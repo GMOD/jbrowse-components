@@ -1,11 +1,12 @@
-import { cast, types } from 'mobx-state-tree'
-import {
-  AnyConfigurationModel,
-  ConfigurationReference,
-} from '../../configuration'
-import PluginManager from '../../PluginManager'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import configSchema from './baseConnectionConfig'
+import { ConfigurationReference } from '../../configuration'
+
+import type PluginManager from '../../PluginManager'
+import type { AnyConfigurationModel } from '../../configuration'
+
+type TrackConf = AnyConfigurationModel | Record<string, unknown>
 
 /**
  * #stateModel BaseConnectionModel
@@ -42,23 +43,21 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addTrackConf(trackConf: AnyConfigurationModel) {
+      addTrackConf(trackConf: TrackConf) {
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },
       /**
        * #action
        */
-      addTrackConfs(trackConfs: AnyConfigurationModel[]) {
-        const length = self.tracks.push(...trackConfs)
-        return self.tracks.slice(length - 1 - trackConfs.length, length - 1)
+      addTrackConfs(trackConfs: TrackConf[]) {
+        self.tracks.push(...trackConfs)
       },
       /**
        * #action
        */
       setTrackConfs(trackConfs: AnyConfigurationModel[]) {
         self.tracks = cast(trackConfs)
-        return self.tracks
       },
       /**
        * #action

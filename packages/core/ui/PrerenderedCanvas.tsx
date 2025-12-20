@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
 import { drawImageOntoCanvasContext } from '../util/offscreenCanvasPonyfill'
 
 function PrerenderedCanvas(props: {
@@ -37,17 +37,20 @@ function PrerenderedCanvas(props: {
       return
     }
     drawImageOntoCanvasContext(imageData, context)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDone(true)
   }, [imageData])
 
-  const softClipString = showSoftClip ? '_softclipped' : ''
-  const blockKeyStr = blockKey ? '_' + blockKey : ''
-  const testId = `prerendered_canvas${softClipString}${blockKeyStr}${
-    done ? '_done' : ''
-  }`
   return (
     <canvas
-      data-testid={testId}
+      data-testid={[
+        'prerendered_canvas',
+        showSoftClip ? 'softclipped' : '',
+        blockKey,
+        done ? 'done' : '',
+      ]
+        .filter(f => !!f)
+        .join('_')}
       ref={featureCanvas}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}

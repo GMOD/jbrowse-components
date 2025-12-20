@@ -1,56 +1,41 @@
-import { Args, Flags } from '@oclif/core'
-import { sync as commandExistsSync } from 'command-exists'
+import { parseArgs } from 'util'
 
-import { spawn } from 'child_process'
-import JBrowseCommand from '../base'
+import { printHelp } from '../utils'
+import { waitForProcessClose } from './process-utils'
+import { GFF_CONFIG, spawnSortProcess } from './sort-utils'
+import { validateFileArgument, validateRequiredCommands } from './validators'
 
-export default class SortGff extends JBrowseCommand {
-  static description =
-    'Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep'
+export async function run(args?: string[]) {
+  const options = {
+    help: {
+      type: 'boolean',
+      short: 'h',
+    },
+  } as const
+  const { values: flags, positionals } = parseArgs({
+    args,
+    options,
+    allowPositionals: true,
+  })
 
-  static examples = [
-    '# sort gff and pipe to bgzip',
-    '$ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz',
-    '$ tabix sorted.gff.gz',
-  ]
-
-  static args = {
-    file: Args.string({
-      required: true,
-      description: `GFF file`,
-    }),
+  if (flags.help) {
+    printHelp({
+      description: GFF_CONFIG.description,
+      examples: GFF_CONFIG.examples,
+      usage: 'jbrowse sort-gff [file] [options]',
+      options,
+    })
+    return
   }
 
-  static flags = {
-    help: Flags.help({ char: 'h' }),
-  }
+  const file = positionals[0]
+  validateFileArgument(file, 'sort-gff', 'gff')
+  validateRequiredCommands(['sh', 'sort', 'grep'])
 
-  async run() {
-    const {
-      args: { file },
-    } = await this.parse(SortGff)
+  const child = spawnSortProcess(file, GFF_CONFIG.sortColumn)
+  const exitCode = await waitForProcessClose(child)
 
-    if (
-      commandExistsSync('sh') &&
-      commandExistsSync('sort') &&
-      commandExistsSync('grep')
-    ) {
-      // this command comes from the tabix docs http://www.htslib.org/doc/tabix.html
-      spawn(
-        'sh',
-        [
-          '-c',
-          `(grep "^#" "${file}"; grep -v "^#" "${file}" | sort -t"\`printf '\t'\`" -k1,1 -k4,4n)`,
-        ],
-        {
-          env: { ...process.env, LC_ALL: 'C' },
-          stdio: 'inherit',
-        },
-      )
-    } else {
-      throw new Error(
-        'Unable to sort, requires unix type environment with sort, grep',
-      )
-    }
+  if (exitCode !== 0) {
+    throw new Error(`Sort process exited with code ${exitCode}`)
   }
 }

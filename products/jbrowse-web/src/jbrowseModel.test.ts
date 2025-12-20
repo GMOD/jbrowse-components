@@ -1,9 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSnapshot } from 'mobx-state-tree'
 import assemblyConfigSchemasFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import configSnapshot from '../test_data/volvox/config.json'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
 import corePlugins from './corePlugins'
 import jbrowseModelFactory from './jbrowseModel'
+import configSnapshot from '../test_data/volvox/config.json'
 
 type JBrowseModelType = ReturnType<typeof jbrowseModelFactory>
 
@@ -15,6 +16,7 @@ describe('JBrowse model', () => {
       .configure()
 
     JBrowseModel = jbrowseModelFactory({
+      adminMode: false,
       pluginManager,
       assemblyConfigSchema: assemblyConfigSchemasFactory(pluginManager),
     })

@@ -5,7 +5,6 @@ export interface Option {
   result: BaseResult
 }
 
-// filter so don't need re-filtering
 function filterOptions(options: Option[], searchQuery: string) {
   return options.filter(
     ({ result }) =>
@@ -51,7 +50,7 @@ export function getDeduplicatedResult(results: BaseResult[]) {
     ([displayString, results]) =>
       results.length === 1
         ? {
-            result: results[0],
+            result: results[0]!,
           }
         : {
             // deduplicate a "multi-result"

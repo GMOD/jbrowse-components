@@ -1,24 +1,25 @@
-import React, { Suspense, useRef, useState } from 'react'
-import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
+import { Suspense, useRef, useState } from 'react'
+
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
-import { useFeatureSequence } from '../hooks'
-import { SimpleFeatureSerialized } from '../../../util'
-import { BaseFeatureWidgetModel } from '../../stateModelFactory'
-import SequencePanel from '../SequencePanel'
 import SequenceFeatureMenu from './SequenceFeatureMenu'
 import SequenceTypeSelector from './SequenceTypeSelector'
+import {
+  SimpleFeature,
+  type SimpleFeatureSerialized,
+  getSession,
+} from '../../../util'
+import { useFeatureSequence } from '../../../util/useFeatureSequence'
+import SequencePanel from '../SequencePanel'
+
+import type { BaseFeatureWidgetModel } from '../../stateModelFactory'
 
 const useStyles = makeStyles()({
   dialogContent: {
     width: '80em',
-  },
-  formControl: {
-    margin: 0,
-    marginLeft: 4,
   },
 })
 
@@ -35,30 +36,29 @@ const SequenceDialog = observer(function ({
   const { upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
-  const [force, setForce] = useState(false)
-  const { sequence, error } = useFeatureSequence(
-    model,
-    feature,
+  const [forceLoad, setForceLoad] = useState(false)
+  const session = getSession(model)
+  const assemblyName = model.view?.assemblyNames?.[0]
+  const { sequence, error } = useFeatureSequence({
+    assemblyName,
+    session,
+    feature: new SimpleFeature(feature),
     upDownBp,
-    force,
-  )
+    forceLoad,
+  })
 
-  const [mode, setMode] = useState('cds')
   return (
     <Dialog
       maxWidth="xl"
       open
-      onClose={() => handleClose()}
       title="Sequence view"
+      onClose={() => {
+        handleClose()
+      }}
     >
       <DialogContent className={classes.dialogContent}>
         <div>
-          <SequenceTypeSelector
-            mode={mode}
-            setMode={setMode}
-            feature={feature}
-            model={sequenceFeatureDetails}
-          />
+          <SequenceTypeSelector model={sequenceFeatureDetails} />
           <SequenceFeatureMenu
             ref={seqPanelRef}
             model={sequenceFeatureDetails}
@@ -75,37 +75,39 @@ const SequenceDialog = observer(function ({
             <ErrorMessage error={error} />
           ) : !sequence ? (
             <LoadingEllipses />
-          ) : sequence ? (
-            'error' in sequence ? (
-              <>
-                <Typography color="error">{sequence.error}</Typography>
-                <Button
-                  variant="contained"
-                  color="inherit"
-                  onClick={() => setForce(true)}
-                >
-                  Force load
-                </Button>
-              </>
-            ) : (
-              <Suspense fallback={<LoadingEllipses />}>
-                <SequencePanel
-                  ref={seqPanelRef}
-                  feature={feature}
-                  mode={mode}
-                  sequence={sequence}
-                  model={sequenceFeatureDetails}
-                />
-              </Suspense>
-            )
+          ) : 'error' in sequence ? (
+            <>
+              <Typography color="error">{sequence.error}</Typography>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={() => {
+                  setForceLoad(true)
+                }}
+              >
+                Force load
+              </Button>
+            </>
           ) : (
-            <Typography>No sequence found</Typography>
+            <Suspense fallback={<LoadingEllipses />}>
+              <SequencePanel
+                ref={seqPanelRef}
+                feature={feature}
+                sequence={sequence}
+                model={sequenceFeatureDetails}
+              />
+            </Suspense>
           )}
         </div>
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={() => handleClose()} variant="contained">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          variant="contained"
+        >
           Close
         </Button>
       </DialogActions>

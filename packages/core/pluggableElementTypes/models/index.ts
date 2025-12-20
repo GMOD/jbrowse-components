@@ -20,3 +20,4 @@ export type {
   BaseTrackConfig,
   BaseTrackConfigSchema as BaseTrackConfigModel,
 } from './baseTrackConfig'
+export type { FileTypeExporter } from './saveTrackFileTypes/types'

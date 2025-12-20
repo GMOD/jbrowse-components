@@ -1,15 +1,14 @@
-import React from 'react'
-import { getContainingView, getSession } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
+import { getContainingView } from '@jbrowse/core/util'
 
-// locals
-import { LinearSyntenyDisplayModel } from '../model'
-import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import type { LinearSyntenyDisplayModel } from '../model'
+import type { Feature } from '@jbrowse/core/util'
 
 interface ClickCoord {
   clientX: number
   clientY: number
-  feature: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  feature: { f: Feature }
 }
 
 export default function SyntenyContextMenu({
@@ -58,18 +57,15 @@ export default function SyntenyContextMenu({
             const end = f.get('end')
             const refName = f.get('refName')
             const mate = f.get('mate')
-            view.views[0]
-              .navToLocString(`${refName}:${start}-${end}`)
-              .catch(e => {
-                console.error(e)
-                getSession(model).notifyError(`${e}`, e)
-              })
-            view.views[1]
-              .navToLocString(`${mate.refName}:${mate.start}-${mate.end}`)
-              .catch(e => {
-                console.error(e)
-                getSession(model).notifyError(`${e}`, e)
-              })
+
+            const l1 = view.views[model.level]!
+            const l2 = view.views[model.level + 1]!
+
+            const center1 = (start + end) / 2
+            const center2 = (mate.start + mate.end) / 2
+
+            l1.centerAt(center1, refName)
+            l2.centerAt(center2, mate.refName)
           },
         },
       ]}

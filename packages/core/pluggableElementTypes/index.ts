@@ -1,14 +1,15 @@
-import AdapterType from './AdapterType'
-import ConnectionType from './ConnectionType'
-import RendererType from './renderers/RendererType'
-import WidgetType from './WidgetType'
-import TrackType from './TrackType'
-import DisplayType from './DisplayType'
-import ViewType from './ViewType'
-import RpcMethodType from './RpcMethodType'
-import InternetAccountType from './InternetAccountType'
-import TextSearchAdapterType from './TextSearchAdapterType'
-import AddTrackWorkflowType from './AddTrackWorkflowType'
+import type AdapterType from './AdapterType'
+import type AddTrackWorkflowType from './AddTrackWorkflowType'
+import type ConnectionType from './ConnectionType'
+import type DisplayType from './DisplayType'
+import type GlyphType from './GlyphType'
+import type InternetAccountType from './InternetAccountType'
+import type RpcMethodType from './RpcMethodType'
+import type TextSearchAdapterType from './TextSearchAdapterType'
+import type TrackType from './TrackType'
+import type ViewType from './ViewType'
+import type WidgetType from './WidgetType'
+import type RendererType from './renderers/RendererType'
 
 export * from './renderers'
 export * from './models'
@@ -25,19 +26,7 @@ export type PluggableElementType =
   | InternetAccountType
   | TextSearchAdapterType
   | AddTrackWorkflowType
-
-export type PluggableElementMember =
-  | keyof AdapterType
-  | keyof ConnectionType
-  | keyof RendererType
-  | keyof WidgetType
-  | keyof TrackType
-  | keyof DisplayType
-  | keyof ViewType
-  | keyof RpcMethodType
-  | keyof InternetAccountType
-  | keyof TextSearchAdapterType
-  | keyof AddTrackWorkflowType
+  | GlyphType
 
 export { default as AdapterType } from './AdapterType'
 export { default as RendererType } from './renderers/RendererType'
@@ -47,6 +36,7 @@ export { default as WidgetType } from './WidgetType'
 export { default as ViewType } from './ViewType'
 export { default as DisplayType } from './DisplayType'
 export { default as InternetAccountType } from './InternetAccountType'
+export { default as GlyphType } from './GlyphType'
 
 export { default as RpcMethodType } from './RpcMethodType'
 export { default as AddTrackWorkflowType } from './AddTrackWorkflowType'

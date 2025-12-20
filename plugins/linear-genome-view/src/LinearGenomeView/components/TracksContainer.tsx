@@ -1,26 +1,29 @@
-import React, { useRef } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
+import { Suspense, lazy, useRef } from 'react'
+
 import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
-// local utils
-import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
-import { useSideScroll, useRangeSelect, useWheelScroll } from './hooks'
-
-// local components
+import Gridlines from './Gridlines'
 import Rubberband from './Rubberband'
 import Scalebar from './Scalebar'
-import Gridlines from './Gridlines'
-import CenterLine from './CenterLine'
 import VerticalGuide from './VerticalGuide'
-import RubberbandSpan from './RubberbandSpan'
-import HighlightGroup from './Highlight'
+import { SCALE_BAR_HEIGHT } from '../consts'
+import { useRangeSelect } from './useRangeSelect'
+import { useSideScroll } from './useSideScroll'
+import { useWheelScroll } from './useWheelScroll'
+
+import type { LinearGenomeViewModel } from '..'
+
+const CenterLine = lazy(() => import('./CenterLine'))
+const Highlight = lazy(() => import('./Highlight'))
+const RubberbandSpan = lazy(() => import('./RubberbandSpan'))
 
 const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
-    overflow: 'hidden',
+    contain: 'layout style',
   },
 })
 
@@ -36,6 +39,8 @@ const TracksContainer = observer(function TracksContainer({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
+  const { stickyViewHeaders, rubberbandTop, showGridlines, showCenterLine } =
+    model
   const ref = useRef<HTMLDivElement>(null)
   const {
     guideX,
@@ -46,8 +51,8 @@ const TracksContainer = observer(function TracksContainer({
     width,
     left,
     anchorPosition,
-    handleMenuItemClick,
     open,
+    handleMenuItemClick,
     handleClose,
     mouseMove,
     mouseDown: mouseDown2,
@@ -63,7 +68,7 @@ const TracksContainer = observer(function TracksContainer({
   return (
     <div
       ref={ref}
-      data-testid="trackContainer"
+      data-testid="tracksContainer"
       className={classes.tracksContainer}
       onMouseDown={event => {
         mouseDown1(event)
@@ -72,18 +77,24 @@ const TracksContainer = observer(function TracksContainer({
       onMouseMove={mouseMove}
       onMouseUp={mouseUp}
     >
-      {model.showGridlines ? <Gridlines model={model} /> : null}
-      {model.showCenterLine ? <CenterLine model={model} /> : null}
+      {showGridlines ? <Gridlines model={model} /> : null}
+      <Suspense fallback={null}>
+        {showCenterLine ? <CenterLine model={model} /> : null}
+      </Suspense>
       {guideX !== undefined ? (
         <VerticalGuide model={model} coordX={guideX} />
       ) : rubberbandOn ? (
-        <RubberbandSpan
-          leftBpOffset={leftBpOffset}
-          rightBpOffset={rightBpOffset}
-          numOfBpSelected={numOfBpSelected}
-          width={width}
-          left={left}
-        />
+        <Suspense fallback={null}>
+          <RubberbandSpan
+            leftBpOffset={leftBpOffset}
+            rightBpOffset={rightBpOffset}
+            numOfBpSelected={numOfBpSelected}
+            width={width}
+            left={left}
+            top={rubberbandTop}
+            sticky={stickyViewHeaders}
+          />
+        </Suspense>
       ) : null}
       {anchorPosition ? (
         <Menu
@@ -104,7 +115,10 @@ const TracksContainer = observer(function TracksContainer({
         ControlComponent={
           <Scalebar
             model={model}
-            style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+            style={{
+              height: SCALE_BAR_HEIGHT,
+              boxSizing: 'border-box',
+            }}
           />
         }
       />
@@ -113,6 +127,24 @@ const TracksContainer = observer(function TracksContainer({
       {children}
     </div>
   )
+})
+
+const HighlightGroup = observer(function HighlightGroup({
+  model,
+}: {
+  model: LGV
+}) {
+  return model.highlight.length ? (
+    <Suspense fallback={null}>
+      {model.highlight.map((highlight, idx) => (
+        <Highlight
+          key={`${JSON.stringify(highlight)}-${idx}`}
+          model={model}
+          highlight={highlight}
+        />
+      ))}
+    </Suspense>
+  ) : null
 })
 
 export default TracksContainer

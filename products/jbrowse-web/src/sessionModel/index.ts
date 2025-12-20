@@ -1,8 +1,9 @@
-import { AbstractSessionModel } from '@jbrowse/core/util/types'
-import { Instance } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import { BaseWebSession } from '@jbrowse/web-core'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseWebSessionModel

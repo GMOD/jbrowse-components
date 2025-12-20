@@ -1,23 +1,26 @@
-import { MenuItem } from '@jbrowse/core/ui/Menu'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-export interface Menu {
-  label: string
-  menuItems: MenuItem[]
-}
+import type { Menu, MenuAction } from '../menus'
+import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 /**
  * #stateModel RootAppMenuMixin
  */
 export function RootAppMenuMixin() {
-  return types.model({}).actions(s => {
-    const self = s as { menus: Menu[] }
-    return {
+  return types
+    .model({})
+    .volatile(() => ({
+      mutableMenuActions: [] as MenuAction[],
+    }))
+    .actions(self => ({
       /**
        * #action
        */
       setMenus(newMenus: Menu[]) {
-        self.menus = newMenus
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'setMenus', newMenus },
+        ]
       },
       /**
        * #action
@@ -25,10 +28,12 @@ export function RootAppMenuMixin() {
        *
        * @param menuName - Name of the menu to insert.
        *
-       * @returns The new length of the top-level menus array
        */
       appendMenu(menuName: string) {
-        return self.menus.push({ label: menuName, menuItems: [] })
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          { type: 'appendMenu', menuName },
+        ]
       },
       /**
        * #action
@@ -40,18 +45,16 @@ export function RootAppMenuMixin() {
        * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
        * second-to-last one.
        *
-       * @returns The new length of the top-level menus array
        */
       insertMenu(menuName: string, position: number) {
-        self.menus.splice(
-          (position < 0 ? self.menus.length : 0) + position,
-          0,
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
           {
-            label: menuName,
-            menuItems: [],
+            type: 'insertMenu',
+            menuName,
+            position,
           },
-        )
-        return self.menus.length
+        ]
       },
       /**
        * #action
@@ -60,16 +63,16 @@ export function RootAppMenuMixin() {
        * @param menuName - Name of the top-level menu to append to.
        *
        * @param menuItem - Menu item to append.
-       *
-       * @returns The new length of the menu
        */
       appendToMenu(menuName: string, menuItem: MenuItem) {
-        const menu = self.menus.find(m => m.label === menuName)
-        if (!menu) {
-          self.menus.push({ label: menuName, menuItems: [menuItem] })
-          return 1
-        }
-        return menu.menuItems.push(menuItem)
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          {
+            type: 'appendToMenu',
+            menuName,
+            menuItem,
+          },
+        ]
       },
       /**
        * #action
@@ -82,19 +85,14 @@ export function RootAppMenuMixin() {
        * @param position - Position to insert menu item. If negative, counts
        * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
        * the second-to-last one.
-       *
-       * @returns The new length of the menu
        */
       insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
-        const menu = self.menus.find(m => m.label === menuName)
-        if (!menu) {
-          self.menus.push({ label: menuName, menuItems: [menuItem] })
-          return 1
-        }
-        const insertPosition =
-          position < 0 ? menu.menuItems.length + position : position
-        menu.menuItems.splice(insertPosition, 0, menuItem)
-        return menu.menuItems.length
+        self.mutableMenuActions.push({
+          type: 'insertInMenu',
+          menuName,
+          menuItem,
+          position,
+        })
       },
       /**
        * #action
@@ -108,28 +106,14 @@ export function RootAppMenuMixin() {
        * @returns The new length of the sub-menu
        */
       appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
-        let topMenu = self.menus.find(m => m.label === menuPath[0])
-        if (!topMenu) {
-          const idx = this.appendMenu(menuPath[0])
-          topMenu = self.menus[idx - 1]
-        }
-        let { menuItems: subMenu } = topMenu
-        const pathSoFar = [menuPath[0]]
-        menuPath.slice(1).forEach(menuName => {
-          pathSoFar.push(menuName)
-          let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
-          if (!sm) {
-            const idx = subMenu.push({ label: menuName, subMenu: [] })
-            sm = subMenu[idx - 1]
-          }
-          if (!('subMenu' in sm)) {
-            throw new Error(
-              `"${menuName}" in path "${pathSoFar}" is not a subMenu`,
-            )
-          }
-          subMenu = sm.subMenu
-        })
-        return subMenu.push(menuItem)
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          {
+            type: 'appendToSubMenu',
+            menuPath,
+            menuItem,
+          },
+        ]
       },
       /**
        * #action
@@ -143,38 +127,21 @@ export function RootAppMenuMixin() {
        * @param position - Position to insert menu item. If negative, counts
        * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
        * the second-to-last one.
-       *
-       * @returns The new length of the sub-menu
        */
       insertInSubMenu(
         menuPath: string[],
         menuItem: MenuItem,
         position: number,
       ) {
-        let topMenu = self.menus.find(m => m.label === menuPath[0])
-        if (!topMenu) {
-          const idx = this.appendMenu(menuPath[0])
-          topMenu = self.menus[idx - 1]
-        }
-        let { menuItems: subMenu } = topMenu
-        const pathSoFar = [menuPath[0]]
-        menuPath.slice(1).forEach(menuName => {
-          pathSoFar.push(menuName)
-          let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
-          if (!sm) {
-            const idx = subMenu.push({ label: menuName, subMenu: [] })
-            sm = subMenu[idx - 1]
-          }
-          if (!('subMenu' in sm)) {
-            throw new Error(
-              `"${menuName}" in path "${pathSoFar}" is not a subMenu`,
-            )
-          }
-          subMenu = sm.subMenu
-        })
-        subMenu.splice(position, 0, menuItem)
-        return subMenu.length
+        self.mutableMenuActions = [
+          ...self.mutableMenuActions,
+          {
+            type: 'insertInSubMenu',
+            menuPath,
+            menuItem,
+            position,
+          },
+        ]
       },
-    }
-  })
+    }))
 }

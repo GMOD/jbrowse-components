@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`basic 1`] = `
+[
+  {
+    "end": 200,
+    "refName": "chr1",
+    "score": 4,
+    "source": "col0",
+    "start": 100,
+    "uniqueId": "test-chr1-0-0",
+  },
+  {
+    "end": 300,
+    "refName": "chr1",
+    "score": 5,
+    "source": "col0",
+    "start": 200,
+    "uniqueId": "test-chr1-1-0",
+  },
+  {
+    "end": 400,
+    "refName": "chr1",
+    "score": 6,
+    "source": "col0",
+    "start": 300,
+    "uniqueId": "test-chr1-2-0",
+  },
+]
+`;

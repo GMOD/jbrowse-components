@@ -1,17 +1,27 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { baseChordDisplayConfig } from '@jbrowse/plugin-circular-view'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config ChordVariantDisplay
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-function stateModelFactory(pluginManager: PluginManager) {
+function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ChordVariantDisplay',
     {
+      /**
+       * #slot
+       */
+      onChordClick: {
+        type: 'boolean',
+        description:
+          'callback that should be run when a chord in the track is clicked',
+        defaultValue: false,
+        contextVariable: ['feature', 'track', 'pluginManager'],
+      },
       /**
        * #slot
        */
@@ -21,13 +31,10 @@ function stateModelFactory(pluginManager: PluginManager) {
       ),
     },
     {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: baseChordDisplayConfig,
+      explicitIdentifier: 'displayId',
       explicitlyTyped: true,
     },
   )
 }
 
-export default stateModelFactory
+export default configSchemaF

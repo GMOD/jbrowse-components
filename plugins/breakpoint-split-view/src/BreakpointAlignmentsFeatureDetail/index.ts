@@ -1,9 +1,11 @@
 import { lazy } from 'react'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from 'mobx-state-tree'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const configSchema = ConfigurationSchema('BreakpointAlignmentsWidget', {})
 

@@ -1,15 +1,13 @@
-import React from 'react'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { stripAlpha } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { SceneGraph } from '@jbrowse/core/util/layouts'
-import { Region, Feature, stripAlpha } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
-const Arrow = observer(function ({
+const Arrow = observer(function Arrow({
   feature,
   featureLayout,
   config,

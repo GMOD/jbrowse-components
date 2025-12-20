@@ -1,19 +1,24 @@
-import {
-  addDisposer,
-  cast,
-  getParent,
-  types,
-  Instance,
-  IAnyType,
-} from 'mobx-state-tree'
-import { when } from '../util'
+import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
-import assemblyFactory, { Assembly } from './assembly'
-import PluginManager from '../PluginManager'
-import RpcManager from '../rpc/RpcManager'
+
+import { readConfObject } from '../configuration'
+import { when } from '../util'
+import assemblyFactory from './assembly'
+
+import type { AnyConfigurationModel } from '../configuration'
+import type { Assembly } from './assembly'
+import type PluginManager from '../PluginManager'
+import type RpcManager from '../rpc/RpcManager'
+import type { StopToken } from '../util/stopToken'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
+
+export interface AssemblyBaseOpts {
+  stopToken?: StopToken
+  sessionId: string
+  statusCallback?: (arg: string) => void
+}
 
 /**
  * #stateModel AssemblyManager
@@ -31,8 +36,11 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       assemblies: types.array(assemblyFactory(conf, pm)),
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get assemblyNameMap() {
-        const obj = {} as Record<string, Assembly | undefined>
+        const obj = {} as Record<string, Assembly>
         for (const assembly of self.assemblies) {
           for (const name of assembly.allAliases) {
             obj[name] = assembly
@@ -45,8 +53,43 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       /**
        * #method
        */
+      getCanonicalAssemblyName(asmName: string) {
+        return self.assemblyNameMap[asmName]?.name
+      },
+      /**
+       * #method
+       */
+      getCanonicalAssemblyName2(asmName: string) {
+        return self.assemblyNameMap[asmName]?.name || asmName
+      },
+      /**
+       * #method
+       */
       get(asmName: string) {
-        return self.assemblyNameMap[asmName]
+        if (asmName) {
+          const assembly = self.assemblyNameMap[asmName]
+          if (assembly) {
+            return assembly
+          } else if (!this.assemblyNamesList.includes(asmName)) {
+            // Extension point for loading unrecognized assemblies. Allows
+            // plugins to provide custom logic for assembly resolution
+            //
+            // Note: this does not return any particular value. however, it can
+            // trigger things like like adding connections, that will
+            // eventually trigger assemblies to be loaded and new evaluations
+            // via observable behavior
+            pm.evaluateExtensionPoint(
+              'Core-handleUnrecognizedAssembly',
+              undefined,
+              {
+                assemblyName: asmName,
+                session: getParent<any>(self).session,
+              },
+            )
+          }
+        }
+
+        return undefined
       },
 
       /**
@@ -58,16 +101,13 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
 
       /**
        * #getter
-       * looks at jbrowse.assemblies, session.sessionAssemblies, and
-       * session.temporaryAssemblies to load from
+       * combined jbrowse.assemblies, session.sessionAssemblies, and
+       * session.temporaryAssemblies
        */
       get assemblyList() {
-        // name is the explicit identifier and can be accessed without getConf,
-        // hence the union with {name:string}
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [], temporaryAssemblies = [] } = {},
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } = getParent<any>(self)
         return [
           ...assemblies,
@@ -77,15 +117,14 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       },
 
       get rpcManager(): RpcManager {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))
     .views(self => ({
       /**
        * #method
-       * use this method instead of assemblyManager.get(assemblyName)
-       * to get an assembly with regions loaded
+       * use this method instead of assemblyManager.get(assemblyName) to get an
+       * assembly with regions loaded
        */
       async waitForAssembly(assemblyName: string) {
         if (!assemblyName) {
@@ -94,7 +133,9 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         let assembly = self.get(assemblyName)
         if (!assembly) {
           try {
-            await when(() => Boolean(self.get(assemblyName)), { timeout: 1000 })
+            await when(() => Boolean(self.get(assemblyName)), {
+              timeout: 10000,
+            })
             assembly = self.get(assemblyName)
           } catch (e) {
             // ignore
@@ -107,10 +148,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         await assembly.load()
         await when(
           () =>
-            !!(assembly?.regions && assembly.refNameAliases) ||
-            !!assembly?.error,
+            !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
         )
         if (assembly.error) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw assembly.error
         }
         return assembly
@@ -122,7 +163,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { signal?: AbortSignal; sessionId: string },
+        opts: AssemblyBaseOpts,
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
@@ -137,7 +178,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getReverseRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { signal?: AbortSignal; sessionId: string },
+        opts: AssemblyBaseOpts,
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
@@ -155,7 +196,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
           return assembly.isValidRefName(refName)
         }
         throw new Error(
-          `Failed to look up refName ${refName} on ${assemblyName} because assembly does not exist`,
+          `Failed to look up refName:${refName} on assemblyName:${assemblyName} (assembly does not exist)`,
         )
       },
     }))
@@ -166,20 +207,17 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
           reaction(
             () => self.assemblyList,
             assemblyConfs => {
-              self.assemblies.forEach(asm => {
+              for (const asm of self.assemblies) {
                 if (!asm.configuration) {
                   this.removeAssembly(asm)
                 }
-              })
-              assemblyConfs.forEach(conf => {
-                if (
-                  !self.assemblies.some(
-                    a => a.name === readConfObject(conf, 'name'),
-                  )
-                ) {
+              }
+              for (const conf of assemblyConfs) {
+                const name = readConfObject(conf, 'name')
+                if (!self.assemblies.some(a => a.name === name)) {
                   this.addAssembly(conf)
                 }
-              })
+              }
             },
             { fireImmediately: true, name: 'assemblyManagerAfterAttach' },
           ),
@@ -208,16 +246,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        */
       addAssembly(configuration: Conf) {
         self.assemblies.push({ configuration })
-      },
-
-      /**
-       * #action
-       * private: you would generally want to add to manipulate
-       * jbrowse.assemblies, session.sessionAssemblies, or
-       * session.temporaryAssemblies instead of using this directly
-       */
-      replaceAssembly(idx: number, configuration: Conf) {
-        self.assemblies[idx] = cast({ configuration })
       },
     }))
 }

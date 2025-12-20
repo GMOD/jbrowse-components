@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config PileupRenderer
@@ -51,6 +51,23 @@ const PileupRenderer = ConfigurationSchema(
       description:
         'the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1',
       defaultValue: 1,
+    },
+    /**
+     * #slot
+     */
+    hideSmallIndels: {
+      type: 'boolean',
+      description:
+        'Hides small indels, sometimes occurring in long read sequencing',
+      defaultValue: false,
+    },
+    /**
+     * #slot
+     */
+    hideMismatches: {
+      type: 'boolean',
+      description: 'Hides SNP mismatches',
+      defaultValue: false,
     },
     /**
      * #slot

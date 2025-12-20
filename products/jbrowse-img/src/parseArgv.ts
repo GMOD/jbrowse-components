@@ -15,7 +15,7 @@ export type Entry = [string, string[]]
 export function parseArgv(argv: string[]) {
   const map = [] as Entry[]
   while (argv.length) {
-    const val = argv[0].slice(2)
+    const val = argv[0]!.slice(2)
     argv = argv.slice(1)
     const next = argv.findIndex(arg => arg.startsWith('-'))
 
@@ -37,12 +37,12 @@ export function standardizeArgv(args: Entry[], trackTypes: string[]) {
     pngwidth?: string
     [key: string]: unknown
   }
-  args.forEach(arg => {
+  for (const arg of args) {
     if (trackTypes.includes(arg[0])) {
       result.trackList.push(arg)
     } else {
       result[arg[0]] = arg[1][0] || true
     }
-  })
+  }
   return result
 }

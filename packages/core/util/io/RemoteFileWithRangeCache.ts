@@ -1,19 +1,18 @@
-import { HttpRangeFetcher } from 'http-range-fetcher'
-import { Buffer } from 'buffer'
-import { RemoteFile, PolyfilledResponse } from 'generic-filehandle'
+import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
+import { RemoteFile } from 'generic-filehandle2'
 
 type BinaryRangeFetch = (
   url: string,
   start: number,
   end: number,
-  options?: { headers?: HeadersInit; signal?: AbortSignal },
+  options?: { headers?: HeadersInit; stopToken?: string },
 ) => Promise<BinaryRangeResponse>
 
 export interface BinaryRangeResponse {
   headers: Record<string, string>
   requestDate: Date
   responseDate: Date
-  buffer: Buffer
+  buffer: Uint8Array
 }
 
 const fetchers: Record<string, BinaryRangeFetch> = {}
@@ -22,7 +21,7 @@ function binaryRangeFetch(
   url: string,
   start: number,
   end: number,
-  options: { headers?: HeadersInit; signal?: AbortSignal } = {},
+  options: { headers?: HeadersInit; stopToken?: string } = {},
 ): Promise<BinaryRangeResponse> {
   const fetcher = fetchers[url]
   if (!fetcher) {
@@ -32,6 +31,7 @@ function binaryRangeFetch(
 }
 
 const globalRangeCache = new HttpRangeFetcher({
+  // @ts-expect-error
   fetch: binaryRangeFetch,
   size: 500 * 1024 ** 2, // 500MiB
   chunkSize: 128 * 1024, // 128KiB
@@ -45,29 +45,31 @@ export function clearCache() {
 
 export class RemoteFileWithRangeCache extends RemoteFile {
   public async fetch(
-    url: RequestInfo,
+    url: string | RequestInfo,
     init?: RequestInit,
-  ): Promise<PolyfilledResponse> {
+  ): Promise<Response> {
     const str = String(url)
     if (!fetchers[str]) {
       fetchers[str] = this.fetchBinaryRange.bind(this)
     }
     // if it is a range request, route it through the range cache
-    const range = new Headers(init?.headers)?.get('range')
+    const range = new Headers(init?.headers).get('range')
     if (range) {
       const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)
       if (rangeParse) {
         const [, start, end] = rangeParse
-        const s = Number.parseInt(start, 10)
-        const e = Number.parseInt(end, 10)
+        const s = Number.parseInt(start!, 10)
+        const e = Number.parseInt(end!, 10)
         const len = e - s
         const { buffer, headers } = (await globalRangeCache.getRange(
-          url,
+          `${url}`,
           s,
           len + 1,
-          { signal: init?.signal },
         )) as BinaryRangeResponse
-        return new Response(buffer, { status: 206, headers })
+        return new Response(buffer as BodyInit, {
+          status: 206,
+          headers,
+        })
       }
     }
     return super.fetch(url, init)
@@ -77,12 +79,13 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     url: string,
     start: number,
     end: number,
-    options: { headers?: HeadersInit; signal?: AbortSignal } = {},
+    options: { headers?: HeadersInit; stopToken?: string } = {},
   ): Promise<BinaryRangeResponse> {
     const requestDate = new Date()
     const res = await super.fetch(url, {
       ...options,
       headers: {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...options.headers,
         range: `bytes=${start}-${end}`,
       },
@@ -96,7 +99,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
 
     // translate the Headers object into a regular key -> value object.
     // will miss duplicate headers of course
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const headers: Record<string, any> = {}
     for (const [k, v] of res.headers.entries()) {
       headers[k] = v
@@ -108,7 +111,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       headers,
       requestDate,
       responseDate,
-      buffer: Buffer.from(arrayBuffer),
+      buffer: new Uint8Array(arrayBuffer),
     }
   }
 }

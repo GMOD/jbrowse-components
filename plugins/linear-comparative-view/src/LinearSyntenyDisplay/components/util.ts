@@ -1,15 +1,19 @@
-import React from 'react'
+import type React from 'react'
+
 import {
   assembleLocString,
   doesIntersect2,
+  getContainingTrack,
+  getContainingView,
   getSession,
   isSessionModelWithWidgets,
-  Feature,
+  toLocale,
 } from '@jbrowse/core/util'
 
-// locals
-import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
-import { LinearSyntenyDisplayModel } from '../model'
+import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
+
+import type { LinearSyntenyDisplayModel } from '../model'
+import type { Feature } from '@jbrowse/core/util'
 
 interface Pos {
   offsetPx: number
@@ -18,7 +22,7 @@ interface Pos {
 export interface ClickCoord {
   clientX: number
   clientY: number
-  feature: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  feature: { f: Feature }
 }
 
 interface FeatPos {
@@ -34,6 +38,7 @@ export function drawMatchSimple({
   feature,
   ctx,
   offsets,
+  level,
   cb,
   height,
   drawCurves,
@@ -44,6 +49,7 @@ export function drawMatchSimple({
   feature: FeatPos
   ctx: CanvasRenderingContext2D
   offsets: number[]
+  level: number
   oobLimit: number
   viewWidth: number
   cb: (ctx: CanvasRenderingContext2D) => void
@@ -53,10 +59,10 @@ export function drawMatchSimple({
 }) {
   const { p11, p12, p21, p22 } = feature
 
-  const x11 = p11.offsetPx - offsets[0]
-  const x12 = p12.offsetPx - offsets[0]
-  const x21 = p21.offsetPx - offsets[1]
-  const x22 = p22.offsetPx - offsets[1]
+  const x11 = p11.offsetPx - offsets[level]!
+  const x12 = p12.offsetPx - offsets[level]!
+  const x21 = p21.offsetPx - offsets[level + 1]!
+  const x22 = p22.offsetPx - offsets[level + 1]!
 
   const l1 = Math.abs(x12 - x11)
   const l2 = Math.abs(x22 - x21)
@@ -109,6 +115,67 @@ export function draw(
   }
 }
 
+export function drawLocationMarkers(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  x2: number,
+  y1: number,
+  x3: number,
+  x4: number,
+  y2: number,
+  mid: number,
+  bpPerPx1: number,
+  bpPerPx2: number,
+  drawCurves?: boolean,
+) {
+  const width1 = Math.abs(x2 - x1)
+  const width2 = Math.abs(x4 - x3)
+  const averageWidth = (width1 + width2) / 2
+
+  // Only draw markers for sufficiently large matches (wider than ~30 pixels)
+  if (averageWidth < 30) {
+    return
+  }
+
+  // Aim for markers at consistent pixel spacing for even visual density
+  // Target spacing of ~20 pixels between markers regardless of feature size
+  const targetPixelSpacing = 20
+  const numMarkers = Math.max(
+    2,
+    Math.floor(averageWidth / targetPixelSpacing) + 1,
+  )
+
+  const prevStrokeStyle = ctx.strokeStyle
+  const prevLineWidth = ctx.lineWidth
+
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)' // Dark semi-transparent line
+  ctx.lineWidth = 0.5
+
+  // Create single path for all markers
+  ctx.beginPath()
+  if (drawCurves) {
+    for (let step = 0; step < numMarkers; step++) {
+      const t = step / numMarkers
+      const topX = x1 + (x2 - x1) * t
+      const bottomX = x4 + (x3 - x4) * t
+      ctx.moveTo(topX, y1)
+      ctx.bezierCurveTo(topX, mid, bottomX, mid, bottomX, y2)
+    }
+  } else {
+    for (let step = 0; step < numMarkers; step++) {
+      const t = step / numMarkers
+      const topX = x1 + (x2 - x1) * t
+      const bottomX = x4 + (x3 - x4) * t
+      ctx.moveTo(topX, y1)
+      ctx.lineTo(bottomX, y2)
+    }
+  }
+  ctx.stroke()
+
+  ctx.strokeStyle = prevStrokeStyle
+  ctx.lineWidth = prevLineWidth
+}
+
 export function drawBox(
   ctx: CanvasRenderingContext2D,
   x1: number,
@@ -124,7 +191,6 @@ export function drawBox(
   ctx.lineTo(x3, y2)
   ctx.lineTo(x4, y2)
   ctx.closePath()
-  ctx.fill()
 }
 
 export function drawBezierBox(
@@ -155,15 +221,21 @@ export function drawBezierBox(
   ctx.lineTo(x4, y2)
   ctx.bezierCurveTo(x4, mid, x1, mid, x1, y1)
   ctx.closePath()
-  ctx.fill()
 }
 
 export function onSynClick(
   event: React.MouseEvent,
   model: LinearSyntenyDisplayModel,
 ) {
-  const ref1 = model.clickMapCanvas
-  const ref2 = model.cigarClickMapCanvas
+  const view = getContainingView(model)
+  const track = getContainingTrack(model)
+  const {
+    featPositions,
+    numFeats,
+    clickMapCanvas: ref1,
+    cigarClickMapCanvas: ref2,
+    level,
+  } = model
   if (!ref1 || !ref2) {
     return
   }
@@ -176,9 +248,9 @@ export function onSynClick(
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
   const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-  const id = getId(r1, g1, b1, unitMultiplier)
-  const feat = model.featPositions[id]
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
+  const id = getId(r1!, g1!, b1!, unitMultiplier)
+  const feat = featPositions[id]
   if (feat) {
     const { f } = feat
     model.setClickId(f.id())
@@ -186,10 +258,10 @@ export function onSynClick(
     if (isSessionModelWithWidgets(session)) {
       session.showWidget(
         session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-          featureData: {
-            feature1: f.toJSON(),
-            feature2: f.get('mate'),
-          },
+          view,
+          track,
+          featureData: f.toJSON(),
+          level,
         }),
       )
     }
@@ -219,17 +291,29 @@ export function onSynContextClick(
   const y = clientY - rect.top
   const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-  const id = getId(r1, g1, b1, unitMultiplier)
+  const id = getId(r1!, g1!, b1!, unitMultiplier)
   const f = model.featPositions[id]
   if (f) {
     model.setClickId(f.f.id())
-    setAnchorEl({ clientX, clientY, feature: f })
+    setAnchorEl({
+      clientX,
+      clientY,
+      feature: f,
+    })
   }
 }
 
-export function getTooltip(f: Feature, cigarOp?: string, cigarOpLen?: string) {
+export function getTooltip({
+  feature,
+  cigarOp,
+  cigarOpLen,
+}: {
+  feature: Feature
+  cigarOpLen?: string
+  cigarOp?: string
+}) {
   // @ts-expect-error
-  const f1 = f.toJSON() as {
+  const f1 = feature.toJSON() as {
     refName: string
     start: number
     end: number
@@ -254,12 +338,12 @@ export function getTooltip(f: Feature, cigarOp?: string, cigarOpLen?: string) {
     `Loc1: ${assembleLocString(f1)}`,
     `Loc2: ${assembleLocString(f2)}`,
     `Inverted: ${f1.strand === -1}`,
-    `Query len: ${l1.toLocaleString('en-US')}`,
-    `Target len: ${l2.toLocaleString('en-US')}`,
+    `Query len: ${toLocale(l1)}`,
+    `Target len: ${toLocale(l2)}`,
     identity ? `Identity: ${identity.toPrecision(2)}` : '',
-    cigarOp ? `CIGAR operator: ${cigarOp}${cigarOpLen}` : '',
+    cigarOp ? `CIGAR operator: ${toLocale(+cigarOpLen!)}${cigarOp}` : '',
     n1 ? `Name 1: ${n1}` : '',
-    n2 ? `Name 1: ${n2}` : '',
+    n2 ? `Name 2: ${n2}` : '',
   ]
     .filter(f => !!f)
     .join('<br/>')

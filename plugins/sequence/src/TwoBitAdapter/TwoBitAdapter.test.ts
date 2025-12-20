@@ -1,5 +1,6 @@
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
 import Adapter from './TwoBitAdapter'
 import configSchema from './configSchema'
 
@@ -29,7 +30,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
   })
 
   const featuresArray2 = await firstValueFrom(features2.pipe(toArray()))
-  expect(featuresArray2[0].get('end')).toBe(50001)
+  expect(featuresArray2[0]!.get('end')).toBe(50001)
 
   const features3 = adapter.getFeatures({
     refName: 'ctgC',

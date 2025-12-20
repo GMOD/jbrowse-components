@@ -1,9 +1,7 @@
-import React from 'react'
-
 // in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
+// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 import { getVolvoxConfig } from './util'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
 
 export const UsingLocObject = () => {
   const { assembly, tracks } = getVolvoxConfig()
@@ -11,7 +9,11 @@ export const UsingLocObject = () => {
     assembly,
     tracks,
     // use 0-based coordinates for "location object" here
-    location: { refName: 'ctgA', start: 10000, end: 20000 },
+    location: {
+      refName: 'ctgA',
+      start: 10000,
+      end: 20000,
+    },
   })
   return (
     <div>

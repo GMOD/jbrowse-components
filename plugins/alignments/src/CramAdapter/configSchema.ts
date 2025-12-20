@@ -40,18 +40,38 @@ const configSchema = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+  },
+  {
+    explicitlyTyped: true,
 
     /**
-     * #slot sequenceAdapter
-     * generally refers to the reference genome assembly's sequence adapter
-     * currently needs to be manually added
+     * #preProcessSnapshot
+     *
+     * preprocessor to allow minimal config, assumes yourfile.cram.crai:
+     *
+     * ```json
+     * {
+     *   "type": "CramAdapter",
+     *   "uri": "yourfile.cram"
+     * }
+     * ```
      */
-    sequenceAdapter: {
-      type: 'frozen',
-      description: 'sequence data adapter',
-      defaultValue: null,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            cramLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            craiLocation: {
+              uri: `${snap.uri}.crai`,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
     },
   },
-  { explicitlyTyped: true },
 )
 export default configSchema

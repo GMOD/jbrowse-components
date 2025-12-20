@@ -1,10 +1,8 @@
-import React from 'react'
-import { observer } from 'mobx-react'
-import { Button, DialogContent, DialogActions, Alert } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
+import { Alert, Button, DialogActions, DialogContent } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
-import { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model'
 
 const DeleteBookmarksDialog = observer(function ({
   onClose,
@@ -34,7 +32,13 @@ const DeleteBookmarksDialog = observer(function ({
         </Alert>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" color="secondary" onClick={() => onClose()}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            onClose()
+          }}
+        >
           Cancel
         </Button>
         <Button

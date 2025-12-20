@@ -1,0 +1,444 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`parses BED file with custom columns 1`] = `
+{
+  "columns": [
+    {
+      "name": "refName",
+    },
+    {
+      "name": "start",
+    },
+    {
+      "name": "end",
+    },
+    {
+      "name": "name",
+    },
+    {
+      "name": "score",
+    },
+    {
+      "name": "strand",
+    },
+    {
+      "name": "gene_name",
+    },
+    {
+      "name": "expression_level",
+    },
+  ],
+  "rowSet": {
+    "rows": [
+      {
+        "cellData": {
+          "end": 250,
+          "expression_level": 1.5,
+          "gene_name": "BRCA1",
+          "name": "feature1",
+          "refName": "chr1",
+          "score": 0,
+          "start": 100,
+          "strand": "+",
+        },
+        "feature": {
+          "end": 250,
+          "expression_level": 1.5,
+          "gene_name": "BRCA1",
+          "name": "feature1",
+          "refName": "chr1",
+          "score": 0,
+          "start": 100,
+          "strand": "+",
+          "uniqueId": "bed-0",
+        },
+      },
+      {
+        "cellData": {
+          "end": 450,
+          "expression_level": 2.3,
+          "gene_name": "TP53",
+          "name": "feature2",
+          "refName": "chr1",
+          "score": 50,
+          "start": 300,
+          "strand": "-",
+        },
+        "feature": {
+          "end": 450,
+          "expression_level": 2.3,
+          "gene_name": "TP53",
+          "name": "feature2",
+          "refName": "chr1",
+          "score": 50,
+          "start": 300,
+          "strand": "-",
+          "uniqueId": "bed-1",
+        },
+      },
+      {
+        "cellData": {
+          "end": 1500,
+          "expression_level": 0.7,
+          "gene_name": "KRAS",
+          "name": "feature3",
+          "refName": "chr2",
+          "score": 100,
+          "start": 1000,
+          "strand": "+",
+        },
+        "feature": {
+          "end": 1500,
+          "expression_level": 0.7,
+          "gene_name": "KRAS",
+          "name": "feature3",
+          "refName": "chr2",
+          "score": 100,
+          "start": 1000,
+          "strand": "+",
+          "uniqueId": "bed-2",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`parses BED file with metadata lines 1`] = `
+{
+  "columns": [
+    {
+      "name": "refName",
+    },
+    {
+      "name": "start",
+    },
+    {
+      "name": "end",
+    },
+    {
+      "name": "name",
+    },
+    {
+      "name": "score",
+    },
+    {
+      "name": "strand",
+    },
+    {
+      "name": "gene_name",
+    },
+    {
+      "name": "tissue_type",
+    },
+  ],
+  "rowSet": {
+    "rows": [
+      {
+        "cellData": {
+          "end": 250,
+          "gene_name": "BRCA1",
+          "name": "feature1",
+          "refName": "chr1",
+          "score": 0,
+          "start": 100,
+          "strand": "+",
+          "tissue_type": "breast",
+        },
+        "feature": {
+          "end": 250,
+          "gene_name": "BRCA1",
+          "name": "feature1",
+          "refName": "chr1",
+          "score": 0,
+          "start": 100,
+          "strand": "+",
+          "tissue_type": "breast",
+          "uniqueId": "bed-0",
+        },
+      },
+      {
+        "cellData": {
+          "end": 450,
+          "gene_name": "TP53",
+          "name": "feature2",
+          "refName": "chr1",
+          "score": 50,
+          "start": 300,
+          "strand": "-",
+          "tissue_type": "liver",
+        },
+        "feature": {
+          "end": 450,
+          "gene_name": "TP53",
+          "name": "feature2",
+          "refName": "chr1",
+          "score": 50,
+          "start": 300,
+          "strand": "-",
+          "tissue_type": "liver",
+          "uniqueId": "bed-1",
+        },
+      },
+      {
+        "cellData": {
+          "end": 1500,
+          "gene_name": "KRAS",
+          "name": "feature3",
+          "refName": "chr2",
+          "score": 100,
+          "start": 1000,
+          "strand": "+",
+          "tissue_type": "lung",
+        },
+        "feature": {
+          "end": 1500,
+          "gene_name": "KRAS",
+          "name": "feature3",
+          "refName": "chr2",
+          "score": 100,
+          "start": 1000,
+          "strand": "+",
+          "tissue_type": "lung",
+          "uniqueId": "bed-2",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`parses BED file with multiple extra columns 1`] = `
+{
+  "columns": [
+    {
+      "name": "refName",
+    },
+    {
+      "name": "start",
+    },
+    {
+      "name": "end",
+    },
+    {
+      "name": "name",
+    },
+    {
+      "name": "score",
+    },
+    {
+      "name": "strand",
+    },
+    {
+      "name": "gene_name",
+    },
+    {
+      "name": "expression",
+    },
+    {
+      "name": "chr_arm",
+    },
+    {
+      "name": "mutation_type",
+    },
+    {
+      "name": "confidence_score",
+    },
+  ],
+  "rowSet": {
+    "rows": [
+      {
+        "cellData": {
+          "chr_arm": "1p",
+          "confidence_score": 0.95,
+          "end": 250,
+          "expression": 1.5,
+          "gene_name": "BRCA1",
+          "mutation_type": "missense",
+          "name": "feature1",
+          "refName": "chr1",
+          "score": 0,
+          "start": 100,
+          "strand": "+",
+        },
+        "feature": {
+          "chr_arm": "1p",
+          "confidence_score": 0.95,
+          "end": 250,
+          "expression": 1.5,
+          "gene_name": "BRCA1",
+          "mutation_type": "missense",
+          "name": "feature1",
+          "refName": "chr1",
+          "score": 0,
+          "start": 100,
+          "strand": "+",
+          "uniqueId": "bed-0",
+        },
+      },
+      {
+        "cellData": {
+          "chr_arm": "17p",
+          "confidence_score": 0.88,
+          "end": 450,
+          "expression": 2.3,
+          "gene_name": "TP53",
+          "mutation_type": "nonsense",
+          "name": "feature2",
+          "refName": "chr1",
+          "score": 50,
+          "start": 300,
+          "strand": "-",
+        },
+        "feature": {
+          "chr_arm": "17p",
+          "confidence_score": 0.88,
+          "end": 450,
+          "expression": 2.3,
+          "gene_name": "TP53",
+          "mutation_type": "nonsense",
+          "name": "feature2",
+          "refName": "chr1",
+          "score": 50,
+          "start": 300,
+          "strand": "-",
+          "uniqueId": "bed-1",
+        },
+      },
+      {
+        "cellData": {
+          "chr_arm": "12q",
+          "confidence_score": 0.75,
+          "end": 1500,
+          "expression": 0.7,
+          "gene_name": "KRAS",
+          "mutation_type": "frameshift",
+          "name": "feature3",
+          "refName": "chr2",
+          "score": 100,
+          "start": 1000,
+          "strand": "+",
+        },
+        "feature": {
+          "chr_arm": "12q",
+          "confidence_score": 0.75,
+          "end": 1500,
+          "expression": 0.7,
+          "gene_name": "KRAS",
+          "mutation_type": "frameshift",
+          "name": "feature3",
+          "refName": "chr2",
+          "score": 100,
+          "start": 1000,
+          "strand": "+",
+          "uniqueId": "bed-2",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`parses standard 6-column BED file 1`] = `
+{
+  "columns": [
+    {
+      "name": "refName",
+    },
+    {
+      "name": "start",
+    },
+    {
+      "name": "end",
+    },
+    {
+      "name": "field_0",
+    },
+    {
+      "name": "field_1",
+    },
+    {
+      "name": "field_2",
+    },
+  ],
+  "rowSet": {
+    "rows": [
+      {
+        "cellData": {
+          "end": 250,
+          "field_0": "feature1",
+          "field_1": 0,
+          "field_2": "+",
+          "name": "feature1",
+          "refName": "chr1",
+          "score": "0",
+          "start": 100,
+          "strand": "+",
+        },
+        "feature": {
+          "end": 250,
+          "field_0": "feature1",
+          "field_1": 0,
+          "field_2": "+",
+          "name": "feature1",
+          "refName": "chr1",
+          "score": "0",
+          "start": 100,
+          "strand": 1,
+          "uniqueId": "bed-0",
+        },
+      },
+      {
+        "cellData": {
+          "end": 450,
+          "field_0": "feature2",
+          "field_1": 50,
+          "field_2": "-",
+          "name": "feature2",
+          "refName": "chr1",
+          "score": "50",
+          "start": 300,
+          "strand": "-",
+        },
+        "feature": {
+          "end": 450,
+          "field_0": "feature2",
+          "field_1": 50,
+          "field_2": "-",
+          "name": "feature2",
+          "refName": "chr1",
+          "score": "50",
+          "start": 300,
+          "strand": -1,
+          "uniqueId": "bed-1",
+        },
+      },
+      {
+        "cellData": {
+          "end": 1500,
+          "field_0": "feature3",
+          "field_1": 100,
+          "field_2": "+",
+          "name": "feature3",
+          "refName": "chr2",
+          "score": "100",
+          "start": 1000,
+          "strand": "+",
+        },
+        "feature": {
+          "end": 1500,
+          "field_0": "feature3",
+          "field_1": 100,
+          "field_2": "+",
+          "name": "feature3",
+          "refName": "chr2",
+          "score": "100",
+          "start": 1000,
+          "strand": 1,
+          "uniqueId": "bed-2",
+        },
+      },
+    ],
+  },
+}
+`;

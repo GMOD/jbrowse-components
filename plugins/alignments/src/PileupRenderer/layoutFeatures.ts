@@ -1,44 +1,44 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { iterMap } from '@jbrowse/core/util'
 
-// locals
 import { layoutFeature } from './layoutFeature'
-import { RenderArgsDeserializedWithFeaturesAndLayout } from './PileupRenderer'
 import { sortFeature } from './sortUtil'
 
-// layout determines the height of the canvas that we use to render
-export function layoutFeats(
-  props: RenderArgsDeserializedWithFeaturesAndLayout,
-) {
-  const { layout, features, sortedBy, config, bpPerPx, showSoftClip, regions } =
-    props
-  const [region] = regions
-  if (!layout) {
-    throw new Error(`layout required`)
-  }
-  if (!layout.addRect) {
-    throw new Error('invalid layout object')
-  }
+import type { LayoutFeature, PreProcessedRenderArgs } from './types'
 
-  const featureMap =
-    sortedBy?.type && region.start === sortedBy.pos
-      ? sortFeature(features, sortedBy)
-      : features
+// layout determines the height of the canvas that we use to render
+export function layoutFeats(props: PreProcessedRenderArgs) {
+  const { layout, features, sortedBy, config, showSoftClip, regions } = props
+  const region = regions[0]!
+  const hasSortedBy = sortedBy?.type && region.start === sortedBy.pos
+  const featureMap = hasSortedBy ? sortFeature(features, sortedBy) : features
 
   const heightPx = readConfObject(config, 'height')
   const displayMode = readConfObject(config, 'displayMode')
-  return iterMap(
-    featureMap.values(),
-    feature =>
-      layoutFeature({
-        feature,
-        layout,
-        bpPerPx,
-        region,
-        showSoftClip,
-        heightPx,
-        displayMode,
-      }),
-    featureMap.size,
-  )
+
+  // Sort features by start position for PileupLayout's built-in hint optimization,
+  // but only when not using explicit sorting (which has its own order)
+  const featureArr = hasSortedBy
+    ? [...featureMap.values()]
+    : [...featureMap.values()].sort((a, b) => a.get('start') - b.get('start'))
+
+  const layoutRecords: LayoutFeature[] = []
+
+  for (const feature of featureArr) {
+    const result = layoutFeature({
+      feature,
+      layout,
+      showSoftClip,
+      heightPx,
+      displayMode,
+    })
+
+    if (result) {
+      layoutRecords.push(result)
+    }
+  }
+
+  return {
+    layoutRecords,
+    height: Math.max(layout.getTotalHeight(), 1),
+  }
 }

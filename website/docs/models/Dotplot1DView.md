@@ -3,17 +3,25 @@ id: dotplot1dview
 title: Dotplot1DView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/dotplot-view/src/DotplotView/1dview.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/1dview.ts)
+## Links
 
-ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used
-here
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/1dview.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/Dotplot1DView.md)
+
+## Docs
+
+ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state
+used here
 
 ### Dotplot1DView - Getters
 

@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`adapter can fetch bed with header 1`] = `
 [
@@ -8,8 +8,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 3000,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163099",
   },
   {
@@ -18,8 +17,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 3105,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163117",
   },
   {
@@ -28,8 +26,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 3152,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163135",
   },
   {
@@ -38,8 +35,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 3171,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163153",
   },
   {
@@ -48,8 +44,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 3174,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163171",
   },
   {
@@ -58,8 +53,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 3213,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163189",
   },
   {
@@ -68,8 +62,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 3465,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163207",
   },
   {
@@ -78,8 +71,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 3795,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163225",
   },
   {
@@ -88,8 +80,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 4035,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163243",
   },
   {
@@ -98,8 +89,7 @@ exports[`adapter can fetch bed with header 1`] = `
     "score": undefined,
     "start": 4073,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-163261",
   },
 ]
@@ -119,8 +109,15 @@ exports[`adapter can fetch features bed with autosql 1`] = `
     "Variant_Type": "SNP",
     "alcohol_history": "--",
     "alcohol_intensity": "--",
+    "blockCount": 1,
+    "blockSizes": [
+      1,
+    ],
     "bmi": "--",
     "case_id": "09454ed6-64bc-4a35-af44-7c4344623d45",
+    "chromStarts": [
+      0,
+    ],
     "cigarettes_per_day": "--",
     "days_to_death": "--",
     "dbSNP_RS": "novel",
@@ -149,7 +146,8 @@ exports[`adapter can fetch features bed with autosql 1`] = `
         "uniqueId": "test-52986-0",
       },
     ],
-    "type": undefined,
+    "thickEnd": 1815757,
+    "thickStart": 1815756,
     "uniqueId": "test-52986",
     "weight": "--",
     "years_smoked": "--",
@@ -165,8 +163,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 3000,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155163",
   },
   {
@@ -175,8 +172,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 3105,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155181",
   },
   {
@@ -185,8 +181,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 3152,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155199",
   },
   {
@@ -195,8 +190,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 3171,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155217",
   },
   {
@@ -205,8 +199,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 3174,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155235",
   },
   {
@@ -215,8 +208,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 3213,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155253",
   },
   {
@@ -225,8 +217,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 3465,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155271",
   },
   {
@@ -235,8 +226,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 3795,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155289",
   },
   {
@@ -245,8 +235,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 4035,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155307",
   },
   {
@@ -255,8 +244,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
     "score": undefined,
     "start": 4073,
     "strand": 0,
-    "subfeatures": [],
-    "type": undefined,
+    "subfeatures": undefined,
     "uniqueId": "test-155325",
   },
 ]
@@ -265,6 +253,7 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
 exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
 [
   {
+    "description": undefined,
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.1",
@@ -285,6 +274,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 1500,
         "parentId": "test-45690",
+        "phase": 0,
         "refName": "ctgA",
         "start": 1200,
         "strand": 1,
@@ -294,6 +284,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 3902,
         "parentId": "test-45690",
+        "phase": 0,
         "refName": "ctgA",
         "start": 2999,
         "strand": 1,
@@ -303,6 +294,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 5500,
         "parentId": "test-45690",
+        "phase": 0,
         "refName": "ctgA",
         "start": 4999,
         "strand": 1,
@@ -312,6 +304,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 7608,
         "parentId": "test-45690",
+        "phase": 0,
         "refName": "ctgA",
         "start": 6999,
         "strand": 1,
@@ -332,6 +325,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
     "uniqueId": "test-45690",
   },
   {
+    "description": undefined,
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.2",
@@ -352,6 +346,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 1500,
         "parentId": "test-45787",
+        "phase": 0,
         "refName": "ctgA",
         "start": 1200,
         "strand": 1,
@@ -361,6 +356,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 5500,
         "parentId": "test-45787",
+        "phase": 0,
         "refName": "ctgA",
         "start": 4999,
         "strand": 1,
@@ -370,6 +366,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 7608,
         "parentId": "test-45787",
+        "phase": 0,
         "refName": "ctgA",
         "start": 6999,
         "strand": 1,
@@ -390,6 +387,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
     "uniqueId": "test-45787",
   },
   {
+    "description": undefined,
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.3",
@@ -419,6 +417,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 3902,
         "parentId": "test-45875",
+        "phase": 0,
         "refName": "ctgA",
         "start": 3300,
         "strand": 1,
@@ -428,6 +427,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 5500,
         "parentId": "test-45875",
+        "phase": 0,
         "refName": "ctgA",
         "start": 4999,
         "strand": 1,
@@ -437,6 +437,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 7600,
         "parentId": "test-45875",
+        "phase": 0,
         "refName": "ctgA",
         "start": 6999,
         "strand": 1,
@@ -457,6 +458,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
     "uniqueId": "test-45875",
   },
   {
+    "description": undefined,
     "end": 23000,
     "itemRgb": "0,0,0",
     "name": "rna-Apple3",
@@ -477,6 +479,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 18800,
         "parentId": "test-45972",
+        "phase": 0,
         "refName": "ctgA",
         "start": 17999,
         "strand": 1,
@@ -486,6 +489,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 19500,
         "parentId": "test-45972",
+        "phase": 0,
         "refName": "ctgA",
         "start": 18999,
         "strand": 1,
@@ -495,6 +499,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 21200,
         "parentId": "test-45972",
+        "phase": 0,
         "refName": "ctgA",
         "start": 20999,
         "strand": 1,

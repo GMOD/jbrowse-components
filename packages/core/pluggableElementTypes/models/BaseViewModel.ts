@@ -1,7 +1,9 @@
-import { types, Instance } from 'mobx-state-tree'
-import { ElementId } from '../../util/types/mst'
-import { MenuItem } from '../../ui'
-import { Region } from '../../util/types/mst'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import { ElementId, Region } from '../../util/types/mst'
+
+import type { MenuItem } from '../../ui'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseViewModel
@@ -49,11 +51,11 @@ const BaseViewModel = types
 
     /**
      * #action
-     * width is an important attribute of the view model, when it becomes set, it
-     * often indicates when the app can start drawing to it. certain views like
-     * lgv are strict about this because if it tries to draw before it knows the
-     * width it should draw to, it may start fetching data for regions it doesn't
-     * need to
+     * width is an important attribute of the view model, when it becomes set,
+     * it often indicates when the app can start drawing to it. certain views
+     * like lgv are strict about this because if it tries to draw before it
+     * knows the width it should draw to, it may start fetching data for
+     * regions it doesn't need to
      *
      * setWidth is updated by a ResizeObserver generally, the views often need
      * to know how wide they are to properly draw genomic regions
@@ -69,10 +71,23 @@ const BaseViewModel = types
       self.minimized = flag
     },
   }))
+  .postProcessSnapshot(snap => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!snap) {
+      return snap
+    }
+    const { minimized, ...rest } = snap as Omit<typeof snap, symbol>
+    return {
+      ...rest,
+      ...(minimized ? { minimized } : {}),
+    } as typeof snap
+  })
 
 export default BaseViewModel
 
-export type IBaseViewModel = Instance<typeof BaseViewModel>
+// the base view does not have type but any derived type needs to add type, so
+// just add it here
+export type IBaseViewModel = Instance<typeof BaseViewModel> & { type: string }
 
 export const BaseViewModelWithDisplayedRegions = BaseViewModel.props({
   displayedRegions: types.array(Region),

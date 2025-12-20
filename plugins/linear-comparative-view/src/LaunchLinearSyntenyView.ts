@@ -1,10 +1,14 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import { when } from 'mobx'
+import type { LinearSyntenyViewModel } from './LinearSyntenyView/model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-// locals
-import { LinearSyntenyViewModel } from './LinearSyntenyView/model'
 type LSV = LinearSyntenyViewModel
+
+interface ViewData {
+  loc?: string
+  assembly: string
+  tracks?: string[]
+}
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -16,76 +20,25 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
       tracks = [],
     }: {
       session: AbstractSessionModel
-      views: { loc: string; assembly: string; tracks?: string[] }[]
-      tracks?: string[]
+      views: ViewData[]
+      tracks?: string[] | string[][]
     }) => {
-      try {
-        const { assemblyManager } = session
-        const model = session.addView('LinearSyntenyView', {}) as LSV
+      // Flatten tracks array if it's 2D (for backwards compatibility)
+      const flatTracks = Array.isArray(tracks[0])
+        ? (tracks as string[][]).flat()
+        : (tracks as string[])
 
-        await when(() => !!model.width)
-
-        model.setViews(
-          await Promise.all(
-            views.map(async view => {
-              const asm = await assemblyManager.waitForAssembly(view.assembly)
-              if (!asm) {
-                throw new Error(`Assembly ${view.assembly} failed to load`)
-              }
-              return {
-                type: 'LinearGenomeView' as const,
-                bpPerPx: 1,
-                offsetPx: 0,
-                hideHeader: true,
-                displayedRegions: asm.regions,
-              }
-            }),
-          ),
-        )
-
-        await Promise.all(model.views.map(view => when(() => view.initialized)))
-
-        const idsNotFound = [] as string[]
-        await Promise.all(
-          views.map(async (data, idx) => {
-            const view = model.views[idx]
-            const { assembly, loc, tracks = [] } = data
-            const asm = await assemblyManager.waitForAssembly(assembly)
-            if (!asm) {
-              throw new Error(`Assembly ${data.assembly} failed to load`)
-            }
-            await view.navToSearchString({ input: loc, assembly: asm })
-            tracks.forEach(track => tryTrack(view, track, idsNotFound))
-          }),
-        )
-
-        tracks.forEach(track => tryTrack(model, track, idsNotFound))
-
-        if (idsNotFound.length) {
-          throw new Error(
-            `Could not resolve identifiers: ${idsNotFound.join(',')}`,
-          )
-        }
-      } catch (e) {
-        session.notifyError(`${e}`, e)
-        throw e
-      }
+      // Use the init property to let the model handle initialization
+      session.addView('LinearSyntenyView', {
+        init: {
+          views: views.map(v => ({
+            loc: v.loc,
+            assembly: v.assembly,
+            tracks: v.tracks,
+          })),
+          tracks: flatTracks,
+        },
+      }) as LSV
     },
   )
-}
-
-function tryTrack(
-  model: { showTrack: (arg: string) => void },
-  trackId: string,
-  idsNotFound: string[],
-) {
-  try {
-    model.showTrack(trackId)
-  } catch (e) {
-    if (`${e}`.match('Could not resolve identifier')) {
-      idsNotFound.push(trackId)
-    } else {
-      throw e
-    }
-  }
 }

@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "scripts": {
+    "oauth": "node --experimental-strip-types  OAuthServer/app.ts",
+    "basicauth": "node --experimental-strip-types HTTPBasicAuthServer/app.ts"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.1"
+  }
+}

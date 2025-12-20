@@ -93,16 +93,9 @@ mac, windows, and linux desktop builds) have been added to the release, click
 workflows will refuse to add them to the published release since it looks for
 draft releases)
 
-Once the draft release has been created (you can look for it
-[here](https://github.com/GMOD/jbrowse-components/releases)), go to the release
-and click "Edit," then add a description to the release. Usually you can copy
-the content of the blog post that was generated (it will be named something like
-`website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the "Downloads"
-section.
-
-Note also that I edit the .prettierrc.json file to change "proseWrap":"always"
-to "proseWrap":"never", format the blogpost, then copy to the github release,
-because they make markdown newlines into actual newlines in these release notes
+Then run `yarn --silent releasenotes|pbcopy` to get the release notes in a
+copy-and-pasteable way for the github release (it is slightly different than the
+blogpost format)
 
 ### Step 5. Update embedded demos
 
@@ -111,12 +104,9 @@ automated, but you can run each step and check that there aren't any errors
 
 ```bash
 cd embedded_demos
-export NODE_OPTIONS=--openssl-legacy-provider # needed to deploy the CRA4 demos
-export JB2TMP=~/jb2tmp # the embedded demo repos are cloned to this folder instead of the embedded_demos folder to avoid typescript and eslint complaining about ../ related weirdness
-./clone_demos.sh # clones embedded demo repos to local folder
-./update_demos.sh # runs yarn upgrade in each embedded demo to get latest jbrowse code
-./deploy_demos.sh # runs build and uploads to amazon s3 bucket
-./push_demos.sh # pushes updated yarn.locks to the github repos so consumers get same lock file
+export JB2TMP=~/jb2tmp
+./clone_demos.sh
+./update_all.sh
 ```
 
 Then you can manually check e.g. https://jbrowse.org/demos/lgv and see that the

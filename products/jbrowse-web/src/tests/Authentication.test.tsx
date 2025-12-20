@@ -1,14 +1,15 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
-import { RemoteFile } from 'generic-filehandle'
-import config from '../../test_data/volvox/config_auth.json'
+import { RemoteFile } from 'generic-filehandle2'
+
 import {
-  setup,
-  pv,
-  hts,
   createView,
-  expectCanvasMatch,
   doBeforeEach,
+  expectCanvasMatch,
+  hts,
+  pv,
+  setup,
 } from './util'
+import config from '../../test_data/volvox/config_auth.json'
 
 setup()
 
@@ -42,12 +43,13 @@ test('open a bigwig track that needs oauth authentication and has existing token
   })
   const token = '1234'
   sessionStorage.setItem('dropboxOAuth-token', token)
-  // @ts-expect-error
-  await waitFor(() => expect(rootModel.internetAccounts.length).toBe(4))
-  // @ts-expect-error
-  rootModel.internetAccounts[0].validateToken = jest.fn().mockReturnValue(token)
-  // @ts-expect-error
-  rootModel.internetAccounts[0].openLocation = jest
+  await waitFor(() => {
+    expect(rootModel.internetAccounts.length).toBe(4)
+  })
+  rootModel.internetAccounts[0]!.validateToken = jest
+    .fn()
+    .mockReturnValue(token)
+  rootModel.internetAccounts[0]!.openLocation = jest
     .fn()
     .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
   view.setNewView(5, 0)

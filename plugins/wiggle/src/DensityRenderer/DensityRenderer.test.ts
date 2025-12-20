@@ -1,10 +1,9 @@
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import DensityRenderer from './DensityRenderer'
-import configSchema from './configSchema'
-import ReactComponent from '../WiggleRendering'
-
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Image, createCanvas } from 'canvas'
+
+import configSchema from './configSchema'
+import { drawDensity } from '../drawDensity'
 
 // @ts-expect-error
 global.nodeImage = Image
@@ -12,22 +11,14 @@ global.nodeImage = Image
 // @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const pluginManager = {} as any
-
-const renderer = new DensityRenderer({
-  name: 'DensityRenderer',
-  ReactComponent,
-  configSchema,
-  pluginManager,
-})
-
 test('inverted mode and reversed', async () => {
+  const features = [
+    new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
+    new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
+  ]
+  const config = configSchema.create()
   const renderProps = {
-    features: [
-      new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
-      new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
-    ],
+    features,
     regions: [
       {
         end: 100,
@@ -39,22 +30,19 @@ test('inverted mode and reversed', async () => {
     ],
     scaleOpts: {
       domain: [0, 100],
-      range: [0, 200],
-      inverted: true,
-      scaleType: 'linear',
+      range: [0, 100],
+      scaleType: 'linear' as const,
     },
-    config: {
-      posColor: 'red',
-      negColor: 'blue',
-    },
+    config,
     bpPerPx: 3,
     highResolutionScaling: 1,
     height: 100,
+    ticks: { values: [0, 100] },
+    displayCrossHatches: false,
   }
 
   const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx =>
-    // @ts-expect-error
-    renderer.draw(ctx, renderProps),
+    drawDensity(ctx, renderProps),
   )
   expect(res).toMatchSnapshot({
     imageData: expect.any(Object),

@@ -13,9 +13,11 @@ you create will need its own configuration schema.
 ### Configuration slot types
 
 Our configuration system is "typed" to facilitate graphical editing of the
-configuration. Each configuration has a "schema" that lists what "configuration
-slots" it has. Each configuration slot has a name, description, a type, and a
-value.
+configuration.
+
+Each "configuration schema" has a list what "configuration slots".
+
+Each "configuration slot" has a name, description, a type, and a value.
 
 Here is a mostly comprehensive list of config types:
 
@@ -25,7 +27,7 @@ Here is a mostly comprehensive list of config types:
 - `number` - allows entering any numeric value
 - `string` - allows entering any string
 - `integer` - allows entering a integer value
-- `boolean
+- `boolean` - allows a boolean value
 - `frozen` - an arbitrary JSON can be specified in this config slot, becomes
   textarea in the GUI
 - `fileLocation` - refers to a URL, local file path on desktop, or file blob
@@ -45,7 +47,7 @@ types:
 ```js
 // plugins/alignments/src/PileupRenderer/configSchema.ts
 
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 export default ConfigurationSchema('PileupRenderer', {
   color: {
     type: 'color',
@@ -173,8 +175,8 @@ a default value in your various pluggable elements.
 
 ### Configuration internals
 
-A configuration is a type of mobx-state-tree model, in which leaf nodes are
-ConfigSlot types, and other nodes are ConfigurationSchema types.
+A configuration is a type of @jbrowse/mobx-state-tree model, in which leaf nodes
+are ConfigSlot types, and other nodes are ConfigurationSchema types.
 
 ```
        Schema

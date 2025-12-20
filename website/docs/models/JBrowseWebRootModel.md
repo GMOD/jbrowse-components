@@ -3,14 +3,22 @@ id: jbrowsewebrootmodel
 title: JBrowseWebRootModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[products/jbrowse-web/src/rootModel/rootModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/rootModel/rootModel.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/rootModel/rootModel.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JBrowseWebRootModel.md)
+
+## Docs
 
 composed of
 
@@ -34,59 +42,43 @@ IMaybe<ISimpleType<string>>
 configPath: types.maybe(types.string)
 ```
 
-### JBrowseWebRootModel - Getters
-
-#### getter: savedSessions
-
-```js
-// type
-any[]
-```
-
-#### getter: autosaveId
-
-```js
-// type
-string
-```
-
-#### getter: previousAutosaveId
-
-```js
-// type
-string
-```
-
-#### getter: savedSessionNames
-
-```js
-// type
-any[]
-```
-
-#### getter: currentSessionId
-
-```js
-// type
-string
-```
-
 ### JBrowseWebRootModel - Methods
 
-#### method: localStorageId
+#### method: menus
 
 ```js
 // type signature
-localStorageId: (name: string) => string
+menus: () => Menu[]
 ```
 
 ### JBrowseWebRootModel - Actions
+
+#### action: setSavedSessionMetadata
+
+```js
+// type signature
+setSavedSessionMetadata: (sessions: SessionMetadata[]) => void
+```
+
+#### action: fetchSessionMetadata
+
+```js
+// type signature
+fetchSessionMetadata: () => Promise<void>
+```
+
+#### action: setSessionDB
+
+```js
+// type signature
+setSessionDB: (sessionDB: IDBPDatabase<SessionDB>) => void
+```
 
 #### action: setSession
 
 ```js
 // type signature
-setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
 ```
 
 #### action: setPluginsUpdated
@@ -96,6 +88,13 @@ setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOption
 setPluginsUpdated: (flag: boolean) => void
 ```
 
+#### action: setReloadPluginManagerCallback
+
+```js
+// type signature
+setReloadPluginManagerCallback: (callback: (configSnapshot: Record<string, unknown>, sessionSnapshot: Record<string, unknown>) => void) => void
+```
+
 #### action: setDefaultSession
 
 ```js
@@ -103,46 +102,39 @@ setPluginsUpdated: (flag: boolean) => void
 setDefaultSession: () => void
 ```
 
+#### action: activateSession
+
+```js
+// type signature
+activateSession: (id: string) => Promise<void>
+```
+
+#### action: favoriteSavedSession
+
+```js
+// type signature
+favoriteSavedSession: (id: string) => Promise<void>
+```
+
+#### action: unfavoriteSavedSession
+
+```js
+// type signature
+unfavoriteSavedSession: (id: string) => Promise<void>
+```
+
+#### action: deleteSavedSession
+
+```js
+// type signature
+deleteSavedSession: (id: string) => Promise<void>
+```
+
 #### action: renameCurrentSession
 
 ```js
 // type signature
 renameCurrentSession: (sessionName: string) => void
-```
-
-#### action: addSavedSession
-
-```js
-// type signature
-addSavedSession: (session: { name: string; }) => void
-```
-
-#### action: removeSavedSession
-
-```js
-// type signature
-removeSavedSession: (session: { name: string; }) => void
-```
-
-#### action: duplicateCurrentSession
-
-```js
-// type signature
-duplicateCurrentSession: () => void
-```
-
-#### action: activateSession
-
-```js
-// type signature
-activateSession: (name: string) => void
-```
-
-#### action: saveSessionToLocalStorage
-
-```js
-// type signature
-saveSessionToLocalStorage: () => void
 ```
 
 #### action: setError

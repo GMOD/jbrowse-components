@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react'
-import { IconButton, MenuItem, TextField } from '@mui/material'
-import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
+import { useEffect } from 'react'
+
+import { ExternalLink } from '@jbrowse/core/ui'
+import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// icons
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
 const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
   connectionTypeChoices,
@@ -33,24 +33,18 @@ const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
               <>
                 {connectionType.description}
                 {connectionType.url ? (
-                  <IconButton
-                    href={connectionType.url}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <OpenInNewIcon />
-                  </IconButton>
+                  <ExternalLink href={connectionType.url} />
                 ) : null}
               </>
             ) : null
           }
           select
           fullWidth
-          onChange={event =>
+          onChange={event => {
             setConnectionType(
               connectionTypeChoices.find(c => c.name === event.target.value),
             )
-          }
+          }}
           variant="outlined"
         >
           {connectionTypeChoices.map(c => (

@@ -1,22 +1,24 @@
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { RenderArgs } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { renameRegionsIfNeeded, Region } from '../../util'
+import { renameRegionsIfNeeded } from '../../util'
+
+import type { RenderArgs } from './util'
+import type { Region } from '../../util'
 
 export default class CoreGetFeatureDensityStats extends RpcMethodType {
   name = 'CoreGetFeatureDensityStats'
 
   async serializeArguments(
     args: RenderArgs & {
-      signal?: AbortSignal
+      stopToken?: string
       statusCallback?: (arg: string) => void
     },
     rpcDriver: string,
   ) {
     const { rootModel } = this.pluginManager
     const assemblyManager = rootModel!.session!.assemblyManager
+
     const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
       ...args,
       filters: args.filters?.toJSON().filters,
@@ -27,18 +29,21 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {}
+      adapterConfig: Record<string, unknown>
       regions: Region[]
-      signal?: RemoteAbortSignal
+      stopToken?: string
       headers?: Record<string, string>
       sessionId: string
     },
     rpcDriver: string,
   ) {
-    const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { adapterConfig, sessionId, regions } = deserializedArgs
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
 
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')

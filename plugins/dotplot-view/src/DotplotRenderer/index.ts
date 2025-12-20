@@ -1,7 +1,9 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import ReactComponent from './components/DotplotRendering'
+import { lazy } from 'react'
+
 import DotplotRenderer from './DotplotRenderer'
 import configSchema from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function DotplotRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
@@ -9,7 +11,7 @@ export default function DotplotRendererF(pluginManager: PluginManager) {
       new DotplotRenderer({
         name: 'DotplotRenderer',
         configSchema: configSchema,
-        ReactComponent,
+        ReactComponent: lazy(() => import('./components/DotplotRendering')),
         pluginManager,
       }),
   )

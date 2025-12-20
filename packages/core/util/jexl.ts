@@ -1,8 +1,9 @@
 import jexl from 'jexl'
-import { Feature } from './simpleFeature'
+
+import type { Feature } from './simpleFeature'
 
 type JexlWithAddFunction = typeof jexl & {
-  addFunction(name: string, func: Function): void
+  addFunction(name: string, func: (...args: unknown[]) => unknown): void
 }
 type JexlNonBuildable = Omit<typeof jexl, 'Jexl'>
 
@@ -13,7 +14,7 @@ export default function JexlF(/* config?: any*/): JexlNonBuildable {
 
   // below are core functions
   j.addFunction('get', (feature: Feature, data: string) => feature.get(data))
-  j.addFunction('parent', (feature: Feature) => feature.parent())
+  j.addFunction('parent', (feature: Feature) => feature.parent?.())
 
   j.addFunction('id', (feature: Feature) => feature.id())
 
@@ -41,6 +42,9 @@ export default function JexlF(/* config?: any*/): JexlNonBuildable {
 
   // string
   j.addFunction('split', (s: string, char: string) => s.split(char))
+  j.addFunction('join', (k: string, ...args: string[]) =>
+    [...args].filter(f => !!f).join(k),
+  )
   j.addFunction('charAt', (s: string, index: number) => s.charAt(index))
   j.addFunction('charCodeAt', (s: string, index: number) => s.charCodeAt(index))
   j.addFunction('codePointAt', (s: string, pos: number) => s.codePointAt(pos))

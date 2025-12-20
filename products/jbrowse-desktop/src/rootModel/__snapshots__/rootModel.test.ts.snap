@@ -1,0 +1,405 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`adds menus 1`] = `
+[
+  {
+    "label": "File",
+    "menuItems": [
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open session...",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Save session as...",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": [Function],
+        "label": "Open assembly...",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open track...",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Open connection...",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to start screen",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Exit",
+        "onClick": [Function],
+      },
+    ],
+  },
+  {
+    "label": "Add",
+    "menuItems": [],
+  },
+  {
+    "label": "Tools",
+    "menuItems": [
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Undo",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Redo",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Plugin store",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Preferences",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Open assembly manager",
+        "onClick": [Function],
+      },
+      {
+        "checked": false,
+        "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "label": "Use workspaces",
+        "onClick": [Function],
+        "type": "checkbox",
+      },
+    ],
+  },
+]
+`;
+
+exports[`adds menus 2`] = `
+[
+  {
+    "label": "File",
+    "menuItems": [
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open session...",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Save session as...",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": [Function],
+        "label": "Open assembly...",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open track...",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Open connection...",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to start screen",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Exit",
+        "onClick": [Function],
+      },
+    ],
+  },
+  {
+    "label": "Add",
+    "menuItems": [],
+  },
+  {
+    "label": "Tools",
+    "menuItems": [
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Undo",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Redo",
+        "onClick": [Function],
+      },
+      {
+        "type": "divider",
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Plugin store",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Preferences",
+        "onClick": [Function],
+      },
+      {
+        "icon": [Function],
+        "label": "Open assembly manager",
+        "onClick": [Function],
+      },
+      {
+        "checked": false,
+        "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "label": "Use workspaces",
+        "onClick": [Function],
+        "type": "checkbox",
+      },
+    ],
+  },
+  {
+    "label": "Second Menu",
+    "menuItems": [
+      {
+        "label": "First Menu Item",
+        "onClick": [Function],
+      },
+      {
+        "label": "Second Menu Item",
+        "onClick": [Function],
+      },
+      {
+        "label": "First Sub Menu",
+        "subMenu": [
+          {
+            "label": "First Sub Menu Item",
+            "onClick": [Function],
+          },
+          {
+            "label": "Second Sub Menu Item",
+            "onClick": [Function],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "label": "Third Menu",
+    "menuItems": [],
+  },
+]
+`;
+
+exports[`adds track and connection configs to an assembly 1`] = `
+{
+  "aliases": [
+    "assemblyA",
+  ],
+  "name": "assembly1",
+  "sequence": {
+    "adapter": {
+      "adapterId": "sequenceConfigAdapterId",
+      "features": [
+        {
+          "end": 10,
+          "refName": "ctgA",
+          "seq": "cattgttgcg",
+          "start": 0,
+          "uniqueId": "firstId",
+        },
+      ],
+      "type": "FromConfigSequenceAdapter",
+    },
+    "displays": [
+      {
+        "displayId": "sequenceConfigId-LinearReferenceSequenceDisplay",
+        "type": "LinearReferenceSequenceDisplay",
+      },
+      {
+        "displayId": "sequenceConfigId-LinearGCContentDisplay",
+        "type": "LinearGCContentDisplay",
+      },
+    ],
+    "trackId": "sequenceConfigId",
+    "type": "ReferenceSequenceTrack",
+  },
+}
+`;
+
+exports[`adds track and connection configs to an assembly 2`] = `
+{
+  "trackId": "trackId0",
+  "type": "FeatureTrack",
+}
+`;
+
+exports[`adds track and connection configs to an assembly 3`] = `
+{
+  "connectionId": "connectionId0",
+  "dataDirLocation": {
+    "internetAccountId": undefined,
+    "internetAccountPreAuthorization": undefined,
+    "locationType": "UriLocation",
+    "uri": "http://mysite.com/jbrowse/data/",
+  },
+  "type": "JBrowse1Connection",
+}
+`;
+
+exports[`creates with defaults 1`] = `{}`;

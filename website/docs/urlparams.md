@@ -9,9 +9,13 @@ import Figure from './figure'
 JBrowse Web features the ability to automatically provide URL parameters to
 setup a session
 
-Note that the embedded components like @jbrowse/react-linear-genome-view make no
-assumptions on how URL params are used, so would have to be implemented by the
-consumer of the library
+:::info note
+
+Note: that the embedded components like @jbrowse/react-linear-genome-view make
+no assumptions on how URL parameters are used, so would have to be implemented
+by the consumer of the library
+
+:::
 
 ## Linear genome view (simple)
 
@@ -22,7 +26,7 @@ Example
 
 `http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track`
 
-Here are the query params used here
+Here is a list the allowed query parameters in jbrowse-web
 
 ### ?config=
 
@@ -33,7 +37,7 @@ Example
 A path to a JBrowse 2 config file, relative to the current folder on the disk.
 Note that this just uses client side fetch to read the file, not server side
 file reads. If ?config= is not specified, it looks for a file named config.json
-e.g. http://host/jbrowse2/config.json which is what the @jbrowse/cli tool sets
+e.g. http://host/jbrowse2/config.json, which is what the @jbrowse/cli tool sets
 up by default
 
 ### &assembly=
@@ -43,8 +47,8 @@ Example
 `&assembly=hg19`
 
 The &assembly parameter refers to an assembly's "name" field one of the
-"assemblies" array in the from the config.json. This is only used for launching
-a single linear genome view.
+"assemblies" array in the config.json. This is only used for launching a single
+linear genome view.
 
 ### &loc=
 
@@ -219,7 +223,8 @@ Expanded
 
 ### Dotplot view
 
-Here is an example of a JSON session spec for a Dotplot View
+Here is an example of a JSON session spec for a dotplot view (self-vs-self
+alignment)
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D
@@ -234,7 +239,7 @@ Expanded
   "views": [
     {
       "type": "DotplotView",
-      "views": [{ "assembly": "volvox" }, { "assembly": "volvox" }],
+      "views": [{ "assembly": "volvox" }, { "assembly": "volvox" }], //  (self vs self alignment)
       "tracks": ["volvox_fake_synteny"]
     }
   ]
@@ -295,7 +300,7 @@ Expanded
 
 ### Linear synteny view
 
-Here is an example of a JSON session spec for a Linear Synteny View
+Here is an example of a JSON session spec for a linear synteny view
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]}
@@ -310,10 +315,77 @@ Expanded
   "views": [
     {
       "type": "LinearSyntenyView",
-      "tracks": ["volvox_fake_synteny"],
+      "tracks": ["volvox_fake_synteny"], //  (self vs self alignment)
       "views": [
         { "loc": "ctgA:1-30000", "assembly": "volvox" },
         { "loc": "ctgA:1000-31000", "assembly": "volvox" }
+      ]
+    }
+  ]
+}
+```
+
+### Breakpoint split view
+
+Here is an example of a JSON session spec for a breakpoint split view
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"BreakpointSplitView","views":[{"loc":"ctgA:1-5000","assembly":"volvox","tracks":["volvox_cram"]},{"loc":"ctgB:1-5000","assembly":"volvox","tracks":["volvox_cram"]}]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"BreakpointSplitView","views":[{"loc":"ctgA:1-5000","assembly":"volvox","tracks":["volvox_cram"]},{"loc":"ctgB:1-5000","assembly":"volvox","tracks":["volvox_cram"]}]}]})
+
+Expanded
+
+```json
+{
+  "views": [
+    {
+      "type": "BreakpointSplitView",
+      "views": [
+        {
+          "loc": "ctgA:1-5000",
+          "assembly": "volvox",
+          "tracks": ["volvox_cram"]
+        },
+        {
+          "loc": "ctgB:1-5000",
+          "assembly": "volvox",
+          "tracks": ["volvox_cram"]
+        }
+      ]
+    }
+  ]
+}
+```
+
+The `views` array specifies the two (or more) linear genome views that make up
+the breakpoint split view. Each view can have its own location, assembly, and
+tracks.
+
+### Linear synteny view (multi-way)
+
+Here is an example of a JSON session spec for a linear synteny view, but with
+more than two views
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]})
+
+Expanded
+
+```json
+{
+  "views": [
+    {
+      "type": "LinearSyntenyView",
+      "tracks": [["volvox_ins.paf"],["volvox_del.paf"]], // this multidimensional array refers to the synteny tracks at each level of the multi-level synteny view
+      "views": [
+        { "loc": "ctgA:1-50000", "assembly": "volvox-ins" },
+        { "loc": "ctgA:1000-50000", "assembly": "volvox" }
+        { "loc": "ctgA:1000-44000", "assembly": "volvox-del" }
       ]
     }
   ]
@@ -329,7 +401,7 @@ view types other than the linear genome view
 ### &session=json-
 
 Similar to encoded sessions, but more readable, `&session=json-` type sessions
-let you specify the input a JSON snapshot of a session session. This is slightly
+let you specify the input a JSON snapshot of a session. This is slightly
 different from a session spec, which has extra logic that loads the session.
 JSON sessions are literal session snapshots, like those that might come from the
 "Export session..." process
@@ -352,7 +424,7 @@ Example
 https://jbrowse.org/code/jb2/v1.5.9/?session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6NdfjvXcCiZpq23-Dt2923u-_2DCPmsevHMn0ePT2umMEEz4GgGWx7C1AKC9EzzQv7wupbpkGfntX3HKt3-YW4OZcJCub1DRZJvgW5xEinzBuMbINtELaKeT_2bY98E0ym_PvdR8rTu7LuMUUBXH4CUeTwjdgUKeJYgZ6_MM-yLWtsGiwo5yBrwBkO3w9dx3b7I3fsuI5FTVGVGd9BdAcJCW27SYhn7QxDKqg0l7pRCIJkmM7YHIxcd2AQbwNSAYExzxQYjCsFeZDtDtlpYo5ZdU9qJQ-fTiZxxrPVYGrf-sdJroHrtQS_ZhIaFiLGZC25JlUUFmGAD0kcPzQ1O90nNQe72dU0eC716vV6rrjC8EObQLEUMElpINu0_tHn3R_yq_t6oBQjuAEegexmP0JfaSv16bpQM_4CMgh1If1WWooguQxTDHnGDpQpDyCjkVhBFTJeliiS-gBpsZ2A0CBrPV3VBt7pIuAiUgvQumZ7Wq6hVrjFKAFNxfZnrfxTKXWw2d3bjG6VN29Rlk2j5mQZaW7ssK8MFmNGin14oVUz1pr5zMQVkXiocQPL_9L6l1jVHFLQD13xsyDHihBqb9AiVPsE_d8WPEKTLuUcv2xdjK8qzLM1PdUDlqPAHH-eeL99vvNC4cFKsrFZ9QuCGmjL
 ```
 
-Note that the "Share" button has a gear icon that let's you select "Long URL"
+Note that the "Share" button has a gear icon that lets you select "Long URL"
 that produces these URLs. The encoded share links can be used without the
 central session sharing system in place, as the entire session is encoded in the
 URL.

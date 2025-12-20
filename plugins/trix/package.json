@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-trix",
-  "version": "2.11.2",
+  "version": "3.7.0",
   "description": "JBrowse 2 trix text search adapter",
   "keywords": [
     "jbrowse",
@@ -24,27 +24,23 @@
   ],
   "scripts": {
     "build": "npm-run-all build:*",
-    "test": "cd ../..; jest plugins/trix",
+    "test": "cd ../..; jest --passWithNoTests plugins/trix",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "npm run clean",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "prebuild": "yarn clean",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^2.0.0",
-    "@mui/material": "^5.0.0",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
-    "react": ">=16.8.0"
+    "react": ">=18.0.0"
   },
   "dependencies": {
-    "@gmod/trix": "^2.0.4"
+    "@gmod/trix": "^3.0.2",
+    "@jbrowse/core": "^3.7.0"
   },
   "publishConfig": {
     "access": "public"

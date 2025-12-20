@@ -1,15 +1,16 @@
-import React, { Suspense, useState } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { Suspense, lazy, useState } from 'react'
 
-import { observer } from 'mobx-react'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { getEnv } from '@jbrowse/core/util'
-import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+import { observer } from 'mobx-react'
 
-// locals
 import Drawer from './Drawer'
 import DrawerHeader from './DrawerHeader'
+
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+
+const ModalWidget = lazy(() => import('./ModalWidget'))
 
 const DrawerWidget = observer(function ({
   session,
@@ -22,12 +23,11 @@ const DrawerWidget = observer(function ({
   const DrawerComponent = visibleWidget
     ? (pluginManager.evaluateExtensionPoint(
         'Core-replaceWidget',
-        pluginManager.getWidgetType(visibleWidget.type).ReactComponent,
+        pluginManager.getWidgetType(visibleWidget.type)!.ReactComponent,
         {
           session,
           model: visibleWidget,
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) as React.FC<any>)
     : null
 
@@ -35,23 +35,42 @@ const DrawerWidget = observer(function ({
   // height want to be able to fill the contained, minus the toolbar height
   // (the position static/sticky is included in AutoSizer estimates)
   const [toolbarHeight, setToolbarHeight] = useState(0)
+  const [popoutDrawer, setPopoutDrawer] = useState(false)
 
   return (
     <Drawer session={session}>
-      <DrawerHeader session={session} setToolbarHeight={setToolbarHeight} />
+      <DrawerHeader
+        onPopoutDrawer={() => {
+          setPopoutDrawer(true)
+        }}
+        session={session}
+        setToolbarHeight={setToolbarHeight}
+      />
       <Suspense fallback={<LoadingEllipses />}>
         <ErrorBoundary
           FallbackComponent={({ error }) => <ErrorMessage error={error} />}
         >
           {DrawerComponent ? (
-            <>
-              <DrawerComponent
-                model={visibleWidget}
-                session={session}
-                toolbarHeight={toolbarHeight}
-              />
-              <div style={{ height: 300 }} />
-            </>
+            popoutDrawer ? (
+              <>
+                <div>Opened in dialog...</div>
+                <ModalWidget
+                  session={session}
+                  onClose={() => {
+                    setPopoutDrawer(false)
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <DrawerComponent
+                  model={visibleWidget}
+                  session={session}
+                  toolbarHeight={toolbarHeight}
+                />
+                <div style={{ height: 300 }} />
+              </>
+            )
           ) : null}
         </ErrorBoundary>
       </Suspense>

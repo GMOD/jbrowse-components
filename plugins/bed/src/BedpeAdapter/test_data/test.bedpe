@@ -1,0 +1,5 @@
+#header line 1
+#header line 2
+chr1	1000	2000	chr2	3000	4000	SV1	60	+	-	DUP
+chr1	5000	6000	chr1	8000	9000	SV2	80	+	+	INV
+chr2	1500	2500	chr3	3500	4500	SV3	70	-	+	TRA

@@ -1,24 +1,22 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import AddIcon from '@mui/icons-material/Add'
+import DeleteIcon from '@mui/icons-material/Delete'
 import {
   Card,
   CardContent,
   IconButton,
-  InputLabel,
   InputAdornment,
+  InputLabel,
   List,
   ListItem,
   Paper,
   TextField,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
-// icons
-import DeleteIcon from '@mui/icons-material/Delete'
-import AddIcon from '@mui/icons-material/Add'
-
-// locals
-import { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -64,27 +62,32 @@ const TextIndexingConfig = observer(function ({
           <CardContent>
             <InputLabel>{section.label}</InputLabel>
             <List disablePadding>
-              {section.values.map((val: string, idx: number) => (
-                <ListItem key={idx} disableGutters>
+              {section.values.map((val, idx) => (
+                /* biome-ignore lint/suspicious/noArrayIndexKey: */
+                <ListItem key={`${val}-${idx}`} disableGutters>
                   <TextField
                     value={val}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => {
-                              const newAttr = section.values.filter(
-                                (_, i) => i !== idx,
-                              )
-                              index === 0
-                                ? setAttributes(newAttr)
-                                : setExclude(newAttr)
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => {
+                                const newAttr = section.values.filter(
+                                  (_, i) => i !== idx,
+                                )
+                                if (index === 0) {
+                                  setAttributes(newAttr)
+                                } else {
+                                  setExclude(newAttr)
+                                }
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
                     }}
                   />
                 </ListItem>
@@ -94,30 +97,36 @@ const TextIndexingConfig = observer(function ({
                   value={index === 0 ? value1 : value2}
                   placeholder="add new"
                   onChange={event => {
-                    index === 0
-                      ? setValue1(event.target.value)
-                      : setValue2(event.target.value)
+                    if (index === 0) {
+                      setValue1(event.target.value)
+                    } else {
+                      setValue2(event.target.value)
+                    }
                   }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => {
-                            if (index === 0) {
-                              setAttributes([...attributes, value1])
-                              setValue1('')
-                            } else {
-                              setExclude([...exclude, value2])
-                              setValue2('')
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => {
+                              if (index === 0) {
+                                setAttributes([...attributes, value1])
+                                setValue1('')
+                              } else {
+                                setExclude([...exclude, value2])
+                                setValue2('')
+                              }
+                            }}
+                            disabled={
+                              index === 0 ? value1 === '' : value2 === ''
                             }
-                          }}
-                          disabled={index === 0 ? value1 === '' : value2 === ''}
-                          data-testid={`stringArrayAdd-Feat`}
-                        >
-                          <AddIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                            data-testid="stringArrayAdd-Feat"
+                          >
+                            <AddIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                 />
               </ListItem>

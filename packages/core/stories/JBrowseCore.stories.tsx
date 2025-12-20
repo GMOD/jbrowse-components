@@ -1,9 +1,9 @@
 export {
-  CDSNoCoords,
   CDSCoords,
-  GeneCoordsGenomic,
+  CDSNoCoords,
   GeneCollapsedIntronCoords,
   GeneCollapsedIntronNoCoords,
+  GeneCoordsGenomic,
 } from './examples'
 
 export default { title: 'Source code for examples' }

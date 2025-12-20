@@ -1,16 +1,17 @@
-import { getConf, ConfigurationReference } from '@jbrowse/core/configuration'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
-  getSession,
   getContainingView,
+  getSession,
   isSessionModelWithWidgets,
-  Feature,
 } from '@jbrowse/core/util'
-
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { types } from '@jbrowse/mobx-state-tree'
 import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
-import { Instance, types } from 'mobx-state-tree'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearVariantDisplay

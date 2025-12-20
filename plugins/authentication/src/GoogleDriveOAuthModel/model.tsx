@@ -1,22 +1,22 @@
-import React from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { Instance, types } from 'mobx-state-tree'
-import { UriLocation } from '@jbrowse/core/util/types'
+import { types } from '@jbrowse/mobx-state-tree'
 
-// locals
-import { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
-import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
-import { getDescriptiveErrorMessage } from './util'
 import { GoogleDriveFile } from './GoogleDriveFilehandle'
 import GoogleDriveIcon from './GoogleDriveIcon'
+import { getDescriptiveErrorMessage } from './util'
+import baseModel from '../OAuthModel/model'
+
+import type { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
+import type { UriLocation } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface RequestInitWithMetadata extends RequestInit {
   metadataOnly?: boolean
 }
 
 function getUri(str: string) {
-  const urlId = str.match(/[-\w]{25,}/)
+  const urlId = /[-\w]{25,}/.exec(str)
   return `https://www.googleapis.com/drive/v3/files/${urlId}`
 }
 

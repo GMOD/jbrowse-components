@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`multiple insertions of varying lengths 1`] = `"A -> AA,AAA,AAAA,AAAAA,AAAAAA"`;
+
+exports[`null ALT 1`] = `
+{
+  "ALT": undefined,
+  "CHROM": "chr1",
+  "FILTER": "PASS",
+  "FORMAT": undefined,
+  "ID": [
+    "rs123",
+  ],
+  "INFO": {},
+  "POS": 100,
+  "QUAL": 29,
+  "REF": "G",
+  "description": "no alternative alleles",
+  "end": 100,
+  "name": "rs123",
+  "refName": "chr1",
+  "samples": {},
+  "start": 99,
+  "type": "remark",
+  "uniqueId": "testid",
+}
+`;

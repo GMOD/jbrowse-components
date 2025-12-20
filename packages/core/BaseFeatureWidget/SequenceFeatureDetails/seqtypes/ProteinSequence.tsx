@@ -1,11 +1,12 @@
-import React from 'react'
 import { observer } from 'mobx-react'
 
-// locals
-import { Feat, stitch } from '../../util'
-import { proteinColor, splitString } from '../util'
-import { SequenceFeatureDetailsModel } from '../model'
+import { convertCodingSequenceToPeptides } from '../../../util/convertCodingSequenceToPeptides'
+import { proteinColor } from '../consts'
+import { splitString } from '../util'
 import SequenceDisplay from './SequenceDisplay'
+
+import type { Feat } from '../../util'
+import type { SequenceFeatureDetailsModel } from '../model'
 
 const ProteinSequence = observer(function ({
   cds,
@@ -18,16 +19,15 @@ const ProteinSequence = observer(function ({
   codonTable: Record<string, string>
   model: SequenceFeatureDetailsModel
 }) {
-  const { width, showCoordinates } = model
-  const str = stitch(cds, sequence)
-  let protein = ''
-  for (let i = 0; i < str.length; i += 3) {
-    // use & symbol for undefined codon, or partial slice
-    protein += codonTable[str.slice(i, i + 3)] || '&'
-  }
+  const { charactersPerRow, showCoordinates } = model
+  const str = convertCodingSequenceToPeptides({
+    cds,
+    sequence,
+    codonTable,
+  })
   const { segments } = splitString({
-    str: protein,
-    width,
+    str,
+    charactersPerRow,
     showCoordinates,
   })
   return (

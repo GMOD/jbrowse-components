@@ -1,20 +1,16 @@
 import {
-  IAnyStateTreeNode,
-  Instance,
-  cast,
-  getSnapshot,
-  types,
-} from 'mobx-state-tree'
+  localStorageGetBoolean,
+  localStorageSetBoolean,
+} from '@jbrowse/core/util'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
-import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { Region } from '@jbrowse/core/util'
-import { DrawerWidgetSessionMixin } from './DrawerWidgets'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
-import { IBaseViewModelWithDisplayedRegions } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-
-// locals
 import { BaseSessionModel, isBaseSession } from './BaseSession'
+import { DrawerWidgetSessionMixin } from './DrawerWidgets'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel MultipleViewsSessionMixin
@@ -27,13 +23,28 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
     .compose(
       BaseSessionModel(pluginManager),
       DrawerWidgetSessionMixin(pluginManager),
+      types.model({
+        /**
+         * #property
+         */
+        views: types.array(
+          pluginManager.pluggableMstType('view', 'stateModel'),
+        ),
+        /**
+         * #property
+         */
+        stickyViewHeaders: types.optional(types.boolean, () =>
+          localStorageGetBoolean('stickyViewHeaders', true),
+        ),
+        /**
+         * #property
+         * enables the dockview-based tabbed/tiled workspace layout
+         */
+        useWorkspaces: types.optional(types.boolean, () =>
+          localStorageGetBoolean('useWorkspaces', false),
+        ),
+      }),
     )
-    .props({
-      /**
-       * #property
-       */
-      views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
-    })
     .actions(self => ({
       /**
        * #action
@@ -106,49 +117,56 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
-        return this.addViewOfAssembly(
-          'LinearGenomeView',
-          assemblyName,
-          initialState,
-        )
+      setStickyViewHeaders(sticky: boolean) {
+        self.stickyViewHeaders = sticky
       },
 
       /**
        * #action
        */
-      addViewOfAssembly(
-        viewType: string,
-        assemblyName: string,
-        initialState: Record<string, unknown> = {},
-      ) {
-        const asm = self.assemblies.find(
-          s => readConfObject(s, 'name') === assemblyName,
-        )
-        if (!asm) {
-          throw new Error(
-            `Could not add view of assembly "${assemblyName}", assembly name not found`,
-          )
-        }
-        return this.addView(viewType, {
-          ...initialState,
-          displayRegionsFromAssemblyName: readConfObject(asm, 'name'),
-        })
+      setUseWorkspaces(useWorkspaces: boolean) {
+        self.useWorkspaces = useWorkspaces
       },
 
-      /**
-       * #action
-       */
-      addViewFromAnotherView(
-        viewType: string,
-        otherView: IBaseViewModelWithDisplayedRegions,
-        initialState: { displayedRegions?: Region[] } = {},
-      ) {
-        const state = { ...initialState }
-        state.displayedRegions = getSnapshot(otherView.displayedRegions)
-        return this.addView(viewType, state)
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            function stickyViewHeadersAutorun() {
+              localStorageSetBoolean(
+                'stickyViewHeaders',
+                self.stickyViewHeaders,
+              )
+            },
+            { name: 'StickyViewHeaders' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function useWorkspacesAutorun() {
+              localStorageSetBoolean('useWorkspaces', self.useWorkspaces)
+            },
+            { name: 'UseWorkspaces' },
+          ),
+        )
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { stickyViewHeaders, useWorkspaces, ...rest } = snap as Omit<
+        typeof snap,
+        symbol
+      >
+      return {
+        ...rest,
+        ...(!stickyViewHeaders ? { stickyViewHeaders } : {}),
+        ...(useWorkspaces ? { useWorkspaces } : {}),
+      } as typeof snap
+    })
 }
 
 /** Session mixin MST type for a session that manages multiple views */

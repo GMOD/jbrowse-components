@@ -1,82 +1,102 @@
-import { Args, Flags } from '@oclif/core'
-import { promises as fsPromises } from 'fs'
-import JBrowseCommand, { Config } from '../base'
+import { parseArgs } from 'util'
 
-export default class AddTrackJson extends JBrowseCommand {
-  // @ts-expect-error
-  target: string
+import {
+  debug,
+  printHelp,
+  readInlineOrFileJson,
+  readJsonFile,
+  resolveConfigPath,
+  writeJsonFile,
+} from '../utils'
 
-  static description =
+import type { Config, Track } from '../base'
+
+export async function run(args?: string[]) {
+  const options = {
+    help: {
+      type: 'boolean',
+      short: 'h',
+    },
+    update: {
+      type: 'boolean',
+      short: 'u',
+      description:
+        'Update the contents of an existing track, matched based on trackId',
+    },
+    target: {
+      type: 'string',
+      description:
+        'Path to config file in JB2 installation directory to write out to',
+    },
+    out: {
+      type: 'string',
+      description: 'Synonym for target',
+    },
+  } as const
+  const { values: flags, positionals } = parseArgs({
+    args,
+    options,
+    allowPositionals: true,
+  })
+
+  const description =
     'Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration'
 
-  static examples = [
+  const examples = [
     '$ jbrowse add-track-json track.json',
     '$ jbrowse add-track-json track.json --update',
   ]
 
-  static args = {
-    track: Args.string({
-      required: true,
-      description: `track JSON file or command line arg blob`,
-    }),
+  if (flags.help) {
+    printHelp({
+      description,
+      examples,
+      usage: 'jbrowse add-track-json <track> [options]',
+      options,
+    })
+    return
   }
 
-  static flags = {
-    update: Flags.boolean({
-      char: 'u',
-      description: `update the contents of an existing track, matched based on trackId`,
-    }),
-    target: Flags.string({
-      description:
-        'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-    }),
-    out: Flags.string({
-      description: 'synonym for target',
-    }),
-  }
-
-  async run() {
-    const { args, flags: runFlags } = await this.parse(AddTrackJson)
-
-    const output = runFlags.target || runFlags.out || '.'
-    const isDir = (await fsPromises.lstat(output)).isDirectory()
-    this.target = isDir ? `${output}/config.json` : output
-
-    const { track: inputtedTrack } = args as { track: string }
-
-    this.debug(`Sequence location is: ${inputtedTrack}`)
-    const { update } = runFlags
-    const config: Config = await this.readJsonFile(this.target)
-    this.debug(`Found existing config file ${this.target}`)
-
-    const track = await this.readInlineOrFileJson(inputtedTrack)
-    if (!config.tracks) {
-      config.tracks = []
-    }
-    const idx = config.tracks.findIndex(
-      ({ trackId }: { trackId: string }) => trackId === track.trackId,
+  const track = positionals[0]
+  if (!track) {
+    throw new Error(
+      'Missing required argument: track\nUsage: jbrowse add-track-json <track> [options]',
     )
-    if (idx !== -1) {
-      const existing = config.tracks[idx].name
-      this.debug(`Found existing track ${existing} in configuration`)
-      if (update) {
-        this.debug(`Overwriting track ${existing} in configuration`)
-        config.tracks[idx] = track
-      } else {
-        this.error(
-          `Cannot add track ${track.name}, a track with that trackId already exists: ${existing}`,
-          { exit: 160 },
-        )
-      }
+  }
+
+  const target = await resolveConfigPath(flags.target, flags.out)
+
+  debug(`Sequence location is: ${track}`)
+  const { update } = flags
+  const config: Config = await readJsonFile(target)
+  debug(`Found existing config file ${target}`)
+
+  const trackConfig = await readInlineOrFileJson<Track>(track)
+  if (!config.tracks) {
+    config.tracks = []
+  }
+  const idx = config.tracks.findIndex(
+    ({ trackId }: { trackId: string }) => trackId === trackConfig.trackId,
+  )
+  if (idx !== -1) {
+    const existing = config.tracks[idx]?.name
+    debug(`Found existing track ${existing} in configuration`)
+    if (update) {
+      debug(`Overwriting track ${existing} in configuration`)
+      config.tracks[idx] = trackConfig
     } else {
-      config.tracks.push(track)
+      throw new Error(
+        `Cannot add track ${trackConfig.name}, a track with that trackId already exists: ${existing}`,
+      )
     }
-    this.debug(`Writing configuration to file ${this.target}`)
-    await this.writeJsonFile(this.target, config)
-    this.log(
-      `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${track.name}" ${
-        idx !== -1 ? 'in' : 'to'
-      } ${this.target}`,
-    )
+  } else {
+    config.tracks.push(trackConfig)
   }
+  debug(`Writing configuration to file ${target}`)
+  await writeJsonFile(target, config)
+  console.log(
+    `${idx !== -1 ? 'Overwrote' : 'Added'} track "${trackConfig.name}" ${
+      idx !== -1 ? 'in' : 'to'
+    } ${target}`,
+  )
 }

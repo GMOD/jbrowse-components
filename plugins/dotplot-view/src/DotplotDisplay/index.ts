@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { lazy } from 'react'
 
-// locals
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { types } from '@jbrowse/mobx-state-tree'
+
 import { stateModelFactory } from './stateModelFactory'
-import ReactComponent from './components/DotplotDisplay'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function DotplotDisplayF(pm: PluginManager) {
   pm.addDisplayType(() => {
@@ -18,7 +18,7 @@ export default function DotplotDisplayF(pm: PluginManager) {
       stateModel: stateModelFactory(configSchema),
       trackType: 'SyntenyTrack',
       viewType: 'DotplotView',
-      ReactComponent,
+      ReactComponent: lazy(() => import('./components/DotplotDisplay')),
     })
   })
 }

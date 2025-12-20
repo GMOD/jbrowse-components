@@ -1,10 +1,12 @@
-import { observer } from 'mobx-react'
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 
-import { Region } from '@jbrowse/core/util/types'
-import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import { Source } from './util'
+import { SimpleFeature } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
+
+import type { Source } from './util'
+import type { Feature } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types'
 
 const MultiWiggleRendering = observer(function (props: {
   regions: Region[]
@@ -12,12 +14,12 @@ const MultiWiggleRendering = observer(function (props: {
   bpPerPx: number
   width: number
   height: number
-  onMouseLeave: Function
-  onMouseMove: Function
-  onFeatureClick: Function
   blockKey: string
   sources: Source[]
-  displayModel: { isMultiRow: boolean }
+  displayModel?: { isMultiRow: boolean }
+  onMouseLeave?: (event: React.MouseEvent) => void
+  onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
+  onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
 }) {
   const {
     regions,
@@ -31,8 +33,9 @@ const MultiWiggleRendering = observer(function (props: {
     onFeatureClick = () => {},
     displayModel,
   } = props
-  const [region] = regions
+  const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
+  const { isMultiRow } = displayModel || {}
 
   function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {
     if (!ref.current) {
@@ -47,8 +50,8 @@ const MultiWiggleRendering = observer(function (props: {
     }
     const px = region.reversed ? width - offsetX : offsetX
     const mouseoverBp = region.start + bpPerPx * px
-    let featureUnderMouse
-    if (displayModel.isMultiRow) {
+    let featureUnderMouse: Feature | undefined
+    if (isMultiRow) {
       for (const feature of features.values()) {
         if (feature.get('source') !== source.name) {
           continue
@@ -106,7 +109,9 @@ const MultiWiggleRendering = observer(function (props: {
         const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
         onFeatureClick(event, featureUnderMouse)
       }}
-      onMouseLeave={event => onMouseLeave(event)}
+      onMouseLeave={event => {
+        onMouseLeave(event)
+      }}
       style={{
         overflow: 'visible',
         position: 'relative',

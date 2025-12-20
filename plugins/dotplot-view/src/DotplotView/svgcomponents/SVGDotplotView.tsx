@@ -1,15 +1,13 @@
-import React from 'react'
-import { when } from 'mobx'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getRoot } from 'mobx-state-tree'
+import { when } from 'mobx'
 
-// locals
-import { DotplotViewModel, ExportSvgOptions } from '../model'
-import { GridRaw } from '../components/Grid'
-import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
 import SVGBackground from './SVGBackground'
+import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
+import DotplotGrid from '../components/DotplotGrid'
+
+import type { DotplotViewModel, ExportSvgOptions } from '../model'
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -18,8 +16,7 @@ export async function renderToSvg(
 ) {
   await when(() => model.initialized)
   const { themeName = 'default', Wrapper = ({ children }) => children } = opts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { createRootFn } = getRoot<any>(model)
+
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
@@ -47,7 +44,7 @@ export async function renderToSvg(
           <SVGBackground width={w} height={height} />
           <VerticalAxisRaw model={model} />
           <g transform={`translate(${borderX} 0)`}>
-            <GridRaw model={model} />
+            <DotplotGrid model={model} />
             <defs>
               <clipPath id="clip-ruler">
                 <rect x={0} y={0} width={viewWidth} height={viewHeight} />
@@ -55,6 +52,7 @@ export async function renderToSvg(
             </defs>
             <g clipPath="url(#clip-ruler)">
               {displayResults.map(({ result }, i) => (
+                /* biome-ignore lint/suspicious/noArrayIndexKey: */
                 <g key={i}>{result}</g>
               ))}
             </g>
@@ -65,6 +63,5 @@ export async function renderToSvg(
         </svg>
       </Wrapper>
     </ThemeProvider>,
-    createRootFn,
   )
 }

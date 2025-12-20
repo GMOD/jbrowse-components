@@ -1,7 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSnapshot, types } from 'mobx-state-tree'
-import { createTestSession } from '../rootModel'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+
 import sessionModelFactory from '.'
+import { createTestSession } from '../rootModel'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 describe('JBrowseWebSessionModel', () => {
@@ -23,7 +24,7 @@ describe('JBrowseWebSessionModel', () => {
   })
 
   it('accepts a custom drawer width', () => {
-    const session = createTestSession({ drawerWidth: 256 })
+    const session = createTestSession({ sessionSnapshot: { drawerWidth: 256 } })
     expect(session.drawerWidth).toBe(256)
   })
 })

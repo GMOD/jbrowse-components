@@ -6,9 +6,32 @@ title: TwoBitAdapter
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-### Source file
+Also note: this document represents the config API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/sequence/src/TwoBitAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/TwoBitAdapter/configSchema.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/TwoBitAdapter/configSchema.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/TwoBitAdapter.md)
+
+## Docs
+
+### TwoBitAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config (note that adding chromSizes improves
+speed, otherwise has to read a lot of the twobit file to calculate chromosome
+names and sizes):
+
+```json
+{
+  "type": "TwoBitAdapter",
+  "uri": "yourfile.2bit"
+  "chromSizes":"yourfile.chrom.sizes"
+}
+
+```
 
 ### TwoBitAdapter - Slots
 
@@ -17,7 +40,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 ```js
 twoBitLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.2bit',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

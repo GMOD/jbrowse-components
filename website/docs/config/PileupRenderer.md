@@ -6,9 +6,17 @@ title: PileupRenderer
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-### Source file
+Also note: this document represents the config API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/PileupRenderer/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/PileupRenderer/configSchema.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/PileupRenderer/configSchema.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/PileupRenderer.md)
+
+## Docs
 
 ### PileupRenderer - Slots
 
@@ -60,6 +68,17 @@ minSubfeatureWidth: {
       description:
         'the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1',
       defaultValue: 1,
+    }
+```
+
+#### slot: hideSmallIndels
+
+```js
+hideSmallIndels: {
+      type: 'boolean',
+      description:
+        'Hides small indels, sometimes occurring in long read sequencing',
+      defaultValue: false,
     }
 ```
 

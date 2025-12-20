@@ -1,15 +1,16 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { useState } from 'react'
+
+import { Dialog } from '@jbrowse/core/ui'
+import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 import {
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   FormControlLabel,
   Radio,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
+import { observer } from 'mobx-react'
 
 const SetColorDialog = observer(function SetColorDialog({
   model,
@@ -37,13 +38,17 @@ const SetColorDialog = observer(function SetColorDialog({
         </Typography>
         <FormControlLabel
           checked={!posneg}
-          onClick={() => setPosNeg(false)}
+          onClick={() => {
+            setPosNeg(false)
+          }}
           control={<Radio />}
           label="Overall color"
         />
         <FormControlLabel
           checked={posneg}
-          onClick={() => setPosNeg(true)}
+          onClick={() => {
+            setPosNeg(true)
+          }}
           control={<Radio />}
           label="Positive/negative color"
         />
@@ -73,7 +78,9 @@ const SetColorDialog = observer(function SetColorDialog({
             <Typography>Overall color</Typography>
             <ColorPicker
               color={model.color || 'black'}
-              onChange={event => model.setColor(event)}
+              onChange={event => {
+                model.setColor(event)
+              }}
             />
           </>
         )}
@@ -95,7 +102,9 @@ const SetColorDialog = observer(function SetColorDialog({
           variant="contained"
           color="primary"
           type="submit"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Submit
         </Button>

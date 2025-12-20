@@ -1,133 +1,180 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
-import {
-  types,
-  getParent,
-  isAlive,
-  cast,
-  Instance,
-  getSnapshot,
-} from 'mobx-state-tree'
+import type React from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
-  getSession,
   getContainingDisplay,
-  getContainingView,
-  getViewParams,
+  getSession,
   makeAbortableReaction,
-  Feature,
 } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types/mst'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
-  AbstractDisplayModel,
-  isRetryException,
-} from '@jbrowse/core/util/types'
-
-import {
-  getTrackAssemblyNames,
   getRpcSessionId,
+  getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
+import { isRetryException } from '@jbrowse/core/util/types'
+import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
-// locals
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
+import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { AbstractDisplayModel, Region } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
+export interface RenderedProps {
+  reactElement: React.ReactElement
+  features: Map<string, Feature>
+  layout: any
+  maxHeightReached: boolean
+  renderProps: any
+  renderArgs: Record<string, unknown>
+}
 // the MST state of a single server-side-rendered block in a display
 const blockState = types
   .model('BlockState', {
+    /**
+     * #property
+     */
     key: types.string,
-    region: Region,
+    /**
+     * #property
+     */
+    region: types.frozen<Region>(),
+    /**
+     * #property
+     */
     reloadFlag: 0,
+    /**
+     * #property
+     */
     isLeftEndOfDisplayedRegion: false,
+    /**
+     * #property
+     */
     isRightEndOfDisplayedRegion: false,
   })
-  // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
   .volatile(() => ({
-    renderInProgress: undefined as AbortController | undefined,
+    /**
+     * #volatile
+     */
+    stopToken: undefined as StopToken | undefined,
+    /**
+     * #volatile
+     */
     filled: false,
+    /**
+     * #volatile
+     */
     reactElement: undefined as React.ReactElement | undefined,
+    /**
+     * #volatile
+     */
     features: undefined as Map<string, Feature> | undefined,
+    /**
+     * #volatile
+     */
     layout: undefined as any,
-    status: '',
+    /**
+     * #volatile
+     */
+    blockStatusMessage: '',
+    /**
+     * #volatile
+     */
     error: undefined as unknown,
+    /**
+     * #volatile
+     */
     message: undefined as string | undefined,
+    /**
+     * #volatile
+     */
     maxHeightReached: false,
+    /**
+     * #volatile
+     */
     ReactComponent: ServerSideRenderedBlockContent,
+    /**
+     * #volatile
+     */
     renderProps: undefined as any,
+    /**
+     * #volatile
+     */
+    renderArgs: undefined as Record<string, unknown> | undefined,
+    /**
+     * #volatile
+     * Whether a render is currently in flight (but data is not ready yet)
+     */
+    isRenderingPending: true,
+    /**
+     * #volatile
+     * Cached reference to containing display for performance.
+     * Avoids expensive getContainingDisplay() tree traversal in statusMessage
+     * getter which is called frequently during rendering.
+     */
+    cachedDisplay: undefined as AbstractDisplayModel | undefined,
   }))
   .actions(self => {
-    let renderInProgress: undefined | AbortController
+    function stopCurrentToken() {
+      if (self.stopToken !== undefined) {
+        stopStopToken(self.stopToken)
+        self.stopToken = undefined
+      }
+    }
+
+    function clearRenderState() {
+      self.filled = false
+      self.reactElement = undefined
+      self.features = undefined
+      self.layout = undefined
+      self.maxHeightReached = false
+      self.renderProps = undefined
+      self.renderArgs = undefined
+    }
+
     return {
+      /**
+       * #action
+       */
       doReload() {
         self.reloadFlag = self.reloadFlag + 1
       },
-      afterAttach() {
-        const display = getContainingDisplay(self)
-        setTimeout(() => {
-          if (isAlive(self)) {
-            makeAbortableReaction(
-              self as any,
-              renderBlockData,
-              renderBlockEffect, // reaction doesn't expect async here
-              {
-                name: `${display.id}/${assembleLocString(
-                  self.region,
-                )} rendering`,
-                delay: display.renderDelay,
-                fireImmediately: true,
-              },
-              this.setLoading,
-              this.setRendered,
-              this.setError,
-            )
-          }
-        }, display.renderDelay)
+
+      /**
+       * #action
+       */
+      setStatusMessage(message: string) {
+        self.blockStatusMessage = message
       },
-      setStatus(message: string) {
-        self.status = message
-      },
-      setLoading(abortController: AbortController) {
-        if (
-          renderInProgress !== undefined &&
-          !renderInProgress.signal.aborted
-        ) {
-          renderInProgress.abort()
-        }
-        self.filled = false
+      /**
+       * #action
+       */
+      setLoading(newStopToken: StopToken) {
+        stopCurrentToken()
+        self.isRenderingPending = true
+        self.error = undefined
         self.message = undefined
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.maxHeightReached = false
-        self.renderProps = undefined
-        renderInProgress = abortController
+        // Note: We intentionally do NOT clear reactElement/features/layout here
+        // so that old content remains visible with a loading overlay while new
+        // content is being rendered
+        self.stopToken = newStopToken
       },
+      /**
+       * #action
+       */
       setMessage(messageText: string) {
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        self.filled = false
+        stopCurrentToken()
+        self.isRenderingPending = false
         self.message = messageText
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
         self.error = undefined
-        self.maxHeightReached = false
-        self.renderProps = undefined
-        renderInProgress = undefined
+        clearRenderState()
       },
-      setRendered(
-        props:
-          | {
-              reactElement: React.ReactElement
-              features: Map<string, Feature>
-              layout: any
-              maxHeightReached: boolean
-              renderProps: any
-            }
-          | undefined,
-      ) {
+      /**
+       * #action
+       */
+      setRendered(props: RenderedProps | undefined) {
         if (!props) {
           return
         }
@@ -137,8 +184,10 @@ const blockState = types
           layout,
           maxHeightReached,
           renderProps,
+          renderArgs,
         } = props
         self.filled = true
+        self.isRenderingPending = false
         self.message = undefined
         self.reactElement = reactElement
         self.features = features
@@ -146,56 +195,49 @@ const blockState = types
         self.error = undefined
         self.maxHeightReached = maxHeightReached
         self.renderProps = renderProps
-        renderInProgress = undefined
+        self.renderArgs = renderArgs
+        self.stopToken = undefined
       },
+      /**
+       * #action
+       */
       setError(error: unknown) {
         console.error(error)
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        // the rendering failed for some reason
-        self.filled = false
+        stopCurrentToken()
+        self.isRenderingPending = false
         self.message = undefined
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.maxHeightReached = false
         self.error = error
-        self.renderProps = undefined
-        renderInProgress = undefined
+        clearRenderState()
         if (isRetryException(error as Error)) {
           this.reload()
         }
       },
+      /**
+       * #action
+       */
       reload() {
-        self.renderInProgress = undefined
-        self.filled = false
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
+        self.stopToken = undefined
+        self.isRenderingPending = false
         self.error = undefined
         self.message = undefined
-        self.maxHeightReached = false
         self.ReactComponent = ServerSideRenderedBlockContent
-        self.renderProps = undefined
+        clearRenderState()
         getParent<any>(self, 2).reload()
       },
       beforeDestroy() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            if (renderInProgress && !renderInProgress.signal.aborted) {
-              renderInProgress.abort()
-            }
-            const display = getContainingDisplay(self)
-            const { rpcManager } = getSession(self)
-            const { rendererType } = display
-            const { renderArgs } = renderBlockData(cast(self))
-            // renderArgs can be undefined if an error occurred in this block
-            if (renderArgs) {
+            stopCurrentToken()
+            // use stored renderArgs from last successful render instead of
+            // recalculating via renderBlockData which is expensive
+            if (self.renderArgs) {
+              const display = getContainingDisplay(self)
+              const { rpcManager } = getSession(self)
+              const { rendererType } = display
               await rendererType.freeResourcesInClient(
                 rpcManager,
-                JSON.parse(JSON.stringify(renderArgs)),
+                JSON.parse(JSON.stringify(self.renderArgs)),
               )
             }
           } catch (e) {
@@ -205,6 +247,39 @@ const blockState = types
       },
     }
   })
+  .views(self => ({
+    get statusMessage() {
+      return self.isRenderingPending
+        ? self.blockStatusMessage ||
+            // @ts-expect-error
+            self.cachedDisplay?.statusMessage ||
+            'Loading'
+        : undefined
+    },
+  }))
+  .actions(self => ({
+    afterAttach() {
+      const display = getContainingDisplay(self)
+      self.cachedDisplay = display
+      setTimeout(() => {
+        if (isAlive(self)) {
+          makeAbortableReaction(
+            self as BlockModel,
+            renderBlockData,
+            renderBlockEffect,
+            {
+              name: `${display.id}/${assembleLocString(self.region)} rendering`,
+              delay: display.renderDelay,
+              fireImmediately: true,
+            },
+            self.setLoading,
+            self.setRendered,
+            self.setError,
+          )
+        }
+      }, display.renderDelay)
+    },
+  }))
 
 export default blockState
 export type BlockStateModel = typeof blockState
@@ -232,64 +307,67 @@ export function renderBlockData(
     }
 
     const renderProps = display.renderProps()
+    const renderingProps = display.renderingProps?.() as
+      | Record<string, unknown>
+      | undefined
     const { config } = renderProps
 
-    // This line is to trigger the mobx reaction when the config changes
-    // It won't trigger the reaction if it doesn't think we're accessing it
+    // This line is to trigger the mobx reaction when the config changes It
+    // won't trigger the reaction if it doesn't think we're accessing it
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
-    const layoutId = getContainingView(display).id
+    const layoutId = parentTrack.id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
       rendererType,
       rpcManager,
       renderProps,
+      renderingProps,
       cannotBeRenderedReason,
       displayError: error,
       renderArgs: {
         statusCallback: (message: string) => {
           if (isAlive(self)) {
-            self.setStatus(message)
+            self.setStatusMessage(message)
           }
         },
         assemblyName: self.region.assemblyName,
-        regions: [getSnapshot(self.region)],
+        regions: [self.region],
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
         layoutId,
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
-        timeout: 1000000, // 10000,
+        timeout: 1_000_000,
       },
     }
   } catch (e) {
-    return { displayError: e }
+    return {
+      displayError: e,
+    }
   }
 }
 
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
-  signal: AbortSignal,
+  stopToken: StopToken | undefined,
   self: BlockModel,
 ) {
-  if (!props) {
-    return
+  if (!props || !isAlive(self)) {
+    return undefined
   }
   const {
     rendererType,
     renderProps,
+    renderingProps,
     rpcManager,
     renderArgs,
     cannotBeRenderedReason,
     displayError,
   } = props
-  if (!isAlive(self)) {
-    return undefined
-  }
-
   if (displayError) {
     self.setError(displayError)
     return undefined
@@ -298,17 +376,15 @@ async function renderBlockEffect(
     self.setMessage(cannotBeRenderedReason)
     return undefined
   }
-
-  if (renderProps.notReady) {
+  if (renderProps.notReady || !renderArgs) {
     return undefined
   }
-
   const { reactElement, features, layout, maxHeightReached } =
     await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
       ...renderProps,
-      viewParams: getViewParams(self),
-      signal,
+      renderingProps,
+      stopToken,
     })
   return {
     reactElement,
@@ -316,5 +392,6 @@ async function renderBlockEffect(
     layout,
     maxHeightReached,
     renderProps,
+    renderArgs,
   }
 }

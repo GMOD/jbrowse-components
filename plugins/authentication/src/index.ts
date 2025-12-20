@@ -1,26 +1,28 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
 import InternetAccountType from '@jbrowse/core/pluggableElementTypes/InternetAccountType'
-import {
-  configSchema as OAuthConfigSchema,
-  modelFactory as OAuthInternetAccountModelFactory,
-} from './OAuthModel'
-import {
-  configSchema as ExternalTokenConfigSchema,
-  modelFactory as ExternalTokenInternetAccountModelFactory,
-} from './ExternalTokenModel'
-import {
-  configSchema as HTTPBasicConfigSchema,
-  modelFactory as HTTPBasicInternetAccountModelFactory,
-} from './HTTPBasicModel'
+
 import {
   configSchema as DropboxOAuthConfigSchema,
   modelFactory as DropboxOAuthInternetAccountModelFactory,
 } from './DropboxOAuthModel'
 import {
+  configSchema as ExternalTokenConfigSchema,
+  modelFactory as ExternalTokenInternetAccountModelFactory,
+} from './ExternalTokenModel'
+import {
   configSchema as GoogleDriveOAuthConfigSchema,
   modelFactory as GoogleDriveOAuthInternetAccountModelFactory,
 } from './GoogleDriveOAuthModel'
+import {
+  configSchema as HTTPBasicConfigSchema,
+  modelFactory as HTTPBasicInternetAccountModelFactory,
+} from './HTTPBasicModel'
+import {
+  configSchema as OAuthConfigSchema,
+  modelFactory as OAuthInternetAccountModelFactory,
+} from './OAuthModel'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class AuthenticationPlugin extends Plugin {
   name = 'AuthenticationPlugin'

@@ -1,9 +1,11 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import configSchemaFactory from './models/configSchema'
-import modelFactory from './models/model'
-import { lazy } from 'react'
+import configSchemaFactory from './configSchema'
+import modelFactory from './model'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
@@ -23,4 +25,4 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
 
 export { default as Tooltip } from './components/Tooltip'
 export { default as ReactComponent } from './components/WiggleDisplayComponent'
-export { default as modelFactory } from './models/model'
+export { default as modelFactory } from './model'

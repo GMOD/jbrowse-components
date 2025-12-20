@@ -1,6 +1,8 @@
-import React from 'react'
-import escapeHTML from 'escape-html'
+import { useEffect } from 'react'
+
 import dompurify from 'dompurify'
+import escapeHTML from 'escape-html'
+
 import { linkify } from '../util'
 
 // source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
@@ -46,7 +48,10 @@ let added = false
 
 // adapted from is-html
 // https://github.com/sindresorhus/is-html/blob/master/index.js
-const full = new RegExp(htmlTags.map(tag => `<${tag}\\b[^>]*>`).join('|'), 'i')
+const full = new RegExp(
+  htmlTags.map(tag => String.raw`<${tag}\b[^>]*>`).join('|'),
+  'i',
+)
 function isHTML(str: string) {
   return full.test(str)
 }
@@ -62,34 +67,29 @@ export default function SanitizedHTML({
   className,
 }: {
   className?: string
-  html: string
+  html: unknown
 }) {
   // try to add links to the text first
-  const html = linkify(pre)
+  const html = linkify(`${pre}`)
   const value = isHTML(html) ? html : escapeHTML(html)
-  if (!added) {
-    added = true
-    // see https://github.com/cure53/DOMPurify/issues/317
-    // only have to add this once, and can't do it globally because dompurify
-    // not yet initialized at global scope
-    dompurify.addHook(
-      'afterSanitizeAttributes',
-      (node: {
-        tagName: string
-        setAttribute: (arg0: string, arg1: string) => void
-      }) => {
+  useEffect(() => {
+    if (!added) {
+      added = true
+      // see https://github.com/cure53/DOMPurify/issues/317
+      // only have to add this once, and can't do it globally because dompurify
+      // not yet initialized at global scope
+      dompurify.addHook('afterSanitizeAttributes', node => {
         if (node.tagName === 'A') {
           node.setAttribute('rel', 'noopener noreferrer')
           node.setAttribute('target', '_blank')
         }
-      },
-    )
-  }
+      })
+    }
+  }, [])
 
   return (
     <span
       className={className}
-      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{
         __html: dompurify.sanitize(value),
       }}

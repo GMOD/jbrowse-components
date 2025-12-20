@@ -1,14 +1,10 @@
 /** MST props, views, actions, etc related to managing connections */
 
-import PluginManager from '@jbrowse/core/PluginManager'
 import {
-  TrackViewModel,
   getContainingView,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import {
-  IAnyStateTreeNode,
-  Instance,
   getMembers,
   getParent,
   getSnapshot,
@@ -17,11 +13,14 @@ import {
   isReferenceType,
   types,
   walk,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-// locals
 import { isBaseSession } from './BaseSession'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type { TrackViewModel } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 export interface ReferringNode {
   node: IAnyStateTreeNode
@@ -46,14 +45,24 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
+        // For frozen tracks, compare by trackId instead of object identity
+        const targetTrackId = (object as { trackId?: string }).trackId
         walk(getParent(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
-            Object.entries(members.properties).forEach(([key, value]) => {
-              if (isReferenceType(value) && node[key] === object) {
-                refs.push({ node, key })
+            for (const [key, value] of Object.entries(members.properties)) {
+              if (isReferenceType(value)) {
+                const ref = node[key]
+                // Compare by trackId for track configurations, fall back to identity
+                const refTrackId = ref?.trackId
+                if (
+                  ref === object ||
+                  (targetTrackId && refTrackId && refTrackId === targetTrackId)
+                ) {
+                  refs.push({ node, key })
+                }
               }
-            })
+            }
           }
         })
         return refs
@@ -66,17 +75,19 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
       removeReferring(
         referring: ReferringNode[],
         track: BaseTrackConfig,
-        callbacks: Function[],
+        callbacks: ((arg: string) => void)[],
         dereferenceTypeCount: Record<string, number>,
       ) {
-        referring.forEach(({ node }) => {
+        for (const { node } of referring) {
           let dereferenced = false
           try {
             // If a view is referring to the track config, remove the track
             // from the view
             const type = 'open track(s)'
             const view = getContainingView(node) as TrackViewModel
-            callbacks.push(() => view.hideTrack(track.trackId))
+            callbacks.push(() => {
+              view.hideTrack(track.trackId)
+            })
             dereferenced = true
             if (!dereferenceTypeCount[type]) {
               dereferenceTypeCount[type] = 0
@@ -91,7 +102,9 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
             // open, close the widget
             const type = 'configuration editor widget(s)'
             if (isSessionModelWithWidgets(self)) {
-              callbacks.push(() => self.hideWidget(node))
+              callbacks.push(() => {
+                self.hideWidget(node)
+              })
             }
             dereferenced = true
             if (!dereferenceTypeCount[type]) {
@@ -106,7 +119,7 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
               )}`,
             )
           }
-        })
+        }
       },
     }))
 }

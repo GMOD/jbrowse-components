@@ -1,6 +1,7 @@
+import path from 'path'
+
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import sanitize from 'sanitize-filename'
-import path from 'path'
 
 export interface UriLocation {
   uri: string
@@ -66,31 +67,37 @@ export interface Sequence {
     | ChromeSizesAdapter
     | CustomSequenceAdapter
 }
-
+type Loc = UriLocation | LocalPathLocation
 export interface Gff3TabixAdapter {
   type: 'Gff3TabixAdapter'
-  gffGzLocation: UriLocation | LocalPathLocation
+  gffGzLocation: Loc
 }
 
 export interface Gff3Adapter {
   type: 'Gff3Adapter'
-  gffLocation: UriLocation | LocalPathLocation
+  gffLocation: Loc
 }
 export interface GtfAdapter {
   type: 'GtfAdapter'
-  gtfLocation: UriLocation | LocalPathLocation
+  gtfLocation: Loc
 }
 
 export interface VcfTabixAdapter {
   type: 'VcfTabixAdapter'
-  vcfGzLocation: UriLocation | LocalPathLocation
+  vcfGzLocation: Loc
 }
 export interface VcfAdapter {
   type: 'VcfAdapter'
-  vcfLocation: UriLocation | LocalPathLocation
+  vcfLocation: Loc
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Track = Record<string, any>
+
+export interface Track {
+  adapter?: { type: string; [key: string]: unknown }
+  textSearching?: TextSearching
+  name: string
+  assemblyNames: string[]
+  trackId: string
+}
 
 export interface TextSearching {
   indexingFeatureTypesToExclude?: string[]
@@ -110,10 +117,10 @@ export interface TrixTextSearchAdapter {
 export interface Config {
   assemblies?: Assembly[]
   assembly?: Assembly
-  configuration?: {}
+  configuration?: Record<string, unknown>
   aggregateTextSearchAdapters?: TrixTextSearchAdapter[]
   connections?: unknown[]
-  defaultSession?: {}
+  defaultSession?: Record<string, unknown>
   tracks?: Track[]
 }
 

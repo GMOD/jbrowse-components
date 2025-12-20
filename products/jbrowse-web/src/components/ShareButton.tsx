@@ -1,11 +1,11 @@
-import React, { useState, lazy } from 'react'
-import { observer } from 'mobx-react'
-import { Button, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import { Suspense, lazy, useState } from 'react'
 
-// icons
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ShareIcon from '@mui/icons-material/Share'
+import { Button, alpha } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   shareDiv: {
@@ -37,18 +37,25 @@ const ShareButton = observer(function (props: {
   return (
     <div className={classes.shareDiv}>
       <Button
-        onClick={async () => setOpen(true)}
         size="small"
         color="inherit"
         startIcon={<ShareIcon />}
         classes={{ root: classes.shareButton }}
+        onClick={async () => {
+          setOpen(true)
+        }}
       >
         Share
       </Button>
       {open ? (
-        <React.Suspense fallback={null}>
-          <ShareDialog handleClose={() => setOpen(false)} session={session} />
-        </React.Suspense>
+        <Suspense fallback={null}>
+          <ShareDialog
+            session={session}
+            handleClose={() => {
+              setOpen(false)
+            }}
+          />
+        </Suspense>
       ) : null}
     </div>
   )

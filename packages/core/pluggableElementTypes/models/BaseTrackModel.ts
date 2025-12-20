@@ -1,33 +1,48 @@
-import { autorun, transaction } from 'mobx'
-import {
-  getRoot,
-  resolveIdentifier,
-  types,
-  Instance,
-  IAnyStateTreeNode,
-  addDisposer,
-} from 'mobx-state-tree'
+import { lazy } from 'react'
 
-// locals
-import {
-  getConf,
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-} from '../../configuration'
-import PluginManager from '../../PluginManager'
-import { MenuItem } from '../../ui'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import Save from '@mui/icons-material/Save'
+
+import { ConfigurationReference, getConf } from '../../configuration'
+import { adapterConfigCacheKey } from '../../data_adapters/util'
 import { getContainingView, getEnv, getSession } from '../../util'
+import { stringifyBED } from './saveTrackFileTypes/bed'
+import { stringifyGBK } from './saveTrackFileTypes/genbank'
+import { stringifyGFF3 } from './saveTrackFileTypes/gff3'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
+
+import type PluginManager from '../../PluginManager'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '../../configuration'
+import type { MenuItem } from '../../ui'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
+
+const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
+
+interface DisplayConf {
+  displayId: string
+  type: string
+}
 
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
-  const viewType = pluginManager.getViewType(view.type)
+  const viewType = pluginManager.getViewType(view.type)!
   const compatTypes = new Set(viewType.displayTypes.map(d => d.name))
   const displays = self.configuration.displays as AnyConfigurationModel[]
   return displays.filter(d => compatTypes.has(d.type))
+}
+
+function getDisplayConf(displays: DisplayConf[], displayId: string) {
+  const displayConf = displays.find(d => d.displayId === displayId)
+  if (!displayConf) {
+    throw new Error(`could not find display config ${displayId}`)
+  }
+  return displayConf
 }
 
 /**
@@ -64,6 +79,10 @@ export function createBaseTrackModel(
       /**
        * #property
        */
+      pinned: false,
+      /**
+       * #property
+       */
       displays: types.array(pm.pluggableMstType('display', 'stateModel')),
     })
     .views(self => ({
@@ -72,7 +91,10 @@ export function createBaseTrackModel(
        * determines which webworker to send the track to, currently based on trackId
        */
       get rpcSessionId() {
-        return self.configuration?.trackId
+        const adapter = getConf(self, 'adapter')
+        return adapter
+          ? adapterConfigCacheKey(adapter)
+          : self.configuration.trackId
       },
       /**
        * #getter
@@ -85,6 +107,13 @@ export function createBaseTrackModel(
        */
       get textSearchAdapter() {
         return getConf(self, 'textSearchAdapter')
+      },
+
+      /**
+       * #getter
+       */
+      get adapterConfig() {
+        return getConf(self, 'adapter')
       },
 
       /**
@@ -118,11 +147,17 @@ export function createBaseTrackModel(
         return (
           isSessionModelWithConfigEditing(session) &&
           (adminMode ||
-            sessionTracks?.find(t => t.trackId === self.configuration?.trackId))
+            sessionTracks?.find(t => t.trackId === self.configuration.trackId))
         )
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setPinned(flag: boolean) {
+        self.pinned = flag
+      },
       /**
        * #action
        */
@@ -134,52 +169,84 @@ export function createBaseTrackModel(
        * #action
        */
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const displayType = pm.getDisplayType(conf.type)
+        const displays = self.configuration.displays as DisplayConf[]
+        const displayConf = getDisplayConf(displays, displayId)
+        const displayType = pm.getDisplayType(displayConf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${conf.type}`)
+          throw new Error(`unknown display type ${displayConf.type}`)
         }
-        const display = displayType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-        })
-        self.displays.push(display)
+        self.displays.push(
+          displayType.stateModel.create({
+            ...initialSnapshot,
+            type: displayConf.type,
+            configuration: displayId,
+          }),
+        )
       },
 
       /**
        * #action
        */
       hideDisplay(displayId: string) {
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const t = self.displays.filter(d => d.configuration === conf)
-        transaction(() => t.forEach(d => self.displays.remove(d)))
-        return t.length
+        const displaysToRemove = self.displays.filter(
+          d => d.configuration.displayId === displayId,
+        )
+        for (const display of displaysToRemove) {
+          self.displays.remove(display)
+        }
+        return displaysToRemove.length
       },
 
       /**
        * #action
        */
-      replaceDisplay(oldId: string, newId: string, initialSnapshot = {}) {
+      replaceDisplay(
+        oldDisplayId: string,
+        newDisplayId: string,
+        initialSnapshot = {},
+      ) {
         const idx = self.displays.findIndex(
-          d => d.configuration.displayId === oldId,
+          d => d.configuration.displayId === oldDisplayId,
         )
         if (idx === -1) {
-          throw new Error(`could not find display id ${oldId} to replace`)
+          throw new Error(
+            `could not find display id ${oldDisplayId} to replace`,
+          )
         }
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), newId)
-        const displayType = pm.getDisplayType(conf.type)
+        const displays = self.configuration.displays as DisplayConf[]
+        const displayConf = getDisplayConf(displays, newDisplayId)
+        const displayType = pm.getDisplayType(displayConf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${conf.type}`)
+          throw new Error(`unknown display type ${displayConf.type}`)
         }
         self.displays.splice(idx, 1, {
           ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
+          type: displayConf.type,
+          configuration: newDisplayId,
         })
+      },
+    }))
+    .views(() => ({
+      saveTrackFileFormatOptions() {
+        return {
+          gff3: {
+            name: 'GFF3',
+            extension: 'gff3',
+            callback: stringifyGFF3,
+          },
+          genbank: {
+            name: 'GenBank',
+            extension: 'gbk',
+            callback: stringifyGBK,
+            helpText:
+              'Note: GenBank format export is experimental. The generated output may not fully conform to the GenBank specification and should be validated before use in production workflows.',
+          },
+          bed: {
+            name: 'BED',
+            extension: 'bed',
+            callback: stringifyBED,
+          },
+        }
       },
     }))
     .views(self => ({
@@ -195,17 +262,44 @@ export function createBaseTrackModel(
 
         return [
           ...menuItems,
+          {
+            label: 'Save track data',
+            icon: Save,
+            priority: 998,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SaveTrackDataDlg,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
           ...(compatDisp.length > 1
             ? [
                 {
                   type: 'subMenu',
                   label: 'Display types',
-                  subMenu: compatDisp.map(d => ({
-                    type: 'radio',
-                    label: pm.getDisplayType(d.type).displayName,
-                    checked: d.displayId === shownId,
-                    onClick: () => self.replaceDisplay(shownId, d.displayId),
-                  })),
+                  priority: -1000,
+                  subMenu: compatDisp.map(d => {
+                    const displayType = pm.getDisplayType(d.type)!
+                    return {
+                      type: 'radio',
+                      label: displayType.displayName,
+                      helpText: displayType.helpText,
+                      checked: d.displayId === shownId,
+                      onClick: () => {
+                        if (d.displayId !== shownId) {
+                          self.replaceDisplay(
+                            shownId,
+                            d.displayId,
+                            self.displays[0].getPortableSettings?.() ?? {},
+                          )
+                        }
+                      },
+                    }
+                  }),
                 },
               ]
             : []),
@@ -217,6 +311,7 @@ export function createBaseTrackModel(
           autorun(() => {
             if (!self.displays.length) {
               const compatDisp = getCompatibleDisplays(self)
+              console.log({ compatDisp })
               self.showDisplay(
                 self.configuration.trackId + '-' + compatDisp[0].type,
               )
@@ -225,6 +320,18 @@ export function createBaseTrackModel(
         )
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { minimized, pinned, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(minimized ? { minimized } : {}),
+        ...(pinned ? { pinned } : {}),
+      } as typeof snap
+    })
 }
 
 export type BaseTrackStateModel = ReturnType<typeof createBaseTrackModel>

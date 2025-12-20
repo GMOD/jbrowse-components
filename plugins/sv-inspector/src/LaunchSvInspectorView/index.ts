@@ -1,6 +1,6 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import { SvInspectorViewModel } from '../SvInspectorView/models/SvInspectorView'
+import type { SvInspectorViewModel } from '../SvInspectorView/model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -17,25 +17,14 @@ export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
       uri: string
       fileType?: string
     }) => {
-      // add view, make typescript happy with return type
-      const view = session.addView('SvInspectorView') as SvInspectorViewModel
-
-      if (!view) {
-        throw new Error('Failed to initialize view')
-      }
-      const exts = uri.split('.')
-      let ext = exts?.pop()?.toUpperCase()
-      if (ext === 'GZ') {
-        ext = exts?.pop()?.toUpperCase()
-      }
-
-      view.spreadsheetView.importWizard.setFileType(fileType || ext || '')
-      view.spreadsheetView.importWizard.setSelectedAssemblyName(assembly)
-      view.spreadsheetView.importWizard.setFileSource({
-        uri,
-        locationType: 'UriLocation',
-      })
-      await view.spreadsheetView.importWizard.import(assembly)
+      // Use the init property to let the model handle initialization
+      session.addView('SvInspectorView', {
+        init: {
+          assembly,
+          uri,
+          fileType,
+        },
+      }) as SvInspectorViewModel
     },
   )
 }

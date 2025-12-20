@@ -1,5 +1,5 @@
-import React from 'react'
 import { render } from '@testing-library/react'
+
 import { JBrowse, getPluginManager } from './util'
 
 test('renders when in admin mode', async () => {

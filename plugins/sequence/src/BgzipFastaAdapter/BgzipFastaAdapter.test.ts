@@ -1,4 +1,6 @@
+import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
+
 import Adapter from './BgzipFastaAdapter'
 import configSchema from './configSchema'
 
@@ -26,7 +28,7 @@ test('can use a indexed fasta with gzi', async () => {
     end: 20000,
   })
 
-  const featuresArray = await features.pipe(toArray()).toPromise()
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
   expect(featuresArray).toMatchSnapshot()
 
   const features2 = adapter.getFeatures({
@@ -35,6 +37,6 @@ test('can use a indexed fasta with gzi', async () => {
     end: 20000,
   })
 
-  const featuresArray2 = await features2.pipe(toArray()).toPromise()
+  const featuresArray2 = await firstValueFrom(features2.pipe(toArray()))
   expect(featuresArray2).toMatchSnapshot()
 })

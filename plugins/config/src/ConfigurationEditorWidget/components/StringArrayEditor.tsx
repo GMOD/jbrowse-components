@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { useState } from 'react'
 
+import DeleteIcon from '@mui/icons-material/Delete'
 import {
   Button,
   FormHelperText,
@@ -11,9 +11,7 @@ import {
   ListItem,
   TextField,
 } from '@mui/material'
-
-// icons
-import DeleteIcon from '@mui/icons-material/Delete'
+import { observer } from 'mobx-react'
 
 const StringArrayEditor = observer(function ({
   slot,
@@ -21,9 +19,9 @@ const StringArrayEditor = observer(function ({
   slot: {
     name: string
     value: string[]
-    setAtIndex: Function
-    removeAtIndex: Function
-    add: Function
+    setAtIndex: (arg: number, arg2: string) => void
+    removeAtIndex: (arg: number) => void
+    add: (arg: string) => void
     description: string
   }
 }) {
@@ -34,18 +32,26 @@ const StringArrayEditor = observer(function ({
       {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
       <List disablePadding>
         {slot.value.map((val, idx) => (
-          <ListItem key={idx} disableGutters>
+          <ListItem key={`${JSON.stringify(val)}-${idx}`} disableGutters>
             <TextField
               value={val}
-              onChange={evt => slot.setAtIndex(idx, evt.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => slot.removeAtIndex(idx)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              onChange={evt => {
+                slot.setAtIndex(idx, evt.target.value)
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => {
+                          slot.removeAtIndex(idx)
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </ListItem>
@@ -56,38 +62,42 @@ const StringArrayEditor = observer(function ({
             <TextField
               value={value}
               placeholder="add new"
-              onChange={event => setValue(event.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <>
-                      <Button
-                        color="primary"
-                        variant="contained"
-                        style={{ margin: 2 }}
-                        data-testid={`stringArrayAdd-${slot.name}`}
-                        onClick={() => {
-                          setAddNew(false)
-                          slot.add(value)
-                          setValue('')
-                        }}
-                      >
-                        OK
-                      </Button>
-                      <Button
-                        color="primary"
-                        variant="contained"
-                        style={{ margin: 2 }}
-                        onClick={() => {
-                          setAddNew(false)
-                          setValue('')
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </>
-                  </InputAdornment>
-                ),
+              onChange={event => {
+                setValue(event.target.value)
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <>
+                        <Button
+                          color="primary"
+                          variant="contained"
+                          style={{ margin: 2 }}
+                          data-testid={`stringArrayAdd-${slot.name}`}
+                          onClick={() => {
+                            setAddNew(false)
+                            slot.add(value)
+                            setValue('')
+                          }}
+                        >
+                          OK
+                        </Button>
+                        <Button
+                          color="primary"
+                          variant="contained"
+                          style={{ margin: 2 }}
+                          onClick={() => {
+                            setAddNew(false)
+                            setValue('')
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </ListItem>
@@ -97,7 +107,9 @@ const StringArrayEditor = observer(function ({
           variant="contained"
           style={{ margin: 4 }}
           disabled={addNew}
-          onClick={() => setAddNew(true)}
+          onClick={() => {
+            setAddNew(true)
+          }}
         >
           Add item
         </Button>

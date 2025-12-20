@@ -1,20 +1,82 @@
-import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
-import { autorun } from 'mobx'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
-  isAbortException,
-  getSession,
-  getContainingView,
-} from '@jbrowse/core/util'
-import { QuantitativeStats } from '@jbrowse/core/util/stats'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive } from 'mobx-state-tree'
+  scaleLinear,
+  scaleLog,
+  scaleQuantize,
+} from '@mui/x-charts-vendor/d3-scale'
 
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
-
-type LGV = LinearGenomeViewModel
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 export const YSCALEBAR_LABEL_OFFSET = 5
+
+// Default color used by wiggle config schema
+export const WIGGLE_COLOR_DEFAULT = '#f0f'
+
+/**
+ * Determines the appropriate color callback for wiggle plots.
+ *
+ * Priority:
+ * 1. If color is a jexl callback expression, evaluate per feature
+ * 2. If color is explicitly set (not default), use static color
+ * 3. If defaultColor provided (e.g. 'grey' for line plots), use it
+ * 4. Otherwise use bicolor pivot logic (posColor/negColor based on score)
+ */
+export function getColorCallback(
+  config: AnyConfigurationModel,
+  opts?: { defaultColor?: string },
+) {
+  const color = readConfObject(config, 'color')
+  const colorIsCallback = config.color?.isCallback
+  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
+
+  if (colorIsCallback) {
+    return (feature: Feature) => readConfObject(config, 'color', { feature })
+  }
+  if (!colorIsDefault) {
+    return () => color
+  }
+  if (opts?.defaultColor) {
+    return () => opts.defaultColor!
+  }
+  // Bicolor pivot logic
+  const pivotValue = readConfObject(config, 'bicolorPivotValue')
+  const negColor = readConfObject(config, 'negColor')
+  const posColor = readConfObject(config, 'posColor')
+  return (_feature: Feature, score: number) =>
+    score < pivotValue ? negColor : posColor
+}
+
+/**
+ * Determines the color for arrays-based rendering.
+ * Returns either a static color or bicolor config for drawXYArrays.
+ */
+export function getArraysColorConfig(config: AnyConfigurationModel) {
+  const color = readConfObject(config, 'color')
+  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
+
+  if (!colorIsDefault) {
+    return { color }
+  }
+  // Return bicolor config
+  return {
+    posColor: readConfObject(config, 'posColor'),
+    negColor: readConfObject(config, 'negColor'),
+    pivotValue: readConfObject(config, 'bicolorPivotValue'),
+  }
+}
+
+/**
+ * Gets a static color for line/density arrays rendering.
+ * Returns the configured color, or the defaultColor if color is default.
+ */
+export function getStaticColor(
+  config: AnyConfigurationModel,
+  defaultColor: string,
+) {
+  const color = readConfObject(config, 'color')
+  return color === WIGGLE_COLOR_DEFAULT ? defaultColor : color
+}
 
 export interface ScaleOpts {
   domain: number[]
@@ -24,9 +86,14 @@ export interface ScaleOpts {
   inverted?: boolean
 }
 
+// There was confusion about whether source or name was required, and effort to
+// remove one or the other was thwarted. Adapters like BigWigAdapter, even in
+// the BigWigAdapter configSchema.ts, use a 'source' field though, while the
+// word 'name' still allowed in the config too. To solve, we made name===source
 export interface Source {
   baseUri?: string
   name: string
+  source: string
   color?: string
   group?: string
 }
@@ -43,13 +110,16 @@ export interface Source {
  *   - inverted (boolean)
  */
 export function getScale({
-  domain = [],
-  range = [],
+  domain,
+  range,
   scaleType,
   pivotValue,
   inverted,
 }: ScaleOpts) {
-  let scale
+  let scale:
+    | ReturnType<typeof scaleLinear<number>>
+    | ReturnType<typeof scaleLog<number>>
+    | ReturnType<typeof scaleQuantize<number>>
   const [min, max] = domain
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')
@@ -57,8 +127,7 @@ export function getScale({
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
-    scale = scaleLog()
-    scale.base(2)
+    scale = scaleLog().base(2)
   } else if (scaleType === 'quantize') {
     scale = scaleQuantize()
   } else {
@@ -75,7 +144,8 @@ export function getScale({
   return scale
 }
 /**
- * gets the origin for drawing the graph. for linear this is 0, for log this is arbitrarily set to log(1)==0
+ * gets the origin for drawing the graph. for linear this is 0, for log this is
+ * arbitrarily set to log(1)==0
  *
  * @param scaleType -
  */
@@ -99,8 +169,8 @@ export function getOrigin(scaleType: string /* , pivot, stats */) {
 }
 
 /**
- * produces a "nice" domain that actually rounds down to 0 for the min
- * or 0 to the max depending on if all values are positive or negative
+ * produces a "nice" domain that actually rounds down to 0 for the min or 0 to
+ * the max depending on if all values are positive or negative
  *
  * @param object - containing attributes
  *   - domain [min,max]
@@ -130,17 +200,14 @@ export function getNiceDomain({
     }
   }
   if (scaleType === 'log') {
-    // if the min is 0, assume that it's just something
-    // with no read coverage and that we should ignore it in calculations
-    // if it's greater than 1 pin to 1 for the full range also
-    // otherwise, we may see bigwigs with fractional values
-    if (min === 0 || min > 1) {
+    // for min>0 and max>1, set log min to 1, which works for most coverage
+    // type tracks. if max is not >1, might be like raw p-values so then it'll
+    // display negative values
+    if (min >= 0 && max > 1) {
       min = 1
     }
   }
-  if (min === undefined || max === undefined) {
-    throw new Error('invalid domain supplied to stats function')
-  }
+
   if (minScore !== undefined && minScore !== Number.MIN_VALUE) {
     min = minScore
   }
@@ -168,154 +235,99 @@ export function getNiceDomain({
   return scale.domain() as [number, number]
 }
 
-export async function getQuantitativeStats(
-  self: {
-    adapterConfig: AnyConfigurationModel
-    configuration: AnyConfigurationModel
-    autoscaleType: string
-    setMessage: (str: string) => void
-  },
-  opts: {
-    headers?: Record<string, string>
-    signal?: AbortSignal
-    filters?: string[]
-  },
-): Promise<QuantitativeStats> {
-  const { rpcManager } = getSession(self)
-  const nd = getConf(self, 'numStdDev') || 3
-  const { adapterConfig, autoscaleType } = self
-  const sessionId = getRpcSessionId(self)
-  const params = {
-    sessionId,
-    adapterConfig,
-    statusCallback: (message: string) => {
-      if (isAlive(self)) {
-        self.setMessage(message)
-      }
-    },
-    ...opts,
-  }
-
-  if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-    const results = (await rpcManager.call(
-      sessionId,
-      'WiggleGetGlobalQuantitativeStats',
-      params,
-    )) as QuantitativeStats
-    const { scoreMin, scoreMean, scoreStdDev } = results
-    // globalsd uses heuristic to avoid unnecessary scoreMin<0
-    // if the scoreMin is never less than 0
-    // helps with most coverage bigwigs just being >0
-    return autoscaleType === 'globalsd'
-      ? {
-          ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-          scoreMax: scoreMean + nd * scoreStdDev,
-        }
-      : results
-  }
-  if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-    const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
-    const results = (await rpcManager.call(
-      sessionId,
-      'WiggleGetMultiRegionQuantitativeStats',
-      {
-        ...params,
-        regions: dynamicBlocks.contentBlocks.map(region => {
-          const { start, end } = region
-          return {
-            ...JSON.parse(JSON.stringify(region)),
-            start: Math.floor(start),
-            end: Math.ceil(end),
-          }
-        }),
-        bpPerPx,
-      },
-    )) as QuantitativeStats
-    const { scoreMin, scoreMean, scoreStdDev } = results
-
-    // localsd uses heuristic to avoid unnecessary scoreMin<0 if the
-    // scoreMin is never less than 0 helps with most coverage bigwigs
-    // just being >0
-    return autoscaleType === 'localsd'
-      ? {
-          ...results,
-          scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-          scoreMax: scoreMean + nd * scoreStdDev,
-        }
-      : results
-  }
-  if (autoscaleType === 'zscale') {
-    return rpcManager.call(
-      sessionId,
-      'WiggleGetGlobalQuantitativeStats',
-      params,
-    ) as Promise<QuantitativeStats>
-  }
-  throw new Error(`invalid autoscaleType '${autoscaleType}'`)
-}
-
-export function quantitativeStatsAutorun(self: {
-  featureDensityStatsReady: boolean
-  regionTooLarge: boolean
-  error: unknown
-  setLoading: (aborter: AbortController) => void
-  setError: (error: unknown) => void
-  updateQuantitativeStats: (
-    stats: QuantitativeStats,
-    statsRegion: string,
-  ) => void
-  renderProps: () => Record<string, unknown>
-  configuration: AnyConfigurationModel
-  adapterConfig: AnyConfigurationModel
-  autoscaleType: string
-  setMessage: (str: string) => void
-}) {
-  addDisposer(
-    self,
-    autorun(
-      async () => {
-        try {
-          const aborter = new AbortController()
-          const view = getContainingView(self) as LGV
-          self.setLoading(aborter)
-
-          if (
-            !view.initialized ||
-            !self.featureDensityStatsReady ||
-            self.regionTooLarge ||
-            self.error
-          ) {
-            return
-          }
-          const statsRegion = JSON.stringify(view.dynamicBlocks)
-
-          const wiggleStats = await getQuantitativeStats(self, {
-            signal: aborter.signal,
-            ...self.renderProps(),
-          })
-
-          if (isAlive(self)) {
-            self.updateQuantitativeStats(wiggleStats, statsRegion)
-          }
-        } catch (e) {
-          if (!isAbortException(e) && isAlive(self)) {
-            console.error(e)
-            self.setError(e)
-          }
-        }
-      },
-      { delay: 1000 },
-    ),
-  )
-}
-
 export function toP(s = 0) {
-  return +(+s).toPrecision(6)
+  return +s.toPrecision(6)
+}
+
+/**
+ * Lightweight feature serialization for wiggle features.
+ * Only serializes properties needed for mouse interaction,
+ * avoiding the overhead of full toJSON() serialization.
+ */
+export function serializeWiggleFeature(f: {
+  get: (key: string) => unknown
+  id: () => string
+}) {
+  return {
+    uniqueId: f.id(),
+    start: f.get('start'),
+    end: f.get('end'),
+    score: f.get('score'),
+    source: f.get('source'),
+    refName: f.get('refName'),
+    maxScore: f.get('maxScore'),
+    minScore: f.get('minScore'),
+    summary: f.get('summary'),
+  }
 }
 
 export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
+}
+
+// Shared constants for wiggle drawing
+export const WIGGLE_FUDGE_FACTOR = 0.3
+export const WIGGLE_CLIP_HEIGHT = 2
+
+// Structure-of-arrays for efficient BigWig rendering
+export interface WiggleFeatureArrays {
+  starts: ArrayLike<number>
+  ends: ArrayLike<number>
+  scores: ArrayLike<number>
+  minScores?: ArrayLike<number>
+  maxScores?: ArrayLike<number>
+}
+
+// Reduced feature arrays (one entry per pixel column) for tooltips
+export interface ReducedFeatureArrays {
+  starts: number[]
+  ends: number[]
+  scores: number[]
+  minScores?: number[]
+  maxScores?: number[]
+}
+
+// Precomputed scale values for fast rendering
+export interface ScaleValues {
+  niceMin: number
+  niceMax: number
+  height: number
+  linearRatio: number
+  log2: number
+  logMin: number
+  logRatio: number
+  isLog: boolean
+}
+
+// Precompute scale values once for use in hot loops
+export function getScaleValues(
+  scaleOpts: ScaleOpts,
+  height: number,
+): ScaleValues {
+  const scale = getScale({ ...scaleOpts, range: [0, height] })
+  const domain = scale.domain() as [number, number]
+  const niceMin = domain[0]
+  const niceMax = domain[1]
+  const domainSpan = niceMax - niceMin
+  const isLog = scaleOpts.scaleType === 'log'
+
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+  const log2 = Math.log(2)
+  const logMin = Math.log(niceMin) / log2
+  const logMax = Math.log(niceMax) / log2
+  const logSpan = logMax - logMin
+  const logRatio = logSpan !== 0 ? height / logSpan : 0
+
+  return {
+    niceMin,
+    niceMax,
+    height,
+    linearRatio,
+    log2,
+    logMin,
+    logRatio,
+    isLog,
+  }
 }
 
 // avoid drawing negative width features for SVG exports

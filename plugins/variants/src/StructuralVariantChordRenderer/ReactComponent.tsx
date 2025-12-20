@@ -1,25 +1,29 @@
-import React, { useMemo } from 'react'
-import { observer } from 'mobx-react'
-import { Feature } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { useMemo } from 'react'
 
-// locals
-import Chord, { Block, AnyRegion } from './Chord'
+import { observer } from 'mobx-react'
+
+import Chord from './Chord'
+
+import type { AnyRegion, Block } from './types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 const StructuralVariantChordsReactComponent = observer(function ({
   features,
   config,
-  displayModel,
   blockDefinitions,
   radius,
   bezierRadius,
-  displayModel: { selectedFeatureId },
+  displayModel,
   onChordClick,
 }: {
   features: Map<string, Feature>
   radius: number
   config: AnyConfigurationModel
-  displayModel: { id: string; selectedFeatureId: string }
+  displayModel?: {
+    id: string
+    selectedFeatureId: string
+  }
   blockDefinitions: Block[]
   bezierRadius: number
   onChordClick: (
@@ -29,7 +33,7 @@ const StructuralVariantChordsReactComponent = observer(function ({
     evt: unknown,
   ) => void
 }) {
-  // make a map of refName -> blockDefinition
+  const { selectedFeatureId } = displayModel || {}
   const blocksForRefsMemo = useMemo(() => {
     const blocksForRefs = {} as Record<string, Block>
     for (const block of blockDefinitions) {
@@ -44,14 +48,10 @@ const StructuralVariantChordsReactComponent = observer(function ({
   }, [blockDefinitions])
 
   return (
-    <g
-      id={`chords-${typeof jest !== 'undefined' ? 'test' : displayModel.id}`}
-      data-testid="structuralVariantChordRenderer"
-    >
+    <g data-testid="structuralVariantChordRenderer">
       {[...features.values()].map(feature => {
         const id = feature.id()
-        const selected = String(selectedFeatureId) === String(id)
-
+        const selected = selectedFeatureId === id
         return (
           <Chord
             key={id}

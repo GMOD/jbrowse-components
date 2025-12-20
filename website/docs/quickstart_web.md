@@ -10,7 +10,7 @@ import config from '../docusaurus.config.json'
 
 ## Prerequisites
 
-- Node.js 16+. Note: we recommend not using `apt` to install Node.js, it often
+- Node.js 18+. Note: we recommend not using `apt` to install Node.js, it often
   installs old versions. Good alternatives include
   [NodeSource](https://github.com/nodesource) or
   [NVM](https://github.com/nvm-sh/nvm).
@@ -18,7 +18,7 @@ import config from '../docusaurus.config.json'
   or `brew install samtools`, used for creating FASTA index and BAM/CRAM
   processing for creating tabix GFF
 - [tabix](http://www.htslib.org/doc/tabix.html) installed e.g.
-  `sudo apt install tabix` and `brew install htslib`, used for creating tabix
+  `sudo apt install tabix` or `brew install htslib`, used for creating tabix
   indexes for BED/VCF/GFF files
 
 ## Installing the JBrowse CLI
@@ -57,6 +57,14 @@ npx @jbrowse/cli --version
 
 :::
 
+Another way which involves downloading a single file bundle is to use
+
+```sh-session
+wget https://unpkg.com/@jbrowse/cli/bundle/index.js -O jbrowse
+chmod +x jbrowse
+./jbrowse --help
+```
+
 ### Using `jbrowse create` to download JBrowse 2
 
 In the directory where you would like to download JBrowse 2, run
@@ -66,8 +74,12 @@ jbrowse create jbrowse2
 ```
 
 This fetches the latest version of jbrowse-web and unzips it to a folder named
-"jbrowse2" from github (https://github.com/GMOD/jbrowse-components/releases),
-you could run this step manually if you wanted to instead.
+"jbrowse2". You can name the folder anything you want to, it is just a folder
+containing html, css, and js files. It is not a fancy installation
+
+Also note: as an alternative to the jbrowse create command, you can manually
+download the jbrowse-web zip from
+https://github.com/GMOD/jbrowse-components/releases
 
 ### Checking the download
 
@@ -149,7 +161,7 @@ indexed FASTA, and 2bit files.
 
 ### Adding a BAM or CRAM track
 
-For this example we will use a BAM file to add an alignments track. As with
+For this example, we will use a BAM file to add an alignments track. As with
 assemblies, you can add a track using local files or remote locations of your
 files.
 
@@ -162,7 +174,7 @@ jbrowse add-track file.cram --load copy --out /var/www/html/jbrowse
 
 This will add a track configuration entry to /var/www/html/jbrowse/config.json
 and copy the files into the folder as well. If you use --load symlink, it can
-symlink the files instead. To see more options adding the track, such as
+symlink the files instead. To see more options for adding the track, such as
 specifying a name, run `jbrowse add-track --help`.
 
 If you have JBrowse 2
@@ -335,13 +347,13 @@ To upgrade the CLI tools, you can re-run the install command
 npm install -g @jbrowse/cli
 ```
 
-### Output to a custom named config file, and output to subfolders
+### Output to a custom config file name
 
 You can use filenames other than config.json, and put configs in subfolders of
 your jbrowse 2 installation too
 
 ```bash
-jbrowse add-assembly mygenome.fa --out /path/to/my/jbrowse2/subfolder/alt_config.json --load copy
+jbrowse add-assembly mygenome.fa --out /path/to/my/jbrowse2/alt_config.json --load copy
 ```
 
 This would then be accessible at e.g.

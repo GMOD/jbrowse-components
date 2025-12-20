@@ -1,21 +1,20 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Feature, AugmentedRegion } from '@jbrowse/core/util'
-import { toArray } from 'rxjs/operators'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 import { firstValueFrom } from 'rxjs'
-import { IAnyStateTreeNode, addDisposer, isAlive } from 'mobx-state-tree'
-import { IAutorunOptions, autorun } from 'mobx'
+import { toArray } from 'rxjs/operators'
 
-// get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
-// BAM does not
-export function getTag(feature: Feature, tag: string) {
-  const tags = feature.get('tags')
-  return tags !== undefined ? tags[tag] : feature.get(tag)
-}
+import { modificationData } from './shared/modificationData'
+
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { AugmentedRegion, Feature } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IAutorunOptions } from 'mobx'
 
 // use fallback alt tag, used in situations where upper case/lower case tags
 // exist e.g. Mm/MM for base modifications
 export function getTagAlt(feature: Feature, tag: string, alt: string) {
-  return getTag(feature, tag) ?? getTag(feature, alt)
+  const tags = feature.get('tags')
+  return tags[tag] ?? tags[alt]
 }
 
 // orientation definitions from igv.js, see also
@@ -90,8 +89,6 @@ export function getColorWGBS(strand: number, base: string) {
   return '#888'
 }
 
-// fetches region sequence augmenting by +/- 1bp for CpG on either side of
-// requested region
 export async function fetchSequence(
   region: AugmentedRegion,
   adapter: BaseFeatureDataAdapter,
@@ -103,33 +100,15 @@ export async function fetchSequence(
       .getFeatures({
         ...region,
         refName: originalRefName || refName,
-        end: end + 1,
-        start: Math.max(0, start - 1),
+        end,
+        start,
       })
       .pipe(toArray()),
   )
   return feats[0]?.get('seq')
 }
 
-// has to check underlying C-G (aka CpG) on the reference sequence
-export function shouldFetchReferenceSequence(type?: string) {
-  return type === 'methylation'
-}
-
-// adapted from IGV
-// https://github.com/igvteam/igv/blob/e803e3af2d8c9ea049961dfd4628146bdde9a574/src/main/java/org/broad/igv/sam/mods/BaseModificationColors.java#L27
-export const modificationColors = {
-  m: 'rgb(255,0,0)',
-  h: 'rgb(11, 132, 165)',
-  o: 'rgb(111, 78, 129)',
-  f: 'rgb(246, 200, 95)',
-  c: 'rgb(157, 216, 102)',
-  g: 'rgb(255, 160, 86)',
-  e: 'rgb(141, 221, 208)',
-  b: 'rgb(202, 71, 47)',
-} as Record<string, string | undefined>
-
-type DisplayModel = IAnyStateTreeNode & { setError: (arg: unknown) => void }
+type DisplayModel = IAnyStateTreeNode & { setError?: (arg: unknown) => void }
 
 export function createAutorun(
   self: DisplayModel,
@@ -138,17 +117,29 @@ export function createAutorun(
 ) {
   addDisposer(
     self,
-    autorun(async () => {
+    autorun(async function sharedAlignmentsAutorun() {
       try {
         await cb()
       } catch (e) {
         if (isAlive(self)) {
-          self.setError(e)
+          self.setError?.(e)
         }
       }
     }, opts),
   )
 }
-export function randomColor() {
-  return `hsl(${Math.random() * 200}, 50%, 50%)`
+
+export function randomColor(str: string) {
+  let sum = 0
+
+  for (let i = 0; i < str.length; i++) {
+    sum += str.charCodeAt(i)
+  }
+  return `hsl(${sum * 10}, 20%, 50%)`
 }
+
+export function getColorForModification(str: string) {
+  return modificationData[str]?.color || randomColor(str)
+}
+
+export { modificationData } from './shared/modificationData'

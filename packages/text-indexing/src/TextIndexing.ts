@@ -1,69 +1,78 @@
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
+
+import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { ixIxxStream } from 'ixixx'
+
+// misc
+import { generateMeta } from './types/common'
 import { indexGff3 } from './types/gff3Adapter'
 import { indexVcf } from './types/vcfAdapter'
-import { generateMeta } from './types/common'
-import { ixIxxStream } from 'ixixx'
-import { Track, indexType } from './util'
-import {
-  checkAbortSignal,
-  isSupportedIndexingAdapter,
-} from '@jbrowse/core/util'
+
+import type { Track, indexType } from './util'
 
 export async function indexTracks(args: {
   tracks: Track[]
-  outLocation?: string
-  signal?: AbortSignal
-  attributes?: string[]
-  assemblies?: string[]
-  exclude?: string[]
+  outDir?: string
+  stopToken?: string
+  attributesToIndex?: string[]
+  assemblyNames?: string[]
+  featureTypesToExclude?: string[]
   indexType?: indexType
   statusCallback: (message: string) => void
 }) {
   const {
     tracks,
-    outLocation,
-    attributes,
-    exclude,
-    assemblies,
+    outDir,
+    attributesToIndex,
+    featureTypesToExclude,
+    assemblyNames,
     indexType,
     statusCallback,
-    signal,
+    stopToken,
   } = args
   const idxType = indexType || 'perTrack'
-  checkAbortSignal(signal)
+  checkStopToken(stopToken)
   await (idxType === 'perTrack'
-    ? perTrackIndex(
+    ? perTrackIndex({
         tracks,
         statusCallback,
-        outLocation,
-        attributes,
-        exclude,
-        signal,
-      )
-    : aggregateIndex(
+        outDir,
+        attributesToIndex,
+        featureTypesToExclude,
+        stopToken,
+      })
+    : aggregateIndex({
         tracks,
         statusCallback,
-        outLocation,
-        attributes,
-        assemblies,
-        exclude,
-        signal,
-      ))
-  checkAbortSignal(signal)
+        outDir,
+        attributesToIndex,
+        assemblyNames,
+        featureTypesToExclude,
+        stopToken,
+      }))
+  checkStopToken(stopToken)
   return []
 }
 
-async function perTrackIndex(
-  tracks: Track[],
-  statusCallback: (message: string) => void,
-  outLocation?: string,
-  attributes?: string[],
-  exclude?: string[],
-  signal?: AbortSignal,
-) {
-  const outFlag = outLocation || '.'
+async function perTrackIndex({
+  tracks,
+  statusCallback,
+  outDir: paramOutDir,
+  attributesToIndex = ['Name', 'ID'],
+  featureTypesToExclude = ['exon', 'CDS'],
+  stopToken,
+}: {
+  tracks: Track[]
+  statusCallback: (message: string) => void
+  outDir?: string
+  attributesToIndex?: string[]
+  featureTypesToExclude?: string[]
+  stopToken?: string
+}) {
+  const outFlag = paramOutDir || '.'
 
   const isDir = fs.lstatSync(outFlag).isDirectory()
   const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
@@ -74,46 +83,44 @@ async function perTrackIndex(
   }
 
   // default settings
-  const attrs = attributes || ['Name', 'ID']
-  const excludeTypes = exclude || ['exon', 'CDS']
-  const force = true
   const supportedTracks = tracks.filter(track =>
     isSupportedIndexingAdapter(track.adapter?.type),
   )
   for (const trackConfig of supportedTracks) {
-    const { textSearching, trackId, assemblyNames } = trackConfig
+    const { trackId, assemblyNames } = trackConfig
     const id = `${trackId}-index`
-    if (textSearching?.textSearchAdapter && !force) {
-      console.warn(
-        `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
-      )
-      continue
-    }
-    await indexDriver(
-      [trackConfig],
+
+    await indexDriver({
+      tracks: [trackConfig],
       outDir,
-      attrs,
-      id,
-      true,
-      excludeTypes,
+      attributesToIndex,
+      name: id,
+      featureTypesToExclude,
       assemblyNames,
       statusCallback,
-      signal,
-    )
+      stopToken,
+    })
   }
 }
 
-async function aggregateIndex(
-  tracks: Track[],
-  statusCallback: (message: string) => void,
-  outLocation?: string,
-  attributes?: string[],
-  assemblies?: string[],
-  exclude?: string[],
-  signal?: AbortSignal,
-) {
-  const outFlag = outLocation || '.'
-
+async function aggregateIndex({
+  tracks,
+  statusCallback,
+  outDir: paramOutDir,
+  attributesToIndex = ['Name', 'ID'],
+  featureTypesToExclude = ['exon', 'CDS'],
+  stopToken,
+  assemblyNames,
+}: {
+  tracks: Track[]
+  statusCallback: (message: string) => void
+  outDir?: string
+  attributesToIndex?: string[]
+  assemblyNames?: string[]
+  featureTypesToExclude?: string[]
+  stopToken?: string
+}) {
+  const outFlag = paramOutDir || '.'
   const isDir = fs.lstatSync(outFlag).isDirectory()
   const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
   const outDir = path.dirname(confFilePath)
@@ -121,157 +128,164 @@ async function aggregateIndex(
   if (!fs.existsSync(trixDir)) {
     fs.mkdirSync(trixDir)
   }
-  if (!assemblies) {
+  if (!assemblyNames) {
     throw new Error(
       'No assemblies passed. Assmeblies required for aggregate indexes',
     )
   }
-  for (const asm of assemblies) {
-    // console.log('Indexing assembly ' + asm + '...')
-    const id = asm + '-index'
-    // default settings
-    const attrs = attributes || ['Name', 'ID']
-    const excludeTypes = exclude || ['exon', 'CDS']
-    // const force = true
-    const quiet = true
-    // supported tracks for given assembly
+  for (const asm of assemblyNames) {
+    const id = `${asm}-index`
     const supportedTracks = tracks
       .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
       .filter(track => (asm ? track.assemblyNames.includes(asm) : true))
 
-    await indexDriver(
-      supportedTracks,
-      outDir,
-      attrs,
-      id,
-      quiet,
-      excludeTypes,
-      [asm],
+    await indexDriver({
+      tracks: supportedTracks,
+      outDir: outDir,
+      attributesToIndex,
+      name: id,
+      featureTypesToExclude,
+      assemblyNames: [asm],
       statusCallback,
-      signal,
-    )
+      stopToken,
+    })
   }
 }
 
-async function indexDriver(
-  tracks: Track[],
-  idxLocation: string,
-  attributes: string[],
-  name: string,
-  quiet: boolean,
-  exclude: string[],
-  assemblyNames: string[],
-  statusCallback: (message: string) => void,
-  signal?: AbortSignal,
-) {
+async function indexDriver({
+  tracks,
+  outDir,
+  attributesToIndex,
+  name,
+  featureTypesToExclude,
+  assemblyNames,
+  statusCallback,
+  stopToken,
+}: {
+  tracks: Track[]
+  outDir: string
+  attributesToIndex: string[]
+  name: string
+  featureTypesToExclude: string[]
+  assemblyNames: string[]
+  statusCallback: (message: string) => void
+  stopToken?: string
+}) {
   const readable = Readable.from(
-    indexFiles(
+    indexFiles({
       tracks,
-      attributes,
-      idxLocation,
-      quiet,
-      exclude,
+      attributesToIndex,
+      outDir,
+      featureTypesToExclude,
       statusCallback,
-      signal,
-    ),
+      stopToken,
+    }),
   )
   statusCallback('Indexing files.')
-  const ixIxxStream = await runIxIxx(readable, idxLocation, name)
-  checkAbortSignal(signal)
+  await runIxIxx(readable, outDir, name)
+  checkStopToken(stopToken)
   await generateMeta({
     configs: tracks,
-    attributes,
-    outDir: idxLocation,
+    attributesToIndex,
+    outDir,
     name,
-    exclude,
+    featureTypesToExclude,
     assemblyNames,
   })
-  checkAbortSignal(signal)
-  return ixIxxStream
+  checkStopToken(stopToken)
 }
 
-async function* indexFiles(
-  tracks: Track[],
-  attributes: string[],
-  outLocation: string,
-  quiet: boolean,
-  typesToExclude: string[],
-  statusCallback: (message: string) => void,
-  signal?: AbortSignal,
-) {
+async function* indexFiles({
+  tracks,
+  attributesToIndex: idx1,
+  outDir,
+  featureTypesToExclude: edx1,
+  statusCallback,
+}: {
+  tracks: Track[]
+  attributesToIndex: string[]
+  outDir: string
+  featureTypesToExclude: string[]
+  statusCallback: (message: string) => void
+  stopToken?: string
+}) {
   for (const track of tracks) {
     const { adapter, textSearching } = track
-    const { type } = adapter
+    const { type } = adapter || {}
     const {
-      indexingFeatureTypesToExclude: types = typesToExclude,
-      indexingAttributes: attrs = attributes,
+      indexingFeatureTypesToExclude: featureTypesToExclude = edx1,
+      indexingAttributes: attributesToIndex = idx1,
     } = textSearching || {}
-    // currently only supporting GFF3Tabix and VCFTabix
-    switch (type) {
-      case 'Gff3TabixAdapter': {
-        yield* indexGff3(
-          track,
-          attrs,
-          getLoc('gffGzLocation', track),
-          outLocation,
-          types,
-          quiet,
-          statusCallback,
-          signal,
-        )
-
-        break
-      }
-      case 'Gff3Adapter': {
-        yield* indexGff3(
-          track,
-          attrs,
-          getLoc('gffLocation', track),
-          outLocation,
-          types,
-          quiet,
-          statusCallback,
-          signal,
-        )
-
-        break
-      }
-      case 'VcfTabixAdapter': {
-        yield* indexVcf(
-          track,
-          attrs,
-          getLoc('vcfGzLocation', track),
-          outLocation,
-          types,
-          quiet,
-          statusCallback,
-          signal,
-        )
-
-        break
-      }
-      case 'VcfAdapter': {
-        yield* indexVcf(
-          track,
-          attrs,
-          getLoc('vcfLocation', track),
-          outLocation,
-          types,
-          quiet,
-          statusCallback,
-          signal,
-        )
-
-        break
-      }
-      // No default
+    let myTotalBytes: number | undefined
+    if (type === 'Gff3Adapter') {
+      yield* indexGff3({
+        config: track,
+        attributesToIndex,
+        inLocation: getLoc('gffLocation', track),
+        outDir,
+        featureTypesToExclude,
+        onStart: totalBytes => {
+          myTotalBytes = totalBytes
+        },
+        onUpdate: progressBytes => {
+          statusCallback(`${progressBytes}/${myTotalBytes}`)
+        },
+      })
+    }
+    if (type === 'Gff3TabixAdapter') {
+      yield* indexGff3({
+        config: track,
+        attributesToIndex,
+        inLocation: getLoc('gffGzLocation', track),
+        outDir,
+        featureTypesToExclude,
+        onStart: totalBytes => {
+          myTotalBytes = totalBytes
+        },
+        onUpdate: progressBytes => {
+          statusCallback(`${progressBytes}/${myTotalBytes}`)
+        },
+      })
+    } else if (type === 'VcfAdapter') {
+      yield* indexVcf({
+        config: track,
+        attributesToIndex,
+        inLocation: getLoc('vcfLocation', track),
+        outDir,
+        onStart: totalBytes => {
+          myTotalBytes = totalBytes
+        },
+        onUpdate: progressBytes => {
+          statusCallback(`${progressBytes}/${myTotalBytes}`)
+        },
+      })
+    } else if (type === 'VcfTabixAdapter') {
+      yield* indexVcf({
+        config: track,
+        attributesToIndex,
+        inLocation: getLoc('vcfGzLocation', track),
+        outDir,
+        onStart: totalBytes => {
+          myTotalBytes = totalBytes
+        },
+        onUpdate: progressBytes => {
+          statusCallback(`${progressBytes}/${myTotalBytes}`)
+        },
+      })
     }
   }
   return
 }
 
 function getLoc(attr: string, config: Track) {
-  const elt = config.adapter[attr]
+  const elt = config.adapter?.[attr] as
+    | { uri: string; localPath: string }
+    | undefined
+  if (!elt) {
+    throw new Error(
+      `can't get find ${attr} from ${config.adapter} for text indexing`,
+    )
+  }
   return elt.uri || elt.localPath
 }
 

@@ -3,14 +3,22 @@ id: sharedwigglemixin
 title: SharedWiggleMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/wiggle/src/shared/modelShared.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/modelShared.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/SharedWiggleMixin.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SharedWiggleMixin.md)
+
+## Docs
 
 ### SharedWiggleMixin - Properties
 
@@ -146,6 +154,15 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
+#### property: statsRegion
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+statsRegion: types.maybe(types.string)
+```
+
 ### SharedWiggleMixin - Getters
 
 #### getter: adapterTypeName
@@ -159,7 +176,7 @@ any
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: filters
@@ -175,21 +192,21 @@ any
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: maxScore
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: minScore
 
 ```js
 // type
-any
+number
 ```
 
 #### getter: adapterCapabilities
@@ -203,14 +220,14 @@ string[]
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### getter: autoscaleType
 
 ```js
 // type
-any
+string
 ```
 
 #### getter: domain
@@ -238,7 +255,7 @@ string
 
 ```js
 // type
-{ domain: number[]; stats: { scoreMin: number; scoreMax: number; }; autoscaleType: any; scaleType: any; inverted: any; }
+{ domain: number[]; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }; autoscaleType: string; scaleType: string; inverted: boolean; }
 ```
 
 #### getter: canHaveFill
@@ -284,7 +301,7 @@ scoreTrackMenuItems: () => ({ label: string; subMenu: { label: string; onClick: 
 
 ```js
 // type signature
-updateQuantitativeStats: (stats: { scoreMin: number; scoreMax: number; }) => void
+updateQuantitativeStats: (stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }, statsRegion?: string) => void
 ```
 
 #### action: setColor
@@ -308,11 +325,18 @@ setPosColor: (color?: string) => void
 setNegColor: (color?: string) => void
 ```
 
-#### action: setLoading
+#### action: setStatsLoading
 
 ```js
 // type signature
-setLoading: (aborter: AbortController) => void
+setStatsLoading: (arg?: string) => void
+```
+
+#### action: setStatsRegion
+
+```js
+// type signature
+setStatsRegion: (statsRegion: string) => void
 ```
 
 #### action: selectFeature

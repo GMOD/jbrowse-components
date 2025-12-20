@@ -1,29 +1,27 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
-
-// icons
+import { isAbstractMenuManager } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 
-// locals
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
   baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay'
-import LinearBareDisplayF from './LinearBareDisplay'
-import LinearGenomeViewF, {
-  SearchBox,
-  ZoomControls,
-  LinearGenomeView,
-} from './LinearGenomeView'
-
-import LinearBasicDisplayF from './LinearBasicDisplay'
-import FeatureTrackF from './FeatureTrack'
 import BasicTrackF from './BasicTrack'
+import FeatureTrackF from './FeatureTrack'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'
+import LinearBareDisplayF from './LinearBareDisplay'
+import LinearBasicDisplayF from './LinearBasicDisplay'
+import LinearGenomeViewF, {
+  LinearGenomeView,
+  SearchBox,
+} from './LinearGenomeView'
+import ZoomControls from './LinearGenomeView/components/HeaderZoomControls'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -78,20 +76,25 @@ export default class LinearGenomeViewPlugin extends Plugin {
 }
 
 export type {
-  ExportSvgDisplayOptions,
   BaseLinearDisplayModel,
   BlockModel,
+  ExportSvgDisplayOptions,
+  LegendItem,
 } from './BaseLinearDisplay'
 
-export { configSchemaFactory as linearBareDisplayConfigSchemaFactory } from './LinearBareDisplay'
 export {
-  baseLinearDisplayConfigSchema,
+  configSchemaFactory as linearBareDisplayConfigSchemaFactory,
+  stateModelFactory as linearBareDisplayStateModelFactory,
+} from './LinearBareDisplay'
+export {
   BaseLinearDisplay,
-  BlockMsg,
   BaseLinearDisplayComponent,
-  TrackHeightMixin,
+  BlockMsg,
   FeatureDensityMixin,
+  FloatingLegend,
   TooLargeMessage,
+  TrackHeightMixin,
+  baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,
@@ -100,12 +103,14 @@ export {
   SearchBox,
 } from './LinearGenomeView'
 export {
-  renderToSvg,
-  SVGTracks,
+  SVGGridlines,
   SVGRuler,
+  SVGTracks,
+  renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util'
 export {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
+export { default as LinearBasicDisplayComponent } from './LinearBasicDisplay/components/LinearBasicDisplayComponent'

@@ -1,8 +1,7 @@
-import {
-  BaseRefNameAliasAdapter,
-  BaseAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
+
+import type { BaseRefNameAliasAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class RefNameAliasAdapter
   extends BaseAdapter
@@ -15,16 +14,30 @@ export default class RefNameAliasAdapter
     }
     const results = await openLocation(loc, this.pluginManager).readFile('utf8')
     const refColumn = this.getConf('refNameColumn')
-    return results
+    const refColumnHeaderName = this.getConf('refNameColumnHeaderName')
+    const lines = results
       .trim()
       .split(/\n|\r\n|\r/)
-      .filter(f => !!f && !f.startsWith('#'))
+      .filter(f => !!f)
+    const header = lines.filter(f => f.startsWith('#'))
+    const headerCol =
+      refColumnHeaderName && header.length
+        ? header
+            .at(-1)!
+            .slice(1)
+            .split('\t')
+            .map(t => t.trim())
+            .indexOf(refColumnHeaderName)
+        : refColumn
+    return lines
+      .filter(f => !f.startsWith('#'))
       .map(row => {
         const aliases = row.split('\t')
-        const [refName] = aliases.splice(refColumn, 1)
-        return { refName, aliases: aliases.filter(f => !!f.trim()) }
+        const refName = aliases[headerCol]
+        return {
+          refName: refName!,
+          aliases: aliases.filter(f => !!f.trim()),
+        }
       })
   }
-
-  async freeResources() {}
 }

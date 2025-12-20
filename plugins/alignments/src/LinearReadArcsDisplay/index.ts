@@ -1,23 +1,27 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-// locals
-import ReactComponent from './components/ReactComponent'
 import configSchemaF from './configSchema'
 import stateModelF from './model'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
       name: 'LinearReadArcsDisplay',
-      displayName: 'Arc display',
+      displayName: 'Read arc display',
+      helpText: 'Connect paired end reads and long split reads using arcs',
       configSchema,
       stateModel: stateModelF(configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },
-      ReactComponent,
+      ReactComponent: lazy(
+        () => import('./components/LinearReadArcsReactComponent'),
+      ),
     })
   })
 }

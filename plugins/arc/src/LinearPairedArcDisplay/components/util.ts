@@ -1,16 +1,21 @@
 import { parseBreakend } from '@gmod/vcf'
-import { Feature, assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString } from '@jbrowse/core/util'
+
+import type { Feature } from '@jbrowse/core/util'
+
 export function makeFeaturePair(feature: Feature, alt?: string) {
   const bnd = alt ? parseBreakend(alt) : undefined
   const start = feature.get('start')
   let end = feature.get('end')
   const strand = feature.get('strand')
-  const mate = feature.get('mate') as {
-    refName: string
-    start: number
-    end: number
-    mateDirection?: number
-  }
+  const mate = feature.get('mate') as
+    | {
+        refName: string
+        start: number
+        end: number
+        mateDirection?: number
+      }
+    | undefined
   const refName = feature.get('refName')
 
   let mateRefName: string | undefined
@@ -37,8 +42,8 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
     const matePosition = bnd.MatePosition.split(':')
     mateDirection = bnd.MateDirection === 'left' ? 1 : -1
     joinDirection = bnd.Join === 'left' ? -1 : 1
-    mateEnd = +matePosition[1]
-    mateStart = +matePosition[1] - 1
+    mateEnd = +matePosition[1]!
+    mateStart = +matePosition[1]! - 1
     mateRefName = matePosition[0]
   }
 
@@ -51,7 +56,7 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
       mateDirection,
     },
     k2: mate ?? {
-      refName: mateRefName,
+      refName: mateRefName || 'unknown',
       end: mateEnd,
       start: mateStart,
       mateDirection: joinDirection,
@@ -70,5 +75,5 @@ export function makeSummary(feature: Feature, alt?: string) {
     alt,
   ]
     .filter(f => !!f)
-    .join(' - ')
+    .join('<br/>')
 }

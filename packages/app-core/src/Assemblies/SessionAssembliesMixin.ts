@@ -1,9 +1,9 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfiguration } from '@jbrowse/core/configuration'
-import { BaseSession } from '@jbrowse/product-core'
-import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { AnyConfiguration } from '@jbrowse/core/configuration'
+import type { BaseSession } from '@jbrowse/product-core'
 
 /**
  * #stateModel SessionAssembliesMixin
@@ -39,6 +39,28 @@ export function SessionAssembliesMixin(
         /**
          * #action
          */
+        addAssembly(conf: AnyConfiguration) {
+          if (self.adminMode) {
+            self.jbrowse.addAssemblyConf(conf)
+          } else {
+            this.addSessionAssembly(conf)
+          }
+        },
+
+        /**
+         * #action
+         */
+        removeAssembly(name: string) {
+          if (self.adminMode) {
+            self.jbrowse.removeAssemblyConf(name)
+          } else {
+            this.removeSessionAssembly(name)
+          }
+        },
+
+        /**
+         * #action
+         */
         removeSessionAssembly(assemblyName: string) {
           const elt = self.sessionAssemblies.find(a => a.name === assemblyName)
           if (elt) {
@@ -46,5 +68,16 @@ export function SessionAssembliesMixin(
           }
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { sessionAssemblies, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(sessionAssemblies.length ? { sessionAssemblies } : {}),
+      } as typeof snap
     })
 }

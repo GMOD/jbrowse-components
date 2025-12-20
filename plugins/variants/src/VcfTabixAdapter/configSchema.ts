@@ -1,5 +1,5 @@
-import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config VcfTabixAdapter
@@ -14,8 +14,12 @@ const VcfTabixAdapter = ConfigurationSchema(
      */
     vcfGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.vcf.gz',
+        locationType: 'UriLocation',
+      },
     },
+
     index: ConfigurationSchema('VcfIndex', {
       /**
        * #slot index.indexType
@@ -36,8 +40,55 @@ const VcfTabixAdapter = ConfigurationSchema(
         },
       },
     }),
+    /**
+     * #slot
+     */
+    samplesTsvLocation: {
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/samples.tsv',
+        description:
+          'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
+        locationType: 'UriLocation',
+      },
+    },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes tbi index at
+     * yourfile.vcf.gz.tbi:
+     *
+     * ```json
+     * {
+     *   "type": "VcfTabixAdapter",
+     *   "uri": "yourfile.vcf.gz",
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            vcfGzLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: `${snap.uri}.tbi`,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default VcfTabixAdapter

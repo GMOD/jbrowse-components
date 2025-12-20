@@ -1,4 +1,3 @@
-import React from 'react'
 import pluginStyles from './styles.module.css'
 import Link from '@mui/material/Link'
 import Typography from '@mui/material/Typography'
@@ -26,7 +25,6 @@ const plugins = [
     license: 'MIT',
     image:
       'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/gdc-screenshot-fs8.png',
-    guideURL: '/jb2/docs/tutorials/plugin_usage/#gdc-plugin',
     resourceURL: 'https://portal.gdc.cancer.gov/',
   },
   {
@@ -40,7 +38,6 @@ const plugins = [
     license: 'Apache License 2.0',
     image:
       'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/icgc-screenshot-fs8.png',
-    guideURL: '/jb2/docs/tutorials/plugin_usage/#icgc-plugin',
     resourceURL: 'https://dcc.icgc.org/',
   },
   {
@@ -54,7 +51,6 @@ const plugins = [
     license: 'MIT',
     image:
       'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/ucsc-screenshot-fs8.png',
-    guideURL: '/jb2/docs/tutorials/plugin_usage/#ucsc-plugin',
     resourceURL: 'https://genome.ucsc.edu/',
   },
   {
@@ -68,7 +64,6 @@ const plugins = [
     license: 'MIT',
     image:
       'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/biothings-screenshot-fs8.png',
-    guideURL: '/jb2/docs/tutorials/plugin_usage/#biothings-plugin',
     resourceURL: 'https://biothings.io/',
   },
   {
@@ -82,7 +77,6 @@ const plugins = [
     license: 'Apache License 2.0',
     image:
       'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/civic-screenshot-fs8.png',
-    guideURL: '/jb2/docs/tutorials/plugin_usage/#civic-plugin',
     resourceURL: 'https://civicdb.org/welcome',
   },
 ]
@@ -122,24 +116,6 @@ export const PluginCard = ({ plugin }) => {
         <Typography variant="h6">Description:</Typography>
         <Typography>{plugin.description}</Typography>
       </CardContent>
-      <CardActions style={{ justifyContent: 'center', alignSelf: 'end' }}>
-        <Button
-          style={{ marginLeft: '1em', backgroundColor: '#721e63' }}
-          color="primary"
-          variant="contained"
-          disableRipple
-          size="small"
-          endIcon={<Book />}
-        >
-          <Link
-            style={{ color: 'white', textDecorationColor: 'white' }}
-            href={plugin.guideURL}
-            target="_blank"
-          >
-            {plugin.name} Plugin Usage Guide
-          </Link>
-        </Button>
-      </CardActions>
     </Card>
   )
 }

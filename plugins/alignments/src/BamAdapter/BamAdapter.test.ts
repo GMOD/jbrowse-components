@@ -1,5 +1,6 @@
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
 import Adapter from './BamAdapter'
 import configSchema from './configSchema'
 
@@ -27,7 +28,7 @@ test('adapter can fetch features from volvox.bam', async () => {
   })
 
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
-  expect(featuresArray[0].get('refName')).toBe('ctgA')
+  expect(featuresArray[0]!.get('refName')).toBe('ctgA')
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray.length).toEqual(3809)
   expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
@@ -88,7 +89,7 @@ test('test usage of BamSlightlyLazyFeature toJSON (used in the widget)', async (
     end: 100,
   })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
-  const f = featuresArray[0].toJSON()
+  const f = featuresArray[0]!.toJSON()
   expect(f.refName).toBe('ctgA')
   expect(f.start).toBe(2)
   expect(f.end).toBe(102)
@@ -119,6 +120,6 @@ test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
     end: 13340,
   })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
-  const f = featuresArray[0]
+  const f = featuresArray[0]!
   expect(f.get('mismatches')).toMatchSnapshot()
 })

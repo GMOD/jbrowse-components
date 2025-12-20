@@ -1,17 +1,19 @@
-import React from 'react'
+import PluginManager from '@jbrowse/core/PluginManager'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { UriLocation } from '@jbrowse/core/util'
-import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
+import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
 import { version } from '../version'
+
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { UriLocation } from '@jbrowse/core/util'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewRootModel
@@ -20,14 +22,6 @@ export default function createModel(
   runtimePlugins: PluginConstructor[],
   makeWorkerInstance: () => Worker = () => {
     throw new Error('no makeWorkerInstance supplied')
-  },
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => any,
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
   },
 ) {
   const pluginManager = new PluginManager(
@@ -61,10 +55,33 @@ export default function createModel(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
     })
-    .volatile(() => ({
+    .volatile(self => ({
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
       adminMode: false,
+      /**
+       * #volatile
+       */
       version,
+      /**
+       * #volatile
+       */
+      rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
+        WebWorkerRpcDriver: {
+          makeWorkerInstance,
+        },
+        MainThreadRpcDriver: {},
+      }),
+
+      /**
+       * #volatile
+       */
+      textSearchManager: new TextSearchManager(pluginManager),
     }))
     .actions(self => ({
       /**
@@ -77,11 +94,9 @@ export default function createModel(
        * #action
        */
       renameCurrentSession(sessionName: string) {
-        if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          snapshot.name = sessionName
-          this.setSession(snapshot)
-        }
+        const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+        snapshot.name = sessionName
+        this.setSession(snapshot)
       },
       /**
        * #action
@@ -104,9 +119,9 @@ export default function createModel(
         // find the existing account selected from menu
         const selectedId = location.internetAccountId
         if (selectedId) {
-          const selectedAccount = self.internetAccounts.find(account => {
-            return account.internetAccountId === selectedId
-          })
+          const selectedAccount = self.internetAccounts.find(
+            a => a.internetAccountId === selectedId,
+          )
           if (selectedAccount) {
             return selectedAccount
           }
@@ -137,17 +152,6 @@ export default function createModel(
       get pluginManager() {
         return pluginManager
       },
-    }))
-    .volatile(self => ({
-      rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
-        WebWorkerRpcDriver: {
-          makeWorkerInstance,
-        },
-        MainThreadRpcDriver: {},
-      }),
-      hydrateFn,
-      createRootFn,
-      textSearchManager: new TextSearchManager(pluginManager),
     }))
   return { model: rootModel, pluginManager }
 }

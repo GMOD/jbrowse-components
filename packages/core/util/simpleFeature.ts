@@ -7,23 +7,10 @@ export interface Feature {
    * 'start' and 'end', but everything else is optional.
    */
   get(name: 'refName'): string
-  get(name: 'start'): number
-  get(name: 'end'): number
+  get(name: 'start' | 'end'): number
   get(name: 'subfeatures'): Feature[] | undefined
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   get(name: string): any
-
-  /**
-   * Set an item of data.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  set(name: string, val: any): void
-
-  /**
-   * Get an array listing which data keys are present in this feature.
-   */
-  tags(): string[]
-
   /**
    * Get the unique ID of this feature.
    */
@@ -32,12 +19,12 @@ export interface Feature {
   /**
    * Get this feature's parent feature, or undefined if none.
    */
-  parent(): Feature | undefined
+  parent?: () => Feature | undefined
 
   /**
    * Get an array of child features, or undefined if none.
    */
-  children(): Feature[] | undefined
+  children?: () => Feature[] | undefined
 
   /**
    * Convert to JSON
@@ -56,7 +43,7 @@ export function isFeature(thing: unknown): thing is Feature {
 
 export interface SimpleFeatureArgs {
   /** key-value data, must include 'start' and 'end' */
-  data: {}
+  data: Record<string, unknown>
   /** optional parent feature */
   parent?: Feature
   /** unique identifier. can also be in data.uniqueId */
@@ -90,7 +77,6 @@ function isSimpleFeatureSerialized(
  * Simple implementation of a feature object.
  */
 export default class SimpleFeature implements Feature {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private data: Record<string, any>
 
   private subfeatures?: SimpleFeature[]
@@ -109,16 +95,19 @@ export default class SimpleFeature implements Feature {
     if (isSimpleFeatureSerialized(args)) {
       this.data = args
     } else {
-      this.data = args.data || {}
-      // load handle from args.parent (not args.data.parent)
-      // this reason is because if args is an object, it likely isn't properly loaded with
-      // parent as a Feature reference (probably a raw parent ID or something instead)
+      this.data = args.data
+      // load handle from args.parent (not args.data.parent) this reason is
+      // because if args is an object, it likely isn't properly loaded with
+      // parent as a Feature reference (probably a raw parent ID or something
+      // instead)
       this.parentHandle = args.parent
     }
 
-    // the feature id comes from
-    // args.id, args.data.uniqueId, or args.uniqueId due to this initialization
+    // the feature id comes from args.id, args.data.uniqueId, or args.uniqueId
+    // due to this initialization
     const id = isSimpleFeatureSerialized(args) ? args.uniqueId : args.id
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id === undefined || id === null) {
       throw new Error(
         'SimpleFeature requires a unique `id` or `data.uniqueId` attribute',
@@ -131,22 +120,18 @@ export default class SimpleFeature implements Feature {
         `invalid feature data, end less than start. end: ${this.data.end} start: ${this.data.start}`,
       )
     }
-
     if (this.data.subfeatures) {
-      this.subfeatures = this.data.subfeatures?.map(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (f: any, i: number) =>
-          typeof f.get !== 'function'
-            ? new SimpleFeature({
-                id: f.uniqueId || `${id}-${i}`,
-                data: {
-                  strand: this.data.strand,
-                  ...f,
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                } as Record<string, any>,
-                parent: this,
-              })
-            : f,
+      this.subfeatures = this.data.subfeatures?.map((f: any, i: number) =>
+        typeof f.get !== 'function'
+          ? new SimpleFeature({
+              id: f.uniqueId || `${id}-${i}`,
+              data: {
+                strand: this.data.strand,
+                ...f,
+              } as Record<string, any>,
+              parent: this,
+            })
+          : f,
       )
     }
   }
@@ -155,7 +140,7 @@ export default class SimpleFeature implements Feature {
    * Get a piece of data about the feature.  All features must have
    * 'start' and 'end', but everything else is optional.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   public get(name: string): any {
     return name === 'subfeatures'
       ? this.subfeatures
@@ -167,7 +152,7 @@ export default class SimpleFeature implements Feature {
   /**
    * Set an item of data.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   public set(name: string, val: any): void {
     this.data[name] = val
   }

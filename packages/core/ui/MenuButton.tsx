@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+
 import Menu from '@jbrowse/core/ui/Menu'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { MenuItem } from '@jbrowse/core/ui'
+
+import type { MenuItemsGetter } from '@jbrowse/core/ui/Menu'
 
 const MenuButton = observer(function MenuButton({
   children,
@@ -14,7 +16,7 @@ const MenuButton = observer(function MenuButton({
 }: {
   closeAfterItemClick?: boolean
   children?: React.ReactElement
-  menuItems: MenuItem[]
+  menuItems: MenuItemsGetter
   stopPropagation?: boolean
   setOpen?: (arg: boolean) => void
   [key: string]: unknown
@@ -26,14 +28,25 @@ const MenuButton = observer(function MenuButton({
   }, [isOpen, setOpen])
   return (
     <>
-      <IconButton {...rest} onClick={event => setAnchorEl(event.currentTarget)}>
+      <IconButton
+        {...rest}
+        onClick={event => {
+          if (stopPropagation) {
+            event.stopPropagation()
+          }
+          setAnchorEl(event.currentTarget)
+        }}
+        disabled={Array.isArray(menuItems) && menuItems.length === 0}
+      >
         {children}
       </IconButton>
       <Menu
         open={!!anchorEl}
         anchorEl={anchorEl}
-        onClose={() => setAnchorEl(undefined)}
-        onMenuItemClick={(_: unknown, callback: Function) => {
+        onClose={() => {
+          setAnchorEl(undefined)
+        }}
+        onMenuItemClick={(_: unknown, callback: () => void) => {
           callback()
           if (closeAfterItemClick) {
             setAnchorEl(undefined)

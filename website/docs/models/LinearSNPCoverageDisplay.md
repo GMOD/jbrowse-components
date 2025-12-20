@@ -3,14 +3,22 @@ id: linearsnpcoveragedisplay
 title: LinearSNPCoverageDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearSNPCoverageDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearSNPCoverageDisplay.md)
+
+## Docs
 
 extends
 
@@ -27,54 +35,58 @@ ISimpleType<"LinearSNPCoverageDisplay">
 type: types.literal('LinearSNPCoverageDisplay')
 ```
 
-#### property: drawInterbaseCounts
+#### property: showInterbaseCounts
 
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
 // code
-drawInterbaseCounts: types.maybe(types.boolean)
+showInterbaseCounts: types.maybe(types.boolean)
 ```
 
-#### property: drawIndicators
+#### property: showInterbaseIndicators
 
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
 // code
-drawIndicators: types.maybe(types.boolean)
+showInterbaseIndicators: types.maybe(types.boolean)
 ```
 
-#### property: drawArcs
+#### property: showArcs
 
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
 // code
-drawArcs: types.maybe(types.boolean)
+showArcs: types.maybe(types.boolean)
 ```
 
-#### property: filterBy
+#### property: minArcScore
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-filterBy: types.optional(FilterModel, {})
+minArcScore: types.optional(types.number, 0)
 ```
 
-#### property: colorBy
+#### property: filterBySetting
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; }, {}, _NotCustomized, _NotCustomized>>
+IType<FilterBy, FilterBy, FilterBy>
 // code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-          }),
-        )
+filterBySetting: types.frozen<FilterBy | undefined>()
+```
+
+#### property: colorBySetting
+
+```js
+// type signature
+IType<ColorBy, ColorBy, ColorBy>
+// code
+colorBySetting: types.frozen<ColorBy | undefined>()
 ```
 
 #### property: jexlFilters
@@ -88,28 +100,61 @@ jexlFilters: types.optional(types.array(types.string), [])
 
 ### LinearSNPCoverageDisplay - Getters
 
+#### getter: colorBy
+
+```js
+// type
+any
+```
+
+#### getter: filterBy
+
+```js
+// type
+any
+```
+
+#### getter: modificationThreshold
+
+```js
+// type
+any
+```
+
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
-#### getter: drawArcsSetting
+#### getter: showArcsSetting
 
 ```js
 // type
 any
 ```
 
-#### getter: drawInterbaseCountsSetting
+#### getter: skipFeatures
+
+Collect all skip features from rendered blocks for cross-region arc drawing Uses
+a Map to deduplicate features that appear in multiple blocks Only computed when
+showArcsSetting is true for performance Filters out arcs with score below
+minArcScore
+
+```js
+// type
+Feature[]
+```
+
+#### getter: showInterbaseCountsSetting
 
 ```js
 // type
 any
 ```
 
-#### getter: drawIndicatorsSetting
+#### getter: showInterbaseIndicatorsSetting
 
 ```js
 // type
@@ -123,11 +168,18 @@ any
 boolean
 ```
 
+#### getter: renderReady
+
+```js
+// type
+;() => boolean
+```
+
 #### getter: TooltipComponent
 
 ```js
 // type
-(props: { model: { featureUnderMouse: Feature; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element
+LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; mouseoverExtraInformation?: string; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element>
 ```
 
 #### getter: adapterConfig
@@ -137,6 +189,7 @@ boolean
 {
   type: string
   subadapter: any
+  sequenceAdapter: unknown
 }
 ```
 
@@ -147,7 +200,7 @@ boolean
 string
 ```
 
-#### getter: needsScalebar
+#### getter: graphType
 
 ```js
 // type
@@ -163,11 +216,25 @@ SerializableFilterChain
 
 ### LinearSNPCoverageDisplay - Methods
 
+#### method: adapterProps
+
+```js
+// type signature
+adapterProps: () => any
+```
+
 #### method: renderProps
 
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { onIndicatorClick(_: unknown, item: { type: "insertion" | "softclip" | "hardclip"; base: string; count: number; total: number; avgLength?: number; minLength?: number; maxLength?: number; topSequence?: string; }): void; displayModel: { ...; } & ... 3 more ... & IStateTreeNode<...>; }
 ```
 
 #### method: contextMenuItems
@@ -181,7 +248,7 @@ contextMenuItems: () => any[]
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### LinearSNPCoverageDisplay - Actions
@@ -190,21 +257,21 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFilterBy
 
 ```js
 // type signature
-setFilterBy: (filter: IFilter) => void
+setFilterBy: (filter: FilterBy) => void
 ```
 
-#### action: setColorBy
+#### action: setColorScheme
 
 ```js
 // type signature
-setColorBy: (colorBy?: { type: string; tag?: string; }) => void
+setColorScheme: (colorBy?: ColorBy) => void
 ```
 
 #### action: setJexlFilters
@@ -214,37 +281,30 @@ setColorBy: (colorBy?: { type: string; tag?: string; }) => void
 setJexlFilters: (filters: string[]) => void
 ```
 
-#### action: updateModificationColorMap
+#### action: setShowInterbaseIndicators
 
 ```js
 // type signature
-updateModificationColorMap: (uniqueModifications: string[]) => void
+setShowInterbaseIndicators: (arg: boolean) => void
 ```
 
-#### action: setModificationsReady
+#### action: setShowInterbaseCounts
 
 ```js
 // type signature
-setModificationsReady: (flag: boolean) => void
+setShowInterbaseCounts: (arg: boolean) => void
 ```
 
-#### action: toggleDrawIndicators
+#### action: setShowArcs
 
 ```js
 // type signature
-toggleDrawIndicators: () => void
+setShowArcs: (arg: boolean) => void
 ```
 
-#### action: toggleDrawInterbaseCounts
+#### action: setMinArcScore
 
 ```js
 // type signature
-toggleDrawInterbaseCounts: () => void
-```
-
-#### action: toggleDrawArcs
-
-```js
-// type signature
-toggleDrawArcs: () => void
+setMinArcScore: (arg: number) => void
 ```

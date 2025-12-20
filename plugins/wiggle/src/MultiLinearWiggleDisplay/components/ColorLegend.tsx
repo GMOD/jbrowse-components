@@ -1,36 +1,43 @@
-import React from 'react'
+import { useMemo } from 'react'
+
+import { getFillProps } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
-import { WiggleDisplayModel } from '../models/model'
+import LegendItem from './LegendItem'
+import LegendItemText from './LegendItemText'
 import RectBg from './RectBg'
+
+import type { MinimalModel } from './types'
 
 const ColorLegend = observer(function ({
   model,
   rowHeight,
-  labelWidth,
   exportSVG,
 }: {
-  model: WiggleDisplayModel
+  model: MinimalModel
   rowHeight: number
-  labelWidth: number
   exportSVG?: boolean
 }) {
   const {
-    needsCustomLegend,
-    needsScalebar,
+    graphType,
     needsFullHeightScalebar,
     rowHeightTooSmallForScalebar,
     renderColorBoxes,
     sources,
+    labelWidth,
   } = model
-  const svgFontSize = Math.min(rowHeight, 12)
-  const canDisplayLabel = rowHeight > 11
-  const colorBoxWidth = renderColorBoxes ? 15 : 0
+  const colorBoxWidth = renderColorBoxes ? 20 : 0
   const legendWidth = labelWidth + colorBoxWidth + 5
   const svgOffset = exportSVG ? 10 : 0
   const extraOffset =
-    svgOffset || (needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0)
+    svgOffset || (graphType && !rowHeightTooSmallForScalebar ? 50 : 0)
+  const theme = useTheme()
+
+  const textFillProps = useMemo(
+    () => getFillProps(theme.palette.text.primary),
+    [theme.palette.text.primary],
+  )
 
   return sources ? (
     <>
@@ -45,39 +52,30 @@ const ColorLegend = observer(function ({
           />
         ) : null
       }
-      {sources.map((source, idx) => {
-        const boxHeight = Math.min(20, rowHeight)
-        return (
-          <React.Fragment key={`${source.name}-${idx}`}>
-            {needsFullHeightScalebar ? null : (
-              <RectBg
-                y={idx * rowHeight + 1}
-                x={extraOffset}
-                width={legendWidth}
-                height={boxHeight}
-              />
-            )}
-            {source.color ? (
-              <RectBg
-                y={idx * rowHeight + 1}
-                x={extraOffset}
-                width={colorBoxWidth}
-                height={needsCustomLegend ? rowHeight : boxHeight}
-                color={source.color}
-              />
-            ) : null}
-            {canDisplayLabel ? (
-              <text
-                y={idx * rowHeight + 13}
-                x={extraOffset + colorBoxWidth + 2}
-                fontSize={svgFontSize}
-              >
-                {source.name}
-              </text>
-            ) : null}
-          </React.Fragment>
-        )
-      })}
+      {/* Render all background rectangles first */}
+      {sources.map((source, idx) => (
+        <LegendItem
+          key={`${source.name}-${idx}`}
+          source={source}
+          idx={idx}
+          model={model}
+          rowHeight={rowHeight}
+          exportSVG={exportSVG}
+          labelWidth={legendWidth}
+        />
+      ))}
+      {/* Then render all text elements on top */}
+      {sources.map((source, idx) => (
+        <LegendItemText
+          key={`${source.name}-text-${idx}`}
+          source={source}
+          idx={idx}
+          model={model}
+          rowHeight={rowHeight}
+          exportSVG={exportSVG}
+          textFillProps={textFillProps}
+        />
+      ))}
     </>
   ) : null
 })

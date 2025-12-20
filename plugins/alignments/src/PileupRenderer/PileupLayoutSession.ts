@@ -1,62 +1,71 @@
-import deepEqual from 'fast-deep-equal'
-import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
-import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { MultiLayout, PileupLayout } from '@jbrowse/core/util/layouts'
+import deepEqual from 'fast-deep-equal'
 
-export interface PileupLayoutSessionProps {
-  config: AnyConfigurationModel
-  bpPerPx: number
-  filters: SerializableFilterChain
-  filterBy: unknown
-  sortedBy: unknown
-  showSoftClip: unknown
-}
+import type { FilterBy, SortedBy } from '../shared/types'
+import type {
+  LayoutSessionLike,
+  LayoutSessionProps,
+} from '@jbrowse/core/pluggableElementTypes/renderers/LayoutSession'
 
-type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
-interface CachedPileupLayout {
-  layout: MyMultiLayout
-  config: AnyConfigurationModel
-  filters: SerializableFilterChain
-  filterBy: unknown
-  sortedBy: unknown
+export interface PileupLayoutSessionProps extends LayoutSessionProps {
+  filterBy: FilterBy
+  sortedBy: SortedBy
   showSoftClip: boolean
 }
-// Sorting and revealing soft clip changes the layout of Pileup renderer
-// Adds extra conditions to see if cached layout is valid
-export class PileupLayoutSession extends LayoutSession {
-  sortedBy: unknown
-  filterBy: unknown
 
-  showSoftClip = false
+type MyMultiLayout = MultiLayout<PileupLayout<unknown>, unknown>
 
-  constructor(args: PileupLayoutSessionProps) {
-    super(args)
-    this.config = args.config
+interface CachedPileupLayout {
+  layout: MyMultiLayout
+  props: PileupLayoutSessionProps
+}
+
+export class PileupLayoutSession implements LayoutSessionLike {
+  props: PileupLayoutSessionProps
+
+  cachedLayout: CachedPileupLayout | undefined
+
+  constructor(props: PileupLayoutSessionProps) {
+    this.props = props
+  }
+
+  update(props: LayoutSessionProps) {
+    this.props = props as PileupLayoutSessionProps
+    return this
+  }
+
+  makeLayout() {
+    const noSpacing = readConfObject(this.props.config, 'noSpacing')
+    const featureHeight = readConfObject(this.props.config, 'height')
+    const maxHeight = readConfObject(this.props.config, 'maxHeight')
+
+    return new MultiLayout(PileupLayout, {
+      featureHeight,
+      spacing: noSpacing ? 0 : 2,
+      maxHeight,
+    })
   }
 
   cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
     return (
-      super.cachedLayoutIsValid(cachedLayout) &&
-      this.showSoftClip === cachedLayout.showSoftClip &&
-      deepEqual(this.sortedBy, cachedLayout.sortedBy) &&
-      deepEqual(this.filterBy, cachedLayout.filterBy)
+      cachedLayout.props.bpPerPx === this.props.bpPerPx &&
+      deepEqual(
+        readConfObject(this.props.config),
+        readConfObject(cachedLayout.props.config),
+      ) &&
+      deepEqual(this.props.filters, cachedLayout.props.filters) &&
+      this.props.showSoftClip === cachedLayout.props.showSoftClip &&
+      deepEqual(this.props.sortedBy, cachedLayout.props.sortedBy) &&
+      deepEqual(this.props.filterBy, cachedLayout.props.filterBy)
     )
   }
-
-  cachedLayout: CachedPileupLayout | undefined
 
   get layout(): MyMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
       this.cachedLayout = {
         layout: this.makeLayout(),
-        config: readConfObject(this.config),
-        filters: this.filters,
-        filterBy: this.filterBy,
-        sortedBy: this.sortedBy,
-        showSoftClip: this.showSoftClip,
+        props: this.props,
       }
     }
     return this.cachedLayout.layout

@@ -1,41 +1,41 @@
-import mapObject from '../util/map-obj'
-import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
-import { setBlobMap, getBlobMap } from '../util/tracks'
+import mapObject from '../util/map-obj'
+import { isRpcResult } from '../util/rpc'
+import { getBlobMap, setBlobMap } from '../util/tracks'
 import {
-  isAppRootModel,
-  isUriLocation,
-  isAuthNeededException,
   RetryError,
-  UriLocation,
+  isAppRootModel,
+  isAuthNeededException,
+  isUriLocation,
 } from '../util/types'
 
-import {
-  deserializeAbortSignal,
-  isRemoteAbortSignal,
-  RemoteAbortSignal,
-} from '../rpc/remoteAbortSignals'
+import type PluginManager from '../PluginManager'
+import type { UriLocation } from '../util/types'
 
-interface SerializedArgs {
-  signal?: RemoteAbortSignal
-  blobMap?: Record<string, File>
-}
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
-  constructor(public pluginManager: PluginManager) {
-    super({})
+  pluginManager: PluginManager
+
+  constructor(pluginManager: PluginManager) {
+    super()
+    this.pluginManager = pluginManager
   }
 
-  async serializeArguments(args: {}, rpcDriverClassName: string): Promise<{}> {
-    const blobMap = getBlobMap()
+  async serializeArguments(
+    args: Record<string, unknown>,
+    rpcDriverClassName: string,
+  ): Promise<Record<string, unknown>> {
     await this.augmentLocationObjects(args, rpcDriverClassName)
-    return { ...args, blobMap }
+    return {
+      ...args,
+      blobMap: getBlobMap(),
+    }
   }
 
   async serializeNewAuthArguments(
     loc: UriLocation,
-    rpcDriverClassName: string,
+    _rpcDriverClassName: string,
   ) {
     const rootModel = this.pluginManager.rootModel
 
@@ -46,36 +46,41 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
     const account = rootModel.findAppropriateInternetAccount(loc)
 
-    // mutating loc object is not allowed in MainThreadRpcDriver, and is only
-    // needed for web worker RPC
-    if (account && rpcDriverClassName !== 'MainThreadRpcDriver') {
+    if (account) {
       loc.internetAccountPreAuthorization =
         await account.getPreAuthorizationInformation(loc)
     }
     return loc
   }
 
-  async deserializeArguments<T extends SerializedArgs>(
-    serializedArgs: T,
+  async deserializeArguments<T>(
+    args: T & { blobMap?: Record<string, File> },
     _rpcDriverClassName: string,
-  ) {
-    if (serializedArgs.blobMap) {
-      setBlobMap(serializedArgs.blobMap)
+  ): Promise<T> {
+    if (args.blobMap) {
+      setBlobMap(args.blobMap)
     }
-    const { signal } = serializedArgs
 
-    return {
-      ...serializedArgs,
-      signal: isRemoteAbortSignal(signal)
-        ? deserializeAbortSignal(signal)
-        : undefined,
-    }
+    return args
   }
 
   abstract execute(
     serializedArgs: unknown,
     rpcDriverClassName: string,
   ): Promise<unknown>
+
+  /**
+   * Execute directly without serialization. Override in subclasses that support
+   * direct execution (e.g., CoreRender). Returns undefined by default, signaling
+   * that the driver should fall back to serialized execution.
+   */
+  async executeDirect(_args: Record<string, unknown>): Promise<unknown> {
+    return undefined
+  }
+
+  supportsDirectExecution(): boolean {
+    return this.executeDirect !== RpcMethodType.prototype.executeDirect
+  }
 
   async serializeReturn(
     originalReturn: unknown,
@@ -90,7 +95,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     _args: unknown,
     _rpcDriverClassName: string,
   ) {
-    let r
+    let r: unknown
     try {
       r = await serializedReturn
     } catch (error) {
@@ -108,6 +113,11 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       }
       throw error
     }
+    // Unwrap rpcResult if present (needed for MainThreadRpcDriver where the
+    // rpcResult wrapper isn't stripped by the worker message handler)
+    if (isRpcResult(r)) {
+      return r.value
+    }
     return r
   }
 
@@ -115,14 +125,39 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     thing: Record<string, unknown>,
     rpcDriverClassName: string,
   ) {
+    const rootModel = this.pluginManager.rootModel
+
+    // Skip expensive deep traversal only if we have a valid root model with no internet accounts
+    // (Don't skip if rootModel isn't set up - let serializeNewAuthArguments handle that case)
+    if (isAppRootModel(rootModel) && rootModel.internetAccounts.length === 0) {
+      return thing
+    }
+
     const uris = [] as UriLocation[]
 
+    // exclude renderingProps from deep traversal - it is only needed
+    // client-side for React components and can contain circular references
+    // (e.g. d3 hierarchy nodes) or non-serializable objects like callbacks
+    const { renderingProps, ...rest } = thing
+
     // using map-obj avoids cycles, seen in circular view svg export
-    mapObject(thing, val => {
-      if (isUriLocation(val)) {
-        uris.push(val)
-      }
-    })
+    mapObject(
+      rest,
+      (key, val: unknown) => {
+        if (isUriLocation(val)) {
+          uris.push(val)
+        }
+        if (Array.isArray(val)) {
+          for (const item of val) {
+            if (isUriLocation(item)) {
+              uris.push(item)
+            }
+          }
+        }
+        return [key, val]
+      },
+      { deep: true },
+    )
     for (const uri of uris) {
       await this.serializeNewAuthArguments(uri, rpcDriverClassName)
     }

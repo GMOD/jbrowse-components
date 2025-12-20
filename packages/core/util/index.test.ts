@@ -1,10 +1,11 @@
 import {
   assembleLocString,
-  parseLocString,
-  ParsedLocString,
   compareLocStrings,
+  parseLocString,
   stringify,
 } from './index'
+
+import type { ParsedLocString } from './index'
 
 describe('parseLocString', () => {
   const cases: [string, ParsedLocString][] = [
@@ -56,7 +57,7 @@ describe('parseLocString', () => {
 
   // test unreversed
   for (const [input, output] of cases) {
-    test(`${input}`, () => {
+    test(input, () => {
       expect(
         parseLocString(input, refName => ['chr1', 'chr2'].includes(refName)),
       ).toEqual({ ...output, reversed: false })
@@ -65,9 +66,9 @@ describe('parseLocString', () => {
 
   // test reversed
   for (const [input, output] of cases) {
-    test(`${input}`, () => {
+    test(input, () => {
       expect(
-        parseLocString(input + '[rev]', refName =>
+        parseLocString(`${input}[rev]`, refName =>
           ['chr1', 'chr2'].includes(refName),
         ),
       ).toEqual({ ...output, reversed: true })

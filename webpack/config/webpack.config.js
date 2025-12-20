@@ -1,33 +1,31 @@
-'use strict'
-
-const fs = require('fs')
+const cp = require('child_process')
 const path = require('path')
-const webpack = require('webpack')
+
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
-const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
+const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin')
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
+const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent')
-const paths = require('./paths')
-const modules = require('./modules')
-const getClientEnvironment = require('./env')
-const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin')
-const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
-const cp = require('child_process')
+const webpack = require('webpack')
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
 
-const createEnvironmentHash = require('./webpack/persistentCache/createEnvironmentHash')
+const getClientEnvironment = require('./env')
+const modules = require('./modules')
+const paths = require('./paths')
 
 // Source maps are resource heavy and can cause out of memory issue for large
 // source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 
+// Disable minimization for production builds (useful for debugging)
+const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
+
 const reactRefreshRuntimeEntry = require.resolve('react-refresh/runtime')
-const reactRefreshWebpackPluginRuntimeEntry = require.resolve(
-  '@pmmmwh/react-refresh-webpack-plugin',
-)
+const reactRefreshWebpackPluginRuntimeEntry =
+  require.resolve('@pmmmwh/react-refresh-webpack-plugin')
 
 function getWorkspaces(fromDir) {
   const cwd = fromDir || process.cwd()
@@ -49,7 +47,7 @@ const cssModuleRegex = /\.module\.css$/
 
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
-module.exports = function (webpackEnv) {
+module.exports = function webpackBuilder(webpackEnv) {
   const isEnvDevelopment = webpackEnv === 'development'
   const isEnvProduction = webpackEnv === 'production'
 
@@ -83,6 +81,7 @@ module.exports = function (webpackEnv) {
   }
 
   return {
+    ...(process.env.NO_CACHE ? { cache: false } : {}),
     target: ['browserslist'],
     // Webpack noise constrained to errors and warnings
     stats: 'errors-warnings',
@@ -129,6 +128,7 @@ module.exports = function (webpackEnv) {
     },
 
     resolve: {
+      conditionNames: ['mui-modern', '...'],
       // This allows you to set a fallback for where webpack should look for
       // modules. We placed these paths second because we want `node_modules`
       // to "win" if there are any conflicts. This matches Node resolution
@@ -187,7 +187,16 @@ module.exports = function (webpackEnv) {
 
               loader: require.resolve('babel-loader'),
               options: {
-                presets: ['@babel/preset-react', '@babel/preset-typescript'],
+                plugins: ['babel-plugin-react-compiler'],
+                presets: [
+                  [
+                    '@babel/preset-react',
+                    {
+                      runtime: 'automatic',
+                    },
+                  ],
+                  '@babel/preset-typescript',
+                ],
               },
             },
             // "postcss" loader applies autoprefixer to our CSS. "css"
@@ -307,10 +316,6 @@ module.exports = function (webpackEnv) {
         new ReactRefreshWebpackPlugin({
           overlay: false,
         }),
-      // Watcher doesn't work well if you mistype casing in a path so we use
-      // a plugin that prints an error when you attempt to do this.
-      // See https://github.com/facebook/create-react-app/issues/240
-      isEnvDevelopment && new CaseSensitivePathsPlugin(),
       isEnvProduction &&
         new MiniCssExtractPlugin({
           // Options similar to the same options in webpackOptions.output
@@ -346,5 +351,8 @@ module.exports = function (webpackEnv) {
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false,
+    optimization: {
+      minimize: isEnvProduction && shouldMinimize,
+    },
   }
 }

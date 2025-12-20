@@ -1,12 +1,13 @@
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import { toArray } from 'rxjs/operators'
-import { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-
-// locals
-import FromConfigAdapter from '../FromConfigAdapter/FromConfigAdapter'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
+import FromConfigAdapter from '../FromConfigAdapter/FromConfigAdapter'
+
+import type { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class FromConfigSequenceAdapter
   extends FromConfigAdapter
@@ -22,7 +23,7 @@ export default class FromConfigSequenceAdapter
       const feats = await firstValueFrom(
         super.getFeatures(region).pipe(toArray()),
       )
-      const feat = feats[0]
+      const feat = feats[0]!
       observer.next(
         new SimpleFeature({
           ...feat.toJSON(),
@@ -50,7 +51,9 @@ export default class FromConfigSequenceAdapter
 
     // recall: features are stored in this object sorted by start coordinate
     for (const [refName, features] of this.features) {
-      let currentRegion
+      let currentRegion:
+        | { start: number; end: number; refName: string }
+        | undefined
       for (const feature of features) {
         if (
           currentRegion &&
@@ -82,5 +85,4 @@ export default class FromConfigSequenceAdapter
    * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */): void {}
 }

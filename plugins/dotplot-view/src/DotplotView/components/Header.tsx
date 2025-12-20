@@ -1,14 +1,13 @@
-import React from 'react'
+import { getBpDisplayStr } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
-import { getBpDisplayStr } from '@jbrowse/core/util'
 
-// locals
-import { DotplotViewModel } from '../model'
+import DotplotControls from './DotplotControls'
 import DotplotWarnings from './DotplotWarnings'
 import PanButtons from './PanButtons'
-import DotplotControls from './DotplotControls'
+
+import type { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles()({
   bp: {

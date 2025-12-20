@@ -1,15 +1,11 @@
-import React from 'react'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
-import {
-  ParsedLocString,
-  assembleLocString,
-  parseLocString,
-} from '@jbrowse/core/util'
-import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
-import createModel, {
-  createSessionModel,
-  createConfigModel,
-} from './createModel'
+import { assembleLocString, parseLocString } from '@jbrowse/core/util'
+import { onPatch } from '@jbrowse/mobx-state-tree'
+
+import createModel from './createModel'
+
+import type { createConfigModel, createSessionModel } from './createModel'
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { IJsonPatch, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
@@ -38,14 +34,6 @@ interface ViewStateOptions {
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => any
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  }
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -55,31 +43,15 @@ export default function createViewState(opts: ViewStateOptions) {
     internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
-    plugins,
+    plugins = [],
     location,
     highlight,
     onChange,
     disableAddTracks = false,
     makeWorkerInstance,
-    hydrateFn,
-    createRootFn,
+    defaultSession,
   } = opts
-  const { model, pluginManager } = createModel(
-    plugins || [],
-    makeWorkerInstance,
-    hydrateFn,
-    createRootFn,
-  )
-  let { defaultSession } = opts
-  if (!defaultSession) {
-    defaultSession = {
-      name: 'this session',
-      view: {
-        id: 'linearGenomeView',
-        type: 'LinearGenomeView',
-      },
-    }
-  }
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   const stateTree = model.create(
     {
       config: {
@@ -90,11 +62,17 @@ export default function createViewState(opts: ViewStateOptions) {
         aggregateTextSearchAdapters,
       },
       disableAddTracks,
-      session: defaultSession,
+      session: defaultSession ?? {
+        name: 'this session',
+        view: {
+          id: 'linearGenomeView',
+          type: 'LinearGenomeView',
+        },
+      },
     },
     { pluginManager },
   )
-  stateTree.config.internetAccounts.forEach(account => {
+  for (const account of stateTree.config.internetAccounts) {
     const internetAccountType = pluginManager.getInternetAccountType(
       account.type,
     )
@@ -105,7 +83,7 @@ export default function createViewState(opts: ViewStateOptions) {
       type: account.type,
       configuration: account,
     })
-  })
+  }
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
@@ -120,25 +98,22 @@ export default function createViewState(opts: ViewStateOptions) {
           assembly.name,
         )
         if (highlight) {
-          highlight.forEach(h => {
+          for (const h of highlight) {
             if (h) {
-              const parsedLocString = parseLocString(h, refName =>
+              const p = parseLocString(h, refName =>
                 isValidRefName(refName, assembly.name),
-              ) as Required<ParsedLocString>
-
-              const location = {
-                ...parsedLocString,
-                assemblyName: assembly,
-              }
-
-              if (
-                location?.start !== undefined &&
-                location?.end !== undefined
-              ) {
-                session.view.addToHighlights(location)
+              )
+              const { start, end } = p
+              if (start !== undefined && end !== undefined) {
+                session.view.addToHighlights({
+                  ...p,
+                  start,
+                  end,
+                  assemblyName: assembly,
+                })
               }
             }
-          })
+          }
         }
       } catch (e) {
         session.notifyError(`${e}`, e)

@@ -1,18 +1,14 @@
-import React from 'react'
-import { IconButton, Paper } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-
-// icons
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import ArrowDropUp from '@mui/icons-material/ArrowDropUp'
 import ArrowLeft from '@mui/icons-material/ArrowLeft'
 import ArrowRight from '@mui/icons-material/ArrowRight'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
+import { IconButton, Paper } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
-import { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles()({
   dpad: {
@@ -21,7 +17,7 @@ const useStyles = makeStyles()({
     margin: 0,
     position: 'absolute',
     right: 50,
-    zIndex: 1000,
+    zIndex: 500,
     top: 50,
   },
   icon: {
@@ -41,7 +37,9 @@ const PanButtons = observer(function PanButtons({
       <div />
       <IconButton
         className={classes.icon}
-        onClick={() => model.vview.scroll(100)}
+        onClick={() => {
+          model.vview.scroll(100)
+        }}
       >
         <ArrowDropUp />
       </IconButton>
@@ -49,14 +47,18 @@ const PanButtons = observer(function PanButtons({
 
       <IconButton
         className={classes.icon}
-        onClick={() => model.hview.scroll(-100)}
+        onClick={() => {
+          model.hview.scroll(-100)
+        }}
       >
         <ArrowLeft />
       </IconButton>
       <div />
       <IconButton
         className={classes.icon}
-        onClick={() => model.hview.scroll(100)}
+        onClick={() => {
+          model.hview.scroll(100)
+        }}
       >
         <ArrowRight />
       </IconButton>
@@ -64,7 +66,9 @@ const PanButtons = observer(function PanButtons({
       <div />
       <IconButton
         className={classes.icon}
-        onClick={() => model.vview.scroll(-100)}
+        onClick={() => {
+          model.vview.scroll(-100)
+        }}
       >
         <ArrowDropDown />
       </IconButton>
@@ -72,8 +76,7 @@ const PanButtons = observer(function PanButtons({
       <IconButton
         className={classes.icon}
         onClick={() => {
-          model.hview.zoomIn()
-          model.vview.zoomIn()
+          model.zoomIn()
         }}
       >
         <ZoomIn />
@@ -82,8 +85,7 @@ const PanButtons = observer(function PanButtons({
       <IconButton
         className={classes.icon}
         onClick={() => {
-          model.hview.zoomOut()
-          model.vview.zoomOut()
+          model.zoomOut()
         }}
       >
         <ZoomOut />

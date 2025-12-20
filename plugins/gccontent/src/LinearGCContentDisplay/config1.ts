@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearGCContentDisplay
@@ -23,7 +24,7 @@ export default function LinearGCContentDisplay(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')
+      baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay')!
         .configSchema,
       explicitlyTyped: true,
     },

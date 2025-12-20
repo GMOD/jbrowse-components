@@ -1,32 +1,33 @@
-import { createGunzip } from 'zlib'
 import readline from 'readline'
-import { Track, decodeURIComponentNoThrow } from '../util'
-import { getLocalOrRemoteStream } from './common'
-import { checkAbortSignal } from '@jbrowse/core/util'
+import { createGunzip } from 'zlib'
 
-export async function* indexVcf(
-  config: Track,
-  attributesToIndex: string[],
-  inLocation: string,
-  outLocation: string,
-  typesToExclude: string[],
-  quiet: boolean,
-  statusCallback: (message: string) => void,
-  signal?: AbortSignal,
-) {
+import { decodeURIComponentNoThrow } from '../util'
+import { getLocalOrRemoteStream } from './common'
+
+export async function* indexVcf({
+  config,
+  attributesToIndex,
+  inLocation,
+  outDir,
+  onStart,
+  onUpdate,
+}: {
+  config: any
+  attributesToIndex: string[]
+  inLocation: string
+  outDir: string
+  onStart: (totalBytes: number) => void
+  onUpdate: (progressBytes: number) => void
+}) {
   const { trackId } = config
-  let receivedBytes = 0
-  const { totalBytes, stream } = await getLocalOrRemoteStream(
-    inLocation,
-    outLocation,
-  )
-  stream.on('data', chunk => {
-    receivedBytes += chunk.length
-    const progress = Math.round((receivedBytes / totalBytes) * 100)
-    statusCallback(`${progress}`)
+  const stream = await getLocalOrRemoteStream({
+    file: inLocation,
+    out: outDir,
+    onTotalBytes: onStart,
+    onBytesReceived: onUpdate,
   })
 
-  const gzStream = inLocation.match(/.b?gz$/)
+  const gzStream = /.b?gz$/.exec(inLocation)
     ? stream.pipe(createGunzip())
     : stream
 
@@ -42,16 +43,16 @@ export async function* indexVcf(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
 
-    // turns vcf info attrs into a map, and converts the arrays into space
+    // turns gff3 attrs into a map, and converts the arrays into space
     // separated strings
     const fields = Object.fromEntries(
-      info
+      info!
         .split(';')
         .map(f => f.trim())
         .filter(f => !!f)
         .map(f => f.split('='))
         .map(([key, val]) => [
-          key.trim(),
+          key!.trim(),
           val
             ? decodeURIComponentNoThrow(val).trim().split(',').join(' ')
             : undefined,
@@ -60,7 +61,7 @@ export async function* indexVcf(
 
     const end = fields.END
 
-    const locStr = `${ref}:${pos}..${end || +pos + 1}`
+    const locStr = `${ref}:${pos}..${end || +pos! + 1}`
     if (id === '.') {
       continue
     }
@@ -69,7 +70,7 @@ export async function* indexVcf(
       .map(attr => fields[attr])
       .filter((f): f is string => !!f)
 
-    const ids = id.split(',')
+    const ids = id!.split(',')
     for (const id of ids) {
       const attrs = [id]
       const record = JSON.stringify([
@@ -78,9 +79,6 @@ export async function* indexVcf(
         encodeURIComponent(id || ''),
         ...infoAttrs.map(a => encodeURIComponent(a || '')),
       ]).replaceAll(',', '|')
-
-      // Check abort signal
-      checkAbortSignal(signal)
       yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }
   }

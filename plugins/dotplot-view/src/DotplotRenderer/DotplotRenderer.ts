@@ -1,28 +1,52 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import ServerSideRenderer from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import {
-  readConfObject,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
-import {
+  dedupe,
+  getSerializedSvg,
   renameRegionsIfNeeded,
   renderToAbstractCanvas,
-  Region,
-  Feature,
 } from '@jbrowse/core/util'
-import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { getSnapshot } from 'mobx-state-tree'
-import ComparativeRenderer, {
-  RenderArgsDeserialized,
-  RenderArgs,
-} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { rpcResult } from 'librpc-web-mod'
+import { firstValueFrom } from 'rxjs'
+import { filter, toArray } from 'rxjs/operators'
 
-// locals
-import { Dotplot1DView, Dotplot1DViewModel } from '../DotplotView/model'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { Dotplot1DView } from '../DotplotView/model'
 
-const { parseCigar } = MismatchParser
+import type { Dotplot1DViewModel } from '../DotplotView/model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  RenderArgs as ServerSideRenderArgs,
+  RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
+  RenderArgsSerialized as ServerSideRenderArgsSerialized,
+  ResultsDeserialized as ServerSideResultsDeserialized,
+  ResultsSerialized as ServerSideResultsSerialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+import type { Region } from '@jbrowse/core/util'
+
+export interface RenderArgs extends ServerSideRenderArgs {
+  blockKey: string
+}
+
+export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
+  blockKey: string
+}
+
+export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized {
+  blockKey: string
+}
+
+export type ResultsSerialized = ServerSideResultsSerialized
+
+export interface ResultsDeserialized extends ServerSideResultsDeserialized {
+  blockKey: string
+}
 
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
+  adapterConfig: AnyConfigurationModel
   height: number
   width: number
   highResolutionScaling: number
@@ -32,7 +56,7 @@ export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   }
 }
 
-interface DotplotRenderArgs extends RenderArgs {
+export interface DotplotRenderArgs extends RenderArgs {
   adapterConfig: AnyConfigurationModel
   sessionId: string
   view: {
@@ -41,18 +65,27 @@ interface DotplotRenderArgs extends RenderArgs {
   }
 }
 
-const r = 'fell outside of range due to CIGAR string'
-const lt = '(less than min coordinate of feature)'
-const gt = '(greater than max coordinate of feature)'
-const fudgeFactor = 1 // allow 1px fuzzyness before warn
-
-function drawCir(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1) {
-  ctx.beginPath()
-  ctx.arc(x, y, r / 2, 0, 2 * Math.PI)
-  ctx.fill()
+interface ResultsSerializedSvgExport extends ResultsSerialized {
+  canvasRecordedData: unknown
+  width: number
+  height: number
 }
 
-export default class DotplotRenderer extends ComparativeRenderer {
+function isCanvasRecordedSvgExport(
+  e: ResultsSerialized,
+): e is ResultsSerializedSvgExport {
+  return 'canvasRecordedData' in e
+}
+
+function normalizeRegion(r: Region) {
+  return {
+    ...r,
+    start: Math.floor(r.start),
+    end: Math.ceil(r.end),
+  }
+}
+
+export default class DotplotRenderer extends ServerSideRenderer {
   supportsSVG = true
 
   async renameRegionsIfNeeded(args: DotplotRenderArgs) {
@@ -79,220 +112,64 @@ export default class DotplotRenderer extends ComparativeRenderer {
     return args
   }
 
-  async drawDotplot(
-    ctx: CanvasRenderingContext2D,
-    props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
-  ) {
-    const { config, views, height, drawCigar, theme } = props
-    const color = readConfObject(config, 'color')
-    const posColor = readConfObject(config, 'posColor')
-    const negColor = readConfObject(config, 'negColor')
-    const colorBy = readConfObject(config, 'colorBy')
-    const lineWidth = readConfObject(config, 'lineWidth')
-    const thresholds = readConfObject(config, 'thresholds')
-    const palette = readConfObject(config, 'thresholdsPalette')
-    const isCallback = config.color.isCallback
-    const [hview, vview] = views
-    const db1 = hview.dynamicBlocks.contentBlocks[0]?.offsetPx
-    const db2 = vview.dynamicBlocks.contentBlocks[0]?.offsetPx
-    const warnings = [] as { message: string; effect: string }[]
-    ctx.lineWidth = lineWidth
+  serializeArgsInClient(args: RenderArgs) {
+    const { displayModel, ...serializable } = args
+    return super.serializeArgsInClient(serializable)
+  }
 
-    // we operate on snapshots of these attributes of the hview/vview because
-    // it is significantly faster than accessing the mobx objects
-    const { bpPerPx: hBpPerPx } = hview
-    const { bpPerPx: vBpPerPx } = vview
-
-    function clampWithWarnX(
-      num: number,
-      min: number,
-      max: number,
-      feature: Feature,
-    ) {
-      const strand = feature.get('strand') || 1
-      if (strand === -1) {
-        ;[max, min] = [min, max]
-      }
-      if (num < min - fudgeFactor) {
-        let start = feature.get('start')
-        let end = feature.get('end')
-        const refName = feature.get('refName')
-        if (strand === -1) {
-          ;[end, start] = [start, end]
-        }
-
-        warnings.push({
-          message: `feature at (X ${refName}:${start}-${end}) ${r} ${lt}`,
-          effect: 'clipped the feature',
-        })
-        return min
-      }
-      if (num > max + fudgeFactor) {
-        const strand = feature.get('strand') || 1
-        const start = strand === 1 ? feature.get('start') : feature.get('end')
-        const end = strand === 1 ? feature.get('end') : feature.get('start')
-        const refName = feature.get('refName')
-
-        warnings.push({
-          message: `feature at (X ${refName}:${start}-${end}) ${r} ${gt}`,
-          effect: 'clipped the feature',
-        })
-        return max
-      }
-      return num
+  deserializeResultsInClient(
+    result: ResultsSerialized,
+    args: RenderArgs,
+  ): ResultsDeserialized {
+    return {
+      ...super.deserializeResultsInClient(result, args),
+      blockKey: args.blockKey,
     }
+  }
 
-    function clampWithWarnY(
-      num: number,
-      min: number,
-      max: number,
-      feature: Feature,
-    ) {
-      if (num < min - fudgeFactor) {
-        const mate = feature.get('mate')
-        const { refName, start, end } = mate
-        warnings.push({
-          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${lt}`,
-          effect: 'clipped the feature',
-        })
-        return min
-      }
-      if (num > max + fudgeFactor) {
-        const mate = feature.get('mate')
-        const { refName, start, end } = mate
+  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
+    const results = (await rpcManager.call(
+      args.sessionId,
+      'ComparativeRender',
+      args,
+    )) as ResultsSerialized
 
-        warnings.push({
-          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${gt}`,
-          effect: 'clipped the feature',
-        })
-        return max
-      }
-      return num
-    }
-
-    const hsnap = {
-      ...getSnapshot(hview),
-      staticBlocks: hview.staticBlocks,
-      width: hview.width,
-    }
-    const vsnap = {
-      ...getSnapshot(vview),
-      staticBlocks: vview.staticBlocks,
-      width: vview.width,
-    }
-    const t = createJBrowseTheme(theme)
-    for (const feature of hview.features || []) {
-      const strand = feature.get('strand') || 1
-      const start = strand === 1 ? feature.get('start') : feature.get('end')
-      const end = strand === 1 ? feature.get('end') : feature.get('start')
-      const refName = feature.get('refName')
-      const mate = feature.get('mate')
-      const mateRef = mate.refName
-
-      let r
-      if (colorBy === 'identity') {
-        const identity = feature.get('identity')
-        for (let i = 0; i < thresholds.length; i++) {
-          if (identity > +thresholds[i]) {
-            r = palette[i]
-            break
-          }
-        }
-      } else if (colorBy === 'meanQueryIdentity') {
-        r = `hsl(${feature.get('meanScore') * 200},100%,40%)`
-      } else if (colorBy === 'mappingQuality') {
-        r = `hsl(${feature.get('mappingQual')},100%,40%)`
-      } else if (colorBy === 'strand') {
-        r = strand === -1 ? negColor : posColor
-      } else if (colorBy === 'default') {
-        r = isCallback
-          ? readConfObject(config, 'color', { feature })
-          : color === '#f0f'
-            ? t.palette.text.primary
-            : color
-      }
-      ctx.fillStyle = r
-      ctx.strokeStyle = r
-
-      const b10 = bpToPx({ self: hsnap, refName, coord: start })
-      const b20 = bpToPx({ self: hsnap, refName, coord: end })
-      const e10 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.start })
-      const e20 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.end })
-      if (
-        b10 !== undefined &&
-        b20 !== undefined &&
-        e10 !== undefined &&
-        e20 !== undefined
-      ) {
-        const b1 = b10.offsetPx - db1
-        const b2 = b20.offsetPx - db1
-        const e1 = e10.offsetPx - db2
-        const e2 = e20.offsetPx - db2
-        if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
-          drawCir(ctx, b1, height - e1, lineWidth)
-        } else {
-          let currX = b1
-          let currY = e1
-          const cigar = feature.get('CIGAR')
-          if (drawCigar && cigar) {
-            const cigarOps = parseCigar(cigar)
-
-            ctx.beginPath()
-            ctx.moveTo(currX, height - currY)
-
-            let lastDrawnX = currX
-            let lastDrawnY = currX
-            for (let i = 0; i < cigarOps.length; i += 2) {
-              const val = +cigarOps[i]
-              const op = cigarOps[i + 1]
-              if (op === 'M' || op === '=' || op === 'X') {
-                currX += (val / hBpPerPx) * strand
-                currY += val / vBpPerPx
-              } else if (op === 'D' || op === 'N') {
-                currX += (val / hBpPerPx) * strand
-              } else if (op === 'I') {
-                currY += val / vBpPerPx
-              }
-              currX = clampWithWarnX(currX, b1, b2, feature)
-              currY = clampWithWarnY(currY, e1, e2, feature)
-
-              // only draw a line segment if it is bigger than 0.5px
-              if (
-                Math.abs(currX - lastDrawnX) > 0.5 ||
-                Math.abs(currY - lastDrawnY) > 0.5
-              ) {
-                ctx.lineTo(currX, height - currY)
-                lastDrawnX = currX
-                lastDrawnY = currY
-              }
-            }
-
-            ctx.stroke()
-          } else {
-            ctx.beginPath()
-            ctx.moveTo(b1, height - e1)
-            ctx.lineTo(b2, height - e2)
-            ctx.stroke()
-          }
-        }
-      } else {
-        if (warnings.length <= 5) {
-          if (b10 === undefined || b20 === undefined) {
-            warnings.push({
-              message: `feature at (X ${refName}:${start}-${end}) not plotted, fell outside of range`,
-              effect: 'feature not rendered',
-            })
-          } else {
-            warnings.push({
-              message: `feature at (Y ${mateRef}:${mate.start}-${mate.end}) not plotted, fell outside of range`,
-              effect: 'feature not rendered',
-            })
-          }
-        }
+    if (isCanvasRecordedSvgExport(results)) {
+      const { reactElement: _, ...rest } = results
+      return {
+        ...rest,
+        html: await getSerializedSvg(results),
       }
     }
+    return results
+  }
 
-    return { warnings }
+  async getFeatures(renderArgs: {
+    regions: Region[]
+    sessionId: string
+    adapterConfig: AnyConfigurationModel
+    filters?: SerializableFilterChain
+  }) {
+    const { regions, sessionId, adapterConfig, filters } = renderArgs
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    const res = await firstValueFrom(
+      (dataAdapter as BaseFeatureDataAdapter)
+        .getFeaturesInMultipleRegions(
+          regions.map(r => normalizeRegion(r)),
+          renderArgs,
+        )
+        .pipe(
+          filter(f => (filters ? filters.passes(f, renderArgs) : true)),
+          toArray(),
+        ),
+    )
+
+    // dedupe needed xref https://github.com/GMOD/jbrowse-components/pull/3404/
+    return dedupe(res, f => f.id())
   }
 
   async render(renderProps: DotplotRenderArgsDeserialized) {
@@ -304,36 +181,31 @@ export default class DotplotRenderer extends ComparativeRenderer {
     const dimensions = [width, height]
     const views = [hview, vview].map((snap, idx) => {
       const view = Dotplot1DView.create(snap)
-      view.setVolatileWidth(dimensions[idx])
+      view.setVolatileWidth(dimensions[idx]!)
       return view
     })
-    const target = views[0]
+    const target = views[0]!
     const feats = await this.getFeatures({
       ...renderProps,
       regions: target.dynamicBlocks.contentBlocks,
     })
     target.setFeatures(feats)
 
+    const { drawDotplot } = await import('./drawDotplot')
     const ret = await renderToAbstractCanvas(width, height, renderProps, ctx =>
-      this.drawDotplot(ctx, { ...renderProps, views }),
+      drawDotplot(ctx, { ...renderProps, views }),
     )
 
-    const results = await super.render({
-      ...renderProps,
+    const serialized = {
       ...ret,
       height,
       width,
-    })
-
-    return {
-      ...results,
-      ...ret,
-      height,
-      width,
-      offsetX: views[0].dynamicBlocks.blocks[0]?.offsetPx || 0,
-      offsetY: views[1].dynamicBlocks.blocks[0]?.offsetPx || 0,
-      bpPerPxX: views[0].bpPerPx,
-      bpPerPxY: views[1].bpPerPx,
+      offsetX: views[0]!.dynamicBlocks.blocks[0]?.offsetPx || 0,
+      offsetY: views[1]!.dynamicBlocks.blocks[0]?.offsetPx || 0,
+      bpPerPxX: views[0]!.bpPerPx,
+      bpPerPxY: views[1]!.bpPerPx,
     }
+
+    return rpcResult(serialized, collectTransferables(ret))
   }
 }

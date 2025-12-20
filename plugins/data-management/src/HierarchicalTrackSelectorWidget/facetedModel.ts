@@ -1,14 +1,19 @@
-import { Instance, addDisposer, getParent, types } from 'mobx-state-tree'
-import { matches } from './util'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+  getSession,
+  localStorageGetBoolean,
+  localStorageGetNumber,
+} from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getSession, localStorageGetItem } from '@jbrowse/core/util'
+import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
-import { getRootKeys, findNonSparseKeys } from './facetedUtil'
+
 import { getRowStr } from './components/faceted/util'
+import { findNonSparseKeys, getRootKeys } from './facetedUtil'
+import { matches } from './util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
@@ -26,32 +31,41 @@ export function facetedStateTreeF() {
        * #property
        */
       showSparse: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showSparse') || 'false'),
+        localStorageGetBoolean('facet-showSparse', false),
       ),
       /**
        * #property
        */
       showFilters: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showFilters') || 'true'),
+        localStorageGetBoolean('facet-showFilters', true),
       ),
 
       /**
        * #property
        */
       showOptions: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showTableOptions') || 'false'),
+        localStorageGetBoolean('facet-showTableOptions', false),
       ),
 
       /**
        * #property
        */
       panelWidth: types.optional(types.number, () =>
-        JSON.parse(localStorageGetItem('facet-panelWidth') || '400'),
+        localStorageGetNumber('facet-panelWidth', 400),
       ),
     })
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       visible: {} as Record<string, boolean>,
+      /**
+       * #volatile
+       */
       useShoppingCart: false,
+      /**
+       * #volatile
+       */
       filters: observable.map<string, string[]>(),
     }))
     .actions(self => ({
@@ -66,6 +80,7 @@ export function facetedStateTreeF() {
        */
       setPanelWidth(width: number) {
         self.panelWidth = width
+        return self.panelWidth
       },
       /**
        * #action
@@ -97,6 +112,12 @@ export function facetedStateTreeF() {
       setShowFilters(f: boolean) {
         self.showFilters = f
       },
+      /**
+       * #action
+       */
+      setVisible(args: Record<string, boolean>) {
+        self.visible = args
+      },
     }))
     .views(self => ({
       /**
@@ -117,20 +138,20 @@ export function facetedStateTreeF() {
         const { allTrackConfigurations, filterText } = self
         return allTrackConfigurations
           .filter(conf => matches(filterText, conf, session))
-          .map(track => {
-            return {
-              id: track.trackId as string,
-              conf: track,
-              name: getTrackName(track, session),
-              category: readConfObject(track, 'category')?.join(', ') as string,
-              adapter: readConfObject(track, 'adapter')?.type as string,
-              description: readConfObject(track, 'description') as string,
-              metadata: readConfObject(track, 'metadata') as Record<
-                string,
-                unknown
-              >,
-            } as const
-          })
+          .map(
+            track =>
+              ({
+                id: track.trackId as string,
+                conf: track,
+                name: getTrackName(track, session),
+                category: readConfObject(track, 'category')?.join(
+                  ', ',
+                ) as string,
+                adapter: readConfObject(track, 'adapter')?.type as string,
+                description: readConfObject(track, 'description') as string,
+                metadata: (track.metadata || {}) as Record<string, unknown>,
+              }) as const,
+          )
       },
     }))
 
@@ -149,6 +170,9 @@ export function facetedStateTreeF() {
       get metadataKeys() {
         return [...new Set(self.rows.flatMap(row => getRootKeys(row.metadata)))]
       },
+      /**
+       * #getter
+       */
       get filteredMetadataKeys() {
         return self.showSparse
           ? this.metadataKeys
@@ -182,23 +206,43 @@ export function facetedStateTreeF() {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setVisible(args: Record<string, boolean>) {
-        self.visible = args
-      },
-
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            this.setVisible(Object.fromEntries(self.fields.map(c => [c, true])))
-          }),
+          autorun(
+            function facetedVisibleAutorun() {
+              self.setVisible(
+                Object.fromEntries(self.fields.map(c => [c, true])),
+              )
+            },
+            { name: 'FacetedVisible' },
+          ),
         )
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        filterText,
+        showSparse,
+        showFilters,
+        showOptions,
+        panelWidth,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(filterText ? { filterText } : {}),
+        ...(showSparse ? { showSparse } : {}),
+        ...(!showFilters ? { showFilters } : {}),
+        ...(showOptions ? { showOptions } : {}),
+        ...(panelWidth !== 400 ? { panelWidth } : {}),
+      } as typeof snap
+    })
 }
-
 export type FacetedStateModel = ReturnType<typeof facetedStateTreeF>
 export type FacetedModel = Instance<FacetedStateModel>
+export type FacetedRow = FacetedModel['filteredRows'][0]

@@ -1,26 +1,42 @@
-import React, { lazy } from 'react'
-import { cast, types, Instance } from 'mobx-state-tree'
+import type React from 'react'
+import { lazy } from 'react'
+
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-} from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
+  type ExportSvgDisplayOptions,
   FeatureDensityMixin,
+  type LegendItem,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
-// icons
-import PaletteIcon from '@mui/icons-material/Palette'
-import FilterListIcon from '@mui/icons-material/ClearAll'
+import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
+import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
+import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
+import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
+import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { getReadDisplayLegendItems } from '../shared/legendUtils'
+import {
+  getColorSchemeMenuItem,
+  getFilterByMenuItem,
+} from '../shared/menuItems'
 
-// locals
-import { FilterModel, IFilter } from '../shared'
-import { ChainData } from '../shared/fetchChains'
+import type { ReducedFeature } from '../shared/types'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// async
-const FilterByTagDialog = lazy(() => import('../shared/FilterByTag'))
+const SetFeatureHeightDialog = lazy(
+  () => import('./components/SetFeatureHeightDialog'),
+)
 
 /**
  * #stateModel LinearReadCloudDisplay
@@ -37,6 +53,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
+      LinearReadDisplayBaseMixin(),
+      LinearReadDisplayWithLayoutMixin(),
+      LinearReadDisplayWithPairFiltersMixin(),
+      RPCRenderingMixin(),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -50,94 +71,164 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        filterBy: types.optional(FilterModel, {}),
+        drawCloud: false,
+
+        /**
+         * #property
+         * Whether to remove spacing between stacked features
+         */
+        noSpacing: types.maybe(types.boolean),
+
+        /**
+         * #property
+         * Maximum height for the layout (prevents infinite stacking)
+         */
+        trackMaxHeight: types.maybe(types.number),
 
         /**
          * #property
          */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        ),
+        hideSmallIndelsSetting: types.maybe(types.boolean),
 
         /**
          * #property
          */
-        drawSingletons: true,
+        hideMismatchesSetting: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
-      loading: false,
-      chainData: undefined as ChainData | undefined,
-      lastDrawnOffsetPx: undefined as number | undefined,
-      lastDrawnBpPerPx: 0,
-      ref: null as HTMLCanvasElement | null,
+      /**
+       * #volatile
+       * Current height of the layout after drawing
+       */
+      layoutHeight: 0,
+      /**
+       * #volatile
+       * Chain ID of the currently selected feature for persistent highlighting
+       */
+      selectedFeatureId: undefined as string | undefined,
+    }))
+    .views(self => ({
+      get dataTestId() {
+        return self.drawCloud ? 'cloud-canvas' : 'stack-canvas'
+      },
+      /**
+       * #getter
+       */
+      get featureHeightSetting() {
+        return self.featureHeight ?? getConf(self, 'featureHeight')
+      },
+      /**
+       * #getter
+       */
+      get hideSmallIndels() {
+        return self.hideSmallIndelsSetting ?? getConf(self, 'hideSmallIndels')
+      },
+      /**
+       * #getter
+       */
+      get hideMismatches() {
+        return self.hideMismatchesSetting ?? getConf(self, 'hideMismatches')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get modificationThreshold() {
+        return self.colorBy?.modifications?.threshold ?? 10
+      },
     }))
     .actions(self => ({
       /**
        * #action
+       * Set whether to remove spacing between features
        */
-      setDrawSingletons(f: boolean) {
-        self.drawSingletons = f
+      setNoSpacing(flag?: boolean) {
+        self.noSpacing = flag
+      },
+      /**
+       * #action
+       * Set the maximum height for the layout
+       */
+      setMaxHeight(n?: number) {
+        self.trackMaxHeight = n
+      },
+      /**
+       * #action
+       * Set the current layout height
+       */
+      setLayoutHeight(n: number) {
+        self.layoutHeight = n
       },
       /**
        * #action
        */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
+      selectFeature(chain: ReducedFeature[]) {
+        const session = getSession(self)
+        const syntheticFeature = chainToSimpleFeature(chain)
+        if (isSessionModelWithWidgets(session)) {
+          const featureWidget = session.addWidget(
+            'BaseFeatureWidget',
+            'baseFeature',
+            {
+              featureData: syntheticFeature.toJSON(),
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+            },
+          )
+          session.showWidget(featureWidget)
+        }
+        session.setSelection(syntheticFeature)
       },
       /**
        * #action
        */
-      setLastDrawnBpPerPx(n: number) {
-        self.lastDrawnBpPerPx = n
+      setDrawCloud(b: boolean) {
+        self.drawCloud = b
+      },
+      /**
+       * #action
+       * Set the ID of the selected feature for persistent highlighting
+       */
+      setSelectedFeatureId(id: string | undefined) {
+        self.selectedFeatureId = id
+      },
+      /**
+       * #action
+       */
+      setHideSmallIndels(arg: boolean) {
+        self.hideSmallIndelsSetting = arg
+      },
+      /**
+       * #action
+       */
+      setHideMismatches(arg: boolean) {
+        self.hideMismatchesSetting = arg
       },
 
       /**
        * #action
        */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
-      /**
-       * #action
-       */
-      reload() {
-        self.error = undefined
-      },
-      /**
-       * #action
-       * internal, a reference to a HTMLCanvas because we use a autorun to draw
-       * the canvas
-       */
-      setRef(ref: HTMLCanvasElement | null) {
-        self.ref = ref
-      },
-
-      setColorScheme(s: { type: string }) {
-        self.colorBy = cast(s)
-      },
-
-      /**
-       * #action
-       */
-      setChainData(args: ChainData) {
-        self.chainData = args
-      },
-
-      /**
-       * #action
-       */
-      setFilterBy(filter: IFilter) {
-        self.filterBy = cast(filter)
+      setShowLegend(s: boolean) {
+        self.showLegend = s
       },
     }))
     .views(self => ({
-      get drawn() {
-        return self.lastDrawnOffsetPx !== undefined
+      /**
+       * #method
+       * Returns legend items based on current colorBy setting
+       */
+      legendItems(): LegendItem[] {
+        return getReadDisplayLegendItems(
+          self.colorBy,
+          self.visibleModifications,
+        )
       },
     }))
     .views(self => {
@@ -147,15 +238,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       } = self
 
       return {
-        // we don't use a server side renderer, so this fills in minimal
-        // info so as not to crash
+        /**
+         * #method
+         */
         renderProps() {
           return {
             ...superRenderProps(),
-            notReady: !self.chainData,
+            notReady: false,
           }
         },
-
         /**
          * #method
          */
@@ -163,44 +254,118 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Draw singletons',
-              type: 'checkbox',
-              checked: self.drawSingletons,
-              onClick: () => self.setDrawSingletons(!self.drawSingletons),
-            },
-            {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  FilterByTagDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
-
-            {
-              label: 'Color scheme',
-              icon: PaletteIcon,
+              label: 'Set feature height...',
               subMenu: [
                 {
-                  label: 'Insert size ± 3σ and orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' }),
+                  label: 'Normal',
+                  type: 'radio',
+                  checked:
+                    self.featureHeightSetting === 7 && self.noSpacing !== true,
+                  onClick: () => {
+                    self.setFeatureHeight(7)
+                    self.setNoSpacing(false)
+                  },
                 },
                 {
-                  label: 'Insert size ± 3σ',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
+                  label: 'Compact',
+                  type: 'radio',
+                  checked:
+                    self.featureHeightSetting === 3 && self.noSpacing === true,
+                  onClick: () => {
+                    self.setFeatureHeight(3)
+                    self.setNoSpacing(true)
+                  },
                 },
                 {
-                  label: 'Orientation',
-                  onClick: () => self.setColorScheme({ type: 'orientation' }),
+                  label: 'Super-compact',
+                  type: 'radio',
+                  checked:
+                    self.featureHeightSetting === 1 && self.noSpacing === true,
+                  onClick: () => {
+                    self.setFeatureHeight(1)
+                    self.setNoSpacing(true)
+                  },
                 },
                 {
-                  label: 'Insert size gradient',
-                  onClick: () => self.setColorScheme({ type: 'gradient' }),
+                  label: 'Manually set height...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SetFeatureHeightDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
                 },
               ],
+            },
+            {
+              label: 'Toggle read cloud',
+              type: 'checkbox',
+              helpText:
+                'In read cloud mode, the y-coordinate of the reads is proportional to TLEN (template length)',
+              checked: self.drawCloud,
+              onClick: () => {
+                self.setDrawCloud(!self.drawCloud)
+              },
+            },
+            {
+              label: 'Draw singletons',
+              type: 'checkbox',
+              helpText:
+                'If disabled, does not single parts of a paired end read, or a single long read alignment. Will only draw paired reads or split alignments',
+              checked: self.drawSingletons,
+              onClick: () => {
+                self.setDrawSingletons(!self.drawSingletons)
+              },
+            },
+            {
+              label: 'Draw proper pairs',
+              helpText:
+                'If disabled, will not draw "normally paired" reads which can help highlight structural variants',
+              type: 'checkbox',
+              checked: self.drawProperPairs,
+              onClick: () => {
+                self.setDrawProperPairs(!self.drawProperPairs)
+              },
+            },
+            {
+              label: 'Draw read strand relative to primary',
+              helpText:
+                'This makes all the reads draw their strand relative to the primary alignment, which can be helpful in seeing patterns of flipping orientation in split long-read alignments',
+              type: 'checkbox',
+              checked: self.flipStrandLongReadChains,
+              onClick: () => {
+                self.setFlipStrandLongReadChains(!self.flipStrandLongReadChains)
+              },
+            },
+            {
+              label: 'Hide small indels (<10bp)',
+              type: 'checkbox',
+              checked: self.hideSmallIndels,
+              onClick: () => {
+                self.setHideSmallIndels(!self.hideSmallIndels)
+              },
+            },
+            {
+              label: 'Hide mismatches',
+              type: 'checkbox',
+              checked: self.hideMismatches,
+              onClick: () => {
+                self.setHideMismatches(!self.hideMismatches)
+              },
+            },
+            getFilterByMenuItem(self),
+            getColorSchemeMenuItem(self),
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
             },
           ]
         },
@@ -208,12 +373,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        async renderSvg(opts: {
-          rasterizeLayers?: boolean
-        }): Promise<React.ReactNode> {
-          const { renderSvg } = await import('../shared/renderSvg')
-          const { drawFeats } = await import('./drawFeats')
-          return renderSvg(self as LinearReadCloudDisplayModel, opts, drawFeats)
+        async renderSvg(
+          opts: ExportSvgDisplayOptions,
+        ): Promise<React.ReactNode> {
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self as LinearReadCloudDisplayModel, opts)
         },
       }
     })
@@ -222,9 +386,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('../shared/afterAttach')
-            const { drawFeats } = await import('./drawFeats')
-            doAfterAttach(self, drawFeats)
+            const { doAfterAttachRPC } = await import('./afterAttachRPC')
+            doAfterAttachRPC(self)
           } catch (e) {
             console.error(e)
             self.setError(e)
@@ -232,6 +395,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { drawCloud, noSpacing, trackMaxHeight, showLegend, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(drawCloud ? { drawCloud } : {}),
+        ...(noSpacing !== undefined ? { noSpacing } : {}),
+        ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
+        ...(showLegend !== undefined ? { showLegend } : {}),
+      } as typeof snap
+    })
 }
 
 export type LinearReadCloudDisplayStateModel = ReturnType<

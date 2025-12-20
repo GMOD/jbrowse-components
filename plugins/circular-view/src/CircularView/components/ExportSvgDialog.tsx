@@ -1,4 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { getSession, useLocalStorage } from '@jbrowse/core/util'
 import {
   Button,
   Checkbox,
@@ -8,14 +11,11 @@ import {
   FormControlLabel,
   MenuItem,
   TextField,
-  TextFieldProps,
   Typography,
 } from '@mui/material'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 
-// locals
-import { ExportSvgOptions } from '../models/model'
-import { getSession, useLocalStorage } from '@jbrowse/core/util'
+import type { ExportSvgOptions } from '../model'
+import type { TextFieldProps } from '@mui/material'
 
 function LoadingMessage() {
   return (
@@ -34,7 +34,7 @@ function TextField2({ children, ...rest }: TextFieldProps) {
   )
 }
 function useSvgLocal<T>(key: string, val: T) {
-  return useLocalStorage('svg-' + key, val)
+  return useLocalStorage(`svg-${key}`, val)
 }
 
 export default function ExportSvgDialog({
@@ -65,7 +65,9 @@ export default function ExportSvgDialog({
         <TextField2
           helperText="filename"
           value={filename}
-          onChange={event => setFilename(event.target.value)}
+          onChange={event => {
+            setFilename(event.target.value)
+          }}
         />
 
         {session.allThemes ? (
@@ -73,7 +75,9 @@ export default function ExportSvgDialog({
             select
             label="Theme"
             value={themeName}
-            onChange={event => setThemeName(event.target.value)}
+            onChange={event => {
+              setThemeName(event.target.value)
+            }}
           >
             {Object.entries(session.allThemes()).map(([key, val]) => (
               <MenuItem key={key} value={key}>
@@ -90,7 +94,9 @@ export default function ExportSvgDialog({
             control={
               <Checkbox
                 checked={rasterizeLayers}
-                onChange={() => setRasterizeLayers(val => !val)}
+                onChange={() => {
+                  setRasterizeLayers(val => !val)
+                }}
               />
             }
             label="Rasterize canvas based tracks? File may be much larger if this is turned off"
@@ -106,7 +112,9 @@ export default function ExportSvgDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

@@ -1,7 +1,7 @@
-import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import FieldName from './FieldName'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+
 import BasicValue from './BasicValue'
+import FieldName from './FieldName'
 
 const useStyles = makeStyles()({
   field: {
@@ -16,15 +16,17 @@ export default function SimpleField({
   description,
   prefix,
   width,
+  formatter,
 }: {
   description?: React.ReactNode
   name: string
   value: unknown
   prefix?: string[]
   width?: number
+  formatter?: (value: unknown, key: string) => React.ReactNode
 }) {
   const { classes } = useStyles()
-  return value !== null && value !== undefined ? (
+  return value != null ? (
     <div className={classes.field}>
       <FieldName
         prefix={prefix}
@@ -32,7 +34,7 @@ export default function SimpleField({
         name={name}
         width={width}
       />
-      <BasicValue value={value} />
+      <BasicValue value={formatter ? formatter(value, name) : value} />
     </div>
   ) : null
 }

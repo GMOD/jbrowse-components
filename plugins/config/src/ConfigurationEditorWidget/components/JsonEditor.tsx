@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { InputLabel, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 // fontSize and fontFamily have to match between Editor and SyntaxHighlighter
@@ -68,11 +69,15 @@ const JsonEditor = observer(function JsonEditor({
           value={contents}
           helperText={slot.description}
           multiline
-          onChange={event => setContents(event.target.value)}
+          onChange={event => {
+            setContents(event.target.value)
+          }}
           style={{ background: error ? '#fdd' : undefined }}
-          InputProps={{
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />

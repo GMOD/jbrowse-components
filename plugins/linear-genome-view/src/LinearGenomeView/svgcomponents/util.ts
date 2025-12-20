@@ -15,7 +15,7 @@ export function totalHeight(
   return sum(
     tracks.map(
       t =>
-        t.displays[0].height +
+        t.displays[0]!.height +
         (['none', 'left'].includes(trackLabels) ? 0 : textHeight),
     ),
   )

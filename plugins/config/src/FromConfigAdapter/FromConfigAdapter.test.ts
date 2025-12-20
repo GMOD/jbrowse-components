@@ -1,5 +1,6 @@
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
 import Adapter from './FromConfigAdapter'
 import configSchema from './configSchema'
 
@@ -17,7 +18,7 @@ test('adapter can fetch features', async () => {
 
   const featuresArray = await firstValueFrom(result.pipe(toArray()))
   expect(featuresArray.length).toBe(1)
-  expect(featuresArray[0].toJSON()).toEqual(features[0])
+  expect(featuresArray[0]!.toJSON()).toEqual(features[0]!)
 })
 
 test('adapter can fetch features with subfeatures', async () => {

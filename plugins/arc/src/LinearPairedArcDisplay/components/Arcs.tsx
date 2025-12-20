@@ -1,20 +1,21 @@
-import React, { useRef, useState } from 'react'
-import { observer } from 'mobx-react'
+import { Suspense, lazy, useRef, useState } from 'react'
+
+import { getConf } from '@jbrowse/core/configuration'
 import {
-  AbstractSessionModel,
-  Feature,
   getContainingView,
   getSession,
   getStrokeProps,
 } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import { getConf } from '@jbrowse/core/configuration'
+import { observer } from 'mobx-react'
 
-// local
-import { LinearArcDisplayModel } from '../model'
-import ArcTooltip from '../../ArcTooltip'
 import { makeFeaturePair, makeSummary } from './util'
+
+import type { LinearArcDisplayModel } from '../model'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const ArcTooltip = lazy(() => import('../../ArcTooltip'))
 
 type LGV = LinearGenomeViewModel
 
@@ -62,32 +63,50 @@ const Arc = observer(function ({
           ref={ref}
           {...getStrokeProps(col)}
           strokeWidth={sw}
-          onMouseOut={() => setMouseOvered(false)}
-          onMouseOver={() => setMouseOvered(true)}
-          onClick={() => model.selectFeature(feature)}
+          onMouseOut={() => {
+            setMouseOvered(false)
+          }}
+          onMouseOver={() => {
+            setMouseOvered(true)
+          }}
+          onClick={() => {
+            model.selectFeature(feature)
+          }}
           fill="none"
           pointerEvents="stroke"
         />
-        {k1.mateDirection !== undefined ? (
+        {k1.mateDirection ? (
           <line
             {...getStrokeProps(col)}
             strokeWidth={sw}
-            onMouseOut={() => setMouseOvered(false)}
-            onMouseOver={() => setMouseOvered(true)}
-            onClick={() => model.selectFeature(feature)}
+            onMouseOut={() => {
+              setMouseOvered(false)
+            }}
+            onMouseOver={() => {
+              setMouseOvered(true)
+            }}
+            onClick={() => {
+              model.selectFeature(feature)
+            }}
             x1={left}
             x2={left + k1.mateDirection * 20}
             y1={1.5}
             y2={1.5}
           />
         ) : null}
-        {k2.mateDirection !== undefined ? (
+        {k2.mateDirection ? (
           <line
             {...getStrokeProps(col)}
             strokeWidth={sw}
-            onMouseOut={() => setMouseOvered(false)}
-            onMouseOver={() => setMouseOvered(true)}
-            onClick={() => model.selectFeature(feature)}
+            onMouseOut={() => {
+              setMouseOvered(false)
+            }}
+            onMouseOver={() => {
+              setMouseOvered(true)
+            }}
+            onClick={() => {
+              model.selectFeature(feature)
+            }}
             x1={right}
             x2={right + k2.mateDirection * 20}
             y1={1.5}
@@ -95,7 +114,9 @@ const Arc = observer(function ({
           />
         ) : null}
         {mouseOvered ? (
-          <ArcTooltip contents={makeSummary(feature, alt)} />
+          <Suspense fallback={null}>
+            <ArcTooltip contents={makeSummary(feature, alt)} />
+          </Suspense>
         ) : null}
       </>
     ) : null
@@ -135,7 +156,7 @@ const Arcs = observer(function ({
   const session = getSession(model)
   const { assemblyManager } = session
   const { features } = model
-  const assembly = assemblyManager.get(view.assemblyNames[0])
+  const assembly = assemblyManager.get(view.assemblyNames[0]!)
 
   return assembly ? (
     <Wrapper model={model} exportSVG={exportSVG}>
@@ -144,7 +165,7 @@ const Arcs = observer(function ({
         return (
           alts?.map(a => (
             <Arc
-              key={f.id() + '-' + a}
+              key={`${f.id()}-${a}`}
               session={session}
               feature={f}
               alt={a}

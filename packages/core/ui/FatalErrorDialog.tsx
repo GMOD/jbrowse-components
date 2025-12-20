@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+
 import {
   Button,
   Dialog,
@@ -6,8 +7,9 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material'
-import FactoryResetDialog from './FactoryResetDialog'
+
 import ErrorMessage from './ErrorMessage'
+import FactoryResetDialog from './FactoryResetDialog'
 
 const ResetComponent = ({
   onFactoryReset,
@@ -24,12 +26,16 @@ const ResetComponent = ({
         data-testid="fatal-error"
         color="primary"
         variant="contained"
-        onClick={() => setDialogOpen(true)}
+        onClick={() => {
+          setDialogOpen(true)
+        }}
       >
         {resetButtonText}
       </Button>
       <FactoryResetDialog
-        onClose={() => setDialogOpen(false)}
+        onClose={() => {
+          setDialogOpen(false)
+        }}
         open={dialogOpen}
         onFactoryReset={onFactoryReset}
       />
@@ -59,7 +65,9 @@ export default function FatalErrorDialog({
         <Button
           color="secondary"
           variant="contained"
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            window.location.reload()
+          }}
         >
           Refresh
         </Button>

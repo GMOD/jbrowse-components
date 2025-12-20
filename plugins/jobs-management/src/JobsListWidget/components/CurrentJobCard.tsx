@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { useState } from 'react'
+
 import {
   Box,
   Button,
@@ -9,7 +9,9 @@ import {
   LinearProgress,
   Typography,
 } from '@mui/material'
-import { NewJob } from '../model'
+import { observer } from 'mobx-react'
+
+import type { NewJob } from '../model'
 
 const CurrentJobCard = observer(function CurrentJobCard({
   job,
@@ -55,22 +57,20 @@ const CurrentJobCard = observer(function CurrentJobCard({
           )}
         </Box>
       </CardContent>
-      {job.cancelCallback ? (
-        <CardActions>
-          <Button
-            variant="contained"
-            color="inherit"
-            disabled={clicked || job.progressPct === 0}
-            onClick={() => {
-              job.setStatusMessage('Aborted via cancel button')
-              job.cancelCallback && job.cancelCallback()
-              setClicked(true)
-            }}
-          >
-            Cancel
-          </Button>
-        </CardActions>
-      ) : null}
+      <CardActions>
+        <Button
+          variant="contained"
+          color="inherit"
+          disabled={clicked || job.progressPct === 0}
+          onClick={() => {
+            job.setStatusMessage('Aborted via cancel button')
+            job.cancelCallback()
+            setClicked(true)
+          }}
+        >
+          Cancel
+        </Button>
+      </CardActions>
     </Card>
   )
 })

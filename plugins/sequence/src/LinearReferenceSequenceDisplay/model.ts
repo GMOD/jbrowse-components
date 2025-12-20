@@ -1,15 +1,12 @@
-import { addDisposer, types } from 'mobx-state-tree'
-import {
-  BaseLinearDisplay,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { getContainingView } from '@jbrowse/core/util'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
+
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -55,13 +52,52 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
+      get sequenceType() {
+        return getConf(getContainingTrack(self), 'sequenceType')
+      },
+
+      /**
+       * #getter
+       * showReverse setting, it is NOT disabled for non-dna sequences
+       */
+      get showForwardActual() {
+        return self.showForward
+      },
+
+      /**
+       * #getter
+       * showReverse setting, is disabled for non-dna sequences
+       */
+      get showReverseActual() {
+        return this.sequenceType === 'dna' ? self.showReverse : false
+      },
+
+      /**
+       * #getter
+       * showTranslation setting is disabled for non-dna sequences
+       */
+      get showTranslationActual() {
+        return this.sequenceType === 'dna' ? self.showTranslation : false
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
       get sequenceHeight() {
-        const { showTranslation, showReverse, showForward } = self
-        const r1 = showReverse && showTranslation ? self.rowHeight * 3 : 0
-        const r2 = showForward && showTranslation ? self.rowHeight * 3 : 0
+        const {
+          rowHeight,
+          showTranslationActual,
+          showReverseActual,
+          showForwardActual,
+        } = self
+        const r1 =
+          showReverseActual && showTranslationActual ? rowHeight * 3 : 0
+        const r2 =
+          showForwardActual && showTranslationActual ? rowHeight * 3 : 0
         const t = r1 + r2
-        const r = showReverse ? self.rowHeight : 0
-        const s = showForward ? self.rowHeight : 0
+        const r = showReverseActual ? rowHeight : 0
+        const s = showForwardActual ? rowHeight : 0
         return t + r + s
       },
     }))
@@ -73,21 +109,23 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         renderProps() {
           const {
-            showForward,
             rpcDriverName,
-            showReverse,
-            showTranslation,
+            showForwardActual,
+            showReverseActual,
+            showTranslationActual,
             rowHeight,
             sequenceHeight,
+            sequenceType,
           } = self
           return {
             ...superRenderProps(),
             ...getParentRenderProps(self),
             config: self.configuration.renderer,
             rpcDriverName,
-            showForward,
-            showReverse,
-            showTranslation,
+            showForward: showForwardActual,
+            showReverse: showReverseActual,
+            showTranslation: showTranslationActual,
+            sequenceType,
             rowHeight,
             sequenceHeight,
           }
@@ -100,7 +138,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       regionCannotBeRendered(/* region */) {
         const view = getContainingView(self) as LGV
-        return view?.bpPerPx > 3 ? 'Zoom in to see sequence' : undefined
+        return view.bpPerPx > 3 ? 'Zoom in to see sequence' : undefined
       },
       /**
        * #getter
@@ -131,14 +169,17 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const view = getContainingView(self) as LGV
-            if (view?.bpPerPx > 3) {
-              self.setHeight(50)
-            } else {
-              self.setHeight(self.sequenceHeight)
-            }
-          }),
+          autorun(
+            function sequenceHeightAutorun() {
+              const view = getContainingView(self) as LGV
+              if (view.bpPerPx > 3) {
+                self.setHeight(50)
+              } else {
+                self.setHeight(self.sequenceHeight)
+              }
+            },
+            { name: 'SequenceHeight' },
+          ),
         )
       },
     }))
@@ -148,25 +189,49 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       trackMenuItems() {
         return [
-          {
-            label: 'Show forward',
-            type: 'checkbox',
-            checked: self.showForward,
-            onClick: () => self.toggleShowForward(),
-          },
-          {
-            label: 'Show reverse',
-            type: 'checkbox',
-            checked: self.showReverse,
-            onClick: () => self.toggleShowReverse(),
-          },
-          {
-            label: 'Show translation',
-            type: 'checkbox',
-            checked: self.showTranslation,
-            onClick: () => self.toggleShowTranslation(),
-          },
+          ...(self.sequenceType === 'dna'
+            ? [
+                {
+                  label: 'Show forward',
+                  type: 'checkbox',
+                  checked: self.showForward,
+                  onClick: () => {
+                    self.toggleShowForward()
+                  },
+                },
+                {
+                  label: 'Show reverse',
+                  type: 'checkbox',
+                  checked: self.showReverse,
+                  onClick: () => {
+                    self.toggleShowReverse()
+                  },
+                },
+                {
+                  label: 'Show translation',
+                  type: 'checkbox',
+                  checked: self.showTranslation,
+                  onClick: () => {
+                    self.toggleShowTranslation()
+                  },
+                },
+              ]
+            : []),
         ]
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { showForward, showReverse, showTranslation, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(!showForward ? { showForward } : {}),
+        ...(!showReverse ? { showReverse } : {}),
+        ...(!showTranslation ? { showTranslation } : {}),
+      } as typeof snap
+    })
 }

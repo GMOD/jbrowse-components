@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react'
-import {
-  TextField,
-  MenuItem,
-  InputProps as IIP,
-  TextFieldProps as TFP,
-} from '@mui/material'
-import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+import { useEffect, useState } from 'react'
 
-// locals
-import { getConf } from '../configuration'
-import { useLocalStorage, AbstractSessionModel } from '../util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { MenuItem, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import { useLocalStorage } from '../util'
+
+import type { AbstractSessionModel } from '../util'
+import type { InputProps as IIP, TextFieldProps as TFP } from '@mui/material'
 
 const useStyles = makeStyles()({
   importFormEntry: {
@@ -21,6 +18,7 @@ const useStyles = makeStyles()({
 const AssemblySelector = observer(function ({
   session,
   onChange,
+  label = 'Assembly',
   selected,
   InputProps,
   TextFieldProps,
@@ -28,6 +26,7 @@ const AssemblySelector = observer(function ({
   helperText = 'Select assembly to view',
 }: {
   session: AbstractSessionModel
+  label?: string
   helperText?: string
   onChange: (arg: string) => void
   selected?: string
@@ -67,27 +66,30 @@ const AssemblySelector = observer(function ({
   return (
     <TextField
       select
-      label="Assembly"
+      data-testid="assembly-selector-textfield"
+      label={label}
       variant="outlined"
       helperText={error || helperText}
       value={selection || ''}
-      inputProps={{ 'data-testid': 'assembly-selector' }}
-      onChange={event => setLastSelected(event.target.value)}
+      onChange={event => {
+        setLastSelected(event.target.value)
+      }}
       error={!!error}
-      InputProps={InputProps}
       disabled={!!error}
       className={classes.importFormEntry}
       {...TextFieldProps}
+      slotProps={{
+        input: InputProps,
+        htmlInput: {
+          'data-testid': 'assembly-selector',
+        },
+      }}
     >
-      {assemblyNames.map(name => {
-        const assembly = assemblyManager.get(name)
-        const displayName = assembly ? getConf(assembly, 'displayName') : ''
-        return (
-          <MenuItem key={name} value={name}>
-            {displayName || name}
-          </MenuItem>
-        )
-      })}
+      {assemblyNames.map(name => (
+        <MenuItem key={name} value={name}>
+          {assemblyManager.get(name)?.displayName || name}
+        </MenuItem>
+      ))}
     </TextField>
   )
 })

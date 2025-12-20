@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
+
 import baseWiggleRendererConfigSchema from '../configSchema'
-import { types } from 'mobx-state-tree'
 
 /**
  * #config XYPlotRenderer
@@ -40,7 +41,7 @@ const configSchema = ConfigurationSchema(
      */
     minSize: {
       type: 'number',
-      defaultValue: 0,
+      defaultValue: 0.7,
     },
   },
   {

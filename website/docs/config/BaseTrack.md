@@ -6,9 +6,17 @@ title: BaseTrack
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-### Source file
+Also note: this document represents the config API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[packages/core/pluggableElementTypes/models/baseTrackConfig.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/baseTrackConfig.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/baseTrackConfig.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BaseTrack.md)
+
+## Docs
 
 ### BaseTrack - Identifier
 
@@ -63,6 +71,17 @@ metadata: {
         type: 'frozen',
         description: 'anything to add about this track',
         defaultValue: {},
+      }
+```
+
+#### slot: rpcDriverName
+
+```js
+rpcDriverName: {
+        type: 'string',
+        description:
+          'RPC driver to use for this track. Leave empty to use the display-level or global default.',
+        defaultValue: '',
       }
 ```
 

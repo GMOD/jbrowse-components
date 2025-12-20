@@ -1,20 +1,20 @@
-import React, { useState } from 'react'
-import { Button } from '@mui/material'
-import { getStr, measureGridWidth } from '@jbrowse/core/util'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import { makeStyles } from 'tss-react/mui'
-import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
+import { useState } from 'react'
+
 import { SanitizedHTML } from '@jbrowse/core/ui'
-
-// locals
-import { moveUp, moveDown } from './util'
-import { Source } from '../../util'
-
-// icons
-import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
+import { getStr, measureGridWidth } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import { Button } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
+
+import { moveDown, moveUp } from './util'
+
+import type { Source } from '../../util'
+import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -40,8 +40,14 @@ function SourcesGrid({
 }) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const [selected, setSelected] = useState([] as string[])
-  const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]
+  const [selected, setSelected] = useState([] as GridRowId[])
+  const {
+    name: _name,
+    color: _color,
+    source: _source,
+    baseUri: _baseUri,
+    ...rest
+  } = rows.length > 0 ? rows[0]! : {}
   const [widgetColor, setWidgetColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
     idx: 0,
@@ -52,34 +58,44 @@ function SourcesGrid({
     <div>
       <Button
         disabled={!selected.length}
-        onClick={event => setAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
       >
         Change color of selected items
       </Button>
       <Button
-        onClick={() => onChange(moveUp([...rows], selected))}
         disabled={!selected.length}
+        onClick={() => {
+          onChange(moveUp([...rows], selected))
+        }}
       >
         <KeyboardArrowUpIcon />
         {showTips ? 'Move selected items up' : null}
       </Button>
       <Button
-        onClick={() => onChange(moveDown([...rows], selected))}
         disabled={!selected.length}
+        onClick={() => {
+          onChange(moveDown([...rows], selected))
+        }}
       >
         <KeyboardArrowDownIcon />
         {showTips ? 'Move selected items down' : null}
       </Button>
       <Button
-        onClick={() => onChange(moveUp([...rows], selected, rows.length))}
         disabled={!selected.length}
+        onClick={() => {
+          onChange(moveUp([...rows], selected, rows.length))
+        }}
       >
         <KeyboardDoubleArrowUpIcon />
         {showTips ? 'Move selected items to top' : null}
       </Button>
       <Button
-        onClick={() => onChange(moveDown([...rows], selected, rows.length))}
         disabled={!selected.length}
+        onClick={() => {
+          onChange(moveDown([...rows], selected, rows.length))
+        }}
       >
         <KeyboardDoubleArrowDownIcon />
         {showTips ? 'Move selected items to bottom' : null}
@@ -89,23 +105,27 @@ function SourcesGrid({
         color={widgetColor}
         onChange={c => {
           setWidgetColor(c)
-          selected.forEach(id => {
+          for (const id of selected) {
             const elt = rows.find(f => f.name === id)
             if (elt) {
               elt.color = c
             }
-          })
+          }
 
           onChange([...rows])
         }}
-        onClose={() => setAnchorEl(null)}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
       />
       <div style={{ height: 400, width: '100%' }}>
         <DataGrid
+          disableRowSelectionOnClick
           getRowId={row => row.name}
           checkboxSelection
-          disableRowSelectionOnClick
-          onRowSelectionModelChange={arg => setSelected(arg as string[])}
+          onRowSelectionModelChange={arg => {
+            setSelected([...arg.ids])
+          }}
           rows={rows}
           rowHeight={25}
           columnHeaderHeight={33}
@@ -113,21 +133,18 @@ function SourcesGrid({
             {
               field: 'color',
               headerName: 'Color',
-              renderCell: params => {
-                const { value, id } = params
-                return (
-                  <ColorPicker
-                    color={value || 'blue'}
-                    onChange={c => {
-                      const elt = rows.find(f => f.name === id)
-                      if (elt) {
-                        elt.color = c
-                      }
-                      onChange([...rows])
-                    }}
-                  />
-                )
-              },
+              renderCell: ({ value, id }) => (
+                <ColorPicker
+                  color={value || 'blue'}
+                  onChange={c => {
+                    const elt = rows.find(f => f.name === id)
+                    if (elt) {
+                      elt.color = c
+                    }
+                    onChange([...rows])
+                  }}
+                />
+              ),
             },
             {
               field: 'name',
@@ -161,7 +178,7 @@ function SourcesGrid({
             // thing since we are controlling sort instead of the default data
             // grid sort anyways
             const idx = (currSort.idx + 1) % 2
-            const field = sort?.field || currSort.field
+            const field = sort!.field || currSort.field
             setCurrSort({ idx, field })
             onChange(
               field

@@ -1,18 +1,16 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import assemblyManagerFactory, {
-  BaseAssemblyConfigSchema,
-} from '@jbrowse/core/assemblyManager'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
-  IAnyType,
-  Instance,
-  SnapshotIn,
   cast,
   getSnapshot,
   isStateTreeNode,
   types,
-} from 'mobx-state-tree'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+} from '@jbrowse/mobx-state-tree'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseRootModel
@@ -59,6 +57,9 @@ export function BaseRootModelFactory({
       ),
     })
     .volatile(self => ({
+      /**
+       * #volatile
+       */
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
@@ -67,9 +68,21 @@ export function BaseRootModelFactory({
         },
       ),
 
+      /**
+       * #volatile
+       */
       adminMode: false,
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
+      /**
+       * #volatile
+       */
       textSearchManager: new TextSearchManager(pluginManager),
+      /**
+       * #volatile
+       */
       pluginManager,
     }))
     .actions(self => ({
@@ -102,9 +115,10 @@ export function BaseRootModelFactory({
        */
       renameCurrentSession(newName: string) {
         if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          snapshot.name = newName
-          this.setSession(snapshot)
+          this.setSession({
+            ...getSnapshot(self.session),
+            name: newName,
+          })
         }
       },
     }))

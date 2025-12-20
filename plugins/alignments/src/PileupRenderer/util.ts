@@ -1,52 +1,6 @@
-import { Feature, measureText } from '@jbrowse/core/util'
-import { Theme } from '@mui/material'
+import { measureText } from '@jbrowse/core/util'
 
-export function fillRect(
-  ctx: CanvasRenderingContext2D,
-  l: number,
-  t: number,
-  w: number,
-  h: number,
-  cw: number,
-  color?: string,
-) {
-  if (l + w < 0 || l > cw) {
-    return
-  } else {
-    if (color) {
-      ctx.fillStyle = color
-    }
-    ctx.fillRect(l, t, w, h)
-  }
-}
-
-export function getColorBaseMap(theme: Theme) {
-  const { bases } = theme.palette
-  return {
-    A: bases.A.main,
-    C: bases.C.main,
-    G: bases.G.main,
-    T: bases.T.main,
-    deletion: '#808080', // gray
-  }
-}
-
-export function getContrastBaseMap(theme: Theme) {
-  return Object.fromEntries(
-    Object.entries(getColorBaseMap(theme)).map(([key, value]) => [
-      key,
-      theme.palette.getContrastText(value),
-    ]),
-  )
-}
-
-export function shouldDrawSNPsMuted(type?: string) {
-  return ['methylation', 'modifications'].includes(type || '')
-}
-
-export function shouldDrawIndels() {
-  return true
-}
+import type { Feature } from '@jbrowse/core/util'
 
 export interface LayoutFeature {
   heightPx: number
@@ -54,10 +8,21 @@ export interface LayoutFeature {
   feature: Feature
 }
 
-// get width and height of chars the height is an approximation: width letter M
-// is approximately the height
-export function getCharWidthHeight() {
-  const charWidth = measureText('A')
-  const charHeight = measureText('M') - 2
-  return { charWidth, charHeight }
+// Cache measureText results for small numbers (0-99)
+// Most deletions are small, so this avoids calling measureText in hot loops
+const smallNumberWidthCache10 = new Map<number, number>()
+const smallNumberWidthCache = new Map<number, number>()
+
+export function measureTextSmallNumber(n: number, fontSize?: number) {
+  const cache =
+    fontSize === 10 ? smallNumberWidthCache10 : smallNumberWidthCache
+  if (n >= 0 && n < 100) {
+    let width = cache.get(n)
+    if (width === undefined) {
+      width = measureText(String(n), fontSize)
+      cache.set(n, width)
+    }
+    return width
+  }
+  return measureText(String(n), fontSize)
 }

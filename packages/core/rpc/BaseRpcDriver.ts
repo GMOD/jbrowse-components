@@ -1,12 +1,14 @@
-import { isAlive, isStateTreeNode } from 'mobx-state-tree'
+import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+import { readConfObject } from '../configuration'
 import { clamp } from '../util'
-import { serializeAbortSignal } from './remoteAbortSignals'
-import PluginManager from '../PluginManager'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
+
+import type PluginManager from '../PluginManager'
+import type { AnyConfigurationModel } from '../configuration'
 
 export interface WorkerHandle {
   status?: string
-  error?: Error
+  error?: unknown
   on?: (channel: string, callback: (message: unknown) => void) => void
   off?: (channel: string, callback: (message: unknown) => void) => void
   destroy(): void
@@ -15,7 +17,6 @@ export interface WorkerHandle {
     args?: unknown,
     options?: {
       statusCallback?(message: string): void
-      timeout?: number
       rpcDriverClassName: string
     },
   ): Promise<unknown>
@@ -25,35 +26,14 @@ export interface RpcDriverConstructorArgs {
   config: AnyConfigurationModel
 }
 
-function isClonable(thing: unknown) {
+function isCloneable(thing: unknown) {
   return !(typeof thing === 'function') && !(thing instanceof Error)
-}
-
-// watches the given worker object, returns a promise that will be rejected if
-// the worker times out
-export async function watchWorker(
-  worker: WorkerHandle,
-  pingTime: number,
-  rpcDriverClassName: string,
-) {
-  // after first ping succeeds, apply wait for timeout
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    await worker.call('ping', [], {
-      timeout: pingTime * 2,
-      rpcDriverClassName,
-    })
-    await new Promise(resolve => setTimeout(resolve, pingTime))
-  }
 }
 
 function detectHardwareConcurrency() {
   const mainThread = typeof window !== 'undefined'
   const canDetect = mainThread && 'hardwareConcurrency' in window.navigator
-  if (mainThread && canDetect) {
-    return window.navigator.hardwareConcurrency
-  }
-  return 1
+  return mainThread && canDetect ? window.navigator.hardwareConcurrency : 1
 }
 class LazyWorker {
   workerP?: Promise<WorkerHandle> | undefined
@@ -62,29 +42,10 @@ class LazyWorker {
 
   async getWorker() {
     if (!this.workerP) {
-      this.workerP = this.driver
-        .makeWorker()
-        .then(worker => {
-          watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
-            error => {
-              if (worker) {
-                console.error(
-                  'worker did not respond, killing and generating new one',
-                )
-                console.error(error)
-                worker.destroy()
-                worker.status = 'killed'
-                worker.error = error
-                this.workerP = undefined
-              }
-            },
-          )
-          return worker
-        })
-        .catch(e => {
-          this.workerP = undefined
-          throw e
-        })
+      this.workerP = this.driver.makeWorker().catch((e: unknown) => {
+        this.workerP = undefined
+        throw e
+      })
     }
     return this.workerP
   }
@@ -95,15 +56,12 @@ export default abstract class BaseRpcDriver {
 
   private lastWorkerAssignment = -1
 
-  private workerAssignments = new Map<string, number>() // sessionId -> worker number
+  // sessionId -> worker number
+  private workerAssignments = new Map<string, number>()
 
   abstract makeWorker(): Promise<WorkerHandle>
 
   private workerPool?: LazyWorker[]
-
-  maxPingTime = 30000
-
-  workerCheckFrequency = 5000
 
   config: AnyConfigurationModel
 
@@ -111,47 +69,49 @@ export default abstract class BaseRpcDriver {
     this.config = args.config
   }
 
-  // filter the given object and just remove any non-clonable things from it
+  // filter the given object and just remove any non-cloneable things from it
   filterArgs<THING_TYPE>(thing: THING_TYPE, sessionId: string): THING_TYPE {
+    // Fast path for primitives (most common case)
+    if (thing === null || thing === undefined) {
+      return thing
+    }
+    const type = typeof thing
+    if (type === 'string' || type === 'number' || type === 'boolean') {
+      return thing
+    }
+    if (type !== 'object') {
+      // functions and other non-cloneables
+      return undefined as unknown as THING_TYPE
+    }
+
+    // Object cases
     if (Array.isArray(thing)) {
       return thing
-        .filter(thing => isClonable(thing))
+        .filter(thing => isCloneable(thing))
         .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
-    }
-    if (typeof thing === 'object' && thing !== null) {
-      // AbortSignals are specially handled
-      if (thing instanceof AbortSignal) {
-        return serializeAbortSignal(
-          thing,
-          this.remoteAbort.bind(this, sessionId),
-        ) as unknown as THING_TYPE
-      }
-
-      if (isStateTreeNode(thing) && !isAlive(thing)) {
-        throw new Error('dead state tree node passed to RPC call')
-      }
-
-      // special case, don't try to iterate the file's subelements as the
-      // object entries below would
-      if (thing instanceof File) {
-        return thing
-      }
-
+    } else if (isStateTreeNode(thing) && !isAlive(thing)) {
+      throw new Error('dead state tree node passed to RPC call')
+    } else if (thing instanceof File) {
+      return thing
+    } else {
       return Object.fromEntries(
         Object.entries(thing)
-          .filter(e => isClonable(e[1]))
+          .filter(e => isCloneable(e[1]))
           .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
       ) as THING_TYPE
     }
-    return thing
   }
 
-  async remoteAbort(sessionId: string, functionName: string, signalId: number) {
+  async remoteAbort(
+    sessionId: string,
+    functionName: string,
+    stopTokenId: number,
+  ) {
     const worker = await this.getWorker(sessionId)
     await worker.call(
       functionName,
-      { signalId },
-      { timeout: 1000000, rpcDriverClassName: this.name },
+      { stopTokenId },
+      { rpcDriverClassName: this.name },
     )
   }
 
@@ -188,7 +148,7 @@ export default abstract class BaseRpcDriver {
       workerNumber = workerAssignment
     }
 
-    return workers[workerNumber].getWorker()
+    return workers[workerNumber]!.getWorker()
   }
 
   async call(
@@ -203,52 +163,29 @@ export default abstract class BaseRpcDriver {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
-    let done = false
+
+    // // eslint-disable-next-line no-console
+    // console.log(`[RPC] ${this.name}: ${functionName} (worker)`)
+
     const unextendedWorker = await this.getWorker(sessionId)
     const worker = pluginManager.evaluateExtensionPoint(
       'Core-extendWorker',
       unextendedWorker,
     ) as WorkerHandle
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
+    if (!rpcMethod) {
+      throw new Error(`unknown RPC method ${functionName}`)
+    }
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
 
     // now actually call the worker
-    const callP = worker
-      .call(functionName, filteredAndSerializedArgs, {
-        timeout: 5 * 60 * 1000, // 5 minutes
-        statusCallback: args.statusCallback,
-        rpcDriverClassName: this.name,
-        ...options,
-      })
-      .finally(() => {
-        done = true
-      })
-
-    // check every 5 seconds to see if the worker has been killed, and
-    // reject the killedP promise if it has
-    let killedCheckInterval: ReturnType<typeof setInterval>
-    const killedP = new Promise((resolve, reject) => {
-      killedCheckInterval = setInterval(() => {
-        // must've been killed
-        if (worker.status === 'killed') {
-          reject(
-            new Error(
-              `operation timed out, worker process stopped responding, ${worker.error}`,
-            ),
-          )
-        } else if (done) {
-          resolve(true)
-        }
-      }, this.workerCheckFrequency)
-    }).finally(() => {
-      clearInterval(killedCheckInterval)
+    const call = await worker.call(functionName, filteredAndSerializedArgs, {
+      statusCallback: args.statusCallback,
+      rpcDriverClassName: this.name,
+      ...options,
     })
 
-    // the result is a race between the actual result promise, and the "killed"
-    // promise. the killed promise will only actually win if the worker was
-    // killed before the call could return
-    const resultP = Promise.race([callP, killedP])
-    return rpcMethod.deserializeReturn(resultP, args, this.name)
+    return rpcMethod.deserializeReturn(call, args, this.name)
   }
 }

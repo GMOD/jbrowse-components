@@ -1,13 +1,14 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { doesIntersect2, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { doesIntersect2 } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { readFile, parseBed } from '../util'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+
+import { parseBed, readFile } from '../util'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { Region } from '@jbrowse/core/util/types'
 
 interface BareFeature {
   refName: string
@@ -37,7 +38,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -45,17 +46,21 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return this.setupP
   }
   async setupPre(opts: BaseOptions) {
+    const { statusCallback = () => {} } = opts
     const assemblyNames = this.getConf('assemblyNames') as string[]
     const pm = this.pluginManager
     const bed1 = openLocation(this.getConf('bed1Location'), pm)
     const bed2 = openLocation(this.getConf('bed2Location'), pm)
     const mcscan = openLocation(this.getConf('mcscanSimpleAnchorsLocation'), pm)
-    const [bed1text, bed2text, mcscantext] = await Promise.all(
-      [bed1, bed2, mcscan].map(r => readFile(r, opts)),
+    const [bed1text, bed2text, mcscantext] = await updateStatus(
+      'Downloading data',
+      statusCallback,
+      () => Promise.all([bed1, bed2, mcscan].map(r => readFile(r, opts))),
     )
-    const bed1Map = parseBed(bed1text)
-    const bed2Map = parseBed(bed2text)
-    const feats = mcscantext
+
+    const bed1Map = parseBed(bed1text!)
+    const bed2Map = parseBed(bed2text!)
+    const feats = mcscantext!
       .split(/\n|\r\n|\r/)
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
@@ -74,7 +79,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
           r12,
           r21,
           r22,
-          +score,
+          +score!,
           strand === '-' ? -1 : 1,
           index,
         ] as Row
@@ -93,8 +98,31 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  async getRefNames() {
-    // we cannot determine this accurately
+  getAssemblyNames() {
+    const assemblyNames = this.getConf('assemblyNames') as string[]
+    return assemblyNames
+  }
+
+  async getRefNames(opts: BaseOptions = {}) {
+    // @ts-expect-error
+    const r1 = opts.regions?.[0].assemblyName
+    const { feats } = await this.setup(opts)
+
+    const idx = this.getAssemblyNames().indexOf(r1)
+    if (idx !== -1) {
+      const set = new Set<string>()
+      for (const feat of feats) {
+        if (idx === 0) {
+          set.add(feat[0].refName)
+          set.add(feat[1].refName)
+        } else {
+          set.add(feat[2].refName)
+          set.add(feat[3].refName)
+        }
+      }
+      return [...set]
+    }
+    console.warn('Unable to do ref renaming on adapter')
     return []
   }
 
@@ -107,7 +135,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         const flip = index === 0
-        feats.forEach(f => {
+        for (const f of feats) {
           const [f11, f12, f21, f22, score, strand, rowNum] = f
           let r1 = {
             refName: f11.refName,
@@ -141,7 +169,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
               }),
             )
           }
-        })
+        }
       }
 
       observer.complete()
@@ -153,5 +181,4 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
    * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
-  freeResources(/* { region } */): void {}
 }

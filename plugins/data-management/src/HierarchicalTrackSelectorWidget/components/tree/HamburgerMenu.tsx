@@ -1,5 +1,7 @@
-import React, { Suspense, lazy, useState } from 'react'
-import { observer } from 'mobx-react'
+import { Suspense, lazy, useState } from 'react'
+
+import { readConfObject } from '@jbrowse/core/configuration'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import {
   getSession,
   isSessionModelWithConnectionEditing,
@@ -7,17 +9,11 @@ import {
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-
-// icons
 import MenuIcon from '@mui/icons-material/Menu'
+import { observer } from 'mobx-react'
 
-// locals
-import { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // lazies
 const FacetedDialog = lazy(() => import('../faceted/FacetedDialog'))
@@ -118,7 +114,9 @@ const HamburgerMenu = observer(function ({
                 ? [
                     {
                       label: 'Turn on/off connections...',
-                      onClick: () => setConnectionToggleOpen(true),
+                      onClick: () => {
+                        setConnectionToggleOpen(true)
+                      },
                     },
                   ]
                 : []),
@@ -139,7 +137,9 @@ const HamburgerMenu = observer(function ({
                     },
                     {
                       label: 'Delete connections...',
-                      onClick: () => setConnectionManagerOpen(true),
+                      onClick: () => {
+                        setConnectionManagerOpen(true)
+                      },
                     },
                   ]
                 : []),
@@ -153,15 +153,17 @@ const HamburgerMenu = observer(function ({
                 label: 'Sort tracks by name',
                 type: 'checkbox',
                 checked: model.activeSortTrackNames,
-                onClick: () =>
-                  model.setSortTrackNames(!model.activeSortTrackNames),
+                onClick: () => {
+                  model.setSortTrackNames(!model.activeSortTrackNames)
+                },
               },
               {
                 label: 'Sort categories by name',
                 type: 'checkbox',
                 checked: model.activeSortCategories,
-                onClick: () =>
-                  model.setSortCategories(!model.activeSortCategories),
+                onClick: () => {
+                  model.setSortCategories(!model.activeSortCategories)
+                },
               },
             ],
           },
@@ -173,17 +175,23 @@ const HamburgerMenu = observer(function ({
                 ? [
                     {
                       label: 'Collapse subcategories',
-                      onClick: () => model.collapseSubCategories(),
+                      onClick: () => {
+                        model.collapseSubCategories()
+                      },
                     },
                   ]
                 : []),
               {
                 label: 'Collapse top-level categories',
-                onClick: () => model.collapseTopLevelCategories(),
+                onClick: () => {
+                  model.collapseTopLevelCategories()
+                },
               },
               {
                 label: 'Expand all categories',
-                onClick: () => model.expandAllCategories(),
+                onClick: () => {
+                  model.expandAllCategories()
+                },
               },
             ],
           },
@@ -195,26 +203,34 @@ const HamburgerMenu = observer(function ({
         {modalInfo ? (
           <CloseConnectionDialog
             modalInfo={modalInfo}
-            onClose={() => setModalInfo(undefined)}
+            onClose={() => {
+              setModalInfo(undefined)
+            }}
           />
         ) : null}
         {deleteDialogDetails ? (
           <DeleteConnectionDialog
-            handleClose={() => setDeleteDialogDetails(undefined)}
+            handleClose={() => {
+              setDeleteDialogDetails(undefined)
+            }}
             deleteDialogDetails={deleteDialogDetails}
             session={session}
           />
         ) : null}
         {connectionManagerOpen ? (
           <ManageConnectionsDialog
-            handleClose={() => setConnectionManagerOpen(false)}
+            handleClose={() => {
+              setConnectionManagerOpen(false)
+            }}
             breakConnection={breakConnection}
             session={session}
           />
         ) : null}
         {connectionToggleOpen ? (
           <ToggleConnectionsDialog
-            handleClose={() => setConnectionToggleOpen(false)}
+            handleClose={() => {
+              setConnectionToggleOpen(false)
+            }}
             session={session}
             breakConnection={breakConnection}
           />
@@ -222,7 +238,9 @@ const HamburgerMenu = observer(function ({
 
         {facetedOpen ? (
           <FacetedDialog
-            handleClose={() => setFacetedOpen(false)}
+            handleClose={() => {
+              setFacetedOpen(false)
+            }}
             model={model}
           />
         ) : null}

@@ -47,7 +47,7 @@ async function getFiles(dir) {
   const child = cp.spawn('yarn', ['tsserver'])
 
   const files = await getFiles('.')
-  files.forEach((file, idx) => {
+  for (const [idx, file] of files.entries()) {
     child.stdin.write(
       `${JSON.stringify({
         seq: idx * 2,
@@ -64,14 +64,14 @@ async function getFiles(dir) {
         arguments: { file },
       })}\n`,
     )
-  })
+  }
 
   child.stdout.on('data', data => {
     const lines = data
       .toString()
       .split(/\r?\n/)
       .filter(line => line.startsWith('{'))
-    lines.forEach(line => {
+    for (const line of lines) {
       let response
       try {
         response = JSON.parse(line)
@@ -80,22 +80,20 @@ async function getFiles(dir) {
       }
       if (response.request_seq && response.body?.length) {
         const warnings = []
-        response.body.forEach(contents => {
+        for (const contents of response.body) {
           warnings.push(
             `${contents.start.line}:${contents.start.offset}-${contents.end.line}:${contents.end.offset} ${contents.text}`,
           )
-        })
+        }
         if (warnings.length) {
-          /* eslint-disable no-console */
           console.log(files[(response.request_seq - 1) / 2])
-          warnings.forEach(warning => {
+          for (const warning of warnings) {
             console.log(warning)
-          })
+          }
           console.log()
-          /* eslint-enable no-console */
         }
       }
-    })
+    }
   })
   child.stdin.end()
 })()

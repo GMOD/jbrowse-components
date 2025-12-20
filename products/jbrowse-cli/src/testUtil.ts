@@ -1,46 +1,156 @@
-import { test as oclifTest } from '@oclif/test'
-import { rimrafSync } from 'rimraf'
-import fs from 'fs'
+import { readFileSync, realpathSync, rmSync } from 'fs'
+import { mkdir, mkdtemp, open } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 
-const { mkdir, mkdtemp, writeFile } = fs.promises
+import { main as nativeMain } from './index'
 
 // increase test timeout for all tests
-jest.setTimeout(20000)
+// jest.setTimeout(20000)
 
 // On macOS, os.tmpdir() is not a real path:
 // https://github.com/nodejs/node/issues/11422
-const tmpDir = fs.realpathSync(os.tmpdir())
+const tmpDir = realpathSync(os.tmpdir())
 
-export const setup = oclifTest
-  .stdout()
-  .add('originalDir', () => process.cwd())
-  .add('dir', async () => {
+export async function runInTmpDir(
+  callbackFn: (args: { dir: string; originalDir: string }) => Promise<void>,
+) {
+  const originalDir = process.cwd()
+  let dir: string | undefined
+  try {
     const jbrowseTmpDir = path.join(tmpDir, 'jbrowse')
     await mkdir(jbrowseTmpDir, { recursive: true })
-    return mkdtemp(path.join(jbrowseTmpDir, path.sep))
-  })
-  .finally(ctx => {
-    rimrafSync(ctx.dir)
-    process.chdir(ctx.originalDir)
-  })
-  .do(async ctx => {
-    process.chdir(ctx.dir)
-    await writeFile('manifest.json', '{"name":"JBrowse"}')
-  })
+    dir = await mkdtemp(path.join(jbrowseTmpDir, path.sep))
+    process.chdir(dir)
+    await callbackFn({ dir, originalDir })
+  } finally {
+    if (dir) {
+      rmSync(dir, { recursive: true, force: true })
+    }
+    process.chdir(originalDir)
+  }
+}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Native command runner for testing
+export async function runCommand(
+  args: string | string[],
+): Promise<{ stdout: string; stderr: string; error?: Error }> {
+  let stdout = ''
+  let stderr = ''
+  let error: Error | undefined
+  let outputReceived = false
+
+  // Mock console functions using Jest spies
+  const consoleLogSpy = jest
+    .spyOn(console, 'log')
+    .mockImplementation((...args: any[]) => {
+      stdout += `${args.join(' ')}\n`
+      outputReceived = true
+    })
+
+  const consoleErrorSpy = jest
+    .spyOn(console, 'error')
+    .mockImplementation((...args: any[]) => {
+      stderr += `${args.join(' ')}\n`
+      outputReceived = true
+    })
+
+  // Mock process.stdout.write
+  const stdoutWriteSpy = jest
+    .spyOn(process.stdout, 'write')
+    .mockImplementation((chunk: any) => {
+      stdout += chunk.toString()
+      outputReceived = true
+      return true
+    })
+
+  // Mock process.stderr.write
+  const stderrWriteSpy = jest
+    .spyOn(process.stderr, 'write')
+    .mockImplementation((chunk: any) => {
+      stderr += chunk.toString()
+      outputReceived = true
+      return true
+    })
+
+  // Mock process.exit
+  const processExitSpy = jest
+    .spyOn(process, 'exit')
+    .mockImplementation((code?: string | number | null) => {
+      if (code && code !== 0) {
+        error = new Error(stderr.trim() || `Process exited with code ${code}`)
+      }
+      throw new Error('EXIT_MOCK')
+    })
+
+  try {
+    // Parse arguments
+    const argsArray = Array.isArray(args) ? args : args.split(' ')
+
+    // Run the native command with args directly instead of mutating process.argv
+    await nativeMain(argsArray)
+
+    // Wait for any pending asynchronous console output
+    // This handles cases where commands start servers or other async operations
+    // that log output after the main command completes
+    await new Promise(resolve => {
+      if (outputReceived) {
+        // If we received output, wait a bit for any additional async output
+        setTimeout(resolve, 50)
+      } else {
+        // If no output yet, wait longer and check periodically
+        let attempts = 0
+        const checkForOutput = () => {
+          if (outputReceived || attempts > 10) {
+            resolve(undefined)
+          } else {
+            attempts++
+            setTimeout(checkForOutput, 10)
+          }
+        }
+        checkForOutput()
+      }
+    })
+  } catch (err) {
+    if (err instanceof Error && err.message !== 'EXIT_MOCK') {
+      error = err
+    }
+  } finally {
+    // Restore Jest mocks
+    consoleLogSpy.mockRestore()
+    consoleErrorSpy.mockRestore()
+    stdoutWriteSpy.mockRestore()
+    stderrWriteSpy.mockRestore()
+    processExitSpy.mockRestore()
+  }
+
+  // If we have stderr but no error, create an error from stderr
+  if (!error && stderr.trim()) {
+    error = new Error(stderr.trim())
+  }
+
+  // Clean up the error message to remove EXIT_MOCK
+  if (error?.message.includes('Error: EXIT_MOCK')) {
+    error = new Error(error.message.replace('\nError: EXIT_MOCK', ''))
+  }
+
+  return {
+    stdout,
+    stderr,
+    error,
+  }
+}
+
 type Conf = Record<string, any>
 
 export function readConf(ctx: { dir: string }, ...rest: string[]): Conf {
   return JSON.parse(
-    fs.readFileSync(path.join(ctx.dir, ...rest, 'config.json'), 'utf8'),
+    readFileSync(path.join(ctx.dir, ...rest, 'config.json'), 'utf8'),
   )
 }
 
 export function readConfAlt(ctx: { dir: string }, ...rest: string[]): Conf {
-  return JSON.parse(fs.readFileSync(path.join(ctx.dir, ...rest), 'utf8'))
+  return JSON.parse(readFileSync(path.join(ctx.dir, ...rest), 'utf8'))
 }
 
 export function dataDir(str: string) {
@@ -51,17 +161,55 @@ export function ctxDir(ctx: { dir: string }, str: string) {
   return path.join(ctx.dir, str)
 }
 
-// source https://stackoverflow.com/a/64255382/2129219
-export async function copyDir(src: string, dest: string) {
-  await fs.promises.mkdir(dest, { recursive: true })
-  const entries = await fs.promises.readdir(src, { withFileTypes: true })
+interface MockFetchResponse {
+  ok?: boolean
+  status?: number
+  statusText?: string
+  headers?: Record<string, string>
+  json?: unknown
+  arrayBuffer?: ArrayBuffer
+  body?: ReadableStream<Uint8Array>
+}
 
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name)
-    const destPath = path.join(dest, entry.name)
+export async function openWebStream(filePath: string) {
+  const handle = await open(filePath, 'r')
+  return handle.readableWebStream() as ReadableStream<Uint8Array>
+}
 
-    entry.isDirectory()
-      ? await copyDir(srcPath, destPath)
-      : await fs.promises.copyFile(srcPath, destPath)
-  }
+export function mockFetch(
+  mockOrHandler:
+    | MockFetchResponse
+    | ((
+        url: string,
+      ) => MockFetchResponse | Promise<MockFetchResponse> | undefined),
+) {
+  const fetchWithProxy = require('./fetchWithProxy')
+    .default as jest.MockedFunction<
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    typeof import('./fetchWithProxy').default
+  >
+
+  fetchWithProxy.mockImplementation(async (url: RequestInfo) => {
+    const urlStr = url.toString()
+    const response =
+      typeof mockOrHandler === 'function'
+        ? await mockOrHandler(urlStr)
+        : mockOrHandler
+
+    if (!response) {
+      throw new Error(`Unexpected fetch to ${urlStr}`)
+    }
+
+    return {
+      ok: response.ok ?? true,
+      status: response.status ?? (response.ok === false ? 500 : 200),
+      statusText: response.statusText ?? '',
+      headers: new Headers(response.headers),
+      json: async () => response.json,
+      arrayBuffer: async () => response.arrayBuffer,
+      body: response.body ?? null,
+    } as unknown as Response
+  })
+
+  return fetchWithProxy
 }

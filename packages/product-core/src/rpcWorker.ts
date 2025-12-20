@@ -1,12 +1,15 @@
-import RpcServer from 'librpc-web-mod'
+import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
-import PluginLoader, {
-  LoadedPlugin,
-  PluginDefinition,
-} from '@jbrowse/core/PluginLoader'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
-import { serializeError } from 'serialize-error'
+import { RpcServer, serializeError } from 'librpc-web-mod'
+
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
+
+declare global {
+  interface Window {
+    rpcServer?: RpcServer
+  }
+}
 
 interface WorkerConfiguration {
   plugins: PluginDefinition[]
@@ -55,17 +58,17 @@ interface WrappedFuncArgs {
   [key: string]: unknown
 }
 
-type RpcFunc = (args: unknown, rpcDriverClassName: string) => unknown
+type RpcFunc = (args: unknown, rpcDriverClassName: string) => Promise<unknown>
 
 function wrapForRpc(func: RpcFunc) {
-  return (args: WrappedFuncArgs) => {
-    const { channel, rpcDriverClassName } = args
+  return (args: unknown) => {
+    const wrappedArgs = args as WrappedFuncArgs
+    const { channel, rpcDriverClassName } = wrappedArgs
     return func(
       {
-        ...args,
+        ...wrappedArgs,
         statusCallback: (message: string) => {
-          // @ts-expect-error
-          self.rpcServer.emit(channel, message)
+          self.rpcServer?.emit(channel, message)
         },
       },
       rpcDriverClassName,
@@ -80,6 +83,14 @@ export async function initializeWorker(
     fetchCJS?: (url: string) => Promise<LoadedPlugin>
   },
 ) {
+  // Add global error handler to catch uncaught errors in the worker
+  self.addEventListener('error', event => {
+    console.error('[Worker uncaught error]', event.error || event.message)
+  })
+  self.addEventListener('unhandledrejection', event => {
+    console.error('[Worker unhandled rejection]', event.reason)
+  })
+
   try {
     const pluginManager = await getPluginManager(corePlugins, opts)
     const rpcConfig = Object.fromEntries(
@@ -88,15 +99,7 @@ export async function initializeWorker(
         .map(e => [e.name, wrapForRpc(e.execute.bind(e))]),
     )
 
-    // @ts-expect-error
-    self.rpcServer = new RpcServer.Server({
-      ...rpcConfig,
-      ...remoteAbortRpcHandler(),
-      ping: async () => {
-        // the ping method is required by the worker driver for checking the
-        // health of the worker
-      },
-    })
+    self.rpcServer = new RpcServer(rpcConfig)
     postMessage({ message: 'ready' })
   } catch (e) {
     postMessage({ message: 'error', error: serializeError(e) })

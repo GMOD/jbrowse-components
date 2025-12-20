@@ -1,48 +1,73 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useRef, useState } from 'react'
-import isObject from 'is-object'
-import PluginManager from '../PluginManager'
+import type React from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+import { unzip } from '@gmod/bgzf-filehandle'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import {
-  addDisposer,
+  getEnv as getEnvMST,
   getParent,
   getSnapshot,
-  getEnv as getEnvMST,
+  hasParent,
   isAlive,
   isStateTreeNode,
-  hasParent,
-  IAnyStateTreeNode,
-  IStateTreeNode,
-  Instance,
-} from 'mobx-state-tree'
-import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import { Feature } from './simpleFeature'
+} from '@jbrowse/mobx-state-tree'
+import { flushSync } from 'react-dom'
+import { createRoot } from 'react-dom/client'
+
+import { coarseStripHTML } from './coarseStripHTML'
+import { colord } from './colord'
+import { parseLocString } from './locString'
+import { checkStopToken } from './stopToken'
 import {
-  isSessionModel,
   isDisplayModel,
-  isViewModel,
+  isSessionModel,
   isTrackModel,
+  isUriLocation,
+  isViewModel,
+} from './types'
+
+import type { ParsedLocString } from './locString'
+import type {
+  AbstractDisplayModel,
+  AbstractTrackModel,
+  AbstractViewModel,
   AssemblyManager,
   Region,
   TypeTestedByPredicate,
 } from './types'
-import { Region as MUIRegion } from './types/mst'
-import { isAbortException, checkAbortSignal } from './aborting'
-import { BaseBlock } from './blockTypes'
-import { isUriLocation } from './types'
+import type PluginManager from '../PluginManager'
+import type { BaseBlock } from './blockTypes'
+import type { Feature } from './simpleFeature'
+import type { StopToken } from './stopToken'
+import type { Region as MUIRegion } from './types/mst'
+import type { BaseOptions } from '../data_adapters/BaseAdapter'
+import type {
+  IAnyStateTreeNode,
+  IStateTreeNode,
+  Instance,
+} from '@jbrowse/mobx-state-tree'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
-// has to be the full path and not the relative path to get the jest mock
-import useMeasure from '@jbrowse/core/util/useMeasure'
-import { colord } from './colord'
-// eslint-disable-next-line react/no-deprecated
-import { flushSync, render } from 'react-dom'
 export * from './types'
-export * from './aborting'
 export * from './when'
 export * from './range'
 export * from './dedupe'
+export * from './coarseStripHTML'
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
+export * from './rpc'
+
+// WeakMap caches for containing model lookups to avoid repeated tree traversal
+const containingDisplayCache = new WeakMap<
+  IAnyStateTreeNode,
+  AbstractDisplayModel
+>()
+const containingTrackCache = new WeakMap<
+  IAnyStateTreeNode,
+  AbstractTrackModel
+>()
+const containingViewCache = new WeakMap<IAnyStateTreeNode, AbstractViewModel>()
 
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -66,17 +91,26 @@ export function useWidthSetter(
 ) {
   const [ref, { width }] = useMeasure()
   useEffect(() => {
+    let token: ReturnType<typeof requestAnimationFrame>
     if (width && isAlive(view)) {
       // sets after a requestAnimationFrame
       // https://stackoverflow.com/a/58701523/2129219
       // avoids ResizeObserver loop error being shown during development
-      requestAnimationFrame(() =>
-        view.setWidth(width - Number.parseInt(padding, 10) * 2),
-      )
+      token = requestAnimationFrame(() => {
+        view.setWidth(width)
+      })
+    }
+
+    return () => {
+      if (token) {
+        cancelAnimationFrame(token)
+      }
     }
   }, [padding, view, width])
   return ref
 }
+
+type Timer = ReturnType<typeof setTimeout>
 
 // https://stackoverflow.com/questions/56283920/
 export function useDebouncedCallback<T>(
@@ -84,25 +118,25 @@ export function useDebouncedCallback<T>(
   wait = 400,
 ) {
   // track args & timeout handle between calls
-  const argsRef = useRef<T[]>()
-  const timeout = useRef<ReturnType<typeof setTimeout>>()
-
-  function cleanup() {
-    if (timeout.current) {
-      clearTimeout(timeout.current)
-    }
-  }
+  const argsRef = useRef<T[]>(null)
+  const timeout = useRef<Timer>(null)
 
   // make sure our timeout gets cleared if our consuming component gets
   // unmounted
-  useEffect(() => cleanup, [])
+  useEffect(() => {
+    if (timeout.current) {
+      clearTimeout(timeout.current)
+    }
+  }, [])
 
   return function debouncedCallback(...args: T[]) {
     // capture latest args
     argsRef.current = args
 
     // clear debounce timer
-    cleanup()
+    if (timeout.current) {
+      clearTimeout(timeout.current)
+    }
 
     // start waiting again
     timeout.current = setTimeout(() => {
@@ -123,7 +157,9 @@ export function findParentThat(
   if (!hasParent(node)) {
     throw new Error('node does not have parent')
   }
-  let currentNode: IAnyStateTreeNode | undefined = getParent<any>(node)
+  let currentNode = getParent<IAnyStateTreeNode>(node)
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (currentNode && isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode
@@ -162,7 +198,7 @@ export function springAnimate(
   let animationFrameId: number
 
   function update(animation: Animation) {
-    const time = Date.now()
+    const time = performance.now()
     let position = animation.lastPosition
     let lastTime = animation.lastTime || time
     let velocity = animation.lastVelocity || 0
@@ -194,19 +230,23 @@ export function springAnimate(
       onFinish()
     } else {
       setValue(position)
-      animationFrameId = requestAnimationFrame(() =>
+      animationFrameId = requestAnimationFrame(() => {
         update({
           lastPosition: position,
           lastTime: time,
           lastVelocity: velocity,
-        }),
-      )
+        })
+      })
     }
   }
 
   return [
-    () => update({ lastPosition: fromValue }),
-    () => cancelAnimationFrame(animationFrameId),
+    () => {
+      update({ lastPosition: fromValue })
+    },
+    () => {
+      cancelAnimationFrame(animationFrameId)
+    },
   ]
 }
 
@@ -217,8 +257,8 @@ export function springAnimate(
 export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
   node: IAnyStateTreeNode,
   predicate: T,
-): TypeTestedByPredicate<T> {
-  return findParentThat(node, predicate)
+) {
+  return findParentThat(node, predicate) as TypeTestedByPredicate<T>
 }
 
 /**
@@ -235,23 +275,39 @@ export function getSession(node: IAnyStateTreeNode) {
 
 /**
  * get the state model of the view in the state tree that contains the given
- * node
+ * node. Results are cached for performance.
  */
-export function getContainingView(node: IAnyStateTreeNode) {
+export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
+  const cached = containingViewCache.get(node)
+  // Validate cached result is still alive (handles re-parenting edge cases)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isViewModel)
+    const result = findParentThatIs(node, isViewModel)
+    containingViewCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no containing view found')
   }
 }
 
 /**
- * get the state model of the view in the state tree that contains the given
- * node
+ * get the state model of the track in the state tree that contains the given
+ * node. Results are cached for performance.
  */
-export function getContainingTrack(node: IAnyStateTreeNode) {
+export function getContainingTrack(
+  node: IAnyStateTreeNode,
+): AbstractTrackModel {
+  const cached = containingTrackCache.get(node)
+  // Validate cached result is still alive (handles re-parenting edge cases)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isTrackModel)
+    const result = findParentThatIs(node, isTrackModel)
+    containingTrackCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no containing track found')
   }
@@ -259,11 +315,20 @@ export function getContainingTrack(node: IAnyStateTreeNode) {
 
 /**
  * get the state model of the display in the state tree that contains the given
- * node
+ * node. Results are cached for performance.
  */
-export function getContainingDisplay(node: IAnyStateTreeNode) {
+export function getContainingDisplay(
+  node: IAnyStateTreeNode,
+): AbstractDisplayModel {
+  const cached = containingDisplayCache.get(node)
+  // Validate cached result is still alive (handles re-parenting edge cases)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isDisplayModel)
+    const result = findParentThatIs(node, isDisplayModel)
+    containingDisplayCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no containing display found')
   }
@@ -316,7 +381,7 @@ export function assembleLocStringFast(
 ) {
   const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
-  let startString
+  let startString: string
   if (start !== undefined) {
     startString = `:${cb(start + 1)}`
   } else if (end !== undefined) {
@@ -324,7 +389,7 @@ export function assembleLocStringFast(
   } else {
     startString = ''
   }
-  let endString
+  let endString: string
   if (end !== undefined) {
     endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
   } else {
@@ -336,153 +401,6 @@ export function assembleLocStringFast(
   }
   return `${assemblyNameString}${refName}${startString}${endString}${rev}`
 }
-
-export interface ParsedLocString {
-  assemblyName?: string
-  refName: string
-  start?: number
-  end?: number
-  reversed?: boolean
-}
-
-export function parseLocStringOneBased(
-  locString: string,
-  isValidRefName: (refName: string, assemblyName?: string) => boolean,
-): ParsedLocString {
-  if (!locString) {
-    throw new Error('no location string provided, could not parse')
-  }
-  let reversed = false
-  if (locString.endsWith('[rev]')) {
-    reversed = true
-    locString = locString.replace(/\[rev]$/, '')
-  }
-  // remove any whitespace
-  locString = locString.replace(/\s/, '')
-  // refNames can have colons, ref https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
-  const assemblyMatch = locString.match(/({(.+)})?(.+)/)
-  if (!assemblyMatch) {
-    throw new Error(`invalid location string: "${locString}"`)
-  }
-  const [, , assemblyName, location] = assemblyMatch
-  if (!assemblyName && location.startsWith('{}')) {
-    throw new Error(`no assembly name was provided in location "${location}"`)
-  }
-  const lastColonIdx = location.lastIndexOf(':')
-  if (lastColonIdx === -1) {
-    if (isValidRefName(location, assemblyName)) {
-      return { assemblyName, refName: location, reversed }
-    }
-    throw new Error(`Unknown reference sequence "${location}"`)
-  }
-  const prefix = location.slice(0, lastColonIdx)
-  const suffix = location.slice(lastColonIdx + 1)
-  if (
-    isValidRefName(prefix, assemblyName) &&
-    isValidRefName(location, assemblyName)
-  ) {
-    throw new Error(`ambiguous location string: "${locString}"`)
-  } else if (isValidRefName(prefix, assemblyName)) {
-    if (suffix) {
-      // see if it's a range
-      const rangeMatch = suffix.match(
-        /^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)(-?(\d+|\d{1,3}(,\d{3})*))$/,
-      )
-      // see if it's a single point
-      const singleMatch = suffix.match(/^(-?(\d+|\d{1,3}(,\d{3})*))(\.\.|-)?$/)
-      if (rangeMatch) {
-        const [, start, , , , end] = rangeMatch
-        if (start !== undefined && end !== undefined) {
-          return {
-            assemblyName,
-            refName: prefix,
-            start: +start.replaceAll(',', ''),
-            end: +end.replaceAll(',', ''),
-            reversed,
-          }
-        }
-      } else if (singleMatch) {
-        const [, start, , , separator] = singleMatch
-        if (start !== undefined) {
-          if (separator) {
-            // indefinite end
-            return {
-              assemblyName,
-              refName: prefix,
-              start: +start.replaceAll(',', ''),
-              reversed,
-            }
-          }
-          return {
-            assemblyName,
-            refName: prefix,
-            start: +start.replaceAll(',', ''),
-            end: +start.replaceAll(',', ''),
-            reversed,
-          }
-        }
-      } else {
-        throw new Error(
-          `could not parse range "${suffix}" on location "${locString}"`,
-        )
-      }
-    } else {
-      return { assemblyName, refName: prefix, reversed }
-    }
-  } else if (isValidRefName(location, assemblyName)) {
-    return { assemblyName, refName: location, reversed }
-  }
-  throw new Error(`unknown reference sequence name in location "${locString}"`)
-}
-
-/**
- * Parse a 1-based location string into an interbase genomic location
- * @param locString - Location string
- * @param isValidRefName - Function that checks if a refName exists in the set
- * of all known refNames, or in the set of refNames for an assembly if
- * assemblyName is given
- * @example
- * ```ts
- * parseLocString('chr1:1..100', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0, end: 100 }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1:1-100', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0, end: 100 }
- * ```
- * @example
- * ```ts
- * parseLocString(`{hg19}chr1:1..100`, isValidRefName)
- * // ↳ { assemblyName: 'hg19', refName: 'chr1', start: 0, end: 100 }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1', isValidRefName)
- * // ↳ { refName: 'chr1' }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1:1', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0, end: 1 }
- * ```
- * @example
- * ```ts
- * parseLocString('chr1:1..', isValidRefName)
- * // ↳ { refName: 'chr1', start: 0}
- * ```
- */
-export function parseLocString(
-  locString: string,
-  isValidRefName: (refName: string, assemblyName?: string) => boolean,
-) {
-  const parsed = parseLocStringOneBased(locString, isValidRefName)
-  if (typeof parsed.start === 'number') {
-    parsed.start -= 1
-  }
-  return parsed
-}
-
 export function compareLocs(locA: ParsedLocString, locB: ParsedLocString) {
   const assemblyComp =
     locA.assemblyName || locB.assemblyName
@@ -589,24 +507,60 @@ export function cartesianToPolar(x: number, y: number) {
   const theta = Math.atan(y / x)
   return [rho, theta] as [number, number]
 }
+interface MinimalRegion {
+  start: number
+  end: number
+  reversed?: boolean
+}
 
 export function featureSpanPx(
   feature: Feature,
-  region: { start: number; end: number; reversed?: boolean },
+  region: MinimalRegion,
   bpPerPx: number,
-): [number, number] {
+) {
   return bpSpanPx(feature.get('start'), feature.get('end'), region, bpPerPx)
 }
 
 export function bpSpanPx(
   leftBp: number,
   rightBp: number,
-  region: { start: number; end: number; reversed?: boolean },
+  region: MinimalRegion,
   bpPerPx: number,
-): [number, number] {
+) {
   const start = bpToPx(leftBp, region, bpPerPx)
   const end = bpToPx(rightBp, region, bpPerPx)
-  return region.reversed ? [end, start] : [start, end]
+  return region.reversed ? ([end, start] as const) : ([start, end] as const)
+}
+
+/**
+ * Calculate layout bounds for a feature, accounting for reversed regions.
+ *
+ * When labels are wider than features, the layout needs extra space:
+ * - Normal: extend towards higher genomic coords (visual right)
+ * - Reversed: extend towards lower genomic coords (visual right when reversed)
+ *
+ * This ensures labels always extend towards visual right of the feature.
+ *
+ * @param featureStart - Feature's genomic start coordinate
+ * @param featureEnd - Feature's genomic end coordinate
+ * @param layoutWidthBp - Total layout width in base pairs (may include label space)
+ * @param reversed - Whether the region is reversed
+ * @returns [layoutStart, layoutEnd] in genomic coordinates
+ */
+export function calculateLayoutBounds(
+  featureStart: number,
+  featureEnd: number,
+  layoutWidthBp: number,
+  reversed?: boolean,
+): [number, number] {
+  const featureWidthBp = featureEnd - featureStart
+  const labelOverhangBp = Math.max(0, layoutWidthBp - featureWidthBp)
+
+  // When reversed, extend towards lower genomic coords (visual right when reversed)
+  // When normal, extend towards higher genomic coords (visual right when normal)
+  return reversed
+    ? [featureStart - labelOverhangBp, featureEnd]
+    : [featureStart, featureStart + layoutWidthBp]
 }
 
 // do an array map of an iterable
@@ -626,8 +580,7 @@ export function iterMap<T, U>(
 
 /**
  * Returns the index of the last element in the array where predicate is true,
- * and -1 otherwise.
- * Based on https://stackoverflow.com/a/53187807
+ * and -1 otherwise. Based on https://stackoverflow.com/a/53187807
  *
  * @param array - The source array to search in
  *
@@ -640,10 +593,10 @@ export function iterMap<T, U>(
 export function findLastIndex<T>(
   array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
-): number {
+) {
   let l = array.length
   while (l--) {
-    if (predicate(array[l], l, array)) {
+    if (predicate(array[l]!, l, array)) {
       return l
     }
   }
@@ -653,121 +606,25 @@ export function findLastIndex<T>(
 export function findLast<T>(
   array: T[],
   predicate: (value: T, index: number, obj: T[]) => boolean,
-): T | undefined {
+) {
   let l = array.length
   while (l--) {
-    if (predicate(array[l], l, array)) {
+    if (predicate(array[l]!, l, array)) {
       return array[l]
     }
   }
   return undefined
 }
 
-/**
- * makes a mobx reaction with the given functions, that calls actions on the
- * model for each stage of execution, and to abort the reaction function when
- * the model is destroyed.
- *
- * Will call startedFunction(signal), successFunction(result), and
- * errorFunction(error) when the async reaction function starts, completes, and
- * errors respectively.
- *
- * @param self -
- * @param dataFunction -
- * @param asyncReactionFunction -
- * @param reactionOptions -
- * @param startedFunction -
- * @param successFunction -
- * @param errorFunction -
- */
-export function makeAbortableReaction<T, U, V>(
-  self: T,
-  dataFunction: (arg: T) => U,
-  asyncReactionFunction: (
-    arg: U | undefined,
-    signal: AbortSignal,
-    model: T,
-    handle: IReactionPublic,
-  ) => Promise<V>,
-  // @ts-expect-error
-  reactionOptions: IReactionOptions,
-  startedFunction: (aborter: AbortController) => void,
-  successFunction: (arg: V) => void,
-  errorFunction: (err: unknown) => void,
-) {
-  let inProgress: AbortController | undefined
-
-  function handleError(error: unknown) {
-    if (!isAbortException(error)) {
-      if (isAlive(self)) {
-        errorFunction(error)
-      } else {
-        console.error(error)
-      }
-    }
-  }
-
-  addDisposer(
-    self,
-    reaction(
-      () => {
-        try {
-          return dataFunction(self)
-        } catch (e) {
-          handleError(e)
-          return undefined
-        }
-      },
-      async (data, mobxReactionHandle) => {
-        if (inProgress && !inProgress.signal.aborted) {
-          inProgress.abort()
-        }
-
-        if (!isAlive(self)) {
-          return
-        }
-        inProgress = new AbortController()
-
-        const thisInProgress = inProgress
-        startedFunction(thisInProgress)
-        try {
-          const result = await asyncReactionFunction(
-            data,
-            thisInProgress.signal,
-            self,
-            // @ts-expect-error
-            mobxReactionHandle,
-          )
-          checkAbortSignal(thisInProgress.signal)
-          if (isAlive(self)) {
-            successFunction(result)
-          }
-        } catch (e) {
-          if (thisInProgress && !thisInProgress.signal.aborted) {
-            thisInProgress.abort()
-          }
-          handleError(e)
-        }
-      },
-      reactionOptions,
-    ),
-  )
-  addDisposer(self, () => {
-    if (inProgress && !inProgress.signal.aborted) {
-      inProgress.abort()
-    }
-  })
-}
-
 export function renameRegionIfNeeded(
-  refNameMap: Record<string, string>,
+  refNameMap: Record<string, string> | undefined,
   region: Region | Instance<typeof MUIRegion>,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
 
-  if (region && refNameMap?.[region.refName]) {
+  if (refNameMap?.[region.refName]) {
     // clone the region so we don't modify it
     region = isStateTreeNode(region)
       ? { ...getSnapshot(region) }
@@ -776,7 +633,11 @@ export function renameRegionIfNeeded(
     // modify it directly in the container
     const newRef = refNameMap[region.refName]
     if (newRef) {
-      return { ...region, refName: newRef, originalRefName: region.refName }
+      return {
+        ...region,
+        refName: newRef,
+        originalRefName: region.refName,
+      }
     }
   }
   return region
@@ -786,7 +647,7 @@ export async function renameRegionsIfNeeded<
   ARGTYPE extends {
     assemblyName?: string
     regions?: Region[]
-    signal?: AbortSignal
+    stopToken?: string
     adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: (arg: string) => void
@@ -817,19 +678,23 @@ export async function renameRegionsIfNeeded<
     ...args,
     regions: regions.map((region, i) =>
       // note: uses assemblyNames defined above since region could be dead now
-      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]], region),
+      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]!], region),
     ),
   }
 }
 
 export function minmax(a: number, b: number) {
-  return [Math.min(a, b), Math.max(a, b)]
+  return [Math.min(a, b), Math.max(a, b)] as const
 }
 
 export function shorten(name: string, max = 70, short = 30) {
   return name.length > max
-    ? name.slice(0, short) + '...' + name.slice(-short)
+    ? `${name.slice(0, short)}...${name.slice(-short)}`
     : name
+}
+
+export function shorten2(name: string, max = 70) {
+  return name.length > max ? `${name.slice(0, max)}...` : name
 }
 
 export function stringify(
@@ -864,81 +729,94 @@ export const isElectron = /electron/i.test(
   typeof navigator !== 'undefined' ? navigator.userAgent : '',
 )
 
-export function revcom(seqString: string) {
-  return reverse(complement(seqString))
-}
+// from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
+// generated with:
+// perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
+export const complementTable = {
+  S: 'S',
+  w: 'w',
+  T: 'A',
+  r: 'y',
+  a: 't',
+  N: 'N',
+  K: 'M',
+  x: 'x',
+  d: 'h',
+  Y: 'R',
+  V: 'B',
+  y: 'r',
+  M: 'K',
+  h: 'd',
+  k: 'm',
+  C: 'G',
+  g: 'c',
+  t: 'a',
+  A: 'T',
+  n: 'n',
+  W: 'W',
+  X: 'X',
+  m: 'k',
+  v: 'b',
+  B: 'V',
+  s: 's',
+  H: 'D',
+  c: 'g',
+  D: 'H',
+  b: 'v',
+  R: 'Y',
+  G: 'C',
+} as Record<string, string>
 
-export function reverse(seqString: string) {
-  return seqString.split('').reverse().join('')
-}
-
-export const complement = (() => {
-  const complementRegex = /[ACGT]/gi
-
-  // from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
-  // generated with:
-  // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
-  const complementTable = {
-    S: 'S',
-    w: 'w',
-    T: 'A',
-    r: 'y',
-    a: 't',
-    N: 'N',
-    K: 'M',
-    x: 'x',
-    d: 'h',
-    Y: 'R',
-    V: 'B',
-    y: 'r',
-    M: 'K',
-    h: 'd',
-    k: 'm',
-    C: 'G',
-    g: 'c',
-    t: 'a',
-    A: 'T',
-    n: 'n',
-    W: 'W',
-    X: 'X',
-    m: 'k',
-    v: 'b',
-    B: 'V',
-    s: 's',
-    H: 'D',
-    c: 'g',
-    D: 'H',
-    b: 'v',
-    R: 'Y',
-    G: 'C',
-  } as Record<string, string>
-
-  return (seqString: string) => {
-    return seqString.replaceAll(complementRegex, m => complementTable[m] || '')
+export function revcom(str: string) {
+  const revcomped = []
+  for (let i = str.length - 1; i >= 0; i--) {
+    revcomped.push(complementTable[str[i]!] ?? str[i])
   }
-})()
+  return revcomped.join('')
+}
+
+export function reverse(str: string) {
+  const reversed = []
+  for (let i = str.length - 1; i >= 0; i--) {
+    reversed.push(str[i]!)
+  }
+  return reversed.join('')
+}
+
+export function complement(str: string) {
+  const comp = []
+  for (let i = 0, l = str.length; i < l; i++) {
+    comp.push(complementTable[str[i]!] ?? str[i]!)
+  }
+  return comp.join('')
+}
 
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
 export const rIC =
   typeof jest === 'undefined'
-    ? typeof window !== 'undefined' && window.requestIdleCallback
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      typeof window !== 'undefined' && window.requestIdleCallback
       ? window.requestIdleCallback
-      : (cb: Function) => setTimeout(() => cb(), 1)
-    : (cb: Function) => cb()
+      : (cb: () => void) =>
+          setTimeout(() => {
+            cb()
+          }, 1)
+    : (cb: () => void) => {
+        cb()
+      }
 
 // prettier-ignore
 const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
+const avgWidth = 0.5279276315789471
 
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
 export function measureText(str: unknown, fontSize = 10) {
-  const avg = 0.5279276315789471
   const s = String(str)
   let total = 0
-  for (let i = 0; i < s.length; i++) {
-    const code = s.charCodeAt(i)
-    total += widths[code] ?? avg
+  for (let i = 0, l = s.length; i < l; i++) {
+    total += widths[s.charCodeAt(i)] ?? avgWidth
   }
   return total * fontSize
 }
@@ -1031,38 +909,53 @@ export const defaultCodonTable = {
  */
 export function generateCodonTable(table: any) {
   const tempCodonTable: Record<string, string> = {}
-  Object.keys(table).forEach(codon => {
+  for (const codon of Object.keys(table)) {
     const aa = table[codon]
     const nucs: string[][] = []
     for (let i = 0; i < 3; i++) {
       const nuc = codon.charAt(i)
       nucs[i] = []
-      nucs[i][0] = nuc.toUpperCase()
-      nucs[i][1] = nuc.toLowerCase()
+      nucs[i]![0] = nuc.toUpperCase()
+      nucs[i]![1] = nuc.toLowerCase()
     }
     for (let i = 0; i < 2; i++) {
-      const n0 = nucs[0][i]
+      const n0 = nucs[0]![i]!
       for (let j = 0; j < 2; j++) {
-        const n1 = nucs[1][j]
+        const n1 = nucs[1]![j]!
         for (let k = 0; k < 2; k++) {
-          const n2 = nucs[2][k]
+          const n2 = nucs[2]![k]!
           const triplet = n0 + n1 + n2
           tempCodonTable[triplet] = aa
         }
       }
     }
-  })
+  }
   return tempCodonTable
 }
 
 // call statusCallback with current status and clear when finished
 export async function updateStatus<U>(
   msg: string,
+  cb: ((arg: string) => void) | undefined,
+  fn: () => U | Promise<U>,
+) {
+  cb?.(msg)
+  const res = await fn()
+  cb?.('')
+  return res
+}
+
+// call statusCallback with current status and clear when finished, and check
+// stopToken afterwards
+export async function updateStatus2<U>(
+  msg: string,
   cb: (arg: string) => void,
+  stopToken: StopToken | undefined,
   fn: () => U | Promise<U>,
 ) {
   cb(msg)
   const res = await fn()
+  checkStopToken(stopToken)
   cb('')
   return res
 }
@@ -1087,6 +980,7 @@ export function objectHash(obj: Record<string, any>) {
 interface VirtualOffset {
   blockPosition: number
 }
+
 interface Block {
   minv: VirtualOffset
   maxv: VirtualOffset
@@ -1106,13 +1000,13 @@ export async function bytesForRegions(
     regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
   )
 
-  return blockResults
-    .flat()
-    .map(block => ({
-      start: block.minv.blockPosition,
-      end: block.maxv.blockPosition + 65535,
-    }))
-    .reduce((a, b) => a + b.end - b.start, 0)
+  return sum(
+    blockResults
+      .flat()
+      .map(
+        block => block.maxv.blockPosition + 65535 - block.minv.blockPosition,
+      ),
+  )
 }
 
 export interface ViewSnap {
@@ -1131,9 +1025,9 @@ export interface ViewSnap {
   })[]
 }
 
-// supported adapter types by text indexer
-//  ensure that this matches the method found in @jbrowse/text-indexing/util
-export function isSupportedIndexingAdapter(type: string) {
+// Supported adapter types by text indexer ensure that this matches the method
+// found in @jbrowse/text-indexing/util
+export function isSupportedIndexingAdapter(type = '') {
   return [
     'Gff3TabixAdapter',
     'VcfTabixAdapter',
@@ -1142,40 +1036,52 @@ export function isSupportedIndexingAdapter(type: string) {
   ].includes(type)
 }
 
-export function getBpDisplayStr(totalBp: number) {
-  let str
-  if (Math.floor(totalBp / 1_000_000) > 0) {
-    str = `${Number.parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
-  } else if (Math.floor(totalBp / 1_000) > 0) {
-    str = `${Number.parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
+export function getBpDisplayStr(total: number) {
+  if (Math.floor(total / 1_000_000) > 0) {
+    return `${reducePrecision(total / 1_000_000)}Mbp`
+  } else if (Math.floor(total / 1_000) > 0) {
+    return `${reducePrecision(total / 1_000)}Kbp`
   } else {
-    str = `${toLocale(Math.floor(totalBp))}bp`
+    return `${Math.floor(total)}bp`
   }
-  return str
 }
 
+export function reducePrecision(s: number, n = 3) {
+  return toLocale(Number.parseFloat(s.toPrecision(n)))
+}
+
+export function getProgressDisplayStr(current: number, total: number) {
+  if (Math.floor(total / 1_000_000) > 0) {
+    return `${reducePrecision(current / 1_000_000)}/${reducePrecision(total / 1_000_000)}Mb`
+  } else if (Math.floor(total / 1_000) > 0) {
+    return `${reducePrecision(current / 1_000)}/${reducePrecision(total / 1_000)}Kb`
+  } else {
+    return `${reducePrecision(current)}/${reducePrecision(total)} bytes`
+  }
+}
+
+// Fast number formatter with thousand separators
+// Benchmarked at 5-67x faster than toLocaleString('en-US')
 export function toLocale(n: number) {
-  return n.toLocaleString('en-US')
+  if (n < 1000) {
+    return String(n)
+  }
+  const str = String(n)
+  const len = str.length
+  let result = ''
+  for (let i = 0; i < len; i++) {
+    if (i > 0 && (len - i) % 3 === 0) {
+      result += ','
+    }
+    result += str[i]
+  }
+  return result
 }
 
 export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
   return Math.floor(bpPerPx / 1_000) > 0
     ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
-    : `${toLocale(Math.floor(totalBp))}`
-}
-
-export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
-  // @ts-expect-error
-  const { dynamicBlocks, staticBlocks, offsetPx } = getContainingView(model)
-  const b = dynamicBlocks?.contentBlocks[0] || {}
-  const staticblock = staticBlocks?.contentBlocks[0] || {}
-  const staticblock1 = staticBlocks?.contentBlocks[1] || {}
-  return {
-    offsetPx: exportSVG ? 0 : offsetPx - staticblock.offsetPx,
-    offsetPx1: exportSVG ? 0 : offsetPx - staticblock1.offsetPx,
-    start: b.start as number,
-    end: b.end as number,
-  }
+    : toLocale(Math.floor(totalBp))
 }
 
 export function getLayoutId({
@@ -1185,7 +1091,7 @@ export function getLayoutId({
   sessionId: string
   layoutId: string
 }) {
-  return sessionId + '-' + layoutId
+  return `${sessionId}-${layoutId}`
 }
 
 // Hook from https://usehooks.com/useLocalStorage/
@@ -1205,6 +1111,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore =
+        // eslint-disable-next-line unicorn/no-instanceof-builtins
         value instanceof Function ? value(storedValue) : value
       setStoredValue(valueToStore)
       if (typeof window !== 'undefined') {
@@ -1219,7 +1126,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 
 export function getUriLink(value: { uri: string; baseUri?: string }) {
   const { uri, baseUri = '' } = value
-  let href
+  let href: string
   try {
     href = new URL(uri, baseUri).href
   } catch (e) {
@@ -1236,19 +1143,16 @@ export function getStr(obj: unknown) {
     : String(obj)
 }
 
-// tries to measure grid width without HTML tags included
-export function coarseStripHTML(s: string) {
-  return s.replaceAll(/(<([^>]+)>)/gi, '')
-}
-
 // based on autolink-js, license MIT
+// https://github.com/bryanwoods/autolink-js/blob/1418049970152c56ced73d43dcc62d80b320fb71/autolink.js#L9
 export function linkify(s: string) {
   const pattern =
     /(^|[\s\n]|<[A-Za-z]*\/?>)((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/gi
   return s.replaceAll(pattern, '$1<a href=\'$2\' target="_blank">$2</a>')
 }
 
-// heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
+// heuristic measurement for a column of a @mui/x-data-grid, pass in
+// values from a column
 export function measureGridWidth(
   elements: unknown[],
   args?: {
@@ -1286,28 +1190,28 @@ export function localStorageGetItem(item: string) {
 }
 
 export function localStorageSetItem(str: string, item: string) {
-  return typeof localStorage !== 'undefined'
-    ? localStorage.setItem(str, item)
-    : undefined
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(str, item)
+  }
 }
 
-export function max(arr: number[], init = -Infinity) {
+export function max(arr: Iterable<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
   for (const entry of arr) {
-    max = entry > max ? entry : max
+    max = Math.max(entry, max)
   }
   return max
 }
 
-export function min(arr: number[], init = Infinity) {
+export function min(arr: Iterable<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
   for (const entry of arr) {
-    min = entry < min ? entry : min
+    min = Math.min(entry, min)
   }
   return min
 }
 
-export function sum(arr: number[]) {
+export function sum(arr: Iterable<number>) {
   let sum = 0
   for (const entry of arr) {
     sum += entry
@@ -1320,10 +1224,13 @@ export function avg(arr: number[]) {
 }
 
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
-  const result = {} as Record<string, T[] | undefined>
+  const result = {} as Record<string, T[]>
   for (const value of array) {
-    const entry = (result[predicate(value)] ||= [])
-    entry.push(value)
+    const t = predicate(value)
+    if (!result[t]) {
+      result[t] = []
+    }
+    result[t].push(value)
   }
   return result
 }
@@ -1341,30 +1248,29 @@ export function mergeIntervals<T extends { start: number; end: number }>(
     return intervals
   }
 
-  const stack = []
+  const stack = [] as T[]
   let top = null
 
   // sort the intervals based on their start values
   intervals = intervals.sort((a, b) => a.start - b.start)
 
   // push the 1st interval into the stack
-  stack.push(intervals[0])
+  stack.push(intervals[0]!)
 
   // start from the next interval and merge if needed
   for (let i = 1; i < intervals.length; i++) {
     // get the top element
-
     top = stack.at(-1)!
 
     // if the current interval doesn't overlap with the
     // stack top element, push it to the stack
-    if (top.end + w < intervals[i].start - w) {
-      stack.push(intervals[i])
+    if (top.end + w < intervals[i]!.start - w) {
+      stack.push(intervals[i]!)
     }
     // otherwise update the end value of the top element
     // if end of current interval is higher
-    else if (top.end < intervals[i].end) {
-      top.end = Math.max(top.end, intervals[i].end)
+    else if (top.end < intervals[i]!.end) {
+      top.end = Math.max(top.end, intervals[i]!.end)
       stack.pop()
       stack.push(top)
     }
@@ -1373,67 +1279,139 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   return stack
 }
 
-interface BasicFeature {
+export interface BasicFeature {
   end: number
   start: number
   refName: string
 }
 
-// hashmap of refName->array of features
-type FeaturesPerRef = Record<string, BasicFeature[]>
-
-export function gatherOverlaps(regions: BasicFeature[]) {
-  const memo = {} as FeaturesPerRef
+// returns new array non-overlapping features
+export function gatherOverlaps<T extends BasicFeature>(regions: T[], w = 5000) {
+  const memo = {} as Record<string, T[]>
   for (const x of regions) {
     if (!memo[x.refName]) {
       memo[x.refName] = []
     }
-    memo[x.refName].push(x)
+    memo[x.refName]!.push(x)
   }
 
   return Object.values(memo).flatMap(group =>
-    mergeIntervals(group.sort((a, b) => a.start - b.start)),
+    mergeIntervals(
+      group.sort((a, b) => a.start - b.start),
+      w,
+    ),
   )
 }
 
 export function stripAlpha(str: string) {
-  const c = colord(str)
-  return c.alpha(1).toHex()
+  return colord(str).alpha(1).toHex()
 }
 
 export function getStrokeProps(str: string) {
-  const c = colord(str)
-  return { strokeOpacity: c.alpha(), stroke: c.alpha(1).toHex() }
+  if (str) {
+    const c = colord(str)
+    return {
+      strokeOpacity: c.alpha(),
+      stroke: c.alpha(1).toHex(),
+    }
+  } else {
+    return {}
+  }
 }
 
 export function getFillProps(str: string) {
-  const c = colord(str)
-  return { fillOpacity: c.alpha(), fill: c.alpha(1).toHex() }
+  if (str) {
+    const c = colord(str)
+    return {
+      fillOpacity: c.alpha(),
+      fill: c.alpha(1).toHex(),
+    }
+  } else {
+    return {}
+  }
 }
 
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
-export function renderToStaticMarkup(
-  node: React.ReactElement,
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  },
-) {
+export function renderToStaticMarkup(node: React.ReactElement) {
   const div = document.createElement('div')
   flushSync(() => {
-    if (createRootFn) {
-      createRootFn(div).render(node)
-    } else {
-      render(node, div)
-    }
+    createRoot(div).render(node)
   })
   return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }
 
+export function isGzip(buf: Uint8Array) {
+  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
+}
+
+export async function fetchAndMaybeUnzip(
+  loc: GenericFilehandle,
+  opts: BaseOptions = {},
+) {
+  const { statusCallback = () => {} } = opts
+  const buf = await updateStatus(
+    'Downloading file',
+    statusCallback,
+    () => loc.readFile(opts) as Promise<Uint8Array>,
+  )
+  return isGzip(buf)
+    ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
+    : buf
+}
+
+export async function fetchAndMaybeUnzipText(
+  loc: GenericFilehandle,
+  opts?: BaseOptions,
+) {
+  const buffer = await fetchAndMaybeUnzip(loc, opts)
+  // 512MB  max chrome string length is 512MB
+  if (buffer.length > 536_870_888) {
+    throw new Error('Data exceeds maximum string length (512MB)')
+  }
+  return new TextDecoder('utf8', { fatal: true }).decode(buffer)
+}
+
+// MIT https://github.com/inspect-js/is-object
+export function isObject(
+  x: unknown,
+): x is Record<string | symbol | number, unknown> {
+  return typeof x === 'object' && x !== null
+}
+
+export function localStorageGetNumber(key: string, defaultVal: number) {
+  return +(localStorageGetItem(key) ?? defaultVal)
+}
+
+export function localStorageGetBoolean(key: string, defaultVal: boolean) {
+  return Boolean(
+    JSON.parse(localStorageGetItem(key) || JSON.stringify(defaultVal)),
+  )
+}
+
+export function localStorageSetBoolean(key: string, value: boolean) {
+  localStorageSetItem(key, JSON.stringify(value))
+}
+
+export function testAdapter(
+  fileName: string,
+  regex: RegExp,
+  adapterHint: string | undefined,
+  expected: string,
+) {
+  return (regex.test(fileName) && !adapterHint) || adapterHint === expected
+}
+
 export {
-  default as SimpleFeature,
   type Feature,
   type SimpleFeatureSerialized,
+  type SimpleFeatureSerializedNoId,
+  default as SimpleFeature,
   isFeature,
 } from './simpleFeature'
 
 export { blobToDataURL } from './blobToDataURL'
+export { makeAbortableReaction } from './makeAbortableReaction'
+export * from './aborting'
+export * from './linkify'
+export * from './locString'
+export * from './stopToken'

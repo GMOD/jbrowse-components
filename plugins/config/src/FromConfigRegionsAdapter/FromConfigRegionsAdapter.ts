@@ -1,18 +1,16 @@
-import {
-  BaseAdapter,
-  RegionsAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
+import { readConfObject } from '@jbrowse/core/configuration'
+import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+import { makeFeatures } from '../FromConfigAdapter/FromConfigAdapter'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { makeFeatures } from '../FromConfigAdapter/FromConfigAdapter'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -32,7 +30,7 @@ export default class FromConfigRegionsAdapter
   ) {
     super(config, getSubAdapter, pluginManager)
     const f = readConfObject(config, 'features') as SimpleFeatureSerialized[]
-    this.features = makeFeatures(f || [])
+    this.features = makeFeatures(f)
   }
 
   /**
@@ -43,7 +41,9 @@ export default class FromConfigRegionsAdapter
 
     // recall: features are stored in this object sorted by start coordinate
     for (const [refName, features] of this.features) {
-      let currentRegion
+      let currentRegion:
+        | { refName: string; start: number; end: number }
+        | undefined
       for (const feature of features) {
         if (
           currentRegion &&
@@ -72,6 +72,4 @@ export default class FromConfigRegionsAdapter
 
     return regions
   }
-
-  freeResources(/* { region } */): void {}
 }

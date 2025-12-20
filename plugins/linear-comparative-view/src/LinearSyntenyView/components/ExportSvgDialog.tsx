@@ -1,4 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { getSession, useLocalStorage } from '@jbrowse/core/util'
 import {
   Button,
   Checkbox,
@@ -7,13 +10,12 @@ import {
   DialogContent,
   FormControlLabel,
   MenuItem,
-  TextField,
-  TextFieldProps,
   Typography,
 } from '@mui/material'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ExportSvgOptions } from '../model'
-import { getSession, useLocalStorage } from '@jbrowse/core/util'
+
+import TextField2 from './TextField2'
+
+import type { ExportSvgOptions } from '../types'
 
 function LoadingMessage() {
   return (
@@ -25,16 +27,9 @@ function LoadingMessage() {
 }
 
 function useSvgLocal<T>(key: string, val: T) {
-  return useLocalStorage('svg-' + key, val)
+  return useLocalStorage(`svg-${key}`, val)
 }
 
-function TextField2({ children, ...rest }: TextFieldProps) {
-  return (
-    <div>
-      <TextField {...rest}>{children}</TextField>
-    </div>
-  )
-}
 export default function ExportSvgDialog({
   model,
   handleClose,
@@ -45,6 +40,7 @@ export default function ExportSvgDialog({
   const session = getSession(model)
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
+  const [showGridlines, setShowGridlines] = useSvgLocal('gridlines', false)
   const [loading, setLoading] = useState(false)
   const [filename, setFilename] = useSvgLocal('file', 'jbrowse.svg')
   const [trackLabels, setTrackLabels] = useSvgLocal('tracklabels', 'offset')
@@ -64,7 +60,9 @@ export default function ExportSvgDialog({
         <TextField2
           helperText="filename"
           value={filename}
-          onChange={event => setFilename(event.target.value)}
+          onChange={event => {
+            setFilename(event.target.value)
+          }}
         />
 
         <TextField2
@@ -73,7 +71,9 @@ export default function ExportSvgDialog({
           variant="outlined"
           value={trackLabels}
           style={{ width: 150 }}
-          onChange={event => setTrackLabels(event.target.value)}
+          onChange={event => {
+            setTrackLabels(event.target.value)
+          }}
         >
           <MenuItem value="offset">Offset</MenuItem>
           <MenuItem value="overlay">Overlay</MenuItem>
@@ -87,7 +87,9 @@ export default function ExportSvgDialog({
             label="Theme"
             variant="outlined"
             value={themeName}
-            onChange={event => setThemeName(event.target.value)}
+            onChange={event => {
+              setThemeName(event.target.value)
+            }}
           >
             {Object.entries(session.allThemes()).map(([key, val]) => (
               <MenuItem key={key} value={key}>
@@ -99,12 +101,26 @@ export default function ExportSvgDialog({
             ))}
           </TextField2>
         ) : null}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={showGridlines}
+              onChange={() => {
+                setShowGridlines(val => !val)
+              }}
+            />
+          }
+          label="Show gridlines"
+        />
+
         {offscreenCanvas ? (
           <FormControlLabel
             control={
               <Checkbox
                 checked={rasterizeLayers}
-                onChange={() => setRasterizeLayers(val => !val)}
+                onChange={() => {
+                  setRasterizeLayers(val => !val)
+                }}
               />
             }
             label="Rasterize canvas based tracks? File may be much larger if this is turned off"
@@ -120,7 +136,9 @@ export default function ExportSvgDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>
@@ -137,6 +155,7 @@ export default function ExportSvgDialog({
                 filename,
                 themeName,
                 trackLabels,
+                showGridlines,
               })
               handleClose()
             } catch (e) {

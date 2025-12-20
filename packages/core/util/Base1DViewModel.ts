@@ -1,11 +1,15 @@
-import { types, cast, Instance } from 'mobx-state-tree'
-import { clamp, sum } from './index'
-import { Feature } from './simpleFeature'
-import { ElementId } from './types/mst'
-import { Region as IRegion } from './types'
+import { cast, types } from '@jbrowse/mobx-state-tree'
+
+import { bpToPx, moveTo, pxToBp } from './Base1DUtils'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
-import { moveTo, pxToBp, bpToPx, BpOffset } from './Base1DUtils'
+import { clamp, sum } from './index'
+import { ElementId } from './types/mst'
+
+import type { BpOffset } from './Base1DUtils'
+import type { Feature } from './simpleFeature'
+import type { Region as IRegion } from './types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel Base1DView
@@ -194,7 +198,9 @@ const Base1DView = types
       const newBpPerPx = clamp(
         bpPerPx,
         'minBpPerPx' in self ? (self.minBpPerPx as number) : 0,
-        'maxBpPerPx' in self ? (self.maxBpPerPx as number) : Infinity,
+        'maxBpPerPx' in self
+          ? (self.maxBpPerPx as number)
+          : Number.POSITIVE_INFINITY,
       )
 
       const oldBpPerPx = self.bpPerPx

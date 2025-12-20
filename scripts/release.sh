@@ -25,7 +25,7 @@ LOCAL_CHANGES=$(git status --short)
 
 # make sure packages are all up to date
 yarn
-
+yarn lint
 # make sure the tests are passing
 yarn test
 

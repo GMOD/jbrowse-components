@@ -1,14 +1,13 @@
 import { fireEvent, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-// locals
 import {
-  setup,
-  expectCanvasMatch,
   createView,
-  hts,
   doBeforeEach,
+  expectCanvasMatch,
+  hts,
   pv,
+  setup,
 } from './util'
 
 setup()
@@ -33,13 +32,13 @@ test('opens an alignments track and clicks feature', async () => {
   expectCanvasMatch(await f1.findByTestId(pv('1..4000-0'), ...opts))
   expectCanvasMatch(await f2.findByTestId(pv('1..4000-0'), ...opts))
 
-  const track = await findAllByTestId('pileup_overlay_canvas')
-  fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
-  fireEvent.click(track[0], { clientX: 200, clientY: 40 })
-  fireEvent.mouseDown(track[0], { clientX: 200, clientY: 20 })
-  fireEvent.mouseMove(track[0], { clientX: 300, clientY: 20 })
-  fireEvent.mouseUp(track[0], { clientX: 300, clientY: 20 })
-  fireEvent.mouseMove(track[0], { clientX: -100, clientY: -100 })
+  const track = await findAllByTestId('pileup-overlay-normal')
+  fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 20 })
+  fireEvent.click(track[0]!, { clientX: 200, clientY: 40 })
+  fireEvent.mouseDown(track[0]!, { clientX: 200, clientY: 20 })
+  fireEvent.mouseMove(track[0]!, { clientX: 300, clientY: 20 })
+  fireEvent.mouseUp(track[0]!, { clientX: 300, clientY: 20 })
+  fireEvent.mouseMove(track[0]!, { clientX: -100, clientY: -100 })
 
   // this is to confirm a alignment detail widget opened
   await findByTestId('alignment-side-drawer', ...opts)

@@ -1,5 +1,6 @@
-const AWS = require('aws-sdk')
 const url_parser = require('url')
+
+const AWS = require('aws-sdk')
 
 const dynamo = new AWS.DynamoDB.DocumentClient()
 
@@ -15,6 +16,8 @@ function recordStats(event, context, done) {
   stats.referer = headers.Referer || headers.referer || null
   stats.acceptLanguage = headers['Accept-Language'] || null
   stats.acceptCharset = headers['Accept-Charset'] || null
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   stats.host = stats.referer ? url_parser.parse(stats.referer).host : null
   if (stats.host?.startsWith('www.')) {
     stats.host = stats.host.slice(4)
@@ -26,7 +29,10 @@ function recordStats(event, context, done) {
   const trackTypesRe = /^track-types-/
   for (const key in stats) {
     if (key.startsWith('track-types-')) {
-      trackTypes[key.replace(trackTypesRe, '')] = parseInt(stats[key], 10)
+      trackTypes[key.replace(trackTypesRe, '')] = Number.parseInt(
+        stats[key],
+        10,
+      )
       delete stats[key]
     }
   }
@@ -38,10 +44,8 @@ function recordStats(event, context, done) {
     const sessionTrackTypesRe = /^sessionTrack-types-/
     for (const key in stats) {
       if (key.startsWith('sessionTrack-types-')) {
-        sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] = parseInt(
-          stats[key],
-          10,
-        )
+        sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] =
+          Number.parseInt(stats[key], 10)
         delete stats[key]
       }
     }
@@ -51,7 +55,7 @@ function recordStats(event, context, done) {
   stats.trackTypes = trackTypes
   const tableName =
     stats.jb2 === 'true' ? 'JB2_Analytics_Events' : 'JB1_Analytics_Events'
-  delete stats.jb2
+  stats.jb2 = undefined
   const params = {
     TableName: tableName,
     Item: stats,

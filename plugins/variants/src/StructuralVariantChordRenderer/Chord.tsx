@@ -1,32 +1,13 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import { polarToCartesian, Feature, getStrokeProps } from '@jbrowse/core/util'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { useState } from 'react'
+
 import { parseBreakend } from '@gmod/vcf'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
-export interface Region {
-  end: number
-  start: number
-  refName: string
-  elided?: false
-}
-
-export interface ElidedRegion {
-  elided: true
-  regions: Region[]
-}
-
-export type AnyRegion = Region | ElidedRegion
-
-export interface Block {
-  flipped: boolean
-  bpPerRadian: number
-  startRadians: number
-  region: AnyRegion
-}
+import type { AnyRegion, Block } from './types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 function bpToRadians(block: Block, pos: number) {
   const blockStart = block.region.elided ? 0 : block.region.start
@@ -58,16 +39,17 @@ const Chord = observer(function Chord({
   if (!startBlock) {
     return null
   }
-  let svType
+  let svType: string | undefined
   if (feature.get('INFO')) {
     ;[svType] = feature.get('INFO').SVTYPE || []
   } else if (feature.get('mate')) {
     svType = 'mate'
   }
-  let endPosition
+  let endPosition: number
   let endBlock: Block | undefined
   const alt = feature.get('ALT')?.[0]
   const bnd = alt && parseBreakend(alt)
+  const startPos = feature.get('start')
   if (bnd) {
     // VCF BND
     const matePosition = bnd.MatePosition.split(':')
@@ -77,7 +59,7 @@ const Chord = observer(function Chord({
     // VCF TRA
     const chr2 = feature.get('INFO')?.CHR2?.[0]
     const end = feature.get('INFO')?.END?.[0]
-    endPosition = parseInt(end, 10)
+    endPosition = Number.parseInt(end, 10)
     endBlock = blocksForRefs[chr2]
   } else if (svType === 'mate') {
     // generic simplefeatures arcs
@@ -85,10 +67,12 @@ const Chord = observer(function Chord({
     const chr2 = mate.refName
     endPosition = mate.start
     endBlock = blocksForRefs[chr2]
+  } else {
+    endBlock = startBlock
+    endPosition = feature.get('end')
   }
 
   if (endBlock) {
-    const startPos = feature.get('start')
     const startRadians = bpToRadians(startBlock, startPos)
     const endRadians = bpToRadians(endBlock, endPosition)
     const startXY = polarToCartesian(radius, startRadians)
@@ -114,9 +98,7 @@ const Chord = observer(function Chord({
         {...getStrokeProps(hovered ? hoverStrokeColor : strokeColor)}
         strokeWidth={hovered ? 3 : 1}
         onClick={evt => {
-          if (endBlock && startBlock) {
-            onClick(feature, startBlock.region, endBlock.region, evt)
-          }
+          onClick(feature, startBlock.region, endBlock.region, evt)
         }}
         onMouseOver={() => {
           if (!selected) {

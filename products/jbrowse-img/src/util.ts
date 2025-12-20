@@ -1,6 +1,7 @@
-import fs from 'fs'
-import tmp from 'tmp'
 import { spawnSync } from 'child_process'
+import fs from 'fs'
+
+import tmp from 'tmp'
 
 // nice helper function from https://stackoverflow.com/questions/263965/
 export function booleanize(str: string) {
@@ -27,6 +28,6 @@ export function convert(
   const ls = spawnSync('rsvg-convert', a)
 
   console.error(`rsvg-convert stderr: ${ls.stderr.toString()}`)
-  console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`) // eslint-disable-line no-console
+  console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
   fs.unlinkSync(name)
 }

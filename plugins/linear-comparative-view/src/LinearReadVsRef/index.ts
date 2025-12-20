@@ -1,13 +1,12 @@
 import { lazy } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
-import { getSession, getContainingTrack } from '@jbrowse/core/util'
 
-// icons
+import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'
 
-// locals
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+import type DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+
 const ReadVsRefDialog = lazy(() => import('./LinearReadVsRef'))
 
 function isDisplay(elt: { name: string }): elt is DisplayType {

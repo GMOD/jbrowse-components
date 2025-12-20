@@ -1,5 +1,5 @@
-// takes an array or Map or Set (anything iterable with values()) of Maps
-// and lets you query them as one Map
+// takes an array or Map or Set (anything iterable with values()) of Maps and
+// lets you query them as one Map
 export default class CompositeMap<T, U> {
   constructor(private submaps: Map<T, U>[]) {}
 
@@ -53,13 +53,13 @@ export default class CompositeMap<T, U> {
 
   *[Symbol.iterator]() {
     for (const key of this.keys()) {
-      yield [key, this.get(key)]
+      yield [key, this.get(key)] as const
     }
   }
 
   *entries() {
     for (const k of this.keys()) {
-      yield [k, this.get(k)]
+      yield [k, this.get(k)] as const
     }
   }
 }

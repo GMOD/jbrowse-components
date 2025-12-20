@@ -1,13 +1,13 @@
-import React from 'react'
-import { Toolbar, Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import AppLogo from '@jbrowse/core/ui/AppLogo'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
-import AppLogo from '@jbrowse/core/ui/AppLogo'
-import { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
-import { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Toolbar, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
+import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   grow: {
@@ -27,11 +27,15 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+interface Menu {
+  label: string
+  menuItems: JBMenuItem[]
+}
+
 type AppSession = SessionWithDrawerWidgets & {
-  savedSessionNames: string[]
-  menus: { label: string; menuItems: JBMenuItem[] }[]
-  renameCurrentSession: (arg: string) => void
+  menus: () => Menu[]
   snackbarMessages: SnackbarMessage[]
+  renameCurrentSession: (arg: string) => void
   popSnackbarMessage: () => unknown
 }
 
@@ -43,11 +47,11 @@ const AppToolbar = observer(function ({
   session: AppSession
 }) {
   const { classes } = useStyles()
-  const { savedSessionNames, name, menus } = session
+  const { name, menus } = session
 
   return (
     <Toolbar>
-      {menus.map(menu => (
+      {menus().map(menu => (
         <DropDownMenu
           key={menu.label}
           menuTitle={menu.label}
@@ -56,30 +60,28 @@ const AppToolbar = observer(function ({
         />
       ))}
       <div className={classes.grow} />
-      <Tooltip title="Rename Session" arrow>
+      <Tooltip title="Rename session" arrow>
         <EditableTypography
           value={name}
-          setValue={newName => {
-            if (savedSessionNames?.includes(newName)) {
-              session.notify(
-                `Cannot rename session to "${newName}", a saved session with that name already exists`,
-                'warning',
-              )
-            } else {
-              session.renameCurrentSession(newName)
-            }
-          }}
           variant="body1"
           classes={{
             inputBase: classes.inputBase,
             inputRoot: classes.inputRoot,
             inputFocused: classes.inputFocused,
           }}
+          setValue={newName => {
+            session.renameCurrentSession(newName)
+          }}
         />
       </Tooltip>
       {HeaderButtons}
       <div className={classes.grow} />
-      <div style={{ width: 150, maxHeight: 48 }}>
+      <div
+        style={{
+          width: 150,
+          maxHeight: 48,
+        }}
+      >
         <AppLogo session={session} />
       </div>
     </Toolbar>

@@ -1,10 +1,9 @@
-import React from 'react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-import { Feature } from '@jbrowse/core/util'
+
+import type { LayoutEntry } from '../Layout'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 const Stick = observer(function Stick({
   feature,
@@ -17,11 +16,7 @@ const Stick = observer(function Stick({
 }: {
   feature: Feature
   config: AnyConfigurationModel
-  layoutRecord: {
-    anchorLocation: number
-    y: number
-    data: { radiusPx: number }
-  }
+  layoutRecord: LayoutEntry
 }) {
   return (
     <line

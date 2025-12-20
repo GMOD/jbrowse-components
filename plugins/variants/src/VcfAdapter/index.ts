@@ -1,6 +1,8 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+
 import configSchema from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function VcfAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
@@ -9,6 +11,7 @@ export default function VcfAdapterF(pluginManager: PluginManager) {
         name: 'VcfAdapter',
         displayName: 'VCF adapter',
         configSchema,
+        adapterCapabilities: ['exportData'],
         getAdapterClass: () => import('./VcfAdapter').then(r => r.default),
       }),
   )

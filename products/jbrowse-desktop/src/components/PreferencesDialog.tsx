@@ -1,14 +1,18 @@
-import React from 'react'
+import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
+  Checkbox,
   DialogActions,
   DialogContent,
+  FormControlLabel,
+  FormGroup,
   MenuItem,
   TextField,
-  ThemeOptions,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { Dialog } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
+
+import type { ThemeOptions } from '@mui/material'
 
 const useStyles = makeStyles()(() => ({
   container: {
@@ -16,7 +20,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-export default function PreferencesDialog({
+const PreferencesDialog = observer(function ({
   handleClose,
   session,
 }: {
@@ -24,7 +28,11 @@ export default function PreferencesDialog({
   session: {
     allThemes: () => Record<string, ThemeOptions & { name?: string }>
     themeName?: string
+    stickyViewHeaders: boolean
+    setStickyViewHeaders(sticky: boolean): void
     setThemeName: (arg: string) => void
+    useWorkspaces: boolean
+    setUseWorkspaces(useWorkspaces: boolean): void
   }
 }) {
   const { classes } = useStyles()
@@ -35,7 +43,9 @@ export default function PreferencesDialog({
           select
           label="Theme"
           value={session.themeName}
-          onChange={event => session.setThemeName(event.target.value)}
+          onChange={event => {
+            session.setThemeName(event.target.value)
+          }}
         >
           {Object.entries(session.allThemes()).map(([key, val]) => (
             <MenuItem key={key} value={key}>
@@ -43,10 +53,28 @@ export default function PreferencesDialog({
             </MenuItem>
           ))}
         </TextField>
+        <FormGroup>
+          <FormControlLabel
+            control={<Checkbox checked={session.stickyViewHeaders} />}
+            onChange={(_, checked) => {
+              session.setStickyViewHeaders(checked)
+            }}
+            label="Keep view header visible"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={session.useWorkspaces} />}
+            onChange={(_, checked) => {
+              session.setUseWorkspaces(checked)
+            }}
+            label="Use workspaces (tabbed/tiled view layout)"
+          />
+        </FormGroup>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Close</Button>
       </DialogActions>
     </Dialog>
   )
-}
+})
+
+export default PreferencesDialog

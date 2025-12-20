@@ -1,24 +1,22 @@
 import fs from 'fs'
 import path from 'path'
 
-// locals
-import { Track, LocalPathLocation, UriLocation } from '../base'
 import fetch from '../fetchWithProxy'
 
+import type { LocalPathLocation, Track, UriLocation } from '../base'
+
 export async function createRemoteStream(urlIn: string) {
-  const response = await fetch(urlIn)
-  if (!response.ok) {
+  const res = await fetch(urlIn)
+  if (!res.ok) {
     throw new Error(
-      `Failed to fetch ${urlIn} status ${
-        response.status
-      } ${await response.text()}`,
+      `Failed to fetch ${urlIn} status ${res.status} ${await res.text()}`,
     )
   }
-  return response
+  return res
 }
 
 export function isURL(FileName: string) {
-  let url
+  let url: URL | undefined
 
   try {
     url = new URL(FileName)
@@ -46,7 +44,6 @@ function makeLocation(location: string, protocol: string) {
 }
 
 export function guessAdapterFromFileName(filePath: string): Track {
-  // const uri = isURL(filePath) ? filePath : path.resolve(filePath)
   const protocol = isURL(filePath) ? 'uri' : 'localPath'
   const name = path.basename(filePath)
   if (/\.vcf\.b?gz$/i.test(filePath)) {
@@ -104,13 +101,15 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
-export function supported(type: string) {
-  return [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
-    'Gff3Adapter',
-    'VcfAdapter',
-  ].includes(type)
+const SUPPORTED_ADAPTERS = new Set([
+  'Gff3TabixAdapter',
+  'VcfTabixAdapter',
+  'Gff3Adapter',
+  'VcfAdapter',
+])
+
+export function supported(type = '') {
+  return SUPPORTED_ADAPTERS.has(type)
 }
 
 export async function generateMeta({

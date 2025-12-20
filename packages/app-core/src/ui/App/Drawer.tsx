@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from 'react'
-import { Paper } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
+import { useEffect, useRef } from 'react'
+
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
-import { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Paper } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -35,8 +37,8 @@ const Drawer = observer(function ({
 
   useEffect(() => {
     function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref?.current?.contains(e.target)) {
-        // @ts-ignore
+      if (e.target instanceof Element && ref.current?.contains(e.target)) {
+        // @ts-expect-error
         const visibleWidgetId = session.visibleWidget?.view?.id
         if (visibleWidgetId) {
           session.setFocusedViewId(visibleWidgetId)
@@ -50,7 +52,7 @@ const Drawer = observer(function ({
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
-  }, [ref, session])
+  }, [session])
 
   return (
     <Paper ref={ref} className={classes.paper} elevation={16} square>

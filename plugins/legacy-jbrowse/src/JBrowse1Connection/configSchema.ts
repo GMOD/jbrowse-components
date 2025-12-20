@@ -1,5 +1,5 @@
-import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
 /**
  * #config JBrowse1Connection

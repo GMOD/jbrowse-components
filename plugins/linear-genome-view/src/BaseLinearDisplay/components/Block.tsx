@@ -1,8 +1,11 @@
-import React from 'react'
-import { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+
+// Warning: block widths use fractional pixels (block.widthPx) intentionally.
+// Do not round these values - rounding causes 1px gaps between blocks.
+// The parent flex container handles subpixel layout correctly.
 const useStyles = makeStyles()(theme => ({
   contentBlock: {
     position: 'relative',

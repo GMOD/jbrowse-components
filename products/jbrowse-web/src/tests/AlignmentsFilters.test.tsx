@@ -1,14 +1,13 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-// locals
 import {
-  setup,
-  expectCanvasMatch,
-  doBeforeEach,
   createView,
+  doBeforeEach,
+  expectCanvasMatch,
   hts,
   pv,
+  setup,
 } from './util'
 
 setup()
@@ -29,14 +28,14 @@ async function testFilterTrack(
   const user = userEvent.setup()
   await user.click(await screen.findByTestId(hts(trackId), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Filter by'))
+  await user.click(await screen.findByText('Filter by...'))
   await user.type(
     await screen.findByPlaceholderText('Enter tag name', ...opts),
     tag,
   )
   await user.type(await screen.findByPlaceholderText('Enter tag value'), value)
   await user.click(await screen.findByText('Submit'))
-  await screen.findAllByTestId(`pileup-${tag}`, ...opts)
+  await screen.findAllByTestId(`pileup-overlay-normal-${tag}`, ...opts)
   const f1 = within(await screen.findByTestId('Blockset-pileup'))
   expectCanvasMatch(await f1.findByTestId(pv(key), ...opts))
 }
@@ -68,9 +67,9 @@ test('set jexl filters on bam pileup display', async () => {
   const user = userEvent.setup()
   await user.click(await screen.findByTestId(hts('volvox_bam'), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click((await screen.findAllByText('Pileup display'))[1])
+  await user.click((await screen.findAllByText('Pileup display'))[1]!)
 
-  const filter = [`jexl:get(feature,'end')==${40005}`]
+  const filter = [`jexl:get(feature,'end')==40005`]
   view.tracks[0].displays[0].setJexlFilters(filter)
 
   expectCanvasMatch(await screen.findByTestId(pv('39805..40176-0'), ...opts))
@@ -85,7 +84,7 @@ test('set jexl filters on snp cov display', async () => {
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('SNPCoverage display'))
 
-  const filter = [`jexl:get(feature,'end')==${40005}`]
+  const filter = [`jexl:get(feature,'end')==40005`]
   view.tracks[0].displays[0].setJexlFilters(filter)
 
   expectCanvasMatch(await screen.findByTestId(pv('39805..40176-0'), ...opts))

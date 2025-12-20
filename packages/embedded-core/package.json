@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/embedded-core",
-  "version": "2.11.2",
+  "version": "3.7.0",
   "description": "JBrowse 2 code shared between embedded products",
   "keywords": [
     "jbrowse",
@@ -29,10 +29,10 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
-    "build": "npm run build:esm && npm run build:commonjs",
-    "test": "cd ../..; jest packages/embedded-core",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
+    "build": "yarn build:esm && yarn build:commonjs",
+    "test": "cd ../..; jest --passWithNoTests packages/embedded-core",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",
     "prepack": "yarn build && yarn useDist",
@@ -41,21 +41,16 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@babel/runtime": "^7.16.3",
-    "@jbrowse/product-core": "^2.11.2",
-    "@mui/icons-material": "^5.0.0",
-    "@mui/material": "^5.10.17",
-    "copy-to-clipboard": "^3.3.1",
-    "react-error-boundary": "^4.0.3"
+    "@jbrowse/core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^9.0.0"
   },
   "peerDependencies": {
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
-    "react": ">=17.0.0",
-    "react-dom": ">=17.0.0",
-    "rxjs": "^7.0.0",
-    "tss-react": "^4.0.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

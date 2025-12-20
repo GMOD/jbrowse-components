@@ -1,18 +1,19 @@
-import React, { useMemo, useState } from 'react'
-import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
+import { useMemo, useState } from 'react'
+
 import {
-  getSession,
   getEnv,
+  getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { isSessionWithConnections } from '@jbrowse/product-core'
+import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
-// locals
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
-import { isSessionWithConnections } from '@jbrowse/product-core'
+
+import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -40,7 +41,7 @@ const AddConnectionWidget = observer(function ({ model }: { model: unknown }) {
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
 
-  // useMemo is needed for react@18+mobx-react@9, previous code called configScema.create directly in a setConfigModel useState hook setter but this caused infinite loop
+  // useMemo is needed for react@18+mobx-react@9, previous code called configSchema.create directly in a setConfigModel useState hook setter but this caused infinite loop
   const configModel = useMemo(
     () => connectionType?.configSchema.create({ connectionId }, getEnv(model)),
     [connectionId, connectionType, model],
@@ -79,7 +80,9 @@ const AddConnectionWidget = observer(function ({ model }: { model: unknown }) {
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
-                  onClick={() => setActiveStep(activeStep - 1)}
+                  onClick={() => {
+                    setActiveStep(activeStep - 1)
+                  }}
                   className={classes.button}
                 >
                   Back

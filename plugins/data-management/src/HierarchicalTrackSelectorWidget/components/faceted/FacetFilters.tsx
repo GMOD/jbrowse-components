@@ -1,10 +1,10 @@
-import React from 'react'
 import { observer } from 'mobx-react'
 
-// locals
 import FacetFilter from './FacetFilter'
-import { HierarchicalTrackSelectorModel } from '../../model'
-import { Row, getRowStr } from './util'
+import { getRowStr } from './util'
+
+import type { Row } from './util'
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const FacetFilters = observer(function ({
   rows,
@@ -18,47 +18,55 @@ const FacetFilters = observer(function ({
   const { faceted } = model
   const { filters } = faceted
   const facets = columns.slice(1)
-  const uniqs = new Map(
-    facets.map(f => [f.field, new Map<string, number>()] as const),
+  const facetFieldToCategoryCountMap = new Map(
+    columns.slice(1).map(f => [f.field, new Map<string, number>()] as const),
   )
 
-  // this code "stages the facet filters" in order that the user has selected
-  // them, which relies on the js behavior that the order of the returned keys is
-  // related to the insertion order.
+  // 1. filterKeys: the title of the facets (right hand panel) that have been
+  // already filtered e.g. user clicked a facet on the right hand panel
   const filterKeys = faceted.filters.keys()
+
+  // 2. facetKeys: the title of the facets (right hand panel), just the rest of
+  // them
   const facetKeys = facets.map(f => f.field)
-  const ret = new Set<string>()
+
+  // these two loops add facet filters in the order that the user has selected
+  // them, which is the intuitive 'drilling down' behavior users want from
+  // faceted selections
+  const facetKeysPrioritizingUserSelections = new Set<string>()
   for (const entry of filterKeys) {
     // give non-empty filters priority
     if (filters.get(entry)?.length) {
-      ret.add(entry)
+      facetKeysPrioritizingUserSelections.add(entry)
     }
   }
   for (const entry of facetKeys) {
-    ret.add(entry)
+    facetKeysPrioritizingUserSelections.add(entry)
   }
 
   let currentRows = rows
-  for (const facet of ret) {
-    const elt = uniqs.get(facet)!
-    for (const row of currentRows) {
-      const key = getRowStr(facet, row)
-      const val = elt.get(key)
-      // we don't allow filtering on empty yet
-      if (key) {
-        if (val === undefined) {
-          elt.set(key, 1)
-        } else {
-          elt.set(key, val + 1)
+  for (const facetKey of facetKeysPrioritizingUserSelections) {
+    const categoryCountMap = facetFieldToCategoryCountMap.get(facetKey)
+    if (categoryCountMap) {
+      for (const row of currentRows) {
+        const key = getRowStr(facetKey, row)
+        const currentCount = categoryCountMap.get(key)
+        // we don't allow filtering on empty yet
+        if (key) {
+          if (currentCount === undefined) {
+            categoryCountMap.set(key, 1)
+          } else {
+            categoryCountMap.set(key, currentCount + 1)
+          }
         }
       }
     }
-    const filter = filters.get(facet)?.length
-      ? new Set(filters.get(facet))
+    const filter = filters.get(facetKey)?.length
+      ? new Set(filters.get(facetKey))
       : undefined
 
     currentRows = currentRows.filter(row =>
-      filter !== undefined ? filter.has(getRowStr(facet, row)) : true,
+      filter !== undefined ? filter.has(getRowStr(facetKey, row)) : true,
     )
   }
 
@@ -67,7 +75,7 @@ const FacetFilters = observer(function ({
       {facets.map(c => (
         <FacetFilter
           key={c.field}
-          vals={[...uniqs.get(c.field)!]}
+          vals={[...facetFieldToCategoryCountMap.get(c.field)!]}
           column={c}
           model={model}
         />

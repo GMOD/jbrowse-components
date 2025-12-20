@@ -1,5 +1,6 @@
-import React from 'react'
-import { SvgIconProps, SvgIcon } from '@mui/material'
+import { SvgIcon } from '@mui/material'
+
+import type { SvgIconProps } from '@mui/material'
 
 export default function GoogleDriveIcon(props: SvgIconProps) {
   return (

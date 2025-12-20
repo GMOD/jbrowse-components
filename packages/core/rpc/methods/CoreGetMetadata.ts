@@ -1,8 +1,6 @@
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-
-import { RemoteAbortSignal } from '../remoteAbortSignals'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 
 export default class CoreGetMetadata extends RpcMethodType {
   name = 'CoreGetMetadata'
@@ -10,8 +8,8 @@ export default class CoreGetMetadata extends RpcMethodType {
   async execute(
     args: {
       sessionId: string
-      signal: RemoteAbortSignal
-      adapterConfig: {}
+      stopToken?: string
+      adapterConfig: Record<string, unknown>
     },
     rpcDriver: string,
   ) {

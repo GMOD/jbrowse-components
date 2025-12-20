@@ -1,5 +1,6 @@
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
 import BigWigAdapter from './BigWigAdapter'
 import configSchema from './configSchema'
 

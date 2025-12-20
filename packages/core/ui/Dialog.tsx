@@ -1,8 +1,11 @@
-import React from 'react'
+import { isValidElement } from 'react'
+
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import CloseIcon from '@mui/icons-material/Close'
 import {
   Dialog as MUIDialog,
   DialogTitle,
-  DialogProps,
   Divider,
   IconButton,
   ScopedCssBaseline,
@@ -11,13 +14,11 @@ import {
   useTheme,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
-import { ErrorBoundary } from 'react-error-boundary'
 
-// icons
-import CloseIcon from '@mui/icons-material/Close'
-// locals
 import ErrorMessage from './ErrorMessage'
+import SanitizedHTML from './SanitizedHTML'
+
+import type { DialogProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -26,39 +27,45 @@ const useStyles = makeStyles()(theme => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
+  errorBox: {
+    width: 800,
+    margin: 40,
+  },
 }))
 
 function DialogError({ error }: { error: unknown }) {
+  const { classes } = useStyles()
   return (
-    <div style={{ width: 800, margin: 40 }}>
+    <div className={classes.errorBox}>
       <ErrorMessage error={error} />
     </div>
   )
 }
 
-interface Props extends DialogProps {
+export interface Props extends DialogProps {
   header?: React.ReactNode
+  titleNode?: React.ReactNode
 }
 
 const Dialog = observer(function (props: Props) {
   const { classes } = useStyles()
-  const { title, header, children, onClose } = props
+  const { titleNode, ...rest } = props
+  const { title, header, children, onClose } = rest
   const theme = useTheme()
 
   return (
-    <MUIDialog {...props}>
+    <MUIDialog {...rest}>
       <ScopedCssBaseline>
-        {React.isValidElement(header) ? (
+        {isValidElement(header) ? (
           header
         ) : (
           <DialogTitle>
-            {title}
+            {titleNode || <SanitizedHTML html={title || ''} />}
             {onClose ? (
               <IconButton
                 className={classes.closeButton}
-                onClick={() => {
-                  // @ts-expect-error
-                  onClose()
+                onClick={event => {
+                  onClose(event, 'backdropClick')
                 }}
               >
                 <CloseIcon />

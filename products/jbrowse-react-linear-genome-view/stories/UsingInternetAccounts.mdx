@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/blocks'
+import { Meta, Story } from '@storybook/addon-docs/blocks'
 import { WithInternetAccounts } from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Using InternetAccounts" />
@@ -7,7 +7,7 @@ import { WithInternetAccounts } from './JBrowseLinearGenomeView.stories'
 
 "Internet accounts" are used to access authenticated resources or otherwise
 override the 'fetch' behavior of the app. Starting with v2.2.1 of
-`@jbrowse/react-linear-genome-view`, developers can use InternetAccounts in the
+`@jbrowse/react-linear-genome-view2`, developers can use InternetAccounts in the
 embedded components.
 
 ## Using InternetAccounts
@@ -48,8 +48,8 @@ you'll more likely be 'automatically' be authenticated via cookies.
 
 Note that JBrowse's `DropboxOAuthInternetAccount` and
 `GoogleDriveOAuthInternetAccount` will not work as-is because
-`@jbrowse/react-linear-genome-view` doesn't have the app-level control needed to
-properly execute an OAuth 2.0 login flow.
+`@jbrowse/react-linear-genome-view2` doesn't have the app-level control needed
+to properly execute an OAuth 2.0 login flow.
 
 There are some instances where InternetAccounts could be useful for non-external
 resources too though. For example, you can use a custom InternetAccount to

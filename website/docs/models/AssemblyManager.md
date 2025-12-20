@@ -3,14 +3,22 @@ id: assemblymanager
 title: AssemblyManager
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[packages/core/assemblyManager/assemblyManager.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assemblyManager.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assemblyManager.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/AssemblyManager.md)
+
+## Docs
 
 ### AssemblyManager - Properties
 
@@ -21,12 +29,19 @@ session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies
 
 ```js
 // type signature
-IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCus...
+IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 assemblies: types.array(assemblyFactory(conf, pm))
 ```
 
 ### AssemblyManager - Getters
+
+#### getter: assemblyNameMap
+
+```js
+// type
+Record<string, { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>>
+```
 
 #### getter: assemblyNamesList
 
@@ -37,21 +52,35 @@ any
 
 #### getter: assemblyList
 
-looks at jbrowse.assemblies, session.sessionAssemblies, and
-session.temporaryAssemblies to load from
+combined jbrowse.assemblies, session.sessionAssemblies, and
+session.temporaryAssemblies
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 ### AssemblyManager - Methods
+
+#### method: getCanonicalAssemblyName
+
+```js
+// type signature
+getCanonicalAssemblyName: (asmName: string) => string
+```
+
+#### method: getCanonicalAssemblyName2
+
+```js
+// type signature
+getCanonicalAssemblyName2: (asmName: string) => string
+```
 
 #### method: get
 
 ```js
 // type signature
-get: (asmName: string) => { configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>
+get: (asmName: string) => { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>
 ```
 
 #### method: waitForAssembly
@@ -61,21 +90,21 @@ with regions loaded
 
 ```js
 // type signature
-waitForAssembly: (assemblyName: string) => Promise<{ configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>>
+waitForAssembly: (assemblyName: string) => Promise<{ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>>
 ```
 
 #### method: getRefNameMapForAdapter
 
 ```js
 // type signature
-getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { signal?: AbortSignal; sessionId: string; }) => Promise<any>
+getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: AssemblyBaseOpts) => Promise<any>
 ```
 
 #### method: getReverseRefNameMapForAdapter
 
 ```js
 // type signature
-getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: { signal?: AbortSignal; sessionId: string; }) => Promise<any>
+getReverseRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string, opts: AssemblyBaseOpts) => Promise<any>
 ```
 
 #### method: isValidRefName
@@ -95,7 +124,7 @@ directly
 
 ```js
 // type signature
-removeAssembly: (asm: { configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>) => void
+removeAssembly: (asm: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: addAssembly
@@ -111,15 +140,4 @@ reference. snapshots cannot be used
 ```js
 // type signature
 addAssembly: (configuration: any) => void
-```
-
-#### action: replaceAssembly
-
-private: you would generally want to add to manipulate jbrowse.assemblies,
-session.sessionAssemblies, or session.temporaryAssemblies instead of using this
-directly
-
-```js
-// type signature
-replaceAssembly: (idx: number, configuration: any) => void
 ```

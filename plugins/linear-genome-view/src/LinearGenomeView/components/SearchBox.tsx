@@ -1,24 +1,54 @@
-import React from 'react'
-import { observer } from 'mobx-react'
-import { useTheme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { alpha, useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
 import RefNameAutocomplete from './RefNameAutocomplete'
+import EndAdornment from './RefNameAutocomplete/EndAdornment'
 import { fetchResults } from './util'
-import { LinearGenomeViewModel, SPACING, WIDGET_HEIGHT } from '..'
 import { handleSelectedRegion, navToOption } from '../../searchUtils'
+import { SPACING, WIDGET_HEIGHT } from '../consts'
 
-const useStyles = makeStyles()(() => ({
+import type { LinearGenomeViewModel } from '../model'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+
+const useStyles = makeStyles()({
   headerRefName: {
     minWidth: 100,
   },
-}))
+})
+
+async function onSelect({
+  option,
+  model,
+  assemblyName,
+}: {
+  option: BaseResult
+  model: LinearGenomeViewModel
+  assemblyName: string
+}) {
+  const { assemblyManager } = getSession(model)
+  const assembly = assemblyManager.get(assemblyName)
+  if (option.hasLocation()) {
+    await navToOption({
+      option,
+      model,
+      assemblyName,
+    })
+  } else if (option.results?.length) {
+    model.setSearchResults(option.results, option.getLabel())
+  } else if (assembly) {
+    await handleSelectedRegion({
+      input: option.getLabel(),
+      assembly,
+      model,
+    })
+  }
+}
 
 const SearchBox = observer(function ({
   model,
-  showHelp,
+  showHelp = true,
 }: {
   showHelp?: boolean
   model: LinearGenomeViewModel
@@ -29,26 +59,19 @@ const SearchBox = observer(function ({
 
   const { textSearchManager, assemblyManager } = session
   const { assemblyNames, rankSearchResults } = model
-  const assemblyName = assemblyNames[0]
+  const assemblyName = assemblyNames[0]!
   const assembly = assemblyManager.get(assemblyName)
   const searchScope = model.searchScope(assemblyName)
 
   return (
     <RefNameAutocomplete
-      showHelp={showHelp}
       onSelect={async option => {
         try {
-          if (option.hasLocation()) {
-            await navToOption({ option, model, assemblyName })
-          } else if (option.results?.length) {
-            model.setSearchResults(option.results, option.getLabel())
-          } else if (assembly) {
-            await handleSelectedRegion({
-              input: option.getLabel(),
-              assembly,
-              model,
-            })
-          }
+          await onSelect({
+            model,
+            assemblyName,
+            option,
+          })
         } catch (e) {
           console.error(e)
           getSession(model).notify(`${e}`, 'warning')
@@ -69,12 +92,17 @@ const SearchBox = observer(function ({
       TextFieldProps={{
         variant: 'outlined',
         className: classes.headerRefName,
-        style: { margin: SPACING },
-        InputProps: {
-          style: {
-            padding: 0,
-            height: WIDGET_HEIGHT,
-            background: alpha(theme.palette.background.paper, 0.8),
+        style: {
+          margin: SPACING,
+        },
+        slotProps: {
+          input: {
+            style: {
+              padding: 0,
+              height: WIDGET_HEIGHT,
+              background: alpha(theme.palette.background.paper, 0.8),
+            },
+            endAdornment: <EndAdornment showHelp={showHelp} />,
           },
         },
       }}

@@ -46,9 +46,8 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
     mouseover: {
       type: 'string',
       description: 'text to display when the cursor hovers over a feature',
-      defaultValue: `jexl:get(feature,'name')`,
-
-      contextVariable: ['feature'],
+      defaultValue: `jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')`,
+      contextVariable: ['feature', 'mouseoverExtraInformation'],
     },
     /**
      * #slot

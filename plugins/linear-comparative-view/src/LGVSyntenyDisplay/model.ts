@@ -1,11 +1,20 @@
 import { lazy } from 'react'
+
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
-  ConfigurationReference,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import { SharedLinearPileupDisplayMixin } from '@jbrowse/plugin-alignments'
-import { types } from 'mobx-state-tree'
+
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
 
 const LaunchSyntenyViewDialog = lazy(
   () => import('./components/LaunchSyntenyViewDialog'),
@@ -48,13 +57,15 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             ...(feature
               ? [
                   {
-                    label: 'Open synteny view for this position',
+                    label: 'Launch synteny view for this position',
                     onClick: () => {
                       getSession(self).queueDialog(handleClose => [
                         LaunchSyntenyViewDialog,
                         {
-                          model: self,
+                          view: getContainingView(self) as LGV,
+                          trackId: getConf(getContainingTrack(self), 'trackId'),
                           handleClose,
+                          session: getSession(self),
                           feature,
                         },
                       ])
@@ -87,12 +98,34 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       */
+      selectFeature(feature: Feature) {
+        const session = getSession(self)
+        if (isSessionModelWithWidgets(session)) {
+          const r2 = getContainingView(self)
+          let r3 = r2
+          try {
+            r3 = getContainingView(r3)
+          } catch (e) {}
+          const featureWidget = session.addWidget(
+            'SyntenyFeatureWidget',
+            'syntenyFeature',
+            {
+              featureData: feature.toJSON(),
+              view: r3,
+              track: getContainingTrack(self),
+            },
+          )
+          session.showWidget(featureWidget)
+        }
+        session.setSelection(feature)
+      },
       afterCreate() {
-        // use color by stand to help indicate inversions better on first load,
+        // use color by strand to help indicate inversions better on first load,
         // otherwise use selected orientation
-        if (self.colorBy) {
-          self.setColorScheme({ ...self.colorBy })
-        } else {
+        if (!self.colorBySetting && self.colorBy.type === 'normal') {
           self.setColorScheme({ type: 'strand' })
         }
       },

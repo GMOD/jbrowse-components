@@ -1,12 +1,11 @@
-import { getSession } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
-import { dedupe, TextSearchManager } from '@jbrowse/core/util'
+import { dedupe, getSession } from '@jbrowse/core/util'
 
-// locals
-import { LinearGenomeViewModel } from './LinearGenomeView'
+import type { LinearGenomeViewModel } from './LinearGenomeView'
+import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { TextSearchManager } from '@jbrowse/core/util'
 
 export async function navToOption({
   option,
@@ -20,7 +19,7 @@ export async function navToOption({
   const location = option.getLocation()
   const trackId = option.getTrackId()
   if (location) {
-    await model.navToLocString(location, assemblyName)
+    await model.navToLocString(location, assemblyName, 0.2)
     if (trackId) {
       model.showTrack(trackId)
     }
@@ -41,7 +40,7 @@ export async function handleSelectedRegion({
   model: LinearGenomeViewModel
   assembly: Assembly
 }) {
-  const allRefs = assembly?.allRefNamesWithLowerCase || []
+  const allRefs = assembly.allRefNamesWithLowerCase || []
   const assemblyName = assembly.name
   if (input.split(' ').every(entry => checkRef(entry, allRefs))) {
     await model.navToLocString(input, assembly.name)
@@ -61,7 +60,7 @@ export async function handleSelectedRegion({
       model.setSearchResults(results, input.toLowerCase(), assemblyName)
     } else if (results.length === 1) {
       await navToOption({
-        option: results[0],
+        option: results[0]!,
         model,
         assemblyName,
       })
@@ -123,9 +122,8 @@ export function splitLast(str: string, split: string): [string, string] {
   const lastIndex = str.lastIndexOf(split)
   if (lastIndex === -1) {
     return [str, '']
-  } else {
-    const before = str.slice(0, lastIndex)
-    const after = str.slice(lastIndex + 1)
-    return [before, after]
   }
+  const before = str.slice(0, lastIndex)
+  const after = str.slice(lastIndex + 1)
+  return [before, after]
 }

@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react'
-import { InputBase, Typography, TypographyProps, useTheme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { forwardRef, useState } from 'react'
+
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
+import { InputBase, Typography, useTheme } from '@mui/material'
+
+import type { TypographyProps } from '@mui/material'
 
 type Variant = TypographyProps['variant']
 
@@ -38,24 +41,13 @@ interface Props {
 }
 
 // using forwardRef so that MUI Tooltip can wrap this component
-const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
+const EditableTypography = forwardRef<HTMLDivElement, Props>(
   function EditableTypography2(props, ref) {
     const { value, setValue, variant, ...other } = props
     const [ref2, { width }] = useMeasure()
     const [editedValue, setEditedValue] = useState<string>()
     const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
-    const [blur, setBlur] = useState(false)
 
-    useEffect(() => {
-      if (blur) {
-        inputNode?.blur()
-        setBlur(false)
-      }
-    }, [blur, inputNode])
-
-    // possibly tss-react does not understand the passing of props to
-    // useStyles, but it appears to work
-    // @ts-expect-error
     const { classes } = useStyles(props, { props })
     const theme = useTheme()
 
@@ -74,7 +66,9 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
           </Typography>
         </div>
         <InputBase
-          inputRef={node => setInputNode(node)}
+          inputRef={node => {
+            setInputNode(node)
+          }}
           className={classes.inputBase}
           inputProps={{
             style: {
@@ -90,13 +84,15 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
             focused: classes.inputFocused,
           }}
           value={val}
-          onChange={event => setEditedValue(event.target.value)}
+          onChange={event => {
+            setEditedValue(event.target.value)
+          }}
           onKeyDown={event => {
             if (event.key === 'Enter') {
               inputNode?.blur()
             } else if (event.key === 'Escape') {
               setEditedValue(undefined)
-              setBlur(true)
+              inputNode?.blur()
             }
           }}
           onBlur={() => {

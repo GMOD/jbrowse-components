@@ -1,85 +1,13 @@
-import React, { useState } from 'react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { Feature, Region, bpSpanPx, getStrokeProps } from '@jbrowse/core/util'
+import { Suspense, lazy, useState } from 'react'
+
+import { readConfObject } from '@jbrowse/core/configuration'
+import { bpSpanPx, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-// locals
-import ArcTooltip from '../ArcTooltip'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
 
-function Arc({
-  selectedFeatureId,
-  region,
-  bpPerPx,
-  config,
-  onFeatureClick,
-  feature,
-}: {
-  selectedFeatureId: string
-  region: Region
-  config: AnyConfigurationModel
-  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
-  bpPerPx: number
-  feature: Feature
-}) {
-  const [isMouseOvered, setIsMouseOvered] = useState(false)
-  const [left, right] = bpSpanPx(
-    feature.get('start'),
-    feature.get('end'),
-    region,
-    bpPerPx,
-  )
-  const featureId = feature.id()
-  let stroke = readConfObject(config, 'color', { feature })
-  let textStroke = 'black'
-  if (selectedFeatureId && String(selectedFeatureId) === String(feature.id())) {
-    stroke = textStroke = 'red'
-  }
-  const label = readConfObject(config, 'label', { feature })
-  const caption = readConfObject(config, 'caption', { feature })
-  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
-  const height = readConfObject(config, 'height', { feature }) || 100
-  const ref = React.createRef<SVGPathElement>()
-
-  // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
-  const t = 0.5
-  const t1 = 1 - t
-  const textYCoord = 3 * (t1 * t1) * (t * height) + 3 * t1 * (t * t) * height
-
-  return (
-    <g>
-      <path
-        ref={ref}
-        {...getStrokeProps(stroke)}
-        d={`M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`}
-        strokeWidth={strokeWidth}
-        fill="transparent"
-        onClick={e => onFeatureClick?.(e, featureId)}
-        onMouseOver={() => setIsMouseOvered(true)}
-        onMouseLeave={() => setIsMouseOvered(false)}
-        pointerEvents="stroke"
-      />
-      {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
-      <text
-        x={left + (right - left) / 2}
-        y={textYCoord + 3}
-        stroke="white"
-        strokeWidth="0.6em"
-      >
-        {label}
-      </text>
-      <text
-        x={left + (right - left) / 2}
-        y={textYCoord + 3}
-        stroke={textStroke}
-      >
-        {label}
-      </text>
-    </g>
-  )
-}
+const ArcTooltip = lazy(() => import('../ArcTooltip'))
 
 function polarToCartesian(
   centerX: number,
@@ -88,54 +16,59 @@ function polarToCartesian(
   angleInDegrees: number,
 ) {
   const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180
-
   return {
     x: centerX + radius * Math.cos(angleInRadians),
     y: centerY + radius * Math.sin(angleInRadians),
   }
 }
 
-function describeArc(
-  x: number,
-  y: number,
-  radius: number,
-  startAngle: number,
-  endAngle: number,
-) {
-  const start = polarToCartesian(x, y, radius, endAngle)
-  const end = polarToCartesian(x, y, radius, startAngle)
-
-  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
-
-  return [
-    'M',
-    start.x,
-    start.y,
-    'A',
-    radius,
-    radius,
-    0,
-    largeArcFlag,
-    0,
-    end.x,
-    end.y,
-  ].join(' ')
+function getSemicirclePath(centerX: number, radius: number) {
+  const start = polarToCartesian(centerX, 0, radius, 270)
+  const end = polarToCartesian(centerX, 0, radius, 90)
+  return {
+    d: `M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}`,
+    textYCoord: radius,
+  }
 }
 
-function SemiCircles({
+function getBezierPath(
+  left: number,
+  right: number,
+  config: AnyConfigurationModel,
+  feature: Feature,
+  displayHeight: number,
+) {
+  const height = Math.min(
+    readConfObject(config, 'height', { feature }) || 100,
+    displayHeight,
+  )
+  // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
+  const t = 0.5
+  const t1 = 1 - t
+  return {
+    d: `M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`,
+    textYCoord: 3 * (t1 * t1) * (t * height) + 3 * t1 * (t * t) * height,
+  }
+}
+
+function ArcFeature({
   selectedFeatureId,
   region,
   bpPerPx,
   config,
-  onFeatureClick,
+  displayHeight,
   feature,
+  semicircle,
+  onFeatureClick,
 }: {
-  selectedFeatureId: string
+  selectedFeatureId?: string
   region: Region
   config: AnyConfigurationModel
-  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   bpPerPx: number
+  displayHeight: number
   feature: Feature
+  semicircle: boolean
+  onFeatureClick: (event: React.MouseEvent, featureId: string) => void
 }) {
   const [isMouseOvered, setIsMouseOvered] = useState(false)
   const [left, right] = bpSpanPx(
@@ -146,55 +79,53 @@ function SemiCircles({
   )
 
   const featureId = feature.id()
-  let stroke = readConfObject(config, 'color', { feature })
-  let textStroke = 'black'
-  if (selectedFeatureId && String(selectedFeatureId) === String(feature.id())) {
-    stroke = textStroke = 'red'
-  }
+  const selected = selectedFeatureId === featureId
+  const stroke = selected ? 'red' : readConfObject(config, 'color', { feature })
+  const textStroke = selected ? 'red' : 'black'
   const label = readConfObject(config, 'label', { feature })
   const caption = readConfObject(config, 'caption', { feature })
-  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
-  const ref = React.createRef<SVGPathElement>()
-  const textYCoord = (right - left) / 2
+  const strokeWidth = readConfObject(config, 'thickness', { feature }) || 2
+
+  const centerX = left + (right - left) / 2
+  const radius = (right - left) / 2
+  const { d, textYCoord } = semicircle
+    ? getSemicirclePath(centerX, radius)
+    : getBezierPath(left, right, config, feature, displayHeight)
 
   return (
     <g>
       <path
-        d={describeArc(
-          left + (right - left) / 2,
-          0,
-          (right - left) / 2,
-          90,
-          270,
-        )}
         {...getStrokeProps(stroke)}
+        d={d}
         strokeWidth={strokeWidth}
         fill="transparent"
-        onClick={e => onFeatureClick?.(e, featureId)}
-        onMouseOver={() => setIsMouseOvered(true)}
-        onMouseLeave={() => setIsMouseOvered(false)}
-        ref={ref}
+        style={{ cursor: 'pointer' }}
+        onClick={e => {
+          onFeatureClick(e, featureId)
+        }}
+        onMouseOver={() => {
+          setIsMouseOvered(true)
+        }}
+        onMouseLeave={() => {
+          setIsMouseOvered(false)
+        }}
         pointerEvents="stroke"
       />
-      {isMouseOvered ? <ArcTooltip contents={caption} /> : null}
-      <text
-        x={left + (right - left) / 2}
-        y={textYCoord + 3}
-        stroke="white"
-        strokeWidth="0.6em"
-      >
+      {isMouseOvered ? (
+        <Suspense fallback={null}>
+          <ArcTooltip contents={caption} />
+        </Suspense>
+      ) : null}
+      <text x={centerX} y={textYCoord + 3} stroke="white" strokeWidth="0.6em">
         {label}
       </text>
-      <text
-        x={left + (right - left) / 2}
-        y={textYCoord + 3}
-        stroke={textStroke}
-      >
+      <text x={centerX} y={textYCoord + 3} stroke={textStroke}>
         {label}
       </text>
     </g>
   )
 }
+
 const ArcRendering = observer(function ({
   features,
   config,
@@ -202,62 +133,37 @@ const ArcRendering = observer(function ({
   bpPerPx,
   height,
   exportSVG,
+  displayModel,
   onFeatureClick,
-  displayModel: { selectedFeatureId },
 }: {
   features: Map<string, Feature>
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
   height: number
-  displayModel: { selectedFeatureId: string }
+  displayModel?: { selectedFeatureId: string }
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   exportSVG: boolean
 }) {
-  const [region] = regions
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const semicircles = readConfObject(config, 'displayMode') === 'semicircles'
+  const semicircle = readConfObject(config, 'displayMode') === 'semicircles'
+  const { selectedFeatureId } = displayModel || {}
 
-  return (
-    <Wrapper exportSVG={exportSVG} width={width} height={height}>
-      {[...features.values()].map(f =>
-        semicircles ? (
-          <SemiCircles
-            key={f.id()}
-            config={config}
-            region={region}
-            bpPerPx={bpPerPx}
-            selectedFeatureId={selectedFeatureId}
-            onFeatureClick={onFeatureClick}
-            feature={f}
-          />
-        ) : (
-          <Arc
-            key={f.id()}
-            config={config}
-            region={region}
-            bpPerPx={bpPerPx}
-            selectedFeatureId={selectedFeatureId}
-            onFeatureClick={onFeatureClick}
-            feature={f}
-          />
-        ),
-      )}
-    </Wrapper>
-  )
-})
+  const children = [...features.values()].map(f => (
+    <ArcFeature
+      key={f.id()}
+      displayHeight={height}
+      config={config}
+      region={region}
+      bpPerPx={bpPerPx}
+      selectedFeatureId={selectedFeatureId}
+      onFeatureClick={onFeatureClick}
+      feature={f}
+      semicircle={semicircle}
+    />
+  ))
 
-function Wrapper({
-  exportSVG,
-  width,
-  height,
-  children,
-}: {
-  exportSVG: boolean
-  width: number
-  height: number
-  children: React.ReactNode
-}) {
   return exportSVG ? (
     children
   ) : (
@@ -265,6 +171,6 @@ function Wrapper({
       {children}
     </svg>
   )
-}
+})
 
 export default ArcRendering

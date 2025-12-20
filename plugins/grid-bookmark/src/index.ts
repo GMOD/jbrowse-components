@@ -1,25 +1,24 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import {
-  SessionWithWidgets,
   getSession,
   isAbstractMenuManager,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import {
-  PluggableElementType,
-  ViewType,
-} from '@jbrowse/core/pluggableElementTypes'
-
-// icons
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
 import HighlightIcon from '@mui/icons-material/Highlight'
 import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget'
-import { GridBookmarkModel } from './GridBookmarkWidget/model'
+
+import type { GridBookmarkModel } from './GridBookmarkWidget/model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  PluggableElementType,
+  ViewType,
+} from '@jbrowse/core/pluggableElementTypes'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default class GridBookmarkPlugin extends Plugin {
   name = 'GridBookmarkPlugin'
@@ -37,30 +36,29 @@ export default class GridBookmarkPlugin extends Plugin {
             .props({
               /**
                * #property
-               * show the bookmark highlights on this track
                */
-              showBookmarkHighlights: true,
+              bookmarkHighlightsVisible: true,
               /**
                * #property
-               * show the bookmark labels on this track
                */
-              showBookmarkLabels: true,
+              bookmarkLabelsVisible: true,
             })
             .actions(self => ({
               /**
                * #action
                */
-              toggleShowBookmarkHighlights(toggle?: boolean) {
-                self.showBookmarkHighlights =
-                  toggle !== undefined ? toggle : !self.showBookmarkHighlights
+              setBookmarkHighlightsVisible(arg: boolean) {
+                self.bookmarkHighlightsVisible = arg
               },
               /**
                * #action
                */
-              toggleShowBookmarkLabels(toggle?: boolean) {
-                self.showBookmarkLabels =
-                  toggle !== undefined ? toggle : !self.showBookmarkLabels
+              setBookmarkLabelsVisible(arg: boolean) {
+                self.bookmarkLabelsVisible = arg
               },
+              /**
+               * #action
+               */
               activateBookmarkWidget() {
                 const session = getSession(self)
                 if (isSessionModelWithWidgets(session)) {
@@ -82,12 +80,14 @@ export default class GridBookmarkPlugin extends Plugin {
               },
             }))
             .actions(self => ({
+              /**
+               * #action
+               */
               navigateNewestBookmark() {
                 const session = getSession(self)
                 const bookmarkWidget = self.activateBookmarkWidget()
-                const regions = bookmarkWidget.bookmarks
-                if (regions?.length) {
-                  self.navTo(regions.at(-1)!)
+                if (bookmarkWidget.bookmarks.length) {
+                  self.navTo(bookmarkWidget.bookmarks.at(-1)!)
                 } else {
                   session.notify(
                     'There are no recent bookmarks to navigate to.',
@@ -96,6 +96,9 @@ export default class GridBookmarkPlugin extends Plugin {
                 }
               },
 
+              /**
+               * #action
+               */
               bookmarkCurrentRegion() {
                 if (self.id === getSession(self).focusedViewId) {
                   const selectedRegions = self.getSelectedRegions(
@@ -103,7 +106,11 @@ export default class GridBookmarkPlugin extends Plugin {
                     undefined,
                   )
                   const bookmarkWidget = self.activateBookmarkWidget()
-                  bookmarkWidget.addBookmark(selectedRegions[0])
+                  if (!selectedRegions.length) {
+                    throw new Error('no region selected')
+                  } else {
+                    bookmarkWidget.addBookmark(selectedRegions[0]!)
+                  }
                 }
               },
             }))
@@ -111,10 +118,12 @@ export default class GridBookmarkPlugin extends Plugin {
               const superMenuItems = self.menuItems
               const superRubberBandMenuItems = self.rubberBandMenuItems
               return {
+                /**
+                 * #method
+                 */
                 menuItems() {
                   return [
                     ...superMenuItems(),
-                    { type: 'divider' },
                     {
                       label: 'Bookmarks',
                       icon: BookmarksIcon,
@@ -127,27 +136,40 @@ export default class GridBookmarkPlugin extends Plugin {
                         {
                           label: 'Bookmark current region',
                           icon: BookmarkIcon,
-                          onClick: () => self.bookmarkCurrentRegion(),
+                          onClick: () => {
+                            self.bookmarkCurrentRegion()
+                          },
                         },
                         {
                           label: 'Toggle bookmark highlights',
                           icon: HighlightIcon,
                           type: 'checkbox',
-                          checked: self.showBookmarkHighlights,
-                          onClick: () => self.toggleShowBookmarkHighlights(),
+                          checked: self.bookmarkHighlightsVisible,
+                          onClick: () => {
+                            self.setBookmarkHighlightsVisible(
+                              !self.bookmarkHighlightsVisible,
+                            )
+                          },
                         },
                         {
                           label: 'Toggle bookmark labels',
                           icon: LabelIcon,
                           type: 'checkbox',
-                          checked: self.showBookmarkLabels,
-                          onClick: () => self.toggleShowBookmarkLabels(),
+                          checked: self.bookmarkLabelsVisible,
+                          onClick: () => {
+                            self.setBookmarkLabelsVisible(
+                              !self.bookmarkLabelsVisible,
+                            )
+                          },
                         },
                       ],
                     },
                   ]
                 },
 
+                /**
+                 * #method
+                 */
                 rubberBandMenuItems() {
                   return [
                     ...superRubberBandMenuItems(),
@@ -161,33 +183,63 @@ export default class GridBookmarkPlugin extends Plugin {
                           rightOffset,
                         )
                         const bookmarkWidget = self.activateBookmarkWidget()
-                        bookmarkWidget.addBookmark(selectedRegions[0])
+                        if (!selectedRegions.length) {
+                          throw new Error('no regions selected')
+                        } else {
+                          bookmarkWidget.addBookmark(selectedRegions[0]!)
+                        }
                       },
                     },
                   ]
                 },
               }
             })
-            .actions(self => ({
-              afterCreate() {
-                document.addEventListener('keydown', e => {
-                  const activationSequence =
-                    (e.ctrlKey || e.metaKey) && e.shiftKey
-                  // ctrl+shift+d or cmd+shift+d
-                  if (activationSequence && e.code === 'KeyD') {
-                    e.preventDefault()
-                    self.activateBookmarkWidget()
-                    self.bookmarkCurrentRegion()
-                    getSession(self).notify('Bookmark created.', 'success')
-                  }
-                  // ctrl+shift+m or cmd+shift+m
-                  if (activationSequence && e.code === 'KeyM') {
-                    e.preventDefault()
-                    self.navigateNewestBookmark()
-                  }
-                })
-              },
-            }))
+            .actions(self => {
+              const keydownListener = (e: KeyboardEvent) => {
+                const activationSequence =
+                  (e.ctrlKey || e.metaKey) && e.shiftKey
+                // ctrl+shift+d or cmd+shift+d
+                if (activationSequence && e.code === 'KeyD') {
+                  e.preventDefault()
+                  self.activateBookmarkWidget()
+                  self.bookmarkCurrentRegion()
+                  getSession(self).notify('Bookmark created.', 'success')
+                }
+                // ctrl+shift+m or cmd+shift+m
+                if (activationSequence && e.code === 'KeyM') {
+                  e.preventDefault()
+                  self.navigateNewestBookmark()
+                }
+              }
+              return {
+                afterCreate() {
+                  document.addEventListener('keydown', keydownListener)
+                },
+                beforeDestroy() {
+                  document.removeEventListener('keydown', keydownListener)
+                },
+              }
+            })
+            .postProcessSnapshot(snap => {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              if (!snap) {
+                return snap
+              }
+              const {
+                bookmarkHighlightsVisible,
+                bookmarkLabelsVisible,
+                ...rest
+              } = snap as unknown as Record<string, unknown>
+              return {
+                ...rest,
+                ...(bookmarkHighlightsVisible === false
+                  ? { bookmarkHighlightsVisible }
+                  : {}),
+                ...(bookmarkLabelsVisible === false
+                  ? { bookmarkLabelsVisible }
+                  : {}),
+              } as typeof snap
+            })
 
           ;(pluggableElement as ViewType).stateModel = newStateModel
         }

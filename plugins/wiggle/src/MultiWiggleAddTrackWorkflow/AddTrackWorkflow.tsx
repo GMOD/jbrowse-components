@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
-import { Button, Paper, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { useState } from 'react'
+
 import {
   getSession,
   isElectron,
@@ -8,12 +7,13 @@ import {
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
-import { AddTrackModel } from '@jbrowse/plugin-data-management'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Button, Paper, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 const useStyles = makeStyles()(theme => ({
-  textbox: {
-    width: '100%',
-  },
   paper: {
     margin: theme.spacing(),
     padding: theme.spacing(),
@@ -25,10 +25,77 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
+// on electron, use path to LocalFileLocation, on web, use the BlobLocation
+function makeFileLocation(file: File) {
+  return isElectron
+    ? {
+        localPath: window.require('electron').webUtils.getPathForFile(file),
+        locationType: 'LocalPathLocation',
+      }
+    : storeBlobLocation({ blob: file })
+}
+
+function doSubmit({
+  trackName,
+  val,
+  model,
+}: {
+  val: string
+  trackName: string
+  model: AddTrackModel
+}) {
+  const session = getSession(model)
+  try {
+    const trackId = [
+      `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
+      session.adminMode ? '' : '-sessionTrack',
+    ].join('')
+
+    // allow list of bigwigs in JSON format or line-by-line
+    let bigWigs: unknown[]
+    try {
+      bigWigs = JSON.parse(val)
+    } catch (e) {
+      bigWigs = val
+        .split(/\n|\r\n|\r/)
+        .map(f => f.trim())
+        .filter(f => !!f)
+    }
+    const obj =
+      typeof bigWigs[0] === 'string' ? { bigWigs } : { subadapters: bigWigs }
+
+    if (isSessionWithAddTracks(session)) {
+      session.addTrackConf({
+        trackId,
+        type: 'MultiQuantitativeTrack',
+        name: trackName,
+        assemblyNames: [model.assembly],
+        adapter: {
+          type: 'MultiWiggleAdapter',
+          ...obj,
+        },
+      })
+
+      model.view?.showTrack(trackId)
+    }
+    model.clearData()
+    if (isSessionModelWithWidgets(session)) {
+      session.hideWidget(model)
+    }
+  } catch (e) {
+    console.error(e)
+    session.notifyError(`${e}`, e)
+  }
+}
+
+const MultiWiggleAddTrackWorkflow = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
-  const [trackName, setTrackName] = useState(`MultiWiggle${+Date.now()}`)
+  const [trackName, setTrackName] = useState(`MultiWiggle${Date.now()}`)
   return (
     <Paper className={classes.paper}>
       <ul>
@@ -38,17 +105,17 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           computer
         </li>
       </ul>
-
       <TextField
         multiline
+        fullWidth
         rows={10}
         value={val}
-        onChange={event => setVal(event.target.value)}
-        placeholder={'Paste list of URLs here, or use file selector below'}
+        placeholder="Paste list of URLs here, or use file selector below"
         variant="outlined"
-        className={classes.textbox}
+        onChange={event => {
+          setVal(event.target.value)
+        }}
       />
-
       <Button variant="outlined" component="label">
         Choose Files from your computer
         <input
@@ -56,74 +123,36 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           hidden
           multiple
           onChange={({ target }) => {
-            const res = [...(target?.files || [])].map(file => ({
-              type: 'BigWigAdapter',
-              bigWigLocation: isElectron
-                ? {
-                    localPath: (file as File & { path: string }).path,
-                    locationType: 'LocalPathLocation',
-                  }
-                : storeBlobLocation({ blob: file }),
-              source: file.name,
-            }))
-            setVal(JSON.stringify(res, null, 2))
+            setVal(
+              JSON.stringify(
+                [...(target.files || [])].map(file => ({
+                  type: 'BigWigAdapter',
+                  bigWigLocation: makeFileLocation(file),
+                  source: file.name,
+                })),
+                null,
+                2,
+              ),
+            )
           }}
         />
       </Button>
       <TextField
         value={trackName}
-        onChange={event => setTrackName(event.target.value)}
         helperText="Track name"
+        onChange={event => {
+          setTrackName(event.target.value)
+        }}
       />
       <Button
         variant="contained"
         className={classes.submit}
         onClick={() => {
-          const session = getSession(model)
-
-          const trackId = [
-            `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
-            `${session.adminMode ? '' : '-sessionTrack'}`,
-          ].join('')
-
-          // allow list of bigwigs in JSON format or line-by-line
-          let bigWigs
-          try {
-            bigWigs = JSON.parse(val)
-          } catch (e) {
-            bigWigs = val
-              .split(/\n|\r\n|\r/)
-              .map(f => f.trim())
-              .filter(f => !!f)
-          }
-          const obj =
-            typeof bigWigs[0] === 'string'
-              ? { bigWigs }
-              : { subadapters: bigWigs }
-
-          if (isSessionWithAddTracks(session)) {
-            session.addTrackConf({
-              trackId,
-              type: 'MultiQuantitativeTrack',
-              name: trackName,
-              assemblyNames: [model.assembly],
-              adapter: {
-                type: 'MultiWiggleAdapter',
-                ...obj,
-              },
-            })
-
-            model.view?.showTrack(trackId)
-          }
-          model.clearData()
-          if (isSessionModelWithWidgets(session)) {
-            session.hideWidget(model)
-          }
+          doSubmit({ trackName, val, model })
         }}
       >
         Submit
       </Button>
-
       <p>Additional notes: </p>
       <ul>
         <li>
@@ -139,4 +168,6 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
       </ul>
     </Paper>
   )
-}
+})
+
+export default MultiWiggleAddTrackWorkflow

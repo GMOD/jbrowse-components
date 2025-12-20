@@ -1,11 +1,10 @@
-import React from 'react'
-import { observer } from 'mobx-react'
 import { List, Typography } from '@mui/material'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { observer } from 'mobx-react'
 
-// locals
-import { PluginStoreModel } from '../model'
 import InstalledPlugin from './InstalledPlugin'
+
+import type { PluginStoreModel } from '../model'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const InstalledPluginsList = observer(function InstalledPluginsList({
   pluginManager,

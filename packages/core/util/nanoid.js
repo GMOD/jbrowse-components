@@ -7,15 +7,15 @@
 export const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
 
-export let random = bytes => crypto.getRandomValues(new Uint8Array(bytes))
+export const random = bytes => crypto.getRandomValues(new Uint8Array(bytes))
 
-export let customRandom = (alphabet, defaultSize, getRandom) => {
+export const customRandom = (alphabet, defaultSize, getRandom) => {
   // First, a bitmask is necessary to generate the ID. The bitmask makes bytes
   // values closer to the alphabet size. The bitmask calculates the closest
   // `2^31 - 1` number, which exceeds the alphabet size.
   // For example, the bitmask for the alphabet size 30 is 31 (00011111).
   // `Math.clz32` is not used, because it is not available in browsers.
-  let mask = (2 << (Math.log(alphabet.length - 1) / Math.LN2)) - 1
+  const mask = (2 << (Math.log(alphabet.length - 1) / Math.LN2)) - 1
   // Though, the bitmask solution is not perfect since the bytes exceeding
   // the alphabet size are refused. Therefore, to reliably generate the ID,
   // the random bytes redundancy has to be satisfied.
@@ -31,27 +31,29 @@ export let customRandom = (alphabet, defaultSize, getRandom) => {
 
   // `-~f => Math.ceil(f)` if f is a float
   // `-~i => i + 1` if i is an integer
-  let step = -~((1.6 * mask * defaultSize) / alphabet.length)
+  const step = -~((1.6 * mask * defaultSize) / alphabet.length)
 
   return (size = defaultSize) => {
     let id = ''
     while (true) {
-      let bytes = getRandom(step)
+      const bytes = getRandom(step)
       // A compact alternative for `for (var i = 0; i < step; i++)`.
       let j = step
       while (j--) {
         // Adding `|| ''` refuses a random byte that exceeds the alphabet size.
         id += alphabet[bytes[j] & mask] || ''
-        if (id.length === size) return id
+        if (id.length === size) {
+          return id
+        }
       }
     }
   }
 }
 
-export let customAlphabet = (alphabet, size = 21) =>
+export const customAlphabet = (alphabet, size = 21) =>
   customRandom(alphabet, size, random)
 
-export let nanoid = (size = 21) =>
+export const nanoid = (size = 21) =>
   crypto.getRandomValues(new Uint8Array(size)).reduce((id, byte) => {
     // It is incorrect to use bytes exceeding the alphabet size.
     // The following mask reduces the random byte in the 0-255 value

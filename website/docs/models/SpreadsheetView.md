@@ -3,14 +3,22 @@ id: spreadsheetview
 title: SpreadsheetView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/spreadsheet-view/src/SpreadsheetView/models/SpreadsheetView.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/models/SpreadsheetView.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetViewModel.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SpreadsheetView.md)
+
+## Docs
 
 ### SpreadsheetView - Properties
 
@@ -38,14 +46,7 @@ offsetPx: 0
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(
-      types.refinement(
-        'SpreadsheetViewHeight',
-        types.number,
-        n => n >= minHeight,
-      ),
-      defaultHeight,
-    )
+height: types.optional(types.number, defaultHeight)
 ```
 
 #### property: hideVerticalResizeHandle
@@ -66,80 +67,44 @@ false
 hideFilterControls: false
 ```
 
-#### property: filterControls
-
-```js
-// type signature
-IOptionalIType<IModelType<{ rowFullText: IOptionalIType<IModelType<{ type: ISimpleType<"RowFullText">; stringToFind: IType<string, string, string>; }, { readonly predicate: (_sheet: unknown, row: { cellsWithDerived: { text: string; }[]; }) => boolean; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>; columnFilt...
-// code
-filterControls: types.optional(FilterControlsModel, () =>
-      FilterControlsModel.create({}),
-    )
-```
-
-#### property: mode
-
-switch specifying whether we are showing the import wizard or the spreadsheet in
-our viewing area
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-mode: types.optional(
-      types.enumeration('SpreadsheetViewMode', ['import', 'display']),
-      'import',
-    )
-```
-
 #### property: importWizard
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<string>, [undefined]>; hasColumnNameLine: IType<boolean, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<string>, [undefined]>; hasColumnNameLine: IType<boolean, boolean, boolean>; columnNameLineNumber: IType<...>; selectedAssemblyName: IMaybe<...>; cachedFileLocation: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...
 // code
 importWizard: types.optional(ImportWizardModel, () =>
-      ImportWizardModel.create(),
-    )
+            ImportWizardModel.create(),
+          )
 ```
 
 #### property: spreadsheet
 
 ```js
 // type signature
-IMaybe<IModelType<{ rowSet: IOptionalIType<IModelType<{ isLoaded: ISimpleType<true>; rows: IArrayType<IModelType<{ id: ISimpleType<string>; cells: IArrayType<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<IType<any, any, any>>; }, {}, _NotCustomized, _NotCustomized>>; extendedData: IMaybe<...>; isSelec...
+IMaybe<IModelType<{ rowSet: IType<RowSet, RowSet, RowSet>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<ISimpleType<string>>; visibleColumns: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
 // code
-spreadsheet: types.maybe(SpreadsheetModel)
+spreadsheet: types.maybe(Spreadsheet())
+```
+
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<SpreadsheetViewInit, SpreadsheetViewInit, SpreadsheetViewInit>
+// code
+init: types.frozen<SpreadsheetViewInit | undefined>()
 ```
 
 ### SpreadsheetView - Getters
-
-#### getter: readyToDisplay
-
-```js
-// type
-boolean
-```
-
-#### getter: hideRowSelection
-
-```js
-// type
-boolean
-```
-
-#### getter: outputRows
-
-```js
-// type
-any
-```
 
 #### getter: assembly
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+any
 ```
 
 ### SpreadsheetView - Methods
@@ -148,7 +113,7 @@ any
 
 ```js
 // type signature
-menuItems: () => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
+menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
 ### SpreadsheetView - Actions
@@ -194,26 +159,12 @@ load a new spreadsheet and set our mode to display it
 
 ```js
 // type signature
-displaySpreadsheet: (spreadsheet: ModelCreationType<ExtractCFromProps<{ rowSet: IOptionalIType<IModelType<{ isLoaded: ISimpleType<true>; rows: IArrayType<IModelType<{ id: ISimpleType<string>; cells: IArrayType<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>>; extendedData: IMayb...
+displaySpreadsheet: (spreadsheet?: { rowSet: RowSet & IStateTreeNode<IType<RowSet, RowSet, RowSet>>; columns: { name: string; }[] & IStateTreeNode<IType<{ name: string; }[], { ...; }[], { ...; }[]>>; assemblyName: string; visibleColumns: Record<...> & IStateTreeNode<...>; } & ... 6 more ... & IStateTreeNode<...>) => void
 ```
 
-#### action: setImportMode
+#### action: setInit
 
 ```js
 // type signature
-setImportMode: () => void
-```
-
-#### action: setDisplayMode
-
-```js
-// type signature
-setDisplayMode: () => void
-```
-
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
+setInit: (init?: SpreadsheetViewInit) => void
 ```

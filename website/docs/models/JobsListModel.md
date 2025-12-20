@@ -3,14 +3,22 @@ id: jobslistmodel
 title: JobsListModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/jobs-management/src/JobsListWidget/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/jobs-management/src/JobsListWidget/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/jobs-management/src/JobsListWidget/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JobsListModel.md)
+
+## Docs
 
 ### JobsListModel - Properties
 
@@ -88,21 +96,21 @@ removeJob: (jobName: string) => { name: string; statusMessage: string; progressP
 
 ```js
 // type signature
-addFinishedJob: (job: NewJob) => IMSTArray<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: ISimpleType<number>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>
+addFinishedJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: addQueuedJob
 
 ```js
 // type signature
-addQueuedJob: (job: NewJob) => IMSTArray<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: ISimpleType<number>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>
+addQueuedJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: addAbortedJob
 
 ```js
 // type signature
-addAbortedJob: (job: NewJob) => IMSTArray<IModelType<{ name: ISimpleType<string>; statusMessage: IMaybe<ISimpleType<string>>; progressPct: ISimpleType<number>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>
+addAbortedJob: (job: NewJob) => { name: string; statusMessage: string; progressPct: number; } & NonEmptyObject & { cancelCallback(): void; } & { setCancelCallback(cancelCallback: () => void): void; setStatusMessage(message?: string): void; setProgressPct(pct: number): void; } & IStateTreeNode<...>
 ```
 
 #### action: removeQueuedJob

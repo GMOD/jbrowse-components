@@ -1,16 +1,17 @@
 import {
-  AnyConfigurationSchemaType,
   ConfigurationSchema,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
   HierarchicalConfigSchemaFactory,
 } from '@jbrowse/product-core'
-import { getParent, types } from 'mobx-state-tree'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #config JBrowseReactCircularGenomeViewConfig
@@ -100,7 +101,6 @@ export default function createConfigModel(
        * #getter
        */
       get rpcManager() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))

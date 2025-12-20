@@ -1,16 +1,18 @@
 export { default as baseLinearDisplayConfigSchema } from './models/configSchema'
 export type { BlockModel } from './models/serverSideRenderedBlock'
-export { BaseLinearDisplay } from './models/BaseLinearDisplayModel'
+export { BaseLinearDisplay } from './model'
 export type {
-  ExportSvgDisplayOptions,
   BaseLinearDisplayModel,
   BaseLinearDisplayStateModel,
-} from './models/BaseLinearDisplayModel'
+  ExportSvgDisplayOptions,
+  LegendItem,
+} from './model'
 export {
-  default as BaseLinearDisplayComponent,
-  Tooltip,
   BlockMsg,
+  Tooltip,
+  default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay'
 export { default as TrackHeightMixin } from './models/TrackHeightMixin'
 export { default as FeatureDensityMixin } from './models/FeatureDensityMixin'
 export { default as TooLargeMessage } from './components/TooLargeMessage'
+export { default as FloatingLegend } from './components/FloatingLegend'

@@ -1,9 +1,10 @@
-import React from 'react'
-import { observer } from 'mobx-react'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
+import { ExternalLink } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui'
-import { Link, Typography } from '@mui/material'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -36,40 +37,24 @@ const HelpWidget = observer(function Help({
       </Typography>
       <ul>
         <li>
-          <Link
-            href="https://github.com/GMOD/jbrowse-components/discussions"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <ExternalLink href="https://github.com/GMOD/jbrowse-components/discussions">
             Question & answer forum
-          </Link>
+          </ExternalLink>
         </li>
         <li>
-          <Link
-            href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <ExternalLink href="https://github.com/GMOD/jbrowse-components/issues/new/choose">
             Report a bug
-          </Link>
+          </ExternalLink>
         </li>
         <li>
-          <Link
-            href="https://jbrowse.org/jb2/docs/user_guide"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <ExternalLink href="https://jbrowse.org/jb2/docs/user_guide">
             User guide
-          </Link>
+          </ExternalLink>
         </li>
         <li>
-          <Link
-            href="https://jbrowse.org/jb2/docs/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <ExternalLink href="https://jbrowse.org/jb2/docs/">
             Documentation
-          </Link>
+          </ExternalLink>
         </li>
       </ul>
     </div>

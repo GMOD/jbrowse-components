@@ -1,19 +1,31 @@
 import { lazy } from 'react'
-import {
-  getConf,
-  ConfigurationReference,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
-import { MenuItem } from '@jbrowse/core/ui'
-import { types, getEnv, Instance, cast } from 'mobx-state-tree'
 
-// icons
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import {
+  cast,
+  getEnv,
+  getParent,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-// locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
@@ -56,6 +68,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        trackSubfeatureLabels: types.maybe(types.string),
+        /**
+         * #property
+         */
+        trackGeneGlyphMode: types.maybe(types.string),
+        /**
+         * #property
+         */
+        trackDisplayDirectionalChevrons: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
@@ -63,6 +87,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         jexlFilters: types.maybe(types.array(types.string)),
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       * Stores the feature under the mouse cursor, fetched asynchronously
+       * via CoreGetFeatureDetails RPC to avoid serializing all features
+       */
+      featureUnderMouseVolatile: undefined as Feature | undefined,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -80,6 +112,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get rendererTypeName() {
         return getConf(self, ['renderer', 'type'])
+      },
+
+      /**
+       * #getter
+       */
+      get sequenceAdapter() {
+        const { assemblyManager } = getSession(self)
+        const track = getParent<{ configuration: AnyConfigurationModel }>(
+          self,
+          2,
+        )
+        const assemblyNames = readConfObject(
+          track.configuration,
+          'assemblyNames',
+        ) as string[]
+        const assembly = assemblyManager.get(assemblyNames[0]!)
+        return assembly ? getConf(assembly, ['sequence', 'adapter']) : undefined
       },
 
       /**
@@ -114,6 +163,36 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
         )
       },
+
+      /**
+       * #getter
+       */
+      get subfeatureLabels() {
+        return (
+          self.trackSubfeatureLabels ??
+          getConf(self, ['renderer', 'subfeatureLabels'])
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get geneGlyphMode() {
+        return (
+          self.trackGeneGlyphMode ??
+          getConf(self, ['renderer', 'geneGlyphMode'])
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get displayDirectionalChevrons() {
+        return (
+          self.trackDisplayDirectionalChevrons ??
+          getConf(self, ['renderer', 'displayDirectionalChevrons'])
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -128,8 +207,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...config,
             showLabels: self.showLabels,
             showDescriptions: self.showDescriptions,
+            subfeatureLabels: self.subfeatureLabels,
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
+            geneGlyphMode: self.geneGlyphMode,
+            displayDirectionalChevrons: self.displayDirectionalChevrons,
           },
           getEnv(self),
         )
@@ -146,6 +228,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setFeatureUnderMouse(feat?: Feature) {
+        self.featureUnderMouseVolatile = feat
+      },
+      /**
+       * #action
+       */
       toggleShowLabels() {
         self.trackShowLabels = !self.showLabels
       },
@@ -154,6 +242,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       toggleShowDescriptions() {
         self.trackShowDescriptions = !self.showDescriptions
+      },
+      /**
+       * #action
+       */
+      setSubfeatureLabels(val: string) {
+        self.trackSubfeatureLabels = val
       },
       /**
        * #action
@@ -167,11 +261,34 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setMaxHeight(val?: number) {
         self.trackMaxHeight = val
       },
+      /**
+       * #action
+       */
+      setGeneGlyphMode(val: string) {
+        self.trackGeneGlyphMode = val
+      },
+      /**
+       * #action
+       */
+      toggleDisplayDirectionalChevrons() {
+        self.trackDisplayDirectionalChevrons = !self.displayDirectionalChevrons
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Override featureUnderMouse to return the volatile feature
+       * which is fetched asynchronously via CoreGetFeatureDetails
+       */
+      get featureUnderMouse() {
+        return self.featureUnderMouseVolatile
+      },
     }))
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
       return {
         /**
@@ -185,6 +302,76 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             filters: new SerializableFilterChain({
               filters: self.activeFilters,
             }),
+            sequenceAdapter: self.sequenceAdapter,
+          }
+        },
+
+        /**
+         * #method
+         */
+        renderingProps() {
+          const superProps = superRenderingProps()
+          const session = getSession(self)
+          return {
+            ...superProps,
+            async onFeatureClick(_: unknown, featureId?: string) {
+              const { rpcManager } = session
+              const { parentTrack } = self
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      layoutId: parentTrack.id,
+                      rendererType: self.rendererTypeName,
+                    },
+                  )) as { feature: SimpleFeatureSerialized | undefined }
+
+                  if (isAlive(self) && feature) {
+                    self.selectFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notifyError(`${e}`, e)
+              }
+            },
+            async onFeatureContextMenu(_: unknown, featureId?: string) {
+              const { rpcManager } = session
+              const { parentTrack } = self
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      layoutId: parentTrack.id,
+                      rendererType: self.rendererTypeName,
+                    },
+                  )) as { feature: SimpleFeatureSerialized | undefined }
+
+                  if (isAlive(self) && feature) {
+                    self.setContextMenuFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notifyError(`${e}`, e)
+              }
+            },
           }
         },
 
@@ -195,53 +382,171 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show labels',
+              label: 'Show...',
               icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showLabels,
-              onClick: () => self.toggleShowLabels(),
-            },
-            {
-              label: 'Show descriptions',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showDescriptions,
-              onClick: () => self.toggleShowDescriptions(),
+              subMenu: [
+                {
+                  label: 'Show labels',
+                  type: 'checkbox',
+                  checked: self.showLabels,
+                  onClick: () => {
+                    self.toggleShowLabels()
+                  },
+                },
+                {
+                  label: 'Show descriptions',
+                  type: 'checkbox',
+                  checked: self.showDescriptions,
+                  onClick: () => {
+                    self.toggleShowDescriptions()
+                  },
+                },
+                {
+                  label: 'Show chevrons',
+                  type: 'checkbox',
+                  checked: self.displayDirectionalChevrons,
+                  onClick: () => {
+                    self.toggleDisplayDirectionalChevrons()
+                  },
+                },
+                {
+                  label: 'Subfeature labels',
+                  subMenu: ['none', 'below', 'overlay'].map(val => ({
+                    label: val,
+                    type: 'radio' as const,
+                    checked: self.subfeatureLabels === val,
+                    onClick: () => {
+                      self.setSubfeatureLabels(val)
+                    },
+                  })),
+                },
+                {
+                  label: 'Gene glyph',
+                  subMenu: [
+                    {
+                      value: 'all',
+                      label: 'All transcripts',
+                    },
+                    {
+                      value: 'longest',
+                      label: 'Longest transcript',
+                    },
+                    {
+                      value: 'longestCoding',
+                      label: 'Longest coding transcript',
+                    },
+                  ].map(({ value, label }) => ({
+                    label,
+                    type: 'radio' as const,
+                    checked: self.geneGlyphMode === value,
+                    onClick: () => {
+                      self.setGeneGlyphMode(value)
+                    },
+                  })),
+                },
+              ],
             },
             {
               label: 'Display mode',
               icon: VisibilityIcon,
               subMenu: [
+                'normal',
                 'compact',
                 'reducedRepresentation',
-                'normal',
                 'collapse',
               ].map(val => ({
                 label: val,
-                onClick: () => self.setDisplayMode(val),
+                type: 'radio' as const,
+                checked: self.displayMode === val,
+                onClick: () => {
+                  self.setDisplayMode(val)
+                },
               })),
             },
             {
-              label: 'Set max height',
+              label: 'Set max track height',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
             {
-              label: 'Edit filters',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  AddFiltersDialog,
-                  { model: self, handleClose },
-                ])
-              },
+              label: 'Filters',
+              subMenu: [
+                {
+                  label: 'Show only genes',
+                  type: 'checkbox',
+                  checked: self.activeFilters.includes(
+                    "jexl:get(feature,'type')=='gene'",
+                  ),
+                  onClick: () => {
+                    const geneFilter = "jexl:get(feature,'type')=='gene'"
+                    const currentFilters = self.activeFilters
+                    if (currentFilters.includes(geneFilter)) {
+                      self.setJexlFilters(
+                        currentFilters.filter((f: string) => f !== geneFilter),
+                      )
+                    } else {
+                      self.setJexlFilters([...currentFilters, geneFilter])
+                    }
+                  },
+                },
+                {
+                  label: 'Edit filters...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      AddFiltersDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+              ],
             },
           ]
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        trackShowLabels,
+        trackShowDescriptions,
+        trackDisplayMode,
+        trackMaxHeight,
+        trackSubfeatureLabels,
+        trackGeneGlyphMode,
+        trackDisplayDirectionalChevrons,
+        jexlFilters,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(trackShowLabels !== undefined ? { trackShowLabels } : {}),
+        ...(trackShowDescriptions !== undefined
+          ? { trackShowDescriptions }
+          : {}),
+        ...(trackDisplayMode !== undefined ? { trackDisplayMode } : {}),
+        ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
+        ...(trackSubfeatureLabels !== undefined
+          ? { trackSubfeatureLabels }
+          : {}),
+        ...(trackGeneGlyphMode !== undefined ? { trackGeneGlyphMode } : {}),
+        ...(trackDisplayDirectionalChevrons !== undefined
+          ? { trackDisplayDirectionalChevrons }
+          : {}),
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+      } as typeof snap
     })
 }
 

@@ -1,7 +1,8 @@
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
-import configSchema from './configSchema'
+import { toArray } from 'rxjs/operators'
+
 import GtfAdapter from './GtfAdapter'
+import configSchema from './configSchema'
 
 describe('adapter can fetch features from volvox.sorted.gtf', () => {
   let adapter: GtfAdapter
@@ -19,12 +20,13 @@ describe('adapter can fetch features from volvox.sorted.gtf', () => {
       refName: 'ctgA',
       start: 0,
       end: 100000,
+      assemblyName: 'volvox',
     })
     expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
     expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
     const featuresArray = await firstValueFrom(features.pipe(toArray()))
     // There are only 4 features in ctgB
-    expect(featuresArray.length).toBe(6)
+    expect(featuresArray.length).toBe(4)
     const featuresJsonArray = featuresArray.map(f => f.toJSON())
     expect(featuresJsonArray).toMatchSnapshot()
   })
@@ -46,6 +48,7 @@ test('can instantiate new GtfAdapter and check for demo data', async () => {
     refName: 'GeneScaffold_1',
     start: 0,
     end: 1100000,
+    assemblyName: 'volvox',
   })
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   const featuresJsonArray = featuresArray.map(f => f.toJSON())

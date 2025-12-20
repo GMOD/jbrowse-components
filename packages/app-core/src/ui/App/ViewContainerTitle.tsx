@@ -1,11 +1,10 @@
-import React from 'react'
+import EditableTypography from '@jbrowse/core/ui/EditableTypography'
+import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
-// locals
-import EditableTypography from '@jbrowse/core/ui/EditableTypography'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 
 const useStyles = makeStyles()(theme => ({
   input: {
@@ -31,17 +30,20 @@ const ViewContainerTitle = observer(function ({
   view: IBaseViewModel
 }) {
   const { classes } = useStyles()
+  const { assemblyManager } = getSession(view)
   return (
     <Tooltip title="Rename view" arrow>
       <EditableTypography
         value={
           view.displayName ||
           // @ts-expect-error
-          `${view.assemblyNames?.join(',') || 'Untitled view'}${
+          `${view.assemblyNames?.map(r => assemblyManager.get(r)?.displayName).join(',') || 'Untitled view'}${
             view.minimized ? ' (minimized)' : ''
           }`
         }
-        setValue={val => view.setDisplayName(val)}
+        setValue={val => {
+          view.setDisplayName(val)
+        }}
         variant="body2"
         classes={{
           input: classes.input,

@@ -1,7 +1,8 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
+
 import { ConfigurationSchema } from '../configuration'
-import WebWorkerRpcDriverConfigSchema from './webWorkerRpcConfig'
 import MainThreadRpcDriverConfigSchema from './mainThreadRpcConfig'
+import WebWorkerRpcDriverConfigSchema from './webWorkerRpcConfig'
 
 /**
  * #config RpcOptions
@@ -37,7 +38,6 @@ export default ConfigurationSchema(
     ),
   },
   {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     actions: (self: any) => ({
       addDriverConfig(configName: string, configSnapshot: { type: string }) {
         self.drivers.set(configName, configSnapshot)

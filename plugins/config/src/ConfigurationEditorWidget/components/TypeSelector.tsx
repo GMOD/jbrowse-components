@@ -1,8 +1,9 @@
-import React from 'react'
 import { MenuItem, Paper, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
 import { useSlotEditorStyles } from './useSlotEditorStyles'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const TypeSelector = observer(function ({
   typeNameChoices,

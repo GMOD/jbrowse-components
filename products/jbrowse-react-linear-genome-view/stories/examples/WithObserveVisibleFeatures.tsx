@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react'
-import { Feature } from '@jbrowse/core/util'
+import { useEffect, useState } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
+
+import { getVolvoxConfig } from './util'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
+
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // in your code
-// import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
-import { getVolvoxConfig } from './util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+// import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 // specifically coded to fetch from the first track (view.tracks[0])
 const VisibleFeatures = observer(function ({

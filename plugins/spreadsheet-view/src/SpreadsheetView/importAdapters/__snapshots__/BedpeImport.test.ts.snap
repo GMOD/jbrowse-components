@@ -1,0 +1,138 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`parses standard 6-column BED file 1`] = `
+{
+  "columns": [
+    {
+      "name": "refName",
+    },
+    {
+      "name": "start",
+    },
+    {
+      "name": "end",
+    },
+    {
+      "name": "mateRef",
+    },
+    {
+      "name": "mateStart",
+    },
+    {
+      "name": "mateEnd",
+    },
+    {
+      "name": "name",
+    },
+    {
+      "name": "score",
+    },
+    {
+      "name": "strand",
+    },
+    {
+      "name": "mateStrand",
+    },
+    {
+      "name": "field_0",
+    },
+  ],
+  "rowSet": {
+    "rows": [
+      {
+        "cellData": {
+          "end": "564465",
+          "field_0": "TRA",
+          "mateEnd": "3917",
+          "mateRefName": "MT",
+          "mateStart": "3917",
+          "mateStrand": "+",
+          "name": "122419_0",
+          "refName": "1",
+          "score": ",",
+          "start": "564465",
+          "strand": "-",
+        },
+        "feature": {
+          "end": 564465,
+          "field_0": "TRA",
+          "mate": {
+            "end": 3917,
+            "refName": "MT",
+            "start": 3917,
+            "strand": 1,
+          },
+          "name": "122419_0",
+          "refName": "1",
+          "score": ",",
+          "start": 564465,
+          "strand": -1,
+          "uniqueId": "bedpe-0",
+        },
+      },
+      {
+        "cellData": {
+          "end": "565470",
+          "field_0": "TRA",
+          "mateEnd": "4920",
+          "mateRefName": "MT",
+          "mateStart": "4920",
+          "mateStrand": "+",
+          "name": "116060_1",
+          "refName": "1",
+          "score": ",",
+          "start": "565470",
+          "strand": "-",
+        },
+        "feature": {
+          "end": 565470,
+          "field_0": "TRA",
+          "mate": {
+            "end": 4920,
+            "refName": "MT",
+            "start": 4920,
+            "strand": 1,
+          },
+          "name": "116060_1",
+          "refName": "1",
+          "score": ",",
+          "start": 565470,
+          "strand": -1,
+          "uniqueId": "bedpe-1",
+        },
+      },
+      {
+        "cellData": {
+          "end": "567235",
+          "field_0": "TRA",
+          "mateEnd": "6707",
+          "mateRefName": "MT",
+          "mateStart": "6707",
+          "mateStrand": "-",
+          "name": "116060_1",
+          "refName": "1",
+          "score": ",",
+          "start": "567235",
+          "strand": "+",
+        },
+        "feature": {
+          "end": 567235,
+          "field_0": "TRA",
+          "mate": {
+            "end": 6707,
+            "refName": "MT",
+            "start": 6707,
+            "strand": -1,
+          },
+          "name": "116060_1",
+          "refName": "1",
+          "score": ",",
+          "start": 567235,
+          "strand": 1,
+          "uniqueId": "bedpe-2",
+        },
+      },
+    ],
+  },
+}
+`;

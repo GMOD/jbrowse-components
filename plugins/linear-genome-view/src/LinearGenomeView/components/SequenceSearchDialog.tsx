@@ -1,19 +1,20 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+
+import { Dialog } from '@jbrowse/core/ui'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   Checkbox,
   DialogActions,
   DialogContent,
-  FormGroup,
   FormControlLabel,
+  FormGroup,
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { getSnapshot } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -37,7 +38,7 @@ const SequenceSearchDialog = observer(function ({
   const [searchReverse, setSearchReverse] = useState(true)
   const [caseInsensitive, setCaseInsensitive] = useState(true)
 
-  let error
+  let error: unknown
 
   try {
     new RegExp(value)
@@ -55,7 +56,9 @@ const SequenceSearchDialog = observer(function ({
         </Typography>
         <TextField
           value={value}
-          onChange={e => setValue(e.target.value)}
+          onChange={e => {
+            setValue(e.target.value)
+          }}
           helperText="Sequence search pattern"
         />
         <FormGroup>
@@ -63,7 +66,9 @@ const SequenceSearchDialog = observer(function ({
             control={
               <Checkbox
                 checked={searchForward}
-                onChange={event => setSearchForward(event.target.checked)}
+                onChange={event => {
+                  setSearchForward(event.target.checked)
+                }}
               />
             }
             label="Search forward strand"
@@ -72,7 +77,9 @@ const SequenceSearchDialog = observer(function ({
             control={
               <Checkbox
                 checked={searchReverse}
-                onChange={event => setSearchReverse(event.target.checked)}
+                onChange={event => {
+                  setSearchReverse(event.target.checked)
+                }}
               />
             }
             label="Search reverse strand"
@@ -81,7 +88,9 @@ const SequenceSearchDialog = observer(function ({
             control={
               <Checkbox
                 checked={caseInsensitive}
-                onChange={event => setCaseInsensitive(event.target.checked)}
+                onChange={event => {
+                  setCaseInsensitive(event.target.checked)
+                }}
               />
             }
             label="Case insensitive"
@@ -93,10 +102,10 @@ const SequenceSearchDialog = observer(function ({
         <Button
           onClick={() => {
             if (value) {
-              const trackId = `sequence_search_${+Date.now()}`
+              const trackId = `sequence_search_${Date.now()}`
               const session = getSession(model)
               const { assemblyManager } = session
-              const assemblyName = model.assemblyNames[0]
+              const assemblyName = model.assemblyNames[0]!
               if (isSessionWithAddTracks(session)) {
                 session.addTrackConf({
                   trackId,
@@ -127,7 +136,9 @@ const SequenceSearchDialog = observer(function ({
         </Button>
 
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           variant="contained"
           color="secondary"
         >

@@ -1,8 +1,9 @@
-import { GenericFilehandle } from 'generic-filehandle'
-import { Observable } from 'rxjs'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { Observable } from 'rxjs'
+
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 // setup for Cram Adapter Testing
 export function parseSmallFasta(text: string) {
@@ -11,10 +12,14 @@ export function parseSmallFasta(text: string) {
     .filter(t => /\S/.test(t))
     .map(entryText => {
       const [defLine, ...seqLines] = entryText.split(/\n|\r\n|\r/)
-      const [id, ...descriptionLines] = defLine.split(' ')
+      const [id, ...descriptionLines] = defLine!.split(' ')
       const description = descriptionLines.join(' ')
       const sequence = seqLines.join('').replaceAll(/\s/g, '')
-      return { id, description, sequence }
+      return {
+        id: id!,
+        description,
+        sequence,
+      }
     })
 }
 
@@ -25,7 +30,8 @@ export class FetchableSmallFasta {
 
   constructor(filehandle: FileHandle) {
     this.data = filehandle.readFile().then(buffer => {
-      const text = buffer.toString('utf8')
+      const decoder = new TextDecoder('utf8')
+      const text = decoder.decode(buffer)
       return parseSmallFasta(text)
     })
   }
@@ -46,7 +52,7 @@ export class FetchableSmallFasta {
   }
 }
 
-export class SequenceAdapter extends BaseFeatureDataAdapter {
+export class SequenceAdapter extends BaseSequenceAdapter {
   fasta: FetchableSmallFasta
 
   refNames: string[] = []
@@ -58,6 +64,10 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
 
   async getRefNames() {
     return this.refNames
+  }
+
+  async getRegions() {
+    return []
   }
 
   getFeatures({
@@ -90,10 +100,10 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
           )
           observer.complete()
         })
-        .catch(e => observer.error(e))
+        .catch((e: unknown) => {
+          observer.error(e)
+        })
       return { unsubscribe: () => {} }
     })
   }
-
-  freeResources(/* { region } */): void {}
 }

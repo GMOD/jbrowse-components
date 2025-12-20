@@ -1,18 +1,21 @@
-import React from 'react'
-import { Box, Button, Typography, FormControl } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Box, Button, FormControl, Typography } from '@mui/material'
+
 import { isElectron } from '../../util'
-import { LocalPathLocation, FileLocation, BlobLocation } from '../../util/types'
 import { getBlob, storeBlobLocation } from '../../util/tracks'
 
-function isLocalPathLocation(
-  location: FileLocation,
-): location is LocalPathLocation {
-  return 'localPath' in location
+import type {
+  BlobLocation,
+  FileLocation,
+  LocalPathLocation,
+} from '../../util/types'
+
+function isLocalPathLocation(loc: FileLocation): loc is LocalPathLocation {
+  return 'localPath' in loc
 }
 
-function isBlobLocation(location: FileLocation): location is BlobLocation {
-  return 'blobId' in location
+function isBlobLocation(loc: FileLocation): loc is BlobLocation {
+  return 'blobId' in loc
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -47,11 +50,12 @@ function LocalFileChooser({
               type="file"
               hidden
               onChange={({ target }) => {
-                const file = target?.files?.[0]
+                const file = target.files?.[0]
                 if (file) {
                   if (isElectron) {
+                    const { webUtils } = window.require('electron')
                     setLocation({
-                      localPath: (file as File & { path: string }).path,
+                      localPath: webUtils.getPathForFile(file),
                       locationType: 'LocalPathLocation',
                     })
                   } else {

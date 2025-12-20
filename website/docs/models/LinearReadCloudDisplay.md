@@ -3,14 +3,22 @@ id: linearreadclouddisplay
 title: LinearReadCloudDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/LinearReadCloudDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearReadCloudDisplay.md)
+
+## Docs
 
 it is not a block based track, hence not BaseLinearDisplay extends
 
@@ -38,37 +46,58 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: filterBy
+#### property: drawCloud
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+false
 // code
-filterBy: types.optional(FilterModel, {})
+drawCloud: false
 ```
 
-#### property: colorBy
+#### property: noSpacing
+
+Whether to remove spacing between stacked features
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
+IMaybe<ISimpleType<boolean>>
 // code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        )
+noSpacing: types.maybe(types.boolean)
 ```
 
-#### property: drawSingletons
+#### property: trackMaxHeight
+
+Maximum height for the layout (prevents infinite stacking)
 
 ```js
 // type signature
-true
+IMaybe<ISimpleType<number>>
 // code
-drawSingletons: true
+trackMaxHeight: types.maybe(types.number)
+```
+
+### LinearReadCloudDisplay - Getters
+
+#### getter: colorBy
+
+```js
+// type
+any
+```
+
+#### getter: filterBy
+
+```js
+// type
+any
+```
+
+#### getter: featureHeightSetting
+
+```js
+// type
+any
 ```
 
 ### LinearReadCloudDisplay - Methods
@@ -77,45 +106,17 @@ drawSingletons: true
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearReadCloudDisplay - Actions
-
-#### action: setDrawSingletons
-
-```js
-// type signature
-setDrawSingletons: (f: boolean) => void
-```
-
-#### action: setLastDrawnOffsetPx
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
-```
-
-#### action: setLastDrawnBpPerPx
-
-```js
-// type signature
-setLastDrawnBpPerPx: (n: number) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
 
 #### action: reload
 
@@ -124,26 +125,70 @@ setLoading: (f: boolean) => void
 reload: () => void
 ```
 
-#### action: setRef
+#### action: setNoSpacing
 
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
+Set whether to remove spacing between features
 
 ```js
 // type signature
-setRef: (ref: HTMLCanvasElement) => void
+setNoSpacing: (flag?: boolean) => void
 ```
 
-#### action: setChainData
+#### action: setMaxHeight
+
+Set the maximum height for the layout
 
 ```js
 // type signature
-setChainData: (args: ChainData) => void
+setMaxHeight: (n?: number) => void
 ```
 
-#### action: setFilterBy
+#### action: setLayoutHeight
+
+Set the current layout height
 
 ```js
 // type signature
-setFilterBy: (filter: IFilter) => void
+setLayoutHeight: (n: number) => void
+```
+
+#### action: selectFeature
+
+```js
+// type signature
+selectFeature: (chain: ReducedFeature[]) => void
+```
+
+#### action: setDrawCloud
+
+```js
+// type signature
+setDrawCloud: (b: boolean) => void
+```
+
+#### action: setRenderingImageData
+
+Set the rendering imageData from RPC
+
+```js
+// type signature
+setRenderingImageData: (imageData: ImageBitmap) => void
+```
+
+#### action: setSelectedFeatureId
+
+Set the ID of the selected feature for persistent highlighting
+
+```js
+// type signature
+setSelectedFeatureId: (id: string) => void
+```
+
+#### action: setRenderingStopToken
+
+Set the rendering stop token
+
+```js
+// type signature
+setRenderingStopToken: (token: string) => void
 ```

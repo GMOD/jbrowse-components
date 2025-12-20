@@ -1,14 +1,12 @@
-import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
-
-// locals
+import { isAbstractMenuManager } from '@jbrowse/core/util'
+import DataUsageIcon from '@mui/icons-material/DataUsage'
 
 import CircularViewF from './CircularView'
 import LaunchCircularViewF from './LaunchCircularView'
 
-// icons
-import DataUsageIcon from '@mui/icons-material/DataUsage'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default class CircularViewPlugin extends Plugin {
   name = 'CircularViewPlugin'
@@ -32,12 +30,7 @@ export default class CircularViewPlugin extends Plugin {
 }
 
 export {
-  baseChordDisplayConfig,
-  BaseChordDisplayModel,
-  BaseChordDisplayComponent,
-} from './BaseChordDisplay'
-
-export {
   type CircularViewModel,
   type CircularViewStateModel,
-} from './CircularView/models/model'
+  type ExportSvgOptions,
+} from './CircularView/model'

@@ -1,12 +1,14 @@
+import fs from 'fs'
+
 import slugify from 'slugify'
+
 import {
-  rm,
+  extractWithComment,
   filter,
   getAllFiles,
   removeComments,
-  extractWithComment,
-} from './util'
-import fs from 'fs'
+  rm,
+} from './util.ts'
 
 interface Action {
   name: string
@@ -45,7 +47,7 @@ interface StateModel {
 }
 
 function generateStateModelDocs(files: string[]) {
-  const cwd = process.cwd() + '/'
+  const cwd = `${process.cwd()}/`
   const contents = {} as Record<string, StateModel>
   extractWithComment(files, obj => {
     const fn = obj.filename
@@ -59,8 +61,8 @@ function generateStateModelDocs(files: string[]) {
       filename: fn2,
     }
     const current = contents[fn]
-    const name = rm(obj.comment, '#' + obj.type) || obj.name
-    const docs = filter(filter(obj.comment, '#' + obj.type), '#category')
+    const name = rm(obj.comment, `#${obj.type}`) || obj.name
+    const docs = filter(filter(obj.comment, `#${obj.type}`), '#category')
     const code = removeComments(obj.node)
     const id = slugify(name, { lower: true })
 
@@ -111,64 +113,51 @@ function generateStateModelDocs(files: string[]) {
   Object.values(contents).forEach(
     ({ model, getters, properties, actions, methods, filename }) => {
       if (model) {
-        const getterstr =
-          `${getters.length ? `### ${model.name} - Getters` : ''}\n` +
-          getters
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) =>
-              join(
-                `#### getter: ${name}`,
-                docs,
-                codeBlock('// type', signature || ''),
-              ),
-            )
-            .join('\n')
+        const getterstr = `${getters.length ? `### ${model.name} - Getters` : ''}\n${getters
 
-        const methodstr =
-          `${methods.length ? `### ${model.name} - Methods` : ''}\n` +
-          methods
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) =>
-              join(
-                `#### method: ${name}`,
-                docs,
-                codeBlock('// type signature', `${name}: ${signature || ''}`),
-              ),
-            )
-            .join('\n')
+          .map(({ name, docs, signature }: any) =>
+            join(
+              `#### getter: ${name}`,
+              docs,
+              codeBlock('// type', signature || ''),
+            ),
+          )
+          .join('\n')}`
 
-        const propertiesstr =
-          `${properties.length ? `### ${model.name} - Properties` : ''}\n` +
-          properties
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, code, signature }: any) =>
-              join(
-                `#### property: ${name}`,
-                docs,
-                codeBlock(
-                  '// type signature',
-                  signature || '',
-                  '// code',
-                  code,
-                ),
-              ),
-            )
-            .join('\n')
+        const methodstr = `${methods.length ? `### ${model.name} - Methods` : ''}\n${methods
 
-        const actionstr =
-          `${actions.length ? `### ${model.name} - Actions` : ''}\n` +
-          actions
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, signature }: any) =>
-              join(
-                `#### action: ${name}`,
-                docs,
-                codeBlock('// type signature', `${name}: ${signature || ''}`),
-              ),
-            )
-            .join('\n')
+          .map(({ name, docs, signature }: any) =>
+            join(
+              `#### method: ${name}`,
+              docs,
+              codeBlock('// type signature', `${name}: ${signature || ''}`),
+            ),
+          )
+          .join('\n')}`
 
-        const dir = `website/docs/models`
+        const propertiesstr = `${properties.length ? `### ${model.name} - Properties` : ''}\n${properties
+
+          .map(({ name, docs, code, signature }: any) =>
+            join(
+              `#### property: ${name}`,
+              docs,
+              codeBlock('// type signature', signature || '', '// code', code),
+            ),
+          )
+          .join('\n')}`
+
+        const actionstr = `${actions.length ? `### ${model.name} - Actions` : ''}\n${actions
+
+          .map(({ name, docs, signature }: any) =>
+            join(
+              `#### action: ${name}`,
+              docs,
+              codeBlock('// type signature', `${name}: ${signature || ''}`),
+            ),
+          )
+          .join('\n')}`
+
+        const dir = 'website/docs/models'
         try {
           fs.mkdirSync(dir)
         } catch (e) {}
@@ -179,13 +168,22 @@ id: ${model.id}
 title: ${model.name}
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
+Note: this document is automatically generated from @jbrowse/mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
 
-### Source file
 
-[${filename}](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
+
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/${model.name}.md)
+
+## Docs
 
 ${model.docs}
 

@@ -1,5 +1,6 @@
-import type { Instance } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
+
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BaseConnection

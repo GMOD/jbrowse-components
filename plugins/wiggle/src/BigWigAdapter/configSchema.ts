@@ -21,14 +21,50 @@ const BigWigAdapter = ConfigurationSchema(
 
     /**
      * #slot
+     * added as feature.get('source') on all features
      */
     source: {
       type: 'string',
       defaultValue: '',
       description: 'Used for multiwiggle',
     },
+
+    /**
+     * #slot
+     */
+    resolutionMultiplier: {
+      type: 'number',
+      defaultValue: 1,
+      description: 'Initial resolution multiplier',
+    },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "BigWigAdapter",
+     *   "uri": "yourfile.bw"
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      return snap.uri
+        ? {
+            ...snap,
+            bigWigLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default BigWigAdapter

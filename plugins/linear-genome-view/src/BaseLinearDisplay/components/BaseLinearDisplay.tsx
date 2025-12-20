@@ -1,14 +1,16 @@
-import React, { useState, useRef } from 'react'
-import { observer } from 'mobx-react'
-import { useTheme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { Suspense, useRef, useState } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
-import { Menu } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
-
+import FloatingLegend from './FloatingLegend'
 import LinearBlocks from './LinearBlocks'
-import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
+import MenuPage from './MenuPage'
+
+import type { Coord } from './types'
+import type { BaseLinearDisplayModel } from '../model'
 
 const useStyles = makeStyles()({
   display: {
@@ -20,27 +22,21 @@ const useStyles = makeStyles()({
   },
 })
 
-type Coord = [number, number]
 const BaseLinearDisplay = observer(function (props: {
   model: BaseLinearDisplayModel
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
   const ref = useRef<HTMLDivElement>(null)
   const [clientRect, setClientRect] = useState<DOMRect>()
   const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
   const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
   const [contextCoord, setContextCoord] = useState<Coord>()
   const { model, children } = props
-  const {
-    TooltipComponent,
-    DisplayMessageComponent,
-    contextMenuItems,
-    height,
-    setContextMenuFeature,
-  } = model
-
+  const { TooltipComponent, DisplayMessageComponent, height, showLegend } =
+    model
+  const theme = useTheme()
+  const legendItems = model.legendItems(theme)
   return (
     <div
       ref={ref}
@@ -73,40 +69,29 @@ const BaseLinearDisplay = observer(function (props: {
       )}
       {children}
 
-      <TooltipComponent
-        model={model}
-        height={height}
-        offsetMouseCoord={offsetMouseCoord}
-        clientMouseCoord={clientMouseCoord}
-        clientRect={clientRect}
-        mouseCoord={offsetMouseCoord}
-      />
+      {showLegend && legendItems.length > 0 ? (
+        <FloatingLegend items={legendItems} />
+      ) : null}
 
-      <Menu
-        open={Boolean(contextCoord) && Boolean(contextMenuItems().length)}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setContextCoord(undefined)
-        }}
-        onClose={() => {
-          setContextCoord(undefined)
-          setContextMenuFeature(undefined)
-        }}
-        TransitionProps={{
-          onExit: () => {
+      <Suspense fallback={null}>
+        <TooltipComponent
+          model={model}
+          height={height}
+          offsetMouseCoord={offsetMouseCoord}
+          clientMouseCoord={clientMouseCoord}
+          clientRect={clientRect}
+          mouseCoord={offsetMouseCoord}
+        />
+      </Suspense>
+      {contextCoord ? (
+        <MenuPage
+          contextCoord={contextCoord}
+          model={model}
+          onClose={() => {
             setContextCoord(undefined)
-            setContextMenuFeature(undefined)
-          },
-        }}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          contextCoord
-            ? { top: contextCoord[1], left: contextCoord[0] }
-            : undefined
-        }
-        style={{ zIndex: theme.zIndex.tooltip }}
-        menuItems={contextMenuItems()}
-      />
+          }}
+        />
+      ) : null}
     </div>
   )
 })

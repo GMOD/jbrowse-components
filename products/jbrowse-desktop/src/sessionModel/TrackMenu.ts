@@ -1,23 +1,26 @@
 import { lazy } from 'react'
-import { getParent, getSnapshot, types } from 'mobx-state-tree'
-import clone from 'clone'
 
-import SettingsIcon from '@mui/icons-material/Settings'
-import CopyIcon from '@mui/icons-material/FileCopy'
-import DeleteIcon from '@mui/icons-material/Delete'
-import InfoIcon from '@mui/icons-material/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import {
+  getParent,
+  getSnapshot,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import DeleteIcon from '@mui/icons-material/Delete'
+import CopyIcon from '@mui/icons-material/FileCopy'
+import InfoIcon from '@mui/icons-material/Info'
+import SettingsIcon from '@mui/icons-material/Settings'
 
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-
+import type { DesktopRootModel } from '../rootModel/rootModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type {
   SessionWithDialogs,
-  SessionWithTracks,
   SessionWithDrawerWidgets,
+  SessionWithTracks,
 } from '@jbrowse/product-core'
-import { DesktopRootModel } from '../rootModel'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
@@ -33,21 +36,26 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
       const session = self as SessionWithDialogs &
         SessionWithTracks &
         SessionWithDrawerWidgets
-      const trackSnapshot = clone(getSnapshot(trackConfig))
+      // Handle both MST models and frozen/plain objects
+      const trackSnapshot = structuredClone(
+        isStateTreeNode(trackConfig) ? getSnapshot(trackConfig) : trackConfig,
+      )
       return [
         {
           label: 'About track',
           onClick: () => {
             session.queueDialog(doneCallback => [
               AboutDialog,
-              { config: trackConfig, handleClose: doneCallback },
+              { config: trackConfig, session, handleClose: doneCallback },
             ])
           },
           icon: InfoIcon,
         },
         {
           label: 'Settings',
-          onClick: () => session.editConfiguration(trackConfig),
+          onClick: () => {
+            session.editConfiguration(trackConfig)
+          },
           icon: SettingsIcon,
         },
         {
@@ -62,9 +70,11 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
           onClick: () => {
             const now = Date.now()
             trackSnapshot.trackId += `-${now}`
-            trackSnapshot.displays.forEach((d: { displayId: string }) => {
-              d.displayId += `-${now}`
-            })
+            if (trackSnapshot.displays) {
+              for (const d of trackSnapshot.displays) {
+                d.displayId += `-${now}`
+              }
+            }
             trackSnapshot.name += ' (copy)'
             trackSnapshot.category = undefined
             session.addTrackConf(trackSnapshot)
@@ -101,13 +111,13 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
                       name: indexName,
                     },
                     name: indexName,
-                    cancelCallback: () => jobsManager.abortJob(),
                   })
                 },
                 icon: Indexing,
               },
             ]
           : []),
+        { type: 'divider' },
       ]
     },
   }))

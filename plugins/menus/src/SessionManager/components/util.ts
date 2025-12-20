@@ -1,13 +1,25 @@
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+export interface SessionMetadata {
+  id: string
+  name: string
+  createdAt: Date
+  configPath: string
+  favorite: boolean
+}
 
 export interface SessionSnap {
-  name: string
-  views?: { tracks?: unknown[] }[]
-  [key: string]: unknown
+  createdAt: Date
+  session: {
+    name: string
+    id: string
+    views?: { tracks?: unknown[] }[]
+    [key: string]: unknown
+  }
 }
 
 export interface SessionModel extends AbstractSessionModel {
-  savedSessions: SessionSnap[]
+  savedSessionMetadata?: SessionMetadata[]
   removeSavedSession: (arg: SessionSnap) => void
   activateSession: (arg: string) => void
   loadAutosaveSession: () => void

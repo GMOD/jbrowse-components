@@ -1,10 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { IStateTreeNode, Instance, SnapshotOut } from 'mobx-state-tree'
 import type {
-  ConfigurationSchemaType,
   ConfigurationSchemaOptions,
+  ConfigurationSchemaType,
 } from './configurationSchema'
 import type ConfigSlot from './configurationSlot'
+import type {
+  IStateTreeNode,
+  Instance,
+  SnapshotOut,
+} from '@jbrowse/mobx-state-tree'
 
 export type GetOptions<SCHEMA> =
   SCHEMA extends ConfigurationSchemaType<any, infer OPTIONS> ? OPTIONS : never
@@ -43,7 +46,9 @@ export type ConfigurationSchemaForModel<MODEL> =
 export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
   ? never
   : SCHEMA extends ConfigurationSchemaType<infer D, any>
-    ?
+    ? // this provides the ability to type check names in the config readConfObject usage
+        // it is not commonly used but retained for now with this lint ignore
+
         | (keyof D & string)
         | GetExplicitIdentifier<SCHEMA>
         | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>

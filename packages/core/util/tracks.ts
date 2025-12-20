@@ -1,37 +1,62 @@
-import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
-import { getSession, objectHash, getEnv } from './index'
-import { PreFileLocation, FileLocation } from './types'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
+import { getParent, isRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+import { getEnv, getSession, objectHash } from './index'
+import { readConfObject } from '../configuration'
+
+import type { FileLocation, PreFileLocation } from './types'
+import type { AnyConfigurationModel } from '../configuration'
+import type {
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 /* utility functions for use by track models and so forth */
+
+// Cache for track assembly names - keyed by trackId string since configuration
+// objects may be recreated on each access when tracks are frozen
+const trackAssemblyNamesCache = new Map<string, string[]>()
 
 export function getTrackAssemblyNames(
   track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
-  return getConfAssemblyNames(track.configuration)
+  const conf = track.configuration
+  const trackId = conf.trackId as string
+  let cached = trackAssemblyNamesCache.get(trackId)
+  if (!cached) {
+    cached = getConfAssemblyNames(conf)
+    trackAssemblyNamesCache.set(trackId, cached)
+  }
+  return cached
 }
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
-  const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as string[]
+  const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
+    | string[]
+    | undefined
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parent = getParent<any>(conf)
     if ('sequence' in parent) {
       return [readConfObject(parent, 'name') as string]
+    } else {
+      throw new Error('unknown assembly names')
     }
   }
   return trackAssemblyNames
 }
 
-/** return the rpcSessionId of the highest parent node in the tree that has an rpcSessionId */
+/**
+ * return the rpcSessionId of the highest parent node in the tree that has an
+ * rpcSessionId */
 
 export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
   interface NodeWithRpcSessionId extends IAnyStateTreeNode {
     rpcSessionId: string
   }
-  let highestRpcSessionId
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let highestRpcSessionId: string | undefined
+
   for (let node = thisNode; !isRoot(node); node = getParent<any>(node)) {
     if ('rpcSessionId' in node) {
       highestRpcSessionId = (node as NodeWithRpcSessionId).rpcSessionId
@@ -53,10 +78,8 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
  */
 export function getParentRenderProps(node: IAnyStateTreeNode) {
   for (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let currentNode = getParent<any>(node);
     !isRoot(currentNode);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     currentNode = getParent<any>(currentNode)
   ) {
     if ('renderProps' in currentNode) {
@@ -82,6 +105,7 @@ export function getBlobMap() {
   return blobMap
 }
 
+// TODO:IS THIS BAD?
 // used in new contexts like webworkers
 export function setBlobMap(map: Record<string, File>) {
   blobMap = map
@@ -93,37 +117,41 @@ let counter = 0
 // of timestamp plus counter to be unique across sessions and fast repeated
 // calls
 export function storeBlobLocation(location: PreFileLocation) {
-  if (location && 'blob' in location) {
-    const blobId = `b${+Date.now()}-${counter++}`
+  if ('blob' in location) {
+    const blobId = `b${Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
-    return { name: location?.blob.name, blobId, locationType: 'BlobLocation' }
+    return { name: location.blob.name, blobId, locationType: 'BlobLocation' }
   }
   return location
 }
 
 /**
- * creates a new location from the provided location including the appropriate suffix and location type
+ * creates a new location from the provided location including the appropriate
+ * suffix and location type
+ *
  * @param location - the FileLocation
  * @param suffix - the file suffix (e.g. .bam)
  * @returns the constructed location object from the provided parameters
  */
 export function makeIndex(location: FileLocation, suffix: string) {
   if ('uri' in location) {
-    return { uri: location.uri + suffix, locationType: 'UriLocation' }
-  }
-
-  if ('localPath' in location) {
+    return {
+      uri: location.uri + suffix,
+      locationType: 'UriLocation',
+    }
+  } else if ('localPath' in location) {
     return {
       localPath: location.localPath + suffix,
       locationType: 'LocalPathLocation',
     }
+  } else {
+    return location
   }
-
-  return location
 }
 
 /**
  * constructs a potential index file (with suffix) from the provided file name
+ *
  * @param name - the name of the index file
  * @param typeA - one option of a potential two file suffix (e.g. CSI, BAI)
  * @param typeB - the second option of a potential two file suffix (e.g. CSI, BAI)
@@ -157,7 +185,7 @@ export function getFileName(track: FileLocation) {
   return (
     blob?.name ||
     uri?.slice(uri.lastIndexOf('/') + 1) ||
-    localPath?.slice(localPath?.replace(/\\/g, '/').lastIndexOf('/') + 1) ||
+    localPath?.slice(localPath.replace(/\\/g, '/').lastIndexOf('/') + 1) ||
     ''
   )
 }
@@ -182,7 +210,6 @@ export function guessAdapter(
     ) as AdapterGuesser
 
     const adapter = adapterGuesser(file, index, adapterHint)
-
     if (adapter) {
       return adapter
     }
@@ -210,7 +237,6 @@ export function guessTrackType(
     ) as TrackTypeGuesser
 
     const trackType = trackTypeGuesser(adapterType)
-
     if (trackType) {
       return trackType
     }
@@ -237,7 +263,7 @@ export function generateUnsupportedTrackConf(
 export function generateUnknownTrackConf(
   trackName: string,
   trackUrl: string,
-  categories: string[] | undefined,
+  categories?: string[],
 ) {
   const conf = {
     type: 'FeatureTrack',
@@ -251,11 +277,17 @@ export function generateUnknownTrackConf(
 }
 
 export function getTrackName(
-  conf: AnyConfigurationModel,
+  conf: AnyConfigurationModel | { name?: string; type?: string },
   session: { assemblies: AnyConfigurationModel[] },
-) {
-  const trackName = readConfObject(conf, 'name') as string
-  if (!trackName && readConfObject(conf, 'type') === 'ReferenceSequenceTrack') {
+): string {
+  // Handle both MST models and plain objects
+  const trackName = isStateTreeNode(conf)
+    ? (readConfObject(conf, 'name') as string)
+    : (conf.name ?? '')
+  const trackType = isStateTreeNode(conf)
+    ? (readConfObject(conf, 'type') as string)
+    : conf.type
+  if (!trackName && trackType === 'ReferenceSequenceTrack') {
     const asm = session.assemblies.find(a => a.sequence === conf)
     return asm
       ? `Reference sequence (${
@@ -264,4 +296,95 @@ export function getTrackName(
       : 'Reference sequence'
   }
   return trackName
+}
+
+type MSTArray<T extends IAnyType> = Instance<ReturnType<typeof types.array<T>>>
+
+interface MinimalTrack extends IAnyType {
+  configuration: { trackId: string }
+}
+
+interface GenericView {
+  type: string
+  tracks: MSTArray<MinimalTrack>
+}
+
+export function showTrackGeneric(
+  self: GenericView,
+  trackId: string,
+  initialSnapshot = {},
+  displayInitialSnapshot = {},
+) {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+
+  // Check if track is already shown
+  const found = self.tracks.find(t => t.configuration.trackId === trackId)
+  if (found) {
+    return found
+  }
+
+  const conf = session.tracksById[trackId]
+  if (!conf) {
+    throw new Error(`Could not resolve identifier "${trackId}"`)
+  }
+
+  const trackType = pluginManager.getTrackType(conf.type)
+  if (!trackType) {
+    throw new Error(`Unknown track type ${conf.type}`)
+  }
+
+  // Find a compatible display for this view type
+  const viewType = pluginManager.getViewType(self.type)!
+  const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
+  const displays = conf.displays ?? []
+  const displayConf = displays.find((d: { type: string }) =>
+    supportedDisplays.has(d.type),
+  )
+
+  // Find a compatible display type for this view
+  const displayType =
+    displayConf?.type ??
+    trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
+
+  if (!displayType) {
+    throw new Error(
+      `Could not find a compatible display for view type ${self.type}`,
+    )
+  }
+
+  // Generate displayId if not found in config - must use the actual displayType
+  const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
+
+  // Create track with just the trackId - the ConfigurationReference will resolve it
+  const track = trackType.stateModel.create({
+    ...initialSnapshot,
+    type: conf.type,
+    configuration: trackId,
+    displays: [
+      {
+        type: displayType,
+        configuration: displayId,
+        ...displayInitialSnapshot,
+      },
+    ],
+  })
+  self.tracks.push(track)
+  return track
+}
+
+export function hideTrackGeneric(self: GenericView, trackId: string) {
+  const t = self.tracks.find(t => t.configuration.trackId === trackId)
+  if (t) {
+    self.tracks.remove(t)
+    return 1
+  }
+  return 0
+}
+
+export function toggleTrackGeneric(self: GenericView, trackId: string) {
+  const hiddenCount = hideTrackGeneric(self, trackId)
+  if (!hiddenCount) {
+    showTrackGeneric(self, trackId)
+  }
 }

@@ -1,17 +1,15 @@
-import React from 'react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { observer } from 'mobx-react'
-import { SceneGraph } from '@jbrowse/core/util/layouts'
-import { Region, Feature, stripAlpha } from '@jbrowse/core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
 import Arrow from './Arrow'
 
-const Segments = observer(function (props: {
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { SceneGraph } from '@jbrowse/core/util/layouts'
+
+const Segments = observer(function Segments(props: {
   region: Region
   feature: Feature
   featureLayout: SceneGraph
@@ -34,9 +32,7 @@ const Segments = observer(function (props: {
   const theme = useTheme()
   const c = readConfObject(config, 'color2', { feature })
   const color2 = c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
-
   const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
-
   const y = top + height / 2
   return (
     <>
@@ -49,6 +45,8 @@ const Segments = observer(function (props: {
         stroke={color2}
       />
       {subfeatures?.map(subfeature => {
+        // bad or old code might not be a string id but try to assume it is
+
         const subfeatureId = String(subfeature.id())
         const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
         // This subfeature got filtered out

@@ -1,78 +1,73 @@
-import React, { useEffect } from 'react'
-import { observer } from 'mobx-react'
-import { onSnapshot } from 'mobx-state-tree'
-import { useQueryParam, StringParam } from 'use-query-params'
-import { CssBaseline, ThemeProvider } from '@mui/material'
+import { useEffect } from 'react'
 
-// core
 import { App } from '@jbrowse/app-core'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { onSnapshot } from '@jbrowse/mobx-state-tree'
+import { CssBaseline, ThemeProvider } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
 import ShareButton from './ShareButton'
-import { WebSessionModel } from '../sessionModel'
+import { readQueryParams, setQueryParams } from '../useQueryParam'
+
+import type { WebSessionModel } from '../sessionModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const JBrowse = observer(function ({
   pluginManager,
 }: {
   pluginManager: PluginManager
 }) {
-  const [adminKey] = useQueryParam('adminKey', StringParam)
-  const [adminServer] = useQueryParam('adminServer', StringParam)
-  const [configPath] = useQueryParam('config', StringParam)
-  const [, setSessionId] = useQueryParam('session', StringParam)
+  const {
+    adminKey,
+    adminServer,
+    config: configPath,
+  } = readQueryParams(['adminKey', 'adminServer', 'config'])
   const { rootModel } = pluginManager
-  const { error, jbrowse } = rootModel || {}
-  const session = rootModel?.session as WebSessionModel
-  const currentSessionId = session.id
+  const { error, jbrowse, session: s } = rootModel!
+  const session = s as WebSessionModel
+  const { id, theme } = session
 
   useEffect(() => {
-    setSessionId(`local-${currentSessionId}`, 'replaceIn')
+    setQueryParams({ session: `local-${id}` })
     // @ts-expect-error
     window.JBrowseRootModel = rootModel
     // @ts-expect-error
     window.JBrowseSession = session
-  }, [currentSessionId, rootModel, session, setSessionId])
+  }, [id, rootModel, session])
 
   useEffect(() => {
-    if (!jbrowse || !adminKey) {
-      return
-    }
-    return onSnapshot(jbrowse, async snapshot => {
-      try {
-        const response = await fetch(adminServer || `/updateConfig`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            adminKey,
-            configPath,
-            config: snapshot,
-          }),
+    return adminKey
+      ? onSnapshot(jbrowse, async snapshot => {
+          try {
+            const response = await fetch(adminServer || '/updateConfig', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                adminKey,
+                configPath,
+                config: snapshot,
+              }),
+            })
+            if (!response.ok) {
+              const message = await response.text()
+              throw new Error(`HTTP ${response.status} (${message})`)
+            }
+          } catch (e) {
+            session.notify(`Admin server error: ${e}`)
+          }
         })
-        if (!response.ok) {
-          const message = await response.text()
-          throw new Error(`HTTP ${response.status} (${message})`)
-        }
-      } catch (e) {
-        session?.notify(`Admin server error: ${e}`)
-      }
-    })
+      : undefined
   }, [jbrowse, session, adminKey, adminServer, configPath])
 
   if (error) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw error
-  }
-  if (!rootModel) {
-    throw new Error('No rootModel found')
-  }
-  if (!session) {
-    throw new Error('No session found')
   }
 
   return (
-    <ThemeProvider theme={session.theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       <App
+        // @ts-expect-error
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />

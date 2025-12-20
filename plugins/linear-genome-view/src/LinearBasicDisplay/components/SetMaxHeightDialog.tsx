@@ -1,14 +1,15 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
   DialogContent,
-  Typography,
   TextField,
+  Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   root: {
@@ -29,19 +30,22 @@ const SetMaxHeightDialog = observer(function ({
   const { classes } = useStyles()
   const { maxHeight = '' } = model
   const [max, setMax] = useState(`${maxHeight}`)
-
+  const ok = max !== '' && !Number.isNaN(+max)
   return (
-    <Dialog open onClose={handleClose} title="Set max height">
+    <Dialog open onClose={handleClose} title="Set max track height">
       <DialogContent className={classes.root}>
         <Typography>
-          Set max height for the track. For example, you can increase this if
-          the layout says &quot;Max height reached&quot;
+          Set max layout height for the track. For example, you can increase
+          this if the layout says &quot;Max height reached&quot;
         </Typography>
         <TextField
           value={max}
-          onChange={event => setMax(event.target.value)}
+          onChange={event => {
+            setMax(event.target.value)
+          }}
           placeholder="Enter max score"
         />
+        {!ok ? <div style={{ color: 'red' }}>Invalid number</div> : null}
       </DialogContent>
       <DialogActions>
         <Button
@@ -49,10 +53,9 @@ const SetMaxHeightDialog = observer(function ({
           color="primary"
           type="submit"
           autoFocus
+          disabled={!ok}
           onClick={() => {
-            model.setMaxHeight(
-              max !== '' && !Number.isNaN(+max) ? +max : undefined,
-            )
+            model.setMaxHeight(+max)
             handleClose()
           }}
         >
@@ -61,7 +64,9 @@ const SetMaxHeightDialog = observer(function ({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

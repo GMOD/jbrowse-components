@@ -1,14 +1,25 @@
-import React from 'react'
-import { render } from '@testing-library/react'
 import fs from 'fs'
 
-// locals
+import { render } from '@testing-library/react'
+
 import SequencePanel from './SequencePanel'
 import { SequenceFeatureDetailsF } from './model'
-
-// test data
 import DLGAP3 from './test_data/DLGAP3'
 import NCDN from './test_data/NCDN'
+
+const f = {
+  start: 1200,
+  end: 1500,
+  refName: 'chr1',
+  strand: 1,
+  type: 'mRNA',
+  uniqueId: 'unique',
+  name: 'made_up',
+  subfeatures: [
+    { refName: 'chr1', start: 1200, end: 1500, type: 'exon' },
+    { refName: 'chr1', start: 1200, end: 1500, type: 'CDS' },
+  ],
+}
 
 const readFasta = (filename: string) => {
   return fs
@@ -30,12 +41,13 @@ test('test using the sequence feature panel', () => {
 
   // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-zMPjiv36k0&password=ddxCy
   const feature = DLGAP3
+  const model = SequenceFeatureDetailsF().create()
+  model.setMode('protein')
   const { getByTestId } = render(
     <SequencePanel
-      model={SequenceFeatureDetailsF().create()}
+      model={model}
       sequence={{ seq: dna }}
-      mode="protein"
-      feature={feature.subfeatures[0]}
+      feature={feature.subfeatures[0]!}
     />,
   )
 
@@ -45,7 +57,7 @@ test('test using the sequence feature panel', () => {
   // with stop codon on the end
   expect(
     element.textContent
-      ?.split('\n')
+      .split('\n')
       .slice(1)
       .map(s => s.trim())
       .join(''),
@@ -65,12 +77,12 @@ test('test using the sequence feature panel with show coords', () => {
   const model = SequenceFeatureDetailsF().create()
   const feature = DLGAP3
   model.setShowCoordinates('genomic')
+  model.setMode('protein')
   const { getByTestId } = render(
     <SequencePanel
       model={model}
       sequence={{ seq: dna }}
-      mode="protein"
-      feature={feature.subfeatures[0]}
+      feature={feature.subfeatures[0]!}
     />,
   )
 
@@ -78,7 +90,7 @@ test('test using the sequence feature panel with show coords', () => {
   // make sure show coords shows the expected sequence as well
   expect(
     element.textContent
-      ?.split('\n')
+      .split('\n')
       .slice(1)
       .map(s => s.trim().split(/\s+/).slice(1).join(''))
       .join(''),
@@ -91,12 +103,13 @@ test('NCDN collapsed intron', () => {
 
   // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-zMPjiv36k0&password=ddxCy
   const feature = NCDN
+  const model = SequenceFeatureDetailsF().create()
+  model.setMode('gene_collapsed_intron')
   const { getByTestId } = render(
     <SequencePanel
-      model={SequenceFeatureDetailsF().create()}
+      model={model}
       sequence={{ seq: dna }}
-      mode="gene_collapsed_intron"
-      feature={feature.subfeatures[0]}
+      feature={feature.subfeatures[0]!}
     />,
   )
 
@@ -116,60 +129,63 @@ test('NCDN updownstream', () => {
 
   // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-zMPjiv36k0&password=ddxCy
   const feature = NCDN
+  const model = SequenceFeatureDetailsF().create()
+  model.setMode('gene_updownstream')
   const { getByTestId } = render(
     <SequencePanel
-      model={SequenceFeatureDetailsF().create()}
+      model={model}
       sequence={{ seq, upstream }}
-      mode="gene_updownstream"
-      feature={feature.subfeatures[0]}
+      feature={feature.subfeatures[0]!}
     />,
   )
 
   const element = getByTestId('sequence_panel')
-
   expect(element.textContent).toMatchSnapshot()
-
-  // expect(element.children[1].textContent).toEqual(
-  //   'AGTGGGCAACGCGGCGTGAGCAGCGGCCCGAGGCTCCCGGAGCATCGCGCTGGGAGAAGACTTCGCCGCTCGGGGCCGCAGCCTGGTGAGCTCAGCCCCCTTCGGGCCCTCCCCTGCATCCCAGCCGGGGCCTCTCCGAGCCGGCGCTGATCGATGCCGACACACCCCGGGGACCCTATCGCGACTCCATCGCGCCATATCGCGACACCATCGTGCCCTGTCGAGACTCCATTTTGTCACAGCCCTTTTCAATATATATCTTTTTTTTTTTTAATTTGCCCTGTCATCTTTGGGGGCTGTCTCCCATGTCGTGATTTTGACGTGATCTCTCCGTGACATCACCGCGCCATCGTGAAGTGTGATCTCATCGCCGCCCTGTCGTGACTTCATCA',
-  // )
-
-  // 3rd is a blank element, so go to 4th, not strictly needed for 3rd to be
-  // blank but helps test
-  // expect(element.children[3].textContent).toEqual(
-  //   'ATGTCGTGTTGTGACCTGGCTGCGGCGGGACAG',
-  // )
 })
 
 test('single exon cDNA should not have duplicate sequences', () => {
   const seq = readFasta('./test_data/volvox.fa')
+  const model = SequenceFeatureDetailsF().create()
+  model.setMode('cdna')
   const { getByTestId } = render(
-    <SequencePanel
-      model={SequenceFeatureDetailsF().create()}
-      sequence={{ seq }}
-      mode="cdna"
-      feature={{
-        start: 1200,
-        end: 1500,
-        refName: 'chr1',
-        type: 'mRNA',
-        uniqueId: 'unique',
-        subfeatures: [
-          { refName: 'chr1', start: 1200, end: 1500, type: 'exon' },
-          { refName: 'chr1', start: 1200, end: 1500, type: 'CDS' },
-        ],
-      }}
-    />,
+    <SequencePanel model={model} sequence={{ seq }} feature={f} />,
   )
 
   const element = getByTestId('sequence_panel')
 
   expect(
     element.textContent
-      ?.split('\n')
+      .split('\n')
       .slice(1)
       .map(s => s.trim())
       .join(''),
   ).toEqual(
     'ATGTCACCTCGGGTACTGCCTCTATTACAGAGGTATCTTAATGGCGCATCCAGCCTTGTGGCTGGGTCTACGTACGCGTGGGCACCATACGTATGTTGGCAGGAAAGGTCAATCATGCTTGTTTCCTCGTCGCAGAAACGTTCACACTATTGGCTCGCGGGATCGAACGGGCCTGATTATTTTTCCAGCTCCTGCGTTCCTATCACGCCAACTGTCGCTAATAAAATGTTATATAGAGATAACCCATTGCTATGCAAGGATGGAGAAACCGCTTCACAACACCCTAGAATTACTTCAGCA',
   )
+})
+
+test('single exon cDNA display genomic coords', () => {
+  const seq = readFasta('./test_data/volvox.fa')
+  const model = SequenceFeatureDetailsF().create()
+  model.setMode('gene')
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel model={model} sequence={{ seq }} feature={f} />,
+  )
+
+  const element = getByTestId('sequence_panel')
+  expect(element.textContent).toMatchSnapshot()
+})
+
+test('single exon cDNA display relative coords', () => {
+  const seq = readFasta('./test_data/volvox.fa')
+  const model = SequenceFeatureDetailsF().create()
+  model.setMode('gene')
+  model.setShowCoordinates('relative')
+  const { getByTestId } = render(
+    <SequencePanel model={model} sequence={{ seq }} feature={f} />,
+  )
+
+  const element = getByTestId('sequence_panel')
+  expect(element.textContent).toMatchSnapshot()
 })

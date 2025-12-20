@@ -1,10 +1,27 @@
+import { lazy } from 'react'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-export const configSchema = ConfigurationSchema('ImportSessionWidget', {})
+import type PluginManager from '@jbrowse/core/PluginManager'
 
-export const stateModel = types.model('ImportSessionWidget', {
+const configSchema = ConfigurationSchema('ImportSessionWidget', {})
+
+const stateModel = types.model('ImportSessionWidget', {
   id: ElementId,
   type: types.literal('ImportSessionWidget'),
 })
+
+export default function ImportSessionWidgetF(pluginManager: PluginManager) {
+  pluginManager.addWidgetType(() => {
+    return new WidgetType({
+      name: 'ImportSessionWidget',
+      heading: 'Import session',
+      configSchema,
+      stateModel,
+      ReactComponent: lazy(() => import('./components/ImportSessionWidget')),
+    })
+  })
+}

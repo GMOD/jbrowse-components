@@ -1,6 +1,5 @@
-import React from 'react'
-import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 
 export default function DeletePluginDialog({
   onClose,
@@ -10,7 +9,13 @@ export default function DeletePluginDialog({
   onClose: (s?: string) => void
 }) {
   return (
-    <Dialog open onClose={() => onClose()} title={`Remove ${plugin}`}>
+    <Dialog
+      open
+      title={`Remove ${plugin}`}
+      onClose={() => {
+        onClose()
+      }}
+    >
       <DialogContent>
         <Typography>
           Please confirm that you want to remove {plugin}.

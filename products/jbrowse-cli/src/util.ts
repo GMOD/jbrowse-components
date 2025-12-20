@@ -1,26 +1,35 @@
-import { isURL, createRemoteStream } from './types/common'
-import fs from 'fs'
+import { createReadStream } from 'fs'
+import { stat } from 'fs/promises'
 import path from 'path'
+import { Readable } from 'stream'
+
+import { createRemoteStream, isURL } from './types/common'
 
 export async function getLocalOrRemoteStream(uri: string, out: string) {
-  let stream
-  let totalBytes = 0
   if (isURL(uri)) {
     const result = await createRemoteStream(uri)
-    totalBytes = +(result.headers.get('Content-Length') || 0)
-    stream = result.body
+    return {
+      totalBytes: +(result.headers.get('Content-Length') || 0),
+      stream: result.body,
+    }
   } else {
     const filename = path.isAbsolute(uri) ? uri : path.join(out, uri)
-    totalBytes = fs.statSync(filename).size
-    stream = fs.createReadStream(filename)
+    const stats = await stat(filename)
+    const nodeStream = createReadStream(filename)
+    return {
+      totalBytes: stats.size,
+      stream: Readable.toWeb(nodeStream) as ReadableStream<Uint8Array>,
+    }
   }
-  return { totalBytes, stream }
 }
 
 export function decodeURIComponentNoThrow(uri: string) {
+  if (!uri.includes('%')) {
+    return uri
+  }
   try {
     return decodeURIComponent(uri)
-  } catch (e) {
+  } catch {
     // avoid throwing exception on a failure to decode URI component
     return uri
   }

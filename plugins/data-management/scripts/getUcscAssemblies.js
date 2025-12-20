@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
 
 /**
  * This grabs the UCSC genome downloads page and parses it for assembly names.
@@ -41,7 +40,9 @@ function parseDownloadsPageContent(pageContent) {
 function checkAssembliesFor2bit(uncheckedAssemblies, checkedAssemblies) {
   if (!uncheckedAssemblies.length) {
     checkedAssemblies.sort()
-    checkedAssemblies.forEach(assemblyName => console.log(assemblyName))
+    for (const assemblyName of checkedAssemblies) {
+      console.log(assemblyName)
+    }
     return
   }
   const [assemblyName] = uncheckedAssemblies

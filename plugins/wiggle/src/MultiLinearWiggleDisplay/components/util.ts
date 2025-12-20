@@ -1,13 +1,19 @@
+import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
   measureText,
 } from '@jbrowse/core/util'
-import { WiggleDisplayModel } from '../models/model'
-import { getConf } from '@jbrowse/core/configuration'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export function moveUp(arr: { name: string }[], sel: string[], by = 1) {
+import type { WiggleDisplayModel } from '../model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { GridRowId } from '@mui/x-data-grid'
+
+export function moveUp<T extends { name: string }>(
+  arr: T[],
+  sel: GridRowId[],
+  by = 1,
+) {
   const idxs = sel
     .map(l => arr.findIndex(v => v.name === l))
     .sort((a, b) => a - b)
@@ -15,7 +21,7 @@ export function moveUp(arr: { name: string }[], sel: string[], by = 1) {
   for (const old of idxs) {
     const idx = Math.max(lastIdx, old - by)
     if (idx >= lastIdx) {
-      arr.splice(idx, 0, arr.splice(old, 1)[0])
+      arr.splice(idx, 0, arr.splice(old, 1)[0]!)
     }
     lastIdx = lastIdx + 1
   }
@@ -23,7 +29,11 @@ export function moveUp(arr: { name: string }[], sel: string[], by = 1) {
   return arr
 }
 
-export function moveDown(arr: { name: string }[], sel: string[], by = 1) {
+export function moveDown<T extends { name: string }>(
+  arr: T[],
+  sel: GridRowId[],
+  by = 1,
+) {
   const idxs = sel
     .map(l => arr.findIndex(v => v.name === l))
     .sort((a, b) => b - a)
@@ -31,7 +41,7 @@ export function moveDown(arr: { name: string }[], sel: string[], by = 1) {
   for (const old of idxs) {
     const idx = Math.min(lastIdx, old + by)
     if (idx <= lastIdx) {
-      arr.splice(idx, 0, arr.splice(old, 1)[0])
+      arr.splice(idx, 0, arr.splice(old, 1)[0]!)
     }
     lastIdx = lastIdx - 1
   }

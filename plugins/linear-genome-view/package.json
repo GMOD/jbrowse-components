@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-genome-view",
-  "version": "2.11.2",
+  "version": "3.7.0",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -25,12 +25,12 @@
     "esm"
   ],
   "scripts": {
-    "prebuild": "npm run clean",
+    "prebuild": "yarn clean",
     "build": "npm-run-all build:*",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo",
-    "test": "cd ../..; jest plugins/linear-genome-view",
+    "test": "cd ../..; jest --passWithNoTests plugins/linear-genome-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
@@ -38,24 +38,20 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@floating-ui/react": "^0.26.3",
-    "@mui/icons-material": "^5.0.1",
-    "@types/file-saver": "^2.0.1",
-    "clone": "^2.1.2",
+    "@jbrowse/core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/product-core": "^3.7.0",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
+    "@types/file-saver-es": "^2.0.1",
     "copy-to-clipboard": "^3.3.1",
-    "file-saver": "^2.0.0",
-    "material-ui-popup-state": "^5.0.0",
-    "react-error-boundary": "^4.0.3"
+    "file-saver-es": "^2.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^9.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^2.0.0",
-    "@mui/material": "^5.0.0",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "tss-react": "^4.0.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

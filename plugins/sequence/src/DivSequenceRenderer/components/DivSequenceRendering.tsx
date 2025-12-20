@@ -1,205 +1,42 @@
-import React from 'react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
+import type { ReactNode } from 'react'
+
 import {
-  Feature,
-  Region,
-  bpSpanPx,
-  revcom,
   complement,
-  defaultStarts,
-  defaultStops,
   defaultCodonTable,
   generateCodonTable,
-  Frame,
 } from '@jbrowse/core/util'
-import { Theme } from '@mui/material'
+import { observer } from 'mobx-react'
 
-function Translation({
-  codonTable,
-  seq,
-  frame,
-  bpPerPx,
-  colorByCDS,
-  region,
-  seqStart,
-  height,
-  y,
-  reverse = false,
-  theme,
-}: {
-  codonTable: Record<string, string>
-  seq: string
-  frame: Frame
-  colorByCDS: boolean
-  bpPerPx: number
-  region: Region
-  seqStart: number
-  reverse?: boolean
-  height: number
-  y: number
-  theme?: Theme
-}) {
-  const normalizedFrame = Math.abs(frame) - 1
-  const seqFrame = seqStart % 3
-  const frameShift = (normalizedFrame - seqFrame + 3) % 3
+import Sequence from './Sequence'
+import Translation from './Translation'
 
-  const frameShiftAdjustedSeqLength = seq.length - frameShift
-  const multipleOfThreeLength =
-    frameShiftAdjustedSeqLength - (frameShiftAdjustedSeqLength % 3)
-  const seqSliced = seq.slice(frameShift, frameShift + multipleOfThreeLength)
-
-  const translated: { letter: string; codon: string }[] = []
-  for (let i = 0; i < seqSliced.length; i += 3) {
-    const codon = seqSliced.slice(i, i + 3)
-    const normalizedCodon = reverse ? revcom(codon) : codon
-    const aminoAcid = codonTable[normalizedCodon] || ''
-    translated.push({
-      letter: aminoAcid,
-      codon: normalizedCodon.toUpperCase(),
-    })
-  }
-
-  const width = (region.end - region.start) / bpPerPx
-  const codonWidth = (1 / bpPerPx) * 3
-  const renderLetter = 1 / bpPerPx >= 12
-  const frameOffset = frameShift / bpPerPx
-  const startOffset = (region.start - seqStart) / bpPerPx
-  const offset = frameOffset - startOffset
-  const defaultFill = colorByCDS
-    ? theme?.palette.framesCDS.at(frame)?.main
-    : theme?.palette.frames.at(frame)?.main
-  return (
-    <>
-      <rect x={0} y={y} width={width} height={height} fill={defaultFill} />
-      {translated.map((element, index) => {
-        const x = region.reversed
-          ? width - (index + 1) * codonWidth - offset
-          : codonWidth * index + offset
-        const { letter, codon } = element
-        const codonFill = defaultStarts.includes(codon)
-          ? theme?.palette.startCodon
-          : defaultStops.includes(codon)
-            ? theme?.palette.stopCodon
-            : undefined
-        if (!(renderLetter || codonFill)) {
-          return null
-        }
-        return (
-          <React.Fragment key={`${index}-${letter}`}>
-            <rect
-              x={x}
-              y={y}
-              width={
-                renderLetter
-                  ? codonWidth
-                  : codonWidth + 0.7 /* small fudge factor when zoomed out*/
-              }
-              height={height}
-              stroke={renderLetter ? '#555' : 'none'}
-              fill={codonFill || 'none'}
-            />
-            {renderLetter ? (
-              <text
-                x={x + codonWidth / 2}
-                fontSize={height - 2}
-                y={y + height / 2}
-                dominantBaseline="middle"
-                textAnchor="middle"
-              >
-                {letter}
-              </text>
-            ) : null}
-          </React.Fragment>
-        )
-      })}
-    </>
-  )
-}
-
-function DNA(props: {
-  seq: string
-  theme: Theme
-  bpPerPx: number
-  height: number
-  region: Region
-  feature: Feature
-  y: number
-}) {
-  const { bpPerPx, region, feature, theme, height, seq, y } = props
-  const render = 1 / bpPerPx >= 12
-
-  const [leftPx, rightPx] = bpSpanPx(
-    feature.get('start'),
-    feature.get('end'),
-    region,
-    bpPerPx,
-  )
-  const reverse = region.reversed
-  const len = feature.get('end') - feature.get('start')
-  const w = Math.max((rightPx - leftPx) / len, 0.8)
-
-  return (
-    <>
-      {seq.split('').map((letter, index) => {
-        // @ts-expect-error
-        const color = theme.palette.bases[letter.toUpperCase()]
-        const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
-        return (
-          <React.Fragment key={index}>
-            <rect
-              x={x}
-              y={y}
-              width={w}
-              height={height}
-              fill={color ? color.main : '#aaa'}
-              stroke={render ? '#555' : 'none'}
-            />
-            {render ? (
-              <text
-                x={x + w / 2}
-                y={y + height / 2}
-                dominantBaseline="middle"
-                textAnchor="middle"
-                fontSize={height - 2}
-                fill={
-                  color ? theme.palette.getContrastText(color.main) : 'black'
-                }
-              >
-                {letter}
-              </text>
-            ) : null}
-          </React.Fragment>
-        )
-      })}
-    </>
-  )
-}
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Frame, Region } from '@jbrowse/core/util'
 
 function SequenceSVG({
   regions,
-  theme: configTheme,
+  width,
   colorByCDS,
-  features = new Map(),
+  features,
   showReverse = true,
   showForward = true,
   showTranslation = true,
+  sequenceType = 'dna',
   bpPerPx,
   rowHeight,
 }: {
   regions: Region[]
-  theme?: Theme
+  width: number
   features: Map<string, Feature>
   colorByCDS: boolean
   showReverse?: boolean
   showForward?: boolean
   showTranslation?: boolean
+  sequenceType?: string
   bpPerPx: number
   rowHeight: number
 }) {
-  const [region] = regions
-  const theme = createJBrowseTheme(configTheme)
+  const region = regions[0]!
   const codonTable = generateCodonTable(defaultCodonTable)
   const [feature] = [...features.values()]
   if (!feature) {
@@ -210,11 +47,7 @@ function SequenceSVG({
     return null
   }
 
-  // incrementer for the y-position of the current sequence being rendered
-  // (applies to both translation rows and dna rows)
-  let currY = -rowHeight
-
-  const showDNA = bpPerPx <= 1
+  const showSequence = bpPerPx <= 1
 
   const forwardFrames: Frame[] = showTranslation && showForward ? [3, 2, 1] : []
   const reverseFrames: Frame[] =
@@ -224,67 +57,83 @@ function SequenceSVG({
   const [topFrames, bottomFrames] = region.reversed
     ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
     : [forwardFrames, reverseFrames]
-  return (
-    <>
-      {topFrames.map(index => (
-        <Translation
-          key={`translation-${index}`}
-          colorByCDS={colorByCDS}
-          seq={seq}
-          y={(currY += rowHeight)}
-          codonTable={codonTable}
-          frame={index}
-          bpPerPx={bpPerPx}
-          region={region}
-          seqStart={feature.get('start')}
-          theme={theme}
-          height={rowHeight}
-          reverse={region.reversed}
-        />
-      ))}
 
-      {showForward && showDNA ? (
-        <DNA
-          height={rowHeight}
-          y={(currY += rowHeight)}
-          feature={feature}
-          region={region}
-          seq={region.reversed ? complement(seq) : seq}
-          bpPerPx={bpPerPx}
-          theme={theme}
-        />
-      ) : null}
+  const elements: ReactNode[] = []
+  let currentY = 0
 
-      {showReverse && showDNA ? (
-        <DNA
-          height={rowHeight}
-          y={(currY += rowHeight)}
-          feature={feature}
-          region={region}
-          seq={region.reversed ? seq : complement(seq)}
-          bpPerPx={bpPerPx}
-          theme={theme}
-        />
-      ) : null}
+  for (const index of topFrames) {
+    elements.push(
+      <Translation
+        key={`translation-${index}`}
+        width={width}
+        colorByCDS={colorByCDS}
+        seq={seq}
+        y={currentY}
+        codonTable={codonTable}
+        frame={index}
+        bpPerPx={bpPerPx}
+        region={region}
+        seqStart={feature.get('start')}
+        height={rowHeight}
+        reverse={region.reversed}
+      />,
+    )
+    currentY += rowHeight
+  }
 
-      {bottomFrames.map(index => (
-        <Translation
-          key={`rev-translation-${index}`}
-          colorByCDS={colorByCDS}
-          seq={seq}
-          y={(currY += rowHeight)}
-          codonTable={codonTable}
-          frame={index}
-          bpPerPx={bpPerPx}
-          region={region}
-          seqStart={feature.get('start')}
-          theme={theme}
-          height={rowHeight}
-          reverse={!region.reversed}
-        />
-      ))}
-    </>
-  )
+  if (showForward && showSequence) {
+    elements.push(
+      <Sequence
+        key="forward_seq"
+        height={rowHeight}
+        sequenceType={sequenceType}
+        y={currentY}
+        feature={feature}
+        region={region}
+        seq={region.reversed ? complement(seq) : seq}
+        bpPerPx={bpPerPx}
+      />,
+    )
+    currentY += rowHeight
+  }
+
+  if (showReverse && showSequence) {
+    elements.push(
+      <Sequence
+        key="reverse_seq"
+        height={rowHeight}
+        sequenceType={sequenceType}
+        y={currentY}
+        feature={feature}
+        region={region}
+        seq={region.reversed ? seq : complement(seq)}
+        bpPerPx={bpPerPx}
+      />,
+    )
+    currentY += rowHeight
+  }
+
+  for (const index of bottomFrames) {
+    elements.push(
+      <Translation
+        key={`rev-translation-${index}`}
+        width={width}
+        colorByCDS={colorByCDS}
+        seq={seq}
+        y={currentY}
+        codonTable={codonTable}
+        frame={index}
+        bpPerPx={bpPerPx}
+        region={region}
+        seqStart={feature.get('start')}
+        height={rowHeight}
+        reverse={!region.reversed}
+      />,
+    )
+    currentY += rowHeight
+  }
+
+  return <>{elements}</>
 }
 
 function Wrapper({
@@ -296,7 +145,7 @@ function Wrapper({
   exportSVG?: { rasterizeLayers: boolean }
   width: number
   totalHeight: number
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return exportSVG ? (
     children
@@ -318,7 +167,18 @@ function Wrapper({
   )
 }
 
-const DivSequenceRendering = observer(function (props: {
+const DivSequenceRendering = observer(function ({
+  exportSVG,
+  features,
+  regions,
+  colorByCDS,
+  bpPerPx,
+  rowHeight,
+  sequenceHeight,
+  showForward,
+  showReverse,
+  showTranslation,
+}: {
   exportSVG?: { rasterizeLayers: boolean }
   features: Map<string, Feature>
   regions: Region[]
@@ -327,18 +187,26 @@ const DivSequenceRendering = observer(function (props: {
   rowHeight: number
   sequenceHeight: number
   config: AnyConfigurationModel
-  theme?: Theme
   showForward?: boolean
   showReverse?: boolean
   showTranslation?: boolean
 }) {
-  const { regions, bpPerPx, sequenceHeight } = props
-  const [region] = regions
-  const width = (region.end - region.start) / bpPerPx
+  const region = regions[0]!
+  const width = Math.ceil((region.end - region.start) / bpPerPx)
 
   return (
-    <Wrapper {...props} totalHeight={sequenceHeight} width={width}>
-      <SequenceSVG {...props} />
+    <Wrapper exportSVG={exportSVG} totalHeight={sequenceHeight} width={width}>
+      <SequenceSVG
+        width={width}
+        showReverse={showReverse}
+        showForward={showForward}
+        showTranslation={showTranslation}
+        colorByCDS={colorByCDS}
+        bpPerPx={bpPerPx}
+        rowHeight={rowHeight}
+        features={features}
+        regions={regions}
+      />
     </Wrapper>
   )
 })

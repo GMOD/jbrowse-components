@@ -1,10 +1,11 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseChordDisplayComponent } from '@jbrowse/plugin-circular-view'
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-// locals
 import configSchemaF from './models/configSchema'
 import stateModelF from './models/stateModelFactory'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function ChordVariantDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
@@ -17,7 +18,7 @@ export default function ChordVariantDisplayF(pluginManager: PluginManager) {
       stateModel,
       trackType: 'VariantTrack',
       viewType: 'CircularView',
-      ReactComponent: BaseChordDisplayComponent,
+      ReactComponent: lazy(() => import('./components/ChordVariantDisplay')),
     })
   })
 }

@@ -1,7 +1,8 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchemaF from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function GCContentAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(

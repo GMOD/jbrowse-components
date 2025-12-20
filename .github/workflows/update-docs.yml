@@ -1,0 +1,42 @@
+name: Upload website
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and upload website to production
+    runs-on: ubuntu-latest
+    if:
+      ${{ contains(github.event.head_commit.message, 'update docs') ||
+      contains(github.event.head_commit.message, '[update docs only]') }}
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: '22'
+          cache: 'yarn'
+          cache-dependency-path: 'website/yarn.lock'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: website
+      - name: Build website
+        run: yarn build
+        working-directory: website
+      - name: Upload to S3 and invalidate CloudFront cache
+        run: |
+          aws s3 sync --delete build s3://jbrowse.org/jb2/
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/jb2/*"
+        working-directory: website

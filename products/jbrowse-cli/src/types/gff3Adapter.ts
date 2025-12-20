@@ -1,10 +1,7 @@
-import { SingleBar, Presets } from 'cli-progress'
-import { createGunzip } from 'zlib'
-import readline from 'readline'
+import { decodeURIComponentNoThrow } from '../util'
+import { createIndexingStream, parseAttributes } from './streamUtils'
 
-// locals
-import { Track } from '../base'
-import { decodeURIComponentNoThrow, getLocalOrRemoteStream } from '../util'
+import type { Track } from '../base'
 
 export async function* indexGff3({
   config,
@@ -22,37 +19,15 @@ export async function* indexGff3({
   quiet: boolean
 }) {
   const { trackId } = config
-
-  // progress bar code was aided by blog post at
-  // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
-  const progressBar = new SingleBar(
-    {
-      format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
-      etaBuffer: 2000,
-    },
-    Presets.shades_classic,
-  )
-
-  let receivedBytes = 0
-  const { totalBytes, stream } = await getLocalOrRemoteStream(
+  const { rl, progressBar } = await createIndexingStream({
     inLocation,
     outLocation,
-  )
-
-  if (!quiet) {
-    progressBar.start(totalBytes, 0)
-  }
-
-  // @ts-expect-error
-  stream.on('data', chunk => {
-    receivedBytes += chunk.length
-    progressBar.update(receivedBytes)
+    trackId,
+    quiet,
   })
 
-  const rl = readline.createInterface({
-    // @ts-expect-error
-    input: inLocation.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
-  })
+  const excludeSet = new Set(typesToExclude)
+  const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
     if (!line.trim()) {
@@ -64,34 +39,20 @@ export async function* indexGff3({
     }
 
     const [seq_id, , type, start, end, , , , col9] = line.split('\t')
-    const locStr = `${seq_id}:${start}..${end}`
 
-    if (!typesToExclude.includes(type)) {
-      // turns gff3 attrs into a map, and converts the arrays into space
-      // separated strings
-      const col9attrs = Object.fromEntries(
-        col9
-          .split(';')
-          .map(f => f.trim())
-          .filter(f => !!f)
-          .map(f => f.split('='))
-          .map(([key, val]) => [
-            key.trim(),
-            decodeURIComponentNoThrow(val).trim().split(',').join(' '),
-          ]),
-      )
+    if (!excludeSet.has(type!)) {
+      const col9attrs = parseAttributes(col9!, decodeURIComponentNoThrow)
       const attrs = attributesToIndex
         .map(attr => col9attrs[attr])
         .filter((f): f is string => !!f)
 
-      if (attrs.length) {
-        const record = JSON.stringify([
-          encodeURIComponent(locStr),
-          encodeURIComponent(trackId),
-          ...attrs.map(a => encodeURIComponent(a)),
-        ]).replaceAll(',', '|')
+      if (attrs.length > 0) {
+        const locStr = `${seq_id}:${start}..${end}`
+        const encodedAttrs = attrs.map(a => `"${encodeURIComponent(a)}"`)
+        const record = `["${encodeURIComponent(locStr)}"|"${encodedTrackId}"|${encodedAttrs.join('|')}]`
+        const uniqueAttrs = [...new Set(attrs)]
 
-        yield `${record} ${[...new Set(attrs)].join(' ')}\n`
+        yield `${record} ${uniqueAttrs.join(' ')}\n`
       }
     }
   }

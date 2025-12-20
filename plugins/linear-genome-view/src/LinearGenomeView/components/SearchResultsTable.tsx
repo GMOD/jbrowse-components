@@ -1,4 +1,10 @@
-import React from 'react'
+import {
+  assembleLocString,
+  getEnv,
+  getSession,
+  parseLocString,
+} from '@jbrowse/core/util'
+import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   Paper,
@@ -9,12 +15,11 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { getRoot, resolveIdentifier } from 'mobx-state-tree'
-import { getEnv, getSession } from '@jbrowse/core/util'
 
-// locals
-import { LinearGenomeViewModel } from '../..'
+import { navToOption } from '../../searchUtils'
+
+import type { LinearGenomeViewModel } from '../..'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 export default function SearchResultsTable({
   searchResults,
@@ -31,7 +36,7 @@ export default function SearchResultsTable({
   const { pluginManager } = getEnv(session)
   const { assemblyManager } = session
   const assemblyName =
-    optAssemblyName || model.displayedRegions[0]?.assemblyName
+    optAssemblyName || model.displayedRegions[0]!.assemblyName
 
   const assembly = assemblyManager.get(assemblyName)
   if (!assembly) {
@@ -49,8 +54,16 @@ export default function SearchResultsTable({
     }
     return ''
   }
-  async function handleClick(location: string) {
-    try {
+  async function handleClick(result: BaseResult) {
+    if (result.hasLocation()) {
+      await navToOption({
+        option: result,
+        model,
+        assemblyName,
+      })
+    } else {
+      // label is used if it is a refName, it has no location
+      const location = result.getLabel()
       const newRegion = assembly?.regions?.find(
         region => location === region.refName,
       )
@@ -59,12 +72,7 @@ export default function SearchResultsTable({
         // we use showAllRegions after setDisplayedRegions to make the entire
         // region visible, xref #1703
         model.showAllRegions()
-      } else {
-        await model.navToLocString(location, assemblyName)
       }
-    } catch (e) {
-      console.warn(e)
-      session.notify(`${e}`, 'warning')
     }
   }
   return (
@@ -79,41 +87,54 @@ export default function SearchResultsTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {searchResults.map(result => (
-            <TableRow key={`${result.getId()}`}>
-              <TableCell component="th" scope="row">
-                {result.getLabel()}
-              </TableCell>
-              <TableCell align="right">{result.getLocation()}</TableCell>
-              <TableCell align="right">
-                {getTrackName(result.getTrackId()) || 'N/A'}
-              </TableCell>
-              <TableCell align="right">
-                <Button
-                  onClick={async () => {
-                    try {
-                      const location = result.getLocation()
-                      if (location) {
-                        await handleClick(location)
-                        const resultTrackId = result.getTrackId()
-                        if (resultTrackId) {
-                          model.showTrack(resultTrackId)
-                        }
+          {searchResults.map(result => {
+            const locString = result.getLocation()
+            let loc
+            try {
+              loc = locString
+                ? parseLocString(locString, refName =>
+                    assembly.isValidRefName(refName),
+                  )
+                : undefined
+            } catch (e) {}
+            return (
+              <TableRow key={result.getId()}>
+                <TableCell component="th" scope="row">
+                  {result.getLabel()}
+                </TableCell>
+                <TableCell align="right">
+                  {loc
+                    ? assembleLocString({
+                        ...loc,
+                        refName:
+                          assembly.getCanonicalRefName(loc.refName) ||
+                          loc.refName,
+                      })
+                    : locString}
+                </TableCell>
+                <TableCell align="right">
+                  {getTrackName(result.getTrackId()) || 'N/A'}
+                </TableCell>
+                <TableCell align="right">
+                  <Button
+                    onClick={async () => {
+                      try {
+                        await handleClick(result)
+                      } catch (e) {
+                        console.error(e)
+                        session.notifyError(`${e}`, e)
                       }
-                    } catch (e) {
-                      console.error(e)
-                      session.notifyError(`${e}`, e)
-                    }
-                    handleClose()
-                  }}
-                  color="primary"
-                  variant="contained"
-                >
-                  Go
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+                      handleClose()
+                    }}
+                    color="primary"
+                    variant="contained"
+                  >
+                    Go
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
         </TableBody>
       </Table>
     </TableContainer>

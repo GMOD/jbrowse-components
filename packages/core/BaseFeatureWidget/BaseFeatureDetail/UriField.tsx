@@ -1,7 +1,7 @@
-import React from 'react'
-import FieldName from './FieldName'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+
 import BasicValue from './BasicValue'
+import FieldName from './FieldName'
 
 const useStyles = makeStyles()({
   field: {
@@ -21,7 +21,7 @@ export default function UriField({
 }) {
   const { classes } = useStyles()
   const { uri, baseUri = '' } = value
-  let href
+  let href: string
   try {
     href = new URL(uri, baseUri).href
   } catch (e) {

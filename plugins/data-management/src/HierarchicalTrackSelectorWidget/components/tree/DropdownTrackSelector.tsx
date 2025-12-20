@@ -1,15 +1,16 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { MenuItem } from '@jbrowse/core/ui/Menu'
-import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getSession } from '@jbrowse/core/util'
+import { useState } from 'react'
 
-// locals
-import { HierarchicalTrackSelectorModel } from '../../model'
-import TrackLabelMenu from './TrackLabelMenu'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { getSession } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+import { observer } from 'mobx-react'
+
+import TrackSelectorTrackMenu from './TrackSelectorTrackMenu'
+
+import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 const DropdownTrackSelector = observer(function ({
   model,
@@ -37,9 +38,8 @@ const DropdownTrackSelector = observer(function ({
           label: (
             <>
               <SanitizedHTML html={getTrackName(t, session)} />{' '}
-              <TrackLabelMenu
+              <TrackSelectorTrackMenu
                 id={t.trackId}
-                trackId={t.trackId}
                 model={model}
                 conf={t}
                 setOpen={setOpen}

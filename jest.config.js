@@ -34,6 +34,8 @@ module.exports = {
     '<rootDir>/config/jest/textEncoder.js',
     '<rootDir>/config/jest/fetchMock.js',
     '<rootDir>/config/jest/console.js',
+    '<rootDir>/config/jest/messagechannel.js',
+    '<rootDir>/config/jest/structuredClone.js',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
   testTimeout: 15000,

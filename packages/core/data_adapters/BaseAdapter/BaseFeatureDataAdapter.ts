@@ -1,15 +1,17 @@
-import { Observable, firstValueFrom, merge } from 'rxjs'
+import { type Observable, firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-// locals
 import { BaseAdapter } from './BaseAdapter'
-import { BaseOptions } from './BaseOptions'
-import { FeatureDensityStats } from './types'
+import {
+  aggregateQuantitativeStats,
+  calculateFeatureDensityStats,
+} from './stats'
 import { ObservableCreate } from '../../util/rxjs'
-import { checkAbortSignal, sum, max, min } from '../../util'
-import { Feature } from '../../util/simpleFeature'
-import { AugmentedRegion as Region } from '../../util/types'
-import { blankStats, rectifyStats, scoresToStats } from '../../util/stats'
+import { blankStats, scoresToStats } from '../../util/stats'
+
+import type { BaseOptions } from './BaseOptions'
+import type { Feature } from '../../util/simpleFeature'
+import type { AugmentedRegion as Region } from '../../util/types'
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
@@ -82,7 +84,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   public getFeaturesInRegion(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const hasData = await this.hasDataForRefName(region.refName, opts)
-      checkAbortSignal(opts.signal)
       if (!hasData) {
         observer.complete()
       } else {
@@ -94,10 +95,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   /**
    * Checks if the store has data for the given assembly and reference
    * sequence, and then gets the features in the region if it does.
-   *
-   * Currently this just calls getFeatureInRegion for each region. Adapters that
-   * are frequently called on multiple regions simultaneously may want to
-   * implement a more efficient custom version of this method.
    *
    * Currently this just calls getFeatureInRegion for each region. Adapters that
    * are frequently called on multiple regions simultaneously may want to
@@ -131,7 +128,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * features over a region, primarily used for quantitative tracks
    */
   public async getRegionQuantitativeStats(region: Region, opts?: BaseOptions) {
-    const feats = this.getFeatures(region, opts)
+    const feats = this.getFeatures(region, {
+      ...opts,
+      statsEstimationMode: true,
+    })
     return scoresToStats(region, feats)
   }
   /**
@@ -145,25 +145,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       return blankStats()
     }
-    const feats = await Promise.all(
+    const stats = await Promise.all(
       regions.map(region => this.getRegionQuantitativeStats(region, opts)),
     )
-
-    const scoreMax = max(feats.map(a => a.scoreMax))
-    const scoreMin = min(feats.map(a => a.scoreMin))
-    const scoreSum = sum(feats.map(a => a.scoreSum))
-    const scoreSumSquares = sum(feats.map(a => a.scoreSumSquares))
-    const featureCount = sum(feats.map(a => a.featureCount))
-    const basesCovered = sum(feats.map(a => a.basesCovered))
-
-    return rectifyStats({
-      scoreMin,
-      scoreMax,
-      featureCount,
-      basesCovered,
-      scoreSumSquares,
-      scoreSum,
-    })
+    return aggregateQuantitativeStats(stats)
   }
 
   /**
@@ -172,77 +157,26 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * information, and give them a hint to zoom in to see more. The default
    * implementation samples from the regions, downloads feature data with
    * getFeatures, and returns an object with the form \{featureDensity:number\}
+
+   * 1. alternative calculations for featureDensity
+   * 2. they can also return an object containing a byte size calculation with
+   * the format \{bytes:number, fetchSizeLimit:number\}
    *
-   * Derived classes can override this to return alternative calculations for
-   * featureDensity, or they can also return an object containing a byte size
-   * calculation with the format \{bytes:number, fetchSizeLimit:number\} where
-   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too much
-   * data' (e.g. CRAM and
-   * BAM may vary on what they think too much data is)
+   * In 2. the fetchSizeLimit is the adapter-defined limit for what it thinks
+   * is 'too much data' (e.g. CRAM and BAM may vary on what they think too much
+   * data is)
    */
   getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
-    let lastTime = +Date.now()
-    const statsFromInterval = async (length: number, expansionTime: number) => {
-      const { start, end } = region
-      const sampleCenter = start * 0.75 + end * 0.25
-
-      const features = await firstValueFrom(
-        this.getFeatures(
-          {
-            ...region,
-            start: Math.max(0, Math.round(sampleCenter - length / 2)),
-            end: Math.min(Math.round(sampleCenter + length / 2), end),
-          },
-          opts,
-        ).pipe(toArray()),
-      )
-
-      return maybeRecordStats(
-        length,
-        { featureDensity: features.length / length },
-        features.length,
-        expansionTime,
-      )
-    }
-
-    const maybeRecordStats = async (
-      interval: number,
-      stats: FeatureDensityStats,
-      statsSampleFeatures: number,
-      expansionTime: number,
-    ): Promise<FeatureDensityStats> => {
-      const refLen = region.end - region.start
-      if (statsSampleFeatures >= 70 || interval * 2 > refLen) {
-        return stats
-      } else if (expansionTime <= 5000) {
-        const currTime = +Date.now()
-        expansionTime += currTime - lastTime
-        lastTime = currTime
-        return statsFromInterval(interval * 2, expansionTime)
-      } else {
-        console.warn(
-          "Stats estimation reached timeout, or didn't get enough features",
-        )
-        return { featureDensity: Number.POSITIVE_INFINITY }
-      }
-    }
-
-    return statsFromInterval(1000, 0)
+    return calculateFeatureDensityStats(
+      region,
+      (region2, opts2) => this.getFeatures(region2, opts2),
+      opts,
+    )
   }
 
   /**
-   * Calculates the "feature density" of a set of regions. The primary purpose
-   * of this API is to alert the user if they are going to be downloading too
-   * much information, and give them a hint to zoom in to see more. The default
-   * implementation samples from the regions, downloads feature data with
-   * getFeatures, and returns an object with the form \{featureDensity:number\}
-   *
-   * Derived classes can override this to return alternative calculations for
-   * featureDensity, or they can also return an object containing a byte size
-   * calculation with the format \{bytes:number, fetchSizeLimit:number\} where
-   * fetchSizeLimit is the adapter-defined limit for what it thinks is 'too much
-   * data' (e.g. CRAM and
-   * BAM may vary on what they think too much data is)
+   * Calculates the "feature density" of a set of regions. Note: Currently only
+   * fetches from the first region because it is a heuristic
    */
   public async getMultiRegionFeatureDensityStats(
     regions: Region[],
@@ -251,6 +185,40 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       throw new Error('No regions supplied')
     }
-    return this.getRegionFeatureDensityStats(regions[0], opts)
+    return this.getRegionFeatureDensityStats(regions[0]!, opts)
+  }
+
+  async getSources(
+    regions: Region[],
+  ): Promise<{ name: string; color?: string; [key: string]: unknown }[]> {
+    const features = await firstValueFrom(
+      this.getFeaturesInMultipleRegions(regions).pipe(toArray()),
+    )
+    const sources = new Set<string>()
+    for (const f of features) {
+      sources.add(f.get('source'))
+    }
+    return [...sources].map(source => ({
+      name: source,
+    }))
+  }
+
+  /**
+   * Export data from the adapter in a specified format for given regions.
+   * Some adapters (like VcfAdapter) can efficiently export raw data directly
+   * from the file without parsing to features.
+   *
+   * @param regions - Regions to export data from
+   * @param formatType - The format to export to (e.g. 'vcf', 'sam', 'bedgraph')
+   * @param opts - Feature adapter options
+   * @returns Promise resolving to the exported data as a string, or undefined
+   *          if the adapter does not support direct export for this format
+   */
+  public async getExportData(
+    _regions: Region[],
+    _formatType: string,
+    _opts?: BaseOptions,
+  ): Promise<string | undefined> {
+    return undefined
   }
 }

@@ -1,27 +1,29 @@
-import React, { lazy } from 'react'
-import { cast, types, Instance } from 'mobx-state-tree'
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-  getConf,
-} from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import type React from 'react'
+
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
-// icons
-import PaletteIcon from '@mui/icons-material/Palette'
-import FilterListIcon from '@mui/icons-material/ClearAll'
+import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin'
+import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
+import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
+import { getReadDisplayLegendItems } from '../shared/legendUtils'
+import {
+  getColorSchemeMenuItem,
+  getFilterByMenuItem,
+} from '../shared/menuItems'
 
-// locals
-import { FilterModel, IFilter } from '../shared'
-import { ChainData } from '../shared/fetchChains'
-
-// async
-const FilterByTagDialog = lazy(() => import('../shared/FilterByTag'))
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  ExportSvgDisplayOptions,
+  LegendItem,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearReadArcsDisplay
@@ -31,6 +33,8 @@ const FilterByTagDialog = lazy(() => import('../shared/FilterByTag'))
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
  * - [FeatureDensityMixin](../featuredensitymixin)
+ * - [LinearReadArcsDisplaySettingsMixin](../linearreadarcdisplaysettingsmixin)
+ * - [RPCRenderingMixin](../rpcrenderingmixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -39,6 +43,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
+      LinearReadDisplayBaseMixin(),
+      LinearReadArcsDisplaySettingsMixin(),
+      RPCRenderingMixin(),
       types.model({
         /**
          * #property
@@ -48,158 +55,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-
         /**
          * #property
          */
-        filterBy: types.optional(FilterModel, {}),
-
-        /**
-         * #property
-         */
-        lineWidth: types.maybe(types.number),
-
-        /**
-         * #property
-         */
-        jitter: types.maybe(types.number),
-
-        /**
-         * #property
-         */
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        ),
-
-        /**
-         * #property
-         */
-        drawInter: true,
-
-        /**
-         * #property
-         */
-        drawLongRange: true,
+        showLegend: types.maybe(types.boolean),
       }),
     )
-    .volatile(() => ({
-      loading: false,
-      chainData: undefined as ChainData | undefined,
-      lastDrawnOffsetPx: undefined as number | undefined,
-      lastDrawnBpPerPx: 0,
-      ref: null as HTMLCanvasElement | null,
-    }))
     .actions(self => ({
       /**
        * #action
        */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
-      },
-      /**
-       * #action
-       */
-      setLastDrawnBpPerPx(n: number) {
-        self.lastDrawnBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
-
-      /**
-       * #action
-       */
-      reload() {
-        self.error = undefined
-      },
-      /**
-       * #action
-       * internal, a reference to a HTMLCanvas because we use a autorun to draw
-       * the canvas
-       */
-      setRef(ref: HTMLCanvasElement | null) {
-        self.ref = ref
-      },
-
-      /**
-       * #action
-       */
-      setColorScheme(s: { type: string }) {
-        self.colorBy = cast(s)
-      },
-
-      /**
-       * #action
-       */
-      setChainData(args: ChainData) {
-        self.chainData = args
-      },
-
-      /**
-       * #action
-       */
-      setDrawInter(f: boolean) {
-        self.drawInter = f
-      },
-
-      /**
-       * #action
-       */
-      setDrawLongRange(f: boolean) {
-        self.drawLongRange = f
-      },
-
-      /**
-       * #action
-       */
-      setFilterBy(filter: IFilter) {
-        self.filterBy = cast(filter)
-      },
-
-      /**
-       * #action
-       * thin, bold, extrabold, etc
-       */
-      setLineWidth(n: number) {
-        self.lineWidth = n
-      },
-
-      /**
-       * #action
-       * jitter val, helpful to jitter the x direction so you see better
-       * evidence when e.g. 100 long reads map to same x position
-       */
-      setJitter(n: number) {
-        self.jitter = n
+      setShowLegend(s: boolean) {
+        self.showLegend = s
       },
     }))
-
     .views(self => ({
       /**
-       * #getter
+       * #method
+       * Returns legend items based on current colorBy setting
        */
-      get drawn() {
-        return self.lastDrawnOffsetPx !== undefined
-      },
-      /**
-       * #getter
-       */
-      get lineWidthSetting() {
-        return self.lineWidth ?? getConf(self, 'lineWidth')
-      },
-
-      /**
-       * #getter
-       */
-      get jitterVal(): number {
-        return self.jitter ?? getConf(self, 'jitter')
+      legendItems(): LegendItem[] {
+        return getReadDisplayLegendItems(self.colorBy)
       },
     }))
     .views(self => {
@@ -210,45 +86,40 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       return {
         /**
          * #method
-         * only used to tell system it's ready for export
          */
         renderProps() {
           return {
             ...superRenderProps(),
-            notReady: !self.chainData,
+            notReady: false,
           }
         },
-
         /**
          * #method
          */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  FilterByTagDialog,
-                  { model: self, handleClose },
-                ])
-              },
-            },
+            getFilterByMenuItem(self),
             {
               label: 'Line width',
               subMenu: [
                 {
                   label: 'Thin',
-                  onClick: () => self.setLineWidth(1),
+                  onClick: () => {
+                    self.setLineWidth(1)
+                  },
                 },
                 {
                   label: 'Bold',
-                  onClick: () => self.setLineWidth(2),
+                  onClick: () => {
+                    self.setLineWidth(2)
+                  },
                 },
                 {
                   label: 'Extra bold',
-                  onClick: () => self.setLineWidth(5),
+                  onClick: () => {
+                    self.setLineWidth(5)
+                  },
                 },
               ],
             },
@@ -259,81 +130,82 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   type: 'checkbox',
                   checked: self.jitterVal === 0,
                   label: 'None',
-                  onClick: () => self.setJitter(0),
+                  onClick: () => {
+                    self.setJitter(0)
+                  },
                 },
                 {
                   type: 'checkbox',
                   checked: self.jitterVal === 2,
                   label: 'Small',
-                  onClick: () => self.setJitter(2),
+                  onClick: () => {
+                    self.setJitter(2)
+                  },
                 },
                 {
                   type: 'checkbox',
                   checked: self.jitterVal === 10,
                   label: 'Large',
-                  onClick: () => self.setJitter(10),
+                  onClick: () => {
+                    self.setJitter(10)
+                  },
                 },
               ],
             },
             {
-              label: 'Draw inter-region vertical lines',
-              type: 'checkbox',
-              checked: self.drawInter,
-              onClick: () => self.setDrawInter(!self.drawInter),
-            },
-            {
-              label: 'Draw long range connections',
-              type: 'checkbox',
-              checked: self.drawLongRange,
-              onClick: () => self.setDrawLongRange(!self.drawLongRange),
-            },
-            {
-              label: 'Color scheme',
-              icon: PaletteIcon,
+              label: 'Show...',
+              type: 'subMenu',
               subMenu: [
                 {
-                  label: 'Insert size ± 3σ and orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'insertSizeAndOrientation' }),
+                  label:
+                    'Inter-chromosomal connections (purple vertical lines)',
+                  type: 'checkbox',
+                  checked: self.drawInter,
+                  onClick: () => {
+                    self.setDrawInter(!self.drawInter)
+                  },
                 },
                 {
-                  label: 'Insert size ± 3σ',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
-                },
-                {
-                  label: 'Orientation',
-                  onClick: () => self.setColorScheme({ type: 'orientation' }),
-                },
-                {
-                  label: 'Insert size gradient',
-                  onClick: () => self.setColorScheme({ type: 'gradient' }),
+                  label: 'Long range connections (red vertical lines)',
+                  type: 'checkbox',
+                  checked: self.drawLongRange,
+                  onClick: () => {
+                    self.setDrawLongRange(!self.drawLongRange)
+                  },
                 },
               ],
+            },
+            getColorSchemeMenuItem(self),
+            {
+              label: 'Show legend',
+              icon: FormatListBulletedIcon,
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
             },
           ]
         },
+
+        /**
+         * #method
+         */
+        async renderSvg(
+          opts: ExportSvgDisplayOptions,
+        ): Promise<React.ReactNode> {
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self as LinearReadArcsDisplayModel, opts)
+        },
       }
     })
-    .views(self => ({
-      /**
-       * #method
-       */
-      async renderSvg(opts: {
-        rasterizeLayers?: boolean
-      }): Promise<React.ReactNode> {
-        const { renderSvg } = await import('../shared/renderSvg')
-        const { drawFeats } = await import('./drawFeats')
-        return renderSvg(self as LinearReadArcsDisplayModel, opts, drawFeats)
-      },
-    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('../shared/afterAttach')
-            const { drawFeats } = await import('./drawFeats')
-            doAfterAttach(self, drawFeats)
+            const { doAfterAttachRPC } = await import('./afterAttachRPC')
+            doAfterAttachRPC(self)
           } catch (e) {
             console.error(e)
             self.setError(e)
@@ -341,6 +213,28 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        lineWidth,
+        jitter,
+        drawInter,
+        drawLongRange,
+        showLegend,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(lineWidth !== undefined ? { lineWidth } : {}),
+        ...(jitter !== undefined ? { jitter } : {}),
+        ...(!drawInter ? { drawInter } : {}),
+        ...(!drawLongRange ? { drawLongRange } : {}),
+        ...(showLegend !== undefined ? { showLegend } : {}),
+      } as typeof snap
+    })
 }
 
 export type LinearReadArcsDisplayStateModel = ReturnType<

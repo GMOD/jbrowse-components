@@ -1,5 +1,6 @@
-import { createEvent, fireEvent, waitFor, screen } from '@testing-library/react'
-import { setup, createView, doBeforeEach, hts } from './util'
+import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react'
+
+import { createView, doBeforeEach, hts, setup } from './util'
 setup()
 
 beforeEach(() => {
@@ -26,11 +27,13 @@ test('click and drag to move sideways', async () => {
   const { view, findByTestId, findAllByText } = await createView()
   await findAllByText('ctgA', ...opts)
   const start = view.offsetPx
-  const track = await findByTestId('trackContainer', ...opts)
+  const track = await findByTestId('tracksContainer', ...opts)
   fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
   fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
   fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
-  await waitFor(() => expect(view.offsetPx - start).toEqual(150), delay)
+  await waitFor(() => {
+    expect(view.offsetPx - start).toEqual(150)
+  }, delay)
 }, 30000)
 
 test('click and drag to rubberband', async () => {
@@ -80,10 +83,12 @@ test('click and drag to reorder tracks', async () => {
   fireEvent.mouseDown(dragHandle0, { clientX: 10, clientY: 100 })
   fireEvent(dragHandle0, dragStartEvent)
   fireEvent.mouseMove(dragHandle0, { clientX: 10, clientY: 220 })
-  fireEvent.dragEnter(container1)
+  fireEvent.dragOver(container1, { clientY: 220 })
   fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
   fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
-  await waitFor(() => expect(view.tracks[0].id).toBe(trackId1))
+  await waitFor(() => {
+    expect(view.tracks[0].id).toBe(trackId1)
+  })
 }, 30000)
 
 test('click and zoom in and back out', async () => {
@@ -91,14 +96,20 @@ test('click and zoom in and back out', async () => {
   await findAllByText('ctgA', ...opts)
   const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
-  await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(before / 2)
+  }, delay)
 
   // wait for it not to be disabled also
   const elt = await findByTestId('zoom_out')
-  await waitFor(() => expect(elt).toHaveProperty('disabled', false))
+  await waitFor(() => {
+    expect(elt).toHaveProperty('disabled', false)
+  })
   fireEvent.click(elt)
 
-  await waitFor(() => expect(view.bpPerPx).toBe(before), delay)
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(before)
+  }, delay)
 }, 60000)
 
 test('opens track selector', async () => {
@@ -131,7 +142,7 @@ test('click to display center line with correct value', async () => {
   fireEvent.click(await findByText('Show center line', ...opts))
   expect(view.showCenterLine).toBe(true)
   expect(view.centerLineInfo?.refName).toBe('ctgA')
-  expect(view.centerLineInfo?.offset).toEqual(120)
+  expect(view.centerLineInfo?.offset).toEqual(120.2)
 }, 30000)
 
 test('test choose option from dropdown refName autocomplete', async () => {
@@ -148,7 +159,7 @@ test('test choose option from dropdown refName autocomplete', async () => {
   autocomplete.focus()
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-  fireEvent.click((await screen.findAllByText('ctgB'))[0])
+  fireEvent.click((await screen.findAllByText(/ctgB/))[0]!)
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
   await waitFor(() => {

@@ -3,14 +3,22 @@ id: gridbookmarkwidgetmodel
 title: GridBookmarkWidgetModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/grid-bookmark/src/GridBookmarkWidget/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/grid-bookmark/src/GridBookmarkWidget/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/grid-bookmark/src/GridBookmarkWidget/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/GridBookmarkWidgetModel.md)
+
+## Docs
 
 ### GridBookmarkWidgetModel - Properties
 
@@ -168,18 +176,18 @@ setSelectedBookmarks: (bookmarks: IExtendedLabeledRegionModel[]) => void
 setBookmarkedRegions: (regions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>) => void
 ```
 
-#### action: setHighlightToggle
+#### action: setBookmarkHighlightsVisible
 
 ```js
 // type signature
-setHighlightToggle: (toggle: boolean) => void
+setBookmarkHighlightsVisible: (arg: boolean) => void
 ```
 
-#### action: setLabelToggle
+#### action: setBookmarkLabelsVisible
 
 ```js
 // type signature
-setLabelToggle: (toggle: boolean) => void
+setBookmarkLabelsVisible: (arg: boolean) => void
 ```
 
 #### action: clearAllBookmarks

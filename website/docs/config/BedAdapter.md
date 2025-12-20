@@ -6,9 +6,28 @@ title: BedAdapter
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-### Source file
+Also note: this document represents the config API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/bed/src/BedAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedAdapter/configSchema.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedAdapter/configSchema.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedAdapter.md)
+
+## Docs
+
+### BedAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config:
+
+```json
+{
+  "type": "BedAdapter",
+  "uri": "yourfile.bed"
+}
+```
 
 ### BedAdapter - Slots
 
@@ -17,7 +36,11 @@ source code. See [Config guide](/docs/config_guide) for more info
 ```js
 bedLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
+      description: 'path to bed file, also allows gzipped bed',
+      defaultValue: {
+        uri: '/path/to/my.bed.gz',
+        locationType: 'UriLocation',
+      },
     }
 ```
 

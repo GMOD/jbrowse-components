@@ -1,13 +1,17 @@
-import { types, Instance } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ElementId } from '@jbrowse/core/util/types/mst'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { getSession } from '@jbrowse/core/util'
 import {
+  UNSUPPORTED,
+  getFileName,
   guessAdapter,
   guessTrackType,
-  getFileName,
-  UNSUPPORTED,
 } from '@jbrowse/core/util/tracks'
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import { types } from '@jbrowse/mobx-state-tree'
+import deepmerge from 'deepmerge'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { FileLocation } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function isAbsoluteUrl(url = '') {
   try {
@@ -17,6 +21,7 @@ function isAbsoluteUrl(url = '') {
     return url.startsWith('/')
   }
 }
+
 interface IndexingAttr {
   attributes: string[]
   exclude: string[]
@@ -56,8 +61,12 @@ export default function f(pluginManager: PluginManager) {
       adapterHint: '',
       textIndexTrack: true,
       textIndexingConf: undefined as IndexingAttr | undefined,
+      mixinData: {},
     }))
     .actions(self => ({
+      setMixinData(arg: Record<string, unknown>) {
+        self.mixinData = arg
+      },
       /**
        * #action
        */
@@ -87,6 +96,8 @@ export default function f(pluginManager: PluginManager) {
        */
       setTrackData(obj: FileLocation) {
         self.trackData = obj
+        // Clear adapter hint when track data changes to force re-evaluation
+        self.adapterHint = ''
       },
       /**
        * #action
@@ -225,11 +236,17 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get trackAdapterType() {
+        return this.trackAdapter?.type
+      },
+      /**
+       * #getter
+       */
       get trackType() {
         return (
           self.altTrackType ||
-          (this.trackAdapter
-            ? guessTrackType(this.trackAdapter.type, self)
+          (this.trackAdapterType
+            ? guessTrackType(this.trackAdapterType, self)
             : '')
         )
       },
@@ -238,9 +255,34 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      getTrackConfig(timestamp: number) {
+        const session = getSession(self)
+        const assemblyInstance = session.assemblyManager.get(self.assembly)
+
+        return assemblyInstance &&
+          self.trackAdapter &&
+          self.trackAdapter.type !== 'UNKNOWN'
+          ? deepmerge(
+              {
+                trackId: [
+                  `${self.trackName.toLowerCase().replaceAll(' ', '_')}-${timestamp}`,
+                  session.adminMode ? '' : '-sessionTrack',
+                ].join(''),
+                type: self.trackType,
+                name: self.trackName,
+                assemblyNames: [self.assembly],
+                adapter: self.trackAdapter,
+              },
+              self.mixinData,
+            )
+          : undefined
+      },
+      /**
+       * #getter
+       */
       get warningMessage() {
         if (self.isFtp) {
-          return `Warning: JBrowse cannot access files using the ftp protocol`
+          return 'Warning: JBrowse cannot access files using the ftp protocol'
         } else if (self.isRelativeUrl) {
           return `Warning: one or more of your files do not provide the protocol e.g.
           https://, please provide an absolute URL unless you are sure a
@@ -250,8 +292,9 @@ export default function f(pluginManager: PluginManager) {
           resources from JBrowse when it is running on https. Please use an
           https URL for your track, or access the JBrowse app from the http
           protocol`
+        } else {
+          return ''
         }
-        return ''
       },
     }))
 }

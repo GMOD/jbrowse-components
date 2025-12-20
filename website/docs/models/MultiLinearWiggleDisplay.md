@@ -3,14 +3,22 @@ id: multilinearwiggledisplay
 title: MultiLinearWiggleDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/wiggle/src/MultiLinearWiggleDisplay/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/models/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/MultiLinearWiggleDisplay.md)
+
+## Docs
 
 extends
 
@@ -36,6 +44,15 @@ IOptionalIType<IType<Source[], Source[], Source[]>, [undefined]>
 layout: types.optional(types.frozen<Source[]>(), [])
 ```
 
+#### property: showSidebar
+
+```js
+// type signature
+true
+// code
+showSidebar: true
+```
+
 ### MultiLinearWiggleDisplay - Getters
 
 #### getter: featureUnderMouse
@@ -49,7 +66,7 @@ Feature
 
 ```js
 // type
-React.FC
+React.ComponentType<any>
 ```
 
 #### getter: rendererTypeName
@@ -59,7 +76,7 @@ React.FC
 string
 ```
 
-#### getter: needsScalebar
+#### getter: graphType
 
 ```js
 // type
@@ -110,11 +127,25 @@ everything else
 any
 ```
 
+#### getter: sourcesWithoutLayout
+
+```js
+// type
+{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
+```
+
 #### getter: sources
 
 ```js
 // type
-{ color: string; name: string; group?: string; }[]
+{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
+```
+
+#### getter: quantitativeStatsReady
+
+```js
+// type
+boolean
 ```
 
 #### getter: rowHeight
@@ -152,6 +183,15 @@ any
 string[]
 ```
 
+#### getter: quantitativeStatsRelevantToCurrentZoom
+
+unused currently
+
+```js
+// type
+boolean
+```
+
 #### getter: hasResolution
 
 ```js
@@ -166,20 +206,27 @@ boolean
 boolean
 ```
 
-#### getter: fillSetting
+### MultiLinearWiggleDisplay - Methods
+
+#### method: adapterProps
 
 ```js
-// type
-;1 | 0 | 2
+// type signature
+adapterProps: () => any
 ```
-
-### MultiLinearWiggleDisplay - Methods
 
 #### method: renderProps
 
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { displayModel: { id: string; type: "MultiLinearWiggleDisplay"; rpcDriverName: string; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<...>> & IStateTreeNode<...>; ... 16 more ...; showSidebar: boolean; } & ... 36 more ... & IStateTreeNode<...>; onMo...
 ```
 
 #### method: trackMenuItems
@@ -190,6 +237,20 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```
 
 ### MultiLinearWiggleDisplay - Actions
+
+#### action: setShowSidebar
+
+```js
+// type signature
+setShowSidebar: (arg: boolean) => void
+```
+
+#### action: setSourcesLoading
+
+```js
+// type signature
+setSourcesLoading: (str: string) => void
+```
 
 #### action: setLayout
 

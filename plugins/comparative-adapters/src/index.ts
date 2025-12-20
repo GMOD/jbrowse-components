@@ -1,20 +1,18 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation } from '@jbrowse/core/util/types'
 
-import PAFAdapterF from './PAFAdapter'
-import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter'
+import BlastTabularAdapter from './BlastTabularAdapter'
+import ChainAdapterF from './ChainAdapter'
+import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent'
+import DeltaAdapterF from './DeltaAdapter'
+import GuessAdapterF from './GuessAdapter'
+import MCScanAddTrackComponentF from './MCScanAddTrackComponent'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
 import MashMapAdapterF from './MashMapAdapter'
-import DeltaAdapterF from './DeltaAdapter'
-import ChainAdapterF from './ChainAdapter'
+import PAFAdapterF from './PAFAdapter'
+import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter'
 
-import {
-  getFileName,
-  AdapterGuesser,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class ComparativeAdaptersPlugin extends Plugin {
   name = 'ComparativeAdaptersPlugin'
@@ -27,36 +25,9 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     MCScanAnchorsAdapterF(pluginManager)
     MCScanSimpleAnchorsAdapterF(pluginManager)
     MashMapAdapterF(pluginManager)
-
-    pluginManager.addToExtensionPoint(
-      'Core-guessAdapterForLocation',
-      (adapterGuesser: AdapterGuesser) => {
-        return (
-          file: FileLocation,
-          index?: FileLocation,
-          adapterHint?: string,
-        ) => {
-          const regexGuess = /\.paf/i
-          const adapterName = 'PAFAdapter'
-          const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              pafLocation: file,
-            }
-          }
-          return adapterGuesser(file, index, adapterHint)
-        }
-      },
-    )
-    pluginManager.addToExtensionPoint(
-      'Core-guessTrackTypeForLocation',
-      (trackTypeGuesser: TrackTypeGuesser) => {
-        return (adapterName: string) =>
-          adapterName === 'PAFAdapter'
-            ? 'SyntenyTrack'
-            : trackTypeGuesser(adapterName)
-      },
-    )
+    BlastTabularAdapter(pluginManager)
+    ComparativeAddTrackComponentF(pluginManager)
+    MCScanAddTrackComponentF(pluginManager)
+    GuessAdapterF(pluginManager)
   }
 }

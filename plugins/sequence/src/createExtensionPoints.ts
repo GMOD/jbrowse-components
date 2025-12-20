@@ -1,11 +1,11 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation } from '@jbrowse/core/util/types'
-import {
-  makeIndex,
-  getFileName,
+import { getFileName, makeIndex } from '@jbrowse/core/util/tracks'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
   AdapterGuesser,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function ExtensionPointsF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -25,7 +25,8 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
         }
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj
-        } else if (adapterHint === adapterName) {
+        }
+        if (adapterHint === adapterName) {
           return obj
         }
         return adapterGuesser(file, index, adapterHint)
@@ -63,7 +64,8 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
 
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj
-        } else if (adapterHint === adapterName) {
+        }
+        if (adapterHint === adapterName) {
           return obj
         }
         return adapterGuesser(file, index, adapterHint)
@@ -101,7 +103,8 @@ export default function ExtensionPointsF(pluginManager: PluginManager) {
 
         if (regexGuess.test(fileName) && !adapterHint) {
           return obj
-        } else if (adapterHint === adapterName) {
+        }
+        if (adapterHint === adapterName) {
           return obj
         }
         return adapterGuesser(file, index, adapterHint)

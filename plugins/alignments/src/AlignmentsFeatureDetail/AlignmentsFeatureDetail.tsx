@@ -1,35 +1,34 @@
-import React from 'react'
+import { lazy } from 'react'
+
+import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import clone from 'clone'
-import { FeatureDetails } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
-// locals
-import { getTag } from './util'
-import { tags } from './tagInfo'
-import { AlignmentFeatureWidgetModel } from './stateModelFactory'
-
-// local components
-import SuppAlignments from './SuppAlignments'
 import Flags from './Flags'
-import PairLink from './PairLink'
 import Formatter from './Formatter'
+import PairLink from './PairLink'
+import { tags } from './tagInfo'
+import { getTag } from './util'
 
-const omit = ['clipPos', 'flags']
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
-const AlignmentsFeatureDetails = observer(function (props: {
+// lazies
+const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
+const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))
+
+const FeatDefined = observer(function (props: {
+  feat: SimpleFeatureSerialized
   model: AlignmentFeatureWidgetModel
 }) {
-  const { model } = props
-  const feat = clone(model.featureData)
-  const SA = getTag('SA', feat) as string
+  const { model, feat } = props
+  const flags = feat.flags as number | null
+  const SA = getTag('SA', feat) as string | undefined
   return (
     <Paper data-testid="alignment-side-drawer">
       <FeatureDetails
         {...props}
-        omit={omit}
-        // @ts-expect-error
-        descriptions={{ ...tags, tags: tags }}
+        descriptions={{ tags }}
         feature={feat}
         formatter={(value, key) =>
           key === 'next_segment_position' ? (
@@ -39,9 +38,36 @@ const AlignmentsFeatureDetails = observer(function (props: {
           )
         }
       />
-      {SA ? <SuppAlignments model={model} tag={SA} feature={feat} /> : null}
-      {feat.flags !== undefined ? <Flags feature={feat} {...props} /> : null}
+
+      {SA !== undefined ? (
+        <SupplementaryAlignments model={model} tag={SA} feature={feat} />
+      ) : null}
+      {flags != null ? (
+        <>
+          {flags & 1 ? (
+            <LinkedPairedAlignments model={model} feature={feat} />
+          ) : null}
+
+          <Flags flags={flags} {...props} />
+        </>
+      ) : null}
     </Paper>
+  )
+})
+
+const AlignmentsFeatureDetails = observer(function (props: {
+  model: AlignmentFeatureWidgetModel
+}) {
+  const { model } = props
+  const { featureData } = model
+  const feat = structuredClone(featureData)
+  return feat ? (
+    <FeatDefined feat={feat} {...props} />
+  ) : (
+    <div>
+      No feature loaded, may not be available after page refresh because it was
+      too large for localStorage
+    </div>
   )
 })
 

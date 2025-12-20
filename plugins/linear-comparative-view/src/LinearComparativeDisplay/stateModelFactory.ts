@@ -1,19 +1,22 @@
 import {
-  readConfObject,
   ConfigurationReference,
-  AnyConfigurationSchemaType,
+  readConfObject,
 } from '@jbrowse/core/configuration'
-import { types, getSnapshot, Instance } from 'mobx-state-tree'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   dedupe,
-  Feature,
   getContainingView,
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { LinearComparativeViewModel } from '../LinearComparativeView/model'
+import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+
+import type { LinearComparativeViewModel } from '../LinearComparativeView/model'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearComparativeDisplay
@@ -34,41 +37,61 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        height: 100,
       }),
     )
-    .volatile((/* self */) => ({
-      renderInProgress: undefined as AbortController | undefined,
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
+      renderInProgress: undefined as string | undefined,
+      /**
+       * #volatile
+       */
       features: undefined as Feature[] | undefined,
+      /**
+       * #volatile
+       */
       message: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      loadingStatus: undefined as string | undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get level() {
+        return getParent<{ height: number; level: number }>(self, 4).level
+      },
+      /**
+       * #getter
+       */
+      get height() {
+        return getParent<{ height: number; level: number }>(self, 4).height
+      },
       /**
        * #getter
        */
       renderProps() {
         return {
           rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           highResolutionScaling: 2,
         }
       },
     }))
     .actions(self => {
-      let renderInProgress: undefined | AbortController
+      let stopToken: undefined | string
 
       return {
         /**
          * #action
          * controlled by a reaction
          */
-        setLoading(abortController: AbortController) {
+        setLoading(newStopToken: string) {
           self.message = undefined
           self.error = undefined
-          renderInProgress = abortController
+          stopToken = newStopToken
         },
 
         /**
@@ -76,12 +99,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * controlled by a reaction
          */
         setMessage(messageText: string) {
-          if (renderInProgress && !renderInProgress.signal.aborted) {
-            renderInProgress.abort()
-          }
           self.message = messageText
           self.error = undefined
-          renderInProgress = undefined
+          stopToken = undefined
+        },
+
+        /**
+         * #action
+         * controlled by a reaction
+         */
+        setLoadingStatus(messageText: string) {
+          self.loadingStatus = messageText
         },
 
         /**
@@ -95,8 +123,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const { features } = args
           const existingFeatures = self.features || []
 
-          const featIds = new Set(existingFeatures.map(f => f.id()) || [])
-          const newFeatIds = new Set(features?.map(f => f.id()) || [])
+          const featIds = new Set(existingFeatures.map(f => f.id()))
+          const newFeatIds = new Set(features.map(f => f.id()))
 
           let foundNewFeatureNotInExistingMap = false
           let foundExistingFeatureNotInNewMap = false
@@ -115,7 +143,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
           self.message = undefined
           self.error = undefined
-          renderInProgress = undefined
+          stopToken = undefined
 
           if (
             foundNewFeatureNotInExistingMap ||
@@ -132,13 +160,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         setError(error: unknown) {
           console.error(error)
-          if (renderInProgress && !renderInProgress.signal.aborted) {
-            renderInProgress.abort()
+          if (stopToken !== undefined) {
+            stopStopToken(stopToken)
           }
           // the rendering failed for some reason
           self.message = undefined
           self.error = error
-          renderInProgress = undefined
+          stopToken = undefined
         },
       }
     })
@@ -165,20 +193,22 @@ function renderBlockData(self: LinearComparativeDisplay) {
   const { rpcManager } = getSession(self)
   const display = self
 
-  // Alternative to readConfObject(config) is below used because renderProps is
-  // something under our control.  Compare to serverSideRenderedBlock
+  // Alternative to readConfObject(config) is below used because
+  // renderProps is something under our control.  Compare to
+  // serverSideRenderedBlock
   readConfObject(self.configuration)
 
-  const { adapterConfig } = self
+  const { level, adapterConfig } = self
   const parent = getContainingView(self) as LinearComparativeViewModel
   const sessionId = getRpcSessionId(self)
   getSnapshot(parent)
-
   return parent.initialized
     ? {
         rpcManager,
         renderProps: {
-          ...display.renderProps(),
+          ...(display.renderProps() as Record<string, unknown>),
+          model: display,
+          level,
           view: parent,
           adapterConfig,
           sessionId,
@@ -195,17 +225,20 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   }
 
   const { rpcManager, renderProps } = props
-  const { adapterConfig } = renderProps
-  const view0 = renderProps.view.views[0]
-
-  const features = (await rpcManager.call('getFeats', 'CoreGetFeatures', {
-    regions: view0.staticBlocks.contentBlocks,
-    sessionId: 'getFeats',
-    adapterConfig,
-  })) as Feature[]
-
+  const { model, sessionId, adapterConfig, level } = renderProps
+  const view = renderProps.view.views[level]!
   return {
-    features: dedupe(features, f => f.id()),
+    features: dedupe(
+      (await rpcManager.call('getFeats', 'CoreGetFeatures', {
+        regions: view.staticBlocks.contentBlocks,
+        sessionId,
+        adapterConfig,
+        statusCallback: (arg: string) => {
+          model.setLoadingStatus(arg)
+        },
+      })) as Feature[],
+      f => f.id(),
+    ),
   }
 }
 

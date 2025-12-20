@@ -3,14 +3,22 @@ id: basetrackmodel
 title: BaseTrackModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[packages/core/pluggableElementTypes/models/BaseTrackModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseTrackModel.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseTrackModel.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseTrackModel.md)
+
+## Docs
 
 these MST models only exist for tracks that are _shown_. they should contain
 only UI state for the track, and have a reference to a track configuration. note
@@ -54,6 +62,15 @@ false
 minimized: false
 ```
 
+#### property: pinned
+
+```js
+// type signature
+false
+// code
+pinned: false
+```
+
 #### property: displays
 
 ```js
@@ -88,6 +105,13 @@ any
 any
 ```
 
+#### getter: adapterConfig
+
+```js
+// type
+any
+```
+
 #### getter: adapterType
 
 ```js
@@ -106,7 +130,7 @@ MenuItem[]
 
 ```js
 // type
-boolean | ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)
+boolean | ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)
 ```
 
 ### BaseTrackModel - Methods
@@ -115,10 +139,17 @@ boolean | ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: str
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
 ### BaseTrackModel - Actions
+
+#### action: setPinned
+
+```js
+// type signature
+setPinned: (flag: boolean) => void
+```
 
 #### action: setMinimized
 
@@ -145,5 +176,5 @@ hideDisplay: (displayId: string) => number
 
 ```js
 // type signature
-replaceDisplay: (oldId: string, newId: string, initialSnapshot?: {}) => void
+replaceDisplay: (oldDisplayId: string, newDisplayId: string, initialSnapshot?: {}) => void
 ```

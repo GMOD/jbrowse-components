@@ -1,35 +1,24 @@
-import {
-  getSession,
-  getContainingTrack,
-  getContainingView,
-  Feature,
-} from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { when } from 'mobx'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 type LSV = LinearSyntenyViewModel
 
 const { parseCigar } = MismatchParser
 
-function f(n: number) {
-  return Math.floor(n)
-}
 function findPosInCigar(cigar: string[], startX: number) {
   let featX = 0
   let mateX = 0
   for (let i = 0; i < cigar.length; i++) {
-    const len = +cigar[i]
-    const op = cigar[i + 1]
+    const len = +cigar[i]!
+    const op = cigar[i + 1]!
     const min = Math.min(len, startX - featX)
 
     if (featX >= startX) {
       break
-    } else if (op === 'I') {
+    }
+    if (op === 'I') {
       mateX += len
     } else if (op === 'D') {
       featX += min
@@ -38,28 +27,35 @@ function findPosInCigar(cigar: string[], startX: number) {
       featX += min
     }
   }
-  return [featX, mateX]
+  return [featX, mateX] as const
+}
+
+export interface SimpleRegion {
+  refName: string
+  start: number
+  end: number
 }
 
 export async function navToSynteny({
   feature,
   windowSize: ws,
-  model,
+  session,
+  trackId,
+  region,
   horizontallyFlip,
 }: {
   windowSize: number
+  trackId: string
   horizontallyFlip: boolean
   feature: Feature
-  model: IAnyStateTreeNode
+  session: AbstractSessionModel
+  region?: SimpleRegion
 }) {
-  const session = getSession(model)
-  const track = getContainingTrack(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const reg = view.dynamicBlocks.contentBlocks[0]
   const cigar = feature.get('CIGAR')
   const strand = feature.get('strand')
-  const regStart = reg.start
-  const regEnd = reg.end
+
+  const featRef = feature.get('refName')
+  const featAsm = feature.get('assemblyName')
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
   const mate = feature.get('mate')
@@ -67,15 +63,15 @@ export async function navToSynteny({
   const mateEnd = mate.end
   const mateAsm = mate.assemblyName
   const mateRef = mate.refName
-  const featAsm = reg.assemblyName
-  const featRef = reg.refName
 
   let rMateStart: number
   let rMateEnd: number
   let rFeatStart: number
   let rFeatEnd: number
 
-  if (cigar) {
+  if (region && cigar) {
+    const regStart = region.start
+    const regEnd = region.end
     const p = parseCigar(cigar)
     const [fStartX, mStartX] = findPosInCigar(p, regStart - featStart)
     const [fEndX, mEndX] = findPosInCigar(p, regEnd - featStart)
@@ -92,20 +88,30 @@ export async function navToSynteny({
     rMateStart = mateStart
     rMateEnd = mateEnd
   }
-  const trackId = track.configuration.trackId
-
-  const view2 = session.addView('LinearSyntenyView', {
+  const l1 = `${featRef}:${Math.floor(rFeatStart - ws)}-${Math.floor(rFeatEnd + ws)}`
+  const m1 = Math.min(rMateStart, rMateEnd)
+  const m2 = Math.max(rMateStart, rMateEnd)
+  const l2 = `${mateRef}:${Math.floor(m1 - ws)}-${Math.floor(m2 + ws)}${
+    horizontallyFlip ? '[rev]' : ''
+  }`
+  session.addView('LinearSyntenyView', {
     type: 'LinearSyntenyView',
     views: [
       {
-        id: `${Math.random()}`,
         type: 'LinearGenomeView',
         hideHeader: true,
+        init: {
+          assembly: featAsm,
+          loc: l1,
+        },
       },
       {
-        id: `${Math.random()}`,
         type: 'LinearGenomeView',
         hideHeader: true,
+        init: {
+          assembly: mateAsm,
+          loc: l2,
+        },
       },
     ],
     tracks: [
@@ -121,15 +127,4 @@ export async function navToSynteny({
       },
     ],
   }) as LSV
-  const l1 = `${featRef}:${f(rFeatStart - ws)}-${f(rFeatEnd + ws)}`
-  const m1 = Math.min(rMateStart, rMateEnd)
-  const m2 = Math.max(rMateStart, rMateEnd)
-  const l2 = `${mateRef}:${f(m1 - ws)}-${f(m2 + ws)}${
-    horizontallyFlip ? '[rev]' : ''
-  }`
-  await when(() => view2.width !== undefined)
-  await Promise.all([
-    view2.views[0].navToLocString(l1, featAsm),
-    view2.views[1].navToLocString(l2, mateAsm),
-  ])
 }

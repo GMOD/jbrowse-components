@@ -1,25 +1,59 @@
-import React from 'react'
-import {
-  SvgIconProps,
-  IconButton,
-  IconButtonProps as IconButtonPropsType,
-} from '@mui/material'
-import { observer } from 'mobx-react'
-import { AbstractSessionModel, getSession } from '@jbrowse/core/util'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  bindTrigger,
-  bindPopover,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
-
-// icons
-import MenuIcon from '@mui/icons-material/Menu'
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
-import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import { bindPopover, bindTrigger, usePopupState } from '@jbrowse/core/ui/hooks'
+import { getSession } from '@jbrowse/core/util'
+import { nanoid } from '@jbrowse/core/util/nanoid'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import MenuIcon from '@mui/icons-material/Menu'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import { IconButton } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import { useDockview } from './DockviewContext'
+
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type {
+  IconButtonProps as IconButtonPropsType,
+  SvgIconProps,
+} from '@mui/material'
+
+function renameIds(obj: Record<string, unknown>): Record<string, unknown> {
+  const idMap = new Map<string, string>()
+
+  function transformIds(value: unknown): unknown {
+    if (value === null || value === undefined) {
+      return value
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(transformIds)
+    }
+
+    if (typeof value === 'object') {
+      const result: Record<string, unknown> = {}
+      for (const [key, val] of Object.entries(value)) {
+        if (key === 'id' && typeof val === 'string') {
+          if (!idMap.has(val)) {
+            idMap.set(val, nanoid())
+          }
+          result[key] = `${val}-${idMap.get(val)}`
+        } else {
+          result[key] = transformIds(val)
+        }
+      }
+      return result
+    }
+
+    return value
+  }
+
+  return transformIds(obj) as Record<string, unknown>
+}
 
 const ViewMenu = observer(function ({
   model,
@@ -30,25 +64,26 @@ const ViewMenu = observer(function ({
   IconButtonProps?: IconButtonPropsType
   IconProps: SvgIconProps
 }) {
-  const { menuItems } = model
   const session = getSession(model) as AbstractSessionModel & {
     moveViewDown: (arg: string) => void
     moveViewUp: (arg: string) => void
     moveViewToBottom: (arg: string) => void
     moveViewToTop: (arg: string) => void
+    useWorkspaces: boolean
   }
 
   const popupState = usePopupState({
-    popupId: 'viewMenu',
     variant: 'popover',
   })
+
+  const { moveViewToNewTab } = useDockview()
 
   // note: This does not use CascadingMenuButton on purpose, because there was
   // a confusing bug related to it! see
   // https://github.com/GMOD/jbrowse-components/issues/4115
   //
-  // Make sure to test the Breakpoint split view menu checkboxes if you
-  // intend to change this
+  // Make sure to test the Breakpoint split view menu checkboxes if you intend
+  // to change this
   return (
     <>
       <IconButton
@@ -60,42 +95,83 @@ const ViewMenu = observer(function ({
       </IconButton>
       <CascadingMenu
         {...bindPopover(popupState)}
-        onMenuItemClick={(_event: unknown, callback: () => void) => callback()}
+        onMenuItemClick={(_event: unknown, callback: () => void) => {
+          callback()
+        }}
         menuItems={[
-          ...(session.views.length > 1
-            ? [
-                {
-                  label: 'View order',
-                  type: 'subMenu' as const,
-                  subMenu: [
+          {
+            label: 'View options',
+            type: 'subMenu' as const,
+            subMenu: [
+              {
+                label: 'Copy view',
+                icon: ContentCopyIcon,
+                onClick: () => {
+                  session.addView(
+                    model.type,
+                    renameIds(
+                      structuredClone(
+                        // @ts-expect-error
+                        getSnapshot(model) as Record<string, unknown>,
+                      ),
+                    ),
+                  )
+                },
+              },
+              ...(session.useWorkspaces
+                ? [
+                    {
+                      label: 'Move to new tab',
+                      icon: OpenInNewIcon,
+                      onClick: () => {
+                        moveViewToNewTab(model.id)
+                      },
+                    },
+                  ]
+                : []),
+              ...(session.views.length > 2
+                ? [
                     {
                       label: 'Move view to top',
                       icon: KeyboardDoubleArrowUpIcon,
-                      onClick: () => session.moveViewToTop(model.id),
+                      onClick: () => {
+                        session.moveViewToTop(model.id)
+                      },
                     },
+                  ]
+                : []),
+              ...(session.views.length > 1
+                ? [
                     {
                       label: 'Move view up',
                       icon: KeyboardArrowUpIcon,
-                      onClick: () => session.moveViewUp(model.id),
+                      onClick: () => {
+                        session.moveViewUp(model.id)
+                      },
                     },
                     {
                       label: 'Move view down',
                       icon: KeyboardArrowDownIcon,
-                      onClick: () => session.moveViewDown(model.id),
+                      onClick: () => {
+                        session.moveViewDown(model.id)
+                      },
                     },
+                  ]
+                : []),
+              ...(session.views.length > 2
+                ? [
                     {
                       label: 'Move view to bottom',
                       icon: KeyboardDoubleArrowDownIcon,
-                      onClick: () => session.moveViewToBottom(model.id),
+                      onClick: () => {
+                        session.moveViewToBottom(model.id)
+                      },
                     },
-                  ],
-                },
-              ]
-            : []),
-
-          // <=1.3.3 didn't use a function, so check as value also
-          ...((typeof menuItems === 'function' ? menuItems() : menuItems) ||
-            []),
+                  ]
+                : []),
+            ],
+          },
+          ...model.menuItems(),
         ]}
         popupState={popupState}
       />

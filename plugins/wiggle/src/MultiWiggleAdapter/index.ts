@@ -1,6 +1,8 @@
-import configSchema from './configSchema'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import PluginManager from '@jbrowse/core/PluginManager'
+
+import configSchema from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function MultiWiggleAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(

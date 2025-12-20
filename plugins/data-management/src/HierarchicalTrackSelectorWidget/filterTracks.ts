@@ -1,9 +1,9 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession, notEmpty } from '@jbrowse/core/util'
+
 import { hasAllOverlap, hasAnyOverlap } from './util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export function filterTracks(
   tracks: AnyConfigurationModel[],
@@ -22,23 +22,27 @@ export function filterTracks(
   if (!view) {
     return []
   }
-  const trackListAssemblies = self.assemblyNames
-    .map(a => assemblyManager.get(a))
+  const viewAssemblyNames = self.assemblyNames
+    .map(a => assemblyManager.getCanonicalAssemblyName(a))
     .filter(notEmpty)
-  return tracks
-    .filter(c => {
-      const trackAssemblyNames = readConfObject(c, 'assemblyNames') as string[]
-      const trackAssemblies = trackAssemblyNames
-        ?.map(name => assemblyManager.get(name))
-        .filter(notEmpty)
-      return view.trackSelectorAnyOverlap
-        ? hasAnyOverlap(trackAssemblies, trackListAssemblies)
-        : hasAllOverlap(trackAssemblies, trackListAssemblies)
-    })
-    .filter(c => {
-      const { displayTypes } = pluginManager.getViewType(view.type)
-      const compatDisplays = displayTypes.map(d => d.name)
-      const trackDisplays = c.displays.map((d: { type: string }) => d.type)
-      return hasAnyOverlap(compatDisplays, trackDisplays)
-    })
+  const { displayTypes } = pluginManager.getViewType(view.type)!
+  const viewDisplaysSet = new Set(
+    displayTypes.map((d: { name: string }) => d.name),
+  )
+  return tracks.filter(c => {
+    const trackConfigAssemblyNames = readConfObject(c, 'assemblyNames') as
+      | string[]
+      | undefined
+    const trackCanonicalAssemblyNames = trackConfigAssemblyNames
+      ?.map(name => assemblyManager.getCanonicalAssemblyName(name))
+      .filter(notEmpty)
+    const assemblyMatch = view.trackSelectorAnyOverlap
+      ? hasAnyOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
+      : hasAllOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
+    if (!assemblyMatch) {
+      return false
+    }
+    const trackType = pluginManager.getTrackType(c.type)!
+    return trackType.displayTypes.some(d => viewDisplaysSet.has(d.name))
+  })
 }

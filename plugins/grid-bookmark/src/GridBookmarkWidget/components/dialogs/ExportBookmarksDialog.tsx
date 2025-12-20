@@ -1,24 +1,22 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { useState } from 'react'
 
+import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import GetAppIcon from '@mui/icons-material/GetApp'
 import {
+  Alert,
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   MenuItem,
   Select,
   Typography,
-  Alert,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { Dialog } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
-// Icons
-import GetAppIcon from '@mui/icons-material/GetApp'
-
-// locals
-import { GridBookmarkModel } from '../../model'
 import { downloadBookmarkFile } from '../../utils'
+
+import type { GridBookmarkModel } from '../../model'
 
 const useStyles = makeStyles()({
   flexItem: {
@@ -33,19 +31,25 @@ const useStyles = makeStyles()({
   },
 })
 
-const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
+const ExportBookmarksDialog = observer(function ({
   model,
   onClose,
 }: {
   model: GridBookmarkModel
-  onClose: (arg: boolean) => void
+  onClose: () => void
 }) {
   const { classes } = useStyles()
   const [fileType, setFileType] = useState('BED')
   const { selectedBookmarks } = model
   const exportAll = selectedBookmarks.length === 0
   return (
-    <Dialog open onClose={onClose} title="Export bookmarks">
+    <Dialog
+      open
+      title="Export bookmarks"
+      onClose={() => {
+        onClose()
+      }}
+    >
       <DialogContent className={classes.container}>
         <Alert severity="info">
           {exportAll ? (
@@ -65,7 +69,9 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
           <Select
             size="small"
             value={fileType}
-            onChange={event => setFileType(event.target.value)}
+            onChange={event => {
+              setFileType(event.target.value)
+            }}
           >
             <MenuItem value="BED">BED</MenuItem>
             <MenuItem value="TSV">TSV</MenuItem>
@@ -78,8 +84,9 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
           color="primary"
           startIcon={<GetAppIcon />}
           onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             downloadBookmarkFile(fileType, model)
-            onClose(false)
+            onClose()
           }}
         >
           Download

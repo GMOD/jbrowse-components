@@ -3,16 +3,28 @@ id: linearhicdisplay
 title: LinearHicDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/hic/src/LinearHicDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/model.ts)
+## Links
 
-extends `BaseLinearDisplay`
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearHicDisplay.md)
+
+## Docs
+
+Non-block-based Hi-C display that renders to a single canvas extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
 
 ### LinearHicDisplay - Properties
 
@@ -61,13 +73,31 @@ IMaybe<ISimpleType<string>>
 colorScheme: types.maybe(types.string)
 ```
 
+#### property: activeNormalization
+
+```js
+// type signature
+string
+// code
+activeNormalization: 'KR'
+```
+
+#### property: mode
+
+```js
+// type signature
+string
+// code
+mode: 'triangular'
+```
+
 ### LinearHicDisplay - Getters
 
-#### getter: blockType
+#### getter: drawn
 
 ```js
 // type
-string
+boolean
 ```
 
 #### getter: rendererTypeName
@@ -77,23 +107,72 @@ string
 string
 ```
 
-#### getter: trackMenuItems
-
-```js
-// type
-() => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
-```
-
 ### LinearHicDisplay - Methods
 
 #### method: renderProps
 
 ```js
 // type signature
-renderProps: () => any
+renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; displayHeight: number; }
+```
+
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### LinearHicDisplay - Actions
+
+#### action: setLastDrawnOffsetPx
+
+```js
+// type signature
+setLastDrawnOffsetPx: (n: number) => void
+```
+
+#### action: setLoading
+
+```js
+// type signature
+setLoading: (f: boolean) => void
+```
+
+#### action: setRef
+
+```js
+// type signature
+setRef: (ref: HTMLCanvasElement) => void
+```
+
+#### action: setRenderingImageData
+
+```js
+// type signature
+setRenderingImageData: (imageData: ImageBitmap) => void
+```
+
+#### action: setRenderingStopToken
+
+```js
+// type signature
+setRenderingStopToken: (token: string) => void
+```
+
+#### action: setFlatbushData
+
+```js
+// type signature
+setFlatbushData: (flatbush: ArrayBufferLike, items: HicFlatbushItem[], maxScore: number, yScalar: number) => void
+```
+
+#### action: reload
+
+```js
+// type signature
+reload: () => void
+```
 
 #### action: setResolution
 
@@ -114,4 +193,25 @@ setUseLogScale: (f: boolean) => void
 ```js
 // type signature
 setColorScheme: (f?: string) => void
+```
+
+#### action: setActiveNormalization
+
+```js
+// type signature
+setActiveNormalization: (f: string) => void
+```
+
+#### action: setAvailableNormalizations
+
+```js
+// type signature
+setAvailableNormalizations: (f: string[]) => void
+```
+
+#### action: setMode
+
+```js
+// type signature
+setMode: (arg: string) => void
 ```

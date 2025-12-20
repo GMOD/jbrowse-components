@@ -3,7 +3,7 @@ import RpcMethodType from './RpcMethodType'
 
 const pluginManager = new PluginManager()
 
-export class MockRpcMethodType extends RpcMethodType {
+class MockRpcMethodType extends RpcMethodType {
   async execute() {}
 }
 
@@ -31,7 +31,7 @@ test('test serialize arguments with augmentLocationObject', async () => {
         testLocation: locationInAdapter,
       },
       filters: [],
-      signal: 'teststring',
+      stopToken: 'teststring',
       randomProperty: 'randomstring',
       parentObject: {
         nestedObject: {

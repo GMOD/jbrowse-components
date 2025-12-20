@@ -1,13 +1,10 @@
-import React from 'react'
-
 // in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
-// in your code
-// import {makeWorkerInstance} from '@jbrowse/react-linear-genome-view/esm/makeWorkerInstance'
-import makeWorkerInstance from '../../src/makeWorkerInstance'
-
+// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
 import { getVolvoxConfig } from './util'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
+// in your code
+// import {makeWorkerInstance} from '@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance'
+import makeWorkerInstance from '../../src/makeWorkerInstance'
 
 export const WithWebWorker = () => {
   const { assembly, tracks } = getVolvoxConfig()

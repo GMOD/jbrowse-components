@@ -1,21 +1,19 @@
-import React, { useState } from 'react'
-import { transaction } from 'mobx'
-import { observer } from 'mobx-react'
-import { getRoot, resolveIdentifier } from 'mobx-state-tree'
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
-
-// jbrowse
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import { getEnv, measureGridWidth } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
-// locals
-import { HierarchicalTrackSelectorModel } from '../../model'
-import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
-import TrackLabelMenu from '../tree/TrackLabelMenu'
+import FacetedDataGrid from './FacetedDataGrid'
+import FacetedHeader from './FacetedHeader'
+import TrackSelectorTrackMenu from '../tree/TrackSelectorTrackMenu'
+
+import type { FacetedRow } from '../../facetedModel'
+import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { GridColDef } from '@mui/x-data-grid'
+
+type T = GridColDef<FacetedRow>
 
 export interface InfoArgs {
   target: HTMLElement
@@ -44,53 +42,15 @@ const FacetedSelector = observer(function FacetedSelector({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const { view, selection, shownTrackIds, faceted } = model
+  const { selection, shownTrackIds, faceted } = model
   const {
     rows,
     panelWidth,
     showFilters,
-    useShoppingCart,
-    showOptions,
-    filteredRows,
     filteredNonMetadataKeys,
     filteredMetadataKeys,
-    visible,
   } = faceted
-  const { pluginManager } = getEnv(model)
 
-  type T = GridColDef<(typeof filteredRows)[0]>
-
-  const [widths, setWidths] = useState<Record<string, number | undefined>>({
-    name:
-      measureGridWidth(
-        rows.map(r => r.name),
-        { maxWidth: 500, stripHTML: true },
-      ) + 15,
-    ...Object.fromEntries(
-      filteredNonMetadataKeys
-        .filter(f => visible[f])
-        .map(e => [
-          e,
-          measureGridWidth(
-            rows.map(r => r[e as keyof typeof r] as string),
-            { maxWidth: 400, stripHTML: true },
-          ),
-        ]),
-    ),
-    ...Object.fromEntries(
-      filteredMetadataKeys
-        .filter(f => visible['metadata.' + f])
-        .map(e => {
-          return [
-            'metadata.' + e,
-            measureGridWidth(
-              rows.map(r => r.metadata[e]),
-              { maxWidth: 400, stripHTML: true },
-            ),
-          ]
-        }),
-    ),
-  })
   const columns: T[] = [
     {
       field: 'name',
@@ -101,16 +61,14 @@ const FacetedSelector = observer(function FacetedSelector({
         return (
           <div className={classes.cell}>
             <SanitizedHTML html={value as string} />
-            <TrackLabelMenu id={id} conf={conf} trackId={id} model={model} />
+            <TrackSelectorTrackMenu id={id} conf={conf} model={model} />
           </div>
         )
       },
-      width: widths.name ?? 100,
     },
     ...filteredNonMetadataKeys.map(e => {
       return {
         field: e,
-        width: widths[e] ?? 100,
         renderCell: params => {
           const val = params.value
           return val ? (
@@ -127,7 +85,6 @@ const FacetedSelector = observer(function FacetedSelector({
         headerName: ['name', ...filteredNonMetadataKeys].includes(e)
           ? `${e} (from metadata)`
           : e,
-        width: widths['metadata.' + e] ?? 100,
         valueGetter: (_, row) => `${row.metadata[e] ?? ''}`,
         renderCell: params => {
           const val = params.value
@@ -158,57 +115,11 @@ const FacetedSelector = observer(function FacetedSelector({
             width: window.innerWidth * frac - (showFilters ? panelWidth : 0),
           }}
         >
-          <DataGrid
-            rows={filteredRows}
-            onColumnWidthChange={arg =>
-              setWidths({ ...widths, [arg.colDef.field]: arg.width })
-            }
-            columnVisibilityModel={visible}
-            onColumnVisibilityModelChange={n => faceted.setVisible(n)}
-            columnHeaderHeight={35}
-            checkboxSelection
-            disableRowSelectionOnClick
-            keepNonExistentRowsSelected
-            onRowSelectionModelChange={userSelectedIds => {
-              if (!useShoppingCart) {
-                const a1 = shownTrackIds
-                const a2 = new Set(userSelectedIds as string[])
-                // synchronize the user selection with the view
-                // see share https://stackoverflow.com/a/33034768/2129219
-                transaction(() => {
-                  ;[...a1].filter(x => !a2.has(x)).map(t => view.hideTrack(t))
-                  ;[...a2]
-                    .filter(x => !a1.has(x))
-                    .map(t => {
-                      view.showTrack(t)
-                      model.addToRecentlyUsed(t)
-                    })
-                })
-              } else {
-                const root = getRoot(model)
-                const schema = pluginManager.pluggableConfigSchemaType('track')
-                model.setSelection(
-                  userSelectedIds.map(id =>
-                    resolveIdentifier(schema, root, id),
-                  ),
-                )
-              }
-            }}
-            rowSelectionModel={
-              useShoppingCart
-                ? selection.map(s => s.trackId)
-                : [...shownTrackIds]
-            }
-            slots={{ toolbar: showOptions ? GridToolbar : null }}
-            slotProps={{
-              toolbar: {
-                printOptions: {
-                  disableToolbarButton: true,
-                },
-              },
-            }}
+          <FacetedDataGrid
+            model={model}
             columns={columns}
-            rowHeight={25}
+            shownTrackIds={shownTrackIds}
+            selection={selection}
           />
         </div>
 

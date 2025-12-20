@@ -1,11 +1,11 @@
-import React from 'react'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { SnapshotIn, onPatch, IJsonPatch } from 'mobx-state-tree'
-import createModel, {
-  createSessionModel,
-  createConfigModel,
-} from './createModel'
+
+import createModel from './createModel'
+
+import type { createConfigModel, createSessionModel } from './createModel'
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { IJsonPatch, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
@@ -22,14 +22,6 @@ interface ViewStateOptions {
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
   makeWorkerInstance?: () => Worker
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => any
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  }
   defaultSession?: SessionSnapshot
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
@@ -42,16 +34,12 @@ export default function createViewState(opts: ViewStateOptions) {
     configuration,
     aggregateTextSearchAdapters,
     plugins,
-    hydrateFn,
-    createRootFn,
     makeWorkerInstance,
     onChange,
   } = opts
   const { model, pluginManager } = createModel(
     plugins || [],
     makeWorkerInstance,
-    hydrateFn,
-    createRootFn,
   )
   let { defaultSession } = opts
   if (!defaultSession) {
@@ -76,7 +64,7 @@ export default function createViewState(opts: ViewStateOptions) {
     session: defaultSession,
   }
   const stateTree = model.create(stateSnapshot, { pluginManager })
-  stateTree.config.internetAccounts.forEach(account => {
+  for (const account of stateTree.config.internetAccounts) {
     const internetAccountType = pluginManager.getInternetAccountType(
       account.type,
     )
@@ -87,7 +75,7 @@ export default function createViewState(opts: ViewStateOptions) {
       type: account.type,
       configuration: account,
     })
-  })
+  }
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   autorun(reaction => {

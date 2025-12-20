@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
 import baseWiggleRendererConfigSchema from '../configSchema'
 
 /**

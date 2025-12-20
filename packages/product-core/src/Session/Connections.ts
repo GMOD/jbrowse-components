@@ -1,16 +1,14 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
-import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
-// locals
-import type { BaseRootModelType } from '../RootModel/BaseRootModel'
-import type { SessionWithReferenceManagementType } from './ReferenceManagement'
 import { isBaseSession } from './BaseSession'
+
+import type { SessionWithReferenceManagementType } from './ReferenceManagement'
+import type { BaseRootModelType } from '../RootModel/BaseRootModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel ConnectionManagementSessionMixin
@@ -22,10 +20,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
        * #property
        */
       connectionInstances: types.array(
-        pluginManager.pluggableMstType(
-          'connection',
-          'stateModel',
-        ) as BaseConnectionModel,
+        pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
     })
     .views(self => ({
@@ -57,8 +52,6 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         const length = self.connectionInstances.push({
           ...initialSnapshot,
           name,
-          // @ts-expect-error unsure why ts doesn't like `type` here, but is
-          // needed
           type,
           configuration,
         })
@@ -71,7 +64,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const root = self as typeof self &
           Instance<SessionWithReferenceManagementType>
-        const callbacksToDeref: Function[] = []
+        const callbacksToDeref: (() => void)[] = []
         const derefTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
         const connection = self.connectionInstances.find(c => c.name === name)
@@ -84,7 +77,9 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         }
         return [
           () => {
-            callbacksToDeref.forEach(cb => cb())
+            for (const cb of callbacksToDeref) {
+              cb()
+            }
             this.breakConnection(configuration)
           },
           derefTypeCount,
@@ -126,6 +121,20 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         self.connectionInstances.clear()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // mst types wrong, nullish needed
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { connectionInstances, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(connectionInstances?.length ? { connectionInstances } : {}),
+      } as typeof snap
+    })
 }
 
 /** Session mixin MST type for a session that has connections */

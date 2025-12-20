@@ -1,4 +1,6 @@
-import PluginLoader, { LoadedPlugin } from '@jbrowse/core/PluginLoader'
+import PluginLoader from '@jbrowse/core/PluginLoader'
+
+import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 
 interface PluginDefinition {
   name: string

@@ -1,20 +1,20 @@
-import React from 'react'
-import { when } from 'mobx'
-import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
-import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getRoot } from 'mobx-state-tree'
+import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
 import {
-  SVGTracks,
+  SVGGridlines,
   SVGRuler,
+  SVGTracks,
   totalHeight,
 } from '@jbrowse/plugin-linear-genome-view'
+import { ThemeProvider } from '@mui/material'
+import { when } from 'mobx'
 
-// locals
 import SVGBackground from './SVGBackground'
-import { ExportSvgOptions, BreakpointViewModel } from '../model'
-import Overlay from '../components/Overlay'
 import { getTrackNameMaxLen, getTrackOffsets } from './util'
+import Overlay from '../components/Overlay'
+
+import type { BreakpointViewModel } from '../model'
+import type { ExportSvgOptions } from '../types'
 
 type BSV = BreakpointViewModel
 
@@ -26,17 +26,16 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
+    showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
   } = opts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { createRootFn } = getRoot<any>(model)
+
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   const { width, views } = model
   const shift = 50
   const offset = headerHeight + rulerHeight
-
   const heights = views.map(
     v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
   )
@@ -60,12 +59,18 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const trackLabelMaxLen = getTrackNameMaxLen(views, fontSize, session) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const textOffset = trackLabels === 'offset' ? textHeight : 0
-  const trackOffsets = [
-    getTrackOffsets(views[0], textOffset, fontSize + offset),
-    getTrackOffsets(views[1], textOffset, fontSize + heights[0] + offset),
-  ]
+  const trackOffsets = views.map((view, idx) =>
+    getTrackOffsets(
+      view,
+      textOffset,
+      fontSize + (idx > 0 ? heights[idx - 1]! : 0) + offset,
+    ),
+  )
   const w = width + trackLabelOffset
   const t = createJBrowseTheme(theme)
+  const tracksHeights = views.map(v =>
+    totalHeight(v.tracks, textHeight, trackLabels),
+  )
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -79,42 +84,64 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           viewBox={[0, 0, w + shift * 2, totalHeightSvg].toString()}
         >
           <SVGBackground width={w} height={totalHeightSvg} shift={shift} />
-          <g transform={`translate(${shift} ${fontSize})`}>
-            <g transform={`translate(${trackLabelOffset})`}>
-              <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
-                {views[0].assemblyNames.join(', ')}
-              </text>
+          {views[0] ? (
+            <g transform={`translate(${shift} ${fontSize})`}>
+              <g transform={`translate(${trackLabelOffset})`}>
+                <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
+                  {views[0].assemblyNames.join(', ')}
+                </text>
 
-              <SVGRuler model={displayResults[0].view} fontSize={fontSize} />
+                <SVGRuler model={displayResults[0]!.view} fontSize={fontSize} />
+              </g>
+              {showGridlines ? (
+                <g transform={`translate(${trackLabelOffset} ${offset})`}>
+                  <SVGGridlines
+                    model={displayResults[0]!.view}
+                    height={tracksHeights[0]!}
+                  />
+                </g>
+              ) : null}
+              <g transform={`translate(0 ${offset})`}>
+                <SVGTracks
+                  textHeight={textHeight}
+                  trackLabels={trackLabels}
+                  fontSize={fontSize}
+                  model={displayResults[0]!.view}
+                  displayResults={displayResults[0]!.data}
+                  trackLabelOffset={trackLabelOffset}
+                />
+              </g>
             </g>
-            <SVGTracks
-              textHeight={textHeight}
-              trackLabels={trackLabels}
-              fontSize={fontSize}
-              model={displayResults[0].view}
-              displayResults={displayResults[0].data}
-              offset={offset}
-              trackLabelOffset={trackLabelOffset}
-            />
-          </g>
+          ) : null}
 
-          <g transform={`translate(${shift} ${fontSize + heights[0]})`}>
-            <g transform={`translate(${trackLabelOffset})`}>
-              <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
-                {views[1].assemblyNames.join(', ')}
-              </text>
-              <SVGRuler model={displayResults[1].view} fontSize={fontSize} />
+          {views[1] ? (
+            <g transform={`translate(${shift} ${fontSize + heights[0]!})`}>
+              <g transform={`translate(${trackLabelOffset})`}>
+                <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
+                  {views[1].assemblyNames.join(', ')}
+                </text>
+                <SVGRuler model={displayResults[1]!.view} fontSize={fontSize} />
+              </g>
+              {showGridlines ? (
+                <g transform={`translate(${trackLabelOffset} ${offset})`}>
+                  <SVGGridlines
+                    model={displayResults[1]!.view}
+                    height={tracksHeights[1]!}
+                  />
+                </g>
+              ) : null}
+              <g transform={`translate(0 ${offset})`}>
+                <SVGTracks
+                  textHeight={textHeight}
+                  trackLabels={trackLabels}
+                  fontSize={fontSize}
+                  model={displayResults[1]!.view}
+                  displayResults={displayResults[1]!.data}
+                  trackLabelOffset={trackLabelOffset}
+                />
+              </g>
             </g>
-            <SVGTracks
-              textHeight={textHeight}
-              trackLabels={trackLabels}
-              fontSize={fontSize}
-              model={displayResults[1].view}
-              displayResults={displayResults[1].data}
-              offset={offset}
-              trackLabelOffset={trackLabelOffset}
-            />
-          </g>
+          ) : null}
 
           <defs>
             <clipPath id="clip-bsv">
@@ -131,13 +158,12 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
                 key={track.configuration.trackId}
                 model={model}
                 trackId={track.configuration.trackId}
-                getTrackYPosOverride={(id, level) => trackOffsets[level][id]}
+                getTrackYPosOverride={(id, level) => trackOffsets[level]![id]!}
               />
             ))}
           </g>
         </svg>
       </Wrapper>
     </ThemeProvider>,
-    createRootFn,
   )
 }

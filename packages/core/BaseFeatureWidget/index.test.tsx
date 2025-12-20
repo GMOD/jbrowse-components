@@ -1,12 +1,12 @@
-import React from 'react'
+import { types } from '@jbrowse/mobx-state-tree'
+import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 
-// locals
-import { ConfigurationSchema } from '../configuration'
-import PluginManager from '../PluginManager'
 import { stateModelFactory } from '.'
+import PluginManager from '../PluginManager'
+import { ConfigurationSchema } from '../configuration'
 import BaseFeatureDetails from './BaseFeatureDetail'
+import { createJBrowseTheme } from '../ui'
 
 test('open up a widget', async () => {
   const pluginManager = new PluginManager([])
@@ -25,9 +25,12 @@ test('open up a widget', async () => {
     { pluginManager },
   )
   const { container, findByText } = render(
-    <BaseFeatureDetails model={model.widget} />,
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
   )
   model.widget.setFeatureData({
+    uniqueId: 'hello',
     start: 2,
     end: 102,
     strand: 1,

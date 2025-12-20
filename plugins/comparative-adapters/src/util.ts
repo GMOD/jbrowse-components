@@ -1,11 +1,8 @@
-import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { GenericFilehandle } from 'generic-filehandle'
-import { unzip } from '@gmod/bgzf-filehandle'
-import { PAFRecord } from './PAFAdapter/util'
+import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 
-export function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
+import type { PAFRecord } from './PAFAdapter/util'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 export function parseBed(text: string) {
   return new Map(
@@ -18,9 +15,9 @@ export function parseBed(text: string) {
           name,
           {
             refName,
-            start: +start,
-            end: +end,
-            score: +score,
+            start: +start!,
+            end: +end!,
+            score: +score!,
             name,
             strand: strand === '-' ? -1 : 1,
           },
@@ -30,81 +27,39 @@ export function parseBed(text: string) {
 }
 
 export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
-  const buffer = (await file.readFile(opts)) as Buffer
-  return new TextDecoder('utf8', { fatal: true }).decode(
-    isGzip(buffer) ? await unzip(buffer) : buffer,
-  )
+  return fetchAndMaybeUnzipText(file, opts)
 }
 
 export function zip(a: number[], b: number[]) {
   return a.map((e, i) => [e, b[i]] as [number, number])
 }
 
-const decoder =
-  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
-
-export function parseLineByLine(
-  buffer: Buffer,
-  cb: (line: string) => PAFRecord,
-) {
-  let blockStart = 0
-  const entries = []
-  while (blockStart < buffer.length) {
-    const n = buffer.indexOf('\n', blockStart)
-    if (n === -1) {
-      break
-    }
-    const b = buffer.slice(blockStart, n)
-    const line = (decoder?.decode(b) || b.toString()).trim()
-    if (line) {
-      entries.push(cb(line))
-    }
-
-    blockStart = n + 1
-  }
-  return entries
-}
-
 export function parsePAFLine(line: string) {
-  const [
-    qname,
-    ,
-    qstart,
-    qend,
-    strand,
-    tname,
-    ,
-    tstart,
-    tend,
-    numMatches,
-    blockLen,
-    mappingQual,
-    ...fields
-  ] = line.split('\t')
+  const parts = line.split('\t')
+  const extraFields = parts.slice(12)
+  const extra: Record<string, string | number> = {
+    numMatches: +parts[9]!,
+    blockLen: +parts[10]!,
+    mappingQual: +parts[11]!,
+  }
 
-  const rest = Object.fromEntries(
-    fields.map(field => {
-      const r = field.indexOf(':')
-      const fieldName = field.slice(0, r)
-      const fieldValue = field.slice(r + 3)
-      return [fieldName, fieldValue]
-    }),
-  )
+  // Process extra fields only if they exist
+  if (extraFields.length) {
+    for (const field of extraFields) {
+      const colonIndex = field.indexOf(':')
+      extra[field.slice(0, colonIndex)] = field.slice(colonIndex + 3)
+    }
+  }
 
   return {
-    tname,
-    tstart: +tstart,
-    tend: +tend,
-    qname,
-    qstart: +qstart,
-    qend: +qend,
-    strand: strand === '-' ? -1 : 1,
-    extra: {
-      numMatches: +numMatches,
-      blockLen: +blockLen,
-      mappingQual: +mappingQual,
-      ...rest,
-    },
+    tname: parts[5],
+    tstart: +parts[7]!,
+    tend: +parts[8]!,
+    qname: parts[0],
+    qstart: +parts[2]!,
+    qend: +parts[3]!,
+    strand: parts[4] === '-' ? -1 : 1,
+    extra,
   } as PAFRecord
 }
 

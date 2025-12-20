@@ -1,9 +1,11 @@
-import React, { ComponentType, LazyExoticComponent } from 'react'
-import { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
-import PluggableElementBase from './PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../configuration'
+import type { ComponentType, LazyExoticComponent } from 'react'
+import type React from 'react'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import PluggableElementBase from './PluggableElementBase'
+
+import type { AnyConfigurationSchemaType } from '../configuration'
+import type { IAnyModelType, IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 type WidgetComponentType = LazyExoticComponent<React.FC<any>> | React.FC<any>
 
 type HeadingComponentType = ComponentType<{ model: IAnyStateTreeNode }>
@@ -19,6 +21,8 @@ export default class WidgetType extends PluggableElementBase {
 
   stateModel: IAnyModelType
 
+  helpText?: React.ReactNode
+
   constructor(stuff: {
     name: string
     heading?: string
@@ -26,6 +30,7 @@ export default class WidgetType extends PluggableElementBase {
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
     ReactComponent: WidgetComponentType
+    helpText?: React.ReactNode
   }) {
     super(stuff)
     this.heading = stuff.heading
@@ -33,11 +38,6 @@ export default class WidgetType extends PluggableElementBase {
     this.configSchema = stuff.configSchema
     this.stateModel = stuff.stateModel
     this.ReactComponent = stuff.ReactComponent
-    if (!this.ReactComponent) {
-      throw new Error(`no ReactComponent defined for widget ${this.name}`)
-    }
-    if (!this.stateModel) {
-      throw new Error(`no stateModel defined for widget ${this.name}`)
-    }
+    this.helpText = stuff.helpText
   }
 }

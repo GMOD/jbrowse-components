@@ -1,17 +1,15 @@
 {
-  // oclif doesn't follow the "extends"
-  // can re-enable if https://github.com/oclif/config/pull/177 is merged
-  // "extends": "../../tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
-    "outDir": "lib",
+    "outDir": "dist",
     "rootDir": "src",
     "strict": true,
     "lib": ["es2021"],
     "target": "es2021",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": ["**/*.test.ts", "**/testUtil.ts"]
+  "exclude": ["**/*.test.ts", "**/testUtil.ts", "dist"]
 }

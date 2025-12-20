@@ -1,5 +1,5 @@
-import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config Gff3TabixAdapter
@@ -15,7 +15,10 @@ const Gff3TabixAdapter = ConfigurationSchema(
      */
     gffGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gff.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.gff.gz',
+        locationType: 'UriLocation',
+      },
     },
 
     index: ConfigurationSchema('Gff3TabixIndex', {
@@ -47,10 +50,45 @@ const Gff3TabixAdapter = ConfigurationSchema(
      */
     dontRedispatch: {
       type: 'stringArray',
-      defaultValue: ['chromosome', 'region'],
+      defaultValue: ['chromosome', 'region', 'contig'],
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes tbi index at
+     * yourfile.gff3.gz.tbi:
+     *
+     * ```json
+     * {
+     *   "type": "Gff3TabixAdapter",
+     *   "uri": "yourfile.gff3.gz",
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            gffGzLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: `${snap.uri}.tbi`,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default Gff3TabixAdapter

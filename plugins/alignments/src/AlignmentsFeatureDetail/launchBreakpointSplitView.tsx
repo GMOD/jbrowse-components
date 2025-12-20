@@ -1,8 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-import { ReducedFeature } from './getSAFeatures'
+import type { ReducedFeature } from './getSAFeatures'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getBreakpointSplitView({
   f1,
@@ -13,7 +12,7 @@ export function getBreakpointSplitView({
   f2: ReducedFeature
   view: LinearGenomeViewModel
 }) {
-  const { assemblyName } = view.displayedRegions[0]
+  const { assemblyName } = view.displayedRegions[0]!
   const { assemblyManager } = getSession(view)
   const assembly = assemblyManager.get(assemblyName)
   if (!assembly) {
@@ -27,7 +26,7 @@ export function getBreakpointSplitView({
 
   if (!topRegion || !bottomRegion) {
     throw new Error(
-      `unable to find the refName for the top or bottom of the breakpoint view`,
+      'unable to find the refName for the top or bottom of the breakpoint view',
     )
   }
   const topMarkedRegion = [{ ...topRegion }, { ...topRegion }]
@@ -36,10 +35,10 @@ export function getBreakpointSplitView({
   const s = f1.strand === 1 ? f1.end : f1.start
   const e = f2.strand === 1 ? f2.start : f2.end
 
-  topMarkedRegion[0].end = s
-  topMarkedRegion[1].start = s + 1
-  bottomMarkedRegion[0].end = e
-  bottomMarkedRegion[1].start = e + 1
+  topMarkedRegion[0]!.end = s
+  topMarkedRegion[1]!.start = s + 1
+  bottomMarkedRegion[0]!.end = e
+  bottomMarkedRegion[1]!.start = e + 1
   const bpPerPx = 10
   return {
     type: 'BreakpointSplitView',
@@ -59,6 +58,6 @@ export function getBreakpointSplitView({
         offsetPx: (bottomRegion.start + e) / bpPerPx,
       },
     ],
-    displayName: `breakend split detail`,
+    displayName: 'breakend split detail',
   }
 }

@@ -1,25 +1,25 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`renders 1`] = `
 <div>
   <div
-    class="css-1ohm0fb-root"
+    class="css-1fhgjcy"
   >
     <div
-      class="MuiStepper-root MuiStepper-vertical css-1nq3qk0-MuiStepper-root-stepper"
+      class="MuiStepper-root MuiStepper-vertical css-h3b25w-MuiStepper-root"
     >
       <div
-        class="MuiStep-root MuiStep-vertical css-8wcvy5-MuiStep-root"
+        class="MuiStep-root MuiStep-vertical css-enonti-MuiStep-root"
       >
         <span
-          class="MuiStepLabel-root MuiStepLabel-vertical css-14sza3e-MuiStepLabel-root"
+          class="MuiStepLabel-root MuiStepLabel-vertical css-122jq7f-MuiStepLabel-root"
         >
           <span
-            class="MuiStepLabel-iconContainer Mui-active css-vnkopk-MuiStepLabel-iconContainer"
+            class="MuiStepLabel-iconContainer Mui-active css-1b2ju2j-MuiStepLabel-iconContainer"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root Mui-active css-1u4zpwo-MuiSvgIcon-root-MuiStepIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root Mui-active css-1jm3coa-MuiSvgIcon-root-MuiStepIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -29,7 +29,7 @@ exports[`renders 1`] = `
                 r="12"
               />
               <text
-                class="MuiStepIcon-text css-117w1su-MuiStepIcon-text"
+                class="MuiStepIcon-text css-1i1npeq-MuiStepIcon-text"
                 dominant-baseline="central"
                 text-anchor="middle"
                 x="12"
@@ -40,53 +40,52 @@ exports[`renders 1`] = `
             </svg>
           </span>
           <span
-            class="MuiStepLabel-labelContainer css-1vyamtt-MuiStepLabel-labelContainer"
+            class="MuiStepLabel-labelContainer css-p8xe3-MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiStepLabel-label Mui-active css-1hv8oq8-MuiStepLabel-label"
+              class="MuiStepLabel-label Mui-active css-vxmcgq-MuiStepLabel-label"
             >
               Select a Connection Type
             </span>
           </span>
         </span>
         <div
-          class="MuiStepContent-root css-14yr603-MuiStepContent-root"
+          class="MuiStepContent-root css-69uykz-MuiStepContent-root"
         >
           <div
-            class="MuiCollapse-root MuiCollapse-vertical MuiStepContent-transition MuiCollapse-entered css-1rw7nzj-MuiCollapse-root-MuiStepContent-transition"
+            class="MuiCollapse-root MuiCollapse-vertical MuiStepContent-transition MuiCollapse-entered css-scib18-MuiCollapse-root-MuiStepContent-transition"
             style="min-height: 0px;"
           >
             <div
-              class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
+              class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
             >
               <div
-                class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
+                class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
               >
                 <form
                   autocomplete="off"
                 >
                   <div
-                    class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+                    class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-cmpglg-MuiFormControl-root-MuiTextField-root"
                   >
                     <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined css-1jy569b-MuiFormLabel-root-MuiInputLabel-root"
+                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-flglzq-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for=":r0:"
-                      id=":r0:-label"
+                      for="_r_3_"
+                      id="_r_3_-label"
                     >
                       connectionType
                     </label>
                     <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiSelect-root css-b32mwt-MuiInputBase-root-MuiOutlinedInput-root"
                     >
                       <div
-                        aria-controls=":r1:"
-                        aria-describedby=":r0:-helper-text"
+                        aria-describedby="_r_3_-helper-text"
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                        aria-labelledby=":r0:-label :r0:"
-                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
-                        id=":r0:"
+                        aria-labelledby="_r_3_-label _r_3_"
+                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-18jp67o-MuiNativeSelect-root-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                        id="_r_3_"
                         role="combobox"
                         tabindex="0"
                       >
@@ -95,13 +94,13 @@ exports[`renders 1`] = `
                       <input
                         aria-hidden="true"
                         aria-invalid="false"
-                        class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
+                        class="MuiSelect-nativeInput css-j0riat-MuiSelect-nativeInput"
                         tabindex="-1"
                         value="UCSCTrackHubConnection"
                       />
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-hfutr2-MuiSvgIcon-root-MuiSelect-icon"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-1n8g1bv-MuiSvgIcon-root-MuiNativeSelect-root-MuiSelect-icon"
                         data-testid="ArrowDropDownIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -112,10 +111,10 @@ exports[`renders 1`] = `
                       </svg>
                       <fieldset
                         aria-hidden="true"
-                        class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                        class="MuiOutlinedInput-notchedOutline css-18p5xg2-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
                       >
                         <legend
-                          class="css-14lo706"
+                          class="css-ex8a5f-MuiNotchedOutlined-root"
                         >
                           <span>
                             connectionType
@@ -124,20 +123,20 @@ exports[`renders 1`] = `
                       </fieldset>
                     </div>
                     <p
-                      class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
-                      id=":r0:-helper-text"
+                      class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-nxe85d-MuiFormHelperText-root"
+                      id="_r_3_-helper-text"
                     >
                       A track or assembly hub in the Track Hub format
                       <a
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                        href="//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
+                        class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-366eis-MuiTypography-root-MuiLink-root"
+                        href="https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
                         rel="noopener noreferrer"
-                        tabindex="0"
                         target="_blank"
                       >
+                         
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
                           data-testid="OpenInNewIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -146,18 +145,15 @@ exports[`renders 1`] = `
                             d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"
                           />
                         </svg>
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
                       </a>
                     </p>
                   </div>
                 </form>
                 <div
-                  class="css-1spe31o-actionsContainer"
+                  class="css-19idom"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1j3hqkx-MuiButtonBase-root-MuiButton-root-button"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-4rmdel-MuiButtonBase-root-MuiButton-root"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -165,15 +161,12 @@ exports[`renders 1`] = `
                     Back
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1xo5g2a-MuiButtonBase-root-MuiButton-root-button"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary css-1pprb7-MuiButtonBase-root-MuiButton-root"
                     data-testid="addConnectionNext"
                     tabindex="0"
                     type="button"
                   >
                     Next
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </div>
               </div>
@@ -182,24 +175,24 @@ exports[`renders 1`] = `
         </div>
       </div>
       <div
-        class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled css-1pe7n21-MuiStepConnector-root"
+        class="MuiStepConnector-root MuiStepConnector-vertical Mui-disabled css-1afu6qk-MuiStepConnector-root"
       >
         <span
-          class="MuiStepConnector-line MuiStepConnector-lineVertical css-8t49rw-MuiStepConnector-line"
+          class="MuiStepConnector-line MuiStepConnector-lineVertical css-1deaddp-MuiStepConnector-line"
         />
       </div>
       <div
-        class="MuiStep-root MuiStep-vertical css-8wcvy5-MuiStep-root"
+        class="MuiStep-root MuiStep-vertical css-enonti-MuiStep-root"
       >
         <span
-          class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled css-14sza3e-MuiStepLabel-root"
+          class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled css-122jq7f-MuiStepLabel-root"
         >
           <span
-            class="MuiStepLabel-iconContainer Mui-disabled css-vnkopk-MuiStepLabel-iconContainer"
+            class="MuiStepLabel-iconContainer Mui-disabled css-1b2ju2j-MuiStepLabel-iconContainer"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-1u4zpwo-MuiSvgIcon-root-MuiStepIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-1jm3coa-MuiSvgIcon-root-MuiStepIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -209,7 +202,7 @@ exports[`renders 1`] = `
                 r="12"
               />
               <text
-                class="MuiStepIcon-text css-117w1su-MuiStepIcon-text"
+                class="MuiStepIcon-text css-1i1npeq-MuiStepIcon-text"
                 dominant-baseline="central"
                 text-anchor="middle"
                 x="12"
@@ -220,17 +213,17 @@ exports[`renders 1`] = `
             </svg>
           </span>
           <span
-            class="MuiStepLabel-labelContainer css-1vyamtt-MuiStepLabel-labelContainer"
+            class="MuiStepLabel-labelContainer css-p8xe3-MuiStepLabel-labelContainer"
           >
             <span
-              class="MuiStepLabel-label Mui-disabled css-1hv8oq8-MuiStepLabel-label"
+              class="MuiStepLabel-label Mui-disabled css-vxmcgq-MuiStepLabel-label"
             >
               Configure Connection
             </span>
           </span>
         </span>
         <div
-          class="MuiStepContent-root MuiStepContent-last css-1mz1l2x-MuiStepContent-root"
+          class="MuiStepContent-root MuiStepContent-last css-1r4r9eo-MuiStepContent-root"
         />
       </div>
     </div>

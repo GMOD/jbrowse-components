@@ -36,7 +36,7 @@ function u(e) {
     o = r(e => {
       t.current && t.current(e)
     })
-  return (t.current = e), o.current
+  return ((t.current = e), o.current)
 }
 const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
   d = e => 'touches' in e,
@@ -68,17 +68,18 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
       _ = r(!1),
       [x, C, E] = t(() => {
         const e = e => {
-            v(e),
+            ;(v(e),
               (d(e) ? e.touches.length > 0 : e.buttons > 0) && m.current
                 ? g(h(m.current, e, b.current))
-                : t(!1)
+                : t(!1))
           },
           r = () => t(!1)
         function t(t) {
           const o = _.current,
             a = f(m.current),
             l = t ? a.addEventListener : a.removeEventListener
-          l(o ? 'touchmove' : 'mousemove', e), l(o ? 'touchend' : 'mouseup', r)
+          ;(l(o ? 'touchmove' : 'mousemove', e),
+            l(o ? 'touchend' : 'mouseup', r))
         }
         return [
           ({ nativeEvent: e }) => {
@@ -89,7 +90,7 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
                 const r = e.changedTouches || []
                 r.length && (b.current = r[0].identifier)
               }
-              r.focus(), g(h(r, e, b.current)), t(!0)
+              ;(r.focus(), g(h(r, e, b.current)), t(!0))
             }
           },
           e => {
@@ -193,7 +194,7 @@ const i = (e, r = 0, t = 1) => (e > t ? t : e < r ? r : e),
     return `hsla(${r}, ${t}%, ${o}%, ${a})`
   },
   y = ({ h: e, s: r, v: t, a: o }) => {
-    ;(e = (e / 360) * 6), (r /= 100), (t /= 100)
+    ;((e = (e / 360) * 6), (r /= 100), (t /= 100))
     const a = Math.floor(e),
       l = t * (1 - r),
       n = t * (1 - (e - a) * r),
@@ -322,10 +323,10 @@ function S(e, t, n) {
   const s = u(n),
     [c, i] = a(() => e.toHsva(t)),
     d = r({ color: t, hsva: c })
-  o(() => {
+  ;(o(() => {
     if (!e.equal(t, d.current.color)) {
       const r = e.toHsva(t)
-      ;(d.current = { hsva: r, color: t }), i(r)
+      ;((d.current = { hsva: r, color: t }), i(r))
     }
   }, [t, e]),
     o(() => {
@@ -333,7 +334,7 @@ function S(e, t, n) {
       L(c, d.current.hsva) ||
         e.equal((r = e.fromHsva(c)), d.current.color) ||
         ((d.current = { hsva: c, color: r }), s(r))
-    }, [c, e, s])
+    }, [c, e, s]))
   const f = l(e => {
     i(r => Object.assign({}, r, e))
   }, [])
@@ -352,11 +353,11 @@ const P = () =>
       const r = e.current ? e.current.ownerDocument : document
       if (void 0 !== r && !Y.has(r)) {
         const e = r.createElement('style')
-        ;(e.innerHTML =
+        ;((e.innerHTML =
           '.react-colorful{position:relative;display:flex;flex-direction:column;width:200px;height:200px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default}.react-colorful__saturation{position:relative;flex-grow:1;border-color:transparent;border-bottom:12px solid #000;border-radius:8px 8px 0 0;background-image:linear-gradient(0deg,#000,transparent),linear-gradient(90deg,#fff,hsla(0,0%,100%,0))}.react-colorful__alpha-gradient,.react-colorful__pointer-fill{content:"";position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;border-radius:inherit}.react-colorful__alpha-gradient,.react-colorful__saturation{box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}.react-colorful__alpha,.react-colorful__hue{position:relative;height:24px}.react-colorful__hue{background:linear-gradient(90deg,red 0,#ff0 17%,#0f0 33%,#0ff 50%,#00f 67%,#f0f 83%,red)}.react-colorful__last-control{border-radius:0 0 8px 8px}.react-colorful__interactive{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;outline:none;touch-action:none}.react-colorful__pointer{position:absolute;z-index:1;box-sizing:border-box;width:28px;height:28px;transform:translate(-50%,-50%);background-color:#fff;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,.2)}.react-colorful__interactive:focus .react-colorful__pointer{transform:translate(-50%,-50%) scale(1.1)}.react-colorful__alpha,.react-colorful__alpha-pointer{background-color:#fff;background-image:url(\'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill-opacity=".05"><path d="M8 0h8v8H8zM0 8h8v8H0z"/></svg>\')}.react-colorful__saturation-pointer{z-index:3}.react-colorful__hue-pointer{z-index:2}'),
-          Y.set(r, e)
+          Y.set(r, e))
         const t = P()
-        t && e.setAttribute('nonce', t), r.head.appendChild(e)
+        ;(t && e.setAttribute('nonce', t), r.head.appendChild(e))
       }
     }, [])
   },
@@ -563,13 +564,13 @@ const P = () =>
       x = l(
         e => {
           const r = d(e.target.value)
-          p(r), f(r) && b(v ? v(r) : r)
+          ;(p(r), f(r) && b(v ? v(r) : r))
         },
         [d, v, f, b],
       ),
       C = l(
         e => {
-          f(e.target.value) || p(d(t)), _(e)
+          ;(f(e.target.value) || p(d(t)), _(e))
         },
         [t, d, f, _],
       )

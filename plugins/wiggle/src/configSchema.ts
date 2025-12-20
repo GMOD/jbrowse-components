@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config WiggleRenderer
@@ -17,6 +17,7 @@ const WiggleRenderer = ConfigurationSchema(
       type: 'color',
       description: 'the color of track, overrides posColor and negColor',
       defaultValue: '#f0f',
+      contextVariable: ['feature'],
     },
     /**
      * #slot
@@ -25,6 +26,7 @@ const WiggleRenderer = ConfigurationSchema(
       type: 'color',
       description: 'the color to use when the score is positive',
       defaultValue: 'blue',
+      contextVariable: ['feature'],
     },
     /**
      * #slot
@@ -33,6 +35,7 @@ const WiggleRenderer = ConfigurationSchema(
       type: 'color',
       description: 'the color to use when the score is negative',
       defaultValue: 'red',
+      contextVariable: ['feature'],
     },
     /**
      * #slot

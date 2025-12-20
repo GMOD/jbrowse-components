@@ -1,0 +1,177 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  createrelease:
+    name: Create release tag and JBrowse web release artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      - name: Set release version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build jbrowse-web
+        run: |
+          echo $RELEASE_VERSION
+          cd products/jbrowse-web/
+          NODE_OPTIONS='--max-old-space-size=6500' yarn build
+          cd build
+          zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
+      - name: Create draft release with jbrowse-web artifact
+        run: |
+          gh release create ${{ github.ref_name }} \
+            ./products/jbrowse-web/build/jbrowse-web-${RELEASE_VERSION}.zip \
+            --draft \
+            --title "Release ${{ github.ref_name }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  buildwindows:
+    needs: createrelease
+    name: Build Windows desktop app
+    runs-on: ubuntu-latest
+    container:
+      image: docker://node:22-bullseye
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Setup java
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
+        with:
+          # eclipse 'temurin' openjdk https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Selecting-a-Java-distribution
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Install wine
+        # https://wiki.debian.org/Wine
+        run: |
+          dpkg --add-architecture i386
+          apt update
+          apt install --yes wine wine32 wine64 libwine libwine:i386 fonts-wine
+      - name: Install build deps
+        run: |
+          apt install --yes python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      # We are just cloning the esigner repo instead of calling their github
+      # action directly https://github.com/SSLcom/esigner-codesign
+      - name: Get ssl.com esigner zip file and unzip
+        run: |
+          mkdir products/jbrowse-desktop/code_signer
+          cd products/jbrowse-desktop/code_signer
+          wget  https://www.ssl.com/download/codesigntool-for-linux-and-macos -O out.zip
+          unzip out.zip
+          chmod +x CodeSignTool.sh
+          cd ../../../
+
+      - name: Build app
+        env:
+          WINDOWS_SIGN_USER_NAME: ${{ secrets.WINDOWS_SIGN_USER_NAME }}
+          WINDOWS_SIGN_USER_PASSWORD: ${{ secrets.WINDOWS_SIGN_USER_PASSWORD }}
+          WINDOWS_SIGN_CREDENTIAL_ID: ${{ secrets.WINDOWS_SIGN_CREDENTIAL_ID }}
+          WINDOWS_SIGN_USER_TOTP: ${{ secrets.WINDOWS_SIGN_USER_TOTP }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chown --recursive root:root /github/home
+          yarn build-electron:win --publish always
+        working-directory: products/jbrowse-desktop
+
+  buildmac:
+    needs: createrelease
+    name: Build Mac desktop app
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      - name: Install build dependencies
+        run: |
+          brew install pkg-config cairo pango libpng jpeg giflib librsvg
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build Mac app
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLEID: ${{ secrets.APPLEID }}
+          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          yarn build-electron:mac --publish always
+        working-directory: products/jbrowse-desktop
+  buildlinux:
+    needs: createrelease
+    name: Build Linux desktop app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build Linux app
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          yarn build-electron:linux --publish always
+        working-directory: products/jbrowse-desktop
+
+  buildjbrowseweb:
+    name: Deploy jbrowse-web and storybooks to latest folder on tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build jbrowse-web
+        run: |
+          echo $RELEASE_VERSION
+          cd products/jbrowse-web/
+          NODE_OPTIONS='--max-old-space-size=6500' yarn build
+          cd ../../
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Copy branch build to S3
+        run: |
+          cd products/jbrowse-web/build && zip -r jbrowse-web-latest.zip . && cd -
+          cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
+          aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/latest/
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/latest/*"

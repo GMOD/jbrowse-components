@@ -3,14 +3,22 @@ id: dotplotview
 title: DotplotView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/dotplot-view/src/DotplotView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/DotplotView.md)
+
+## Docs
 
 extends
 
@@ -121,7 +129,7 @@ drawCigar: true
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; bpPerPx: IType<...>; of...
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; interRegionPaddingWidth: IOptionalIType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ......
 // code
 hview: types.optional(DotplotHView, {})
 ```
@@ -130,7 +138,7 @@ hview: types.optional(DotplotHView, {})
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; bpPerPx: IType<...>; of...
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; interRegionPaddingWidth: IOptionalIType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ......
 // code
 vview: types.optional(DotplotVView, {})
 ```
@@ -139,11 +147,9 @@ vview: types.optional(DotplotVView, {})
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; configuration: AnyConfigurationSchemaType; minimized: IType<...>; displays: IArrayType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IAnyType>
 // code
-tracks: types.array(
-          pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
-        )
+tracks: types.array(pm.pluggableMstType('track', 'stateModel'))
 ```
 
 #### property: viewTrackConfigs
@@ -156,6 +162,17 @@ dotplots where this track would not really apply elsewhere
 IArrayType<IAnyModelType>
 // code
 viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
+```
+
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<DotplotViewInit, DotplotViewInit, DotplotViewInit>
+// code
+init: types.frozen<DotplotViewInit | undefined>()
 ```
 
 ### DotplotView - Getters
@@ -202,11 +219,36 @@ any[]
 any[]
 ```
 
-#### getter: loading
+#### getter: hasSomethingToShow
 
 ```js
 // type
 boolean
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+boolean
+```
+
+#### getter: showImportForm
+
+Whether to show the import form
+
+```js
+// type
+boolean
+```
+
+#### getter: loadingMessage
+
+```js
+// type
+string
 ```
 
 #### getter: viewWidth
@@ -227,7 +269,7 @@ number
 
 ```js
 // type
-({ id: string; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<...>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; bpPerPx: number; offsetPx: number; interRegion...
+({ id: string; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>>; bpPerPx: number; offsetPx: number; interRegionPaddingWidth: number; minimumBlockWidth: number; } & ... 11 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: error
@@ -250,10 +292,31 @@ renderProps: () => any
 
 ```js
 // type signature
-menuItems: () => ({ label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; } | { label: string; onClick: () => void; icon?: undefined; } | { ...; })[]
+menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } | { label: string; onClick: () => Widget; icon: (props: SvgIconProps) => Element; })[]
 ```
 
 ### DotplotView - Actions
+
+#### action: importFormRemoveRow
+
+```js
+// type signature
+importFormRemoveRow: (idx: number) => void
+```
+
+#### action: clearImportFormSyntenyTracks
+
+```js
+// type signature
+clearImportFormSyntenyTracks: () => void
+```
+
+#### action: setImportFormSyntenyTrack
+
+```js
+// type signature
+setImportFormSyntenyTrack: (arg: number, val: ImportFormSyntenyTrack) => void
+```
 
 #### action: setShowPanButtons
 
@@ -327,28 +390,25 @@ setHeight: (newHeight: number) => number
 setError: (e: unknown) => void
 ```
 
-#### action: closeView
-
-removes the view itself from the state tree entirely by calling the parent
-removeView
+#### action: setInit
 
 ```js
 // type signature
-closeView: () => void
+setInit: (init?: DotplotViewInit) => void
 ```
 
-#### action: zoomOutButton
+#### action: zoomOut
 
 ```js
 // type signature
-zoomOutButton: () => void
+zoomOut: () => void
 ```
 
-#### action: zoomInButton
+#### action: zoomIn
 
 ```js
 // type signature
-zoomInButton: () => void
+zoomIn: () => void
 ```
 
 #### action: activateTrackSelector
@@ -362,21 +422,21 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
+showTrack: (trackId: string, initialSnapshot?: {}) => any
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => 0 | 1
 ```
 
 #### action: toggleTrack
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string) => void
 ```
 
 #### action: setAssemblyNames
@@ -390,23 +450,35 @@ setAssemblyNames: (target: string, query: string) => void
 
 ```js
 // type signature
-setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; bpPerPx...
+setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; interRegionPaddingWidth: IOptionalIType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void
 ```
 
 #### action: getCoords
 
 ```js
 // type signature
-getCoords: (mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }[]
+getCoords: (mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }[]
 ```
 
-#### action: zoomIn
+#### action: zoomInToMouseCoords
 
 zooms into clicked and dragged region
 
 ```js
 // type signature
-zoomIn: (mousedown: Coord, mouseup: Coord) => void
+zoomInToMouseCoords: (mousedown: Coord, mouseup: Coord) => void
+```
+
+#### action: calculateBorders
+
+Calculate borders synchronously for a given zoom level
+
+```js
+// type signature
+calculateBorders: () => {
+  borderX: number
+  borderY: number
+}
 ```
 
 #### action: showAllRegions
@@ -414,6 +486,13 @@ zoomIn: (mousedown: Coord, mouseup: Coord) => void
 ```js
 // type signature
 showAllRegions: () => void
+```
+
+#### action: initializeDisplayedRegions
+
+```js
+// type signature
+initializeDisplayedRegions: () => void
 ```
 
 #### action: onDotplotView

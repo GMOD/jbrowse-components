@@ -1,41 +1,46 @@
 import React from 'react'
 
 // must import first to create window.require as side effect
-import { ipcMain, ipcRenderer } from '../../../../packages/__mocks__/electron'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { render, fireEvent } from '@testing-library/react'
-import { SnapshotIn } from 'mobx-state-tree'
+import { fireEvent, render } from '@testing-library/react'
 
 // locals
 import JBrowse from './JBrowse'
-import corePlugins from '../corePlugins'
-import JBrowseRootModelFactory from '../rootModel'
+import { ipcMain, ipcRenderer } from '../../../../packages/__mocks__/electron'
 import configSnapshot from '../../test_data/volvox/config.json'
-import sessionModelFactory from '../sessionModel'
+import corePlugins from '../corePlugins'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
+import sessionModelFactory from '../sessionModel/sessionModel'
+
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
 type JBrowseRootModel = ReturnType<typeof JBrowseRootModelFactory>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(configSnapshot as any).configuration = {
-  rpc: {
-    defaultDriver: 'MainThreadRpcDriver',
-  },
-}
-
 function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
-  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-  pluginManager.createPluggableElements()
+  const pluginManager = new PluginManager(
+    corePlugins.map(P => new P()),
+  ).createPluggableElements()
 
   const rootModel = JBrowseRootModelFactory({
     pluginManager,
     sessionModelFactory,
-  }).create({ jbrowse: initialState || configSnapshot }, { pluginManager })
-  pluginManager.setRootModel(rootModel)
-  pluginManager.configure()
-  return pluginManager
+  }).create(
+    {
+      jbrowse: initialState || {
+        ...configSnapshot,
+        configuration: {
+          rpc: {
+            defaultDriver: 'MainThreadRpcDriver',
+          },
+        },
+      },
+    },
+    { pluginManager },
+  )
+  return pluginManager.setRootModel(rootModel).configure()
 }
 
 test('basic test of electron-mock-ipc', () => {

@@ -5,10 +5,9 @@ class AbortError extends Error {
 }
 
 /**
- * properly check if the given AbortSignal is aborted.
- * per the standard, if the signal reads as aborted,
- * this function throws either a DOMException AbortError, or a regular error
- * with a `code` attribute set to `ERR_ABORTED`.
+ * properly check if the given AbortSignal is aborted. per the standard, if the
+ * signal reads as aborted, this function throws either a DOMException
+ * AbortError, or a regular error with a `code` attribute set to `ERR_ABORTED`.
  *
  * for convenience, passing `undefined` is a no-op
  *
@@ -57,7 +56,7 @@ export function makeAbortError() {
 
 export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
   if (!signal) {
-    return Observable.create()
+    return new Observable()
   }
   return fromEvent(signal, 'abort')
 }
@@ -78,6 +77,6 @@ export function isAbortException(exception: unknown): boolean {
       // Error: aborted
       // AbortError: aborted
       // AbortError: The user aborted a request.
-      !!/\b(aborted|aborterror)\b/i.test(exception.message))
+      /\b(aborted|aborterror)\b/i.test(exception.message))
   )
 }

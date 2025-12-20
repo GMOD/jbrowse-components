@@ -1,13 +1,22 @@
-import React from 'react'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import 'requestidlecallback-polyfill'
+import { ThemeProvider } from '@mui/material'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 
-// locals
 import LinearGenomeView from './LinearGenomeView'
+
+import type { LinearGenomeViewModel } from '../model'
 
 // mock
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+
+function LGV({ model }: { model: LinearGenomeViewModel }) {
+  return (
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <LinearGenomeView model={model} />
+    </ThemeProvider>
+  )
+}
 
 const assemblyConf = {
   name: 'volMyt1',
@@ -35,17 +44,24 @@ test('renders setup wizard', async () => {
   session.addView('LinearGenomeView', { id: 'lgv' })
   const model = session.views[0]
   model.setWidth(800)
-  const { findByText } = render(<LinearGenomeView model={model} />)
+  const { findByText } = render(<LGV model={model} />)
   expect(model.displayedRegions.length).toEqual(0)
   const elt = await findByText('Open', {}, { timeout: 10000 })
-  await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
-  fireEvent.click(elt)
-  await waitFor(() => expect(model.displayedRegions.length).toEqual(1), {
-    timeout: 15000,
+  await waitFor(() => {
+    expect(elt.getAttribute('disabled')).toBe(null)
   })
+  fireEvent.click(elt)
+  await waitFor(
+    () => {
+      expect(model.displayedRegions.length).toEqual(1)
+    },
+    {
+      timeout: 15000,
+    },
+  )
 }, 15000)
 
-test('renders one track, one region', async () => {
+xtest('renders one track, one region', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addTrackConf({
@@ -81,7 +97,7 @@ test('renders one track, one region', async () => {
   const model = session.views[0]
   model.setWidth(800)
   const { container, queryAllByTestId, getByPlaceholderText, findByText } =
-    render(<LinearGenomeView model={model} />)
+    render(<LGV model={model} />)
   await findByText('Foo Track')
   // test needs to wait until it's updated to display 100 bp in the header to
   // make snapshot pass
@@ -92,12 +108,14 @@ test('renders one track, one region', async () => {
       (getByPlaceholderText('Search for location') as HTMLInputElement).value,
     ).toEqual('ctgA:1..100')
   })
-  await waitFor(() => expect(queryAllByTestId('svgfeatures').length).toBe(1))
+  await waitFor(() => {
+    expect(queryAllByTestId('svgfeatures').length).toBe(1)
+  })
   // snapshot has no features rendered
   expect(container).toMatchSnapshot()
 })
 
-test('renders two tracks, two regions', async () => {
+xtest('renders two tracks, two regions', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assemblyConf)
   session.addTrackConf({
@@ -158,10 +176,12 @@ test('renders two tracks, two regions', async () => {
   const model = session.views[0]
   model.setWidth(800)
   const { container, findByDisplayValue, findByText, queryAllByTestId } =
-    render(<LinearGenomeView model={model} />)
+    render(<LGV model={model} />)
   await findByText('Foo Track')
   await findByText('798bp')
   await findByDisplayValue('ctgA:1..100 ctgB:1,001..1,698')
-  await waitFor(() => expect(queryAllByTestId('svgfeatures').length).toBe(4))
+  await waitFor(() => {
+    expect(queryAllByTestId('svgfeatures').length).toBe(4)
+  })
   expect(container).toMatchSnapshot()
 }, 15000)

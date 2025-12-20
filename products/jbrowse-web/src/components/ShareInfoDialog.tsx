@@ -1,4 +1,3 @@
-import React from 'react'
 import { Dialog } from '@jbrowse/core/ui'
 import { DialogContent, DialogContentText } from '@mui/material'
 
@@ -11,9 +10,11 @@ export default function InfoDialog({
 }) {
   return (
     <Dialog
-      onClose={() => onClose()}
       open={open}
       title="Info about session URLs"
+      onClose={() => {
+        onClose()
+      }}
     >
       <DialogContent>
         <DialogContentText>

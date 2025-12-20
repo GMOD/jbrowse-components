@@ -1,33 +1,25 @@
 import { lazy } from 'react'
+
+import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   addDisposer,
   cast,
-  getParent,
   getPath,
-  getRoot,
   onAction,
-  resolveIdentifier,
   types,
-  Instance,
-  SnapshotIn,
-} from 'mobx-state-tree'
-import { autorun, transaction } from 'mobx'
+} from '@jbrowse/mobx-state-tree'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import { autorun } from 'mobx'
 
-// jbrowse
-import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { MenuItem } from '@jbrowse/core/ui'
-import { getSession, isSessionModelWithWidgets, avg } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { ElementId } from '@jbrowse/core/util/types/mst'
-import {
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-
-// icons
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
@@ -40,6 +32,9 @@ const ReturnToImportFormDialog = lazy(
  * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
+  const LinearSyntenyViewHelper = pluginManager.getViewType(
+    'LinearSyntenyViewHelper',
+  )?.stateModel
   return types
     .compose(
       'LinearComparativeView',
@@ -68,30 +63,28 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        interactToggled: false,
+        interactiveOverlay: false,
         /**
          * #property
          */
-        middleComparativeHeight: 100,
+        showDynamicControls: true,
         /**
          * #property
          */
-        tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
-        ),
+        levels: types.array(LinearSyntenyViewHelper!),
         /**
          * #property
          * currently this is limited to an array of two
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         ),
 
         /**
          * #property
-         * this represents tracks specific to this view specifically used
-         * for read vs ref dotplots where this track would not really apply
+         * this represents tracks specific to this view specifically used for
+         * read vs ref dotplots where this track would not really apply
          * elsewhere
          */
         viewTrackConfigs: types.array(
@@ -100,20 +93,24 @@ function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       width: undefined as number | undefined,
+      /**
+       * #volatile
+       * Set to true when the view is being initialized from a launch spec to
+       * avoid showing the import form during loading
+       */
+      isLoading: false,
     }))
     .views(self => ({
       /**
        * #getter
        */
-      get highResolutionScaling() {
-        return 2
-      },
-      /**
-       * #getter
-       */
       get initialized() {
         return (
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           self.width !== undefined &&
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
@@ -135,19 +132,37 @@ function stateModelFactory(pluginManager: PluginManager) {
       get assemblyNames() {
         return [...new Set(self.views.flatMap(v => v.assemblyNames))]
       },
+
+      /**
+       * #getter
+       */
+      get loadingMessage() {
+        return this.showLoading ? 'Loading' : undefined
+      },
+
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return self.isLoading || (!this.initialized && self.views.length > 0)
+      },
     }))
     .actions(self => ({
       afterAttach() {
+        // doesn't link showTrack/hideTrack, doesn't make sense in
+        // synteny views most time
+        const actions = new Set([
+          'horizontalScroll',
+          'zoomTo',
+          'setScaleFactor',
+        ])
         addDisposer(
           self,
           onAction(self, param => {
             if (self.linkViews) {
               const { name, path, args } = param
-
-              // doesn't link showTrack/hideTrack, doesn't make sense in
-              // synteny views most time
-              const actions = ['horizontalScroll', 'zoomTo', 'setScaleFactor']
-              if (actions.includes(name) && path) {
+              if (actions.has(name) && path) {
                 this.onSubviewAction(name, path, args)
               }
             }
@@ -165,13 +180,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       onSubviewAction(actionName: string, path: string, args?: unknown[]) {
-        self.views.forEach(view => {
+        for (const view of self.views) {
           const ret = getPath(view)
           if (!ret.endsWith(path)) {
             // @ts-expect-error
             view[actionName](args?.[0])
           }
-        })
+        }
       },
 
       /**
@@ -184,8 +199,20 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setIsLoading(arg: boolean) {
+        self.isLoading = arg
+      },
+
+      /**
+       * #action
+       */
       setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
         self.views = cast(views)
+        const levels = []
+        for (let i = 0; i < views.length - 1; i++) {
+          levels.push({ level: i })
+        }
+        self.levels = cast(levels)
       },
 
       /**
@@ -197,45 +224,41 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the
-       * parent removeView
        */
-      closeView() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getParent<any>(self, 2).removeView(self)
+      setLevelHeight(newHeight: number, level = 0) {
+        const l = self.levels[level]!
+        l.setHeight(newHeight)
+        return l.height
       },
-
       /**
        * #action
        */
-      setMiddleComparativeHeight(n: number) {
-        self.middleComparativeHeight = n
-        return self.middleComparativeHeight
+      setLinkViews(arg: boolean) {
+        self.linkViews = arg
       },
-
       /**
        * #action
        */
-      toggleLinkViews() {
-        self.linkViews = !self.linkViews
+      setShowDynamicControls(arg: boolean) {
+        self.showDynamicControls = arg
       },
-
       /**
        * #action
        */
-      activateTrackSelector() {
+      activateTrackSelector(level: number) {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
           if (isSessionModelWithWidgets(session)) {
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
-              { view: self },
+              {
+                view: self.levels[level],
+              },
             )
             session.showWidget(selector)
             return selector
           }
-          return undefined
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
@@ -243,80 +266,45 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-          return true
-        }
-        return false
+      toggleTrack(trackId: string, level = 0) {
+        self.levels[level]?.toggleTrack(trackId)
       },
 
       /**
        * #action
        */
-      showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(schema, getRoot(self), trackId)
-        if (!configuration) {
-          throw new Error(`track not found ${trackId}`)
+      showTrack(trackId: string, level = 0, initialSnapshot = {}) {
+        if (!self.levels[level]) {
+          self.levels[level] = cast({ level })
         }
-        const trackType = pluginManager.getTrackType(configuration.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${configuration.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
-        )
-        const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.has(d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
-          )
-        }
-        self.tracks.push(
-          trackType.stateModel.create({
-            ...initialSnapshot,
-            type: configuration.type,
-            configuration,
-            displays: [{ type: displayConf.type, configuration: displayConf }],
-          }),
-        )
+        self.levels[level].showTrack(trackId, initialSnapshot)
       },
 
       /**
        * #action
        */
-      hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const config = resolveIdentifier(schema, getRoot(self), trackId)
-        const shownTracks = self.tracks.filter(t => t.configuration === config)
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
-        return shownTracks.length
+      hideTrack(trackId: string, level = 0) {
+        self.levels[level]?.hideTrack(trackId)
       },
       /**
        * #action
        */
       squareView() {
         const average = avg(self.views.map(v => v.bpPerPx))
-        self.views.forEach(view => {
+        for (const view of self.views) {
           const center = view.pxToBp(view.width / 2)
           view.setNewView(average, view.offsetPx)
-          if (!center.refName) {
-            return
+          if (center.refName) {
+            view.centerAt(center.coord, center.refName, center.index)
           }
-          view.centerAt(center.coord, center.refName, center.index)
-        })
+        }
       },
       /**
        * #action
        */
       clearView() {
         self.views = cast([])
-        self.tracks = cast([])
+        self.levels = cast([])
       },
     }))
     .views(() => ({
@@ -335,24 +323,18 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       menuItems(): MenuItem[] {
         return [
-          ...self.views
-            .map((view, idx) => [idx, view.menuItems?.()] as const)
-            .filter(f => !!f[1])
-            .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
           {
             label: 'Return to import form',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 ReturnToImportFormDialog,
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
             },
             icon: FolderOpenIcon,
-          },
-          {
-            label: 'Open track selector',
-            onClick: self.activateTrackSelector,
-            icon: TrackSelectorIcon,
           },
         ]
       },
@@ -364,12 +346,12 @@ function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Zoom to region(s)',
             onClick: () => {
-              self.views.forEach(view => {
+              for (const view of self.views) {
                 const { leftOffset, rightOffset } = view
                 if (leftOffset && rightOffset) {
                   view.moveTo(leftOffset, rightOffset)
                 }
-              })
+              }
             },
           },
         ]
@@ -379,14 +361,52 @@ function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            if (self.width) {
-              self.views.forEach(v => v.setWidth(self.width))
-            }
-          }),
+          autorun(
+            function comparativeViewWidthAutorun() {
+              if (self.width) {
+                for (const view of self.views) {
+                  view.setWidth(self.width)
+                }
+              }
+            },
+            { name: 'ComparativeViewWidth' },
+          ),
         )
       },
     }))
+    .preProcessSnapshot(snap => {
+      // @ts-expect-error
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      const { tracks, levels = [{ tracks, level: 0 }], ...rest } = snap || {}
+      return {
+        ...rest,
+        levels,
+      }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        trackSelectorType,
+        showIntraviewLinks,
+        linkViews,
+        interactiveOverlay,
+        showDynamicControls,
+        viewTrackConfigs,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
+        ...(linkViews ? { linkViews } : {}),
+        ...(interactiveOverlay ? { interactiveOverlay } : {}),
+        ...(!showDynamicControls ? { showDynamicControls } : {}),
+        ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
+      } as typeof snap
+    })
 }
 
 export type LinearComparativeViewStateModel = ReturnType<

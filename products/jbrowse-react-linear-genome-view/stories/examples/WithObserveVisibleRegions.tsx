@@ -1,11 +1,11 @@
-import React from 'react'
-import { Region } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // in your code
-// import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
+// import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 import { getVolvoxConfig } from './util'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
+
+import type { Region } from '@jbrowse/core/util'
 
 function loc(r: Region) {
   return `${r.refName}:${Math.floor(r.start)}-${Math.floor(r.end)}`
@@ -13,8 +13,12 @@ function loc(r: Region) {
 
 type ViewState = ReturnType<typeof createViewState>
 
-const VisibleRegions = observer(({ viewState }: { viewState: ViewState }) => {
-  const view = viewState.session.views[0]
+const VisibleRegions = observer(function ({
+  viewState,
+}: {
+  viewState: ViewState
+}) {
+  const view = viewState.session.views[0]!
   return view.initialized ? (
     <div>
       <p>Visible region {view.coarseDynamicBlocks.map(loc).join(',')}</p>

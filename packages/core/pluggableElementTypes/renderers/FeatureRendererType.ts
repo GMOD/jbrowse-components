@@ -1,40 +1,45 @@
-import { toArray } from 'rxjs/operators'
-import clone from 'clone'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
-// locals
-import { checkAbortSignal, iterMap } from '../../util'
-import SimpleFeature, {
-  Feature,
-  SimpleFeatureSerialized,
-} from '../../util/simpleFeature'
-import { AugmentedRegion as Region } from '../../util/types'
+import ServerSideRendererType from './ServerSideRendererType'
+import { normalizeRegion } from './util'
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import ServerSideRendererType, {
+import { iterMap } from '../../util'
+import SimpleFeature from '../../util/simpleFeature'
+
+import type {
   RenderArgs as ServerSideRenderArgs,
-  RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
+  RenderArgsSerialized as ServerSideRenderArgsSerialized,
   RenderResults as ServerSideRenderResults,
+  RenderReturn,
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { AnyConfigurationModel } from '../../configuration'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { Feature, SimpleFeatureSerialized } from '../../util/simpleFeature'
+import type { AugmentedRegion as Region } from '../../util/types'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  displayModel: { id: string; selectedFeatureId?: string }
+  displayModel?: {
+    id: string
+    selectedFeatureId?: string
+  }
   regions: Region[]
   blockKey: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
-  displayModel: { id: string; selectedFeatureId?: string }
+  displayModel?: {
+    id: string
+    selectedFeatureId?: string
+  }
   regions: Region[]
   blockKey: string
 }
 
-export interface RenderArgsDeserialized
-  extends ServerSideRenderArgsDeserialized {
+export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized {
   displayModel: { id: string; selectedFeatureId?: string }
   regions: Region[]
   blockKey: string
@@ -42,11 +47,11 @@ export interface RenderArgsDeserialized
 }
 
 export interface RenderResults extends ServerSideRenderResults {
-  features: Map<string, Feature>
+  features?: Map<string, Feature>
 }
 
 export interface ResultsSerialized extends ServerSideResultsSerialized {
-  features: SimpleFeatureSerialized[]
+  features?: SimpleFeatureSerialized[]
 }
 
 export interface ResultsDeserialized extends ServerSideResultsDeserialized {
@@ -54,40 +59,38 @@ export interface ResultsDeserialized extends ServerSideResultsDeserialized {
   blockKey: string
 }
 
+/**
+ * FeatureRendererType provides feature fetching and serialization for renderers
+ * that need to return features to the client (e.g., SvgFeatureRenderer for click handling).
+ *
+ * Canvas-based renderers that return rpcResult() with ImageBitmap bypass the feature
+ * serialization and can use getFeatures() directly without going through render().
+ */
 export default class FeatureRendererType extends ServerSideRendererType {
-  /**
-   * replaces the `displayModel` param (which on the client is a MST model)
-   * with a stub that only contains the `selectedFeature`, since this is the only
-   * part of the track model that most renderers read. also serializes the config
-   * and regions to JSON from MST objects.
-   *
-   * @param args - the arguments passed to render
-   */
-  serializeArgsInClient(args: RenderArgs) {
-    const { displayModel, regions } = args
-    const serializedArgs = {
-      ...args,
-      displayModel: displayModel && {
-        id: displayModel.id,
-        selectedFeatureId: displayModel.selectedFeatureId,
-      },
-      regions: clone(regions),
+  async renderDirect(args: RenderArgs) {
+    const result = await super.renderDirect(args)
+    return {
+      ...result,
+      blockKey: args.blockKey,
     }
-    return super.serializeArgsInClient(serializedArgs)
   }
 
-  /**
-   * Adds feature deserialization to base server-side result deserialization
-   *
-   * @param results - the results of the render
-   * @param args - the arguments passed to render
-   */
+  serializeArgsInClient(args: RenderArgs) {
+    return super.serializeArgsInClient({
+      ...args,
+      displayModel: undefined,
+      regions: structuredClone(args.regions),
+    })
+  }
+
   deserializeResultsInClient(
     result: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
     const deserializedFeatures = new Map<string, SimpleFeature>(
-      result.features.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]),
+      result.features
+        ?.map(f => SimpleFeature.fromJSON(f))
+        .map(f => [f.id(), f]),
     )
 
     const deserialized = super.deserializeResultsInClient(
@@ -104,80 +107,47 @@ export default class FeatureRendererType extends ServerSideRendererType {
     }
   }
 
-  /**
-   * Adds feature serialization to base server-side result serialization
-   *
-   * @param result - object containing the results of calling the `render`
-   * method
-   * @param args - deserialized render args
-   */
   serializeResultsInWorker(
     result: RenderResults,
     args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const serialized = super.serializeResultsInWorker(result, args)
     const { features } = result
+
     return {
       ...serialized,
-      features: iterMap(features.values(), f => f.toJSON(), features.size),
+      features:
+        features instanceof Map
+          ? iterMap(features.values(), f => f.toJSON(), features.size)
+          : undefined,
     }
   }
 
-  /**
-   * will expand if soft clipping or feature glyphs are shown
-   *
-   * @param region - rendering region
-   * @param _renderArgs - render args, unused, may be used in deriving classes
-   */
   getExpandedRegion(region: Region, _renderArgs: RenderArgsDeserialized) {
     return region
   }
 
-  /**
-   * use the dataAdapter to fetch the features to be rendered
-   *
-   * @param renderArgs -
-   * @returns Map of features as `{ id => feature, ... }`
-   */
   async getFeatures(
     renderArgs: RenderArgsDeserialized,
   ): Promise<Map<string, Feature>> {
     const pm = this.pluginManager
-    const { signal, regions, sessionId, adapterConfig } = renderArgs
+    const { regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    const features = new Map()
 
-    if (!regions || regions.length === 0) {
-      return features
-    }
-    // make sure the requested region's start and end are integers, if
-    // there is a region specification.
-    const requestRegions = regions.map((r: Region) => {
-      const requestRegion = { ...r }
-      if (requestRegion.start) {
-        requestRegion.start = Math.floor(requestRegion.start)
-      }
-      if (requestRegion.end) {
-        requestRegion.end = Math.ceil(requestRegion.end)
-      }
-      return requestRegion
-    })
-
-    const region = requestRegions[0]
-
+    const requestRegions = regions.map(r => normalizeRegion(r))
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeatures(
-            this.getExpandedRegion(region, renderArgs),
+            this.getExpandedRegion(requestRegions[0]!, renderArgs),
             renderArgs,
           )
         : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
     const feats = await firstValueFrom(featureObservable.pipe(toArray()))
-    checkAbortSignal(signal)
     return new Map<string, Feature>(
       feats
         .filter(feat => this.featurePassesFilters(renderArgs, feat))
@@ -185,11 +155,6 @@ export default class FeatureRendererType extends ServerSideRendererType {
     )
   }
 
-  /**
-   * @param renderArgs -
-   * @param feature -
-   * @returns true if this feature passes all configured filters
-   */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
     return renderArgs.filters
       ? renderArgs.filters.passes(feature, renderArgs)
@@ -197,15 +162,12 @@ export default class FeatureRendererType extends ServerSideRendererType {
   }
 
   /**
-   * gets features and renders
-   *
-   * @param props - render args
+   * Default render method that fetches features and passes them to the React component.
+   * Canvas-based renderers override this and return rpcResult() directly.
    */
-  async render(
-    props: RenderArgsDeserialized & { features?: Map<string, Feature> },
-  ): Promise<RenderResults> {
-    const features = props.features || (await this.getFeatures(props))
-    const result = await super.render({ ...props, features })
+  async render(renderArgs: RenderArgsDeserialized): Promise<RenderReturn> {
+    const features = await this.getFeatures(renderArgs)
+    const result = await super.render({ ...renderArgs, features })
     return { ...result, features }
   }
 }

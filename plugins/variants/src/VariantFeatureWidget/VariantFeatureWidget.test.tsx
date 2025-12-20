@@ -1,12 +1,12 @@
-import React from 'react'
-import { render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { types } from '@jbrowse/mobx-state-tree'
+import { ThemeProvider } from '@mui/material'
+import { render } from '@testing-library/react'
 
-// locals
-import { stateModelFactory } from './stateModelFactory'
 import VariantFeatureDetails from './VariantFeatureWidget'
+import { stateModelFactory } from './stateModelFactory'
 
 test('renders with just the required model elements', () => {
   const pluginManager = new PluginManager([])
@@ -25,6 +25,7 @@ test('renders with just the required model elements', () => {
     { pluginManager },
   )
   model.widget.setFeatureData({
+    uniqueId: 'hello',
     refName: 'ctgA',
     start: 176,
     end: 177,
@@ -37,6 +38,10 @@ test('renders with just the required model elements', () => {
     },
   })
 
-  const { container } = render(<VariantFeatureDetails model={model.widget} />)
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <VariantFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
   expect(container).toMatchSnapshot()
 })

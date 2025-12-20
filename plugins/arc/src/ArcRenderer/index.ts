@@ -1,15 +1,16 @@
-import PluginManager from '@jbrowse/core/PluginManager'
+import { lazy } from 'react'
 
-import ReactComponent from './ArcRendering'
-import configSchema from './configSchema'
 import ArcRenderer from './ArcRenderer'
+import configSchema from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function ArcRendererF(pluginManager: PluginManager) {
   pluginManager.addRendererType(
     () =>
       new ArcRenderer({
         name: 'ArcRenderer',
-        ReactComponent,
+        ReactComponent: lazy(() => import('./ArcRendering')),
         configSchema,
         pluginManager,
       }),

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "outDir": "dist",
@@ -10,6 +10,8 @@
     "strict": true,
     "declaration": true,
     "module": "commonjs",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
     "moduleResolution": "node"
   },
   "include": ["generateConfigDocs.ts", "generateStateModelDocs.ts", "util.ts"]

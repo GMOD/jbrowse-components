@@ -1,4 +1,4 @@
-# @jbrowse/react-circular-genome-view
+# @jbrowse/react-circular-genome-view2
 
 > JBrowse 2 circular genome view React component
 
@@ -9,12 +9,11 @@ of a single JBrowse 2 circular genome view.
 ## Usage
 
 ```tsx
-import React from 'react'
 import '@fontsource/roboto'
 import {
   createViewState,
   JBrowseCircularGenomeView,
-} from '@jbrowse/react-circular-genome-view'
+} from '@jbrowse/react-circular-genome-view2'
 
 function View() {
   const state = createViewState({
@@ -38,13 +37,13 @@ For working examples, see https://jbrowse.org/jb2/docs/embedded_components/
 With [yarn](https://yarnpkg.com/):
 
 ```
-$ yarn add @jbrowse/react-circular-genome-view
+$ yarn add @jbrowse/react-circular-genome-view2
 ```
 
 Or with [npm](https://npmjs.org/):
 
 ```
-$ npm install @jbrowse/react-circular-genome-view --legacy-peer-deps
+$ npm install @jbrowse/react-circular-genome-view2 --legacy-peer-deps
 ```
 
 The --legacy-peer-deps helps with installing via NPM to avoid warnings about the

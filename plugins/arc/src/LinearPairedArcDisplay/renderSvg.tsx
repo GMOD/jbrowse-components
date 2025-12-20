@@ -1,10 +1,9 @@
-import React from 'react'
 import { getContainingView, when } from '@jbrowse/core/util'
 
-// locals
-import { LinearArcDisplayModel } from './model'
 import Arcs from './components/Arcs'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+import type { LinearArcDisplayModel } from './model'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export async function renderArcSvg(
   model: LinearArcDisplayModel,
@@ -17,7 +16,7 @@ export async function renderArcSvg(
   const view = getContainingView(model) as LinearGenomeViewModel
   const width = view.dynamicBlocks.totalWidthPx
   const height = model.height
-  const clipid = 'arc-' + model.id
+  const clipid = `arc-${model.id}`
   return (
     <>
       <defs>

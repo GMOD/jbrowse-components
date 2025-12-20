@@ -2,7 +2,23 @@
  * Helper class allows reading names index generated in JBrowse1
  * Adapted from https://github.com/GMOD/jbrowse/blob/master/src/JBrowse/Store/Hash.js
  */
-import crc32 from 'buffer-crc32'
+
+const crcTable = new Uint32Array(256)
+for (let i = 0; i < 256; i++) {
+  let c = i
+  for (let j = 0; j < 8; j++) {
+    c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
+  }
+  crcTable[i] = c
+}
+
+function crc32(str: string) {
+  let crc = 0xffffffff
+  for (let i = 0; i < str.length; i++) {
+    crc = crcTable[(crc ^ str.charCodeAt(i)) & 0xff]! ^ (crc >>> 8)
+  }
+  return (crc ^ 0xffffffff) >>> 0
+}
 
 export default class HttpMap {
   url: string
@@ -92,9 +108,6 @@ export default class HttpMap {
   }
 
   hash(data: string) {
-    return crc32(Buffer.from(data))
-      .toString('hex')
-      .toLowerCase()
-      .replace('-', 'n')
+    return crc32(data).toString(16).toLowerCase().replace('-', 'n')
   }
 }

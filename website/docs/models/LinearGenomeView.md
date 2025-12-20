@@ -3,14 +3,22 @@ id: lineargenomeview
 title: LinearGenomeView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/linear-genome-view/src/LinearGenomeView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearGenomeView.md)
+
+## Docs
 
 extends
 
@@ -70,9 +78,9 @@ entire set of chromosomes if your assembly is very fragmented
 
 ```js
 // type signature
-IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
+IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 // code
-displayedRegions: types.array(MUIRegion)
+displayedRegions: types.optional(types.frozen<Region[]>(), [])
 ```
 
 #### property: tracks
@@ -136,9 +144,7 @@ show the "center line"
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCenterLine: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
-          ),
+          localStorageGetBoolean('lgv-showCenterLine', false),
         )
 ```
 
@@ -151,9 +157,7 @@ show the "cytobands" in the overview scale bar
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCytobandsSetting: types.optional(types.boolean, () =>
-          Boolean(
-            JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
-          ),
+          localStorageGetBoolean('lgv-showCytobands', true),
         )
 ```
 
@@ -191,10 +195,10 @@ highlights on the LGV from the URL parameters
 
 ```js
 // type signature
-IOptionalIType<IArrayType<IType<Required<ParsedLocString>, Required<ParsedLocString>, Required<ParsedLocString>>>, [...]>
+IOptionalIType<IArrayType<IType<HighlightType, HighlightType, HighlightType>>, [undefined]>
 // code
 highlight: types.optional(
-          types.array(types.frozen<Required<ParsedLocString>>()),
+          types.array(types.frozen<HighlightType>()),
           [],
         )
 ```
@@ -208,11 +212,58 @@ color by CDS
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 colorByCDS: types.optional(types.boolean, () =>
-          Boolean(JSON.parse(localStorageGetItem('lgv-colorByCDS') || 'false')),
+          localStorageGetBoolean('lgv-colorByCDS', false),
         )
 ```
 
+#### property: showTrackOutlines
+
+show the track outlines
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showTrackOutlines: types.optional(types.boolean, () =>
+          localStorageGetBoolean('lgv-showTrackOutlines', true),
+        )
+```
+
+#### property: init
+
+this is a non-serialized property that can be used for loading the linear genome
+view via session snapshots example:
+
+```json
+{
+  loc: "chr1:1,000,000-2,000,000"
+  assembly: "hg19"
+  tracks: ["genes", "variants"]
+}
+```
+
+```js
+// type signature
+IType<InitState, InitState, InitState>
+// code
+init: types.frozen<InitState | undefined>()
+```
+
 ### LinearGenomeView - Getters
+
+#### getter: pinnedTracks
+
+```js
+// type
+any[]
+```
+
+#### getter: unpinnedTracks
+
+```js
+// type
+any[]
+```
 
 #### getter: trackLabelsSetting
 
@@ -245,6 +296,47 @@ number
 any[]
 ```
 
+#### getter: assemblyDisplayNames
+
+```js
+// type
+any
+```
+
+#### getter: isTopLevelView
+
+checking if lgv is a 'top-level' view is used for toggling pin track capability,
+sticky positioning
+
+```js
+// type
+boolean
+```
+
+#### getter: stickyViewHeaders
+
+only uses sticky view headers when it is a 'top-level' view and session allows
+it
+
+```js
+// type
+boolean
+```
+
+#### getter: rubberbandTop
+
+```js
+// type
+number
+```
+
+#### getter: assembliesNotFound
+
+```js
+// type
+string
+```
+
 #### getter: assemblyErrors
 
 ```js
@@ -273,7 +365,39 @@ any
 boolean
 ```
 
-#### getter: scaleBarHeight
+#### getter: loadingMessage
+
+```js
+// type
+string
+```
+
+#### getter: hasSomethingToShow
+
+```js
+// type
+any
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+any
+```
+
+#### getter: showImportForm
+
+Whether to show the import form
+
+```js
+// type
+boolean
+```
+
+#### getter: scalebarHeight
 
 ```js
 // type
@@ -333,7 +457,7 @@ number
 
 ```js
 // type
-any
+unknown
 ```
 
 #### getter: maxOffset
@@ -446,6 +570,13 @@ same as visibleLocStrings, but only updated every 300ms
 string
 ```
 
+#### getter: coarseTotalBpDisplayStr
+
+```js
+// type
+string
+```
+
 #### getter: centerLineInfo
 
 ```js
@@ -454,6 +585,13 @@ any
 ```
 
 ### LinearGenomeView - Methods
+
+#### method: scalebarDisplayPrefix
+
+```js
+// type signature
+scalebarDisplayPrefix: () => any
+```
 
 #### method: MiniControlsComponent
 
@@ -492,6 +630,8 @@ getTrack: (id: string) => any
 
 #### method: rankSearchResults
 
+does nothing currently
+
 ```js
 // type signature
 rankSearchResults: (results: BaseResult[]) => BaseResult[]
@@ -513,7 +653,7 @@ were selected by the rubberband
 
 ```js
 // type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { start: number; end: number; regionNumber?: number; reversed?: boolean; refName: string; assemblyName: string; key: string; offsetPx: number; widthPx: number; variant?: string; isLeftEndOfDisplayedRegion?: boolean; }[]
+getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { assemblyName: string; refName: string; start: number; end: number; }[]
 ```
 
 #### method: exportSvg
@@ -562,10 +702,17 @@ centerAt: (coord: number, refName: string, regionNumber?: number) => void
 
 ```js
 // type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }
+pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }
 ```
 
 ### LinearGenomeView - Actions
+
+#### action: setShowTrackOutlines
+
+```js
+// type signature
+setShowTrackOutlines: (arg: boolean) => void
+```
 
 #### action: setColorByCDS
 
@@ -627,21 +774,21 @@ setShowGridlines: (b: boolean) => void
 
 ```js
 // type signature
-addToHighlights: (highlight: Required<ParsedLocString>) => void
+addToHighlights: (highlight: HighlightType) => void
 ```
 
 #### action: setHighlight
 
 ```js
 // type signature
-setHighlight: (highlight: Required<ParsedLocString>[]) => void
+setHighlight: (highlight?: HighlightType[]) => void
 ```
 
 #### action: removeHighlight
 
 ```js
 // type signature
-removeHighlight: (highlight: Required<ParsedLocString>) => void
+removeHighlight: (highlight: HighlightType) => void
 ```
 
 #### action: scrollTo
@@ -701,7 +848,7 @@ showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) 
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => 0 | 1
 ```
 
 #### action: moveTrackDown
@@ -739,18 +886,11 @@ moveTrackToBottom: (id: string) => void
 moveTrack: (movingId: string, targetId: string) => void
 ```
 
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
-```
-
 #### action: toggleTrack
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string) => void
 ```
 
 #### action: setTrackLabels
@@ -779,15 +919,6 @@ setDisplayedRegions: (regions: Region[]) => void
 ```js
 // type signature
 activateTrackSelector: () => Widget
-```
-
-#### action: afterDisplayedRegionsSet
-
-schedule something to be run after the next time displayedRegions is set
-
-```js
-// type signature
-afterDisplayedRegionsSet: (cb: Function) => void
 ```
 
 #### action: horizontalScroll
@@ -825,6 +956,13 @@ showAllRegionsInAssembly: (assemblyName?: string) => void
 setDraggingTrackId: (idx?: string) => void
 ```
 
+#### action: setLastTrackDragY
+
+```js
+// type signature
+setLastTrackDragY: (y: number) => void
+```
+
 #### action: setScaleFactor
 
 ```js
@@ -839,6 +977,13 @@ this "clears the view" and makes the view return to the import form
 ```js
 // type signature
 clearView: () => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (arg?: InitState) => void
 ```
 
 #### action: slide
@@ -883,7 +1028,7 @@ wait for assemblies to be initialized
 
 ```js
 // type signature
-navToLocString: (input: string, optAssemblyName?: string) => Promise<any>
+navToLocString: (input: string, optAssemblyName?: string, grow?: number) => Promise<any>
 ```
 
 #### action: navToSearchString
@@ -893,17 +1038,28 @@ is returned. Will pop up a search dialog if multiple results are returned
 
 ```js
 // type signature
-navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<....
+navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promise<...>
+```
+
+#### action: navToLocation
+
+Similar to `navToLocString`, but accepts a parsed location object instead of a
+locstring. Will try to perform `setDisplayedRegions` if changing regions
+
+```js
+// type signature
+navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string, grow?: number) => Promise<any>
 ```
 
 #### action: navToLocations
 
-Similar to `navToLocString`, but accepts parsed location objects instead of
-strings. Will try to perform `setDisplayedRegions` if changing regions
+Similar to `navToLocString`, but accepts a list of parsed location objects
+instead of a locstring. Will try to perform `setDisplayedRegions` if changing
+regions
 
 ```js
 // type signature
-navToLocations: (parsedLocStrings: ParsedLocString[], assemblyName?: string) => Promise<void>
+navToLocations: (regions: ParsedLocString[], assemblyName?: string, grow?: number) => Promise<void>
 ```
 
 #### action: navTo

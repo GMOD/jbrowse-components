@@ -1,11 +1,9 @@
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-  getConf,
-} from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel LinearArcDisplay
@@ -86,7 +84,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
-            rpcDriverName: self.rpcDriverName,
             config: self.rendererConfig,
             height: self.height,
           }
@@ -116,13 +113,17 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   type: 'radio',
                   label: 'Arcs',
-                  onClick: () => self.setDisplayMode('arcs'),
+                  onClick: () => {
+                    self.setDisplayMode('arcs')
+                  },
                   checked: self.displayMode === 'arcs',
                 },
                 {
                   type: 'radio',
                   label: 'Semi-circles',
-                  onClick: () => self.setDisplayMode('semicircles'),
+                  onClick: () => {
+                    self.setDisplayMode('semicircles')
+                  },
                   checked: self.displayMode === 'semicircles',
                 },
               ],

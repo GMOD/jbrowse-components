@@ -3,14 +3,22 @@ id: linearreadarcsdisplay
 title: LinearReadArcsDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/LinearReadArcsDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadArcsDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearReadArcsDisplay.md)
+
+## Docs
 
 the arc display is a non-block-based track, so draws to a single canvas and can
 connect multiple regions extends
@@ -39,16 +47,9 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: filterBy
-
-```js
-// type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
-// code
-filterBy: types.optional(FilterModel, {})
-```
-
 #### property: lineWidth
+
+Width of the arc lines (thin, bold, extra bold)
 
 ```js
 // type signature
@@ -59,6 +60,8 @@ lineWidth: types.maybe(types.number)
 
 #### property: jitter
 
+Jitter amount for x-position to better visualize overlapping arcs
+
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
@@ -66,22 +69,9 @@ IMaybe<ISimpleType<number>>
 jitter: types.maybe(types.number)
 ```
 
-#### property: colorBy
-
-```js
-// type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
-// code
-colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-            extra: types.frozen(),
-          }),
-        )
-```
-
 #### property: drawInter
+
+Whether to draw inter-region vertical lines
 
 ```js
 // type signature
@@ -92,6 +82,8 @@ drawInter: true
 
 #### property: drawLongRange
 
+Whether to draw long-range connections
+
 ```js
 // type signature
 true
@@ -101,11 +93,18 @@ drawLongRange: true
 
 ### LinearReadArcsDisplay - Getters
 
-#### getter: drawn
+#### getter: colorBy
 
 ```js
 // type
-boolean
+any
+```
+
+#### getter: filterBy
+
+```js
+// type
+any
 ```
 
 #### getter: lineWidthSetting
@@ -137,38 +136,17 @@ renderProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearReadArcsDisplay - Actions
-
-#### action: setLastDrawnOffsetPx
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
-```
-
-#### action: setLastDrawnBpPerPx
-
-```js
-// type signature
-setLastDrawnBpPerPx: (n: number) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
 
 #### action: reload
 
@@ -177,31 +155,9 @@ setLoading: (f: boolean) => void
 reload: () => void
 ```
 
-#### action: setRef
-
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
-
-```js
-// type signature
-setRef: (ref: HTMLCanvasElement) => void
-```
-
-#### action: setColorScheme
-
-```js
-// type signature
-setColorScheme: (s: { type: string; }) => void
-```
-
-#### action: setChainData
-
-```js
-// type signature
-setChainData: (args: ChainData) => void
-```
-
 #### action: setDrawInter
+
+Toggle drawing of inter-region vertical lines
 
 ```js
 // type signature
@@ -210,21 +166,16 @@ setDrawInter: (f: boolean) => void
 
 #### action: setDrawLongRange
 
+Toggle drawing of long-range connections
+
 ```js
 // type signature
 setDrawLongRange: (f: boolean) => void
 ```
 
-#### action: setFilterBy
-
-```js
-// type signature
-setFilterBy: (filter: IFilter) => void
-```
-
 #### action: setLineWidth
 
-thin, bold, extrabold, etc
+Set the line width (thin=1, bold=2, extrabold=5, etc)
 
 ```js
 // type signature
@@ -233,10 +184,28 @@ setLineWidth: (n: number) => void
 
 #### action: setJitter
 
-jitter val, helpful to jitter the x direction so you see better evidence when
-e.g. 100 long reads map to same x position
+Set jitter amount for x-position Helpful to jitter the x direction so you see
+better evidence when e.g. 100 long reads map to same x position
 
 ```js
 // type signature
 setJitter: (n: number) => void
+```
+
+#### action: setRenderingImageData
+
+Set the rendering imageData from RPC
+
+```js
+// type signature
+setRenderingImageData: (imageData: ImageBitmap) => void
+```
+
+#### action: setRenderingStopToken
+
+Set the rendering stop token
+
+```js
+// type signature
+setRenderingStopToken: (token: string) => void
 ```

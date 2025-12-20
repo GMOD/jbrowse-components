@@ -6,13 +6,24 @@ title: BaseLinearDisplay
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-### Source file
+Also note: this document represents the config API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts)
+## Links
 
-`BaseLinearDisplay` is a "base" config that is extended by classes like
-`LinearBasicDisplay` (used for feature tracks, etc) and `LinearBareDisplay`
-(more stripped down than even the basic display, not commonly used)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BaseLinearDisplay.md)
+
+## Docs
+
+`BaseLinearDisplay` is a "base" config that is extended by other configs
+including
+
+- `LinearBasicDisplay` (used for feature tracks, etc)
+- `LinearBareDisplay` (more stripped down than even the basic display, not
+  commonly used)
 
 ### BaseLinearDisplay - Identifier
 
@@ -58,8 +69,21 @@ height: {
 mouseover: {
       type: 'string',
       description: 'text to display when the cursor hovers over a feature',
-      defaultValue: `jexl:get(feature,'name')`,
+      defaultValue: `jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')`,
+      contextVariable: ['feature', 'mouseoverExtraInformation'],
+    }
+```
 
-      contextVariable: ['feature'],
+#### slot: jexlFilters
+
+config jexlFilters are deferred evaluated so they are prepended with jexl at
+runtime rather than being stored with jexl in the config
+
+```js
+jexlFilters: {
+      type: 'stringArray',
+      description:
+        'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
+      defaultValue: [],
     }
 ```

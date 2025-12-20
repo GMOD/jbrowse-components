@@ -1,6 +1,3 @@
-import React from 'react'
-import { observer } from 'mobx-react'
-
 import {
   Checkbox,
   FormControl,
@@ -10,9 +7,9 @@ import {
   OutlinedInput,
   Select,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
-import { GridBookmarkModel } from '../model'
+import type { GridBookmarkModel } from '../model'
 
 const AssemblySelector = observer(function ({
   model,
@@ -20,7 +17,7 @@ const AssemblySelector = observer(function ({
   model: GridBookmarkModel
 }) {
   const { validAssemblies, selectedAssemblies } = model
-  const noAssemblies = validAssemblies.size === 0 ? true : false
+  const noAssemblies = validAssemblies.size === 0
   const label = 'Select assemblies'
   const id = 'select-assemblies-label'
   const selectedSet = new Set(selectedAssemblies)
@@ -33,18 +30,21 @@ const AssemblySelector = observer(function ({
         labelId={id}
         multiple
         value={selectedAssemblies}
-        onChange={event => model.setSelectedAssemblies([...event.target.value])}
+        onChange={event => {
+          model.setSelectedAssemblies(
+            typeof event.target.value === 'string'
+              ? [event.target.value]
+              : event.target.value,
+          )
+        }}
         input={<OutlinedInput label={label} />}
         renderValue={selected => selected.join(', ')}
       >
         <MenuItem
           onClickCapture={event => {
-            // onClickCapture allows us to avoid the parent Select onChange from triggering
-            if (isAllSelected) {
-              model.setSelectedAssemblies([])
-            } else {
-              model.setSelectedAssemblies(undefined)
-            }
+            // onClickCapture allows us to avoid the parent Select onChange
+            // from triggering
+            model.setSelectedAssemblies(isAllSelected ? [] : undefined)
             event.preventDefault()
           }}
         >

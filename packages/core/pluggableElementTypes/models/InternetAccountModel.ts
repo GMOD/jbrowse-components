@@ -1,10 +1,14 @@
-import React from 'react'
-import { Instance, types } from 'mobx-state-tree'
+import type React from 'react'
+
+import { types } from '@jbrowse/mobx-state-tree'
+
+import { BaseInternetAccountConfig } from './baseInternetAccountConfig'
 import { ConfigurationReference, getConf } from '../../configuration'
 import { RemoteFileWithRangeCache } from '../../util/io'
 import { ElementId } from '../../util/types/mst'
-import { UriLocation, AnyReactComponentType } from '../../util/types'
-import { BaseInternetAccountConfig } from './baseInternetAccountConfig'
+
+import type { AnyReactComponentType, UriLocation } from '../../util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const inWebWorker = typeof sessionStorage === 'undefined'
 
@@ -98,7 +102,7 @@ export const InternetAccount = types
      * @returns true or false
      */
     handlesLocation(location: UriLocation) {
-      return self.domains.some(domain => location?.uri.includes(domain))
+      return self.domains.some(domain => location.uri.includes(domain))
     },
     /**
      * #getter
@@ -189,7 +193,7 @@ export const InternetAccount = types
           tokenPromise = Promise.resolve(token)
           return tokenPromise
         }
-        tokenPromise = new Promise((resolve, reject) =>
+        tokenPromise = new Promise((resolve, reject) => {
           self.getTokenFromUser(
             token => {
               self.storeToken(token)
@@ -199,8 +203,8 @@ export const InternetAccount = types
               self.removeToken()
               reject(error)
             },
-          ),
-        )
+          )
+        })
         return tokenPromise
       },
     }
@@ -209,14 +213,19 @@ export const InternetAccount = types
     /**
      * #action
      */
-    addAuthHeaderToInit(init: RequestInit = {}, token: string) {
+    addAuthHeaderToInit(init?: RequestInit, token?: string) {
       return {
         ...init,
         headers: new Headers({
-          ...init.headers,
-          [self.authHeader]: self.tokenType
-            ? `${self.tokenType} ${token}`
-            : token,
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
+          ...init?.headers,
+          ...(token
+            ? {
+                [self.authHeader]: self.tokenType
+                  ? `${self.tokenType} ${token}`
+                  : token,
+              }
+            : {}),
         }),
       }
     },

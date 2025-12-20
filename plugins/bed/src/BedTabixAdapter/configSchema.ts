@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BedTabixAdapter
@@ -14,7 +14,10 @@ const BedTabixAdapter = ConfigurationSchema(
      */
     bedGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.bed.gz',
+        locationType: 'UriLocation',
+      },
     },
 
     index: ConfigurationSchema('TabixIndex', {
@@ -65,7 +68,40 @@ const BedTabixAdapter = ConfigurationSchema(
       defaultValue: '',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
+     * ```json
+     * {
+     *   "type": "BedTabixAdapter",
+     *   "uri": "yourfile.bed.gz"
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            bedGzLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: `${snap.uri}.tbi`,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default BedTabixAdapter

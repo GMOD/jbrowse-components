@@ -1,6 +1,6 @@
-import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { fireEvent, render } from '@testing-library/react'
+
 import AddTrackWidget from './AddTrackWidget'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
@@ -91,28 +91,30 @@ function getSession() {
   return { session, model }
 }
 
-describe('<AddTrackWidget />', () => {
-  it('adds a track', async () => {
-    const { session, model } = getSession()
-    const { getByTestId, getAllByTestId, findByText, findAllByText } = render(
-      <AddTrackWidget model={model} />,
-    )
-    expect(session.sessionTracks.length).toBe(1)
-    fireEvent.change(getAllByTestId('urlInput')[0], {
-      target: { value: 'test.txt' },
-    })
-    fireEvent.click(getAllByTestId('addTrackNextButton')[0])
-    fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
-    const bamAdapter = await findByText('BAM adapter')
-    fireEvent.click(bamAdapter)
-    fireEvent.change(getByTestId('trackNameInput'), {
-      target: { value: 'Test track name' },
-    })
-    fireEvent.mouseDown(getByTestId('trackTypeSelect'))
-    fireEvent.click(await findByText('Feature track'))
-    fireEvent.mouseDown(getByTestId('assemblyNameSelect'))
-    fireEvent.click((await findAllByText('volMyt1'))[1])
-    fireEvent.click(getAllByTestId('addTrackNextButton')[0])
-    expect(session.sessionTracks.length).toBe(2)
+test('adds a track', async () => {
+  const { session, model } = getSession()
+  const { getByTestId, getAllByTestId, findByText, findAllByText } = render(
+    <AddTrackWidget model={model} />,
+  )
+  expect(session.sessionTracks.length).toBe(1)
+  fireEvent.change(getAllByTestId('urlInput')[0]!, {
+    target: {
+      value: 'test.txt',
+    },
   })
+  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
+  fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
+  const bamAdapter = await findByText('BAM adapter')
+  fireEvent.click(bamAdapter)
+  fireEvent.change(getByTestId('trackNameInput'), {
+    target: {
+      value: 'Test track name',
+    },
+  })
+  fireEvent.mouseDown(getByTestId('trackTypeSelect'))
+  fireEvent.click(await findByText('Feature track'))
+  fireEvent.mouseDown(getByTestId('assemblyNameSelect'))
+  fireEvent.click((await findAllByText('volMyt1'))[1]!)
+  fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
+  expect(session.sessionTracks.length).toBe(2)
 })

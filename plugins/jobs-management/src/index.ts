@@ -1,9 +1,14 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { SessionWithWidgets, isAbstractMenuManager } from '@jbrowse/core/util'
 import { Indexing } from '@jbrowse/core/ui/Icons'
-import { isSessionModelWithWidgets } from '@jbrowse/core/util'
+import {
+  isAbstractMenuManager,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
+
 import JobsListWidgetF from './JobsListWidget'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 export default class JobsManagementPlugin extends Plugin {
   name = 'JobsManagementPlugin'

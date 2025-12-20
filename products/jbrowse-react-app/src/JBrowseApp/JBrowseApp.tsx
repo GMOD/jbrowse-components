@@ -1,12 +1,12 @@
-import React, { Suspense, lazy } from 'react'
-import { observer } from 'mobx-react'
-import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
-import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
-import { getConf } from '@jbrowse/core/configuration'
-import { makeStyles } from 'tss-react/mui'
+import { Suspense, lazy } from 'react'
 
-// locals
-import { ViewModel } from '../createModel'
+import { getConf } from '@jbrowse/core/configuration'
+import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { ViewModel } from '../createModel'
 
 const App = lazy(() => import('./AppReExport'))
 
@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
 
 const JBrowseApp = observer(function ({ viewState }: { viewState: ViewModel }) {
   const { classes } = useStyles()
-  const session = viewState?.session
+  const session = viewState.session
   const theme = createJBrowseTheme(getConf(viewState.jbrowse, 'theme'))
 
   return (

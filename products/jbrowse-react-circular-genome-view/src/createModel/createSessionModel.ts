@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
-import { AbstractSessionModel } from '@jbrowse/core/util/types'
-import { getParent, types, Instance } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+
 import { getConf } from '@jbrowse/core/configuration'
-import InfoIcon from '@mui/icons-material/Info'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
@@ -14,6 +11,11 @@ import {
   ReferenceManagementSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
+import InfoIcon from '@mui/icons-material/Info'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
@@ -44,7 +46,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      view: pluginManager.getViewType('CircularView').stateModel,
+      view: pluginManager.getViewType('CircularView')!.stateModel,
     })
     .volatile((/* self */) => ({
       /**
@@ -136,7 +138,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             onClick: () => {
               self.queueDialog(doneCallback => [
                 AboutDialog,
-                { config, handleClose: doneCallback },
+                { config, session: self, handleClose: doneCallback },
               ])
             },
             icon: InfoIcon,

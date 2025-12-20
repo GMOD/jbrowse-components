@@ -1,7 +1,4 @@
-const { TextEncoder, TextDecoder } = require('web-encoding')
-if (!global.TextEncoder) {
-  global.TextEncoder = TextEncoder
-}
-if (!global.TextDecoder) {
-  global.TextDecoder = TextDecoder
-}
+import { TextDecoder, TextEncoder } from 'util'
+
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder

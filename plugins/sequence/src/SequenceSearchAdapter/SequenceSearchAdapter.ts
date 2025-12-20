@@ -1,17 +1,12 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature, doesIntersect2, revcom } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import {
-  SimpleFeature,
-  Feature,
-  Region,
-  revcom,
-  doesIntersect2,
-} from '@jbrowse/core/util'
-import { toArray } from 'rxjs/operators'
-import { firstValueFrom } from 'rxjs'
+
+import type {
+  BaseOptions,
+  BaseSequenceAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
   public async configure() {
@@ -19,7 +14,7 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
     if (!adapter) {
       throw new Error('Error getting subadapter')
     }
-    return adapter.dataAdapter as BaseFeatureDataAdapter
+    return adapter.dataAdapter as BaseSequenceAdapter
   }
 
   public async getRefNames() {
@@ -39,21 +34,20 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
         return
       }
 
-      const ret = sequenceAdapter.getFeatures(
-        {
-          ...query,
-          start: queryStart,
-          end: queryEnd,
-        },
-        opts,
-      )
-      const feats = await firstValueFrom(ret.pipe(toArray()))
-      const residues: string = feats[0]?.get('seq') || ''
+      const residues =
+        (await sequenceAdapter.getSequence(
+          {
+            ...query,
+            start: queryStart,
+            end: queryEnd,
+          },
+          opts,
+        )) ?? ''
       const search = this.getConf('search') as string
       const searchForward = this.getConf('searchForward')
       const searchReverse = this.getConf('searchReverse')
       const caseInsensitive = this.getConf('caseInsensitive')
-      const re = new RegExp(search, 'g' + (caseInsensitive ? 'i' : ''))
+      const re = new RegExp(search, `g${caseInsensitive ? 'i' : ''}`)
 
       if (search) {
         if (searchForward) {
@@ -99,6 +93,4 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  public freeResources() {}
 }

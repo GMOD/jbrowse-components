@@ -1,8 +1,10 @@
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+
 import configSchemaFactory from './configSchema'
 import modelFactory from './model'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
@@ -10,6 +12,8 @@ export default function register(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearPileupDisplay',
       displayName: 'Pileup display',
+      helpText:
+        'Display stacked aligned reads showing exact placement and sequences relative to the reference genome',
       configSchema,
       stateModel: modelFactory(configSchema),
       subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },

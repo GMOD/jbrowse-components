@@ -3,14 +3,22 @@ id: circularview
 title: CircularView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/circular-view/src/CircularView/models/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/CircularView.md)
+
+## Docs
 
 extends
 
@@ -100,19 +108,7 @@ disableImportForm: false
 // type signature
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(
-          types.refinement('trackHeight', types.number, n => n >= minHeight),
-          defaultHeight,
-        )
-```
-
-#### property: displayedRegions
-
-```js
-// type signature
-IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
-// code
-displayedRegions: types.array(Region)
+height: types.optional(types.number, defaultHeight)
 ```
 
 #### property: scrollX
@@ -194,6 +190,17 @@ minimumBlockWidth: 20
 string
 // code
 trackSelectorType: 'hierarchical'
+```
+
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<CircularViewInit, CircularViewInit, CircularViewInit>
+// code
+init: types.frozen<CircularViewInit | undefined>()
 ```
 
 ### CircularView - Getters
@@ -344,6 +351,48 @@ string[]
 any
 ```
 
+#### getter: loadingMessage
+
+```js
+// type
+string
+```
+
+#### getter: hasSomethingToShow
+
+```js
+// type
+boolean
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+any
+```
+
+#### getter: showView
+
+Whether the view is fully initialized and ready to display
+
+```js
+// type
+any
+```
+
+#### getter: showImportForm
+
+Whether to show the import form (when not ready to display and import form is
+enabled, or when there's an error)
+
+```js
+// type
+boolean
+```
+
 #### getter: staticSlices
 
 ```js
@@ -455,18 +504,11 @@ setBpPerPx: (newVal: number) => void
 setModelViewWhenAdjust: (secondCondition: boolean) => void
 ```
 
-#### action: closeView
-
-```js
-// type signature
-closeView: () => void
-```
-
 #### action: setDisplayedRegions
 
 ```js
 // type signature
-setDisplayedRegions: (regions: SnapshotOrInstance<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>[]) => void
+setDisplayedRegions: (regions: Region[]) => void
 ```
 
 #### action: activateTrackSelector
@@ -480,7 +522,7 @@ activateTrackSelector: () => Widget
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string) => void
 ```
 
 #### action: setError
@@ -488,6 +530,13 @@ toggleTrack: (trackId: string) => boolean
 ```js
 // type signature
 setError: (error: unknown) => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (init?: CircularViewInit) => void
 ```
 
 #### action: showTrack
@@ -501,14 +550,14 @@ showTrack: (trackId: string, initialSnapshot?: {}) => void
 
 ```js
 // type signature
-addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => void
+addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => void
 ```
 
 #### action: toggleFitToWindowLock

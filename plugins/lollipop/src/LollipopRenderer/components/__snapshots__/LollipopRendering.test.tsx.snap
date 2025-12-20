@@ -1,9 +1,9 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`no features 1`] = `
 <div>
   <svg
-    height="20"
+    height="0"
     style="position: relative;"
     width="100"
   />

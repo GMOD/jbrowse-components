@@ -1,8 +1,8 @@
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import React from 'react'
-import { render } from '@testing-library/react'
-import Rendering from './ArcRendering'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { render } from '@testing-library/react'
+
+import Rendering from './ArcRendering'
 
 test('no features', () => {
   const { container } = render(

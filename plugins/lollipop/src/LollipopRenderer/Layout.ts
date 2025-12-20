@@ -1,23 +1,23 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 interface LayoutItem {
   uniqueId: string
   anchorLocation: number
   width: number
   height: number
-  data: { score: number }
+  data: { score: number; featureId: string; anchorX: number; radiusPx: number }
 }
 
-type LayoutEntry = LayoutItem & { x: number; y: number }
-
-type LayoutMap = Map<string, LayoutEntry>
+export type LayoutEntry = LayoutItem & { x: number; y: number }
 
 export class FloatingLayout {
   width: number
-
   totalHeight = 0
+  items: LayoutItem[] = []
+  layout = new Map<string, LayoutEntry>()
 
   constructor({ width }: { width: number }) {
     if (!width) {
@@ -26,32 +26,25 @@ export class FloatingLayout {
     this.width = width
   }
 
-  items: LayoutItem[] = []
-
-  layout: LayoutMap = new Map()
-
-  layoutDirty = false
-
   add(
     uniqueId: string,
     anchorLocation: number,
     width: number,
     height: number,
-    data: { score: number },
+    data: LayoutItem['data'],
   ) {
-    this.items.push({ uniqueId, anchorLocation, width, height, data })
-    this.layoutDirty = true
+    this.items.push({
+      uniqueId,
+      anchorLocation,
+      width,
+      height,
+      data,
+    })
   }
 
-  /**
-   * @returns Map of `uniqueId => {x,y,anchorLocation,width,height,data}`
-   */
   getLayout(configuration?: AnyConfigurationModel) {
-    if (!this.layoutDirty) {
-      return this.layout
-    }
     if (!configuration) {
-      throw new Error('configuration object required')
+      return this.layout
     }
 
     const minY = readConfObject(configuration, 'minStickLength')
@@ -63,8 +56,8 @@ export class FloatingLayout {
     // bump them
     let maxBottom = 0
     const layoutEntries: [string, LayoutEntry][] = new Array(sorted.length)
-    for (let i = 0; i < sorted.length; i += 1) {
-      const currentItem = sorted[i]
+    for (const [i, element] of sorted.entries()) {
+      const currentItem = element
       const { anchorLocation, width, height } = currentItem
       const start = anchorLocation - width / 2
       const end = start + width
@@ -73,7 +66,7 @@ export class FloatingLayout {
 
       // figure out how far down to put it
       for (let j = 0; j < i; j += 1) {
-        const [, previouslyLaidOutItem] = layoutEntries[j]
+        const [, previouslyLaidOutItem] = layoutEntries[j]!
         const {
           x: prevStart,
           y: prevTop,
@@ -96,77 +89,23 @@ export class FloatingLayout {
       // record the entry and update the maxBottom
       layoutEntries[i] = [
         currentItem.uniqueId,
-        { ...currentItem, x: start, y: top },
+        {
+          ...currentItem,
+          x: start,
+          y: top,
+        },
       ]
       if (bottom > maxBottom) {
         maxBottom = bottom
       }
     }
 
-    // try to tile them left to right all at the same level
-    // if they don't fit, try to alternate them on 2 levels, then 3
     this.totalHeight = maxBottom
     this.layout = new Map(layoutEntries)
-    this.layoutDirty = false
-    return this.layout
-  }
-
-  getTotalHeight() {
-    if (this.layoutDirty) {
-      throw new Error('getTotalHeight does not work when the layout is dirty.')
-    }
-    return this.totalHeight
-  }
-
-  serializeRegion() {
-    return this.toJSON()
-  }
-
-  toJSON() {
-    if (this.layoutDirty) {
-      throw new Error('toJSON does not work when the layout is dirty.')
-    }
-    return { pairs: [...this.getLayout()], totalHeight: this.getTotalHeight() }
-  }
-
-  static fromJSON() {
-    throw new Error('not supported')
-  }
-}
-
-export class PrecomputedFloatingLayout {
-  layout: LayoutMap
-
-  totalHeight: number
-
-  constructor({
-    pairs,
-    totalHeight,
-  }: {
-    pairs: [string, LayoutEntry][]
-    totalHeight: number
-  }) {
-    this.layout = new Map(pairs)
-    this.totalHeight = totalHeight
-  }
-
-  add(uniqueId: string) {
-    if (!this.layout.has(uniqueId)) {
-      throw new Error(`layout error, precomputed layout is missing ${uniqueId}`)
-    }
-  }
-
-  getLayout() {
     return this.layout
   }
 
   getTotalHeight() {
     return this.totalHeight
-  }
-
-  static fromJSON(
-    json: ConstructorParameters<typeof PrecomputedFloatingLayout>[0],
-  ) {
-    return new PrecomputedFloatingLayout(json)
   }
 }

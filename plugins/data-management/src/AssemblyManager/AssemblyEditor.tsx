@@ -1,8 +1,9 @@
-import React from 'react'
-import { observer } from 'mobx-react'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { ConfigurationEditor } from '@jbrowse/plugin-config'
-import { makeStyles } from 'tss-react/mui'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { Button, DialogActions, DialogContent } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()({
   container: {
@@ -12,18 +13,34 @@ const useStyles = makeStyles()({
 })
 const AssemblyEditor = observer(function ({
   assembly,
+  onClose,
 }: {
   assembly?: AnyConfigurationModel
+  onClose: () => void
 }) {
   const { classes } = useStyles()
   return (
-    <div className={classes.container}>
-      {assembly ? (
-        <ConfigurationEditor model={{ target: assembly }} />
-      ) : (
-        <div>No assembly</div>
-      )}
-    </div>
+    <>
+      <DialogContent>
+        <div className={classes.container}>
+          {assembly ? (
+            <ConfigurationEditor model={{ target: assembly }} />
+          ) : (
+            <div>No assembly</div>
+          )}
+        </div>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          onClick={() => {
+            onClose()
+          }}
+        >
+          Back
+        </Button>
+      </DialogActions>
+    </>
   )
 })
 

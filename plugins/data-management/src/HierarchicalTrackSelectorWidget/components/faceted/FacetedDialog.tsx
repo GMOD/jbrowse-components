@@ -1,11 +1,10 @@
-import React from 'react'
-import { DialogContent } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
+import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
-import { HierarchicalTrackSelectorModel } from '../../model'
 import FacetedSelector from './FacetedSelector'
+
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const FacetedTrackSelectorDialog = observer(function (props: {
   handleClose: () => void

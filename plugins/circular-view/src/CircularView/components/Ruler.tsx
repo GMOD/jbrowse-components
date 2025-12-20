@@ -1,24 +1,18 @@
-import React from 'react'
-import { observer } from 'mobx-react'
 import {
+  assembleLocString,
+  getFillProps,
   getSession,
+  getStrokeProps,
   polarToCartesian,
   radToDeg,
-  assembleLocString,
-  getStrokeProps,
-  getFillProps,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material/styles'
-import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
 
-// locals
-import {
-  Slice,
-  SliceElidedRegion,
-  SliceNonElidedRegion,
-} from '../models/slices'
-import { CircularViewModel } from '../models/model'
+import type { CircularViewModel } from '../model'
+import type { Slice, SliceElidedRegion, SliceNonElidedRegion } from '../slices'
 
 const useStyles = makeStyles()({
   rulerLabel: {
@@ -76,7 +70,7 @@ const ElisionRulerArc = observer(function ({
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
   // TODO: draw the elision
   const centerRadians = (endRadians + startRadians) / 2
-  const regionCount = `[${Number(region.regions.length).toLocaleString()}]`
+  const regionCount = `[${region.regions.length.toLocaleString()}]`
   return (
     <>
       <RulerLabel
@@ -130,9 +124,7 @@ const RulerLabel = observer(function ({
   const textXY = polarToCartesian(radiusPx + 5, radians)
   if (!text) {
     return null
-  }
-
-  if (text.length * 6.5 < maxWidthPx) {
+  } else if (text.length * 6.5 < maxWidthPx) {
     // text is rotated parallel to the ruler arc
     return (
       <text
@@ -140,7 +132,7 @@ const RulerLabel = observer(function ({
         y={0}
         className={classes.rulerLabel}
         textAnchor="middle"
-        dominantBaseline="baseline"
+        dominantBaseline="middle"
         transform={`translate(${textXY}) rotate(${radToDeg(radians) + 90})`}
         {...getFillProps(color)}
       >
@@ -148,8 +140,7 @@ const RulerLabel = observer(function ({
         <title>{title || text}</title>
       </text>
     )
-  }
-  if (maxWidthPx > 4) {
+  } else if (maxWidthPx > 4) {
     // text is rotated perpendicular to the ruler arc
     const overallRotation = radToDeg(radians + view.offsetRadians - Math.PI / 2)
     if (overallRotation >= 180) {
@@ -182,10 +173,10 @@ const RulerLabel = observer(function ({
         <title>{title || text}</title>
       </text>
     )
+  } else {
+    // if you get here there is no room for the text at all
+    return null
   }
-
-  // if you get here there is no room for the text at all
-  return null
 })
 
 const RegionRulerArc = observer(function ({
@@ -203,11 +194,8 @@ const RegionRulerArc = observer(function ({
   const centerRadians = (endRadians + startRadians) / 2
   const widthPx = (endRadians - startRadians) * radiusPx
   const session = getSession(model)
-  let color
   const assembly = session.assemblyManager.get(region.assemblyName)
-  if (assembly) {
-    color = assembly.getRefNameColor(region.refName)
-  }
+  let color = assembly ? assembly.getRefNameColor(region.refName) : undefined
   if (color) {
     try {
       color = makeContrasting(color, theme.palette.background.paper)
@@ -248,7 +236,7 @@ const Ruler = observer(function ({
 }) {
   return slice.region.elided ? (
     <ElisionRulerArc
-      key={assembleLocString(slice.region.regions[0])}
+      key={assembleLocString(slice.region.regions[0]!)}
       model={model}
       region={slice.region}
       slice={slice}

@@ -2,27 +2,35 @@
  * Used by plugin build systems to determine if a module is provided by JBrowse
  * globally and thus doesn't need to be bundled. A check in ./modules.tsx makes
  * sure this is in sync with the re-exported modules.
+ *
+ * Using this instead of just Object.keys(modules) allows this file to be
+ * easily used by downstream tooling like simple esbuild scripts, rollup
+ * configs, etc. without actually importing all the modules in modules.tsx,
+ * which a Object.keys(modules) would do
  */
 export default [
   'mobx',
+  '@jbrowse/mobx-state-tree',
   'mobx-state-tree',
   'react',
   'react/jsx-runtime',
   'react-dom',
+  'react-dom/client',
   'mobx-react',
   '@mui/x-data-grid',
   '@mui/material/utils',
   '@material-ui/core/utils',
+  'tss-react',
   'tss-react/mui',
   '@material-ui/core',
   '@mui/material',
-  'prop-types',
 
   '@mui/material/styles',
   '@material-ui/core/styles',
   '@material-ui/core/Accordion',
   '@material-ui/core/AccordionActions',
   '@material-ui/core/AccordionDetails',
+  '@material-ui/core/AccordionSummary',
   '@material-ui/core/Alert',
   '@material-ui/core/AlertTitle',
   '@material-ui/core/Autocomplete',
@@ -62,6 +70,7 @@ export default [
   '@material-ui/core/FormHelperText',
   '@material-ui/core/FormGroup',
   '@material-ui/core/Grid',
+  '@material-ui/core/Grid2',
   '@material-ui/core/Grow',
   '@material-ui/core/Icon',
   '@material-ui/core/IconButton',
@@ -129,9 +138,11 @@ export default [
   '@material-ui/core/Toolbar',
   '@material-ui/core/Tooltip',
   '@material-ui/core/Typography',
+
   '@mui/material/Accordion',
   '@mui/material/AccordionActions',
   '@mui/material/AccordionDetails',
+  '@mui/material/AccordionSummary',
   '@mui/material/Alert',
   '@mui/material/AlertTitle',
   '@mui/material/Autocomplete',
@@ -171,6 +182,7 @@ export default [
   '@mui/material/FormHelperText',
   '@mui/material/FormGroup',
   '@mui/material/Grid',
+  '@mui/material/Grid2',
   '@mui/material/Grow',
   '@mui/material/Icon',
   '@mui/material/IconButton',
@@ -238,11 +250,13 @@ export default [
   '@mui/material/Toolbar',
   '@mui/material/Tooltip',
   '@mui/material/Typography',
+
   '@material-ui/lab/ToggleButton',
   '@material-ui/lab/ToggleButtonGroup',
   '@material-ui/lab/Autocomplete',
   '@material-ui/lab/Alert',
   '@material-ui/lab',
+
   '@jbrowse/core/Plugin',
   '@jbrowse/core/pluggableElementTypes',
   '@jbrowse/core/pluggableElementTypes/ViewType',
@@ -250,7 +264,6 @@ export default [
   '@jbrowse/core/pluggableElementTypes/DisplayType',
   '@jbrowse/core/pluggableElementTypes/TrackType',
   '@jbrowse/core/pluggableElementTypes/WidgetType',
-
   '@jbrowse/core/pluggableElementTypes/models',
   '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType',
   '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType',
@@ -260,6 +273,7 @@ export default [
   '@jbrowse/core/configuration',
   '@jbrowse/core/util/types/mst',
   '@jbrowse/core/ui',
+  '@jbrowse/core/ui/theme',
   '@jbrowse/core/util',
   '@jbrowse/core/util/color',
   '@jbrowse/core/util/layouts',

@@ -1,13 +1,14 @@
 import { fireEvent } from '@testing-library/react'
-import config from '../../test_data/volvox/config_auth.json'
+
 import {
-  setup,
-  pv,
-  hts,
   createView,
-  expectCanvasMatch,
   doBeforeEach,
+  expectCanvasMatch,
+  hts,
+  pv,
+  setup,
 } from './util'
+import config from '../../test_data/volvox/config_auth.json'
 
 setup()
 
@@ -55,7 +56,7 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
   )
   expect(
     sessionStorage.getItem('HTTPBasicInternetAccount-HTTPBasicTest-token'),
-  ).toContain(btoa(`username:password`))
+  ).toContain(btoa('username:password'))
 
   expectCanvasMatch(await findByTestId(pv('1..4000-0'), {}, delay))
 }, 25000)

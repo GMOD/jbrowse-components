@@ -1,13 +1,13 @@
-import React, { Suspense } from 'react'
-import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
+import { Suspense } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { EmbeddedViewContainer, ModalWidget } from '@jbrowse/embedded-core'
-
-// locals
-import { ViewModel } from '../createModel/createModel'
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { ViewModel } from '../createModel/createModel'
 
 const JBrowseLinearGenomeView = observer(function ({
   viewState,
@@ -17,11 +17,7 @@ const JBrowseLinearGenomeView = observer(function ({
   const { session } = viewState
   const { view } = session
   const { pluginManager } = getEnv(session)
-  const viewType = pluginManager.getViewType(view.type)
-  if (!viewType) {
-    throw new Error(`unknown view type ${view.type}`)
-  }
-  const { ReactComponent } = viewType
+  const { ReactComponent } = pluginManager.getViewType(view.type)!
   const theme = createJBrowseTheme(
     readConfObject(viewState.config.configuration, 'theme'),
   )
@@ -33,6 +29,7 @@ const JBrowseLinearGenomeView = observer(function ({
           <ReactComponent model={view} session={session} />
         </Suspense>
       </EmbeddedViewContainer>
+      {/* @ts-expect-error see comments on interface for AbstractSessionModel */}
       <ModalWidget session={session} />
     </ThemeProvider>
   )

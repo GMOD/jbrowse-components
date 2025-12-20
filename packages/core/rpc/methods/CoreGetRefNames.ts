@@ -1,8 +1,6 @@
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-
-import { RemoteAbortSignal } from '../remoteAbortSignals'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 
 export default class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -10,19 +8,27 @@ export default class CoreGetRefNames extends RpcMethodType {
   async execute(
     args: {
       sessionId: string
-      signal: RemoteAbortSignal
-      adapterConfig: {}
+      stopToken?: string
+      adapterConfig: Record<string, unknown>
+      sequenceAdapter?: Record<string, unknown>
     },
     rpcDriver: string,
   ) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { sessionId, adapterConfig } = deserializedArgs
+    const { sessionId, adapterConfig, sequenceAdapter } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-
-    if (isFeatureAdapter(dataAdapter)) {
-      return dataAdapter.getRefNames(deserializedArgs)
+    if (!isFeatureAdapter(dataAdapter)) {
+      return []
     }
-    return []
+
+    // Set sequenceAdapterConfig on the adapter for BAM/CRAM adapters that need
+    // reference sequence data. Wrapper adapters like SNPCoverageAdapter override
+    // setSequenceAdapterConfig to propagate to their subadapters.
+    if (sequenceAdapter && !dataAdapter.sequenceAdapterConfig) {
+      dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
+    }
+
+    return dataAdapter.getRefNames(deserializedArgs)
   }
 }

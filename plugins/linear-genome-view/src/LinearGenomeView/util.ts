@@ -1,8 +1,57 @@
-import {
-  AssemblyManager,
-  ParsedLocString,
-  parseLocString,
-} from '@jbrowse/core/util'
+import type { RefObject } from 'react'
+
+import { assembleLocString, parseLocString } from '@jbrowse/core/util'
+
+import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
+import type { BaseBlock, BlockSet } from '@jbrowse/core/util/blockTypes'
+
+/**
+ * Find the pinned content block (one that's scrolled off-screen to the left).
+ * Returns the block if found, undefined otherwise.
+ */
+export function getPinnedContentBlock(
+  staticBlocks: BlockSet,
+  offsetPx: number,
+) {
+  let pinnedBlockIndex = -1
+  let i = 0
+  for (const block of staticBlocks) {
+    if (block.offsetPx - offsetPx < 0) {
+      pinnedBlockIndex = i
+    } else {
+      break
+    }
+    i++
+  }
+  const pinnedBlock = staticBlocks.blocks[pinnedBlockIndex]
+  return pinnedBlock?.type === 'ContentBlock' ? pinnedBlock : undefined
+}
+
+/**
+ * Gets a map of existing child elements keyed by their data-* attribute,
+ * but only if bpPerPx hasn't changed. When bpPerPx changes, returns an
+ * empty map to force recreation of all elements.
+ */
+export function getCachedElements<T extends HTMLElement>(
+  container: HTMLElement,
+  bpPerPx: number,
+  lastBpPerPxRef: RefObject<number | null>,
+  dataKey: string,
+) {
+  const bpPerPxChanged = lastBpPerPxRef.current !== bpPerPx
+  lastBpPerPxRef.current = bpPerPx
+
+  const existingKeys = new Map<string, T>()
+  if (!bpPerPxChanged) {
+    for (const child of container.children) {
+      const key = (child as HTMLElement).dataset[dataKey]
+      if (key) {
+        existingKeys.set(key, child as T)
+      }
+    }
+  }
+  return existingKeys
+}
 
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major and minor
@@ -16,10 +65,7 @@ export function chooseGridPitch(
 ) {
   scale = Math.abs(scale)
   const minMajorPitchBp = minMajorPitchPx * scale
-  const majorMagnitude = Number.parseInt(
-    Number(minMajorPitchBp).toExponential().split(/e/i)[1],
-    10,
-  )
+  const majorMagnitude = +minMajorPitchBp.toExponential().split(/e/i)[1]!
 
   let majorPitch = 10 ** majorMagnitude
   while (majorPitch < minMajorPitchBp) {
@@ -57,9 +103,6 @@ export function makeTicks(
 
   let minBase = start
   let maxBase = end
-  if (minBase === null || maxBase === null) {
-    return []
-  }
 
   if (bpPerPx < 0) {
     ;[minBase, maxBase] = [maxBase, minBase]
@@ -96,11 +139,17 @@ export function makeTicks(
  *
  * Used by navToLocations and navToLocString
  */
-export async function generateLocations(
-  regions: ParsedLocString[] = [],
-  assemblyManager: AssemblyManager,
-  assemblyName?: string,
-) {
+export async function generateLocations({
+  regions,
+  assemblyManager,
+  assemblyName,
+  grow,
+}: {
+  regions: ParsedLocString[]
+  assemblyManager: AssemblyManager
+  assemblyName?: string
+  grow?: number
+}) {
   return Promise.all(
     regions.map(async region => {
       const asmName = region.assemblyName || assemblyName
@@ -125,10 +174,23 @@ export async function generateLocations(
         throw new Error(`Could not find refName ${refName} in ${asmName}`)
       }
 
-      return {
-        ...(region as Omit<typeof region, symbol>),
-        assemblyName: asmName,
-        parentRegion,
+      const { start, end } = region
+      if (grow && start && end) {
+        const len = end - start
+        const margin = len * grow
+        return {
+          ...(region as Omit<typeof region, symbol>),
+          start: Math.max(0, start - margin),
+          end: end + margin,
+          assemblyName: asmName,
+          parentRegion,
+        }
+      } else {
+        return {
+          ...(region as Omit<typeof region, symbol>),
+          assemblyName: asmName,
+          parentRegion,
+        }
       }
     }),
   )
@@ -166,17 +228,36 @@ export function parseLocStrings(
     // start, end if start and end are integer inputs
     const [refName, start, end] = inputs
     if (
-      `${e}`.match(/Unknown reference sequence/) &&
-      Number.isInteger(+start) &&
-      Number.isInteger(+end)
+      /Unknown feature or sequence/.exec(`${e}`) &&
+      Number.isInteger(+start!) &&
+      Number.isInteger(+end!)
     ) {
       return [
-        parseLocString(refName + ':' + start + '..' + end, ref =>
+        parseLocString(`${refName}:${start}..${end}`, ref =>
           isValidRefName(ref, assemblyName),
         ),
       ]
-    } else {
-      throw e
     }
+    throw e
+  }
+}
+
+export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
+  if (!contentBlocks.length) {
+    return ''
+  } else {
+    const isSingleAssemblyName = contentBlocks.every(
+      b => b.assemblyName === contentBlocks[0]!.assemblyName,
+    )
+    const locs = contentBlocks.map(block =>
+      assembleLocString({
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
+        ...block,
+        start: Math.round(block.start),
+        end: Math.round(block.end),
+        assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+      }),
+    )
+    return locs.join(' ')
   }
 }

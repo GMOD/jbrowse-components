@@ -1,10 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react'
-import { observer } from 'mobx-react'
+import { useEffect, useRef, useState } from 'react'
+
 import { drawImageOntoCanvasContext } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { observer } from 'mobx-react'
 
 /**
- * A block whose content is rendered outside of the main thread and hydrated by this
- * component.
+ * A block whose content is rendered outside of the main thread and hydrated by
+ * this component.
  */
 interface ModelType {
   imageData: string
@@ -34,7 +35,7 @@ const ServerSideSyntenyRendering = observer(function ({
     const context = canvas.getContext('2d')!
     drawImageOntoCanvasContext(imageData, context)
     setDone(true)
-  }, [height, imageData, width])
+  }, [imageData])
 
   return (
     <canvas

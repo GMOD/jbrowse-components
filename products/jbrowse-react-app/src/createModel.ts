@@ -1,27 +1,21 @@
-import React from 'react'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { Instance } from 'mobx-state-tree'
 
-// locals
 import corePlugins from './corePlugins'
-import createRootModel from './rootModel'
+import createRootModel from './rootModel/rootModel'
 import sessionModelFactory from './sessionModel'
 
-export default function createModel(
-  runtimePlugins: PluginConstructor[],
-  makeWorkerInstance: () => Worker = () => {
+import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
+export default function createModel({
+  runtimePlugins,
+  makeWorkerInstance = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
-  hydrateFn?: (
-    container: Element | Document,
-    initialChildren: React.ReactNode,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => any,
-  createRootFn?: (elt: Element | DocumentFragment) => {
-    render: (node: React.ReactElement) => unknown
-  },
-) {
+}: {
+  runtimePlugins: PluginConstructor[]
+  makeWorkerInstance?: () => Worker
+}) {
   const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({ plugin: new P(), metadata: { isCore: true } })),
     ...runtimePlugins.map(P => new P()),
@@ -32,8 +26,6 @@ export default function createModel(
       pluginManager,
       sessionModelFactory,
       makeWorkerInstance,
-      hydrateFn,
-      createRootFn,
     }),
     pluginManager,
   }

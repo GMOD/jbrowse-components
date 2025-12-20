@@ -1,28 +1,22 @@
-import React from 'react'
-import { observer } from 'mobx-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { SortedBy } from '../../shared/types'
 
 const LinearPileupDisplayBlurb = observer(function ({
   model,
 }: {
   model: {
-    sortedBy?: {
-      pos: number
-      refName: number
-      type: string
-      tag?: string
-    }
+    sortedBy?: SortedBy
   }
 }) {
   const { sortedBy } = model
   return sortedBy ? (
     <div data-testid={`blurb-${sortedBy}`}>
       <Typography color="secondary" variant="caption">
-        {sortedBy
-          ? `Sorted by ${sortedBy.tag ?? sortedBy.type} at ${
-              sortedBy.refName
-            }:${sortedBy.pos}`
-          : null}
+        {`Sorted by ${sortedBy.tag ?? sortedBy.type} at ${
+          sortedBy.refName
+        }:${sortedBy.pos}`}
       </Typography>
     </div>
   ) : null

@@ -1,10 +1,8 @@
-import React from 'react'
-
 // replace with this in your code:
-// import {createViewState,JBrowseApp} from '@jbrowse/react-app'
-import { createViewState, JBrowseApp } from '../../src'
-import config from '../../public/test_data/volvox/config.json'
+// import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
 import { addRelativeUris } from './util'
+import config from '../../public/test_data/volvox/config.json'
+import { JBrowseApp, createViewState } from '../../src'
 
 const configPath = 'test_data/volvox/config.json'
 addRelativeUris(config, new URL(configPath, window.location.href).href)

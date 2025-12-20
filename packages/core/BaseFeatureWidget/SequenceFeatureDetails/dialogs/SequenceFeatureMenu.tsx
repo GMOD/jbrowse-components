@@ -1,16 +1,13 @@
-import React, { lazy, useState } from 'react'
-import { observer } from 'mobx-react'
-import copy from 'copy-to-clipboard'
-import { saveAs } from 'file-saver'
+import { forwardRef, lazy, useState } from 'react'
 
-// locals
-import CascadingMenuButton from '../../../ui/CascadingMenuButton'
-import { SequenceFeatureDetailsModel } from '../model'
-import { MenuItem } from '../../../ui'
-
-// icons
 import MoreVert from '@mui/icons-material/MoreVert'
 import Settings from '@mui/icons-material/Settings'
+import { observer } from 'mobx-react'
+
+import CascadingMenuButton from '../../../ui/CascadingMenuButton'
+
+import type { MenuItem } from '../../../ui'
+import type { SequenceFeatureDetailsModel } from '../model'
 
 // lazies
 const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog'))
@@ -20,7 +17,7 @@ interface Props {
   extraItems?: MenuItem[]
 }
 const SequenceFeatureMenu = observer(
-  React.forwardRef<HTMLDivElement, Props>(function SequenceFeatureMenu2(
+  forwardRef<HTMLDivElement, Props>(function SequenceFeatureMenu2(
     { model, extraItems = [] },
     ref,
   ) {
@@ -28,7 +25,7 @@ const SequenceFeatureMenu = observer(
       throw new Error('needs a non function ref')
     }
     const [showSettings, setShowSettings] = useState(false)
-    const { showCoordinates2 } = model
+    const { showCoordinatesSetting, showGenomicCoordsOption } = model
 
     return (
       <>
@@ -36,7 +33,8 @@ const SequenceFeatureMenu = observer(
           menuItems={[
             {
               label: 'Copy plaintext',
-              onClick: () => {
+              onClick: async () => {
+                const { default: copy } = await import('copy-to-clipboard')
                 const r = ref?.current
                 if (r) {
                   copy(r.textContent || '', { format: 'text/plain' })
@@ -45,7 +43,8 @@ const SequenceFeatureMenu = observer(
             },
             {
               label: 'Copy HTML',
-              onClick: () => {
+              onClick: async () => {
+                const { default: copy } = await import('copy-to-clipboard')
                 const r = ref?.current
                 if (r) {
                   copy(r.outerHTML, { format: 'text/html' })
@@ -54,7 +53,9 @@ const SequenceFeatureMenu = observer(
             },
             {
               label: 'Download plaintext',
-              onClick: () => {
+              onClick: async () => {
+                // eslint-disable-next-line @typescript-eslint/no-deprecated
+                const { saveAs } = await import('file-saver-es')
                 const r = ref?.current
                 if (r) {
                   saveAs(
@@ -68,7 +69,9 @@ const SequenceFeatureMenu = observer(
             },
             {
               label: 'Download HTML',
-              onClick: () => {
+              onClick: async () => {
+                // eslint-disable-next-line @typescript-eslint/no-deprecated
+                const { saveAs } = await import('file-saver-es')
                 const r = ref?.current
                 if (r) {
                   saveAs(
@@ -90,21 +93,40 @@ const SequenceFeatureMenu = observer(
                 {
                   label: 'No coordinates',
                   type: 'radio',
-                  checked: showCoordinates2 === 'none',
-                  onClick: () => model.setShowCoordinates('none'),
+                  checked: showCoordinatesSetting === 'none',
+                  onClick: () => {
+                    model.setShowCoordinates('none')
+                  },
                 },
                 {
                   label: 'Coordinates relative to feature start',
                   type: 'radio',
-                  checked: showCoordinates2 === 'relative',
-                  onClick: () => model.setShowCoordinates('relative'),
+                  checked: showCoordinatesSetting === 'relative',
+                  onClick: () => {
+                    model.setShowCoordinates('relative')
+                  },
                 },
+                ...(showGenomicCoordsOption
+                  ? [
+                      {
+                        label:
+                          'Coordinates relative to genome (only available for continuous genome based sequence types)',
+                        type: 'radio' as const,
+                        checked: showCoordinatesSetting === 'genomic',
+                        onClick: () => {
+                          model.setShowCoordinates('genomic')
+                        },
+                      },
+                    ]
+                  : []),
               ],
             },
             {
               label: 'Settings',
               icon: Settings,
-              onClick: () => setShowSettings(true),
+              onClick: () => {
+                setShowSettings(true)
+              },
             },
           ]}
         >
@@ -114,7 +136,9 @@ const SequenceFeatureMenu = observer(
         {showSettings ? (
           <SequenceFeatureSettingsDialog
             model={model}
-            handleClose={() => setShowSettings(false)}
+            handleClose={() => {
+              setShowSettings(false)
+            }}
           />
         ) : null}
       </>

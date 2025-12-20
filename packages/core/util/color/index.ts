@@ -5,6 +5,7 @@ import {
   getLuminance as muiGetLuminance,
   lighten,
 } from '@mui/material/styles'
+
 import { namedColorToHex } from './cssColorsLevel4'
 
 /**
@@ -75,3 +76,18 @@ export function makeContrasting(
 }
 
 export { isNamedColor, namedColorToHex } from './cssColorsLevel4'
+
+/**
+ * Generate a consistent random color for a given string.
+ * The same string will always generate the same color.
+ *
+ * @param str - The string to generate a color from
+ * @returns A CSS color string in HSL format
+ */
+export function randomColor(str: string): string {
+  let sum = 0
+  for (let i = 0; i < str.length; i++) {
+    sum += str.charCodeAt(i)
+  }
+  return `hsl(${sum * 10}, 50%, 50%)`
+}

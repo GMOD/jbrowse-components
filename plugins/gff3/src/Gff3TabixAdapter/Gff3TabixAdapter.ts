@@ -1,22 +1,18 @@
-/* eslint-disable no-underscore-dangle */
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
-import { Region } from '@jbrowse/core/util/types'
-import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
-import gff, { GFF3Feature, GFF3FeatureLineWithRefs } from '@gmod/gff'
-import { Observer } from 'rxjs'
-import {
-  readConfObject,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { updateStatus } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { parseRecordsSync } from 'gff-nostream'
+
+import { featureData } from '../featureData'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { Region } from '@jbrowse/core/util/types'
+import type { Observer } from 'rxjs'
 
 interface LineFeature {
   start: number
@@ -26,79 +22,106 @@ interface LineFeature {
 }
 
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
-  protected gff: TabixIndexedFile
+  private configured?: Promise<{
+    gff: TabixIndexedFile
+    dontRedispatchSet: Set<string>
+  }>
 
-  protected dontRedispatch: string[]
-
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    const gffGzLocation = readConfObject(config, 'gffGzLocation')
-    const indexType = readConfObject(config, ['index', 'indexType'])
-    const location = readConfObject(config, ['index', 'location'])
-    const dontRedispatch = readConfObject(config, 'dontRedispatch')
-
-    this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
-    this.gff = new TabixIndexedFile({
+  private async configurePre(_opts?: BaseOptions) {
+    const gffGzLocation = this.getConf('gffGzLocation')
+    const indexType = this.getConf(['index', 'indexType'])
+    const loc = this.getConf(['index', 'location'])
+    const dontRedispatch = this.getConf('dontRedispatch') as string[]
+    const gff = new TabixIndexedFile({
       filehandle: openLocation(gffGzLocation, this.pluginManager),
       csiFilehandle:
-        indexType === 'CSI'
-          ? openLocation(location, this.pluginManager)
-          : undefined,
+        indexType === 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
       tbiFilehandle:
-        indexType !== 'CSI'
-          ? openLocation(location, this.pluginManager)
-          : undefined,
+        indexType !== 'CSI' ? openLocation(loc, this.pluginManager) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
-      renameRefSeqs: (n: string) => n,
     })
+
+    return {
+      gff,
+      dontRedispatchSet: new Set(dontRedispatch),
+      header: await gff.getHeader(),
+    }
   }
 
+  protected async configurePre2() {
+    if (!this.configured) {
+      this.configured = this.configurePre().catch((e: unknown) => {
+        this.configured = undefined
+        throw e
+      })
+    }
+    return this.configured
+  }
+
+  async configure(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    return updateStatus('Downloading index', statusCallback, () =>
+      this.configurePre2(),
+    )
+  }
   public async getRefNames(opts: BaseOptions = {}) {
-    return this.gff.getReferenceSequenceNames(opts)
+    const { gff } = await this.configure(opts)
+    return gff.getReferenceSequenceNames(opts)
   }
 
-  public async getHeader() {
-    return this.gff.getHeader()
+  public async getHeader(opts: BaseOptions = {}) {
+    const { gff } = await this.configure(opts)
+    return gff.getHeader()
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const metadata = await this.gff.getMetadata()
+      const { gff } = await this.configure(opts)
+      const metadata = await gff.getMetadata()
       await this.getFeaturesHelper(query, opts, metadata, observer, true)
-    }, opts.signal)
+    }, opts.stopToken)
   }
 
   private async getFeaturesHelper(
     query: Region,
-    opts: BaseOptions = {},
+    opts: BaseOptions,
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
     allowRedispatch: boolean,
     originalQuery = query,
   ) {
+    const { statusCallback = () => {} } = opts
     try {
       const lines: LineFeature[] = []
 
-      await this.gff.getLines(
-        query.refName,
-        query.start,
-        query.end,
-        (line: string, fileOffset: number) => {
-          lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
-        },
+      const { dontRedispatchSet, gff } = await this.configure(opts)
+      const { start: startCol, end: endCol } = metadata.columnNumbers
+      await updateStatus('Downloading features', statusCallback, () =>
+        gff.getLines(
+          query.refName,
+          query.start,
+          query.end,
+          (line, fileOffset) => {
+            const fields = line.split('\t')
+            lines.push({
+              // note: index column numbers are 1-based
+              start: +fields[startCol - 1]!,
+              end: +fields[endCol - 1]!,
+              lineHash: fileOffset,
+              fields,
+            })
+          },
+        ),
       )
+
       if (allowRedispatch && lines.length) {
-        let minStart = Infinity
-        let maxEnd = -Infinity
-        lines.forEach(line => {
-          const featureType = line.fields[2]
-          // only expand redispatch range if feature is not a "dontRedispatch" type
-          // skips large regions like chromosome,region
-          if (!this.dontRedispatch.includes(featureType)) {
+        let minStart = Number.POSITIVE_INFINITY
+        let maxEnd = Number.NEGATIVE_INFINITY
+        for (const line of lines) {
+          const featureType = line.fields[2]!
+          // only expand redispatch range if feature is not a "dontRedispatch"
+          // type skips large regions like chromosome,region
+          if (!dontRedispatchSet.has(featureType)) {
             const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
               minStart = start
@@ -107,7 +130,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
               maxEnd = line.end
             }
           }
-        })
+        }
         if (maxEnd > query.end || minStart < query.start) {
           // make a new feature callback to only return top-level features
           // in the original query range
@@ -123,138 +146,28 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      const gff3 = lines
-        .map((lineRecord: LineFeature) => {
-          if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
-            if (!lineRecord.fields[8].includes('_lineHash')) {
-              lineRecord.fields[8] += `;_lineHash=${lineRecord.lineHash}`
-            }
-          } else {
-            lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
-          }
-          return lineRecord.fields.join('\t')
-        })
-        .join('\n')
-
-      const features = gff.parseStringSync(gff3, {
-        parseFeatures: true,
-        parseComments: false,
-        parseDirectives: false,
-        parseSequences: false,
-        disableDerivesFromReferences: true,
-      })
-
-      features.forEach(featureLocs =>
-        this.formatFeatures(featureLocs).forEach(f => {
+      for (const featureLocs of parseRecordsSync(lines)) {
+        for (const featureLoc of featureLocs) {
+          // Check intersection before creating SimpleFeature to avoid
+          // unnecessary allocations GFF3 coordinates are 1-based, so subtract
+          // 1 from start for 0-based
+          const start = featureLoc.start! - 1
+          const end = featureLoc.end!
           if (
-            doesIntersect2(
-              f.get('start'),
-              f.get('end'),
-              originalQuery.start,
-              originalQuery.end,
-            )
+            doesIntersect2(start, end, originalQuery.start, originalQuery.end)
           ) {
-            observer.next(f)
+            observer.next(
+              new SimpleFeature({
+                data: featureData(featureLoc),
+                id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
+              }),
+            )
           }
-        }),
-      )
+        }
+      }
       observer.complete()
     } catch (e) {
       observer.error(e)
     }
   }
-
-  private parseLine(
-    columnNumbers: { start: number; end: number },
-    line: string,
-    fileOffset: number,
-  ) {
-    const fields = line.split('\t')
-
-    // note: index column numbers are 1-based
-    return {
-      start: +fields[columnNumbers.start - 1],
-      end: +fields[columnNumbers.end - 1],
-      lineHash: fileOffset,
-      fields,
-    }
-  }
-
-  private formatFeatures(featureLocs: GFF3Feature) {
-    return featureLocs.map(
-      featureLoc =>
-        new SimpleFeature({
-          data: this.featureData(featureLoc),
-
-          id: `${this.id}-offset-${featureLoc.attributes!._lineHash![0]}`,
-        }),
-    )
-  }
-
-  private featureData(data: GFF3FeatureLineWithRefs) {
-    const f: Record<string, unknown> = { ...data }
-    ;(f.start as number) -= 1 // convert to interbase
-    if (data.strand === '+') {
-      f.strand = 1
-    } else if (data.strand === '-') {
-      f.strand = -1
-    } else if (data.strand === '.') {
-      f.strand = 0
-    } else {
-      f.strand = undefined
-    }
-    f.phase = Number(data.phase)
-    f.refName = data.seq_id
-    if (data.score === null) {
-      delete f.score
-    }
-    if (data.phase === null) {
-      delete f.score
-    }
-    const defaultFields = new Set([
-      'start',
-      'end',
-      'seq_id',
-      'score',
-      'type',
-      'source',
-      'phase',
-      'strand',
-    ])
-    const dataAttributes = data.attributes || {}
-    for (const a of Object.keys(dataAttributes)) {
-      let b = a.toLowerCase()
-      if (defaultFields.has(b)) {
-        // add "suffix" to tag name if it already exists
-        // reproduces behavior of NCList
-        b += '2'
-      }
-      if (dataAttributes[a] !== null) {
-        let attr: string | string[] | undefined = dataAttributes[a]
-        if (Array.isArray(attr) && attr.length === 1) {
-          ;[attr] = attr
-        }
-        f[b] = attr
-      }
-    }
-    f.refName = f.seq_id
-
-    // the SimpleFeature constructor takes care of recursively inflating subfeatures
-    if (data.child_features && data.child_features.length > 0) {
-      f.subfeatures = data.child_features.flatMap(childLocs =>
-        childLocs.map(childLoc => this.featureData(childLoc)),
-      )
-    }
-
-    delete f.child_features
-    delete f.data
-    // delete f.derived_features
-    delete f._linehash
-    delete f.attributes
-    delete f.seq_id
-
-    return f
-  }
-
-  public freeResources(/* { region } */) {}
 }

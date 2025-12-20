@@ -1,37 +1,27 @@
-import React, { useEffect, useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
+import { useEffect, useState } from 'react'
+
+import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { complement, reverse } from '@jbrowse/core/util'
+import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Button,
   Checkbox,
-  CircularProgress,
-  Container,
   DialogActions,
   DialogContent,
-  FormGroup,
   FormControlLabel,
+  FormGroup,
   TextField,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { saveAs } from 'file-saver'
-import { getConf } from '@jbrowse/core/configuration'
-import copy from 'copy-to-clipboard'
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  getSession,
-  reverse,
-  complement,
-  Feature,
-  Region,
-} from '@jbrowse/core/util'
-import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
-// icons
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import GetAppIcon from '@mui/icons-material/GetApp'
+import { fetchSequence } from './fetchSequence'
 
-// locals
-import { LinearGenomeViewModel } from '..'
+import type { BpOffset } from '../types'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -42,62 +32,28 @@ const useStyles = makeStyles()({
   },
 })
 
-type LGV = LinearGenomeViewModel
-
-/**
- * Fetches and returns a list features for a given list of regions
- */
-async function fetchSequence(
-  model: LGV,
-  regions: Region[],
-  signal?: AbortSignal,
-) {
-  const session = getSession(model)
-  const { leftOffset, rightOffset } = model
-
-  if (!leftOffset || !rightOffset) {
-    throw new Error('no offsets on model to use for range')
-  }
-
-  if (leftOffset.assemblyName !== rightOffset.assemblyName) {
-    throw new Error('not able to fetch sequences from multiple assemblies')
-  }
-  const { rpcManager, assemblyManager } = session
-  const assemblyName = leftOffset.assemblyName || rightOffset.assemblyName || ''
-  const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`assembly ${assemblyName} not found`)
-  }
-  const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
-
-  const sessionId = 'getSequence'
-  return rpcManager.call(sessionId, 'CoreGetFeatures', {
-    adapterConfig,
-    regions,
-    sessionId,
-    signal,
-  }) as Promise<Feature[]>
-}
-
 const GetSequenceDialog = observer(function ({
   model,
   handleClose,
 }: {
-  model: LGV
+  model: {
+    leftOffset?: BpOffset
+    rightOffset?: BpOffset
+    getSelectedRegions: (left?: BpOffset, right?: BpOffset) => Region[]
+    setOffsets: (left?: BpOffset, right?: BpOffset) => void
+  }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const session = getSession(model)
   const [error, setError] = useState<unknown>()
   const [sequenceChunks, setSequenceChunks] = useState<Feature[]>()
   const [rev, setReverse] = useState(false)
   const [copied, setCopied] = useState(false)
   const [comp, setComplement] = useState(false)
   const { leftOffset, rightOffset } = model
-  const loading = Boolean(sequenceChunks === undefined)
+  const loading = sequenceChunks === undefined
 
   useEffect(() => {
-    let active = true
     const controller = new AbortController()
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -110,53 +66,45 @@ const GetSequenceDialog = observer(function ({
         if (selection.length === 0) {
           throw new Error('Selected region is out of bounds')
         }
-        const chunks = await fetchSequence(model, selection, controller.signal)
-        if (active) {
-          setSequenceChunks(chunks)
-        }
+        setSequenceChunks(await fetchSequence(model, selection))
       } catch (e) {
         console.error(e)
-        if (active) {
-          setError(e)
-        }
+        setError(e)
       }
     })()
 
     return () => {
       controller.abort()
-      active = false
     }
-  }, [model, session, leftOffset, rightOffset])
+  }, [model, leftOffset, rightOffset])
 
   const sequence = sequenceChunks
     ? formatSeqFasta(
-        sequenceChunks
-          .filter(f => !!f)
-          .map(chunk => {
-            let chunkSeq = chunk.get('seq')
-            const chunkRefName = chunk.get('refName')
-            const chunkStart = chunk.get('start') + 1
-            const chunkEnd = chunk.get('end')
-            const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-            if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
-              throw new Error(
-                `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                  chunkEnd - chunkStart
-                ).toLocaleString()}`,
-              )
-            }
+        sequenceChunks.map(chunk => {
+          let chunkSeq = chunk.get('seq')
+          const chunkRefName = chunk.get('refName')
+          const chunkStart = chunk.get('start') + 1
+          const chunkEnd = chunk.get('end')
+          const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+          if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+            throw new Error(
+              `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                chunkEnd - chunkStart
+              ).toLocaleString()}`,
+            )
+          }
 
-            if (rev) {
-              chunkSeq = reverse(chunkSeq)
-            }
-            if (comp) {
-              chunkSeq = complement(chunkSeq)
-            }
-            return {
-              header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
-              seq: chunkSeq,
-            }
-          }),
+          if (rev) {
+            chunkSeq = reverse(chunkSeq)
+          }
+          if (comp) {
+            chunkSeq = complement(chunkSeq)
+          }
+          return {
+            header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
+            seq: chunkSeq,
+          }
+        }),
       )
     : ''
 
@@ -166,27 +114,19 @@ const GetSequenceDialog = observer(function ({
     <Dialog
       maxWidth="xl"
       open
+      title="Reference sequence"
       onClose={() => {
         handleClose()
         model.setOffsets()
       }}
-      title="Reference sequence"
     >
       <DialogContent>
         {error ? (
-          <Typography color="error">{`${error}`}</Typography>
+          <ErrorMessage error={error} />
         ) : loading ? (
-          <Container>
-            Retrieving reference sequence...
-            <CircularProgress
-              style={{ marginLeft: 10 }}
-              size={20}
-              disableShrink
-            />
-          </Container>
+          <LoadingEllipses message="Retrieving sequences" />
         ) : null}
         <TextField
-          data-testid="rubberband-sequence"
           variant="outlined"
           multiline
           minRows={5}
@@ -199,10 +139,12 @@ const GetSequenceDialog = observer(function ({
               ? 'Reference sequence too large to display, use the download FASTA button'
               : sequence
           }
-          InputProps={{
-            readOnly: true,
-            classes: {
-              input: classes.textAreaFont,
+          slotProps={{
+            input: {
+              readOnly: true,
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />
@@ -211,7 +153,9 @@ const GetSequenceDialog = observer(function ({
             control={
               <Checkbox
                 value={rev}
-                onChange={event => setReverse(event.target.checked)}
+                onChange={event => {
+                  setReverse(event.target.checked)
+                }}
               />
             }
             label="Reverse sequence"
@@ -220,22 +164,27 @@ const GetSequenceDialog = observer(function ({
             control={
               <Checkbox
                 value={comp}
-                onChange={event => setComplement(event.target.checked)}
+                onChange={event => {
+                  setComplement(event.target.checked)
+                }}
               />
             }
             label="Complement sequence"
           />
         </FormGroup>
         <Typography style={{ margin: 10 }}>
-          Note: Check both boxes for the "reverse complement"
+          Note: Check both boxes for the &quot;reverse complement&quot;
         </Typography>
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => {
+          onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(sequence)
             setCopied(true)
-            setTimeout(() => setCopied(false), 500)
+            setTimeout(() => {
+              setCopied(false)
+            }, 500)
           }}
           disabled={loading || !!error || sequenceTooLarge}
           color="primary"
@@ -244,7 +193,9 @@ const GetSequenceDialog = observer(function ({
           {copied ? 'Copied' : 'Copy to clipboard'}
         </Button>
         <Button
-          onClick={() => {
+          onClick={async () => {
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
+            const { saveAs } = await import('file-saver-es')
             saveAs(
               new Blob([sequence || ''], {
                 type: 'text/x-fasta;charset=utf-8',

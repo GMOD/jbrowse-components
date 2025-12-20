@@ -1,24 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
-import { ThemeOptions } from '@mui/material'
-import { types, Instance } from 'mobx-state-tree'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  getConf,
-  ConfigurationReference,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import {
+  ReactRendering,
   getContainingView,
   makeAbortableReaction,
-  ReactRendering,
 } from '@jbrowse/core/util'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { types } from '@jbrowse/mobx-state-tree'
 
-// locals
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
-import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
+
+import type { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel DotplotDisplay
@@ -39,17 +36,56 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * #property
            */
           configuration: ConfigurationReference(configSchema),
+          /**
+           * #property
+           * color by setting that overrides the config setting
+           */
+          colorBy: types.optional(types.string, 'default'),
         })
         .volatile(() => ({
+          /**
+           * #volatile
+           */
+          stopToken: undefined as StopToken | undefined,
+          /**
+           * #volatile
+           */
           warnings: [] as { message: string; effect: string }[],
-          renderInProgress: undefined as AbortController | undefined,
+          /**
+           * #volatile
+           */
           filled: false,
+          /**
+           * #volatile
+           */
           data: undefined as any,
+          /**
+           * #volatile
+           */
           reactElement: undefined as React.ReactElement | undefined,
+          /**
+           * #volatile
+           */
           message: undefined as string | undefined,
+          /**
+           * #volatile
+           */
           renderingComponent: undefined as any,
+          /**
+           * #volatile
+           */
           ReactComponent2:
             ServerSideRenderedBlockContent as unknown as React.FC<any>,
+          /**
+           * #volatile
+           * alpha transparency value for synteny drawing (0-1)
+           */
+          alpha: 1,
+          /**
+           * #volatile
+           * minimum alignment length to display (in bp)
+           */
+          minAlignmentLength: 0,
         })),
     )
     .views(self => ({
@@ -73,7 +109,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return {
           ...getParentRenderProps(self),
           rpcDriverName: self.rpcDriverName,
-          displayModel: self,
           config: self.configuration.renderer,
         }
       },
@@ -82,15 +117,16 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgOptions & { theme: ThemeOptions }) {
+      async renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
         const props = renderBlockData(self)
         if (!props) {
           return null
         }
 
-        const { rendererType, rpcManager, renderProps } = props
+        const { rendererType, rpcManager, renderProps, renderingProps } = props
         const rendering = await rendererType.renderInClient(rpcManager, {
           ...renderProps,
+          renderingProps,
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,
         })
@@ -104,92 +140,94 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         )
       },
     }))
-    .actions(self => {
-      let renderInProgress: undefined | AbortController
-
-      return {
-        afterAttach() {
-          makeAbortableReaction(
-            self,
-            () => renderBlockData(self),
-            blockData => renderBlockEffect(blockData),
-            {
-              name: `${self.type} ${self.id} rendering`,
-              delay: 500,
-              fireImmediately: true,
-            },
-            this.setLoading,
-            this.setRendered,
-            this.setError,
-          )
-        },
-        /**
-         * #action
-         */
-        setLoading(abortController: AbortController) {
-          self.filled = false
-          self.message = undefined
-          self.reactElement = undefined
-          self.data = undefined
-          self.error = undefined
-          self.renderingComponent = undefined
-          renderInProgress = abortController
-        },
-        /**
-         * #action
-         */
-        setMessage(messageText: string) {
-          if (renderInProgress && !renderInProgress.signal.aborted) {
-            renderInProgress.abort()
-          }
-          self.filled = false
-          self.message = messageText
-          self.reactElement = undefined
-          self.data = undefined
-          self.error = undefined
-          self.renderingComponent = undefined
-          renderInProgress = undefined
-        },
-        /**
-         * #action
-         */
-        setRendered(args?: {
-          data: any
-          reactElement: React.ReactElement
-          renderingComponent: React.Component
-        }) {
-          if (args === undefined) {
-            return
-          }
-          const { data, reactElement, renderingComponent } = args
-          self.warnings = data.warnings
-          self.filled = true
-          self.message = undefined
-          self.reactElement = reactElement
-          self.data = data
-          self.error = undefined
-          self.renderingComponent = renderingComponent
-          renderInProgress = undefined
-        },
-        /**
-         * #action
-         */
-        setError(error: unknown) {
-          console.error(error)
-          if (renderInProgress && !renderInProgress.signal.aborted) {
-            renderInProgress.abort()
-          }
-          // the rendering failed for some reason
-          self.filled = false
-          self.message = undefined
-          self.reactElement = undefined
-          self.data = undefined
-          self.error = error
-          self.renderingComponent = undefined
-          renderInProgress = undefined
-        },
-      }
-    })
+    .actions(self => ({
+      afterAttach() {
+        makeAbortableReaction(
+          self,
+          () => renderBlockData(self),
+          blockData => renderBlockEffect(blockData),
+          {
+            name: `${self.type} ${self.id} rendering`,
+            delay: 500,
+            fireImmediately: true,
+          },
+          this.setLoading,
+          this.setRendered,
+          this.setError,
+        )
+      },
+      /**
+       * #action
+       */
+      setLoading(stopToken?: StopToken) {
+        self.filled = false
+        self.message = undefined
+        self.reactElement = undefined
+        self.data = undefined
+        self.error = undefined
+        self.renderingComponent = undefined
+        self.stopToken = stopToken
+      },
+      /**
+       * #action
+       */
+      setMessage(messageText: string) {
+        self.message = messageText
+      },
+      /**
+       * #action
+       */
+      setRendered(args?: {
+        data: any
+        reactElement: React.ReactElement
+        renderingComponent: React.Component
+      }) {
+        if (args === undefined) {
+          return
+        }
+        const { data, reactElement, renderingComponent } = args
+        self.warnings = data.warnings
+        self.filled = true
+        self.message = undefined
+        self.reactElement = reactElement
+        self.data = data
+        self.error = undefined
+        self.renderingComponent = renderingComponent
+        self.stopToken = undefined
+      },
+      /**
+       * #action
+       */
+      setError(error: unknown) {
+        console.error(error)
+        // the rendering failed for some reason
+        self.filled = false
+        self.message = undefined
+        self.reactElement = undefined
+        self.data = undefined
+        self.error = error
+        self.renderingComponent = undefined
+        self.stopToken = undefined
+      },
+      /**
+       * #action
+       */
+      setAlpha(value: number) {
+        self.alpha = value
+      },
+      /**
+       * #action
+       */
+      setMinAlignmentLength(value: number) {
+        self.minAlignmentLength = value
+      },
+      /**
+       * #action
+       */
+      setColorBy(value: string) {
+        self.colorBy = value
+      },
+    }))
 }
 
 export type DotplotDisplayStateModel = ReturnType<typeof stateModelFactory>

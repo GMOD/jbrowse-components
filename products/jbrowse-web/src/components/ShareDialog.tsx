@@ -1,48 +1,32 @@
-import React, { useState, useEffect, lazy } from 'react'
-import { getSnapshot } from 'mobx-state-tree'
-import { observer } from 'mobx-react'
+import { lazy, useEffect, useState } from 'react'
+
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import {
+  type AbstractSessionModel,
+  localStorageGetItem,
+} from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import SettingsIcon from '@mui/icons-material/Settings'
 import {
   Button,
   DialogActions,
   DialogContent,
   DialogContentText,
   IconButton,
-  TextField,
   Typography,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
-import { StringParam, useQueryParam } from 'use-query-params'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
-// icons
-import SettingsIcon from '@mui/icons-material/Settings'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
-
-// locals
-import { toUrlSafeB64 } from '../util'
 import { shareSessionToDynamo } from '../sessionSharing'
+import { setQueryParams } from '../useQueryParam'
+import { toUrlSafeB64 } from '../util'
+import ShareDialogLinkField from './ShareDialogLinkField'
 
 const SettingsDialog = lazy(() => import('./ShareSettingsDialog'))
 
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
-
-function LinkField({ url }: { url: string }) {
-  return (
-    <TextField
-      label="URL"
-      value={url}
-      InputProps={{ readOnly: true }}
-      variant="filled"
-      fullWidth
-      onClick={event => {
-        const target = event.target as HTMLTextAreaElement
-        target.select()
-      }}
-    />
-  )
-}
 
 const ShareDialog = observer(function ({
   handleClose,
@@ -58,12 +42,10 @@ const ShareDialog = observer(function ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<unknown>()
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
-  const [, setPassword] = useQueryParam('password', StringParam)
-  const [, setSession] = useQueryParam('session', StringParam)
 
   const url = session.shareURL
   const currentSetting =
-    localStorage.getItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
+    localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
   const snap = getSnapshot(session)
 
   useEffect(() => {
@@ -96,6 +78,7 @@ const ShareDialog = observer(function ({
           setLongUrl(longUrl.toString())
         }
       } catch (e) {
+        console.error(e)
         setError(e)
       } finally {
         setLoading(false)
@@ -115,21 +98,30 @@ const ShareDialog = observer(function ({
         <DialogContent>
           <DialogContentText>
             Copy the URL below to share your current JBrowse session.
-            <IconButton onClick={() => setSettingsDialogOpen(true)}>
+            <IconButton
+              onClick={() => {
+                setSettingsDialogOpen(true)
+              }}
+            >
               <SettingsIcon />
             </IconButton>
           </DialogContentText>
 
           {currentSetting === 'short' ? (
             error ? (
-              <ErrorMessage error={error} onReset={() => setError(undefined)} />
+              <ErrorMessage
+                error={error}
+                onReset={() => {
+                  setError(undefined)
+                }}
+              />
             ) : loading ? (
               <Typography>Generating short URL...</Typography>
             ) : (
-              <LinkField url={shortUrl} />
+              <ShareDialogLinkField url={shortUrl} />
             )
           ) : (
-            <LinkField url={longUrl} />
+            <ShareDialogLinkField url={longUrl} />
           )}
         </DialogContent>
         <DialogActions>
@@ -138,8 +130,10 @@ const ShareDialog = observer(function ({
             disabled={disabled}
             onClick={event => {
               event.preventDefault()
-              setPassword(passwordParam, 'replaceIn')
-              setSession(sessionParam, 'replaceIn')
+              setQueryParams({
+                password: passwordParam,
+                session: sessionParam,
+              })
               alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
             }}
           >
@@ -147,12 +141,13 @@ const ShareDialog = observer(function ({
           </Button>
 
           <Button
-            onClick={() => {
+            startIcon={<ContentCopyIcon />}
+            disabled={disabled}
+            onClick={async () => {
+              const { default: copy } = await import('copy-to-clipboard')
               copy(shortUrl || longUrl)
               session.notify('Copied to clipboard', 'success')
             }}
-            startIcon={<ContentCopyIcon />}
-            disabled={disabled}
           >
             Copy to Clipboard
           </Button>
@@ -165,8 +160,10 @@ const ShareDialog = observer(function ({
 
       <SettingsDialog
         open={settingsDialogOpen}
-        onClose={() => setSettingsDialogOpen(false)}
         currentSetting={currentSetting}
+        onClose={() => {
+          setSettingsDialogOpen(false)
+        }}
       />
     </>
   )

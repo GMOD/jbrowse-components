@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
 import ThisPlugin from '.'
 
 test('plugin in a stock JBrowse', () => {
@@ -10,7 +11,7 @@ test('plugin in a stock JBrowse', () => {
     /JBrowse already configured, cannot add plugins/,
   )
 
-  const BigWigAdapter = pluginManager.getAdapterType('BigWigAdapter')
+  const BigWigAdapter = pluginManager.getAdapterType('BigWigAdapter')!
   const config = BigWigAdapter.configSchema.create({ type: 'BigWigAdapter' })
   expect(getSnapshot(config)).toMatchSnapshot()
 })

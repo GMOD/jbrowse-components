@@ -1,16 +1,17 @@
-import React, { useState } from 'react'
-import { Button, TextField } from '@mui/material'
+import { useState } from 'react'
+
 import { ErrorMessage } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
 import {
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Button, TextField } from '@mui/material'
+import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-// locals
-import { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()({
   textbox: {
@@ -39,12 +40,12 @@ const PasteConfigAddTrackWorkflow = observer(function ({
         multiline
         rows={10}
         value={val}
-        onChange={event => setVal(event.target.value)}
-        placeholder={
-          'Paste track config or array of track configs in JSON format'
-        }
+        placeholder="Paste track config or array of track configs in JSON format"
         variant="outlined"
         className={classes.textbox}
+        onChange={event => {
+          setVal(event.target.value)
+        }}
       />
       <Button
         variant="contained"
@@ -59,9 +60,16 @@ const PasteConfigAddTrackWorkflow = observer(function ({
               isSessionWithAddTracks(session) &&
               isSessionModelWithWidgets(session)
             ) {
-              confs.forEach(c => session.addTrackConf(c))
-              confs.forEach(c => model.view.showTrack(c.trackId))
-              model.clearData()
+              transaction(() => {
+                for (const c of confs) {
+                  session.addTrackConf(c)
+                }
+                for (const c of confs) {
+                  model.view.showTrack(c.trackId)
+                }
+                model.clearData()
+              })
+
               session.hideWidget(model)
             }
           } catch (e) {

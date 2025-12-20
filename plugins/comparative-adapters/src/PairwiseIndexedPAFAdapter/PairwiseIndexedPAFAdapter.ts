@@ -1,19 +1,18 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { FileLocation, Region } from '@jbrowse/core/util/types'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { openLocation } from '@jbrowse/core/util/io'
 import { TabixIndexedFile } from '@gmod/tabix'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { updateStatus } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-// locals
-import { parsePAFLine } from '../util'
 import SyntenyFeature from '../SyntenyFeature'
+import { parsePAFLine } from '../util'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { Feature } from '@jbrowse/core/util'
+import type { FileLocation, Region } from '@jbrowse/core/util/types'
 
 interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel
@@ -42,19 +41,21 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       chunkCacheSize: 50 * 2 ** 20,
     })
   }
-  async getHeader() {
-    return this.pif.getHeader()
+  async getHeader(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    return updateStatus('Downloading header', statusCallback, () =>
+      this.pif.getHeader(),
+    )
   }
 
   getAssemblyNames(): string[] {
     const assemblyNames = this.getConf('assemblyNames') as string[]
-    if (assemblyNames.length === 0) {
-      return [
-        this.getConf('queryAssembly') as string,
-        this.getConf('targetAssembly') as string,
-      ]
-    }
-    return assemblyNames
+    return assemblyNames.length === 0
+      ? [
+          this.getConf('queryAssembly') as string,
+          this.getConf('targetAssembly') as string,
+        ]
+      : assemblyNames
   }
 
   public async hasDataForRefName() {
@@ -62,7 +63,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames(opts: BaseOptions & { regions?: Region[] } = {}) {
-    const r1 = opts.regions?.[0].assemblyName
+    const r1 = opts.regions?.[0]?.assemblyName
     if (!r1) {
       throw new Error('no assembly name provided')
     }
@@ -73,11 +74,13 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       return names.filter(n => n.startsWith('q')).map(n => n.slice(1))
     } else if (idx === 1) {
       return names.filter(n => n.startsWith('t')).map(n => n.slice(1))
+    } else {
+      return []
     }
-    return []
   }
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
+    const { statusCallback = () => {} } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
@@ -86,49 +89,49 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const flip = index === 0
       const letter = flip ? 'q' : 't'
 
-      await this.pif.getLines(letter + query.refName, query.start, query.end, {
-        lineCallback: (line, fileOffset) => {
-          const r = parsePAFLine(line)
-          const refName = r.qname.slice(1)
-          const start = r.qstart
-          const end = r.qend
-          const mateName = r.tname
-          const mateStart = r.tstart
-          const mateEnd = r.tend
+      await updateStatus('Downloading features', statusCallback, () =>
+        this.pif.getLines(letter + query.refName, query.start, query.end, {
+          lineCallback: (line, fileOffset) => {
+            const r = parsePAFLine(line)
+            const refName = r.qname.slice(1)
+            const start = r.qstart
+            const end = r.qend
+            const mateName = r.tname
+            const mateStart = r.tstart
+            const mateEnd = r.tend
 
-          const { extra, strand } = r
-          const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
+            const { extra, strand } = r
+            const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
 
-          observer.next(
-            new SyntenyFeature({
-              uniqueId: fileOffset + assemblyName,
-              assemblyName,
-              start,
-              end,
-              type: 'match',
-              refName,
-              strand,
-              ...rest,
-              CIGAR: extra.cg,
-              syntenyId: fileOffset,
-              identity: numMatches / blockLen,
-              numMatches,
-              blockLen,
-              mate: {
-                start: mateStart,
-                end: mateEnd,
-                refName: mateName,
-                assemblyName: assemblyNames[+flip],
-              },
-            }),
-          )
-        },
-        signal: opts.signal,
-      })
+            observer.next(
+              new SyntenyFeature({
+                uniqueId: fileOffset + assemblyName,
+                assemblyName,
+                start,
+                end,
+                type: 'match',
+                refName,
+                strand,
+                ...rest,
+                CIGAR: extra.cg,
+                syntenyId: fileOffset,
+                identity: numMatches / blockLen,
+                numMatches,
+                blockLen,
+                mate: {
+                  start: mateStart,
+                  end: mateEnd,
+                  refName: mateName,
+                  assemblyName: assemblyNames[+flip],
+                },
+              }),
+            )
+          },
+          stopToken: opts.stopToken,
+        }),
+      )
 
       observer.complete()
     })
   }
-
-  freeResources(/* { query } */): void {}
 }

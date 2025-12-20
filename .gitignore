@@ -19,3 +19,6 @@ lerna-debug.log
 .yarn
 .yarnrc
 *.tsbuildinfo
+.aider*
+*.cpuprofile
+test_data/soa4

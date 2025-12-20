@@ -1,10 +1,9 @@
-import React from 'react'
 // in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
-import makeWorkerInstance from '../../src/makeWorkerInstance'
+// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
+
 import { getVolvoxConfig } from './util'
-import { createRoot, hydrateRoot } from 'react-dom/client'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
+import makeWorkerInstance from '../../src/makeWorkerInstance'
 
 export const WithReact18 = () => {
   const { assembly, tracks } = getVolvoxConfig()
@@ -17,9 +16,6 @@ export const WithReact18 = () => {
       },
     },
     makeWorkerInstance,
-
-    hydrateFn: hydrateRoot,
-    createRootFn: createRoot,
   })
   return (
     <div>

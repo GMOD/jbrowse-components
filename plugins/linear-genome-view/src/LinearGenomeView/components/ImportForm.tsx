@@ -1,24 +1,23 @@
-import React, { useState, useEffect } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
+import { useEffect, useState } from 'react'
+
+import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import CloseIcon from '@mui/icons-material/Close'
 import {
   Button,
-  FormControl,
-  Container,
-  Grid,
   CircularProgress,
+  Container,
+  FormControl,
+  Grid as Grid,
 } from '@mui/material'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { observer } from 'mobx-react'
 
-// icons
-import CloseIcon from '@mui/icons-material/Close'
-
-// locals
-import { LinearGenomeViewModel } from '..'
-import { handleSelectedRegion, navToOption } from '../../searchUtils'
 import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete'
+import { handleSelectedRegion, navToOption } from '../../searchUtils'
+
+import type { LinearGenomeViewModel } from '..'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -43,7 +42,7 @@ const LinearGenomeViewImportForm = observer(function ({
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const { error } = model
-  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
   const [option, setOption] = useState<BaseResult>()
   const assembly = assemblyManager.get(selectedAsm)
   const assemblyError = assemblyNames.length
@@ -53,13 +52,14 @@ const LinearGenomeViewImportForm = observer(function ({
   const [value, setValue] = useState('')
   const regions = assembly?.regions
   const assemblyLoaded = !!regions
-  const r0 = regions ? regions[0]?.refName : ''
+  const r0 = regions ? regions[0]?.refName || '' : ''
 
   // useEffect resets to an "initial state" of displaying first region from
   // assembly after assembly change. needs to react to selectedAsm as well as
   // r0 because changing assembly will run setValue('') and then r0 may not
   // change if assembly names are the same across assemblies, but it still
   // needs to be reset
+  /* biome-ignore lint/correctness/useExhaustiveDependencies: */
   useEffect(() => {
     setValue(r0)
   }, [r0, selectedAsm])
@@ -108,62 +108,58 @@ const LinearGenomeViewImportForm = observer(function ({
             justifyContent="center"
             alignItems="center"
           >
-            <Grid item>
-              <FormControl>
-                <AssemblySelector
-                  onChange={val => setSelectedAsm(val)}
-                  localStorageKey="lgv"
-                  session={session}
-                  selected={selectedAsm}
-                />
-              </FormControl>
-            </Grid>
-            <Grid item>
-              {selectedAsm ? (
-                assemblyError ? (
-                  <CloseIcon style={{ color: 'red' }} />
-                ) : assemblyLoaded ? (
-                  <FormControl>
-                    <ImportFormRefNameAutocomplete
-                      value={value}
-                      setValue={setValue}
-                      selectedAsm={selectedAsm}
-                      setOption={setOption}
-                      model={model}
-                    />
-                  </FormControl>
-                ) : (
-                  <CircularProgress size={20} disableShrink />
-                )
-              ) : null}
-            </Grid>
-            <Grid item>
-              <FormControl>
-                <Button
-                  type="submit"
-                  disabled={!value}
-                  className={classes.button}
-                  variant="contained"
-                  color="primary"
-                >
-                  Open
-                </Button>
-              </FormControl>
-              <FormControl>
-                <Button
-                  disabled={!value}
-                  className={classes.button}
-                  onClick={() => {
-                    model.setError(undefined)
-                    model.showAllRegionsInAssembly(selectedAsm)
-                  }}
-                  variant="contained"
-                  color="secondary"
-                >
-                  Show all regions in assembly
-                </Button>
-              </FormControl>
-            </Grid>
+            <FormControl>
+              <AssemblySelector
+                onChange={val => {
+                  setSelectedAsm(val)
+                }}
+                localStorageKey="lgv"
+                session={session}
+                selected={selectedAsm}
+              />
+            </FormControl>
+            {selectedAsm ? (
+              assemblyError ? (
+                <CloseIcon style={{ color: 'red' }} />
+              ) : assemblyLoaded ? (
+                <FormControl>
+                  <ImportFormRefNameAutocomplete
+                    value={value}
+                    setValue={setValue}
+                    selectedAsm={selectedAsm}
+                    setOption={setOption}
+                    model={model}
+                  />
+                </FormControl>
+              ) : (
+                <CircularProgress size={20} disableShrink />
+              )
+            ) : null}
+            <FormControl>
+              <Button
+                type="submit"
+                disabled={!value}
+                className={classes.button}
+                variant="contained"
+                color="primary"
+              >
+                Open
+              </Button>
+            </FormControl>
+            <FormControl>
+              <Button
+                disabled={!value}
+                className={classes.button}
+                onClick={() => {
+                  model.setError(undefined)
+                  model.showAllRegionsInAssembly(selectedAsm)
+                }}
+                variant="contained"
+                color="secondary"
+              >
+                Show all regions in assembly
+              </Button>
+            </FormControl>
           </Grid>
         </form>
       </Container>

@@ -1,9 +1,9 @@
-import React from 'react'
-import { Tooltip, Typography } from '@mui/material'
-import { observer } from 'mobx-react'
 import { stringify } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui'
-import { LinearComparativeViewModel } from '../model'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { LinearComparativeViewModel } from '../model'
 
 type LCV = LinearComparativeViewModel
 
@@ -13,10 +13,8 @@ const useStyles = makeStyles()({
     height: '100%',
     width: 1,
     position: 'absolute',
-    zIndex: 10,
-  },
-  sm: {
-    fontSize: 10,
+    background: 'red',
+    zIndex: 1001,
   },
 })
 
@@ -35,12 +33,9 @@ const VerticalGuide = observer(function ({
       title={model.views
         .map(view => view.pxToBp(coordX))
         .map((elt, idx) => (
-          <Typography
-            className={classes.sm}
-            key={[JSON.stringify(elt), idx].join('-')}
-          >
+          <div key={[JSON.stringify(elt), idx].join('-')}>
             {stringify(elt, true)}
-          </Typography>
+          </div>
         ))}
       arrow
     >
@@ -48,7 +43,6 @@ const VerticalGuide = observer(function ({
         className={classes.guide}
         style={{
           left: coordX,
-          background: 'red',
         }}
       />
     </Tooltip>

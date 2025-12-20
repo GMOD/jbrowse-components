@@ -1,12 +1,15 @@
-import React, { useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid'
-import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { useState } from 'react'
 
-// locals
-import { measureGridWidth, getStr } from '../../util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
+
 import FieldName from './FieldName'
 import { SanitizedHTML } from '../../ui'
+import DataGridFlexContainer from '../../ui/DataGridFlexContainer'
+import { getStr, measureGridWidth } from '../../util'
+
+import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
   margin: {
@@ -36,7 +39,7 @@ export default function DataGridDetails({
 }) {
   const { classes } = useStyles()
   const [checked, setChecked] = useState(false)
-  const keys = Object.keys(value[0]).sort()
+  const keys = Object.keys(value[0]!).sort()
   const unionKeys = new Set(keys)
 
   // avoids key 'id' from being used in row data
@@ -72,42 +75,35 @@ export default function DataGridDetails({
           control={
             <Checkbox
               checked={checked}
-              onChange={event => setChecked(event.target.checked)}
+              onChange={event => {
+                setChecked(event.target.checked)
+              }}
             />
           }
           label={<Typography variant="body2">Show options</Typography>}
         />
-        <DataGrid
-          disableRowSelectionOnClick
-          rows={rows}
-          rowCount={25}
-          rowHeight={25}
-          columnHeaderHeight={35}
-          hideFooter={rows.length < 25}
-          slots={{ toolbar: checked ? GridToolbar : null }}
-          slotProps={{
-            toolbar: {
-              printOptions: {
-                disableToolbarButton: true,
-              },
-            },
-          }}
-          columns={colNames.map(
-            (val, index) =>
-              ({
-                field: val,
-                renderCell: params => {
-                  const value = params.value as string
-                  return (
+        <DataGridFlexContainer>
+          <DataGrid
+            disableRowSelectionOnClick
+            rows={rows}
+            rowHeight={20}
+            columnHeaderHeight={35}
+            hideFooter={rows.length < 25}
+            showToolbar={checked}
+            columns={colNames.map(
+              (val, index) =>
+                ({
+                  field: val,
+                  width: widths[index],
+                  renderCell: ({ value }) => (
                     <div className={classes.cell}>
-                      <SanitizedHTML html={getStr(value)} />
+                      <SanitizedHTML html={getStr(value || '')} />
                     </div>
-                  )
-                },
-                width: widths[index],
-              }) satisfies GridColDef<(typeof rows)[0]>,
-          )}
-        />
+                  ),
+                }) satisfies GridColDef<(typeof rows)[0]>,
+            )}
+          />
+        </DataGridFlexContainer>
       </div>
     )
   }

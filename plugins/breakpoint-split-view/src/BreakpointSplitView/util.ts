@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { clamp } from '@jbrowse/core/util'
+import { useEffect, useState } from 'react'
 
-// locals
-import { LayoutRecord } from './model'
+import { getConf } from '@jbrowse/core/configuration'
+import { clamp, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+
+import type { LayoutRecord } from './types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -11,19 +15,22 @@ interface Display {
   height: number
   scrollTop: number
   SNPCoverageDisplay?: { height: number }
+  notReady?: () => boolean
+  searchFeatureByID?: (str: string) => LayoutRecord
 }
 
 interface Track {
   displays: Display[]
+  configuration: AnyConfigurationModel
 }
 
-const [, TOP, , BOTTOM] = [0, 1, 2, 3]
+const [, TOP, , BOTTOM] = [0, 1, 2, 3] as const
 
 function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
 }
 
-function heightFromSpecificLevel(
+export function heightFromSpecificLevel(
   views: LGV[],
   trackId: string,
   level: number,
@@ -31,7 +38,7 @@ function heightFromSpecificLevel(
 ) {
   return getYPosOverride
     ? getYPosOverride(trackId, level)
-    : views[level].trackRefs[trackId]?.getBoundingClientRect().top || 0
+    : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0
 }
 
 export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
@@ -47,7 +54,7 @@ export function yPos(
   c: LayoutRecord,
   getYPosOverride?: (trackId: string, level: number) => number,
 ) {
-  const display = tracks[level].displays[0]
+  const display = tracks[level]!.displays[0]!
   const min = 0
   const max = display.height
   let offset = 0
@@ -86,4 +93,28 @@ export function intersect<T>(
   const ids = new Set(a2.map(elt => cb(elt)))
   const a12 = a1.filter(value => ids.has(cb(value)))
   return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
+}
+
+export function calc(track: Track, f: Feature) {
+  return track.displays[0]!.searchFeatureByID?.(f.id())
+}
+
+export async function getBlockFeatures(
+  model: { views: LinearGenomeViewModel[] },
+  track: Track,
+) {
+  const { views } = model
+  const { rpcManager } = getSession(model)
+  const sessionId = getRpcSessionId(track)
+
+  return Promise.all(
+    views.flatMap(
+      async view =>
+        (await rpcManager.call(sessionId, 'BreakpointGetFeatures', {
+          adapterConfig: getConf(track, ['adapter']),
+          sessionId,
+          regions: view.staticBlocks.contentBlocks,
+        })) as Feature[][],
+    ),
+  )
 }

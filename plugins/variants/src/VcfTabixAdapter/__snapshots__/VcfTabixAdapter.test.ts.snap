@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
 [
@@ -13,8 +13,9 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "C",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
+    "ID": undefined,
     "INFO": {
       "AC1": [
         2,
@@ -44,8 +45,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "POS": 277,
     "QUAL": 10.4,
     "REF": "T",
-    "aliases": undefined,
-    "description": "SNV T -> C",
+    "description": "T -> C",
     "end": 277,
     "name": undefined,
     "refName": "ctgA",
@@ -73,8 +73,9 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "C",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
+    "ID": undefined,
     "INFO": {
       "AC1": [
         2,
@@ -110,8 +111,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "POS": 1694,
     "QUAL": 107,
     "REF": "T",
-    "aliases": undefined,
-    "description": "SNV T -> C",
+    "description": "T -> C",
     "end": 1694,
     "name": undefined,
     "refName": "ctgA",
@@ -139,8 +139,9 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "G",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
+    "ID": undefined,
     "INFO": {
       "AC1": [
         1,
@@ -176,8 +177,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "POS": 2644,
     "QUAL": 44,
     "REF": "T",
-    "aliases": undefined,
-    "description": "SNV T -> G",
+    "description": "T -> G",
     "end": 2644,
     "name": undefined,
     "refName": "ctgA",
@@ -205,8 +205,9 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "A",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
+    "ID": undefined,
     "INFO": {
       "AC1": [
         2,
@@ -236,8 +237,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "POS": 3213,
     "QUAL": 124,
     "REF": "T",
-    "aliases": undefined,
-    "description": "SNV T -> A",
+    "description": "T -> A",
     "end": 3213,
     "name": undefined,
     "refName": "ctgA",
@@ -265,8 +265,9 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
       "ct",
     ],
     "CHROM": "ctgA",
-    "FILTER": null,
-    "ID": null,
+    "FILTER": undefined,
+    "FORMAT": "GT:PL:GQ",
+    "ID": undefined,
     "INFO": {
       "AC1": [
         2,
@@ -297,8 +298,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "POS": 3858,
     "QUAL": 160,
     "REF": "ctt",
-    "aliases": undefined,
-    "description": "deletion ctt -> ct",
+    "description": "ctt -> ct",
     "end": 3860,
     "name": undefined,
     "refName": "ctgA",

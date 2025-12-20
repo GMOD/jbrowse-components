@@ -1,13 +1,14 @@
-import React, { useRef } from 'react'
-import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
-import { Menu } from '@jbrowse/core/ui'
+import { useRef } from 'react'
 
-// locals
-import VerticalGuide from './VerticalGuide'
+import { Menu } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
+
 import RubberbandSpan from './RubberbandSpan'
-import { useRangeSelect } from './hooks'
-import { LinearGenomeViewModel } from '..'
+import VerticalGuide from './VerticalGuide'
+import { useRangeSelect } from './useRangeSelect'
+
+import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
@@ -16,6 +17,7 @@ const useStyles = makeStyles()({
     cursor: 'crosshair',
     width: '100%',
     minHeight: 8,
+    zIndex: 825,
   },
 })
 
@@ -28,6 +30,7 @@ const Rubberband = observer(function ({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
+  const { stickyViewHeaders, rubberbandTop } = model
 
   const {
     guideX,
@@ -38,8 +41,8 @@ const Rubberband = observer(function ({
     width,
     left,
     anchorPosition,
-    handleMenuItemClick,
     open,
+    handleMenuItemClick,
     handleClose,
     mouseMove,
     mouseDown,
@@ -57,6 +60,8 @@ const Rubberband = observer(function ({
           numOfBpSelected={numOfBpSelected}
           width={width}
           left={left}
+          top={rubberbandTop}
+          sticky={stickyViewHeaders}
         />
       ) : null}
       {anchorPosition ? (
@@ -75,6 +80,10 @@ const Rubberband = observer(function ({
       <div
         data-testid="rubberband_controls"
         className={classes.rubberbandControl}
+        style={{
+          top: rubberbandTop,
+          position: stickyViewHeaders ? 'sticky' : undefined,
+        }}
         ref={ref}
         onMouseDown={mouseDown}
         onMouseMove={mouseMove}

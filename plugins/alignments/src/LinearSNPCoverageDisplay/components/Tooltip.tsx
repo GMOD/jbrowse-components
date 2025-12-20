@@ -1,132 +1,66 @@
-import React from 'react'
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Tooltip, YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
-import { Feature, toLocale } from '@jbrowse/core/util'
-import { Tooltip } from '@jbrowse/plugin-wiggle'
 
-type Count = Record<
-  string,
-  {
-    total: number
-    '-1': number
-    '0': number
-    '1': number
-  }
->
+import TooltipContents from './TooltipContents'
 
-interface SNPInfo {
-  cov: Count
-  lowqual: Count
-  noncov: Count
-  delskips: Count
-  refbase: string
-  total: number
-  ref: number
-  all: number
-  '-1': number
-  '0': number
-  '1': number
-}
+import type { Feature } from '@jbrowse/core/util'
 
-const toP = (s = 0) => +(+s).toFixed(1)
-
-const pct = (n: number, total: number) => `${toP((n / (total || 1)) * 100)}%`
-
-interface Props {
-  feature: Feature
-}
-
-const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
-  function TooltipContents2({ feature }, reactRef) {
-    const start = feature.get('start')
-    const end = feature.get('end')
-    const name = feature.get('refName')
-    const {
-      refbase,
-      all,
-      total,
-      ref,
-      '-1': rn1,
-      '1': r1,
-      '0': r0,
-      ...info
-    } = feature.get('snpinfo') as SNPInfo
-    const loc = [
-      name,
-      start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`,
-    ]
-      .filter(f => !!f)
-      .join(':')
-
-    return (
-      <div ref={reactRef}>
-        <table>
-          <caption>{loc}</caption>
-          <thead>
-            <tr>
-              <th>Base</th>
-              <th>Count</th>
-              <th>% of Total</th>
-              <th>Strands</th>
-              <th>Source</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Total</td>
-              <td>{all}</td>
-            </tr>
-            <tr>
-              <td>REF {refbase ? `(${refbase.toUpperCase()})` : ''}</td>
-              <td>{ref}</td>
-              <td>{pct(ref, all)}</td>
-              <td>
-                {rn1 ? `${rn1}(-)` : ''}
-                {r1 ? `${r1}(+)` : ''}
-              </td>
-              <td />
-            </tr>
-
-            {Object.entries(info).map(([key, entry]) =>
-              Object.entries(entry).map(([base, score]) => (
-                <tr key={base}>
-                  <td>{base.toUpperCase()}</td>
-                  <td>{score.total}</td>
-                  <td>
-                    {base === 'total' || base === 'skip'
-                      ? '---'
-                      : pct(score.total, all)}
-                  </td>
-                  <td>
-                    {score['-1'] ? `${score['-1']}(-)` : ''}
-                    {score['1'] ? `${score['1']}(+)` : ''}
-                  </td>
-                  <td>{key}</td>
-                </tr>
-              )),
-            )}
-          </tbody>
-        </table>
-      </div>
-    )
+const useStyles = makeStyles()(theme => ({
+  hoverVertical: {
+    background: theme.palette.text.primary,
+    border: 'none',
+    width: 1,
+    height: '100%',
+    top: YSCALEBAR_LABEL_OFFSET,
+    cursor: 'default',
+    position: 'absolute',
+    pointerEvents: 'none',
   },
-)
+}))
 
 type Coord = [number, number]
 
-const SNPCoverageTooltip = observer(
-  (props: {
-    model: { featureUnderMouse: Feature }
-    height: number
-    offsetMouseCoord: Coord
-    clientMouseCoord: Coord
-    clientRect?: DOMRect
-  }) => {
-    const { model } = props
-    const { featureUnderMouse: feat } = model
-    return feat && feat.get('type') === 'skip' ? null : (
-      <Tooltip TooltipContents={TooltipContents} {...props} />
+const SNPCoverageTooltip = observer(function (props: {
+  model: {
+    featureUnderMouse?: Feature
+    mouseoverExtraInformation?: string
+  }
+  height: number
+  offsetMouseCoord: Coord
+  clientMouseCoord: Coord
+  clientRect?: DOMRect
+}) {
+  const { model, height, clientMouseCoord, offsetMouseCoord } = props
+  const { featureUnderMouse: feat, mouseoverExtraInformation } = model
+  const { classes } = useStyles()
+
+  // Show interbase indicator tooltip when hovering over one
+  if (mouseoverExtraInformation && !feat) {
+    const x = clientMouseCoord[0] + 5
+    const y = clientMouseCoord[1]
+    return (
+      <>
+        <BaseTooltip clientPoint={{ x, y }}>
+          <div style={{ whiteSpace: 'pre-wrap' }}>
+            {mouseoverExtraInformation}
+          </div>
+        </BaseTooltip>
+        <div
+          className={classes.hoverVertical}
+          style={{
+            left: offsetMouseCoord[0],
+            height: height - YSCALEBAR_LABEL_OFFSET * 2,
+          }}
+        />
+      </>
     )
-  },
-)
+  }
+
+  return feat && feat.get('type') === 'skip' ? null : (
+    <Tooltip TooltipContents={TooltipContents} {...props} />
+  )
+})
 
 export default SNPCoverageTooltip

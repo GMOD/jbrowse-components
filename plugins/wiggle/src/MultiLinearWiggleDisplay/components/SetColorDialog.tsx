@@ -1,19 +1,7 @@
-import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { useLocalStorage } from '@jbrowse/core/util'
-import clone from 'clone'
-
-// locals
-import DraggableDialog from './DraggableDialog'
-import { Source } from '../../util'
 import SourcesGrid from './SourcesGrid'
+import SharedSetColorDialog from './ui/SetColorDialog'
 
-const useStyles = makeStyles()({
-  content: {
-    minWidth: 800,
-  },
-})
+import type { Source } from '../../util'
 
 export default function SetColorDialog({
   model,
@@ -26,91 +14,15 @@ export default function SetColorDialog({
   }
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
-  const { sources } = model
-  const [currLayout, setCurrLayout] = useState(clone(sources || []))
-  const [showTips, setShowTips] = useLocalStorage('multiwiggle-showTips', true)
   return (
-    <DraggableDialog
-      open
-      onClose={handleClose}
-      maxWidth="xl"
-      title={'Multi-wiggle color/arrangement editor'}
-    >
-      <DialogContent className={classes.content}>
-        <Button
-          variant="contained"
-          style={{ float: 'right' }}
-          onClick={() => setShowTips(!showTips)}
-        >
-          {showTips ? 'Hide tips' : 'Show tips'}
-        </Button>
-        <br />
-        {showTips ? (
-          <>
-            Helpful tips
-            <ul>
-              <li>You can select rows in the table with the checkboxes</li>
-              <li>
-                Multi-select is enabled with shift-click and control-click
-              </li>
-              <li>
-                The "Move selected items up/down" can re-arrange subtracks
-              </li>
-              <li>
-                Sorting the data grid itself can also re-arrange subtracks
-              </li>
-              <li>Changes are applied when you hit Submit</li>
-              <li>
-                You can click and drag the dialog box to move it on the screen
-              </li>
-              <li>
-                Columns in the table can be hidden using a vertical '...' menu
-                on the right side of each column
-              </li>
-            </ul>
-          </>
-        ) : null}
-        <SourcesGrid
-          rows={currLayout}
-          onChange={setCurrLayout}
-          showTips={showTips}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          type="submit"
-          color="inherit"
-          onClick={() => {
-            model.clearLayout()
-            setCurrLayout(model.sources || [])
-          }}
-        >
-          Clear custom settings
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-            setCurrLayout([...(model.sources || [])])
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          onClick={() => {
-            model.setLayout(currLayout)
-            handleClose()
-          }}
-        >
-          Submit
-        </Button>
-      </DialogActions>
-    </DraggableDialog>
+    <SharedSetColorDialog
+      model={model as any}
+      handleClose={handleClose}
+      title="Multi-wiggle color/arrangement editor"
+      enableBulkEdit
+      enableRowPalettizer
+      showTipsStorageKey="multiwiggle-showTips"
+      SourcesGridComponent={SourcesGrid as any}
+    />
   )
 }

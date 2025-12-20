@@ -1,20 +1,24 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`breakpoint split view 1`] = `
 <g
   data-testid="pacbio_hg002_breakpoints-loaded"
   fill="none"
-  stroke="#000000"
-  stroke-opacity="0.38"
 >
   <path
-    d="M 407.99312656000257 75.5 C 607.9931265600026 75.5 203.41868021525443 84.5 403.4186802152544 84.5"
+    d="M 410.99312656000257 75.5 C 610.9931265600026 75.5 203.41868021525443 84.5 403.4186802152544 84.5"
     data-testid="r1"
+    pointer-events="auto"
+    stroke="#000000"
+    stroke-opacity="0.38"
     stroke-width="1"
   />
   <path
     d="M 660.4186802152544 84.5 C 860.4186802152544 84.5 206.99312656000257 48.5 406.99312656000257 48.5"
     data-testid="r1"
+    pointer-events="auto"
+    stroke="#000000"
+    stroke-opacity="0.38"
     stroke-width="1"
   />
 </g>
@@ -30,6 +34,7 @@ exports[`breakpoint split view 2`] = `
   <path
     d="M 387.99312656000257 19.5 L 407.99312656000257 19.5 L 403.4186802152544 19.5 L 423.4186802152544 19.5"
     data-testid="r2"
+    pointer-events="auto"
     stroke-width="5"
   />
 </g>

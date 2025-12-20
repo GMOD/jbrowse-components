@@ -1,27 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
-import clone from 'clone'
-import { PluginDefinition } from '@jbrowse/core/PluginLoader'
+
 import {
-  getConf,
-  AnyConfigurationModel,
-  readConfObject,
-  AnyConfiguration,
-} from '@jbrowse/core/configuration'
-import { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
+  AppFocusMixin,
+  DockviewLayoutMixin,
+  SessionAssembliesMixin,
+  TemporaryAssembliesMixin,
+} from '@jbrowse/app-core'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
-import { autorun } from 'mobx'
 import {
   addDisposer,
   cast,
   getParent,
   getSnapshot,
+  isStateTreeNode,
   types,
-  SnapshotIn,
-  Instance,
-} from 'mobx-state-tree'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import PluginManager from '@jbrowse/core/PluginManager'
+} from '@jbrowse/mobx-state-tree'
 import {
   DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
@@ -30,27 +25,34 @@ import {
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
 } from '@jbrowse/product-core'
-import {
-  AppFocusMixin,
-  SessionAssembliesMixin,
-  TemporaryAssembliesMixin,
-} from '@jbrowse/app-core'
-import { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
-
-// icons
-import SettingsIcon from '@mui/icons-material/Settings'
-import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
+import SettingsIcon from '@mui/icons-material/Settings'
+import { autorun } from 'mobx'
 
-// locals
 import { WebSessionConnectionsMixin } from '../SessionConnections'
+
+import type { Menu } from '@jbrowse/app-core'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type {
+  AnyConfiguration,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type { AssemblyManager } from '@jbrowse/core/util/types'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const AboutDialog = lazy(() => import('./AboutDialog'))
+
+interface Display {
+  displayId: string
+}
 
 /**
  * #stateModel BaseWebSession
@@ -91,6 +93,7 @@ export function BaseWebSession({
         SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
         TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
         WebSessionConnectionsMixin(pluginManager),
+        DockviewLayoutMixin(),
         AppFocusMixin(),
         SnackbarModel(),
       ),
@@ -103,7 +106,9 @@ export function BaseWebSession({
       /**
        * #property
        */
-      sessionPlugins: types.array(types.frozen()),
+      sessionPlugins: types.array(
+        types.frozen<PluginDefinition & { name: string }>(),
+      ),
     })
     .volatile((/* self */) => ({
       /**
@@ -112,13 +117,23 @@ export function BaseWebSession({
       sessionThemeName: localStorageGetItem('themeName') || 'default',
       /**
        * #volatile
-       * this is the current "task" that is being performed in the UI.
-       * this is usually an object of the form
+       * this is the current "task" that is being performed in the UI. this is
+       * usually an object of the form
+       *
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries([
+          ...this.tracks.map(t => [t.trackId, t]),
+          ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+        ])
+      },
       /**
        * #getter
        */
@@ -137,7 +152,9 @@ export function BaseWebSession({
        * include temporaryAssemblies. basically the list to be displayed in a
        * AssemblySelector dropdown
        */
-      get assemblies(): Instance<BaseAssemblyConfigSchema[]> {
+      get assemblies(): (Instance<BaseAssemblyConfigSchema> & {
+        sequence: { trackId: string }
+      })[] {
         return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
       },
       /**
@@ -194,8 +211,8 @@ export function BaseWebSession({
       /**
        * #getter
        */
-      get savedSessions() {
-        return self.root.savedSessions
+      get savedSessionMetadata() {
+        return self.root.savedSessionMetadata
       },
       /**
        * #getter
@@ -203,24 +220,14 @@ export function BaseWebSession({
       get previousAutosaveId() {
         return self.root.previousAutosaveId
       },
-      /**
-       * #getter
-       */
-      get savedSessionNames() {
-        return self.root.savedSessionNames
-      },
+
       /**
        * #getter
        */
       get history() {
         return self.root.history
       },
-      /**
-       * #getter
-       */
-      get menus() {
-        return self.root.menus
-      },
+
       /**
        * #method
        */
@@ -241,7 +248,7 @@ export function BaseWebSession({
       /**
        * #action
        */
-      addSessionPlugin(plugin: JBrowsePlugin) {
+      addSessionPlugin(plugin: PluginDefinition & { name: string }) {
         if (self.sessionPlugins.some(p => p.name === plugin.name)) {
           throw new Error('session plugin cannot be installed twice')
         }
@@ -253,14 +260,23 @@ export function BaseWebSession({
        * #action
        */
       removeSessionPlugin(pluginDefinition: PluginDefinition) {
+        type PluginUrls = Partial<{
+          url: string
+          umdUrl: string
+          cjsUrl: string
+          esmUrl: string
+        }>
+        const def = pluginDefinition as PluginUrls
         self.sessionPlugins = cast(
-          self.sessionPlugins.filter(
-            plugin =>
-              plugin.url !== pluginDefinition.url ||
-              plugin.umdUrl !== pluginDefinition.umdUrl ||
-              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
-              plugin.esmUrl !== pluginDefinition.esmUrl,
-          ),
+          self.sessionPlugins.filter(plugin => {
+            const p = plugin as PluginUrls
+            return (
+              p.url !== def.url ||
+              p.umdUrl !== def.umdUrl ||
+              p.cjsUrl !== def.cjsUrl ||
+              p.esmUrl !== def.esmUrl
+            )
+          }),
         )
         getParent<any>(self).setPluginsUpdated(true)
       },
@@ -275,10 +291,23 @@ export function BaseWebSession({
       /**
        * #action
        */
-      removeSavedSession(sessionSnapshot: { name: string }) {
-        return self.root.removeSavedSession(sessionSnapshot)
+      deleteSavedSession(id: string) {
+        return self.root.deleteSavedSession(id)
       },
 
+      /**
+       * #action
+       */
+      favoriteSavedSession(id: string) {
+        return self.root.favoriteSavedSession(id)
+      },
+
+      /**
+       * #action
+       */
+      unfavoriteSavedSession(id: string) {
+        return self.root.unfavoriteSavedSession(id)
+      },
       /**
        * #action
        */
@@ -331,9 +360,13 @@ export function BaseWebSession({
       /**
        * #action
        */
-      editTrackConfiguration(configuration: AnyConfigurationModel) {
+      editTrackConfiguration(
+        configuration: AnyConfigurationModel | { trackId: string },
+      ) {
         const { adminMode, sessionTracks } = self
-        if (!adminMode && !sessionTracks.includes(configuration)) {
+        const trackId = configuration.trackId
+        const isSessionTrack = sessionTracks.some(t => t.trackId === trackId)
+        if (!adminMode && !isSessionTrack) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         self.editConfiguration(configuration)
@@ -353,42 +386,55 @@ export function BaseWebSession({
         return [
           {
             label: 'About track',
+            priority: 1002,
             onClick: () => {
               self.queueDialog(handleClose => [
                 AboutDialog,
-                { config, handleClose },
+                {
+                  config,
+                  handleClose,
+                  session: self,
+                },
               ])
             },
             icon: InfoIcon,
           },
           {
             label: 'Settings',
+            priority: 1001,
             disabled: !canEdit,
-            onClick: () => self.editTrackConfiguration(config),
             icon: SettingsIcon,
+            onClick: () => {
+              self.editTrackConfiguration(config)
+            },
           },
           {
             label: 'Delete track',
+            priority: 1000,
             disabled: !canEdit || isRefSeq,
-            onClick: () => self.deleteTrackConf(config),
             icon: DeleteIcon,
+            onClick: () => {
+              self.deleteTrackConf(config)
+            },
           },
           {
             label: 'Copy track',
+            priority: 999,
             disabled: isRefSeq,
             onClick: () => {
-              interface Display {
-                displayId: string
-              }
-              const snap = clone(getSnapshot(config)) as {
+              const snap = structuredClone(
+                isStateTreeNode(config) ? getSnapshot(config) : config,
+              ) as {
                 [key: string]: unknown
-                displays: Display[]
+                displays?: Display[]
               }
               const now = Date.now()
               snap.trackId += `-${now}`
-              snap.displays.forEach(display => {
-                display.displayId += `-${now}`
-              })
+              if (snap.displays) {
+                for (const display of snap.displays) {
+                  display.displayId += `-${now}`
+                }
+              }
               // the -sessionTrack suffix to trackId is used as metadata for
               // the track selector to store the track in a special category,
               // and default category is also cleared
@@ -401,17 +447,28 @@ export function BaseWebSession({
             },
             icon: CopyIcon,
           },
+          { type: 'divider' },
         ]
+      },
+
+      /**
+       * #method
+       */
+      menus(): Menu[] {
+        return self.root.menus()
       },
     }))
     .actions(self => ({
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem('drawerPosition', self.drawerPosition)
-            localStorageSetItem('themeName', self.themeName)
-          }),
+          autorun(
+            function sessionLocalStorageAutorun() {
+              localStorageSetItem('drawerPosition', self.drawerPosition)
+              localStorageSetItem('themeName', self.themeName)
+            },
+            { name: 'SessionLocalStorage' },
+          ),
         )
       },
     }))
@@ -422,19 +479,18 @@ export function BaseWebSession({
   ) as typeof sessionModel
 
   return types.snapshotProcessor(extendedSessionModel, {
-    // @ts-expect-error
-    preProcessor(snapshot) {
-      if (snapshot) {
-        // @ts-expect-error
-        const { connectionInstances, ...rest } = snapshot || {}
-        // connectionInstances schema changed from object to an array, so any
-        // old connectionInstances as object is in snapshot, filter it out
-        // https://github.com/GMOD/jbrowse-components/issues/1903
-        if (!Array.isArray(connectionInstances)) {
-          return rest
-        }
-      }
-      return snapshot
+    preProcessor(
+      snapshot: SnapshotIn<typeof extendedSessionModel> & {
+        connectionInstances?: unknown
+      },
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      const { connectionInstances, ...rest } = snapshot || {}
+
+      // connectionInstances schema changed from object to an array, so any old
+      // connectionInstances as object is in snapshot, filter it out
+      // xref https://github.com/GMOD/jbrowse-components/issues/1903
+      return !Array.isArray(connectionInstances) ? rest : snapshot
     },
   })
 }

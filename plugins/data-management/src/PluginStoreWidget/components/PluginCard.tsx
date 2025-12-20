@@ -1,36 +1,27 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
-import { getSession, getEnv } from '@jbrowse/core/util'
+import { useState } from 'react'
+
+import { ExternalLink } from '@jbrowse/core/ui'
+import { getEnv, getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
+import AddIcon from '@mui/icons-material/Add'
+import CheckIcon from '@mui/icons-material/Check'
+import PersonIcon from '@mui/icons-material/Person'
 import {
-  JBrowsePlugin,
-  isSessionWithSessionPlugins,
-} from '@jbrowse/core/util/types'
-import {
+  Button,
   Card,
   CardActions,
   CardContent,
-  Button,
-  Link,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
 
-// icons
-import PersonIcon from '@mui/icons-material/Person'
-import AddIcon from '@mui/icons-material/Add'
-import CheckIcon from '@mui/icons-material/Check'
-
-// locals
-import { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model'
+import type { JBrowsePlugin } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()({
   card: {
     margin: '0.5em',
-  },
-  icon: {
-    marginLeft: '0.5em',
-    marginRight: '0.5em',
   },
   bold: {
     fontWeight: 600,
@@ -39,58 +30,55 @@ const useStyles = makeStyles()({
     display: 'flex',
     alignItems: 'center',
   },
+  mr: {
+    marginRight: '0.5em',
+  },
 })
 
 const PluginCard = observer(function PluginCard({
   plugin,
   model,
-  adminMode,
 }: {
   plugin: JBrowsePlugin
   model: PluginStoreModel
-  adminMode: boolean
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(model)
   const { runtimePluginDefinitions } = pluginManager
-  const isInstalled = runtimePluginDefinitions.some(d => d.url === plugin.url)
+  const isInstalled = runtimePluginDefinitions.some(
+    d => 'url' in d && d.url === plugin.url,
+  )
   const [tempDisabled, setTempDisabled] = useState(false)
-  const disableButton = isInstalled || tempDisabled
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rootModel = getParent<any>(model, 3)
-  const { jbrowse } = rootModel
-
+  const { adminMode, jbrowse } = session
+  const { name, authors, description } = plugin
   return (
-    <Card variant="outlined" key={plugin.name} className={classes.card}>
+    <Card variant="outlined" key={name} className={classes.card}>
       <CardContent>
         <Typography variant="h5">
-          <Link
-            href={`${plugin.location}#readme`}
-            target="_blank"
-            rel="noopener"
-          >
+          <ExternalLink href={`${plugin.location}#readme`}>
             {plugin.name}
-          </Link>
+          </ExternalLink>
         </Typography>
         <div className={classes.dataField}>
-          <PersonIcon style={{ marginRight: '0.5em' }} />
-          <Typography>{plugin.authors.join(', ')}</Typography>
+          <PersonIcon className={classes.mr} />
+          <Typography>{authors.join(', ')}</Typography>
         </div>
         <Typography className={classes.bold}>Description:</Typography>
-        <Typography>{plugin.description}</Typography>
+        <Typography>{description}</Typography>
       </CardContent>
       <CardActions>
         <Button
           variant="contained"
-          disabled={disableButton}
+          disabled={isInstalled || tempDisabled}
           startIcon={isInstalled ? <CheckIcon /> : <AddIcon />}
           onClick={() => {
             if (adminMode) {
-              jbrowse.addPlugin({ name: plugin.name, url: plugin.url })
+              jbrowse.addPlugin(plugin)
             } else if (isSessionWithSessionPlugins(session)) {
               session.addSessionPlugin(plugin)
+            } else {
+              session.notify('No way to install plugin')
             }
             setTempDisabled(true)
           }}

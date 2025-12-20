@@ -1,14 +1,15 @@
-import { openLocation } from '@jbrowse/core/util/io'
 import { objectHash } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
 import {
+  UNKNOWN,
+  UNSUPPORTED,
   generateUnknownTrackConf,
   generateUnsupportedTrackConf,
   guessAdapter,
   guessTrackType,
-  UNKNOWN,
-  UNSUPPORTED,
 } from '@jbrowse/core/util/tracks'
-import { Track, RefSeqs, RefSeq } from './types'
+
+import type { RefSeq, RefSeqs, Track } from './types'
 
 interface Jb2Track {
   trackId: string
@@ -39,7 +40,6 @@ interface Jb2Adapter {
   bedGzLocation?: Jb2Location
   index?: { location: Jb2Location; indexType?: string }
   rootUrlTemplate?: Jb2Location
-  sequenceAdapter?: Jb2Adapter
 }
 
 interface Jb2Feature {
@@ -59,7 +59,6 @@ interface Jb2Location {
 export function convertTrackConfig(
   jb1TrackConfig: Track,
   dataRoot: string,
-  sequenceAdapter: Jb2Adapter,
 ): Jb2Track {
   const jb2TrackConfig: Jb2Track = {
     trackId: objectHash(jb1TrackConfig),
@@ -135,17 +134,16 @@ export function convertTrackConfig(
       const adapter: Jb2Adapter = {
         type: 'CramAdapter',
         cramLocation: { uri: urlTemplate, locationType: 'UriLocation' },
-        sequenceAdapter,
+        craiLocation: jb1TrackConfig.craiUrlTemplate
+          ? {
+              uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
+              locationType: 'UriLocation',
+            }
+          : {
+              uri: `${urlTemplate}.crai`,
+              locationType: 'UriLocation',
+            },
       }
-      adapter.craiLocation = jb1TrackConfig.craiUrlTemplate
-        ? {
-            uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
-            locationType: 'UriLocation',
-          }
-        : {
-            uri: `${urlTemplate}.crai`,
-            locationType: 'UriLocation',
-          }
       return {
         ...jb2TrackConfig,
         type: 'AlignmentsTrack',
@@ -338,16 +336,16 @@ export function convertTrackConfig(
       const adapter: Jb2Adapter = {
         type: 'IndexedFastaAdapter',
         fastaLocation: { uri: urlTemplate, locationType: 'UriLocation' },
+        faiLocation: jb1TrackConfig.faiUrlTemplate
+          ? {
+              uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+              locationType: 'UriLocation',
+            }
+          : {
+              uri: `${urlTemplate}.fai`,
+              locationType: 'UriLocation',
+            },
       }
-      adapter.faiLocation = jb1TrackConfig.faiUrlTemplate
-        ? {
-            uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
-            locationType: 'UriLocation',
-          }
-        : {
-            uri: `${urlTemplate}.fai`,
-            locationType: 'UriLocation',
-          }
       return {
         ...jb2TrackConfig,
         type: 'SequenceTrack',
@@ -358,25 +356,25 @@ export function convertTrackConfig(
       const adapter: Jb2Adapter = {
         type: 'BgzipFastaAdapter',
         fastaLocation: { uri: urlTemplate, locationType: 'UriLocation' },
+        faiLocation: jb1TrackConfig.faiUrlTemplate
+          ? {
+              uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+              locationType: 'UriLocation',
+            }
+          : {
+              uri: `${urlTemplate}.fai`,
+              locationType: 'UriLocation',
+            },
+        gziLocation: jb1TrackConfig.gziUrlTemplate
+          ? {
+              uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
+              locationType: 'UriLocation',
+            }
+          : {
+              uri: `${urlTemplate}.gzi`,
+              locationType: 'UriLocation',
+            },
       }
-      adapter.faiLocation = jb1TrackConfig.faiUrlTemplate
-        ? {
-            uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
-            locationType: 'UriLocation',
-          }
-        : {
-            uri: `${urlTemplate}.fai`,
-            locationType: 'UriLocation',
-          }
-      adapter.gziLocation = jb1TrackConfig.gziUrlTemplate
-        ? {
-            uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
-            locationType: 'UriLocation',
-          }
-        : {
-            uri: `${urlTemplate}.gzi`,
-            locationType: 'UriLocation',
-          }
       return {
         ...jb2TrackConfig,
         type: 'ReferenceSequenceTrack',
@@ -395,15 +393,13 @@ export function convertTrackConfig(
     }
   }
 
-  // If we don't recognize the store class, make a best effort to guess by file type
+  // If we don't recognize the store class, make a best effort to guess by file
+  // type
   jb2TrackConfig.adapter = guessAdapter(
     { uri: urlTemplate, locationType: 'UriLocation' },
     undefined,
     urlTemplate,
   )
-  if (!jb2TrackConfig.adapter) {
-    throw new Error('Could not determine adapter')
-  }
 
   if (jb2TrackConfig.adapter.type === UNSUPPORTED) {
     return generateUnsupportedTrackConf(
@@ -466,7 +462,7 @@ export async function createRefSeqsAdapter(
 
   // check refseq urls
   if (refSeqs.url) {
-    if (refSeqs.url.match(/.fai$/)) {
+    if (/.fai$/.exec(refSeqs.url)) {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: {
@@ -479,16 +475,16 @@ export async function createRefSeqsAdapter(
         },
       }
     }
-    if (refSeqs.url.match(/.2bit$/)) {
+    if (/.2bit$/.exec(refSeqs.url)) {
       return {
         type: 'TwoBitAdapter',
         twoBitLocation: { uri: refSeqs.url, locationType: 'UriLocation' },
       }
     }
-    if (refSeqs.url.match(/.fa$/)) {
+    if (/.fa$/.exec(refSeqs.url)) {
       throw new Error('Unindexed FASTA adapter not available')
     }
-    if (refSeqs.url.match(/.sizes/)) {
+    if (/.sizes/.exec(refSeqs.url)) {
       throw new Error('chromosome SIZES adapter not available')
     }
     const refSeqsJson = await openLocation({

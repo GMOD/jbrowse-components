@@ -1,10 +1,12 @@
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { set1 } from '@jbrowse/core/ui/colors'
+
+import ArcRendererF from './ArcRenderer'
 import LinearArcDisplayF from './LinearArcDisplay'
 import LinearPairedArcDisplayF from './LinearPairedArcDisplay'
-import ArcRendererF from './ArcRenderer'
-import { Feature } from '@jbrowse/core/util'
-import { set1 } from '@jbrowse/core/ui/colors'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Feature } from '@jbrowse/core/util'
 
 export default class ArcPlugin extends Plugin {
   name = 'ArcRenderer'
@@ -20,7 +22,7 @@ export default class ArcPlugin extends Plugin {
     )
     pluginManager.jexl.addFunction(
       'defaultPairedArcColor',
-      (_feature: Feature, alt: string) => {
+      (_feature: Feature, alt?: string) => {
         if (alt?.startsWith('<DEL')) {
           return set1[0]
         } else if (alt?.startsWith('<DUP')) {

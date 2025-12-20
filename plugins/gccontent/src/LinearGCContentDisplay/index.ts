@@ -1,11 +1,19 @@
+import { lazy } from 'react'
+
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 
 import configSchemaFactory1 from './config1'
 import configSchemaFactory2 from './config2'
 import stateModelF1 from './stateModel1'
 import stateModelF2 from './stateModel2'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+const LazyWiggleDisplayComponent = lazy(() =>
+  import('@jbrowse/plugin-wiggle').then(m => ({
+    default: m.LinearWiggleDisplayReactComponent,
+  })),
+)
 
 export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
@@ -18,7 +26,7 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
       displayName: 'GC content display',
       trackType: 'ReferenceSequenceTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: LinearWiggleDisplayReactComponent,
+      ReactComponent: LazyWiggleDisplayComponent,
     })
   })
 
@@ -32,7 +40,7 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
       displayName: 'GC content display',
       trackType: 'GCContentTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: LinearWiggleDisplayReactComponent,
+      ReactComponent: LazyWiggleDisplayComponent,
     })
   })
 }

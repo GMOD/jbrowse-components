@@ -1,114 +1,75 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { IntervalTree } from '@flatten-js/interval-tree'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import IntervalTree from '@flatten-js/interval-tree'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { unzip } from '@gmod/bgzf-filehandle'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { parseStringSync } from 'gff-nostream'
 
-import gff, { GFF3FeatureLineWithRefs } from '@gmod/gff'
+import { featureData } from '../featureData'
+import { parseGffBuffer } from './gffParser'
 
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
-const decoder =
-  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
+type StatusCallback = (arg: string) => void
 
 export default class Gff3Adapter extends BaseFeatureDataAdapter {
-  calculatedIntervalTreeMap: Record<string, IntervalTree> = {}
+  calculatedIntervalTreeMap: Record<string, IntervalTree<Feature>> = {}
 
-  protected gffFeatures?: Promise<{
+  gffFeatures?: Promise<{
     header: string
     intervalTreeMap: Record<
       string,
-      ((sc?: (arg: string) => void) => IntervalTree) | undefined
+      (sc?: StatusCallback) => IntervalTree<Feature>
     >
   }>
 
-  private async loadDataP(opts: BaseOptions) {
+  private async loadDataP(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    const pm = this.pluginManager
-    const buf = await openLocation(this.getConf('gffLocation'), pm).readFile()
-    const buffer = isGzip(buf) ? await unzip(buf) : buf
-    const headerLines = []
-    const featureMap = {} as Record<string, string>
-    let blockStart = 0
-
-    let i = 0
-    while (blockStart < buffer.length) {
-      const n = buffer.indexOf('\n', blockStart)
-      // could be a non-newline ended file, so slice to end of file if n===-1
-      const b =
-        n === -1 ? buffer.slice(blockStart) : buffer.slice(blockStart, n)
-      const line = (decoder?.decode(b) || b.toString()).trim()
-      if (line) {
-        if (line.startsWith('#')) {
-          headerLines.push(line)
-        } else if (line.startsWith('>')) {
-          break
-        } else {
-          const ret = line.indexOf('\t')
-          const refName = line.slice(0, ret)
-          if (!featureMap[refName]) {
-            featureMap[refName] = ''
-          }
-          featureMap[refName] += line + '\n'
-        }
-      }
-      if (i++ % 10_000 === 0) {
-        statusCallback(
-          `Loading ${Math.floor(blockStart / 1_000_000).toLocaleString('en-US')}/${Math.floor(buffer.length / 1_000_000).toLocaleString('en-US')} MB`,
-        )
-      }
-
-      blockStart = n + 1
-    }
-
-    const intervalTreeMap = Object.fromEntries(
-      Object.entries(featureMap).map(([refName, lines]) => {
-        return [
-          refName,
-          (sc?: (arg: string) => void) => {
-            sc?.(`Parsing GFF data`)
-            if (!this.calculatedIntervalTreeMap[refName]) {
-              const intervalTree = new IntervalTree()
-              gff
-                .parseStringSync(lines, {
-                  parseFeatures: true,
-                  parseComments: false,
-                  parseDirectives: false,
-                  parseSequences: false,
-                  disableDerivesFromReferences: true,
-                })
-                .flat()
-                .map(
-                  (f, i) =>
-                    new SimpleFeature({
-                      data: this.featureData(f),
-                      id: `${this.id}-${refName}-${i}`,
-                    }),
-                )
-                .forEach(obj =>
-                  intervalTree.insert([obj.get('start'), obj.get('end')], obj),
-                )
-              this.calculatedIntervalTreeMap[refName] = intervalTree
-            }
-            return this.calculatedIntervalTreeMap[refName]
-          },
-        ]
-      }),
+    const buffer = await fetchAndMaybeUnzip(
+      openLocation(this.getConf('gffLocation'), this.pluginManager),
+      opts,
     )
 
-    return { header: headerLines.join('\n'), intervalTreeMap }
+    const { header, featureMap } = parseGffBuffer(buffer, statusCallback)
+
+    const intervalTreeMap = Object.fromEntries(
+      Object.entries(featureMap).map(([refName, lines]) => [
+        refName,
+        (sc?: (arg: string) => void) => {
+          if (!this.calculatedIntervalTreeMap[refName]) {
+            sc?.('Parsing GFF data')
+            const intervalTree = new IntervalTree<Feature>()
+            for (const obj of parseStringSync(lines)
+              .flat()
+              .map(
+                (f, i) =>
+                  new SimpleFeature({
+                    data: featureData(f),
+                    id: `${this.id}-${refName}-${i}`,
+                  }),
+              )) {
+              intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+            }
+
+            this.calculatedIntervalTreeMap[refName] = intervalTree
+          }
+          return this.calculatedIntervalTreeMap[refName]
+        },
+      ]),
+    )
+
+    return {
+      header,
+      intervalTreeMap,
+    }
   }
 
   private async loadData(opts: BaseOptions) {
     if (!this.gffFeatures) {
-      this.gffFeatures = this.loadDataP(opts).catch(e => {
+      this.gffFeatures = this.loadDataP(opts).catch((e: unknown) => {
         this.gffFeatures = undefined
         throw e
       })
@@ -132,78 +93,16 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       try {
         const { start, end, refName } = query
         const { intervalTreeMap } = await this.loadData(opts)
-        intervalTreeMap[refName]?.(opts.statusCallback)
-          ?.search([start, end])
-          .forEach(f => observer.next(f))
+        for (const f of intervalTreeMap[refName]?.(opts.statusCallback).search([
+          start,
+          end,
+        ]) || []) {
+          observer.next(f)
+        }
         observer.complete()
       } catch (e) {
         observer.error(e)
       }
-    }, opts.signal)
+    }, opts.stopToken)
   }
-
-  private featureData(data: GFF3FeatureLineWithRefs) {
-    const f: Record<string, unknown> = { ...data }
-    ;(f.start as number) -= 1 // convert to interbase
-    if (data.strand === '+') {
-      f.strand = 1
-    } else if (data.strand === '-') {
-      f.strand = -1
-    } else if (data.strand === '.') {
-      f.strand = 0
-    } else {
-      f.strand = undefined
-    }
-    f.phase = Number(data.phase)
-    f.refName = data.seq_id
-    if (data.score === null) {
-      delete f.score
-    }
-    if (data.phase === null) {
-      delete f.score
-    }
-    const defaultFields = new Set([
-      'start',
-      'end',
-      'seq_id',
-      'score',
-      'type',
-      'source',
-      'phase',
-      'strand',
-    ])
-    const dataAttributes = data.attributes || {}
-    for (const a of Object.keys(dataAttributes)) {
-      let b = a.toLowerCase()
-      if (defaultFields.has(b)) {
-        // add "suffix" to tag name if it already exists
-        // reproduces behavior of NCList
-        b += '2'
-      }
-      if (dataAttributes[a] !== null) {
-        let attr: string | string[] | undefined = dataAttributes[a]
-        if (Array.isArray(attr) && attr.length === 1) {
-          ;[attr] = attr
-        }
-        f[b] = attr
-      }
-    }
-    f.refName = f.seq_id
-
-    // the SimpleFeature constructor takes care of recursively inflating subfeatures
-    if (data.child_features && data.child_features.length > 0) {
-      f.subfeatures = data.child_features.flatMap(childLocs =>
-        childLocs.map(childLoc => this.featureData(childLoc)),
-      )
-    }
-
-    delete f.child_features
-    delete f.data
-    // delete f.derived_features
-    delete f.attributes
-    delete f.seq_id
-    return f
-  }
-
-  public freeResources(/* { region } */) {}
 }

@@ -1,9 +1,6 @@
-import React from 'react'
-import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
-
-// icons
 import SettingsIcon from '@mui/icons-material/Settings'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 
 export default function HelpDialog({
   handleClose,
@@ -14,11 +11,13 @@ export default function HelpDialog({
     <Dialog
       maxWidth="xl"
       open
-      onClose={() => handleClose()}
+      onClose={() => {
+        handleClose()
+      }}
       title="Feature sequence panel help"
     >
       <DialogContent>
-        <Typography paragraph>
+        <Typography>
           The "Feature sequence" panel shows the underlying genomic sequence for
           a given feature, fetched from the reference genome.
         </Typography>
@@ -42,9 +41,7 @@ export default function HelpDialog({
             highlighted
           </li>
         </ul>
-        <Typography paragraph>
-          For other feature types, the options are:
-        </Typography>
+        <Typography>For other feature types, the options are:</Typography>
         <ul>
           <li>
             Genomic +/- Nbp up+down stream - the reference genome sequence
@@ -63,7 +60,13 @@ export default function HelpDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={() => handleClose()} autoFocus variant="contained">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          autoFocus
+          variant="contained"
+        >
           Close
         </Button>
       </DialogActions>

@@ -1,10 +1,12 @@
-import React from 'react'
-import { observer } from 'mobx-react'
-import { IAnyStateTreeNode, getEnv } from 'mobx-state-tree'
+import { ExternalLink } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { Typography, Link } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getEnv } from '@jbrowse/mobx-state-tree'
+import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -44,10 +46,7 @@ const AboutWidget = observer(function ({
         {version}
       </Typography>
       <Typography align="center">
-        JBrowse is a{' '}
-        <Link href="http://gmod.org/" target="_blank" rel="noopener noreferrer">
-          GMOD
-        </Link>{' '}
+        JBrowse is a <ExternalLink href="http://gmod.org/">GMOD</ExternalLink>{' '}
         project
       </Typography>
       <br />
@@ -65,9 +64,7 @@ const AboutWidget = observer(function ({
               return (
                 <li key={plugin.name}>
                   {plugin.url ? (
-                    <Link target="_blank" rel="noopener noreferrer" href={url}>
-                      {text}
-                    </Link>
+                    <ExternalLink href={url}>{text}</ExternalLink>
                   ) : (
                     <Typography>{text}</Typography>
                   )}

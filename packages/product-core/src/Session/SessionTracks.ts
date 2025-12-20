@@ -1,14 +1,14 @@
-import { IAnyStateTreeNode, Instance, types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
+import { isBaseSession } from './BaseSession'
+import { TracksManagerSessionMixin } from './Tracks'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-
-// locals
-import { TracksManagerSessionMixin } from './Tracks'
-import { isBaseSession } from './BaseSession'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel SessionTracksManagerSessionMixin
@@ -45,6 +45,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           if (self.adminMode) {
             return superAddTrackConf(trackConf)
           }
+
           const { trackId, type } = trackConf as {
             type: string
             trackId: string
@@ -79,6 +80,19 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           return self.sessionTracks.splice(idx, 1)
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { sessionTracks, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(sessionTracks?.length ? { sessionTracks } : {}),
+      } as typeof snap
     })
 }
 

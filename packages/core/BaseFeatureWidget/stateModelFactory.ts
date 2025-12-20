@@ -1,33 +1,16 @@
-import { types, addDisposer, Instance } from 'mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import clone from 'clone'
 
-// locals
-import PluginManager from '../PluginManager'
 import { getConf } from '../configuration'
 import { getSession } from '../util'
-import { ElementId } from '../util/types/mst'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model'
+import { formatSubfeatures } from './util'
+import { ElementId } from '../util/types/mst'
 
-interface Feat {
-  subfeatures?: Record<string, unknown>[]
-}
-
-function formatSubfeatures(
-  obj: Feat,
-  depth: number,
-  parse: (obj: Record<string, unknown>) => void,
-  currentDepth = 0,
-  returnObj = {} as Record<string, unknown>,
-) {
-  if (depth <= currentDepth) {
-    return
-  }
-  obj.subfeatures?.map(sub => {
-    formatSubfeatures(sub, depth, parse, currentDepth + 1, returnObj)
-    parse(sub)
-  })
-}
+import type PluginManager from '../PluginManager'
+import type { SimpleFeatureSerialized } from '../util'
+import type { MaybeSerializedFeat } from './types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseFeatureWidget
@@ -43,42 +26,51 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #property
        */
       id: ElementId,
+
       /**
        * #property
        */
       type: types.literal('BaseFeatureWidget'),
+
       /**
        * #property
        */
-      featureData: types.frozen(),
+      featureData: types.frozen<MaybeSerializedFeat>(),
+
       /**
        * #property
        */
       formattedFields: types.frozen(),
+
       /**
        * #property
        */
-      unformattedFeatureData: types.frozen(),
+      unformattedFeatureData: types.frozen<MaybeSerializedFeat>(),
+
       /**
        * #property
        */
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+
       /**
        * #property
        */
       track: types.safeReference(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
+
       /**
        * #property
        */
       trackId: types.maybe(types.string),
+
       /**
        * #property
        */
       trackType: types.maybe(types.string),
+
       /**
        * #property
        */
@@ -88,8 +80,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #property
        */
       sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {}),
+
+      /**
+       * #property
+       */
+      descriptions: types.frozen<Record<string, unknown> | undefined>(),
     })
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       error: undefined as unknown,
     }))
 
@@ -97,7 +97,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setFeatureData(featureData: Record<string, unknown>) {
+      setFeatureData(featureData: SimpleFeatureSerialized) {
         self.unformattedFeatureData = featureData
       },
       /**
@@ -109,7 +109,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setFormattedData(feat: Record<string, unknown>) {
+      setFormattedData(feat: SimpleFeatureSerialized) {
         self.featureData = feat
       },
       /**
@@ -131,49 +131,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
       afterCreate() {
         addDisposer(
           self,
-          autorun(() => {
-            try {
-              const { unformattedFeatureData, track } = self
-              const session = getSession(self)
-              if (track) {
-                self.setExtra(
-                  track.type,
-                  track.configuration.trackId,
-                  getConf(track, ['formatDetails', 'maxDepth']),
-                )
-              }
-              if (unformattedFeatureData) {
-                const feature = clone(unformattedFeatureData)
-
-                const combine = (
-                  arg2: string,
-                  feature: Record<string, unknown>,
-                ) => ({
-                  ...getConf(session, ['formatDetails', arg2], { feature }),
-                  ...getConf(track, ['formatDetails', arg2], { feature }),
-                })
-
+          autorun(
+            function featureWidgetAutorun() {
+              try {
+                const { unformattedFeatureData, track } = self
+                const session = getSession(self)
                 if (track) {
-                  // eslint-disable-next-line no-underscore-dangle
-                  feature.__jbrowsefmt = combine('feature', feature)
-
-                  formatSubfeatures(
-                    feature,
-                    getConf(track, ['formatDetails', 'depth']),
-                    sub => {
-                      // eslint-disable-next-line no-underscore-dangle
-                      sub.__jbrowsefmt = combine('subfeatures', sub)
-                    },
+                  self.setExtra(
+                    track.type,
+                    track.configuration.trackId,
+                    getConf(track, ['formatDetails', 'maxDepth']),
                   )
                 }
+                if (unformattedFeatureData) {
+                  const feature = structuredClone(unformattedFeatureData)
 
-                self.setFormattedData(feature)
+                  const combine = (
+                    arg2: string,
+                    feature: Record<string, unknown>,
+                  ) => ({
+                    ...getConf(session, ['formatDetails', arg2], { feature }),
+                    ...getConf(track, ['formatDetails', arg2], { feature }),
+                  })
+
+                  if (track) {
+                    feature.__jbrowsefmt = combine('feature', feature)
+
+                    formatSubfeatures(
+                      feature,
+                      getConf(track, ['formatDetails', 'depth']),
+                      sub => {
+                        sub.__jbrowsefmt = combine('subfeatures', sub)
+                      },
+                    )
+                  }
+
+                  self.setFormattedData(feature)
+                }
+              } catch (e) {
+                console.error(e)
+                self.setError(e)
               }
-            } catch (e) {
-              console.error(e)
-              self.setError(e)
-            }
-          }),
+            },
+            { name: 'FeatureWidget' },
+          ),
         )
       },
     }))
@@ -187,21 +188,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       const { unformattedFeatureData, featureData, ...rest } = snap as Omit<
         typeof snap,
         symbol
       >
-      // finalizedFeatureData avoids running formatter twice if loading from
-      // snapshot
+
+      const s2 = JSON.stringify(featureData, (_, v) =>
+        v === undefined ? null : v,
+      )
+
+      // JSON.stringify can return empty if too large
+
+      const featureTooLargeToBeSerialized = !s2 || s2.length > 2_000_000
+
+      // The concept of using `finalizedFeatureData` is to avoid running
+      // formatter twice if loading from snapshot
       return {
-        // replacing undefined with null helps with allowing fields to be
+        // We replace undefined with null to help with allowing fields to be
         // hidden, setting null is not allowed by jexl so we set it to
-        // undefined to hide. see config guide. this replacement happens both
-        // here and when displaying the featureData in base feature widget
-        finalizedFeatureData: JSON.parse(
-          JSON.stringify(featureData, (_, v) => (v === undefined ? null : v)),
-        ),
+        // undefined to hide, but JSON only allows serializing null
+        finalizedFeatureData: featureTooLargeToBeSerialized
+          ? undefined
+          : JSON.parse(s2),
         ...rest,
       }
     })

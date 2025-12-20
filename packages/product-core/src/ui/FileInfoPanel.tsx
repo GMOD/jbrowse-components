@@ -1,33 +1,34 @@
-import React, { useState, useEffect } from 'react'
-import {
-  readConfObject,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
-import {
-  BaseCard,
-  Attributes,
-} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import { useEffect, useState } from 'react'
+
+import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+
+import { readConf } from './util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 type FileInfo = Record<string, unknown> | string
 
 export default function FileInfoPanel({
   config,
+  session,
 }: {
-  config: AnyConfigurationModel
+  config: AnyConfigurationModel | Record<string, unknown>
+  session: AbstractSessionModel
 }) {
   const [error, setError] = useState<unknown>()
   const [info, setInfo] = useState<FileInfo>()
-  const session = getSession(config)
   const { rpcManager } = session
+  const trackId = readConf(config, 'trackId') as string
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
-        const adapterConfig = readConfObject(config, 'adapter')
-        const result = await rpcManager.call(config.trackId, 'CoreGetInfo', {
+        const adapterConfig = readConf(config, 'adapter')
+        const result = await rpcManager.call(trackId, 'CoreGetInfo', {
           adapterConfig,
         })
         setInfo(result as FileInfo)
@@ -36,7 +37,7 @@ export default function FileInfoPanel({
         setError(e)
       }
     })()
-  }, [config, rpcManager])
+  }, [config, rpcManager, trackId])
 
   const details =
     typeof info === 'string'
@@ -47,7 +48,7 @@ export default function FileInfoPanel({
         }
       : info || {}
 
-  return info !== null ? (
+  return (
     <BaseCard title="File info">
       {error ? (
         <ErrorMessage error={error} />
@@ -57,5 +58,5 @@ export default function FileInfoPanel({
         <Attributes attributes={details} />
       )}
     </BaseCard>
-  ) : null
+  )
 }

@@ -3,14 +3,22 @@ id: spreadsheetviewspreadsheet
 title: SpreadsheetViewSpreadsheet
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/spreadsheet-view/src/SpreadsheetView/models/Spreadsheet.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/models/Spreadsheet.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetModel.tsx)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SpreadsheetViewSpreadsheet.md)
+
+## Docs
 
 ### SpreadsheetViewSpreadsheet - Properties
 
@@ -18,59 +26,50 @@ info
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ isLoaded: ISimpleType<true>; rows: IArrayType<IModelType<{ id: ISimpleType<string>; cells: IArrayType<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<IType<any, any, any>>; }, {}, _NotCustomized, _NotCustomized>>; extendedData: IMaybe<...>; isSelected: IType<...>; }, { ...; }...
+IType<RowSet, RowSet, RowSet>
 // code
-rowSet: types.optional(StaticRowSetModel, () => StaticRowSetModel.create())
+rowSet: types.frozen<RowSet | undefined>()
 ```
 
 #### property: columns
 
 ```js
 // type signature
-IArrayType<IModelType<{ name: IMaybe<ISimpleType<string>>; dataType: IOptionalIType<IAnyType, [undefined]>; isDerived: IType<boolean, boolean, boolean>; derivationFunctionText: IMaybe<...>; }, { ...; }, _NotCustomized, _NotCustomized>>
+IType<{ name: string; }[], { name: string; }[], { name: string; }[]>
 // code
-columns: types.array(ColumnDefinition)
+columns: types.frozen<{ name: string }[]>()
 ```
 
-#### property: columnDisplayOrder
+#### property: assemblyName
 
 ```js
 // type signature
-IArrayType<ISimpleType<number>>
+IMaybe<ISimpleType<string>>
 // code
-columnDisplayOrder: types.array(types.number)
+assemblyName: types.maybe(types.string)
 ```
 
-#### property: hasColumnNames
+#### property: visibleColumns
 
 ```js
 // type signature
-false
+IType<Record<string, boolean>, Record<string, boolean>, Record<string, boolean>>
 // code
-hasColumnNames: false
-```
-
-#### property: sortColumns
-
-```js
-// type signature
-IArrayType<IModelType<{ columnNumber: ISimpleType<number>; descending: IType<boolean, boolean, boolean>; }, { switchDirection(): void; }, _NotCustomized, _NotCustomized>>
-// code
-sortColumns: types.array(
-      types
-        .model('SortColumns', {
-          columnNumber: types.number,
-          descending: false,
-        })
-        .actions(self => ({
-          switchDirection() {
-            self.descending = !self.descending
-          },
-        })),
-    )
+visibleColumns: types.frozen<Record<string, boolean>>()
 ```
 
 ### SpreadsheetViewSpreadsheet - Getters
+
+#### getter: rows
+
+```js
+// type
+{
+  id: number
+  feature: SimpleFeatureSerialized
+}
+;[]
+```
 
 #### getter: initialized
 
@@ -79,69 +78,25 @@ sortColumns: types.array(
 boolean
 ```
 
-#### getter: hideRowSelection
+#### getter: dataGridColumns
 
 ```js
 // type
-any
-```
-
-#### getter: dataTypeChoices
-
-list of data type names to be made available in the column dropdown menu
-
-```js
-// type
-{
-  typeName: 'Text' | 'LocRef' | 'Number' | 'LocStart' | 'LocEnd' | 'LocString'
-  displayName: string
-  categoryName: string
-}
-;[]
-```
-
-### SpreadsheetViewSpreadsheet - Methods
-
-#### method: rowSortingComparisonFunction
-
-```js
-// type signature
-rowSortingComparisonFunction: (rowA: { id: string; cells: IMSTArray<IModelType<{ text: ISimpleType<string>; extendedData: IMaybe<IType<any, any, any>>; }, {}, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; extendedData: any; isSelected: boolean; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>, rowB: { ...; } & ... 3 more ...
+({ field: string; width: number; type: "number"; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[]
 ```
 
 ### SpreadsheetViewSpreadsheet - Actions
 
-#### action: setLoaded
+#### action: setVisibleRows
 
 ```js
 // type signature
-setLoaded: (flag: boolean) => void
+setVisibleRows: (arg?: Record<number, boolean>) => void
 ```
 
-#### action: setRowMenuPosition
+#### action: setVisibleColumns
 
 ```js
 // type signature
-setRowMenuPosition: (newPosition: { anchorEl: Element; rowNumber: string; }) => void
-```
-
-#### action: setSortColumns
-
-```js
-// type signature
-setSortColumns: (newSort: readonly ModelCreationType<ExtractCFromProps<{ columnNumber: ISimpleType<number>; descending: IType<boolean, boolean, boolean>; }>>[]) => void
-```
-
-#### action: setColumnType
-
-```js
-// type signature
-setColumnType: (columnNumber: number, newTypeName: string) => void
-```
-
-#### action: unselectAll
-
-```js
-// type signature
-unselectAll: () => void
+setVisibleColumns: (arg: Record<string, boolean>) => void
 ```

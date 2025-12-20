@@ -1,29 +1,17 @@
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
-import { Region, renameRegionsIfNeeded } from '@jbrowse/core/util'
+import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
+import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
+import type { Region } from '@jbrowse/core/util'
+
+export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'WiggleGetMultiRegionQuantitativeStats'
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async deserializeArguments(args: any, rpcDriverClassName: string) {
-    const l = await super.deserializeArguments(args, rpcDriverClassName)
-    return {
-      ...l,
-      filters: args.filters
-        ? new SerializableFilterChain({
-            filters: args.filters,
-          })
-        : undefined,
-    }
-  }
 
   async serializeArguments(
     args: RenderArgs & {
-      signal?: AbortSignal
+      staticBlocks?: Region[]
+      stopToken?: string
       statusCallback?: (arg: string) => void
     },
     rpcDriverClassName: string,
@@ -31,24 +19,34 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
     const pm = this.pluginManager
     const assemblyManager = pm.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
-      return args
+      throw new Error('no assembly manager')
     }
 
-    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
-      ...args,
-      filters: args.filters?.toJSON().filters,
-    })
+    // Also rename staticBlocks if present
+    let renamedStaticBlocks = args.staticBlocks
+    if (args.staticBlocks?.length) {
+      const renamed = await renameRegionsIfNeeded(assemblyManager, {
+        ...args,
+        regions: args.staticBlocks,
+      })
+      renamedStaticBlocks = renamed.regions
+    }
 
-    return super.serializeArguments(renamedArgs, rpcDriverClassName)
+    const baseResult = await super.serializeArguments(args, rpcDriverClassName)
+    return {
+      ...baseResult,
+      staticBlocks: renamedStaticBlocks,
+    }
   }
 
   async execute(
     args: {
-      adapterConfig: {}
-      signal?: RemoteAbortSignal
+      adapterConfig: Record<string, unknown>
+      stopToken?: string
       sessionId: string
       headers?: Record<string, string>
       regions: Region[]
+      staticBlocks?: Region[]
       bpPerPx: number
     },
     rpcDriverClassName: string,
@@ -58,13 +56,13 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { regions, adapterConfig, sessionId } = deserializedArgs
+    const { regions, staticBlocks, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     // @ts-expect-error
-    return dataAdapter.getMultiRegionQuantitativeStats(
-      regions,
-      deserializedArgs,
-    )
+    return dataAdapter.getMultiRegionQuantitativeStats(regions, {
+      ...deserializedArgs,
+      staticBlocks,
+    })
   }
 }

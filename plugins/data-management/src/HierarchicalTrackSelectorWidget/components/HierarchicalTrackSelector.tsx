@@ -1,22 +1,20 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import AutoSizer from 'react-virtualized-auto-sizer'
+import { useState } from 'react'
 
-// locals
-import { HierarchicalTrackSelectorModel } from '../model'
-import { TreeNode } from '../generateHierarchy'
+import { observer } from 'mobx-react'
+
+import AutoSizer from './AutoSizer'
 import HierarchicalFab from './HierarchicalFab'
-import HierarchicalTree from './tree/HierarchicalTree'
 import HierarchicalHeader from './tree/HierarchicalHeader'
+import HierarchicalTree from './tree/HierarchicalTree'
+
+import type { HierarchicalTrackSelectorModel } from '../model'
 
 // Don't use autosizer in jest and instead hardcode a height, otherwise fails
 // jest tests
 const AutoSizedHierarchicalTree = ({
-  tree,
   model,
   offset,
 }: {
-  tree: TreeNode
   model: HierarchicalTrackSelectorModel
   offset: number
 }) => {
@@ -26,12 +24,11 @@ const AutoSizedHierarchicalTree = ({
         <HierarchicalTree
           height={(args.height || offset) - offset}
           model={model}
-          tree={tree}
         />
       )}
     </AutoSizer>
   ) : (
-    <HierarchicalTree height={9000} model={model} tree={tree} />
+    <HierarchicalTree height={9000} model={model} />
   )
 }
 
@@ -77,7 +74,6 @@ const HierarchicalTrackSelector = observer(function ({
     <>
       <HierarchicalHeader model={model} setHeaderHeight={setHeaderHeight} />
       <AutoSizedHierarchicalTree
-        tree={model.hierarchy}
         model={model}
         offset={toolbarHeight + headerHeight}
       />

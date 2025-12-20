@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
-import { Feature, getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Checkbox,
@@ -9,8 +10,11 @@ import {
   FormControlLabel,
   TextField,
 } from '@mui/material'
+
 import { navToSynteny } from './util'
-import { makeStyles } from 'tss-react/mui'
+
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
   padding: {
@@ -20,28 +24,50 @@ const useStyles = makeStyles()({
 })
 
 export default function LaunchSyntenyViewDialog({
-  model,
+  session,
+  view,
   feature,
+  trackId,
   handleClose,
 }: {
-  model: unknown
+  session: AbstractSessionModel
+  view?: LinearGenomeViewModel
   feature: Feature
+  trackId: string
   handleClose: () => void
 }) {
   const { classes } = useStyles()
   const inverted = feature.get('strand') === -1
+  const hasCIGAR = !!feature.get('CIGAR')
   const [horizontallyFlip, setHorizontallyFlip] = useState(inverted)
   const [windowSize, setWindowSize] = useState('1000')
+  const [useRegionOfInterest, setUseRegionOfInterest] = useState(true)
   return (
     <Dialog open title="Launch synteny view" onClose={handleClose}>
       <DialogContent>
+        {view && hasCIGAR ? (
+          <FormControlLabel
+            className={classes.padding}
+            control={
+              <Checkbox
+                checked={useRegionOfInterest}
+                onChange={event => {
+                  setUseRegionOfInterest(event.target.checked)
+                }}
+              />
+            }
+            label="Use CIGAR string to navigate the current visible to the target"
+          />
+        ) : null}
         {inverted ? (
           <FormControlLabel
             className={classes.padding}
             control={
               <Checkbox
                 checked={horizontallyFlip}
-                onChange={event => setHorizontallyFlip(event.target.checked)}
+                onChange={event => {
+                  setHorizontallyFlip(event.target.checked)
+                }}
               />
             }
             label="Note: The feature is inverted in orientation on the target
@@ -52,7 +78,9 @@ export default function LaunchSyntenyViewDialog({
         <TextField
           label="Add window size in bp"
           value={windowSize}
-          onChange={event => setWindowSize(event.target.value)}
+          onChange={event => {
+            setWindowSize(event.target.value)
+          }}
         />
       </DialogContent>
       <DialogActions>
@@ -66,11 +94,15 @@ export default function LaunchSyntenyViewDialog({
                   feature,
                   windowSize: +windowSize,
                   horizontallyFlip,
-                  model,
+                  trackId,
+                  session,
+                  region: useRegionOfInterest
+                    ? view?.dynamicBlocks.contentBlocks[0]
+                    : undefined,
                 })
               } catch (e) {
                 console.error(e)
-                getSession(model).notifyError(`${e}`, e)
+                session.notifyError(`${e}`, e)
               }
             })()
             handleClose()
@@ -81,7 +113,9 @@ export default function LaunchSyntenyViewDialog({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

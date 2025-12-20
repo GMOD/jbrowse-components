@@ -1,12 +1,11 @@
-import getValue from 'get-value'
-import { Track, Source } from './types'
+import getValue from './get-value'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import type { Source, Track } from './types'
+
 export function isTrack(arg: any): arg is Track {
   return arg?.label && typeof arg.label === 'string'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isSource(arg: any): arg is Source {
   return arg?.url && typeof arg.url === 'string'
 }
@@ -14,7 +13,7 @@ export function isSource(arg: any): arg is Source {
 /**
  * updates a with values from b, recursively
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type Obj = Record<string, any>
 export function deepUpdate(a: Obj, b: Obj): Obj {
   for (const prop of Object.keys(b)) {
@@ -65,8 +64,8 @@ export function fillTemplate(template: string, fillWith: Obj): string {
  * (Lifted from dojo https://github.com/dojo/dojo/blob/master/_base/lang.js)
  * @param src - The object to clone
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function clone(src: any): any {
+
+export function structuredClone(src: any): any {
   if (
     !src ||
     typeof src !== 'object' ||
@@ -81,21 +80,19 @@ export function clone(src: any): any {
   }
   if (src instanceof Date) {
     // Date
-    return new Date(src.getTime()) // Date
+    return new Date(src) // Date
   }
   if (src instanceof RegExp) {
     // RegExp
     return new RegExp(src) // RegExp
   }
-  let r
-  let i
-  let l
+  let r: unknown[]
   if (Array.isArray(src)) {
     // array
     r = []
-    for (i = 0, l = src.length; i < l; ++i) {
+    for (let i = 0, l = src.length; i < l; ++i) {
       if (i in src) {
-        r[i] = clone(src[i])
+        r[i] = structuredClone(src[i])
       }
     }
     // we don't clone functions for performance reasons
@@ -106,7 +103,7 @@ export function clone(src: any): any {
     // generic objects
     r = src.constructor ? new src.constructor() : {}
   }
-  return mixin(r, src, clone)
+  return mixin(r, src, a => structuredClone(a))
 }
 
 /**
@@ -126,16 +123,18 @@ export function clone(src: any): any {
  * to the Javascript assignment operator.
  * @returns dest, as modified
  */
-function mixin(dest: Obj, source: Obj, copyFunc: Function): Obj {
-  let name
-  let s
+function mixin(
+  dest: Obj,
+  source: Obj,
+  copyFunc?: (arg: unknown) => unknown,
+): Obj {
   const empty = {}
-  for (name in source) {
+  for (const name in source) {
     // the (!(name in empty) || empty[name] !== s) condition avoids copying
     // properties in "source" inherited from Object.prototype.	 For example,
     // if dest has a custom toString() method, don't overwrite it with the
     // toString() method that source inherited from Object.prototype
-    s = source[name]
+    const s = source[name]
     if (
       !(name in dest) ||
       // @ts-expect-error

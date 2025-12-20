@@ -1,12 +1,13 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
+
+import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 
 // specialized get features to return limited data about alignments
 export default abstract class PileupBaseRPC extends RpcMethodType {
   async serializeArguments(
     args: RenderArgs & {
-      signal?: AbortSignal
+      stopToken?: string
       statusCallback?: (arg: string) => void
     },
     rpcDriver: string,

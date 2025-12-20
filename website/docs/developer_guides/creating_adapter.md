@@ -1,6 +1,6 @@
 ---
 id: creating_adapter
-title: Creating a custom adapter
+title: Creating custom adapters
 ---
 
 ### What is an adapter
@@ -71,7 +71,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
     //    originalRefName:string the name of the refName from the fasta file, e.g. 1 instead of chr1
     // }
     // opts: {
-    //   signal?: AbortSignal
+    //   stopToken?: string
     //   ...rest: all the renderProps() object from the display type
     // }
   }
@@ -199,7 +199,7 @@ The options parameter to getFeatures can contain any number of things:
 ```typescript
 interface Options {
   bpPerPx: number
-  signal: AbortSignal
+  stopToken?: string
   statusCallback: Function
   headers: Record<string, string>
 }
@@ -207,8 +207,8 @@ interface Options {
 
 - `bpPerPx` - number: resolution of the genome browser when the features were
   fetched
-- `signal` - can be used to abort a fetch request when it is no longer needed,
-  from AbortController
+- `stopToken` - can be used to abort a fetch request when it is no longer
+  needed, from AbortController
 - `statusCallback` - not implemented yet but in the future may allow you to
   report the status of your loading operations
 - `headers` - set of HTTP headers as a JSON object

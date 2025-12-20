@@ -1,33 +1,32 @@
-import { doesIntersect2, Feature } from '@jbrowse/core/util'
-import { Mismatch } from '../MismatchParser'
+import { doesIntersect2 } from '@jbrowse/core/util'
 
-interface SortObject {
-  pos: number
-  type: string
-  tag?: string
-}
-export const sortFeature = (
+import type { Mismatch, SortedBy } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
+
+export function sortFeature(
   features: Map<string, Feature>,
-  sortedBy: SortObject,
-) => {
-  const featureArray = Array.from(features.values())
+  sortedBy: SortedBy,
+) {
   const featuresInCenterLine: Feature[] = []
   const featuresOutsideCenter: Feature[] = []
   const { pos, type } = sortedBy
 
-  // only sort on features that intersect center line, append those outside post-sort
-  featureArray.forEach(innerArray => {
-    const feature = innerArray
+  // Partition features directly from map iterator (avoids intermediate array)
+  let firstFeature: Feature | undefined
+  for (const feature of features.values()) {
+    if (!firstFeature) {
+      firstFeature = feature
+    }
     const start = feature.get('start')
     const end = feature.get('end')
     if (doesIntersect2(pos - 1, pos, start, end)) {
-      featuresInCenterLine.push(innerArray)
+      featuresInCenterLine.push(feature)
     } else {
-      featuresOutsideCenter.push(innerArray)
+      featuresOutsideCenter.push(feature)
     }
-  })
+  }
 
-  const isCram = featureArray.length ? featureArray[0].get('tags') : false
+  const isCram = firstFeature ? firstFeature.get('tags') : false
   switch (type) {
     case 'Start location': {
       featuresInCenterLine.sort((a, b) => a.get('start') - b.get('start'))
@@ -56,34 +55,39 @@ export const sortFeature = (
 
     // first sort all mismatches, then all reference bases at the end
     case 'Base pair': {
-      const baseSortArray: [string, Mismatch][] = []
-      featuresInCenterLine.forEach(feature => {
+      const baseMap = new Map<string, Mismatch>()
+      for (const feature of featuresInCenterLine) {
         const mismatches: Mismatch[] = feature.get('mismatches')
-        mismatches.forEach(mismatch => {
-          const start = feature.get('start')
-          const offset = start + mismatch.start + 1
-          const consuming =
-            mismatch.type === 'insertion' || mismatch.type === 'softclip'
-          const len = consuming ? 0 : mismatch.length
+        const start = feature.get('start')
+        for (const m of mismatches) {
+          const offset = start + m.start + 1
+          const consuming = m.type === 'insertion' || m.type === 'softclip'
+          const len = consuming ? 0 : m.length
           if (pos >= offset && pos < offset + len) {
-            baseSortArray.push([feature.id(), mismatch])
+            baseMap.set(feature.id(), m)
           }
-        })
-      })
+        }
+      }
 
-      const baseMap = new Map(baseSortArray)
       featuresInCenterLine.sort((a, b) => {
         const aMismatch = baseMap.get(a.id())
         const bMismatch = baseMap.get(b.id())
-        const acode = bMismatch?.base.toUpperCase()
-        const bcode = aMismatch?.base.toUpperCase()
-        if (acode === bcode && acode === '*') {
-          // @ts-expect-error
-          return aMismatch.length - bMismatch.length
-        }
-        return (
-          (acode ? acode.charCodeAt(0) : 0) - (bcode ? bcode.charCodeAt(0) : 0)
-        )
+        const acode =
+          aMismatch?.type === 'mismatch'
+            ? aMismatch.base.toUpperCase()
+            : aMismatch?.type === 'deletion'
+              ? '*'
+              : undefined
+        const bcode =
+          bMismatch?.type === 'mismatch'
+            ? bMismatch.base.toUpperCase()
+            : bMismatch?.type === 'deletion'
+              ? '*'
+              : undefined
+        return acode === bcode && acode === '*'
+          ? (bMismatch?.length ?? 0) - (aMismatch?.length ?? 0)
+          : (bcode ? bcode.charCodeAt(0) : 0) -
+              (acode ? acode.charCodeAt(0) : 0)
       })
 
       break
@@ -98,10 +102,13 @@ export const sortFeature = (
     }
   }
 
-  return new Map(
-    [...featuresInCenterLine, ...featuresOutsideCenter].map(feature => [
-      feature.id(),
-      feature,
-    ]),
-  )
+  // Build result map directly without intermediate array spread
+  const result = new Map<string, Feature>()
+  for (const feature of featuresInCenterLine) {
+    result.set(feature.id(), feature)
+  }
+  for (const feature of featuresOutsideCenter) {
+    result.set(feature.id(), feature)
+  }
+  return result
 }

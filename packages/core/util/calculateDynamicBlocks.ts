@@ -1,5 +1,5 @@
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
-import { intersection2 } from './range'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 import { assembleLocStringFast } from '.'
 import {
   BlockSet,
@@ -7,7 +7,9 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from './blockTypes'
-import { Base1DViewModel } from './calculateStaticBlocks'
+import { intersection2 } from './range'
+
+import type { Base1DViewModel } from './calculateStaticBlocks'
 
 /**
  * returns a BlockSet of which the `blocks` attribute is an array of 'dynamic
@@ -45,6 +47,9 @@ export default function calculateDynamicBlocks(
   if (!width) {
     throw new Error('view has no width, cannot calculate displayed blocks')
   }
+
+  // Pre-calculate inverse to avoid repeated divisions
+  const invBpPerPx = 1 / bpPerPx
   const blocks = new BlockSet()
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
@@ -61,11 +66,11 @@ export default function calculateDynamicBlocks(
       start: regionStart,
       end: regionEnd,
       reversed,
-    } = region
+    } = region!
     const displayedRegionRightPx =
-      displayedRegionLeftPx + (regionEnd - regionStart) / bpPerPx
+      displayedRegionLeftPx + (regionEnd - regionStart) * invBpPerPx
 
-    const regionWidthPx = (regionEnd - regionStart) / bpPerPx
+    const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
     const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     const [leftPx, rightPx] = intersection2(
@@ -89,7 +94,7 @@ export default function calculateDynamicBlocks(
         end = regionEnd - (leftPx - displayedRegionLeftPx) * bpPerPx
         isLeftEndOfDisplayedRegion = end === regionEnd
         isRightEndOfDisplayedRegion = start === regionStart
-        blockOffsetPx = displayedRegionLeftPx + (regionEnd - end) / bpPerPx
+        blockOffsetPx = displayedRegionLeftPx + (regionEnd - end) * invBpPerPx
       } else {
         start = (leftPx - displayedRegionLeftPx) * bpPerPx + regionStart
         end = Math.min(
@@ -98,9 +103,10 @@ export default function calculateDynamicBlocks(
         )
         isLeftEndOfDisplayedRegion = start === regionStart
         isRightEndOfDisplayedRegion = end === regionEnd
-        blockOffsetPx = displayedRegionLeftPx + (start - regionStart) / bpPerPx
+        blockOffsetPx =
+          displayedRegionLeftPx + (start - regionStart) * invBpPerPx
       }
-      const widthPx = (end - start) / bpPerPx
+      const widthPx = (end - start) * invBpPerPx
       const blockData = {
         assemblyName,
         refName,
@@ -113,11 +119,14 @@ export default function calculateDynamicBlocks(
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,
-        key: '',
+        key: `${assembleLocStringFast({
+          assemblyName,
+          refName,
+          start,
+          end,
+          reversed,
+        })}-${regionNumber}${reversed ? '-reversed' : ''}`,
       }
-      blockData.key = `${assembleLocStringFast(blockData)}-${regionNumber}${
-        reversed ? '-reversed' : ''
-      }`
 
       if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
         blocks.push(
@@ -169,7 +178,7 @@ export default function calculateDynamicBlocks(
         }
       }
     }
-    displayedRegionLeftPx += (regionEnd - regionStart) / bpPerPx
+    displayedRegionLeftPx += (regionEnd - regionStart) * invBpPerPx
   }
   return blocks
 }

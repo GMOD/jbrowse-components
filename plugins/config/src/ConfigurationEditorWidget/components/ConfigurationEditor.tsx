@@ -1,37 +1,33 @@
-import React from 'react'
 import {
-  readConfObject,
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
   isConfigurationSlotType,
-  AnyConfigurationModel,
+  readConfObject,
 } from '@jbrowse/core/configuration'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getMembers } from '@jbrowse/mobx-state-tree'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
-  FormGroup,
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  FormGroup,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getMembers, IAnyType } from 'mobx-state-tree'
 import { singular } from 'pluralize'
 
-// icons
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-
-// locals
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
-  expandIcon: {
-    color: theme.palette.tertiary?.contrastText || '#fff',
-  },
-  root: {
-    padding: theme.spacing(1, 3, 1, 1),
+  icon: {
+    color: theme.palette.tertiary.contrastText || '#fff',
   },
   expansionPanelDetails: {
     display: 'block',
@@ -61,54 +57,51 @@ const Member = observer(function (props: {
     slot = schema[slotName],
     path = [],
   } = props
-  let typeSelector
   if (isConfigurationSchemaType(slotSchema)) {
     if (slot.length) {
       return slot.map((subslot: AnyConfigurationModel, slotIndex: number) => {
-        const key = `${singular(slotName)} ${slotIndex + 1}`
+        const key = subslot.type
+          ? `${singular(slotName)} ${subslot.type}`
+          : `${singular(slotName)} ${slotIndex + 1}`
         return <Member key={key} {...props} slot={subslot} slotName={key} />
       })
     }
     // if this is an explicitly typed schema, make a type-selecting dropdown
     // that can be used to change its type
     const typeNameChoices = getTypeNamesFromExplicitlyTypedUnion(slotSchema)
-    if (typeNameChoices.length) {
-      typeSelector = (
-        <TypeSelector
-          typeNameChoices={typeNameChoices}
-          slotName={slotName}
-          slot={slot}
-          onChange={evt => {
-            if (evt.target.value !== slot.type) {
-              schema.setSubschema(slotName, { type: evt.target.value })
-            }
-          }}
-        />
-      )
-    }
     return (
       <Accordion defaultExpanded className={classes.accordion}>
         <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+          expandIcon={<ExpandMoreIcon className={classes.icon} />}
         >
           <Typography>{[...path, slotName].join('➔')}</Typography>
         </AccordionSummary>
         <AccordionDetails className={classes.expansionPanelDetails}>
-          {typeSelector}
+          {typeNameChoices.length ? (
+            <TypeSelector
+              typeNameChoices={typeNameChoices}
+              slotName={slotName}
+              slot={slot}
+              onChange={evt => {
+                if (evt.target.value !== slot.type) {
+                  schema.setSubschema(slotName, {
+                    type: evt.target.value,
+                  })
+                }
+              }}
+            />
+          ) : null}
           <FormGroup className={classes.noOverflow}>
             <Schema schema={slot} path={[...path, slotName]} />
           </FormGroup>
         </AccordionDetails>
       </Accordion>
     )
-  }
-
-  if (isConfigurationSlotType(slotSchema)) {
-    // this is a regular config slot
+  } else if (isConfigurationSlotType(slotSchema)) {
     return <SlotEditor key={slotName} slot={slot} slotSchema={slotSchema} />
+  } else {
+    return null
   }
-
-  return null
 })
 
 const Schema = observer(function ({
@@ -137,28 +130,35 @@ const Schema = observer(function ({
 const ConfigurationEditor = observer(function ({
   model,
 }: {
-  model: { target: AnyConfigurationModel }
+  model: {
+    target?: AnyConfigurationModel
+  }
   session?: AbstractSessionModel
 }) {
   const { classes } = useStyles()
-  // key forces a re-render, otherwise the same field can end up being used
-  // for different tracks since only the backing model changes for example
-  // see pr #804
-  const { target } = model
-  const key = target && readConfObject(target, 'trackId')
-  const name = target && readConfObject(target, 'name')
+  // key forces a re-render, otherwise the same field can end up being used for
+  // different tracks since only the backing model changes for example see pr
+  // #804
+  const target = model.target
+  if (!target) {
+    return <Typography>No configuration target</Typography>
+  }
+  const key = readConfObject(target, 'trackId')
+  const name = readConfObject(target, 'name')
   return (
     <Accordion key={key} defaultExpanded className={classes.accordion}>
       <AccordionSummary
-        expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+        expandIcon={<ExpandMoreIcon className={classes.icon} />}
       >
-        <Typography>{name ?? 'Configuration'}</Typography>
+        <Typography>
+          <SanitizedHTML html={name ?? 'Configuration'} />
+        </Typography>
       </AccordionSummary>
       <AccordionDetails
         className={classes.expansionPanelDetails}
         data-testid="configEditor"
       >
-        {!target ? 'no target set' : <Schema schema={target} />}
+        <Schema schema={target} />
       </AccordionDetails>
     </Accordion>
   )

@@ -1,20 +1,19 @@
 import NCListStore from '@gmod/nclist'
-import { Region } from '@jbrowse/core/util/types'
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkAbortSignal } from '@jbrowse/core/util'
-import { RemoteFile } from 'generic-filehandle'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { RemoteFile } from 'generic-filehandle2'
+
 import NCListFeature from './NCListFeature'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { Region } from '@jbrowse/core/util/types'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private nclist: any
 
   private configRefNames?: string[]
@@ -34,11 +33,9 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
       urlTemplate: rootUrlTemplate.uri,
       readFile: (url: string) =>
         new RemoteFile(
-          String(
-            rootUrlTemplate.baseUri
-              ? new URL(url, rootUrlTemplate.baseUri).toString()
-              : url,
-          ),
+          rootUrlTemplate.baseUri
+            ? new URL(url, rootUrlTemplate.baseUri).toString()
+            : url,
         ).readFile(),
     })
   }
@@ -48,21 +45,20 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
    * want to verify that the store has features for the given reference sequence
    * before fetching.
    * @param region -
-   * @param opts - [signal] optional signalling object for aborting the fetch
+   * @param opts - [stopToken] optional stopTokenling object for aborting the fetch
    * @returns Observable of Feature objects in the region
    */
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { signal } = opts
+      const { stopToken } = opts
       for await (const feature of this.nclist.getFeatures(region, opts)) {
-        checkAbortSignal(signal)
+        checkStopToken(stopToken)
         observer.next(this.wrapFeature(feature))
       }
       observer.complete()
     })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   wrapFeature(ncFeature: any): NCListFeature {
     return new NCListFeature(
       ncFeature,
@@ -88,5 +84,4 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
    * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
-  freeResources() {}
 }

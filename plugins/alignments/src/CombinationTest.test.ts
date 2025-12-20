@@ -1,15 +1,15 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { toArray } from 'rxjs/operators'
-import { LocalFile } from 'generic-filehandle'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
-import CramAdapter from './CramAdapter/CramAdapter'
-import BamAdapter from './BamAdapter/BamAdapter'
-import { SequenceAdapter } from './CramAdapter/CramTestAdapters'
-
-import cramConfigSchema from './CramAdapter/configSchema'
-import bamConfigSchema from './BamAdapter/configSchema'
+import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
+import BamAdapter from './BamAdapter/BamAdapter'
+import bamConfigSchema from './BamAdapter/configSchema'
+import CramAdapter from './CramAdapter/CramAdapter'
+import { SequenceAdapter } from './CramAdapter/CramTestAdapters'
+import cramConfigSchema from './CramAdapter/configSchema'
+
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 const pluginManager = new PluginManager()
 
@@ -22,6 +22,10 @@ const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
   }
 }
 
+// Mock sequenceAdapter config - the actual config doesn't matter since
+// getVolvoxSequenceSubAdapter ignores it and returns the test adapter
+const sequenceAdapterConfig = { type: 'TestSequenceAdapter' }
+
 async function getFeats(f1: string, f2: string) {
   const cramAdapter = new CramAdapter(
     cramConfigSchema.create({
@@ -29,13 +33,14 @@ async function getFeats(f1: string, f2: string) {
         localPath: require.resolve(f1),
       },
       craiLocation: {
-        localPath: require.resolve(f1 + '.crai'),
+        localPath: require.resolve(`${f1}.crai`),
       },
-      sequenceAdapter: {},
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
   )
+  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
+  cramAdapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
   const bamAdapter = new BamAdapter(
     bamConfigSchema.create({
@@ -44,11 +49,16 @@ async function getFeats(f1: string, f2: string) {
       },
       index: {
         location: {
-          localPath: require.resolve(f2 + '.bai'),
+          localPath: require.resolve(`${f2}.bai`),
         },
       },
     }),
+    getVolvoxSequenceSubAdapter,
+    pluginManager,
   )
+  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
+  bamAdapter.setSequenceAdapterConfig(sequenceAdapterConfig)
+
   const query = {
     assemblyName: 'volvox',
     refName: 'ctgA',

@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 
+import { createView, doBeforeEach, hts, setup } from './util'
 import configSnapshot from '../../test_data/volvox/config.json'
-import { doBeforeEach, createView, setup, hts } from './util'
 
 setup()
 

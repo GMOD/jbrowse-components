@@ -1,24 +1,23 @@
-import { BamFile, HtsgetFile } from '@gmod/bam'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { HtsgetFile } from '@gmod/bam'
+
 import BamAdapter from '../BamAdapter/BamAdapter'
+import BamSlightlyLazyFeature from '../BamAdapter/BamSlightlyLazyFeature'
+
+import type { BamFile } from '@gmod/bam'
 
 export default class HtsgetBamAdapter extends BamAdapter {
-  protected async configurePre() {
-    const htsgetBase = this.getConf('htsgetBase')
-    const htsgetTrackId = this.getConf('htsgetTrackId')
-    const bam = new HtsgetFile({
-      baseUrl: htsgetBase,
-      trackId: htsgetTrackId,
-    }) as unknown as BamFile
-
-    const adapterConfig = this.getConf('sequenceAdapter')
-    if (adapterConfig && this.getSubAdapter) {
-      const adapter = await this.getSubAdapter(adapterConfig)
-      return {
-        bam,
-        sequenceAdapter: adapter.dataAdapter as BaseFeatureDataAdapter,
+  protected configure() {
+    if (!this.configureResult) {
+      const htsgetBase = this.getConf('htsgetBase')
+      const htsgetTrackId = this.getConf('htsgetTrackId')
+      this.configureResult = {
+        bam: new HtsgetFile({
+          baseUrl: htsgetBase,
+          trackId: htsgetTrackId,
+          recordClass: BamSlightlyLazyFeature,
+        }) as unknown as BamFile<BamSlightlyLazyFeature>,
       }
     }
-    return { bam }
+    return this.configureResult
   }
 }

@@ -1,29 +1,20 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
+import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { unzip } from '@gmod/bgzf-filehandle'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
-// locals
 import SyntenyFeature from '../SyntenyFeature'
-import {
-  flipCigar,
-  swapIndelCigar,
-  parsePAFLine,
-  isGzip,
-  parseLineByLine,
-} from '../util'
-import { getWeightedMeans, PAFRecord } from './util'
+import { flipCigar, parsePAFLine, swapIndelCigar } from '../util'
+import { getWeightedMeans } from './util'
+
+import type { PAFRecord } from './util'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types'
 
 const { parseCigar } = MismatchParser
 
@@ -38,7 +29,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions) {
     if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
+      this.setupP = this.setupPre(opts).catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -47,17 +38,25 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async setupPre(opts?: BaseOptions) {
-    const pm = this.pluginManager
-    const pafLocation = openLocation(this.getConf('pafLocation'), pm)
-    const buffer = (await pafLocation.readFile(opts)) as Buffer
-    const buf = isGzip(buffer) ? await unzip(buffer) : buffer
-    return parseLineByLine(buf, parsePAFLine)
+    const lines = [] as PAFRecord[]
+    parseLineByLine(
+      await fetchAndMaybeUnzip(
+        openLocation(this.getConf('pafLocation'), this.pluginManager),
+        opts,
+      ),
+      line => {
+        lines.push(parsePAFLine(line))
+        return true
+      },
+      opts?.statusCallback,
+    )
+    return lines
   }
 
   async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures
-    // so is not really that important, and has to be true or else
-    // getFeatures is never called (BaseAdapter filters it out)
+    // determining this properly is basically a call to getFeatures so is not
+    // really that important, and has to be true or else getFeatures is never
+    // called (BaseAdapter filters it out)
     return true
   }
 
@@ -90,14 +89,10 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      let pafRecords = await this.setup(opts)
-      const { config } = opts
+      const pafRecords = getWeightedMeans(await this.setup(opts))
 
       // note: this is not the adapter config, it is responding to a display
       // setting passed in via the opts parameter
-      if (config && readConfObject(config, 'colorBy') === 'meanQueryIdentity') {
-        pafRecords = getWeightedMeans(pafRecords)
-      }
       const assemblyNames = this.getAssemblyNames()
 
       // The index of the assembly name in the query list corresponds to the
@@ -113,8 +108,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         observer.complete()
       }
 
+      // eslint-disable-next-line unicorn/no-for-loop
       for (let i = 0; i < pafRecords.length; i++) {
-        const r = pafRecords[i]
+        const r = pafRecords[i]!
         let start = 0
         let end = 0
         let refName = ''
@@ -179,6 +175,4 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     })
   }
-
-  freeResources(/* { query } */): void {}
 }

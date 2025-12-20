@@ -1,15 +1,13 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
+import AddIcon from '@mui/icons-material/Add'
+
+import { onClick } from './DotplotReadVsRef'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
   DisplayType,
   PluggableElementType,
 } from '@jbrowse/core/pluggableElementTypes'
-import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
-
-// icons
-import AddIcon from '@mui/icons-material/Add'
-
-// local
-import { onClick } from './DotplotReadVsRef'
+import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 
 export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -31,7 +29,9 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
                           {
                             label: 'Dotplot of read vs ref',
                             icon: AddIcon,
-                            onClick: () => onClick(feature, self),
+                            onClick: () => {
+                              onClick(feature, self)
+                            },
                           },
                         ]
                       : []),

@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
+import { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 
 export function HTTPBasicLoginForm({
   internetAccountId,
@@ -18,6 +19,9 @@ export function HTTPBasicLoginForm({
       maxWidth="xl"
       data-testid="login-httpbasic"
       title={`Log in for ${internetAccountId}`}
+      onClose={() => {
+        handleClose()
+      }}
     >
       <form
         onSubmit={event => {
@@ -34,9 +38,13 @@ export function HTTPBasicLoginForm({
             required
             label="Username"
             variant="outlined"
-            inputProps={{ 'data-testid': 'login-httpbasic-username' }}
-            onChange={event => setUsername(event.target.value)}
+            onChange={event => {
+              setUsername(event.target.value)
+            }}
             margin="dense"
+            slotProps={{
+              htmlInput: { 'data-testid': 'login-httpbasic-username' },
+            }}
           />
           <TextField
             required
@@ -44,9 +52,13 @@ export function HTTPBasicLoginForm({
             type="password"
             autoComplete="current-password"
             variant="outlined"
-            inputProps={{ 'data-testid': 'login-httpbasic-password' }}
-            onChange={event => setPassword(event.target.value)}
+            onChange={event => {
+              setPassword(event.target.value)
+            }}
             margin="dense"
+            slotProps={{
+              htmlInput: { 'data-testid': 'login-httpbasic-password' },
+            }}
           />
         </DialogContent>
         <DialogActions>
@@ -57,7 +69,9 @@ export function HTTPBasicLoginForm({
             variant="contained"
             color="secondary"
             type="submit"
-            onClick={() => handleClose()}
+            onClick={() => {
+              handleClose()
+            }}
           >
             Cancel
           </Button>

@@ -1,20 +1,21 @@
-import { waitFor } from '@testing-library/react'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
+import { waitFor } from '@testing-library/react'
 
-// locals
-import { LinearGenomeViewModel, stateModelFactory } from '.'
+import { stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38Regions from './hg38DisplayedRegions.json'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
+
+import type { LinearGenomeViewModel } from '.'
 
 type LGV = LinearGenomeViewModel
 
@@ -61,6 +62,7 @@ function initialize() {
     .model({})
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
+      initialized: true,
     }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
@@ -146,7 +148,7 @@ test('can instantiate a model that lets you navigate', () => {
   expect(model.maxBpPerPx).toBeCloseTo(13.888)
   model.setNewView(0.02, 0)
 
-  expect(model.scaleBarHeight).toEqual(20)
+  expect(model.scalebarHeight).toEqual(20)
   // header height 20 + area where polygons get drawn has height of 48
   expect(model.headerHeight).toEqual(68)
   // TODO: figure out how to better test height
@@ -233,29 +235,29 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(0.125)
 
-  expect(() => model.navTo({ refName: 'ctgA', start: 200, end: 100 })).toThrow(
-    /start greater than end/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'ctgA', start: 200, end: 100 })
+  }).toThrow(/start greater than end/)
 
-  expect(() => model.navTo({ refName: 'noExist', start: 0, end: 100 })).toThrow(
-    /could not find a region/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'noExist', start: 0, end: 100 })
+  }).toThrow(/could not find a region/)
 
-  expect(() => model.navTo({ refName: 'ctgA', end: 20100 })).toThrow(
-    /could not find a region/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'ctgA', end: 20100 })
+  }).toThrow(/could not find a region/)
 
-  expect(() => model.navTo({ refName: 'ctgA', start: 20000 })).toThrow(
-    /could not find a region/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'ctgA', start: 20000 })
+  }).toThrow(/could not find a region/)
 
-  expect(() =>
-    model.navTo({ refName: 'ctgA', start: 20000, end: 20100 }),
-  ).toThrow(/could not find a region/)
+  expect(() => {
+    model.navTo({ refName: 'ctgA', start: 20000, end: 20100 })
+  }).toThrow(/could not find a region/)
 
-  expect(() => model.navTo({ refName: 'ctgA', start: 0, end: 20000 })).toThrow(
-    /could not find a region/,
-  )
+  expect(() => {
+    model.navTo({ refName: 'ctgA', start: 0, end: 20000 })
+  }).toThrow(/could not find a region/)
 })
 
 test('can navToMultiple', () => {
@@ -580,7 +582,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
 //
 // this test is important because interregionpadding blocks outside the current
 // view should not be taken into account
-test('can perform pxToBp on human genome things with ellided blocks (zoomed in)', () => {
+test('can perform pxToBp on human genome things with elided blocks (zoomed in)', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
@@ -605,7 +607,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed in)'
 //
 // this tests some places on hg38 when zoomed to whole genome, so inter-region
 // padding blocks and elided blocks matter
-test('can perform pxToBp on human genome things with ellided blocks (zoomed out)', () => {
+test('can perform pxToBp on human genome things with elided blocks (zoomed out)', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
@@ -629,7 +631,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
   expect(model.pxToBp(800).coord).toBe(111057351)
   expect(model.pxToBp(800).refName).toBe('10')
 
-  // chrX after an ellided block, this tests a specific coord but should just be
+  // chrX after an elided block, this tests a specific coord but should just be
   // probably somewhat around here
   expect(model.pxToBp(1228).coord).toBe(1075410)
   expect(model.pxToBp(1228).refName).toBe('Y')
@@ -658,6 +660,30 @@ test('can showAllRegionsInAssembly', async () => {
     'ctgA',
     'ctgB',
   ])
+})
+
+test('init without loc shows whole genome', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testInitNoLoc',
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+      },
+    }),
+  )
+  model.setWidth(width)
+  await waitFor(() => {
+    expect(model.displayedRegions.map(reg => reg.refName)).toEqual([
+      'ctgA',
+      'ctgB',
+    ])
+  })
 })
 
 describe('get sequence for selected displayed regions', () => {
@@ -717,8 +743,8 @@ describe('get sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(singleRegion.length).toEqual(1)
-    expect(singleRegion[0].start).toEqual(0)
-    expect(singleRegion[0].end).toEqual(800)
+    expect(singleRegion[0]!.start).toEqual(0)
+    expect(singleRegion[0]!.end).toEqual(800)
   })
   it('handles when start or end offsets are out of bounds of displayed regions', () => {
     model.setOffsets(
@@ -793,12 +819,12 @@ describe('get sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(overlapping.length).toEqual(3)
-    expect(overlapping[0].start).toEqual(200)
-    expect(overlapping[0].end).toEqual(500)
-    expect(overlapping[1].start).toEqual(0)
-    expect(overlapping[1].end).toEqual(3000)
-    expect(overlapping[2].start).toEqual(0)
-    expect(overlapping[2].end).toEqual(110)
+    expect(overlapping[0]!.start).toEqual(200)
+    expect(overlapping[0]!.end).toEqual(500)
+    expect(overlapping[1]!.start).toEqual(0)
+    expect(overlapping[1]!.end).toEqual(3000)
+    expect(overlapping[2]!.start).toEqual(0)
+    expect(overlapping[2]!.end).toEqual(110)
   })
 
   it('can select over two regions in diff reference sequence', () => {
@@ -835,10 +861,10 @@ describe('get sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(multipleRegions.length).toEqual(2)
-    expect(multipleRegions[0].start).toEqual(49998)
-    expect(multipleRegions[0].end).toEqual(50001)
-    expect(multipleRegions[1].start).toEqual(0)
-    expect(multipleRegions[1].end).toEqual(9)
+    expect(multipleRegions[0]!.start).toEqual(49998)
+    expect(multipleRegions[0]!.end).toEqual(50001)
+    expect(multipleRegions[1]!.start).toEqual(0)
+    expect(multipleRegions[1]!.end).toEqual(9)
   })
 
   it('can handle horizontally flipped regions', () => {
@@ -877,8 +903,8 @@ describe('get sequence for selected displayed regions', () => {
     )
 
     expect(hfRegion.length).toEqual(1)
-    expect(hfRegion[0].start).toEqual(49997)
-    expect(hfRegion[0].end).toEqual(50000)
+    expect(hfRegion[0]!.start).toEqual(49997)
+    expect(hfRegion[0]!.end).toEqual(50000)
   })
 })
 
@@ -939,14 +965,22 @@ test('navToLocString with human assembly', async () => {
   const w = view.width
 
   await view.navToLocString('2')
-  await waitFor(() => expect(view.bpPerPx).toBe(hg38Regions[1].end / w))
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(hg38Regions[1]!.end / w)
+  })
 
   await view.navToLocString('chr3')
-  await waitFor(() => expect(view.bpPerPx).toBe(hg38Regions[2].end / w))
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(hg38Regions[2]!.end / w)
+  })
 
   await view.navToLocString('chr3:1,000,000,000-1,100,000,000')
-  await waitFor(() => expect(view.bpPerPx).toBe(0.02))
-  await waitFor(() => expect(view.offsetPx).toBe(9914777550))
+  await waitFor(() => {
+    expect(view.bpPerPx).toBe(0.02)
+  })
+  await waitFor(() => {
+    expect(view.offsetPx).toBe(9914777550)
+  })
   await view.navToLocString('chr3:-1,100,000,000..-1,000,000,000')
 })
 
@@ -964,8 +998,12 @@ test('multi region', async () => {
   model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
 
   await model.navToLocString('ctgA ctgB')
-  await waitFor(() => expect(model.displayedRegions[0].refName).toBe('ctgA'))
-  await waitFor(() => expect(model.displayedRegions[1].refName).toBe('ctgB'))
+  await waitFor(() => {
+    expect(model.displayedRegions[0]!.refName).toBe('ctgA')
+  })
+  await waitFor(() => {
+    expect(model.displayedRegions[1]!.refName).toBe('ctgB')
+  })
 })
 
 test('space separated locstring', async () => {
@@ -982,6 +1020,61 @@ test('space separated locstring', async () => {
   model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
 
   await model.navToLocString('ctgA 0 100')
-  await waitFor(() => expect(model.offsetPx).toBe(0))
-  await waitFor(() => expect(model.bpPerPx).toBe(0.125))
+  await waitFor(() => {
+    expect(model.offsetPx).toBe(0)
+  })
+  await waitFor(() => {
+    expect(model.bpPerPx).toBe(0.125)
+  })
+})
+
+test('showLoading is true when displayedRegions are set but not yet initialized', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+      ],
+      bpPerPx: 1,
+      offsetPx: 0,
+    }),
+  )
+  // width not set yet, so not initialized
+  expect(model.showLoading).toBe(true)
+  expect(model.initialized).toBe(false)
+
+  // after setting width, should be initialized
+  model.setWidth(800)
+  expect(model.showLoading).toBe(false)
+  expect(model.initialized).toBe(true)
+})
+
+test('showLoading is true when init is set and becomes false after initialization', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+        loc: 'ctgA:1000-2000',
+      },
+    }),
+  )
+  // not initialized yet, so showLoading should be true
+  expect(model.showLoading).toBe(true)
+  expect(model.initialized).toBe(false)
+
+  model.setWidth(800)
+  // after init autorun processes and view initializes, showLoading should become false
+  await waitFor(() => {
+    expect(model.showLoading).toBe(false)
+  })
+  await waitFor(() => {
+    expect(model.initialized).toBe(true)
+  })
 })

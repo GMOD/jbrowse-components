@@ -1,4 +1,3 @@
-import React from 'react'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 
 import factoryReset from './factoryReset'

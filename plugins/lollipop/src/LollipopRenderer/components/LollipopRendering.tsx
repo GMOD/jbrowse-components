@@ -1,20 +1,22 @@
-import React from 'react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { Feature, Region, bpToPx } from '@jbrowse/core/util'
+import type { FocusEvent, MouseEvent } from 'react'
+import { Fragment, useMemo } from 'react'
+
+import { readConfObject } from '@jbrowse/core/configuration'
+import { bpToPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-// locals
+import { FloatingLayout } from '../Layout'
 import Lollipop from './Lollipop'
 import Stick from './Stick'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 function layoutFeat(args: {
   feature: Feature
   bpPerPx: number
   region: Region
-  layout: { add: (...args: unknown[]) => void }
+  layout: FloatingLayout
   config: AnyConfigurationModel
 }) {
   const { feature, bpPerPx, config, region, layout } = args
@@ -34,70 +36,66 @@ function layoutFeat(args: {
     featureId: feature.id(),
     anchorX: centerPx,
     radiusPx,
-    score: readConfObject(args.config, 'score', { feature }),
+    score: readConfObject(config, 'score', { feature }),
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LollipopRendering = observer(function (props: Record<string, any>) {
-  const onMouseDown = (event: React.MouseEvent) => {
+  const onMouseDown = (event: MouseEvent) => {
     const { onMouseDown: handler } = props
     return handler?.(event)
   }
 
-  const onMouseUp = (event: React.MouseEvent) => {
+  const onMouseUp = (event: MouseEvent) => {
     const { onMouseUp: handler } = props
     return handler?.(event)
   }
 
-  const onMouseEnter = (event: React.MouseEvent | React.FocusEvent) => {
+  const onMouseEnter = (event: MouseEvent | FocusEvent) => {
     const { onMouseEnter: handler } = props
     return handler?.(event)
   }
 
-  const onMouseLeave = (event: React.MouseEvent | React.FocusEvent) => {
+  const onMouseLeave = (event: MouseEvent | FocusEvent) => {
     const { onMouseLeave: handler } = props
     return handler?.(event)
   }
 
-  const onMouseOver = (event: React.MouseEvent) => {
+  const onMouseOver = (event: MouseEvent) => {
     const { onMouseOver: handler } = props
     return handler?.(event)
   }
 
-  const onMouseOut = (event: React.MouseEvent) => {
+  const onMouseOut = (event: MouseEvent) => {
     const { onMouseOut: handler } = props
     return handler?.(event)
   }
 
-  const onClick = (event: React.MouseEvent) => {
+  const onClick = (event: MouseEvent) => {
     const { onClick: handler } = props
     return handler?.(event)
   }
-
   const {
     regions,
     bpPerPx,
-    layout,
     config,
     features = new Map(),
     displayModel = {},
   } = props
   const { selectedFeatureId } = displayModel
-  const [region] = regions
-  for (const feature of features.values()) {
-    layoutFeat({
-      feature,
-      bpPerPx,
-      region,
-      config,
-      layout,
-    })
-  }
-
+  const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const records = [...layout.getLayout(config).values()]
-  const height = layout.getTotalHeight()
+
+  const { records, height } = useMemo(() => {
+    const layout = new FloatingLayout({ width })
+    for (const feature of features.values()) {
+      layoutFeat({ feature, bpPerPx, region, config, layout })
+    }
+    return {
+      records: [...layout.getLayout(config).values()],
+      height: layout.getTotalHeight(),
+    }
+  }, [features, bpPerPx, region, config, width])
 
   return (
     <svg
@@ -117,22 +115,27 @@ const LollipopRendering = observer(function (props: Record<string, any>) {
       {records.map(layoutRecord => {
         const feature = features.get(layoutRecord.data.featureId)
         return (
-          <React.Fragment key={feature.id()}>
+          <Fragment key={feature.id()}>
             <Stick
-              key={`stick-${feature.id()}`}
-              {...props}
               config={config}
               layoutRecord={layoutRecord}
               feature={feature}
             />
             <Lollipop
-              key={`body-${feature.id()}`}
-              {...props}
+              config={config}
               layoutRecord={layoutRecord}
               feature={feature}
               selectedFeatureId={selectedFeatureId}
+              onFeatureMouseDown={props.onFeatureMouseDown}
+              onFeatureMouseEnter={props.onFeatureMouseEnter}
+              onFeatureMouseOut={props.onFeatureMouseOut}
+              onFeatureMouseOver={props.onFeatureMouseOver}
+              onFeatureMouseUp={props.onFeatureMouseUp}
+              onFeatureMouseLeave={props.onFeatureMouseLeave}
+              onFeatureMouseMove={props.onFeatureMouseMove}
+              onFeatureClick={props.onFeatureClick}
             />
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </svg>

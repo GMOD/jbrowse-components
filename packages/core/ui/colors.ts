@@ -21,8 +21,8 @@ const dark2 = [
   '#666666',
 ]
 const set1 = [
-  '#e41a1c',
   '#377eb8',
+  '#e41a1c',
   '#4daf4a',
   '#984ea3',
   '#ff7f00',
@@ -68,13 +68,13 @@ const ggplot2Colors4 = ['#F8766D', '#7CAE00', '#00BFC4', '#C77CFF']
 const ggplot2Colors3 = ['#F8766D', '#00BA38', '#619CFF']
 
 export {
+  category10,
+  dark2,
+  ggplot2Colors3,
+  ggplot2Colors4,
+  ggplot2Colors5,
+  ggplot2Colors6,
   set1,
   set2,
   tableau10,
-  dark2,
-  category10,
-  ggplot2Colors6,
-  ggplot2Colors5,
-  ggplot2Colors4,
-  ggplot2Colors3,
 }

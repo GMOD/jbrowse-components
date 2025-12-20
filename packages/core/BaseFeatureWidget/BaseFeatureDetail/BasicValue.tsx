@@ -1,10 +1,10 @@
-import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import isObject from 'is-object'
+import { isValidElement } from 'react'
+
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Link } from '@mui/material'
 
-// locals
 import { SanitizedHTML } from '../../ui'
+import { isObject } from '../../util'
 
 const useStyles = makeStyles()(theme => ({
   fieldValue: {
@@ -18,10 +18,10 @@ const useStyles = makeStyles()(theme => ({
 
 export default function BasicValue({ value }: { value: unknown }) {
   const { classes } = useStyles()
-  const isLink = `${value}`.match(/^https?:\/\//)
+  const isLink = /^https?:\/\//.exec(`${value}`)
   return (
     <div className={classes.fieldValue}>
-      {React.isValidElement(value) ? (
+      {isValidElement(value) ? (
         value
       ) : isLink ? (
         <Link href={`${value}`}>{`${value}`}</Link>

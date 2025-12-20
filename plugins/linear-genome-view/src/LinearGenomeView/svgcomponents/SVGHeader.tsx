@@ -1,14 +1,14 @@
-import React from 'react'
 import { getSession, stripAlpha } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { useTheme } from '@mui/material'
 
-// locals
-import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
-import Cytobands from '../components/Cytobands'
 import SVGRuler from './SVGRuler'
 import SVGScalebar from './SVGScalebar'
+import Cytobands from '../components/Cytobands'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon'
+import { HEADER_OVERVIEW_HEIGHT } from '../consts'
+
+import type { LinearGenomeViewModel } from '..'
 
 export default function SVGHeader({
   model,
@@ -23,7 +23,7 @@ export default function SVGHeader({
 }) {
   const { width, assemblyNames, showCytobands, displayedRegions } = model
   const { assemblyManager } = getSession(model)
-  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
+  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]!
   const assembly = assemblyManager.get(assemblyName)
   const theme = useTheme()
   const c = stripAlpha(theme.palette.text.primary)
@@ -39,17 +39,19 @@ export default function SVGHeader({
 
   overview.setVolatileWidth(width)
   overview.showAllRegions()
-  const block = overview.dynamicBlocks.contentBlocks[0]
+  const block = overview.dynamicBlocks.contentBlocks[0]!
   const first = visibleRegions.at(0)!
   const last = visibleRegions.at(-1)!
   const firstOverviewPx =
     overview.bpToPx({
+      // eslint-disable-next-line @typescript-eslint/no-misused-spread
       ...first,
       coord: first.reversed ? first.end : first.start,
     }) || 0
 
   const lastOverviewPx =
     overview.bpToPx({
+      // eslint-disable-next-line @typescript-eslint/no-misused-spread
       ...last,
       coord: last.reversed ? last.start : last.end,
     }) || 0

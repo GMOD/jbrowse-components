@@ -1,11 +1,10 @@
-import React from 'react'
-import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
-// locals
-import { SvInspectorViewModel } from '../models/SvInspectorView'
 import CircularViewOptions from './CircularViewOptions'
+
+import type { SvInspectorViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   resizeHandleVert: {
@@ -19,9 +18,6 @@ const useStyles = makeStyles()(theme => ({
     height: 4,
     boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
-  },
-  viewControls: {
-    margin: 0,
   },
   viewsContainer: {
     display: 'flex',
@@ -48,7 +44,9 @@ const SvInspectorView = observer(function ({
     <div className={classes.container}>
       <div className={classes.viewsContainer}>
         <div
-          style={{ width: model.spreadsheetView.width }}
+          style={{
+            width: model.spreadsheetView.width,
+          }}
           className={classes.container}
         >
           <SpreadsheetViewReactComponent model={model.spreadsheetView} />

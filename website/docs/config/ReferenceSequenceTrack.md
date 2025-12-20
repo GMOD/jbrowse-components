@@ -6,9 +6,17 @@ title: ReferenceSequenceTrack
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-### Source file
+Also note: this document represents the config API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/sequence/src/ReferenceSequenceTrack/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ReferenceSequenceTrack/configSchema.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ReferenceSequenceTrack/configSchema.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/ReferenceSequenceTrack.md)
+
+## Docs
 
 used to display base level DNA sequence tracks
 
@@ -41,6 +49,26 @@ name: {
         type: 'string',
         description:
           'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
+        defaultValue: '',
+      }
+```
+
+#### slot: sequenceType
+
+```js
+sequenceType: {
+        type: 'string',
+        description: 'either dna or pep',
+        defaultValue: 'dna',
+      }
+```
+
+#### slot: description
+
+```js
+description: {
+        description: 'a description of the track',
+        type: 'string',
         defaultValue: '',
       }
 ```

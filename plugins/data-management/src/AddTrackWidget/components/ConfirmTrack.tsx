@@ -1,86 +1,37 @@
-import React, { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+
+import { AssemblySelector } from '@jbrowse/core/ui'
+import {
+  getEnv,
+  getSession,
+  isElectron,
+  isSupportedIndexingAdapter,
+} from '@jbrowse/core/util'
+import { UNKNOWN } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Checkbox,
   FormControl,
   FormControlLabel,
-  Link,
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import {
-  isSupportedIndexingAdapter,
-  getSession,
-  isElectron,
-} from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { UNKNOWN } from '@jbrowse/core/util/tracks'
-import { AssemblySelector } from '@jbrowse/core/ui'
 
-// locals
-import { AddTrackModel } from '../model'
+import StatusMessage from './AddTrackStatusMessage'
+import UnknownAdapterPrompt from './AddTrackUnknownAdapterPrompt'
 import TextIndexingConfig from './TextIndexingConfig'
-import TrackTypeSelector from './TrackTypeSelector'
 import TrackAdapterSelector from './TrackAdapterSelector'
+import TrackTypeSelector from './TrackTypeSelector'
+import Unsupported from './Unsupported'
+
+import type { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),
   },
 }))
-
-function StatusMessage({
-  trackAdapter,
-  trackType,
-}: {
-  trackAdapter: { type: string; subadapter?: { type: string } }
-  trackType: string
-}) {
-  const { classes } = useStyles()
-  const { type, subadapter } = trackAdapter
-  return type === 'SNPCoverageAdapter' ? (
-    <Typography className={classes.spacing}>
-      Selected <code>{trackType}</code>. Using adapter <code>{type}</code> with
-      subadapter <code>{subadapter?.type}</code>. Please enter a track name and,
-      if necessary, update the track type.
-    </Typography>
-  ) : (
-    <Typography className={classes.spacing}>
-      Using adapter <code>{type}</code> and guessing track type{' '}
-      <code>{trackType}</code>. Please enter a track name and, if necessary,
-      update the track type.
-    </Typography>
-  )
-}
-
-function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
-  const { classes } = useStyles()
-  return (
-    <>
-      <Typography className={classes.spacing}>
-        JBrowse was not able to guess the adapter type for this data, but it may
-        be in the list below. If not, you can{' '}
-        <Link
-          href="https://github.com/GMOD/jbrowse-components/releases"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          check for new releases
-        </Link>{' '}
-        of JBrowse to see if they support this data type or{' '}
-        <Link
-          href="https://github.com/GMOD/jbrowse-components/issues/new"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          file an issue
-        </Link>{' '}
-        and add a feature request for this data type.
-      </Typography>
-      <TrackAdapterSelector model={model} />
-    </>
-  )
-}
 
 const ConfirmTrack = observer(function ConfirmTrack({
   model,
@@ -90,8 +41,14 @@ const ConfirmTrack = observer(function ConfirmTrack({
   const { classes } = useStyles()
   const [check, setCheck] = useState(true)
   const session = getSession(model)
-  const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
-    model
+  const {
+    trackName,
+    unsupported,
+    trackAdapter,
+    trackType,
+    warningMessage,
+    adapterHint,
+  } = model
 
   useEffect(() => {
     if (adapterHint === '' && trackAdapter) {
@@ -99,93 +56,96 @@ const ConfirmTrack = observer(function ConfirmTrack({
     }
   }, [adapterHint, trackAdapter, trackAdapter?.type, model])
 
-  if (model.unsupported) {
+  if (unsupported) {
+    return <Unsupported />
+  } else if (trackAdapter?.type === UNKNOWN) {
+    return <UnknownAdapterPrompt model={model} />
+  } else if (!trackAdapter?.type) {
+    return <Typography>Could not recognize this data type.</Typography>
+  } else {
+    const supportedForIndexing = isSupportedIndexingAdapter(trackAdapter.type)
+    const { pluginManager } = getEnv(model)
+    const Component = pluginManager.evaluateExtensionPoint(
+      'Core-addTrackComponent',
+      ({ model }: { model: AddTrackModel }) => (
+        <AssemblySelector
+          session={session}
+          helperText="Select assembly to add track to"
+          selected={model.assembly}
+          onChange={asm => {
+            model.setAssembly(asm)
+          }}
+          TextFieldProps={{
+            fullWidth: true,
+            SelectProps: {
+              SelectDisplayProps: {
+                // @ts-expect-error
+                'data-testid': 'assemblyNameSelect',
+              },
+            },
+          }}
+        />
+      ),
+      { model },
+    ) as React.FC<any>
     return (
-      <Typography className={classes.spacing}>
-        This version of JBrowse cannot display data of this type. It is
-        possible, however, that there is a newer version that can display them.
-        You can{' '}
-        <Link
-          href="https://github.com/GMOD/jbrowse-components/releases"
-          target="_blank"
-          rel="noopener noreferrer"
+      <div>
+        <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
+        {warningMessage ? (
+          <Typography color="warning">{warningMessage}</Typography>
+        ) : null}
+        <TextField
+          className={classes.spacing}
+          label="trackName"
+          helperText="A name for this track"
+          fullWidth
+          value={trackName}
+          onChange={event => {
+            model.setTrackName(event.target.value)
+          }}
+          slotProps={{
+            htmlInput: {
+              'data-testid': 'trackNameInput',
+            },
+          }}
+        />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}
         >
-          check for new releases
-        </Link>{' '}
-        of JBrowse or{' '}
-        <Link
-          href="https://github.com/GMOD/jbrowse-components/issues/new"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          file an issue
-        </Link>{' '}
-        and add a feature request for this data type.
-      </Typography>
+          <TrackAdapterSelector model={model} />
+          <TrackTypeSelector model={model} />
+
+          <Suspense fallback={null}>
+            <Component model={model} />
+          </Suspense>
+        </div>
+
+        {isElectron && supportedForIndexing && (
+          <FormControl>
+            <FormControlLabel
+              label="Index track for text searching?"
+              control={
+                <Checkbox
+                  checked={check}
+                  onChange={e => {
+                    setCheck(e.target.checked)
+                    model.setTextIndexTrack(e.target.checked)
+                  }}
+                />
+              }
+            />
+          </FormControl>
+        )}
+        {isElectron && check && supportedForIndexing ? (
+          <TextIndexingConfig model={model} />
+        ) : null}
+      </div>
     )
   }
-  if (trackAdapter?.type === UNKNOWN) {
-    return <UnknownAdapterPrompt model={model} />
-  }
-
-  if (!trackAdapter?.type) {
-    return <Typography>Could not recognize this data type.</Typography>
-  }
-
-  const supportedForIndexing = isSupportedIndexingAdapter(trackAdapter?.type)
-  return (
-    <div>
-      {trackAdapter ? (
-        <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
-      ) : null}
-      {warningMessage ? (
-        <Typography style={{ color: 'orange' }}>{warningMessage}</Typography>
-      ) : null}
-      <TextField
-        className={classes.spacing}
-        label="trackName"
-        helperText="A name for this track"
-        fullWidth
-        value={trackName}
-        onChange={event => model.setTrackName(event.target.value)}
-        inputProps={{ 'data-testid': 'trackNameInput' }}
-      />
-      <TrackAdapterSelector model={model} />
-      <TrackTypeSelector model={model} />
-      <AssemblySelector
-        session={session}
-        helperText="Select assembly to add track to"
-        selected={model.assembly}
-        onChange={asm => model.setAssembly(asm)}
-        TextFieldProps={{
-          fullWidth: true,
-          SelectProps: {
-            // @ts-expect-error
-            SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
-          },
-        }}
-      />
-      {isElectron && supportedForIndexing && (
-        <FormControl>
-          <FormControlLabel
-            label={'Index track for text searching?'}
-            control={
-              <Checkbox
-                checked={check}
-                onChange={e => {
-                  setCheck(e.target.checked)
-                  model.setTextIndexTrack(e.target.checked)
-                }}
-              />
-            }
-          />
-        </FormControl>
-      )}
-      {isElectron && check && supportedForIndexing ? (
-        <TextIndexingConfig model={model} />
-      ) : null}
-    </div>
-  )
 })
 
 export default ConfirmTrack

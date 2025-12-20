@@ -1,10 +1,12 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { UriLocation } from '@jbrowse/core/util/types'
-import { ExternalTokenInternetAccountConfigModel } from './configSchema'
-import { Instance, types, getRoot } from 'mobx-state-tree'
+import { getRoot, types } from '@jbrowse/mobx-state-tree'
 
 import { ExternalTokenEntryForm } from './ExternalTokenEntryForm'
+
+import type { ExternalTokenInternetAccountConfigModel } from './configSchema'
+import type { UriLocation } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const stateModelFactory = (
   configSchema: ExternalTokenInternetAccountConfigModel,
@@ -24,7 +26,6 @@ const stateModelFactory = (
         resolve: (token: string) => void,
         reject: (error: Error) => void,
       ) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { session } = getRoot<any>(self)
         session.queueDialog((doneCallback: () => void) => [
           ExternalTokenEntryForm,
@@ -48,16 +49,14 @@ const stateModelFactory = (
         const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
         const response = await fetch(location.uri, newInit)
         if (!response.ok) {
-          let errorMessage
+          let errorMessage: string
           try {
             errorMessage = await response.text()
           } catch (error) {
             errorMessage = ''
           }
           throw new Error(
-            `Token could not be validated — ${response.status} (${
-              response.statusText
-            })${errorMessage ? ` (${errorMessage})` : ''}`,
+            `Token could not be validated — ${response.status} ${errorMessage ? ` (${errorMessage})` : ''}`,
           )
         }
         return token

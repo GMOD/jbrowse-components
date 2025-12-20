@@ -1,9 +1,8 @@
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-} from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel LinearLollipopDisplay
@@ -48,7 +47,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
-            rpcDriverName: self.rpcDriverName,
             config: self.configuration.renderer,
           }
         },

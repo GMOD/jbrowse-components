@@ -1,8 +1,9 @@
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { types } from 'mobx-state-tree'
-// locals
+import { types } from '@jbrowse/mobx-state-tree'
+
 import SharedModelF from './shared'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel LinearGCContentDisplay

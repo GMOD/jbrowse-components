@@ -3,14 +3,22 @@ id: linearreferencesequencedisplay
 title: LinearReferenceSequenceDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearReferenceSequenceDisplay.md)
+
+## Docs
 
 base model `BaseLinearDisplay`
 
@@ -71,6 +79,40 @@ rowHeight: 15
 ```
 
 ### LinearReferenceSequenceDisplay - Getters
+
+#### getter: sequenceType
+
+```js
+// type
+any
+```
+
+#### getter: showForwardActual
+
+showReverse setting, it is NOT disabled for non-dna sequences
+
+```js
+// type
+boolean
+```
+
+#### getter: showReverseActual
+
+showReverse setting, is disabled for non-dna sequences
+
+```js
+// type
+boolean
+```
+
+#### getter: showTranslationActual
+
+showTranslation setting is disabled for non-dna sequences
+
+```js
+// type
+boolean
+```
 
 #### getter: sequenceHeight
 

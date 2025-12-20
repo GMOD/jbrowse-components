@@ -1,13 +1,14 @@
-import React, { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
+
+import { Logomark } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { IconButton, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { Logomark } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
 
-// locals
 import ViewMenu from './ViewMenu'
+
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 const VersionAboutDialog = lazy(() => import('./VersionAboutDialog'))
 
@@ -60,7 +61,11 @@ const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
         </Typography>
       ) : null}
       <div className={classes.grow} />
-      <IconButton onClick={() => setDialogOpen(true)}>
+      <IconButton
+        onClick={() => {
+          setDialogOpen(true)
+        }}
+      >
         <div style={{ width: 22, height: 22 }}>
           <Logomark variant="white" />
         </div>
@@ -69,7 +74,9 @@ const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
         <Suspense fallback={null}>
           <VersionAboutDialog
             open
-            onClose={() => setDialogOpen(false)}
+            onClose={() => {
+              setDialogOpen(false)
+            }}
             version={session.version}
           />
         </Suspense>

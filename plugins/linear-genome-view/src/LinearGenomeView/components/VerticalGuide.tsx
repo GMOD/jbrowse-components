@@ -1,11 +1,9 @@
-import React from 'react'
-import { Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
 import { stringify } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
-import { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
@@ -15,7 +13,14 @@ const useStyles = makeStyles()({
     height: '100%',
     width: 1,
     position: 'absolute',
-    zIndex: 10,
+    left: 0,
+    background: 'red',
+    zIndex: 1001,
+  },
+  tooltipTarget: {
+    position: 'sticky',
+    left: 0,
+    width: 1,
   },
 })
 
@@ -27,16 +32,30 @@ const VerticalGuide = observer(function VerticalGuide({
   coordX: number
 }) {
   const { classes } = useStyles()
+  const { stickyViewHeaders, rubberbandTop } = model
+
   return (
-    <Tooltip open placement="top" title={stringify(model.pxToBp(coordX))} arrow>
+    <>
+      <Tooltip
+        open
+        placement="top"
+        title={stringify(model.pxToBp(coordX))}
+        arrow
+      >
+        <div
+          className={classes.tooltipTarget}
+          style={{
+            transform: `translateX(${coordX + 6}px)`,
+            top: rubberbandTop,
+            position: stickyViewHeaders ? 'sticky' : undefined,
+          }}
+        />
+      </Tooltip>
       <div
         className={classes.guide}
-        style={{
-          left: coordX,
-          background: 'red',
-        }}
+        style={{ transform: `translateX(${coordX}px)` }}
       />
-    </Tooltip>
+    </>
   )
 })
 

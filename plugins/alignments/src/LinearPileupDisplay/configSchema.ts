@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
+
+import { defaultFilterFlags } from '../shared/util'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearPileupDisplay
@@ -9,7 +12,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 function configSchemaF(pluginManager: PluginManager) {
-  // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
     'LinearPileupDisplay',
     {
@@ -26,7 +28,7 @@ function configSchemaF(pluginManager: PluginManager) {
        */
       renderers: ConfigurationSchema('RenderersConfiguration', {
         PileupRenderer:
-          pluginManager.getRendererType('PileupRenderer').configSchema,
+          pluginManager.getRendererType('PileupRenderer')!.configSchema,
       }),
       /**
        * #slot
@@ -40,18 +42,21 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      colorScheme: {
-        type: 'stringEnum',
-        model: types.enumeration('colorScheme', [
-          'strand',
-          'normal',
-          'insertSize',
-          'insertSizeAndOrientation',
-          'mappingQuality',
-          'tag',
-        ]),
+      colorBy: {
+        type: 'frozen',
         description: 'color scheme to use',
-        defaultValue: 'normal',
+        defaultValue: {
+          type: 'normal',
+        },
+      },
+
+      /**
+       * #slot
+       */
+      filterBy: {
+        type: 'frozen',
+        description: 'default filters to use',
+        defaultValue: defaultFilterFlags,
       },
     },
     {

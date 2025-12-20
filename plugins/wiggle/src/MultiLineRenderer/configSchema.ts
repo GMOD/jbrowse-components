@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
+
 import baseWiggleRendererConfigSchema from '../configSchema'
 /**
  * #config MultiLineRenderer

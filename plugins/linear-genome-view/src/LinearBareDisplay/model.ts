@@ -1,10 +1,11 @@
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { getEnv } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
+
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
+
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel LinearBareDisplay
@@ -28,7 +29,23 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(configSchema),
       }),
     )
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get rendererConfig() {
+        const configBlob = getConf(self, ['renderer']) || {}
+        const config = configBlob as Omit<typeof configBlob, symbol>
 
+        return self.rendererType.configSchema.create(config, getEnv(self))
+      },
+      /**
+       * #getter
+       */
+      get rendererTypeName() {
+        return getConf(self, ['renderer', 'type'])
+      },
+    }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
@@ -39,16 +56,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return {
             ...superRenderProps(),
             ...getParentRenderProps(self),
-            rpcDriverName: self.rpcDriverName,
-            config: self.configuration.renderer,
+            config: self.rendererConfig,
           }
-        },
-
-        /**
-         * #getter
-         */
-        get rendererTypeName() {
-          return self.configuration.renderer.type
         },
       }
     })

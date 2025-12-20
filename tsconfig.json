@@ -7,27 +7,36 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "noUncheckedIndexedAccess": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "module": "esnext",
+    "removeComments": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "jsx": "react-jsx",
     "isolatedModules": true,
-    "jsx": "react",
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   },
   "exclude": [
     "**/build/",
+    "**/docs/",
     "**/dist/",
+    "**/esm/",
     "**/lib/",
     "**/umd/",
+    "**/esm/",
     "**/tmp/",
+    "**/config/jest/",
     "**/embedded_demos/",
     "**/component_tests/",
     "**/plugin-development-tools/",
     "**/webpack.config.js",
-    "**/website"
+    "**/website",
+    "**/auth_test_utils"
   ]
 }

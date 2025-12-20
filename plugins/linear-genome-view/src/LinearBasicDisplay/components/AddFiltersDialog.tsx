@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
+import { useEffect, useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
-import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -45,7 +46,9 @@ const AddFiltersDialog = observer(function ({
         .split('\n')
         .map(line => line.trim())
         .filter(line => !!line)
-        .map(line => checkJexl(line.trim()))
+        .map(line => {
+          checkJexl(line.trim())
+        })
       setError(undefined)
     } catch (e) {
       console.error(e)
@@ -72,6 +75,12 @@ const AddFiltersDialog = observer(function ({
               <code>jexl:get(feature,'score') &gt; 400</code> - show only
               features that have a score greater than 400
             </li>
+            <li>
+              <code>
+                jexl:get(feature,'end') - get(feature,'start') &lt; 1000000
+              </code>{' '}
+              - show only features with length less than 1Mbp
+            </li>
           </ul>
         </div>
 
@@ -84,10 +93,14 @@ const AddFiltersDialog = observer(function ({
           className={classes.dialogContent}
           fullWidth
           value={data}
-          onChange={event => setData(event.target.value)}
-          InputProps={{
-            classes: {
-              input: classes.textAreaFont,
+          onChange={event => {
+            setData(event.target.value)
+          }}
+          slotProps={{
+            input: {
+              classes: {
+                input: classes.textAreaFont,
+              },
             },
           }}
         />
@@ -109,7 +122,9 @@ const AddFiltersDialog = observer(function ({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

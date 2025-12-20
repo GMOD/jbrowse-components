@@ -1,14 +1,14 @@
-import React from 'react'
-import { getSnapshot, getParent } from 'mobx-state-tree'
+import DialogQueue from '@jbrowse/app-core/src/ui/App/DialogQueue'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getParent, getRoot, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel'
 
-// locals
 import PluginStoreWidget from './PluginStoreWidget'
-import { PluginStoreModel } from '../model'
+
+import type { PluginStoreModel } from '../model'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
@@ -27,33 +27,30 @@ const plugins = {
   ],
 }
 
-beforeEach(() => {
-  Object.defineProperty(window, 'location', {
-    configurable: true,
-    value: {
-      reload: jest.fn(),
-    },
-  })
-})
-
 jest.spyOn(global, 'fetch').mockImplementation(async () => {
   return new Response(JSON.stringify(plugins))
 })
 
-function setup(snapshot?: {}, adminMode?: boolean) {
+function setup(sessionSnapshot?: Record<string, unknown>, adminMode?: boolean) {
   const user = userEvent.setup()
-  const session = createTestSession(snapshot, adminMode)
+  const session = createTestSession({ sessionSnapshot, adminMode })
   const model = session.addWidget(
     'PluginStoreWidget',
     'pluginStoreWidget',
   ) as PluginStoreModel
-  return { model, session, user }
+  const root = getRoot(session)
+  const reloadPluginManagerMock = jest.fn()
+  // @ts-expect-error
+  root.setReloadPluginManagerCallback(reloadPluginManagerMock)
+  return { model, session, user, reloadPluginManagerMock }
 }
 
 test('renders with the available plugins', async () => {
-  const { model } = setup()
+  const { model, session } = setup()
   const { container, findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
+      {/* @ts-expect-error */}
+      <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
@@ -62,21 +59,27 @@ test('renders with the available plugins', async () => {
 })
 
 test('Installs a session plugin', async () => {
-  const { user, session, model } = setup()
+  const { user, session, model, reloadPluginManagerMock } = setup()
   const { findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
+      {/* @ts-expect-error */}
+      <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
   await user.click(await findByText('Install'))
-  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
+  await waitFor(() => {
+    expect(reloadPluginManagerMock).toHaveBeenCalled()
+  })
   expect(getSnapshot(session.sessionPlugins)[0]).toEqual(plugins.plugins[0])
 })
 
 test('plugin store admin - adds a custom plugin correctly', async () => {
-  const { user, session, model } = setup({}, true)
+  const { user, session, model, reloadPluginManagerMock } = setup({}, true)
   const { findByText, findByLabelText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
+      {/* @ts-expect-error */}
+      <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
@@ -85,7 +88,9 @@ test('plugin store admin - adds a custom plugin correctly', async () => {
   await user.type(await findByLabelText('Plugin name'), 'MsaView')
   await user.click(await findByText('Submit'))
 
-  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
+  await waitFor(() => {
+    expect(reloadPluginManagerMock).toHaveBeenCalled()
+  })
 
   expect(getSnapshot(getParent(session)).jbrowse.plugins).toEqual([
     {
@@ -96,14 +101,18 @@ test('plugin store admin - adds a custom plugin correctly', async () => {
 })
 
 test('plugin store admin - removes a custom plugin correctly', async () => {
-  const { user, session, model } = setup({}, true)
+  const { user, session, model, reloadPluginManagerMock } = setup({}, true)
   session.jbrowse.addPlugin(plugins.plugins[0])
   const { findByText, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
+      {/* @ts-expect-error */}
+      <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
   await user.click(await findByTestId('removePlugin-SVGPlugin'))
   await user.click(await findByText('Confirm'))
-  await waitFor(() => expect(window.location.reload).toHaveBeenCalled())
+  await waitFor(() => {
+    expect(reloadPluginManagerMock).toHaveBeenCalled()
+  })
 })

@@ -1,16 +1,16 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+
 import { colord } from '@jbrowse/core/util/colord'
-import { Popover, Select, MenuItem, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { MenuItem, Popover, Select, TextField } from '@mui/material'
 
-// locals
 import * as paletteColors from './colors'
-import { useLocalStorage, useDebounce } from '../util'
-
-// we are using a vendored copy of react-colorful because the default uses
-// pure-ESM which is difficult to make pass with jest e.g.
-// https://stackoverflow.com/questions/58613492/how-to-resolve-cannot-use-import-statement-outside-a-module-in-jest
+import { useDebounce, useLocalStorage } from '../util'
 import { RgbaStringColorPicker } from './react-colorful'
+
+// note: we are using a vendored copy of react-colorful because the default
+// uses pure-ESM which is difficult to make pass with jest e.g.
+// https://stackoverflow.com/questions/58613492/how-to-resolve-cannot-use-import-statement-outside-a-module-in-jest
 
 const useStyles = makeStyles()({
   picker: { position: 'relative' },
@@ -48,11 +48,15 @@ export const PopoverPicker = ({
       <div
         className={classes.swatch}
         style={{ backgroundColor: color }}
-        onClick={event => setAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
       />
       <ColorPopover
         anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
         color={color}
         onChange={onChange}
       />
@@ -122,17 +126,23 @@ export function ColorPicker({
         <div className={classes.swatches}>
           {presetColors.map((presetColor, idx) => (
             <button
+              type="button"
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
               key={`${presetColor}-${idx}`}
               className={classes.swatch}
               style={{ background: presetColor }}
-              onClick={() => handleChange(presetColor)}
+              onClick={() => {
+                handleChange(presetColor)
+              }}
             />
           ))}
         </div>
         <TextField
           helperText={'Manually set color (hex, rgb, or css color name)'}
           value={text}
-          onChange={event => handleChange(event.target.value)}
+          onChange={event => {
+            handleChange(event.target.value)
+          }}
         />
       </div>
     </div>

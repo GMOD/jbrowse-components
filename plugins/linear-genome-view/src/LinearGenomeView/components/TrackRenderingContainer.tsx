@@ -1,14 +1,12 @@
-import React, { Suspense, useEffect, useRef } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
+import { Suspense, useEffect, useRef } from 'react'
 
-// jbrowse core
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
-// locals
-import { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '..'
+import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
   // aligns with block boundaries. check for example the breakpoint split view
@@ -27,7 +25,7 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
-    zIndex: 2,
+    contain: 'strict',
   },
 })
 
@@ -36,42 +34,45 @@ type LGV = LinearGenomeViewModel
 const TrackRenderingContainer = observer(function ({
   model,
   track,
-  onDragEnter,
 }: {
   model: LGV
   track: BaseTrackModel
-  onDragEnter: () => void
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
   const { height, RenderingComponent, DisplayBlurb } = display
+  const { trackRefs, id, scaleFactor } = model
   const trackId = getConf(track, 'trackId')
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
 
   useEffect(() => {
     if (ref.current) {
-      model.trackRefs[trackId] = ref.current
+      trackRefs[trackId] = ref.current
     }
     return () => {
-      delete model.trackRefs[trackId]
+      delete trackRefs[trackId]
     }
-  }, [model.trackRefs, trackId])
+  }, [trackRefs, trackId])
 
   return (
     <div
       className={classes.trackRenderingContainer}
-      style={{ height: minimized ? 20 : height }}
+      style={{
+        height: minimized ? 20 : height,
+      }}
       onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
-      onDragEnter={onDragEnter}
-      data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
+      data-testid={`trackRenderingContainer-${id}-${trackId}`}
     >
       {!minimized ? (
         <>
           <div
             ref={ref}
             className={classes.renderingComponentContainer}
-            style={{ transform: `scaleX(${model.scaleFactor})` }}
+            style={{
+              transform:
+                scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
+            }}
           >
             <Suspense fallback={<LoadingEllipses />}>
               <RenderingComponent

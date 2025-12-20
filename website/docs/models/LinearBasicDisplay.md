@@ -3,14 +3,22 @@ id: linearbasicdisplay
 title: LinearBasicDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/linear-genome-view/src/LinearBasicDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearBasicDisplay/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearBasicDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearBasicDisplay.md)
+
+## Docs
 
 used by `FeatureTrack`, has simple settings like "show/hide feature labels",
 etc.
@@ -66,6 +74,33 @@ IMaybe<ISimpleType<number>>
 trackMaxHeight: types.maybe(types.number)
 ```
 
+#### property: trackSubfeatureLabels
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+trackSubfeatureLabels: types.maybe(types.string)
+```
+
+#### property: trackGeneGlyphMode
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+trackGeneGlyphMode: types.maybe(types.string)
+```
+
+#### property: trackDisplayDirectionalChevrons
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+trackDisplayDirectionalChevrons: types.maybe(types.boolean)
+```
+
 #### property: configuration
 
 ```js
@@ -75,9 +110,32 @@ AnyConfigurationSchemaType
 configuration: ConfigurationReference(configSchema)
 ```
 
+#### property: jexlFilters
+
+```js
+// type signature
+IMaybe<IArrayType<ISimpleType<string>>>
+// code
+jexlFilters: types.maybe(types.array(types.string))
+```
+
 ### LinearBasicDisplay - Getters
 
+#### getter: activeFilters
+
+```js
+// type
+any
+```
+
 #### getter: rendererTypeName
+
+```js
+// type
+any
+```
+
+#### getter: sequenceAdapter
 
 ```js
 // type
@@ -112,11 +170,42 @@ any
 any
 ```
 
+#### getter: subfeatureLabels
+
+```js
+// type
+any
+```
+
+#### getter: geneGlyphMode
+
+```js
+// type
+any
+```
+
+#### getter: displayDirectionalChevrons
+
+```js
+// type
+any
+```
+
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+```
+
+#### getter: featureUnderMouse
+
+Override featureUnderMouse to return the volatile feature which is fetched
+asynchronously via CoreGetFeatureDetails
+
+```js
+// type
+Feature
 ```
 
 ### LinearBasicDisplay - Methods
@@ -125,7 +214,14 @@ any
 
 ```js
 // type signature
-renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; }
+renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; filters: SerializableFilterChain; sequenceAdapter: any; }
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
@@ -136,6 +232,20 @@ trackMenuItems: () => MenuItem[]
 ```
 
 ### LinearBasicDisplay - Actions
+
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (f?: string[]) => void
+```
+
+#### action: setFeatureUnderMouse
+
+```js
+// type signature
+setFeatureUnderMouse: (feat?: Feature) => void
+```
 
 #### action: toggleShowLabels
 
@@ -151,6 +261,13 @@ toggleShowLabels: () => void
 toggleShowDescriptions: () => void
 ```
 
+#### action: setSubfeatureLabels
+
+```js
+// type signature
+setSubfeatureLabels: (val: string) => void
+```
+
 #### action: setDisplayMode
 
 ```js
@@ -163,4 +280,18 @@ setDisplayMode: (val: string) => void
 ```js
 // type signature
 setMaxHeight: (val?: number) => void
+```
+
+#### action: setGeneGlyphMode
+
+```js
+// type signature
+setGeneGlyphMode: (val: string) => void
+```
+
+#### action: toggleDisplayDirectionalChevrons
+
+```js
+// type signature
+toggleDisplayDirectionalChevrons: () => void
 ```

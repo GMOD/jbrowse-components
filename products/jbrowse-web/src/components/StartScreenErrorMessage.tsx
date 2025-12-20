@@ -1,9 +1,9 @@
-import React from 'react'
 import { ErrorMessage } from '@jbrowse/core/ui'
+
 import NoConfigMessage from './NoConfigMessage'
 
 export default function StartScreenErrorMessage({ error }: { error: unknown }) {
-  return `${error}`.match(/HTTP 404 fetching config.json/) ? (
+  return /HTTP 404 fetching config.json/.exec(`${error}`) ? (
     <div>
       <h1>It worked!</h1>
       <p

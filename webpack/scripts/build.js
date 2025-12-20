@@ -1,8 +1,6 @@
-/* eslint-disable no-console */
-'use strict'
-// Makes the script crash on unhandled rejections instead of silently
-// ignoring them. In the future, promise rejections that are not handled will
-// terminate the Node.js process with a non-zero exit code.
+// Makes the script crash on unhandled rejections instead of silently ignoring
+// them. In the future, promise rejections that are not handled will terminate
+// the Node.js process with a non-zero exit code.
 process.on('unhandledRejection', err => {
   throw err
 })
@@ -10,16 +8,19 @@ process.on('unhandledRejection', err => {
 // Ensure environment variables are read.
 require('../config/env')
 
+const fs = require('fs')
 const path = require('path')
+
 const chalk = require('chalk')
-const fs = require('fs-extra')
-const webpack = require('webpack')
-const paths = require('../config/paths')
+const FileSizeReporter = require('react-dev-utils/FileSizeReporter')
+const { checkBrowsers } = require('react-dev-utils/browsersHelper')
 const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles')
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
-const printHostingInstructions = require('react-dev-utils/printHostingInstructions')
-const FileSizeReporter = require('react-dev-utils/FileSizeReporter')
 const printBuildError = require('react-dev-utils/printBuildError')
+const printHostingInstructions = require('react-dev-utils/printHostingInstructions')
+const webpack = require('webpack')
+
+const paths = require('../config/paths')
 
 const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild
@@ -41,7 +42,6 @@ const writeStatsJson = argv.includes('--stats')
 
 // We require that you explicitly set browsers and do not fall back to
 // browserslist defaults.
-const { checkBrowsers } = require('react-dev-utils/browsersHelper')
 
 module.exports = function buildWebpack(config) {
   return checkBrowsers(paths.appPath, isInteractive)
@@ -53,7 +53,7 @@ module.exports = function buildWebpack(config) {
     .then(previousFileSizes => {
       // Remove all content but keep the directory so that
       // if you're in it, you don't end up in Trash
-      fs.emptyDirSync(paths.appBuild)
+      fs.rmSync(paths.appBuild, { recursive: true, force: true })
       // Merge with the public folder
       copyPublicFolder()
       // Start the webpack build
@@ -65,14 +65,10 @@ module.exports = function buildWebpack(config) {
           console.log(chalk.yellow('Compiled with warnings.\n'))
           console.log(warnings.join('\n\n'))
           console.log(
-            '\nSearch for the ' +
-              chalk.underline(chalk.yellow('keywords')) +
-              ' to learn more about each warning.',
+            `\nSearch for the ${chalk.underline(chalk.yellow('keywords'))} to learn more about each warning.`,
           )
           console.log(
-            'To ignore, add ' +
-              chalk.cyan('// eslint-disable-next-line') +
-              ' to the line before.\n',
+            `To ignore, add ${chalk.cyan('// eslint-disable-next-line')} to the line before.\n`,
           )
         } else {
           console.log(chalk.green('Compiled successfully.\n'))
@@ -133,16 +129,15 @@ module.exports = function buildWebpack(config) {
         let messages
         if (err) {
           if (!err.message) {
-            return reject(err)
+            reject(err)
+            return
           }
 
           let errMessage = err.message
 
           // Add additional information for postcss errors
           if (Object.prototype.hasOwnProperty.call(err, 'postcssNode')) {
-            errMessage +=
-              '\nCompileError: Begins at CSS selector ' +
-              err.postcssNode.selector
+            errMessage += `\nCompileError: Begins at CSS selector ${err.postcssNode.selector}`
           }
 
           messages = formatWebpackMessages({
@@ -160,7 +155,8 @@ module.exports = function buildWebpack(config) {
           if (messages.errors.length > 1) {
             messages.errors.length = 1
           }
-          return reject(new Error(messages.errors.join('\n\n')))
+          reject(new Error(messages.errors.join('\n\n')))
+          return
         }
         if (
           process.env.CI &&
@@ -179,7 +175,8 @@ module.exports = function buildWebpack(config) {
                   'Most CI servers set it automatically.\n',
               ),
             )
-            return reject(new Error(filteredWarnings.join('\n\n')))
+            reject(new Error(filteredWarnings.join('\n\n')))
+            return
           }
         }
 
@@ -190,19 +187,21 @@ module.exports = function buildWebpack(config) {
         }
 
         if (writeStatsJson) {
-          return fs.writeFileSync(
-            paths.appBuild + '/bundle-stats.json',
+          fs.writeFileSync(
+            `${paths.appBuild}/bundle-stats.json`,
             JSON.stringify(stats.toJson()),
           )
+          return
         }
 
-        return resolve(resolveArgs)
+        resolve(resolveArgs)
       })
     })
   }
 
   function copyPublicFolder() {
-    fs.copySync(paths.appPublic, paths.appBuild, {
+    fs.cpSync(paths.appPublic, paths.appBuild, {
+      recursive: true,
       dereference: true,
       filter: file => file !== paths.appHtml,
     })

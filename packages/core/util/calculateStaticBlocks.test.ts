@@ -100,7 +100,7 @@ describe('block calculation', () => {
       interRegionPaddingWidth: 2,
     })
     expect(blockSet).toMatchSnapshot()
-    expect(blockSet.blocks[1].offsetPx).toBe(0)
+    expect(blockSet.blocks[1]!.offsetPx).toBe(0)
   })
 
   it('can calculate some blocks 7', () => {
@@ -160,8 +160,7 @@ describe('block calculation', () => {
       minimumBlockWidth: 20,
       interRegionPaddingWidth: 2,
     })
-    // console.log(JSON.stringify(blockSet.blocks, null, '  '))
-    expect(blockSet.blocks[1].offsetPx).toBe(0)
+    expect(blockSet.blocks[1]!.offsetPx).toBe(0)
     expect(blockSet.blocks).toMatchSnapshot()
   })
 })

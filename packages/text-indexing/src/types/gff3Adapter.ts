@@ -1,37 +1,42 @@
-import { createGunzip } from 'zlib'
 import readline from 'readline'
-import { Track, decodeURIComponentNoThrow } from '../util'
-import { getLocalOrRemoteStream } from './common'
-import { checkAbortSignal } from '@jbrowse/core/util'
+import { createGunzip } from 'zlib'
 
-export async function* indexGff3(
-  config: Track,
-  attributes: string[],
-  inLocation: string,
-  outLocation: string,
-  typesToExclude: string[],
-  quiet: boolean,
-  statusCallback: (message: string) => void,
-  signal?: AbortSignal,
-) {
+import { decodeURIComponentNoThrow } from '../util'
+import { getLocalOrRemoteStream } from './common'
+
+export async function* indexGff3({
+  config,
+  attributesToIndex,
+  inLocation,
+  outDir,
+  featureTypesToExclude,
+  onStart,
+  onUpdate,
+}: {
+  config: { trackId: string }
+  attributesToIndex: string[]
+  inLocation: string
+  outDir: string
+  featureTypesToExclude: string[]
+  onStart: (totalBytes: number) => void
+  onUpdate: (progressBytes: number) => void
+}) {
   const { trackId } = config
-  let receivedBytes = 0
-  const { totalBytes, stream } = await getLocalOrRemoteStream(
-    inLocation,
-    outLocation,
-  )
-  stream.on('data', chunk => {
-    receivedBytes += chunk.length
-    // send an update?
-    const progress = Math.round((receivedBytes / totalBytes) * 100)
-    statusCallback(`${progress}`)
+  const stream = await getLocalOrRemoteStream({
+    file: inLocation,
+    out: outDir,
+    onTotalBytes: onStart,
+    onBytesReceived: onUpdate,
   })
+
   const rl = readline.createInterface({
-    input: inLocation.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
+    input: /.b?gz$/.exec(inLocation) ? stream.pipe(createGunzip()) : stream,
   })
 
   for await (const line of rl) {
-    if (line.startsWith('#')) {
+    if (!line.trim()) {
+      continue
+    } else if (line.startsWith('#')) {
       continue
     } else if (line.startsWith('>')) {
       break
@@ -40,21 +45,23 @@ export async function* indexGff3(
     const [seq_id, , type, start, end, , , , col9] = line.split('\t')
     const locStr = `${seq_id}:${start}..${end}`
 
-    if (!typesToExclude.includes(type)) {
+    if (!featureTypesToExclude.includes(type!)) {
       // turns gff3 attrs into a map, and converts the arrays into space
       // separated strings
       const col9attrs = Object.fromEntries(
-        col9
+        col9!
           .split(';')
           .map(f => f.trim())
           .filter(f => !!f)
           .map(f => f.split('='))
           .map(([key, val]) => [
-            key.trim(),
-            decodeURIComponentNoThrow(val).trim().split(',').join(' '),
+            key!.trim(),
+            val
+              ? decodeURIComponentNoThrow(val).trim().split(',').join(' ')
+              : undefined,
           ]),
       )
-      const attrs = attributes
+      const attrs = attributesToIndex
         .map(attr => col9attrs[attr])
         .filter((f): f is string => !!f)
 
@@ -65,11 +72,8 @@ export async function* indexGff3(
           ...attrs.map(a => encodeURIComponent(a)),
         ]).replaceAll(',', '|')
 
-        // Check abort signal
-        checkAbortSignal(signal)
         yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }
     }
   }
-  // console.log('done')
 }

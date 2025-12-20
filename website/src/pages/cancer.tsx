@@ -1,4 +1,3 @@
-import React from 'react'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
 import clsx from 'clsx'
@@ -7,7 +6,6 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import MiniFeatures from '@site/src/components/MiniFeatures'
 
-// locals
 import MiniPlugins from '../components/MiniPlugins'
 import styles from './styles.module.css'
 

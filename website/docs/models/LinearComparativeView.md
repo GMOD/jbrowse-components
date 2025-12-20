@@ -3,14 +3,22 @@ id: linearcomparativeview
 title: LinearComparativeView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/linear-comparative-view/src/LinearComparativeView/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeView/model.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeView/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearComparativeView.md)
+
+## Docs
 
 extends
 
@@ -63,33 +71,31 @@ false
 linkViews: false
 ```
 
-#### property: interactToggled
+#### property: interactiveOverlay
 
 ```js
 // type signature
 false
 // code
-interactToggled: false
+interactiveOverlay: false
 ```
 
-#### property: middleComparativeHeight
+#### property: showDynamicControls
 
 ```js
 // type signature
-number
+true
 // code
-middleComparativeHeight: 100
+showDynamicControls: true
 ```
 
-#### property: tracks
+#### property: levels
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IArrayType<IAnyModelType>
 // code
-tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
-        )
+levels: types.array(LinearSyntenyViewHelper!)
 ```
 
 #### property: views
@@ -98,10 +104,10 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
 // code
 views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeView')!
             .stateModel as LinearGenomeViewStateModel,
         )
 ```
@@ -122,13 +128,6 @@ viewTrackConfigs: types.array(
 
 ### LinearComparativeView - Getters
 
-#### getter: highResolutionScaling
-
-```js
-// type
-number
-```
-
 #### getter: initialized
 
 ```js
@@ -148,6 +147,22 @@ any[][]
 ```js
 // type
 any[]
+```
+
+#### getter: loadingMessage
+
+```js
+// type
+string
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+boolean
 ```
 
 ### LinearComparativeView - Methods
@@ -185,6 +200,13 @@ rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 setWidth: (newWidth: number) => void
 ```
 
+#### action: setIsLoading
+
+```js
+// type signature
+setIsLoading: (arg: boolean) => void
+```
+
 #### action: setViews
 
 ```js
@@ -196,59 +218,56 @@ setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimp
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomize...
+removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 12 more ...; init: InitState & IStateTreeNode<...>; } & ... 18 more ... & IStateTreeNode<...>) =>...
 ```
 
-#### action: closeView
-
-removes the view itself from the state tree entirely by calling the parent
-removeView
+#### action: setLevelHeight
 
 ```js
 // type signature
-closeView: () => void
+setLevelHeight: (newHeight: number, level?: number) => any
 ```
 
-#### action: setMiddleComparativeHeight
+#### action: setLinkViews
 
 ```js
 // type signature
-setMiddleComparativeHeight: (n: number) => number
+setLinkViews: (arg: boolean) => void
 ```
 
-#### action: toggleLinkViews
+#### action: setShowDynamicControls
 
 ```js
 // type signature
-toggleLinkViews: () => void
+setShowDynamicControls: (arg: boolean) => void
 ```
 
 #### action: activateTrackSelector
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
+activateTrackSelector: (level: number) => Widget
 ```
 
 #### action: toggleTrack
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string, level?: number) => void
 ```
 
 #### action: showTrack
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
+showTrack: (trackId: string, level?: number, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string, level?: number) => void
 ```
 
 #### action: squareView

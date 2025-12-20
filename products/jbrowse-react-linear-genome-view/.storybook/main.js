@@ -1,13 +1,12 @@
 module.exports = {
-  stories: ['../stories/**/*.mdx', '../stories/**/*.stories.@(js|jsx|ts|tsx)'],
-  staticDirs: ['../public'],
-  addons: ['@storybook/addon-essentials'],
+  stories: [
+    '../stories/**/*.mdx',
+    '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+  ],
+  addons: ['@storybook/addon-docs'],
   framework: {
     name: '@storybook/react-webpack5',
     options: {},
-  },
-  docs: {
-    docsPage: true,
   },
 
   webpackFinal: async config => {
@@ -18,7 +17,6 @@ module.exports = {
           loader: require.resolve('babel-loader'),
           options: {
             rootMode: 'upward',
-            presets: ['@babel/preset-react'],
           },
         },
       ],

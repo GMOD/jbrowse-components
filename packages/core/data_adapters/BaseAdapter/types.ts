@@ -1,10 +1,12 @@
+import type { StopToken } from '../../util/stopToken'
+
 export interface BaseOptions {
-  signal?: AbortSignal
+  stopToken?: StopToken
   bpPerPx?: number
   sessionId?: string
+  signal?: AbortSignal
   statusCallback?: (message: string) => void
   headers?: Record<string, string>
-  [key: string]: unknown
 }
 
 export type SearchType = 'full' | 'prefix' | 'exact'
@@ -12,7 +14,7 @@ export type SearchType = 'full' | 'prefix' | 'exact'
 export interface BaseTextSearchArgs {
   queryString: string
   searchType?: SearchType
-  signal?: AbortSignal
+  stopToken?: StopToken
   limit?: number
   pageNumber?: number
 }

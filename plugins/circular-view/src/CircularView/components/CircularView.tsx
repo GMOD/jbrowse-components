@@ -1,14 +1,13 @@
-import React from 'react'
-import { observer } from 'mobx-react'
-import { ResizeHandle } from '@jbrowse/core/ui'
+import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
-// locals
-import Ruler from './Ruler'
 import Controls from './Controls'
 import ImportForm from './ImportForm'
-import { CircularViewModel } from '../models/model'
+import Ruler from './Ruler'
+
+import type { CircularViewModel } from '../model'
 
 const dragHandleHeight = 3
 
@@ -29,7 +28,7 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
       {model.staticSlices.map(slice => (
         <Ruler
           key={assembleLocString(
-            slice.region.elided ? slice.region.regions[0] : slice.region,
+            slice.region.elided ? slice.region.regions[0]! : slice.region,
           )}
           model={model}
           slice={slice}
@@ -50,20 +49,17 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
 })
 
 const CircularView = observer(({ model }: { model: CircularViewModel }) => {
-  const initialized =
-    !!model.displayedRegions.length &&
-    !!model.figureWidth &&
-    !!model.figureHeight &&
-    model.initialized
+  const { showLoading, showView, showImportForm, loadingMessage } = model
 
-  const showImportForm = !initialized && !model.disableImportForm
-  const showFigure = initialized && !showImportForm
-
-  return showImportForm || model.error ? (
-    <ImportForm model={model} />
-  ) : showFigure ? (
-    <CircularViewLoaded model={model} />
-  ) : null
+  if (showLoading) {
+    return <LoadingEllipses variant="h6" message={loadingMessage} />
+  } else if (showImportForm) {
+    return <ImportForm model={model} />
+  } else if (showView) {
+    return <CircularViewLoaded model={model} />
+  } else {
+    return null
+  }
 })
 
 const CircularViewLoaded = observer(function ({

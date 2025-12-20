@@ -1,6 +1,6 @@
 {
-  "name": "@jbrowse/react-circular-genome-view",
-  "version": "2.11.2",
+  "name": "@jbrowse/react-circular-genome-view2",
+  "version": "3.7.0",
   "description": "JBrowse 2 circular genome view React component",
   "keywords": [
     "jbrowse",
@@ -23,46 +23,39 @@
     "docs"
   ],
   "scripts": {
-    "prebuild": "npm run clean",
+    "prebuild": "yarn clean",
     "build": "npm-run-all build:*",
     "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
-    "prepack": "npm run build",
-    "build:esm": "tsc -b tsconfig.build.esm.json",
-    "build:commonjs": "tsc -b tsconfig.build.commonjs.json",
-    "build:webpack": "npm-run-all build:webpack:*",
-    "build:webpack:dev": "cross-env NODE_ENV=development webpack",
-    "build:webpack:prod": "cross-env NODE_ENV=production webpack",
+    "prepack": "yarn build",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
+    "build:webpack": "webpack",
     "clean": "rimraf esm dist *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
-    "@jbrowse/core": "^2.11.2",
-    "@jbrowse/embedded-core": "^2.11.2",
-    "@jbrowse/plugin-authentication": "^2.11.2",
-    "@jbrowse/plugin-circular-view": "^2.11.2",
-    "@jbrowse/plugin-config": "^2.11.2",
-    "@jbrowse/plugin-data-management": "^2.11.2",
-    "@jbrowse/plugin-linear-genome-view": "^2.11.2",
-    "@jbrowse/plugin-sequence": "^2.11.2",
-    "@jbrowse/plugin-variants": "^2.11.2",
-    "@jbrowse/plugin-wiggle": "^2.11.2",
-    "@jbrowse/product-core": "^2.11.2",
-    "@mui/icons-material": "^5.0.0",
-    "@mui/material": "^5.10.17",
+    "@jbrowse/core": "^3.7.0",
+    "@jbrowse/embedded-core": "^3.7.0",
+    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/plugin-authentication": "^3.7.0",
+    "@jbrowse/plugin-circular-view": "^3.7.0",
+    "@jbrowse/plugin-config": "^3.7.0",
+    "@jbrowse/plugin-data-management": "^3.7.0",
+    "@jbrowse/plugin-sequence": "^3.7.0",
+    "@jbrowse/plugin-variants": "^3.7.0",
+    "@jbrowse/plugin-wiggle": "^3.7.0",
+    "@jbrowse/product-core": "^3.7.0",
+    "@mui/icons-material": "^7.0.0",
+    "@mui/material": "^7.0.0",
     "mobx": "^6.6.0",
-    "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0",
-    "prop-types": "^15.0.0",
-    "rxjs": "^7.0.0",
-    "tss-react": "^4.4.1"
+    "mobx-react": "^9.0.0"
   },
   "peerDependencies": {
-    "react": ">=16.8.0"
+    "react": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

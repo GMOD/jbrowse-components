@@ -6,9 +6,17 @@ title: SvgFeatureRenderer
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-### Source file
+Also note: this document represents the config API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/svg/src/SvgFeatureRenderer/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/svg/src/SvgFeatureRenderer/configSchema.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/svg/src/SvgFeatureRenderer/configSchema.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/SvgFeatureRenderer.md)
+
+## Docs
 
 ### SvgFeatureRenderer - Slots
 
@@ -198,5 +206,23 @@ impliedUTRs: {
       type: 'boolean',
       description: 'imply UTR from the exon and CDS differences',
       defaultValue: false,
+    }
+```
+
+#### slot: transcriptTypes
+
+```js
+transcriptTypes: {
+      type: 'stringArray',
+      defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
+    }
+```
+
+#### slot: containerTypes
+
+```js
+containerTypes: {
+      type: 'stringArray',
+      defaultValue: ['proteoform_orf'],
     }
 ```

@@ -1,27 +1,33 @@
-import React from 'react'
+import { forwardRef } from 'react'
+
+import { toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { Feature } from '@jbrowse/core/util'
 
-// locals
-import { Source, toP } from '../../util'
-import Tooltip, { TooltipContentsComponent } from '../../Tooltip'
+import Tooltip from '../../Tooltip'
+import { toP } from '../../util'
 
-const en = (n: number) => n.toLocaleString('en-US')
+import type { TooltipContentsComponent } from '../../Tooltip'
+import type { Source } from '../../util'
+import type { Feature } from '@jbrowse/core/util'
 
 interface Props {
   model: { sources: Source[] }
   feature: Feature
 }
-const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
+const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2({ model, feature }, ref) {
     const start = feature.get('start')
     const end = feature.get('end')
     const refName = feature.get('refName')
-    const coord = start === end ? en(start) : `${en(start)}..${en(end)}`
-    const sources = feature.get('sources') as Record<string, { score: number }>
+    const coord =
+      start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`
+    const sources = feature.get('sources') as
+      | Record<string, { score: number }>
+      | undefined
     const source = feature.get('source')
     const summary = feature.get('summary')
     const obj = Object.fromEntries(model.sources.map(ent => [ent.name, ent]))
+    const obj2 = obj[source]
 
     return (
       <div ref={ref}>
@@ -37,19 +43,32 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
               </tr>
             </thead>
             <tbody>
-              {Object.entries(sources).map(([source, data]) => (
-                <tr key={source}>
-                  <td style={{ background: obj[source]?.color }}> </td>
-                  <td>{source}</td>
-                  <td>{toP(data.score)}</td>
-                </tr>
-              ))}
+              {Object.entries(sources).map(([source, data]) => {
+                const sourceInfo = obj[source]
+                return (
+                  <tr key={source}>
+                    <td>
+                      {sourceInfo && (
+                        <div
+                          style={{
+                            width: 16,
+                            height: 16,
+                            background: sourceInfo.color,
+                          }}
+                        ></div>
+                      )}
+                    </td>
+                    <td>{sourceInfo?.name || source}</td>
+                    <td>{toP(data.score)}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         ) : (
           <span>
-            {source}{' '}
-            {summary
+            {obj2?.name || source}{' '}
+            {summary && feature.get('minScore') != null
               ? `min:${toP(feature.get('minScore'))} avg:${toP(
                   feature.get('score'),
                 )} max:${toP(feature.get('maxScore'))}`
@@ -63,18 +82,14 @@ const TooltipContents = React.forwardRef<HTMLDivElement, Props>(
 
 type Coord = [number, number]
 
-const WiggleTooltip = observer(
-  (props: {
-    model: { featureUnderMouse: Feature; sources: Source[]; rowHeight: number }
-    height: number
-    offsetMouseCoord: Coord
-    clientMouseCoord: Coord
-    clientRect?: DOMRect
-    TooltipContents?: TooltipContentsComponent
-  }) => {
-    return <Tooltip useClientY TooltipContents={TooltipContents} {...props} />
-  },
-)
-export default WiggleTooltip
+const WiggleTooltip = observer(function (props: {
+  model: { featureUnderMouse: Feature; sources: Source[]; rowHeight: number }
+  height: number
+  offsetMouseCoord: Coord
+  clientMouseCoord: Coord
+  TooltipContents?: TooltipContentsComponent
+}) {
+  return <Tooltip TooltipContents={TooltipContents} {...props} />
+})
 
-export { default as Tooltip } from '../../Tooltip'
+export default WiggleTooltip

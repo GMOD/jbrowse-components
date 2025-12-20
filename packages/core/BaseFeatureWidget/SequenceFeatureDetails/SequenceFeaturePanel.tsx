@@ -1,15 +1,15 @@
-import React, { lazy, useState, Suspense } from 'react'
+import { Suspense, lazy, useState } from 'react'
+
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import Help from '@mui/icons-material/Help'
 import { Button, FormControl, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-// locals
 import { LoadingEllipses } from '../../ui'
-import { BaseFeatureWidgetModel } from '../stateModelFactory'
-import { SimpleFeatureSerialized, getSession } from '../../util'
+import { getSession } from '../../util'
 
-// icons
-import Help from '@mui/icons-material/Help'
+import type { SimpleFeatureSerialized } from '../../util'
+import type { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // lazies
 const SequenceFeatureDetails = lazy(() => import('./SequenceFeatureDetails'))
@@ -39,21 +39,28 @@ const SequenceFeaturePanel = observer(function ({
   const { classes } = useStyles()
   const [shown, setShown] = useState(false)
 
-  return model ? (
+  return (
     <div className={classes.container}>
       <FormControl className={classes.formControl}>
-        <Button variant="contained" onClick={() => setShown(!shown)}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setShown(!shown)
+          }}
+        >
           {shown ? 'Hide feature sequence' : 'Show feature sequence'}
         </Button>
       </FormControl>
 
       <IconButton
-        onClick={() =>
+        onClick={() => {
           getSession(model).queueDialog(handleClose => [
             HelpDialog,
-            { handleClose },
+            {
+              handleClose,
+            },
           ])
-        }
+        }}
       >
         <Help />
       </IconButton>
@@ -67,7 +74,7 @@ const SequenceFeaturePanel = observer(function ({
         </Suspense>
       ) : null}
     </div>
-  ) : null
+  )
 })
 
 export default SequenceFeaturePanel

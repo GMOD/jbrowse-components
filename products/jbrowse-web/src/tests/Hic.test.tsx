@@ -1,13 +1,6 @@
 import { fireEvent } from '@testing-library/react'
 
-import {
-  setup,
-  doBeforeEach,
-  expectCanvasMatch,
-  createView,
-  pc,
-  hts,
-} from './util'
+import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
 import hicConfig from '../../../../extra_test_data/hic_integration_test.json'
 
 beforeEach(() => {
@@ -16,12 +9,17 @@ beforeEach(() => {
 
 setup()
 
-const delay = { timeout: 20000 }
+const timeout = 30_000
+const delay = { timeout }
 
-test('hic', async () => {
-  const { view, findByTestId } = await createView(hicConfig)
+test(
+  'hic',
+  async () => {
+    const { view, findByTestId } = await createView(hicConfig)
 
-  view.setNewView(5000, 0)
-  fireEvent.click(await findByTestId(hts('hic_test'), {}, delay))
-  expectCanvasMatch(await findByTestId(pc('{hg19}1:1..4000000-0'), {}, delay))
-}, 25000)
+    view.setNewView(5000, 0)
+    fireEvent.click(await findByTestId(hts('hic_test'), {}, delay))
+    expectCanvasMatch(await findByTestId('hic_canvas_done', {}, delay))
+  },
+  timeout,
+)

@@ -1,119 +1,91 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+
+import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { getConf } from '@jbrowse/core/configuration'
+import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
-import clone from 'clone'
-import copy from 'copy-to-clipboard'
-import { Button } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import {
-  getConf,
-  readConfObject,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
-import { getSession, getEnv } from '@jbrowse/core/util'
-import {
-  BaseCard,
-  Attributes,
-} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+
 import FileInfoPanel from './FileInfoPanel'
+import HeaderButtons from './HeaderButtons'
 import RefNameInfoDialog from './RefNameInfoDialog'
+import { generateDisplayableConfig, readConf } from './util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   content: {
     minWidth: 800,
   },
-  button: {
-    float: 'right',
-  },
 })
-
-function removeAttr(obj: Record<string, unknown>, attr: string) {
-  for (const prop in obj) {
-    if (prop === attr) {
-      delete obj[prop]
-    } else if (typeof obj[prop] === 'object') {
-      removeAttr(obj[prop] as Record<string, unknown>, attr)
-    }
-  }
-  return obj
-}
 
 const AboutDialogContents = observer(function ({
   config,
+  session,
 }: {
-  config: AnyConfigurationModel
+  config: AnyConfigurationModel | Record<string, unknown>
+  session: AbstractSessionModel
 }) {
-  const [copied, setCopied] = useState(false)
-  const conf = readConfObject(config)
-  const session = getSession(config)
+  const conf = isStateTreeNode(config) ? getSnapshot(config) : config
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)
 
   const hideUris =
     getConf(session, ['formatAbout', 'hideUris']) ||
-    readConfObject(config, ['formatAbout', 'hideUris'])
+    readConf(config, ['formatAbout', 'hideUris'])
 
   const { pluginManager } = getEnv(session)
 
-  const confPostExt = pluginManager.evaluateExtensionPoint(
-    'Core-customizeAbout',
-    {
-      config: {
-        ...conf,
-        ...getConf(session, ['formatAbout', 'config'], { config: conf }),
-        ...readConfObject(config, ['formatAbout', 'config'], { config: conf }),
-      },
-    },
-    { session, config },
-  ) as Record<string, unknown>
+  const confPostExt = generateDisplayableConfig({
+    config,
+    session,
+    pluginManager,
+  })
 
   const ExtraPanel = pluginManager.evaluateExtensionPoint(
     'Core-extraAboutPanel',
     null,
     { session, config },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) as { name: string; Component: React.FC<any> }
+  ) as { name: string; Component: React.FC<any> } | null
+  const hideFields = ['displays', 'baseUri', 'refNames', 'formatAbout']
 
   return (
     <div className={classes.content}>
       <BaseCard title="Configuration">
         {!hideUris ? (
-          <span className={classes.button}>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => setShowRefNames(true)}
-            >
-              Show ref names
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => {
-                const snap = removeAttr(clone(conf), 'baseUri')
-                copy(JSON.stringify(snap, null, 2))
-                setCopied(true)
-                setTimeout(() => setCopied(false), 1000)
-              }}
-            >
-              {copied ? 'Copied to clipboard!' : 'Copy config'}
-            </Button>
-          </span>
+          <HeaderButtons conf={conf} setShowRefNames={setShowRefNames} />
         ) : null}
         <Attributes
-          attributes={confPostExt}
-          omit={['displays', 'baseUri', 'refNames', 'formatAbout']}
+          attributes={confPostExt.config}
+          omit={[...hideFields, 'metadata']}
           hideUris={hideUris}
         />
       </BaseCard>
+      {confPostExt.config.metadata ? (
+        <BaseCard title="Metadata">
+          <Attributes
+            attributes={confPostExt.config.metadata}
+            omit={hideFields}
+            hideUris={hideUris}
+          />
+        </BaseCard>
+      ) : null}
       {ExtraPanel ? (
         <BaseCard title={ExtraPanel.name}>
           <ExtraPanel.Component config={config} />
         </BaseCard>
       ) : null}
-      <FileInfoPanel config={config} />
+      <FileInfoPanel config={config} session={session} />
       {showRefNames ? (
         <RefNameInfoDialog
+          session={session}
           config={config}
-          onClose={() => setShowRefNames(false)}
+          onClose={() => {
+            setShowRefNames(false)
+          }}
         />
       ) : null}
     </div>

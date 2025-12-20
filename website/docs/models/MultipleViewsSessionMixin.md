@@ -3,14 +3,22 @@ id: multipleviewssessionmixin
 title: MultipleViewsSessionMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[packages/product-core/src/Session/MultipleViews.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/MultipleViewsSessionMixin.md)
+
+## Docs
 
 composed of
 
@@ -26,6 +34,30 @@ composed of
 IArrayType<IAnyType>
 // code
 views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
+```
+
+#### property: stickyViewHeaders
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+stickyViewHeaders: types.optional(types.boolean, () =>
+        localStorageGetBoolean('stickyViewHeaders', true),
+      )
+```
+
+#### property: useWorkspaces
+
+enables the dockview-based tabbed/tiled workspace layout
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+useWorkspaces: types.optional(types.boolean, () =>
+        localStorageGetBoolean('useWorkspaces', false),
+      )
 ```
 
 ### MultipleViewsSessionMixin - Actions
@@ -69,26 +101,19 @@ addView: (typeName: string, initialState?: {}) => any
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; } & NonEmptyObject & { width: number; } & { menuItems(): MenuItem[]; } & { setDisplayName(name: string): void; setWidth(newWidth: number): void; setMinimized(flag: boolean): void; } & IStateTreeNode<...>) => void
+removeView: (view: IBaseViewModel) => void
 ```
 
-#### action: addLinearGenomeViewOfAssembly
+#### action: setStickyViewHeaders
 
 ```js
 // type signature
-addLinearGenomeViewOfAssembly: (assemblyName: string, initialState?: {}) => any
+setStickyViewHeaders: (sticky: boolean) => void
 ```
 
-#### action: addViewOfAssembly
+#### action: setUseWorkspaces
 
 ```js
 // type signature
-addViewOfAssembly: (viewType: string, assemblyName: string, initialState?: Record<string, unknown>) => any
-```
-
-#### action: addViewFromAnotherView
-
-```js
-// type signature
-addViewFromAnotherView: (viewType: string, otherView: { id: string; displayName: string; minimized: boolean; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>;...
+setUseWorkspaces: (useWorkspaces: boolean) => void
 ```

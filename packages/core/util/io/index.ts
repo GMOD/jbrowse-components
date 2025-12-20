@@ -1,26 +1,24 @@
-import {
-  BlobFile,
-  GenericFilehandle,
-  LocalFile,
-  Fetcher,
-} from 'generic-filehandle'
 import isNode from 'detect-node'
+import { BlobFile, LocalFile } from 'generic-filehandle2'
 
-// locals
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
+import { isElectron } from '../'
+import { getBlob } from '../tracks'
 import {
-  FileLocation,
-  LocalPathLocation,
-  BlobLocation,
+  AuthNeededError,
   isRootModelWithInternetAccounts,
   isUriLocation,
-  AuthNeededError,
+} from '../types'
+
+import type PluginManager from '../../PluginManager'
+import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
+import type {
+  BlobLocation,
+  FileLocation,
+  LocalPathLocation,
   UriLocation,
 } from '../types'
-import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
-import { getBlob } from '../tracks'
-import PluginManager from '../../PluginManager'
-import { isElectron } from '../'
+import type { Fetcher, GenericFilehandle } from 'generic-filehandle2'
 
 function isLocalPathLocation(
   location: FileLocation,
@@ -43,9 +41,6 @@ export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
 ): GenericFilehandle {
-  if (!location) {
-    throw new Error('must provide a location to openLocation')
-  }
   if (isLocalPathLocation(location)) {
     if (!location.localPath) {
       throw new Error('No local path provided')
@@ -125,14 +120,15 @@ function getInternetAccount(
         'Failed to obtain token from internet account. Try reloading the page',
       )
     }
-    const internetAccountType = pluginManager.getInternetAccountType(
-      location.internetAccountPreAuthorization.internetAccountType,
-    )
-    return internetAccountType.stateModel.create({
-      type: location.internetAccountPreAuthorization.internetAccountType,
-      configuration:
-        location.internetAccountPreAuthorization.authInfo.configuration,
-    })
+    return pluginManager
+      .getInternetAccountType(
+        location.internetAccountPreAuthorization.internetAccountType,
+      )!
+      .stateModel.create({
+        type: location.internetAccountPreAuthorization.internetAccountType,
+        configuration:
+          location.internetAccountPreAuthorization.authInfo.configuration,
+      })
   }
   return undefined
 }

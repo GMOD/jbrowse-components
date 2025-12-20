@@ -3,14 +3,22 @@ id: linearalignmentsdisplaymixin
 title: LinearAlignmentsDisplayMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/LinearAlignmentsDisplay/models/alignmentsModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/models/alignmentsModel.tsx)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsModel.tsx)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearAlignmentsDisplayMixin.md)
+
+## Docs
 
 ### LinearAlignmentsDisplayMixin - Properties
 
@@ -22,7 +30,11 @@ refers to LinearPileupDisplay sub-display model
 // type signature
 IMaybe<IAnyType>
 // code
-PileupDisplay: types.maybe(types.union(...lowerPanelDisplays))
+PileupDisplay: types.maybe(
+      types.union(
+        ...getLowerPanelDisplays(pluginManager).map(f => f.stateModel),
+      ),
+    )
 ```
 
 #### property: SNPCoverageDisplay
@@ -34,7 +46,7 @@ refers to LinearSNPCoverageDisplay sub-display model
 IMaybe<IAnyModelType>
 // code
 SNPCoverageDisplay: types.maybe(
-      pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
+      pluginManager.getDisplayType('LinearSNPCoverageDisplay')!.stateModel,
     )
 ```
 

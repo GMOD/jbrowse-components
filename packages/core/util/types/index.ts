@@ -1,35 +1,37 @@
-import React from 'react'
-import {
-  isStateTreeNode,
-  Instance,
-  SnapshotIn,
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+import type React from 'react'
+
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+import type {
+  BlobLocation as MUBlobLocation,
+  LocalPathLocation as MULocalPathLocation,
+  NoAssemblyRegion as MUNoAssemblyRegion,
+  Region as MUIRegion,
+  UriLocation as MUUriLocation,
+} from './mst'
+import type TextSearchManager from '../../TextSearch/TextSearchManager'
+import type assemblyManager from '../../assemblyManager'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
+import type RpcManager from '../../rpc/RpcManager'
+import type { MenuItem } from '../../ui'
+import type { Feature } from '../simpleFeature'
+import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   IType,
-} from 'mobx-state-tree'
-import { AnyConfigurationModel } from '../../configuration'
-
-import assemblyManager from '../../assemblyManager'
-import TextSearchManager from '../../TextSearch/TextSearchManager'
-import { MenuItem } from '../../ui'
-import {
-  NoAssemblyRegion as MUNoAssemblyRegion,
-  Region as MUIRegion,
-  LocalPathLocation as MULocalPathLocation,
-  UriLocation as MUUriLocation,
-  BlobLocation as MUBlobLocation,
-} from './mst'
-import RpcManager from '../../rpc/RpcManager'
-import { Feature } from '../simpleFeature'
-import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
-import { ThemeOptions } from '@mui/material'
+  Instance,
+  SnapshotIn,
+} from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extends IStateTreeNode<IType<any, unknown, any>> {
+export interface AbstractViewContainer extends IStateTreeNode<
+  IType<any, any, any>
+> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
@@ -50,7 +52,7 @@ export function isViewContainer(
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 export interface SnackAction {
-  name: React.ReactElement
+  name: React.ReactElement | string
   onClick: () => void
 }
 
@@ -76,13 +78,12 @@ export interface JBrowsePlugin {
 }
 
 export type DialogComponentType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.LazyExoticComponent<React.FC<any>>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.FC<any>
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
+  tracksById: Record<string, AnyConfigurationModel>
   jbrowse: IAnyStateTreeNode
   drawerPosition?: string
   configuration: AnyConfigurationModel
@@ -92,10 +93,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   selection?: unknown
   focusedViewId?: string
   themeName?: string
+  theme?: ThemeOptions
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void
-  allThemes?: () => Record<string, ThemeOptions | undefined>
+  allThemes?: () => Record<string, ThemeOptions>
   setSelection: (feature: Feature) => void
   setSession?: (arg: { name: string; [key: string]: unknown }) => void
   clearSelection: () => void
@@ -126,14 +128,14 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   }[]
   makeConnection?: Function
   breakConnection?: Function
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   prepareToBreakConnection?: (arg: AnyConfigurationModel) => any
   adminMode?: boolean
   showWidget?: Function
   addWidget?: Function
 
   DialogComponent?: DialogComponentType
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   DialogProps: any
   queueDialog<T extends DialogComponentType>(
     callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
@@ -156,23 +158,21 @@ export interface SessionWithConfigEditing extends AbstractSessionModel {
   editConfiguration(configuration: AnyConfigurationModel): void
 }
 export function isSessionModelWithConfigEditing(
-  thing: unknown,
-): thing is SessionWithConfigEditing {
-  return isSessionModel(thing) && 'editConfiguration' in thing
+  t: unknown,
+): t is SessionWithConfigEditing {
+  return isSessionModel(t) && 'editConfiguration' in t
 }
 
 /** abstract interface for a session allows adding tracks */
-export interface SessionWithConfigEditing extends AbstractSessionModel {
+export interface SessionWithAddTracks extends AbstractSessionModel {
   addTrackConf(
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
   ): void
 }
-export function isSessionWithAddTracks(
-  thing: unknown,
-): thing is SessionWithConfigEditing {
+export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
   return (
     // @ts-expect-error
-    isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks
+    isSessionModel(t) && 'addTrackConf' in t && !t.disableAddTracks
   )
 }
 
@@ -196,8 +196,8 @@ export interface SessionWithWidgets extends AbstractSessionModel {
   minimized: boolean
   visibleWidget?: Widget
   widgets: Map<string | number, Widget>
-  hideAllWidgets: () => void
   activeWidgets: Map<string | number, Widget>
+  hideAllWidgets: () => void
   addWidget(
     typeName: string,
     id: string,
@@ -223,7 +223,7 @@ export function isSessionModelWithWidgets(
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
 }
-interface SessionWithConnections {
+export interface SessionWithConnections {
   makeConnection: (arg: AnyConfigurationModel) => void
 }
 export function isSessionModelWithConnections(
@@ -232,7 +232,7 @@ export function isSessionModelWithConnections(
   return isSessionModel(thing) && 'makeConnection' in thing
 }
 
-interface SessionWithConnectionEditing {
+export interface SessionWithConnectionEditing {
   addConnectionConf: (arg: AnyConfigurationModel) => void
 }
 
@@ -270,8 +270,7 @@ export function isSelectionContainer(
 }
 
 /** abstract interface for a session allows applying focus to views and widgets */
-export interface SessionWithFocusedViewAndDrawerWidgets
-  extends SessionWithDrawerWidgets {
+export interface SessionWithFocusedViewAndDrawerWidgets extends SessionWithDrawerWidgets {
   focusedViewId: string | undefined
   setFocusedViewId(id: string): void
 }
@@ -297,9 +296,12 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
+type Display = { displayId: string } & AnyConfigurationModel
+
 export interface AbstractTrackModel {
+  id: string
   displays: AbstractDisplayModel[]
-  configuration: AnyConfigurationModel
+  configuration: AnyConfigurationModel & { displays: Display[] }
 }
 
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
@@ -316,7 +318,7 @@ export interface AbstractDisplayModel {
   id: string
   parentTrack: AbstractTrackModel
   renderDelay: number
-  rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  rendererType: any
   cannotBeRenderedReason?: string
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
@@ -409,26 +411,30 @@ export function isAbstractMenuManager(
   )
 }
 
-// Empty interfaces required by mobx-state-tree
-// See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
-/* eslint-disable @typescript-eslint/no-empty-interface */
-
-export interface NoAssemblyRegion
-  extends SnapshotIn<typeof MUNoAssemblyRegion> {}
+// Empty interfaces required by @jbrowse/mobx-state-tree
+// See https://@jbrowse/mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface NoAssemblyRegion extends SnapshotIn<
+  typeof MUNoAssemblyRegion
+> {}
 
 /**
  * a description of a specific genomic region. assemblyName, refName, start,
  * end, and reversed
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
 export interface AugmentedRegion extends Region {
   originalRefName?: string
 }
 
-export interface LocalPathLocation
-  extends SnapshotIn<typeof MULocalPathLocation> {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface LocalPathLocation extends SnapshotIn<
+  typeof MULocalPathLocation
+> {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export function isUriLocation(location: unknown): location is UriLocation {
@@ -487,6 +493,7 @@ export function isAuthNeededException(
     exception instanceof Error &&
     // DOMException
     (exception.name === 'AuthNeededError' ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (exception as AuthNeededError).url !== undefined)
   )
 }
@@ -495,10 +502,12 @@ export function isRetryException(exception: Error): boolean {
   return (
     // DOMException
     exception.name === 'RetryError' ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (exception as RetryError).internetAccountId !== undefined
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
@@ -520,4 +529,4 @@ export type PreFileLocation =
   | PreLocalPathLocation
   | PreBlobLocation
 
-export { type default as TextSearchManager } from '../../TextSearch/TextSearchManager'
+export { default as TextSearchManager } from '../../TextSearch/TextSearchManager'

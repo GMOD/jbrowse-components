@@ -1,29 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  isStateTreeNode,
   getSnapshot,
   getType,
+  isArrayType,
+  isLateType,
   isMapType,
+  isModelType,
+  isOptionalType,
+  isStateTreeNode,
   isType,
   isUnionType,
-  isOptionalType,
-  isArrayType,
-  isModelType,
-  isLateType,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
 
 import {
-  getUnionSubTypes,
   getDefaultValue,
   getSubType,
+  getUnionSubTypes,
   resolveLateType,
 } from '../util/mst-reflection'
 
-import {
+import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
-  ConfigurationSlotName,
   ConfigurationSchemaForModel,
+  ConfigurationSlotName,
 } from './types'
 
 /**
@@ -42,13 +41,9 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     | string[],
   args: Record<string, unknown> = {},
 ): any {
-  if (!confObject) {
-    throw new TypeError('must provide conf object to read')
-  }
   if (!slotPath) {
-    return JSON.parse(JSON.stringify(getSnapshot(confObject)))
-  }
-  if (typeof slotPath === 'string') {
+    return structuredClone(getSnapshot(confObject))
+  } else if (typeof slotPath === 'string') {
     let slot = confObject[slotPath]
     // check for the subconf being a map if we don't find it immediately
     if (
@@ -70,16 +65,14 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
       //     schemaType.name
       //   })`,
       // )
+    } else {
+      const val = slot.expr ? slot.expr.evalSync(args) : slot
+      return isStateTreeNode(val)
+        ? JSON.parse(JSON.stringify(getSnapshot(val)))
+        : val
     }
-
-    const val = slot.expr ? slot.expr.evalSync(args) : slot
-    return isStateTreeNode(val)
-      ? JSON.parse(JSON.stringify(getSnapshot(val)))
-      : val
-  }
-
-  if (Array.isArray(slotPath)) {
-    const slotName = slotPath[0]
+  } else if (Array.isArray(slotPath)) {
+    const slotName = slotPath[0]!
     if (slotPath.length > 1) {
       const newPath = slotPath.slice(1)
       let subConf = confObject[slotName]
@@ -115,9 +108,6 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
   slotPath?: Parameters<typeof readConfObject<CONFMODEL>>[1],
   args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
 ) {
-  if (!model) {
-    throw new TypeError('must provide a model object')
-  }
   const { configuration } = model
   if (isConfigurationModel(configuration)) {
     return readConfObject<CONFMODEL>(configuration, slotPath, args)
@@ -138,7 +128,7 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
     // @ts-expect-error
     if (isUnionType(maybeUnionType)) {
       const typeNames: string[] = []
-      getUnionSubTypes(maybeUnionType).forEach(type => {
+      for (let type of getUnionSubTypes(maybeUnionType)) {
         type = resolveLateType(type)
         let typeName = getTypeNamesFromExplicitlyTypedUnion(type)
         if (!typeName.length) {
@@ -150,7 +140,7 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
           throw new Error(`invalid config schema type ${type}`)
         }
         typeNames.push(...typeName)
-      })
+      }
       return typeNames
     }
   }
@@ -179,39 +169,35 @@ export function isBareConfigurationSchemaType(
 export function isConfigurationSchemaType(
   thing: unknown,
 ): thing is AnyConfigurationSchemaType {
+  // written as a series of if-statements instead of a big logical because this
+  // construction gives much better debugging backtraces.
+
+  // also, note that the order of these statements matters, because for example
+  // some union types are also optional types
+
   if (!isType(thing)) {
     return false
-  }
-
-  // written as a series of if-statements instead of a big logical OR
-  // because this construction gives much better debugging backtraces.
-
-  // also, note that the order of these statements matters, because
-  // for example some union types are also optional types
-
-  if (isBareConfigurationSchemaType(thing)) {
+  } else if (isBareConfigurationSchemaType(thing)) {
     return true
-  }
-
-  if (isUnionType(thing)) {
+  } else if (isUnionType(thing)) {
     return getUnionSubTypes(thing).every(
       t => isConfigurationSchemaType(t) || t.name === 'undefined',
     )
-  }
-
-  if (isOptionalType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+  } else if (
+    isOptionalType(thing) &&
+    isConfigurationSchemaType(getSubType(thing))
+  ) {
     return true
-  }
-
-  if (isArrayType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+  } else if (
+    isArrayType(thing) &&
+    isConfigurationSchemaType(getSubType(thing))
+  ) {
     return true
-  }
-
-  if (isMapType(thing) && isConfigurationSchemaType(getSubType(thing))) {
+  } else if (isMapType(thing) && isConfigurationSchemaType(getSubType(thing))) {
     return true
+  } else {
+    return false
   }
-
-  return false
 }
 
 export function isConfigurationModel(

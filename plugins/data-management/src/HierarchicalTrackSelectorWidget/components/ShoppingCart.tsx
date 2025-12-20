@@ -1,24 +1,26 @@
-import React from 'react'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getEnv, getSession } from '@jbrowse/core/util'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import { Badge } from '@mui/material'
 import { observer } from 'mobx-react'
-import { MenuItem } from '@jbrowse/core/ui/Menu'
-import { getSession, getEnv } from '@jbrowse/core/util'
 
-// icons
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
-
-// locals
-import { HierarchicalTrackSelectorModel } from '../model'
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 const ShoppingCart = observer(function ({
   model,
 }: {
-  model: HierarchicalTrackSelectorModel
+  model: {
+    clearSelection: () => void
+    selection: AnyConfigurationModel[]
+  }
 }) {
+  const session = getSession(model)
   const { selection } = model
   const { pluginManager } = getEnv(model)
-  const session = getSession(model)
+  const { adminMode, sessionTracks } = session
+  const s = new Set<string>(sessionTracks?.map(t => t.trackId))
+  const canEdit = (t: string) => adminMode || s.has(t)
   const items = pluginManager.evaluateExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
     [],
@@ -28,10 +30,35 @@ const ShoppingCart = observer(function ({
   return selection.length ? (
     <CascadingMenuButton
       menuItems={[
-        { label: 'Clear', onClick: () => model.clearSelection() },
+        {
+          label: 'Clear selection',
+          onClick: () => {
+            model.clearSelection()
+          },
+        },
+        ...(selection.every(elt => canEdit(elt.trackId))
+          ? [
+              {
+                label: 'Delete tracks',
+                onClick: () => {
+                  for (const track of selection) {
+                    // @ts-expect-error
+                    session.deleteTrackConf?.(track)
+                  }
+                },
+              },
+            ]
+          : []),
+
         ...items.map(item => ({
           ...item,
-          ...('onClick' in item ? { onClick: () => item.onClick(model) } : {}),
+          ...('onClick' in item
+            ? {
+                onClick: () => {
+                  item.onClick(model)
+                },
+              }
+            : {}),
         })),
       ]}
     >

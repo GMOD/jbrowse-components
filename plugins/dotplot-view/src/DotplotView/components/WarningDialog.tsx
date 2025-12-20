@@ -1,11 +1,12 @@
-import React from 'react'
-import { DialogContent, DialogContentText } from '@mui/material'
+import { getConf } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
-import { DataGrid } from '@mui/x-data-grid'
-import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 import { measureGridWidth } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { DialogContent, DialogContentText } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
+import { observer } from 'mobx-react'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()({
   content: {
@@ -13,9 +14,38 @@ const useStyles = makeStyles()({
   },
 })
 
+interface Warning {
+  message: string
+  effect: string
+}
+
 interface TrackWarning {
   configuration: AnyConfigurationModel
-  displays: { warnings: { message: string; effect: string }[] }[]
+  displays: {
+    warnings: Warning[]
+  }[]
+}
+function getTrackWarnings({
+  trackWarnings,
+}: {
+  trackWarnings: TrackWarning[]
+}) {
+  const rows = [] as {
+    name: string
+    message: string
+    effect: string
+    id: string
+  }[]
+  for (const [i, trackWarning] of trackWarnings.entries()) {
+    const track = trackWarning
+    const name = getConf(track, 'name')
+    const d = track.displays[0]!
+    for (let j = 0; j < d.warnings.length; j++) {
+      const warning = d.warnings[j]!
+      rows.push({ name, ...warning, id: `${i}_${j}` })
+    }
+  }
+  return rows
 }
 
 const WarningDialog = observer(function WarningDialog({
@@ -26,20 +56,7 @@ const WarningDialog = observer(function WarningDialog({
   trackWarnings: TrackWarning[]
 }) {
   const { classes } = useStyles()
-  const rows = [] as {
-    name: string
-    message: string
-    effect: string
-    id: string
-  }[]
-  for (let i = 0; i < trackWarnings.length; i++) {
-    const track = trackWarnings[i]
-    const name = getConf(track, 'name')
-    for (let j = 0; j < track.displays[0].warnings.length; j++) {
-      const warning = track.displays[0].warnings[j]
-      rows.push({ name, ...warning, id: i + '_' + j })
-    }
-  }
+  const rows = getTrackWarnings({ trackWarnings })
   const columns = [
     { field: 'name' },
     { field: 'message', width: measureGridWidth(rows.map(r => r.message)) },

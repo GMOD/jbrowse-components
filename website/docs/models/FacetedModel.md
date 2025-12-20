@@ -3,14 +3,22 @@ id: facetedmodel
 title: FacetedModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/data-management/src/HierarchicalTrackSelectorWidget/facetedModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/facetedModel.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/facetedModel.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/FacetedModel.md)
+
+## Docs
 
 ### FacetedModel - Properties
 
@@ -30,7 +38,7 @@ filterText: types.optional(types.string, '')
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showSparse: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showSparse') || 'false'),
+        localStorageGetBoolean('facet-showSparse', false),
       )
 ```
 
@@ -41,7 +49,7 @@ showSparse: types.optional(types.boolean, () =>
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showFilters: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showFilters') || 'true'),
+        localStorageGetBoolean('facet-showFilters', true),
       )
 ```
 
@@ -52,7 +60,7 @@ showFilters: types.optional(types.boolean, () =>
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showOptions: types.optional(types.boolean, () =>
-        JSON.parse(localStorageGetItem('facet-showTableOptions') || 'false'),
+        localStorageGetBoolean('facet-showTableOptions', false),
       )
 ```
 
@@ -63,7 +71,7 @@ showOptions: types.optional(types.boolean, () =>
 IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 panelWidth: types.optional(types.number, () =>
-        JSON.parse(localStorageGetItem('facet-panelWidth') || '400'),
+        localStorageGetNumber('facet-panelWidth', 400),
       )
 ```
 
@@ -73,14 +81,14 @@ panelWidth: types.optional(types.number, () =>
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
 ```
 
 #### getter: rows
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: filteredNonMetadataKeys
@@ -97,6 +105,13 @@ string[] | readonly ["category", "adapter", "description"]
 any[]
 ```
 
+#### getter: filteredMetadataKeys
+
+```js
+// type
+any
+```
+
 #### getter: fields
 
 ```js
@@ -108,7 +123,7 @@ any[]
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 ### FacetedModel - Actions
@@ -124,7 +139,7 @@ setFilter: (key: string, value: string[]) => void
 
 ```js
 // type signature
-setPanelWidth: (width: number) => void
+setPanelWidth: (width: number) => number
 ```
 
 #### action: setUseShoppingCart
@@ -167,11 +182,4 @@ setShowFilters: (f: boolean) => void
 ```js
 // type signature
 setVisible: (args: Record<string, boolean>) => void
-```
-
-#### action: setWidths
-
-```js
-// type signature
-setWidths: (args: Record<string, number>) => void
 ```

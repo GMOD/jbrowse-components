@@ -1,13 +1,8 @@
-import React, { useState } from 'react'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  Input,
-  Typography,
-} from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import { useState } from 'react'
+
+import { ErrorMessage } from '@jbrowse/core/ui'
+import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
+import { DialogContentText, Input } from '@mui/material'
 const { ipcRenderer } = window.require('electron')
 
 const RenameQuickstartDialog = ({
@@ -23,57 +18,46 @@ const RenameQuickstartDialog = ({
   const [error, setError] = useState<unknown>()
 
   return (
-    <Dialog
-      open={!!quickstartToRename}
-      onClose={() => onClose(false)}
+    <ConfirmDialog
+      open
       title="Rename quickstart"
-    >
-      <DialogContent>
-        <DialogContentText>
-          Please enter a new name for the session:
-        </DialogContentText>
-        {quickstartNames.includes(newQuickstartName) ? (
-          <DialogContentText color="error">
-            There is already a session named &quot;{newQuickstartName}&quot;
-          </DialogContentText>
-        ) : null}
-        <Input
-          autoFocus
-          defaultValue={quickstartToRename}
-          onChange={event => setNewQuickstartName(event.target.value)}
-        />
-        {error ? (
-          <Typography color="error" variant="h6">{`${error}`}</Typography>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => onClose(false)} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={async () => {
-            try {
-              await ipcRenderer.invoke(
-                'renameQuickstart',
-                quickstartToRename,
-                newQuickstartName,
-              )
-              onClose(true)
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            }
-          }}
-          color="primary"
-          variant="contained"
-          disabled={
-            !quickstartToRename || quickstartNames.includes(newQuickstartName)
+      onCancel={() => {
+        onClose(false)
+      }}
+      onSubmit={async () => {
+        try {
+          if (quickstartNames.includes(newQuickstartName)) {
+            throw new Error('quickstart with this name already exists')
           }
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
+          await ipcRenderer.invoke(
+            'renameQuickstart',
+            quickstartToRename,
+            newQuickstartName,
+          )
+          onClose(true)
+        } catch (e) {
+          console.error(e)
+          setError(e)
+        }
+      }}
+    >
+      <DialogContentText>
+        Please enter a new name for the session:
+      </DialogContentText>
+      {quickstartNames.includes(newQuickstartName) ? (
+        <DialogContentText color="error">
+          There is already a session named &quot;{newQuickstartName}&quot;
+        </DialogContentText>
+      ) : null}
+      <Input
+        autoFocus
+        defaultValue={quickstartToRename}
+        onChange={event => {
+          setNewQuickstartName(event.target.value)
+        }}
+      />
+      {error ? <ErrorMessage error={error} /> : null}
+    </ConfirmDialog>
   )
 }
 

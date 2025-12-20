@@ -1,9 +1,6 @@
-import { when } from 'mobx'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-// locals
-import { CircularViewModel } from '../CircularView/models/model'
+import type { CircularViewModel } from '../CircularView/model'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 type CGV = CircularViewModel
 
@@ -18,30 +15,21 @@ export default function LaunchCircularViewF(pluginManager: PluginManager) {
     }: {
       session: AbstractSessionModel
       assembly?: string
-      loc: string
       tracks?: string[]
     }) => {
-      const { assemblyManager } = session
-      const view = session.addView('CircularView', {}) as CGV
-
-      await when(() => view.initialized)
-
       if (!assembly) {
         throw new Error(
           'No assembly provided when launching circular genome view',
         )
       }
 
-      const asm = await assemblyManager.waitForAssembly(assembly)
-      if (!asm) {
-        throw new Error(
-          `Assembly "${assembly}" not found when launching circular genome view`,
-        )
-      }
-
-      view.setDisplayedRegions(asm.regions || [])
-
-      tracks.forEach(track => view.showTrack(track))
+      // Use the init property to let the model handle initialization
+      session.addView('CircularView', {
+        init: {
+          assembly,
+          tracks,
+        },
+      }) as CGV
     },
   )
 }

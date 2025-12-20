@@ -1,8 +1,7 @@
-import React from 'react'
-import { Checkbox, FormControlLabel, FormGroup } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import SimpleField from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Checkbox, FormControlLabel, FormGroup } from '@mui/material'
 
 const useStyles = makeStyles()({
   compact: {
@@ -27,10 +26,9 @@ const flagNames = [
   'supplementary alignment',
 ]
 
-export default function AlignmentFlags(props: { feature: { flags: number } }) {
+export default function AlignmentFlags(props: { flags: number }) {
   const { classes } = useStyles()
-  const { feature } = props
-  const { flags } = feature
+  const { flags } = props
 
   return (
     <BaseCard {...props} title="Flags">

@@ -3,14 +3,22 @@ id: basefeaturewidget
 title: BaseFeatureWidget
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[packages/core/BaseFeatureWidget/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/BaseFeatureWidget/stateModelFactory.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/BaseFeatureWidget/stateModelFactory.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseFeatureWidget.md)
+
+## Docs
 
 displays data about features, allowing configuration callbacks to modify the
 contents of what is displayed
@@ -41,9 +49,9 @@ type: types.literal('BaseFeatureWidget')
 
 ```js
 // type signature
-IType<any, any, any>
+IType<SimpleFeatureSerialized, SimpleFeatureSerialized, SimpleFeatureSerialized>
 // code
-featureData: types.frozen()
+featureData: types.frozen<MaybeSerializedFeat>()
 ```
 
 #### property: formattedFields
@@ -59,9 +67,9 @@ formattedFields: types.frozen()
 
 ```js
 // type signature
-IType<any, any, any>
+IType<SimpleFeatureSerialized, SimpleFeatureSerialized, SimpleFeatureSerialized>
 // code
-unformattedFeatureData: types.frozen()
+unformattedFeatureData: types.frozen<MaybeSerializedFeat>()
 ```
 
 #### property: view
@@ -117,9 +125,18 @@ maxDepth: types.maybe(types.number)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{}, { intronBp: number; upDownBp: number; upperCaseCDS: boolean; } & { setUpDownBp(f: number): void; setIntronBp(f: number): void; setUpperCaseCDS(f: boolean): void; } & { afterAttach(): void; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized; mode: SequenceDisplayMode; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
+```
+
+#### property: descriptions
+
+```js
+// type signature
+IType<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>
+// code
+descriptions: types.frozen<Record<string, unknown> | undefined>()
 ```
 
 ### BaseFeatureWidget - Actions
@@ -128,7 +145,7 @@ sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 
 ```js
 // type signature
-setFeatureData: (featureData: Record<string, unknown>) => void
+setFeatureData: (featureData: SimpleFeatureSerialized) => void
 ```
 
 #### action: clearFeatureData
@@ -142,7 +159,7 @@ clearFeatureData: () => void
 
 ```js
 // type signature
-setFormattedData: (feat: Record<string, unknown>) => void
+setFormattedData: (feat: SimpleFeatureSerialized) => void
 ```
 
 #### action: setExtra

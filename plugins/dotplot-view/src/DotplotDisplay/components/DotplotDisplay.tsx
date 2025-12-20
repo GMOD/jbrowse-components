@@ -1,10 +1,8 @@
-import React from 'react'
-import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
-// locals
-import { DotplotDisplayModel } from '../stateModelFactory'
-import { DotplotViewModel } from '../../DotplotView/model'
+import type { DotplotViewModel } from '../../DotplotView/model'
+import type { DotplotDisplayModel } from '../stateModelFactory'
 
 const DotplotDisplay = observer(function DotplotDisplay(props: {
   model: DotplotDisplayModel

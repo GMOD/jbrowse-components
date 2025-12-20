@@ -1,10 +1,9 @@
-import React from 'react'
 import { observer } from 'mobx-react'
 
-// local
-import { LinearArcDisplayModel } from '../model'
-import BaseDisplayComponent from './BaseDisplayComponent'
 import Arcs from './Arcs'
+import BaseDisplayComponent from './BaseDisplayComponent'
+
+import type { LinearArcDisplayModel } from '../model'
 
 const LinearArcReactComponent = observer(function ({
   model,

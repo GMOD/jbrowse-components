@@ -1,13 +1,12 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
+
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import {
-  bindTrigger,
-  bindPopover,
-  usePopupState,
-} from 'material-ui-popup-state/hooks'
-import { MenuItem } from '@jbrowse/core/ui'
+
+import { bindPopover, bindTrigger, usePopupState } from './hooks'
+
+import type { MenuItemsGetter } from '@jbrowse/core/ui/CascadingMenu'
 
 const CascadingMenuButton = observer(function CascadingMenuButton({
   children,
@@ -19,18 +18,15 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   ...rest
 }: {
   children?: React.ReactElement
-  menuItems: MenuItem[]
+  menuItems: MenuItemsGetter
   closeAfterItemClick?: boolean
   stopPropagation?: boolean
   onClick?: () => void
   setOpen?: (arg: boolean) => void
   [key: string]: unknown
 }) {
-  const popupState = usePopupState({
-    popupId: 'viewMenu',
-    variant: 'popover',
-  })
-  const { onClick, onTouchStart, ...rest2 } = bindTrigger(popupState)
+  const popupState = usePopupState()
+  const { onClick, ...rest2 } = bindTrigger(popupState)
   const { isOpen } = popupState
   useEffect(() => {
     setOpen?.(isOpen)
@@ -46,22 +42,17 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
           onClick(event)
           onClickExtra?.()
         }}
-        onTouchStart={event => {
-          if (stopPropagation) {
-            event.stopPropagation()
-          }
-          onTouchStart(event)
-          onClickExtra?.()
-        }}
         {...rest2}
         {...rest}
-        disabled={menuItems.length === 0}
+        disabled={Array.isArray(menuItems) && menuItems.length === 0}
       >
         {children}
       </IconButton>
       <CascadingMenu
         {...bindPopover(popupState)}
-        onMenuItemClick={(_: unknown, callback: () => void) => callback()}
+        onMenuItemClick={(_: unknown, callback: () => void) => {
+          callback()
+        }}
         menuItems={menuItems}
         closeAfterItemClick={closeAfterItemClick}
         popupState={popupState}

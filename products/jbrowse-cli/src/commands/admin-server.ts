@@ -1,169 +1,117 @@
-import { Flags } from '@oclif/core'
-import path from 'path'
 import fs from 'fs'
-import crypto from 'crypto'
-import boxen from 'boxen'
-import chalk from 'chalk'
 import os from 'os'
-import express from 'express'
+import path from 'path'
+import { parseArgs } from 'util'
+
 import cors from 'cors'
-import JBrowseCommand from '../base'
+import express from 'express'
 
-function isValidPort(port: number) {
-  return port > 0 && port < 65535
-}
+import {
+  generateKey,
+  parsePort,
+  setupConfigFile,
+  setupRoutes,
+  startServer,
+} from './admin-server-utils'
+import { debug, printHelp } from '../utils'
 
-// generate a string of random alphanumeric characters to serve as admin key
-function generateKey() {
-  return crypto.randomBytes(5).toString('hex')
-}
+import type { Request, Response } from 'express'
 
-export default class AdminServer extends JBrowseCommand {
-  static description = 'Start up a small admin server for JBrowse configuration'
+export async function run(args?: string[]) {
+  const options = {
+    help: {
+      type: 'boolean',
+      short: 'h',
+    },
+    port: {
+      type: 'string',
+      short: 'p',
+      description: 'Specified port to start the server on (default: 9090)',
+    },
+    root: {
+      type: 'string',
+      description: 'Path to the root of the JB2 installation',
+    },
+    bodySizeLimit: {
+      type: 'string',
+      description: 'Size limit of the update message (default: 25mb)',
+    },
+  } as const
+  const { values: flags } = parseArgs({
+    args,
+    options,
+    allowPositionals: true,
+  })
 
-  static examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
+  const description = 'Start up a small admin server for JBrowse configuration'
 
-  static flags = {
-    port: Flags.string({
-      char: 'p',
-      description: 'Specifified port to start the server on;\nDefault is 9090.',
-    }),
-    root: Flags.string({
-      description:
-        'path to the root of the JB2 installation.\nCreates ./config.json if nonexistent. note that you can navigate to ?config=path/to/subconfig.json in the web browser and it will write to rootDir/path/to/subconfig.json',
-    }),
-    bodySizeLimit: Flags.string({
-      description:
-        'Size limit of the update message; may need to increase if config is large.\nArgument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.',
-      default: '25mb',
-    }),
+  const examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
 
-    help: Flags.help({ char: 'h' }),
-  }
-
-  async run() {
-    const { flags: runFlags } = await this.parse(AdminServer)
-    const { root, bodySizeLimit } = runFlags
-
-    const output = root || '.'
-    const isDir = fs.lstatSync(output).isDirectory()
-    const outFile = isDir ? `${output}/config.json` : output
-    const baseDir = path.dirname(outFile)
-
-    if (fs.existsSync(outFile)) {
-      this.debug(`Found existing config file ${outFile}`)
-    } else {
-      this.debug(`Creating config file ${outFile}`)
-      await this.writeJsonFile(outFile, {
-        assemblies: [],
-        configuration: {},
-        connections: [],
-        defaultSession: {
-          name: 'New Session',
-        },
-        tracks: [],
-      })
-    }
-
-    // start server with admin key in URL query string
-    let port = 9090
-    if (runFlags.port) {
-      if (!isValidPort(parseInt(runFlags.port, 10))) {
-        this.error(`${runFlags.port} is not a valid port`)
-      } else {
-        port = parseInt(runFlags.port, 10)
-      }
-    }
-    const app = express()
-    app.use(express.static(baseDir))
-    app.use(cors())
-
-    // POST route to save config
-    app.use(express.json({ limit: bodySizeLimit }))
-    app.post('/updateConfig', async (req, res) => {
-      if (adminKey === req.body.adminKey) {
-        this.debug('Admin key matches')
-        try {
-          // use directory traversal prevention
-          // https://nodejs.org/en/knowledge/file-system/security/introduction/#preventing-directory-traversal
-          const filename = req.body.configPath
-            ? path.join(baseDir, req.body.configPath)
-            : outFile
-          if (!filename.startsWith(baseDir)) {
-            throw new Error(
-              `Cannot perform directory traversal outside of ${baseDir}`,
-            )
-          }
-          await this.writeJsonFile(filename, req.body.config)
-          res.send('Config written to disk')
-        } catch (e) {
-          res.status(500).send(`Could not write config file ${e}`)
-        }
-      } else {
-        res.status(403).send('Admin key does not match')
-      }
+  if (flags.help) {
+    printHelp({
+      description,
+      examples,
+      usage: 'jbrowse admin-server [options]',
+      options,
     })
-
-    app.post(
-      '/shutdown',
-      async (req: express.Request, res: express.Response) => {
-        this.debug('Req body: ', req.body)
-        if (req.body.adminKey === adminKey) {
-          this.debug('Admin key matches')
-          res.send('Exiting')
-          server.close()
-        } else {
-          res.status(403).send('Admin key does not match')
-        }
-      },
-    )
-
-    const adminKey = generateKey()
-    const server = app.listen(port)
-    // Server message adapted from `serve`
-    // https://github.com/vercel/serve/blob/f65ac293c20058f809769a4dbf4951acc21df6df/bin/serve.js
-    const details = server.address()
-    let localAddress = ''
-    let networkAddress = ''
-
-    if (typeof details === 'string') {
-      localAddress = details
-    } else if (details && typeof details === 'object') {
-      const address = details.address === '::' ? 'localhost' : details.address
-      const ip = getNetworkAddress()
-
-      localAddress = `http://${address}:${details.port}?adminKey=${adminKey}`
-      if (ip) {
-        networkAddress = `http://${ip}:${details.port}?adminKey=${adminKey}`
-      }
-    }
-    let message = chalk.green(
-      'Now serving JBrowse\nNavigate to the below URL to configure',
-    )
-    if (localAddress) {
-      const prefix = networkAddress ? '- ' : ''
-      const space = networkAddress ? '            ' : '  '
-
-      message += `\n\n${chalk.bold(`${prefix}Local:`)}${space}${localAddress}`
-    }
-    if (networkAddress) {
-      message += `\n${chalk.bold('- On Your Network:')}  ${networkAddress}`
-    }
-    this.log(boxen(message, { padding: 1, borderColor: 'blue', margin: 1 }))
-    this.log(
-      `If you are running yarn start you can launch http://localhost:3000?adminKey=${adminKey}&adminServer=http://localhost:${port}/updateConfig`,
-    )
+    return
   }
-}
 
-function getNetworkAddress() {
-  for (const network of Object.values(os.networkInterfaces())) {
-    for (const networkInterface of network || []) {
-      const { address, family, internal } = networkInterface
-      if (family === 'IPv4' && !internal) {
-        return address
-      }
+  const { root, bodySizeLimit = '25mb' } = flags
+
+  const { outFile, baseDir } = await setupConfigFile({ root })
+
+  // Parse and validate port
+  const port = parsePort({ portStr: flags.port })
+
+  // Set up the Express server
+  // const { app, key, keyPath, serverRef } = setupServer({
+  //   baseDir,
+  //   outFile,
+  //   bodySizeLimit,
+  // })
+  const app = express()
+
+  // Configure middleware
+  app.use(express.static(baseDir))
+  app.use(cors())
+  app.use(express.json({ limit: bodySizeLimit }))
+
+  // Add error handling middleware
+  app.use((err: any, _req: Request, res: Response, next: () => void) => {
+    if (err) {
+      console.error('Server error:', err)
+      res.status(500).setHeader('Content-Type', 'text/plain')
+      res.send('Internal Server Error')
+    } else {
+      next()
     }
+  })
+
+  // Generate admin key and store it
+  const key = generateKey()
+  const keyPath = path.join(os.tmpdir(), `jbrowse-admin-${key}`)
+
+  try {
+    fs.writeFileSync(keyPath, key)
+    debug(`Admin key stored at ${keyPath}`)
+  } catch (error: any) {
+    console.error(`Failed to write admin key to ${keyPath}:`, error.message)
+    // Continue anyway, as this is not critical
   }
-  return undefined
+
+  // Create server reference for shutdown route
+  const serverRef = { current: null }
+
+  // Set up routes
+  setupRoutes({
+    app,
+    baseDir,
+    outFile,
+    key,
+    serverRef,
+  })
+
+  // Start the server and set up shutdown handlers
+  startServer({ app, port, key, outFile, keyPath, serverRef })
 }

@@ -1,0 +1,436 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`file types 1`] = `
+{
+  "bedLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.txt",
+  },
+  "type": "BedAdapter",
+}
+`;
+
+exports[`file types 2`] = `
+{
+  "bigBedLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bb",
+  },
+  "type": "BigBedAdapter",
+}
+`;
+
+exports[`file types 3`] = `
+{
+  "bigBedLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bigbed",
+  },
+  "type": "BigBedAdapter",
+}
+`;
+
+exports[`file types 4`] = `
+{
+  "bigBedLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bigbed",
+  },
+  "type": "BigBedAdapter",
+}
+`;
+
+exports[`file types 5`] = `
+{
+  "bigBedLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.txt",
+  },
+  "type": "BigBedAdapter",
+}
+`;
+
+exports[`file types 6`] = `
+{
+  "pafLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.paf",
+  },
+  "type": "PAFAdapter",
+}
+`;
+
+exports[`file types 7`] = `
+{
+  "pafLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.paf.gz",
+  },
+  "type": "PAFAdapter",
+}
+`;
+
+exports[`file types 8`] = `
+{
+  "chainLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.chain",
+  },
+  "type": "ChainAdapter",
+}
+`;
+
+exports[`file types 9`] = `
+{
+  "chainLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.chain.gz",
+  },
+  "type": "ChainAdapter",
+}
+`;
+
+exports[`file types 10`] = `
+{
+  "deltaLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.delta",
+  },
+  "type": "DeltaAdapter",
+}
+`;
+
+exports[`file types 11`] = `
+{
+  "deltaLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.delta.gz",
+  },
+  "type": "DeltaAdapter",
+}
+`;
+
+exports[`file types 12`] = `
+{
+  "outLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.out",
+  },
+  "type": "MashMapAdapter",
+}
+`;
+
+exports[`file types 13`] = `
+{
+  "outLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.out.gz",
+  },
+  "type": "MashMapAdapter",
+}
+`;
+
+exports[`file types 14`] = `
+{
+  "index": {
+    "indexType": "TBI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.pif.gz.tbi",
+    },
+  },
+  "pifGzLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.pif.gz",
+  },
+  "type": "PairwiseIndexedPAFAdapter",
+}
+`;
+
+exports[`file types 15`] = `
+{
+  "index": {
+    "indexType": "CSI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.pif.gz.csi",
+    },
+  },
+  "pifGzLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.pif.gz",
+  },
+  "type": "PairwiseIndexedPAFAdapter",
+}
+`;
+
+exports[`file types 16`] = `
+{
+  "type": "UNKNOWN",
+}
+`;
+
+exports[`file types 17`] = `
+{
+  "gtfLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.gtf",
+  },
+  "type": "GtfAdapter",
+}
+`;
+
+exports[`file types 18`] = `
+{
+  "gtfLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.gtf.gz",
+  },
+  "type": "GtfAdapter",
+}
+`;
+
+exports[`file types 19`] = `
+{
+  "bamLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.gff.gz",
+  },
+  "gffGzLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.gff.gz",
+  },
+  "index": {
+    "indexType": "TBI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.gff.gz.tbi",
+    },
+  },
+  "type": "Gff3TabixAdapter",
+}
+`;
+
+exports[`file types 20`] = `
+{
+  "bamLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.gff3.gz",
+  },
+  "gffGzLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.gff3.gz",
+  },
+  "index": {
+    "indexType": "TBI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.gff3.gz.tbi",
+    },
+  },
+  "type": "Gff3TabixAdapter",
+}
+`;
+
+exports[`file types 21`] = `
+{
+  "type": "UNKNOWN",
+}
+`;
+
+exports[`file types 22`] = `
+{
+  "bigWigLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bw",
+  },
+  "type": "BigWigAdapter",
+}
+`;
+
+exports[`file types 23`] = `
+{
+  "bigWigLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bigwig",
+  },
+  "type": "BigWigAdapter",
+}
+`;
+
+exports[`file types 24`] = `
+{
+  "hicLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.hic",
+  },
+  "type": "HicAdapter",
+}
+`;
+
+exports[`file types 25`] = `
+{
+  "mcscanAnchorsLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.anchors",
+  },
+  "type": "MCScanAnchorsAdapter",
+}
+`;
+
+exports[`file types 26`] = `
+{
+  "mcscanSimpleAnchorsLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.anchors.simple",
+  },
+  "type": "MCScanSimpleAnchorsAdapter",
+}
+`;
+
+exports[`file types 27`] = `
+{
+  "type": "VcfAdapter",
+  "vcfLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.vcf",
+  },
+}
+`;
+
+exports[`file types 28`] = `
+{
+  "index": {
+    "indexType": "TBI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.vcf.gz.tbi",
+    },
+  },
+  "type": "VcfTabixAdapter",
+  "vcfGzLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.vcf.gz",
+  },
+}
+`;
+
+exports[`file types 29`] = `
+{
+  "index": {
+    "indexType": "CSI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.vcf.gz.csi",
+    },
+  },
+  "type": "VcfTabixAdapter",
+  "vcfGzLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.vcf.gz",
+  },
+}
+`;
+
+exports[`file types 30`] = `
+{
+  "type": "UNKNOWN",
+}
+`;
+
+exports[`file types 31`] = `
+{
+  "bedLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bedMethyl",
+  },
+  "type": "BedAdapter",
+}
+`;
+
+exports[`file types 32`] = `
+{
+  "bedGraphLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bg",
+  },
+  "type": "BedGraphAdapter",
+}
+`;
+
+exports[`file types 33`] = `
+{
+  "bedGraphGzLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bg.gz",
+  },
+  "index": {
+    "indexType": "TBI",
+    "location": {
+      "locationType": "UriLocation",
+      "uri": "test.bg.gz.tbi",
+    },
+  },
+  "type": "BedGraphTabixAdapter",
+}
+`;
+
+exports[`file types 34`] = `
+{
+  "bedpeLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.bedpe",
+  },
+  "type": "BedpeAdapter",
+}
+`;
+
+exports[`file types 35`] = `
+{
+  "blastTableLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.tab",
+  },
+  "type": "BlastTabularAdapter",
+}
+`;
+
+exports[`file types 36`] = `
+{
+  "mcscanAnchorsLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.anchors",
+  },
+  "type": "MCScanAnchorsAdapter",
+}
+`;
+
+exports[`file types 37`] = `
+{
+  "mcscanAnchorsLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.anchors.gz",
+  },
+  "type": "MCScanAnchorsAdapter",
+}
+`;
+
+exports[`file types 38`] = `
+{
+  "mcscanSimpleAnchorsLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.anchors.simple",
+  },
+  "type": "MCScanSimpleAnchorsAdapter",
+}
+`;
+
+exports[`file types 39`] = `
+{
+  "mcscanSimpleAnchorsLocation": {
+    "locationType": "UriLocation",
+    "uri": "test.anchors.simple.gz",
+  },
+  "type": "MCScanSimpleAnchorsAdapter",
+}
+`;

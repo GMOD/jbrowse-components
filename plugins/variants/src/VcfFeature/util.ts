@@ -1,140 +1,139 @@
-import VCF, { parseBreakend } from '@gmod/vcf'
+import { parseBreakend } from '@gmod/vcf'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 
-const altTypeToSO: Record<string, string | undefined> = {
-  DEL: 'deletion',
-  INS: 'insertion',
-  DUP: 'duplication',
-  INV: 'inversion',
-  INVDUP: 'inverted duplication',
-  CNV: 'copy_number_variation',
-  TRA: 'translocation',
-  'DUP:TANDEM': 'tandem_duplication',
-  NON_REF: 'sequence_variant',
-  '*': 'sequence_variant',
+import type VCF from '@gmod/vcf'
+
+const genotypeDelimRegex = /[/|]/
+
+function isBreakend(alt: string) {
+  return (
+    alt.includes('[') ||
+    alt.includes(']') ||
+    alt.startsWith('.') ||
+    alt.endsWith('.')
+  )
 }
 
-/**
- * Get a sequence ontology (SO) term that describes the variant type
- */
+function isSymbolic(alt: string) {
+  return alt.startsWith('<') || isBreakend(alt)
+}
+
+function isInversion(ref: string, alt: string) {
+  return ref.split('').reverse().join('') === alt
+}
+
+const altTypeToSO: Record<string, string> = {
+  '<DEL>': 'deletion',
+  '<INS>': 'insertion',
+  '<DUP>': 'duplication',
+  '<INV>': 'inversion',
+  '<INVDUP>': 'inverted_duplication',
+  '<CNV>': 'copy_number_variation',
+  '<TRA>': 'translocation',
+  '<DUP:TANDEM>': 'tandem_duplication',
+  '<NON_REF>': 'sequence_variant',
+  '<*>': 'sequence_variant',
+}
+
 export function getSOTermAndDescription(
   ref: string,
-  alt: string[],
+  alt: string[] | undefined,
   parser: VCF,
 ): string[] {
-  // it's just a remark if there are no alternate alleles
   if (!alt || alt.length === 0) {
     return ['remark', 'no alternative alleles']
   }
 
-  const soTerms = new Set<string>()
-  let descriptions = new Set<string>()
-  alt.forEach(a => {
-    let [soTerm, description] = getSOAndDescFromAltDefs(a, parser)
-    if (!soTerm) {
-      ;[soTerm, description] = getSOAndDescByExamination(ref, a)
-    }
-    if (soTerm && description) {
-      soTerms.add(soTerm)
-      descriptions.add(description)
-    }
-  })
+  const soTerms = alt.map(a => getSOTerm(a, ref, parser))
+  const uniqueSoTerms = [...new Set(soTerms)]
+  const description = formatGroupDescription(ref, alt)
 
-  // Combine descriptions like ["SNV G -> A", "SNV G -> T"] to ["SNV G -> A,T"]
-  if (descriptions.size > 1) {
-    const descs = [...descriptions]
-    const prefixes = new Set(
-      descs.map(desc => {
-        const prefix = desc.split('->')
-        return prefix[1] ? prefix[0] : desc
-      }),
-    )
+  return [uniqueSoTerms.join(','), description]
+}
 
-    descriptions = new Set(
-      [...prefixes]
-        .map(r => r.trim())
-        .map(prefix => {
-          const suffixes = descs
-            .map(desc => desc.split('->').map(r => r.trim()))
-            .map(pref => (pref[1] && pref[0] === prefix ? pref[1] : ''))
-            .filter(f => !!f)
-
-          return suffixes.length ? `${prefix} -> ${suffixes.join(',')}` : prefix
-        }),
-    )
+function getSOTerm(alt: string, ref: string, parser: VCF): string {
+  // Symbolic alleles
+  if (alt.startsWith('<')) {
+    return findSOTerm(alt, parser) ?? 'variant'
   }
-  if (soTerms.size) {
-    return [[...soTerms].join(','), [...descriptions].join(',')]
+
+  // Breakends
+  if (isBreakend(alt) && parseBreakend(alt)) {
+    return 'breakend'
   }
-  return []
+
+  const lenRef = ref.length
+  const lenAlt = alt.length
+
+  if (lenRef === 1 && lenAlt === 1) {
+    return 'SNV'
+  } else if (lenRef === lenAlt) {
+    return isInversion(ref, alt) ? 'inversion' : 'substitution'
+  } else {
+    return lenRef < lenAlt ? 'insertion' : 'deletion'
+  }
+}
+
+function formatGroupDescription(ref: string, alts: string[]): string {
+  if (alts.every(isSymbolic)) {
+    return alts.join(',')
+  }
+
+  const lenRef = ref.length
+
+  return `${ref.length > 10 ? getBpDisplayStr(lenRef) : ref} -> ${alts.map(a => (a.length > 10 ? getBpDisplayStr(a.length) : a)).join(',')}`
+}
+
+function findSOTerm(alt: string, parser: VCF): string | undefined {
+  if (altTypeToSO[alt]) {
+    return altTypeToSO[alt]
+  }
+  if (parser.getMetadata('ALT', alt)) {
+    return 'sequence_variant'
+  }
+  // Try parent term by stripping last component, e.g. '<INS:ME>' -> '<INS>'
+  const parts = alt.slice(1, -1).split(':')
+  return parts.length > 1
+    ? findSOTerm(`<${parts.slice(0, -1).join(':')}>`, parser)
+    : undefined
 }
 
 export function getSOAndDescFromAltDefs(alt: string, parser: VCF): string[] {
-  if (typeof alt === 'string' && !alt.startsWith('<')) {
+  if (!alt.startsWith('<')) {
     return []
   }
 
-  // look for a definition with an SO type for this
-  let soTerm = altTypeToSO[alt]
-  // if no SO term but ALT is in metadata, assume sequence_variant
-  if (!soTerm && parser.getMetadata('ALT', alt)) {
-    soTerm = 'sequence_variant'
-  }
-  if (soTerm) {
-    return [soTerm, alt]
-  }
-
-  // try to look for a definition for a parent term if we can
-  const modAlt = alt.split(':')
-  if (modAlt.length > 1) {
-    return getSOAndDescFromAltDefs(`<${modAlt.slice(0, -1).join(':')}>`, parser)
-  }
-
-  // no parent
-  return []
+  const soTerm = findSOTerm(alt, parser)
+  return [soTerm ?? 'variant', alt]
 }
 
-// note: term SNV is used instead of SNP because SO definition of SNP says
-// abundance must be at least 1% in population, and can't be sure we meet
-// that
-export function getSOAndDescByExamination(ref: string, alt: string) {
-  const bnd = parseBreakend(alt)
-  if (bnd) {
-    return ['breakend', alt]
-  } else if (ref.length === 1 && alt.length === 1) {
-    return ['SNV', makeDescriptionString('SNV', ref, alt)]
-  } else if (alt === '<INS>') {
-    return ['insertion', alt]
-  } else if (alt === '<DEL>') {
-    return ['deletion', alt]
-  } else if (alt === '<INV>') {
-    return ['inversion', alt]
-  } else if (alt === '<TRA>') {
-    return ['translocation', alt]
-  } else if (alt.includes('<')) {
-    return ['sv', alt]
-  } else if (ref.length === alt.length) {
-    return ref.split('').reverse().join('') === alt
-      ? ['inversion', makeDescriptionString('inversion', ref, alt)]
-      : ['substitution', makeDescriptionString('substitution', ref, alt)]
-  } else if (ref.length <= alt.length) {
-    const len = alt.length - ref.length
-    const lena = len.toLocaleString('en-US')
-    return [
-      'insertion',
-      len > 5 ? lena + 'bp INS' : makeDescriptionString('insertion', ref, alt),
-    ]
-  } else if (ref.length > alt.length) {
-    const len = ref.length - alt.length
-    const lena = len.toLocaleString('en-US')
-    return [
-      'deletion',
-      len > 5 ? lena + 'bp DEL' : makeDescriptionString('deletion', ref, alt),
-    ]
+export function getMinimalDesc(ref: string, alt: string) {
+  if (isSymbolic(alt) || (ref.length === 1 && alt.length === 1)) {
+    return alt
   }
 
-  return ['indel', makeDescriptionString('indel', ref, alt)]
+  const lenRef = ref.length
+  const lenAlt = alt.length
+  const isLong = lenRef > 5 || lenAlt > 5
+
+  return isLong
+    ? `${getBpDisplayStr(lenRef)} -> ${getBpDisplayStr(lenAlt)}`
+    : `${ref} -> ${alt}`
 }
 
-function makeDescriptionString(soTerm: string, ref: string, alt: string) {
-  return `${soTerm} ${ref} -> ${alt}`
+export function makeSimpleAltString(
+  genotype: string,
+  ref: string,
+  alt: string[],
+) {
+  return genotype
+    .split(genotypeDelimRegex)
+    .map(r =>
+      r === '.'
+        ? '.'
+        : +r === 0
+          ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
+          : getMinimalDesc(ref, alt[+r - 1] || ''),
+    )
+    .join(genotype.includes('|') ? '|' : '/')
 }

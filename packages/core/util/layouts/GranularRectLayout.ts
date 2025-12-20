@@ -1,278 +1,223 @@
-import {
-  RectTuple,
-  SerializedLayout,
-  Rectangle,
+import type {
   BaseLayout,
+  RectTuple,
+  Rectangle,
+  SerializedLayout,
 } from './BaseLayout'
 
 /**
- * Rectangle-layout manager that lays out rectangles using bitmaps at
- * resolution that, for efficiency, may be somewhat lower than that of
- * the coordinate system for the rectangles being laid out.  `pitchX`
- * and `pitchY` are the ratios of input scale resolution to internal
- * bitmap resolution.
+ * See https://github.com/cmdcolin/track_layout_benchmark for information on
+ * alternative algorithms and benchmark information
  */
 
 // minimum excess size of the array at which we garbage collect
-const minSizeToBotherWith = 10000
 const maxFeaturePitchWidth = 20000
 
-function segmentsIntersect(
-  x1: number,
-  x2: number,
-  y1: number,
-  y2: number,
-): boolean {
-  return x2 >= y1 && y2 >= x1
-}
-
-type Bit<T> = Record<string, T> | string | undefined
-
-interface RowState<T> {
-  min: number
-  max: number
-  offset: number
-  bits: Bit<T>[]
-}
-// a single row in the layout
+// Optimized row class using flat interval array
 class LayoutRow<T> {
   private padding = 1
 
-  private allFilled?: Record<string, T> | string
+  public allFilled?: Record<string, T> | string
 
-  private widthLimit = 1_000_000
+  // Flat array: [start1, end1, start2, end2, ...]
+  // Kept sorted by start position for binary search
+  private intervals: number[] = []
 
-  private rowState?: RowState<T>
-
-  // this.rowState.bits is the array of items in the layout row, indexed by (x - this.offset)
-  // this.rowState.min is the leftmost edge of all the rectangles we have in the layout
-  // this.rowState.max is the rightmost edge of all the rectangles we have in the layout
-  // this.rowState.offset is the offset of the bits array relative to the genomic coordinates
-  //      (modified by pitchX, but we don't know that in this class)
+  // Parallel array storing data for each interval
+  private data: (Record<string, T> | string)[] = []
 
   setAllFilled(data: Record<string, T> | string): void {
     this.allFilled = data
+  }
+
+  getIntervals(): number[] {
+    return this.intervals
   }
 
   getItemAt(x: number): Record<string, T> | string | undefined {
     if (this.allFilled) {
       return this.allFilled
     }
-    if (
-      this.rowState?.min === undefined ||
-      x < this.rowState.min ||
-      x >= this.rowState.max
-    ) {
+
+    const intervals = this.intervals
+    const len = intervals.length
+
+    if (len === 0) {
       return undefined
     }
-    return this.rowState.bits[x - this.rowState.offset]
+
+    // Linear scan for small arrays
+    if (len < 40) {
+      for (let i = 0; i < len; i += 2) {
+        if (x >= intervals[i]! && x < intervals[i + 1]!) {
+          return this.data[i >> 1]
+        }
+      }
+      return undefined
+    }
+
+    // Binary search for larger arrays - find interval containing x
+    let low = 0
+    let high = len >> 1
+
+    while (low < high) {
+      const mid = (low + high) >>> 1
+      const midIdx = mid << 1
+      if (intervals[midIdx + 1]! <= x) {
+        low = mid + 1
+      } else {
+        high = mid
+      }
+    }
+
+    const idx = low << 1
+    if (idx < len && x >= intervals[idx]! && x < intervals[idx + 1]!) {
+      return this.data[low]
+    }
+    return undefined
   }
 
-  isRangeClear(left: number, right: number) {
+  isRangeClear(left: number, right: number): boolean {
     if (this.allFilled) {
       return false
     }
 
-    if (
-      this.rowState === undefined ||
-      right <= this.rowState.min ||
-      left >= this.rowState.max
-    ) {
+    const intervals = this.intervals
+    const len = intervals.length
+
+    // Empty row is always clear
+    if (len === 0) {
       return true
     }
-    const { min, max, offset, bits } = this.rowState
 
-    const maxX = Math.min(max, right) - offset
-    let flag = true
-    for (let x = Math.max(min, left) - offset; x < maxX && flag; x++) {
-      flag = bits[x] === undefined
+    // Linear scan for small arrays (better cache locality)
+    if (len < 40) {
+      for (let i = 0; i < len; i += 2) {
+        const start = intervals[i]!
+        const end = intervals[i + 1]!
+        // Intersection check: end > left && start < right
+        if (end > left && start < right) {
+          return false
+        }
+      }
+      return true
     }
 
-    return flag
-  }
+    // Binary search for larger arrays
+    // Find first interval whose end > left (first potential overlap)
+    let low = 0
+    let high = len >> 1
 
-  // NOTE: this.rowState.min, this.rowState.max, and this.rowState.offset are
-  // interbase coordinates
-  initialize(left: number, right: number): RowState<T> {
-    const rectWidth = right - left
-    return {
-      offset: left - rectWidth,
-      min: left,
-      max: right,
-      bits: Array.from({ length: 3 * rectWidth }),
+    while (low < high) {
+      const mid = (low + high) >>> 1
+      const midIdx = mid << 1
+      if (intervals[midIdx + 1]! <= left) {
+        low = mid + 1
+      } else {
+        high = mid
+      }
     }
+
+    // Check if found interval overlaps
+    const idx = low << 1
+    if (idx >= len) {
+      return true
+    }
+
+    // If the first candidate's start is >= right, no overlap possible
+    const start = intervals[idx]!
+    if (start >= right) {
+      return true
+    }
+
+    // This interval overlaps (we know end > left from binary search, and start < right)
+    return false
   }
 
   addRect(rect: Rectangle<T>, data: Record<string, T> | string): void {
     const left = rect.l
-    const right = rect.r + this.padding // only padding on the right
-    if (!this.rowState) {
-      this.rowState = this.initialize(left, right)
-    }
+    const right = rect.r + this.padding
+    const intervals = this.intervals
+    const len = intervals.length
 
-    // or check if we need to expand to the left and/or to the right
-    let oLeft = left - this.rowState.offset
-    let oRight = right - this.rowState.offset
-    const currLength = this.rowState.bits.length
-
-    // expand rightward if necessary
-    if (oRight >= this.rowState.bits.length) {
-      const additionalLength = oRight + 1
-      if (this.rowState.bits.length + additionalLength > this.widthLimit) {
-        console.warn(
-          'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
-        )
-        this.rowState = this.initialize(left, right)
-      } else if (additionalLength > 0) {
-        this.rowState.bits = [
-          ...this.rowState.bits,
-          ...Array.from<Bit<T>>({ length: additionalLength }),
-        ]
+    // Hybrid insertion strategy
+    if (len < 40) {
+      // Linear insertion for small arrays
+      let idx = len
+      for (let i = 0; i < len; i += 2) {
+        if (left < intervals[i]!) {
+          idx = i
+          break
+        }
       }
-    }
+      intervals.splice(idx, 0, left, right)
+      this.data.splice(idx >> 1, 0, data)
+    } else {
+      // Binary search insertion for larger arrays
+      let low = 0
+      let high = len >> 1
 
-    // expand leftward if necessary
-    if (left < this.rowState.offset) {
-      // use math.min to avoid negative lengths
-      const additionalLength = Math.min(
-        currLength - oLeft,
-        this.rowState.offset,
-      )
-      if (this.rowState.bits.length + additionalLength > this.widthLimit) {
-        console.warn(
-          'Layout width limit exceeded, discarding old layout. Please be more careful about discarding unused blocks.',
-        )
-
-        this.rowState = this.initialize(left, right)
-      } else {
-        this.rowState.bits = [
-          ...Array.from<Bit<T>>({ length: additionalLength }),
-          ...this.rowState.bits,
-        ]
-        this.rowState.offset -= additionalLength
+      while (low < high) {
+        const mid = (low + high) >>> 1
+        const midIdx = mid << 1
+        if (intervals[midIdx]! < left) {
+          low = mid + 1
+        } else {
+          high = mid
+        }
       }
-    }
-    oRight = right - this.rowState.offset
-    oLeft = left - this.rowState.offset
-    const w = oRight - oLeft
 
-    if (w > maxFeaturePitchWidth) {
-      console.warn(
-        `Layout X pitch set too low, feature spans ${w} bits in a single row.`,
-        rect,
-        data,
-      )
-    }
-
-    for (let x = oLeft; x < oRight; x += 1) {
-      this.rowState.bits[x] = data
-    }
-
-    if (left < this.rowState.min) {
-      this.rowState.min = left
-    }
-    if (right > this.rowState.max) {
-      this.rowState.max = right
+      intervals.splice(low << 1, 0, left, right)
+      this.data.splice(low, 0, data)
     }
   }
 
-  /**
-   *  Given a range of interbase coordinates, deletes all data dealing with that range
-   */
   discardRange(left: number, right: number): void {
     if (this.allFilled) {
       return
-    } // allFilled is irrevocable currently
-
-    // if we have no data, do nothing
-    if (!this.rowState) {
-      return
     }
 
-    // if doesn't overlap at all, do nothing
-    if (right <= this.rowState.min || left >= this.rowState.max) {
-      return
+    const intervals = this.intervals
+    const data = this.data
+    const oldLen = intervals.length
+    const newIntervals: number[] = []
+    const newData: (Record<string, T> | string)[] = []
+
+    for (let i = 0; i < oldLen; i += 2) {
+      const start = intervals[i]!
+      const end = intervals[i + 1]!
+      const intervalData = data[i >> 1]!
+
+      // If interval is completely within discard range, skip it
+      if (start >= left && end <= right) {
+        continue
+      }
+      // If no overlap, keep it
+      if (end <= left || start >= right) {
+        newIntervals.push(start, end)
+        newData.push(intervalData)
+      }
+      // If interval overlaps left edge
+      else if (start < left && end > left) {
+        if (end <= right) {
+          // Trim from the right
+          newIntervals.push(start, left)
+          newData.push(intervalData)
+        } else {
+          // Interval spans the entire discard range, split it
+          newIntervals.push(start, left, right, end)
+          newData.push(intervalData, intervalData)
+        }
+      }
+      // If interval overlaps right edge only
+      else if (start < right && end > right) {
+        newIntervals.push(right, end)
+        newData.push(intervalData)
+      }
     }
 
-    // if completely encloses range, discard everything
-    if (left <= this.rowState.min && right >= this.rowState.max) {
-      this.rowState = undefined
-      return
-    }
-
-    // if overlaps left edge, adjust the min
-    if (right > this.rowState.min && left <= this.rowState.min) {
-      this.rowState.min = right
-    }
-
-    // if overlaps right edge, adjust the max
-    if (left < this.rowState.max && right >= this.rowState.max) {
-      this.rowState.max = left
-    }
-
-    // now trim the left, right, or both sides of the array
-    if (
-      this.rowState.offset < this.rowState.min - minSizeToBotherWith &&
-      this.rowState.bits.length >
-        this.rowState.max + minSizeToBotherWith - this.rowState.offset
-    ) {
-      // trim both sides
-      const leftTrimAmount = this.rowState.min - this.rowState.offset
-      const rightTrimAmount =
-        this.rowState.bits.length -
-        1 -
-        (this.rowState.max - this.rowState.offset)
-      // if (rightTrimAmount <= 0) debugger
-      // if (leftTrimAmount <= 0) debugger
-      // this.log(`trim both sides, ${leftTrimAmount} from left, ${rightTrimAmount} from right`)
-      this.rowState.bits = this.rowState.bits.slice(
-        leftTrimAmount,
-        this.rowState.bits.length - rightTrimAmount,
-      )
-      this.rowState.offset += leftTrimAmount
-      // if (this.rowState.offset > this.rowState.min) debugger
-      // if (this.rowState.bits.length <= this.rowState.max - this.rowState.offset) debugger
-    } else if (this.rowState.offset < this.rowState.min - minSizeToBotherWith) {
-      // trim left side
-      const desiredOffset =
-        this.rowState.min - Math.floor(minSizeToBotherWith / 2)
-      const trimAmount = desiredOffset - this.rowState.offset
-      // this.log(`trim left side by ${trimAmount}`)
-      this.rowState.bits.splice(0, trimAmount)
-      this.rowState.offset += trimAmount
-      // if (this.rowState.offset > this.rowState.min) debugger
-      // if (this.rowState.bits.length <= this.rowState.max - this.rowState.offset) debugger
-    } else if (
-      this.rowState.bits.length >
-      this.rowState.max - this.rowState.offset + minSizeToBotherWith
-    ) {
-      // trim right side
-      const desiredLength =
-        this.rowState.max -
-        this.rowState.offset +
-        1 +
-        Math.floor(minSizeToBotherWith / 2)
-      // this.log(`trim right side by ${this.rowState.bits.length-desiredLength}`)
-      // if (desiredLength > this.rowState.bits.length) debugger
-      this.rowState.bits.length = desiredLength
-      // if (this.rowState.offset > this.rowState.min) debugger
-      // if (this.rowState.bits.length <= this.rowState.max - this.rowState.offset) debugger
-    }
-
-    // if (this.rowState.offset > this.rowState.min) debugger
-    // if (this.rowState.bits.length <= this.rowState.max - this.rowState.offset) debugger
-
-    // if range now enclosed in the new bounds, loop through and clear the bits
-    const oLeft = Math.max(this.rowState.min, left) - this.rowState.offset
-    // if (oLeft < 0) debugger
-    // if (oLeft >= this.rowState.bits.length) debugger
-    // if (oRight < 0) debugger
-    // if (oRight >= this.rowState.bits.length) debugger
-
-    const oRight = Math.min(right, this.rowState.max) - this.rowState.offset
-    for (let x = oLeft; x >= 0 && x < oRight; x += 1) {
-      this.rowState.bits[x] = undefined
-    }
+    this.intervals = newIntervals
+    this.data = newData
   }
 }
 
@@ -334,6 +279,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   /**
    * @returns top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
+   * @param startingRow - Optional hint (in pixels) for where to start searching for free space.
+   *  Use when you know features overlap (e.g., sorted reads at the same position).
+   *  The hint is only used as a starting point; collision detection still verifies.
    */
   addRect(
     id: string,
@@ -341,10 +289,22 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     right: number,
     height: number,
     data?: T,
+    serializableData?: T,
+    startingRow?: number,
   ): number | null {
+    const pitchX = this.pitchX
+    const pitchY = this.pitchY
+
     // if we have already laid it out, return its layout
     const storedRec = this.rectangles.get(id)
     if (storedRec) {
+      // Update serializableData even if rect already exists
+      // This is needed when config changes (e.g., showSubfeatureLabels toggle)
+      // cause the same rect to be added with different metadata
+      if (serializableData !== undefined) {
+        storedRec.serializableData = serializableData
+      }
+
       if (storedRec.top === null) {
         return null
       }
@@ -352,12 +312,14 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       // add it to the bitmap again, since that bitmap range may have been
       // discarded
       this.addRectToBitmap(storedRec)
-      return storedRec.top * this.pitchY
+      return storedRec.top * pitchY
     }
 
-    const pLeft = Math.floor(left / this.pitchX)
-    const pRight = Math.floor(right / this.pitchX)
-    const pHeight = Math.ceil(height / this.pitchY)
+    // Use Math.trunc for fast floor operation that works with large coordinates
+    // (bitwise | 0 overflows above 2^31, causing layout issues with large genomic coordinates)
+    const pLeft = Math.trunc(left / pitchX)
+    const pRight = Math.trunc(right / pitchX)
+    const pHeight = Math.ceil(height / pitchY)
 
     const rectangle: Rectangle<T> = {
       id,
@@ -367,15 +329,79 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       h: pHeight,
       originalHeight: height,
       data,
+      serializableData,
     }
 
     const maxTop = this.maxHeight - pHeight
-    let top = 0
+    // Use startingRow hint if provided (in pixels), convert to pitch rows
+    let top =
+      startingRow !== undefined
+        ? Math.min(Math.floor(startingRow / pitchY), maxTop)
+        : 0
+
     if (this.displayMode !== 'collapse') {
-      for (; top <= maxTop; top += 1) {
-        if (!this.collides(rectangle, top)) {
-          break
+      // OPTIMIZATION: Inline collision checking for hot path
+      // Eliminates function call overhead which is critical at 100k+ features
+      const bitmap = this.bitmap
+
+      outer: for (; top <= maxTop; top += 1) {
+        // Check all rows that this rectangle would occupy
+        const maxY = top + pHeight
+        for (let y = top; y < maxY; y += 1) {
+          const row = bitmap[y]
+
+          // Fast path: no row created yet
+          if (!row) {
+            continue
+          }
+
+          // Fast path: row is all filled
+          if (row.allFilled) {
+            continue outer
+          }
+
+          // Fully inlined isRangeClear for maximum performance
+          const intervals = row.getIntervals()
+          const len = intervals.length
+
+          if (len > 0) {
+            if (len < 40) {
+              // Linear scan for small arrays
+              for (let i = 0; i < len; i += 2) {
+                const start = intervals[i]!
+                const end = intervals[i + 1]!
+                if (end > pLeft && start < pRight) {
+                  continue outer
+                }
+              }
+            } else {
+              // Binary search for larger arrays
+              let low = 0
+              let high = len >> 1
+
+              while (low < high) {
+                const mid = (low + high) >>> 1
+                const midIdx = mid << 1
+                if (intervals[midIdx + 1]! <= pLeft) {
+                  low = mid + 1
+                } else {
+                  high = mid
+                }
+              }
+
+              const idx = low << 1
+              if (idx < len) {
+                const start = intervals[idx]!
+                if (start < pRight) {
+                  continue outer
+                }
+              }
+            }
+          }
         }
+
+        // No collision found in any row
+        break
       }
 
       if (top > maxTop) {
@@ -385,11 +411,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         return null
       }
     }
+
     rectangle.top = top
     this.addRectToBitmap(rectangle)
     this.rectangles.set(id, rectangle)
     this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
-    return top * this.pitchY
+    return top * pitchY
   }
 
   collides(rect: Rectangle<T>, top: number) {
@@ -406,25 +433,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return false
   }
 
-  /**
-   * make a subarray if it does not exist
-   */
-  private autovivifyRow(bitmap: LayoutRow<T>[], y: number) {
-    let row = bitmap[y]
-    if (!row) {
-      if (y > this.hardRowLimit) {
-        throw new Error(
-          `layout hard limit (${
-            this.hardRowLimit * this.pitchY
-          }px) exceeded, aborting layout`,
-        )
-      }
-      row = new LayoutRow()
-      bitmap[y] = row
-    }
-    return row
-  }
-
   addRectToBitmap(rect: Rectangle<T>) {
     if (rect.top === null) {
       return
@@ -432,6 +440,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     const data = rect.id
     const yEnd = rect.top + rect.h
+    const bitmap = this.bitmap
+    const hardRowLimit = this.hardRowLimit
+    const pitchY = this.pitchY
+
     if (rect.r - rect.l > maxFeaturePitchWidth) {
       // the rect is very big in relation to the view size, just pretend, for
       // the purposes of layout, that it extends infinitely.  this will cause
@@ -439,11 +451,31 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       // along the genome at the same zoom level.  but most users will not do
       // that.  hopefully.
       for (let y = rect.top; y < yEnd; y += 1) {
-        this.autovivifyRow(this.bitmap, y).setAllFilled(data)
+        let row = bitmap[y]
+        if (!row) {
+          if (y > hardRowLimit) {
+            throw new Error(
+              `layout hard limit (${hardRowLimit * pitchY}px) exceeded, aborting layout`,
+            )
+          }
+          row = new LayoutRow()
+          bitmap[y] = row
+        }
+        row.setAllFilled(data)
       }
     } else {
       for (let y = rect.top; y < yEnd; y += 1) {
-        this.autovivifyRow(this.bitmap, y).addRect(rect, data)
+        let row = bitmap[y]
+        if (!row) {
+          if (y > hardRowLimit) {
+            throw new Error(
+              `layout hard limit (${hardRowLimit * pitchY}px) exceeded, aborting layout`,
+            )
+          }
+          row = new LayoutRow()
+          bitmap[y] = row
+        }
+        row.addRect(rect, data)
       }
     }
   }
@@ -453,14 +485,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
    *  the features.
    */
   discardRange(left: number, right: number) {
-    // console.log( 'discard', left, right );
-    const pLeft = Math.floor(left / this.pitchX)
-    const pRight = Math.floor(right / this.pitchX)
+    const pLeft = Math.trunc(left / this.pitchX)
+    const pRight = Math.trunc(right / this.pitchX)
     const { bitmap } = this
     for (const row of bitmap) {
-      if (row) {
-        row.discardRange(pLeft, pRight)
-      }
+      row.discardRange(pLeft, pRight)
     }
   }
 
@@ -469,12 +498,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   getByCoord(x: number, y: number) {
-    const pY = Math.floor(y / this.pitchY)
+    const pY = Math.trunc(y / this.pitchY)
     const row = this.bitmap[pY]
     if (!row) {
       return undefined
     }
-    const pX = Math.floor(x / this.pitchX)
+    const pX = Math.trunc(x / this.pitchX)
     return row.getItemAt(pX)
   }
 
@@ -508,39 +537,45 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   getRectangles(): Map<string, RectTuple> {
+    const pitchX = this.pitchX
+    const pitchY = this.pitchY
+    // @ts-expect-error
     return new Map(
       [...this.rectangles.entries()].map(([id, rect]) => {
-        const { l, r, originalHeight, top } = rect
-        const t = (top || 0) * this.pitchY
+        const { l, r, originalHeight, top, serializableData } = rect
+        const t = (top || 0) * pitchY
         const b = t + originalHeight
-        return [id, [l * this.pitchX, t, r * this.pitchX, b]] // left, top, right, bottom
+        return [id, [l * pitchX, t, r * pitchX, b, serializableData]] // left, top, right, bottom
       }),
     )
   }
 
   serializeRegion(region: { start: number; end: number }): SerializedLayout {
+    const pitchX = this.pitchX
+    const pitchY = this.pitchY
+    const x1 = region.start
+    const x2 = region.end
     const regionRectangles: Record<string, RectTuple> = {}
     let maxHeightReached = false
+
     for (const [id, rect] of this.rectangles.entries()) {
       const { l, r, originalHeight, top } = rect
-      if (rect.top === null) {
+      if (top === null) {
         maxHeightReached = true
       } else {
-        const t = (top || 0) * this.pitchY
+        const t = top * pitchY
         const b = t + originalHeight
-        const y1 = l * this.pitchX
-        const y2 = r * this.pitchX
-        const x1 = region.start
-        const x2 = region.end
+        const y1 = l * pitchX
+        const y2 = r * pitchX
         // add +/- pitchX to avoid resolution causing errors
-        if (segmentsIntersect(x1, x2, y1 - this.pitchX, y2 + this.pitchX)) {
-          regionRectangles[id] = [y1, t, y2, b]
+        if (x2 >= y1 - pitchX && y2 + pitchX >= x1) {
+          // @ts-expect-error
+          regionRectangles[id] = [y1, t, y2, b, rect.serializableData]
         }
       }
     }
     return {
       rectangles: regionRectangles,
-      containsNoTransferables: true,
       totalHeight: this.getTotalHeight(),
       maxHeightReached,
     }
@@ -550,7 +585,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const rectangles = Object.fromEntries(this.getRectangles())
     return {
       rectangles,
-      containsNoTransferables: true,
       totalHeight: this.getTotalHeight(),
       maxHeightReached: this.maxHeightReached,
     }

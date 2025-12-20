@@ -1,16 +1,15 @@
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
-// locals
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { RenderArgs } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { renameRegionsIfNeeded, Region } from '../../util'
-import SimpleFeature, {
-  SimpleFeatureSerialized,
-} from '../../util/simpleFeature'
+import { renameRegionsIfNeeded } from '../../util'
+import SimpleFeature from '../../util/simpleFeature'
+
+import type { RenderArgs } from './util'
+import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
+import type { Region } from '../../util'
+import type { SimpleFeatureSerialized } from '../../util/simpleFeature'
 
 export default class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'
@@ -42,25 +41,35 @@ export default class CoreGetFeatures extends RpcMethodType {
     args: {
       sessionId: string
       regions: Region[]
-      adapterConfig: {}
-      signal?: RemoteAbortSignal
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      adapterConfig: Record<string, unknown>
+      statusCallback: (arg: string) => void
+      stopToken?: string
       opts?: any
     },
     rpcDriver: string,
   ) {
-    const pm = this.pluginManager
-    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { signal, sessionId, adapterConfig, regions, opts } = deserializedArgs
-    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    if (!isFeatureAdapter(dataAdapter)) {
-      throw new Error('Adapter does not support retrieving features')
-    }
-    const ret = dataAdapter.getFeaturesInMultipleRegions(regions, {
-      ...opts,
-      signal,
-    })
-    const r = await firstValueFrom(ret.pipe(toArray()))
+    const {
+      stopToken,
+      statusCallback,
+      sessionId,
+      adapterConfig,
+      regions,
+      opts,
+    } = await this.deserializeArguments(args, rpcDriver)
+
+    const dataAdapter = (
+      await getAdapter(this.pluginManager, sessionId, adapterConfig)
+    ).dataAdapter as BaseFeatureDataAdapter
+
+    const r = await firstValueFrom(
+      dataAdapter
+        .getFeaturesInMultipleRegions(regions, {
+          ...opts,
+          statusCallback,
+          stopToken,
+        })
+        .pipe(toArray()),
+    )
     return r.map(f => f.toJSON())
   }
 }

@@ -1,10 +1,27 @@
+import { lazy } from 'react'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-export const configSchema = ConfigurationSchema('HelpWidget', {})
+import type PluginManager from '@jbrowse/core/PluginManager'
 
-export const stateModel = types.model('HelpWidget', {
+const configSchema = ConfigurationSchema('HelpWidget', {})
+
+const stateModel = types.model('HelpWidget', {
   id: ElementId,
   type: types.literal('HelpWidget'),
 })
+
+export default function HelpWidgetF(pluginManager: PluginManager) {
+  pluginManager.addWidgetType(() => {
+    return new WidgetType({
+      name: 'HelpWidget',
+      heading: 'Help',
+      configSchema,
+      stateModel,
+      ReactComponent: lazy(() => import('./components/HelpWidget')),
+    })
+  })
+}

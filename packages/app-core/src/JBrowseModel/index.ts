@@ -1,16 +1,14 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import { cast, getParent, getSnapshot } from 'mobx-state-tree'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { cast, getParent, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { toJS } from 'mobx'
 
-// locals
 import { JBrowseConfigF } from '../JBrowseConfig'
+
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 /**
  * #stateModel AppCoreJBrowseModel
@@ -27,6 +25,7 @@ export function JBrowseModelF({
   pluginManager,
   assemblyConfigSchema,
 }: {
+  adminMode?: boolean
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
@@ -42,7 +41,6 @@ export function JBrowseModelF({
        * #getter
        */
       get rpcManager(): RpcManager {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))
@@ -82,13 +80,13 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      addTrackConf(trackConf: AnyConfigurationModel) {
+      addTrackConf(trackConf: { trackId: string; type: string }) {
         const { type } = trackConf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        const length = self.tracks.push(trackConf)
-        return self.tracks[length - 1]
+        self.tracks = [...self.tracks, trackConf]
+        return self.tracks.at(-1)
       },
       /**
        * #action
@@ -111,16 +109,31 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      deleteTrackConf(trackConf: AnyConfigurationModel) {
-        const elt = self.tracks.find(t => t.trackId === trackConf.trackId)
-        return self.tracks.remove(elt)
+      deleteTrackConf(trackConf: AnyConfigurationModel | { trackId: string }) {
+        const trackId = trackConf.trackId
+        self.tracks = self.tracks.filter(t => t.trackId !== trackId)
+      },
+      /**
+       * #action
+       * Updates an existing track configuration. Used to sync editable configs
+       * back to the frozen tracks array.
+       */
+      updateTrackConf(trackConf: { trackId: string; [key: string]: unknown }) {
+        const { trackId } = trackConf
+        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+        if (idx !== -1) {
+          // Replace the track at that index
+          const newTracks = [...self.tracks]
+          newTracks[idx] = trackConf
+          self.tracks = newTracks
+        }
       },
       /**
        * #action
        */
       addPlugin(pluginDefinition: PluginDefinition) {
         self.plugins.push(pluginDefinition)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const rootModel = getParent<any>(self)
         rootModel.setPluginsUpdated(true)
       },
@@ -131,13 +144,17 @@ export function JBrowseModelF({
         self.plugins = cast(
           self.plugins.filter(
             plugin =>
+              // @ts-expect-error
               plugin.url !== pluginDefinition.url ||
+              // @ts-expect-error
               plugin.umdUrl !== pluginDefinition.umdUrl ||
+              // @ts-expect-error
               plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              // @ts-expect-error
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         getParent<any>(self).setPluginsUpdated(true)
       },
 
@@ -146,7 +163,6 @@ export function JBrowseModelF({
        */
       setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
         const newDefault =
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           getParent<any>(self).session.name === sessionConf.name
             ? getSnapshot(sessionConf)
             : toJS(sessionConf)

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
-// locals
-import { ImportWizardModel } from '../models/ImportWizard'
+import type { ImportWizardModel } from '../ImportWizard'
 
 const useStyles = makeStyles()({
   textField: {
@@ -43,7 +43,9 @@ const NumberEditor = observer(function ({
       value={val}
       disabled={disabled}
       type="number"
-      onChange={evt => setVal(evt.target.value)}
+      onChange={evt => {
+        setVal(evt.target.value)
+      }}
       className={classes.textField}
     />
   )

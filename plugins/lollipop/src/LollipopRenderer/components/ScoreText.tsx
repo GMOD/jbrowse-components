@@ -1,10 +1,8 @@
-import React from 'react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
-import { Feature } from '@jbrowse/core/util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 export default function ScoreText({
   feature,
@@ -31,7 +29,11 @@ export default function ScoreText({
   }
   return (
     <text
-      style={{ fontSize: fontHeight, fill: contrastingTextColor(innerColor) }}
+      style={{
+        pointerEvents: 'none',
+        fontSize: fontHeight,
+        fill: contrastingTextColor(innerColor),
+      }}
       x={anchorX}
       y={y + radiusPx - fontHeight / 2.4}
       textAnchor="middle"

@@ -1,112 +1,128 @@
-import React, { useState } from 'react'
-import { IconButton, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
-import { observer } from 'mobx-react'
-import { Menu } from '@jbrowse/core/ui'
+import { useState } from 'react'
 
-// icons
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-
-// locals
-import { LinearComparativeViewModel } from '../model'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import SearchIcon from '@mui/icons-material/Search'
+import { FormGroup } from '@mui/material'
+import { observer } from 'mobx-react'
 
-type LCV = LinearComparativeViewModel
+import ColorBySelector from './ColorBySelector'
+import HeaderSearchBoxes from './HeaderSearchBoxes'
+import MinLengthSlider from './MinLengthSlider'
+import OpacitySlider from './OpacitySlider'
 
-const useStyles = makeStyles()(() => ({
-  headerBar: {
-    gridArea: '1/1/auto/span 2',
-    display: 'flex',
-  },
-  spacer: {
-    flexGrow: 1,
-  },
-  iconButton: {
-    margin: 5,
-  },
-  bp: {
-    display: 'flex',
-    alignItems: 'center',
-    marginLeft: 10,
-  },
-  searchContainer: {
-    marginLeft: 5,
-  },
-  searchBox: {
-    display: 'flex',
-  },
-}))
+import type { LinearComparativeViewModel } from '../model'
 
-const TrackSelector = observer(({ model }: { model: LCV }) => {
-  return (
-    <CascadingMenuButton
-      menuItems={[
-        {
-          label: 'Synteny track selector',
-          onClick: () => model.activateTrackSelector(),
-        },
-        ...model.views.map((view, idx) => ({
-          label: `View ${idx + 1} track selector`,
-          onClick: () => view.activateTrackSelector(),
-        })),
-      ]}
-    >
-      <TrackSelectorIcon />
-    </CascadingMenuButton>
-  )
+const useStyles = makeStyles()({
+  inline: {
+    display: 'inline-flex',
+  },
 })
 
-const Header = observer(function ({ model }: { model: LCV }) {
+const Header = observer(function ({
+  model,
+}: {
+  model: LinearComparativeViewModel
+}) {
   const { classes } = useStyles()
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement>()
-  const anyShowHeaders = model.views.some(view => !view.hideHeader)
-  return (
-    <div className={classes.headerBar}>
-      <TrackSelector model={model} />
+  const { views, levels, showDynamicControls } = model
+  const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
+  const [sideBySide, setSideBySide] = useState(views.length <= 3)
 
-      <IconButton
-        onClick={event => setMenuAnchorEl(event.currentTarget)}
-        className={classes.iconButton}
+  // Check if we have any displays to show sliders
+  const hasDisplays = levels[0]?.tracks[0]?.displays[0]
+
+  return (
+    <FormGroup row>
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Synteny track selectors',
+            type: 'subMenu',
+            subMenu: views.slice(0, -1).map((_, idx) => ({
+              label: `Row ${idx + 1}->${idx + 2} (${views[idx]!.assemblyNames.join(',')}->${views[idx + 1]!.assemblyNames.join(',')})`,
+              onClick: () => {
+                model.activateTrackSelector(idx)
+              },
+            })),
+          },
+
+          {
+            label: 'Row track selectors',
+            type: 'subMenu',
+            subMenu: views.map((view, idx) => ({
+              label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
+              onClick: () => view.activateTrackSelector(),
+            })),
+          },
+        ]}
+      >
+        <TrackSelectorIcon />
+      </CascadingMenuButton>
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Row view menus',
+            type: 'subMenu',
+            subMenu: views.map((view, idx) => ({
+              label: `View ${idx + 1} Menu`,
+              subMenu: view.menuItems(),
+            })),
+          },
+          ...model.headerMenuItems(),
+        ]}
       >
         <MoreVertIcon />
-      </IconButton>
-      {!anyShowHeaders
-        ? model.views.map(view => (
-            <div key={view.id} className={classes.searchBox}>
-              <div className={classes.searchContainer}>
-                <SearchBox model={view} showHelp={false} />
-              </div>
-              <div className={classes.bp}>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  className={classes.bp}
-                >
-                  {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp
-                </Typography>
-              </div>
-            </div>
-          ))
-        : null}
+      </CascadingMenuButton>
+      <CascadingMenuButton
+        menuItems={[
+          {
+            label: 'Show search boxes',
+            type: 'checkbox',
+            checked: showSearchBoxes,
+            onClick: () => {
+              setShowSearchBoxes(!showSearchBoxes)
+            },
+          },
+          {
+            label: 'Orientation - Side-by-side',
+            type: 'radio',
+            checked: sideBySide,
+            onClick: () => {
+              setSideBySide(!sideBySide)
+            },
+          },
+          {
+            label: 'Orientation - Vertical',
+            type: 'radio',
+            checked: !sideBySide,
+            onClick: () => {
+              setSideBySide(!sideBySide)
+            },
+          },
+        ]}
+      >
+        <SearchIcon />
+      </CascadingMenuButton>
 
-      <div className={classes.spacer} />
-
-      {menuAnchorEl ? (
-        <Menu
-          anchorEl={menuAnchorEl}
-          open
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setMenuAnchorEl(undefined)
-          }}
-          menuItems={model.headerMenuItems()}
-          onClose={() => setMenuAnchorEl(undefined)}
-        />
+      {hasDisplays && showDynamicControls ? (
+        <>
+          <ColorBySelector model={model} />
+          <OpacitySlider model={model} />
+          <MinLengthSlider model={model} />
+        </>
       ) : null}
-    </div>
+
+      {showSearchBoxes ? (
+        <span className={sideBySide ? classes.inline : undefined}>
+          {views.map(view => (
+            <HeaderSearchBoxes key={view.id} view={view} />
+          ))}
+        </span>
+      ) : null}
+    </FormGroup>
   )
 })
-
 export default Header

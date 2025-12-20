@@ -1,15 +1,22 @@
-import React from 'react'
-import { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
+import type React from 'react'
+
 import PluggableElementBase from './PluggableElementBase'
-import DisplayType from './DisplayType'
+
+import type DisplayType from './DisplayType'
+import type { IAnyModelType, IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 type BasicView = React.ComponentType<{
   // TODO: can we use AbstractViewModel here?
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   model: any
   session?: IAnyStateTreeNode
 }>
+
 type ViewComponentType = React.LazyExoticComponent<BasicView> | BasicView
+
+interface ViewMetadata {
+  hiddenFromGUI?: boolean
+}
 
 export default class ViewType extends PluggableElementBase {
   ReactComponent: ViewComponentType
@@ -18,31 +25,30 @@ export default class ViewType extends PluggableElementBase {
 
   displayTypes: DisplayType[] = []
 
+  viewMetadata: ViewMetadata = {}
+
   // extendedName can be used for when you extend a given view type, and want
-  // to register all of that view types displays to yourself e.g. you create a
-  // linear-genome-view subtype, and want all the tracks that are compatible
-  // display types for the linear-genome-view to be compatible with your type
-  // also (without this, display types are only registered to a single view
-  // type)
+  // to register all of that view types displays to yourself
+  //
+  // e.g. you create a linear-genome-view subtype, and want all the tracks that
+  // are compatible display types for the linear-genome-view to be compatible
+  // with your type also (without this, display types are only registered to a
+  // single view type)
   extendedName?: string
 
   constructor(stuff: {
     name: string
     displayName?: string
-    ReactComponent: ViewComponentType
     stateModel: IAnyModelType
     extendedName?: string
+    viewMetadata?: ViewMetadata
+    ReactComponent: ViewComponentType
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
+    this.viewMetadata = stuff.viewMetadata || {}
     this.stateModel = stuff.stateModel
     this.extendedName = stuff.extendedName
-    if (!this.ReactComponent) {
-      throw new Error(`no ReactComponent defined for view ${this.name}`)
-    }
-    if (!this.stateModel) {
-      throw new Error(`no stateModel defined for view ${this.name}`)
-    }
   }
 
   addDisplayType(display: DisplayType) {

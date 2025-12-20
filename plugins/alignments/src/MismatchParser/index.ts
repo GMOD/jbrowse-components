@@ -1,226 +1,70 @@
-import { revcom, Feature } from '@jbrowse/core/util'
-import { getTagAlt } from '../util'
+import { cigarToMismatches } from './cigarToMismatches'
+import { cigarToMismatches2 } from './cigarToMismatches2'
+import { mdToMismatches } from './mdToMismatches'
+import { mdToMismatches2 } from './mdToMismatches2'
 
-export interface Mismatch {
-  qual?: number
-  start: number
-  length: number
-  type: string
-  base: string
-  altbase?: string
-  seq?: string
-  cliplen?: number
-}
-const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
-const modificationRegex = new RegExp(/([A-Z])([-+])([^,.?]+)([.?])?/)
-const cigarRegex = new RegExp(/([MIDNSHPX=])/)
+import type { Mismatch } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
+
 const startClip = new RegExp(/(\d+)[SH]$/)
 const endClip = new RegExp(/^(\d+)([SH])/)
 
-export function parseCigar(cigar = '') {
-  return cigar.split(cigarRegex).slice(0, -1)
-}
-
-export function cigarToMismatches(
-  ops: string[],
-  seq?: string,
-  ref?: string,
-  qual?: Buffer,
-) {
-  let roffset = 0 // reference offset
-  let soffset = 0 // seq offset
-  const mismatches: Mismatch[] = []
-  const hasRefAndSeq = ref && seq
-  for (let i = 0; i < ops.length; i += 2) {
-    const len = +ops[i]
-    const op = ops[i + 1]
-
-    if (op === 'M' || op === '=' || op === 'E') {
-      if (hasRefAndSeq) {
-        for (let j = 0; j < len; j++) {
-          if (
-            // @ts-ignore in the full yarn build of the repo, this says that object is possibly undefined for some reason, ignored
-            seq[soffset + j].toUpperCase() !== ref[roffset + j].toUpperCase()
-          ) {
-            mismatches.push({
-              start: roffset + j,
-              type: 'mismatch',
-              base: seq[soffset + j],
-              altbase: ref[roffset + j],
-              length: 1,
-            })
-          }
-        }
-      }
-      soffset += len
-    }
-    if (op === 'I') {
-      mismatches.push({
-        start: roffset,
-        type: 'insertion',
-        base: `${len}`,
-        length: 0,
-      })
-      soffset += len
-    } else if (op === 'D') {
-      mismatches.push({
-        start: roffset,
-        type: 'deletion',
-        base: '*',
-        length: len,
-      })
-    } else if (op === 'N') {
-      mismatches.push({
-        start: roffset,
-        type: 'skip',
-        base: 'N',
-        length: len,
-      })
-    } else if (op === 'X') {
-      const r = seq?.slice(soffset, soffset + len) || []
-      const q = qual?.slice(soffset, soffset + len) || []
-
-      for (let j = 0; j < len; j++) {
-        mismatches.push({
-          start: roffset + j,
-          type: 'mismatch',
-          base: r[j],
-          qual: q[j],
-          length: 1,
-        })
-      }
-      soffset += len
-    } else if (op === 'H') {
-      mismatches.push({
-        start: roffset,
-        type: 'hardclip',
-        base: `H${len}`,
-        cliplen: len,
-        length: 1,
-      })
-    } else if (op === 'S') {
-      mismatches.push({
-        start: roffset,
-        type: 'softclip',
-        base: `S${len}`,
-        cliplen: len,
-        length: 1,
-      })
-      soffset += len
-    }
-
-    if (op !== 'I' && op !== 'S' && op !== 'H') {
-      roffset += len
-    }
-  }
-  return mismatches
-}
-
-/**
- * parse a SAM MD tag to find mismatching bases of the template versus the
- * reference @returns array of mismatches and their positions
- */
-export function mdToMismatches(
-  mdstring: string,
-  ops: string[],
-  cigarMismatches: Mismatch[],
-  seq: string,
-  qual?: Buffer,
-) {
-  let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
-  let lastCigar = 0
-  let lastTemplateOffset = 0
-  let lastRefOffset = 0
-  let lastSkipPos = 0
-  const mismatchRecords: Mismatch[] = []
-  const skips = cigarMismatches.filter(cigar => cigar.type === 'skip')
-
-  // convert a position on the reference sequence to a position
-  // on the template sequence, taking into account hard and soft
-  // clipping of reads
-
-  function nextRecord(): void {
-    mismatchRecords.push(curr)
-
-    // get a new mismatch record ready
-    curr = {
-      start: curr.start + curr.length,
-      length: 0,
-      base: '',
-      type: 'mismatch',
-    }
-  }
-
-  function getTemplateCoordLocal(refCoord: number): number {
-    let templateOffset = lastTemplateOffset
-    let refOffset = lastRefOffset
-    for (
-      let i = lastCigar;
-      i < ops.length && refOffset <= refCoord;
-      i += 2, lastCigar = i
-    ) {
-      const len = +ops[i]
-      const op = ops[i + 1]
-
-      if (op === 'S' || op === 'I') {
-        templateOffset += len
-      } else if (op === 'D' || op === 'P' || op === 'N') {
-        refOffset += len
-      } else if (op !== 'H') {
-        templateOffset += len
-        refOffset += len
-      }
-    }
-    lastTemplateOffset = templateOffset
-    lastRefOffset = refOffset
-
-    return templateOffset - (refOffset - refCoord)
-  }
-
-  // now actually parse the MD string
-  const md = mdstring.match(mdRegex) || []
-  for (const token of md) {
-    const num = +token
-    if (!Number.isNaN(num)) {
-      curr.start += num
-    } else if (token.startsWith('^')) {
-      curr.start += token.length - 1
+export function parseCigar(s = '') {
+  let currLen = ''
+  const ret = []
+  for (let i = 0, l = s.length; i < l; i++) {
+    const c = s[i]!
+    if (c >= '0' && c <= '9') {
+      currLen = currLen + c
     } else {
-      // mismatch
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let j = 0; j < token.length; j += 1) {
-        curr.length = 1
-
-        while (lastSkipPos < skips.length) {
-          const mismatch = skips[lastSkipPos]
-          if (curr.start >= mismatch.start) {
-            curr.start += mismatch.length
-            lastSkipPos++
-          } else {
-            break
-          }
-        }
-        const s = getTemplateCoordLocal(curr.start)
-        curr.base = seq[s] || 'X'
-        curr.qual = qual?.[s]
-        curr.altbase = token
-        nextRecord()
-      }
+      ret.push(currLen, c)
+      currLen = ''
     }
   }
-  return mismatchRecords
+  return ret
+}
+
+// CIGAR operation char codes to indices (from BAM spec)
+const CIGAR_CODE_TO_INDEX: Record<number, number> = {
+  77: 0, // M
+  73: 1, // I
+  68: 2, // D
+  78: 3, // N
+  83: 4, // S
+  72: 5, // H
+  80: 6, // P
+  61: 7, // =
+  88: 8, // X
+}
+
+// Parses CIGAR string to packed Uint32Array format
+// Returns Uint32Array where each value is (length << 4) | opIndex
+export function parseCigar2(s = ''): Uint32Array {
+  let currLen = 0
+  const ret: number[] = []
+  for (let i = 0, l = s.length; i < l; i++) {
+    const code = s.charCodeAt(i)
+    if (code >= 48 && code <= 57) {
+      // '0' to '9'
+      currLen = currLen * 10 + (code - 48)
+    } else {
+      const opIndex = CIGAR_CODE_TO_INDEX[code]!
+      ret.push((currLen << 4) | opIndex)
+      currLen = 0
+    }
+  }
+  return new Uint32Array(ret)
 }
 
 export function getMismatches(
-  cigar: string,
+  cigar?: string,
   md?: string,
   seq?: string,
   ref?: string,
-  qual?: Buffer,
+  qual?: Uint8Array,
 ) {
   let mismatches: Mismatch[] = []
   const ops = parseCigar(cigar)
-
   // parse the CIGAR tag if it has one
   if (cigar) {
     mismatches = mismatches.concat(cigarToMismatches(ops, seq, ref, qual))
@@ -235,162 +79,37 @@ export function getMismatches(
 
   return mismatches
 }
-// get relative reference sequence positions for positions given relative to
-// the read sequence
-export function* getNextRefPos(cigarOps: string[], positions: number[]) {
-  let readPos = 0
-  let refPos = 0
-  let currPos = 0
 
-  for (let i = 0; i < cigarOps.length && currPos < positions.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op === 'S' || op === 'I') {
-      for (let i = 0; i < len && currPos < positions.length; i++) {
-        if (positions[currPos] === readPos + i) {
-          currPos++
-        }
-      }
-      readPos += len
-    } else if (op === 'D' || op === 'N') {
-      refPos += len
-    } else if (op === 'M' || op === 'X' || op === '=') {
-      for (let i = 0; i < len && currPos < positions.length; i++) {
-        if (positions[currPos] === readPos + i) {
-          yield refPos + i
-          currPos++
-        }
-      }
-      readPos += len
-      refPos += len
-    }
-  }
-}
-
-export function getModificationProbabilities(feature: Feature) {
-  const m = (getTagAlt(feature, 'ML', 'Ml') as number[] | string) || []
-  return m
-    ? (typeof m === 'string' ? m.split(',').map(e => +e) : m).map(e => e / 255)
-    : (getTagAlt(feature, 'MP', 'Mp') as string | undefined)
-        ?.split('')
-        .map(s => s.charCodeAt(0) - 33)
-        .map(elt => Math.min(1, elt / 50))
-}
-
-export function getMethBins(feature: Feature) {
-  const fstart = feature.get('start')
-  const fend = feature.get('end')
-  const fstrand = feature.get('strand') as -1 | 0 | 1
-  const flen = fend - fstart
-  const mm = (getTagAlt(feature, 'MM', 'Mm') as string | undefined) || ''
-  const methBins = new Array<number>(flen)
-  const methProbs = new Array<number>(flen)
-  const seq = feature.get('seq') as string | undefined
-  if (seq) {
-    const ops = parseCigar(feature.get('CIGAR'))
-    const probabilities = getModificationProbabilities(feature)
-    const modifications = getModificationPositions(mm, seq, fstrand)
-    let probIndex = 0
-    for (const { type, positions } of modifications) {
-      if (type === 'm') {
-        for (const ref of getNextRefPos(ops, positions)) {
-          const prob = probabilities?.[probIndex] || 0
-          probIndex++
-          if (ref >= 0 && ref < flen) {
-            methBins[ref] = 1
-            methProbs[ref] = prob
-          }
-        }
-      }
-    }
-  }
-  return { methBins, methProbs }
-}
-
-export function getModificationPositions(
-  mm: string,
-  fseq: string,
-  fstrand: number,
+// Optimized version using packed NUMERIC_CIGAR from @gmod/bam
+export function getMismatches2(
+  cigar?: Uint32Array,
+  md?: string,
+  seq?: string,
+  ref?: string,
+  qual?: Uint8Array,
 ) {
-  const seq = fstrand === -1 ? revcom(fseq) : fseq
-  const mods = mm.split(';').filter(mod => !!mod)
-  const result = []
-  for (const mod of mods) {
-    const [basemod, ...skips] = mod.split(',')
-
-    // regexes based on parse_mm.pl from hts-specs
-    const matches = basemod.match(modificationRegex)
-    if (!matches) {
-      throw new Error('bad format for MM tag')
-    }
-    const [, base, strand, typestr] = matches
-
-    // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
-    // split, and they can also be chemical codes (ChEBI) e.g. C+16061
-    const types = typestr.split(/(\d+|.)/).filter(f => !!f)
-
-    if (strand === '-') {
-      console.warn('unsupported negative strand modifications')
-      // make sure to return a somewhat matching type even in this case
-      result.push({ type: 'unsupported', positions: [] as number[] })
-    }
-
-    // this logic also based on parse_mm.pl from hts-specs is that in the
-    // sequence of the read, if we have a modification type e.g. C+m;2 and a
-    // sequence ACGTACGTAC we skip the two instances of C and go to the last
-    // C
-    for (const type of types) {
-      let i = 0
-      const positions = []
-      for (const d of skips) {
-        let delta = +d
-        do {
-          if (base === 'N' || base === seq[i]) {
-            delta--
-          }
-          i++
-        } while (delta >= 0 && i < seq.length)
-
-        const temp = i - 1
-        positions.push(fstrand === -1 ? seq.length - 1 - temp : temp)
-      }
-      if (fstrand === -1) {
-        positions.sort((a, b) => a - b)
-      }
-      result.push({
-        type,
-        positions,
-      })
-    }
+  let mismatches: Mismatch[] = []
+  // parse the CIGAR tag if it has one
+  if (cigar && cigar.length > 0) {
+    mismatches = mismatches.concat(cigarToMismatches2(cigar, seq, ref, qual))
   }
-  return result
-}
 
-export function getModificationTypes(mm: string) {
-  return mm
-    .split(';')
-    .filter(mod => !!mod)
-    .flatMap(mod => {
-      const [basemod] = mod.split(',')
+  // now let's look for CRAM or MD mismatches
+  if (md && seq && cigar) {
+    mismatches = mismatches.concat(
+      mdToMismatches2(md, cigar, mismatches, seq, qual),
+    )
+  }
 
-      const matches = basemod.match(modificationRegex)
-      if (!matches) {
-        throw new Error(`bad format for MM tag: ${mm}`)
-      }
-      const typestr = matches[3]
-
-      // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
-      // split, and they can also be chemical codes (ChEBI) e.g. C+16061
-      return typestr.split(/(\d+|.)/).filter(f => !!f)
-    })
+  return mismatches
 }
 
 export function getOrientedCigar(flip: boolean, cigar: string[]) {
   if (flip) {
     const ret = []
     for (let i = 0; i < cigar.length; i += 2) {
-      const len = cigar[i]
-      let op = cigar[i + 1]
+      const len = cigar[i]!
+      let op = cigar[i + 1]!
       if (op === 'D') {
         op = 'I'
       } else if (op === 'I') {
@@ -399,9 +118,8 @@ export function getOrientedCigar(flip: boolean, cigar: string[]) {
       ret.push(len, op)
     }
     return ret
-  } else {
-    return cigar
   }
+  return cigar
 }
 
 export function getOrientedMismatches(flip: boolean, cigar: string) {
@@ -413,7 +131,7 @@ export function getLengthOnRef(cigar: string) {
   const cigarOps = parseCigar(cigar)
   let lengthOnRef = 0
   for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
+    const len = +cigarOps[i]!
     const op = cigarOps[i + 1]
     if (op !== 'H' && op !== 'S' && op !== 'I') {
       lengthOnRef += len
@@ -426,7 +144,7 @@ export function getLength(cigar: string) {
   const cigarOps = parseCigar(cigar)
   let length = 0
   for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
+    const len = +cigarOps[i]!
     const op = cigarOps[i + 1]
     if (op !== 'D' && op !== 'N') {
       length += len
@@ -439,7 +157,7 @@ export function getLengthSansClipping(cigar: string) {
   const cigarOps = parseCigar(cigar)
   let length = 0
   for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
+    const len = +cigarOps[i]!
     const op = cigarOps[i + 1]
     if (op !== 'H' && op !== 'S' && op !== 'D' && op !== 'N') {
       length += len
@@ -450,13 +168,12 @@ export function getLengthSansClipping(cigar: string) {
 
 export function getClip(cigar: string, strand: number) {
   return strand === -1
-    ? +(cigar.match(startClip) || [])[1] || 0
-    : +(cigar.match(endClip) || [])[1] || 0
+    ? +(startClip.exec(cigar) || [])[1]! || 0
+    : +(endClip.exec(cigar) || [])[1]! || 0
 }
 
-export function getTag(f: Feature, tag: string) {
-  const tags = f.get('tags')
-  return tags ? tags[tag] : f.get(tag)
+export function getTag(feature: Feature, tag: string) {
+  return feature.get('tags')[tag]
 }
 
 // produces a list of "feature-like" object from parsing supplementary
@@ -476,7 +193,11 @@ export function featurizeSA(
     SA?.split(';')
       .filter(aln => !!aln)
       .map((aln, index) => {
-        const [saRef, saStart, saStrand, saCigar] = aln.split(',')
+        const ret = aln.split(',')
+        const saRef = ret[0]!
+        const saStart = ret[1]!
+        const saStrand = ret[2]!
+        const saCigar = ret[3]!
         const saLengthOnRef = getLengthOnRef(saCigar)
         const saLength = getLength(saCigar)
         const saLengthSansClipping = getLengthSansClipping(saCigar)
@@ -491,7 +212,7 @@ export function featurizeSA(
           start: saRealStart,
           end: saRealStart + saLengthOnRef,
           seqLength: saLength,
-          clipPos: saClipPos,
+          clipLengthAtStartOfRead: saClipPos,
           CIGAR: saCigar,
           strand: (normalize ? strand : 1) * saStrandNormalized,
           uniqueId: `${id}_SA${index}`,
@@ -504,3 +225,6 @@ export function featurizeSA(
       }) || []
   )
 }
+
+export { getNextRefPos } from './getNextRefPos'
+export { cigarToMismatches2 } from './cigarToMismatches2'

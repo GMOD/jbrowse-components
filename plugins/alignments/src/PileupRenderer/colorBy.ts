@@ -1,10 +1,10 @@
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+
 import { fillColor } from '../shared/color'
 import { orientationTypes } from '../util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 export function colorByInsertSize(feature: Feature) {
   return feature.get('is_paired') &&
@@ -23,7 +23,7 @@ function getOrientation(feature: Feature, config: AnyConfigurationModel) {
     | 'ff'
     | 'rf'
   const type = orientationTypes[orientationType]
-  const orientation = type[feature.get('pair_orientation') as string]
+  const orientation = type[feature.get('pair_orientation') as string]!
   return {
     LR: 'color_pair_lr' as const,
     RR: 'color_pair_rr' as const,
@@ -56,21 +56,20 @@ function getStranded(feature: Feature) {
       return strand * flipper === 1 ? 'color_rev_strand' : 'color_fwd_strand'
     }
     // mate missing, separate color
-    else if (flags & 8) {
+    if (flags & 8) {
       return strand * flipper === 1
         ? 'color_rev_missing_mate'
         : 'color_fwd_missing_mate'
     }
     // same chrom without proper pairing gets separate color
-    else if (feature.get('refName') === feature.get('next_ref')) {
+    if (feature.get('refName') === feature.get('next_ref')) {
       return strand * flipper === 1
         ? 'color_rev_strand_not_proper'
         : 'color_fwd_strand_not_proper'
     }
     // abberant chrom
-    else {
-      return strand === 1 ? 'color_fwd_diff_chr' : 'color_rev_diff_chr'
-    }
+
+    return strand === 1 ? 'color_fwd_diff_chr' : 'color_rev_diff_chr'
   }
   return 'color_unknown'
 }

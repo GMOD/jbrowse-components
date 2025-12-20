@@ -1,13 +1,11 @@
-import { types, Instance } from 'mobx-state-tree'
-import {
-  getConf,
-  ConfigurationReference,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
-// locals
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
+
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface Pos {
   offsetPx: number
@@ -41,39 +39,79 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * color scheme to use for rendering synteny features
+         */
+        colorBy: types.optional(types.string, 'default'),
       }),
     )
     .volatile(() => ({
-      // canvas used for drawing visible screen
+      /**
+       * #volatile
+       * canvas used for drawing visible screen
+       */
       mainCanvas: null as HTMLCanvasElement | null,
 
-      // canvas used for drawing click map with feature ids
-      // this renders a unique color per alignment, so that it can be re-traced
-      // after a feature click with getImageData at that pixel
+      /**
+       * #volatile
+       * canvas used for drawing click map with feature ids this renders a
+       * unique color per alignment, so that it can be re-traced after a
+       * feature click with getImageData at that pixel
+       */
       clickMapCanvas: null as HTMLCanvasElement | null,
 
-      // canvas used for drawing click map with cigar data
-      // this can show if you are mousing over a insertion/deletion. it is similar
-      // in purpose to the clickMapRef but was not feasible to pack this into the
-      // clickMapRef
+      /**
+       * #volatile
+       * canvas used for drawing click map with cigar data this can show if you
+       * are mousing over a insertion/deletion. it is similar in purpose to the
+       * clickMapRef but was not feasible to pack this into the clickMapRef
+       */
       cigarClickMapCanvas: null as HTMLCanvasElement | null,
 
-      // canvas for drawing mouseover shading
-      // this is separate from the other code for speed: don't have to redraw
-      // entire canvas to do a feature's mouseover shading
+      /**
+       * #volatile
+       * canvas for drawing mouseover shading this is separate from the other
+       * code for speed: don't have to redraw entire canvas to do a feature's
+       * mouseover shading
+       */
       mouseoverCanvas: null as HTMLCanvasElement | null,
 
-      // assigned by reaction
+      /**
+       * #volatile
+       * assigned by reaction
+       */
       featPositions: [] as FeatPos[],
 
-      // currently mouse'd over feature
+      /**
+       * #volatile
+       * currently mouse'd over feature
+       */
       mouseoverId: undefined as string | undefined,
 
-      // currently click'd over feature
+      /**
+       * #volatile
+       * currently click'd over feature
+       */
       clickId: undefined as string | undefined,
 
-      // currently mouseover'd CIGAR subfeature
+      /**
+       * #volatile
+       * currently mouseover'd CIGAR subfeature
+       */
       cigarMouseoverId: -1,
+
+      /**
+       * #volatile
+       * alpha transparency value for synteny drawing (0-1)
+       */
+      alpha: 0.2,
+
+      /**
+       * #volatile
+       * minimum alignment length to display (in bp)
+       */
+      minAlignmentLength: 0,
     }))
     .actions(self => ({
       /**
@@ -124,6 +162,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setClickId(arg?: string) {
         self.clickId = arg
       },
+      /**
+       * #action
+       */
+      setAlpha(value: number) {
+        self.alpha = value
+      },
+      /**
+       * #action
+       */
+      setMinAlignmentLength(value: number) {
+        self.minAlignmentLength = value
+      },
+      /**
+       * #action
+       */
+      setColorBy(value: string) {
+        self.colorBy = value
+      },
     }))
 
     .views(self => ({
@@ -137,18 +193,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ...getConf(self.parentTrack, 'adapter'),
         }
       },
+
       /**
        * #getter
        */
       get trackIds() {
         return getConf(self, 'trackIds') as string[]
       },
+
       /**
        * #getter
        */
       get numFeats() {
         return self.featPositions.length
       },
+
       /**
        * #getter
        * used for synteny svg rendering

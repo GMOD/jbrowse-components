@@ -1,23 +1,25 @@
 /* eslint-disable react-refresh/only-export-components */
-import React from 'react'
-import { when } from 'mobx'
+
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   getSession,
   max,
   measureText,
   renderToStaticMarkup,
 } from '@jbrowse/core/util'
-import { ThemeProvider } from '@mui/material'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getRoot } from 'mobx-state-tree'
+import { ThemeProvider } from '@mui/material'
+import { when } from 'mobx'
 
-// locals
-import { LinearGenomeViewModel, ExportSvgOptions } from '..'
+import { isReadyOrHasError } from '../svgExportUtil'
 import SVGBackground from './SVGBackground'
-import SVGTracks from './SVGTracks'
+import SVGGridlines from './SVGGridlines'
 import SVGHeader from './SVGHeader'
+import SVGTracks from './SVGTracks'
 import { totalHeight } from './util'
+
+import type { LinearGenomeViewModel } from '..'
+import type { ExportSvgOptions } from '../types'
 
 type LGV = LinearGenomeViewModel
 
@@ -32,22 +34,22 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     cytobandHeight = 100,
     trackLabels = 'offset',
     themeName = 'default',
+    showGridlines = false,
     Wrapper = ({ children }) => children,
   } = opts
   const session = getSession(model)
   const { allThemes } = session
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { createRootFn } = getRoot<any>(model)
+
   const theme = allThemes?.()[themeName]
-  const { width, tracks, showCytobands } = model
+  const { width, pinnedTracks, unpinnedTracks, tracks, showCytobands } = model
   const shift = 50
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 10
   const height = totalHeight(tracks, textHeight, trackLabels) + offset + 100
   const displayResults = await Promise.all(
-    tracks.map(async track => {
+    [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
-      await when(() => !display.renderProps().notReady)
+      await when(() => isReadyOrHasError(display))
       return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )
@@ -60,6 +62,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
+  const tracksHeight = totalHeight(tracks, textHeight, trackLabels)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -82,22 +85,28 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 cytobandHeight={cytobandHeight}
               />
             </g>
-            <SVGTracks
-              textHeight={textHeight}
-              fontSize={fontSize}
-              model={model}
-              displayResults={displayResults}
-              offset={offset}
-              trackLabels={trackLabels}
-              trackLabelOffset={trackLabelOffset}
-            />
+            {showGridlines ? (
+              <g transform={`translate(${trackLabelOffset} ${offset})`}>
+                <SVGGridlines model={model} height={tracksHeight} />
+              </g>
+            ) : null}
+            <g transform={`translate(0 ${offset})`}>
+              <SVGTracks
+                textHeight={textHeight}
+                fontSize={fontSize}
+                model={model}
+                displayResults={displayResults}
+                trackLabels={trackLabels}
+                trackLabelOffset={trackLabelOffset}
+              />
+            </g>
           </g>
         </svg>
       </Wrapper>
     </ThemeProvider>,
-    createRootFn,
   )
 }
 
+export { default as SVGGridlines } from './SVGGridlines'
 export { default as SVGRuler } from './SVGRuler'
 export { default as SVGTracks } from './SVGTracks'

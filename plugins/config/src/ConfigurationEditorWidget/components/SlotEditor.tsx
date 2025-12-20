@@ -1,33 +1,31 @@
-import React, { useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
-import { getPropertyMembers, IAnyType } from 'mobx-state-tree'
-import { getEnv, FileLocation } from '@jbrowse/core/util'
+import { useEffect, useState } from 'react'
+
 import { FileSelector } from '@jbrowse/core/ui'
-import {
-  getSubType,
-  getUnionSubTypes,
-  ILiteralType,
-} from '@jbrowse/core/util/mst-reflection'
-import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
-
-// icons
+import { getEnv } from '@jbrowse/core/util'
+import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
+import { getPropertyMembers } from '@jbrowse/mobx-state-tree'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
+import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
-import StringArrayEditor from './StringArrayEditor'
+import BooleanEditor from './BooleanEditor'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
-import JsonEditor from './JsonEditor'
-import StringArrayMapEditor from './StringArrayMapEditor'
 import ConfigurationTextField from './ConfigurationTextField'
-import NumberMapEditor from './NumberMapEditor'
+import JsonEditor from './JsonEditor'
 import NumberEditor from './NumberEditor'
-import BooleanEditor from './BooleanEditor'
-import {
+import NumberMapEditor from './NumberMapEditor'
+import StringArrayEditor from './StringArrayEditor'
+import StringArrayMapEditor from './StringArrayMapEditor'
+import { useSlotEditorStyles } from './useSlotEditorStyles'
+
+import type {
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
 } from '@jbrowse/core/configuration'
-import { useSlotEditorStyles } from './useSlotEditorStyles'
+import type { FileLocation } from '@jbrowse/core/util'
+import type { ILiteralType } from '@jbrowse/core/util/mst-reflection'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const StringEditor = observer(function ({
   slot,
@@ -44,7 +42,9 @@ const StringEditor = observer(function ({
       label={slot.name}
       helperText={slot.description}
       value={slot.value}
-      onChange={evt => slot.set(evt.target.value)}
+      onChange={evt => {
+        slot.set(evt.target.value)
+      }}
     />
   )
 })
@@ -65,7 +65,9 @@ const TextEditor = observer(function ({
       helperText={slot.description}
       multiline
       value={slot.value}
-      onChange={evt => slot.set(evt.target.value)}
+      onChange={evt => {
+        slot.set(evt.target.value)
+      }}
     />
   )
 })
@@ -100,7 +102,9 @@ const IntegerEditor = observer(function ({
       helperText={slot.description}
       value={val}
       type="number"
-      onChange={evt => setVal(evt.target.value)}
+      onChange={evt => {
+        setVal(evt.target.value)
+      }}
     />
   )
 })
@@ -114,7 +118,7 @@ const StringEnumEditor = observer(function ({
 }) {
   const p = getPropertyMembers(getSubType(slotSchema))
   const choices = getUnionSubTypes(
-    getUnionSubTypes(getSubType(p.properties.value))[1],
+    getUnionSubTypes(getSubType(p.properties.value!))[1]!,
   ).map(t => (t as ILiteralType<string>).value)
 
   return (
@@ -123,7 +127,9 @@ const StringEnumEditor = observer(function ({
       label={slot.name}
       select
       helperText={slot.description}
-      onChange={evt => slot.set(evt.target.value)}
+      onChange={evt => {
+        slot.set(evt.target.value)
+      }}
     >
       {choices.map(str => (
         <MenuItem key={str} value={str}>
@@ -147,10 +153,12 @@ const FileSelectorWrapper = observer(function ({
   return (
     <FileSelector
       location={slot.value}
-      setLocation={location => slot.set(location)}
+      setLocation={location => {
+        slot.set(location)
+      }}
       name={slot.name}
       description={slot.description}
-      rootModel={getEnv(slot).pluginManager?.rootModel}
+      rootModel={getEnv(slot).pluginManager.rootModel}
     />
   )
 })
@@ -175,7 +183,6 @@ const SlotEditor = observer(function ({
   slot,
   slotSchema,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   slot: any
   slotSchema: IAnyType
 }) {

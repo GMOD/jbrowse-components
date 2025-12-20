@@ -1,18 +1,37 @@
-import fetch, { Headers, Response, Request } from 'node-fetch'
-import { JSDOM } from 'jsdom'
+import { TextDecoder, TextEncoder } from 'util'
+
 import { Image, createCanvas } from 'canvas'
+import { JSDOM } from 'jsdom'
+import fetch, { Headers, Request, Response } from 'node-fetch'
 
 export default function setupEnv() {
+  addGlobalCanvasUtils()
+  addGlobalTextUtils()
+  addGlobalDocument()
+  addFetchPolyfill()
+}
+function addGlobalCanvasUtils() {
   // @ts-expect-error
   global.nodeImage = Image
   // @ts-expect-error
   global.nodeCreateCanvas = createCanvas
+}
 
-  const window = new JSDOM(`...`).window
+function addGlobalTextUtils() {
+  global.TextEncoder = TextEncoder
+  // @ts-expect-error
+  global.TextDecoder = TextDecoder
+}
+
+function addGlobalDocument() {
+  const window = new JSDOM('...').window
   global.document = window.document
   // @ts-expect-error
   global.window = window
+  addFetchPolyfill()
+}
 
+function addFetchPolyfill() {
   // force use of node-fetch polyfill, even if node 18+ fetch is available.
   // native node 18+ fetch currently gives errors related to unidici and
   // Uint8Array:

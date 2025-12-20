@@ -1,71 +1,33 @@
-import {
-  isModelType,
-  isType,
-  types,
-  IAnyType,
-  IAnyModelType,
-} from 'mobx-state-tree'
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+import { isModelType, isType, types } from '@jbrowse/mobx-state-tree'
 
-// Pluggable elements
-import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
-import RendererType from './pluggableElementTypes/renderers/RendererType'
-import AdapterType from './pluggableElementTypes/AdapterType'
-import TrackType from './pluggableElementTypes/TrackType'
-import DisplayType from './pluggableElementTypes/DisplayType'
-import ViewType from './pluggableElementTypes/ViewType'
-import WidgetType from './pluggableElementTypes/WidgetType'
-import ConnectionType from './pluggableElementTypes/ConnectionType'
-import RpcMethodType from './pluggableElementTypes/RpcMethodType'
-import InternetAccountType from './pluggableElementTypes/InternetAccountType'
-import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
-import AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType'
-
+import CorePlugin from './CorePlugin'
+import PhasedScheduler from './PhasedScheduler'
+import ReExports from './ReExports'
 import {
   ConfigurationSchema,
   isBareConfigurationSchemaType,
 } from './configuration'
-
-import Plugin from './Plugin'
-import ReExports from './ReExports'
-
-import {
-  PluggableElementType,
-  PluggableElementMember,
-} from './pluggableElementTypes'
-import { AbstractRootModel } from './util'
-import CorePlugin from './CorePlugin'
+import AdapterType from './pluggableElementTypes/AdapterType'
+import AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType'
+import ConnectionType from './pluggableElementTypes/ConnectionType'
+import DisplayType from './pluggableElementTypes/DisplayType'
+import GlyphType from './pluggableElementTypes/GlyphType'
+import InternetAccountType from './pluggableElementTypes/InternetAccountType'
+import RpcMethodType from './pluggableElementTypes/RpcMethodType'
+import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
+import TrackType from './pluggableElementTypes/TrackType'
+import ViewType from './pluggableElementTypes/ViewType'
+import WidgetType from './pluggableElementTypes/WidgetType'
+import RendererType from './pluggableElementTypes/renderers/RendererType'
 import createJexlInstance from './util/jexl'
-import { PluginDefinition } from './PluginLoader'
 
-// helper class that keeps groups of callbacks that are then run in a specified
-// order by group
-class PhasedScheduler<PhaseName extends string> {
-  phaseCallbacks = new Map<PhaseName, Function[]>()
-
-  phaseOrder: PhaseName[] = []
-
-  constructor(...phaseOrder: PhaseName[]) {
-    this.phaseOrder = phaseOrder
-  }
-
-  add(phase: PhaseName, callback: Function) {
-    if (!this.phaseOrder.includes(phase)) {
-      throw new Error(`unknown phase ${phase}`)
-    }
-    let phaseCallbacks = this.phaseCallbacks.get(phase)
-    if (!phaseCallbacks) {
-      phaseCallbacks = []
-      this.phaseCallbacks.set(phase, phaseCallbacks)
-    }
-    phaseCallbacks.push(callback)
-  }
-
-  run() {
-    this.phaseOrder.forEach(phaseName => {
-      this.phaseCallbacks.get(phaseName)?.forEach(callback => callback())
-    })
-  }
-}
+import type Plugin from './Plugin'
+import type { PluginDefinition } from './PluginLoader'
+import type { PluggableElementType } from './pluggableElementTypes'
+import type PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
+import type { AbstractRootModel } from './util'
+import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
 
 type PluggableElementTypeGroup =
   | 'renderer'
@@ -79,6 +41,7 @@ type PluggableElementTypeGroup =
   | 'internet account'
   | 'text search adapter'
   | 'add track workflow'
+  | 'glyph'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -116,7 +79,6 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any) => any
 
 /**
@@ -146,6 +108,7 @@ export default class PluginManager {
   runtimePluginDefinitions: PluginDefinition[] = []
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
+    'glyph',
     'renderer',
     'adapter',
     'text search adapter',
@@ -158,6 +121,8 @@ export default class PluginManager {
     'internet account',
     'add track workflow',
   ) as PhasedScheduler<PluggableElementTypeGroup> | undefined
+
+  glyphTypes = new TypeRecord('GlyphType', GlyphType)
 
   rendererTypes = new TypeRecord('RendererType', RendererType)
 
@@ -203,18 +168,44 @@ export default class PluginManager {
     })
 
     // add all the initial plugins
-    initialPlugins.forEach(plugin => {
+    for (const plugin of initialPlugins) {
       this.addPlugin(plugin)
-    })
+    }
   }
 
-  pluginConfigurationSchemas() {
+  pluginConfigurationNamespacedSchemas() {
     const configurationSchemas: Record<string, unknown> = {}
-    this.plugins.forEach(plugin => {
+    for (const plugin of this.plugins) {
       if (plugin.configurationSchema) {
         configurationSchemas[plugin.name] = plugin.configurationSchema
       }
-    })
+    }
+    return configurationSchemas
+  }
+
+  pluginConfigurationUnnamespacedSchemas() {
+    let configurationSchemas: Record<string, unknown> = {}
+    for (const plugin of this.plugins) {
+      if (plugin.configurationSchemaUnnamespaced) {
+        configurationSchemas = {
+          ...configurationSchemas,
+          ...plugin.configurationSchemaUnnamespaced,
+        }
+      }
+    }
+    return configurationSchemas
+  }
+
+  pluginConfigurationRootSchemas() {
+    let configurationSchemas: Record<string, unknown> = {}
+    for (const plugin of this.plugins) {
+      if (plugin.rootConfigurationSchema) {
+        configurationSchemas = {
+          ...configurationSchemas,
+          ...plugin.rootConfigurationSchema(this),
+        }
+      }
+    }
     return configurationSchemas
   }
 
@@ -256,13 +247,14 @@ export default class PluginManager {
     // see elementCreationSchedule above for the creation order
     if (this.elementCreationSchedule) {
       this.elementCreationSchedule.run()
-      delete this.elementCreationSchedule
+      this.elementCreationSchedule = undefined
     }
     return this
   }
 
   setRootModel(rootModel: AbstractRootModel) {
     this.rootModel = rootModel
+    return this
   }
 
   configure() {
@@ -270,7 +262,9 @@ export default class PluginManager {
       throw new Error('already configured')
     }
 
-    this.plugins.forEach(plugin => plugin.configure(this))
+    for (const plugin of this.plugins) {
+      plugin.configure(this)
+    }
 
     this.configured = true
 
@@ -303,6 +297,8 @@ export default class PluginManager {
         return this.internetAccountTypes
       case 'add track workflow':
         return this.addTrackWidgets
+      case 'glyph':
+        return this.glyphTypes
       default:
         throw new Error(`invalid element type '${groupName}'`)
     }
@@ -326,18 +322,18 @@ export default class PluginManager {
       }
 
       if (typeRecord.has(newElement.name)) {
-        throw new Error(
+        console.warn(
           `${groupName} ${newElement.name} already registered, cannot register it again`,
         )
+      } else {
+        typeRecord.add(
+          newElement.name,
+          this.evaluateExtensionPoint(
+            'Core-extendPluggableElement',
+            newElement,
+          ) as PluggableElementType,
+        )
       }
-
-      typeRecord.add(
-        newElement.name,
-        this.evaluateExtensionPoint(
-          'Core-extendPluggableElement',
-          newElement,
-        ) as PluggableElementType,
-      )
     })
 
     return this
@@ -349,6 +345,10 @@ export default class PluginManager {
 
   getElementTypesInGroup(groupName: PluggableElementTypeGroup) {
     return this.getElementTypeRecord(groupName).all()
+  }
+
+  getViewElements() {
+    return this.getElementTypesInGroup('view') as ViewType[]
   }
 
   getTrackElements() {
@@ -380,7 +380,7 @@ export default class PluginManager {
   /** get a MST type for the union of all specified pluggable MST types */
   pluggableMstType(
     groupName: PluggableElementTypeGroup,
-    fieldName: PluggableElementMember,
+    fieldName: string,
     fallback: IAnyType = types.maybe(types.null),
   ) {
     const pluggableTypes = this.getElementTypeRecord(groupName)
@@ -403,7 +403,7 @@ export default class PluginManager {
   /** get a MST type for the union of all specified pluggable config schemas */
   pluggableConfigSchemaType(
     typeGroup: PluggableElementTypeGroup,
-    fieldName: PluggableElementMember = 'configSchema',
+    fieldName = 'configSchema',
   ) {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
@@ -436,23 +436,24 @@ export default class PluginManager {
    */
   jbrequire = (
     lib: keyof typeof ReExports | AnyFunction | { default: AnyFunction },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]
+
       if (!pack) {
         throw new TypeError(
           `No jbrequire re-export defined for package '${lib}'. If this package must be shared between plugins, add it to ReExports.js. If it does not need to be shared, just import it normally.`,
         )
       }
       return pack
-    }
-
-    if (typeof lib === 'function') {
+    } else if (typeof lib === 'function') {
       return this.load(lib)
     }
 
-    if (lib.default) {
+    // @ts-expect-error
+    else if (lib.default) {
+      console.warn('initiated jbrequire on a {default:Function}')
+      // @ts-expect-error
       return this.jbrequire(lib.default)
     }
 
@@ -461,7 +462,7 @@ export default class PluginManager {
     )
   }
 
-  getRendererType(typeName: string): RendererType {
+  getRendererType(typeName: string) {
     return this.rendererTypes.get(typeName)
   }
 
@@ -469,43 +470,43 @@ export default class PluginManager {
     return this.rendererTypes.all()
   }
 
-  getAdapterType(typeName: string): AdapterType {
+  getAdapterType(typeName: string) {
     return this.adapterTypes.get(typeName)
   }
 
-  getTextSearchAdapterType(typeName: string): TextSearchAdapterType {
+  getTextSearchAdapterType(typeName: string) {
     return this.textSearchAdapterTypes.get(typeName)
   }
 
-  getTrackType(typeName: string): TrackType {
+  getTrackType(typeName: string) {
     return this.trackTypes.get(typeName)
   }
 
-  getDisplayType(typeName: string): DisplayType {
+  getDisplayType(typeName: string) {
     return this.displayTypes.get(typeName)
   }
 
-  getViewType(typeName: string): ViewType {
+  getViewType(typeName: string) {
     return this.viewTypes.get(typeName)
   }
 
-  getAddTrackWorkflow(typeName: string): AddTrackWorkflowType {
+  getAddTrackWorkflow(typeName: string) {
     return this.addTrackWidgets.get(typeName)
   }
 
-  getWidgetType(typeName: string): WidgetType {
+  getWidgetType(typeName: string) {
     return this.widgetTypes.get(typeName)
   }
 
-  getConnectionType(typeName: string): ConnectionType {
+  getConnectionType(typeName: string) {
     return this.connectionTypes.get(typeName)
   }
 
-  getRpcMethodType(methodName: string): RpcMethodType {
+  getRpcMethodType(methodName: string) {
     return this.rpcMethods.get(methodName)
   }
 
-  getInternetAccountType(name: string): InternetAccountType {
+  getInternetAccountType(name: string) {
     return this.internetAccountTypes.get(name)
   }
 
@@ -527,7 +528,7 @@ export default class PluginManager {
     const callback = () => {
       const track = cb(this)
       const displays = this.getElementTypesInGroup('display') as DisplayType[]
-      displays.forEach(display => {
+      for (const display of displays) {
         // track may have already added the displayType in its cb
         if (
           display.trackType === track.name &&
@@ -535,7 +536,7 @@ export default class PluginManager {
         ) {
           track.addDisplayType(display)
         }
-      })
+      }
       return track
     }
     return this.addElementType('track', callback)
@@ -549,7 +550,7 @@ export default class PluginManager {
     const callback = () => {
       const newView = cb(this)
       const displays = this.getElementTypesInGroup('display') as DisplayType[]
-      displays.forEach(display => {
+      for (const display of displays) {
         // view may have already added the displayType in its callback
         // see ViewType for description of extendedName
         if (
@@ -559,7 +560,7 @@ export default class PluginManager {
         ) {
           newView.addDisplayType(display)
         }
-      })
+      }
       return newView
     }
     return this.addElementType('view', callback)
@@ -583,6 +584,18 @@ export default class PluginManager {
 
   addAddTrackWorkflowType(cb: (pm: PluginManager) => AddTrackWorkflowType) {
     return this.addElementType('add track workflow', cb)
+  }
+
+  addGlyphType(cb: (pm: PluginManager) => GlyphType) {
+    return this.addElementType('glyph', cb)
+  }
+
+  getGlyphType(typeName: string) {
+    return this.glyphTypes.get(typeName)
+  }
+
+  getGlyphTypes(): GlyphType[] {
+    return this.glyphTypes.all()
   }
 
   addToExtensionPoint<T>(

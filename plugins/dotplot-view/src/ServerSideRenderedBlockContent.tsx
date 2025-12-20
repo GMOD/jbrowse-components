@@ -1,7 +1,7 @@
-import React, { useEffect, useState, CSSProperties } from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { Typography } from '@mui/material'
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import type { CSSProperties } from 'react'
+
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => {
@@ -13,51 +13,29 @@ const useStyles = makeStyles()(theme => {
       backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
       textAlign: 'center',
     },
-
-    blockMessage: {
-      backgroundColor: bg,
-      padding: '10px',
-    },
-    blockError: {
-      backgroundColor: bg,
-      padding: '10px',
-      color: 'red',
-    },
   }
 })
 
 function LoadingMessage() {
-  // only show the loading message after 300ms to prevent excessive flickering
-  const [shown, setShown] = useState(false)
   const { classes } = useStyles()
-  useEffect(() => {
-    const timeout = setTimeout(() => setShown(true), 300)
-    return () => clearTimeout(timeout)
-  }, [])
-
-  return shown ? (
+  return (
     <div className={classes.loading}>
       <LoadingEllipses />
     </div>
-  ) : null
+  )
 }
 
 function BlockMessage({ messageText }: { messageText: string }) {
   const { classes } = useStyles()
   return (
-    <div className={classes.blockMessage}>
-      <Typography>{`${messageText}`}</Typography>
+    <div className={classes.loading}>
+      <LoadingEllipses message={messageText} />
     </div>
   )
 }
 
 function BlockError({ error }: { error: unknown }) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.blockError}>
-      <Typography>{`${error}`}</Typography>
-    </div>
-  )
+  return <ErrorMessage error={error} />
 }
 
 const ServerSideRenderedDotplotContent = observer(function ({

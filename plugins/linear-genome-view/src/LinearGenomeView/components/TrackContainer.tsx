@@ -1,30 +1,40 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react'
+
+import { ErrorMessage, ResizeHandle } from '@jbrowse/core/ui'
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
-import { ErrorBoundary } from 'react-error-boundary'
 
-// jbrowse core
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
-
-// locals
-import { LinearGenomeViewModel } from '..'
+import Gridlines from './Gridlines'
 import TrackLabelContainer from './TrackLabelContainer'
 import TrackRenderingContainer from './TrackRenderingContainer'
+import { shouldSwapTracks } from './util'
 
-const useStyles = makeStyles()({
+import type { LinearGenomeViewModel } from '..'
+import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+
+const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: 2,
+    overflow: 'hidden',
+    position: 'relative',
+    contain: 'layout style paint',
+  },
+  unpinnedTrack: {
+    background: 'none',
   },
   resizeHandle: {
-    height: 3,
+    height: 4,
     boxSizing: 'border-box',
     position: 'relative',
-    zIndex: 2,
+    background: 'transparent',
+    '&:hover': {
+      background: theme.palette.divider,
+    },
   },
-})
+}))
 
 type LGV = LinearGenomeViewModel
 
@@ -37,36 +47,46 @@ const TrackContainer = observer(function ({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { draggingTrackId } = model
+  const { draggingTrackId, showTrackOutlines } = model
   const ref = useRef<HTMLDivElement>(null)
 
   return (
     <Paper
       ref={ref}
-      className={classes.root}
-      variant="outlined"
+      className={cx(classes.root, track.pinned ? null : classes.unpinnedTrack)}
+      variant={showTrackOutlines ? 'outlined' : undefined}
+      elevation={showTrackOutlines ? undefined : 0}
       onClick={event => {
-        if (event.detail === 2 && !track.displays[0].featureIdUnderMouse) {
+        if (event.detail === 2 && !display.featureIdUnderMouse) {
           const left = ref.current?.getBoundingClientRect().left || 0
           model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
         }
       }}
+      onDragOver={event => {
+        if (
+          isAlive(display) &&
+          draggingTrackId !== undefined &&
+          draggingTrackId !== display.id
+        ) {
+          const draggingIdx = model.tracks.findIndex(
+            t => t.id === draggingTrackId,
+          )
+          const targetIdx = model.tracks.findIndex(t => t.id === track.id)
+          const movingDown = targetIdx > draggingIdx
+          const currentY = event.clientY
+
+          if (shouldSwapTracks(model.lastTrackDragY, currentY, movingDown)) {
+            model.setLastTrackDragY(currentY)
+            model.moveTrack(draggingTrackId, track.id)
+          }
+        }
+      }}
     >
+      {/* offset 1px since for left track border */}
+      {track.pinned ? <Gridlines model={model} offset={1} /> : null}
       <TrackLabelContainer track={track} view={model} />
       <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
-        <TrackRenderingContainer
-          model={model}
-          track={track}
-          onDragEnter={() => {
-            if (
-              isAlive(display) &&
-              draggingTrackId !== undefined &&
-              draggingTrackId !== display.id
-            ) {
-              model.moveTrack(draggingTrackId, track.id)
-            }
-          }}
-        />
+        <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
       <ResizeHandle
         onDrag={display.resizeHeight}

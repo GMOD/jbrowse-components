@@ -1,9 +1,11 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { UriLocation } from '@jbrowse/core/util'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { Instance, addDisposer, types } from 'mobx-state-tree'
-import { BaseRootModel } from './BaseRootModel'
+
+import type { BaseRootModel } from './BaseRootModel'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { UriLocation } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel InternetAccountsMixin
@@ -49,26 +51,25 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
        */
       createEphemeralInternetAccount(
         internetAccountId: string,
-        initialSnapshot = {},
+        initialSnapshot: Record<string, unknown>,
         url: string,
       ) {
-        let hostUri
+        let hostUri: string | undefined
 
         try {
           hostUri = new URL(url).origin
         } catch (e) {
           // ignore
         }
-        // id of a custom new internaccount is `${type}-${name}`
         const internetAccountSplit = internetAccountId.split('-')
         const configuration = {
-          type: internetAccountSplit[0],
+          type: internetAccountSplit[0]!,
           internetAccountId: internetAccountId,
           name: internetAccountSplit.slice(1).join('-'),
           description: '',
           domains: hostUri ? [hostUri] : [],
         }
-        const type = pluginManager.getInternetAccountType(configuration.type)
+        const type = pluginManager.getInternetAccountType(configuration.type)!
         const internetAccount = type.stateModel.create({
           ...initialSnapshot,
           type: configuration.type,
@@ -110,10 +111,15 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
       afterCreate() {
         addDisposer(
           self,
-          autorun(() => {
-            const { jbrowse } = self as typeof self & BaseRootModel
-            jbrowse.internetAccounts.forEach(self.initializeInternetAccount)
-          }),
+          autorun(
+            function internetAccountsAutorun() {
+              const { jbrowse } = self as typeof self & BaseRootModel
+              for (const internetAccount of jbrowse.internetAccounts) {
+                self.initializeInternetAccount(internetAccount)
+              }
+            },
+            { name: 'InternetAccounts' },
+          ),
         )
       },
     }))

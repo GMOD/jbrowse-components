@@ -1,91 +1,26 @@
-import deepEqual from 'fast-deep-equal'
-
-// layouts
-import GranularRectLayout from '../../util/layouts/GranularRectLayout'
-import MultiLayout from '../../util/layouts/MultiLayout'
-import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
+import FeatureRendererType from './FeatureRendererType'
+import { LayoutSession } from './LayoutSession'
+import { expandRegion } from './util'
+import { readConfObject } from '../../configuration'
+import { getLayoutId } from '../../util'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
 
-// other
-import FeatureRendererType, {
+import type {
   RenderArgs as FeatureRenderArgs,
-  RenderArgsSerialized as FeatureRenderArgsSerialized,
   RenderArgsDeserialized as FeatureRenderArgsDeserialized,
+  RenderArgsSerialized as FeatureRenderArgsSerialized,
   RenderResults as FeatureRenderResults,
-  ResultsSerialized as FeatureResultsSerialized,
   ResultsDeserialized as FeatureResultsDeserialized,
+  ResultsSerialized as FeatureResultsSerialized,
 } from './FeatureRendererType'
-import { getLayoutId, Region, Feature } from '../../util'
-import { readConfObject, AnyConfigurationModel } from '../../configuration'
-import SerializableFilterChain from './util/serializableFilterChain'
-import RpcManager from '../../rpc/RpcManager'
-
-export interface LayoutSessionProps {
-  config: AnyConfigurationModel
-  bpPerPx: number
-  filters: SerializableFilterChain
-}
-
-export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
-export interface CachedLayout {
-  layout: MyMultiLayout
-  config: AnyConfigurationModel
-  filters: SerializableFilterChain
-}
-
-export class LayoutSession implements LayoutSessionProps {
-  config: AnyConfigurationModel
-
-  bpPerPx: number
-
-  filters: SerializableFilterChain
-
-  constructor(args: LayoutSessionProps) {
-    this.config = args.config
-    this.bpPerPx = args.bpPerPx
-    this.filters = args.filters
-    this.update(args)
-  }
-
-  update(props: LayoutSessionProps) {
-    Object.assign(this, props)
-  }
-
-  makeLayout() {
-    return new MultiLayout(GranularRectLayout, {
-      maxHeight: readConfObject(this.config, 'maxHeight'),
-      displayMode: readConfObject(this.config, 'displayMode'),
-      pitchX: this.bpPerPx,
-      pitchY: readConfObject(this.config, 'noSpacing') ? 1 : 3,
-    })
-  }
-
-  /**
-   * @param layout -
-   * @returns true if the given layout is a valid one to use for this session
-   */
-  cachedLayoutIsValid(cachedLayout: CachedLayout) {
-    return (
-      cachedLayout &&
-      cachedLayout.layout.subLayoutConstructorArgs.pitchX === this.bpPerPx &&
-      deepEqual(readConfObject(this.config), cachedLayout.config) &&
-      deepEqual(this.filters, cachedLayout.filters)
-    )
-  }
-
-  cachedLayout: CachedLayout | undefined
-
-  get layout(): MyMultiLayout {
-    if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
-      this.cachedLayout = {
-        layout: this.makeLayout(),
-        config: readConfObject(this.config),
-        filters: this.filters,
-      }
-    }
-    return this.cachedLayout.layout
-  }
-}
+import type { LayoutSessionLike, LayoutSessionProps } from './LayoutSession'
+import type { RenderReturn } from './RendererType'
+import type RpcManager from '../../rpc/RpcManager'
+import type { Feature, Region } from '../../util'
+import type {
+  BaseLayout,
+  SerializedLayout,
+} from '../../util/layouts/BaseLayout'
 export interface RenderArgs extends FeatureRenderArgs {
   bpPerPx: number
   layoutId: string
@@ -96,12 +31,13 @@ export interface RenderArgsSerialized extends FeatureRenderArgsSerialized {
 }
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
+  statusCallback?: (arg: string) => void
   bpPerPx: number
   layoutId: string
 }
 
 export interface RenderResults extends FeatureRenderResults {
-  layout: BaseLayout<Feature>
+  layout?: BaseLayout<Feature> | SerializedLayout
 }
 
 export interface ResultsSerialized extends FeatureResultsSerialized {
@@ -115,62 +51,46 @@ export interface ResultsDeserialized extends FeatureResultsDeserialized {
 }
 
 export default class BoxRendererType extends FeatureRendererType {
-  sessions: Record<string, LayoutSession> = {}
+  layoutSessions: Record<string, LayoutSessionLike> = {}
+
+  createLayoutSession(props: LayoutSessionProps): LayoutSessionLike {
+    return new LayoutSession(props)
+  }
+
+  getLayoutSession(props: { sessionId: string; layoutId: string }) {
+    return this.layoutSessions[getLayoutId(props)]
+  }
 
   getWorkerSession(
     props: LayoutSessionProps & { sessionId: string; layoutId: string },
   ) {
     const key = getLayoutId(props)
-    if (!this.sessions[key]) {
-      this.sessions[key] = this.createSession(props)
+    if (!this.layoutSessions[key]) {
+      this.layoutSessions[key] = this.createLayoutSession(props)
     }
-    const session = this.sessions[key]
-    session.update(props)
-    return session
+    return this.layoutSessions[key].update(props)
   }
 
-  // expands region for glyphs to use
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
-    if (!region) {
-      return region
-    }
     const { bpPerPx, config } = renderArgs
     const maxFeatureGlyphExpansion =
-      config === undefined
-        ? 0
-        : readConfObject(config, 'maxFeatureGlyphExpansion')
-    if (!maxFeatureGlyphExpansion) {
-      return region
-    }
+      readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
-    return {
-      ...region,
-      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
-      end: Math.ceil(region.end + bpExpansion),
-    }
+    return expandRegion(region, bpExpansion)
   }
 
-  createSession(props: LayoutSessionProps) {
-    return new LayoutSession(props)
+  freeResources(args: RenderArgs) {
+    const key = getLayoutId(args)
+    const session = this.layoutSessions[key]
+    if (session) {
+      const region = args.regions[0]!
+      session.layout.discardRange(region.refName, region.start, region.end)
+    }
   }
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const { regions } = args
-    const key = getLayoutId(args)
-    let freed = 0
-    const session = this.sessions[key]
-    if (!regions && session) {
-      delete this.sessions[key]
-      freed = 1
-    }
-    if (session && regions) {
-      session.layout.discardRange(
-        regions[0].refName,
-        regions[0].start,
-        regions[0].end,
-      )
-    }
-    return freed + (await super.freeResourcesInClient(rpcManager, args))
+    this.freeResources(args)
+    return super.freeResourcesInClient(rpcManager, args)
   }
 
   deserializeLayoutInClient(json: SerializedLayout) {
@@ -180,50 +100,59 @@ export default class BoxRendererType extends FeatureRendererType {
   deserializeResultsInClient(result: ResultsSerialized, args: RenderArgs) {
     const layout = this.deserializeLayoutInClient(result.layout)
     return super.deserializeResultsInClient(
-      { ...result, layout } as FeatureResultsSerialized,
+      {
+        ...result,
+        layout,
+      } as FeatureResultsSerialized,
       args,
     ) as ResultsDeserialized
   }
 
   createLayoutInWorker(args: RenderArgsDeserialized) {
     const { regions } = args
-    const session = this.getWorkerSession(args)
-    return session.layout.getSublayout(regions[0].refName)
+    const { layout } = this.getWorkerSession(args)
+    return layout.getSublayout(regions[0]!.refName)
+  }
+
+  serializeLayout(layout: BaseLayout<unknown>, args: RenderArgsDeserialized) {
+    const region = args.regions[0]!
+    return layout.serializeRegion(this.getExpandedRegion(region, args))
+  }
+
+  /**
+   * Default render method that fetches features and creates layout.
+   * Canvas-based renderers should override this and return rpcResult() directly.
+   */
+  async render(renderArgs: RenderArgsDeserialized): Promise<RenderReturn> {
+    const features = await this.getFeatures(renderArgs)
+    const layout = this.createLayoutInWorker(renderArgs)
+    return { features, layout }
   }
 
   serializeResultsInWorker(
     results: RenderResults,
     args: RenderArgsDeserialized,
   ): ResultsSerialized {
-    const serialized = super.serializeResultsInWorker(
+    const { features, ...rest } = super.serializeResultsInWorker(
       results,
       args,
     ) as ResultsSerialized
 
-    const [region] = args.regions
-    serialized.layout = results.layout.serializeRegion(
-      this.getExpandedRegion(region, args),
-    )
-    if (serialized.layout.rectangles) {
-      serialized.features = serialized.features.filter(f => {
-        return Boolean(serialized.layout.rectangles[f.uniqueId])
-      })
-    }
+    const region = args.regions[0]!
+    const resultLayout = results.layout
 
-    serialized.maxHeightReached = serialized.layout.maxHeightReached
-    return serialized
-  }
-
-  /**
-   * gets layout and renders
-   *
-   * @param props - render args
-   */
-  async render(props: RenderArgsDeserialized): Promise<RenderResults> {
+    // Live layouts (BaseLayout) have serializeRegion method, plain objects (SerializedLayout) don't
     const layout =
-      (props.layout as undefined | BaseLayout<unknown>) ||
-      this.createLayoutInWorker(props)
-    const result = await super.render({ ...props, layout })
-    return { ...result, layout }
+      resultLayout && 'serializeRegion' in resultLayout
+        ? resultLayout.serializeRegion(this.getExpandedRegion(region, args))
+        : (resultLayout as unknown as SerializedLayout)
+
+    return {
+      ...rest,
+      layout,
+      maxHeightReached: layout.maxHeightReached,
+      // Filter features to only those visible in the layout
+      features: features?.filter(f => !!layout.rectangles[f.uniqueId]),
+    }
   }
 }

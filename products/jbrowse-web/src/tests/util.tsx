@@ -1,26 +1,25 @@
 /* eslint-disable react-refresh/only-export-components */
-import React from 'react'
+import fs from 'fs'
+import path from 'path'
 
-import { render, waitFor } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import { LocalFile, GenericFilehandle } from 'generic-filehandle'
-import rangeParser from 'range-parser'
-import { QueryParamProvider } from 'use-query-params'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
-import { Image, createCanvas } from 'canvas'
-
-// jbrowse
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { fireEvent, render, waitFor } from '@testing-library/react'
+import { Image, createCanvas } from 'canvas'
+import { saveAs } from 'file-saver-es'
+import { LocalFile } from 'generic-filehandle2'
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-// locals
-import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
-import JBrowseRootModelFactory from '../rootModel/rootModel'
+import { generateReadBuffer } from './generateReadBuffer'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
+import JBrowse from './TestingJBrowse'
+
+import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -31,10 +30,13 @@ global.nodeImage = Image
 // @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getPluginManager(initialState?: any, adminMode = true) {
-  const pluginManager = new PluginManager(corePlugins.map(P => new P()))
-  pluginManager.createPluggableElements()
+export function getPluginManager(
+  initialState?: Record<string, unknown>,
+  adminMode = true,
+) {
+  const pluginManager = new PluginManager(
+    corePlugins.map(P => new P()),
+  ).createPluggableElements()
 
   const rootModel = JBrowseRootModelFactory({
     pluginManager,
@@ -50,37 +52,7 @@ export function getPluginManager(initialState?: any, adminMode = true) {
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
-  return pluginManager
-}
-
-export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
-  return async (request: Request) => {
-    try {
-      const file = getFile(request.url)
-      const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
-      const r = request.headers.get('range')
-      if (r) {
-        const range = rangeParser(maxRangeRequest, r)
-        if (range === -2 || range === -1) {
-          throw new Error(`Error parsing range "${r}"`)
-        }
-        const { start, end } = range[0]
-        const len = end - start + 1
-        const buf = Buffer.alloc(len)
-        const { bytesRead } = await file.read(buf, 0, len, start)
-        const stat = await file.stat()
-        return new Response(buf.slice(0, bytesRead), {
-          status: 206,
-          headers: [['content-range', `${start}-${end}/${stat.size}`]],
-        })
-      }
-      const body = await file.readFile()
-      return new Response(body, { status: 200 })
-    } catch (e) {
-      console.error(e)
-      return new Response(undefined, { status: 404 })
-    }
-  }
+  return { pluginManager, rootModel }
 }
 
 export function setup() {
@@ -88,6 +60,7 @@ export function setup() {
 }
 
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
+  // eslint-disable-next-line no-restricted-globals
   return Buffer.from(
     canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
     'base64',
@@ -104,41 +77,43 @@ export function expectCanvasMatch(
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function JBrowse(props: any) {
-  return (
-    <QueryParamProvider adapter={WindowHistoryAdapter}>
-      <JBrowseWithoutQueryParamProvider {...props} />
-    </QueryParamProvider>
-  )
-}
-
-export const hts = (str: string) => 'htsTrackEntry-Tracks,' + str
+export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)
   const { view } = ret
-  if (view && 'initialized' in view) {
-    await waitFor(() => expect(view.initialized).toBe(true), { timeout: 30000 })
+  if ('initialized' in view) {
+    await waitFor(
+      () => {
+        expect(view.initialized).toBe(true)
+      },
+      { timeout: 30000 },
+    )
   }
   return ret
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createViewNoWait(args?: any, adminMode?: boolean) {
-  const pluginManager = getPluginManager(args, adminMode)
+interface Results extends ReturnType<typeof render> {
+  view: LGV
+  session: AbstractSessionModel
+  rootModel: AppRootModel
+}
+
+export function createViewNoWait(args?: any, adminMode?: boolean): Results {
+  const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
-  const rootModel = pluginManager.rootModel!
-  const session = rootModel.session!
+  const session = rootModel.session! as AbstractSessionModel
   const view = session.views[0] as LGV
   return { view, rootModel, session, ...rest }
 }
 
 export function doBeforeEach(
-  cb = (str: string) => require.resolve(`../../test_data/volvox/${str}`),
+  cb = (str: string) =>
+    require.resolve(
+      `../../test_data/volvox/${str.replace('http://localhost:3000/test_data/volvox/', '')}`,
+    ),
 ) {
   clearCache()
   clearAdapterCache()
@@ -148,8 +123,12 @@ export function doBeforeEach(
   // @ts-expect-error
   fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
 }
-
-export async function doSetupForImportForm(val?: unknown) {
+interface Results2 extends Results {
+  autocomplete: HTMLElement
+  input: HTMLElement
+  getInputValue: () => string
+}
+export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
   const args = await createView(val)
   const { view, findByTestId, getByPlaceholderText, findByPlaceholderText } =
     args
@@ -178,8 +157,8 @@ export async function doSetupForImportForm(val?: unknown) {
 
   return {
     autocomplete,
-    input,
     getInputValue,
+    input,
     ...args,
   }
 }
@@ -202,9 +181,142 @@ export function mockFile404(
 ) {
   // @ts-expect-error
   fetch.mockResponse(async request => {
-    if (request.url === str) {
-      return { status: 404 }
-    }
-    return readBuffer(request)
+    const matches = request.url.includes(str)
+    return matches ? { status: 404 } : readBuffer(request)
   })
 }
+
+export async function exportAndVerifySvg({
+  findByTestId,
+  findByText,
+  filename,
+  delay,
+  findAllByText,
+}: {
+  findByTestId: any
+  findByText: any
+  filename: string
+  delay?: { timeout: number }
+  findAllByText?: any
+}) {
+  const actualDelay = delay || { timeout: 40000 }
+  const opts = [{}, actualDelay]
+  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
+
+  if (findAllByText) {
+    fireEvent.click((await findAllByText('Export SVG'))[0])
+  } else {
+    fireEvent.click(await findByText('Export SVG', ...opts))
+  }
+
+  fireEvent.click(await findByText('Submit', ...opts))
+
+  await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(saveAs).toHaveBeenCalled()
+  }, actualDelay)
+
+  // @ts-expect-error
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const svg = saveAs.mock.calls[0][0].content[0]
+  const dir = path.dirname(module.filename)
+  fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
+  expect(svg).toMatchSnapshot()
+  return svg
+}
+
+export async function testFileReload(config: {
+  failingFile: string
+  readBuffer: any
+  trackId: string
+  viewLocation: [number, number]
+  expectedCanvas: string | RegExp
+  timeout?: number
+}) {
+  const delay = { timeout: config.timeout || 30000 }
+  const opts = [{}, delay]
+
+  await mockConsole(async () => {
+    mockFile404(config.failingFile, config.readBuffer)
+    const { view, findByTestId, findAllByTestId, findAllByText } =
+      await createView()
+    view.setNewView(config.viewLocation[0], config.viewLocation[1])
+    fireEvent.click(await findByTestId(hts(config.trackId), ...opts))
+    await findAllByText(/HTTP 404/, ...opts)
+
+    // @ts-expect-error
+    fetch.mockResponse(config.readBuffer)
+    const buttons = await findAllByTestId('reload_button')
+    fireEvent.click(buttons[0]!)
+
+    const canvas =
+      typeof config.expectedCanvas === 'string'
+        ? await findByTestId(config.expectedCanvas, ...opts)
+        : (await findAllByTestId(config.expectedCanvas, ...opts))[0]!
+    expectCanvasMatch(canvas)
+  })
+}
+
+export async function openSpreadsheetView({
+  user,
+  screen,
+  fileUrl,
+  timeout,
+}: {
+  user: any
+  screen: any
+  fileUrl: string
+  timeout?: number
+}) {
+  const delay = { timeout: timeout || 50000 }
+  const opts = [{}, delay]
+  const { session } = await createView()
+
+  await user.click(await screen.findByText('File'))
+  await user.click(await screen.findByText('Add'))
+  await user.click(await screen.findByText('Spreadsheet view'))
+
+  fireEvent.change(await screen.findByTestId('urlInput', ...opts), {
+    target: { value: fileUrl },
+  })
+
+  await waitFor(() => {
+    expect(screen.getByTestId('open_spreadsheet')).not.toBeDisabled()
+  }, delay)
+
+  await user.click(await screen.findByTestId('open_spreadsheet'))
+  return { session }
+}
+
+export async function openViewWithFileInput({
+  menuPath,
+  fileUrl,
+  timeout,
+}: {
+  menuPath: string[]
+  fileUrl: string
+  timeout?: number
+}) {
+  const delay = { timeout: timeout || 40000 }
+  const result = await createView()
+  const { findByTestId, getByTestId, findByText } = result
+
+  for (const item of menuPath) {
+    fireEvent.click(await findByText(item))
+  }
+
+  fireEvent.change(await findByTestId('urlInput', {}, delay), {
+    target: { value: fileUrl },
+  })
+
+  await waitFor(() => {
+    expect(getByTestId('open_spreadsheet').closest('button')).not.toBeDisabled()
+  }, delay)
+
+  fireEvent.click(await findByTestId('open_spreadsheet'))
+  return result
+}
+
+export { default as JBrowse } from './TestingJBrowse'
+
+export { generateReadBuffer } from './generateReadBuffer'

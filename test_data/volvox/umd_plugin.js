@@ -8,6 +8,65 @@
 
     install(pluginManager) {
       const React = pluginManager.jbrequire('react')
+      const { GlyphType } = pluginManager.jbrequire(
+        '@jbrowse/core/pluggableElementTypes',
+      )
+
+      // Example pluggable glyph: draws SNV features as purple diamonds
+      pluginManager.addGlyphType(
+        () =>
+          new GlyphType({
+            name: 'SNVGlyph',
+            displayName: 'SNV Diamond',
+            draw: ctx => {
+              const { ctx: context, featureLayout } = ctx
+              const { x, y, width, height } = featureLayout
+
+              const centerX = x + width / 2
+              const centerY = y + height / 2
+              const halfWidth = Math.max(width / 2, 4)
+              const halfHeight = height / 2
+
+              // Purple diamond fill
+              context.fillStyle = '#800080'
+              context.beginPath()
+              context.moveTo(centerX, centerY - halfHeight) // top
+              context.lineTo(centerX + halfWidth, centerY) // right
+              context.lineTo(centerX, centerY + halfHeight) // bottom
+              context.lineTo(centerX - halfWidth, centerY) // left
+              context.closePath()
+              context.fill()
+
+              // Indigo stroke
+              context.strokeStyle = '#4B0082'
+              context.lineWidth = 1
+              context.stroke()
+            },
+            match: feature => feature.get('type') === 'SNV',
+          }),
+      )
+
+      pluginManager.addToExtensionPoint(
+        'Core-handleUnrecognizedAssembly',
+        (_defaultResult, { assemblyName, session }) => {
+          const jb2asm = `jb2hub-${assemblyName}`
+          if (
+            assemblyName &&
+            !session.connections.find(f => f.connectionId === jb2asm)
+          ) {
+            console.log('getUnrecognizedAssembly', { assemblyName })
+            const conf = {
+              type: 'JB2TrackHubConnection',
+              uri: 'http://localhost:3000/test_data/volvox/config2.json',
+              name: 'my conn',
+              assemblyNames: [assemblyName],
+              connectionId: jb2asm,
+            }
+            session.addConnectionConf(conf)
+            session.makeConnection(conf)
+          }
+        },
+      )
 
       function NewAboutComponent() {
         return React.createElement(
@@ -117,7 +176,7 @@
       pluginManager.addToExtensionPoint(
         'Core-replaceWidget',
         (DefaultWidget, { model }) => {
-          return model.trackId === 'volvox.inv.vcf'
+          return model.trackId === 'volvox_sv_test_renamed'
             ? ReplaceFeatureWidget
             : DefaultWidget
         },
@@ -132,7 +191,17 @@
       })
     }
 
-    configure(/* pluginManager */) {}
+    configure(pluginManager) {
+      pluginManager.jexl.addFunction('repeatColor', feature => {
+        let type = feature.get('repeatClass')
+        return {
+          R: '#00A000',
+          RC: '#FF7F00',
+          F: '#8b0000',
+          C: '#0000FF',
+        }[type]
+      })
+    }
   }
 
   // the plugin will be included in both the main thread and web worker, so

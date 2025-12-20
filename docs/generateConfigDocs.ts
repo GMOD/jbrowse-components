@@ -1,12 +1,14 @@
-import slugify from 'slugify'
-import {
-  rm,
-  filter,
-  removeComments,
-  extractWithComment,
-  getAllFiles,
-} from './util'
 import fs from 'fs'
+
+import slugify from 'slugify'
+
+import {
+  extractWithComment,
+  filter,
+  getAllFiles,
+  removeComments,
+  rm,
+} from './util.ts'
 
 interface Derives {
   name: string
@@ -35,10 +37,11 @@ interface Config {
   slots: Slot[]
   config?: Conf
   filename: string
+  preProcessSnapshot: any
 }
 
 function generateConfigDocs(files: string[]) {
-  const cwd = process.cwd() + '/'
+  const cwd = `${process.cwd()}/`
   const contents = {} as Record<string, Config>
   extractWithComment(files, obj => {
     const fn = obj.filename
@@ -50,11 +53,12 @@ function generateConfigDocs(files: string[]) {
         slots: [],
         config: undefined,
         filename: fn2,
+        preProcessSnapshot: undefined,
       }
     }
     const current = contents[fn]
-    const name = rm(obj.comment, '#' + obj.type) || obj.name
-    const docs = filter(filter(obj.comment, '#' + obj.type), '#category')
+    const name = rm(obj.comment, `#${obj.type}`) || obj.name
+    const docs = filter(filter(obj.comment, `#${obj.type}`), '#category')
     const code = removeComments(obj.node)
     const id = slugify(name, { lower: true })
 
@@ -91,6 +95,8 @@ function generateConfigDocs(files: string[]) {
       current.slots.push({ ...obj, name, docs, code })
     } else if (obj.type === 'config') {
       current.config = { ...obj, name, docs, id, category }
+    } else if (obj.type === 'preProcessSnapshot') {
+      current.preProcessSnapshot = { ...obj, name, docs, id, category }
     }
   })
   return contents
@@ -101,8 +107,14 @@ function generateConfigDocs(files: string[]) {
   const contents = generateConfigDocs(await getAllFiles())
 
   Object.values(contents).forEach(
-    ({ config, slots, id, derives, filename }) => {
+    ({ config, slots, id, derives, filename, preProcessSnapshot }) => {
       if (config) {
+        const preprocessStr = preProcessSnapshot
+          ? `### ${config.name} - Pre-processor / simplified config
+
+${preProcessSnapshot.docs}
+`
+          : ''
         const idstr = id
           ? `### ${config.name} - Identifier
 
@@ -119,12 +131,10 @@ ${derives.code}
 \`\`\`
 `
           : ''
-        const slotstr =
-          `${slots.length ? `### ${config.name} - Slots` : ''}\n` +
-          slots
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(({ name, docs, code }: any) => {
-              return `#### slot: ${name}
+        const slotstr = `${slots.length ? `### ${config.name} - Slots` : ''}\n${slots
+
+          .map(({ name, docs, code }: any) => {
+            return `#### slot: ${name}
 
 ${docs}
 
@@ -132,10 +142,10 @@ ${docs}
 ${code}
 \`\`\`
 `
-            })
-            .join('\n')
+          })
+          .join('\n')}`
 
-        const dir = `website/docs/config`
+        const dir = 'website/docs/config'
         try {
           fs.mkdirSync(dir)
         } catch (e) {}
@@ -145,20 +155,35 @@ ${code}
 id: ${config.id}
 title: ${config.name}
 ---
+
 Note: this document is automatically generated from configuration objects in
 our source code. See [Config guide](/docs/config_guide) for more info
 
-### Source file
+Also note: this document represents the config API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[${filename}](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
+
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
+
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/${config.name}.md)
+
+
+## Docs
 
 ${config.docs}
+
+${preprocessStr}
 
 ${idstr}
 
 ${slotstr}
 
 ${derivesstr}
+
 `,
         )
       }

@@ -1,31 +1,29 @@
 import { lazy } from 'react'
-import { types, Instance } from 'mobx-state-tree'
+
 import {
-  AnyConfigurationSchemaType,
   ConfigurationReference,
-  readConfObject,
   getConf,
+  readConfObject,
 } from '@jbrowse/core/configuration'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getEnv, getSession, getContainingView } from '@jbrowse/core/util'
-import { getUniqueModificationValues } from '../shared'
-
-import { createAutorun, randomColor, modificationColors } from '../util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// icons
+import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
+import ColorLensIcon from '@mui/icons-material/ColorLens'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import SortIcon from '@mui/icons-material/Sort'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
-// locals
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { observable } from 'mobx'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { getModificationsSubMenu } from '../shared/menuItems'
 
-// lzies
-const SortByTagDialog = lazy(() => import('./components/SortByTag'))
-const ModificationsDialog = lazy(
-  () => import('./components/ColorByModifications'),
-)
+import type { SortedBy } from '../shared/types'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// lazies
+const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
+const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
 
 type LGV = LinearGenomeViewModel
 
@@ -40,6 +38,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .compose(
       'LinearPileupDisplay',
       SharedLinearPileupDisplayMixin(configSchema),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -61,22 +60,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        sortedBy: types.maybe(
-          types.model({
-            type: types.string,
-            pos: types.number,
-            tag: types.maybe(types.string),
-            refName: types.string,
-            assemblyName: types.string,
-          }),
-        ),
+        sortedBy: types.frozen<SortedBy | undefined>(),
       }),
     )
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       sortReady: false,
+      /**
+       * #volatile
+       */
       currSortBpPerPx: 0,
-      modificationTagMap: observable.map<string, string>({}),
-      modificationsReady: false,
     }))
     .actions(self => ({
       /**
@@ -84,25 +79,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setCurrSortBpPerPx(n: number) {
         self.currSortBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      updateModificationColorMap(uniqueModifications: string[]) {
-        uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
-            self.modificationTagMap.set(
-              value,
-              modificationColors[value] || randomColor(),
-            )
-          }
-        })
-      },
-      /**
-       * #action
-       */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
       },
       /**
        * #action
@@ -154,6 +130,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
+       * Sort by a specific position (used for sorting at mismatch positions)
+       */
+      setSortedByAtPosition(type: string, pos: number, refName: string) {
+        const view = getContainingView(self) as LGV
+        const assemblyName = view.assemblyNames[0]
+        if (!assemblyName) {
+          return
+        }
+        self.sortReady = false
+        self.sortedBy = {
+          type,
+          pos: pos + 1,
+          refName,
+          assemblyName,
+        }
+      },
+      /**
+       * #action
        * overrides base from SharedLinearPileupDisplay to make sortReady false
        * since changing feature height destroys the sort-induced layout
        */
@@ -181,6 +175,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
+      get modificationThreshold() {
+        return self.colorBy?.modifications?.threshold ?? 10
+      },
+      /**
+       * #getter
+       */
       get rendererConfig() {
         const {
           featureHeight,
@@ -188,12 +188,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           trackMaxHeight,
           mismatchAlpha,
           rendererTypeName,
+          hideSmallIndels,
+          hideMismatches,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
             ...(featureHeight !== undefined ? { height: featureHeight } : {}),
+            ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
+            ...(hideMismatches !== undefined ? { hideMismatches } : {}),
             ...(noSpacing !== undefined ? { noSpacing } : {}),
             ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
             ...(trackMaxHeight !== undefined
@@ -229,7 +233,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
-        renderPropsPre: superRenderPropsPre,
+        adapterRenderProps: superAdapterRenderProps,
         renderProps: superRenderProps,
         colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
       } = self
@@ -238,14 +242,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        renderPropsPre() {
-          const { sortedBy, showSoftClipping, modificationTagMap } = self
-          const superProps = superRenderPropsPre()
+        adapterRenderProps() {
+          const {
+            sortedBy,
+            showSoftClipping,
+            visibleModifications,
+            simplexModifications,
+          } = self
+          const superProps = superAdapterRenderProps()
           return {
             ...superProps,
             showSoftClip: showSoftClipping,
             sortedBy,
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
+            visibleModifications: Object.fromEntries(
+              visibleModifications.toJSON(),
+            ),
+            simplexModifications: [...simplexModifications],
           }
         },
         /**
@@ -267,6 +279,82 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return [
             ...superTrackMenuItems(),
             {
+              label: 'Sort by...',
+              icon: SwapVertIcon,
+              disabled: self.showSoftClipping,
+              subMenu: [
+                ...['Start location', 'Read strand', 'Base pair'].map(
+                  option => ({
+                    label: option,
+                    onClick: () => {
+                      self.setSortedBy(option)
+                    },
+                  }),
+                ),
+                {
+                  label: 'Sort by tag...',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SortByTagDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+                {
+                  label: 'Clear sort',
+                  onClick: () => {
+                    self.clearSelected()
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Color by...',
+              icon: ColorLensIcon,
+              subMenu: [
+                {
+                  label: 'Pair orientation',
+                  onClick: () => {
+                    self.setColorScheme({
+                      type: 'pairOrientation',
+                    })
+                  },
+                },
+                {
+                  label: 'Modifications',
+                  type: 'subMenu',
+                  subMenu: getModificationsSubMenu(self, {
+                    includeMethylation: true,
+                  }),
+                },
+                {
+                  label: 'Insert size',
+                  onClick: () => {
+                    self.setColorScheme({
+                      type: 'insertSize',
+                    })
+                  },
+                },
+                ...superColorSchemeSubMenuItems(),
+              ],
+            },
+            {
+              label: 'Group by...',
+              icon: WorkspacesIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  GroupByDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+            {
               label: 'Show soft clipping',
               icon: VisibilityIcon,
               type: 'checkbox',
@@ -281,144 +369,45 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label: 'Sort by',
-              icon: SortIcon,
-              disabled: self.showSoftClipping,
-              subMenu: [
-                ...['Start location', 'Read strand', 'Base pair'].map(
-                  option => ({
-                    label: option,
-                    onClick: () => self.setSortedBy(option),
-                  }),
-                ),
-                {
-                  label: 'Sort by tag...',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      SortByTagDialog,
-                      { model: self, handleClose },
-                    ])
-                  },
-                },
-                {
-                  label: 'Clear sort',
-                  onClick: () => self.clearSelected(),
-                },
-              ],
-            },
-            {
-              label: 'Color scheme',
-              subMenu: [
-                {
-                  label: 'Pair orientation',
-                  onClick: () =>
-                    self.setColorScheme({ type: 'pairOrientation' }),
-                },
-                {
-                  label: 'Modifications or methylation',
-                  onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
-                      ModificationsDialog,
-                      { model: self, handleClose: doneCallback },
-                    ])
-                  },
-                },
-                {
-                  label: 'Insert size',
-                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
-                },
-                ...superColorSchemeSubMenuItems(),
-              ],
-            },
-            {
               label: 'Fade mismatches by quality',
               type: 'checkbox',
               checked: self.mismatchAlphaSetting,
-              onClick: () => self.toggleMismatchAlpha(),
+              onClick: () => {
+                self.toggleMismatchAlpha()
+              },
             },
-          ]
+          ] as const
         },
       }
     })
     .actions(self => ({
       afterAttach() {
-        createAutorun(
-          self,
-          async () => {
-            const view = getContainingView(self) as LGV
-            if (!self.autorunReady) {
-              return
-            }
-
-            const { bpPerPx } = view
-
-            self.setCurrSortBpPerPx(bpPerPx)
-          },
-          { delay: 1000 },
-        )
-        createAutorun(
-          self,
-          async () => {
-            const { rpcManager } = getSession(self)
-            const view = getContainingView(self) as LGV
-            if (!self.autorunReady) {
-              return
-            }
-
-            const { sortedBy, adapterConfig, rendererType, sortReady } = self
-            const { bpPerPx } = view
-
-            if (
-              sortedBy &&
-              (!sortReady || self.currSortBpPerPx === view.bpPerPx)
-            ) {
-              const { pos, refName, assemblyName } = sortedBy
-              // render just the sorted region first
-              // @ts-expect-error
-              await self.rendererType.renderInClient(rpcManager, {
-                assemblyName,
-                regions: [
-                  {
-                    start: pos,
-                    end: pos + 1,
-                    refName,
-                    assemblyName,
-                  },
-                ],
-                adapterConfig,
-                rendererType: rendererType.name,
-                sessionId: getRpcSessionId(self),
-                layoutId: view.id,
-                timeout: 1_000_000,
-                ...self.renderPropsPre(),
-              })
-            }
-            self.setCurrSortBpPerPx(bpPerPx)
-            self.setSortReady(true)
-          },
-          { delay: 1000 },
-        )
-
-        createAutorun(self, async () => {
-          if (!self.autorunReady) {
-            return
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./doAfterAttach')
+            doAfterAttach(self)
+          } catch (e) {
+            getSession(self).notifyError(`${e}`, e)
+            console.error(e)
           }
-          const { parentTrack, colorBy } = self
-          const { staticBlocks } = getContainingView(self) as LGV
-          if (colorBy?.type === 'modifications') {
-            const adapter = getConf(parentTrack, ['adapter'])
-            const vals = await getUniqueModificationValues(
-              self,
-              adapter,
-              colorBy,
-              staticBlocks,
-            )
-            self.updateModificationColorMap(vals)
-          }
-          self.setModificationsReady(true)
-        })
+        })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { showSoftClipping, mismatchAlpha, sortedBy, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(showSoftClipping ? { showSoftClipping } : {}),
+        ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+        ...(sortedBy !== undefined ? { sortedBy } : {}),
+      } as typeof snap
+    })
 }
 
 export type LinearPileupDisplayStateModel = ReturnType<typeof stateModelFactory>

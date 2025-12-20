@@ -3,16 +3,26 @@ id: sharedlinearpileupdisplaymixin
 title: SharedLinearPileupDisplayMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/alignments/src/LinearPileupDisplay/SharedLinearPileupDisplayMixin.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearPileupDisplay/SharedLinearPileupDisplayMixin.ts)
+## Links
 
-extends `BaseLinearDisplay`
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearPileupDisplay/SharedLinearPileupDisplayMixin.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SharedLinearPileupDisplayMixin.md)
+
+## Docs
+
+extends
+
+- [BaseLinearDisplay](../baselineardisplay)
 
 ### SharedLinearPileupDisplayMixin - Properties
 
@@ -61,22 +71,22 @@ IMaybe<ISimpleType<number>>
 trackMaxHeight: types.maybe(types.number)
 ```
 
-#### property: colorBy
+#### property: colorBySetting
 
 ```js
 // type signature
-IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
+IType<ColorBy, ColorBy, ColorBy>
 // code
-colorBy: ColorByModel
+colorBySetting: types.frozen<ColorBy | undefined>()
 ```
 
-#### property: filterBy
+#### property: filterBySetting
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+IType<FilterBy, FilterBy, FilterBy>
 // code
-filterBy: types.optional(FilterModel, {})
+filterBySetting: types.frozen<FilterBy | undefined>()
 ```
 
 #### property: jexlFilters
@@ -88,13 +98,50 @@ IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
 jexlFilters: types.optional(types.array(types.string), [])
 ```
 
+#### property: hideSmallIndelsSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideSmallIndelsSetting: types.maybe(types.boolean)
+```
+
 ### SharedLinearPileupDisplayMixin - Getters
+
+#### getter: colorBy
+
+```js
+// type
+any
+```
+
+#### getter: filterBy
+
+```js
+// type
+any
+```
+
+#### getter: autorunReady
+
+```js
+// type
+boolean
+```
+
+#### getter: hideSmallIndels
+
+```js
+// type
+boolean
+```
 
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
 ```
 
 #### getter: maxHeight
@@ -143,23 +190,39 @@ string
 
 ```js
 // type
-({ model, }: { model: { sortedBy?: { pos: number; refName: number; type: string; tag?: string; }; }; }) => Element
+({ model, }: { model: { sortedBy?: SortedBy; }; }) => Element
 ```
 
 ### SharedLinearPileupDisplayMixin - Methods
+
+#### method: copyFeatureToClipboard
+
+uses copy-to-clipboard and generates notification
+
+```js
+// type signature
+copyFeatureToClipboard: (feature: Feature) => Promise<void>
+```
 
 #### method: contextMenuItems
 
 ```js
 // type signature
-contextMenuItems: () => { label: string; icon: (props: SvgIconProps) => Element; onClick: () => void; }[]
+contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
-#### method: renderPropsPre
+#### method: adapterRenderProps
 
 ```js
 // type signature
-renderPropsPre: () => any
+adapterRenderProps: () => any
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onClick(): void; onMismatchClick(_: unknown, item: { type: string; seq: string; modType?: string; probability?: number; }, featureId?: string): Promise<...>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<...>; displayModel: { ...;...
 ```
 
 #### method: colorSchemeSubMenuItems
@@ -173,7 +236,7 @@ colorSchemeSubMenuItems: () => { label: string; onClick: () => void; }[]
 
 ```js
 // type signature
-trackMenuItems: () => MenuItem[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### SharedLinearPileupDisplayMixin - Actions
@@ -189,7 +252,7 @@ setTagsReady: (flag: boolean) => void
 
 ```js
 // type signature
-setMaxHeight: (n: number) => void
+setMaxHeight: (n?: number) => void
 ```
 
 #### action: setFeatureHeight
@@ -210,7 +273,7 @@ setNoSpacing: (flag?: boolean) => void
 
 ```js
 // type signature
-setColorScheme: (colorScheme: { type: string; tag?: string; extra?: ExtraColorBy; }) => void
+setColorScheme: (colorScheme: ColorBy) => void
 ```
 
 #### action: updateColorTagMap
@@ -234,27 +297,18 @@ setFeatureUnderMouse: (feat?: Feature) => void
 selectFeature: (feature: Feature) => void
 ```
 
-#### action: copyFeatureToClipboard
-
-uses copy-to-clipboard and generates notification
-
-```js
-// type signature
-copyFeatureToClipboard: (feature: Feature) => void
-```
-
 #### action: setConfig
 
 ```js
 // type signature
-setConfig: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setConfig: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
 ```
 
 #### action: setFilterBy
 
 ```js
 // type signature
-setFilterBy: (filter: IFilter) => void
+setFilterBy: (filter: FilterBy) => void
 ```
 
 #### action: setJexlFilters
@@ -262,4 +316,11 @@ setFilterBy: (filter: IFilter) => void
 ```js
 // type signature
 setJexlFilters: (filters: string[]) => void
+```
+
+#### action: setHideSmallIndels
+
+```js
+// type signature
+setHideSmallIndels: (arg: boolean) => void
 ```

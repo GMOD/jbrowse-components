@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BamAdapter
@@ -15,7 +15,10 @@ const configSchema = ConfigurationSchema(
      */
     bamLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.bam',
+        locationType: 'UriLocation',
+      },
     },
 
     index: ConfigurationSchema('BamIndex', {
@@ -47,19 +50,41 @@ const configSchema = ConfigurationSchema(
         'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
       defaultValue: 5_000_000,
     },
+  },
+  {
+    explicitlyTyped: true,
+
     /**
-     * #slot
-     * generally refers to the reference genome assembly's sequence adapter
-     * currently needs to be manually added
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, assumes yourfile.bam.bai:
+     * ```json
+     * {
+     *   "type": "BamAdapter",
+     *   "uri": "yourfile.bam"
+     * }
+     * ```
      */
-    sequenceAdapter: {
-      type: 'frozen',
-      description:
-        'sequence data adapter, used to calculate SNPs when BAM reads lacking MD tags',
-      defaultValue: null,
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            bamLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+            index: {
+              location: {
+                uri: `${snap.uri}.bai`,
+                baseUri: snap.baseUri,
+              },
+            },
+          }
+        : snap
     },
   },
-  { explicitlyTyped: true },
 )
 
 export default configSchema

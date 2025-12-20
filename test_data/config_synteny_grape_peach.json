@@ -61,7 +61,7 @@
         "trackSelectorType": "hierarchical",
         "showIntraviewLinks": true,
         "linkViews": false,
-        "interactToggled": false,
+        "interactiveOverlay": false,
         "middleComparativeHeight": 100,
         "tracks": [
           {
@@ -135,7 +135,7 @@
         "trackSelectorType": "hierarchical",
         "showIntraviewLinks": true,
         "linkViews": false,
-        "interactToggled": false,
+        "interactiveOverlay": false,
         "middleComparativeHeight": 100,
         "tracks": [
           {
@@ -1909,6 +1909,20 @@
             "locationType": "UriLocation"
           }
         }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grape_peach_synteny_tblastx",
+      "name": "Grape peach synteny (TBLASTX)",
+      "assemblyNames": ["peach", "grape"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "BlastTabularAdapter",
+        "blastTableLocation": {
+          "uri": "grape_peach_synteny/peach_vs_grape.tsv.gz"
+        },
+        "assemblyNames": ["peach", "grape"]
       }
     }
   ]

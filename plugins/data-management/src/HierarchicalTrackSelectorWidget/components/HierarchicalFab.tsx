@@ -1,19 +1,17 @@
-import React, { useState } from 'react'
-import { Fab, Menu, MenuItem } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { useState } from 'react'
+
 import {
   getSession,
-  isSessionModelWithWidgets,
   isSessionModelWithConnections,
+  isSessionModelWithWidgets,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import AddIcon from '@mui/icons-material/Add'
+import { Fab, Menu, MenuItem } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// icons
-import AddIcon from '@mui/icons-material/Add'
-
-// locals
-import { HierarchicalTrackSelectorModel } from '../model'
+import type { HierarchicalTrackSelectorModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   fab: {
@@ -42,14 +40,18 @@ const HierarchicalFab = observer(function ({
       <Fab
         color="secondary"
         className={classes.fab}
-        onClick={event => setAnchorEl(event.currentTarget)}
+        onClick={event => {
+          setAnchorEl(event.currentTarget)
+        }}
       >
         <AddIcon />
       </Fab>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
       >
         {hasConnections ? (
           <MenuItem

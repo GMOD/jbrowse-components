@@ -4,10 +4,16 @@
 
 import fs from 'fs'
 import path from 'path'
-import { Scope } from 'nock'
 
-// locals
-import { setup, dataDir, copyDir } from '../testUtil'
+import {
+  dataDir,
+  mockFetch,
+  openWebStream,
+  runCommand,
+  runInTmpDir,
+} from '../testUtil'
+
+jest.mock('../fetchWithProxy')
 
 const configPath = dataDir('indexing_config.json')
 const volvoxDir = path.join(
@@ -20,24 +26,8 @@ const volvoxDir = path.join(
   'volvox',
 )
 
-function mockRemote1(exampleSite: Scope) {
-  return exampleSite
-    .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
-    .reply(200, () =>
-      fs.createReadStream(dataDir('au9_scaffold_subset_sync.gff3')),
-    )
-}
-
-function mockRemote2(exampleSite: Scope) {
-  return exampleSite
-    .get(
-      '/GMOD/jbrowse-components/raw/main/test_data/volvox/volvox.sort.gff3.gz',
-    )
-    .reply(200, fs.createReadStream(dataDir('volvox.sort.gff3.gz')))
-}
-
-const ixLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', b + '.ix')
-const ixxLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', b + '.ixx')
+const ixLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', `${b}.ix`)
+const ixxLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', `${b}.ixx`)
 
 function readText(str: string) {
   return fs.readFileSync(str, 'utf8')
@@ -65,199 +55,200 @@ function verifyIxxFiles(ctx: string, base = 'volvox') {
   expect(ixxdata).toMatchSnapshot()
 }
 
-// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
-
-// Base text index command
-// Test throwing an error if --tracks and no track ids provided
-describe('textIndexCommandErrors', () => {
-  setup
-    .command(['text-index', '--tracks'])
-    .catch('Flag --tracks expects a value')
-    .it('fails if no track ids are provided to the command with --tracks flag.')
-
-  setup
-    .command(['text-index', '--Command'])
-    .catch(err => expect(err.message).toContain('Nonexistent flag:'))
-    .it('fails if there is an invalid flag')
+test('fails if no track ids are provided with --tracks flag.', async () => {
+  await runInTmpDir(async () => {
+    const { error } = await runCommand(['text-index', '--tracks'])
+    expect(error?.message).toMatchSnapshot()
+  })
 })
 
-// Non-Gzipped File
-describe('text-index', () => {
-  setup
-    .do(async ctx => {
-      const gff3File = dataDir('au9_scaffold_subset_sync.gff3')
-      fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
-      fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-    })
-    .command(['text-index', '--tracks=au9_scaffold', '--target=config.json'])
-    .it('Indexes a local non-gz gff3 file', ctx => verifyIxxFiles(ctx.dir))
+test('fails if there is an invalid flag', async () => {
+  await runInTmpDir(async () => {
+    const { error } = await runCommand(['text-index', '--Command'])
+    expect(error?.message).toMatchSnapshot()
+  })
 })
 
-// Gzipped File
-describe('text-index tracks', () => {
-  setup
-    .do(async ctx => {
-      const gff3File = dataDir('volvox.sort.gff3.gz')
-      fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
-      fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-    })
-    .command(['text-index', '--tracks=gff3tabix_genes', '--target=config.json'])
-    .it('Indexes a local gz gff3 file', ctx => verifyIxxFiles(ctx.dir))
+test('indexes a local non-gz gff3 file', async () => {
+  await runInTmpDir(async ctx => {
+    const gff3File = dataDir('au9_scaffold_subset_sync.gff3')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    await runCommand([
+      'text-index',
+      '--tracks=au9_scaffold',
+      '--target=config.json',
+    ])
+    verifyIxxFiles(ctx.dir)
+  })
 })
-
-// Remote GZ
-describe('text-index tracks', () => {
-  setup
-    .nock('https://github.com', mockRemote2)
-    .do(ctx => fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json')))
-    .command([
+test('indexes a local gz gff3 file', async () => {
+  await runInTmpDir(async ctx => {
+    // Gzipped File
+    const gff3File = dataDir('volvox.sort.gff3.gz')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    await runCommand([
+      'text-index',
+      '--tracks=gff3tabix_genes',
+      '--target=config.json',
+    ])
+    verifyIxxFiles(ctx.dir)
+  })
+})
+test('indexes a remote gz gff3 file', async () => {
+  await runInTmpDir(async ctx => {
+    mockFetch(async () => ({
+      body: await openWebStream(dataDir('volvox.sort.gff3.gz')),
+    }))
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    await runCommand([
       'text-index',
       '--tracks=online_gff3tabix_genes',
       '--target=config.json',
     ])
-    .it('Indexes a remote gz gff3 file', ctx => verifyIxxFiles(ctx.dir))
+    verifyIxxFiles(ctx.dir)
+  })
 })
 
-// Remote Non-GZ
-
-describe('text-index tracks', () => {
-  setup
-    .nock('https://raw.githubusercontent.com', mockRemote1)
-    .do(ctx => fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json')))
-    .command([
+test('indexes a remote non-gz gff3 file', async () => {
+  await runInTmpDir(async ctx => {
+    mockFetch(async () => ({
+      body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
+    }))
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    await runCommand([
       'text-index',
       '--tracks=online_au9_scaffold',
       '--target=config.json',
     ])
-    .it('Indexes a remote non-gz gff3 file', ctx => verifyIxxFiles(ctx.dir))
+    verifyIxxFiles(ctx.dir)
+  })
 })
 
-// 2 Local Files
-
-describe('text-index tracks', () => {
-  setup
-    .do(ctx => {
-      const gff3File = dataDir('volvox.sort.gff3.gz')
-      const gff3File2 = dataDir('au9_scaffold_subset_sync.gff3')
-      fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
-      fs.copyFileSync(gff3File2, path.join(ctx.dir, path.basename(gff3File2)))
-      fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-    })
-    .command([
+test('indexes multiple local gff3 files', async () => {
+  await runInTmpDir(async ctx => {
+    const gff3File = dataDir('volvox.sort.gff3.gz')
+    const gff3File2 = dataDir('au9_scaffold_subset_sync.gff3')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+    fs.copyFileSync(gff3File2, path.join(ctx.dir, path.basename(gff3File2)))
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    await runCommand([
       'text-index',
       '--tracks=gff3tabix_genes,au9_scaffold',
       '--target=config.json',
     ])
-    .it('Indexes multiple local gff3 files', ctx => verifyIxxFiles(ctx.dir))
+    verifyIxxFiles(ctx.dir)
+  })
 })
 
-describe('text-index tracks', () => {
-  setup
-    .nock('https://github.com', mockRemote2)
-    .nock('https://raw.githubusercontent.com', mockRemote1)
-    .do(ctx => fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json')))
-    .command([
+test('indexes multiple remote gff3 file', async () => {
+  await runInTmpDir(async ctx => {
+    mockFetch(async url => {
+      if (url.includes('volvox.sort.gff3.gz')) {
+        return { body: await openWebStream(dataDir('volvox.sort.gff3.gz')) }
+      }
+      return {
+        body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
+      }
+    })
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    await runCommand([
       'text-index',
       '--tracks=online_gff3tabix_genes,online_au9_scaffold',
       '--target=config.json',
     ])
-    .it('Indexes multiple remote gff3 file', ctx => verifyIxxFiles(ctx.dir))
+    verifyIxxFiles(ctx.dir)
+  })
 })
 
-// URL and Local
-describe('text-index tracks', () => {
-  setup
-    .nock('https://raw.githubusercontent.com', mockRemote1)
-    .do(ctx => {
-      const gff3File = dataDir('volvox.sort.gff3.gz')
-      fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
-      fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-    })
-    .command([
+test('indexes a remote and a local file', async () => {
+  await runInTmpDir(async ctx => {
+    mockFetch(async () => ({
+      body: await openWebStream(dataDir('au9_scaffold_subset_sync.gff3')),
+    }))
+    const gff3File = dataDir('volvox.sort.gff3.gz')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    await runCommand([
       'text-index',
       '--tracks=gff3tabix_genes,online_au9_scaffold',
       '--target=config.json',
     ])
-    .it('Indexes a remote and a local file', ctx => verifyIxxFiles(ctx.dir))
+    verifyIxxFiles(ctx.dir)
+  })
 })
 
-describe('text-index tracks', () => {
-  setup
-    .do(ctx => {
-      const gff3File = dataDir('volvox.sort.gff3.gz')
-      fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
-      fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-    })
-    .command([
+test('indexes a track using only the attributes tag', async () => {
+  await runInTmpDir(async ctx => {
+    const gff3File = dataDir('volvox.sort.gff3.gz')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    await runCommand([
       'text-index',
       '--tracks=noAttributes',
       '--target=config.json',
       '--attributes=ID',
     ])
-    .it('Indexes a track using only the attributes tag', ctx =>
-      verifyIxxFiles(ctx.dir),
-    )
+    verifyIxxFiles(ctx.dir)
+  })
 })
 
 // no attributes in track
-describe('text-index tracks', () => {
-  setup
-    .do(ctx => {
-      const gff3File = dataDir('volvox.sort.gff3.gz')
-      fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
-      fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-    })
-    .command(['text-index', '--tracks=noAttributes', '--target=config.json'])
-    .it('Indexes a track with no attributes in the config', ctx =>
-      verifyIxxFiles(ctx.dir),
-    )
+test('indexes a track with no attributes in the config', async () => {
+  await runInTmpDir(async ctx => {
+    const gff3File = dataDir('volvox.sort.gff3.gz')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+    fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    await runCommand([
+      'text-index',
+      '--tracks=noAttributes',
+      '--target=config.json',
+    ])
+    verifyIxxFiles(ctx.dir)
+  })
 })
-
-describe('text-index with multiple per-files', () => {
-  setup
-    .do(ctx => copyDir(volvoxDir, ctx.dir))
-    .command([
+test('indexes with multiple per-file args', async () => {
+  await runInTmpDir(async ctx => {
+    fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
+    await runCommand([
       'text-index',
       '--file',
       'volvox.sort.gff3.gz',
       '--file',
       'volvox.filtered.vcf.gz',
     ])
-    .it('Indexes with multiple per-file args', ctx =>
-      verifyIxxFiles(ctx.dir, 'aggregate'),
-    )
+    verifyIxxFiles(ctx.dir, 'aggregate')
+  })
 })
 
-describe('text-index with single per-file', () => {
-  setup
-    .do(ctx => copyDir(volvoxDir, ctx.dir))
-    .command(['text-index', '--file', 'volvox.sort.gff3.gz'])
-    .it('Indexes with  single per-file arg', ctx =>
-      verifyIxxFiles(ctx.dir, 'volvox.sort.gff3.gz'),
-    )
+test('indexes with  single per-file arg', async () => {
+  await runInTmpDir(async ctx => {
+    fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
+    await runCommand(['text-index', '--file', 'volvox.sort.gff3.gz'])
+    verifyIxxFiles(ctx.dir, 'volvox.sort.gff3.gz')
+  })
 })
-describe('run with a single assembly similar to embedded config', () => {
-  let preVolvoxIx = ''
-  let preVolvoxIxx = ''
-  let preVolvoxMeta = ''
 
-  setup
-    .do(async ctx => {
-      await copyDir(volvoxDir, ctx.dir)
-      const volvoxConfig = readJSON(path.join(ctx.dir, 'config.json'))
-      const assembly = volvoxConfig.assemblies[0]
-      delete volvoxConfig.assemblies
-      fs.writeFileSync(
-        path.join(ctx.dir, 'config.json'),
-        JSON.stringify({ ...volvoxConfig, assembly }),
-      )
+test('indexes single assembly volvox config', async () => {
+  await runInTmpDir(async ctx => {
+    let preVolvoxIx = ''
+    let preVolvoxIxx = ''
+    let preVolvoxMeta = ''
 
-      preVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
-      preVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
-      preVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
-    })
-    .command([
+    fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
+    const volvoxConfig = readJSON(path.join(ctx.dir, 'config.json'))
+    const assembly = volvoxConfig.assemblies[0]
+    volvoxConfig.assemblies = undefined
+    fs.writeFileSync(
+      path.join(ctx.dir, 'config.json'),
+      JSON.stringify({ ...volvoxConfig, assembly }),
+    )
+
+    preVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
+    preVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
+    preVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
+    await runCommand([
       'text-index',
       '--target=config.json',
       '--force',
@@ -266,27 +257,24 @@ describe('run with a single assembly similar to embedded config', () => {
     ])
     // to update (e.g. if volvox config is updated) run:
     // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
-    .it('Indexes single assembly volvox config', ctx => {
-      expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
-      expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
-      expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
-    })
+    expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
+    expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
+    expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
+  })
 })
 
-describe('run with a volvox config', () => {
-  let preVolvoxIx = ''
-  let preVolvoxIxx = ''
-  let preVolvoxMeta = ''
+test('indexes entire volvox config', async () => {
+  await runInTmpDir(async ctx => {
+    let preVolvoxIx = ''
+    let preVolvoxIxx = ''
+    let preVolvoxMeta = ''
 
-  setup
-    .do(async ctx => {
-      await copyDir(volvoxDir, ctx.dir)
+    fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
 
-      preVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
-      preVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
-      preVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
-    })
-    .command([
+    preVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
+    preVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
+    preVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
+    await runCommand([
       'text-index',
       '--target=config.json',
       '--force',
@@ -295,9 +283,8 @@ describe('run with a volvox config', () => {
     ])
     // to update (e.g. if volvox config is updated) run:
     // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
-    .it('Indexes entire volvox config', ctx => {
-      expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
-      expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
-      expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
-    })
+    expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
+    expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
+    expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
+  })
 })

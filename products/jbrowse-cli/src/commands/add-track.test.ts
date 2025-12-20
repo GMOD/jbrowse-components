@@ -5,7 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { setup, readConf, ctxDir } from '../testUtil'
+import { ctxDir, readConf, runCommand, runInTmpDir } from '../testUtil'
 
 const { writeFile, copyFile } = fs.promises
 
@@ -41,186 +41,154 @@ function init2bit(ctx: { dir: string }) {
   )
 }
 
-// Cleaning up exitCode in Node.js 20, xref https://github.com/jestjs/jest/issues/14501
-afterAll(() => (process.exitCode = 0))
+test('fails if no track is specified', async () => {
+  const { error } = await runCommand(['add-track'])
+  expect(error?.message).toMatchSnapshot()
+})
 
-describe('add-track', () => {
-  setup.command(['add-track']).exit(2).it('fails if no track is specified')
-  setup
-    .command(['add-track', simpleBam])
-    .exit(110)
-    .it('fails if load flag isnt passed in for a localFile')
-  setup
-    .command([
+test('fails if load flag is not passed in for a localFile', async () => {
+  const { error } = await runCommand(['add-track', simpleBam])
+  expect(error?.message).toMatchSnapshot()
+})
+
+test('fails if URL with load flag is passed', async () => {
+  const { error } = await runCommand([
+    'add-track',
+    'https://mysite.com/data/simple.bam',
+    '--load',
+    'inPlace',
+  ])
+  expect(error?.message).toMatchSnapshot()
+})
+
+test('cannot add a track with the same track id', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand(['add-track', simpleBam, '--load', 'copy'])
+    const { error } = await runCommand([
       'add-track',
-      'https://mysite.com/data/simple.bam',
+      simpleBam,
       '--load',
-      'inPlace',
+      'copy',
     ])
-    .exit(100)
-    .it('fails if URL with load flag is passed')
+    expect(error?.message).toMatchSnapshot()
+  })
+})
 
-  setup
-    .do(initctx)
-    .command(['add-track', simpleBam, '--load', 'copy'])
-    .command(['add-track', simpleBam, '--load', 'copy'])
-    .exit(160)
-    .it('cannot add a track with the same track id')
+test('use force to overwrite a symlink', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
 
-  setup
-    .do(initctx)
-    .command(['add-track', simpleBam, '--load', 'symlink'])
-    .command(['add-track', simpleBam, '--load', 'symlink', '--force'])
-    .it('use force to overwrite a symlink')
+    await runCommand(['add-track', simpleBam, '--load', 'symlink'])
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'symlink',
+      '--force',
+    ])
+    expect(error).toBe(undefined)
+  })
+})
 
-  setup
-    .do(initctx)
-    .command(['add-track', simpleBam, '--load', 'copy'])
-    .command(['add-track', simpleBam, '--load', 'copy', '--force'])
-    .it('use force to overwrite a copied file')
+test('use force to overwrite a copied file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
 
-  // setting up a test for move difficult currently, because it would literally
-  // move the file in our test data...
-  // setup
-  //   .do(initctx)
-  //   .do(async ctx => {
-  //     await fsPromises.copyFile(simpleBam, path.join(ctx.dir, 'new.bam'))
-  //     await fsPromises.copyFile(simpleBai, path.join(ctx.dir, 'new.bam.bai'))
-  //   })
-  //   .command(['add-track', 'new.bam', '--load', 'move'])
-  //   .command(['add-track', 'new.bam', '--load', 'move', '--force'])
-  //   .it('use force to overwrite a moved file')
+    await runCommand(['add-track', simpleBam, '--load', 'copy'])
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--force',
+    ])
+    expect(error).toBe(undefined)
+  })
+})
 
-  setup
-    .command(['add-track', simpleBam, '--load', 'copy'])
-    .catch(/no such file or directory/)
-    .it('cannot add a track if there is no config file')
-  setup
-    .do(initctx)
-    .do(ctx =>
-      writeFile(path.join(ctx.dir, 'config.json'), '{"assemblies":[]}'),
-    )
-    .command(['add-track', simpleBam, '--load', 'copy'])
-    .exit(150)
-    .it('fails if it cannot assume the assemblyname')
+// setting up a test for move difficult currently, because it would literally
+// move the file in our test data...
+//
+//   .do(initctx)
+//   .do(async ctx => {
+//     await fsPromises.copyFile(simpleBam, path.join(ctx.dir, 'new.bam'))
+//     await fsPromises.copyFile(simpleBai, path.join(ctx.dir, 'new.bam.bai'))
+//   })
+//   runCommand(['add-track', 'new.bam', '--load', 'move'])
+//   runCommand(['add-track', 'new.bam', '--load', 'move', '--force'])
+//   .it('use force to overwrite a moved file')
 
-  setup
-    .do(initctx)
-    .command(['add-track', simpleBam, '--load', 'copy'])
-    .it('adds a bam track with bai', async ctx => {
-      expect(exists(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
-      expect(exists(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: 'simple.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'BAI',
-              location: {
-                uri: 'simple.bam.bai',
-                locationType: 'UriLocation',
-              },
-            },
-            sequenceAdapter: {
-              type: 'testSeqAdapter',
-              twoBitLocation: {
-                uri: 'test.2bit',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ])
-    })
+test('cannot add a track if there is no config file', async () => {
+  await runInTmpDir(async () => {
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+    ])
+    expect(error?.message).toMatchSnapshot()
+  })
+})
+test('fails if it cannot assume the assemblyname', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await writeFile(path.join(ctx.dir, 'config.json'), '{"assemblies":[]}')
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+    ])
 
-  setup
-    .do(initctx)
-    .command([
+    expect(error?.message).toMatchSnapshot()
+  })
+})
+
+test('adds bam track with bai', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand(['add-track', simpleBam, '--load', 'copy'])
+    expect(exists(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
+    expect(exists(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds bam track with csi', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
       'add-track',
       simpleBam,
       '--load',
       'copy',
       '--indexFile',
-      simpleBam + '.csi',
+      `${simpleBam}.csi`,
     ])
-    .it('adds a bam track with csi', async ctx => {
-      expect(exists(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
-      expect(exists(ctxDir(ctx, 'simple.bam.csi'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: 'simple.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'CSI',
-              location: {
-                uri: 'simple.bam.csi',
-                locationType: 'UriLocation',
-              },
-            },
-            sequenceAdapter: {
-              type: 'testSeqAdapter',
-              twoBitLocation: {
-                uri: 'test.2bit',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ])
-    })
-  setup
-    .do(initctx)
-    .command(['add-track', '/testing/in/place.bam', '--load', 'inPlace'])
-    .it('adds a bam track with load inPlace', async ctx => {
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'place',
-          name: 'place',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: '/testing/in/place.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'BAI',
-              location: {
-                uri: '/testing/in/place.bam.bai',
-                locationType: 'UriLocation',
-              },
-            },
-            sequenceAdapter: {
-              type: 'testSeqAdapter',
-              twoBitLocation: {
-                uri: 'test.2bit',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ])
-    })
-  setup
-    .do(initctx)
-    .command([
+    expect(exists(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
+    expect(exists(path.join(ctx.dir, 'simple.bam.csi'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds bam track with load inPlace', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
+      'add-track',
+      '/testing/in/place.bam',
+      '--load',
+      'inPlace',
+    ])
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds bam+bai track with load inPlace', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
       'add-track',
       '/testing/in/place.bam',
       '--load',
@@ -228,41 +196,14 @@ describe('add-track', () => {
       '--indexFile',
       '/something/else/random.bai',
     ])
-    .it('adds a bam track with load inPlace', async ctx => {
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'place',
-          name: 'place',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: '/testing/in/place.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'BAI',
-              location: {
-                uri: '/something/else/random.bai',
-                locationType: 'UriLocation',
-              },
-            },
-            sequenceAdapter: {
-              type: 'testSeqAdapter',
-              twoBitLocation: {
-                uri: 'test.2bit',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ])
-    })
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
 
-  setup
-    .do(initctx)
-    .command([
+test('adds bam track with indexFile for bai', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -270,78 +211,35 @@ describe('add-track', () => {
       '--indexFile',
       simpleBai,
     ])
-    .it('adds a bam track with indexFile for bai', async ctx => {
-      expect(exists(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
-      expect(exists(ctxDir(ctx, 'simple.bai'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: 'simple.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'BAI',
-              location: {
-                uri: 'simple.bai',
-                locationType: 'UriLocation',
-              },
-            },
-            sequenceAdapter: {
-              type: 'testSeqAdapter',
-              twoBitLocation: {
-                uri: 'test.2bit',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ])
-    })
+    expect(exists(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'simple.bai'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
 
-  setup
-    .do(initctx)
-    .command(['add-track', simpleBam, '--load', 'copy', '--subDir', 'bam'])
-    .it('adds a bam track with subDir', async ctx => {
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: 'bam/simple.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'BAI',
-              location: {
-                uri: 'bam/simple.bam.bai',
-                locationType: 'UriLocation',
-              },
-            },
-            sequenceAdapter: {
-              type: 'testSeqAdapter',
-              twoBitLocation: {
-                uri: 'test.2bit',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ])
-    })
+test('adds bam track with subDir', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--subDir',
+      'bam',
+    ])
 
-  setup
-    .do(initctx)
-    .command([
+    expect(exists(ctxDir(ctx, 'bam/simple.bam'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'bam/simple.bam.bai'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds bam track with subDir and localPath protocol', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -351,41 +249,18 @@ describe('add-track', () => {
       '--subDir',
       'bam',
     ])
-    .it('adds a bam track with subDir and localPath protocol', async ctx => {
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              localPath: 'bam/simple.bam',
-              locationType: 'LocalPathLocation',
-            },
-            index: {
-              indexType: 'BAI',
-              location: {
-                localPath: 'bam/simple.bam.bai',
-                locationType: 'LocalPathLocation',
-              },
-            },
-            sequenceAdapter: {
-              type: 'testSeqAdapter',
-              twoBitLocation: {
-                uri: 'test.2bit',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ])
-    })
 
-  setup
-    .do(initctx)
-    .command([
+    expect(exists(ctxDir(ctx, 'bam/simple.bam'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'bam/simple.bam.bai'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds bam track with all the custom fields', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -395,7 +270,7 @@ describe('add-track', () => {
       '--trackId',
       'customTrackId',
       '--description',
-      'new description',
+      '"new description"',
       '--trackType',
       'CustomTrackType',
       '--category',
@@ -403,88 +278,47 @@ describe('add-track', () => {
       '--assemblyNames',
       'customAssemblyName',
       '--config',
-      '{"defaultRendering": "test"}',
+      '{"defaultRendering":"test"}',
     ])
-    .it('adds a bam track with all the custom fields', async ctx => {
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'CustomTrackType',
-          trackId: 'customTrackId',
-          name: 'customName',
-          description: 'new description',
-          category: ['newcategory'],
-          assemblyNames: ['customAssemblyName'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: 'simple.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'BAI',
-              location: {
-                uri: 'simple.bam.bai',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-          defaultRendering: 'test',
-        },
-      ])
-    })
 
-  setup
-    .do(initctx)
-    .command(['add-track', 'https://mysite.com/data/simple.bam'])
-    .it('adds a bam track from a url', async ctx => {
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: 'https://mysite.com/data/simple.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'BAI',
-              location: {
-                uri: 'https://mysite.com/data/simple.bam.bai',
-                locationType: 'UriLocation',
-              },
-            },
-            sequenceAdapter: {
-              type: 'testSeqAdapter',
-              twoBitLocation: {
-                uri: 'test.2bit',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ])
-    })
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
 
-  // fails when there is more than one assembly and none is specified on the
-  // command line
-  setup
-    .do(initctx)
-    .do(init2bit)
-    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
-    .command(['add-track', simpleBam, '--load', 'copy'])
-    .exit(2)
-    .it('fails multiple assemblies exist but no assemblyNames passed')
+test('adds bam track from a url', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
 
-  // fails when there is more than one assembly and none is specified on the
-  // command line
-  setup
-    .do(initctx)
-    .do(init2bit)
-    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
-    .command([
+    await runCommand(['add-track', 'https://mysite.com/data/simple.bam'])
+
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('fails multiple assemblies exist but no assemblyNames passed', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await init2bit(ctx)
+
+    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+    ])
+
+    expect(error?.message).toMatchSnapshot()
+  })
+})
+
+test('adds track to a config with multiple assemblies', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await init2bit(ctx)
+
+    await runCommand(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    const { error } = await runCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -492,146 +326,100 @@ describe('add-track', () => {
       '--assemblyNames',
       'testAssembly',
     ])
-    .it('adds a track to a config with multiple assemblies', async ctx => {
-      const contents = readConf(ctx)
-      expect(contents.tracks).toEqual([
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'simple',
-          name: 'simple',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BamAdapter',
-            bamLocation: {
-              uri: 'simple.bam',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'BAI',
-              location: {
-                uri: 'simple.bam.bai',
-                locationType: 'UriLocation',
-              },
-            },
 
-            sequenceAdapter: {
-              twoBitLocation: {
-                uri: 'test.2bit',
-                locationType: 'UriLocation',
-              },
-              type: 'testSeqAdapter',
-            },
-          },
-        },
-      ])
-    })
+    expect(error).toBe(undefined)
+  })
+})
 
-  setup
-    .do(initctx)
-    .command(['add-track', simpleGff, '--load', 'copy'])
-    .it('adds a plaintext gff', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox.sort.gff3'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'FeatureTrack',
-          trackId: 'volvox.sort',
-          name: 'volvox.sort',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'Gff3Adapter',
-            gffLocation: {
-              uri: 'volvox.sort.gff3',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ])
-    })
+test('adds plaintext gff', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
 
-  setup
-    .do(initctx)
-    .command(['add-track', simpleVcf, '--load', 'copy'])
-    .it('adds a plaintext vcf', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox.filtered.vcf'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'VariantTrack',
-          trackId: 'volvox.filtered',
-          name: 'volvox.filtered',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'VcfAdapter',
-            vcfLocation: {
-              uri: 'volvox.filtered.vcf',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ])
-    })
+    await runCommand(['add-track', simpleGff, '--load', 'copy'])
+    expect(exists(ctxDir(ctx, 'volvox.sort.gff3'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
 
-  setup
-    .do(initctx)
-    .command(['add-track', simpleGtf, '--load', 'copy'])
-    .it('adds a plaintext gtf', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox.sorted.gtf'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'FeatureTrack',
-          trackId: 'volvox.sorted',
-          name: 'volvox.sorted',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'GtfAdapter',
-            gtfLocation: {
-              uri: 'volvox.sorted.gtf',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ])
-    })
+test('adds plaintext vcf', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
 
-  setup
-    .do(initctx)
-    .command([
+    await runCommand(['add-track', simpleVcf, '--load', 'copy'])
+    expect(exists(ctxDir(ctx, 'volvox.filtered.vcf'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds plaintext gtf', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand(['add-track', simpleGtf, '--load', 'copy'])
+    expect(exists(ctxDir(ctx, 'volvox.sorted.gtf'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds plaintext bed', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand(['add-track', simpleBed, '--load', 'copy'])
+
+    expect(exists(ctxDir(ctx, 'volvox.bed'))).toBeTruthy()
+
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds plaintext bedpe', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand(['add-track', simpleBedpe, '--load', 'copy'])
+
+    expect(exists(ctxDir(ctx, 'volvox.bedpe'))).toBeTruthy()
+
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds tabix gff with tbi', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand(['add-track', simpleGffGz, '--load', 'copy'])
+
+    expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.tbi'))).toBeTruthy()
+
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds tabix gff with csi', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
       'add-track',
       simpleGffGz,
       '--load',
       'copy',
       '--indexFile',
-      simpleGffGz + '.csi',
+      `${simpleGffGz}.csi`,
     ])
-    .it('adds a tabix gff with csi', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
-      expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.csi'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'FeatureTrack',
-          trackId: 'volvox.sort.gff3',
-          name: 'volvox.sort.gff3',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            gffGzLocation: {
-              uri: 'volvox.sort.gff3.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'volvox.sort.gff3.gz.csi',
-                locationType: 'UriLocation',
-              },
-              indexType: 'CSI',
-            },
-          },
-        },
-      ])
-    })
 
-  setup
-    .do(initctx)
-    .command([
+    expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.csi'))).toBeTruthy()
+
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds paf.gz file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
       'add-track',
       simplePafGz,
       '--assemblyNames',
@@ -639,29 +427,17 @@ describe('add-track', () => {
       '--load',
       'copy',
     ])
-    .it('adds a paf gz file', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf.gz'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels.paf',
-          name: 'volvox_inv_indels.paf',
-          adapter: {
-            type: 'PAFAdapter',
-            pafLocation: {
-              uri: 'volvox_inv_indels.paf.gz',
-              locationType: 'UriLocation',
-            },
-            assemblyNames: ['volvox_random_inv', 'volvox'],
-          },
-          assemblyNames: ['volvox_random_inv', 'volvox'],
-        },
-      ])
-    })
+    expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf.gz'))).toBeTruthy()
 
-  setup
-    .do(initctx)
-    .command([
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds paf file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
       'add-track',
       simplePaf,
       '--assemblyNames',
@@ -669,29 +445,16 @@ describe('add-track', () => {
       '--load',
       'copy',
     ])
-    .it('adds a paf file', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
-          adapter: {
-            type: 'PAFAdapter',
-            pafLocation: {
-              uri: 'volvox_inv_indels.paf',
-              locationType: 'UriLocation',
-            },
-            assemblyNames: ['volvox_random_inv', 'volvox'],
-          },
-          assemblyNames: ['volvox_random_inv', 'volvox'],
-        },
-      ])
-    })
 
-  setup
-    .do(initctx)
-    .command([
+    expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds delta file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
       'add-track',
       simpleDelta,
       '--assemblyNames',
@@ -699,29 +462,16 @@ describe('add-track', () => {
       '--load',
       'copy',
     ])
-    .it('adds a delta file', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox_inv_indels.delta'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
-          adapter: {
-            type: 'DeltaAdapter',
-            assemblyNames: ['volvox_random_inv', 'volvox'],
-            deltaLocation: {
-              uri: 'volvox_inv_indels.delta',
-              locationType: 'UriLocation',
-            },
-          },
-          assemblyNames: ['volvox_random_inv', 'volvox'],
-        },
-      ])
-    })
 
-  setup
-    .do(initctx)
-    .command([
+    expect(exists(ctxDir(ctx, 'volvox_inv_indels.delta'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds mashmap file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
       'add-track',
       simpleOut,
       '--assemblyNames',
@@ -729,29 +479,17 @@ describe('add-track', () => {
       '--load',
       'copy',
     ])
-    .it('adds a mashmap file', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox_inv_indels.out'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
-          adapter: {
-            type: 'MashMapAdapter',
-            assemblyNames: ['volvox_random_inv', 'volvox'],
-            outLocation: {
-              uri: 'volvox_inv_indels.out',
-              locationType: 'UriLocation',
-            },
-          },
-          assemblyNames: ['volvox_random_inv', 'volvox'],
-        },
-      ])
-    })
 
-  setup
-    .do(initctx)
-    .command([
+    expect(exists(ctxDir(ctx, 'volvox_inv_indels.out'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds mcscan simple anchors file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
       'add-track',
       simpleMcScanSimple,
       '--assemblyNames',
@@ -763,41 +501,19 @@ describe('add-track', () => {
       '--load',
       'copy',
     ])
-    .it('adds a mcscan simpleanchors file', async ctx => {
-      expect(
-        exists(ctxDir(ctx, 'volvox_inv_indels.anchors.simple')),
-      ).toBeTruthy()
-      expect(exists(ctxDir(ctx, 'grape.bed'))).toBeTruthy()
-      expect(exists(ctxDir(ctx, 'peach.bed'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels.anchors',
-          name: 'volvox_inv_indels.anchors',
-          adapter: {
-            type: 'MCScanSimpleAnchorsAdapter',
-            assemblyNames: ['volvox_random_inv', 'volvox'],
-            mcscanSimpleAnchorsLocation: {
-              uri: 'volvox_inv_indels.anchors.simple',
-              locationType: 'UriLocation',
-            },
-            bed1Location: {
-              uri: 'grape.bed',
-              locationType: 'UriLocation',
-            },
-            bed2Location: {
-              uri: 'peach.bed',
-              locationType: 'UriLocation',
-            },
-          },
-          assemblyNames: ['volvox_random_inv', 'volvox'],
-        },
-      ])
-    })
+    expect(exists(ctxDir(ctx, 'volvox_inv_indels.anchors.simple'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'grape.bed'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'peach.bed'))).toBeTruthy()
 
-  setup
-    .do(initctx)
-    .command([
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds mcscan anchors file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
       'add-track',
       simpleMcScan,
       '--assemblyNames',
@@ -809,40 +525,19 @@ describe('add-track', () => {
       '--load',
       'copy',
     ])
-    .it('adds a mcscan anchors file', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox_inv_indels.anchors'))).toBeTruthy()
-      expect(exists(ctxDir(ctx, 'grape.bed'))).toBeTruthy()
-      expect(exists(ctxDir(ctx, 'peach.bed'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'volvox_inv_indels.anchors'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'grape.bed'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'peach.bed'))).toBeTruthy()
 
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
-          adapter: {
-            type: 'MCScanAnchorsAdapter',
-            assemblyNames: ['volvox_random_inv', 'volvox'],
-            mcscanAnchorsLocation: {
-              uri: 'volvox_inv_indels.anchors',
-              locationType: 'UriLocation',
-            },
-            bed1Location: {
-              uri: 'grape.bed',
-              locationType: 'UriLocation',
-            },
-            bed2Location: {
-              uri: 'peach.bed',
-              locationType: 'UriLocation',
-            },
-          },
-          assemblyNames: ['volvox_random_inv', 'volvox'],
-        },
-      ])
-    })
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
 
-  setup
-    .do(initctx)
-    .command([
+test('adds chain file', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
       'add-track',
       simpleChain,
       '--assemblyNames',
@@ -850,96 +545,7 @@ describe('add-track', () => {
       '--load',
       'copy',
     ])
-    .it('adds a liftover chain file', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox_inv_indels.chain'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'SyntenyTrack',
-          trackId: 'volvox_inv_indels',
-          name: 'volvox_inv_indels',
-          adapter: {
-            type: 'ChainAdapter',
-            assemblyNames: ['volvox_random_inv', 'volvox'],
-            chainLocation: {
-              uri: 'volvox_inv_indels.chain',
-              locationType: 'UriLocation',
-            },
-          },
-          assemblyNames: ['volvox_random_inv', 'volvox'],
-        },
-      ])
-    })
-
-  setup
-    .do(initctx)
-    .command(['add-track', simpleGffGz, '--load', 'copy'])
-    .it('adds a tabix gff', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
-      expect(exists(ctxDir(ctx, 'volvox.sort.gff3.gz.tbi'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'FeatureTrack',
-          trackId: 'volvox.sort.gff3',
-          name: 'volvox.sort.gff3',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            gffGzLocation: {
-              uri: 'volvox.sort.gff3.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'volvox.sort.gff3.gz.tbi',
-                locationType: 'UriLocation',
-              },
-              indexType: 'TBI',
-            },
-          },
-        },
-      ])
-    })
-
-  setup
-    .do(initctx)
-    .command(['add-track', simpleBed, '--load', 'copy'])
-    .it('adds a bed track', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox.bed'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'FeatureTrack',
-          trackId: 'volvox',
-          name: 'volvox',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BedAdapter',
-            bedLocation: {
-              uri: 'volvox.bed',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ])
-    })
-  setup
-    .do(initctx)
-    .command(['add-track', simpleBedpe, '--load', 'copy'])
-    .it('adds a bedpe track', async ctx => {
-      expect(exists(ctxDir(ctx, 'volvox.bedpe'))).toBeTruthy()
-      expect(readConf(ctx).tracks).toEqual([
-        {
-          type: 'VariantTrack',
-          trackId: 'volvox',
-          name: 'volvox',
-          assemblyNames: ['testAssembly'],
-          adapter: {
-            type: 'BedpeAdapter',
-            bedpeLocation: {
-              uri: 'volvox.bedpe',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ])
-    })
+    expect(exists(ctxDir(ctx, 'volvox_inv_indels.chain'))).toBeTruthy()
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
 })

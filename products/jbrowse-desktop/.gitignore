@@ -15,5 +15,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 coverage/
-public/electron.js
-public/generateFastaIndex.js
+public/*.js
+public/*.d.ts
+public/ipc/*.js
+public/ipc/*.d.ts

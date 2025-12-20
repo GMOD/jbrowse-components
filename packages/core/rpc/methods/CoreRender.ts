@@ -1,17 +1,14 @@
+import { validateRendererType } from './util'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import {
-  RenderResults,
-  ResultsSerialized,
+import { renameRegionsIfNeeded } from '../../util'
+
+import type {
   RenderArgs,
   RenderArgsSerialized,
-  validateRendererType,
+  RenderResults,
+  ResultsSerialized,
 } from './util'
-import { RemoteAbortSignal } from '../remoteAbortSignals'
-import { checkAbortSignal, renameRegionsIfNeeded } from '../../util'
 
-/**
- * fetches features from an adapter and call a renderer with them
- */
 export default class CoreRender extends RpcMethodType {
   name = 'CoreRender'
 
@@ -24,47 +21,46 @@ export default class CoreRender extends RpcMethodType {
       renamedArgs,
       rpcDriver,
     )) as RenderArgs
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      return superArgs
-    }
 
-    const { rendererType } = args
-
-    const RendererType = validateRendererType(
-      rendererType,
-      this.pluginManager.getRendererType(rendererType),
-    )
-
-    return RendererType.serializeArgsInClient(superArgs)
+    return validateRendererType(
+      args.rendererType,
+      this.pluginManager.getRendererType(args.rendererType),
+    ).serializeArgsInClient(superArgs)
   }
 
-  async execute(
-    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
-    rpcDriver: string,
-  ) {
-    let deserializedArgs = args
-    if (rpcDriver !== 'MainThreadRpcDriver') {
-      deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    }
-    const { sessionId, rendererType, signal } = deserializedArgs
+  /**
+   * Execute directly without serialization. Used by MainThreadRpcDriver
+   * to bypass the serialize/deserialize overhead.
+   */
+  async executeDirect(args: RenderArgs) {
+    const { rootModel } = this.pluginManager
+    const assemblyManager = rootModel!.session!.assemblyManager
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
+    const { sessionId, rendererType } = renamedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
-    checkAbortSignal(signal)
-
-    const RendererType = validateRendererType(
+    return validateRendererType(
       rendererType,
       this.pluginManager.getRendererType(rendererType),
-    )
+    ).renderDirect(renamedArgs)
+  }
 
-    const result =
-      rpcDriver === 'MainThreadRpcDriver'
-        ? await RendererType.render(deserializedArgs)
-        : await RendererType.renderInWorker(deserializedArgs)
+  async execute(
+    args: RenderArgsSerialized & { stopToken?: string },
+    rpcDriver: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
+    const { sessionId, rendererType } = deserializedArgs
+    if (!sessionId) {
+      throw new Error('must pass a unique session id')
+    }
 
-    checkAbortSignal(signal)
-    return result
+    return validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    ).renderInWorker(deserializedArgs)
   }
 
   async deserializeReturn(
@@ -73,18 +69,11 @@ export default class CoreRender extends RpcMethodType {
     rpcDriver: string,
   ): Promise<unknown> {
     const des = await super.deserializeReturn(serializedReturn, args, rpcDriver)
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      return des
-    }
-
-    const { rendererType } = args
-    const RendererType = validateRendererType(
-      rendererType,
-      this.pluginManager.getRendererType(rendererType),
-    )
-    return RendererType.deserializeResultsInClient(
-      des as ResultsSerialized,
-      args,
-    )
+    // always call deserializeResultsInClient to ensure renderingProps are
+    // properly spread into the React component props
+    return validateRendererType(
+      args.rendererType,
+      this.pluginManager.getRendererType(args.rendererType),
+    ).deserializeResultsInClient(des as ResultsSerialized, args)
   }
 }

@@ -1,13 +1,14 @@
-import React, { useState } from 'react'
-import {
-  IconButton,
+import { CascadingMenu } from '@jbrowse/core/ui'
+import { bindPopover, bindTrigger, usePopupState } from '@jbrowse/core/ui/hooks'
+import MenuIcon from '@mui/icons-material/Menu'
+import { IconButton } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import type {
   IconButtonProps as IconButtonPropsType,
   SvgIconProps,
 } from '@mui/material'
-import MenuIcon from '@mui/icons-material/Menu'
-import { observer } from 'mobx-react'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { Menu } from '@jbrowse/core/ui'
 
 const ViewMenu = observer(function ({
   model,
@@ -18,33 +19,25 @@ const ViewMenu = observer(function ({
   IconButtonProps: IconButtonPropsType
   IconProps: SvgIconProps
 }) {
-  const [anchorEl, setAnchorEl] = useState<HTMLElement>()
-
-  if (!model.menuItems()?.length) {
-    return null
-  }
-
+  const popupState = usePopupState({
+    variant: 'popover',
+  })
   return (
     <>
       <IconButton
         {...IconButtonProps}
-        aria-label="more"
-        aria-controls="view-menu"
-        aria-haspopup="true"
-        onClick={event => setAnchorEl(event.currentTarget)}
+        {...bindTrigger(popupState)}
         data-testid="view_menu_icon"
       >
         <MenuIcon {...IconProps} />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onMenuItemClick={(_, callback) => {
+      <CascadingMenu
+        {...bindPopover(popupState)}
+        onMenuItemClick={(_event: unknown, callback: () => void) => {
           callback()
-          setAnchorEl(undefined)
         }}
-        onClose={() => setAnchorEl(undefined)}
         menuItems={model.menuItems()}
+        popupState={popupState}
       />
     </>
   )

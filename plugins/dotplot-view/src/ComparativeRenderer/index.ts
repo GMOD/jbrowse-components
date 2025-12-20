@@ -1,38 +1,33 @@
-import { checkAbortSignal } from '@jbrowse/core/util'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import ComparativeRenderer, {
-  RenderArgs as ComparativeRenderArgs,
-  RenderArgsSerialized as ComparativeRenderArgsSerialized,
-  RenderResults,
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+import type {
+  DotplotRenderArgs,
+  RenderArgsSerialized,
   ResultsSerialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
+} from '../DotplotRenderer/DotplotRenderer'
+import type DotplotRenderer from '../DotplotRenderer/DotplotRenderer'
+import type { RenderResults } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 
-interface RenderArgs extends ComparativeRenderArgs {
-  adapterConfig: {}
+interface RenderArgs extends DotplotRenderArgs {
   rendererType: string
 }
 
-interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
-  adapterConfig: {}
+interface RenderArgsSerializedWithRenderer extends RenderArgsSerialized {
+  adapterConfig: Record<string, unknown>
   rendererType: string
 }
 
-/**
- * call a synteny renderer with the given args
- * param views: a set of views that each contain a set of regions
- * used instead of passing regions directly as in render()
- */
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 
-  async renameRegionsIfNeeded(args: RenderArgs, rend: ComparativeRenderer) {
+  async renameRegionsIfNeeded(args: RenderArgs, rend: DotplotRenderer) {
     return rend.renameRegionsIfNeeded(args)
   }
 
   getRenderer(rendererType: string) {
     const pm = this.pluginManager
-    return pm.getRendererType(rendererType) as ComparativeRenderer
+    return pm.getRendererType(rendererType) as DotplotRenderer
   }
 
   async serializeArguments(args: RenderArgs, rpcDriver: string) {
@@ -41,30 +36,23 @@ export default class ComparativeRender extends RpcMethodType {
     const n = (await super.serializeArguments(args, rpcDriver)) as RenderArgs
     const result = await this.renameRegionsIfNeeded(n, renderer)
 
-    return rpcDriver === 'MainThreadRpcDriver'
-      ? result
-      : renderer.serializeArgsInClient(result)
+    return renderer.serializeArgsInClient(result)
   }
 
   async execute(
-    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    args: RenderArgsSerializedWithRenderer & { stopToken?: string },
     rpcDriver: string,
   ) {
-    let deserializedArgs = args
-    if (rpcDriver !== 'MainThreadRpcDriver') {
-      deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    }
-    const { sessionId, rendererType, signal } = deserializedArgs
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
+    const { sessionId, rendererType, stopToken } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
-    checkAbortSignal(signal)
+    checkStopToken(stopToken)
 
     const renderer = this.getRenderer(rendererType)
-    return rpcDriver === 'MainThreadRpcDriver'
-      ? renderer.render(deserializedArgs)
-      : renderer.renderInWorker(deserializedArgs)
+    return renderer.renderInWorker(deserializedArgs)
   }
 
   async deserializeReturn(
@@ -77,9 +65,6 @@ export default class ComparativeRender extends RpcMethodType {
       args,
       rpcDriver,
     )) as ResultsSerialized
-    if (rpcDriver === 'MainThreadRpcDriver') {
-      return ret
-    }
 
     const renderer = this.getRenderer(args.rendererType)
     return renderer.deserializeResultsInClient(ret, args)

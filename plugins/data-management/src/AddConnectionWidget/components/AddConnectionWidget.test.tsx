@@ -1,12 +1,20 @@
-import React from 'react'
-import userEvent from '@testing-library/user-event'
-import { render } from '@testing-library/react'
+import { ThemeProvider } from '@emotion/react'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
-// locals
-import AddConnectionWidget from './AddConnectionWidget'
+import AddConnectionWidget2 from './AddConnectionWidget'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+
+function AddConnectionWidget({ model }: { model: unknown }) {
+  return (
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <AddConnectionWidget2 model={model} />
+    </ThemeProvider>
+  )
+}
 
 function makeSession() {
   const session = createTestSession()
@@ -46,30 +54,32 @@ test('renders', () => {
 }, 20000)
 
 test('can handle a custom UCSC trackHub URL', async () => {
-  jest.spyOn(global, 'fetch').mockImplementation(async url => {
-    const urlText = `${url}`
-    if (urlText.endsWith('hub.txt')) {
-      return new Response(`hub TestHub
+  jest
+    .spyOn(global, 'fetch')
+    .mockImplementation(async (url: string | Request | URL) => {
+      const urlText = `${url}`
+      if (urlText.endsWith('hub.txt')) {
+        return new Response(`hub TestHub
 shortLabel Test Hub
 longLabel Test Genome Informatics Hub for human DNase and RNAseq data
 genomesFile genomes.txt
 email genome@test.com
 descriptionUrl test.html
 `)
-    } else if (urlText.endsWith('genomes.txt')) {
-      return new Response(`genome volMyt1
+      } else if (urlText.endsWith('genomes.txt')) {
+        return new Response(`genome volMyt1
 trackDb hg19/trackDb.txt
 `)
-    } else if (urlText.endsWith('trackDb.txt')) {
-      return new Response(`track dnaseSignal
+      } else if (urlText.endsWith('trackDb.txt')) {
+        return new Response(`track dnaseSignal
 bigDataUrl dnaseSignal.bigWig
 shortLabel DNAse Signal
 longLabel Depth of alignments of DNAse reads
 type bigWig
 `)
-    }
-    throw new Error('unknown')
-  })
+      }
+      throw new Error('unknown')
+    })
 
   const {
     session,
@@ -80,7 +90,7 @@ type bigWig
     findByDisplayValue,
   } = renderWidget()
   expect(session.connections.length).toBe(0)
-  await user.click(getAllByRole('combobox')[0])
+  await user.click(getAllByRole('combobox')[0]!)
   const ucscTrackHubSelection = await findAllByText('UCSC Track Hub')
   await user.click(ucscTrackHubSelection.at(-1)!)
   await user.click(await findByText('Next'))
@@ -120,7 +130,7 @@ test('can handle a custom JBrowse 1 data directory URL', async () => {
     session,
   } = renderWidget()
   expect(session.connections.length).toBe(0)
-  await user.click(getAllByRole('combobox')[0])
+  await user.click(getAllByRole('combobox')[0]!)
   await user.click(await findByText('JBrowse 1 Data'))
   await user.click(await findByText('Next'))
   await user.type(await findByDisplayValue('nameOfConnection'), 'testing')

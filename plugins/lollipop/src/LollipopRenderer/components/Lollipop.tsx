@@ -1,108 +1,150 @@
-import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
+
 import ScoreText from './ScoreText'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Lollipop = observer(function Lollipop(props: Record<string, any>) {
-  const { feature, config, layoutRecord, selectedFeatureId } = props
+import type { LayoutEntry } from '../Layout'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+
+function Circle({
+  cx,
+  cy,
+  r,
+  style,
+  featureId,
+  onFeatureMouseDown,
+  onFeatureMouseEnter,
+  onFeatureMouseOut,
+  onFeatureMouseOver,
+  onFeatureMouseUp,
+  onFeatureMouseLeave,
+  onFeatureMouseMove,
+  onFeatureClick,
+}: {
+  cx: number
+  cy: number
+  r: number
+  style: { fill: string }
+  featureId: string
+  onFeatureMouseDown?: (event: React.MouseEvent, id: string) => void
+  onFeatureMouseEnter?: (event: React.MouseEvent, id: string) => void
+  onFeatureMouseOut?: (
+    event: React.MouseEvent | React.FocusEvent,
+    id: string,
+  ) => void
+  onFeatureMouseOver?: (
+    event: React.MouseEvent | React.FocusEvent,
+    id: string,
+  ) => void
+  onFeatureMouseUp?: (event: React.MouseEvent, id: string) => void
+  onFeatureMouseLeave?: (event: React.MouseEvent, id: string) => void
+  onFeatureMouseMove?: (event: React.MouseEvent, id: string) => void
+  onFeatureClick?: (event: React.MouseEvent, id: string) => void
+}) {
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={r}
+      style={style}
+      onMouseDown={e => onFeatureMouseDown?.(e, featureId)}
+      onMouseEnter={e => onFeatureMouseEnter?.(e, featureId)}
+      onMouseOut={e => onFeatureMouseOut?.(e, featureId)}
+      onMouseOver={e => onFeatureMouseOver?.(e, featureId)}
+      onMouseUp={e => onFeatureMouseUp?.(e, featureId)}
+      onMouseLeave={e => onFeatureMouseLeave?.(e, featureId)}
+      onMouseMove={e => onFeatureMouseMove?.(e, featureId)}
+      onClick={e => {
+        e.stopPropagation()
+        onFeatureClick?.(e, featureId)
+      }}
+      onFocus={e => onFeatureMouseOver?.(e, featureId)}
+      onBlur={e => onFeatureMouseOut?.(e, featureId)}
+    />
+  )
+}
+
+const Lollipop = observer(function Lollipop({
+  feature,
+  config,
+  layoutRecord,
+  selectedFeatureId,
+  onFeatureMouseDown,
+  onFeatureMouseEnter,
+  onFeatureMouseOut,
+  onFeatureMouseOver,
+  onFeatureMouseUp,
+  onFeatureMouseLeave,
+  onFeatureMouseMove,
+  onFeatureClick,
+}: {
+  feature: Feature
+  config: AnyConfigurationModel
+  layoutRecord: LayoutEntry
+  selectedFeatureId?: string
+  onFeatureMouseDown?: (event: React.MouseEvent, id: string) => void
+  onFeatureMouseEnter?: (event: React.MouseEvent, id: string) => void
+  onFeatureMouseOut?: (
+    event: React.MouseEvent | React.FocusEvent,
+    id: string,
+  ) => void
+  onFeatureMouseOver?: (
+    event: React.MouseEvent | React.FocusEvent,
+    id: string,
+  ) => void
+  onFeatureMouseUp?: (event: React.MouseEvent, id: string) => void
+  onFeatureMouseLeave?: (event: React.MouseEvent, id: string) => void
+  onFeatureMouseMove?: (event: React.MouseEvent, id: string) => void
+  onFeatureClick?: (event: React.MouseEvent, id: string) => void
+}) {
   const {
     anchorLocation,
     y,
     data: { radiusPx },
   } = layoutRecord
 
-  const onFeatureMouseDown = (event: React.MouseEvent) => {
-    const { onFeatureMouseDown: handler, feature } = props
-    return handler?.(event, feature.id())
-  }
-
-  const onFeatureMouseEnter = (event: React.MouseEvent) => {
-    const { onFeatureMouseEnter: handler, feature } = props
-    return handler?.(event, feature.id())
-  }
-
-  const onFeatureMouseOut = (event: React.MouseEvent | React.FocusEvent) => {
-    const { onFeatureMouseOut: handler, feature } = props
-    return handler?.(event, feature.id())
-  }
-
-  const onFeatureMouseOver = (event: React.MouseEvent | React.FocusEvent) => {
-    const { onFeatureMouseOver: handler, feature } = props
-    return handler?.(event, feature.id())
-  }
-
-  const onFeatureMouseUp = (event: React.MouseEvent) => {
-    const { onFeatureMouseUp: handler, feature } = props
-    return handler?.(event, feature.id())
-  }
-
-  const onFeatureMouseLeave = (event: React.MouseEvent) => {
-    const { onFeatureMouseLeave: handler, feature } = props
-    return handler?.(event, feature.id())
-  }
-
-  const onFeatureMouseMove = (event: React.MouseEvent) => {
-    const { onFeatureMouseMove: handler, feature } = props
-    return handler?.(event, feature.id())
-  }
-
-  const onFeatureClick = (event: React.MouseEvent) => {
-    const { onFeatureClick: handler, feature } = props
-    event.stopPropagation()
-    return handler?.(event, feature.id())
-  }
-
-  const styleOuter = {
-    fill: readConfObject(config, 'strokeColor', { feature }),
-  }
-  if (String(selectedFeatureId) === String(feature.id())) {
-    styleOuter.fill = 'red'
-  }
-
-  const styleInner = {
-    fill: readConfObject(config, 'innerColor', { feature }),
-  }
-
+  const featureId = feature.id()
   const strokeWidth = readConfObject(config, 'strokeWidth', { feature })
+  const cx = anchorLocation
+  const cy = y + radiusPx
+
+  const handlers = {
+    featureId,
+    onFeatureMouseDown,
+    onFeatureMouseEnter,
+    onFeatureMouseOut,
+    onFeatureMouseOver,
+    onFeatureMouseUp,
+    onFeatureMouseLeave,
+    onFeatureMouseMove,
+    onFeatureClick,
+  }
 
   return (
-    <g data-testid={feature.id()}>
+    <g data-testid={featureId}>
       <title>{readConfObject(config, 'caption', { feature })}</title>
-      <circle
-        cx={anchorLocation}
-        cy={y + radiusPx}
+      <Circle
+        cx={cx}
+        cy={cy}
         r={radiusPx}
-        style={styleOuter}
-        onMouseDown={onFeatureMouseDown}
-        onMouseEnter={onFeatureMouseEnter}
-        onMouseOut={onFeatureMouseOut}
-        onMouseOver={onFeatureMouseOver}
-        onMouseUp={onFeatureMouseUp}
-        onMouseLeave={onFeatureMouseLeave}
-        onMouseMove={onFeatureMouseMove}
-        onClick={onFeatureClick}
-        onFocus={onFeatureMouseOver}
-        onBlur={onFeatureMouseOut}
+        style={{
+          fill:
+            String(selectedFeatureId) === String(featureId)
+              ? 'red'
+              : readConfObject(config, 'strokeColor', { feature }),
+        }}
+        {...handlers}
       />
-      {radiusPx - strokeWidth <= 2 ? null : (
-        <circle
-          cx={anchorLocation}
-          cy={y + radiusPx}
+      {radiusPx - strokeWidth > 2 ? (
+        <Circle
+          cx={cx}
+          cy={cy}
           r={radiusPx - strokeWidth}
-          style={styleInner}
-          onMouseDown={onFeatureMouseDown}
-          onMouseEnter={onFeatureMouseEnter}
-          onMouseOut={onFeatureMouseOut}
-          onMouseOver={onFeatureMouseOver}
-          onMouseUp={onFeatureMouseUp}
-          onMouseLeave={onFeatureMouseLeave}
-          onMouseMove={onFeatureMouseMove}
-          onClick={onFeatureClick}
-          onFocus={onFeatureMouseOver}
-          onBlur={onFeatureMouseOut}
+          style={{ fill: readConfObject(config, 'innerColor', { feature }) }}
+          {...handlers}
         />
-      )}
+      ) : null}
       <ScoreText
         feature={feature}
         config={config}

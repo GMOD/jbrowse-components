@@ -1,22 +1,16 @@
 import {
-  types,
-  cast,
-  Instance,
-  SnapshotIn,
-  IMSTArray,
-  addDisposer,
-} from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { Region } from '@jbrowse/core/util/types'
-import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-import {
   getSession,
   localStorageGetItem,
   localStorageSetItem,
 } from '@jbrowse/core/util'
+import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Region } from '@jbrowse/core/util/types'
+import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LabeledRegionModel = types
   .compose(
@@ -40,14 +34,15 @@ const SharedBookmarksModel = types.model('SharedBookmarksModel', {
 })
 
 export interface IExtendedLGV extends LinearGenomeViewModel {
-  showBookmarkHighlights: boolean
-  showBookmarkLabels: boolean
-  toggleShowBookmarkHighlights: (arg: boolean) => {}
-  toggleShowBookmarkLabels: (arg: boolean) => {}
+  bookmarkHighlightsVisible: boolean
+  bookmarkLabelsVisible: boolean
+  setBookmarkHighlightsVisible: (arg: boolean) => void
+  setBookmarkLabelsVisible: (arg: boolean) => void
 }
 
-export interface ILabeledRegionModel
-  extends SnapshotIn<typeof LabeledRegionModel> {
+export interface ILabeledRegionModel extends SnapshotIn<
+  typeof LabeledRegionModel
+> {
   refName: string
   start: number
   end: number
@@ -93,7 +88,13 @@ export default function f(_pluginManager: PluginManager) {
       ),
     })
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
+      /**
+       * #volatile
+       */
       selectedAssembliesPre: undefined as string[] | undefined,
     }))
     .views(self => ({
@@ -118,7 +119,7 @@ export default function f(_pluginManager: PluginManager) {
       get areBookmarksHighlightedOnAllOpenViews() {
         const { views } = getSession(self)
         return views.every(v =>
-          'showBookmarkHighlights' in v ? v.showBookmarkHighlights : true,
+          'bookmarkHighlightsVisible' in v ? v.bookmarkHighlightsVisible : true,
         )
       },
       /**
@@ -127,7 +128,7 @@ export default function f(_pluginManager: PluginManager) {
       get areBookmarksHighlightLabelsOnAllOpenViews() {
         const { views } = getSession(self)
         return views.every(v =>
-          'showBookmarkLabels' in v ? v.showBookmarkLabels : true,
+          'bookmarkLabelsVisible' in v ? v.bookmarkLabelsVisible : true,
         )
       },
     }))
@@ -228,9 +229,9 @@ export default function f(_pluginManager: PluginManager) {
        * #action
        */
       updateBulkBookmarkHighlights(color: string) {
-        self.selectedBookmarks.forEach(bookmark =>
-          this.updateBookmarkHighlight(bookmark, color),
-        )
+        for (const bookmark of self.selectedBookmarks) {
+          this.updateBookmarkHighlight(bookmark, color)
+        }
       },
       /**
        * #action
@@ -247,20 +248,32 @@ export default function f(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      setHighlightToggle(toggle: boolean) {
+      setBookmarkHighlightsVisible(arg: boolean) {
         const { views } = getSession(self)
-        ;(views as IExtendedLGV[]).forEach(view => {
-          view.toggleShowBookmarkHighlights?.(toggle)
-        })
+        // hacky, but mst walk() on session leads to 'too much recursion'
+        for (const view of views) {
+          // @ts-expect-error
+          view.setBookmarkHighlightsVisible?.(arg)
+          // @ts-expect-error
+          view.views?.map(view => {
+            view.setBookmarkHighlightsVisible?.(arg)
+          })
+        }
       },
       /**
        * #action
        */
-      setLabelToggle(toggle: boolean) {
+      setBookmarkLabelsVisible(arg: boolean) {
         const { views } = getSession(self)
-        ;(views as IExtendedLGV[]).forEach(view => {
-          view.toggleShowBookmarkLabels?.(toggle)
-        })
+        // hacky, but mst walk() on session leads to 'too much recursion'
+        for (const view of views) {
+          // @ts-expect-error
+          view.setBookmarkLabelsVisible?.(arg)
+          // @ts-expect-error
+          view.views?.map(view => {
+            view.setBookmarkHighlightsVisible?.(arg)
+          })
+        }
       },
     }))
     .actions(self => ({
@@ -283,6 +296,10 @@ export default function f(_pluginManager: PluginManager) {
         }
         self.selectedBookmarks = []
       },
+
+      removeBookmarkObject(arg: Instance<typeof LabeledRegionModel>) {
+        self.bookmarks.remove(arg)
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -299,9 +316,12 @@ export default function f(_pluginManager: PluginManager) {
         })
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem(key, JSON.stringify(self.bookmarks))
-          }),
+          autorun(
+            function bookmarkLocalStorageAutorun() {
+              localStorageSetItem(key, JSON.stringify(self.bookmarks))
+            },
+            { name: 'BookmarkLocalStorage' },
+          ),
         )
       },
     }))

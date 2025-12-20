@@ -16,7 +16,7 @@ const ChainAdapter = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'Target is the first value in the array, query is the second',
+        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
     },
     /**
      * #slot
@@ -44,7 +44,36 @@ const ChainAdapter = ConfigurationSchema(
       defaultValue: { uri: '/path/to/file.chain', locationType: 'UriLocation' },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "ChainAdapter",
+     *   "uri": "yourfile.chain.gz",
+     *   "queryAssembly": "hg19",
+     *   "targetAssembly": "hg38"
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            chainLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default ChainAdapter

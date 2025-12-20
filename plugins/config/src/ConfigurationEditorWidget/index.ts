@@ -1,9 +1,12 @@
 import { lazy } from 'react'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
-import PluginManager from '@jbrowse/core/PluginManager'
-import stateModelFactory from './model'
+
 import HeadingComponent from './components/HeadingComponent'
+import stateModelFactory from './model'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const configSchema = ConfigurationSchema('ConfigurationEditorWidget', {})
 

@@ -11,7 +11,7 @@ export interface PAFRecord {
   extra: {
     cg?: string
     blockLen?: number
-    mappingQual: number
+    mappingQual?: number
     numMatches?: number
     meanScore?: number
   }
@@ -49,8 +49,8 @@ export interface PAFRecord {
 // could be a 2d map)
 //
 // the result is a single number that says e.g. chr5 from human mapped to chr5
-// on mouse with 0.8 quality, and that0.8 is then attached to all the pieces of
-// chr5 on human that mapped to chr5 on mouse. if chr5 on human also more
+// on mouse with 0.8 quality, and that 0.8 is then attached to all the pieces
+// of chr5 on human that mapped to chr5 on mouse. if chr5 on human also more
 // weakly mapped to chr6 on mouse, then it would have another value e.g. 0.6.
 // this can show strong and weak levels of synteny, especially in polyploidy
 // situations
@@ -60,11 +60,11 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
-    const key = query + '-' + target
+    const key = `${query}-${target}`
     if (!scoreMap[key]) {
       scoreMap[key] = { quals: [], len: [] }
     }
-    scoreMap[key].quals.push(entry.extra.mappingQual)
+    scoreMap[key].quals.push(entry.extra.mappingQual || 1)
     scoreMap[key].len.push(entry.extra.blockLen || 1)
   }
 
@@ -77,7 +77,7 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   for (const entry of ret) {
     const query = entry.qname
     const target = entry.tname
-    const key = query + '-' + target
+    const key = `${query}-${target}`
     entry.extra.meanScore = meanScoreMap[key]
   }
 
@@ -97,7 +97,6 @@ export function getWeightedMeans(ret: PAFRecord[]) {
 
 // https://gist.github.com/stekhn/a12ed417e91f90ecec14bcfa4c2ae16a
 function weightedMean(tuples: [number, number][]) {
-  // eslint-disable-next-line unicorn/no-array-reduce
   const [valueSum, weightSum] = tuples.reduce(
     ([valueSum, weightSum], [value, weight]) => [
       valueSum + value * weight,

@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
+
 import baseConfigFactory from '../LinearComparativeDisplay/configSchemaF'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearSyntenyDisplay
@@ -22,7 +24,10 @@ function configSchemaFactory(pluginManager: PluginManager) {
        * #slot
        * currently unused
        */
-      middle: { type: 'boolean', defaultValue: true },
+      middle: {
+        type: 'boolean',
+        defaultValue: true,
+      },
     },
     {
       /**

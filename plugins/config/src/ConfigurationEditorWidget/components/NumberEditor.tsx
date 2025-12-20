@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+
 import { observer } from 'mobx-react'
+
 import ConfigurationTextField from './ConfigurationTextField'
 
 const NumberEditor = observer(function ({
@@ -28,7 +30,9 @@ const NumberEditor = observer(function ({
       helperText={slot.description}
       value={val}
       type="number"
-      onChange={evt => setVal(evt.target.value)}
+      onChange={evt => {
+        setVal(evt.target.value)
+      }}
     />
   )
 })

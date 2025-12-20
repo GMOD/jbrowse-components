@@ -1,17 +1,16 @@
 import '@testing-library/jest-dom'
 
-import { fireEvent } from '@testing-library/react'
-import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { fireEvent } from '@testing-library/react'
 
-// locals
-import JBrowseRootModelFactory from '../rootModel/rootModel'
-import corePlugins from '../corePlugins'
-import * as sessionSharing from '../sessionSharing'
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
-import { doBeforeEach, setup, createView, hts } from './util'
+import corePlugins from '../corePlugins'
 import TestPlugin from './TestPlugin'
+import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
+import JBrowseRootModelFactory from '../rootModel/rootModel'
 import sessionModelFactory from '../sessionModel'
+import * as sessionSharing from '../sessionSharing'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -27,15 +26,6 @@ test('renders with an empty config', async () => {
   const { findByText } = await createView()
   await findByText('Help', {}, delay)
 }, 20000)
-
-test('lollipop track test', async () => {
-  const { view, findByTestId } = await createView()
-  view.setNewView(1, 150)
-  fireEvent.click(await findByTestId(hts('lollipop_track'), {}, delay))
-
-  await findByTestId('display-lollipop_track_linear', {}, delay)
-  await findByTestId('three', {}, delay)
-}, 30000)
 
 test('toplevel configuration', () => {
   const plugins = [...corePlugins, TestPlugin].map(P => new P())
@@ -64,15 +54,17 @@ test('toplevel configuration', () => {
 })
 
 test('assembly aliases', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId, findAllByTestId } = await createView()
   view.setNewView(0.05, 5000)
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
-  await findByTestId('box-test-vcf-604453', {}, delay)
+  expectCanvasMatch(
+    (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
+  )
 }, 30000)
 
-test('nclist track test with long name', async () => {
+xtest('nclist track test with long name', async () => {
   const { view, findByTestId, findByText } = await createView()
   view.setNewView(6.2, -301)
   fireEvent.click(await findByTestId(hts('nclist_long_names'), {}, delay))

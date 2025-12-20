@@ -1,19 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
-import { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive, types } from 'mobx-state-tree'
 
-// locals
-import { LinearGenomeViewModel } from '../../LinearGenomeView'
-import TooLargeMessage from '../components/TooLargeMessage'
-import { getDisplayStr, getFeatureDensityStatsPre } from './util'
 import autorunFeatureDensityStats from './autorunFeatureDensityStats'
+import { getDisplayStr, getFeatureDensityStatsPre } from './util'
+import TooLargeMessage from '../components/TooLargeMessage'
+
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region } from '@jbrowse/core/util/types'
 
 type LGV = LinearGenomeViewModel
+
+type AutorunSelf = Parameters<typeof autorunFeatureDensityStats>[0]
+type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
 /**
  * #stateModel FeatureDensityMixin
@@ -89,7 +90,9 @@ export default function FeatureDensityMixin() {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => autorunFeatureDensityStats(self as any)),
+          autorun(() =>
+            autorunFeatureDensityStats(self as unknown as AutorunSelf),
+          ),
         )
       },
     }))
@@ -114,11 +117,11 @@ export default function FeatureDensityMixin() {
       /**
        * #action
        */
-      async getFeatureDensityStats() {
+      getFeatureDensityStats() {
         if (!self.featureDensityStatsP) {
           self.featureDensityStatsP = getFeatureDensityStatsPre(
-            self as any,
-          ).catch(e => {
+            self as unknown as FeatureDensityStatsSelf,
+          ).catch((e: unknown) => {
             if (isAlive(self)) {
               this.setFeatureDensityStatsP(undefined)
             }
@@ -190,6 +193,12 @@ export default function FeatureDensityMixin() {
     }))
     .views(self => ({
       /**
+       * #getter
+       */
+      get featureDensityStatsReadyAndRegionNotTooLarge() {
+        return self.featureDensityStatsReady && !self.regionTooLarge
+      },
+      /**
        * #method
        */
       regionCannotBeRenderedText(_region: Region) {
@@ -205,9 +214,8 @@ export default function FeatureDensityMixin() {
        *  react node allows user to force load at current setting
        */
       regionCannotBeRendered(_region: Region) {
-        return self.regionTooLarge ? (
-          <TooLargeMessage model={self as any} />
-        ) : null
+        // @ts-expect-error
+        return self.regionTooLarge ? <TooLargeMessage model={self} /> : null
       },
     }))
 }

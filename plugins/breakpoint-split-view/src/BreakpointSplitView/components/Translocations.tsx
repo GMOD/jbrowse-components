@@ -1,63 +1,51 @@
-import React, { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+
 import { getSession } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 
-// locals
+import {
+  LEFT,
+  createMouseHandlers,
+  getTestId,
+  getYOffset,
+} from './overlayUtils'
 import { getMatchedTranslocationFeatures } from './util'
-import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
-import { BreakpointViewModel, LayoutRecord } from '../model'
+import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
 
-const [LEFT] = [0, 1, 2, 3]
+import type { OverlayProps } from './overlayUtils'
+import type { LayoutRecord } from '../types'
 
 function str(s: string) {
-  if (s === '+') {
-    return 1
-  } else if (s === '-') {
-    return -1
-  } else {
-    return 0
-  }
+  return s === '+' ? 1 : s === '-' ? -1 : 0
 }
 
 const Translocations = observer(function ({
   model,
   trackId,
-  parentRef: ref,
+  parentRef,
   getTrackYPosOverride,
-}: {
-  model: BreakpointViewModel
-  trackId: string
-  parentRef: React.RefObject<SVGSVGElement>
-  getTrackYPosOverride?: (trackId: string, level: number) => number
-}) {
-  const { views } = model
+}: OverlayProps) {
+  const { interactiveOverlay, views } = model
   const session = getSession(model)
   const { assemblyManager } = session
+  const snap = getSnapshot(model)
+  const v0 = views[0]
+  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
+  useNextFrame(snap)
   const totalFeatures = model.getTrackFeatures(trackId)
-  const layoutMatches = useMemo(
-    () =>
-      model.getMatchedFeaturesInLayout(
-        trackId,
-        getMatchedTranslocationFeatures(totalFeatures),
-      ),
 
-    [totalFeatures, trackId, model],
-  )
+  const layoutMatches = useMemo(() => {
+    const matchedFeatures = getMatchedTranslocationFeatures(totalFeatures)
+    return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
+  }, [totalFeatures, trackId, model])
 
   const [mouseoverElt, setMouseoverElt] = useState<string>()
-  const snap = getSnapshot(model)
-  useNextFrame(snap)
+  const yOffset = getYOffset(parentRef)
+  const tracks = views.map(v => v.getTrack(trackId))
 
-  const assembly = assemblyManager.get(views[0].assemblyNames[0])
   if (!assembly) {
     return null
-  }
-
-  let yOffset = 0
-  if (ref.current) {
-    const rect = ref.current.getBoundingClientRect()
-    yOffset = rect.top
   }
 
   // we hardcode the TRA to go to the "other view" and if there is none, we
@@ -67,43 +55,38 @@ const Translocations = observer(function ({
   if (views.length < 2) {
     return null
   }
+
   return (
     <g
       fill="none"
       stroke="green"
       strokeWidth={5}
-      data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
+      data-testid={getTestId(trackId, layoutMatches.length > 0)}
     >
       {layoutMatches.map(chunk => {
-        // we follow a path in the list of chunks, not from top to bottom,
-        // just in series following x1,y1 -> x2,y2
         const ret = []
         for (const { layout: c1, feature: f1, level: level1 } of chunk) {
           const level2 = level1 === 0 ? 1 : 0
           const id = f1.id()
-          if (!c1) {
-            return null
-          }
 
           const info = f1.get('INFO')
           const chr2 = info.CHR2[0]
           const end2 = info.END[0]
-          const res = info.STRANDS?.[0]?.split('') // not all files have STRANDS
+          const res = info.STRANDS?.[0]?.split('')
           const [myDirection, mateDirection] = res ?? ['.', '.']
 
-          const r = getPxFromCoordinate(views[level2], chr2, end2)
+          const r = getPxFromCoordinate(views[level2]!, chr2, end2)
           if (r) {
             const c2: LayoutRecord = [r, 0, r + 1, 0]
             const x1 = getPxFromCoordinate(
-              views[level1],
+              views[level1]!,
               f1.get('refName'),
               c1[LEFT],
             )
             const x2 = r
-            const reversed1 = views[level1].pxToBp(x1).reversed
-            const reversed2 = views[level2].pxToBp(x2).reversed
+            const reversed1 = views[level1]!.pxToBp(x1).reversed
+            const reversed2 = views[level2]!.pxToBp(x2).reversed
 
-            const tracks = views.map(v => v.getTrack(trackId))
             const y1 =
               yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
               yOffset
@@ -112,38 +95,36 @@ const Translocations = observer(function ({
               yOffset
 
             const path = [
-              'M', // move to
+              'M',
               x1 - 20 * str(myDirection) * (reversed1 ? -1 : 1),
               y1,
-              'L', // line to
+              'L',
               x1,
               y1,
-              'L', // line to
+              'L',
               x2,
               y2,
-              'L', // line to
+              'L',
               x2 - 20 * str(mateDirection) * (reversed2 ? -1 : 1),
               y2,
             ].join(' ')
+
+            const mouseHandlers = createMouseHandlers(
+              id,
+              setMouseoverElt,
+              session,
+              'VariantFeatureWidget',
+              'variantFeature',
+              totalFeatures.get(id)?.toJSON(),
+            )
+
             ret.push(
               <path
                 d={path}
                 key={JSON.stringify(path)}
+                pointerEvents={interactiveOverlay ? 'auto' : undefined}
                 strokeWidth={id === mouseoverElt ? 10 : 5}
-                onClick={() => {
-                  const featureWidget = session.addWidget?.(
-                    'VariantFeatureWidget',
-                    'variantFeature',
-                    {
-                      featureData: (
-                        totalFeatures.get(id) || { toJSON: () => {} }
-                      ).toJSON(),
-                    },
-                  )
-                  session.showWidget?.(featureWidget)
-                }}
-                onMouseOver={() => setMouseoverElt(id)}
-                onMouseOut={() => setMouseoverElt(undefined)}
+                {...mouseHandlers}
               />,
             )
           }

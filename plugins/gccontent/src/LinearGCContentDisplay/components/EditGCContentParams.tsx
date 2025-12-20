@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { useState } from 'react'
+
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
@@ -7,7 +8,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
 const EditGCContentParamsDialog = observer(function ({
   model,
@@ -33,18 +34,22 @@ const EditGCContentParamsDialog = observer(function ({
           and it is not recommended to make the step size larger than the window
           size as then the sliding window will miss contents.
         </Typography>
-        {windowDelta > windowSize ? (
+        {+windowDelta > +windowSize ? (
           <ErrorMessage error="It is not recommended to make the step size larger than the window size" />
         ) : null}
         <TextField
           label="Size of sliding window (bp)"
-          value={`${windowSize}`}
-          onChange={event => setWindowSize(event.target.value)}
+          value={windowSize}
+          onChange={event => {
+            setWindowSize(event.target.value)
+          }}
         />
         <TextField
           label="Step size of sliding window (bp)"
-          value={`${windowDelta}`}
-          onChange={event => setWindowDelta(event.target.value)}
+          value={windowDelta}
+          onChange={event => {
+            setWindowDelta(event.target.value)
+          }}
         />
 
         <DialogActions>
@@ -63,7 +68,9 @@ const EditGCContentParamsDialog = observer(function ({
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => handleClose()}
+            onClick={() => {
+              handleClose()
+            }}
           >
             Cancel
           </Button>

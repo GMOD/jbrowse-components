@@ -1,24 +1,8 @@
-import { types } from 'mobx-state-tree'
-import propTypes from 'prop-types'
-import { PropTypes as MxPropTypes } from 'mobx-react'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { nanoid } from '../nanoid'
 
 export const ElementId = types.optional(types.identifier, () => nanoid())
-
-// PropTypes that are useful when working with instances of these in react components
-export const PropTypes = {
-  Region: propTypes.shape({
-    refName: propTypes.string.isRequired,
-    start: propTypes.number.isRequired,
-    end: propTypes.number.isRequired,
-  }),
-  ConfigSchema: MxPropTypes.objectOrObservableObject,
-  Feature: propTypes.shape({
-    get: propTypes.func.isRequired,
-    id: propTypes.func.isRequired,
-  }),
-}
 
 export const NoAssemblyRegion = types
   .model('NoAssemblyRegion', {
@@ -72,7 +56,7 @@ export const UriLocationRaw = types.model('UriLocation', {
 
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   postProcessor: snap => {
-    // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+    // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
     const { baseUri, ...rest } = snap as Omit<typeof snap, symbol>
     if (!baseUri) {
       return rest
@@ -86,12 +70,13 @@ export const FileLocation = types.snapshotProcessor(
   {
     // @ts-expect-error
     preProcessor(snap) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return undefined
       }
 
       // @ts-expect-error
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       const { locationType, ...rest } = snap as Omit<typeof snap, symbol>
       if (!locationType) {
         // @ts-expect-error

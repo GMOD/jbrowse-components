@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import { getEnv } from '../util'
 import { stringToJexlExpression } from '../util/jexlStrings'
 import { FileLocation } from '../util/types/mst'
-import { getEnv } from '../util'
 
-function isValidColorString(/* str */) {
-  // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string
+import type { IAnyComplexType, IAnyModelType } from '@jbrowse/mobx-state-tree'
+
+function isValidColorString(_str: string) {
   return true
 }
 const typeModels: Record<string, any> = {
@@ -189,11 +190,7 @@ export default function ConfigSlot(
     throw new Error("no 'defaultValue' provided")
   }
 
-  // if the `type` is something like `color`, then the model name
-  // here will be `ColorConfigSlot`
-  const configSlotModelName = `${slotName
-    .charAt(0)
-    .toUpperCase()}${slotName.slice(1)}ConfigSlot`
+  const configSlotModelName = `${slotName.charAt(0).toUpperCase()}${slotName.slice(1)}ConfigSlot`
   let slot = types
     .model(configSlotModelName, {
       name: types.literal(slotName),
@@ -211,28 +208,21 @@ export default function ConfigSlot(
     }))
     .views(self => ({
       get expr() {
-        if (self.isCallback) {
-          // compile as jexl function
-          const { pluginManager } = getEnv(self)
-          if (!pluginManager && typeof jest === 'undefined') {
-            console.warn(
-              'no pluginManager detected on config env (if you dynamically instantiate a config, for example in renderProps for your display model, check that you add the env argument)',
+        return self.isCallback
+          ? stringToJexlExpression(
+              String(self.value),
+              getEnv(self).pluginManager.jexl,
             )
-          }
-          return stringToJexlExpression(String(self.value), pluginManager?.jexl)
-        }
-        return { evalSync: () => self.value }
+          : {
+              evalSync: () => self.value,
+            }
       },
 
       // JS representation of the value of this slot, suitable
       // for embedding in either JSON or a JS function string.
       // many of the data types override this in typeModelExtensions
       get valueJSON(): any[] | Record<string, any> | string | undefined {
-        if (self.isCallback) {
-          return undefined
-        }
-
-        return json(self.value)
+        return self.isCallback ? undefined : json(self.value)
       },
     }))
     .preProcessSnapshot(val =>
@@ -281,16 +271,13 @@ export default function ConfigSlot(
           /* ignore */
         }
         self.value = defaultValue
-        // if it is still a callback (happens if the defaultValue is a callback),
-        // then use the last-resort fallback default
-
+        // if it is still a callback (happens if the defaultValue is a
+        // callback), then use the last-resort fallback default
         // if defaultValue has jexl: string, run this part
-        if (self.isCallback) {
-          if (!(type in fallbackDefaults)) {
-            throw new Error(`no fallbackDefault defined for type ${type}`)
-          }
-          self.value = fallbackDefaults[type]
+        if (!(type in fallbackDefaults)) {
+          throw new Error(`no fallbackDefault defined for type ${type}`)
         }
+        self.value = fallbackDefaults[type]
       },
     }))
 
@@ -306,7 +293,8 @@ export default function ConfigSlot(
     description,
     value: defaultValue,
   })
-  const m = completeModel
-  Object.defineProperty(m, 'isJBrowseConfigurationSlot', { value: true })
-  return m
+  Object.defineProperty(completeModel, 'isJBrowseConfigurationSlot', {
+    value: true,
+  })
+  return completeModel
 }

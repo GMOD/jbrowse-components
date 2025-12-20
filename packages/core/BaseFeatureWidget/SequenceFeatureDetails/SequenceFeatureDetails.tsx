@@ -1,16 +1,16 @@
-import React, { lazy, useRef, useState, Suspense } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// locals
-import { useFeatureSequence } from './hooks'
 import { ErrorMessage, LoadingEllipses } from '../../ui'
-import { SimpleFeatureSerialized, getSession } from '../../util'
-import { BaseFeatureWidgetModel } from '../stateModelFactory'
-
-// icons
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector'
+import { SimpleFeature, getSession } from '../../util'
+import { useFeatureSequence } from '../../util/useFeatureSequence'
+
+import type { SimpleFeatureSerialized } from '../../util'
+import type { BaseFeatureWidgetModel } from '../stateModelFactory'
 
 // lazies
 const SequencePanel = lazy(() => import('./SequencePanel'))
@@ -29,26 +29,25 @@ const SequenceFeatureDetails = observer(function ({
   const { upDownBp } = sequenceFeatureDetails
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
-  const [force, setForce] = useState(false)
-  const { sequence, error } = useFeatureSequence(
-    model,
-    feature,
+  const [openInDialog, setOpenInDialog] = useState(false)
+  const [forceLoad, setForceLoad] = useState(false)
+  const session = getSession(model)
+  const assemblyName = model.view?.assemblyNames?.[0]
+  const { sequence, error } = useFeatureSequence({
+    assemblyName,
+    session,
+    feature: new SimpleFeature(feature),
     upDownBp,
-    force,
-  )
-
-  const [mode, setMode] = useState('cds')
+    forceLoad,
+  })
+  useEffect(() => {
+    sequenceFeatureDetails.setFeature(feature)
+  }, [sequenceFeatureDetails, feature])
 
   return (
     <>
       <div>
-        <SequenceTypeSelector
-          mode={mode}
-          setMode={setMode}
-          feature={feature}
-          model={sequenceFeatureDetails}
-        />
-
+        <SequenceTypeSelector model={sequenceFeatureDetails} />
         <SequenceFeatureMenu
           ref={seqPanelRef}
           model={sequenceFeatureDetails}
@@ -56,33 +55,45 @@ const SequenceFeatureDetails = observer(function ({
             {
               label: 'Open in dialog',
               onClick: () => {
-                getSession(model).queueDialog(handleClose => [
-                  SequenceDialog,
-                  { model, feature, handleClose },
-                ])
+                setOpenInDialog(true)
               },
             },
           ]}
         />
       </div>
-      <div>
-        {feature.type === 'gene' ? (
-          <Typography>
-            Note: inspect subfeature sequences for protein/CDS computations
-          </Typography>
-        ) : null}
-        {error ? (
-          <ErrorMessage error={error} />
-        ) : !sequence ? (
-          <LoadingEllipses />
-        ) : sequence ? (
-          'error' in sequence ? (
+      {openInDialog ? (
+        <div>
+          Open in dialog...
+          <Suspense fallback={<LoadingEllipses />}>
+            <SequenceDialog
+              model={model}
+              feature={feature}
+              handleClose={() => {
+                setOpenInDialog(false)
+              }}
+            />
+          </Suspense>
+        </div>
+      ) : (
+        <div>
+          {feature.type === 'gene' ? (
+            <Typography>
+              Note: inspect subfeature sequences for protein/CDS computations
+            </Typography>
+          ) : null}
+          {error ? (
+            <ErrorMessage error={error} />
+          ) : !sequence ? (
+            <LoadingEllipses />
+          ) : 'error' in sequence ? (
             <>
               <Typography color="error">{sequence.error}</Typography>
               <Button
                 variant="contained"
                 color="inherit"
-                onClick={() => setForce(true)}
+                onClick={() => {
+                  setForceLoad(true)
+                }}
               >
                 Force load
               </Button>
@@ -92,16 +103,13 @@ const SequenceFeatureDetails = observer(function ({
               <SequencePanel
                 ref={seqPanelRef}
                 feature={feature}
-                mode={mode}
                 sequence={sequence}
                 model={sequenceFeatureDetails}
               />
             </Suspense>
-          )
-        ) : (
-          <Typography>No sequence found</Typography>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </>
   )
 })

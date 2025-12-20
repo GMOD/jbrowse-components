@@ -2,26 +2,31 @@
  * @jest-environment node
  */
 
-import path from 'path'
 import fs from 'fs'
-import { setup } from '../testUtil'
+import path from 'path'
 import { gunzipSync } from 'zlib'
+
+import { runCommand, runInTmpDir } from '../testUtil'
 
 const base = path.join(__dirname, '..', '..', 'test', 'data')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
 
 const exists = (p: string) => fs.existsSync(p)
 
-describe('make-pif', () => {
-  const fn = path.basename(simplePaf, '.paf') + '.pif.gz'
-  setup
-    .command(['make-pif', simplePaf, '--out', fn])
-    .it('processes volvox paf', () => {
-      expect(exists(fn)).toBeTruthy()
-      expect(gunzipSync(fs.readFileSync(fn)).toString()).toMatchSnapshot()
-    })
-  setup.command(['make-pif', simplePaf, '--out', fn, '--csi']).it('csi', () => {
+test('make-pif', async () => {
+  await runInTmpDir(async () => {
+    const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
+    await runCommand(['make-pif', simplePaf, '--out', fn])
     expect(exists(fn)).toBeTruthy()
-    expect(exists(fn + '.csi')).toBeTruthy()
+    expect(gunzipSync(fs.readFileSync(fn)).toString()).toMatchSnapshot()
+  })
+})
+
+test('make pif with CSI', async () => {
+  await runInTmpDir(async () => {
+    const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
+    await runCommand(['make-pif', simplePaf, '--out', fn, '--csi'])
+    expect(exists(fn)).toBeTruthy()
+    expect(exists(`${fn}.csi`)).toBeTruthy()
   })
 })

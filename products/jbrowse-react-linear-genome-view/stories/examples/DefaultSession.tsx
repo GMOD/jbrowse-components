@@ -1,6 +1,5 @@
-import React from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
 import { getVolvoxConfig } from './util'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
 
 export const DefaultSession = () => {
   // this default session loads an alignments track at startup

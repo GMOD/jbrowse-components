@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
+import { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 
 export const ExternalTokenEntryForm = ({
   internetAccountId,
@@ -16,6 +17,9 @@ export const ExternalTokenEntryForm = ({
       open
       maxWidth="xl"
       data-testid="externalToken-form"
+      onClose={() => {
+        handleClose()
+      }}
       title={`Enter token for ${internetAccountId}`}
     >
       <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
@@ -23,9 +27,13 @@ export const ExternalTokenEntryForm = ({
           required
           label="Enter Token"
           variant="outlined"
-          inputProps={{ 'data-testid': 'entry-externalToken' }}
-          onChange={event => setToken(event.target.value)}
+          onChange={event => {
+            setToken(event.target.value)
+          }}
           margin="dense"
+          slotProps={{
+            htmlInput: { 'data-testid': 'entry-externalToken' },
+          }}
         />
       </DialogContent>
       <DialogActions>
@@ -45,7 +53,9 @@ export const ExternalTokenEntryForm = ({
         <Button
           variant="contained"
           color="secondary"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
         >
           Cancel
         </Button>

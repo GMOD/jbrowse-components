@@ -1,9 +1,8 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
 
-// locals
-import AdapterClass from './JBrowse1TextSearchAdapter'
 import configSchema from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function JBrowse1TextSearchAdapterF(
   pluginManager: PluginManager,
@@ -13,8 +12,9 @@ export default function JBrowse1TextSearchAdapterF(
       new TextSearchAdapterType({
         name: 'JBrowse1TextSearchAdapter',
         configSchema,
-        AdapterClass,
         description: 'A JBrowse 1 text search adapter',
+        getAdapterClass: () =>
+          import('./JBrowse1TextSearchAdapter').then(t => t.default),
       }),
   )
 }

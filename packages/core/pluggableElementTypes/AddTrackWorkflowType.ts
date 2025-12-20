@@ -1,10 +1,10 @@
-import React from 'react'
-import { IAnyModelType } from 'mobx-state-tree'
+import type React from 'react'
+
 import PluggableElementBase from './PluggableElementBase'
 
+import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
+
 type BasicComponent = React.ComponentType<{
-  // TODO: can we use AbstractViewModel here?
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: any
 }>
 type AddTrackWorkflowComponentType =
@@ -24,11 +24,5 @@ export default class AddTrackWorkflow extends PluggableElementBase {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
     this.stateModel = stuff.stateModel
-    if (!this.ReactComponent) {
-      throw new Error(`no ReactComponent defined for view ${this.name}`)
-    }
-    if (!this.stateModel) {
-      throw new Error(`no stateModel defined for view ${this.name}`)
-    }
   }
 }

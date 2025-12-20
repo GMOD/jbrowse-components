@@ -1,13 +1,12 @@
-import React from 'react'
+import { Dialog } from '@jbrowse/core/ui'
 import {
+  Button,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  Button,
   List,
   ListItem,
-  DialogActions,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 const CloseConnectionDialog = observer(function CloseConnectionDialog({
@@ -23,7 +22,12 @@ const CloseConnectionDialog = observer(function CloseConnectionDialog({
 }) {
   const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo
   return (
-    <Dialog open maxWidth="lg" title={`Close connection "${name}"`}>
+    <Dialog
+      open
+      maxWidth="lg"
+      title={`Close connection "${name}"`}
+      onClose={onClose}
+    >
       <DialogContent>
         {dereferenceTypeCount ? (
           <>
@@ -42,19 +46,20 @@ const CloseConnectionDialog = observer(function CloseConnectionDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose()} color="primary">
+        <Button
+          onClick={() => {
+            onClose()
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button
           variant="contained"
-          onClick={
-            modalInfo
-              ? () => {
-                  safelyBreakConnection?.()
-                  onClose()
-                }
-              : () => {}
-          }
+          onClick={() => {
+            safelyBreakConnection?.()
+            onClose()
+          }}
           color="primary"
         >
           OK

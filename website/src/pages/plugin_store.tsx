@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import copy from 'copy-to-clipboard'
+import { useState } from 'react'
 
 import Layout from '@theme/Layout'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
@@ -226,7 +225,8 @@ function ConfigBlock(props) {
         disableRipple
         size="small"
         startIcon={clickedCopy ? <AssignmentTurnedIn /> : <Assignment />}
-        onClick={() => {
+        onClick={async () => {
+          const { default: copy } = await import('copy-to-clipboard')
           copy(configString)
           setClickedCopy(true)
           setTimeout(() => setClickedCopy(false), 1000)

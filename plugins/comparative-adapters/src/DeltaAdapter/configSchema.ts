@@ -16,7 +16,7 @@ const DeltaAdapter = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'Array of assembly names to use for this file. The target assembly name is the first value in the array, query assembly name is the second',
+        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
     },
     /**
      * #slot
@@ -41,10 +41,42 @@ const DeltaAdapter = ConfigurationSchema(
      */
     deltaLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/file.delta', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/file.delta',
+        locationType: 'UriLocation',
+      },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "DeltaAdapter",
+     *   "uri": "yourfile.delta.gz",
+     *   "queryAssembly": "hg19",
+     *   "targetAssembly": "hg38"
+     * }
+     * ```
+     */
+
+    preProcessSnapshot: snap => {
+      return snap.uri
+        ? {
+            ...snap,
+            deltaLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default DeltaAdapter

@@ -1,23 +1,19 @@
-import React from 'react'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import CloseIcon from '@mui/icons-material/Close'
 import {
   Button,
-  DialogContent,
   DialogActions,
+  DialogContent,
   IconButton,
   Tooltip,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { AbstractSessionModel } from '@jbrowse/core/util'
 
-// icons
-import CloseIcon from '@mui/icons-material/Close'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   connectionContainer: {
@@ -59,7 +55,11 @@ const ManageConnectionsDialog = observer(function ({
             return (
               <Typography key={`conn-${name}`}>
                 {adminMode || sessionConnections?.includes(conf) ? (
-                  <IconButton onClick={() => breakConnection(conf, true)}>
+                  <IconButton
+                    onClick={() => {
+                      breakConnection(conf, true)
+                    }}
+                  >
                     <CloseIcon color="error" />
                   </IconButton>
                 ) : (
@@ -76,7 +76,9 @@ const ManageConnectionsDialog = observer(function ({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           variant="contained"
           color="primary"
         >

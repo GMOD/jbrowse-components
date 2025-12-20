@@ -1,24 +1,12 @@
-import { groupBy, Feature } from '@jbrowse/core/util'
-import { drawLine } from '../drawLine'
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 
-import WiggleBaseRenderer, {
-  MultiRenderArgsDeserialized as MultiArgs,
-} from '../WiggleBaseRenderer'
+import type { MultiRenderArgsDeserialized } from '../types'
 
-export default class MultiLineRenderer extends WiggleBaseRenderer {
-  // @ts-expect-error
-  async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
-    const { sources, features } = props
-    const groups = groupBy(features.values(), f => f.get('source'))
-    let feats = [] as Feature[]
-    sources.forEach(source => {
-      const { reducedFeatures } = drawLine(ctx, {
-        ...props,
-        features: groups[source.name] || [],
-        colorCallback: () => source.color || 'blue',
-      })
-      feats = feats.concat(reducedFeatures)
-    })
-    return { reducedFeatures: feats }
+export default class MultiLineRenderer extends FeatureRendererType {
+  supportsSVG = true
+
+  async render(renderProps: MultiRenderArgsDeserialized) {
+    const { makeImageData } = await import('./makeImageData')
+    return makeImageData(renderProps, this.pluginManager)
   }
 }

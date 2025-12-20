@@ -1,18 +1,17 @@
-import React from 'react'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import {
   getFillProps,
   getStrokeProps,
   getTickDisplayStr,
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
 import { getBlockLabelKeysToHide } from './util'
-import { DotplotViewModel } from '../model'
+
+import type { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles()(() => ({
   vtext: {
@@ -117,7 +116,7 @@ export const HorizontalAxisRaw = observer(function ({
             <text
               x={x - 7}
               y={0}
-              transform={`rotate(${htextRotation},${x},${0})`}
+              transform={`rotate(${htextRotation},${x},0)`}
               key={`text-${JSON.stringify(tick)}`}
               fontSize={11}
               dominantBaseline="middle"

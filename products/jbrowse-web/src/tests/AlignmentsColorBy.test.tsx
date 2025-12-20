@@ -1,14 +1,13 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-// locals
 import {
-  setup,
-  expectCanvasMatch,
-  doBeforeEach,
   createView,
+  doBeforeEach,
+  expectCanvasMatch,
   hts,
   pv,
+  setup,
 } from './util'
 
 setup()
@@ -26,14 +25,14 @@ test('color by tag', async () => {
   view.setNewView(0.465, 85055)
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Color scheme'))
+  await user.click(await screen.findByText('Color by...'))
   await user.click(await screen.findByText('Color by tag...'))
   await user.type(
     await screen.findByPlaceholderText('Enter tag name', ...opts),
     'HP',
   )
   await user.click(await screen.findByText('Submit'))
-  await screen.findAllByTestId('pileup-tag-HP', ...opts)
+  await screen.findAllByTestId('pileup-overlay-tag-HP', ...opts)
   const f1 = within(await screen.findByTestId('Blockset-pileup'))
   expectCanvasMatch(await f1.findByTestId(pv('39805..40176-0'), ...opts))
 }, 50000)
@@ -46,9 +45,9 @@ test('color by stranded rna-seq', async () => {
     await screen.findByTestId(hts('paired_end_stranded_rnaseq'), ...opts),
   )
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Color scheme'))
+  await user.click(await screen.findByText('Color by...'))
   await user.click(await screen.findByText('First-of-pair strand'))
-  await screen.findAllByTestId('pileup-stranded', ...opts)
+  await screen.findAllByTestId('pileup-overlay-stranded', ...opts)
   const f1 = within(await screen.findByTestId('Blockset-pileup'))
 
   // note on test flakiness: this is the taller of two blocks, (the first

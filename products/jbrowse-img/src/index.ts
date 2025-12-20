@@ -1,31 +1,34 @@
 import fs from 'fs'
+
 import yargs from 'yargs'
 
-// locals
-import { standardizeArgv, parseArgv } from './parseArgv'
-import { renderRegion, Opts } from './renderRegion'
-import { convert } from './util'
+import { parseArgv, standardizeArgv } from './parseArgv'
+import { renderRegion } from './renderRegion'
 import setupEnv from './setupEnv'
+import { convert } from './util'
+
+import type { Opts } from './renderRegion'
 
 setupEnv()
 
 const err = console.error
 console.error = (...p: unknown[]) => {
-  if (!`${p[0]}`.match('useLayoutEffect')) {
+  if (!/useLayoutEffect/.exec(`${p[0]}`)) {
     err(p)
   }
 }
 
 const warn = console.warn
 console.warn = (...p: unknown[]) => {
-  if (!`${p[0]}`.match('estimation reached timeout')) {
+  if (!/estimation reached timeout/.exec(`${p[0]}`)) {
     warn(p)
   }
 }
 
-// note: yargs is actually unused except for printing help
-// we do custom command line parsing, see parseArgv.ts
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
+// note: yargs is actually unused except for printing help we do custom command
+// line parsing, see parseArgv.ts
+//
+// eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/no-unused-expressions
 yargs
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
   .option('config', {
@@ -116,7 +119,6 @@ yargs
     type: 'array',
   })
 
-  // other
   .option('out', {
     description:
       'File to output to. Default: out.svg. If a filename with extension .png is supplied the program will try to automatically execute rsvg-convert to convert it to png',

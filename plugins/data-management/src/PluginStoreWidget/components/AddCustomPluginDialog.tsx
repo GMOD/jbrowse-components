@@ -1,6 +1,9 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
+import { useState } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Button,
   Collapse,
@@ -9,15 +12,10 @@ import {
   DialogContentText,
   TextField,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
-
-// icons
 import IconButton from '@mui/material/IconButton'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { observer } from 'mobx-react'
 
-// locals
-import { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   dialogContent: {
@@ -43,7 +41,7 @@ const AddCustomPluginDialog = observer(function ({
   onClose: () => void
   model: PluginStoreModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const [umdPluginName, setUMDPluginName] = useState('')
   const [umdPluginUrl, setUMDPluginUrl] = useState('')
   const [esmPluginUrl, setESMPluginUrl] = useState('')
@@ -76,16 +74,22 @@ const AddCustomPluginDialog = observer(function ({
             label="Plugin name"
             variant="outlined"
             value={umdPluginName}
-            onChange={event => setUMDPluginName(event.target.value)}
+            onChange={event => {
+              setUMDPluginName(event.target.value)
+            }}
           />
           <TextField
             label="Plugin URL"
             variant="outlined"
             value={umdPluginUrl}
-            onChange={event => setUMDPluginUrl(event.target.value)}
+            onChange={event => {
+              setUMDPluginUrl(event.target.value)
+            }}
           />
           <DialogContentText
-            onClick={() => setAdvancedOptionsOpen(!advancedOptionsOpen)}
+            onClick={() => {
+              setAdvancedOptionsOpen(!advancedOptionsOpen)
+            }}
           >
             <IconButton
               className={cx(classes.expand, {
@@ -110,13 +114,17 @@ const AddCustomPluginDialog = observer(function ({
                 label="ESM build URL"
                 variant="outlined"
                 value={esmPluginUrl}
-                onChange={event => setESMPluginUrl(event.target.value)}
+                onChange={event => {
+                  setESMPluginUrl(event.target.value)
+                }}
               />
               <TextField
                 label="CJS build URL"
                 variant="outlined"
                 value={cjsPluginUrl}
-                onChange={event => setCJSPluginUrl(event.target.value)}
+                onChange={event => {
+                  setCJSPluginUrl(event.target.value)
+                }}
               />
             </div>
           </Collapse>

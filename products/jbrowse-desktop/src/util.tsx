@@ -1,9 +1,10 @@
 import fsPromises from 'fs/promises'
-import path from 'path'
 import os from 'os'
+import path from 'path'
 
-import { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 import sanitize from 'sanitize-filename'
+
+import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 
 export async function fetchCJS(url: string): Promise<LoadedPlugin> {
   // On macOS `os.tmpdir()` returns the path to a symlink, see:

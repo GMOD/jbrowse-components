@@ -1,20 +1,30 @@
-import React, { lazy } from 'react'
+import { lazy } from 'react'
+
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-// locals
 import LinearComparativeViewComponent from '../../LinearComparativeView/components/LinearComparativeView'
-import { LinearSyntenyViewModel } from '../model'
 
-const ImportForm = lazy(() => import('./ImportForm'))
+import type { LinearSyntenyViewModel } from '../model'
 
-type LSV = LinearSyntenyViewModel
+const LinearSyntenyImportForm = lazy(
+  () => import('./ImportForm/LinearSyntenyImportForm'),
+)
 
-const LinearSyntenyView = observer(({ model }: { model: LSV }) => {
-  return !model.initialized ? (
-    <ImportForm model={model} />
-  ) : (
-    <LinearComparativeViewComponent model={model} />
-  )
+const LinearSyntenyView = observer(function ({
+  model,
+}: {
+  model: LinearSyntenyViewModel
+}) {
+  const { showLoading, showImportForm, loadingMessage } = model
+
+  if (showLoading) {
+    return <LoadingEllipses variant="h6" message={loadingMessage} />
+  } else if (showImportForm) {
+    return <LinearSyntenyImportForm model={model} />
+  } else {
+    return <LinearComparativeViewComponent model={model} />
+  }
 })
 
 export default LinearSyntenyView

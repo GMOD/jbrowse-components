@@ -1,44 +1,48 @@
-import React from 'react'
-import { SequenceFeatureDetailsModel } from '../model'
+import { Fragment } from 'react'
+
 import { observer } from 'mobx-react'
+
+import type { SequenceFeatureDetailsModel } from '../model'
 
 const SequenceDisplay = observer(function ({
   chunks,
   start,
   color,
+  strand = 1,
   coordStart = start,
-  coordMultiplier = 1,
   model,
 }: {
   chunks: string[]
   start: number
   coordStart?: number
-  coordMultiplier?: number
+  strand?: number
   color?: string
   model: SequenceFeatureDetailsModel
 }) {
-  const { width, showCoordinates } = model
+  const { charactersPerRow, showCoordinates } = model
+
   return chunks.map((chunk, idx) => {
-    const f = coordStart - (start % 100)
+    const f = coordStart - (start % charactersPerRow)
     const prefix =
-      (idx == 0 && start % width == 0) || idx > 0
-        ? `${f + idx * width * coordMultiplier}`.padStart(4) + '   '
+      (idx === 0 && start % charactersPerRow === 0) || idx > 0
+        ? `${`${f + idx * strand * charactersPerRow}`.padStart(4)}   `
         : ''
     const postfix =
       idx === chunks.length - 1 &&
       (chunks.at(-1)?.replaceAll(' ', '').length || 0) +
-        (idx === 0 ? start % 100 : 0) !==
-        width
+        (idx === 0 ? start % charactersPerRow : 0) !==
+        charactersPerRow
         ? null
         : showCoordinates
           ? ' \n'
           : ''
     return (
-      <React.Fragment key={`${chunk}-${idx}`}>
+      /* biome-ignore lint/suspicious/noArrayIndexKey: */
+      <Fragment key={`${chunk}-${idx}`}>
         {showCoordinates ? prefix : null}
         <span style={{ background: color }}>{chunk}</span>
         {postfix}
-      </React.Fragment>
+      </Fragment>
     )
   })
 })

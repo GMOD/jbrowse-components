@@ -1,5 +1,5 @@
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { freeAdapterResources } from '../../data_adapters/dataAdapterCache'
+import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 
 /**
  * free up any resources (e.g. cached adapter objects)
@@ -10,22 +10,14 @@ import { freeAdapterResources } from '../../data_adapters/dataAdapterCache'
 export default class CoreFreeResources extends RpcMethodType {
   name = 'CoreFreeResources'
 
-  async execute(specification: {}) {
-    let deleteCount = 0
-
-    deleteCount += freeAdapterResources(specification)
-
-    // pass the freeResources hint along to all the renderers as well
-    this.pluginManager.getRendererTypes().forEach(renderer => {
-      const count = renderer.freeResources(/* specification */)
-      if (count) {
-        deleteCount += count
-      }
-    })
-
-    return deleteCount
+  async execute(args: Record<string, unknown>) {
+    await freeAdapterResources(args)
+    for (const renderer of this.pluginManager.getRendererTypes()) {
+      renderer.freeResources(args)
+    }
   }
-  async serializeArguments(args: {}, _rpcDriver: string): Promise<{}> {
+
+  async serializeArguments(args: Record<string, unknown>, _rpcDriver: string) {
     return args
   }
 }

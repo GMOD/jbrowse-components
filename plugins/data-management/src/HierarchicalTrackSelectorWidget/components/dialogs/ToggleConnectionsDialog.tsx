@@ -1,20 +1,18 @@
-import React from 'react'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Checkbox,
-  DialogContent,
   DialogActions,
+  DialogContent,
   FormControlLabel,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
@@ -60,7 +58,7 @@ const ConnectionRow = observer(function ConnectionRow({
         name,
         assemblyNames.length ? `(${ellipses(assemblyNames.join(','))})` : '',
       ]
-        .filter(f => !!f)
+        .filter(Boolean)
         .join(' ')}
     />
   )
@@ -80,7 +78,7 @@ const ConnectionList = observer(function ConnectionsList({
         <Typography>No connections found</Typography>
       ) : (
         session.connections.map((conf, idx) => (
-          <div key={conf.name + '_' + idx}>
+          <div key={`${conf.name}_${idx}`}>
             <ConnectionRow
               conf={conf}
               session={session}
@@ -115,7 +113,9 @@ const ToggleConnectionDialog = observer(function ({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+          }}
           variant="contained"
           color="primary"
         >

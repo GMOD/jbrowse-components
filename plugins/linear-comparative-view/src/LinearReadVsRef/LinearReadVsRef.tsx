@@ -1,4 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+
+import { getConf } from '@jbrowse/core/configuration'
+import { Dialog } from '@jbrowse/core/ui'
+import {
+  gatherOverlaps,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   Button,
   CircularProgress,
@@ -7,26 +18,16 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from 'tss-react/mui'
-import { getConf } from '@jbrowse/core/configuration'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  getSession,
-  getContainingView,
-  gatherOverlaps,
-  Feature,
-} from '@jbrowse/core/util'
 
-// locals
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+import type { Feature } from '@jbrowse/core/util'
+
 const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
   MismatchParser
 
 interface ReducedFeature {
   refName: string
   start: number
-  clipPos: number
+  clipLengthAtStartOfRead: number
   end: number
   strand: number
   seqLength: number
@@ -54,7 +55,7 @@ export default function ReadVsRefDialog({
 }: {
   feature: Feature
   handleClose: () => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   track: any
 }) {
   const { classes } = useStyles()
@@ -75,7 +76,7 @@ export default function ReadVsRefDialog({
       try {
         if (preFeature.get('flags') & 2048) {
           const SA: string = getTag(preFeature, 'SA') || ''
-          const primaryAln = SA.split(';')[0]
+          const primaryAln = SA.split(';')[0]!
           const [saRef, saStart] = primaryAln.split(',')
           const { rpcManager } = getSession(track)
           const adapterConfig = getConf(track, 'adapter')
@@ -87,8 +88,8 @@ export default function ReadVsRefDialog({
             regions: [
               {
                 refName: saRef,
-                start: +saStart - 1,
-                end: +saStart,
+                start: +saStart! - 1,
+                end: +saStart!,
               },
             ],
           })) as Feature[]
@@ -127,7 +128,7 @@ export default function ReadVsRefDialog({
       const origStrand = feature.get('strand') as number
       const SA = (getTag(feature, 'SA') as string) || ''
       const readName = feature.get('name') as string
-      const clipPos = getClip(cigar, 1)
+      const clipLengthAtStartOfRead = getClip(cigar, 1)
 
       const readAssembly = `${readName}_assembly_${Date.now()}`
       const [trackAssembly] = getConf(track, 'assemblyNames')
@@ -147,30 +148,32 @@ export default function ReadVsRefDialog({
       const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
 
       const feat = feature.toJSON()
-      feat.clipPos = clipPos
+      feat.clipLengthAtStartOfRead = clipLengthAtStartOfRead
       feat.strand = 1
 
       feat.mate = {
         refName: readName,
-        start: clipPos,
-        end: clipPos + getLengthSansClipping(cigar),
+        start: clipLengthAtStartOfRead,
+        end: clipLengthAtStartOfRead + getLengthSansClipping(cigar),
       }
 
       // if secondary alignment or supplementary, calculate length from SA[0]'s
       // CIGAR which is the primary alignments. otherwise it is the primary
       // alignment just use seq.length if primary alignment
       const totalLength =
-        flags & 2048 ? getLength(suppAlns[0].CIGAR) : getLength(cigar)
+        flags & 2048 ? getLength(suppAlns[0]!.CIGAR) : getLength(cigar)
 
       const features = [feat, ...suppAlns] as ReducedFeature[]
 
-      features.forEach((f, idx) => {
-        f.refName = assembly?.getCanonicalRefName(f.refName) || f.refName
+      for (const [idx, f] of features.entries()) {
+        f.refName = assembly.getCanonicalRefName(f.refName) || f.refName
         f.syntenyId = idx
         f.mate.syntenyId = idx
         f.mate.uniqueId = `${f.uniqueId}_mate`
-      })
-      features.sort((a, b) => a.clipPos - b.clipPos)
+      }
+      features.sort(
+        (a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
+      )
 
       const featSeq = feature.get('seq') as string | undefined
 
@@ -192,10 +195,10 @@ export default function ReadVsRefDialog({
       )
 
       session.addTemporaryAssembly?.({
-        name: `${readAssembly}`,
+        name: readAssembly,
         sequence: {
           type: 'ReferenceSequenceTrack',
-          name: `Read sequence`,
+          name: 'Read sequence',
           trackId: seqTrackId,
           assemblyNames: [readAssembly],
           adapter: {
@@ -236,7 +239,7 @@ export default function ReadVsRefDialog({
                     showReverse: true,
                     showTranslation: false,
                     height: 35,
-                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                    configuration: `${sequenceTrackConf.trackId}-LinearReferenceSequenceDisplay`,
                   },
                 ],
               },
@@ -336,7 +339,9 @@ export default function ReadVsRefDialog({
 
             <TextField
               value={windowSize}
-              onChange={event => setWindowSize(event.target.value)}
+              onChange={event => {
+                setWindowSize(event.target.value)
+              }}
               label="Set window size"
             />
           </div>

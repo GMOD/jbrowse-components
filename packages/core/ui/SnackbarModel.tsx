@@ -1,15 +1,12 @@
-import React, { lazy } from 'react'
-import { types } from 'mobx-state-tree'
+import { lazy } from 'react'
+
+import { types } from '@jbrowse/mobx-state-tree'
+import Report from '@mui/icons-material/Report'
 import { observable } from 'mobx'
 
-// locals
-import { NotificationLevel, SnackAction } from '../util/types'
-
-// icons
-import Report from '@mui/icons-material/Report'
+import type { NotificationLevel, SnackAction } from '../util/types'
 
 // lazies
-
 const ErrorMessageStackTraceDialog = lazy(
   () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
 )
@@ -28,7 +25,18 @@ export default function SnackbarModel() {
   return types
     .model({})
     .volatile(() => ({
+      /**
+       * #volatile
+       */
       snackbarMessages: observable.array<SnackbarMessage>(),
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get snackbarMessageSet() {
+        return new Map(self.snackbarMessages.map(s => [s.message, s]))
+      },
     }))
     .actions(self => ({
       /**
@@ -42,6 +50,10 @@ export default function SnackbarModel() {
           }, 5000)
         }
       },
+
+      /**
+       * #action
+       */
       notifyError(errorMessage: string, error?: unknown, extra?: unknown) {
         this.notify(errorMessage, 'error', {
           name: <Report />,
@@ -66,7 +78,9 @@ export default function SnackbarModel() {
         level?: NotificationLevel,
         action?: SnackAction,
       ) {
-        return self.snackbarMessages.push({ message, level, action })
+        if (action || !self.snackbarMessageSet.has(message)) {
+          self.snackbarMessages.push({ message, level, action })
+        }
       },
       /**
        * #action
@@ -78,8 +92,8 @@ export default function SnackbarModel() {
        * #action
        */
       removeSnackbarMessage(message: string) {
-        const element = self.snackbarMessages.find(f => f.message === message)
-        if (element) {
+        const element = self.snackbarMessageSet.get(message)
+        if (element !== undefined) {
           self.snackbarMessages.remove(element)
         }
       },

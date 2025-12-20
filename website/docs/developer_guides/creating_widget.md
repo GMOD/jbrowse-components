@@ -1,6 +1,6 @@
 ---
 id: creating_widget
-title: Creating a custom widget
+title: Creating custom widgets
 ---
 
 Here is an example of registering a custom widget
@@ -8,12 +8,11 @@ Here is an example of registering a custom widget
 index.tsx
 
 ```tsx
-import React from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 // model is an instance of the stateModel below
 function ReactComponent({ model }: { model: any }) {

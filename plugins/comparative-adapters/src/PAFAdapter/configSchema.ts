@@ -15,7 +15,7 @@ const PAFAdapter = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'Array of assembly names to use for this file. The target assembly name is the first value in the array, query assembly name is the second',
+        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
     },
     /**
      * #slot
@@ -44,7 +44,36 @@ const PAFAdapter = ConfigurationSchema(
       },
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * {
+     *   "type": "PAFAdapter",
+     *   "uri": "file.paf.gz",
+     *   "queryAssembly":"hg19",
+     *   "targetAssembly":"hg38"
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      // populate from just snap.uri
+      return snap.uri
+        ? {
+            ...snap,
+            pafLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          }
+        : snap
+    },
+  },
 )
 
 export default PAFAdapter

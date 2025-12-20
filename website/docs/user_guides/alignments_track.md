@@ -34,8 +34,8 @@ either be removed from the alignment (hard clipping) or can be included, and not
 shown by default (soft clipping).
 
 JBrowse 2 also contains an option to "show the soft clipping" that has occurred.
-This can be valuable to show the signal around a region that contains structural
-variation or difficult mappability.
+This can be valuable to show the stopToken around a region that contains
+structural variation or difficult mappability.
 
 <Figure caption="The soft clipping option is a toggle in the 'Pileup settings' menu." src="/img/alignments_soft_clipped_menu.png" />
 <Figure caption="Shows what turning on soft-clipping enables for a simulated long-read dataset. There is a simulated structural variant, a deletion, at this position, so the read has bases that map to the other side of the deletion being revealed by this." src="/img/alignments_soft_clipped.png" />
@@ -90,8 +90,9 @@ If you have data that marks DNA/RNA modifications using the MM tag in BAM/CRAM
 format, then the alignments track can use these tags to color modifications. It
 uses two modes:
 
-1. Modifications mode - draws the modifications as they are
-2. Methylation mode - draws both unmodified and modified CpGs (unmodified
+1. All modifications - draws the modifications as they are
+1. modifications - draws the modifications as they are
+1. Methylation mode - draws both unmodified and modified CpGs (unmodified
    positions are not indicated by the MM tag and this mode considers the
    sequence context)
 
@@ -174,7 +175,7 @@ they are not relevant to your interest.
 
 <Figure caption="The arc display showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
 
-### Using the "Read cloud display"
+### Using the "Linked reads display"
 
 Similar to the "Arc display" we also offer what we call the "Read cloud"
 display. It is similar in some ways to the "Arc display" but renders paired-end

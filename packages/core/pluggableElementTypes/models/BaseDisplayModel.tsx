@@ -1,13 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
-import { getParent, Instance, types, isRoot } from 'mobx-state-tree'
+import type React from 'react'
 
-// locals
+import { getParent, isRoot, types } from '@jbrowse/mobx-state-tree'
+
 import { getConf } from '../../configuration'
-import { MenuItem } from '../../ui'
-import { getParentRenderProps } from '../../util/tracks'
 import { getContainingView, getEnv } from '../../util'
+import { getParentRenderProps } from '../../util/tracks'
 import { ElementId } from '../../util/types/mst'
+
+import type { MenuItem } from '../../ui'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseDisplay
@@ -32,7 +33,7 @@ function stateModelFactory() {
     .volatile(() => ({
       rendererTypeName: '',
       error: undefined as unknown,
-      message: undefined as string | undefined,
+      statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -40,14 +41,14 @@ function stateModelFactory() {
        */
       get RenderingComponent(): React.FC<{
         model: typeof self
-        onHorizontalScroll?: Function
+        onHorizontalScroll?: () => void
         blockState?: Record<string, any>
       }> {
         const { pluginManager } = getEnv(self)
-        const displayType = pluginManager.getDisplayType(self.type)
-        return displayType.ReactComponent as React.FC<{
+        return pluginManager.getDisplayType(self.type)!
+          .ReactComponent as React.FC<{
           model: typeof self
-          onHorizontalScroll?: Function
+          onHorizontalScroll?: () => void
           blockState?: Record<string, any>
         }>
       },
@@ -81,44 +82,88 @@ function stateModelFactory() {
       },
 
       /**
+       * #getter
+       * Returns the parent display if this display is nested within another display
+       * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
+       */
+      get parentDisplay() {
+        try {
+          const parent = getParent<any>(self)
+          // Check if immediate parent looks like a display
+          // (has type property ending with 'Display')
+          const parentType = parent?.type
+          if (
+            typeof parentType === 'string' &&
+            parentType.endsWith('Display')
+          ) {
+            return parent
+          }
+        } catch {
+          // Ignore errors walking up tree
+        }
+        return undefined
+      },
+
+      /**
+       * #getter
+       * Returns the effective RPC driver name with hierarchical fallback:
+       * 1. This display's explicit rpcDriverName
+       * 2. Parent display's effectiveRpcDriverName (for nested displays)
+       * 3. Track config's rpcDriverName
+       */
+      get effectiveRpcDriverName() {
+        if (self.rpcDriverName) {
+          return self.rpcDriverName
+        }
+        if (this.parentDisplay?.effectiveRpcDriverName) {
+          return this.parentDisplay.effectiveRpcDriverName
+        }
+        try {
+          return getConf(this.parentTrack, 'rpcDriverName') || undefined
+        } catch {
+          return undefined
+        }
+      },
+    }))
+    .views(self => ({
+      /**
        * #method
        * the react props that are passed to the Renderer when data
-       * is rendered in this display
+       * is rendered in this display. these are serialized and sent to the
+       * worker for server-side rendering
        */
       renderProps() {
         return {
           ...getParentRenderProps(self),
           notReady: getContainingView(self).minimized,
-          rpcDriverName: self.rpcDriverName,
+          rpcDriverName: self.effectiveRpcDriverName,
+        }
+      },
+      /**
+       * #method
+       * props passed to the renderer's React "Rendering" component.
+       * these are client-side only and never sent to the worker.
+       * includes displayModel and callbacks
+       */
+      renderingProps() {
+        return {
           displayModel: self,
         }
       },
 
       /**
        * #getter
-       * the pluggable element type object for this display's
-       * renderer
+       * the pluggable element type object for this display's renderer
        */
       get rendererType() {
         const { pluginManager } = getEnv(self)
-        const RendererType = pluginManager.getRendererType(
-          self.rendererTypeName,
-        )
-        if (!RendererType) {
-          throw new Error(`renderer "${self.rendererTypeName}" not found`)
-        }
-        if (!RendererType.ReactComponent) {
-          throw new Error(
-            `renderer ${self.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
-          )
-        }
-        return RendererType
+        return pluginManager.getRendererType(self.rendererTypeName)!
       },
 
       /**
        * #getter
-       * if a display-level message should be displayed instead,
-       * make this return a react component
+       * if a display-level message should be displayed instead, make this
+       * return a react component
        */
       get DisplayMessageComponent() {
         return undefined as undefined | React.FC<any>
@@ -152,8 +197,8 @@ function stateModelFactory() {
       /**
        * #action
        */
-      setMessage(arg?: string) {
-        self.message = arg
+      setStatusMessage(arg?: string) {
+        self.statusMessage = arg
       },
       /**
        * #action

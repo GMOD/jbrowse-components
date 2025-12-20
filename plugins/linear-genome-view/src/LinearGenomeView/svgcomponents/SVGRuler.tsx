@@ -1,12 +1,10 @@
-import React from 'react'
-import { getTickDisplayStr, stripAlpha } from '@jbrowse/core/util'
+import { getTickDisplayStr, measureText, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-// locals
 import { makeTicks } from '../util'
-
-import { LinearGenomeViewModel } from '..'
 import SVGRegionSeparators from './SVGRegionSeparators'
+
+import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
@@ -18,6 +16,7 @@ function Ruler({
   major = true,
   minor = true,
   hideText = false,
+  widthPx,
 }: {
   start: number
   end: number
@@ -26,6 +25,7 @@ function Ruler({
   major?: boolean
   minor?: boolean
   hideText?: boolean
+  widthPx: number
 }) {
   const ticks = makeTicks(start, end, bpPerPx, major, minor)
   const theme = useTheme()
@@ -36,7 +36,7 @@ function Ruler({
         const x = (reversed ? end - tick.base : tick.base - start) / bpPerPx
         return (
           <line
-            key={'tick-' + tick.base}
+            key={`tick-${tick.base}`}
             x1={x}
             x2={x}
             y1={0}
@@ -49,6 +49,15 @@ function Ruler({
       {!hideText
         ? ticks
             .filter(tick => tick.type === 'major')
+            .filter(tick => {
+              const x =
+                (reversed ? end - tick.base : tick.base - start) / bpPerPx
+              const labelText = getTickDisplayStr(tick.base + 1, bpPerPx)
+              const labelWidth = measureText(labelText, 11) + 4
+              const leftEdge = x - 3
+              const rightEdge = leftEdge + labelWidth
+              return leftEdge >= 0 && rightEdge <= widthPx
+            })
             .map(tick => {
               const x =
                 (reversed ? end - tick.base : tick.base - start) / bpPerPx
@@ -110,6 +119,7 @@ export default function SVGRuler({
                     end={end}
                     bpPerPx={bpPerPx}
                     reversed={reversed}
+                    widthPx={widthPx}
                   />
                 </g>
               </g>

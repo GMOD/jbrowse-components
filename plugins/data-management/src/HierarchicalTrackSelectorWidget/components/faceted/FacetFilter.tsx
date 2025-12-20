@@ -1,20 +1,22 @@
-import React, { useState } from 'react'
-import {
-  Typography,
-  FormControl,
-  Select,
-  IconButton,
-  Tooltip,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { useState } from 'react'
 
-// icon
+import { coarseStripHTML } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import AddIcon from '@mui/icons-material/Add'
 import ClearIcon from '@mui/icons-material/Clear'
 import MinimizeIcon from '@mui/icons-material/Minimize'
-import AddIcon from '@mui/icons-material/Add'
-import { coarseStripHTML } from '@jbrowse/core/util'
+import {
+  FormControl,
+  IconButton,
+  Select,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
-import { HierarchicalTrackSelectorModel } from '../../model'
+
+// icon
+
+import type { HierarchicalTrackSelectorModel } from '../../model'
 
 const useStyles = makeStyles()(theme => ({
   facet: {
@@ -29,7 +31,12 @@ const useStyles = makeStyles()(theme => ({
 function ClearButton({ onClick }: { onClick: () => void }) {
   return (
     <Tooltip title="Clear selection on this facet filter">
-      <IconButton onClick={() => onClick()} size="small">
+      <IconButton
+        onClick={() => {
+          onClick()
+        }}
+        size="small"
+      >
         <ClearIcon />
       </IconButton>
     </Tooltip>
@@ -45,7 +52,12 @@ function ExpandButton({
 }) {
   return (
     <Tooltip title="Minimize/expand this facet filter">
-      <IconButton onClick={() => onClick()} size="small">
+      <IconButton
+        onClick={() => {
+          onClick()
+        }}
+        size="small"
+      >
         {visible ? <MinimizeIcon /> : <AddIcon />}
       </IconButton>
     </Tooltip>
@@ -70,8 +82,17 @@ const FacetFilter = observer(function ({
     <FormControl className={classes.facet} fullWidth>
       <div>
         <Typography component="span">{field}</Typography>
-        <ClearButton onClick={() => faceted.setFilter(field, [])} />
-        <ExpandButton visible={visible} onClick={() => setVisible(!visible)} />
+        <ClearButton
+          onClick={() => {
+            faceted.setFilter(field, [])
+          }}
+        />
+        <ExpandButton
+          visible={visible}
+          onClick={() => {
+            setVisible(!visible)
+          }}
+        />
       </div>
       {visible ? (
         <Select

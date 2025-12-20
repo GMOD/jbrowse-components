@@ -1,341 +1,362 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`renders one track, one region 1`] = `
 <div>
   <div
     class="css-1v4ghfe-rel"
   >
-    <div>
-      <div
-        class="css-1v4ghfe-rel"
-      >
+    <div
+      class="css-1atg2qy-header"
+      style="position: sticky;"
+    >
+      <div>
         <div
-          class="css-dznme2-rubberbandControl"
+          class="css-1v4ghfe-rel"
         >
           <div
-            class="css-16vhz0m-scalebar"
+            class="css-dznme2-rubberbandControl"
           >
             <div
-              class="css-den3n5-scalebarVisibleRegion"
-              style="width: 800px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
-            />
-            <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
-            />
-            <div>
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-1hokke9-MuiTypography-root-scalebarRefName"
-                style="left: 3px; color: rgb(153, 102, 0);"
-              >
-                ctgA
-              </p>
+              class="css-16vhz0m-scalebar"
+            >
               <div
-                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
-                style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
-              >
+                class="css-den3n5-scalebarVisibleRegion"
+                style="width: 800px; left: 0px; background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
+              />
+              <div
+                class="css-2jeg0a-scalebarContig"
+                style="width: 0px; left: 0px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
+              />
+              <div>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
+                  class="MuiTypography-root MuiTypography-body1 css-10gjpil-MuiTypography-root-scalebarRefName"
+                  style="left: 3px; color: rgb(153, 102, 0);"
                 >
-                  20
+                  ctgA
                 </p>
-                <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
+                <div
+                  class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
+                  style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
                 >
-                  40
-                </p>
-                <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
-                >
-                  60
-                </p>
-                <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
-                >
-                  80
-                </p>
-                <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
-                >
-                  100
-                </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
+                  >
+                    20
+                  </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
+                  >
+                    40
+                  </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
+                  >
+                    60
+                  </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
+                  >
+                    80
+                  </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
+                  >
+                    100
+                  </p>
+                </div>
               </div>
+              <div
+                class="css-2jeg0a-scalebarContig"
+                style="width: 0px; left: 800px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
+              />
             </div>
-            <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
-            />
           </div>
         </div>
-      </div>
-      <div
-        class="css-1fs11k8-overview"
-      >
-        <svg
-          class="css-191b84s-overviewSvg"
-          height="48"
-        >
-          <polygon
-            fill="#42a5f5"
-            fill-opacity="0.3"
-            points="0,48,101,48,800,0,0,0"
-            stroke="#42a5f5"
-            stroke-opacity="0.8"
-          />
-        </svg>
         <div
-          class="css-cwpsam-headerBar"
+          class="css-1fs11k8-overview"
         >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-7xx2bb-MuiButtonBase-root-MuiIconButton-root-toggleButton"
-            tabindex="0"
-            title="Open track selector"
-            type="button"
-            value="track_select"
+          <svg
+            class="css-191b84s-overviewSvg"
+            height="48"
           >
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1mgxsmk-MuiSvgIcon-root-buttonSpacer"
-              focusable="false"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
-              />
-            </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            <polygon
+              fill="#42777f"
+              fill-opacity="0.3"
+              points="0,48,101,48,800,0,0,0"
+              stroke="#42777f"
+              stroke-opacity="0.8"
             />
-          </button>
+          </svg>
           <div
-            class="css-1n1xfjh-spacer"
-          />
-          <div
-            class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
+            class="css-10yx88u-headerBar"
           >
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-1bqryi1-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1hf3bf0-MuiButtonBase-root-MuiIconButton-root-toggleButton"
               tabindex="0"
+              title="Open track selector"
               type="button"
+              value="track_select"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="ArrowBackIcon"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 focusable="false"
                 viewBox="0 0 24 24"
               >
                 <path
-                  d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"
+                  d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
                 />
               </svg>
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
-            </button>
-            <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-1bqryi1-MuiButtonBase-root-MuiButton-root-panButton"
-              tabindex="0"
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="ArrowForwardIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="m12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
-                />
-              </svg>
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
             </button>
             <div
-              class="MuiAutocomplete-root css-ka7ti6-MuiAutocomplete-root"
-              data-testid="autocomplete"
-              style="width: 175px;"
+              class="css-1n1xfjh-spacer"
+            />
+            <div
+              class="MuiFormGroup-root MuiFormGroup-row css-f2mils-MuiFormGroup-root-headerForm"
             >
+              <button
+                class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                  data-testid="ArrowBackIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"
+                  />
+                </svg>
+              </button>
+              <button
+                class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                  data-testid="ArrowForwardIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
+                  />
+                </svg>
+              </button>
               <div
-                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1efd6m0-MuiFormControl-root-MuiTextField-root-headerRefName"
-                style="margin: 7px;"
+                class="MuiAutocomplete-root css-7yn9vh-MuiAutocomplete-root"
+                data-testid="autocomplete"
+                style="width: 175px;"
               >
                 <div
-                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
-                  style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
+                  class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1jmmqni-MuiFormControl-root-MuiTextField-root-headerRefName"
+                  style="margin: 7px;"
                 >
-                  <input
-                    aria-autocomplete="list"
-                    aria-expanded="false"
-                    aria-invalid="false"
-                    autocapitalize="none"
-                    autocomplete="off"
-                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-19qh8xo-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":r6:"
-                    placeholder="Search for location"
-                    role="combobox"
-                    spellcheck="false"
-                    type="text"
-                    value="ctgA:1..100"
-                  />
                   <div
-                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
-                    style="margin-right: 7px;"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-fwcp0t-MuiInputBase-root-MuiOutlinedInput-root"
+                    style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
                   >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
-                      data-testid="SearchIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
-                      />
-                    </svg>
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pe4mpk-MuiButtonBase-root-MuiIconButton-root"
-                      tabindex="0"
-                      type="button"
+                    <input
+                      aria-autocomplete="list"
+                      aria-expanded="false"
+                      aria-invalid="false"
+                      autocapitalize="none"
+                      autocomplete="off"
+                      class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
+                      id="_r_18_"
+                      placeholder="Search for location"
+                      role="combobox"
+                      spellcheck="false"
+                      type="text"
+                      value="ctgA:1..100"
+                    />
+                    <div
+                      class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1hnilo0-MuiInputAdornment-root-th"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
-                        data-testid="HelpIcon"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                        data-testid="SearchIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
                       >
                         <path
-                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
+                          d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
                         />
                       </svg>
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
-                    </button>
-                  </div>
-                  <fieldset
-                    aria-hidden="true"
-                    class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-                  >
-                    <legend
-                      class="css-ihdtdm"
-                    >
-                      <span
-                        class="notranslate"
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
                       >
-                        ​
-                      </span>
-                    </legend>
-                  </fieldset>
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                          data-testid="HelpIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <fieldset
+                      aria-hidden="true"
+                      class="MuiOutlinedInput-notchedOutline css-18p5xg2-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+                    >
+                      <legend
+                        class="css-1nf2c5d-MuiNotchedOutlined-root"
+                      >
+                        <span
+                          aria-hidden="true"
+                          class="notranslate"
+                        >
+                          ​
+                        </span>
+                      </legend>
+                    </fieldset>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <p
-            class="MuiTypography-root MuiTypography-body2 css-1lztmv5-MuiTypography-root-bp"
-          >
-            100bp
-          </p>
-          <div
-            class="css-z84q6m-container"
-          >
-            <button
-              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="zoom_out"
-              disabled=""
-              tabindex="-1"
-              type="button"
+            <p
+              class="MuiTypography-root MuiTypography-body2 css-lqhf8e-MuiTypography-root-bp"
             >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="ZoomOutIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14M7 9h5v1H7z"
-                />
-              </svg>
-            </button>
-            <span
-              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-m0837o-MuiSlider-root-slider"
+              100bp
+            </p>
+            <div
+              class="css-z84q6m-container"
             >
               <span
-                class="MuiSlider-rail css-7o8aqz-MuiSlider-rail"
-              />
-              <span
-                class="MuiSlider-track css-nl6333-MuiSlider-track"
-                style="left: 0%; width: 0%;"
-              />
-              <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-l29f8w-MuiSlider-thumb"
-                data-index="0"
-                style="left: 0%;"
+                aria-label="Zoom out 2x"
+                class=""
+                data-mui-internal-clone-element="true"
               >
-                <input
-                  aria-orientation="horizontal"
-                  aria-valuemax="564.3856189774724"
-                  aria-valuemin="284.799690655495"
-                  aria-valuenow="284.799690655495"
-                  data-index="0"
-                  max="564.3856189774724"
-                  min="284.799690655495"
-                  step="1"
-                  style="border: 0px; height: 100%; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 100%; direction: ltr;"
-                  type="range"
-                  value="284.799690655495"
-                />
+                <button
+                  class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                  data-testid="zoom_out"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                    data-testid="ZoomOutIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14M7 9h5v1H7z"
+                    />
+                  </svg>
+                </button>
               </span>
-            </span>
-            <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="zoom_in"
-              tabindex="0"
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="ZoomInIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
-                />
-                <path
-                  d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2z"
-                />
-              </svg>
               <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
-            </button>
+                class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1fayfxi-MuiSlider-root-slider"
+              >
+                <span
+                  class="MuiSlider-rail css-r64h58-MuiSlider-rail"
+                />
+                <span
+                  class="MuiSlider-track css-1iqz70e-MuiSlider-track"
+                  style="left: 0%; width: 0%;"
+                />
+                <span
+                  aria-label="Window size: 111bp"
+                  class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-o0wpuw-MuiSlider-thumb"
+                  data-index="0"
+                  data-mui-internal-clone-element="true"
+                  style="left: 0%;"
+                >
+                  <input
+                    aria-orientation="horizontal"
+                    aria-valuemax="564.3856189774724"
+                    aria-valuemin="284.799690655495"
+                    aria-valuenow="284.799690655495"
+                    data-index="0"
+                    max="564.3856189774724"
+                    min="284.799690655495"
+                    step="1"
+                    style="border: 0px; height: 100%; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 100%; direction: ltr;"
+                    type="range"
+                    value="284.799690655495"
+                  />
+                </span>
+              </span>
+              <span
+                aria-label="Zoom in 2x"
+                class=""
+                data-mui-internal-clone-element="true"
+              >
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                  data-testid="zoom_in"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                    data-testid="ZoomInIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
+                    />
+                    <path
+                      d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2z"
+                    />
+                  </svg>
+                </button>
+              </span>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                  data-testid="MoreVertIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div
+              class="css-1n1xfjh-spacer"
+            />
           </div>
-          <div
-            class="css-1n1xfjh-spacer"
-          />
         </div>
       </div>
     </div>
     <div
-      class="css-75rarj-tracksContainer"
-      data-testid="trackContainer"
+      class="css-1x918n3-tracksContainer"
+      data-testid="tracksContainer"
     >
       <div
-        class="css-1rfvwmf-verticalGuidesZoomContainer"
+        class="css-n6mj5o-verticalGuidesZoomContainer"
       >
         <div
-          class="css-17gfnt3-verticalGuidesContainer"
+          class="css-14511yq-verticalGuidesContainer"
           style="left: -800px; width: 1700px;"
         >
           <div
@@ -346,42 +367,82 @@ exports[`renders one track, one region 1`] = `
             class="css-1dmfa10-contentBlock"
             style="width: 100px;"
           >
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: -21px;"
-            />
-            <div
-              class="css-1qcgmte-tick-majorTick"
-              style="left: -1px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 19px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 39px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 59px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 79px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 99px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 119px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 139px;"
-            />
+            <svg
+              class="css-6m1lch-svgOverlay"
+            >
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="-21"
+                x2="-21"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.26)"
+                stroke-width="1"
+                x1="-1"
+                x2="-1"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="19"
+                x2="19"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="39"
+                x2="39"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="59"
+                x2="59"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="79"
+                x2="79"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="99"
+                x2="99"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="119"
+                x2="119"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="139"
+                x2="139"
+                y1="0"
+                y2="100%"
+              />
+            </svg>
           </div>
           <div
             class="css-a9ifge-boundaryPaddingBlock"
@@ -390,16 +451,115 @@ exports[`renders one track, one region 1`] = `
         </div>
       </div>
       <div
-        class="css-dznme2-rubberbandControl"
+        class="css-fe416x-rubberbandControl"
         data-testid="rubberband_controls"
+        style="top: 96px; position: sticky;"
       >
         <div
-          class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1coqp07-MuiPaper-root-scalebarContainer"
+          class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-gcizdo-MuiPaper-root-container"
           data-resizer="true"
           style="height: 17px; box-sizing: border-box;"
         >
           <div
-            class="css-khofof-scalebarZoomContainer"
+            class="css-n6mj5o-verticalGuidesZoomContainer"
+          >
+            <div
+              class="css-14511yq-verticalGuidesContainer"
+              style="left: -801px; width: 1700px;"
+            >
+              <div
+                class="css-a9ifge-boundaryPaddingBlock"
+                style="width: 800px;"
+              />
+              <div
+                class="css-1dmfa10-contentBlock"
+                style="width: 100px;"
+              >
+                <svg
+                  class="css-6m1lch-svgOverlay"
+                >
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="-21"
+                    x2="-21"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.26)"
+                    stroke-width="1"
+                    x1="-1"
+                    x2="-1"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="19"
+                    x2="19"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="39"
+                    x2="39"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="59"
+                    x2="59"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="79"
+                    x2="79"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="99"
+                    x2="99"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="119"
+                    x2="119"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="139"
+                    x2="139"
+                    y1="0"
+                    y2="100%"
+                  />
+                </svg>
+              </div>
+              <div
+                class="css-a9ifge-boundaryPaddingBlock"
+                style="width: 800px;"
+              />
+            </div>
+          </div>
+          <div
+            class="css-tyiuoa-zoomContainer"
           >
             <div
               class="css-y3821b-scalebar"
@@ -410,14 +570,8 @@ exports[`renders one track, one region 1`] = `
                 style="background: none; width: 800px;"
               />
               <div
-                class="css-1dmfa10-contentBlock"
-                style="width: 100px;"
-              >
-                <div
-                  class="css-1f3h2yl-tick"
-                  style="left: -1px;"
-                />
-              </div>
+                style="width: 100px; position: relative; min-height: 100%; contain: layout style paint;"
+              />
               <div
                 class="css-a9ifge-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
@@ -425,7 +579,7 @@ exports[`renders one track, one region 1`] = `
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
+            class="MuiTypography-root MuiTypography-body1 css-4lhiy8-MuiTypography-root-refLabel"
             data-testid="refLabel-ctgA"
             style="left: -1px; padding-left: 1px;"
           >
@@ -434,10 +588,11 @@ exports[`renders one track, one region 1`] = `
         </div>
       </div>
       <div
-        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-u7uo4q-MuiPaper-root-root-unpinnedTrack"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1q1f5r0-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1i0p0kv-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
         >
           <span
             class="css-k4omgw-dragHandle"
@@ -446,7 +601,7 @@ exports[`renders one track, one region 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1cz9l96-MuiSvgIcon-root-dragHandleIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1lzyuvu-MuiSvgIcon-root-dragHandleIcon"
               data-testid="DragIndicatorIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -457,14 +612,14 @@ exports[`renders one track, one region 1`] = `
             </svg>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1qdvzjn-MuiButtonBase-root-MuiIconButton-root-iconButton"
             tabindex="0"
             title="close this track"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="CloseIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -473,26 +628,23 @@ exports[`renders one track, one region 1`] = `
                 d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
               />
             </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-14nk8rx-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
             </span>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="MoreVertIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -501,19 +653,15 @@ exports[`renders one track, one region 1`] = `
                 d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
               />
             </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
           </button>
         </div>
         <div
-          class="css-1ql7uaq-trackRenderingContainer"
+          class="css-rgoijz-trackRenderingContainer"
           data-testid="trackRenderingContainer-lgv-testConfig"
           style="height: 100px;"
         >
           <div
             class="css-v11ioz-renderingComponentContainer"
-            style="transform: scaleX(1);"
           >
             <div
               class="css-1y9lrrz-display"
@@ -547,7 +695,7 @@ exports[`renders one track, one region 1`] = `
           </div>
         </div>
         <div
-          class="css-14zcv15-horizontalHandle-resizeHandle"
+          class="css-120n0lh-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
       </div>
@@ -561,355 +709,373 @@ exports[`renders two tracks, two regions 1`] = `
   <div
     class="css-1v4ghfe-rel"
   >
-    <div>
-      <div
-        class="css-1v4ghfe-rel"
-      >
+    <div
+      class="css-1atg2qy-header"
+      style="position: sticky;"
+    >
+      <div>
         <div
-          class="css-dznme2-rubberbandControl"
+          class="css-1v4ghfe-rel"
         >
           <div
-            class="css-16vhz0m-scalebar"
+            class="css-dznme2-rubberbandControl"
           >
             <div
-              class="css-den3n5-scalebarVisibleRegion"
-              style="width: 580px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
-            />
-            <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
-            />
-            <div>
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-1hokke9-MuiTypography-root-scalebarRefName"
-                style="left: 3px; color: rgb(153, 102, 0);"
-              >
-                ctgA
-              </p>
+              class="css-16vhz0m-scalebar"
+            >
               <div
-                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
-                style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
+                class="css-den3n5-scalebarVisibleRegion"
+                style="width: 580px; left: 0px; background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
+              />
+              <div
+                class="css-2jeg0a-scalebarContig"
+                style="width: 0px; left: 0px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
+              />
+              <div>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-10gjpil-MuiTypography-root-scalebarRefName"
+                  style="left: 3px; color: rgb(153, 102, 0);"
+                >
+                  ctgA
+                </p>
+                <div
+                  class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
+                  style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
+                />
+              </div>
+              <div
+                class="css-2jeg0a-scalebarContig"
+                style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
+              />
+              <div>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-10gjpil-MuiTypography-root-scalebarRefName"
+                  style="left: 75.72727272727273px;"
+                >
+                  ctgB
+                </p>
+                <div
+                  class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
+                  style="left: 72.72727272727273px; width: 727.2727272727273px;"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 145.0909090909091px; pointer-events: none;"
+                  >
+                    1,200
+                  </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 290.1818181818182px; pointer-events: none;"
+                  >
+                    1,400
+                  </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 435.27272727272725px; pointer-events: none;"
+                  >
+                    1,600
+                  </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 580.3636363636364px; pointer-events: none;"
+                  >
+                    1,800
+                  </p>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1skyzkw-MuiTypography-root-scalebarLabel"
+                    style="left: 725.4545454545454px; pointer-events: none;"
+                  >
+                    2,000
+                  </p>
+                </div>
+              </div>
+              <div
+                class="css-2jeg0a-scalebarContig"
+                style="width: 0px; left: 800px; background-color: rgb(153, 153, 153); background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px);"
               />
             </div>
-            <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
-            />
-            <div>
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-1hokke9-MuiTypography-root-scalebarRefName"
-                style="left: 75.72727272727273px;"
-              >
-                ctgB
-              </p>
-              <div
-                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
-                style="left: 72.72727272727273px; width: 727.2727272727273px;"
-              >
-                <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 145.0909090909091px; pointer-events: none;"
-                >
-                  1,200
-                </p>
-                <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 290.1818181818182px; pointer-events: none;"
-                >
-                  1,400
-                </p>
-                <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 435.27272727272725px; pointer-events: none;"
-                >
-                  1,600
-                </p>
-                <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 580.3636363636364px; pointer-events: none;"
-                >
-                  1,800
-                </p>
-                <p
-                  class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
-                  style="left: 725.4545454545454px; pointer-events: none;"
-                >
-                  2,000
-                </p>
-              </div>
-            </div>
-            <div
-              class="css-2jeg0a-scalebarContig"
-              style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
-            />
           </div>
         </div>
-      </div>
-      <div
-        class="css-1fs11k8-overview"
-      >
-        <svg
-          class="css-191b84s-overviewSvg"
-          height="48"
-        >
-          <polygon
-            fill="#42a5f5"
-            fill-opacity="0.3"
-            points="0,48,802,48,580,0,0,0"
-            stroke="#42a5f5"
-            stroke-opacity="0.8"
-          />
-        </svg>
         <div
-          class="css-cwpsam-headerBar"
+          class="css-1fs11k8-overview"
         >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-7xx2bb-MuiButtonBase-root-MuiIconButton-root-toggleButton"
-            tabindex="0"
-            title="Open track selector"
-            type="button"
-            value="track_select"
+          <svg
+            class="css-191b84s-overviewSvg"
+            height="48"
           >
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1mgxsmk-MuiSvgIcon-root-buttonSpacer"
-              focusable="false"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
-              />
-            </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            <polygon
+              fill="#42777f"
+              fill-opacity="0.3"
+              points="0,48,802,48,580,0,0,0"
+              stroke="#42777f"
+              stroke-opacity="0.8"
             />
-          </button>
+          </svg>
           <div
-            class="css-1n1xfjh-spacer"
-          />
-          <div
-            class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
+            class="css-10yx88u-headerBar"
           >
             <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-1bqryi1-MuiButtonBase-root-MuiButton-root-panButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1hf3bf0-MuiButtonBase-root-MuiIconButton-root-toggleButton"
               tabindex="0"
+              title="Open track selector"
               type="button"
+              value="track_select"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="ArrowBackIcon"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
                 focusable="false"
                 viewBox="0 0 24 24"
               >
                 <path
-                  d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"
+                  d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
                 />
               </svg>
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
-            </button>
-            <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary css-1bqryi1-MuiButtonBase-root-MuiButton-root-panButton"
-              tabindex="0"
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="ArrowForwardIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="m12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
-                />
-              </svg>
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
             </button>
             <div
-              class="MuiAutocomplete-root css-ka7ti6-MuiAutocomplete-root"
-              data-testid="autocomplete"
-              style="width: 283.990625px;"
+              class="css-1n1xfjh-spacer"
+            />
+            <div
+              class="MuiFormGroup-root MuiFormGroup-row css-f2mils-MuiFormGroup-root-headerForm"
             >
+              <button
+                class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                  data-testid="ArrowBackIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"
+                  />
+                </svg>
+              </button>
+              <button
+                class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-71atz7-MuiButtonBase-root-MuiButton-root-panButton"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                  data-testid="ArrowForwardIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
+                  />
+                </svg>
+              </button>
               <div
-                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1efd6m0-MuiFormControl-root-MuiTextField-root-headerRefName"
-                style="margin: 7px;"
+                class="MuiAutocomplete-root css-7yn9vh-MuiAutocomplete-root"
+                data-testid="autocomplete"
+                style="width: 283.990625px;"
               >
                 <div
-                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
-                  style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
+                  class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1jmmqni-MuiFormControl-root-MuiTextField-root-headerRefName"
+                  style="margin: 7px;"
                 >
-                  <input
-                    aria-autocomplete="list"
-                    aria-expanded="false"
-                    aria-invalid="false"
-                    autocapitalize="none"
-                    autocomplete="off"
-                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-19qh8xo-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":r9:"
-                    placeholder="Search for location"
-                    role="combobox"
-                    spellcheck="false"
-                    type="text"
-                    value="ctgA:1..100 ctgB:1,001..1,698"
-                  />
                   <div
-                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
-                    style="margin-right: 7px;"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-fwcp0t-MuiInputBase-root-MuiOutlinedInput-root"
+                    style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
                   >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
-                      data-testid="SearchIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
-                      />
-                    </svg>
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pe4mpk-MuiButtonBase-root-MuiIconButton-root"
-                      tabindex="0"
-                      type="button"
+                    <input
+                      aria-autocomplete="list"
+                      aria-expanded="false"
+                      aria-invalid="false"
+                      autocapitalize="none"
+                      autocomplete="off"
+                      class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-13meb6w-MuiInputBase-input-MuiOutlinedInput-input"
+                      id="_r_1s_"
+                      placeholder="Search for location"
+                      role="combobox"
+                      spellcheck="false"
+                      type="text"
+                      value="ctgA:1..100 ctgB:1,001..1,698"
+                    />
+                    <div
+                      class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1hnilo0-MuiInputAdornment-root-th"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
-                        data-testid="HelpIcon"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                        data-testid="SearchIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
                       >
                         <path
-                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
+                          d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
                         />
                       </svg>
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
-                    </button>
-                  </div>
-                  <fieldset
-                    aria-hidden="true"
-                    class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-                  >
-                    <legend
-                      class="css-ihdtdm"
-                    >
-                      <span
-                        class="notranslate"
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
                       >
-                        ​
-                      </span>
-                    </legend>
-                  </fieldset>
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                          data-testid="HelpIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <fieldset
+                      aria-hidden="true"
+                      class="MuiOutlinedInput-notchedOutline css-18p5xg2-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+                    >
+                      <legend
+                        class="css-1nf2c5d-MuiNotchedOutlined-root"
+                      >
+                        <span
+                          aria-hidden="true"
+                          class="notranslate"
+                        >
+                          ​
+                        </span>
+                      </legend>
+                    </fieldset>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <p
-            class="MuiTypography-root MuiTypography-body2 css-1lztmv5-MuiTypography-root-bp"
-          >
-            798bp
-          </p>
-          <div
-            class="css-z84q6m-container"
-          >
-            <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="zoom_out"
-              tabindex="0"
-              type="button"
+            <p
+              class="MuiTypography-root MuiTypography-body2 css-lqhf8e-MuiTypography-root-bp"
             >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="ZoomOutIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14M7 9h5v1H7z"
-                />
-              </svg>
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
-            </button>
-            <span
-              class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-m0837o-MuiSlider-root-slider"
+              798bp
+            </p>
+            <div
+              class="css-z84q6m-container"
             >
               <span
-                class="MuiSlider-rail css-7o8aqz-MuiSlider-rail"
-              />
-              <span
-                class="MuiSlider-track css-nl6333-MuiSlider-track"
-                style="left: 0%; width: 9.774680693120512%;"
-              />
-              <span
-                class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-l29f8w-MuiSlider-thumb"
-                data-index="0"
-                style="left: 9.774680693120512%;"
+                aria-label="Zoom out 2x"
+                class=""
+                data-mui-internal-clone-element="true"
               >
-                <input
-                  aria-orientation="horizontal"
-                  aria-valuemax="564.3856189774724"
-                  aria-valuemin="-61.143471208234715"
-                  aria-valuenow="0"
-                  data-index="0"
-                  max="564.3856189774724"
-                  min="-61.143471208234715"
-                  step="1"
-                  style="border: 0px; height: 100%; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 100%; direction: ltr;"
-                  type="range"
-                  value="0"
-                />
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                  data-testid="zoom_out"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                    data-testid="ZoomOutIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14M7 9h5v1H7z"
+                    />
+                  </svg>
+                </button>
               </span>
-            </span>
-            <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
-              data-testid="zoom_in"
-              tabindex="0"
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="ZoomInIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
-                />
-                <path
-                  d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2z"
-                />
-              </svg>
               <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
-            </button>
+                class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1fayfxi-MuiSlider-root-slider"
+              >
+                <span
+                  class="MuiSlider-rail css-r64h58-MuiSlider-rail"
+                />
+                <span
+                  class="MuiSlider-track css-1iqz70e-MuiSlider-track"
+                  style="left: 0%; width: 9.774680693120512%;"
+                />
+                <span
+                  aria-label="Window size: 800bp"
+                  class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-o0wpuw-MuiSlider-thumb"
+                  data-index="0"
+                  data-mui-internal-clone-element="true"
+                  style="left: 9.774680693120512%;"
+                >
+                  <input
+                    aria-orientation="horizontal"
+                    aria-valuemax="564.3856189774724"
+                    aria-valuemin="-61.143471208234715"
+                    aria-valuenow="0"
+                    data-index="0"
+                    max="564.3856189774724"
+                    min="-61.143471208234715"
+                    step="1"
+                    style="border: 0px; height: 100%; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 100%; direction: ltr;"
+                    type="range"
+                    value="0"
+                  />
+                </span>
+              </span>
+              <span
+                aria-label="Zoom in 2x"
+                class=""
+                data-mui-internal-clone-element="true"
+              >
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                  data-testid="zoom_in"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                    data-testid="ZoomInIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
+                    />
+                    <path
+                      d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2z"
+                    />
+                  </svg>
+                </button>
+              </span>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                  data-testid="MoreVertIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div
+              class="css-1n1xfjh-spacer"
+            />
           </div>
-          <div
-            class="css-1n1xfjh-spacer"
-          />
         </div>
       </div>
     </div>
     <div
-      class="css-75rarj-tracksContainer"
-      data-testid="trackContainer"
+      class="css-1x918n3-tracksContainer"
+      data-testid="tracksContainer"
     >
       <div
-        class="css-1rfvwmf-verticalGuidesZoomContainer"
+        class="css-n6mj5o-verticalGuidesZoomContainer"
       >
         <div
-          class="css-17gfnt3-verticalGuidesContainer"
+          class="css-14511yq-verticalGuidesContainer"
           style="left: -800px; width: 1702px;"
         >
           <div
@@ -920,42 +1086,82 @@ exports[`renders two tracks, two regions 1`] = `
             class="css-1dmfa10-contentBlock"
             style="width: 100px;"
           >
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: -21px;"
-            />
-            <div
-              class="css-1qcgmte-tick-majorTick"
-              style="left: -1px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 19px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 39px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 59px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 79px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 99px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 119px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 139px;"
-            />
+            <svg
+              class="css-6m1lch-svgOverlay"
+            >
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="-21"
+                x2="-21"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.26)"
+                stroke-width="1"
+                x1="-1"
+                x2="-1"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="19"
+                x2="19"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="39"
+                x2="39"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="59"
+                x2="59"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="79"
+                x2="79"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="99"
+                x2="99"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="119"
+                x2="119"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="139"
+                x2="139"
+                y1="0"
+                y2="100%"
+              />
+            </svg>
           </div>
           <div
             class="css-1b6zgog-interRegionPaddingBlock"
@@ -965,196 +1171,836 @@ exports[`renders two tracks, two regions 1`] = `
             class="css-1dmfa10-contentBlock"
             style="width: 800px;"
           >
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: -21px;"
-            />
-            <div
-              class="css-1qcgmte-tick-majorTick"
-              style="left: -1px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 19px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 39px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 59px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 79px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 99px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 119px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 139px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 159px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 179px;"
-            />
-            <div
-              class="css-1qcgmte-tick-majorTick"
-              style="left: 199px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 219px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 239px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 259px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 279px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 299px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 319px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 339px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 359px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 379px;"
-            />
-            <div
-              class="css-1qcgmte-tick-majorTick"
-              style="left: 399px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 419px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 439px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 459px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 479px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 499px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 519px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 539px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 559px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 579px;"
-            />
-            <div
-              class="css-1qcgmte-tick-majorTick"
-              style="left: 599px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 619px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 639px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 659px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 679px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 699px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 719px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 739px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 759px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 779px;"
-            />
-            <div
-              class="css-1qcgmte-tick-majorTick"
-              style="left: 799px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 819px;"
-            />
-            <div
-              class="css-i794sq-tick-minorTick"
-              style="left: 839px;"
-            />
+            <svg
+              class="css-6m1lch-svgOverlay"
+            >
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="-21"
+                x2="-21"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.26)"
+                stroke-width="1"
+                x1="-1"
+                x2="-1"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="19"
+                x2="19"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="39"
+                x2="39"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="59"
+                x2="59"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="79"
+                x2="79"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="99"
+                x2="99"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="119"
+                x2="119"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="139"
+                x2="139"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="159"
+                x2="159"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="179"
+                x2="179"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.26)"
+                stroke-width="1"
+                x1="199"
+                x2="199"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="219"
+                x2="219"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="239"
+                x2="239"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="259"
+                x2="259"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="279"
+                x2="279"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="299"
+                x2="299"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="319"
+                x2="319"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="339"
+                x2="339"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="359"
+                x2="359"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="379"
+                x2="379"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.26)"
+                stroke-width="1"
+                x1="399"
+                x2="399"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="419"
+                x2="419"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="439"
+                x2="439"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="459"
+                x2="459"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="479"
+                x2="479"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="499"
+                x2="499"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="519"
+                x2="519"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="539"
+                x2="539"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="559"
+                x2="559"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="579"
+                x2="579"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.26)"
+                stroke-width="1"
+                x1="599"
+                x2="599"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="619"
+                x2="619"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="639"
+                x2="639"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="659"
+                x2="659"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="679"
+                x2="679"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="699"
+                x2="699"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="719"
+                x2="719"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="739"
+                x2="739"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="759"
+                x2="759"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="779"
+                x2="779"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.26)"
+                stroke-width="1"
+                x1="799"
+                x2="799"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="819"
+                x2="819"
+                y1="0"
+                y2="100%"
+              />
+              <line
+                stroke="rgba(0, 0, 0, 0.12)"
+                stroke-width="1"
+                x1="839"
+                x2="839"
+                y1="0"
+                y2="100%"
+              />
+            </svg>
           </div>
         </div>
       </div>
       <div
-        class="css-dznme2-rubberbandControl"
+        class="css-fe416x-rubberbandControl"
         data-testid="rubberband_controls"
+        style="top: 96px; position: sticky;"
       >
         <div
-          class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1coqp07-MuiPaper-root-scalebarContainer"
+          class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-gcizdo-MuiPaper-root-container"
           data-resizer="true"
           style="height: 17px; box-sizing: border-box;"
         >
           <div
-            class="css-khofof-scalebarZoomContainer"
+            class="css-n6mj5o-verticalGuidesZoomContainer"
+          >
+            <div
+              class="css-14511yq-verticalGuidesContainer"
+              style="left: -801px; width: 1702px;"
+            >
+              <div
+                class="css-a9ifge-boundaryPaddingBlock"
+                style="width: 800px;"
+              />
+              <div
+                class="css-1dmfa10-contentBlock"
+                style="width: 100px;"
+              >
+                <svg
+                  class="css-6m1lch-svgOverlay"
+                >
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="-21"
+                    x2="-21"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.26)"
+                    stroke-width="1"
+                    x1="-1"
+                    x2="-1"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="19"
+                    x2="19"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="39"
+                    x2="39"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="59"
+                    x2="59"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="79"
+                    x2="79"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="99"
+                    x2="99"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="119"
+                    x2="119"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="139"
+                    x2="139"
+                    y1="0"
+                    y2="100%"
+                  />
+                </svg>
+              </div>
+              <div
+                class="css-1b6zgog-interRegionPaddingBlock"
+                style="width: 2px;"
+              />
+              <div
+                class="css-1dmfa10-contentBlock"
+                style="width: 800px;"
+              >
+                <svg
+                  class="css-6m1lch-svgOverlay"
+                >
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="-21"
+                    x2="-21"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.26)"
+                    stroke-width="1"
+                    x1="-1"
+                    x2="-1"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="19"
+                    x2="19"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="39"
+                    x2="39"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="59"
+                    x2="59"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="79"
+                    x2="79"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="99"
+                    x2="99"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="119"
+                    x2="119"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="139"
+                    x2="139"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="159"
+                    x2="159"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="179"
+                    x2="179"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.26)"
+                    stroke-width="1"
+                    x1="199"
+                    x2="199"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="219"
+                    x2="219"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="239"
+                    x2="239"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="259"
+                    x2="259"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="279"
+                    x2="279"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="299"
+                    x2="299"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="319"
+                    x2="319"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="339"
+                    x2="339"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="359"
+                    x2="359"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="379"
+                    x2="379"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.26)"
+                    stroke-width="1"
+                    x1="399"
+                    x2="399"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="419"
+                    x2="419"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="439"
+                    x2="439"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="459"
+                    x2="459"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="479"
+                    x2="479"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="499"
+                    x2="499"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="519"
+                    x2="519"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="539"
+                    x2="539"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="559"
+                    x2="559"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="579"
+                    x2="579"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.26)"
+                    stroke-width="1"
+                    x1="599"
+                    x2="599"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="619"
+                    x2="619"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="639"
+                    x2="639"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="659"
+                    x2="659"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="679"
+                    x2="679"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="699"
+                    x2="699"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="719"
+                    x2="719"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="739"
+                    x2="739"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="759"
+                    x2="759"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="779"
+                    x2="779"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.26)"
+                    stroke-width="1"
+                    x1="799"
+                    x2="799"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="819"
+                    x2="819"
+                    y1="0"
+                    y2="100%"
+                  />
+                  <line
+                    stroke="rgba(0, 0, 0, 0.12)"
+                    stroke-width="1"
+                    x1="839"
+                    x2="839"
+                    y1="0"
+                    y2="100%"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div
+            class="css-tyiuoa-zoomContainer"
           >
             <div
               class="css-y3821b-scalebar"
@@ -1165,84 +2011,72 @@ exports[`renders two tracks, two regions 1`] = `
                 style="background: none; width: 800px;"
               />
               <div
-                class="css-1dmfa10-contentBlock"
-                style="width: 100px;"
-              >
-                <div
-                  class="css-1f3h2yl-tick"
-                  style="left: -1px;"
-                />
-              </div>
+                style="width: 100px; position: relative; min-height: 100%; contain: layout style paint;"
+              />
               <div
                 class="css-1b6zgog-interRegionPaddingBlock"
                 style="background: none; width: 2px;"
               />
               <div
-                class="css-1dmfa10-contentBlock"
-                style="width: 800px;"
+                style="width: 800px; position: relative; min-height: 100%; contain: layout style paint;"
               >
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: -1px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: -1px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,000
-                  </p>
+                  </div>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: 199px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 199px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,200
-                  </p>
+                  </div>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: 399px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 399px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,400
-                  </p>
+                  </div>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: 599px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 599px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,600
-                  </p>
+                  </div>
                 </div>
                 <div
-                  class="css-1f3h2yl-tick"
-                  style="left: 799px;"
+                  style="position: absolute; width: 0px; display: flex; justify-content: center; pointer-events: none; left: 799px;"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+                  <div
+                    style="font-size: 11px; z-index: 1; background: rgb(255, 255, 255); line-height: normal; pointer-events: none;"
                   >
                     1,800
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
+            class="MuiTypography-root MuiTypography-body1 css-4lhiy8-MuiTypography-root-refLabel"
             data-testid="refLabel-ctgA"
             style="left: -1px; padding-left: 1px;"
           >
             ctgA
           </p>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
+            class="MuiTypography-root MuiTypography-body1 css-4lhiy8-MuiTypography-root-refLabel"
             data-testid="refLabel-ctgB"
             style="left: 101px; padding-left: 1px;"
           >
@@ -1251,10 +2085,11 @@ exports[`renders two tracks, two regions 1`] = `
         </div>
       </div>
       <div
-        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-u7uo4q-MuiPaper-root-root-unpinnedTrack"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1q1f5r0-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1i0p0kv-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
         >
           <span
             class="css-k4omgw-dragHandle"
@@ -1263,7 +2098,7 @@ exports[`renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1cz9l96-MuiSvgIcon-root-dragHandleIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1lzyuvu-MuiSvgIcon-root-dragHandleIcon"
               data-testid="DragIndicatorIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1274,14 +2109,14 @@ exports[`renders two tracks, two regions 1`] = `
             </svg>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1qdvzjn-MuiButtonBase-root-MuiIconButton-root-iconButton"
             tabindex="0"
             title="close this track"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="CloseIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1290,26 +2125,23 @@ exports[`renders two tracks, two regions 1`] = `
                 d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
               />
             </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-14nk8rx-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
             </span>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="MoreVertIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1318,19 +2150,15 @@ exports[`renders two tracks, two regions 1`] = `
                 d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
               />
             </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
           </button>
         </div>
         <div
-          class="css-1ql7uaq-trackRenderingContainer"
+          class="css-rgoijz-trackRenderingContainer"
           data-testid="trackRenderingContainer-lgv-testConfig"
           style="height: 100px;"
         >
           <div
             class="css-v11ioz-renderingComponentContainer"
-            style="transform: scaleX(1);"
           >
             <div
               class="css-1y9lrrz-display"
@@ -1375,15 +2203,16 @@ exports[`renders two tracks, two regions 1`] = `
           </div>
         </div>
         <div
-          class="css-14zcv15-horizontalHandle-resizeHandle"
+          class="css-120n0lh-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
       </div>
       <div
-        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-u7uo4q-MuiPaper-root-root-unpinnedTrack"
       >
         <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1q1f5r0-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1i0p0kv-MuiPaper-root-trackLabel-trackLabelOverlap-root"
+          style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
         >
           <span
             class="css-k4omgw-dragHandle"
@@ -1392,7 +2221,7 @@ exports[`renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1cz9l96-MuiSvgIcon-root-dragHandleIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1lzyuvu-MuiSvgIcon-root-dragHandleIcon"
               data-testid="DragIndicatorIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1403,14 +2232,14 @@ exports[`renders two tracks, two regions 1`] = `
             </svg>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1qdvzjn-MuiButtonBase-root-MuiIconButton-root-iconButton"
             tabindex="0"
             title="close this track"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="CloseIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1419,26 +2248,23 @@ exports[`renders two tracks, two regions 1`] = `
                 d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
               />
             </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-14nk8rx-MuiTypography-root-trackName"
           >
             <span>
               Bar Track
             </span>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
             data-testid="track_menu_icon"
             tabindex="0"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
               data-testid="MoreVertIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1447,19 +2273,15 @@ exports[`renders two tracks, two regions 1`] = `
                 d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
               />
             </svg>
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
           </button>
         </div>
         <div
-          class="css-1ql7uaq-trackRenderingContainer"
+          class="css-rgoijz-trackRenderingContainer"
           data-testid="trackRenderingContainer-lgv-testConfig2"
           style="height: 100px;"
         >
           <div
             class="css-v11ioz-renderingComponentContainer"
-            style="transform: scaleX(1);"
           >
             <div
               class="css-1y9lrrz-display"
@@ -1504,7 +2326,7 @@ exports[`renders two tracks, two regions 1`] = `
           </div>
         </div>
         <div
-          class="css-14zcv15-horizontalHandle-resizeHandle"
+          class="css-120n0lh-horizontalHandle-resizeHandle"
           data-resizer="true"
         />
       </div>

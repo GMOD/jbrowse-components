@@ -1,14 +1,15 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { getSession, stringify } from '@jbrowse/core/util'
-import { observer } from 'mobx-react'
-import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import { useEffect, useRef, useState } from 'react'
 
-// locals
-import { LinearGenomeViewModel } from '..'
+import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
+
+import OverviewRubberbandHoverTooltip from './OverviewRubberbandHoverTooltip'
 import RubberbandSpan from './RubberbandSpan'
 import { getRelativeX } from './util'
+
+import type { LinearGenomeViewModel } from '..'
+import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 type LGV = LinearGenomeViewModel
 
@@ -18,52 +19,9 @@ const useStyles = makeStyles()({
     width: '100%',
     minHeight: 8,
   },
-  guide: {
-    pointerEvents: 'none',
-    height: '100%',
-    width: 1,
-    position: 'absolute',
-    zIndex: 10,
-  },
   rel: {
     position: 'relative',
   },
-})
-
-const HoverTooltip = observer(function ({
-  model,
-  open,
-  guideX,
-  overview,
-}: {
-  model: LGV
-  open: boolean
-  guideX: number
-  overview: Base1DViewModel
-}) {
-  const { classes } = useStyles()
-  const { cytobandOffset } = model
-  const { assemblyManager } = getSession(model)
-
-  const px = overview.pxToBp(guideX - cytobandOffset)
-  const assembly = assemblyManager.get(px.assemblyName)
-  const cytoband = assembly?.cytobands?.find(
-    f =>
-      px.coord > f.get('start') &&
-      px.coord < f.get('end') &&
-      px.refName === assembly.getCanonicalRefName(f.get('refName')),
-  )
-
-  return (
-    <Tooltip
-      open={open}
-      placement="top"
-      title={[stringify(px), cytoband?.get('name')].join(' ')}
-      arrow
-    >
-      <div className={classes.guide} style={{ left: guideX }} />
-    </Tooltip>
-  )
 })
 
 const OverviewRubberband = observer(function OverviewRubberband({
@@ -160,7 +118,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
     return (
       <div className={classes.rel}>
         {guideX !== undefined ? (
-          <HoverTooltip
+          <OverviewRubberbandHoverTooltip
             model={model}
             open={!mouseDragging}
             overview={overview}
@@ -182,13 +140,13 @@ const OverviewRubberband = observer(function OverviewRubberband({
 
   let left = startX || 0
   let width = 0
-  if (startX !== undefined && currentX !== undefined) {
-    left = currentX < startX ? currentX : startX
+  if (currentX !== undefined) {
+    left = Math.min(currentX, startX)
     width = currentX - startX
   }
   // calculate the start and end bp of drag
-  let leftBpOffset
-  let rightBpOffset
+  let leftBpOffset: ReturnType<typeof overview.pxToBp> | undefined
+  let rightBpOffset: ReturnType<typeof overview.pxToBp> | undefined
   if (startX) {
     leftBpOffset = overview.pxToBp(startX - cytobandOffset)
     rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)

@@ -1,7 +1,6 @@
-import React from 'react'
-import { observer } from 'mobx-react'
-import { DialogContent, DialogActions, Button, Typography } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const SetDefaultSession = observer(function ({
   rootModel,
@@ -27,14 +26,20 @@ const SetDefaultSession = observer(function ({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button color="secondary" variant="contained" onClick={() => onClose()}>
+        <Button
+          color="secondary"
+          variant="contained"
+          onClick={() => {
+            onClose()
+          }}
+        >
           Cancel
         </Button>
         <Button
           variant="contained"
           onClick={() => {
             jbrowse.setDefaultSessionConf({
-              name: `New session`,
+              name: 'New session',
             })
             onClose()
           }}

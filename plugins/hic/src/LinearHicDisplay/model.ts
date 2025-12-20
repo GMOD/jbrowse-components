@@ -1,12 +1,25 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { types, getEnv } from 'mobx-state-tree'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getEnv, types } from '@jbrowse/mobx-state-tree'
+import {
+  FeatureDensityMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
+
+import type { HicFlatbushItem } from '../HicRenderer/types'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearHicDisplay
  * #category display
- * extends `BaseLinearDisplay`
+ * Non-block-based Hi-C display that renders to a single canvas
+ * extends
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -16,7 +29,9 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearHicDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      TrackHeightMixin(),
+      FeatureDensityMixin(),
       types.model({
         /**
          * #property
@@ -38,52 +53,144 @@ export default function stateModelFactory(
          * #property
          */
         colorScheme: types.maybe(types.string),
+        /**
+         * #property
+         */
+        activeNormalization: 'KR',
+        /**
+         * #property
+         */
+        mode: 'triangular',
       }),
     )
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #getter
-         */
-        get blockType() {
-          return 'dynamicBlocks'
-        },
-        /**
-         * #getter
-         */
-        get rendererTypeName() {
-          return 'HicRenderer'
-        },
-        /**
-         * #method
-         */
-        renderProps() {
-          const config = self.rendererType.configSchema.create(
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
+      availableNormalizations: undefined as string[] | undefined,
+      /**
+       * #volatile
+       */
+      loading: false,
+      /**
+       * #volatile
+       */
+      lastDrawnOffsetPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
+      ref: null as HTMLCanvasElement | null,
+      /**
+       * #volatile
+       */
+      renderingImageData: undefined as ImageBitmap | undefined,
+      /**
+       * #volatile
+       */
+      renderingStopToken: undefined as StopToken | undefined,
+      /**
+       * #volatile
+       */
+      flatbush: undefined as ArrayBufferLike | undefined,
+      /**
+       * #volatile
+       */
+      flatbushItems: [] as HicFlatbushItem[],
+      /**
+       * #volatile
+       */
+      maxScore: 0,
+      /**
+       * #volatile
+       */
+      yScalar: 1,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get drawn() {
+        return self.lastDrawnOffsetPx !== undefined
+      },
+      /**
+       * #getter
+       */
+      get rendererTypeName() {
+        return 'HicRenderer'
+      },
+      /**
+       * #method
+       */
+      renderProps() {
+        return {
+          config: self.rendererType.configSchema.create(
             {
               ...getConf(self, 'renderer'),
-
-              // add specific jexl color callback when using pre-defined color schemes
               ...(self.colorScheme
                 ? { color: 'jexl:interpolate(count,scale)' }
                 : {}),
             },
             getEnv(self),
-          )
-
-          return {
-            ...superRenderProps(),
-            config,
-            rpcDriverName: self.rpcDriverName,
-            displayModel: self,
-            resolution: self.resolution,
-            useLogScale: self.useLogScale,
-            colorScheme: self.colorScheme,
-          }
-        },
-      }
-    })
+          ),
+          resolution: self.resolution,
+          useLogScale: self.useLogScale,
+          colorScheme: self.colorScheme,
+          normalization: self.activeNormalization,
+          displayHeight: self.mode === 'adjust' ? self.height : undefined,
+        }
+      },
+    }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setLastDrawnOffsetPx(n: number) {
+        self.lastDrawnOffsetPx = n
+      },
+      /**
+       * #action
+       */
+      setLoading(f: boolean) {
+        self.loading = f
+      },
+      /**
+       * #action
+       */
+      setRef(ref: HTMLCanvasElement | null) {
+        self.ref = ref
+      },
+      /**
+       * #action
+       */
+      setRenderingImageData(imageData: ImageBitmap | undefined) {
+        self.renderingImageData = imageData
+      },
+      /**
+       * #action
+       */
+      setRenderingStopToken(token: StopToken | undefined) {
+        self.renderingStopToken = token
+      },
+      /**
+       * #action
+       */
+      setFlatbushData(
+        flatbush: ArrayBufferLike | undefined,
+        items: HicFlatbushItem[],
+        maxScore: number,
+        yScalar: number,
+      ) {
+        self.flatbush = flatbush
+        self.flatbushItems = items
+        self.maxScore = maxScore
+        self.yScalar = yScalar
+      },
+      /**
+       * #action
+       */
+      reload() {
+        self.error = undefined
+      },
       /**
        * #action
        */
@@ -102,12 +209,30 @@ export default function stateModelFactory(
       setColorScheme(f?: string) {
         self.colorScheme = f
       },
+      /**
+       * #action
+       */
+      setActiveNormalization(f: string) {
+        self.activeNormalization = f
+      },
+      /**
+       * #action
+       */
+      setAvailableNormalizations(f: string[]) {
+        self.availableNormalizations = f
+      },
+      /**
+       * #action
+       */
+      setMode(arg: string) {
+        self.mode = arg
+      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
         /**
-         * #getter
+         * #method
          */
         trackMenuItems() {
           return [
@@ -116,7 +241,31 @@ export default function stateModelFactory(
               label: 'Use log scale',
               type: 'checkbox',
               checked: self.useLogScale,
-              onClick: () => self.setUseLogScale(!self.useLogScale),
+              onClick: () => {
+                self.setUseLogScale(!self.useLogScale)
+              },
+            },
+            {
+              label: 'Rendering mode',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Triangular',
+                  type: 'radio',
+                  checked: self.mode === 'triangular',
+                  onClick: () => {
+                    self.setMode('triangular')
+                  },
+                },
+                {
+                  label: 'Adjust to height of display',
+                  type: 'radio',
+                  checked: self.mode === 'adjust',
+                  onClick: () => {
+                    self.setMode('adjust')
+                  },
+                },
+              ],
             },
             {
               label: 'Color scheme',
@@ -124,37 +273,97 @@ export default function stateModelFactory(
               subMenu: [
                 {
                   label: 'Fall',
-                  onClick: () => self.setColorScheme('fall'),
+                  type: 'radio',
+                  checked: self.colorScheme === 'fall',
+                  onClick: () => {
+                    self.setColorScheme('fall')
+                  },
                 },
                 {
                   label: 'Viridis',
-                  onClick: () => self.setColorScheme('viridis'),
+                  type: 'radio',
+                  checked: self.colorScheme === 'viridis',
+                  onClick: () => {
+                    self.setColorScheme('viridis')
+                  },
                 },
                 {
                   label: 'Juicebox',
-                  onClick: () => self.setColorScheme('juicebox'),
+                  type: 'radio',
+                  checked: self.colorScheme === 'juicebox',
+                  onClick: () => {
+                    self.setColorScheme('juicebox')
+                  },
                 },
                 {
-                  label: 'Clear',
-                  onClick: () => self.setColorScheme(undefined),
+                  label: 'Default',
+                  type: 'radio',
+                  checked: self.colorScheme === undefined,
+                  onClick: () => {
+                    self.setColorScheme(undefined)
+                  },
                 },
               ],
             },
+
             {
               label: 'Resolution',
               subMenu: [
                 {
                   label: 'Finer resolution',
-                  onClick: () => self.setResolution(self.resolution * 2),
+                  onClick: () => {
+                    self.setResolution(self.resolution * 2)
+                  },
                 },
                 {
                   label: 'Coarser resolution',
-                  onClick: () => self.setResolution(self.resolution / 2),
+                  onClick: () => {
+                    self.setResolution(self.resolution / 2)
+                  },
                 },
               ],
             },
+            ...(self.availableNormalizations
+              ? [
+                  {
+                    label: 'Normalization scheme',
+                    subMenu: self.availableNormalizations.map(norm => ({
+                      label: norm,
+                      type: 'radio',
+                      checked: norm === self.activeNormalization,
+                      onClick: () => {
+                        self.setActiveNormalization(norm)
+                      },
+                    })),
+                  },
+                ]
+              : []),
           ]
         },
       }
     })
+    .actions(self => ({
+      beforeDestroy() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+        }
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./afterAttach')
+            doAfterAttach(self)
+          } catch (e) {
+            console.error(e)
+            self.setError(e)
+          }
+        })()
+      },
+    }))
 }
+
+export type LinearHicDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearHicDisplayModel = Instance<LinearHicDisplayStateModel>

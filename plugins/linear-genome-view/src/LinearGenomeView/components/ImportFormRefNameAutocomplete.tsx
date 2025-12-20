@@ -1,12 +1,11 @@
-import React from 'react'
-import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { observer } from 'mobx-react'
 
-// locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults } from './util'
-import { LinearGenomeViewModel } from '..'
+
+import type { LinearGenomeViewModel } from '..'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 type LGV = LinearGenomeViewModel
 
@@ -43,8 +42,12 @@ const ImportFormRefNameAutocomplete = observer(function ({
       assemblyName={selectedAsm}
       value={value}
       minWidth={270}
-      onChange={str => setValue(str)}
-      onSelect={val => setOption(val)}
+      onChange={str => {
+        setValue(str)
+      }}
+      onSelect={val => {
+        setOption(val)
+      }}
       TextFieldProps={{
         variant: 'outlined',
         helperText: 'Enter sequence name, feature name, or location',

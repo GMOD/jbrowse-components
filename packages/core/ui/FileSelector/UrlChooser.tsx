@@ -1,29 +1,38 @@
-import React from 'react'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { FileLocation, isUriLocation } from '../../util/types'
+
+import { isUriLocation } from '../../util/types'
+
+import type { FileLocation } from '../../util/types'
 
 const UrlChooser = observer(function ({
   location,
-  setLocation,
   label,
+  style,
+  setLocation,
 }: {
   location?: FileLocation
-  setLocation: (arg: FileLocation) => void
   label?: string
+  style?: Record<string, unknown>
+  setLocation: (arg: FileLocation) => void
 }) {
   return (
     <TextField
-      fullWidth
       variant="outlined"
-      inputProps={{ 'data-testid': 'urlInput' }}
+      fullWidth
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
       label={label || 'Enter URL'}
+      style={style}
       onChange={event => {
         setLocation({
           uri: event.target.value.trim(),
           locationType: 'UriLocation',
         })
+      }}
+      slotProps={{
+        htmlInput: {
+          'data-testid': 'urlInput',
+        },
       }}
     />
   )

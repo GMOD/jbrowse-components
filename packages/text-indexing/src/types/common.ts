@@ -1,25 +1,26 @@
 import fs from 'fs'
-import fetch from 'node-fetch'
 import path from 'path'
-import { LocalPathLocation, UriLocation, Track } from '../util'
 
-// Method for handing off the parsing of a gff3 file URL.
-// Calls the proper parser depending on if it is gzipped or not.
-// Returns a @gmod/gff stream.
+import fetch from 'node-fetch'
+
+import type { LocalPathLocation, Track, UriLocation } from '../util'
+
+// Method for handing off the parsing of a gff3 file URL. Calls the proper
+// parser depending on if it is gzipped or not. Returns a @gmod/gff stream.
 export async function createRemoteStream(urlIn: string) {
-  const response = await fetch(urlIn)
-  if (!response.ok) {
+  const res = await fetch(urlIn)
+  if (!res.ok) {
     throw new Error(
-      `Failed to fetch ${urlIn} status ${response.status} ${response.statusText}`,
+      `Failed to fetch ${urlIn} status ${res.status} ${await res.text()}`,
     )
   }
-  return response
+  return res
 }
 
 // Checks if the passed in string is a valid URL.
 // Returns a boolean.
 export function isURL(FileName: string) {
-  let url
+  let url: URL | undefined
 
   try {
     url = new URL(FileName)
@@ -30,19 +31,36 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-export async function getLocalOrRemoteStream(uri: string, out: string) {
-  let stream
-  let totalBytes = 0
-  if (isURL(uri)) {
-    const result = await createRemoteStream(uri)
-    totalBytes = +(result.headers?.get('Content-Length') || 0)
-    stream = result.body
+export async function getLocalOrRemoteStream({
+  file,
+  out,
+  onBytesReceived,
+  onTotalBytes,
+}: {
+  file: string
+  out: string
+  onBytesReceived: (totalBytesReceived: number) => void
+  onTotalBytes: (totalBytes: number) => void
+}) {
+  let receivedBytes = 0
+  if (isURL(file)) {
+    const result = await createRemoteStream(file)
+    result.body.on('data', chunk => {
+      receivedBytes += chunk.length
+      onBytesReceived(receivedBytes)
+    })
+    onTotalBytes(+(result.headers.get('Content-Length') || 0))
+    return result.body
   } else {
-    const filename = path.isAbsolute(uri) ? uri : path.join(out, uri)
-    totalBytes = fs.statSync(filename).size
-    stream = fs.createReadStream(filename)
+    const filename = path.isAbsolute(file) ? file : path.join(out, file)
+    const stream = fs.createReadStream(filename)
+    stream.on('data', chunk => {
+      receivedBytes += chunk.length
+      onBytesReceived(receivedBytes)
+    })
+    onTotalBytes(fs.statSync(filename).size)
+    return stream
   }
-  return { totalBytes, stream }
 }
 
 export function makeLocation(location: string, protocol: string) {
@@ -119,48 +137,39 @@ export function guessAdapterFromFileName(filePath: string): Track {
 
 /**
  * Generates metadata of index given a filename (trackId or assembly)
- * @param name -  assembly name or trackId
- * @param attributes -  attributes indexed
- * @param include -  feature types included from index
- * @param exclude -  feature types excluded from index
- * @param configs - list of track
  */
 export async function generateMeta({
   configs,
-  attributes,
+  attributesToIndex,
   outDir,
   name,
-  exclude,
+  featureTypesToExclude,
   assemblyNames,
 }: {
   configs: Track[]
-  attributes: string[]
+  attributesToIndex: string[]
   outDir: string
   name: string
-  exclude: string[]
+  featureTypesToExclude: string[]
   assemblyNames: string[]
 }) {
-  const tracks = configs.map(config => {
-    const { trackId, textSearching, adapter } = config
-
-    const includeExclude =
-      textSearching?.indexingFeatureTypesToExclude || exclude
-
-    const metaAttrs = textSearching?.indexingAttributes || attributes
-
-    return {
-      trackId: trackId,
-      attributesIndexed: metaAttrs,
-      excludedTypes: includeExclude,
-      adapterConf: adapter,
-    }
-  })
   fs.writeFileSync(
     path.join(outDir, 'trix', `${name}_meta.json`),
     JSON.stringify(
       {
         dateCreated: new Date().toISOString(),
-        tracks,
+        tracks: configs.map(config => {
+          const { trackId, textSearching, adapter } = config
+          return {
+            trackId,
+            attributesIndexed:
+              textSearching?.indexingAttributes || attributesToIndex,
+            excludedTypes:
+              textSearching?.indexingFeatureTypesToExclude ||
+              featureTypesToExclude,
+            adapterConf: adapter,
+          }
+        }),
         assemblyNames,
       },
       null,

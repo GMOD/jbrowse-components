@@ -1,22 +1,26 @@
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseJB1Json, parseJB1Conf, regularizeConf } from './jb1ConfigParse'
-import { clone, deepUpdate, fillTemplate } from './util'
-import {
-  JBLocation,
-  UriLocation,
-  LocalPathLocation,
+
+import { parseJB1Conf, parseJB1Json, regularizeConf } from './jb1ConfigParse'
+import { deepUpdate, fillTemplate } from './util'
+
+import type {
   Config,
-  Track,
   Include,
+  JBLocation,
+  LocalPathLocation,
+  Track,
+  UriLocation,
 } from './types'
 
 function isUriLocation(location: JBLocation): location is UriLocation {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as UriLocation).uri !== undefined
 }
 
 function isLocalPathLocation(
   location: JBLocation,
 ): location is LocalPathLocation {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as LocalPathLocation).localPath !== undefined
 }
 
@@ -88,7 +92,7 @@ export async function createFinalConfig(
   baseConfig: Config,
   defaults = configDefaults,
 ): Promise<Config> {
-  const configWithDefaults = deepUpdate(clone(defaults), baseConfig)
+  const configWithDefaults = deepUpdate(structuredClone(defaults), baseConfig)
   let finalConfig = await loadIncludes(configWithDefaults)
   finalConfig = mergeConfigs(finalConfig, baseConfig) || finalConfig
   fillTemplates(finalConfig, finalConfig)
@@ -130,8 +134,9 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     if (prop === 'tracks' && prop in a) {
       const aTracks = a[prop] || []
       const bTracks = b[prop] || []
+
       if (Array.isArray(aTracks) && Array.isArray(bTracks)) {
-        a[prop] = mergeTrackConfigs(aTracks || [], bTracks || [])
+        a[prop] = mergeTrackConfigs(aTracks, bTracks)
       } else {
         throw new Error(
           `Track config has not been properly regularized: ${aTracks} ${bTracks}`,
@@ -173,19 +178,19 @@ function mergeTrackConfigs(a: Track[], b: Track[]): Track[] {
 
   // index the tracks in `a` by track label
   const aTracks: Record<string, Track> = {}
-  a.forEach((t, i): void => {
+  for (const [i, t] of a.entries()) {
     t.index = i
     aTracks[t.label] = t
-  })
+  }
 
-  b.forEach((bT): void => {
+  for (const bT of b) {
     const aT = aTracks[bT.label]
     if (aT) {
       mergeConfigs(aT, bT)
     } else {
       a.push(bT)
     }
-  })
+  }
 
   return a
 }
@@ -196,7 +201,7 @@ function mergeTrackConfigs(a: Track[], b: Track[]): Track[] {
  * @param inputConfig - Config to load includes into
  */
 async function loadIncludes(inputConfig: Config): Promise<Config> {
-  inputConfig = clone(inputConfig)
+  inputConfig = structuredClone(inputConfig)
 
   async function loadRecur(
     config: Config,
@@ -208,7 +213,7 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
         `Could not determine source URL: ${JSON.stringify(config)}`,
       )
     }
-    const newUpstreamConf = mergeConfigs(clone(upstreamConf), config)
+    const newUpstreamConf = mergeConfigs(structuredClone(upstreamConf), config)
     if (!newUpstreamConf) {
       throw new Error('Problem merging configs')
     }
@@ -216,7 +221,7 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
       regularizeIncludes(config.include || []),
       newUpstreamConf,
     )
-    delete config.include
+    config.include = undefined
 
     const loads = includes.map(async (include): Promise<Config> => {
       include.cacheBuster = inputConfig.cacheBuster
@@ -227,9 +232,9 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
       return loadRecur(includedData, newUpstreamConf)
     })
     const includedDataObjects = await Promise.all(loads)
-    includedDataObjects.forEach((includedData): void => {
+    for (const includedData of includedDataObjects) {
       config = mergeConfigs(config, includedData) || config
-    })
+    }
     return config
   }
 
@@ -265,8 +270,7 @@ function regularizeIncludes(
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unnecessary-type-constraint
-function fillTemplates<T extends any>(subconfig: T, config: Config): T {
+function fillTemplates<T>(subconfig: T, config: Config): T {
   if (!subconfig) {
     return subconfig
   }
@@ -275,7 +279,6 @@ function fillTemplates<T extends any>(subconfig: T, config: Config): T {
       subconfig[i] = fillTemplates(subconfig[i], config)
     }
   } else if (typeof subconfig === 'object') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sub = subconfig as Record<string, any>
     for (const name of Object.keys(sub)) {
       sub[name] = fillTemplates(sub[name], config)

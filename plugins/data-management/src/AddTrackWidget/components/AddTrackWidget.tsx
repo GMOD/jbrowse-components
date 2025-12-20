@@ -1,12 +1,13 @@
-import React, { useState } from 'react'
-import { observer } from 'mobx-react'
-import { FormControl, FormHelperText, Select, MenuItem } from '@mui/material'
-import { getEnv } from '@jbrowse/core/util'
+import { Suspense, useState } from 'react'
 
-// locals
-import { AddTrackModel } from '../model'
+import { getEnv } from '@jbrowse/core/util'
+import { FormControl, FormHelperText, MenuItem, Select } from '@mui/material'
+import { observer } from 'mobx-react'
+
 import DefaultAddTrackWorkflow from './DefaultAddTrackWorkflow'
 import PasteConfigWorkflow from './PasteConfigWorkflow'
+
+import type { AddTrackModel } from '../model'
 
 const AddTrackSelector = observer(function ({
   model,
@@ -14,21 +15,28 @@ const AddTrackSelector = observer(function ({
   model: AddTrackModel
 }) {
   const [val, setVal] = useState('Default add track workflow')
-  const { pluginManager } = getEnv(model)
-  const widgets = pluginManager.getAddTrackWorkflowElements()
   const ComponentMap = {
     'Default add track workflow': DefaultAddTrackWorkflow,
     'Add track JSON': PasteConfigWorkflow,
-    ...Object.fromEntries(widgets.map(w => [w.name, w.ReactComponent])),
+    ...Object.fromEntries(
+      getEnv(model)
+        .pluginManager.getAddTrackWorkflowElements()
+        .map(w => [w.name, w.ReactComponent]),
+    ),
   } as Record<string, React.FC<{ model: AddTrackModel }>>
 
   // make sure the selected value is in the list
   const val2 = ComponentMap[val] ? val : 'Default add track workflow'
-  const Component = ComponentMap[val2]
+  const Component = ComponentMap[val2]!
   return (
     <>
       <FormControl>
-        <Select value={val2} onChange={event => setVal(event.target.value)}>
+        <Select
+          value={val2}
+          onChange={event => {
+            setVal(event.target.value)
+          }}
+        >
           {Object.keys(ComponentMap).map(e => (
             <MenuItem key={e} value={e}>
               {e}
@@ -38,8 +46,9 @@ const AddTrackSelector = observer(function ({
         <FormHelperText>Type of add track workflow</FormHelperText>
       </FormControl>
 
-      <br />
-      <Component model={model} />
+      <Suspense fallback={null}>
+        <Component model={model} />
+      </Suspense>
     </>
   )
 })

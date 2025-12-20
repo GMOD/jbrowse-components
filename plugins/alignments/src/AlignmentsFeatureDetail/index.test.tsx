@@ -1,12 +1,12 @@
-import React from 'react'
-import { render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { types } from '@jbrowse/mobx-state-tree'
+import { ThemeProvider } from '@mui/material'
+import { render } from '@testing-library/react'
 
-// locals
-import { stateModelFactory } from './stateModelFactory'
 import ReactComponent from './AlignmentsFeatureDetail'
+import { stateModelFactory } from './stateModelFactory'
 
 test('open up a widget', () => {
   const pluginManager = new PluginManager([])
@@ -24,6 +24,7 @@ test('open up a widget', () => {
     { pluginManager },
   )
   session.widget.setFeatureData({
+    uniqueId: 'hello',
     seq: 'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
     start: 2,
     end: 102,
@@ -40,7 +41,9 @@ test('open up a widget', () => {
     type: 'match',
   })
   const { container, getByText } = render(
-    <ReactComponent model={session.widget} />,
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ReactComponent model={session.widget} />,
+    </ThemeProvider>,
   )
   expect(container).toMatchSnapshot()
   expect(getByText('ctgA:3..102 (+)')).toBeTruthy()

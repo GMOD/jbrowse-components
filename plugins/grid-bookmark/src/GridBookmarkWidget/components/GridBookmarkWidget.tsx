@@ -1,23 +1,22 @@
-import React, { lazy } from 'react'
-import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
-import { getSession } from '@jbrowse/core/util'
-import { Alert } from '@mui/material'
+import { lazy } from 'react'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-
-// locals
-import BookmarkGrid from './BookmarkGrid'
-import AssemblySelector from './AssemblySelector'
-import { GridBookmarkModel } from '../model'
-
-// icons
-import Menu from '@mui/icons-material/Menu'
+import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import Delete from '@mui/icons-material/Delete'
 import GetApp from '@mui/icons-material/GetApp'
+import Menu from '@mui/icons-material/Menu'
+import Palette from '@mui/icons-material/Palette'
 import Publish from '@mui/icons-material/Publish'
 import Settings from '@mui/icons-material/Settings'
-import Palette from '@mui/icons-material/Palette'
 import Share from '@mui/icons-material/Share'
-import Delete from '@mui/icons-material/Delete'
+import { Alert } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import AssemblySelector from './AssemblySelector'
+import BookmarkGrid from './BookmarkGrid'
+
+import type { GridBookmarkModel } from '../model'
 
 // lazies
 const ExportBookmarksDialog = lazy(
@@ -51,17 +50,11 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
   model: GridBookmarkModel
 }) {
   const { classes } = useStyles()
-
-  if (!model) {
-    return null
-  }
-
   return (
     <div>
       <Alert severity="info">
         Click and type within the <strong>label</strong> field to annotate your
-        bookmark. Double click the <strong>label</strong> field to do so within
-        a dialog.
+        bookmark
       </Alert>
       <div className={classes.flex}>
         <CascadingMenuButton

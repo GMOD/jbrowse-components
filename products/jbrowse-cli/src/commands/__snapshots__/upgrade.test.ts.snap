@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`fails if the fetch does not return the right file 1`] = `
+"Error: No directory supplied
+"
+`;
+
+exports[`fails if user selects a directory that does not exist 1`] = `
+"Error: No manifest.json found in this directory, are you sure it is an
+        existing jbrowse 2 installation?
+"
+`;
+
+exports[`fails if user selects a directory that does not have a installation 1`] = `
+"Error: No manifest.json found in this directory, are you sure it is an
+        existing jbrowse 2 installation?
+"
+`;
+
+exports[`fails to upgrade if version does not exist 1`] = `
+"Error: No directory supplied
+"
+`;

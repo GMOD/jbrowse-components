@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
-import { Button, Container, Grid } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import { observer } from 'mobx-react'
+import { useState } from 'react'
+
+import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Button, Container, Grid } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { CircularViewModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
@@ -11,13 +14,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ImportForm = observer(({ model }: { model: any }) => {
+const ImportForm = observer(function ({ model }: { model: CircularViewModel }) {
   const { classes } = useStyles()
   const session = getSession(model)
   const { error } = model
   const { assemblyNames, assemblyManager } = session
-  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
   const assembly = assemblyManager.get(selectedAsm)
   const assemblyError = assemblyNames.length
     ? assembly?.error
@@ -29,37 +31,30 @@ const ImportForm = observer(({ model }: { model: any }) => {
     <Container className={classes.importFormContainer}>
       {err ? (
         <Grid container spacing={1} justifyContent="center" alignItems="center">
-          <Grid item>
-            <ErrorMessage error={err} />
-          </Grid>
+          <ErrorMessage error={err} />
         </Grid>
       ) : null}
       <Grid container spacing={1} justifyContent="center" alignItems="center">
-        <Grid item>
-          <AssemblySelector
-            onChange={val => {
-              model.setError(undefined)
-              setSelectedAsm(val)
-            }}
-            session={session}
-            selected={selectedAsm}
-          />
-        </Grid>
-
-        <Grid item>
-          <Button
-            disabled={!regions?.length}
-            onClick={() => {
-              model.setError(undefined)
-              model.setDisplayedRegions(regions)
-            }}
-            variant="contained"
-            color="primary"
-          >
-            {/* if there's an error, it's not actively loading  so just display open */}
-            {regions.length || err ? 'Open' : 'Loading...'}
-          </Button>
-        </Grid>
+        <AssemblySelector
+          onChange={val => {
+            model.setError(undefined)
+            setSelectedAsm(val)
+          }}
+          session={session}
+          selected={selectedAsm}
+        />
+        <Button
+          disabled={!regions.length}
+          onClick={() => {
+            model.setError(undefined)
+            model.setDisplayedRegions(regions)
+          }}
+          variant="contained"
+          color="primary"
+        >
+          {/* if there's an error, it's not actively loading  so just display open */}
+          {regions.length || err ? 'Open' : 'Loading...'}
+        </Button>
       </Grid>
     </Container>
   )

@@ -1,7 +1,10 @@
 import { lazy } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
+
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+
 import { stateModelFactory } from './model'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addViewType(() => {

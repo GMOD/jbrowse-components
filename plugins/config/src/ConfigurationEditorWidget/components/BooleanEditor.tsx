@@ -1,12 +1,10 @@
-import React from 'react'
-import { observer } from 'mobx-react'
-
 import {
   Checkbox,
   FormControl,
   FormControlLabel,
   FormHelperText,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const BooleanEditor = observer(function ({
   slot,
@@ -25,7 +23,9 @@ const BooleanEditor = observer(function ({
         control={
           <Checkbox
             checked={slot.value}
-            onChange={evt => slot.set(evt.target.checked)}
+            onChange={evt => {
+              slot.set(evt.target.checked)
+            }}
           />
         }
       />

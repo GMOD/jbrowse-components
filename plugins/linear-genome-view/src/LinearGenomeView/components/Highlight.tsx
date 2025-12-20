@@ -1,23 +1,17 @@
-import React, { useRef, useState } from 'react'
-import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
-import { colord } from '@jbrowse/core/util/colord'
-import {
-  ParsedLocString,
-  Region,
-  SessionWithWidgets,
-  getSession,
-} from '@jbrowse/core/util'
+import { useRef, useState } from 'react'
+
 import { Menu } from '@jbrowse/core/ui'
-import { IconButton, Tooltip, useTheme } from '@mui/material'
-
-// icons
-import LinkIcon from '@mui/icons-material/Link'
-import CloseIcon from '@mui/icons-material/Close'
+import { getSession } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
+import CloseIcon from '@mui/icons-material/Close'
+import LinkIcon from '@mui/icons-material/Link'
+import { IconButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
-// locals
-import { LinearGenomeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '../model'
+import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -25,24 +19,33 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
+    left: 0,
     overflow: 'hidden',
-    background: `${colord(theme.palette.highlight?.main ?? 'goldenrod')
-      .alpha(0.35)
-      .toRgbString()}`,
+    background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
+  },
+  linkIcon: {
+    color: colord(theme.palette.highlight.main).darken(0.2).toRgbString(),
+  },
+  z3: {
+    zIndex: 3,
   },
 }))
 
-const Highlight = observer(function Highlight({
+const Highlight = observer(function ({
   model,
   highlight,
 }: {
   model: LGV
-  highlight: Required<ParsedLocString>
+  highlight: {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+  }
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
-  const color = useTheme().palette.highlight?.main ?? 'goldenrod'
   const session = getSession(model) as SessionWithWidgets
   const { assemblyManager } = session
 
@@ -55,7 +58,12 @@ const Highlight = observer(function Highlight({
   }
 
   // coords
-  const mapCoords = (r: Required<ParsedLocString>) => {
+  const mapCoords = (r: {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+  }) => {
     const s = model.bpToPx({
       refName: r.refName,
       coord: r.start,
@@ -72,7 +80,7 @@ const Highlight = observer(function Highlight({
       : undefined
   }
 
-  const asm = assemblyManager.get(highlight?.assemblyName)
+  const asm = assemblyManager.get(highlight.assemblyName)
 
   const h = mapCoords({
     ...highlight,
@@ -83,22 +91,19 @@ const Highlight = observer(function Highlight({
     <div
       className={classes.highlight}
       style={{
-        left: h.left,
+        transform: `translateX(${h.left}px)`,
         width: h.width,
       }}
     >
-      <Tooltip title={'Highlighted from URL parameter'} arrow>
+      <Tooltip title="Highlighted from URL parameter" arrow>
         <IconButton
           ref={anchorEl}
-          onClick={() => setOpen(true)}
-          style={{ zIndex: 3 }}
+          className={classes.z3}
+          onClick={() => {
+            setOpen(true)
+          }}
         >
-          <LinkIcon
-            fontSize="small"
-            sx={{
-              color: `${colord(color).darken(0.2).toRgbString()}`,
-            }}
-          />
+          <LinkIcon fontSize="small" className={classes.linkIcon} />
         </IconButton>
       </Tooltip>
       <Menu
@@ -113,7 +118,9 @@ const Highlight = observer(function Highlight({
           {
             label: 'Dismiss highlight',
             icon: CloseIcon,
-            onClick: () => dismissHighlight(),
+            onClick: () => {
+              dismissHighlight()
+            },
           },
           {
             label: 'Bookmark highlighted region',
@@ -126,7 +133,7 @@ const Highlight = observer(function Highlight({
                   'GridBookmark',
                 )
               }
-              // @ts-ignore
+              // @ts-expect-error
               bookmarkWidget.addBookmark(highlight as Region)
               dismissHighlight()
             },
@@ -137,18 +144,4 @@ const Highlight = observer(function Highlight({
   ) : null
 })
 
-const HighlightGroup = observer(function HighlightGroup({
-  model,
-}: {
-  model: LGV
-}) {
-  return model.highlight.map((highlight, idx) => (
-    <Highlight
-      key={JSON.stringify(highlight) + '-' + idx}
-      model={model}
-      highlight={highlight}
-    />
-  ))
-})
-
-export default HighlightGroup
+export default Highlight

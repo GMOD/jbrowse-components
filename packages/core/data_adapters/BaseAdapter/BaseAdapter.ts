@@ -1,17 +1,19 @@
-import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-// locals
-import { readConfObject, AnyConfigurationModel } from '../../configuration'
-import { getSubAdapterType } from '../dataAdapterCache'
-import { AugmentedRegion as Region } from '../../util/types'
+import { ConfigurationSchema, readConfObject } from '../../configuration'
 import idMaker from '../../util/idMaker'
-import PluginManager from '../../PluginManager'
-import { ConfigurationSchema } from '../../configuration'
+
+import type PluginManager from '../../PluginManager'
+import type { AnyConfigurationModel } from '../../configuration'
+import type { AugmentedRegion as Region } from '../../util/types'
+import type { getSubAdapterType } from '../dataAdapterCache'
 
 const EmptyConfig = ConfigurationSchema('empty', {})
 
-export abstract class BaseAdapter {
+export class BaseAdapter {
   public id: string
+
+  public sequenceAdapterConfig?: Record<string, unknown>
 
   static capabilities = [] as string[]
 
@@ -31,8 +33,18 @@ export abstract class BaseAdapter {
   }
 
   /**
+   * Sets the sequence adapter configuration for adapters that need reference
+   * sequence data (e.g., CRAM adapters). Wrapper adapters like SNPCoverageAdapter
+   * can override this to propagate to their subadapters.
+   */
+  setSequenceAdapterConfig(config: Record<string, unknown>) {
+    this.sequenceAdapterConfig = config
+  }
+
+  /**
    * Same as `readConfObject(this.config, arg)`.
-   * @deprecated Does not offer the same TS type checking as `readConfObject`, consider using that instead.
+   * Note: Does not offer the same TS type checking as `readConfObject`,
+   * consider using that instead.
    */
   getConf(arg: string | string[]) {
     return readConfObject(this.config, arg)
@@ -43,5 +55,5 @@ export abstract class BaseAdapter {
    * needed for the foreseeable future and can be purged from caches, etc
    * @param region - Region
    */
-  public abstract freeResources(region: Region): void
+  freeResources(_region: Region) {}
 }

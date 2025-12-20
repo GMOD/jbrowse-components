@@ -1,7 +1,8 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
-import PluginManager from '@jbrowse/core/PluginManager'
 
 import configSchema from './configSchema'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function NCListAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
@@ -10,6 +11,9 @@ export default function NCListAdapterF(pluginManager: PluginManager) {
         name: 'NCListAdapter',
         displayName: 'NCList adapter',
         configSchema,
+        adapterMetadata: {
+          category: 'Uncommon',
+        },
         getAdapterClass: () => import('./NCListAdapter').then(r => r.default),
       }),
   )

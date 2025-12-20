@@ -1,20 +1,26 @@
-// @ts-nocheck
-import React, { useRef, useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
-import { CacheProvider } from '@emotion/react'
+import React, { useEffect, useRef, useState } from 'react'
+
 import createCache from '@emotion/cache'
-// in your code:
-// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view'
-import { createViewState, JBrowseLinearGenomeView } from '../../src'
-import { getVolvoxConfig } from './util'
+import { CacheProvider } from '@emotion/react'
 import r2wc from '@r2wc/react-to-web-component'
+import { createPortal } from 'react-dom'
+
+import { getVolvoxConfig } from './util'
+import { JBrowseLinearGenomeView, createViewState } from '../../src'
+
+import type { EmotionCache } from '@emotion/cache'
+
+// in your code:
+// import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
+
+type ViewState = ReturnType<typeof createViewState>
 
 const ShadowComponent = () => {
-  const node = useRef(null)
+  const node = useRef<HTMLDivElement>(null)
   const nodeForPin = useRef(null)
-  const [rootNode, setRootNode] = useState(null)
-  const [cacheNode, setCacheNode] = useState(null)
-  const [config, setConfig] = useState(null)
+  const [rootNode, setRootNode] = useState<ShadowRoot>()
+  const [cacheNode, setCacheNode] = useState<EmotionCache>()
+  const [config, setConfig] = useState<ViewState>()
   useEffect(() => {
     if (!node.current) {
       return
@@ -83,14 +89,16 @@ const ShadowComponent = () => {
   }, [])
   return (
     <div ref={node}>
-      {rootNode &&
-        createPortal(
-          <CacheProvider value={cacheNode}>
-            <JBrowseLinearGenomeView viewState={config} />
-            <div ref={nodeForPin} />
-          </CacheProvider>,
-          rootNode,
-        )}
+      {rootNode && config
+        ? createPortal(
+            // @ts-expect-error
+            <CacheProvider value={cacheNode}>
+              <JBrowseLinearGenomeView viewState={config} />
+              <div ref={nodeForPin} />
+            </CacheProvider>,
+            rootNode,
+          )
+        : null}
     </div>
   )
 }
@@ -105,7 +113,8 @@ export const ShadowDOMOneLinearGenomeView = () => {
   }
   return (
     <div>
-      <jbrowse-linear-view></jbrowse-linear-view>
+      {/* @ts-expect-error */}
+      <jbrowse-linear-view />
       <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/ShadowDOMOneLinearGenomeView.tsx">
         Source code
       </a>

@@ -3,14 +3,22 @@ id: baselineardisplay
 title: BaseLinearDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-### Source file
+Also note: this document represents the state model API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/model.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseLinearDisplay.md)
+
+## Docs
 
 BaseLinearDisplay is used as the basis for many linear genome view tracks. It is
 block based, and can use 'static blocks' or 'dynamic blocks'
@@ -29,7 +37,7 @@ updated via autorun
 
 ```js
 // type signature
-IMapType<IModelType<{ key: ISimpleType<string>; region: IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOf...
+IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Region>; reloadFlag: IType<number, number, number>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 blockState: types.map(BlockState)
 ```
@@ -38,12 +46,22 @@ blockState: types.map(BlockState)
 
 ```js
 // type signature
-ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; }, ConfigurationSchemaOptions<...>>
+ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; jexlFilters: { ...; }; }, Configura...
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
 ### BaseLinearDisplay - Getters
+
+#### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead of the blocks, make this
+return a react component
+
+```js
+// type
+any
+```
 
 #### getter: blockType
 
@@ -73,7 +91,7 @@ number
 
 ```js
 // type
-React.FC<any>
+React.ComponentType<any>
 ```
 
 #### getter: selectedFeatureId
@@ -84,16 +102,6 @@ feature
 ```js
 // type
 string
-```
-
-#### getter: DisplayMessageComponent
-
-if a display-level message should be displayed instead of the blocks, make this
-return a react component
-
-```js
-// type
-any
 ```
 
 #### getter: features
@@ -111,6 +119,13 @@ CompositeMap<unknown, unknown>
 ```js
 // type
 any
+```
+
+#### getter: layoutFeatures
+
+```js
+// type
+CompositeMap<string, LayoutRecord>
 ```
 
 #### getter: getFeatureOverlapping
@@ -150,7 +165,19 @@ trackMenuItems: () => MenuItem[]
 contextMenuItems: () => MenuItem[]
 ```
 
+#### method: renderingProps
+
+props for the renderer's React "Rendering" component - client-side only, never
+sent to the worker. includes displayModel and callbacks
+
+```js
+// type signature
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRe...
+```
+
 #### method: renderProps
+
+props sent to the worker for server-side rendering
 
 ```js
 // type signature
@@ -187,6 +214,13 @@ deleteBlock: (key: string) => void
 selectFeature: (feature: Feature) => void
 ```
 
+#### action: navToFeature
+
+```js
+// type signature
+navToFeature: (feature: Feature) => void
+```
+
 #### action: clearFeatureSelection
 
 ```js
@@ -206,6 +240,13 @@ setFeatureIdUnderMouse: (feature?: string) => void
 ```js
 // type signature
 setContextMenuFeature: (feature?: Feature) => void
+```
+
+#### action: setMouseoverExtraInformation
+
+```js
+// type signature
+setMouseoverExtraInformation: (extra?: string) => void
 ```
 
 #### action: reload

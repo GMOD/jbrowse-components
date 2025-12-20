@@ -1,21 +1,19 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { Region } from '@jbrowse/core/util'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { toArray } from 'rxjs/operators'
 import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
-// locals
 import PileupBaseRPC from '../base'
-import { getTag } from '../../util'
+
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region } from '@jbrowse/core/util'
 
 export default class PileupGetGlobalValueForTag extends PileupBaseRPC {
   name = 'PileupGetGlobalValueForTag'
 
   async execute(
     args: {
-      adapterConfig: {}
-      signal?: RemoteAbortSignal
+      adapterConfig: Record<string, unknown>
+      stopToken?: string
       headers?: Record<string, string>
       regions: Region[]
       sessionId: string
@@ -23,19 +21,22 @@ export default class PileupGetGlobalValueForTag extends PileupBaseRPC {
     },
     rpcDriver: string,
   ) {
-    const { adapterConfig, sessionId, regions, tag } =
-      await this.deserializeArguments(args, rpcDriver)
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
+    const { adapterConfig, sessionId, regions, tag } = deserializedArgs
 
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const features = dataAdapter.getFeaturesInMultipleRegions(regions)
+    const features = dataAdapter.getFeaturesInMultipleRegions(
+      regions,
+      deserializedArgs,
+    )
     const featuresArray = await firstValueFrom(features.pipe(toArray()))
     return [
       ...new Set(
         featuresArray
-          .map(feature => getTag(feature, tag))
+          .map(feature => feature.get('tags')?.[tag])
           .filter(f => f !== undefined)
           .map(f => `${f}`),
       ),

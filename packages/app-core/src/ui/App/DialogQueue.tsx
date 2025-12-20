@@ -1,8 +1,8 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
+
 import { observer } from 'mobx-react'
 
-// locals
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
 const DialogQueue = observer(function ({
   session,

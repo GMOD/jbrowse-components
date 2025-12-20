@@ -6,9 +6,28 @@ title: Gff3TabixAdapter
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-### Source file
+Also note: this document represents the config API for the current released
+version of jbrowse. If you are not using the current version, please cross
+reference the markdown files in our repo of the checked out git tag
 
-[plugins/gff3/src/Gff3TabixAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3TabixAdapter/configSchema.ts)
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3TabixAdapter/configSchema.ts)
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/Gff3TabixAdapter.md)
+
+## Docs
+
+### Gff3TabixAdapter - Pre-processor / simplified config
+
+preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi:
+
+```json
+{
+  "type": "Gff3TabixAdapter",
+  "uri": "yourfile.gff3.gz"
+}
+```
 
 ### Gff3TabixAdapter - Slots
 
@@ -17,7 +36,10 @@ source code. See [Config guide](/docs/config_guide) for more info
 ```js
 gffGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gff.gz', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.gff.gz',
+        locationType: 'UriLocation',
+      },
     }
 ```
 
@@ -52,6 +74,6 @@ this for certain feature types to avoid fetching e.g. the entire chromosome
 ```js
 dontRedispatch: {
       type: 'stringArray',
-      defaultValue: ['chromosome', 'region'],
+      defaultValue: ['chromosome', 'region', 'contig'],
     }
 ```

@@ -1,8 +1,7 @@
-import {
-  RegionsAdapter,
-  BaseAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
+
+import type { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class ChromSizesAdapter
   extends BaseAdapter
@@ -20,16 +19,16 @@ export default class ChromSizesAdapter
         .split(/\n|\r\n|\r/)
         .map(f => f.trim())
         .filter(f => !!f)
-        .map((line: string) => {
+        .map(line => {
           const [name, length] = line.split('\t')
-          return [name, +length]
+          return [name!, +length!]
         }),
     )
   }
 
   async setup() {
     if (!this.setupP) {
-      this.setupP = this.setupPre().catch(e => {
+      this.setupP = this.setupPre().catch((e: unknown) => {
         this.setupP = undefined
         throw e
       })
@@ -42,13 +41,11 @@ export default class ChromSizesAdapter
     return Object.keys(refSeqs).map(refName => ({
       refName,
       start: 0,
-      end: refSeqs[refName],
+      end: refSeqs[refName]!,
     }))
   }
 
   public getHeader() {
     return {}
   }
-
-  public freeResources(/* { region } */): void {}
 }

@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react'
-import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
+import { useEffect, useState } from 'react'
 
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import {
   Alert,
   Button,
@@ -11,20 +14,20 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import copy from 'copy-to-clipboard'
+import { observer } from 'mobx-react'
 
-import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-
-// locals
 import { shareSessionToDynamo } from '../../sessionSharing'
-import { GridBookmarkModel } from '../../model'
+
+import type { GridBookmarkModel } from '../../model'
 
 const useStyles = makeStyles()(() => ({
   flexItem: {
     margin: 5,
+  },
+  content: {
+    display: 'flex',
+    flexFlow: 'column',
+    gap: '5px',
   },
 }))
 
@@ -48,7 +51,6 @@ const ShareBookmarksDialog = observer(function ({
       : model.sharedBookmarksModel
 
   useEffect(() => {
-    let cancelled = false
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -63,30 +65,22 @@ const ShareBookmarksDialog = observer(function ({
           session.shareURL,
           locationUrl.href,
         )
-        if (!cancelled) {
-          const params = new URLSearchParams(locationUrl.search)
-          params.set('bookmarks', `share-${result.json.sessionId}`)
-          params.set('password', result.password)
-          locationUrl.search = params.toString()
-          setUrl(locationUrl.href)
-          setLoading(false)
-        }
+        const params = new URLSearchParams(locationUrl.search)
+        params.set('bookmarks', `share-${result.json.sessionId}`)
+        params.set('password', result.password)
+        locationUrl.search = params.toString()
+        setUrl(locationUrl.href)
+        setLoading(false)
       } catch (e) {
         setError(e)
       } finally {
         setLoading(false)
       }
     })()
-
-    return () => {
-      cancelled = true
-    }
   }, [bookmarksToShare, session])
   return (
     <Dialog open onClose={onClose} title="Share bookmarks">
-      <DialogContent
-        style={{ display: 'flex', flexFlow: 'column', gap: '5px' }}
-      >
+      <DialogContent className={classes.content}>
         <Alert severity="info">
           {shareAll ? (
             <>
@@ -111,7 +105,11 @@ const ShareBookmarksDialog = observer(function ({
           <TextField
             label="URL"
             value={url}
-            InputProps={{ readOnly: true }}
+            slotProps={{
+              input: {
+                readOnly: true,
+              },
+            }}
             variant="filled"
             fullWidth
             onClick={event => {
@@ -134,6 +132,7 @@ const ShareBookmarksDialog = observer(function ({
           disabled={loading}
           startIcon={<ContentCopyIcon />}
           onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(url)
             session.notify('Copied to clipboard', 'success')
             onClose()

@@ -1,7 +1,8 @@
 import { getContainingView, isAbortException } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '../../LinearGenomeView'
-import { isAlive } from 'mobx-state-tree'
-import { BaseLinearDisplayModel } from './BaseLinearDisplayModel'
+import { isAlive } from '@jbrowse/mobx-state-tree'
+
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { BaseLinearDisplayModel } from '../model'
 
 // stats estimation autorun calls getFeatureDensityStats against the data
 // adapter which by default uses featureDensity, but can also respond with a
@@ -25,7 +26,7 @@ export default async function autorunFeatureDensityStats(
     }
 
     // don't re-estimate featureDensity even if zoom level changes,
-    // jbrowse1-style assume it's sort of representative
+    // jbrowse 1-style assume it's sort of representative
     if (self.featureDensityStats?.featureDensity !== undefined) {
       self.setCurrStatsBpPerPx(view.bpPerPx)
       return
@@ -38,8 +39,8 @@ export default async function autorunFeatureDensityStats(
       self.setFeatureDensityStats(stats)
     }
   } catch (e) {
-    if (!isAbortException(e) && isAlive(self)) {
-      console.error(e)
+    console.error(e)
+    if (isAlive(self) && !isAbortException(e)) {
       self.setError(e)
     }
   }

@@ -1,11 +1,12 @@
-import React from 'react'
 import { observer } from 'mobx-react'
 
-// locals
-import { cdsColor, splitString } from '../util'
-import { Feat, stitch } from '../../util'
-import { SequenceFeatureDetailsModel } from '../model'
+import { stitch } from '../../util'
+import { cdsColor } from '../consts'
+import { splitString } from '../util'
 import SequenceDisplay from './SequenceDisplay'
+
+import type { Feat } from '../../util'
+import type { SequenceFeatureDetailsModel } from '../model'
 
 const CDSSequence = observer(function ({
   cds,
@@ -16,10 +17,10 @@ const CDSSequence = observer(function ({
   sequence: string
   model: SequenceFeatureDetailsModel
 }) {
-  const { width, showCoordinates } = model
+  const { charactersPerRow, showCoordinates } = model
   const { segments } = splitString({
     str: stitch(cds, sequence),
-    width,
+    charactersPerRow,
     showCoordinates,
   })
   return (

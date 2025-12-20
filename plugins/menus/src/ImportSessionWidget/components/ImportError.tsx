@@ -1,9 +1,6 @@
-import React from 'react'
-import { Paper, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-
-// icons
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ErrorIcon from '@mui/icons-material/Error'
+import { Paper, Typography } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   error: {

@@ -1,12 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
-import { AbstractSessionModel } from '@jbrowse/core/util/types'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+
 import { getConf } from '@jbrowse/core/configuration'
-import { cast, getParent, types, Instance } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
-import InfoIcon from '@mui/icons-material/Info'
-import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
+import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
@@ -16,6 +12,12 @@ import {
   SessionTracksManagerSessionMixin,
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
+import InfoIcon from '@mui/icons-material/Info'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
 
@@ -50,7 +52,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      view: pluginManager.getViewType('LinearGenomeView')
+      view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel,
       /**
        * #property
@@ -142,7 +144,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             onClick: () => {
               self.queueDialog(doneCallback => [
                 AboutDialog,
-                { config, handleClose: doneCallback },
+                { config, session: self, handleClose: doneCallback },
               ])
             },
             icon: InfoIcon,

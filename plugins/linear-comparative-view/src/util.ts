@@ -1,6 +1,7 @@
-import { clamp } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { clamp, sum } from '@jbrowse/core/util'
+
+import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { Region } from '@jbrowse/core/util/types'
 
 export type LayoutRecord = [number, number, number, number]
 
@@ -11,7 +12,7 @@ export interface ReducedLinearGenomeView {
   dynamicBlocks: Region[]
   displayedRegions: Region[]
   headerHeight: number
-  scaleBarHeight: number
+  scalebarHeight: number
   height: number
   features: Feature[]
   tracks: {
@@ -22,7 +23,7 @@ export interface ReducedLinearGenomeView {
   }[]
 }
 
-const [, TOP, , BOTTOM] = [0, 1, 2, 3]
+const [, TOP, , BOTTOM] = [0, 1, 2, 3] as const
 
 export function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
@@ -32,16 +33,16 @@ function heightFromSpecificLevel(
   trackConfigId: string,
   level: number,
 ) {
-  const heightUpUntilThisPoint = views
-    .slice(0, level)
-    .map(v => v.height + 7)
-    .reduce((a, b) => a + b, 0)
+  const heightUpUntilThisPoint = sum(
+    views.slice(0, level).map(v => v.height + 7),
+  )
 
+  const v = views[level]!
   return (
     heightUpUntilThisPoint +
-    views[level].headerHeight +
-    views[level].scaleBarHeight +
-    getTrackPos(views[level], trackConfigId) +
+    v.headerHeight +
+    v.scalebarHeight +
+    getTrackPos(v, trackConfigId) +
     1
   )
 }
@@ -53,7 +54,7 @@ export function getTrackPos(
   const idx = view.tracks.findIndex(t => t.configuration === trackConfigId)
   let accum = 0
   for (let i = 0; i < idx; i += 1) {
-    accum += view.tracks[i].height + 3 // +1px for trackresizehandle
+    accum += view.tracks[i]!.height + 3 // +1px for trackresizehandle
   }
   return accum
 }
@@ -77,7 +78,9 @@ export function overlayYPos(
   c: LayoutRecord,
   cond: boolean,
 ) {
-  const track = views[level].tracks.find(t => t.configuration === trackConfigId)
+  const track = views[level]!.tracks.find(
+    t => t.configuration === trackConfigId,
+  )
   const ypos = track
     ? clamp(c[TOP] - (track.scrollTop || 0), 0, track.height) +
       heightFromSpecificLevel(views, trackConfigId, level) +
