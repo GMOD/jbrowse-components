@@ -26,8 +26,16 @@ export class PileupLayoutSession implements LayoutSessionLike {
 
   cachedLayout: CachedPileupLayout | undefined
 
+  layoutWasReset = false
+
   constructor(props: PileupLayoutSessionProps) {
     this.props = props
+  }
+
+  checkAndClearLayoutWasReset() {
+    const wasReset = this.layoutWasReset
+    this.layoutWasReset = false
+    return wasReset
   }
 
   update(props: LayoutSessionProps) {
@@ -63,6 +71,9 @@ export class PileupLayoutSession implements LayoutSessionLike {
 
   get layout(): MyMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
+      if (this.cachedLayout) {
+        this.layoutWasReset = true
+      }
       this.cachedLayout = {
         layout: this.makeLayout(),
         props: this.props,

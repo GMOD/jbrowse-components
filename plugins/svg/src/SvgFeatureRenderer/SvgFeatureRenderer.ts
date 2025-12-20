@@ -11,7 +11,7 @@ export default class SvgFeatureRenderer extends BoxRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const layout = this.createLayoutInWorker(renderProps)
+    const { layout, layoutWasReset } = this.createLayoutInWorker(renderProps)
     const { statusCallback = () => {}, regions, bpPerPx, config } = renderProps
     const region = regions[0]!
     const displayMode = readConfObject(config, 'displayMode') as string
@@ -32,6 +32,6 @@ export default class SvgFeatureRenderer extends BoxRendererType {
       },
     )
 
-    return { features, layout }
+    return { features, layout, layoutWasReset }
   }
 }

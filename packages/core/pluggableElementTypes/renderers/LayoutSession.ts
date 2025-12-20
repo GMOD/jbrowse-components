@@ -31,6 +31,7 @@ export interface CachedLayout {
 export interface LayoutSessionLike {
   layout: BaseMultiLayout
   update(props: LayoutSessionProps): LayoutSessionLike
+  checkAndClearLayoutWasReset(): boolean
 }
 
 export class LayoutSession implements LayoutSessionLike {
@@ -38,8 +39,21 @@ export class LayoutSession implements LayoutSessionLike {
 
   cachedLayout: CachedLayout | undefined
 
+  /** Flag indicating the layout was reset (due to jump or config change) */
+  layoutWasReset = false
+
   constructor(props: LayoutSessionProps) {
     this.props = props
+  }
+
+  /**
+   * Check if layout was reset and clear the flag.
+   * Used to signal to the client that all blocks should re-render.
+   */
+  checkAndClearLayoutWasReset() {
+    const wasReset = this.layoutWasReset
+    this.layoutWasReset = false
+    return wasReset
   }
 
   update(props: LayoutSessionProps) {
@@ -57,18 +71,32 @@ export class LayoutSession implements LayoutSessionLike {
   }
 
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
-    return (
-      cachedLayout.props.bpPerPx === this.props.bpPerPx &&
-      deepEqual(
+    if (
+      cachedLayout.props.bpPerPx !== this.props.bpPerPx ||
+      !deepEqual(
         readConfObject(this.props.config),
         readConfObject(cachedLayout.props.config),
-      ) &&
-      deepEqual(this.props.filters, cachedLayout.props.filters)
-    )
+      ) ||
+      !deepEqual(this.props.filters, cachedLayout.props.filters)
+    ) {
+      return false
+    }
+
+    // Note: We intentionally do NOT check for coordinate overlap here.
+    // This allows disparate regions in the same view (e.g., chr1:1-100 and chr1:5000-5100)
+    // to share the same layout without triggering a reset.
+    // Memory cleanup is handled by discardRange() when blocks are destroyed.
+
+    return true
   }
 
   get layout(): BaseMultiLayout {
     if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
+      // Only signal reset if we're recreating an existing layout, not on first creation.
+      // On first load there are no stale blocks to worry about.
+      if (this.cachedLayout) {
+        this.layoutWasReset = true
+      }
       this.cachedLayout = {
         layout: this.makeLayout(),
         props: this.props,

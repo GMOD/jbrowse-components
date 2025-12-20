@@ -27,7 +27,7 @@ export default class PileupRenderer extends BoxRendererType {
     const width = (region.end - region.start) / bpPerPx
 
     const features = await this.getFeatures(renderProps)
-    const layout = this.createLayoutInWorker(renderProps)
+    const { layout, layoutWasReset } = this.createLayoutInWorker(renderProps)
 
     const { makeImageData } = await import('./makeImageData')
     const { result, height, featureNames } = await updateStatus(
@@ -55,6 +55,7 @@ export default class PileupRenderer extends BoxRendererType {
         height,
         width,
         maxHeightReached: layout.maxHeightReached,
+        layoutWasReset,
       },
       collectTransferables(result),
     )

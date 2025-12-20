@@ -29,6 +29,7 @@ export interface RenderedProps {
   maxHeightReached: boolean
   renderProps: any
   renderArgs: Record<string, unknown>
+  layoutWasReset?: boolean
 }
 // the MST state of a single server-side-rendered block in a display
 const blockState = types
@@ -185,7 +186,18 @@ const blockState = types
           maxHeightReached,
           renderProps,
           renderArgs,
+          layoutWasReset,
         } = props
+
+        // If the layout was reset (e.g., user jumped to a distant region),
+        // trigger reload of all blocks to maintain consistent Y positions
+        // for features across blocks. Don't set rendered state since
+        // we're about to re-render.
+        if (layoutWasReset) {
+          getContainingDisplay(self).reload()
+          return
+        }
+
         self.filled = true
         self.isRenderingPending = false
         self.message = undefined
@@ -379,7 +391,7 @@ async function renderBlockEffect(
   if (renderProps.notReady || !renderArgs) {
     return undefined
   }
-  const { reactElement, features, layout, maxHeightReached } =
+  const { reactElement, features, layout, maxHeightReached, layoutWasReset } =
     await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
       ...renderProps,
@@ -393,5 +405,6 @@ async function renderBlockEffect(
     maxHeightReached,
     renderProps,
     renderArgs,
+    layoutWasReset,
   }
 }

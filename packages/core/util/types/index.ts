@@ -320,6 +320,7 @@ export interface AbstractDisplayModel {
   renderDelay: number
   rendererType: any
   cannotBeRenderedReason?: string
+  reload(): void
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
   return (
