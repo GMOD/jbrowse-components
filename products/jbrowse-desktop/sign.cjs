@@ -11,7 +11,7 @@ if (!fs.existsSync(TEMP_DIR)) {
 }
 
 function sign(configuration) {
-  if (process.env.SKIP_CODE_SIGNING === 'true') {
+  if (!process.env.WINDOWS_SIGN_CREDENTIAL_ID) {
     console.log(`Skipping code signing for ${configuration.path}`)
     return
   }
