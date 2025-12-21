@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { createView, doBeforeEach, hts, setup } from './util'
 
@@ -16,65 +15,9 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
-// Create a mock EDEN gene feature with mRNA subfeatures containing CDS
-// This structure is needed for the "Collapse introns" menu item to appear
-function createEdenGeneFeature() {
-  return new SimpleFeature({
-    uniqueId: 'test-eden-gene',
-    refName: 'ctgA',
-    start: 1049,
-    end: 9000,
-    name: 'EDEN',
-    type: 'gene',
-    subfeatures: [
-      {
-        uniqueId: 'eden-mrna-1',
-        refName: 'ctgA',
-        start: 1049,
-        end: 9000,
-        name: 'EDEN.1',
-        type: 'mRNA',
-        subfeatures: [
-          { uniqueId: 'cds1', refName: 'ctgA', start: 1200, end: 1500, type: 'CDS' },
-          { uniqueId: 'cds2', refName: 'ctgA', start: 3000, end: 3900, type: 'CDS' },
-          { uniqueId: 'cds3', refName: 'ctgA', start: 5000, end: 5500, type: 'CDS' },
-          { uniqueId: 'cds4', refName: 'ctgA', start: 7000, end: 7600, type: 'CDS' },
-        ],
-      },
-      {
-        uniqueId: 'eden-mrna-2',
-        refName: 'ctgA',
-        start: 1049,
-        end: 9000,
-        name: 'EDEN.2',
-        type: 'mRNA',
-        subfeatures: [
-          { uniqueId: 'cds5', refName: 'ctgA', start: 1200, end: 1500, type: 'CDS' },
-          { uniqueId: 'cds6', refName: 'ctgA', start: 5000, end: 5500, type: 'CDS' },
-          { uniqueId: 'cds7', refName: 'ctgA', start: 7000, end: 7600, type: 'CDS' },
-        ],
-      },
-      {
-        uniqueId: 'eden-mrna-3',
-        refName: 'ctgA',
-        start: 1299,
-        end: 9000,
-        name: 'EDEN.3',
-        type: 'mRNA',
-        subfeatures: [
-          { uniqueId: 'cds8', refName: 'ctgA', start: 3000, end: 3900, type: 'CDS' },
-          { uniqueId: 'cds9', refName: 'ctgA', start: 5000, end: 5500, type: 'CDS' },
-          { uniqueId: 'cds10', refName: 'ctgA', start: 7000, end: 7600, type: 'CDS' },
-        ],
-      },
-    ],
-  })
-}
-
 test('collapse introns on gene feature', async () => {
   const user = userEvent.setup()
-  const { view, session, findByTestId, findByText, findAllByTestId } =
-    await createView()
+  const { view, session, findByText, findAllByTestId } = await createView()
 
   // Navigate to the region with the EDEN gene (1050-9000)
   await view.navToLocString('ctgA:907..10,000')
@@ -85,14 +28,11 @@ test('collapse introns on gene feature', async () => {
   // Wait for the track to render
   await findAllByTestId(/prerendered_canvas.*done/, ...opts)
 
-  // Get the display
+  // Get the display and enable accessible feature overlay
   const display = view.tracks[0]?.displays[0]
-
-  // Enable the accessible feature overlay for testing
   display.setShowAccessibleFeatureOverlay(true)
 
   // Wait for accessible feature buttons to appear
-  // These are rendered based on the layout data
   await waitFor(
     () => {
       const featureButtons = screen.queryAllByTestId(/^feature-/)
@@ -101,9 +41,10 @@ test('collapse introns on gene feature', async () => {
     { timeout: 10000 },
   )
 
-  // Find a gene feature button and right-click it
-  const featureButtons = screen.getAllByTestId(/^feature-/)
-  fireEvent.contextMenu(featureButtons[0]!)
+  // Find and right-click a feature with the EDEN gene (has exons/CDS for collapse introns)
+  // The feature buttons have aria-labels like "EDEN, gene"
+  const edenButton = await screen.findByRole('button', { name: /EDEN.*gene/i })
+  fireEvent.contextMenu(edenButton)
 
   // Click on "Collapse introns" in the context menu
   fireEvent.click(await findByText('Collapse introns', ...opts))
@@ -146,7 +87,7 @@ test('collapse introns on gene feature', async () => {
 
 test('collapse introns dialog shows transcript table', async () => {
   const user = userEvent.setup()
-  const { view, findAllByTestId, findByText, findByTestId } = await createView()
+  const { view, findAllByTestId, findByText } = await createView()
 
   // Navigate to the region with the EDEN gene
   await view.navToLocString('ctgA:907..10,000')
@@ -157,19 +98,22 @@ test('collapse introns dialog shows transcript table', async () => {
   // Wait for the track to render
   await findAllByTestId(/prerendered_canvas.*done/, ...opts)
 
-  // Get the display
+  // Get the display and enable accessible feature overlay
   const display = view.tracks[0]?.displays[0]
+  display.setShowAccessibleFeatureOverlay(true)
 
-  // Create mock EDEN gene feature and set it as context menu feature
-  const edenFeature = createEdenGeneFeature()
-  display.setContextMenuFeature(edenFeature)
-
-  // Find the display element and trigger context menu
-  const displayElement = await findByTestId(
-    `display-${display.configuration.displayId}`,
-    ...opts,
+  // Wait for accessible feature buttons to appear
+  await waitFor(
+    () => {
+      const featureButtons = screen.queryAllByTestId(/^feature-/)
+      expect(featureButtons.length).toBeGreaterThan(0)
+    },
+    { timeout: 10000 },
   )
-  fireEvent.contextMenu(displayElement)
+
+  // Find and right-click the EDEN gene feature
+  const edenButton = await screen.findByRole('button', { name: /EDEN.*gene/i })
+  fireEvent.contextMenu(edenButton)
 
   // Click on "Collapse introns"
   fireEvent.click(await findByText('Collapse introns', ...opts))

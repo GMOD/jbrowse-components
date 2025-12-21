@@ -2,6 +2,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { BlockModel } from '../models/serverSideRenderedBlock'
+import type { Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   overlay: {
@@ -20,7 +21,6 @@ const useStyles = makeStyles()({
     margin: 0,
     cursor: 'pointer',
     pointerEvents: 'auto',
-    // Visually hidden but accessible
     '&:focus': {
       outline: '2px solid #005fcc',
       outlineOffset: -2,
@@ -30,9 +30,9 @@ const useStyles = makeStyles()({
 
 interface Props {
   blockState: BlockModel
-  onFeatureClick?: (featureId: string) => void
-  onFeatureContextMenu?: (featureId: string) => void
-  onFeatureFocus?: (featureId: string) => void
+  onFeatureClick?: (featureId: string, feature?: Feature) => void
+  onFeatureContextMenu?: (featureId: string, feature?: Feature) => void
+  onFeatureFocus?: (featureId: string, feature?: Feature) => void
 }
 
 const FeatureAccessibilityOverlay = observer(function FeatureAccessibilityOverlay({
@@ -48,7 +48,6 @@ const FeatureAccessibilityOverlay = observer(function FeatureAccessibilityOverla
     return null
   }
 
-  // Get all rectangles from the layout
   // getRectangles returns Map<string, [left, top, right, bottom, serializableData]>
   const rectangles = layout.getRectangles?.()
   if (!rectangles) {
@@ -62,14 +61,16 @@ const FeatureAccessibilityOverlay = observer(function FeatureAccessibilityOverla
         const width = right - left
         const height = bottom - top
 
-        // Skip very small features that would be hard to interact with
         if (width < 1 || height < 1) {
           return null
         }
 
-        // Build aria-label from available data
-        const name = data?.name || data?.id || featureId
-        const type = data?.type || 'feature'
+        // Get the actual Feature object from the layout (stored via addRect's data param)
+        const feature = layout.getDataByID?.(featureId) as Feature | undefined
+
+        // Build aria-label from feature or serializable data
+        const name = feature?.get?.('name') || data?.label || featureId
+        const type = feature?.get?.('type') || 'feature'
         const ariaLabel = `${name}, ${type}`
 
         return (
@@ -88,15 +89,15 @@ const FeatureAccessibilityOverlay = observer(function FeatureAccessibilityOverla
             tabIndex={0}
             onClick={e => {
               e.stopPropagation()
-              onFeatureClick?.(featureId)
+              onFeatureClick?.(featureId, feature)
             }}
             onContextMenu={e => {
               e.preventDefault()
               e.stopPropagation()
-              onFeatureContextMenu?.(featureId)
+              onFeatureContextMenu?.(featureId, feature)
             }}
             onFocus={() => {
-              onFeatureFocus?.(featureId)
+              onFeatureFocus?.(featureId, feature)
             }}
           />
         )

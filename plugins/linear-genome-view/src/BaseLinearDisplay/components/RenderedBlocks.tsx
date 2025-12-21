@@ -48,15 +48,14 @@ const RenderedBlocks = observer(function ({
           {showAccessibleFeatureOverlay && state ? (
             <FeatureAccessibilityOverlay
               blockState={state}
-              onFeatureFocus={featureId => {
+              onFeatureFocus={(featureId, _feature) => {
                 setFeatureIdUnderMouse?.(featureId)
               }}
-              onFeatureClick={featureId => {
+              onFeatureClick={(featureId, _feature) => {
                 setFeatureIdUnderMouse?.(featureId)
               }}
-              onFeatureContextMenu={featureId => {
+              onFeatureContextMenu={(featureId, feature) => {
                 setFeatureIdUnderMouse?.(featureId)
-                const feature = features?.get(featureId)
                 if (feature) {
                   setContextMenuFeature?.(feature)
                 }
