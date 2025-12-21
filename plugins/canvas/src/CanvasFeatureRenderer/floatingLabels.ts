@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { measureText } from '@jbrowse/core/util'
 
 import { truncateLabel } from './util'
 
@@ -6,10 +7,13 @@ import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
+const FLOATING_LABEL_FONT_SIZE = 11
+
 export interface FloatingLabelData {
   text: string
   relativeY: number
   color: string
+  textWidth: number
   isOverlay?: boolean
 }
 
@@ -61,11 +65,13 @@ export function createFeatureFloatingLabels({
         text: name,
         relativeY: 0,
         color: nameColor,
+        textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
       },
       {
         text: description,
         relativeY: actualFontHeight,
         color: descriptionColor,
+        textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
       },
     )
   } else if (shouldShowLabel) {
@@ -73,12 +79,14 @@ export function createFeatureFloatingLabels({
       text: name,
       relativeY: 0,
       color: nameColor,
+      textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
     })
   } else if (shouldShowDescription) {
     floatingLabels.push({
       text: description,
       relativeY: 0,
       color: descriptionColor,
+      textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
     })
   }
 
@@ -119,6 +127,7 @@ export function createTranscriptFloatingLabel({
     text: truncatedName,
     relativeY,
     color,
+    textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
     isOverlay,
   }
 }

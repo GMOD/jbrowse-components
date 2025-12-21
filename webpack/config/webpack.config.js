@@ -270,7 +270,7 @@ module.exports = function webpackBuilder(webpackEnv) {
             inject: true,
             template: paths.appHtml,
           },
-          isEnvProduction
+          isEnvProduction && shouldMinimize
             ? {
                 minify: {
                   removeComments: true,
@@ -353,6 +353,8 @@ module.exports = function webpackBuilder(webpackEnv) {
     performance: false,
     optimization: {
       minimize: isEnvProduction && shouldMinimize,
+      // Explicitly disable minimizers when NO_MINIMIZE is set
+      ...(shouldMinimize ? {} : { minimizer: [] }),
     },
   }
 }
