@@ -284,14 +284,14 @@ const FloatingLabels = observer(function ({
       ref={containerRef}
       onClick={e => {
         const target = e.target as HTMLElement
-        const featureId = target.dataset?.featureId
+        const featureId = target.dataset.featureId
         if (featureId) {
           model.setFeatureIdUnderMouse(featureId)
         }
       }}
       onContextMenu={e => {
         const target = e.target as HTMLElement
-        const featureId = target.dataset?.featureId
+        const featureId = target.dataset.featureId
         if (featureId) {
           // Set the feature ID so the context menu knows which feature was clicked
           model.setFeatureIdUnderMouse(featureId)

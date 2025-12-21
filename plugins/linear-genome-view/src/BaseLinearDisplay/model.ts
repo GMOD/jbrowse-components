@@ -6,8 +6,8 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { isFeatureAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -17,8 +17,6 @@ import {
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
   getParentRenderProps,
@@ -30,6 +28,8 @@ import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'

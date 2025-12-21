@@ -9,8 +9,8 @@ import FeatureAccessibilityOverlay from './FeatureAccessibilityOverlay'
 import MaxHeightReached from './MaxHeightReachedIndicator'
 
 import type { BlockModel } from '../models/serverSideRenderedBlock'
-import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 import type { Feature } from '@jbrowse/core/util'
+import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 
 const RenderedBlocks = observer(function ({
   model,
@@ -31,7 +31,6 @@ const RenderedBlocks = observer(function ({
     showAccessibleFeatureOverlay,
     setFeatureIdUnderMouse,
     setContextMenuFeature,
-    features,
   } = model
   return blockDefinitions.map(block => {
     const key = `${model.id}-${block.key}`

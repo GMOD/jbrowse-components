@@ -5,7 +5,6 @@ import userEvent from '@testing-library/user-event'
 import { createView, doBeforeEach, hts, setup } from './util'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Feature } from '@jbrowse/core/util'
 
 setup()
 
@@ -15,10 +14,6 @@ beforeEach(() => {
 
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
-
-interface DisplayModel {
-  contextMenuFeature: Feature | undefined
-}
 
 test('collapse introns on gene feature', async () => {
   const user = userEvent.setup()
@@ -33,22 +28,11 @@ test('collapse introns on gene feature', async () => {
   // Wait for the track to render
   await findAllByTestId(/prerendered_canvas.*done/, ...opts)
 
-  // Find the floating label for EDEN and right-click it
+  // Find the floating label for EDEN and right-click it to open context menu
   const edenLabel = await screen.findByTestId('floatingLabel-EDEN', ...opts)
   fireEvent.contextMenu(edenLabel)
 
-  // Get the display to check contextMenuFeature
-  const display = view.tracks[0]?.displays[0] as DisplayModel
-
-  // Wait for the context menu feature to be set
-  await waitFor(
-    () => {
-      expect(display.contextMenuFeature).toBeDefined()
-    },
-    { timeout: 10000 },
-  )
-
-  // Click on "Collapse introns" in the context menu
+  // Click on "Collapse introns" in the context menu (waits for menu to appear)
   fireEvent.click(await findByText('Collapse introns', ...opts))
 
   // The dialog should appear with transcript selection
@@ -100,22 +84,11 @@ test('collapse introns dialog shows transcript table', async () => {
   // Wait for the track to render
   await findAllByTestId(/prerendered_canvas.*done/, ...opts)
 
-  // Find the floating label for EDEN and right-click it
+  // Find the floating label for EDEN and right-click it to open context menu
   const edenLabel = await screen.findByTestId('floatingLabel-EDEN', ...opts)
   fireEvent.contextMenu(edenLabel)
 
-  // Get the display to check contextMenuFeature
-  const display = view.tracks[0]?.displays[0] as DisplayModel
-
-  // Wait for context menu feature to be set
-  await waitFor(
-    () => {
-      expect(display.contextMenuFeature).toBeDefined()
-    },
-    { timeout: 10000 },
-  )
-
-  // Click on "Collapse introns"
+  // Click on "Collapse introns" (waits for menu to appear)
   fireEvent.click(await findByText('Collapse introns', ...opts))
 
   // Dialog should appear
