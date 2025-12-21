@@ -1,4 +1,5 @@
 import { BoxRendererType } from '@jbrowse/core/pluggableElementTypes'
+import { iterMap } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from 'librpc-web-mod'
 
@@ -32,6 +33,11 @@ export default class CanvasFeatureRenderer extends BoxRendererType {
       height,
       width,
       maxHeightReached: layout.maxHeightReached,
+      features: iterMap(
+        features.values(),
+        f => f.toJSON(),
+        features.size,
+      ).filter(f => !!serializedLayout.rectangles[f.uniqueId]),
     }
 
     return rpcResult(serialized, collectTransferables(res))
