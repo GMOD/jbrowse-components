@@ -22,7 +22,7 @@ import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -446,12 +446,12 @@ function stateModelFactory() {
           try {
             const view = getContainingView(self) as LGV
             const track = getContainingTrack(self)
-            const session = getSession(self)
+            const { pluginManager } = getEnv(self)
             const adapterConfig = readConfObject(track.configuration, 'adapter')
             const sessionId = getRpcSessionId(self)
 
             const { dataAdapter } = await getAdapter(
-              session.pluginManager,
+              pluginManager,
               sessionId,
               adapterConfig,
             )

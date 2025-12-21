@@ -1,5 +1,6 @@
 import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 
 /**
