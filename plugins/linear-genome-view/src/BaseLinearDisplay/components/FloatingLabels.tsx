@@ -233,22 +233,22 @@ const FloatingLabels = observer(function ({
     }
   }
 
+  const { onFeatureClick, onFeatureContextMenu } = model.renderingProps()
+
   return (
     <div
       onClick={e => {
         const target = e.target as HTMLElement
         const featureId = target.dataset.featureId
         if (featureId) {
-          model.setFeatureIdUnderMouse(featureId)
+          onFeatureClick?.(e, featureId)
         }
       }}
       onContextMenu={e => {
         const target = e.target as HTMLElement
         const featureId = target.dataset.featureId
         if (featureId) {
-          model.setFeatureIdUnderMouse(featureId)
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          model.fetchAndSetContextMenuFeature(featureId)
+          onFeatureContextMenu?.(e, featureId)
         }
       }}
       style={{

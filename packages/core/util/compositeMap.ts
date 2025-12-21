@@ -3,20 +3,6 @@
 export default class CompositeMap<T, U> {
   constructor(private submaps: Map<T, U>[]) {}
 
-  get size() {
-    let count = 0
-    const seen = new Set<T>()
-    for (const submap of this.submaps) {
-      for (const key of submap.keys()) {
-        if (!seen.has(key)) {
-          seen.add(key)
-          count++
-        }
-      }
-    }
-    return count
-  }
-
   has(id: T) {
     for (const submap of this.submaps.values()) {
       if (submap.has(id)) {

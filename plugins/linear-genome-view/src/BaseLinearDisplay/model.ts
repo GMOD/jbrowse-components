@@ -1,13 +1,7 @@
 import type React from 'react'
 import { lazy } from 'react'
 
-import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { isFeatureAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
@@ -22,14 +16,12 @@ import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
-import { addDisposer, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
@@ -154,12 +146,6 @@ function stateModelFactory() {
        * #volatile
        */
       contextMenuFeature: undefined as undefined | Feature,
-      /**
-       * #volatile
-       * When true, renders invisible focusable elements over features for accessibility.
-       * This enables keyboard navigation and screen reader access to canvas features.
-       */
-      showAccessibleFeatureOverlay: false,
     }))
     .views(self => ({
       /**
@@ -399,13 +385,6 @@ function stateModelFactory() {
       },
       /**
        * #action
-       * Toggle the accessible feature overlay for keyboard/screen reader access
-       */
-      setShowAccessibleFeatureOverlay(show: boolean) {
-        self.showAccessibleFeatureOverlay = show
-      },
-      /**
-       * #action
        */
       setShowLegend(s: boolean) {
         self.showLegend = s
@@ -427,60 +406,6 @@ function stateModelFactory() {
             val.doReload()
           }
           superReload()
-        },
-
-        /**
-         * #action
-         * Fetch a feature by ID and set it as the context menu feature.
-         * First checks the features cache, then fetches from adapter if needed.
-         */
-        async fetchAndSetContextMenuFeature(featureId: string) {
-          // First check if feature is already in the cache
-          const cachedFeature = self.features.get(featureId)
-          if (cachedFeature) {
-            self.setContextMenuFeature(cachedFeature)
-            return
-          }
-
-          // Feature not in cache, fetch from adapter
-          try {
-            const view = getContainingView(self) as LGV
-            const track = getContainingTrack(self)
-            const { pluginManager } = getEnv(self)
-            const adapterConfig = readConfObject(track.configuration, 'adapter')
-            const sessionId = getRpcSessionId(self)
-
-            const { dataAdapter } = await getAdapter(
-              pluginManager,
-              sessionId,
-              adapterConfig,
-            )
-
-            if (!isFeatureAdapter(dataAdapter)) {
-              return
-            }
-
-            // Use the displayed regions to fetch features
-            const regions = view.displayedRegions
-            if (regions.length === 0) {
-              return
-            }
-
-            // Fetch features from the visible regions
-            for (const region of regions) {
-              const featureObservable = dataAdapter.getFeatures(region)
-              const features = await firstValueFrom(
-                featureObservable.pipe(toArray()),
-              )
-              const feature = features.find(f => f.id() === featureId)
-              if (feature) {
-                self.setContextMenuFeature(feature)
-                return
-              }
-            }
-          } catch (e) {
-            console.error('Error fetching feature for context menu:', e)
-          }
         },
       }
     })
@@ -584,15 +509,7 @@ function stateModelFactory() {
           onFeatureContextMenu(_: unknown, featureId?: string) {
             const f = getFeatureId(featureId)
             if (f) {
-              // First try to get from cache synchronously
-              const cachedFeature = self.features.get(f)
-              if (cachedFeature) {
-                self.setContextMenuFeature(cachedFeature)
-              } else {
-                // Feature not in cache (e.g., canvas rendering), fetch async
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                self.fetchAndSetContextMenuFeature(f)
-              }
+              self.setContextMenuFeature(self.features.get(f))
             } else {
               self.clearFeatureSelection()
             }

@@ -1,7 +1,7 @@
 import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major and minor
@@ -199,14 +199,15 @@ export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
     const isSingleAssemblyName = contentBlocks.every(
       b => b.assemblyName === contentBlocks[0]!.assemblyName,
     )
-    const locs = contentBlocks.map(block =>
-      assembleLocString({
-        ...block,
-        start: Math.round(block.start),
-        end: Math.round(block.end),
-        assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
-      }),
-    )
-    return locs.join(' ')
+    return contentBlocks
+      .map(block =>
+        assembleLocString({
+          refName: block.refName,
+          start: Math.round(block.start),
+          end: Math.round(block.end),
+          assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+        }),
+      )
+      .join(' ')
   }
 }

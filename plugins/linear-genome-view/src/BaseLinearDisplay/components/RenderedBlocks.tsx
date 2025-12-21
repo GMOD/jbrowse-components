@@ -5,11 +5,9 @@ import {
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from './Block'
-import FeatureAccessibilityOverlay from './FeatureAccessibilityOverlay'
 import MaxHeightReached from './MaxHeightReachedIndicator'
 
 import type { BlockModel } from '../models/serverSideRenderedBlock'
-import type { Feature } from '@jbrowse/core/util'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 
 const RenderedBlocks = observer(function ({
@@ -19,19 +17,9 @@ const RenderedBlocks = observer(function ({
     id: string
     blockDefinitions: BlockSet
     blockState: { get: (key: string) => BlockModel | undefined }
-    showAccessibleFeatureOverlay?: boolean
-    setFeatureIdUnderMouse?: (featureId: string | undefined) => void
-    setContextMenuFeature?: (feature: Feature | undefined) => void
-    features?: { get: (id: string) => Feature | undefined }
   }
 }) {
-  const {
-    blockDefinitions,
-    blockState,
-    showAccessibleFeatureOverlay,
-    setFeatureIdUnderMouse,
-    setContextMenuFeature,
-  } = model
+  const { blockDefinitions, blockState } = model
   return blockDefinitions.map(block => {
     const key = `${model.id}-${block.key}`
     if (block.type === 'ContentBlock') {
@@ -43,23 +31,6 @@ const RenderedBlocks = observer(function ({
           ) : null}
           {state?.maxHeightReached ? (
             <MaxHeightReached top={state.layout.getTotalHeight() - 16} />
-          ) : null}
-          {showAccessibleFeatureOverlay && state ? (
-            <FeatureAccessibilityOverlay
-              blockState={state}
-              onFeatureFocus={(featureId, _feature) => {
-                setFeatureIdUnderMouse?.(featureId)
-              }}
-              onFeatureClick={(featureId, _feature) => {
-                setFeatureIdUnderMouse?.(featureId)
-              }}
-              onFeatureContextMenu={(featureId, feature) => {
-                setFeatureIdUnderMouse?.(featureId)
-                if (feature) {
-                  setContextMenuFeature?.(feature)
-                }
-              }}
-            />
           ) : null}
         </ContentBlockComponent>
       )
