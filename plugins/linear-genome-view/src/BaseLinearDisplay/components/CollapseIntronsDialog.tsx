@@ -177,7 +177,7 @@ export default function CollapseIntronsDialog({
       title="Select transcript to collapse"
     >
       <DialogContent>
-        <DialogContentText>
+        <DialogContentText component="div">
           <p>
             Select the 'window size' which will be the extra space surrounding
             splice boundary to include. 10bp will only include a small 10bp
