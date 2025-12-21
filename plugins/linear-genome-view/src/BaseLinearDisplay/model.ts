@@ -584,7 +584,10 @@ function stateModelFactory() {
                 // the display is not properly attached to a view
               }
             },
-            { name: 'BaseLinearDisplayBlockDefinitions' },
+            {
+              name: 'BaseLinearDisplayBlockDefinitions',
+              delay: 60,
+            },
           ),
         )
       },
