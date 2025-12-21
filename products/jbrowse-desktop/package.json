@@ -98,7 +98,7 @@
     "swr": "^2.3.8"
   },
   "devDependencies": {
-    "electron": "39.2.6"
+    "electron": "39.2.7"
   },
   "browserslist": [
     "last 1 chrome version"

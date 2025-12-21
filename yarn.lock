@@ -1599,10 +1599,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/hclust/-/hclust-1.0.7.tgz#2513c40b863f47559232885b8635941273f646ea"
   integrity sha512-aG3ccCvxM00oaPi/guM6iAaQ1dBjb4OnqfEHXYN90grVi80x62nv9sqy5jKu7RlhNv4ohYbjgvtuwKkPuFlapA==
 
-"@gmod/http-range-fetcher@^5.0.5":
-  version "5.0.5"
-  resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-5.0.5.tgz#3b16d527889fabb676acd3b605c0efb650f74333"
-  integrity sha512-ZJoe2pCvuGhHJ61BF7qOhXGswbdqPel6x/YDlpjhEtHm/0M+7CYmuKcLShTnlfWyaV4WEOkP89AzenT17S3fuw==
+"@gmod/http-range-fetcher@^5.0.6":
+  version "5.0.6"
+  resolved "https://registry.yarnpkg.com/@gmod/http-range-fetcher/-/http-range-fetcher-5.0.6.tgz#c5f684ccb1967f4119a0ee6c2a05cccb35318750"
+  integrity sha512-5Gaa1I5oMH1WBzNMMR+q2BGpZ/9qt6G6h3r85CF5NbBJ/um7n1FyoJNtCEzEBvxnQcYa+7rR9tqo2/bXela+1g==
   dependencies:
     "@jbrowse/quick-lru" "^7.0.0"
 
@@ -6748,24 +6748,24 @@ dns-packet@^5.2.2:
   dependencies:
     "@leichtgewicht/ip-codec" "^2.0.1"
 
-dockview-core@^4.11.0:
-  version "4.11.0"
-  resolved "https://registry.yarnpkg.com/dockview-core/-/dockview-core-4.11.0.tgz#fc7f012f59f4e20c1089a2173a735ea6cf2f48c1"
-  integrity sha512-v7I9fjJ7mNsRCrtN4fLeopc46mufqUEie7hszJ4m37f3zWTnj73herI30021+v5BIxgM3Et/S95fI+ibdYZbQg==
+dockview-core@^4.12.0:
+  version "4.12.0"
+  resolved "https://registry.yarnpkg.com/dockview-core/-/dockview-core-4.12.0.tgz#524574394ff683999ab7004a826d1ed2e42b4b6e"
+  integrity sha512-J9jFIFy9nNZrq7WF3l6X9osm/CmojDpzY0unTfnsWFNu2TkTc4GJ2qnpvzmyC0qgwp4NcUdXJTfoswc9Uvfuhw==
 
-dockview-react@^4.11.0:
-  version "4.11.0"
-  resolved "https://registry.yarnpkg.com/dockview-react/-/dockview-react-4.11.0.tgz#102ecae2fd410678ef08fa50180a1e167cf20d1c"
-  integrity sha512-Z7Il4zOrUhKGsRlHWpO5JZ4CELu2wE+ClFVNJqngcElU2JCBnuAWzptb+KqQPtOOydvdEyKyBGRIREnq8HEJJA==
+dockview-react@^4.12.0:
+  version "4.12.0"
+  resolved "https://registry.yarnpkg.com/dockview-react/-/dockview-react-4.12.0.tgz#05c3755d9e33b3c7df861f70d6ed2fbdd9b2a288"
+  integrity sha512-0aru4DKL9hif4z8QLDPKN6zeg7hAwhz1rjtlOr/YbBdJ5lc398MPn+k5DEMYirQQkt/AP5zD/9PjWNPYiWQhaw==
   dependencies:
-    dockview "^4.11.0"
+    dockview "^4.12.0"
 
-dockview@^4.11.0:
-  version "4.11.0"
-  resolved "https://registry.yarnpkg.com/dockview/-/dockview-4.11.0.tgz#2f8fd70e0b9438c3265eff65129aed65ecaf12eb"
-  integrity sha512-C8QQPsK2SSfKgEFzC9vRADLok2YIr/AKdKRvnzWxo6SkPpH4t7oJvZJr2egL0bna1iUJaVcrWJEMZcI6slnsNA==
+dockview@^4.12.0:
+  version "4.12.0"
+  resolved "https://registry.yarnpkg.com/dockview/-/dockview-4.12.0.tgz#fd2646f5f09901271f09cf5d3dbc0ec7b6d5a613"
+  integrity sha512-WPzUTqMd72GE2hwKnCcj5A0M0Ofgc9VMofEzBTNOD1Z8letRNazOAmRNnCgp12yfziKY5LyY32837KW2EqtmLA==
   dependencies:
-    dockview-core "^4.11.0"
+    dockview-core "^4.12.0"
 
 doctrine@^2.1.0:
   version "2.1.0"
@@ -7013,10 +7013,10 @@ electron-window-state@^5.0.3:
     jsonfile "^4.0.0"
     mkdirp "^0.5.1"
 
-electron@39.2.6:
-  version "39.2.6"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-39.2.6.tgz#7e1fdc01020418ea6c5cc92a3dd05fe65ad94941"
-  integrity sha512-dHBgTodWBZd+tL1Dt0PSh/CFLHeDkFCTKCTXu1dgPhlE9Z3k2zzlBQ9B2oW55CFsKanBDHiUomHJNw0XaSdQpA==
+electron@39.2.7:
+  version "39.2.7"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-39.2.7.tgz#1cf2371304994fe26c564764bd50878fe405fb4b"
+  integrity sha512-KU0uFS6LSTh4aOIC3miolcbizOFP7N1M46VTYVfqIgFiuA2ilfNaOHLDS9tCMvwwHRowAsvqBrh9NgMXcTOHCQ==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^22.7.7"

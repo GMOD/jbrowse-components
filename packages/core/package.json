@@ -34,7 +34,7 @@
     "@floating-ui/react": "^0.27.0",
     "@gmod/abortable-promise-cache": "^3.0.1",
     "@gmod/bgzf-filehandle": "^6.0.9",
-    "@gmod/http-range-fetcher": "^5.0.5",
+    "@gmod/http-range-fetcher": "^5.0.6",
     "@jbrowse/mobx-state-tree": "^5.4.7",
     "@jbrowse/quick-lru": "^7.3.5",
     "@leeoniya/ufuzzy": "^1.0.18",
