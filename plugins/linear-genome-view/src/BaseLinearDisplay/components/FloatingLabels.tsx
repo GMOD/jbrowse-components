@@ -1,16 +1,11 @@
-import {
-  clamp,
-  getContainingView,
-  getSession,
-  measureText,
-} from '@jbrowse/core/util'
+import { useMemo } from 'react'
+
+import { clamp, getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FloatingLabelData, LayoutRecord } from '../model'
-
-const fontSize = 11
 
 interface PixelPositions {
   leftPx: number
@@ -134,7 +129,7 @@ interface LabelProps {
   offsetPx: number
 }
 
-const FloatingLabel = observer(function ({
+function FloatingLabel({
   text,
   color,
   isOverlay,
@@ -163,7 +158,7 @@ const FloatingLabel = observer(function ({
       {text}
     </div>
   )
-})
+}
 
 const FloatingLabels = observer(function ({
   model,
@@ -175,13 +170,20 @@ const FloatingLabels = observer(function ({
   const assemblyName = view.assemblyNames[0]
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { layoutFeatures } = model
-  const { offsetPx } = view
+  const { offsetPx, bpPerPx } = view
 
-  if (!assembly) {
+  const featureLabels = useMemo(
+    () =>
+      assembly
+        ? deduplicateFeatureLabels(layoutFeatures, view, assembly)
+        : undefined,
+    [layoutFeatures, view, assembly, bpPerPx],
+  )
+
+  if (!featureLabels) {
     return null
   }
 
-  const featureLabels = deduplicateFeatureLabels(layoutFeatures, view, assembly)
   const labels: React.ReactElement[] = []
 
   for (const [
@@ -193,9 +195,8 @@ const FloatingLabels = observer(function ({
 
     for (let i = 0, l = floatingLabels.length; i < l; i++) {
       const floatingLabel = floatingLabels[i]!
-      const { text, relativeY, color, isOverlay } = floatingLabel
+      const { text, relativeY, color, isOverlay, textWidth: labelWidth } = floatingLabel
 
-      const labelWidth = measureText(text, fontSize)
       if (labelWidth > featureWidth) {
         continue
       }

@@ -73,6 +73,7 @@ export interface FloatingLabelData {
   text: string
   relativeY: number
   color: string
+  textWidth: number
   isOverlay?: boolean
 }
 

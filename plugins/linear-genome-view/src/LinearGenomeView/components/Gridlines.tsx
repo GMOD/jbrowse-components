@@ -1,8 +1,10 @@
+import { useLayoutEffect, useRef } from 'react'
+
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import {
-  ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
@@ -13,7 +15,7 @@ import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   verticalGuidesZoomContainer: {
     position: 'absolute',
     top: 0,
@@ -27,18 +29,14 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     display: 'flex',
   },
-  tick: {
-    position: 'absolute',
-    height: '100%',
-    width: 1,
+  contentBlock: {
+    position: 'relative',
+    minHeight: '100%',
+    boxSizing: 'border-box',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
   },
-  majorTick: {
-    background: theme.palette.action.disabled,
-  },
-  minorTick: {
-    background: theme.palette.divider,
-  },
-}))
+})
 
 function RenderedBlockLines({
   block,
@@ -47,27 +45,44 @@ function RenderedBlockLines({
   block: ContentBlock
   bpPerPx: number
 }) {
-  const { classes, cx } = useStyles()
-  const ticks = makeTicks(block.start, block.end, bpPerPx)
+  const { classes } = useStyles()
+  const theme = useTheme()
+  const ref = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) {
+      return
+    }
+    el.innerHTML = ''
+
+    const ticks = makeTicks(block.start, block.end, bpPerPx)
+    const majorColor = theme.palette.action.disabled
+    const minorColor = theme.palette.divider
+    const frag = document.createDocumentFragment()
+
+    for (const { type, base } of ticks) {
+      const x =
+        (block.reversed ? block.end - base : base - block.start) / bpPerPx
+      const tick = document.createElement('div')
+      tick.style.position = 'absolute'
+      tick.style.height = '100%'
+      tick.style.width = '1px'
+      tick.style.left = `${x}px`
+      tick.style.background =
+        type === 'major' || type === 'labeledMajor' ? majorColor : minorColor
+      frag.appendChild(tick)
+    }
+
+    el.appendChild(frag)
+  }, [block.start, block.end, block.reversed, bpPerPx, theme])
+
   return (
-    <ContentBlockComponent block={block}>
-      {ticks.map(({ type, base }) => {
-        const x =
-          (block.reversed ? block.end - base : base - block.start) / bpPerPx
-        return (
-          <div
-            key={base}
-            className={cx(
-              classes.tick,
-              type === 'major' || type === 'labeledMajor'
-                ? classes.majorTick
-                : classes.minorTick,
-            )}
-            style={{ left: x }}
-          />
-        )
-      })}
-    </ContentBlockComponent>
+    <div
+      ref={ref}
+      style={{ width: block.widthPx }}
+      className={classes.contentBlock}
+    />
   )
 }
 const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
