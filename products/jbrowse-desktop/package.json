@@ -98,13 +98,13 @@
     "swr": "^2.3.8"
   },
   "devDependencies": {
-    "electron": "39.2.6"
+    "electron": "39.2.7"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "39.2.6",
+    "electronVersion": "39.2.7",
     "extraMetadata": {
       "main": "build/electron.js"
     },

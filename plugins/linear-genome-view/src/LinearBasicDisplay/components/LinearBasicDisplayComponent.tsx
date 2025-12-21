@@ -10,10 +10,9 @@ const LinearBasicDisplayComponent = observer(function (props: {
 }) {
   const { model } = props
   return (
-    <div style={{ position: 'relative' }}>
-      <BaseLinearDisplayComponent model={model} />
+    <BaseLinearDisplayComponent model={model}>
       <FloatingLabels model={model} />
-    </div>
+    </BaseLinearDisplayComponent>
   )
 })
 

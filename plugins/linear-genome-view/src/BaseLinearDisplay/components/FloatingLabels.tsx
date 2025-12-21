@@ -126,6 +126,7 @@ interface LabelProps {
   isOverlay: boolean
   featureLeftPx: number
   featureRightPx: number
+  featureId: string
   labelWidth: number
   y: number
   offsetPx: number
@@ -137,6 +138,7 @@ function FloatingLabel({
   isOverlay,
   featureLeftPx,
   featureRightPx,
+  featureId,
   labelWidth,
   y,
   offsetPx,
@@ -147,10 +149,13 @@ function FloatingLabel({
 
   return (
     <div
+      data-testid={`floatingLabel-${text}`}
+      data-feature-id={featureId}
       style={{
         position: 'absolute',
         fontSize: '11px',
-        pointerEvents: 'none',
+        cursor: 'pointer',
+        pointerEvents: 'auto',
         color,
         backgroundColor: isOverlay ? 'rgba(255, 255, 255, 0.8)' : undefined,
         lineHeight: isOverlay ? '1' : undefined,
@@ -216,9 +221,10 @@ const FloatingLabels = observer(function ({
           key={`${key}-${i}`}
           text={text}
           color={color}
-          isOverlay={isOverlay}
+          isOverlay={isOverlay ?? false}
           featureLeftPx={leftPx}
           featureRightPx={rightPx}
+          featureId={key}
           labelWidth={labelWidth}
           y={y}
           offsetPx={offsetPx}
@@ -227,8 +233,24 @@ const FloatingLabels = observer(function ({
     }
   }
 
+  const { onFeatureClick, onFeatureContextMenu } = model.renderingProps()
+
   return (
     <div
+      onClick={e => {
+        const target = e.target as HTMLElement
+        const featureId = target.dataset.featureId
+        if (featureId) {
+          onFeatureClick?.(e, featureId)
+        }
+      }}
+      onContextMenu={e => {
+        const target = e.target as HTMLElement
+        const featureId = target.dataset.featureId
+        if (featureId) {
+          onFeatureContextMenu?.(e, featureId)
+        }
+      }}
       style={{
         position: 'absolute',
         top: 0,
