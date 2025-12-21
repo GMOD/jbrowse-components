@@ -20,9 +20,9 @@ function calculateFeaturePixelPositions(
   refName: string,
   left: number,
   right: number,
+  bpPerPx: number,
 ): PixelPositions | undefined {
   const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
-  const { bpPerPx } = view
 
   const leftBpPx = view.bpToPx({
     refName: canonicalRefName,
@@ -72,6 +72,7 @@ function deduplicateFeatureLabels(
   assembly:
     | { getCanonicalRefName: (refName: string) => string | undefined }
     | undefined,
+  bpPerPx: number,
 ): Map<string, FeatureLabelData> {
   const featureLabels = new Map<string, FeatureLabelData>()
 
@@ -95,6 +96,7 @@ function deduplicateFeatureLabels(
       refName,
       left,
       right,
+      bpPerPx,
     )
 
     if (!positions) {
@@ -175,7 +177,7 @@ const FloatingLabels = observer(function ({
   const featureLabels = useMemo(
     () =>
       assembly
-        ? deduplicateFeatureLabels(layoutFeatures, view, assembly)
+        ? deduplicateFeatureLabels(layoutFeatures, view, assembly, bpPerPx)
         : undefined,
     [layoutFeatures, view, assembly, bpPerPx],
   )
@@ -195,7 +197,13 @@ const FloatingLabels = observer(function ({
 
     for (let i = 0, l = floatingLabels.length; i < l; i++) {
       const floatingLabel = floatingLabels[i]!
-      const { text, relativeY, color, isOverlay, textWidth: labelWidth } = floatingLabel
+      const {
+        text,
+        relativeY,
+        color,
+        isOverlay,
+        textWidth: labelWidth,
+      } = floatingLabel
 
       if (labelWidth > featureWidth) {
         continue

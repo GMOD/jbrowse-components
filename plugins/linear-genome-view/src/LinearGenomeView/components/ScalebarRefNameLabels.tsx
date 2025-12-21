@@ -1,6 +1,6 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -28,11 +28,17 @@ const ScalebarRefNameLabels = observer(function ({ model }: { model: LGV }) {
   const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
 
   // find the block that needs pinning to the left side for context
-  let lastLeftBlock = 0
+  // default to first ContentBlock if nothing is scrolled left
+  let lastLeftBlock = staticBlocks.blocks.findIndex(
+    b => b.type === 'ContentBlock',
+  )
+  if (lastLeftBlock < 0) {
+    lastLeftBlock = 0
+  }
 
   // eslint-disable-next-line unicorn/no-array-for-each
   staticBlocks.forEach((block, i) => {
-    if (block.offsetPx - offsetPx < 0) {
+    if (block.type === 'ContentBlock' && block.offsetPx - offsetPx < 0) {
       lastLeftBlock = i
     }
   })
