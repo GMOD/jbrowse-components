@@ -128,7 +128,6 @@ function deduplicateFeatureLabels(
 
 // Data stored per label element for fast offset updates
 interface LabelPositionData {
-  featureId: string
   featureLeftPx: number
   featureRightPx: number
   labelWidth: number
@@ -195,7 +194,6 @@ const FloatingLabels = observer(function ({
             newKeys.add(labelKey)
 
             labelPositions.set(labelKey, {
-              featureId: key,
               featureLeftPx: leftPx,
               featureRightPx: rightPx,
               labelWidth,
@@ -289,21 +287,18 @@ const FloatingLabels = observer(function ({
         const featureId = target.dataset?.featureId
         if (featureId) {
           model.setFeatureIdUnderMouse(featureId)
-          const feature = model.features.get(featureId)
-          if (feature) {
-            model.selectFeature(feature)
-          }
         }
       }}
       onContextMenu={e => {
         const target = e.target as HTMLElement
         const featureId = target.dataset?.featureId
         if (featureId) {
-          e.preventDefault()
+          // Set the feature ID so the context menu knows which feature was clicked
           model.setFeatureIdUnderMouse(featureId)
-          // Trigger the context menu flow - fetch feature and set it
+          // Fetch and set the context menu feature
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           model.fetchAndSetContextMenuFeature(featureId)
+          // Don't preventDefault - let the event bubble up to show the context menu
         }
       }}
       style={{
