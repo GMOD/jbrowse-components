@@ -16,10 +16,13 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
+interface DisplayModel {
+  contextMenuFeature: Feature | undefined
+}
+
 test('collapse introns on gene feature', async () => {
   const user = userEvent.setup()
-  const { view, session, findByTestId, findByText, findAllByTestId } =
-    await createView()
+  const { view, session, findByText, findAllByTestId } = await createView()
 
   // Navigate to the region with the EDEN gene (1050-9000)
   await view.navToLocString('ctgA:907..10,000')
@@ -30,36 +33,20 @@ test('collapse introns on gene feature', async () => {
   // Wait for the track to render
   await findAllByTestId(/prerendered_canvas.*done/, ...opts)
 
-  // Get the display
-  const display = view.tracks[0]?.displays[0] as {
-    features: Map<string, Feature>
-    setContextMenuFeature: (feature: Feature) => void
-    configuration: { displayId: string }
-  }
+  // Find the floating label for EDEN and right-click it
+  const edenLabel = await screen.findByTestId('floatingLabel-EDEN', ...opts)
+  fireEvent.contextMenu(edenLabel)
 
-  // Wait for features to be available from the renderer
+  // Get the display to check contextMenuFeature
+  const display = view.tracks[0]?.displays[0] as DisplayModel
+
+  // Wait for the context menu feature to be set
   await waitFor(
     () => {
-      expect(display.features.size).toBeGreaterThan(0)
+      expect(display.contextMenuFeature).toBeDefined()
     },
     { timeout: 10000 },
   )
-
-  // Find the EDEN gene feature from the rendered features
-  const edenFeature = [...display.features.values()].find(
-    f => f.get('name') === 'EDEN' && f.get('type') === 'gene',
-  )
-  expect(edenFeature).toBeDefined()
-
-  // Set the feature for context menu (simulates right-clicking on the feature)
-  display.setContextMenuFeature(edenFeature!)
-
-  // Find the display element and trigger context menu
-  const displayElement = await findByTestId(
-    `display-${display.configuration.displayId}`,
-    ...opts,
-  )
-  fireEvent.contextMenu(displayElement)
 
   // Click on "Collapse introns" in the context menu
   fireEvent.click(await findByText('Collapse introns', ...opts))
@@ -102,7 +89,7 @@ test('collapse introns on gene feature', async () => {
 
 test('collapse introns dialog shows transcript table', async () => {
   const user = userEvent.setup()
-  const { view, findAllByTestId, findByText, findByTestId } = await createView()
+  const { view, findAllByTestId, findByText } = await createView()
 
   // Navigate to the region with the EDEN gene
   await view.navToLocString('ctgA:907..10,000')
@@ -113,36 +100,20 @@ test('collapse introns dialog shows transcript table', async () => {
   // Wait for the track to render
   await findAllByTestId(/prerendered_canvas.*done/, ...opts)
 
-  // Get the display
-  const display = view.tracks[0]?.displays[0] as {
-    features: Map<string, Feature>
-    setContextMenuFeature: (feature: Feature) => void
-    configuration: { displayId: string }
-  }
+  // Find the floating label for EDEN and right-click it
+  const edenLabel = await screen.findByTestId('floatingLabel-EDEN', ...opts)
+  fireEvent.contextMenu(edenLabel)
 
-  // Wait for features to be available from the renderer
+  // Get the display to check contextMenuFeature
+  const display = view.tracks[0]?.displays[0] as DisplayModel
+
+  // Wait for context menu feature to be set
   await waitFor(
     () => {
-      expect(display.features.size).toBeGreaterThan(0)
+      expect(display.contextMenuFeature).toBeDefined()
     },
     { timeout: 10000 },
   )
-
-  // Find the EDEN gene feature from the rendered features
-  const edenFeature = [...display.features.values()].find(
-    f => f.get('name') === 'EDEN' && f.get('type') === 'gene',
-  )
-  expect(edenFeature).toBeDefined()
-
-  // Set the feature for context menu
-  display.setContextMenuFeature(edenFeature!)
-
-  // Find the display element and trigger context menu
-  const displayElement = await findByTestId(
-    `display-${display.configuration.displayId}`,
-    ...opts,
-  )
-  fireEvent.contextMenu(displayElement)
 
   // Click on "Collapse introns"
   fireEvent.click(await findByText('Collapse introns', ...opts))
@@ -151,14 +122,12 @@ test('collapse introns dialog shows transcript table', async () => {
   await findByText('Select transcript to collapse', ...opts)
 
   // Click to show all transcripts button
-  // Note: "Show all transcripts" also appears in the description text, so use button role
   const showButton = await screen.findByRole('button', {
     name: /Show all transcripts/,
   })
   fireEvent.click(showButton)
 
   // Wait for the transcript table to render
-  // The table should show "Name/ID" header
   await waitFor(
     () => {
       expect(screen.getByText('Name/ID')).toBeInTheDocument()
@@ -167,7 +136,6 @@ test('collapse introns dialog shows transcript table', async () => {
   )
 
   // Verify EDEN transcripts appear in the table
-  // The EDEN gene has mRNA subfeatures
   expect(screen.getByText('EDEN.1')).toBeInTheDocument()
   expect(screen.getByText('EDEN.2')).toBeInTheDocument()
   expect(screen.getByText('EDEN.3')).toBeInTheDocument()
