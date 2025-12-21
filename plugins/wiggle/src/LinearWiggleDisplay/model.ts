@@ -305,18 +305,19 @@ function stateModelFactory(
               : []),
           ]
         },
-
-        /**
-         * #method
-         */
-        trackMenuItems() {
-          return [
-            ...this.wiggleBaseTrackMenuItems(),
-            ...this.wiggleOnlyTrackMenuItems(),
-          ]
-        },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       */
+      trackMenuItems() {
+        return [
+          ...self.wiggleBaseTrackMenuItems(),
+          ...self.wiggleOnlyTrackMenuItems(),
+        ]
+      },
+    }))
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
 
