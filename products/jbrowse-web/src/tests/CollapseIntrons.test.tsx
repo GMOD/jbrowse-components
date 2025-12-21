@@ -16,8 +16,8 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
-// Create a mock EDEN gene feature with mRNA subfeatures that have exons and CDS
-// This matches the structure of the EDEN gene in volvox.sort.gff3.gz
+// Create a mock EDEN gene feature with mRNA subfeatures containing CDS
+// This structure is needed for the "Collapse introns" menu item to appear
 function createEdenGeneFeature() {
   return new SimpleFeature({
     uniqueId: 'test-eden-gene',
@@ -28,145 +28,43 @@ function createEdenGeneFeature() {
     type: 'gene',
     subfeatures: [
       {
-        uniqueId: 'test-eden-mrna-1',
+        uniqueId: 'eden-mrna-1',
         refName: 'ctgA',
         start: 1049,
         end: 9000,
         name: 'EDEN.1',
         type: 'mRNA',
         subfeatures: [
-          {
-            uniqueId: 'utr1',
-            refName: 'ctgA',
-            start: 1049,
-            end: 1200,
-            type: 'five_prime_UTR',
-          },
-          {
-            uniqueId: 'cds1',
-            refName: 'ctgA',
-            start: 1200,
-            end: 1500,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'cds2',
-            refName: 'ctgA',
-            start: 2999,
-            end: 3902,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'cds3',
-            refName: 'ctgA',
-            start: 4999,
-            end: 5500,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'cds4',
-            refName: 'ctgA',
-            start: 6999,
-            end: 7608,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'utr2',
-            refName: 'ctgA',
-            start: 7608,
-            end: 9000,
-            type: 'three_prime_UTR',
-          },
+          { uniqueId: 'cds1', refName: 'ctgA', start: 1200, end: 1500, type: 'CDS' },
+          { uniqueId: 'cds2', refName: 'ctgA', start: 3000, end: 3900, type: 'CDS' },
+          { uniqueId: 'cds3', refName: 'ctgA', start: 5000, end: 5500, type: 'CDS' },
+          { uniqueId: 'cds4', refName: 'ctgA', start: 7000, end: 7600, type: 'CDS' },
         ],
       },
       {
-        uniqueId: 'test-eden-mrna-2',
+        uniqueId: 'eden-mrna-2',
         refName: 'ctgA',
         start: 1049,
         end: 9000,
         name: 'EDEN.2',
         type: 'mRNA',
         subfeatures: [
-          {
-            uniqueId: 'utr3',
-            refName: 'ctgA',
-            start: 1049,
-            end: 1200,
-            type: 'five_prime_UTR',
-          },
-          {
-            uniqueId: 'cds5',
-            refName: 'ctgA',
-            start: 1200,
-            end: 1500,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'cds6',
-            refName: 'ctgA',
-            start: 4999,
-            end: 5500,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'cds7',
-            refName: 'ctgA',
-            start: 6999,
-            end: 7608,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'utr4',
-            refName: 'ctgA',
-            start: 7608,
-            end: 9000,
-            type: 'three_prime_UTR',
-          },
+          { uniqueId: 'cds5', refName: 'ctgA', start: 1200, end: 1500, type: 'CDS' },
+          { uniqueId: 'cds6', refName: 'ctgA', start: 5000, end: 5500, type: 'CDS' },
+          { uniqueId: 'cds7', refName: 'ctgA', start: 7000, end: 7600, type: 'CDS' },
         ],
       },
       {
-        uniqueId: 'test-eden-mrna-3',
+        uniqueId: 'eden-mrna-3',
         refName: 'ctgA',
         start: 1299,
         end: 9000,
         name: 'EDEN.3',
         type: 'mRNA',
         subfeatures: [
-          {
-            uniqueId: 'utr5',
-            refName: 'ctgA',
-            start: 1299,
-            end: 1500,
-            type: 'five_prime_UTR',
-          },
-          {
-            uniqueId: 'cds8',
-            refName: 'ctgA',
-            start: 2999,
-            end: 3902,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'cds9',
-            refName: 'ctgA',
-            start: 4999,
-            end: 5500,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'cds10',
-            refName: 'ctgA',
-            start: 6999,
-            end: 7608,
-            type: 'CDS',
-          },
-          {
-            uniqueId: 'utr6',
-            refName: 'ctgA',
-            start: 7608,
-            end: 9000,
-            type: 'three_prime_UTR',
-          },
+          { uniqueId: 'cds8', refName: 'ctgA', start: 3000, end: 3900, type: 'CDS' },
+          { uniqueId: 'cds9', refName: 'ctgA', start: 5000, end: 5500, type: 'CDS' },
+          { uniqueId: 'cds10', refName: 'ctgA', start: 7000, end: 7600, type: 'CDS' },
         ],
       },
     ],
@@ -190,16 +88,22 @@ test('collapse introns on gene feature', async () => {
   // Get the display
   const display = view.tracks[0]?.displays[0]
 
-  // Create mock EDEN gene feature and set it as context menu feature
-  const edenFeature = createEdenGeneFeature()
-  display.setContextMenuFeature(edenFeature)
+  // Enable the accessible feature overlay for testing
+  display.setShowAccessibleFeatureOverlay(true)
 
-  // Find the display element and trigger context menu
-  const displayElement = await findByTestId(
-    `display-${display.configuration.displayId}`,
-    ...opts,
+  // Wait for accessible feature buttons to appear
+  // These are rendered based on the layout data
+  await waitFor(
+    () => {
+      const featureButtons = screen.queryAllByTestId(/^feature-/)
+      expect(featureButtons.length).toBeGreaterThan(0)
+    },
+    { timeout: 10000 },
   )
-  fireEvent.contextMenu(displayElement)
+
+  // Find a gene feature button and right-click it
+  const featureButtons = screen.getAllByTestId(/^feature-/)
+  fireEvent.contextMenu(featureButtons[0]!)
 
   // Click on "Collapse introns" in the context menu
   fireEvent.click(await findByText('Collapse introns', ...opts))

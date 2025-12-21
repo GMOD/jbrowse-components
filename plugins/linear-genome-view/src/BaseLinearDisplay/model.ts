@@ -145,6 +145,12 @@ function stateModelFactory() {
        * #volatile
        */
       contextMenuFeature: undefined as undefined | Feature,
+      /**
+       * #volatile
+       * When true, renders invisible focusable elements over features for accessibility.
+       * This enables keyboard navigation and screen reader access to canvas features.
+       */
+      showAccessibleFeatureOverlay: false,
     }))
     .views(self => ({
       /**
@@ -381,6 +387,13 @@ function stateModelFactory() {
        */
       setMouseoverExtraInformation(extra?: string) {
         self.mouseoverExtraInformation = extra
+      },
+      /**
+       * #action
+       * Toggle the accessible feature overlay for keyboard/screen reader access
+       */
+      setShowAccessibleFeatureOverlay(show: boolean) {
+        self.showAccessibleFeatureOverlay = show
       },
       /**
        * #action
