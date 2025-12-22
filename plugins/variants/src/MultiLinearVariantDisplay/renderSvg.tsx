@@ -12,12 +12,12 @@ export async function renderSvg(
 ) {
   await when(() => !!self.regionCannotBeRenderedText)
   const dataSvg = await superRenderSvg(opts)
-  const legendSvg = await makeSidebarSvg(self)
+  const sidebarSvg = await makeSidebarSvg(self)
 
   return (
     <>
       <g id="data-layer">{dataSvg}</g>
-      {legendSvg}
+      {sidebarSvg}
     </>
   )
 }
