@@ -9,7 +9,6 @@ export function drawTree({
 }) {
   const { treeAreaWidth, hierarchy, scrollTop, height } = model
   // Clear the entire canvas
-  ctx.resetTransform()
   ctx.scale(2, 2)
   ctx.clearRect(0, 0, treeAreaWidth, height)
 

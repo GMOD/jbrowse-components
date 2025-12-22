@@ -42,6 +42,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         if (!ctx) {
           return
         }
+        ctx.resetTransform()
         drawTree({
           ctx,
           model: self,

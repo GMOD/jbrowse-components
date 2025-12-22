@@ -10,6 +10,7 @@ export interface BpOffset {
   oob?: boolean
 }
 export interface ExportSvgOptions {
+  scale?: number
   rasterizeLayers?: boolean
   filename?: string
   Wrapper?: React.FC<{ children: React.ReactNode }>

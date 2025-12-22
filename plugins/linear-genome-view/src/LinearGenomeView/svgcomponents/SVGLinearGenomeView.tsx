@@ -50,7 +50,13 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
       await when(() => isReadyOrHasError(display))
-      return { track, result: await display.renderSvg({ ...opts, theme }) }
+      return {
+        track,
+        result: await display.renderSvg({
+          ...opts,
+          theme,
+        }),
+      }
     }),
   )
   const trackLabelMaxLen =

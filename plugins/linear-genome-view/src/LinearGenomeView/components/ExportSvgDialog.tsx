@@ -162,6 +162,7 @@ export default function ExportSvgDialog({
                 filename,
                 trackLabels,
                 themeName,
+                scale: 2,
                 showGridlines,
               })
               handleClose()
