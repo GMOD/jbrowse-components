@@ -7,8 +7,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import SvgTree from './SvgTree'
-
 import type { ClusterHierarchyNode, TreeSidebarModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -27,15 +25,17 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 function getDescendantNames(node: ClusterHierarchyNode): string[] {
-  return !node.children?.length
-    ? [node.data.name]
-    : node.children.flatMap(child => getDescendantNames(child))
+  if (!node.children?.length) {
+    return [node.data.name]
+  }
+  return node.children.flatMap(child => getDescendantNames(child))
 }
 
 /**
  * TreeSidebar renders a hierarchical cluster tree alongside the variant display.
  *
  * Architecture:
+ * - treeCanvas: Draws the tree structure lines (via treeDrawingAutorun)
  * - mouseoverCanvas: Draws hover highlights spanning full width (via treeDrawingAutorun)
  * - interaction div: Captures mouse events over the tree area
  *
@@ -49,6 +49,15 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
   const [nodeData, setNodeData] = useState<ClusterHierarchyNode[]>([])
 
   const { hierarchy, treeAreaWidth, height, scrollTop, showTree } = model
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const treeCanvasRef = useCallback(
+    (ref: HTMLCanvasElement | null) => {
+      model.setTreeCanvasRef(ref)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, treeAreaWidth, height],
+  )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const mouseoverCanvasRef = useCallback(
@@ -89,9 +98,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
         setNodeIndex(index)
         setNodeData(nodes)
       },
-      {
-        name: 'TreeSpatialIndex',
-      },
+      { name: 'TreeSpatialIndex' },
     )
   }, [model])
 
@@ -139,20 +146,19 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
         }}
       >
         {/* Tree structure canvas - draws lines via treeDrawingAutorun */}
-        <svg
+        <canvas
+          ref={treeCanvasRef}
           width={treeAreaWidth * 2}
           height={height * 2}
           style={{
-            position: 'absolute',
             width: treeAreaWidth,
             height,
+            position: 'absolute',
             top: 0,
             left: 0,
             pointerEvents: 'none',
           }}
-        >
-          <SvgTree model={model} />
-        </svg>
+        />
         {/* Highlight canvas - draws hover highlights via treeDrawingAutorun */}
         <canvas
           ref={mouseoverCanvasRef}
