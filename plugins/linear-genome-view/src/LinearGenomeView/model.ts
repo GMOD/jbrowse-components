@@ -554,11 +554,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get totalBp() {
-        console.log(
-          'wtf',
-          self.displayedRegions.map(r => r.end - r.start),
-          sum(self.displayedRegions.map(r => r.end - r.start)),
-        )
         return sum(self.displayedRegions.map(r => r.end - r.start))
       },
 
@@ -566,7 +561,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get maxBpPerPx() {
-        console.log(this.totalBp, self.width)
         return this.totalBp / (self.width * 0.9)
       },
 
@@ -776,6 +770,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       scrollTo(offsetPx: number) {
         const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
+        console.log('[scrollTo]:', {
+          requested: offsetPx,
+          clamped: newOffsetPx,
+          minOffset: self.minOffset,
+          maxOffset: self.maxOffset,
+        })
         self.offsetPx = newOffsetPx
         return newOffsetPx
       },
@@ -798,12 +798,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         // tweak the offset so that the center of the view remains at the same
         // coordinate
-        this.scrollTo(
-          Math.round(
-            ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
-              (centerAtOffset ? self.width / 2 : offset),
-          ),
+        const newOffsetPx = Math.round(
+          ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
+            (centerAtOffset ? self.width / 2 : offset),
         )
+        console.log('[zoomTo] Calculation:', {
+          oldOffsetPx: self.offsetPx,
+          oldBpPerPx,
+          newBpPerPx,
+          offset,
+          centerAtOffset,
+          calculation: `((${self.offsetPx} + ${offset}) * ${oldBpPerPx}) / ${newBpPerPx} - ${centerAtOffset ? self.width / 2 : offset}`,
+          newOffsetPx,
+        })
+        this.scrollTo(newOffsetPx)
         return newBpPerPx
       },
 
@@ -1028,19 +1036,58 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       center() {
-        const centerBp = self.totalBp / 2
-        const centerPx = centerBp / self.bpPerPx
-        self.scrollTo(Math.round(centerPx - self.width / 2))
+        // Calculate total content width including inter-region padding
+        const numPaddings = Math.max(0, self.displayedRegions.length - 1)
+        const totalPaddingPx = numPaddings * self.interRegionPaddingWidth
+        const totalContentPx = self.totalBp / self.bpPerPx + totalPaddingPx
+        const centerPx = totalContentPx / 2
+        const targetOffsetPx = Math.round(centerPx - self.width / 2)
+        console.log('[center] Calculation:', {
+          totalBp: self.totalBp,
+          bpPerPx: self.bpPerPx,
+          numRegions: self.displayedRegions.length,
+          numPaddings,
+          totalPaddingPx,
+          totalContentPx,
+          centerPx,
+          width: self.width,
+          targetOffsetPx,
+        })
+        self.scrollTo(targetOffsetPx)
       },
 
       /**
        * #action
        */
       showAllRegions() {
-        console.log('t1')
-        self.zoomTo(self.maxBpPerPx)
-        console.log('t2')
-        this.center()
+        console.log('[showAllRegions UNIQUE-2024] Start:', {
+          offsetPx: self.offsetPx,
+          bpPerPx: self.bpPerPx,
+          width: self.width,
+          totalBp: self.totalBp,
+          maxBpPerPx: self.maxBpPerPx,
+        })
+
+        // Compute target values
+        const targetBpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+
+        // Calculate proper centered offset for target zoom
+        const numPaddings = Math.max(0, self.displayedRegions.length - 1)
+        const totalPaddingPx = numPaddings * self.interRegionPaddingWidth
+        const totalContentPx = self.totalBp / targetBpPerPx + totalPaddingPx
+        const centerPx = totalContentPx / 2
+        const targetOffsetPx = Math.round(centerPx - self.width / 2)
+
+        // Set both values directly - no intermediate steps
+        self.bpPerPx = targetBpPerPx
+        self.offsetPx = clamp(targetOffsetPx, self.minOffset, self.maxOffset)
+
+        console.log('[showAllRegions DIRECT-SET] Set bpPerPx and offsetPx directly:', {
+          targetBpPerPx,
+          targetOffsetPx,
+          bpPerPx: self.bpPerPx,
+          offsetPx: self.offsetPx,
+        })
       },
 
       /**

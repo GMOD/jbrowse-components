@@ -12,7 +12,7 @@ import {
 import type { LinearGenomeViewModel } from '../../../LinearGenomeView'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
-import { collapseIntrons, getExonsAndCDS } from '../util'
+import { collapseIntrons, getExonsAndCDS } from './util'
 
 export default function TranscriptTable({
   transcripts,

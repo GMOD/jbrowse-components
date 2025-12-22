@@ -28,27 +28,56 @@ export async function collapseIntrons({
   assembly: Assembly
   padding: number
 }) {
+  console.log('[collapseIntrons ENTRY-UNIQUE-2024] Function called')
   const r0 = transcripts[0]?.get('refName')
   if (!r0) {
     return
   }
   const refName = assembly.getCanonicalRefName2(r0)
   const subs = getExonsAndCDS(transcripts)
-  const { id, ...rest } = getSnapshot(view)
+  const snapshot = getSnapshot(view)
+  const { id, offsetPx, bpPerPx, ...rest } = snapshot
+  const mergedRegions = mergeIntervals(
+    subs.map(f => ({
+      refName,
+      start: f.get('start') - padding,
+      end: f.get('end') + padding,
+      assemblyName: view.assemblyNames[0],
+    })),
+    padding,
+  )
+
+  // Compute the correct bpPerPx and offsetPx for the new regions BEFORE creating the view
+  const totalBp = mergedRegions.reduce((sum, r) => sum + (r.end - r.start), 0)
+  const width = view.width
+  const maxBpPerPx = totalBp / (width * 0.9)
+  const numPaddings = Math.max(0, mergedRegions.length - 1)
+  const interRegionPaddingWidth = 2 // INTER_REGION_PADDING_WIDTH
+  const totalPaddingPx = numPaddings * interRegionPaddingWidth
+  const totalContentPx = totalBp / maxBpPerPx + totalPaddingPx
+  const centerPx = totalContentPx / 2
+  const initialOffsetPx = Math.round(centerPx - width / 2)
+
+  console.log('[CollapseIntrons UNIQUE-2024] Computed initial view state:', {
+    mergedRegions,
+    totalBp,
+    width,
+    maxBpPerPx,
+    initialOffsetPx,
+  })
+
   const newView = getSession(view).addView('LinearGenomeView', {
     ...rest,
     tracks: rest.tracks.map(({ id, ...r }) => r),
-    displayedRegions: mergeIntervals(
-      subs.map(f => ({
-        refName,
-        start: f.get('start') - padding,
-        end: f.get('end') + padding,
-        assemblyName: view.assemblyNames[0],
-      })),
-      padding,
-    ),
+    displayedRegions: mergedRegions,
+    // Set the correct bpPerPx and offsetPx from the start!
+    bpPerPx: maxBpPerPx,
+    offsetPx: initialOffsetPx,
   }) as LinearGenomeViewModel
   await when(() => newView.initialized)
 
-  newView.showAllRegions()
+  console.log('[CollapseIntrons UNIQUE-2024] View initialized with:', {
+    offsetPx: newView.offsetPx,
+    bpPerPx: newView.bpPerPx,
+  })
 }
