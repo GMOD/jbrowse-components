@@ -65,6 +65,7 @@ export interface FlatbushItem {
   label?: string
   description?: string
   mouseOver?: string
+  tooltip?: string
 }
 
 export interface SubfeatureInfo {

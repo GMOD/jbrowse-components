@@ -9,6 +9,7 @@ import {
   addSubfeaturesToLayoutAndFlatbush,
   adjustChildPositions,
 } from './layoutUtils'
+import { buildFeatureTooltip } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type {
@@ -125,6 +126,11 @@ export function makeImageData({
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
     const mouseOver = feature.get('_mouseOver') as string | undefined
+    const tooltip = buildFeatureTooltip({
+      mouseOver,
+      label: label || undefined,
+      description: description || undefined,
+    })
 
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({
@@ -139,6 +145,7 @@ export function makeImageData({
       label: label || undefined,
       description: description || undefined,
       mouseOver,
+      tooltip,
     })
 
     if (isGene && hasTranscriptChildren) {
