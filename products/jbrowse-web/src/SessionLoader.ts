@@ -417,7 +417,7 @@ const SessionLoader = types
         })
         const sessionSnap = await sessionDB.get('sessions', query)
         if (sessionSnap) {
-          return await this.loadSession(sessionSnap)
+          await this.loadSession(sessionSnap)
         }
       } catch (e) {
         console.error(e)
