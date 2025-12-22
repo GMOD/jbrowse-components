@@ -16,7 +16,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
 
-import { cluster, hierarchy, HierarchyNode } from '../d3-hierarchy2'
+import { cluster, hierarchy, Node as HierarchyNode } from '../d3-hierarchy2'
 import { getSources } from './getSources'
 
 import type { SampleInfo, Source } from './types'
@@ -25,12 +25,12 @@ import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-interface NewickData {
+export interface NewickData {
   data: NewickNode
   height: number
 }
 
-interface NewickNode {
+export interface NewickNode {
   children?: NewickNode[]
 }
 
@@ -170,7 +170,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
-      hoveredTreeNode: undefined as HierarchyNode<NewickData> | undefined,
+      hoveredTreeNode: undefined as HierarchyNode | undefined,
       /**
        * #volatile
        */
@@ -202,7 +202,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredTreeNode(node: HierarchyNode<NewickData> | undefined) {
+      setHoveredTreeNode(node: HierarchyNode | undefined) {
         self.hoveredTreeNode = node
       },
       /**
@@ -390,8 +390,8 @@ export default function MultiVariantBaseModelF(
         }
         const tree = fromNewick(newick)
         return hierarchy(tree, (d: NewickNode) => d.children)
-          .sum(d => (d.children ? 0 : 1))
-          .sort((a: HierarchyNode<NewickData>, b: HierarchyNode<NewickData>) =>
+          .sum((d: NewickNode) => (d.children ? 0 : 1))
+          .sort((a: HierarchyNode, b: HierarchyNode) =>
             ascending(a.data.height || 1, b.data.height || 1),
           )
       },
@@ -440,10 +440,12 @@ export default function MultiVariantBaseModelF(
           if (!r) {
             return undefined
           }
-          const clust = cluster<NewickData>()
-            .size([this.rowHeight * this.nrow, self.treeAreaWidth])
-            .separation(() => 1)
-          clust(r)
+          const clust = cluster()
+          if (clust) {
+            clust.size([this.rowHeight * this.nrow, self.treeAreaWidth])
+            clust.separation(() => 1)
+            clust(r)
+          }
           return r
         },
         /**
