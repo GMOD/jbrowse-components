@@ -141,19 +141,13 @@ function deduplicateFeatureLabels(
         continue
       }
 
-      // Clamp leftPx to not be less than the viewport's left edge
-      // When offsetPx is negative (scrolled left), clamp to 0
-      // When offsetPx is positive (scrolled right), clamp to offsetPx
-      const { offsetPx } = view
-      const viewportLeft = Math.max(0, offsetPx)
-      const clampedLeftPx = Math.max(minLeftPx, viewportLeft)
-      const clampedRightPx = Math.max(maxRightPx, viewportLeft)
-
+      // Don't clamp here - store the actual positions
+      // Clamping will happen in FloatingLabel component based on current offsetPx
       const existing = featureLabels.get(key)
-      if (!existing || clampedLeftPx < existing.leftPx) {
+      if (!existing || minLeftPx < existing.leftPx) {
         featureLabels.set(key, {
-          leftPx: clampedLeftPx,
-          rightPx: clampedRightPx,
+          leftPx: minLeftPx,
+          rightPx: maxRightPx,
           topPx: effectiveTopPx,
           totalFeatureHeight,
           floatingLabels,
@@ -164,19 +158,13 @@ function deduplicateFeatureLabels(
 
     const { leftPx, rightPx } = positions
 
-    // Clamp leftPx to not be less than the viewport's left edge
-    // When offsetPx is negative (scrolled left), clamp to 0
-    // When offsetPx is positive (scrolled right), clamp to offsetPx
-    const { offsetPx } = view
-    const viewportLeft = Math.max(0, offsetPx)
-    const clampedLeftPx = Math.max(leftPx, viewportLeft)
-    const clampedRightPx = Math.max(rightPx, viewportLeft)
-
+    // Don't clamp here - store the actual positions
+    // Clamping will happen in FloatingLabel component based on current offsetPx
     const existing = featureLabels.get(key)
-    if (!existing || clampedLeftPx < existing.leftPx) {
+    if (!existing || leftPx < existing.leftPx) {
       featureLabels.set(key, {
-        leftPx: clampedLeftPx,
-        rightPx: clampedRightPx,
+        leftPx,
+        rightPx,
         topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
@@ -212,8 +200,13 @@ function FloatingLabel({
   offsetPx,
   tooltip,
 }: LabelProps) {
-  const naturalX = featureLeftPx - offsetPx
-  const maxX = featureRightPx - offsetPx - labelWidth
+  // Clamp feature positions to viewport (don't position in off-screen area)
+  const viewportLeft = Math.max(0, offsetPx)
+  const clampedFeatureLeftPx = Math.max(featureLeftPx, viewportLeft)
+  const clampedFeatureRightPx = Math.max(featureRightPx, viewportLeft)
+
+  const naturalX = clampedFeatureLeftPx - offsetPx
+  const maxX = clampedFeatureRightPx - offsetPx - labelWidth
   const x = clamp(0, naturalX, maxX)
 
   return (
