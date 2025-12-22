@@ -39,7 +39,6 @@ export async function renderToAbstractCanvas<T extends object | undefined>(
         canvasRecordedData: fakeCtx.toJSON() as Record<string, unknown>,
       } as unknown as Result
     } else {
-      console.log({ exportSVG })
       const s = exportSVG.scale || highResolutionScaling
       const canvas = createCanvas(Math.ceil(width * s), height * s)
       const ctx = canvas.getContext('2d')

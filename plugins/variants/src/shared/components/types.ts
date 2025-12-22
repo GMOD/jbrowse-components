@@ -9,6 +9,11 @@ export interface ClusterNodeData {
 
 export type ClusterHierarchyNode = HierarchyNode<ClusterNodeData>
 
+export interface HoveredTreeNode {
+  node: ClusterHierarchyNode
+  descendantNames: string[]
+}
+
 export interface TreeSidebarModel {
   totalHeight: number
   hierarchy?: ClusterHierarchyNode
@@ -18,10 +23,7 @@ export interface TreeSidebarModel {
   showTree: boolean
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
-  setHoveredTreeNode: (node?: {
-    node: ClusterHierarchyNode
-    descendantNames: string[]
-  }) => void
+  setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
 }
 
@@ -29,7 +31,7 @@ export interface LegendBarModel {
   id: string
   scrollTop: number
   height: number
-  hierarchy?: any
+  hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   totalHeight: number
   canDisplayLabels: boolean
