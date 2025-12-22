@@ -13,6 +13,7 @@ import tseslint from 'typescript-eslint'
 export default defineConfig(
   {
     ignores: [
+      'test_data',
       'packages/__mocks__/@testing-library/react.tsx',
       'packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
       'packages/__mocks__/generic-filehandle2.ts',

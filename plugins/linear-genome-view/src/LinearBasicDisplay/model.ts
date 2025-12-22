@@ -6,14 +6,9 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import {
-  SimpleFeature,
-  getContainingTrack,
-  getSession,
-} from '@jbrowse/core/util'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
-  addDisposer,
   cast,
   getEnv,
   getParent,
@@ -21,7 +16,6 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun } from 'mobx'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
@@ -82,6 +76,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        trackDisplayDirectionalChevrons: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
@@ -114,6 +112,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get rendererTypeName() {
         return getConf(self, ['renderer', 'type'])
+      },
+
+      /**
+       * #getter
+       */
+      get sequenceAdapter() {
+        const { assemblyManager } = getSession(self)
+        const track = getParent<{ configuration: AnyConfigurationModel }>(
+          self,
+          2,
+        )
+        const assemblyNames = readConfObject(
+          track.configuration,
+          'assemblyNames',
+        ) as string[]
+        const assembly = assemblyManager.get(assemblyNames[0]!)
+        return assembly ? getConf(assembly, ['sequence', 'adapter']) : undefined
       },
 
       /**
@@ -168,6 +183,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           getConf(self, ['renderer', 'geneGlyphMode'])
         )
       },
+
+      /**
+       * #getter
+       */
+      get displayDirectionalChevrons() {
+        return (
+          self.trackDisplayDirectionalChevrons ??
+          getConf(self, ['renderer', 'displayDirectionalChevrons'])
+        )
+      },
     }))
     .views(self => ({
       /**
@@ -186,6 +211,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             displayMode: self.displayMode,
             maxHeight: self.maxHeight,
             geneGlyphMode: self.geneGlyphMode,
+            displayDirectionalChevrons: self.displayDirectionalChevrons,
           },
           getEnv(self),
         )
@@ -241,6 +267,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setGeneGlyphMode(val: string) {
         self.trackGeneGlyphMode = val
       },
+      /**
+       * #action
+       */
+      toggleDisplayDirectionalChevrons() {
+        self.trackDisplayDirectionalChevrons = !self.displayDirectionalChevrons
+      },
     }))
     .views(self => ({
       /**
@@ -264,37 +296,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         renderProps() {
           const superProps = superRenderProps()
-          const session = getSession(self)
-          const { assemblyManager } = session
-
-          // Get the assembly's sequenceAdapter configuration
-          let sequenceAdapter
-          // Get assembly names from the parent track's configuration
-          const track = getParent<{ configuration: AnyConfigurationModel }>(
-            self,
-            2,
-          )
-          const assemblyNames = readConfObject(
-            track.configuration,
-            'assemblyNames',
-          ) as string[]
-
-          const assembly = assemblyManager.get(assemblyNames[0]!)
-          if (assembly) {
-            // Get the sequence adapter config and ensure it's a plain object
-            const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
-            sequenceAdapter = adapterConfig
-          } else {
-            console.warn('No assembly found for:', assemblyNames[0])
-          }
-
           return {
             ...(superProps as Omit<typeof superProps, symbol>),
             config: self.rendererConfig,
             filters: new SerializableFilterChain({
               filters: self.activeFilters,
             }),
-            sequenceAdapter,
+            sequenceAdapter: self.sequenceAdapter,
           }
         },
 
@@ -308,6 +316,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...superProps,
             async onFeatureClick(_: unknown, featureId?: string) {
               const { rpcManager } = session
+              const { parentTrack } = self
               try {
                 const f = featureId || self.featureIdUnderMouse
                 if (!f) {
@@ -320,7 +329,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
+                      layoutId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -336,6 +345,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             async onFeatureContextMenu(_: unknown, featureId?: string) {
               const { rpcManager } = session
+              const { parentTrack } = self
               try {
                 const f = featureId || self.featureIdUnderMouse
                 if (!f) {
@@ -348,7 +358,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
+                      layoutId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -392,6 +402,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
+                  label: 'Show chevrons',
+                  type: 'checkbox',
+                  checked: self.displayDirectionalChevrons,
+                  onClick: () => {
+                    self.toggleDisplayDirectionalChevrons()
+                  },
+                },
+                {
                   label: 'Subfeature labels',
                   subMenu: ['none', 'below', 'overlay'].map(val => ({
                     label: val,
@@ -405,8 +423,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Gene glyph',
                   subMenu: [
-                    { value: 'all', label: 'All transcripts' },
-                    { value: 'longest', label: 'Longest transcript' },
+                    {
+                      value: 'all',
+                      label: 'All transcripts',
+                    },
+                    {
+                      value: 'longest',
+                      label: 'Longest transcript',
+                    },
                     {
                       value: 'longestCoding',
                       label: 'Longest coding transcript',
@@ -440,7 +464,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               })),
             },
             {
-              label: 'Set max height',
+              label: 'Set max track height',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
@@ -490,53 +514,40 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
-    .actions(self => ({
-      afterAttach() {
-        // Autorun synchronizes featureUnderMouse with featureIdUnderMouse
-        // asynchronously. This is needed because we don't serialize all
-        // features from the renderer over RPC to avoid overhead
-        addDisposer(
-          self,
-          autorun(async () => {
-            const session = getSession(self)
-            try {
-              const featureId = self.featureIdUnderMouse
-              if (self.featureUnderMouse?.id() !== featureId) {
-                if (!featureId) {
-                  self.setFeatureUnderMouse(undefined)
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = (await session.rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId,
-                      sessionId,
-                      layoutId: getContainingTrack(self).id,
-                      rendererType: self.rendererTypeName,
-                    },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
-
-                  // Check featureIdUnderMouse is still the same as the
-                  // feature.id that was returned e.g. that the user hasn't
-                  // moused over to a new position during the async operation
-                  if (
-                    isAlive(self) &&
-                    feature &&
-                    self.featureIdUnderMouse === feature.uniqueId
-                  ) {
-                    self.setFeatureUnderMouse(new SimpleFeature(feature))
-                  }
-                }
-              }
-            } catch (e) {
-              console.error(e)
-              session.notifyError(`${e}`, e)
-            }
-          }),
-        )
-      },
-    }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        trackShowLabels,
+        trackShowDescriptions,
+        trackDisplayMode,
+        trackMaxHeight,
+        trackSubfeatureLabels,
+        trackGeneGlyphMode,
+        trackDisplayDirectionalChevrons,
+        jexlFilters,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(trackShowLabels !== undefined ? { trackShowLabels } : {}),
+        ...(trackShowDescriptions !== undefined
+          ? { trackShowDescriptions }
+          : {}),
+        ...(trackDisplayMode !== undefined ? { trackDisplayMode } : {}),
+        ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
+        ...(trackSubfeatureLabels !== undefined
+          ? { trackSubfeatureLabels }
+          : {}),
+        ...(trackGeneGlyphMode !== undefined ? { trackGeneGlyphMode } : {}),
+        ...(trackDisplayDirectionalChevrons !== undefined
+          ? { trackDisplayDirectionalChevrons }
+          : {}),
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+      } as typeof snap
+    })
 }
 
 export type FeatureTrackStateModel = ReturnType<typeof stateModelFactory>

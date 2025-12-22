@@ -1,3 +1,5 @@
+import { startTransition } from 'react'
+
 import { DataGrid, useGridApiRef } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
@@ -19,9 +21,7 @@ const SpreadsheetDataGrid = observer(function ({
       columnHeaderHeight={35}
       columnVisibilityModel={visibleColumns}
       onFilterModelChange={() => {
-        // might be an x-data-grid undocumented api, if it stops working, can
-        // consider using controlled filtering
-        setTimeout(() => {
+        startTransition(() => {
           if (apiRef.current) {
             model.setVisibleRows(apiRef.current.state.visibleRowsLookup)
           }

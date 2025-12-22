@@ -77,17 +77,3 @@ fetchSizeLimit: {
       defaultValue: 5_000_000,
     }
 ```
-
-#### slot: sequenceAdapter
-
-generally refers to the reference genome assembly's sequence adapter currently
-needs to be manually added
-
-```js
-sequenceAdapter: {
-      type: 'frozen',
-      description:
-        'sequence data adapter, used to calculate SNPs when BAM reads lacking MD tags',
-      defaultValue: null,
-    }
-```

@@ -1,13 +1,17 @@
 import {
+  getEnv,
+  getRoot,
   getSnapshot,
   isLateType,
   isStateTreeNode,
   isType,
+  resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
 
 import ConfigSlot from './configurationSlot'
 import { isConfigurationSchemaType } from './util'
+import { getContainingTrack, getSession } from '../util'
 import { ElementId } from '../util/types/mst'
 
 import type { ConfigSlotDefinition } from './configurationSlot'
@@ -276,9 +280,131 @@ export function ConfigurationSchema<
   return schemaType
 }
 
+/**
+ * Creates a reference type for track configurations that:
+ * - Resolves trackId strings to configuration objects at runtime
+ * - Always serializes as just the trackId string in snapshots
+ * - Works with both frozen tracks (plain objects) and MST model tracks
+ */
+export function TrackConfigurationReference(schemaType: IAnyType) {
+  const trackRef = types.reference(schemaType, {
+    get(id, parent) {
+      const session = getSession(parent)
+
+      // Try session.tracksById first (works for frozen tracks)
+      let ret = session.tracksById[id]
+      if (!ret) {
+        // Fall back to resolveIdentifier for view-specific tracks (e.g. viewTrackConfigs)
+        // that are MST models but not in session.tracks
+        // @ts-expect-error
+        ret = resolveIdentifier(schemaType, getRoot(parent), id)
+      }
+      if (!ret) {
+        throw new Error(`Could not resolve identifier "${id}"`)
+      }
+      // If it's a frozen/plain object, we need to instantiate it
+      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
+    },
+    set(value) {
+      return value.trackId
+    },
+  })
+
+  // Use snapshotProcessor to always serialize as just the trackId.
+  // The union allows accepting either a string ID or full object as input,
+  // but postProcessor ensures output is always just the ID string.
+  return types.snapshotProcessor(
+    types.union(
+      {
+        dispatcher: snapshot =>
+          typeof snapshot === 'string' ? trackRef : schemaType,
+      },
+      trackRef,
+      schemaType,
+    ),
+    {
+      postProcessor(snapshot) {
+        if (
+          typeof snapshot === 'object' &&
+          snapshot !== null &&
+          'trackId' in snapshot
+        ) {
+          return (snapshot as { trackId: string }).trackId
+        }
+        return snapshot
+      },
+    },
+  )
+}
+
+/**
+ * Creates a reference type for display configurations that:
+ * - Resolves displayId strings to configuration objects at runtime
+ * - Works with frozen track configurations (where displays are plain objects)
+ * - Falls back to creating a default configuration if display is not explicitly configured
+ *
+ * Note: Unlike TrackConfigurationReference, we don't use snapshotProcessor here
+ * because it interferes with how sub-displays (like PileupDisplay) are created
+ * and causes "setConfig is not a function" errors. Display configs are serialized
+ * through the containing track's snapshot processing instead.
+ */
+export function DisplayConfigurationReference(schemaType: IAnyType) {
+  const displayRef = types.reference(schemaType, {
+    get(id, parent) {
+      const track = getContainingTrack(parent)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      const displays = track.configuration.displays || []
+      // Find in the track's displays array (may be frozen/plain objects)
+      let ret = displays.find((d: { displayId: string }) => d.displayId === id)
+
+      // If not found in config, create a default configuration for this display type
+      // This handles the common case where displays are auto-generated from track types
+      if (!ret) {
+        // Extract display type from the displayId (format: trackId-DisplayType)
+        const displayType = `${id}`.split('-').slice(1).join('-')
+        if (displayType) {
+          // @ts-expect-error
+          ret = { displayId: `${id}`, type: displayType }
+        }
+      }
+
+      if (!ret) {
+        throw new Error(`Display configuration "${id}" not found`)
+      }
+      // If it's a frozen/plain object, instantiate it as an MST model
+      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
+    },
+    set(value) {
+      return value.displayId
+    },
+  })
+
+  return types.union(
+    {
+      dispatcher: snapshot =>
+        typeof snapshot === 'string' ? displayRef : schemaType,
+    },
+    displayRef,
+    schemaType,
+  )
+}
+
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
 >(schemaType: SCHEMATYPE) {
+  const name = schemaType.name
+  // Check if this is a track configuration schema
+  if (
+    name.includes('TrackConfigurationSchema') &&
+    !name.includes('DisplayConfigurationSchema')
+  ) {
+    return TrackConfigurationReference(schemaType) as SCHEMATYPE
+  }
+  // Check if this is a display configuration schema
+  if (name.includes('DisplayConfigurationSchema')) {
+    return DisplayConfigurationReference(schemaType) as SCHEMATYPE
+  }
+  // Default behavior for other configuration types
   // we cast this to SCHEMATYPE, because the reference *should* behave just
   // like the object it points to. It won't be undefined (this is a
   // `reference`, not a `safeReference`)

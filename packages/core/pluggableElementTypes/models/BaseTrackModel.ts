@@ -1,8 +1,7 @@
 import { lazy } from 'react'
 
-import { getRoot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
-import { transaction } from 'mobx'
 
 import { ConfigurationReference, getConf } from '../../configuration'
 import { adapterConfigCacheKey } from '../../data_adapters/util'
@@ -21,8 +20,12 @@ import type {
 import type { MenuItem } from '../../ui'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
-// lazies
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
+
+interface DisplayConf {
+  displayId: string
+  type: string
+}
 
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
@@ -31,6 +34,14 @@ export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const compatTypes = new Set(viewType.displayTypes.map(d => d.name))
   const displays = self.configuration.displays as AnyConfigurationModel[]
   return displays.filter(d => compatTypes.has(d.type))
+}
+
+function getDisplayConf(displays: DisplayConf[], displayId: string) {
+  const displayConf = displays.find(d => d.displayId === displayId)
+  if (!displayConf) {
+    throw new Error(`could not find display config ${displayId}`)
+  }
+  return displayConf
 }
 
 /**
@@ -157,55 +168,60 @@ export function createBaseTrackModel(
        * #action
        */
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const displayType = pm.getDisplayType(conf.type)
+        const displays = self.configuration.displays as DisplayConf[]
+        const displayConf = getDisplayConf(displays, displayId)
+        const displayType = pm.getDisplayType(displayConf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${conf.type}`)
+          throw new Error(`unknown display type ${displayConf.type}`)
         }
-        const display = displayType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-        })
-        self.displays.push(display)
+        self.displays.push(
+          displayType.stateModel.create({
+            ...initialSnapshot,
+            type: displayConf.type,
+            configuration: displayId,
+          }),
+        )
       },
 
       /**
        * #action
        */
       hideDisplay(displayId: string) {
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const t = self.displays.filter(d => d.configuration === conf)
-        transaction(() => {
-          for (const d of t) {
-            self.displays.remove(d)
-          }
-        })
-        return t.length
+        const displaysToRemove = self.displays.filter(
+          d => d.configuration.displayId === displayId,
+        )
+        for (const display of displaysToRemove) {
+          self.displays.remove(display)
+        }
+        return displaysToRemove.length
       },
 
       /**
        * #action
        */
-      replaceDisplay(oldId: string, newId: string, initialSnapshot = {}) {
+      replaceDisplay(
+        oldDisplayId: string,
+        newDisplayId: string,
+        initialSnapshot = {},
+      ) {
         const idx = self.displays.findIndex(
-          d => d.configuration.displayId === oldId,
+          d => d.configuration.displayId === oldDisplayId,
         )
         if (idx === -1) {
-          throw new Error(`could not find display id ${oldId} to replace`)
+          throw new Error(
+            `could not find display id ${oldDisplayId} to replace`,
+          )
         }
-        const schema = pm.pluggableConfigSchemaType('display')
-        const conf = resolveIdentifier(schema, getRoot(self), newId)
-        const displayType = pm.getDisplayType(conf.type)
+        const displays = self.configuration.displays as DisplayConf[]
+        const displayConf = getDisplayConf(displays, newDisplayId)
+        const displayType = pm.getDisplayType(displayConf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${conf.type}`)
+          throw new Error(`unknown display type ${displayConf.type}`)
         }
         self.displays.splice(idx, 1, {
           ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
+          type: displayConf.type,
+          configuration: newDisplayId,
         })
       },
     }))
@@ -248,6 +264,7 @@ export function createBaseTrackModel(
           {
             label: 'Save track data',
             icon: Save,
+            priority: 998,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SaveTrackDataDlg,
@@ -288,6 +305,18 @@ export function createBaseTrackModel(
         ]
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { minimized, pinned, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(minimized ? { minimized } : {}),
+        ...(pinned ? { pinned } : {}),
+      } as typeof snap
+    })
 }
 
 export type BaseTrackStateModel = ReturnType<typeof createBaseTrackModel>

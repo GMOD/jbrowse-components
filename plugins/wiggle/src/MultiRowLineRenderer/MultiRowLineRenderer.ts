@@ -6,8 +6,7 @@ export default class MultiRowLineRenderer extends FeatureRendererType {
   supportsSVG = true
 
   async render(renderProps: MultiRenderArgsDeserialized) {
-    const features = await this.getFeatures(renderProps)
-    const { renderMultiRowLine } = await import('./renderMultiRowLine')
-    return renderMultiRowLine(renderProps, features)
+    const { makeImageData } = await import('./makeImageData')
+    return makeImageData(renderProps, this.pluginManager)
   }
 }

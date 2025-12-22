@@ -6,9 +6,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -171,8 +171,7 @@ function stateModelFactory(
           notReady:
             superProps.notReady ||
             !domain ||
-            !self.stats ||
-            self.statsRegion !== statsRegion,
+            self.stats?.statsRegion !== statsRegion,
           height,
           ticks,
           inverted,
@@ -197,7 +196,11 @@ function stateModelFactory(
        */
       get quantitativeStatsReady() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        return view.initialized && !self.regionTooLarge && !self.error
+        return (
+          view.initialized &&
+          self.featureDensityStatsReadyAndRegionNotTooLarge &&
+          !self.error
+        )
       },
     }))
     .views(self => {
@@ -206,8 +209,9 @@ function stateModelFactory(
       return {
         /**
          * #method
+         * Base track menu items shared by all wiggle displays (Score submenu)
          */
-        trackMenuItems() {
+        wiggleBaseTrackMenuItems() {
           return [
             ...superTrackMenuItems(),
             {
@@ -215,6 +219,16 @@ function stateModelFactory(
               icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
             },
+          ]
+        },
+
+        /**
+         * #method
+         * Menu items specific to LinearWiggleDisplay (Color, Inverted, etc.)
+         * Not used by SNPCoverageDisplay
+         */
+        wiggleOnlyTrackMenuItems() {
+          return [
             ...(self.graphType
               ? [
                   {
@@ -293,6 +307,17 @@ function stateModelFactory(
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       */
+      trackMenuItems() {
+        return [
+          ...self.wiggleBaseTrackMenuItems(),
+          ...self.wiggleOnlyTrackMenuItems(),
+        ]
+      },
+    }))
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
 
@@ -313,6 +338,17 @@ function stateModelFactory(
           return renderSvg(self, opts, superRenderSvg)
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { invertedSetting, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(invertedSetting !== undefined ? { invertedSetting } : {}),
+      } as typeof snap
     })
 }
 

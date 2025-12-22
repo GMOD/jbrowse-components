@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
@@ -39,7 +39,9 @@ export async function getGenotypeMatrix({
       dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
     ),
   })
-  forEachWithStopTokenCheck(mafs, stopToken, ({ feature }) => {
+  const lastCheck = { time: Date.now() }
+  let idx = 0
+  for (const { feature } of mafs) {
     const genotypes = feature.get('genotypes') as Record<string, string>
     for (const { name } of sources) {
       const val = genotypes[name]!
@@ -66,6 +68,7 @@ export async function getGenotypeMatrix({
 
       rows[name]!.push(genotypeStatus)
     }
-  })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
   return rows
 }

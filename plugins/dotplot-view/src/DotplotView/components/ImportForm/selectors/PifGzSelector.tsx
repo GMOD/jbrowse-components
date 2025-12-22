@@ -12,7 +12,7 @@ const PifGzSelector = observer(function ({
   setSwap,
   fileLocation,
   setFileLocation,
-  indexFileLocation = undefined,
+  indexFileLocation,
   setIndexFileLocation = () => {},
   radioOption,
 }: SelectorProps) {

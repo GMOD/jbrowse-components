@@ -55,7 +55,7 @@ rpcDriverName: types.maybe(types.string)
 
 ```js
 // type
-React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _NotC...
+React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized,...
 ```
 
 #### getter: DisplayBlurb
@@ -148,7 +148,7 @@ callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _...
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & { readonly RenderingComponent: React.FC<...>; ... 4 more ...; readonly effectiveRpcDriverName: any; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
@@ -167,11 +167,11 @@ regionCannotBeRendered: () => any
 
 ### BaseDisplay - Actions
 
-#### action: setMessage
+#### action: setStatusMessage
 
 ```js
 // type signature
-setMessage: (arg?: string) => void
+setStatusMessage: (arg?: string) => void
 ```
 
 #### action: setError

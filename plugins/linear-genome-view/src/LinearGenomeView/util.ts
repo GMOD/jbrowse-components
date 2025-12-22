@@ -1,35 +1,7 @@
-import type { RefObject } from 'react'
-
 import { assembleLocString, parseLocString } from '@jbrowse/core/util'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-
-/**
- * Gets a map of existing child elements keyed by their data-* attribute,
- * but only if bpPerPx hasn't changed. When bpPerPx changes, returns an
- * empty map to force recreation of all elements.
- */
-export function getCachedElements<T extends HTMLElement>(
-  container: HTMLElement,
-  bpPerPx: number,
-  lastBpPerPxRef: RefObject<number | null>,
-  dataKey: string,
-) {
-  const bpPerPxChanged = lastBpPerPxRef.current !== bpPerPx
-  lastBpPerPxRef.current = bpPerPx
-
-  const existingKeys = new Map<string, T>()
-  if (!bpPerPxChanged) {
-    for (const child of container.children) {
-      const key = (child as HTMLElement).dataset[dataKey]
-      if (key) {
-        existingKeys.set(key, child as T)
-      }
-    }
-  }
-  return existingKeys
-}
 
 /**
  * Given a scale ( bp/px ) and minimum distances (px) between major and minor
@@ -227,15 +199,15 @@ export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
     const isSingleAssemblyName = contentBlocks.every(
       b => b.assemblyName === contentBlocks[0]!.assemblyName,
     )
-    const locs = contentBlocks.map(block =>
-      assembleLocString({
-        // eslint-disable-next-line @typescript-eslint/no-misused-spread
-        ...block,
-        start: Math.round(block.start),
-        end: Math.round(block.end),
-        assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
-      }),
-    )
-    return locs.join(' ')
+    return contentBlocks
+      .map(block =>
+        assembleLocString({
+          refName: block.refName,
+          start: Math.round(block.start),
+          end: Math.round(block.end),
+          assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+        }),
+      )
+      .join(' ')
   }
 }

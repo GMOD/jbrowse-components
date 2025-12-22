@@ -1,5 +1,9 @@
 import { getFillProps } from '@jbrowse/core/util'
-import { SVGRuler, SVGTracks } from '@jbrowse/plugin-linear-genome-view'
+import {
+  SVGGridlines,
+  SVGRuler,
+  SVGTracks,
+} from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -13,16 +17,19 @@ export default function SVGLinearGenomeView({
   displayResults,
   rulerHeight,
   shift,
+  showGridlines = false,
+  tracksHeight,
 }: {
   textHeight: number
   trackLabels: string
   trackLabelOffset: number
   fontSize: number
   view: LinearGenomeViewModel
-
   displayResults: any
   rulerHeight: number
   shift: number
+  showGridlines?: boolean
+  tracksHeight: number
 }) {
   const theme = useTheme()
   return (
@@ -37,6 +44,13 @@ export default function SVGLinearGenomeView({
         </text>
         <SVGRuler model={displayResults.view} fontSize={fontSize} />
       </g>
+      {showGridlines ? (
+        <g
+          transform={`translate(${trackLabelOffset} ${rulerHeight + fontSize})`}
+        >
+          <SVGGridlines model={displayResults.view} height={tracksHeight} />
+        </g>
+      ) : null}
       <g transform={`translate(0 ${rulerHeight + fontSize})`}>
         <SVGTracks
           textHeight={textHeight}

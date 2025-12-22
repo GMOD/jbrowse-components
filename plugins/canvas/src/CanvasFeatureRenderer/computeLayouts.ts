@@ -1,5 +1,4 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { calculateLayoutBounds } from '@jbrowse/core/util'
 
 import { createFeatureFloatingLabels } from './floatingLabels'
 import { layoutFeature } from './simpleLayout'
@@ -62,13 +61,12 @@ export function computeLayouts({
 
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
-    const layoutWidthBp = totalLayoutWidth * bpPerPx
-    const [layoutStart, layoutEnd] = calculateLayoutBounds(
-      featureStart,
-      featureEnd,
-      layoutWidthBp,
-      reversed,
-    )
+    const leftPaddingBp = featureLayout.leftPadding * bpPerPx
+    const rightPaddingBp =
+      (totalLayoutWidth - featureLayout.width - featureLayout.leftPadding) *
+      bpPerPx
+    const layoutStart = featureStart - leftPaddingBp
+    const layoutEnd = featureEnd + rightPaddingBp
 
     const topPx = layout.addRect(
       feature.id(),

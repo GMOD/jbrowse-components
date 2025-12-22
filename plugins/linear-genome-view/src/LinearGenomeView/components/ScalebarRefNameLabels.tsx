@@ -1,105 +1,85 @@
-import { useEffect, useRef } from 'react'
-
-import { useTheme } from '@mui/material'
-import { autorun } from 'mobx'
-
-import { getCachedElements } from '../util'
-import ScalebarPinnedLabel from './ScalebarPinnedLabel'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
-function ScalebarRefNameLabels({ model }: { model: LGV }) {
-  const theme = useTheme()
-  const innerRef = useRef<HTMLDivElement>(null)
-  const lastBpPerPxRef = useRef<number | null>(null)
+const useStyles = makeStyles()(theme => ({
+  refLabel: {
+    fontSize: 11,
+    position: 'absolute',
+    left: 2,
+    top: -1,
+    fontWeight: 'bold',
+    lineHeight: 'normal',
+    zIndex: 1,
+    background: theme.palette.background.paper,
+  },
+  b0: {
+    left: 0,
+    zIndex: 100,
+  },
+}))
 
-  // Handle offsetPx changes - update container position
-  useEffect(() => {
-    return autorun(
-      function refNameLabelsOffsetAutorun() {
-        const { offsetPx } = model
-        const inner = innerRef.current
-        if (inner) {
-          inner.style.transform = `translateX(${-offsetPx}px)`
-        }
-      },
-      { name: 'RefNameLabelsOffset' },
-    )
-  }, [model])
+const ScalebarRefNameLabels = observer(function ({ model }: { model: LGV }) {
+  const { classes, cx } = useStyles()
+  const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
 
-  // Handle staticBlocks changes - create/update label elements
-  useEffect(() => {
-    const bgColor = theme.palette.background.paper
+  // find the block that needs pinning to the left side for context
+  // default to first ContentBlock if nothing is scrolled left
+  let lastLeftBlock = staticBlocks.blocks.findIndex(
+    b => b.type === 'ContentBlock',
+  )
+  if (lastLeftBlock < 0) {
+    lastLeftBlock = 0
+  }
 
-    return autorun(
-      function refNameLabelsLayoutAutorun() {
-        const { staticBlocks, bpPerPx } = model
-        const inner = innerRef.current
-        if (!inner) {
-          return
-        }
-
-        const existingKeys = getCachedElements<HTMLSpanElement>(
-          inner,
-          bpPerPx,
-          lastBpPerPxRef,
-          'labelKey',
-        )
-
-        const fragment = document.createDocumentFragment()
-
-        let index = 0
-        for (const block of staticBlocks) {
-          const {
-            offsetPx: blockOffsetPx,
-            isLeftEndOfDisplayedRegion,
-            type,
-            refName,
-          } = block
-
-          if (type === 'ContentBlock' && isLeftEndOfDisplayedRegion) {
-            const key = `refLabel-${block.key}-${index}`
-            let span = existingKeys.get(key)
-            if (!span) {
-              span = createLabelElement(bgColor)
-              span.dataset.labelKey = key
-              span.dataset.testid = `refLabel-${refName}`
-            }
-            span.style.left = `${blockOffsetPx - 1}px`
-            span.style.paddingLeft = '1px'
-            span.textContent = refName
-            fragment.append(span)
-          }
-          index++
-        }
-
-        inner.replaceChildren(fragment)
-      },
-      { name: 'RefNameLabelsLayout' },
-    )
-  }, [model, theme])
-
+  // eslint-disable-next-line unicorn/no-array-for-each
+  staticBlocks.forEach((block, i) => {
+    if (block.type === 'ContentBlock' && block.offsetPx - offsetPx < 0) {
+      lastLeftBlock = i
+    }
+  })
+  const val = scalebarDisplayPrefix()
+  const b0 = staticBlocks.blocks[0]
   return (
     <>
-      <div ref={innerRef} style={{ position: 'absolute' }} />
-      <ScalebarPinnedLabel model={model} />
+      {b0?.type !== 'ContentBlock' && val ? (
+        <Typography className={cx(classes.b0, classes.refLabel)}>
+          {val}
+        </Typography>
+      ) : null}
+      {staticBlocks.map((block, index) => {
+        const {
+          offsetPx: blockOffsetPx,
+          isLeftEndOfDisplayedRegion,
+          key,
+          type,
+          refName,
+        } = block
+        const last = index === lastLeftBlock
+        return type === 'ContentBlock' &&
+          (isLeftEndOfDisplayedRegion || last) ? (
+          <Typography
+            key={`refLabel-${key}-${index}`}
+            style={{
+              left: last
+                ? Math.max(0, -offsetPx)
+                : blockOffsetPx - offsetPx - 1,
+              paddingLeft: last ? 0 : 1,
+            }}
+            className={classes.refLabel}
+            data-testid={`refLabel-${refName}`}
+          >
+            {last && val ? `${val}:` : ''}
+            {refName}
+          </Typography>
+        ) : null
+      })}
     </>
   )
-}
-
-function createLabelElement(bgColor: string) {
-  const span = document.createElement('span')
-  span.style.fontSize = '11px'
-  span.style.position = 'absolute'
-  span.style.left = '2px'
-  span.style.top = '-1px'
-  span.style.fontWeight = 'bold'
-  span.style.lineHeight = 'normal'
-  span.style.zIndex = '1'
-  span.style.background = bgColor
-  return span
-}
+})
 
 export default ScalebarRefNameLabels

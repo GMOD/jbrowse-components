@@ -7,7 +7,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import type { TreeSidebarModel } from './types'
+import type { ClusterHierarchyNode, TreeSidebarModel } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
@@ -24,11 +24,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function getDescendantNames(node: any): string[] {
-  if (!node.children || node.children.length === 0) {
+function getDescendantNames(node: ClusterHierarchyNode): string[] {
+  if (!node.children?.length) {
     return [node.data.name]
   }
-  return node.children.flatMap((child: any) => getDescendantNames(child))
+  return node.children.flatMap(child => getDescendantNames(child))
 }
 
 /**
@@ -46,7 +46,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
   const { classes } = useStyles()
   const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
   const [nodeIndex, setNodeIndex] = useState<Flatbush | null>(null)
-  const [nodeData, setNodeData] = useState<any[]>([])
+  const [nodeData, setNodeData] = useState<ClusterHierarchyNode[]>([])
 
   const { hierarchy, treeAreaWidth, height, scrollTop, showTree } = model
 
@@ -83,24 +83,20 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
           return
         }
 
-        const nodes = [...h.descendants()].filter(
-          (node: any) => node.children && node.children.length > 0,
-        )
+        const nodes = h.descendants().filter(node => node.children?.length)
 
         const index = new Flatbush(nodes.length)
-        const data: any[] = []
         const hitRadius = 8
 
         for (const node of nodes) {
-          const x = node.y
+          const x = node.y!
           const y = node.x!
           index.add(x - hitRadius, y - hitRadius, x + hitRadius, y + hitRadius)
-          data.push(node)
         }
 
         index.finish()
         setNodeIndex(index)
-        setNodeData(data)
+        setNodeData(nodes)
       },
       { name: 'TreeSpatialIndex' },
     )
@@ -116,8 +112,8 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
       const y = event.clientY - rect.top + scrollTop
 
       const results = nodeIndex.search(x, y, x, y)
-      if (results.length > 0) {
-        const node = nodeData[results[0]!]!
+      const node = results.length > 0 ? nodeData[results[0]!] : undefined
+      if (node) {
         model.setHoveredTreeNode({
           node,
           descendantNames: getDescendantNames(node),

@@ -2,7 +2,7 @@ import { createTheme } from '@mui/material'
 import { blue, green, grey, orange, red } from '@mui/material/colors'
 import deepmerge from 'deepmerge'
 
-import type { ThemeOptions } from '@mui/material'
+import type { Theme, ThemeOptions } from '@mui/material'
 import type {
   PaletteAugmentColorOptions,
   PaletteColor,
@@ -455,12 +455,27 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
 
 type ThemeMap = Record<string, ThemeOptions>
 
+const themeCache = new Map<string, Theme>()
+
+function getThemeCacheKey(
+  configTheme: ThemeOptions,
+  themeName: string,
+): string {
+  return JSON.stringify({ configTheme, themeName })
+}
+
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
   themes = defaultThemes,
   themeName = 'default',
 ) {
-  return createTheme(
+  const cacheKey = getThemeCacheKey(configTheme, themeName)
+  const cached = themeCache.get(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  const theme = createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
         ? deepmerge(themes.default!, augmentThemeColors(configTheme), {
@@ -469,12 +484,16 @@ export function createJBrowseTheme(
         : addMissingColors(themes[themeName]),
     ),
   )
+
+  themeCache.set(cacheKey, theme)
+  return theme
 }
 
 // MUI by default allows strings like '#f00' for primary and secondary and
 // augments them to have light and dark variants but not for anything else, so
 // we augment them here
 function augmentThemeColors(theme: ThemeOptions = {}) {
+  const augmentedPalette: Record<string, PaletteColor> = {}
   for (const entry of [
     'primary',
     'secondary',
@@ -482,21 +501,18 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
     'quaternary',
     'highlight',
   ] as const) {
-    if (theme.palette?.[entry]) {
-      theme = deepmerge(theme, {
-        palette: {
-          [entry]: refTheme.palette.augmentColor(
-            'color' in theme.palette[entry]
-              ? (theme.palette[entry] as PaletteAugmentColorOptions)
-              : {
-                  color: theme.palette[entry],
-                },
-          ),
-        },
-      })
+    const paletteEntry = theme.palette?.[entry]
+    if (paletteEntry) {
+      augmentedPalette[entry] = refTheme.palette.augmentColor(
+        'color' in paletteEntry
+          ? (paletteEntry as PaletteAugmentColorOptions)
+          : { color: paletteEntry },
+      )
     }
   }
-  return theme
+  return Object.keys(augmentedPalette).length > 0
+    ? deepmerge(theme, { palette: augmentedPalette })
+    : theme
 }
 
 // adds missing colors to users theme

@@ -7,6 +7,7 @@ import {
 } from './Block'
 import MaxHeightReached from './MaxHeightReachedIndicator'
 
+import type { BlockModel } from '../models/serverSideRenderedBlock'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 
 const RenderedBlocks = observer(function ({
@@ -15,12 +16,10 @@ const RenderedBlocks = observer(function ({
   model: {
     id: string
     blockDefinitions: BlockSet
-    blockState: any
-    renderProps: () => { notReady?: boolean }
+    blockState: { get: (key: string) => BlockModel | undefined }
   }
 }) {
   const { blockDefinitions, blockState } = model
-  const { notReady } = model.renderProps()
   return blockDefinitions.map(block => {
     const key = `${model.id}-${block.key}`
     if (block.type === 'ContentBlock') {
@@ -28,8 +27,6 @@ const RenderedBlocks = observer(function ({
       return (
         <ContentBlockComponent block={block} key={key}>
           {state?.ReactComponent ? (
-            <state.ReactComponent model={state} />
-          ) : notReady && state ? (
             <state.ReactComponent model={state} />
           ) : null}
           {state?.maxHeightReached ? (

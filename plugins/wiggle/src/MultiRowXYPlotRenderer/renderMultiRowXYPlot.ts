@@ -1,15 +1,16 @@
 import {
-  forEachWithStopTokenCheck,
   groupBy,
   renderToAbstractCanvas,
   updateStatus,
 } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
 
 import type { MultiRenderArgsDeserialized } from '../types'
+import type { ReducedFeatureArrays } from '../util'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiRowXYPlot(
@@ -35,32 +36,35 @@ export async function renderMultiRowXYPlot(
     () =>
       renderToAbstractCanvas(width, height, renderProps, ctx => {
         const groups = groupBy(features.values(), f => f.get('source'))
-        let feats: Feature[] = []
+        const reducedFeatures: Record<string, ReducedFeatureArrays> = {}
         ctx.save()
-        forEachWithStopTokenCheck(sources, stopToken, source => {
-          const sourceFeatures = groups[source.name] || []
-          const { reducedFeatures } = drawXY(ctx, {
+        const lastCheck = { time: Date.now() }
+        let idx = 0
+        for (const source of sources) {
+          const { reducedFeatures: reduced } = drawXY(ctx, {
             ...renderProps,
-            features: sourceFeatures,
+            features: groups[source.name] || [],
             height: rowHeight,
-            colorCallback: () => source.color || 'blue',
+            staticColor: source.color || 'blue',
+            colorCallback: () => '', // unused when staticColor is set
           })
+          reducedFeatures[source.name] = reduced
           ctx.strokeStyle = 'rgba(200,200,200,0.8)'
           ctx.beginPath()
           ctx.moveTo(0, rowHeight)
           ctx.lineTo(width, rowHeight)
           ctx.stroke()
           ctx.translate(0, rowHeight)
-          feats = feats.concat(reducedFeatures)
-        })
+          checkStopToken2(stopToken, idx++, lastCheck)
+        }
         ctx.restore()
-        return { reducedFeatures: feats }
+        return { reducedFeatures }
       }),
   )
 
   const serialized = {
     ...rest,
-    features: reducedFeatures.map(f => f.toJSON()),
+    reducedFeatures,
     height,
     width,
   }

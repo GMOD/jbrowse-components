@@ -4,11 +4,11 @@ import {
   ReactRendering,
   getContainingView,
   getSession,
-  getViewParams,
 } from '@jbrowse/core/util'
 
+import { calculateLabelPositions } from './calculateLabelPositions'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-import { calculateLabelPositions, getId } from './util'
+import { getId } from './util'
 import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -70,7 +70,6 @@ export async function renderBaseLinearDisplaySvg(
           ...renderArgs,
           ...renderProps,
           renderingProps,
-          viewParams: getViewParams(self, true),
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,
         }),

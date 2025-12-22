@@ -15,6 +15,32 @@ export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
 }
 
+/**
+ * Build tooltip string from mouseOver, label, and description.
+ * Used by both CanvasFeatureRendering and FloatingLabels to ensure consistency.
+ */
+export function buildFeatureTooltip({
+  mouseOver,
+  label,
+  description,
+}: {
+  mouseOver?: string
+  label?: string
+  description?: string
+}) {
+  if (mouseOver) {
+    return mouseOver
+  }
+  const parts: string[] = []
+  if (label && /\S/.test(label)) {
+    parts.push(label)
+  }
+  if (description && /\S/.test(description)) {
+    parts.push(description)
+  }
+  return parts.length > 0 ? parts.join('<br/>') : undefined
+}
+
 export function isOffScreen(left: number, width: number, canvasWidth: number) {
   return left + width < 0 || left > canvasWidth
 }
@@ -96,7 +122,7 @@ export function chooseGlyphType({
     if (transcriptTypes.includes(type) && hasCDS) {
       return 'ProcessedTranscript'
     } else if (
-      (!feature.parent() && hasSubSub) ||
+      (!feature.parent?.() && hasSubSub) ||
       containerTypes.includes(type)
     ) {
       return 'Subfeatures'

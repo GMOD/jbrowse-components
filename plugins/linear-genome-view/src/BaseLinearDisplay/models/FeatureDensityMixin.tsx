@@ -195,7 +195,7 @@ export default function FeatureDensityMixin() {
       /**
        * #getter
        */
-      get statsReadyAndRegionNotTooLarge() {
+      get featureDensityStatsReadyAndRegionNotTooLarge() {
         return self.featureDensityStatsReady && !self.regionTooLarge
       },
       /**

@@ -1,21 +1,46 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+  toLocale,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import { formatInterbaseStats, getInterbaseTypeLabel } from '../types'
+import {
+  clickMapItemToFeatureData,
+  formatInterbaseStats,
+  formatModificationStats,
+  formatSNPStats,
+  getInterbaseTypeLabel,
+} from '../types'
 
-import type { InterbaseIndicatorItem } from '../types'
+import type { ClickMapItem } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-function getItemLabel(item: InterbaseIndicatorItem | undefined) {
+function getItemLabel(item: ClickMapItem | undefined, refName?: string) {
   if (!item) {
     return undefined
   }
-  const { type, count, total } = item
-  return `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total)}`
+  let label: string
+  if (item.type === 'snp') {
+    label = formatSNPStats(item)
+  } else if (item.type === 'modification') {
+    label = formatModificationStats(item)
+  } else {
+    const { type, count, total, avgLength, minLength, maxLength, topSequence } =
+      item
+    label = `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total, type, { avgLength, minLength, maxLength, topSequence })}`
+  }
+  const pos = item.start + 1
+  const location = refName ? `${refName}:${toLocale(pos)}` : `${pos}`
+  return `${label}\nPosition: ${location}`
 }
 
 const SNPCoverageRendering = observer(function (props: {
@@ -25,9 +50,10 @@ const SNPCoverageRendering = observer(function (props: {
   width: number
   height: number
   blockKey: string
+  displayModel?: BaseLinearDisplayModel
   clickMap?: {
     flatbush: ArrayBuffer
-    items: InterbaseIndicatorItem[]
+    items: ClickMapItem[]
   }
   onMouseLeave?: (event: React.MouseEvent) => void
   onMouseMove?: (
@@ -36,10 +62,6 @@ const SNPCoverageRendering = observer(function (props: {
     extra?: string,
   ) => void
   onFeatureClick?: (event: React.MouseEvent, featureId?: string) => void
-  onIndicatorClick?: (
-    event: React.MouseEvent,
-    item: InterbaseIndicatorItem,
-  ) => void
 }) {
   const {
     regions,
@@ -48,10 +70,10 @@ const SNPCoverageRendering = observer(function (props: {
     width,
     height,
     clickMap,
+    displayModel,
     onMouseLeave,
     onMouseMove,
     onFeatureClick,
-    onIndicatorClick,
   } = props
   const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
@@ -89,10 +111,26 @@ const SNPCoverageRendering = observer(function (props: {
       return undefined
     }
     const rect = ref.current.getBoundingClientRect()
-    const offsetX = clientX - rect.left - 1
+    const offsetX = clientX - rect.left
     const offsetY = clientY - rect.top
-    const search = flatbush.search(offsetX, offsetY, offsetX + 1, offsetY + 1)
-    return search.length ? items[search[0]!] : undefined
+    // Use a small search box around the cursor for better hit detection
+    const search = flatbush.search(
+      offsetX,
+      offsetY,
+      offsetX + 1.5,
+      offsetY + 1.5,
+    )
+    if (search.length === 0) {
+      return undefined
+    }
+    if (search.length === 1) {
+      return items[search[0]!]
+    }
+    // When multiple items overlap, prioritize those with higher read percentage
+    const sorted = search
+      .map(idx => items[idx]!)
+      .sort((a, b) => b.count / b.total - a.count / a.total)
+    return sorted[0]
   }
 
   return (
@@ -101,7 +139,7 @@ const SNPCoverageRendering = observer(function (props: {
       data-testid="snpcoverage-rendering-test"
       onMouseMove={e => {
         const item = getInterbaseItemUnderMouse(e.clientX, e.clientY)
-        const label = getItemLabel(item)
+        const label = getItemLabel(item, region.refName)
         setIsOverIndicator(!!item)
         if (label) {
           onMouseMove?.(e, undefined, label)
@@ -111,8 +149,22 @@ const SNPCoverageRendering = observer(function (props: {
       }}
       onClick={e => {
         const item = getInterbaseItemUnderMouse(e.clientX, e.clientY)
-        if (item && onIndicatorClick) {
-          onIndicatorClick(e, item)
+        if (item && displayModel) {
+          const session = getSession(displayModel)
+          const view = getContainingView(displayModel)
+          const featureData = clickMapItemToFeatureData(item, region.refName)
+          if (isSessionModelWithWidgets(session)) {
+            const featureWidget = session.addWidget(
+              'BaseFeatureWidget',
+              'baseFeature',
+              {
+                featureData,
+                view,
+                track: getContainingTrack(displayModel),
+              },
+            )
+            session.showWidget(featureWidget)
+          }
         } else {
           onFeatureClick?.(e, getFeatureUnderMouse(e.clientX)?.id())
         }

@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
 import configSchema from './configSchema.ts'
 
 /**

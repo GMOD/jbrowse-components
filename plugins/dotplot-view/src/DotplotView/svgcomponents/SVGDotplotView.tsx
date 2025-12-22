@@ -5,7 +5,7 @@ import { when } from 'mobx'
 
 import SVGBackground from './SVGBackground'
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
-import { GridRaw } from '../components/Grid'
+import DotplotGrid from '../components/DotplotGrid'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../model'
 
@@ -44,7 +44,7 @@ export async function renderToSvg(
           <SVGBackground width={w} height={height} />
           <VerticalAxisRaw model={model} />
           <g transform={`translate(${borderX} 0)`}>
-            <GridRaw model={model} />
+            <DotplotGrid model={model} />
             <defs>
               <clipPath id="clip-ruler">
                 <rect x={0} y={0} width={viewWidth} height={viewHeight} />

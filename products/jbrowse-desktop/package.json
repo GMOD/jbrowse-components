@@ -79,7 +79,7 @@
     "@jbrowse/text-indexing": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
-    "@mui/x-data-grid": "^8.0.0",
+    "@mui/x-data-grid": "^8.22.1",
     "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.0.0",
     "deepmerge": "^4.2.2",
@@ -91,20 +91,19 @@
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "node-fetch": "^2.6.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "sanitize-filename": "^1.6.3",
-    "swr": "^2.3.3",
-    "tss-react": "^4.4.1"
+    "swr": "^2.3.8"
   },
   "devDependencies": {
-    "electron": "39.2.1"
+    "electron": "39.2.7"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "39.2.1",
+    "electronVersion": "39.2.7",
     "extraMetadata": {
       "main": "build/electron.js"
     },

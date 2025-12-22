@@ -19,7 +19,7 @@ export interface ReducedFeature {
   pair_orientation: string
   next_ref?: string
   next_pos?: number
-  clipPos: number
+  clipLengthAtStartOfRead: number
   SA?: string
 }
 
@@ -40,7 +40,11 @@ export async function fetchChains(self: LinearArcDisplayModel) {
   const { rpcManager } = getSession(self)
   const view = getContainingView(self) as LGV
 
-  if (!view.initialized || self.error || !self.statsReadyAndRegionNotTooLarge) {
+  if (
+    !view.initialized ||
+    self.error ||
+    !self.featureDensityStatsReadyAndRegionNotTooLarge
+  ) {
     return
   }
 

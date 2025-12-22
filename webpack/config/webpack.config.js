@@ -20,6 +20,9 @@ const paths = require('./paths')
 // source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 
+// Disable minimization for production builds (useful for debugging)
+const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
+
 const reactRefreshRuntimeEntry = require.resolve('react-refresh/runtime')
 const reactRefreshWebpackPluginRuntimeEntry =
   require.resolve('@pmmmwh/react-refresh-webpack-plugin')
@@ -267,7 +270,7 @@ module.exports = function webpackBuilder(webpackEnv) {
             inject: true,
             template: paths.appHtml,
           },
-          isEnvProduction
+          isEnvProduction && shouldMinimize
             ? {
                 minify: {
                   removeComments: true,
@@ -348,5 +351,10 @@ module.exports = function webpackBuilder(webpackEnv) {
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false,
+    optimization: {
+      minimize: isEnvProduction && shouldMinimize,
+      // Explicitly disable minimizers when NO_MINIMIZE is set
+      ...(shouldMinimize ? {} : { minimizer: [] }),
+    },
   }
 }

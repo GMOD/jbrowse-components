@@ -13,7 +13,7 @@ afterEach(() => {
   cleanup()
 })
 
-const timeout = 60000
+const timeout = 90000
 
 const testStack = (loc: string, track: string) =>
   testLinkedReadsDisplay({
@@ -21,7 +21,7 @@ const testStack = (loc: string, track: string) =>
     track,
     displayMode: 'stack',
     canvasId: 'stack-canvas',
-    timeout,
+    timeout: timeout - 5000,
   })
 
 test(

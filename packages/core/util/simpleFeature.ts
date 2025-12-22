@@ -19,12 +19,12 @@ export interface Feature {
   /**
    * Get this feature's parent feature, or undefined if none.
    */
-  parent(): Feature | undefined
+  parent?: () => Feature | undefined
 
   /**
    * Get an array of child features, or undefined if none.
    */
-  children(): Feature[] | undefined
+  children?: () => Feature[] | undefined
 
   /**
    * Convert to JSON

@@ -12,6 +12,7 @@ import AdapterType from './pluggableElementTypes/AdapterType'
 import AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 import DisplayType from './pluggableElementTypes/DisplayType'
+import GlyphType from './pluggableElementTypes/GlyphType'
 import InternetAccountType from './pluggableElementTypes/InternetAccountType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
 import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
@@ -40,6 +41,7 @@ type PluggableElementTypeGroup =
   | 'internet account'
   | 'text search adapter'
   | 'add track workflow'
+  | 'glyph'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -106,6 +108,7 @@ export default class PluginManager {
   runtimePluginDefinitions: PluginDefinition[] = []
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
+    'glyph',
     'renderer',
     'adapter',
     'text search adapter',
@@ -118,6 +121,8 @@ export default class PluginManager {
     'internet account',
     'add track workflow',
   ) as PhasedScheduler<PluggableElementTypeGroup> | undefined
+
+  glyphTypes = new TypeRecord('GlyphType', GlyphType)
 
   rendererTypes = new TypeRecord('RendererType', RendererType)
 
@@ -292,6 +297,8 @@ export default class PluginManager {
         return this.internetAccountTypes
       case 'add track workflow':
         return this.addTrackWidgets
+      case 'glyph':
+        return this.glyphTypes
       default:
         throw new Error(`invalid element type '${groupName}'`)
     }
@@ -577,6 +584,18 @@ export default class PluginManager {
 
   addAddTrackWorkflowType(cb: (pm: PluginManager) => AddTrackWorkflowType) {
     return this.addElementType('add track workflow', cb)
+  }
+
+  addGlyphType(cb: (pm: PluginManager) => GlyphType) {
+    return this.addElementType('glyph', cb)
+  }
+
+  getGlyphType(typeName: string) {
+    return this.glyphTypes.get(typeName)
+  }
+
+  getGlyphTypes(): GlyphType[] {
+    return this.glyphTypes.all()
   }
 
   addToExtensionPoint<T>(

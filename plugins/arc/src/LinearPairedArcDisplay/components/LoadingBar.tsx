@@ -24,10 +24,10 @@ const LoadingBar = observer(function ({
   model: LinearArcDisplayModel
 }) {
   const { classes } = useStyles()
-  const { message } = model
+  const { statusMessage } = model
   return (
     <div className={classes.loading}>
-      <LoadingEllipses message={message} />
+      <LoadingEllipses message={statusMessage} />
     </div>
   )
 })

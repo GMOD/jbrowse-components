@@ -1,16 +1,21 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { measureText } from '@jbrowse/core/util'
 
-import { truncateLabel } from './util'
+import { buildFeatureTooltip, truncateLabel } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
+const FLOATING_LABEL_FONT_SIZE = 11
+
 export interface FloatingLabelData {
   text: string
   relativeY: number
   color: string
+  textWidth: number
   isOverlay?: boolean
+  tooltip?: string
 }
 
 /**
@@ -55,17 +60,28 @@ export function createFeatureFloatingLabels({
 
   const floatingLabels: FloatingLabelData[] = []
 
+  // Build tooltip using shared function (same as CanvasFeatureRendering)
+  const tooltip = buildFeatureTooltip({
+    mouseOver: feature.get('_mouseOver') as string | undefined,
+    label: rawName,
+    description: rawDescription,
+  })
+
   if (shouldShowLabel && shouldShowDescription) {
     floatingLabels.push(
       {
         text: name,
         relativeY: 0,
         color: nameColor,
+        textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
+        tooltip,
       },
       {
         text: description,
         relativeY: actualFontHeight,
         color: descriptionColor,
+        textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
+        tooltip,
       },
     )
   } else if (shouldShowLabel) {
@@ -73,12 +89,16 @@ export function createFeatureFloatingLabels({
       text: name,
       relativeY: 0,
       color: nameColor,
+      textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
+      tooltip,
     })
   } else if (shouldShowDescription) {
     floatingLabels.push({
       text: description,
       relativeY: 0,
       color: descriptionColor,
+      textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
+      tooltip,
     })
   }
 
@@ -119,6 +139,8 @@ export function createTranscriptFloatingLabel({
     text: truncatedName,
     relativeY,
     color,
+    textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
     isOverlay,
+    tooltip: buildFeatureTooltip({ label: transcriptName }),
   }
 }

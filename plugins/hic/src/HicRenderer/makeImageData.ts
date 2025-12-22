@@ -1,8 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import Flatbush from '@jbrowse/core/util/flatbush'
+import { checkStopToken2, checkStopToken } from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import {
   scaleSequential,
@@ -11,14 +11,19 @@ import {
 
 import interpolateViridis from './viridis'
 
-import type {
-  HicFeature,
-  RenderArgsDeserializedWithFeatures,
-} from './HicRenderer'
+import type { RenderArgsDeserializedWithFeatures } from './HicRenderer'
+import type { HicFlatbushItem } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
+
+export interface MakeImageDataResult {
+  flatbush: ArrayBufferLike
+  items: HicFlatbushItem[]
+  maxScore: number
+  w: number
+}
 
 interface HicDataAdapter extends BaseFeatureDataAdapter {
   getResolution: (bp: number) => Promise<number>
@@ -34,7 +39,7 @@ export async function makeImageData(
     yScalar: number
     pluginManager: PluginManager
   },
-) {
+): Promise<MakeImageDataResult | undefined> {
   const {
     features,
     config,
@@ -52,7 +57,6 @@ export async function makeImageData(
 
   const { statusCallback = () => {} } = props
   statusCallback('Drawing Hi-C matrix')
-  const region = regions[0]!
   const { dataAdapter } = await getAdapter(
     pluginManager,
     sessionId,
@@ -62,67 +66,115 @@ export async function makeImageData(
     bpPerPx / resolution,
   )
 
-  const width = (region.end - region.start) / bpPerPx
   const w = res / (bpPerPx * Math.sqrt(2))
   const baseColor = colord(readConfObject(config, 'baseColor'))
-  const offset = Math.floor(region.start / res)
-  if (features.length) {
-    let maxScore = 0
-    let minBin = 0
-    let maxBin = 0
-    checkStopToken(stopToken)
-    for (const { bin1, bin2, counts } of features) {
-      maxScore = Math.max(counts, maxScore)
-      minBin = Math.min(Math.min(bin1, bin2), minBin)
-      maxBin = Math.max(Math.max(bin1, bin2), maxBin)
-    }
-    checkStopToken(stopToken)
-    const colorSchemes = {
-      juicebox: ['rgba(0,0,0,0)', 'red'],
-      fall: interpolateRgbBasis([
-        'rgb(255, 255, 255)',
-        'rgb(255, 255, 204)',
-        'rgb(255, 237, 160)',
-        'rgb(254, 217, 118)',
-        'rgb(254, 178, 76)',
-        'rgb(253, 141, 60)',
-        'rgb(252, 78, 42)',
-        'rgb(227, 26, 28)',
-        'rgb(189, 0, 38)',
-        'rgb(128, 0, 38)',
-        'rgb(0, 0, 0)',
-      ]),
-      viridis: interpolateViridis,
-    }
-    const m = useLogScale ? maxScore : maxScore / 20
 
-    // @ts-expect-error
-    const x1 = colorSchemes[colorScheme] || colorSchemes.juicebox
-    const scale = useLogScale
-      ? scaleSequentialLog(x1).domain([1, m])
-      : scaleSequential(x1).domain([0, m])
-    if (yScalar) {
-      ctx.scale(1, yScalar)
-    }
-    ctx.save()
-
-    if (region.reversed === true) {
-      ctx.scale(-1, 1)
-      ctx.translate(-width, 0)
-    }
-    ctx.rotate(-Math.PI / 4)
-    forEachWithStopTokenCheck(features, stopToken, (f: HicFeature) => {
-      const { bin1, bin2, counts } = f
-      ctx.fillStyle = readConfObject(config, 'color', {
-        count: counts,
-        maxScore,
-        baseColor,
-        scale,
-        useLogScale,
-      })
-      ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
-    })
-    ctx.restore()
+  // Calculate pixel offset for each region (cumulative)
+  const regionPixelOffsets: number[] = []
+  let cumulativePixelOffset = 0
+  for (const region of regions) {
+    regionPixelOffsets.push(cumulativePixelOffset)
+    cumulativePixelOffset += (region.end - region.start) / bpPerPx
   }
-  return undefined
+
+  // Calculate bin offset within each region
+  const regionBinOffsets = regions.map(region => Math.floor(region.start / res))
+
+  if (!features.length) {
+    return undefined
+  }
+
+  let maxScore = 0
+  checkStopToken(stopToken)
+  for (const { counts } of features) {
+    if (counts > maxScore) {
+      maxScore = counts
+    }
+  }
+  checkStopToken(stopToken)
+  const colorSchemes = {
+    juicebox: ['rgba(0,0,0,0)', 'red'],
+    fall: interpolateRgbBasis([
+      'rgb(255, 255, 255)',
+      'rgb(255, 255, 204)',
+      'rgb(255, 237, 160)',
+      'rgb(254, 217, 118)',
+      'rgb(254, 178, 76)',
+      'rgb(253, 141, 60)',
+      'rgb(252, 78, 42)',
+      'rgb(227, 26, 28)',
+      'rgb(189, 0, 38)',
+      'rgb(128, 0, 38)',
+      'rgb(0, 0, 0)',
+    ]),
+    viridis: interpolateViridis,
+  }
+  const m = useLogScale ? maxScore : maxScore / 20
+
+  // @ts-expect-error
+  const x1 = colorSchemes[colorScheme] || colorSchemes.juicebox
+  const scale = useLogScale
+    ? scaleSequentialLog(x1).domain([1, m])
+    : scaleSequential(x1).domain([0, m])
+  if (yScalar) {
+    ctx.scale(1, yScalar)
+  }
+  ctx.save()
+
+  // TODO: handle reversed regions for multi-region case
+  ctx.rotate(-Math.PI / 4)
+
+  // Precompute combined offsets for each region (bin offset + pixel-to-bin conversion)
+  const pxToBinFactor = bpPerPx / res
+  const regionCombinedOffsets = regionBinOffsets.map(
+    (binOffset, i) => (regionPixelOffsets[i] ?? 0) * pxToBinFactor - binOffset,
+  )
+
+  // Build Flatbush index and items array
+  // Store coordinates in the unrotated space (before -45° rotation)
+  // Client will transform mouse coords with inverse rotation to query
+  const coords: number[] = []
+  const items: HicFlatbushItem[] = []
+  const lastCheck = { time: Date.now() }
+  let idx = 0
+
+  for (const f of features) {
+    const { bin1, bin2, counts, region1Idx, region2Idx } = f
+
+    ctx.fillStyle = readConfObject(config, 'color', {
+      count: counts,
+      maxScore,
+      baseColor,
+      scale,
+      useLogScale,
+    })
+
+    const x = (bin1 + (regionCombinedOffsets[region1Idx] ?? 0)) * w
+    const y = (bin2 + (regionCombinedOffsets[region2Idx] ?? 0)) * w
+    ctx.fillRect(x, y, w, w)
+
+    // Store the unrotated rectangle coordinates for Flatbush
+    coords.push(x, y, x + w, y + w)
+    items.push({ bin1, bin2, counts, region1Idx, region2Idx })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
+  ctx.restore()
+
+  // Build Flatbush spatial index
+  const flatbush = new Flatbush(Math.max(items.length, 1))
+  if (coords.length) {
+    for (let i = 0; i < coords.length; i += 4) {
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+    }
+  } else {
+    flatbush.add(0, 0)
+  }
+  flatbush.finish()
+
+  return {
+    flatbush: flatbush.data,
+    items,
+    maxScore,
+    w,
+  }
 }

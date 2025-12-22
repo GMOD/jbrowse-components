@@ -37,7 +37,7 @@ updated via autorun
 
 ```js
 // type signature
-IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Region>; reloadFlag: IType<number, number, number>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Region>; reloadFlag: IType<number, number, number>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 blockState: types.map(BlockState)
 ```
@@ -150,13 +150,6 @@ CompositeMap<string, LayoutRecord>
 ```
 
 ### BaseLinearDisplay - Methods
-
-#### method: copyInfoToClipboard
-
-```js
-// type signature
-copyInfoToClipboard: (feature: Feature) => Promise<void>
-```
 
 #### method: trackMenuItems
 

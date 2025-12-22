@@ -1,15 +1,17 @@
 import { Fragment } from 'react'
 
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   ReactRendering,
   getContainingView,
   getSession,
-  getViewParams,
 } from '@jbrowse/core/util'
 
+import SVGLegend from './SVGLegend'
 import BlockState, { renderBlockData } from './models/serverSideRenderedBlock'
-import { calculateLabelPositions, getId } from './models/util'
+import { getId } from './models/util'
 import { ErrorBox } from '../LinearGenomeView/SVGErrorBox'
+import { calculateLabelPositions } from './models/calculateLabelPositions'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from './model'
@@ -70,7 +72,6 @@ export async function renderBaseLinearDisplaySvg(
           ...renderArgs,
           ...renderProps,
           renderingProps,
-          viewParams: getViewParams(self, true),
           exportSVG: opts,
           theme: opts.theme || renderProps.theme,
         }),
@@ -87,6 +88,10 @@ export async function renderBaseLinearDisplaySvg(
 
   // Create a clip path ID for the labels that covers the entire view
   const labelsClipId = getId(id, 'labels')
+
+  // Get legend items if legend is enabled
+  const theme = createJBrowseTheme(opts.theme)
+  const legendItems = self.showLegend ? self.legendItems(theme) : []
 
   return (
     <>
@@ -138,6 +143,9 @@ export async function renderBaseLinearDisplaySvg(
           </g>
         ))}
       </g>
+      {legendItems.length > 0 ? (
+        <SVGLegend items={legendItems} width={width} />
+      ) : null}
     </>
   )
 }

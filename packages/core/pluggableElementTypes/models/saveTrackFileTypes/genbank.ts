@@ -145,12 +145,11 @@ export async function stringifyGBK({
     `UNK ${date}`,
   ].join('')
   const l2 = 'FEATURES             Location/Qualifiers'
-  const seq = await fetchSequence({
-    session,
-    assemblyName,
-    regions: [{ assemblyName, start, end, refName }],
-  })
-  const contig = seq.map(f => f.get('seq') || '').join('')
+  const contig =
+    (await fetchSequence({
+      session,
+      region: { assemblyName, start, end, refName },
+    })) ?? ''
   const lines = features.map(feat => formatFeatWithSubfeatures(feat, start))
   const seqlines = ['ORIGIN', `\t1 ${contig}`, '//']
   return [l1, l2, ...lines, ...seqlines].join('\n')

@@ -45,12 +45,22 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
+        // For frozen tracks, compare by trackId instead of object identity
+        const targetTrackId = (object as { trackId?: string }).trackId
         walk(getParent(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             for (const [key, value] of Object.entries(members.properties)) {
-              if (isReferenceType(value) && node[key] === object) {
-                refs.push({ node, key })
+              if (isReferenceType(value)) {
+                const ref = node[key]
+                // Compare by trackId for track configurations, fall back to identity
+                const refTrackId = ref?.trackId
+                if (
+                  ref === object ||
+                  (targetTrackId && refTrackId && refTrackId === targetTrackId)
+                ) {
+                  refs.push({ node, key })
+                }
               }
             }
           }

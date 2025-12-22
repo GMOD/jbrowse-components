@@ -14,6 +14,7 @@ import { getNiceDomain } from '../util'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // lazies
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog'))
@@ -90,10 +91,6 @@ export default function SharedWiggleMixin(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        statsRegion: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -103,14 +100,24 @@ export default function SharedWiggleMixin(
       message: undefined as undefined | string,
       /**
        * #volatile
+       * statsRegion is a serialized snapshot of view.dynamicBlocks at the time
+       * stats were fetched. since stats are fetched asynchronously, the view
+       * may have panned by the time they return. renderProps compares this to
+       * the current dynamicBlocks to detect stale stats and show a loading
+       * state until fresh stats arrive
        */
       stats: undefined as
-        | { currStatsBpPerPx: number; scoreMin: number; scoreMax: number }
+        | {
+            currStatsBpPerPx: number
+            scoreMin: number
+            scoreMax: number
+            statsRegion?: string
+          }
         | undefined,
       /**
        * #volatile
        */
-      statsFetchInProgress: undefined as undefined | string,
+      statsFetchInProgress: undefined as undefined | StopToken,
     }))
     .actions(self => ({
       /**
@@ -129,16 +136,15 @@ export default function SharedWiggleMixin(
         if (
           !self.stats ||
           Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
-          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
+          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON ||
+          self.stats.statsRegion !== statsRegion
         ) {
           self.stats = {
             currStatsBpPerPx,
             scoreMin,
             scoreMax,
+            statsRegion,
           }
-        }
-        if (statsRegion) {
-          self.statsRegion = statsRegion
         }
       },
       /**
@@ -163,18 +169,11 @@ export default function SharedWiggleMixin(
       /**
        * #action
        */
-      setStatsLoading(arg?: string) {
+      setStatsLoading(arg?: StopToken) {
         if (self.statsFetchInProgress) {
           stopStopToken(self.statsFetchInProgress)
         }
         self.statsFetchInProgress = arg
-      },
-
-      /**
-       * #action
-       */
-      setStatsRegion(statsRegion: string) {
-        self.statsRegion = statsRegion
       },
 
       /**
@@ -563,5 +562,47 @@ export default function SharedWiggleMixin(
           superReload()
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        selectedRendering,
+        resolution,
+        fill,
+        minSize,
+        color,
+        posColor,
+        negColor,
+        summaryScoreMode,
+        rendererTypeNameState,
+        scale,
+        autoscale,
+        displayCrossHatches,
+        constraints,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(selectedRendering ? { selectedRendering } : {}),
+        ...(resolution !== 1 ? { resolution } : {}),
+        ...(fill !== undefined ? { fill } : {}),
+        ...(minSize !== undefined ? { minSize } : {}),
+        ...(color !== undefined ? { color } : {}),
+        ...(posColor !== undefined ? { posColor } : {}),
+        ...(negColor !== undefined ? { negColor } : {}),
+        ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
+        ...(rendererTypeNameState !== undefined
+          ? { rendererTypeNameState }
+          : {}),
+        ...(scale !== undefined ? { scale } : {}),
+        ...(autoscale !== undefined ? { autoscale } : {}),
+        ...(displayCrossHatches !== undefined ? { displayCrossHatches } : {}),
+        ...(constraints.min !== undefined || constraints.max !== undefined
+          ? { constraints }
+          : {}),
+      } as typeof snap
     })
 }

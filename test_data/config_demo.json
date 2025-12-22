@@ -1459,7 +1459,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "hg002_nanopore",
-      "name": "HG002 BAM nanopore+whatshap",
+      "name": "HG002 BAM ultralong nanopore+whatshap",
       "assemblyNames": ["hg19"],
       "category": ["GIAB"],
       "adapter": {
@@ -4110,8 +4110,20 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "hg002_bam",
+      "name": "HG002 BAM HG002_ONTrel2_16x_RG_HP10xtrioRTG",
+      "assemblyNames": ["hg19"],
+      "category": ["GIAB"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam"
+      }
+    },
+
+    {
+      "type": "AlignmentsTrack",
       "trackId": "hg002_cram",
-      "name": "HG002 CRAM nanopore+whatshap",
+      "name": "HG002 CRAM HG002_ONTrel2_16x_RG_HP10xtrioRTG",
       "assemblyNames": ["hg19"],
       "category": ["GIAB"],
       "adapter": {
@@ -5013,6 +5025,16 @@
           "source": "https://epi2me.nanoporetech.com/chromatin-acc-hg002/"
         }
       }
+    },
+    {
+      "type": "HicTrack",
+      "trackId": "combined",
+      "name": "combined",
+      "adapter": {
+        "type": "HicAdapter",
+        "uri": "https://hgdownload.gi.ucsc.edu/gbdb/hg19/bbi/hic/GSE63525_HMEC_combined.hic"
+      },
+      "assemblyNames": ["hg19"]
     }
   ],
   "connections": [],

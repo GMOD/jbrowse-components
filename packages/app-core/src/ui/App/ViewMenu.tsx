@@ -9,8 +9,11 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import MenuIcon from '@mui/icons-material/Menu'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { useDockview } from './DockviewContext'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -66,11 +69,14 @@ const ViewMenu = observer(function ({
     moveViewUp: (arg: string) => void
     moveViewToBottom: (arg: string) => void
     moveViewToTop: (arg: string) => void
+    useWorkspaces: boolean
   }
 
   const popupState = usePopupState({
     variant: 'popover',
   })
+
+  const { moveViewToNewTab } = useDockview()
 
   // note: This does not use CascadingMenuButton on purpose, because there was
   // a confusing bug related to it! see
@@ -112,6 +118,17 @@ const ViewMenu = observer(function ({
                   )
                 },
               },
+              ...(session.useWorkspaces
+                ? [
+                    {
+                      label: 'Move to new tab',
+                      icon: OpenInNewIcon,
+                      onClick: () => {
+                        moveViewToNewTab(model.id)
+                      },
+                    },
+                  ]
+                : []),
               ...(session.views.length > 2
                 ? [
                     {
@@ -154,7 +171,6 @@ const ViewMenu = observer(function ({
                 : []),
             ],
           },
-
           ...model.menuItems(),
         ]}
         popupState={popupState}

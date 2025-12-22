@@ -1,6 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { bpToPx, forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { drawFeature } from './drawFeature'
 import {
@@ -8,6 +9,7 @@ import {
   addSubfeaturesToLayoutAndFlatbush,
   adjustChildPositions,
 } from './layoutUtils'
+import { buildFeatureTooltip } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type {
@@ -52,6 +54,7 @@ export function makeImageData({
     layout,
     peptideDataMap,
     colorByCDS,
+    pluginManager,
   } = renderArgs
   const region = regions[0]!
   const theme = createJBrowseTheme(configTheme)
@@ -65,8 +68,10 @@ export function makeImageData({
   ctx.textAlign = 'left'
 
   const { subfeatureLabels, transcriptTypes } = configContext
+  const lastCheck = { time: Date.now() }
+  let idx = 0
 
-  forEachWithStopTokenCheck(layoutRecords, stopToken, record => {
+  for (const record of layoutRecords) {
     const {
       feature,
       layout: featureLayout,
@@ -103,6 +108,7 @@ export function makeImageData({
       canvasWidth,
       peptideDataMap,
       colorByCDS,
+      pluginManager,
     })
 
     const featureType = feature.get('type')
@@ -119,7 +125,11 @@ export function makeImageData({
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
-    const mouseOver = feature.get('_mouseOver') as string | undefined
+    const tooltip = buildFeatureTooltip({
+      mouseOver: feature.get('_mouseOver') as string | undefined,
+      label: label || undefined,
+      description: description || undefined,
+    })
 
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({
@@ -131,9 +141,7 @@ export function makeImageData({
       rightPx,
       topPx,
       bottomPx,
-      label: label || undefined,
-      description: description || undefined,
-      mouseOver,
+      tooltip,
     })
 
     if (isGene && hasTranscriptChildren) {
@@ -154,7 +162,8 @@ export function makeImageData({
         featureLayout: adjustedLayout,
       })
     }
-  })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
 
   return {
     flatbush: buildFlatbush(coords, items.length).data,

@@ -64,9 +64,8 @@ const Dialog = observer(function (props: Props) {
             {onClose ? (
               <IconButton
                 className={classes.closeButton}
-                onClick={() => {
-                  // @ts-expect-error
-                  onClose()
+                onClick={event => {
+                  onClose(event, 'backdropClick')
                 }}
               >
                 <CloseIcon />

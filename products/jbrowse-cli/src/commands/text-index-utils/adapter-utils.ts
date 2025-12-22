@@ -9,66 +9,39 @@ export function getLoc(elt: UriLocation | LocalPathLocation): string {
 }
 
 export function createTrixAdapter(
-  id: string,
-  asm: string,
-  assemblyNames?: string[],
+  name: string,
+  assemblyNames: string[],
+  idSuffix = 'index',
 ): TrixTextSearchAdapter {
   return {
     type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: id,
+    textSearchAdapterId: `${name}-${idSuffix}`,
     ixFilePath: {
-      uri: `trix/${asm}.ix`,
+      uri: `trix/${name}.ix`,
       locationType: 'UriLocation',
     },
     ixxFilePath: {
-      uri: `trix/${asm}.ixx`,
+      uri: `trix/${name}.ixx`,
       locationType: 'UriLocation',
     },
     metaFilePath: {
-      uri: `trix/${asm}_meta.json`,
+      uri: `trix/${name}_meta.json`,
       locationType: 'UriLocation',
     },
-    assemblyNames: assemblyNames || [asm],
+    assemblyNames,
   }
 }
 
-export function createPerTrackTrixAdapter(
-  trackId: string,
-  assemblyNames: string[],
-) {
-  return {
-    type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: `${trackId}-index`,
-    ixFilePath: {
-      uri: `trix/${trackId}.ix`,
-      locationType: 'UriLocation' as const,
-    },
-    ixxFilePath: {
-      uri: `trix/${trackId}.ixx`,
-      locationType: 'UriLocation' as const,
-    },
-    metaFilePath: {
-      uri: `trix/${trackId}_meta.json`,
-      locationType: 'UriLocation' as const,
-    },
-    assemblyNames: assemblyNames,
-  }
+const ADAPTER_LOCATION_KEYS: Record<string, string> = {
+  Gff3TabixAdapter: 'gffGzLocation',
+  Gff3Adapter: 'gffLocation',
+  VcfAdapter: 'vcfLocation',
+  VcfTabixAdapter: 'vcfGzLocation',
 }
 
 export function getAdapterLocation(
   adapter: any,
 ): UriLocation | LocalPathLocation | undefined {
-  const { type } = adapter || {}
-
-  if (type === 'Gff3TabixAdapter') {
-    return adapter.gffGzLocation || adapter
-  } else if (type === 'Gff3Adapter') {
-    return adapter.gffLocation || adapter
-  } else if (type === 'VcfAdapter') {
-    return adapter.vcfLocation || adapter
-  } else if (type === 'VcfTabixAdapter') {
-    return adapter.vcfGzLocation || adapter
-  }
-
-  return undefined
+  const key = ADAPTER_LOCATION_KEYS[adapter?.type]
+  return key ? (adapter[key] ?? adapter) : undefined
 }

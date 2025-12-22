@@ -6,7 +6,8 @@ import { locstr } from './util'
 import type { DotplotViewModel } from '../model'
 
 type Coord = [number, number] | undefined
-export const DotplotTooltipClick = observer(function ({
+
+const DotplotTooltipClick = observer(function ({
   model,
   mousedown,
   mousedownClient,

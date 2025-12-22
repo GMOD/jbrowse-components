@@ -43,7 +43,9 @@ const SNPCoverageTooltip = observer(function (props: {
     return (
       <>
         <BaseTooltip clientPoint={{ x, y }}>
-          <div>{mouseoverExtraInformation}</div>
+          <div style={{ whiteSpace: 'pre-wrap' }}>
+            {mouseoverExtraInformation}
+          </div>
         </BaseTooltip>
         <div
           className={classes.hoverVertical}

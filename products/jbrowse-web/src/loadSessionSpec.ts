@@ -9,7 +9,7 @@ export async function loadSessionSpec(
     sessionTracks = [],
   }: {
     views: ViewSpec[]
-    sessionTracks: Record<string, unknown>[]
+    sessionTracks?: Record<string, unknown>[]
   },
   pluginManager: PluginManager,
 ) {

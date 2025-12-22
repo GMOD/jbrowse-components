@@ -41,9 +41,9 @@ const ShoppingCart = observer(function ({
               {
                 label: 'Delete tracks',
                 onClick: () => {
-                  for (const s of selection) {
+                  for (const track of selection) {
                     // @ts-expect-error
-                    session.deleteTrackConf?.(s)
+                    session.deleteTrackConf?.(track)
                   }
                 },
               },

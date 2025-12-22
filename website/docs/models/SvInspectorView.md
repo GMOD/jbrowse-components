@@ -71,7 +71,7 @@ onlyDisplayRelevantRegionsInCircularView: false
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...> | { ...; }>, [...]>
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 6 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
@@ -85,7 +85,7 @@ spreadsheetView: types.optional(SpreadsheetModel, () =>
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 7 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, { ...; }>, [...]>
 // code
 circularView: types.optional(CircularModel, () =>
           CircularModel.create({
@@ -95,6 +95,17 @@ circularView: types.optional(CircularModel, () =>
             disableImportForm: true,
           }),
         )
+```
+
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<SvInspectorViewInit, SvInspectorViewInit, SvInspectorViewInit>
+// code
+init: types.frozen<SvInspectorViewInit | undefined>()
 ```
 
 ### SvInspectorView - Getters
@@ -188,6 +199,13 @@ setDisplayedRegions: (regions: Region[]) => void
 ```js
 // type signature
 setOnlyDisplayRelevantRegionsInCircularView: (val: boolean) => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (init?: SvInspectorViewInit) => void
 ```
 
 #### action: resizeHeight

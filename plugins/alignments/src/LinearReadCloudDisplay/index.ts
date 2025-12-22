@@ -19,8 +19,13 @@ export default function register(pluginManager: PluginManager) {
       stateModel: stateModelF(configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
-      subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },
-      ReactComponent: lazy(() => import('./components/ReactComponent')),
+      subDisplay: {
+        type: 'LinearAlignmentsDisplay',
+        lowerPanel: true,
+      },
+      ReactComponent: lazy(
+        () => import('./components/LinearReadCloudReactComponent'),
+      ),
     })
   })
 }

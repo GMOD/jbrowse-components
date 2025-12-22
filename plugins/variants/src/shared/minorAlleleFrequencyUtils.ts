@@ -1,4 +1,4 @@
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -71,7 +71,9 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
     alleleCounts: Record<string, number>
   }[]
 
-  forEachWithStopTokenCheck(features, stopToken, feature => {
+  const lastCheck = { time: Date.now() }
+  let idx = 0
+  for (const feature of features) {
     if (feature.get('end') - feature.get('start') <= lengthCutoffFilter) {
       const featureId = feature.id()
       let genotypes = genotypesCache?.get(featureId)
@@ -92,7 +94,8 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
         })
       }
     }
-  })
+    checkStopToken2(stopToken, idx++, lastCheck)
+  }
 
   return results
 }

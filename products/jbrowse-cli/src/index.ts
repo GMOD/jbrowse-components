@@ -88,7 +88,22 @@ export async function main(args: string[]) {
     const commandArgs = args.slice(1) // Remove the command name from args
     await command(commandArgs)
   } catch (error) {
-    console.error('Error:', error instanceof Error ? error.message : error)
+    const message = error instanceof Error ? error.message : String(error)
+    const code =
+      error instanceof Error ? (error as NodeJS.ErrnoException).code : undefined
+
+    console.error('Error:', message)
+
+    if (code === 'EPIPE' || code === 'ENOSPC' || message.includes('EPIPE')) {
+      console.error(`
+This error may be caused by running out of space in the temporary directory.
+Try setting a custom TMPDIR with more available space:
+
+  mkdir mytmpdir
+  TMPDIR=mytmpdir jbrowse text-index ...
+
+`)
+    }
     process.exit(1)
   }
 }

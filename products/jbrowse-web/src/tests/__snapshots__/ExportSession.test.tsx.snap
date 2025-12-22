@@ -1,0 +1,84 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`export session with alignments and gff tracks 1`] = `
+{
+  "session": {
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+    },
+    "id": "test-id-0",
+    "sessionPlugins": [],
+    "views": [
+      {
+        "bpPerPx": 0.5,
+        "displayedRegions": [
+          {
+            "assemblyName": "volvox",
+            "end": 50001,
+            "refName": "ctgA",
+            "start": 0,
+          },
+        ],
+        "id": "integration_test",
+        "tracks": [
+          {
+            "configuration": "volvox_alignments_pileup_coverage",
+            "displays": [
+              {
+                "PileupDisplay": {
+                  "configuration": {
+                    "displayId": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay_LinearPileupDisplay_xyz",
+                    "type": "LinearPileupDisplay",
+                  },
+                  "heightPreConfig": 205,
+                  "id": "test-id-5",
+                  "type": "LinearPileupDisplay",
+                },
+                "SNPCoverageDisplay": {
+                  "configuration": {
+                    "displayId": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay_snpcoverage_xyz",
+                    "type": "LinearSNPCoverageDisplay",
+                  },
+                  "heightPreConfig": 45,
+                  "id": "test-id-4",
+                  "type": "LinearSNPCoverageDisplay",
+                },
+                "configuration": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay",
+                "id": "test-id-3",
+                "type": "LinearAlignmentsDisplay",
+              },
+            ],
+            "id": "test-id-2",
+            "type": "AlignmentsTrack",
+          },
+          {
+            "configuration": "gff3tabix_genes",
+            "displays": [
+              {
+                "configuration": "gff3tabix_genes-LinearBasicDisplay",
+                "id": "test-id-7",
+                "type": "LinearBasicDisplay",
+              },
+            ],
+            "id": "test-id-6",
+            "type": "FeatureTrack",
+          },
+        ],
+        "type": "LinearGenomeView",
+      },
+    ],
+    "widgets": {
+      "GridBookmark": {
+        "id": "GridBookmark",
+        "type": "GridBookmarkWidget",
+      },
+      "hierarchicalTrackSelector": {
+        "faceted": {},
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "view": "integration_test",
+      },
+    },
+  },
+}
+`;

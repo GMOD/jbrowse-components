@@ -21,6 +21,8 @@ export default class WidgetType extends PluggableElementBase {
 
   stateModel: IAnyModelType
 
+  helpText?: React.ReactNode
+
   constructor(stuff: {
     name: string
     heading?: string
@@ -28,6 +30,7 @@ export default class WidgetType extends PluggableElementBase {
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
     ReactComponent: WidgetComponentType
+    helpText?: React.ReactNode
   }) {
     super(stuff)
     this.heading = stuff.heading
@@ -35,5 +38,6 @@ export default class WidgetType extends PluggableElementBase {
     this.configSchema = stuff.configSchema
     this.stateModel = stuff.stateModel
     this.ReactComponent = stuff.ReactComponent
+    this.helpText = stuff.helpText
   }
 }

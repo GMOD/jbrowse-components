@@ -21,6 +21,7 @@ import { observer } from 'mobx-react'
 
 import type { ReducedModel } from './types'
 import type { Source } from '../../../util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const WiggleClusterDialogAuto = observer(function ({
@@ -35,7 +36,7 @@ const WiggleClusterDialogAuto = observer(function ({
   const [progress, setProgress] = useState('')
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
-  const [stopToken, setStopToken] = useState('')
+  const [stopToken, setStopToken] = useState<StopToken>()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
     'cluster-samplesPerPixel',

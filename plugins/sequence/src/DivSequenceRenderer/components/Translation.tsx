@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 import { defaultStarts, defaultStops, revcom } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
@@ -59,47 +57,33 @@ export default function Translation({
   const defaultFill = colorByCDS
     ? theme.palette.framesCDS.at(frame)?.main
     : theme.palette.frames.at(frame)?.main
-  return (
-    <>
-      <rect x={0} y={y} width={width} height={height} fill={defaultFill} />
-      {translated.map((element, index) => {
-        const x = region.reversed
-          ? width - (index + 1) * codonWidth - offset
-          : codonWidth * index + offset
-        const { letter, codon } = element
-        const codonFill = defaultStarts.includes(codon)
-          ? theme.palette.startCodon
-          : defaultStops.includes(codon)
-            ? theme.palette.stopCodon
-            : undefined
-        return !(renderLetter || codonFill) ? null : (
-          <Fragment key={`${index}-${letter}`}>
-            <rect
-              x={x}
-              y={y}
-              width={
-                renderLetter
-                  ? codonWidth
-                  : codonWidth + 0.7 /* small fudge factor when zoomed out*/
-              }
-              height={height}
-              stroke={renderLetter ? '#555' : 'none'}
-              fill={codonFill || 'none'}
-            />
-            {renderLetter ? (
-              <text
-                x={x + codonWidth / 2}
-                fontSize={height - 2}
-                y={y + height / 2}
-                dominantBaseline="middle"
-                textAnchor="middle"
-              >
-                {letter}
-              </text>
-            ) : null}
-          </Fragment>
-        )
-      })}
-    </>
-  )
+
+  let svg = `<rect x="0" y="${y}" width="${width}" height="${height}" fill="${defaultFill}"/>`
+
+  for (let i = 0, l = translated.length; i < l; i++) {
+    const element = translated[i]!
+    const x = region.reversed
+      ? width - (i + 1) * codonWidth - offset
+      : codonWidth * i + offset
+    const { letter, codon } = element
+    const codonFill = defaultStarts.includes(codon)
+      ? theme.palette.startCodon
+      : defaultStops.includes(codon)
+        ? theme.palette.stopCodon
+        : undefined
+
+    if (renderLetter || codonFill) {
+      const rectWidth = renderLetter
+        ? codonWidth
+        : codonWidth + 0.7 /* small fudge factor when zoomed out*/
+      const stroke = renderLetter ? '#555' : 'none'
+      svg += `<rect x="${x}" y="${y}" width="${rectWidth}" height="${height}" stroke="${stroke}" fill="${codonFill || 'none'}"/>`
+
+      if (renderLetter) {
+        svg += `<text x="${x + codonWidth / 2}" font-size="${height - 2}" y="${y + height / 2}" dominant-baseline="middle" text-anchor="middle">${letter}</text>`
+      }
+    }
+  }
+
+  return <g dangerouslySetInnerHTML={{ __html: svg }} />
 }

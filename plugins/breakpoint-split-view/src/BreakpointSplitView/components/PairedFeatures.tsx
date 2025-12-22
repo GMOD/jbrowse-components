@@ -1,17 +1,20 @@
+import { useMemo, useState } from 'react'
+
+import { getSession } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import {
   LEFT,
-  calculateYPositions,
   createMouseHandlers,
   getCanonicalRefs,
   getTestId,
-  useBreakpointOverlaySetup,
-} from './useBreakpointOverlay'
+  getYOffset,
+} from './overlayUtils'
 import { getMatchedPairedFeatures } from './util'
-import { getPxFromCoordinate } from '../util'
+import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
 
-import type { OverlayProps } from './useBreakpointOverlay'
+import type { OverlayProps } from './overlayUtils'
 
 const PairedFeatures = observer(function ({
   model,
@@ -20,21 +23,22 @@ const PairedFeatures = observer(function ({
   getTrackYPosOverride,
 }: OverlayProps) {
   const { interactiveOverlay, views } = model
+  const session = getSession(model)
+  const { assemblyManager } = session
+  const snap = getSnapshot(model)
+  const v0 = views[0]
+  const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
+  useNextFrame(snap)
   const totalFeatures = model.getTrackFeatures(trackId)
-  const {
-    session,
-    assembly,
-    layoutMatches,
-    mouseoverElt,
-    setMouseoverElt,
-    yOffset,
-  } = useBreakpointOverlaySetup(
-    model,
-    trackId,
-    parentRef,
-    getMatchedPairedFeatures,
-    totalFeatures,
-  )
+
+  const layoutMatches = useMemo(() => {
+    const matchedFeatures = getMatchedPairedFeatures(totalFeatures)
+    return model.getMatchedFeaturesInLayout(trackId, matchedFeatures)
+  }, [totalFeatures, trackId, model])
+
+  const [mouseoverElt, setMouseoverElt] = useState<string>()
+  const yOffset = getYOffset(parentRef)
+  const tracks = views.map(v => v.getTrack(trackId))
 
   if (!assembly) {
     return null
@@ -53,11 +57,6 @@ const PairedFeatures = observer(function ({
           const { layout: c1, feature: f1, level: level1 } = chunk[i]!
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
           const id = f1.id()
-
-          if (!c1 || !c2) {
-            return null
-          }
-
           const { f1ref, f2ref } = getCanonicalRefs(
             assembly,
             f1.get('refName'),
@@ -66,16 +65,12 @@ const PairedFeatures = observer(function ({
           const x1 = getPxFromCoordinate(views[level1]!, f1ref, c1[LEFT])
           const x2 = getPxFromCoordinate(views[level2]!, f2ref, c2[LEFT])
 
-          const { y1, y2 } = calculateYPositions(
-            trackId,
-            level1,
-            level2,
-            views,
-            c1,
-            c2,
-            yOffset,
-            getTrackYPosOverride,
-          )
+          const y1 =
+            yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
+            yOffset
+          const y2 =
+            yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
+            yOffset
 
           const path = ['M', x1, y1, 'L', x2, y2].join(' ')
           const mouseHandlers = createMouseHandlers(

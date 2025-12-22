@@ -176,5 +176,5 @@ hideDisplay: (displayId: string) => number
 
 ```js
 // type signature
-replaceDisplay: (oldId: string, newId: string, initialSnapshot?: {}) => void
+replaceDisplay: (oldDisplayId: string, newDisplayId: string, initialSnapshot?: {}) => void
 ```

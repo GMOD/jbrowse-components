@@ -1,8 +1,4 @@
-import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -34,21 +30,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           if (!assemblyName) {
             throw new Error('assembly name required for JBrowse 1 connection')
           }
-          const conf = session.assemblies.find(
-            a => readConfObject(a, 'name') === assemblyName,
-          )
-          if (!conf) {
-            throw new Error(`Assembly "${assemblyName}" not found`)
-          }
-          const sequenceAdapter = readConfObject(conf, ['sequence', 'adapter'])
-
           // @ts-expect-error
           const jb2Tracks = config.tracks?.map(jb1Track => ({
-            ...convertTrackConfig(
-              jb1Track,
-              config.dataRoot || '',
-              sequenceAdapter,
-            ),
+            ...convertTrackConfig(jb1Track, config.dataRoot || ''),
             assemblyNames: [assemblyName],
           }))
 
