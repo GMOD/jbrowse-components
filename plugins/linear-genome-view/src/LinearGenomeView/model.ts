@@ -1409,7 +1409,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
-      let currentBlockKeys = ''
+      let currentBlockKeys: string | undefined
       return {
         /**
          * #getter
@@ -1420,15 +1420,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * blocks to render their data for the region represented by the block
          */
         get staticBlocks() {
-          const ret = calculateStaticBlocks(self)
-          // Use block keys for comparison instead of JSON.stringify for better
-          // performance - keys uniquely identify blocks
-          const newKeys = ret.blocks.map(b => b.key).join(',')
-          if (currentBlockKeys !== newKeys) {
-            currentlyCalculatedStaticBlocks = ret
+          const newBlocks = calculateStaticBlocks(self)
+          const newKeys = newBlocks.blocks.map(b => b.key).join(',')
+          if (
+            currentlyCalculatedStaticBlocks === undefined ||
+            currentBlockKeys !== newKeys
+          ) {
+            currentlyCalculatedStaticBlocks = newBlocks
             currentBlockKeys = newKeys
+            return currentlyCalculatedStaticBlocks
+          } else {
+            return currentlyCalculatedStaticBlocks
           }
-          return currentlyCalculatedStaticBlocks!
         },
         /**
          * #getter
