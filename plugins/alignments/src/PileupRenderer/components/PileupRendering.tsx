@@ -1,59 +1,25 @@
 import { useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingTrack,
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
-  toLocale,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { observer } from 'mobx-react'
 
-import { flatbushItemToFeatureData, getFlatbushItemLabel } from '../types'
+import { flatbushItemToFeatureData } from '../types'
+import PileupTooltip from './PileupTooltip'
 
 import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
-
-function PileupTooltip({
-  item,
-  featureName,
-  refName,
-  mousePosition,
-}: {
-  item?: FlatbushItem
-  featureName?: string
-  refName: string
-  mousePosition: { x: number; y: number }
-}) {
-  return (
-    <BaseTooltip
-      clientPoint={{ x: mousePosition.x, y: mousePosition.y + 20 }}
-      placement="bottom-start"
-    >
-      <div>
-        {item ? (
-          <>
-            <div style={{ whiteSpace: 'pre-line' }}>
-              {getFlatbushItemLabel(item)}
-            </div>
-            <div>
-              Position: {refName}:{toLocale(item.start + 1)}
-            </div>
-          </>
-        ) : featureName ? (
-          <div>{featureName}</div>
-        ) : null}
-      </div>
-    </BaseTooltip>
-  )
-}
+import { makeRect } from './util'
 
 const PileupRendering = observer(function (props: {
   blockKey: string
@@ -124,28 +90,12 @@ const PileupRendering = observer(function (props: {
     ? displayModel.getFeatureByID(blockKey, highlightedFeature)
     : undefined
 
-  function makeRect(
-    r: [number, number, number, number] | [number, number, number, number, any],
-    offset = 2,
-  ) {
-    const [leftBp, topPx, rightBp, bottomPx] = r
-    const leftPx = region.reversed
-      ? (region.end - rightBp) / bpPerPx
-      : (leftBp - region.start) / bpPerPx
-    const rightPx = region.reversed
-      ? (region.end - leftBp) / bpPerPx
-      : (rightBp - region.start) / bpPerPx
-    const rectTop = Math.round(topPx)
-    const rectHeight = Math.round(bottomPx - topPx)
-    return {
-      left: leftPx - offset,
-      top: rectTop - offset,
-      width: rightPx - leftPx,
-      height: rectHeight,
-    }
-  }
-  const selected = selectedRect ? makeRect(selectedRect) : undefined
-  const highlight = highlightedRect ? makeRect(highlightedRect, 0) : undefined
+  const selected = selectedRect
+    ? makeRect(selectedRect, 2, region, bpPerPx)
+    : undefined
+  const highlight = highlightedRect
+    ? makeRect(highlightedRect, 0, region, bpPerPx)
+    : undefined
 
   const canvasWidth = Math.ceil(width)
   const isClickable = itemUnderMouse || featureIdUnderMouse
@@ -205,12 +155,14 @@ const PileupRendering = observer(function (props: {
           clientBp,
           offsetY,
         )
-        const featureName =
-          !item && featureId ? featureNames[featureId] : undefined
+        const featureName = featureId ? featureNames[featureId] : undefined
         setFeatureNameUnderMouse(featureName)
         setMousePosition(
           item || featureName
-            ? { x: event.clientX, y: event.clientY }
+            ? {
+                x: event.clientX,
+                y: event.clientY,
+              }
             : undefined,
         )
         // Don't pass label - we handle tooltips ourselves
@@ -263,7 +215,11 @@ const PileupRendering = observer(function (props: {
     >
       <PrerenderedCanvas
         {...props}
-        style={{ position: 'absolute', left: 0, top: 0 }}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+        }}
       />
       {highlight ? (
         <div

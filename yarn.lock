@@ -6969,9 +6969,9 @@ electron-localshortcut@^3.2.1:
     keyboardevents-areequal "^0.2.1"
 
 electron-mock-ipc@^0.3.8:
-  version "0.3.12"
-  resolved "https://registry.yarnpkg.com/electron-mock-ipc/-/electron-mock-ipc-0.3.12.tgz#f9a7dca9a23a95dbe5a62f27cca12768d4cb88c0"
-  integrity sha512-/uwZRpbX+k4E+GesmREg6XcQiTLNhi35M/cw8Czr+ij9k+EYTYY3UPkILnsTr5KTEeAx5/uypf/KwjZDQFDyjA==
+  version "0.3.14"
+  resolved "https://registry.yarnpkg.com/electron-mock-ipc/-/electron-mock-ipc-0.3.14.tgz#32d8b98aa4153bbd518b35d50630a143d1212c3c"
+  integrity sha512-DouQtwlfk/lDfMQXo7ltefMoJ5t6FTUTfTh99zEJNYok+SlUMzbOFMW5cBzem20NOJ2aAD4Lrc/26CuXCWCTdw==
 
 electron-publish@25.1.7:
   version "25.1.7"
