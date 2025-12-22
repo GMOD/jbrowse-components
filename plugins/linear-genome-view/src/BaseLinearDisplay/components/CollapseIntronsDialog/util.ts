@@ -16,6 +16,37 @@ export function getExonsAndCDS(transcripts: Feature[]) {
   )
 }
 
+interface ViewState {
+  bpPerPx: number
+  offsetPx: number
+}
+
+/**
+ * Calculate the initial view state (zoom and offset) to show all regions
+ * centered and filling ~90% of the viewport width.
+ */
+function calculateInitialViewState(
+  regions: { start: number; end: number }[],
+  viewWidth: number,
+): ViewState {
+  const totalBp = regions.reduce((sum, r) => sum + (r.end - r.start), 0)
+
+  // Zoom to fit all regions in 90% of viewport width
+  const bpPerPx = totalBp / (viewWidth * 0.9)
+
+  // Account for inter-region padding when centering
+  const numPaddings = Math.max(0, regions.length - 1)
+  const interRegionPaddingWidth = 2 // INTER_REGION_PADDING_WIDTH constant
+  const totalPaddingPx = numPaddings * interRegionPaddingWidth
+  const totalContentPx = totalBp / bpPerPx + totalPaddingPx
+
+  // Center the content in the viewport
+  const centerPx = totalContentPx / 2
+  const offsetPx = Math.round(centerPx - viewWidth / 2)
+
+  return { bpPerPx, offsetPx }
+}
+
 export async function collapseIntrons({
   view,
   transcripts,
@@ -48,23 +79,14 @@ export async function collapseIntrons({
   // Compute the correct bpPerPx and offsetPx for the new regions BEFORE creating the view.
   // We do this upfront (instead of calling showAllRegions() after creation) to avoid
   // rendering with incorrect values and then updating, which would cause layout thrashing.
-  const totalBp = mergedRegions.reduce((sum, r) => sum + (r.end - r.start), 0)
-  const width = view.width
-  const maxBpPerPx = totalBp / (width * 0.9)
-  const numPaddings = Math.max(0, mergedRegions.length - 1)
-  const interRegionPaddingWidth = 2 // INTER_REGION_PADDING_WIDTH
-  const totalPaddingPx = numPaddings * interRegionPaddingWidth
-  const totalContentPx = totalBp / maxBpPerPx + totalPaddingPx
-  const centerPx = totalContentPx / 2
-  const initialOffsetPx = Math.round(centerPx - width / 2)
+  const initialState = calculateInitialViewState(mergedRegions, view.width)
 
   const newView = getSession(view).addView('LinearGenomeView', {
     ...rest,
     tracks: rest.tracks.map(({ id, ...r }) => r),
     displayedRegions: mergedRegions,
-    // Set the correct bpPerPx and offsetPx from the start!
-    bpPerPx: maxBpPerPx,
-    offsetPx: initialOffsetPx,
+    bpPerPx: initialState.bpPerPx,
+    offsetPx: initialState.offsetPx,
   }) as LinearGenomeViewModel
   await when(() => newView.initialized)
 }
