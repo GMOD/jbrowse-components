@@ -78,6 +78,7 @@ export default function TranscriptTable({
                     color="primary"
                     disabled={!validPadding}
                     onClick={() => {
+                      // eslint-disable-next-line @typescript-eslint/no-floating-promises
                       ;(async () => {
                         try {
                           await collapseIntrons({

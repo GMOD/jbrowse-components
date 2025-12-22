@@ -25,7 +25,7 @@ interface ViewState {
  * Calculate the initial view state (zoom and offset) to show all regions
  * centered and filling ~90% of the viewport width.
  */
-function calculateInitialViewState(
+export function calculateInitialViewState(
   regions: { start: number; end: number }[],
   viewWidth: number,
 ): ViewState {

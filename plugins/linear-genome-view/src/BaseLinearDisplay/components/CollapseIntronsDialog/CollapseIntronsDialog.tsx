@@ -101,6 +101,7 @@ export default function CollapseIntronsDialog({
           color="primary"
           disabled={!validWindowSize}
           onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             ;(async () => {
               try {
                 await collapseIntrons({
