@@ -21,69 +21,6 @@ interface TreeDrawingModel {
 }
 
 export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
-  // Draw tree structure
-  addDisposer(
-    self,
-    autorun(
-      function treeDrawAutorun() {
-        const {
-          treeCanvas,
-          hierarchy,
-          treeAreaWidth,
-          height,
-          scrollTop,
-          // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-          totalHeight,
-        } = self
-        if (!treeCanvas || !hierarchy) {
-          return
-        }
-
-        const ctx = treeCanvas.getContext('2d')
-        if (!ctx) {
-          return
-        }
-
-        // Clear the entire canvas
-        ctx.clearRect(0, 0, treeAreaWidth, height)
-
-        // Save the context state
-        ctx.save()
-
-        // Translate to simulate scrolling
-        ctx.translate(0, -scrollTop)
-
-        // Draw the tree (this draws the full tree, but only visible part shows)
-        // Note: accessing totalHeight ensures we redraw when row height changes
-        ctx.strokeStyle = '#0008'
-        ctx.lineWidth = 1
-
-        // Use single path for all tree lines for better performance
-        ctx.beginPath()
-        for (const link of hierarchy.links()) {
-          const { source, target } = link
-          const sy = source.x!
-          const ty = target.x!
-          const tx = target.y!
-          const sx = source.y!
-
-          // Vertical line
-          ctx.moveTo(sx, sy)
-          ctx.lineTo(sx, ty)
-
-          // Horizontal line
-          ctx.moveTo(sx, ty)
-          ctx.lineTo(tx, ty)
-        }
-        ctx.stroke()
-
-        // Restore the context state
-        ctx.restore()
-      },
-      { name: 'TreeDraw' },
-    ),
-  )
-
   // Draw hover highlights
   addDisposer(
     self,
