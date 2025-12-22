@@ -13,7 +13,7 @@ const MultiVariantLegendBarWrapper = observer(function ({
   exportSVG?: boolean
 }) {
   const { id, scrollTop, height, hierarchy, treeAreaWidth, showTree } = model
-  const clipid = `legend-${id}`
+  const clipid = `legend-${typeof jest === 'undefined' ? id : 'test'}`
   const leftOffset = hierarchy && showTree ? treeAreaWidth : 0
   return exportSVG ? (
     <>

@@ -19,6 +19,7 @@ import deepEqual from 'fast-deep-equal'
 import { cluster, hierarchy } from '../d3-hierarchy2'
 import { getSources } from './getSources'
 
+import type { ClusterHierarchyNode, HoveredTreeNode } from './components/types'
 import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -161,7 +162,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
-      hoveredTreeNode: undefined as any,
+      hoveredTreeNode: undefined as HoveredTreeNode | undefined,
       /**
        * #volatile
        */
@@ -193,7 +194,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredTreeNode(node: any) {
+      setHoveredTreeNode(node?: HoveredTreeNode) {
         self.hoveredTreeNode = node
       },
       /**
@@ -380,9 +381,9 @@ export default function MultiVariantBaseModelF(
           return undefined
         }
         const tree = fromNewick(newick)
-        return hierarchy(tree, (d: any) => d.children)
-          .sum((d: any) => (d.children ? 0 : 1))
-          .sort((a: any, b: any) =>
+        return hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
+          .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
+          .sort((a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
             ascending(a.data.height || 1, b.data.height || 1),
           )
       },
@@ -432,9 +433,8 @@ export default function MultiVariantBaseModelF(
             return undefined
           }
           const clust = cluster()
-            .size([this.rowHeight * this.nrow, self.treeAreaWidth])!
-            // @ts-expect-error
-            .separation(() => 1)
+          clust.size([this.rowHeight * this.nrow, self.treeAreaWidth])
+          clust.separation(() => 1)
           clust(r)
           return r
         },

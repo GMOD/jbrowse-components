@@ -137,14 +137,22 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
     <>
       {/* Sticky container keeps tree visible when parent scrolls */}
       <div
-        style={{ position: 'sticky', top: 0, left: 0, height: 0, zIndex: 100 }}
+        style={{
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          height: 0,
+          zIndex: 100,
+        }}
       >
         {/* Tree structure canvas - draws lines via treeDrawingAutorun */}
         <canvas
           ref={treeCanvasRef}
-          width={treeAreaWidth}
-          height={height}
+          width={treeAreaWidth * 2}
+          height={height * 2}
           style={{
+            width: treeAreaWidth,
+            height,
             position: 'absolute',
             top: 0,
             left: 0,

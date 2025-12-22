@@ -2,7 +2,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { ClusterHierarchyNode } from './components/types'
+import type { ClusterHierarchyNode, HoveredTreeNode } from './components/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface TreeDrawingModel {
@@ -14,10 +14,7 @@ interface TreeDrawingModel {
   scrollTop: number
   rowHeight: number
   totalHeight: number
-  hoveredTreeNode?: {
-    node: ClusterHierarchyNode
-    descendantNames: string[]
-  }
+  hoveredTreeNode?: HoveredTreeNode
 }
 
 export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
@@ -33,7 +30,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           height,
           scrollTop,
           // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-          totalHeight,
+          totalHeight: _totalHeight,
         } = self
         if (!treeCanvas || !hierarchy) {
           return
@@ -45,10 +42,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
 
         // Clear the entire canvas
+        ctx.resetTransform()
+        ctx.scale(2, 2)
         ctx.clearRect(0, 0, treeAreaWidth, height)
-
-        // Save the context state
-        ctx.save()
 
         // Translate to simulate scrolling
         ctx.translate(0, -scrollTop)
@@ -76,11 +72,10 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           ctx.lineTo(tx, ty)
         }
         ctx.stroke()
-
-        // Restore the context state
-        ctx.restore()
       },
-      { name: 'TreeDraw' },
+      {
+        name: 'TreeDraw',
+      },
     ),
   )
 

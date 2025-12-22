@@ -14,12 +14,12 @@ import { observer } from 'mobx-react'
 
 import { flatbushItemToFeatureData } from '../types'
 import PileupTooltip from './PileupTooltip'
+import { makeRect } from './util'
 
 import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
 import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
-import { makeRect } from './util'
 
 const PileupRendering = observer(function (props: {
   blockKey: string
