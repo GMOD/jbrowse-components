@@ -1,10 +1,18 @@
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSerializedSvg,
+  renderToAbstractCanvas,
+} from '@jbrowse/core/util'
 
 import SvgTree from './components/SvgTree'
 import LegendBar from '../shared/components/MultiVariantLegendBar'
 
 import type { LegendBarModel } from './components/types'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
+import { drawTree } from './drawTree'
 
 interface Model extends LegendBarModel {
   hierarchy: any
@@ -13,9 +21,43 @@ interface Model extends LegendBarModel {
   treeAreaWidth: number
 }
 
-export async function makeSidebarSvg(self: Model) {
+export async function makeSidebarSvg(
+  self: Model,
+  opts: ExportSvgDisplayOptions,
+) {
   const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
   const { hierarchy, showTree, treeAreaWidth, availableHeight } = self
+  const { totalHeight } = self as any
+
+  console.log({ opts })
+  let treeSvg = null
+  if (hierarchy) {
+    const result = await renderToAbstractCanvas(
+      treeAreaWidth,
+      totalHeight,
+      {
+        exportSVG: opts,
+      },
+      async ctx => {
+        drawTree({
+          ctx,
+          model: self,
+        })
+        return undefined
+      },
+    )
+
+    if ('html' in result) {
+      treeSvg = <g dangerouslySetInnerHTML={{ __html: result.html }} />
+    } else if ('canvasRecordedData' in result) {
+      const html = await getSerializedSvg({
+        width: treeAreaWidth,
+        height: totalHeight,
+        canvasRecordedData: result.canvasRecordedData,
+      })
+      treeSvg = <g dangerouslySetInnerHTML={{ __html: html }} />
+    }
+  }
 
   return (
     <g
@@ -33,7 +75,7 @@ export async function makeSidebarSvg(self: Model) {
       >
         <LegendBar model={self} orientation="left" exportSVG />
       </g>
-      {showTree ? <SvgTree model={self} /> : null}
+      {showTree ? treeSvg : null}
     </g>
   )
 }

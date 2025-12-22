@@ -25,7 +25,7 @@ export async function renderSvg(
         <LinesConnectingMatrixToGenomicPosition exportSVG model={model} />
         <g transform={`translate(0,${lineZoneHeight})`}>
           <g>{await superRenderSvg(opts)}</g>
-          {await makeSidebarSvg(model)}
+          {await makeSidebarSvg(model, opts)}
         </g>
       </g>
     </>
