@@ -27,80 +27,24 @@ import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
 import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
+import { getTranscripts, hasExonsOrCDS } from './util'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
-import type { ExportSvgOptions } from '../LinearGenomeView/types'
 import type { LegendItem } from './components/FloatingLegend'
+import type { ExportSvgDisplayOptions, LayoutRecord } from './types'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { Theme, ThemeOptions } from '@mui/material'
+import type { Theme } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
 const CollapseIntronsDialog = lazy(
-  () => import('./components/CollapseIntronsDialog'),
+  () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog'),
 )
 
 type LGV = LinearGenomeViewModel
-
-function hasExonsOrCDS(transcripts: Feature[]) {
-  return transcripts.some(t => {
-    const subs = t.get('subfeatures') ?? []
-    return subs.some(f => f.get('type') === 'exon' || f.get('type') === 'CDS')
-  })
-}
-
-function getTranscripts(feature?: Feature): Feature[] {
-  if (!feature) {
-    return []
-  }
-  return feature.get('type') === 'mRNA'
-    ? [feature]
-    : (feature.get('subfeatures') ?? [])
-}
-
-export interface Layout {
-  minX: number
-  minY: number
-  maxX: number
-  maxY: number
-  name: string
-}
-
-export interface FloatingLabelData {
-  text: string
-  relativeY: number
-  color: string
-  textWidth: number
-  isOverlay?: boolean
-  tooltip?: string
-}
-
-export type LayoutRecord =
-  | [number, number, number, number]
-  | [
-      number,
-      number,
-      number,
-      number,
-      {
-        label?: string
-        description?: string
-        refName: string
-        floatingLabels?: FloatingLabelData[]
-        totalFeatureHeight?: number
-        totalLayoutWidth?: number
-        featureWidth?: number
-        actualTopPx?: number
-      },
-    ]
-
-export interface ExportSvgDisplayOptions extends ExportSvgOptions {
-  overrideHeight?: number
-  theme?: ThemeOptions
-}
 
 /**
  * #stateModel BaseLinearDisplay

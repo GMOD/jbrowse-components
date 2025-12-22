@@ -3,15 +3,22 @@ import { useMemo } from 'react'
 import { clamp, getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { clampToViewport } from './util'
+
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { FloatingLabelData, LayoutRecord } from '../model'
+import type { FloatingLabelData, LayoutRecord } from '../types'
 
 interface PixelPositions {
   leftPx: number
   rightPx: number
 }
 
+/**
+ * Calculate pixel positions for a feature given its BP coordinates.
+ * Handles cases where one or both ends might be off-screen by estimating
+ * positions based on feature width and bpPerPx.
+ */
 function calculateFeaturePixelPositions(
   view: LinearGenomeViewModel,
   assembly:
@@ -34,24 +41,24 @@ function calculateFeaturePixelPositions(
     coord: right,
   })?.offsetPx
 
+  // Helper to create normalized positions from two pixel values
+  const makePositions = (px1: number, px2: number): PixelPositions => ({
+    leftPx: Math.min(px1, px2),
+    rightPx: Math.max(px1, px2),
+  })
+
   if (leftBpPx !== undefined) {
-    const px1 = leftBpPx
-    const px2 =
-      rightBpPx !== undefined ? rightBpPx : px1 + (right - left) / bpPerPx
-
-    return {
-      leftPx: Math.min(px1, px2),
-      rightPx: Math.max(px1, px2),
-    }
+    // Left end is visible - use it and estimate/calculate right end
+    const rightEstimate =
+      rightBpPx !== undefined ? rightBpPx : leftBpPx + (right - left) / bpPerPx
+    return makePositions(leftBpPx, rightEstimate)
   } else if (rightBpPx !== undefined) {
-    const px2 = rightBpPx
-    const px1 = px2 - (right - left) / bpPerPx
-
-    return {
-      leftPx: Math.min(px1, px2),
-      rightPx: Math.max(px1, px2),
-    }
+    // Right end is visible - estimate left end from right
+    const leftEstimate = rightBpPx - (right - left) / bpPerPx
+    return makePositions(leftEstimate, rightBpPx)
   } else {
+    // Both ends are off-screen - can't determine position
+    // (Will fall back to multi-region calculation)
     return undefined
   }
 }
@@ -62,6 +69,91 @@ interface FeatureLabelData {
   topPx: number
   totalFeatureHeight: number
   floatingLabels: FloatingLabelData[]
+}
+
+/**
+ * Calculate pixel positions for features that span multiple regions
+ * (e.g., genes with collapsed introns where both ends are off-screen)
+ */
+function calculateMultiRegionPositions(
+  view: LinearGenomeViewModel,
+  assembly:
+    | { getCanonicalRefName: (refName: string) => string | undefined }
+    | undefined,
+  refName: string,
+  left: number,
+  right: number,
+): { leftPx: number; rightPx: number } | undefined {
+  const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
+  const visibleRegions = view.displayedRegions.filter(
+    r => r.refName === canonicalRefName && r.start < right && r.end > left,
+  )
+
+  if (visibleRegions.length === 0) {
+    return undefined
+  }
+
+  // Calculate the leftmost and rightmost pixel positions across ALL visible regions
+  let minLeftPx = Infinity
+  let maxRightPx = -Infinity
+
+  for (const region of visibleRegions) {
+    const regionStart = Math.max(left, region.start)
+    const regionEnd = Math.min(right, region.end)
+
+    const startPx = view.bpToPx({
+      refName: canonicalRefName,
+      coord: regionStart,
+    })?.offsetPx
+
+    const endPx = view.bpToPx({
+      refName: canonicalRefName,
+      coord: regionEnd,
+    })?.offsetPx
+
+    if (startPx !== undefined && endPx !== undefined) {
+      minLeftPx = Math.min(minLeftPx, startPx, endPx)
+      maxRightPx = Math.max(maxRightPx, startPx, endPx)
+    }
+  }
+
+  if (minLeftPx === Infinity || maxRightPx === -Infinity) {
+    return undefined
+  }
+
+  return { leftPx: minLeftPx, rightPx: maxRightPx }
+}
+
+/**
+ * Try to get pixel positions for a feature, falling back to multi-region
+ * calculation if both ends are off-screen.
+ */
+function getFeaturePositions(
+  view: LinearGenomeViewModel,
+  assembly:
+    | { getCanonicalRefName: (refName: string) => string | undefined }
+    | undefined,
+  refName: string,
+  left: number,
+  right: number,
+  bpPerPx: number,
+): PixelPositions | undefined {
+  // Try standard calculation first
+  const positions = calculateFeaturePixelPositions(
+    view,
+    assembly,
+    refName,
+    left,
+    right,
+    bpPerPx,
+  )
+
+  if (positions) {
+    return positions
+  }
+
+  // Fall back to multi-region calculation (for collapsed introns, etc.)
+  return calculateMultiRegionPositions(view, assembly, refName, left, right)
 }
 
 function deduplicateFeatureLabels(
@@ -83,14 +175,13 @@ function deduplicateFeatureLabels(
 
     const [left, topPx, right, , feature] = val
     const { refName, floatingLabels, totalFeatureHeight, actualTopPx } = feature
-
     const effectiveTopPx = actualTopPx ?? topPx
 
     if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
       continue
     }
 
-    const positions = calculateFeaturePixelPositions(
+    const positions = getFeaturePositions(
       view,
       assembly,
       refName,
@@ -105,6 +196,7 @@ function deduplicateFeatureLabels(
 
     const { leftPx, rightPx } = positions
 
+    // Store the leftmost occurrence of this feature
     const existing = featureLabels.get(key)
     if (!existing || leftPx < existing.leftPx) {
       featureLabels.set(key, {
@@ -145,8 +237,14 @@ function FloatingLabel({
   offsetPx,
   tooltip,
 }: LabelProps) {
-  const naturalX = featureLeftPx - offsetPx
-  const maxX = featureRightPx - offsetPx - labelWidth
+  const { leftPx, rightPx } = clampToViewport(
+    featureLeftPx,
+    featureRightPx,
+    offsetPx,
+  )
+
+  const naturalX = leftPx - offsetPx
+  const maxX = rightPx - offsetPx - labelWidth
   const x = clamp(0, naturalX, maxX)
 
   return (

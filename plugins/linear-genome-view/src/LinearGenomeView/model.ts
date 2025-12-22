@@ -792,12 +792,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         // tweak the offset so that the center of the view remains at the same
         // coordinate
-        this.scrollTo(
-          Math.round(
-            ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
-              (centerAtOffset ? self.width / 2 : offset),
-          ),
+        const newOffsetPx = Math.round(
+          ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
+            (centerAtOffset ? self.width / 2 : offset),
         )
+        this.scrollTo(newOffsetPx)
         return newBpPerPx
       },
 
@@ -1022,16 +1021,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       center() {
-        const centerBp = self.totalBp / 2
-        const centerPx = centerBp / self.bpPerPx
-        self.scrollTo(Math.round(centerPx - self.width / 2))
+        // Calculate total content width including inter-region padding
+        const numPaddings = Math.max(0, self.displayedRegions.length - 1)
+        const totalPaddingPx = numPaddings * self.interRegionPaddingWidth
+        const totalContentPx = self.totalBp / self.bpPerPx + totalPaddingPx
+        const centerPx = totalContentPx / 2
+        const targetOffsetPx = Math.round(centerPx - self.width / 2)
+        self.scrollTo(targetOffsetPx)
       },
 
       /**
        * #action
        */
       showAllRegions() {
-        self.zoomTo(self.maxBpPerPx)
+        // Set zoom to show all regions, then center the view
+        self.bpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
         this.center()
       },
 

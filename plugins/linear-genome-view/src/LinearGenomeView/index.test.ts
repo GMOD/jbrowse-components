@@ -516,7 +516,7 @@ test('can instantiate a model that >2 regions', () => {
   expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
   expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
   model.showAllRegions()
-  expect(model.offsetPx).toEqual(-40)
+  expect(model.offsetPx).toEqual(-38)
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 100 })).toEqual({
     index: 0,
@@ -1077,4 +1077,55 @@ test('showLoading is true when init is set and becomes false after initializatio
   await waitFor(() => {
     expect(model.initialized).toBe(true)
   })
+})
+
+test('showAllRegions accounts for inter-region padding when centering', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 2000, end: 3000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 4000, end: 5000 },
+      ],
+    }),
+  )
+
+  model.setWidth(900)
+  model.showAllRegions()
+
+  // Total BP = 3000
+  // With 3 regions, there are 2 inter-region paddings = 4px
+  // bpPerPx = 3000 / (900 * 0.9) = 3.7037
+  // totalContentPx = 3000 / 3.7037 + 4 = 810 + 4 = 814
+  // centerPx = 407, offsetPx = 407 - 450 = -43
+
+  expect(model.bpPerPx).toBeCloseTo(3.7037, 3)
+  expect(model.offsetPx).toBe(-43)
+})
+
+test('showAllRegions with single region has no padding adjustment', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+      ],
+    }),
+  )
+
+  model.setWidth(900)
+  model.showAllRegions()
+
+  // Single region = 0 paddings
+  // bpPerPx = 1000 / (900 * 0.9) = 1.234567
+  // totalContentPx = 1000 / 1.234567 + 0 = 810
+  // centerPx = 405, offsetPx = 405 - 450 = -45
+
+  expect(model.bpPerPx).toBeCloseTo(1.2346, 3)
+  expect(model.offsetPx).toBe(-45)
 })
