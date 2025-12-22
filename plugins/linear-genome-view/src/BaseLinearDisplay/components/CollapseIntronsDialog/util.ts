@@ -28,7 +28,6 @@ export async function collapseIntrons({
   assembly: Assembly
   padding: number
 }) {
-  console.log('[collapseIntrons ENTRY-UNIQUE-2024] Function called')
   const r0 = transcripts[0]?.get('refName')
   if (!r0) {
     return
@@ -58,14 +57,6 @@ export async function collapseIntrons({
   const centerPx = totalContentPx / 2
   const initialOffsetPx = Math.round(centerPx - width / 2)
 
-  console.log('[CollapseIntrons UNIQUE-2024] Computed initial view state:', {
-    mergedRegions,
-    totalBp,
-    width,
-    maxBpPerPx,
-    initialOffsetPx,
-  })
-
   const newView = getSession(view).addView('LinearGenomeView', {
     ...rest,
     tracks: rest.tracks.map(({ id, ...r }) => r),
@@ -75,9 +66,4 @@ export async function collapseIntrons({
     offsetPx: initialOffsetPx,
   }) as LinearGenomeViewModel
   await when(() => newView.initialized)
-
-  console.log('[CollapseIntrons UNIQUE-2024] View initialized with:', {
-    offsetPx: newView.offsetPx,
-    bpPerPx: newView.bpPerPx,
-  })
 }

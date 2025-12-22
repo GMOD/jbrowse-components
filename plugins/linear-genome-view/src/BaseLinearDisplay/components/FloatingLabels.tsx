@@ -54,11 +54,6 @@ function calculateFeaturePixelPositions(
   } else {
     // Both ends are off-screen - estimate position based on feature width
     // This can happen when feature spans regions but current viewport doesn't show either end
-    console.log('[FloatingLabels] Both ends off-screen, estimating position', {
-      refName,
-      left,
-      right,
-    })
     return undefined
   }
 }
@@ -154,17 +149,6 @@ function deduplicateFeatureLabels(
       const clampedLeftPx = Math.max(minLeftPx, viewportLeft)
       const clampedRightPx = Math.max(maxRightPx, viewportLeft)
 
-      if (minLeftPx < viewportLeft) {
-        console.log('[FloatingLabels FALLBACK] Clamping feature position:', {
-          key,
-          originalLeftPx: minLeftPx,
-          clampedLeftPx,
-          offsetPx,
-          viewportLeft,
-          floatingLabels: floatingLabels.map(l => l.text),
-        })
-      }
-
       const existing = featureLabels.get(key)
       if (!existing || clampedLeftPx < existing.leftPx) {
         featureLabels.set(key, {
@@ -187,17 +171,6 @@ function deduplicateFeatureLabels(
     const viewportLeft = Math.max(0, offsetPx)
     const clampedLeftPx = Math.max(leftPx, viewportLeft)
     const clampedRightPx = Math.max(rightPx, viewportLeft)
-
-    if (leftPx < viewportLeft) {
-      console.log('[FloatingLabels] Clamping feature position:', {
-        key,
-        originalLeftPx: leftPx,
-        clampedLeftPx,
-        offsetPx,
-        viewportLeft,
-        floatingLabels: floatingLabels.map(l => l.text),
-      })
-    }
 
     const existing = featureLabels.get(key)
     if (!existing || clampedLeftPx < existing.leftPx) {
@@ -313,13 +286,6 @@ const FloatingLabels = observer(function ({
       } = floatingLabel
 
       if (labelWidth > featureWidth) {
-        console.log('[FloatingLabels] Skipping label (too wide):', {
-          text,
-          labelWidth,
-          featureWidth,
-          leftPx,
-          rightPx,
-        })
         continue
       }
 

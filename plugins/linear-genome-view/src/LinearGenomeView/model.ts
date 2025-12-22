@@ -770,12 +770,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       scrollTo(offsetPx: number) {
         const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
-        console.log('[scrollTo]:', {
-          requested: offsetPx,
-          clamped: newOffsetPx,
-          minOffset: self.minOffset,
-          maxOffset: self.maxOffset,
-        })
         self.offsetPx = newOffsetPx
         return newOffsetPx
       },
@@ -802,15 +796,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
             (centerAtOffset ? self.width / 2 : offset),
         )
-        console.log('[zoomTo] Calculation:', {
-          oldOffsetPx: self.offsetPx,
-          oldBpPerPx,
-          newBpPerPx,
-          offset,
-          centerAtOffset,
-          calculation: `((${self.offsetPx} + ${offset}) * ${oldBpPerPx}) / ${newBpPerPx} - ${centerAtOffset ? self.width / 2 : offset}`,
-          newOffsetPx,
-        })
         this.scrollTo(newOffsetPx)
         return newBpPerPx
       },
@@ -1042,17 +1027,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const totalContentPx = self.totalBp / self.bpPerPx + totalPaddingPx
         const centerPx = totalContentPx / 2
         const targetOffsetPx = Math.round(centerPx - self.width / 2)
-        console.log('[center] Calculation:', {
-          totalBp: self.totalBp,
-          bpPerPx: self.bpPerPx,
-          numRegions: self.displayedRegions.length,
-          numPaddings,
-          totalPaddingPx,
-          totalContentPx,
-          centerPx,
-          width: self.width,
-          targetOffsetPx,
-        })
         self.scrollTo(targetOffsetPx)
       },
 
@@ -1060,14 +1034,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showAllRegions() {
-        console.log('[showAllRegions UNIQUE-2024] Start:', {
-          offsetPx: self.offsetPx,
-          bpPerPx: self.bpPerPx,
-          width: self.width,
-          totalBp: self.totalBp,
-          maxBpPerPx: self.maxBpPerPx,
-        })
-
         // Compute target values
         const targetBpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
 
@@ -1081,13 +1047,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // Set both values directly - no intermediate steps
         self.bpPerPx = targetBpPerPx
         self.offsetPx = clamp(targetOffsetPx, self.minOffset, self.maxOffset)
-
-        console.log('[showAllRegions DIRECT-SET] Set bpPerPx and offsetPx directly:', {
-          targetBpPerPx,
-          targetOffsetPx,
-          bpPerPx: self.bpPerPx,
-          offsetPx: self.offsetPx,
-        })
       },
 
       /**
