@@ -7,7 +7,9 @@ import { replaceUndefinedWithNull } from '../util'
 
 import type { BaseInputProps } from './types'
 
-const BaseFeatureDetail = observer(function ({ model }: BaseInputProps) {
+const BaseFeatureDetail = observer(function BaseFeatureDetail({
+  model,
+}: BaseInputProps) {
   const { error, descriptions, featureData } = model
 
   if (error) {

@@ -13,7 +13,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const NumberEditor = observer(function ({
+const NumberEditor = observer(function NumberEditor({
   model,
   disabled,
   modelPropName,

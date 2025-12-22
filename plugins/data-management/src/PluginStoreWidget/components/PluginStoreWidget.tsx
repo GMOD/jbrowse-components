@@ -50,7 +50,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const PluginStoreWidget = observer(function ({
+const PluginStoreWidget = observer(function PluginStoreWidget({
   model,
 }: {
   model: PluginStoreModel

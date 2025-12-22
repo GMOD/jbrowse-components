@@ -22,7 +22,7 @@ function getInitialToggleValue(location?: FileLocation) {
   return !location || isUriLocation(location) ? 'url' : 'file'
 }
 
-const FileSelector = observer(function ({
+const FileSelector = observer(function FileSelector({
   inline,
   location,
   name,

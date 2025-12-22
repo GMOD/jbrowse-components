@@ -43,7 +43,7 @@ function getItemLabel(item: ClickMapItem | undefined, refName?: string) {
   return `${label}\nPosition: ${location}`
 }
 
-const SNPCoverageRendering = observer(function (props: {
+const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
   regions: Region[]
   features: Map<string, Feature>
   bpPerPx: number

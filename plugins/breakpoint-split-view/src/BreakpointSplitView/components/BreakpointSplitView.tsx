@@ -36,7 +36,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const BreakpointSplitViewLevels = observer(function ({
+const BreakpointSplitViewLevels = observer(function BreakpointSplitViewLevels({
   model,
 }: {
   model: BreakpointViewModel
@@ -65,7 +65,7 @@ const BreakpointSplitViewLevels = observer(function ({
   )
 })
 
-const BreakpointSplitView = observer(function ({
+const BreakpointSplitView = observer(function BreakpointSplitView({
   model,
 }: {
   model: BreakpointViewModel

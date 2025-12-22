@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel } from '../../model'
 
-const DeleteBookmarksDialog = observer(function ({
+const DeleteBookmarksDialog = observer(function DeleteBookmarksDialog({
   onClose,
   model,
 }: {

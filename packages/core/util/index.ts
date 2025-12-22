@@ -1095,9 +1095,13 @@ export function getLayoutId({
 }
 
 // Hook from https://usehooks.com/useLocalStorage/
-export function useLocalStorage<T>(key: string, initialValue: T) {
+export function useLocalStorage<T>(
+  key: string,
+  initialValue: T,
+  enabled = true,
+) {
   const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || !enabled) {
       return initialValue
     }
     try {
@@ -1114,7 +1118,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
         // eslint-disable-next-line unicorn/no-instanceof-builtins
         value instanceof Function ? value(storedValue) : value
       setStoredValue(valueToStore)
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && enabled) {
         window.localStorage.setItem(key, JSON.stringify(valueToStore))
       }
     } catch (error) {

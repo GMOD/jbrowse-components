@@ -8,7 +8,7 @@ import type { SimpleFeatureSerialized } from '../../../util'
 import type { Feat } from '../../util'
 import type { SequenceFeatureDetailsModel } from '../model'
 
-const CDNASequence = observer(function ({
+const CDNASequence = observer(function CDNASequence({
   utr,
   cds,
   exons,

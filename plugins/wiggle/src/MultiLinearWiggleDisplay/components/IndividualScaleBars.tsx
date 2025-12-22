@@ -6,7 +6,7 @@ import YScaleBar from '../../shared/YScaleBar'
 
 import type { WiggleDisplayModel } from '../model'
 
-const IndividualScaleBars = observer(function ({
+const IndividualScaleBars = observer(function IndividualScaleBars({
   model,
   orientation,
   exportSVG,

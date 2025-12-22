@@ -36,7 +36,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const LinearSyntenyRendering = observer(function ({
+const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   model,
 }: {
   model: LinearSyntenyDisplayModel

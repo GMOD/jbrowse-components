@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const HierarchicalFab = observer(function ({
+const HierarchicalFab = observer(function HierarchicalFab({
   model,
 }: {
   model: HierarchicalTrackSelectorModel

@@ -42,7 +42,11 @@ function getDescendantNames(node: ClusterHierarchyNode): string[] {
  * The sticky container keeps the tree visible when the parent scrolls.
  * The tree drawing uses translate(-scrollTop) to show the correct portion.
  */
-const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
+const TreeSidebar = observer(function TreeSidebar({
+  model,
+}: {
+  model: TreeSidebarModel
+}) {
   const { classes } = useStyles()
   const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
   const [nodeIndex, setNodeIndex] = useState<Flatbush | null>(null)

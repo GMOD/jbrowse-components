@@ -17,7 +17,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const SetMaxHeightDialog = observer(function (props: {
+const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
   model: {
     maxHeight?: number
     setMaxHeight: (arg?: number) => void

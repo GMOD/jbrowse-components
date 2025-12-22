@@ -81,7 +81,7 @@ function screenToUnrotated(
   return { x, y }
 }
 
-const HicCanvas = observer(function ({
+const HicCanvas = observer(function HicCanvas({
   model,
 }: {
   model: LinearHicDisplayModel
@@ -198,7 +198,7 @@ const HicCanvas = observer(function ({
   )
 })
 
-const LinearHicReactComponent = observer(function ({
+const LinearHicReactComponent = observer(function LinearHicReactComponent({
   model,
 }: {
   model: LinearHicDisplayModel

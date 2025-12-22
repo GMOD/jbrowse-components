@@ -5,7 +5,7 @@ import { useSlotEditorStyles } from './useSlotEditorStyles'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-const TypeSelector = observer(function ({
+const TypeSelector = observer(function TypeSelector({
   typeNameChoices,
   slot,
   slotName,

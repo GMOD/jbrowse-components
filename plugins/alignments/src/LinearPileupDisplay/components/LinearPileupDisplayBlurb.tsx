@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import type { SortedBy } from '../../shared/types'
 
-const LinearPileupDisplayBlurb = observer(function ({
+const LinearPileupDisplayBlurb = observer(function LinearPileupDisplayBlurb({
   model,
 }: {
   model: {

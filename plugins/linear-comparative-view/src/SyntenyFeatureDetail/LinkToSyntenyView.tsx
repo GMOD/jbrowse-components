@@ -17,7 +17,7 @@ const LaunchSyntenyViewDialog = lazy(
   () => import('../LGVSyntenyDisplay/components/LaunchSyntenyViewDialog'),
 )
 
-const LinkToSyntenyView = observer(function ({
+const LinkToSyntenyView = observer(function LinkToSyntenyView({
   model,
   feat,
 }: {

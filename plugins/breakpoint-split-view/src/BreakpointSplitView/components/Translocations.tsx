@@ -20,7 +20,7 @@ function str(s: string) {
   return s === '+' ? 1 : s === '-' ? -1 : 0
 }
 
-const Translocations = observer(function ({
+const Translocations = observer(function Translocations({
   model,
   trackId,
   parentRef,

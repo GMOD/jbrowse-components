@@ -19,7 +19,7 @@ const ArcTooltip = lazy(() => import('../../ArcTooltip'))
 
 type LGV = LinearGenomeViewModel
 
-const Arc = observer(function ({
+const Arc = observer(function Arc({
   model,
   feature,
   alt,
@@ -124,7 +124,7 @@ const Arc = observer(function ({
   return null
 })
 
-const Wrapper = observer(function ({
+const Wrapper = observer(function Wrapper({
   model,
   exportSVG,
   children,
@@ -145,7 +145,7 @@ const Wrapper = observer(function ({
   )
 })
 
-const Arcs = observer(function ({
+const Arcs = observer(function Arcs({
   model,
   exportSVG,
 }: {

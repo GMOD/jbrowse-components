@@ -17,7 +17,11 @@ const useStyles = makeStyles()({
   },
 })
 
-const Header = observer(function ({ model }: { model: BreakpointViewModel }) {
+const Header = observer(function Header({
+  model,
+}: {
+  model: BreakpointViewModel
+}) {
   const { classes } = useStyles()
   const { views } = model
   const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)

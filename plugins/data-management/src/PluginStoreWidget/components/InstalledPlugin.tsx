@@ -38,7 +38,7 @@ function LockedPluginIconButton() {
   )
 }
 
-const UninstallPluginIconButton = observer(function ({
+const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
   plugin,
   model,
 }: {
@@ -81,7 +81,7 @@ const UninstallPluginIconButton = observer(function ({
   )
 })
 
-const InstalledPlugin = observer(function ({
+const InstalledPlugin = observer(function InstalledPlugin({
   plugin,
   model,
 }: {

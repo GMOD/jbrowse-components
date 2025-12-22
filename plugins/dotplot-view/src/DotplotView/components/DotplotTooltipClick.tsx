@@ -7,7 +7,7 @@ import type { DotplotViewModel } from '../model'
 
 type Coord = [number, number] | undefined
 
-const DotplotTooltipClick = observer(function ({
+const DotplotTooltipClick = observer(function DotplotTooltipClick({
   model,
   mousedown,
   mousedownClient,

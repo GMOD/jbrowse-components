@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const StringArrayMapEditor = observer(function ({
+const StringArrayMapEditor = observer(function StringArrayMapEditor({
   slot,
 }: {
   slot: {

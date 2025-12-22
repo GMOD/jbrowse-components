@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import type { WiggleDisplayModel } from '../model'
 
-const YScaleBarsWrapper = observer(function ({
+const YScaleBarsWrapper = observer(function YScaleBarsWrapper({
   children,
   model,
   exportSVG,

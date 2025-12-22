@@ -51,7 +51,7 @@ function sliceArcPath(
   ].join(' ')
 }
 
-const ElisionRulerArc = observer(function ({
+const ElisionRulerArc = observer(function ElisionRulerArc({
   model,
   slice,
   region,
@@ -103,7 +103,7 @@ const ElisionRulerArc = observer(function ({
   )
 })
 
-const RulerLabel = observer(function ({
+const RulerLabel = observer(function RulerLabel({
   view,
   text,
   maxWidthPx,
@@ -179,7 +179,7 @@ const RulerLabel = observer(function ({
   }
 })
 
-const RegionRulerArc = observer(function ({
+const RegionRulerArc = observer(function RegionRulerArc({
   model,
   slice,
   region,
@@ -227,7 +227,7 @@ const RegionRulerArc = observer(function ({
   )
 })
 
-const Ruler = observer(function ({
+const Ruler = observer(function Ruler({
   model,
   slice,
 }: {

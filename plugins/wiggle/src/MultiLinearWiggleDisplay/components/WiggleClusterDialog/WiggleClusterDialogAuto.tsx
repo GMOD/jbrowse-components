@@ -24,7 +24,7 @@ import type { Source } from '../../../util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const WiggleClusterDialogAuto = observer(function ({
+const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
   model,
   children,
   handleClose,

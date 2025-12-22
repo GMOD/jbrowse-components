@@ -5,7 +5,7 @@ import { LogoFull } from './Logo'
 
 import type { AnyConfigurationModel } from '../configuration'
 
-const Logo = observer(function ({
+const Logo = observer(function Logo({
   session,
 }: {
   session: { configuration: AnyConfigurationModel }

@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const EditGCContentParamsDialog = observer(function ({
+const EditGCContentParamsDialog = observer(function EditGCContentParamsDialog({
   model,
   handleClose,
 }: {

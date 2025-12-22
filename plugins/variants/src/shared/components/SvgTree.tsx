@@ -2,7 +2,11 @@ import { observer } from 'mobx-react'
 
 import type { LegendBarModel } from './types'
 
-const SvgTree = observer(function ({ model }: { model: LegendBarModel }) {
+const SvgTree = observer(function SvgTree({
+  model,
+}: {
+  model: LegendBarModel
+}) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { treeAreaWidth: _treeAreaWidth, hierarchy } = model
   const svg = []

@@ -20,7 +20,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const PreferencesDialog = observer(function ({
+const PreferencesDialog = observer(function PreferencesDialog({
   handleClose,
   session,
 }: {

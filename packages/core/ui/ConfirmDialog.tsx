@@ -13,7 +13,7 @@ interface Props extends DialogProps {
   submitText?: string
 }
 
-const ConfirmDialog = observer(function (props: Props) {
+const ConfirmDialog = observer(function ConfirmDialog(props: Props) {
   const {
     onSubmit,
     onCancel,

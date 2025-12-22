@@ -11,7 +11,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const SequenceTypeSelector = observer(function ({
+const SequenceTypeSelector = observer(function SequenceTypeSelector({
   model,
 }: {
   model: SequenceFeatureDetailsModel

@@ -56,7 +56,7 @@ const DrawerAppBar = observer(function DrawerAppBar({
   )
 })
 
-const ModalWidget = observer(function ({
+const ModalWidget = observer(function ModalWidget({
   session,
   onClose,
 }: {

@@ -67,7 +67,11 @@ function ContentBlockLabels({
   )
 }
 
-const ScalebarCoordinateLabels = observer(function ({ model }: { model: LGV }) {
+const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
+  model,
+}: {
+  model: LGV
+}) {
   const { classes, cx } = useStyles()
   const { staticBlocks, bpPerPx } = model
 

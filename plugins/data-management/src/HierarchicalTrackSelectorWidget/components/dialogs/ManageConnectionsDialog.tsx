@@ -32,7 +32,7 @@ function DisabledButton() {
   )
 }
 
-const ManageConnectionsDialog = observer(function ({
+const ManageConnectionsDialog = observer(function ManageConnectionsDialog({
   session,
   handleClose,
   breakConnection,

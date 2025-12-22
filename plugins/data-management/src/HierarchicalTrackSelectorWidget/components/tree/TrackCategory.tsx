@@ -42,7 +42,7 @@ function getTrackIdsFromCategory(node: TreeCategoryNode): string[] {
     .map(entry => entry.trackId)
 }
 
-const TrackCategory = observer(function ({
+const TrackCategory = observer(function TrackCategory({
   item,
   model,
 }: {

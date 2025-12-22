@@ -10,7 +10,7 @@ import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-const AssemblyTable = observer(function ({
+const AssemblyTable = observer(function AssemblyTable({
   onEditAssembly,
   onAddAssembly,
   onClose,

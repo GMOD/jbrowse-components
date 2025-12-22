@@ -51,7 +51,7 @@ function validateAndSetCode(
   }
 }
 
-const CallbackEditor = observer(function ({
+const CallbackEditor = observer(function CallbackEditor({
   slot,
 }: {
   slot: {
