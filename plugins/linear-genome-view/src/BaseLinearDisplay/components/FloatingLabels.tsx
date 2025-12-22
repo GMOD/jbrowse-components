@@ -130,6 +130,7 @@ interface LabelProps {
   labelWidth: number
   y: number
   offsetPx: number
+  tooltip?: string
 }
 
 function FloatingLabel({
@@ -142,6 +143,7 @@ function FloatingLabel({
   labelWidth,
   y,
   offsetPx,
+  tooltip,
 }: LabelProps) {
   const naturalX = featureLeftPx - offsetPx
   const maxX = featureRightPx - offsetPx - labelWidth
@@ -151,10 +153,11 @@ function FloatingLabel({
     <div
       data-testid={`floatingLabel-${text}`}
       data-feature-id={featureId}
+      data-tooltip={tooltip}
       style={{
         position: 'absolute',
         fontSize: '11px',
-        cursor: 'pointer',
+        cursor: 'default',
         pointerEvents: 'auto',
         color,
         backgroundColor: isOverlay ? 'rgba(255, 255, 255, 0.8)' : undefined,
@@ -187,6 +190,10 @@ const FloatingLabels = observer(function ({
     [layoutFeatures, view, assembly, bpPerPx],
   )
 
+  // @ts-expect-error
+  const { onFeatureClick, onFeatureContextMenu, onMouseMove } =
+    model.renderingProps()
+
   if (!featureLabels) {
     return null
   }
@@ -208,6 +215,7 @@ const FloatingLabels = observer(function ({
         color,
         isOverlay,
         textWidth: labelWidth,
+        tooltip,
       } = floatingLabel
 
       if (labelWidth > featureWidth) {
@@ -228,12 +236,11 @@ const FloatingLabels = observer(function ({
           labelWidth={labelWidth}
           y={y}
           offsetPx={offsetPx}
+          tooltip={tooltip}
         />,
       )
     }
   }
-
-  const { onFeatureClick, onFeatureContextMenu } = model.renderingProps()
 
   return (
     <div
@@ -249,6 +256,13 @@ const FloatingLabels = observer(function ({
         const featureId = target.dataset.featureId
         if (featureId) {
           onFeatureContextMenu?.(e, featureId)
+        }
+      }}
+      onMouseOver={e => {
+        const target = e.target as HTMLElement
+        const { featureId, tooltip } = target.dataset
+        if (featureId) {
+          onMouseMove?.(e, featureId, tooltip)
         }
       }}
       style={{

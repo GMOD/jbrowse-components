@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { truncateLabel } from './util'
+import { buildFeatureTooltip, truncateLabel } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -15,6 +15,7 @@ export interface FloatingLabelData {
   color: string
   textWidth: number
   isOverlay?: boolean
+  tooltip?: string
 }
 
 /**
@@ -59,6 +60,13 @@ export function createFeatureFloatingLabels({
 
   const floatingLabels: FloatingLabelData[] = []
 
+  // Build tooltip using shared function (same as CanvasFeatureRendering)
+  const tooltip = buildFeatureTooltip({
+    mouseOver: feature.get('_mouseOver') as string | undefined,
+    label: rawName,
+    description: rawDescription,
+  })
+
   if (shouldShowLabel && shouldShowDescription) {
     floatingLabels.push(
       {
@@ -66,12 +74,14 @@ export function createFeatureFloatingLabels({
         relativeY: 0,
         color: nameColor,
         textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
+        tooltip,
       },
       {
         text: description,
         relativeY: actualFontHeight,
         color: descriptionColor,
         textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
+        tooltip,
       },
     )
   } else if (shouldShowLabel) {
@@ -80,6 +90,7 @@ export function createFeatureFloatingLabels({
       relativeY: 0,
       color: nameColor,
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
+      tooltip,
     })
   } else if (shouldShowDescription) {
     floatingLabels.push({
@@ -87,6 +98,7 @@ export function createFeatureFloatingLabels({
       relativeY: 0,
       color: descriptionColor,
       textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
+      tooltip,
     })
   }
 
@@ -129,5 +141,6 @@ export function createTranscriptFloatingLabel({
     color,
     textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
     isOverlay,
+    tooltip: buildFeatureTooltip({ label: transcriptName }),
   }
 }

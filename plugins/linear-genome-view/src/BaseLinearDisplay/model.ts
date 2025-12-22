@@ -75,6 +75,7 @@ export interface FloatingLabelData {
   color: string
   textWidth: number
   isOverlay?: boolean
+  tooltip?: string
 }
 
 export type LayoutRecord =
