@@ -125,9 +125,8 @@ export function makeImageData({
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
-    const mouseOver = feature.get('_mouseOver') as string | undefined
     const tooltip = buildFeatureTooltip({
-      mouseOver,
+      mouseOver: feature.get('_mouseOver') as string | undefined,
       label: label || undefined,
       description: description || undefined,
     })
@@ -142,9 +141,6 @@ export function makeImageData({
       rightPx,
       topPx,
       bottomPx,
-      label: label || undefined,
-      description: description || undefined,
-      mouseOver,
       tooltip,
     })
 

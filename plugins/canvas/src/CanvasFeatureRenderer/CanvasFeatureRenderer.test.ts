@@ -182,8 +182,7 @@ describe('CanvasFeatureRenderer', () => {
 
       expect(result.items).toHaveLength(1)
       expect(result.items[0]!.featureId).toBe('test1')
-      expect(result.items[0]!.label).toBe('TestFeature')
-      expect(result.items[0]!.description).toBe('A test feature')
+      expect(result.items[0]!.tooltip).toBe('TestFeature<br/>A test feature')
       expect(result.items[0]!.startBp).toBe(100)
       expect(result.items[0]!.endBp).toBe(200)
       expect(result.flatbush).toBeDefined()
@@ -236,7 +235,7 @@ describe('CanvasFeatureRenderer', () => {
           }),
       )
 
-      expect(result.items[0]!.mouseOver).toBe('Custom mouseover text')
+      expect(result.items[0]!.tooltip).toBe('Custom mouseover text')
     })
 
     test('gene with mRNA transcript creates subfeature info', async () => {
@@ -400,8 +399,9 @@ describe('CanvasFeatureRenderer', () => {
           }),
       )
 
-      expect(result.items[0]!.label).toBe(longName)
-      expect(result.items[0]!.label!.length).toBe(60)
+      // Tooltip contains full (non-truncated) name
+      expect(result.items[0]!.tooltip).toBe(longName)
+      expect(result.items[0]!.tooltip!.length).toBe(60)
     })
 
     test('snapshot of flatbush items structure', async () => {

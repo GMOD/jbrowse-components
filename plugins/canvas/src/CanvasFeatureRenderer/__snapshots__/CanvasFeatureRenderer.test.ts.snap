@@ -4,14 +4,12 @@ exports[`CanvasFeatureRenderer makeImageData snapshot of flatbush items structur
 [
   {
     "bottomPx": 34,
-    "description": "Test description",
     "endBp": 200,
     "featureId": "test1",
-    "label": "TestFeature",
     "leftPx": 100,
-    "mouseOver": undefined,
     "rightPx": 200,
     "startBp": 100,
+    "tooltip": "TestFeature<br/>Test description",
     "topPx": 0,
     "type": "box",
   },

@@ -58,7 +58,7 @@ export default function LoadingOverlay({
       {children}
       <span
         className={cx(classes.overlay, isLoading && classes.visible)}
-        data-testid="loading-overlay"
+        data-testid={isLoading ? 'loading-overlay' : undefined}
       >
         <span className={classes.dots}>{statusMessage || 'Loading'}</span>
       </span>
