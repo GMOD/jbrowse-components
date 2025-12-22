@@ -2,12 +2,13 @@ import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { openDB } from 'idb'
 import { autorun } from 'mobx'
 
 import { readSessionFromDynamo } from './sessionSharing'
 import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 
-import type { SessionTriagedInfo } from './types'
+import type { SessionDB, SessionTriagedInfo } from './types'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -404,6 +405,22 @@ const SessionLoader = types
         if (query === sessionSnap.id) {
           return this.loadSession(sessionSnap)
         }
+      }
+
+      // check IndexedDB for saved session
+      try {
+        const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
+          upgrade(db) {
+            db.createObjectStore('metadata')
+            db.createObjectStore('sessions')
+          },
+        })
+        const sessionSnap = await sessionDB.get('sessions', query)
+        if (sessionSnap) {
+          return await this.loadSession(sessionSnap)
+        }
+      } catch (e) {
+        console.error(e)
       }
 
       if (self.bc1) {
