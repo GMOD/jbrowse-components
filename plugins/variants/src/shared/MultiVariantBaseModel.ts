@@ -24,6 +24,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ClusterHierarchyNode, HoveredTreeNode } from './components/types'
 
 export interface NewickData {
   data: NewickNode
@@ -32,6 +33,10 @@ export interface NewickData {
 
 export interface NewickNode {
   children?: NewickNode[]
+  data: {
+    name: string
+    height: number
+  }
 }
 
 // lazies
@@ -170,7 +175,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
-      hoveredTreeNode: undefined as HierarchyNode | undefined,
+      hoveredTreeNode: undefined as HoveredTreeNode | undefined,
       /**
        * #volatile
        */
@@ -202,7 +207,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredTreeNode(node: HierarchyNode | undefined) {
+      setHoveredTreeNode(node?: HoveredTreeNode) {
         self.hoveredTreeNode = node
       },
       /**
