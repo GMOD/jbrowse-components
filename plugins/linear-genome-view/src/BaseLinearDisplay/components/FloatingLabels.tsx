@@ -66,6 +66,59 @@ interface FeatureLabelData {
   floatingLabels: FloatingLabelData[]
 }
 
+/**
+ * Calculate pixel positions for features that span multiple regions
+ * (e.g., genes with collapsed introns where both ends are off-screen)
+ */
+function calculateMultiRegionPositions(
+  view: LinearGenomeViewModel,
+  assembly:
+    | { getCanonicalRefName: (refName: string) => string | undefined }
+    | undefined,
+  refName: string,
+  left: number,
+  right: number,
+): { leftPx: number; rightPx: number } | undefined {
+  const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
+  const visibleRegions = view.displayedRegions.filter(
+    r => r.refName === canonicalRefName && r.start < right && r.end > left,
+  )
+
+  if (visibleRegions.length === 0) {
+    return undefined
+  }
+
+  // Calculate the leftmost and rightmost pixel positions across ALL visible regions
+  let minLeftPx = Infinity
+  let maxRightPx = -Infinity
+
+  for (const region of visibleRegions) {
+    const regionStart = Math.max(left, region.start)
+    const regionEnd = Math.min(right, region.end)
+
+    const startPx = view.bpToPx({
+      refName: canonicalRefName,
+      coord: regionStart,
+    })?.offsetPx
+
+    const endPx = view.bpToPx({
+      refName: canonicalRefName,
+      coord: regionEnd,
+    })?.offsetPx
+
+    if (startPx !== undefined && endPx !== undefined) {
+      minLeftPx = Math.min(minLeftPx, startPx, endPx)
+      maxRightPx = Math.max(maxRightPx, startPx, endPx)
+    }
+  }
+
+  if (minLeftPx === Infinity || maxRightPx === -Infinity) {
+    return undefined
+  }
+
+  return { leftPx: minLeftPx, rightPx: maxRightPx }
+}
+
 function deduplicateFeatureLabels(
   layoutFeatures: {
     entries(): IterableIterator<readonly [string, LayoutRecord | undefined]>
@@ -103,46 +156,21 @@ function deduplicateFeatureLabels(
 
     if (!positions) {
       // Feature spans regions that aren't all visible (e.g., in collapsed introns view).
-      // Find ALL visible regions within the feature's range and use the full span.
-      const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
-      const visibleRegions = view.displayedRegions.filter(
-        r => r.refName === canonicalRefName && r.start < right && r.end > left,
+      // Calculate positions across all visible regions
+      const multiRegionPositions = calculateMultiRegionPositions(
+        view,
+        assembly,
+        refName,
+        left,
+        right,
       )
 
-      if (visibleRegions.length === 0) {
+      if (!multiRegionPositions) {
         continue
       }
 
-      // Calculate the leftmost and rightmost pixel positions across ALL visible regions
-      let minLeftPx = Infinity
-      let maxRightPx = -Infinity
+      const { leftPx: minLeftPx, rightPx: maxRightPx } = multiRegionPositions
 
-      for (const region of visibleRegions) {
-        const regionStart = Math.max(left, region.start)
-        const regionEnd = Math.min(right, region.end)
-
-        const startPx = view.bpToPx({
-          refName: canonicalRefName,
-          coord: regionStart,
-        })?.offsetPx
-
-        const endPx = view.bpToPx({
-          refName: canonicalRefName,
-          coord: regionEnd,
-        })?.offsetPx
-
-        if (startPx !== undefined && endPx !== undefined) {
-          minLeftPx = Math.min(minLeftPx, startPx, endPx)
-          maxRightPx = Math.max(maxRightPx, startPx, endPx)
-        }
-      }
-
-      if (minLeftPx === Infinity || maxRightPx === -Infinity) {
-        continue
-      }
-
-      // Don't clamp here - store the actual positions
-      // Clamping will happen in FloatingLabel component based on current offsetPx
       const existing = featureLabels.get(key)
       if (!existing || minLeftPx < existing.leftPx) {
         featureLabels.set(key, {

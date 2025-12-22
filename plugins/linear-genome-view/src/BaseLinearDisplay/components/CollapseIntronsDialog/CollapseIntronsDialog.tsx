@@ -10,11 +10,12 @@ import {
   TextField,
 } from '@mui/material'
 
+import TranscriptTable from './TranscriptTable'
+import { collapseIntrons } from './util'
+
 import type { LinearGenomeViewModel } from '../../../LinearGenomeView'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
-import TranscriptTable from './TranscriptTable'
-import { collapseIntrons } from './util'
 
 export default function CollapseIntronsDialog({
   view,

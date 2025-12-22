@@ -1,4 +1,4 @@
-import { Feature } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 export function hasExonsOrCDS(transcripts: Feature[]) {
   return transcripts.some(t => {

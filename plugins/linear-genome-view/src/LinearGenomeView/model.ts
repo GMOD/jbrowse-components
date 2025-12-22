@@ -1034,19 +1034,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showAllRegions() {
-        // Compute target values
-        const targetBpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
-
-        // Calculate proper centered offset for target zoom
-        const numPaddings = Math.max(0, self.displayedRegions.length - 1)
-        const totalPaddingPx = numPaddings * self.interRegionPaddingWidth
-        const totalContentPx = self.totalBp / targetBpPerPx + totalPaddingPx
-        const centerPx = totalContentPx / 2
-        const targetOffsetPx = Math.round(centerPx - self.width / 2)
-
-        // Set both values directly - no intermediate steps
-        self.bpPerPx = targetBpPerPx
-        self.offsetPx = clamp(targetOffsetPx, self.minOffset, self.maxOffset)
+        // Set zoom to show all regions, then center the view
+        self.bpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        this.center()
       },
 
       /**

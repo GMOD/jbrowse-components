@@ -27,16 +27,16 @@ import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
 import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
+import { getTranscripts, hasExonsOrCDS } from './util'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type { LegendItem } from './components/FloatingLegend'
+import type { ExportSvgDisplayOptions, LayoutRecord } from './types'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { Theme } from '@mui/material'
-import { getTranscripts, hasExonsOrCDS } from './util'
-import { ExportSvgDisplayOptions, LayoutRecord } from './types'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))

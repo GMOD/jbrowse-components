@@ -1,6 +1,5 @@
 import { getSession, mergeIntervals } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-
 import { when } from 'mobx'
 
 import type { LinearGenomeViewModel } from '../../../LinearGenomeView'
@@ -46,7 +45,9 @@ export async function collapseIntrons({
     padding,
   )
 
-  // Compute the correct bpPerPx and offsetPx for the new regions BEFORE creating the view
+  // Compute the correct bpPerPx and offsetPx for the new regions BEFORE creating the view.
+  // We do this upfront (instead of calling showAllRegions() after creation) to avoid
+  // rendering with incorrect values and then updating, which would cause layout thrashing.
   const totalBp = mergedRegions.reduce((sum, r) => sum + (r.end - r.start), 0)
   const width = view.width
   const maxBpPerPx = totalBp / (width * 0.9)
