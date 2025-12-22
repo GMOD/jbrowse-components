@@ -52,6 +52,13 @@ function calculateFeaturePixelPositions(
       rightPx: Math.max(px1, px2),
     }
   } else {
+    // Both ends are off-screen - estimate position based on feature width
+    // This can happen when feature spans regions but current viewport doesn't show either end
+    console.log('[FloatingLabels] Both ends off-screen, estimating position', {
+      refName,
+      left,
+      right,
+    })
     return undefined
   }
 }
@@ -100,6 +107,55 @@ function deduplicateFeatureLabels(
     )
 
     if (!positions) {
+      // Feature spans regions that aren't all visible (e.g., in collapsed introns view).
+      // Find ALL visible regions within the feature's range and use the full span.
+      const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
+      const visibleRegions = view.displayedRegions.filter(
+        r => r.refName === canonicalRefName && r.start < right && r.end > left,
+      )
+
+      if (visibleRegions.length === 0) {
+        continue
+      }
+
+      // Calculate the leftmost and rightmost pixel positions across ALL visible regions
+      let minLeftPx = Infinity
+      let maxRightPx = -Infinity
+
+      for (const region of visibleRegions) {
+        const regionStart = Math.max(left, region.start)
+        const regionEnd = Math.min(right, region.end)
+
+        const startPx = view.bpToPx({
+          refName: canonicalRefName,
+          coord: regionStart,
+        })?.offsetPx
+
+        const endPx = view.bpToPx({
+          refName: canonicalRefName,
+          coord: regionEnd,
+        })?.offsetPx
+
+        if (startPx !== undefined && endPx !== undefined) {
+          minLeftPx = Math.min(minLeftPx, startPx, endPx)
+          maxRightPx = Math.max(maxRightPx, startPx, endPx)
+        }
+      }
+
+      if (minLeftPx === Infinity || maxRightPx === -Infinity) {
+        continue
+      }
+
+      const existing = featureLabels.get(key)
+      if (!existing || minLeftPx < existing.leftPx) {
+        featureLabels.set(key, {
+          leftPx: minLeftPx,
+          rightPx: maxRightPx,
+          topPx: effectiveTopPx,
+          totalFeatureHeight,
+          floatingLabels,
+        })
+      }
       continue
     }
 
@@ -219,6 +275,13 @@ const FloatingLabels = observer(function ({
       } = floatingLabel
 
       if (labelWidth > featureWidth) {
+        console.log('[FloatingLabels] Skipping label (too wide):', {
+          text,
+          labelWidth,
+          featureWidth,
+          leftPx,
+          rightPx,
+        })
         continue
       }
 
