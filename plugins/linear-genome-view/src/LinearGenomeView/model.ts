@@ -554,6 +554,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get totalBp() {
+        console.log(
+          'wtf',
+          self.displayedRegions.map(r => r.end - r.start),
+          sum(self.displayedRegions.map(r => r.end - r.start)),
+        )
         return sum(self.displayedRegions.map(r => r.end - r.start))
       },
 
@@ -561,6 +566,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get maxBpPerPx() {
+        console.log(this.totalBp, self.width)
         return this.totalBp / (self.width * 0.9)
       },
 
@@ -1031,7 +1037,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showAllRegions() {
+        console.log('t1')
         self.zoomTo(self.maxBpPerPx)
+        console.log('t2')
         this.center()
       },
 

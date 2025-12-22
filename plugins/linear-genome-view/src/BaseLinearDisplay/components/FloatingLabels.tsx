@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { FloatingLabelData, LayoutRecord } from '../model'
+import type { FloatingLabelData, LayoutRecord } from '../types'
 
 interface PixelPositions {
   leftPx: number

@@ -4,9 +4,10 @@ export { BaseLinearDisplay } from './model'
 export type {
   BaseLinearDisplayModel,
   BaseLinearDisplayStateModel,
-  ExportSvgDisplayOptions,
   LegendItem,
 } from './model'
+export type { ExportSvgDisplayOptions } from './types'
+
 export {
   BlockMsg,
   Tooltip,
