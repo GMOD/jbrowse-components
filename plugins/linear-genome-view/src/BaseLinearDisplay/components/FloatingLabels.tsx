@@ -146,11 +146,30 @@ function deduplicateFeatureLabels(
         continue
       }
 
+      // Clamp leftPx to not be less than the viewport's left edge
+      // When offsetPx is negative (scrolled left), clamp to 0
+      // When offsetPx is positive (scrolled right), clamp to offsetPx
+      const { offsetPx } = view
+      const viewportLeft = Math.max(0, offsetPx)
+      const clampedLeftPx = Math.max(minLeftPx, viewportLeft)
+      const clampedRightPx = Math.max(maxRightPx, viewportLeft)
+
+      if (minLeftPx < viewportLeft) {
+        console.log('[FloatingLabels FALLBACK] Clamping feature position:', {
+          key,
+          originalLeftPx: minLeftPx,
+          clampedLeftPx,
+          offsetPx,
+          viewportLeft,
+          floatingLabels: floatingLabels.map(l => l.text),
+        })
+      }
+
       const existing = featureLabels.get(key)
-      if (!existing || minLeftPx < existing.leftPx) {
+      if (!existing || clampedLeftPx < existing.leftPx) {
         featureLabels.set(key, {
-          leftPx: minLeftPx,
-          rightPx: maxRightPx,
+          leftPx: clampedLeftPx,
+          rightPx: clampedRightPx,
           topPx: effectiveTopPx,
           totalFeatureHeight,
           floatingLabels,
@@ -161,11 +180,30 @@ function deduplicateFeatureLabels(
 
     const { leftPx, rightPx } = positions
 
+    // Clamp leftPx to not be less than the viewport's left edge
+    // When offsetPx is negative (scrolled left), clamp to 0
+    // When offsetPx is positive (scrolled right), clamp to offsetPx
+    const { offsetPx } = view
+    const viewportLeft = Math.max(0, offsetPx)
+    const clampedLeftPx = Math.max(leftPx, viewportLeft)
+    const clampedRightPx = Math.max(rightPx, viewportLeft)
+
+    if (leftPx < viewportLeft) {
+      console.log('[FloatingLabels] Clamping feature position:', {
+        key,
+        originalLeftPx: leftPx,
+        clampedLeftPx,
+        offsetPx,
+        viewportLeft,
+        floatingLabels: floatingLabels.map(l => l.text),
+      })
+    }
+
     const existing = featureLabels.get(key)
-    if (!existing || leftPx < existing.leftPx) {
+    if (!existing || clampedLeftPx < existing.leftPx) {
       featureLabels.set(key, {
-        leftPx,
-        rightPx,
+        leftPx: clampedLeftPx,
+        rightPx: clampedRightPx,
         topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
