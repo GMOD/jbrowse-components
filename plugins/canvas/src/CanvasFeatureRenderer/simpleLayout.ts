@@ -71,7 +71,6 @@ export function layoutFeature(args: {
     fontHeight,
     labelAllowed,
     geneGlyphMode,
-    featureHeight,
   } = configContext
 
   const glyphType = chooseGlyphType({ feature, configContext })

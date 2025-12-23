@@ -15,6 +15,9 @@ const typeModels: Record<string, any> = {
   numberMap: types.map(types.number),
   boolean: types.boolean,
   color: types.refinement('Color', types.string, isValidColorString),
+  maybeColor: types.maybe(
+    types.refinement('Color', types.string, isValidColorString),
+  ),
   integer: types.integer,
   number: types.number,
   string: types.string,
@@ -30,6 +33,7 @@ const fallbackDefaults: Record<string, any> = {
   numberMap: {},
   boolean: true,
   color: 'black',
+  maybeColor: undefined,
   integer: 1,
   number: 1,
   string: '',
@@ -186,17 +190,22 @@ export default function ConfigSlot(
     )
   }
 
-  if (defaultValue === undefined) {
+  if (defaultValue === undefined && type !== 'maybeColor') {
     throw new Error("no 'defaultValue' provided")
   }
 
   const configSlotModelName = `${slotName.charAt(0).toUpperCase()}${slotName.slice(1)}ConfigSlot`
+  const actualDefaultValue =
+    defaultValue === undefined ? fallbackDefaults[type] : defaultValue
   let slot = types
     .model(configSlotModelName, {
       name: types.literal(slotName),
       description: types.literal(description),
       type: types.literal(type),
-      value: types.optional(types.union(JexlStringType, model), defaultValue),
+      value: types.optional(
+        types.union(JexlStringType, model),
+        actualDefaultValue,
+      ),
     })
     .volatile(() => ({
       contextVariable,

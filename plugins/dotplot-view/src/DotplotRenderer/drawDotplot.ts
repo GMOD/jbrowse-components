@@ -62,12 +62,10 @@ export async function drawDotplot(
     views,
     height,
     drawCigar,
-    theme,
     alpha = 1,
     minAlignmentLength = 0,
     colorBy: colorByOverride,
   } = props
-  const color = readConfObject(config, 'color')
   const posColor = readConfObject(config, 'posColor')
   const negColor = readConfObject(config, 'negColor')
   // Use override if provided, otherwise fall back to config
@@ -97,7 +95,6 @@ export async function drawDotplot(
     staticBlocks: vview.staticBlocks,
     width: vview.width,
   }
-  const t = createJBrowseTheme(theme)
   const features = hview.features || []
 
   // Pre-compute colors with alpha for common cases (major optimization)
@@ -170,7 +167,7 @@ export async function drawDotplot(
       } else if (colorBy === 'mappingQuality') {
         r = `hsl(${feature.get('mappingQual')},100%,40%)`
       } else if (colorBy === 'default') {
-        r = readConfObject(config, 'color', { feature })
+        r = readConfObject(config, 'color', { feature }) ?? 'black'
       }
       colorWithAlpha = applyAlpha(r, alpha)
     }

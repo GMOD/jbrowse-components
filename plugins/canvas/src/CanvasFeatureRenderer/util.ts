@@ -37,8 +37,10 @@ export function readLabelColors(
       readConfObject(config, ['labels', 'nameColor'], { feature, theme }) || '',
     ),
     descriptionColor: String(
-      readConfObject(config, ['labels', 'descriptionColor'], { feature, theme }) ||
-        '',
+      readConfObject(config, ['labels', 'descriptionColor'], {
+        feature,
+        theme,
+      }) || '',
     ),
   }
 }
@@ -108,11 +110,21 @@ export function getBoxColor({
   theme: Theme
 }) {
   let fill: string
-  if (isUTR(feature)) {
-    fill = getConfigColor({ config, configContext, colorKey: 'color3', feature, theme })
-  } else {
-    fill = getConfigColor({ config, configContext, colorKey: 'color1', feature, theme })
-  }
+  fill = isUTR(feature)
+    ? getConfigColor({
+        config,
+        configContext,
+        colorKey: 'color3',
+        feature,
+        theme,
+      })
+    : getConfigColor({
+        config,
+        configContext,
+        colorKey: 'color1',
+        feature,
+        theme,
+      })
 
   const featureType: string | undefined = feature.get('type')
   const featureStrand: -1 | 1 | undefined = feature.get('strand')
@@ -199,7 +211,12 @@ export function getStrokeColor({
   configContext: RenderConfigContext
   theme: Theme
 }) {
-  const c = getConfigColor({ config, configContext, colorKey: 'color2', feature, theme })
-  // #f0f is a sentinel value in the schema that means "use theme color"
-  return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
+  const c = getConfigColor({
+    config,
+    configContext,
+    colorKey: 'color2',
+    feature,
+    theme,
+  })
+  return c ?? stripAlpha(theme.palette.text.secondary)
 }

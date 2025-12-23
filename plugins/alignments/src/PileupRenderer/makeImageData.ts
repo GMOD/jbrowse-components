@@ -86,7 +86,7 @@ function renderFeatures({
   )
   const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
   const hideMismatches = readConfObject(config, 'hideMismatches') as boolean
-  const defaultColor = readConfObject(config, 'color') === '#f0f'
+  const defaultColor = readConfObject(config, 'color') == null
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)

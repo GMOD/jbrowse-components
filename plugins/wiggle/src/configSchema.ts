@@ -14,9 +14,9 @@ const WiggleRenderer = ConfigurationSchema(
      * #slot
      */
     color: {
-      type: 'color',
+      type: 'maybeColor',
       description: 'the color of track, overrides posColor and negColor',
-      defaultValue: '#f0f',
+      defaultValue: undefined,
       contextVariable: ['feature'],
     },
     /**

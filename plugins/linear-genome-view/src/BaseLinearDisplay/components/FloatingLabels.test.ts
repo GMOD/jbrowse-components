@@ -433,7 +433,8 @@ describe('FloatingLabels utilities', () => {
         )
 
         const labelLeftInAbsoluteCoords = x + offsetPx
-        const labelRightInAbsoluteCoords = labelLeftInAbsoluteCoords + labelWidth
+        const labelRightInAbsoluteCoords =
+          labelLeftInAbsoluteCoords + labelWidth
 
         expect(labelLeftInAbsoluteCoords).toBeGreaterThanOrEqual(viewportLeft)
         expect(labelRightInAbsoluteCoords).toBeLessThanOrEqual(featureRightPx)
@@ -592,7 +593,8 @@ describe('FloatingLabels utilities', () => {
         )
 
         const labelLeftInAbsoluteCoords = x + offsetPx
-        const labelRightInAbsoluteCoords = labelLeftInAbsoluteCoords + labelWidth
+        const labelRightInAbsoluteCoords =
+          labelLeftInAbsoluteCoords + labelWidth
 
         expect(labelRightInAbsoluteCoords).toBeLessThanOrEqual(featureRightPx)
       })

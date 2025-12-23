@@ -22,10 +22,10 @@ const CanvasFeatureRenderer = ConfigurationSchema(
      * #slot
      */
     color2: {
-      type: 'color',
+      type: 'maybeColor',
       description:
         'the secondary color of each feature, used for connecting lines, etc',
-      defaultValue: '#f0f',
+      defaultValue: undefined,
       contextVariable: ['feature', 'theme'],
     },
     /**
@@ -43,9 +43,9 @@ const CanvasFeatureRenderer = ConfigurationSchema(
      * #slot
      */
     outline: {
-      type: 'color',
+      type: 'maybeColor',
       description: 'the outline for features',
-      defaultValue: '',
+      defaultValue: undefined,
       contextVariable: ['feature', 'theme'],
     },
     /**

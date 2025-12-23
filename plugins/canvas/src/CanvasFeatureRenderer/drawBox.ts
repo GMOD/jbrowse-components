@@ -4,7 +4,13 @@ import type { DrawFeatureArgs } from './types'
 
 function getOutline(args: DrawFeatureArgs) {
   const { feature, config, configContext, theme } = args
-  return getConfigColor({ config, configContext, colorKey: 'outline', feature, theme })
+  return getConfigColor({
+    config,
+    configContext,
+    colorKey: 'outline',
+    feature,
+    theme,
+  })
 }
 
 const utrHeightFraction = 0.65

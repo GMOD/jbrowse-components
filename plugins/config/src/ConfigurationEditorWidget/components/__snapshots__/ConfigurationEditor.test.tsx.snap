@@ -1170,49 +1170,34 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 class="css-8atqhb"
                               >
                                 <div
-                                  style="display: flex;"
+                                  class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
                                 >
-                                  <div
-                                    class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
+                                  <label
+                                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1d1r0im-MuiFormLabel-root-MuiInputLabel-root"
+                                    data-shrink="false"
+                                    for="_r_13_"
+                                    id="_r_13_-label"
                                   >
-                                    <label
-                                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
-                                      data-shrink="true"
-                                      for="_r_13_"
-                                      id="_r_13_-label"
-                                    >
-                                      color
-                                    </label>
-                                    <div
-                                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
-                                    >
-                                      <input
-                                        aria-describedby="_r_13_-helper-text"
-                                        aria-invalid="false"
-                                        class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                        id="_r_13_"
-                                        type="text"
-                                        value="#f0f"
-                                      />
-                                    </div>
-                                    <p
-                                      class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                                      id="_r_13_-helper-text"
-                                    >
-                                      the color of each feature in a pileup alignment
-                                    </p>
+                                    color
+                                  </label>
+                                  <div
+                                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-1eo3eah-MuiInputBase-root-MuiInput-root"
+                                  >
+                                    <input
+                                      aria-describedby="_r_13_-helper-text"
+                                      aria-invalid="false"
+                                      class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall css-1wd3yy0-MuiInputBase-input-MuiInput-input"
+                                      id="_r_13_"
+                                      type="text"
+                                    />
                                   </div>
                                   <div
-                                    style="margin-top: 10px;"
+                                    class="MuiFormHelperText-root MuiFormHelperText-sizeSmall css-ng1q56-MuiFormHelperText-root"
+                                    id="_r_13_-helper-text"
                                   >
-                                    <div
-                                      class="css-79elbk"
-                                    >
-                                      <div
-                                        class="css-1me52ai"
-                                        style="background-color: rgb(255, 0, 255);"
-                                      />
-                                    </div>
+                                    <span>
+                                      the color of each feature in a pileup alignment
+                                    </span>
                                   </div>
                                 </div>
                               </div>

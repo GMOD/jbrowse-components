@@ -40,11 +40,15 @@ export function createFeatureFloatingLabels({
   description: string
   theme: Theme
 }): FloatingLabelData[] {
-  const { showLabels, showDescriptions, fontHeight } = configContext
+  const { showLabels, showDescriptions } = configContext
 
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
-  const { nameColor, descriptionColor } = readLabelColors(config, feature, theme)
+  const { nameColor, descriptionColor } = readLabelColors(
+    config,
+    feature,
+    theme,
+  )
 
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
@@ -53,11 +57,10 @@ export function createFeatureFloatingLabels({
     return []
   }
 
-  const actualFontHeight = readConfObject(
-    config,
-    ['labels', 'fontSize'],
-    { feature, theme },
-  ) as number
+  const actualFontHeight = readConfObject(config, ['labels', 'fontSize'], {
+    feature,
+    theme,
+  }) as number
 
   const floatingLabels: FloatingLabelData[] = []
 

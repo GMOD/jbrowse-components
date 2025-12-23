@@ -14,10 +14,10 @@ export default ConfigurationSchema(
      * #slot
      */
     color: {
-      type: 'color',
+      type: 'maybeColor',
       description:
         'the color of each feature in a synteny, used with colorBy:default',
-      defaultValue: '#f0f',
+      defaultValue: undefined,
       contextVariable: ['feature'],
     },
 

@@ -10,9 +10,6 @@ import type { Feature } from '@jbrowse/core/util'
 
 export const YSCALEBAR_LABEL_OFFSET = 5
 
-// Default color used by wiggle config schema
-export const WIGGLE_COLOR_DEFAULT = '#f0f'
-
 /**
  * Determines the appropriate color callback for wiggle plots.
  *
@@ -26,7 +23,7 @@ export function getColorCallback(
   opts?: { defaultColor?: string },
 ) {
   const color = readConfObject(config, 'color')
-  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
+  const colorIsDefault = color == null
 
   if (!colorIsDefault) {
     return (feature: Feature) => readConfObject(config, 'color', { feature })
@@ -48,7 +45,7 @@ export function getColorCallback(
  */
 export function getArraysColorConfig(config: AnyConfigurationModel) {
   const color = readConfObject(config, 'color')
-  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
+  const colorIsDefault = color == null
 
   if (!colorIsDefault) {
     return { color }
@@ -70,7 +67,7 @@ export function getStaticColor(
   defaultColor: string,
 ) {
   const color = readConfObject(config, 'color')
-  return color === WIGGLE_COLOR_DEFAULT ? defaultColor : color
+  return color ?? defaultColor
 }
 
 export interface ScaleOpts {
