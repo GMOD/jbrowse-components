@@ -7,6 +7,7 @@ import type { LayoutRecord } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
+import type { Theme } from '@mui/material'
 
 const yPadding = 5
 
@@ -17,6 +18,7 @@ export function computeLayouts({
   config,
   configContext,
   layout,
+  theme,
 }: {
   features: Map<string, Feature>
   bpPerPx: number
@@ -24,6 +26,7 @@ export function computeLayouts({
   config: AnyConfigurationModel
   configContext: RenderConfigContext
   layout: BaseLayout<unknown>
+  theme: Theme
 }): LayoutRecord[] {
   const reversed = region.reversed || false
   const layoutRecords: LayoutRecord[] = []
@@ -35,6 +38,7 @@ export function computeLayouts({
       reversed,
       config,
       configContext,
+      theme,
     })
 
     const totalLayoutWidth = featureLayout.totalLayoutWidth
@@ -49,6 +53,7 @@ export function computeLayouts({
       configContext,
       name,
       description,
+      theme,
     })
 
     const featureStart = feature.get('start')

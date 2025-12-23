@@ -3,8 +3,8 @@ import { getBoxColor, getConfigColor, isOffScreen, isUTR } from './util'
 import type { DrawFeatureArgs } from './types'
 
 function getOutline(args: DrawFeatureArgs) {
-  const { feature, config, configContext } = args
-  return getConfigColor({ config, configContext, colorKey: 'outline', feature })
+  const { feature, config, configContext, theme } = args
+  return getConfigColor({ config, configContext, colorKey: 'outline', feature, theme })
 }
 
 const utrHeightFraction = 0.65

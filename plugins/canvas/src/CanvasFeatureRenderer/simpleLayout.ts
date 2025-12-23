@@ -12,6 +12,7 @@ import type { RenderConfigContext } from './renderConfig'
 import type { FeatureLayout } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { Theme } from '@mui/material'
 
 const TRANSCRIPT_PADDING = 2
 const STRAND_ARROW_PADDING = 8
@@ -42,6 +43,7 @@ export function layoutFeature(args: {
   reversed: boolean
   config: AnyConfigurationModel
   configContext: RenderConfigContext
+  theme: Theme
   parentX?: number
   parentY?: number
   isNested?: boolean
@@ -53,6 +55,7 @@ export function layoutFeature(args: {
     reversed,
     config,
     configContext,
+    theme,
     parentX = 0,
     parentY = 0,
     isNested = false,
@@ -82,7 +85,7 @@ export function layoutFeature(args: {
     x = parentX + relativeX / bpPerPx
   }
 
-  const height = readConfObject(config, 'height', { feature }) as number
+  const height = readConfObject(config, 'height', { feature, theme }) as number
   const actualHeight = displayMode === 'compact' ? height / 2 : height
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const y = parentY
@@ -154,6 +157,7 @@ export function layoutFeature(args: {
           reversed,
           config,
           configContext,
+          theme,
           parentX: x,
           parentY: currentY,
           isNested: true,
@@ -187,6 +191,7 @@ export function layoutFeature(args: {
             reversed,
             config,
             configContext,
+            theme,
             parentX: x,
             parentY,
             isNested: true,

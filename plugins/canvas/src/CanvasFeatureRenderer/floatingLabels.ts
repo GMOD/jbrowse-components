@@ -6,6 +6,7 @@ import { buildFeatureTooltip, readLabelColors, truncateLabel } from './util'
 import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { Theme } from '@mui/material'
 
 const FLOATING_LABEL_FONT_SIZE = 11
 
@@ -30,18 +31,20 @@ export function createFeatureFloatingLabels({
   configContext,
   name: rawName,
   description: rawDescription,
+  theme,
 }: {
   feature: Feature
   config: AnyConfigurationModel
   configContext: RenderConfigContext
   name: string
   description: string
+  theme: Theme
 }): FloatingLabelData[] {
   const { showLabels, showDescriptions, fontHeight } = configContext
 
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
-  const { nameColor, descriptionColor } = readLabelColors(config, feature)
+  const { nameColor, descriptionColor } = readLabelColors(config, feature, theme)
 
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
@@ -53,7 +56,7 @@ export function createFeatureFloatingLabels({
   const actualFontHeight = readConfObject(
     config,
     ['labels', 'fontSize'],
-    { feature },
+    { feature, theme },
   ) as number
 
   const floatingLabels: FloatingLabelData[] = []

@@ -30,13 +30,14 @@ export function readFeatureLabels(
 export function readLabelColors(
   config: AnyConfigurationModel,
   feature: Feature,
+  theme: Theme,
 ) {
   return {
     nameColor: String(
-      readConfObject(config, ['labels', 'nameColor'], { feature }) || '',
+      readConfObject(config, ['labels', 'nameColor'], { feature, theme }) || '',
     ),
     descriptionColor: String(
-      readConfObject(config, ['labels', 'descriptionColor'], { feature }) ||
+      readConfObject(config, ['labels', 'descriptionColor'], { feature, theme }) ||
         '',
     ),
   }
@@ -82,13 +83,15 @@ export function getConfigColor({
   config,
   colorKey,
   feature,
+  theme,
 }: {
   config: AnyConfigurationModel
   configContext: RenderConfigContext
   colorKey: 'color1' | 'color2' | 'color3' | 'outline'
   feature: Feature
+  theme: Theme
 }) {
-  return readConfObject(config, colorKey, { feature }) as string
+  return readConfObject(config, colorKey, { feature, theme }) as string
 }
 
 export function getBoxColor({
@@ -106,9 +109,9 @@ export function getBoxColor({
 }) {
   let fill: string
   if (isUTR(feature)) {
-    fill = getConfigColor({ config, configContext, colorKey: 'color3', feature })
+    fill = getConfigColor({ config, configContext, colorKey: 'color3', feature, theme })
   } else {
-    fill = getConfigColor({ config, configContext, colorKey: 'color1', feature })
+    fill = getConfigColor({ config, configContext, colorKey: 'color1', feature, theme })
   }
 
   const featureType: string | undefined = feature.get('type')
@@ -196,7 +199,7 @@ export function getStrokeColor({
   configContext: RenderConfigContext
   theme: Theme
 }) {
-  const c = getConfigColor({ config, configContext, colorKey: 'color2', feature })
+  const c = getConfigColor({ config, configContext, colorKey: 'color2', feature, theme })
   // #f0f is a sentinel value in the schema that means "use theme color"
   return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 }

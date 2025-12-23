@@ -31,7 +31,7 @@ export async function doAll({
   features: Map<string, Feature>
   renderProps: RenderArgsDeserialized
 }) {
-  const { statusCallback = () => {}, regions, bpPerPx, config } = renderProps
+  const { statusCallback = () => {}, regions, bpPerPx, config, theme } = renderProps
   const region = regions[0]!
   const width = Math.max(1, (region.end - region.start) / bpPerPx)
 
@@ -50,6 +50,7 @@ export async function doAll({
         config,
         configContext,
         layout,
+        theme,
       })
     },
   )
