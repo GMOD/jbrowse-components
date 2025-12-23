@@ -149,6 +149,7 @@ export function makeImageData({
         layout,
         featureLayout: adjustedLayout,
         parentFeatureId: feature.id(),
+        parentName: label,
         subfeatureCoords,
         subfeatureInfos,
         config,

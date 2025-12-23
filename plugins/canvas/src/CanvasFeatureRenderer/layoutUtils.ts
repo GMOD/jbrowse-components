@@ -24,6 +24,7 @@ export function addSubfeaturesToLayoutAndFlatbush({
   layout,
   featureLayout,
   parentFeatureId,
+  parentName,
   subfeatureCoords,
   subfeatureInfos,
   config,
@@ -34,6 +35,7 @@ export function addSubfeaturesToLayoutAndFlatbush({
   layout: BaseLayout<unknown>
   featureLayout: FeatureLayout
   parentFeatureId: string
+  parentName: string
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
   config: AnyConfigurationModel
@@ -67,8 +69,9 @@ export function addSubfeaturesToLayoutAndFlatbush({
     )
 
     subfeatureInfos.push({
-      subfeatureId: childFeature.id(),
+      subfeatureId: String(childFeature.get('id') || ''),
       parentFeatureId,
+      parentName,
       type: childType,
       name: transcriptName,
     })

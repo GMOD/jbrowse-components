@@ -152,8 +152,10 @@ const CanvasFeatureRendering = observer(function (props: {
           if (subfeatureSearch.length) {
             const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
             if (subfeatureInfo) {
-              const { name, type } = subfeatureInfo
-              extra += `<br/>${name ? `${name} (${type})` : type}`
+              const { name, type, parentName, subfeatureId } = subfeatureInfo
+              const displayName =
+                name && name === parentName ? subfeatureId : name
+              extra += `<br/>${displayName ? `${displayName} (${type})` : type}`
             }
           }
         }
