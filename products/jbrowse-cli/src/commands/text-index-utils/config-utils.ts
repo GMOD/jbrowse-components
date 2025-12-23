@@ -21,7 +21,7 @@ export function parseCommaSeparatedString(value?: string): string[] {
  * Sanitizes a name for use in file paths by replacing invalid characters
  */
 export function sanitizeNameForPath(name: string): string {
-  return name.replace(/[/\\:*?"<>|]/g, '_')
+  return name //.replace(/[/\\:*?"<>|]/g, '_')
 }
 
 /**
@@ -58,15 +58,27 @@ export function ensureTrixDir(outLocation: string): string {
   return trixDir
 }
 
+/**
+ * Extracts all assembly names from a config object
+ * Handles both single assembly (config.assembly) and multiple assemblies (config.assemblies)
+ */
+function extractAssemblyNamesFromConfig(config: Config): string[] {
+  if (config.assemblies) {
+    return config.assemblies.map(a => a.name)
+  }
+  if (config.assembly) {
+    return [config.assembly.name]
+  }
+  return []
+}
+
 export function getAssemblyNames(
   config: Config,
   assemblies?: string,
 ): string[] {
   const asms = assemblies
     ? parseCommaSeparatedString(assemblies)
-    : config.assembly
-      ? [config.assembly.name]
-      : []
+    : extractAssemblyNamesFromConfig(config)
 
   if (!asms.length) {
     throw new Error('No assemblies found')
