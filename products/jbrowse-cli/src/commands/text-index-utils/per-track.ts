@@ -1,12 +1,9 @@
-import path from 'path'
-
 import { createTrixAdapter } from './adapter-utils'
 import {
-  ensureTrixDir,
   getTrackConfigs,
+  loadConfigForIndexing,
   parseCommaSeparatedString,
-  readConf,
-  validatePrefixSize,
+  prepareIndexDriverFlags,
   writeConf,
 } from './config-utils'
 import { indexDriver } from './indexing-utils'
@@ -28,11 +25,12 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
     exclude,
     prefixSize,
   } = flags
-  const configPath = await resolveConfigPath(target, out)
-  const outLocation = path.dirname(configPath)
-  const config = readConf(configPath)
+  const { config, configPath, outLocation } = await loadConfigForIndexing(
+    target,
+    out,
+    resolveConfigPath,
+  )
   const configTracks = config.tracks || []
-  ensureTrixDir(outLocation)
   validateAssembliesForPerTrack(assemblies)
   const confs = getTrackConfigs(
     config,
@@ -58,13 +56,10 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
 
     await indexDriver({
       trackConfigs: [trackConfig],
-      attributes: parseCommaSeparatedString(attributes),
       outLocation,
-      quiet: quiet ?? false,
       name: trackId,
-      typesToExclude: parseCommaSeparatedString(exclude),
       assemblyNames,
-      prefixSize: validatePrefixSize(prefixSize),
+      ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
     })
     if (!textSearching?.textSearchAdapter) {
       // modifies track with new text search adapter

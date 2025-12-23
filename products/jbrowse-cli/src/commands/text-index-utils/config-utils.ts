@@ -19,9 +19,10 @@ export function parseCommaSeparatedString(value?: string): string[] {
 
 /**
  * Sanitizes a name for use in file paths by replacing invalid characters
+ * Replaces characters that are problematic in file paths: / \ : * ? " < > |
  */
 export function sanitizeNameForPath(name: string): string {
-  return name //.replace(/[/\\:*?"<>|]/g, '_')
+  return name.replace(/[/\\:*?"<>|]/g, '_')
 }
 
 /**
@@ -42,12 +43,47 @@ export function validatePrefixSize(
   return parsed
 }
 
+/**
+ * Prepares common indexDriver parameters from raw flag values
+ */
+export function prepareIndexDriverFlags(flags: {
+  attributes: string
+  exclude: string
+  quiet?: boolean
+  prefixSize?: string | number
+}) {
+  return {
+    attributes: parseCommaSeparatedString(flags.attributes),
+    typesToExclude: parseCommaSeparatedString(flags.exclude),
+    quiet: flags.quiet ?? false,
+    prefixSize: validatePrefixSize(flags.prefixSize),
+  }
+}
+
 export function readConf(configPath: string): Config {
   return JSON.parse(fs.readFileSync(configPath, 'utf8')) as Config
 }
 
 export function writeConf(obj: Config, configPath: string): void {
   fs.writeFileSync(configPath, JSON.stringify(obj, null, 2))
+}
+
+/**
+ * Loads config and prepares output location for indexing
+ */
+export async function loadConfigForIndexing(
+  target: string | undefined,
+  out: string | undefined,
+  resolveConfigPath: (
+    target: string | undefined,
+    out: string | undefined,
+  ) => Promise<string>,
+) {
+  const configPath = await resolveConfigPath(target, out)
+  const outLocation = path.dirname(configPath)
+  const config = readConf(configPath)
+  ensureTrixDir(outLocation)
+  return { config, configPath, outLocation }
 }
 
 export function ensureTrixDir(outLocation: string): string {
@@ -115,18 +151,12 @@ export function getTrackConfigs(
         console.log(`Skipping ${track.trackId}: excluded via --exclude-tracks`)
         return false
       }
-      return true
-    })
-    .filter(track => {
       if (!supported(track.adapter?.type)) {
         console.log(
           `Skipping ${track.trackId}: unsupported adapter type '${track.adapter?.type}'`,
         )
         return false
       }
-      return true
-    })
-    .filter(track => {
       if (assemblyName && !track.assemblyNames.includes(assemblyName)) {
         console.log(
           `Skipping ${track.trackId}: not in assembly '${assemblyName}'`,

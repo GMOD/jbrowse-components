@@ -53,7 +53,6 @@ export interface RenderConfigContext {
   displayDirectionalChevrons: boolean
 
   isMouseoverCallback: boolean
-  isSubfeatureMouseoverCallback: boolean
 }
 
 export function createRenderConfigContext(
@@ -99,8 +98,6 @@ export function createRenderConfigContext(
     : (readConfObject(config, ['labels', 'fontSize']) as number)
 
   const isMouseoverCallback = config.mouseover?.isCallback ?? false
-  const isSubfeatureMouseoverCallback =
-    config.subfeatureMouseover?.isCallback ?? false
 
   return {
     displayMode,
@@ -125,6 +122,5 @@ export function createRenderConfigContext(
     geneGlyphMode,
     displayDirectionalChevrons,
     isMouseoverCallback,
-    isSubfeatureMouseoverCallback,
   }
 }

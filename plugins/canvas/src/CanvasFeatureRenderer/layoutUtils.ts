@@ -23,27 +23,21 @@ export function adjustChildPositions(
 export function addSubfeaturesToLayoutAndFlatbush({
   layout,
   featureLayout,
-  parentFeatureId,
-  parentName,
   subfeatureCoords,
   subfeatureInfos,
   config,
   subfeatureLabels,
   transcriptTypes,
   labelColor,
-  isSubfeatureMouseoverCallback,
 }: {
   layout: BaseLayout<unknown>
   featureLayout: FeatureLayout
-  parentFeatureId: string
-  parentName: string
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
   config: AnyConfigurationModel
   subfeatureLabels: string
   transcriptTypes: string[]
   labelColor: string
-  isSubfeatureMouseoverCallback: boolean
 }) {
   const showSubfeatureLabels = subfeatureLabels !== 'none'
   for (const child of featureLayout.children) {
@@ -65,40 +59,21 @@ export function addSubfeaturesToLayoutAndFlatbush({
     const bottomPx = child.y + child.totalLayoutHeight
     subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
-    const transcriptName = String(
-      readConfObject(config, ['labels', 'name'], { feature: childFeature }) ||
-        '',
+    const displayLabel = String(
+      readConfObject(config, 'subfeatureMouseover', {
+        feature: childFeature,
+      }) || '',
     )
 
-    const subfeatureId = String(childFeature.get('id') || '')
-    const displayLabel = isSubfeatureMouseoverCallback
-      ? String(
-          readConfObject(config, 'subfeatureMouseover', {
-            name: transcriptName,
-            parentName,
-            id: subfeatureId,
-            type: childType,
-          }) || '',
-        )
-      : transcriptName === parentName
-        ? subfeatureId
-        : transcriptName
-
     subfeatureInfos.push({
-      subfeatureId,
-      parentFeatureId,
-      parentName,
-      type: childType,
-      name: transcriptName,
       displayLabel,
+      type: childType,
     })
 
     const floatingLabels: FloatingLabelData[] = []
     if (showSubfeatureLabels) {
       const label = createTranscriptFloatingLabel({
-        transcriptName,
-        parentName,
-        subfeatureId,
+        displayLabel,
         featureHeight: child.height,
         subfeatureLabels,
         color: labelColor,

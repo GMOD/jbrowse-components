@@ -1,13 +1,10 @@
-import path from 'path'
-
 import { createTrixAdapter } from './adapter-utils'
 import {
-  ensureTrixDir,
   getAssemblyNames,
   getTrackConfigs,
+  loadConfigForIndexing,
   parseCommaSeparatedString,
-  readConf,
-  validatePrefixSize,
+  prepareIndexDriverFlags,
   writeConf,
 } from './config-utils'
 import { indexDriver } from './indexing-utils'
@@ -29,10 +26,11 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
     dryrun,
     prefixSize,
   } = flags
-  const configPath = await resolveConfigPath(target, out)
-  const outLocation = path.dirname(configPath)
-  const config = readConf(configPath)
-  ensureTrixDir(outLocation)
+  const { config, configPath, outLocation } = await loadConfigForIndexing(
+    target,
+    out,
+    resolveConfigPath,
+  )
 
   const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters || []
   const asms = getAssemblyNames(config, assemblies)
@@ -69,12 +67,9 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
       await indexDriver({
         trackConfigs,
         outLocation,
-        quiet: quiet ?? false,
         name: asm,
-        attributes: parseCommaSeparatedString(attributes),
-        typesToExclude: parseCommaSeparatedString(exclude),
         assemblyNames: [asm],
-        prefixSize: validatePrefixSize(prefixSize),
+        ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
       })
 
       const trixConf = createTrixAdapter(asm, [asm])

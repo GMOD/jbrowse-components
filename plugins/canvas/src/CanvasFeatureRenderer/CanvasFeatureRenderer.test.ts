@@ -369,10 +369,7 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.items).toHaveLength(1)
       expect(result.items[0]!.featureId).toBe('gene1')
       expect(result.subfeatureInfos).toHaveLength(1)
-      expect(result.subfeatureInfos[0]!.name).toBe('TestTranscript')
       expect(result.subfeatureInfos[0]!.type).toBe('mRNA')
-      expect(result.subfeatureInfos[0]!.parentFeatureId).toBe('gene1')
-      expect(result.subfeatureInfos[0]!.parentName).toBe('TestGene')
       expect(result.subfeatureInfos[0]!.displayLabel).toBe('TestTranscript')
     })
 
@@ -445,10 +442,8 @@ describe('CanvasFeatureRenderer', () => {
       )
 
       expect(result.subfeatureInfos).toHaveLength(1)
-      expect(result.subfeatureInfos[0]!.name).toBe('BRCA1')
-      expect(result.subfeatureInfos[0]!.parentName).toBe('BRCA1')
-      expect(result.subfeatureInfos[0]!.subfeatureId).toBe('transcript-001')
-      expect(result.subfeatureInfos[0]!.displayLabel).toBe('transcript-001')
+      expect(result.subfeatureInfos[0]!.type).toBe('mRNA')
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe('BRCA1')
     })
 
     test('custom subfeatureMouseover callback', async () => {
@@ -489,7 +484,7 @@ describe('CanvasFeatureRenderer', () => {
         assemblyName: 'volvox',
       }
       const args = createRenderArgs(features, region, {
-        subfeatureMouseover: `jexl:type + ': ' + id`,
+        subfeatureMouseover: `jexl:get(feature,'type') + ': ' + get(feature,'id')`,
       })
 
       const layoutRecords = computeLayouts({
@@ -1940,7 +1935,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region, {
         subfeatureLabels: 'below',
-        subfeatureMouseover: `jexl:name + ' (' + type + ')'`,
+        subfeatureMouseover: `jexl:get(feature,'name') + ' (' + get(feature,'type') + ')'`,
       })
 
       const layoutRecords = computeLayouts({
@@ -2009,7 +2004,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region, {
         subfeatureLabels: 'overlay',
-        subfeatureMouseover: `jexl:id + ': ' + name`,
+        subfeatureMouseover: `jexl:get(feature,'id') + ': ' + get(feature,'name')`,
       })
 
       const layoutRecords = computeLayouts({

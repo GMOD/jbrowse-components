@@ -2,9 +2,8 @@ import path from 'path'
 
 import {
   ensureTrixDir,
-  parseCommaSeparatedString,
+  prepareIndexDriverFlags,
   sanitizeNameForPath,
-  validatePrefixSize,
 } from './config-utils'
 import { indexDriver, prepareFileTrackConfigs } from './indexing-utils'
 import { validateFileInput } from './validators'
@@ -29,11 +28,8 @@ export async function indexFileList(flags: TextIndexFlags): Promise<void> {
     trackConfigs,
     outLocation: outFlag,
     name,
-    quiet: quiet ?? false,
-    attributes: parseCommaSeparatedString(attributes),
-    typesToExclude: parseCommaSeparatedString(exclude),
     assemblyNames: [],
-    prefixSize: validatePrefixSize(prefixSize),
+    ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
   })
 
   console.log(

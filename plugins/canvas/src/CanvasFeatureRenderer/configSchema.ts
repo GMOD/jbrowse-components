@@ -105,9 +105,9 @@ const CanvasFeatureRenderer = ConfigurationSchema(
     subfeatureMouseover: {
       type: 'string',
       description:
-        'the mouseover tooltip label for subfeatures (e.g. transcripts). Available variables: name (subfeature name), parentName (parent feature name), id (subfeature id), type (subfeature type)',
-      defaultValue: `jexl:name == parentName ? id : name`,
-      contextVariable: ['name', 'parentName', 'id', 'type'],
+        'the mouseover tooltip label for subfeatures (e.g. transcripts). Available variables: feature (the subfeature object)',
+      defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
+      contextVariable: ['feature'],
     },
 
     labels: ConfigurationSchema('CanvasFeatureLabels', {

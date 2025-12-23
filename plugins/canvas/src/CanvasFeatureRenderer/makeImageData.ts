@@ -157,16 +157,12 @@ export function makeImageData({
       addSubfeaturesToLayoutAndFlatbush({
         layout,
         featureLayout: adjustedLayout,
-        parentFeatureId: feature.id(),
-        parentName: label,
         subfeatureCoords,
         subfeatureInfos,
         config,
         subfeatureLabels,
         transcriptTypes,
         labelColor: theme.palette.text.primary,
-        isSubfeatureMouseoverCallback:
-          configContext.isSubfeatureMouseoverCallback,
       })
     } else if (adjustedLayout.children.length > 0) {
       addNestedSubfeaturesToLayout({
