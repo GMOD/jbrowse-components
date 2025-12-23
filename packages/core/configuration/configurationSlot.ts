@@ -190,13 +190,12 @@ export default function ConfigSlot(
     )
   }
 
-  if (defaultValue === undefined && type !== 'maybeColor') {
-    throw new Error("no 'defaultValue' provided")
+  const actualDefaultValue = defaultValue ?? fallbackDefaults[type]
+  if (actualDefaultValue === undefined && !(type in fallbackDefaults)) {
+    throw new Error("no 'defaultValue' provided and no fallback available")
   }
 
   const configSlotModelName = `${slotName.charAt(0).toUpperCase()}${slotName.slice(1)}ConfigSlot`
-  const actualDefaultValue =
-    defaultValue === undefined ? fallbackDefaults[type] : defaultValue
   let slot = types
     .model(configSlotModelName, {
       name: types.literal(slotName),
@@ -246,18 +245,18 @@ export default function ConfigSlot(
     )
     .postProcessSnapshot(snap => {
       if (typeof snap.value === 'object') {
-        return JSON.stringify(snap.value) !== JSON.stringify(defaultValue)
+        return JSON.stringify(snap.value) !== JSON.stringify(actualDefaultValue)
           ? snap.value
           : undefined
       }
-      return snap.value !== defaultValue ? snap.value : undefined
+      return snap.value !== actualDefaultValue ? snap.value : undefined
     })
     .actions(self => ({
       set(newVal: any) {
         self.value = newVal
       },
       reset() {
-        self.value = defaultValue
+        self.value = actualDefaultValue
       },
       convertToCallback() {
         if (self.isCallback) {

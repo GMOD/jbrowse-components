@@ -93,7 +93,9 @@ export function getConfigColor({
   feature: Feature
   theme: Theme
 }) {
-  return readConfObject(config, colorKey, { feature, theme }) as string
+  return readConfObject(config, colorKey, { feature, theme }) as
+    | string
+    | undefined
 }
 
 export function getBoxColor({

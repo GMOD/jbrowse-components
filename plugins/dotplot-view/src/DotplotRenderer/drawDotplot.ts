@@ -62,6 +62,7 @@ export async function drawDotplot(
     views,
     height,
     drawCigar,
+    theme: configTheme,
     alpha = 1,
     minAlignmentLength = 0,
     colorBy: colorByOverride,
@@ -79,6 +80,8 @@ export async function drawDotplot(
   const db2 = vview.dynamicBlocks.contentBlocks[0]?.offsetPx
   const warnings = [] as Warning[]
   ctx.lineWidth = lineWidth
+
+  const theme = createJBrowseTheme(configTheme)
 
   // we operate on snapshots of these attributes of the hview/vview because
   // it is significantly faster than accessing the mobx objects
@@ -167,7 +170,9 @@ export async function drawDotplot(
       } else if (colorBy === 'mappingQuality') {
         r = `hsl(${feature.get('mappingQual')},100%,40%)`
       } else if (colorBy === 'default') {
-        r = readConfObject(config, 'color', { feature }) ?? 'black'
+        r =
+          readConfObject(config, 'color', { feature, theme }) ??
+          (theme.palette.mode === 'dark' ? 'white' : 'black')
       }
       colorWithAlpha = applyAlpha(r, alpha)
     }

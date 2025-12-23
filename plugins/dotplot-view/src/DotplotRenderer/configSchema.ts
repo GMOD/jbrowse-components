@@ -18,7 +18,7 @@ export default ConfigurationSchema(
       description:
         'the color of each feature in a synteny, used with colorBy:default',
       defaultValue: undefined,
-      contextVariable: ['feature'],
+      contextVariable: ['feature', 'theme'],
     },
 
     /**
