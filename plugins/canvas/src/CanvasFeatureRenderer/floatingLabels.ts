@@ -113,11 +113,15 @@ export function createFeatureFloatingLabels({
  */
 export function createTranscriptFloatingLabel({
   transcriptName,
+  parentName,
+  subfeatureId,
   featureHeight,
   subfeatureLabels,
   color,
 }: {
   transcriptName: string
+  parentName: string
+  subfeatureId: string
   featureHeight: number
   subfeatureLabels: string
   color: string
@@ -126,7 +130,9 @@ export function createTranscriptFloatingLabel({
     return null
   }
 
-  const truncatedName = truncateLabel(transcriptName)
+  const displayName =
+    transcriptName === parentName ? subfeatureId : transcriptName
+  const truncatedName = truncateLabel(displayName)
 
   // For 'overlay' mode, position label at top of feature (negative relativeY)
   // For 'below' mode, position label at bottom of feature (relativeY = 0)
@@ -141,6 +147,6 @@ export function createTranscriptFloatingLabel({
     color,
     textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
     isOverlay,
-    tooltip: buildFeatureTooltip({ label: transcriptName }),
+    tooltip: buildFeatureTooltip({ label: displayName }),
   }
 }

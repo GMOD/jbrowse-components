@@ -238,6 +238,59 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.items[0]!.tooltip).toBe('Custom mouseover text')
     })
 
+    test('custom mouseover callback for feature', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        name: 'TestFeature',
+        description: 'A test feature',
+        score: 42,
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        mouseover: `jexl:label + ' (score: ' + get(feature, 'score') + ')'`,
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe('TestFeature (score: 42)')
+    })
+
     test('gene with mRNA transcript creates subfeature info', async () => {
       const feature = new SimpleFeature({
         uniqueId: 'gene1',
@@ -320,6 +373,7 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.subfeatureInfos[0]!.type).toBe('mRNA')
       expect(result.subfeatureInfos[0]!.parentFeatureId).toBe('gene1')
       expect(result.subfeatureInfos[0]!.parentName).toBe('TestGene')
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe('TestTranscript')
     })
 
     test('gene with transcript having same name as parent', async () => {
@@ -394,6 +448,83 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.subfeatureInfos[0]!.name).toBe('BRCA1')
       expect(result.subfeatureInfos[0]!.parentName).toBe('BRCA1')
       expect(result.subfeatureInfos[0]!.subfeatureId).toBe('transcript-001')
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe('transcript-001')
+    })
+
+    test('custom subfeatureMouseover callback', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            name: 'TestTranscript',
+            id: 'transcript-001',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 250,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureMouseover: `jexl:type + ': ' + id`,
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.subfeatureInfos).toHaveLength(1)
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe(
+        'mRNA: transcript-001',
+      )
     })
 
     test('compact display mode', async () => {

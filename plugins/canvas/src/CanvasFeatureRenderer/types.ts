@@ -71,6 +71,7 @@ export interface SubfeatureInfo {
   parentName: string
   type: string
   name: string
+  displayLabel: string
 }
 
 export interface RenderArgs {
