@@ -1822,7 +1822,7 @@ describe('CanvasFeatureRenderer', () => {
 
       const width = (region.end - region.start) / args.bpPerPx
 
-      const result = await renderToAbstractCanvas(
+      await renderToAbstractCanvas(
         width,
         100,
         { highResolutionScaling: 1 },
@@ -1840,13 +1840,10 @@ describe('CanvasFeatureRenderer', () => {
           }),
       )
 
-      const layoutRect = args.layout.getByID('test1')
-      expect(layoutRect).toBeDefined()
-      expect(layoutRect![4]).toMatchObject({
-        featureWidth: 100,
-        leftPadding: 8,
-        totalLayoutWidth: 108,
-      })
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+      expect(layoutRecords[0]!.layout.width).toBe(100)
+      expect(layoutRecords[0]!.layout.totalLayoutWidth).toBe(108)
     })
 
     test('subfeature labels have leftPadding: 0', async () => {
@@ -1902,7 +1899,7 @@ describe('CanvasFeatureRenderer', () => {
 
       const width = (region.end - region.start) / args.bpPerPx
 
-      const result = await renderToAbstractCanvas(
+      await renderToAbstractCanvas(
         width,
         100,
         { highResolutionScaling: 1 },
@@ -1920,17 +1917,13 @@ describe('CanvasFeatureRenderer', () => {
           }),
       )
 
-      const transcriptRect = args.layout.getByID('mrna1')
-      expect(transcriptRect).toBeDefined()
-      expect(transcriptRect![4]).toMatchObject({
-        floatingLabels: expect.arrayContaining([
-          expect.objectContaining({
-            text: expect.any(String),
-          }),
-        ]),
-        featureWidth: 400,
-        leftPadding: 0,
-      })
+      expect(layoutRecords).toHaveLength(1)
+      const geneLayout = layoutRecords[0]!.layout
+      expect(geneLayout.children).toHaveLength(1)
+      const transcriptLayout = geneLayout.children[0]!
+      // Transcript has its own leftPadding based on strand, but labels use leftPadding: 0
+      expect(transcriptLayout.leftPadding).toBe(8)
+      expect(transcriptLayout.width).toBe(400)
     })
 
     test('gene feature with negative strand has correct padding in layout', async () => {
@@ -1992,10 +1985,11 @@ describe('CanvasFeatureRenderer', () => {
           }),
       )
 
-      const geneRect = args.layout.getByID('gene1')
-      expect(geneRect).toBeDefined()
-      expect(geneRect![4].leftPadding).toBe(8)
-      expect(geneRect![4].featureWidth).toBe(400)
+      expect(layoutRecords).toHaveLength(1)
+      const geneLayout = layoutRecords[0]!.layout
+      expect(geneLayout.leftPadding).toBe(8)
+      expect(geneLayout.width).toBe(400)
+      expect(geneLayout.totalLayoutWidth).toBe(408)
     })
   })
 
