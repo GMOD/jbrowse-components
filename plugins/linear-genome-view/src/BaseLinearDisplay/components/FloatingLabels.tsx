@@ -170,14 +170,8 @@ function deduplicateFeatureLabels(
 ): Map<string, FeatureLabelData> {
   const featureLabels = new Map<string, FeatureLabelData>()
 
-  let totalCount = 0
-  let skippedCount = 0
-
   for (const [key, val] of layoutFeatures.entries()) {
-    totalCount++
-
     if (!val?.[4]) {
-      skippedCount++
       continue
     }
 
@@ -199,15 +193,6 @@ function deduplicateFeatureLabels(
       featureWidth === undefined ||
       leftPadding === undefined
     ) {
-      console.log('[deduplicateFeatureLabels] Skipping feature:', {
-        key,
-        hasFloatingLabels: !!floatingLabels,
-        floatingLabelsLength: floatingLabels?.length || 0,
-        hasTotalFeatureHeight: !!totalFeatureHeight,
-        hasFeatureWidth: featureWidth !== undefined,
-        hasLeftPadding: leftPadding !== undefined,
-      })
-      skippedCount++
       continue
     }
 
@@ -240,12 +225,6 @@ function deduplicateFeatureLabels(
       })
     }
   }
-
-  console.log('[deduplicateFeatureLabels] Summary:', {
-    totalCount,
-    skippedCount,
-    processedCount: featureLabels.size,
-  })
 
   return featureLabels
 }
@@ -322,10 +301,7 @@ const FloatingLabels = observer(function ({
     const result = assembly
       ? deduplicateFeatureLabels(layoutFeatures, view, assembly, bpPerPx)
       : undefined
-    console.log('[FloatingLabels] featureLabels:', {
-      count: result?.size || 0,
-      labels: result ? Array.from(result.keys()) : [],
-    })
+
     return result
   }, [layoutFeatures, view, assembly, bpPerPx])
 
@@ -343,7 +319,6 @@ const FloatingLabels = observer(function ({
     key,
     {
       leftPx,
-      rightPx,
       topPx,
       totalFeatureHeight,
       floatingLabels,

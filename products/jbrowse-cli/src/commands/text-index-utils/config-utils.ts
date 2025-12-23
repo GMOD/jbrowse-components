@@ -5,6 +5,43 @@ import { supported } from '../../types/common'
 
 import type { Config, Track } from '../../base'
 
+/**
+ * Parses a comma-separated string into an array of trimmed, non-empty strings
+ */
+export function parseCommaSeparatedString(
+  value?: string,
+): string[] | undefined {
+  return value
+    ?.split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+}
+
+/**
+ * Sanitizes a name for use in file paths by replacing invalid characters
+ */
+export function sanitizeNameForPath(name: string): string {
+  return name.replace(/[/\\:*?"<>|]/g, '_')
+}
+
+/**
+ * Validates and parses a prefix size value
+ */
+export function validatePrefixSize(
+  value?: string | number,
+): number | undefined {
+  if (!value) {
+    return undefined
+  }
+  const parsed = typeof value === 'number' ? value : parseInt(value, 10)
+  if (isNaN(parsed) || parsed < 0) {
+    throw new Error(
+      `Invalid prefixSize: "${value}". Must be a positive number.`,
+    )
+  }
+  return parsed
+}
+
 export function readConf(configPath: string): Config {
   return JSON.parse(fs.readFileSync(configPath, 'utf8')) as Config
 }
@@ -26,8 +63,7 @@ export function getAssemblyNames(
   assemblies?: string,
 ): string[] {
   const asms =
-    assemblies?.split(',') ||
-    config.assemblies?.map(a => a.name) ||
+    parseCommaSeparatedString(assemblies) ||
     (config.assembly ? [config.assembly.name] : [])
 
   if (!asms.length) {
@@ -60,9 +96,29 @@ export function getTrackConfigs(
       }
       return currentTrack
     })
-    .filter(track => !excludeSet.has(track.trackId))
-    .filter(track => supported(track.adapter?.type))
-    .filter(track =>
-      assemblyName ? track.assemblyNames.includes(assemblyName) : true,
-    )
+    .filter(track => {
+      if (excludeSet.has(track.trackId)) {
+        console.log(`Skipping ${track.trackId}: excluded via --exclude-tracks`)
+        return false
+      }
+      return true
+    })
+    .filter(track => {
+      if (!supported(track.adapter?.type)) {
+        console.log(
+          `Skipping ${track.trackId}: unsupported adapter type '${track.adapter?.type}'`,
+        )
+        return false
+      }
+      return true
+    })
+    .filter(track => {
+      if (assemblyName && !track.assemblyNames.includes(assemblyName)) {
+        console.log(
+          `Skipping ${track.trackId}: not in assembly '${assemblyName}'`,
+        )
+        return false
+      }
+      return true
+    })
 }

@@ -5,13 +5,17 @@ import {
   ensureTrixDir,
   getAssemblyNames,
   getTrackConfigs,
+  parseCommaSeparatedString,
   readConf,
+  validatePrefixSize,
   writeConf,
 } from './config-utils'
 import { indexDriver } from './indexing-utils'
 import { resolveConfigPath } from '../../utils'
 
-export async function aggregateIndex(flags: any) {
+import type { TextIndexFlags } from './index'
+
+export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
   const {
     out,
     target,
@@ -25,9 +29,9 @@ export async function aggregateIndex(flags: any) {
     dryrun,
     prefixSize,
   } = flags
-  const confPath = await resolveConfigPath(target, out)
-  const outLocation = path.dirname(confPath)
-  const config = readConf(confPath)
+  const configPath = await resolveConfigPath(target, out)
+  const outLocation = path.dirname(configPath)
+  const config = readConf(configPath)
   ensureTrixDir(outLocation)
 
   const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters || []
@@ -36,9 +40,9 @@ export async function aggregateIndex(flags: any) {
   for (const asm of asms) {
     const trackConfigs = getTrackConfigs(
       config,
-      tracks?.split(','),
+      parseCommaSeparatedString(tracks),
       asm,
-      excludeTracks?.split(','),
+      parseCommaSeparatedString(excludeTracks),
     )
     if (!trackConfigs.length) {
       console.log(`Indexing assembly ${asm}...(no tracks found)...`)
@@ -67,10 +71,10 @@ export async function aggregateIndex(flags: any) {
         outLocation,
         quiet,
         name: asm,
-        attributes: attributes.split(','),
-        typesToExclude: exclude.split(','),
+        attributes: parseCommaSeparatedString(attributes),
+        typesToExclude: parseCommaSeparatedString(exclude),
         assemblyNames: [asm],
-        prefixSize,
+        prefixSize: validatePrefixSize(prefixSize),
       })
 
       const trixConf = createTrixAdapter(asm, [asm])
@@ -89,7 +93,7 @@ export async function aggregateIndex(flags: any) {
         ...config,
         aggregateTextSearchAdapters,
       },
-      confPath,
+      configPath,
     )
   }
 }

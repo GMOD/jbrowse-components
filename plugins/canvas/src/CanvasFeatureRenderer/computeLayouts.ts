@@ -59,16 +59,6 @@ export function computeLayouts({
       description,
     })
 
-    console.log('[computeLayouts] Feature:', {
-      id: feature.id(),
-      name,
-      description,
-      floatingLabelsCount: floatingLabels.length,
-      showLabels: configContext.showLabels,
-      showDescriptions: configContext.showDescriptions,
-      labelAllowed: configContext.labelAllowed,
-    })
-
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
     const leftPaddingBp = featureLayout.leftPadding * bpPerPx

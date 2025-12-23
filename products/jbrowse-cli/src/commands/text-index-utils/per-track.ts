@@ -4,14 +4,18 @@ import { createTrixAdapter } from './adapter-utils'
 import {
   ensureTrixDir,
   getTrackConfigs,
+  parseCommaSeparatedString,
   readConf,
+  validatePrefixSize,
   writeConf,
 } from './config-utils'
 import { indexDriver } from './indexing-utils'
 import { validateAssembliesForPerTrack } from './validators'
 import { resolveConfigPath } from '../../utils'
 
-export async function perTrackIndex(flags: any) {
+import type { TextIndexFlags } from './index'
+
+export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
   const {
     out,
     target,
@@ -24,17 +28,17 @@ export async function perTrackIndex(flags: any) {
     exclude,
     prefixSize,
   } = flags
-  const confFilePath = await resolveConfigPath(target, out)
-  const outLocation = path.dirname(confFilePath)
-  const config = readConf(confFilePath)
+  const configPath = await resolveConfigPath(target, out)
+  const outLocation = path.dirname(configPath)
+  const config = readConf(configPath)
   const configTracks = config.tracks || []
   ensureTrixDir(outLocation)
   validateAssembliesForPerTrack(assemblies)
   const confs = getTrackConfigs(
     config,
-    tracks?.split(','),
+    parseCommaSeparatedString(tracks),
     undefined,
-    excludeTracks?.split(','),
+    parseCommaSeparatedString(excludeTracks),
   )
   if (!confs.length) {
     throw new Error(
@@ -54,13 +58,13 @@ export async function perTrackIndex(flags: any) {
 
     await indexDriver({
       trackConfigs: [trackConfig],
-      attributes: attributes.split(','),
+      attributes: parseCommaSeparatedString(attributes),
       outLocation,
       quiet,
       name: trackId,
-      typesToExclude: exclude.split(','),
+      typesToExclude: parseCommaSeparatedString(exclude),
       assemblyNames,
-      prefixSize,
+      prefixSize: validatePrefixSize(prefixSize),
     })
     if (!textSearching?.textSearchAdapter) {
       // modifies track with new text search adapter
@@ -81,6 +85,6 @@ export async function perTrackIndex(flags: any) {
   }
 
   if (hasChanges) {
-    writeConf({ ...config, tracks: configTracks }, confFilePath)
+    writeConf({ ...config, tracks: configTracks }, configPath)
   }
 }
