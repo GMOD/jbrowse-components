@@ -22,7 +22,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const BaseLinearDisplay = observer(function (props: {
+const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
   model: BaseLinearDisplayModel
   children?: React.ReactNode
 }) {

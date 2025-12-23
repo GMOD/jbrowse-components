@@ -36,7 +36,7 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Enter track data', 'Confirm track type']
 
-const DefaultAddTrackWorkflow = observer(function ({
+const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
   model,
 }: {
   model: AddTrackModel

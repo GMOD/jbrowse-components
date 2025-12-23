@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const MinLengthSlider = observer(function ({
+const MinLengthSlider = observer(function MinLengthSlider({
   model,
 }: {
   model: DotplotViewModel

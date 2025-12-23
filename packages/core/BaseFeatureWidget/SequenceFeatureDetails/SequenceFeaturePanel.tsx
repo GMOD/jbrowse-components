@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
-const SequenceFeaturePanel = observer(function ({
+const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
   model,
   feature,
 }: {

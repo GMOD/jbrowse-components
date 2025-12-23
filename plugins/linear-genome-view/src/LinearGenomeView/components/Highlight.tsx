@@ -31,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Highlight = observer(function ({
+const Highlight = observer(function Highlight({
   model,
   highlight,
 }: {

@@ -5,7 +5,7 @@ import ErrorActions from './ErrorActions'
 
 import type { LinearArcDisplayModel } from '../model'
 
-const ErrorMessage = observer(function ({
+const ErrorMessage = observer(function ErrorMessage({
   model,
 }: {
   model: LinearArcDisplayModel

@@ -16,7 +16,7 @@ import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
 
 import type { OverlayProps } from './overlayUtils'
 
-const Breakends = observer(function ({
+const Breakends = observer(function Breakends({
   model,
   trackId,
   parentRef,

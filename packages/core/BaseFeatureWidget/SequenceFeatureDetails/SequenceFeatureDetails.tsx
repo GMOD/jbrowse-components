@@ -18,7 +18,7 @@ const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog'))
 
 // set the key on this component to feature.id to clear state after new feature
 // is selected
-const SequenceFeatureDetails = observer(function ({
+const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   model,
   feature,
 }: {

@@ -56,7 +56,7 @@ function Header({
   )
 }
 
-const ClusterDialog = observer(function ({
+const ClusterDialog = observer(function ClusterDialog({
   model,
   handleClose,
 }: {

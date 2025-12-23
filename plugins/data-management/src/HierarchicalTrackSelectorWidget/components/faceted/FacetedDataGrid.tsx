@@ -11,7 +11,7 @@ import { computeInitialWidths } from './computeInitialWidths'
 import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
-const FacetedDataGrid = observer(function ({
+const FacetedDataGrid = observer(function FacetedDataGrid({
   model,
   columns,
   shownTrackIds,

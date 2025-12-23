@@ -24,7 +24,7 @@ function checkJexl(code: string) {
   stringToJexlExpression(code)
 }
 
-const AddFiltersDialog = observer(function ({
+const AddFiltersDialog = observer(function AddFiltersDialog({
   model,
   handleClose,
 }: {

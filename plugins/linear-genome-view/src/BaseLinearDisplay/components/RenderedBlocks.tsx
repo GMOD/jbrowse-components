@@ -10,7 +10,7 @@ import MaxHeightReached from './MaxHeightReachedIndicator'
 import type { BlockModel } from '../models/serverSideRenderedBlock'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 
-const RenderedBlocks = observer(function ({
+const RenderedBlocks = observer(function RenderedBlocks({
   model,
 }: {
   model: {

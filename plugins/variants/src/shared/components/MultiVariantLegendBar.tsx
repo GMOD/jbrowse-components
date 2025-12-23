@@ -8,7 +8,7 @@ import MultiVariantLegendBarWrapper from './MultiVariantLegendBarWrapper'
 
 import type { LegendBarModel } from './types'
 
-const MultiVariantLegendBar = observer(function (props: {
+const MultiVariantLegendBar = observer(function MultiVariantLegendBar(props: {
   model: LegendBarModel
   orientation?: string
   exportSVG?: boolean

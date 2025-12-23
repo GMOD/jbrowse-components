@@ -64,7 +64,7 @@ function ExpandButton({
   )
 }
 
-const FacetFilter = observer(function ({
+const FacetFilter = observer(function FacetFilter({
   column,
   vals,
   model,

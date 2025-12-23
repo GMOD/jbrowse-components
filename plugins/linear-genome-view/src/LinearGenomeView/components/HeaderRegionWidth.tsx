@@ -13,7 +13,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const HeaderRegionWidth = observer(function ({
+const HeaderRegionWidth = observer(function HeaderRegionWidth({
   model,
 }: {
   model: LinearGenomeViewModel

@@ -43,7 +43,7 @@ const Controls = function ({ model }: { model: LinearGenomeViewModel }) {
   )
 }
 
-const LinearGenomeViewHeader = observer(function ({
+const LinearGenomeViewHeader = observer(function LinearGenomeViewHeader({
   model,
 }: {
   model: LinearGenomeViewModel

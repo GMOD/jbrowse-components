@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SpreadsheetViewActual = observer(function ({
+const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
   model,
 }: {
   model: SpreadsheetViewModel

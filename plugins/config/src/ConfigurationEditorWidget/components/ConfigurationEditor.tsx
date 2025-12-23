@@ -42,7 +42,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Member = observer(function (props: {
+const Member = observer(function Member(props: {
   slotName: string
   slotSchema: IAnyType
   schema: AnyConfigurationModel
@@ -104,7 +104,7 @@ const Member = observer(function (props: {
   }
 })
 
-const Schema = observer(function ({
+const Schema = observer(function Schema({
   schema,
   path = [],
 }: {
@@ -127,7 +127,7 @@ const Schema = observer(function ({
   )
 })
 
-const ConfigurationEditor = observer(function ({
+const ConfigurationEditor = observer(function ConfigurationEditor({
   model,
 }: {
   model: {

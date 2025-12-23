@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const SortByTagDialog = observer(function (props: {
+const SortByTagDialog = observer(function SortByTagDialog(props: {
   model: {
     setSortedBy: (arg: string, arg2: string) => void
   }

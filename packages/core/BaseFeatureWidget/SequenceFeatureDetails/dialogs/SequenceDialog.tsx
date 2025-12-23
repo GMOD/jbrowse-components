@@ -23,7 +23,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const SequenceDialog = observer(function ({
+const SequenceDialog = observer(function SequenceDialog({
   handleClose,
   model,
   feature,

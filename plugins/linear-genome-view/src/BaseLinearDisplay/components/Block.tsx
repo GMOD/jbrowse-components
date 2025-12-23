@@ -31,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ContentBlock = observer(function ({
+const ContentBlock = observer(function ContentBlock({
   block,
   children,
 }: {

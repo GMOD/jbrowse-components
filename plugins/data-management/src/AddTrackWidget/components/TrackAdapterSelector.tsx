@@ -6,7 +6,11 @@ import { categorizeAdapters } from './util'
 
 import type { AddTrackModel } from '../model'
 
-const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
+const TrackAdapterSelector = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const { trackAdapter } = model
   const { pluginManager } = getEnv(model)
 

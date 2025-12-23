@@ -31,7 +31,7 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
-const TrackRenderingContainer = observer(function ({
+const TrackRenderingContainer = observer(function TrackRenderingContainer({
   model,
   track,
 }: {

@@ -31,7 +31,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const ExportBookmarksDialog = observer(function ({
+const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   model,
   onClose,
 }: {

@@ -55,7 +55,7 @@ function renameIds(obj: Record<string, unknown>): Record<string, unknown> {
   return transformIds(obj) as Record<string, unknown>
 }
 
-const ViewMenu = observer(function ({
+const ViewMenu = observer(function ViewMenu({
   model,
   IconButtonProps,
   IconProps,

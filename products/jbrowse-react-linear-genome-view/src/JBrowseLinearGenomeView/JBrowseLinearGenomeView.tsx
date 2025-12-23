@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 
 import type { ViewModel } from '../createModel/createModel'
 
-const JBrowseLinearGenomeView = observer(function ({
+const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   viewState,
 }: {
   viewState: ViewModel

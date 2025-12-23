@@ -15,7 +15,7 @@ import type { LinearGenomeViewModel } from '../model'
 
 const toP = (s = 0) => +s.toFixed(1)
 
-const RegionWidthEditorDialog = observer(function ({
+const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
   model,
   handleClose,
 }: {

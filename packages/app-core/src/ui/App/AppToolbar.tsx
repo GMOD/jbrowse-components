@@ -39,7 +39,7 @@ type AppSession = SessionWithDrawerWidgets & {
   popSnackbarMessage: () => unknown
 }
 
-const AppToolbar = observer(function ({
+const AppToolbar = observer(function AppToolbar({
   session,
   HeaderButtons = <div />,
 }: {

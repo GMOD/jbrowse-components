@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel } from '../model'
 
-const AssemblySelector = observer(function ({
+const AssemblySelector = observer(function AssemblySelector({
   model,
 }: {
   model: GridBookmarkModel

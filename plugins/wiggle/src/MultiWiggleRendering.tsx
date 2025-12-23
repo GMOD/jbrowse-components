@@ -8,7 +8,7 @@ import type { Source } from './util'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-const MultiWiggleRendering = observer(function (props: {
+const MultiWiggleRendering = observer(function MultiWiggleRendering(props: {
   regions: Region[]
   features: Map<string, Feature>
   bpPerPx: number

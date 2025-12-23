@@ -46,7 +46,7 @@ async function onSelect({
   }
 }
 
-const SearchBox = observer(function ({
+const SearchBox = observer(function SearchBox({
   model,
   showHelp = true,
 }: {

@@ -22,7 +22,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const AboutWidget = observer(function ({
+const AboutWidget = observer(function AboutWidget({
   model,
 }: {
   model: IAnyStateTreeNode

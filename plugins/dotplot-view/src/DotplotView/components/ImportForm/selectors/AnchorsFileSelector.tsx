@@ -5,7 +5,7 @@ import SwapAssemblies from './SwapAssemblies'
 
 import type { SelectorProps } from './SelectorTypes'
 
-const AnchorsFileSelector = observer(function ({
+const AnchorsFileSelector = observer(function AnchorsFileSelector({
   assembly1,
   assembly2,
   swap,

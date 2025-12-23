@@ -16,7 +16,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const TrackSourceSelect = observer(function ({
+const TrackSourceSelect = observer(function TrackSourceSelect({
   model,
 }: {
   model: AddTrackModel

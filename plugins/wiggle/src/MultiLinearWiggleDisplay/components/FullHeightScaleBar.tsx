@@ -8,7 +8,7 @@ import YScaleBar from '../../shared/YScaleBar'
 import type { WiggleDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const FullHeightScaleBar = observer(function ({
+const FullHeightScaleBar = observer(function FullHeightScaleBar({
   model,
   orientation,
   exportSVG,

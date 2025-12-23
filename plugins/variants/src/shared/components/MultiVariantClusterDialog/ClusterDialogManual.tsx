@@ -32,7 +32,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const ClusterDialogManuals = observer(function ({
+const ClusterDialogManuals = observer(function ClusterDialogManuals({
   model,
   handleClose,
   children,

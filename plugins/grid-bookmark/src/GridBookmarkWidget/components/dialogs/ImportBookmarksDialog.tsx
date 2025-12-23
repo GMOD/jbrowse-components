@@ -94,7 +94,7 @@ async function getBookmarksFromBEDFile(lines: string[], selectedAsm: string) {
     })
 }
 
-const ImportBookmarksDialog = observer(function ({
+const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
   onClose,
   model,
 }: {

@@ -16,7 +16,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const NoTracksActiveButton = observer(function ({
+const NoTracksActiveButton = observer(function NoTracksActiveButton({
   model,
 }: {
   model: LinearGenomeViewModel

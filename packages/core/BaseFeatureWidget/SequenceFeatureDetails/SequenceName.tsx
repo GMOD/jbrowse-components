@@ -15,7 +15,7 @@ function getStrand(strand: number) {
   }
 }
 
-const SequenceName = observer(function ({
+const SequenceName = observer(function SequenceName({
   mode,
   model,
   feature,

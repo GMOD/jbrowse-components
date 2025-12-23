@@ -75,7 +75,7 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
   )
 }
 
-const FilterByTagDialog = observer(function (props: {
+const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   model: {
     filterBy: FilterBy
     setFilterBy: (arg: FilterBy) => void

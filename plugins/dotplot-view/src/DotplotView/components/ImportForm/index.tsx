@@ -65,7 +65,7 @@ function doSubmit({
   })
 }
 
-const DotplotImportForm = observer(function ({
+const DotplotImportForm = observer(function DotplotImportForm({
   model,
 }: {
   model: DotplotViewModel

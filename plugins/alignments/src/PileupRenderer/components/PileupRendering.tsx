@@ -21,7 +21,7 @@ import type { FlatbushItem } from '../types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-const PileupRendering = observer(function (props: {
+const PileupRendering = observer(function PileupRendering(props: {
   blockKey: string
   displayModel: BaseLinearDisplayModel
   width: number

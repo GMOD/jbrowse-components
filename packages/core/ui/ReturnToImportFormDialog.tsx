@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import Dialog from './Dialog'
 
-const ReturnToImportFormDialog = observer(function ({
+const ReturnToImportFormDialog = observer(function ReturnToImportFormDialog({
   model,
   handleClose,
 }: {

@@ -21,7 +21,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const LinearBlocks = observer(function ({
+const LinearBlocks = observer(function LinearBlocks({
   model,
 }: {
   model: BaseLinearDisplayModel

@@ -31,7 +31,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const SwapAssemblies = observer(function ({
+const SwapAssemblies = observer(function SwapAssemblies({
   assembly1,
   assembly2,
   swap,

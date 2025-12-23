@@ -32,7 +32,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const GetSequenceDialog = observer(function ({
+const GetSequenceDialog = observer(function GetSequenceDialog({
   model,
   handleClose,
 }: {

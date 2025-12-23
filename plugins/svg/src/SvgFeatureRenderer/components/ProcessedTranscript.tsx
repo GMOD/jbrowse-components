@@ -9,7 +9,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
-const ProcessedTranscript = observer(function (props: {
+const ProcessedTranscript = observer(function ProcessedTranscript(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel

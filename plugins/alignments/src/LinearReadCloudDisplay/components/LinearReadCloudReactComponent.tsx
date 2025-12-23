@@ -79,7 +79,7 @@ function MismatchTooltip({
   )
 }
 
-const FeatureHighlights = observer(function ({
+const FeatureHighlights = observer(function FeatureHighlights({
   selectedFeatureBounds,
   hoveredFeature,
   canvasLeft,
@@ -133,7 +133,7 @@ const FeatureHighlights = observer(function ({
   )
 })
 
-const CloudCanvases = observer(function ({
+const CloudCanvases = observer(function CloudCanvases({
   model,
   canvasWidth,
   height,
@@ -194,7 +194,7 @@ const CloudCanvases = observer(function ({
   )
 })
 
-const Cloud = observer(function ({
+const Cloud = observer(function Cloud({
   model,
 }: {
   model: LinearReadCloudDisplayModel
@@ -436,15 +436,17 @@ const Cloud = observer(function ({
   )
 })
 
-const LinearReadCloudReactComponent = observer(function ({
-  model,
-}: {
-  model: LinearReadCloudDisplayModel
-}) {
-  return (
-    <BaseDisplayComponent model={model}>
-      <Cloud model={model} />
-    </BaseDisplayComponent>
-  )
-})
+const LinearReadCloudReactComponent = observer(
+  function LinearReadCloudReactComponent({
+    model,
+  }: {
+    model: LinearReadCloudDisplayModel
+  }) {
+    return (
+      <BaseDisplayComponent model={model}>
+        <Cloud model={model} />
+      </BaseDisplayComponent>
+    )
+  },
+)
 export default LinearReadCloudReactComponent

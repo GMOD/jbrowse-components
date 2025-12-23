@@ -18,45 +18,49 @@ const useStyles = makeStyles()({
   },
 })
 
-const OverviewRubberbandHoverTooltip = observer(function ({
-  model,
-  open,
-  guideX,
-  overview,
-}: {
-  model: LGV
-  open: boolean
-  guideX: number
-  overview: Base1DViewModel
-}) {
-  const { classes } = useStyles()
-  const { cytobandOffset } = model
-  const { assemblyManager } = getSession(model)
+const OverviewRubberbandHoverTooltip = observer(
+  function OverviewRubberbandHoverTooltip({
+    model,
+    open,
+    guideX,
+    overview,
+  }: {
+    model: LGV
+    open: boolean
+    guideX: number
+    overview: Base1DViewModel
+  }) {
+    const { classes } = useStyles()
+    const { cytobandOffset } = model
+    const { assemblyManager } = getSession(model)
 
-  const px = overview.pxToBp(guideX - cytobandOffset)
-  const assembly = assemblyManager.get(px.assemblyName)
-  const cytoband = assembly?.cytobands?.find(
-    f =>
-      px.coord > f.get('start') &&
-      px.coord < f.get('end') &&
-      px.refName === assembly.getCanonicalRefName(f.get('refName')),
-  )
+    const px = overview.pxToBp(guideX - cytobandOffset)
+    const assembly = assemblyManager.get(px.assemblyName)
+    const cytoband = assembly?.cytobands?.find(
+      f =>
+        px.coord > f.get('start') &&
+        px.coord < f.get('end') &&
+        px.refName === assembly.getCanonicalRefName(f.get('refName')),
+    )
 
-  return (
-    <Tooltip
-      open={open}
-      placement="top"
-      title={[stringify(px), cytoband?.get('name'), cytoband?.get('type')].join(
-        ' ',
-      )}
-      arrow
-    >
-      <div
-        className={classes.guide}
-        style={{ transform: `translateX(${guideX}px)` }}
-      />
-    </Tooltip>
-  )
-})
+    return (
+      <Tooltip
+        open={open}
+        placement="top"
+        title={[
+          stringify(px),
+          cytoband?.get('name'),
+          cytoband?.get('type'),
+        ].join(' ')}
+        arrow
+      >
+        <div
+          className={classes.guide}
+          style={{ transform: `translateX(${guideX}px)` }}
+        />
+      </Tooltip>
+    )
+  },
+)
 
 export default OverviewRubberbandHoverTooltip

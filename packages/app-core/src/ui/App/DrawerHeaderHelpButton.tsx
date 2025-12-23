@@ -8,7 +8,7 @@ import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/
 
 const DrawerHeaderHelpDialog = lazy(() => import('./DrawerHeaderHelpDialog'))
 
-const DrawerHeaderHelpButton = observer(function ({
+const DrawerHeaderHelpButton = observer(function DrawerHeaderHelpButton({
   session,
   helpText,
 }: {

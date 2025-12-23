@@ -30,7 +30,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewLauncher = observer(({ session }: { session: AppSession }) => {
+const ViewLauncher = observer(function ViewLauncher({
+  session,
+}: {
+  session: AppSession
+}) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(session)
   const viewTypes = pluginManager.getViewElements()

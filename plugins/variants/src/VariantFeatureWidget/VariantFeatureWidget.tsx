@@ -93,7 +93,7 @@ function LaunchBreakendWidgetArea({
   ) : null
 }
 
-const FeatDefined = observer(function (props: {
+const FeatDefined = observer(function FeatDefined(props: {
   feat: SimpleFeatureSerialized
   model: VariantFeatureWidgetModel
 }) {
@@ -145,7 +145,7 @@ const FeatDefined = observer(function (props: {
   )
 })
 
-const VariantFeatureWidget = observer(function (props: {
+const VariantFeatureWidget = observer(function VariantFeatureWidget(props: {
   model: VariantFeatureWidgetModel
 }) {
   const { model } = props
