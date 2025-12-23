@@ -1,6 +1,6 @@
 import path from 'path'
 
-import { debug, readJsonFile } from '../utils'
+import { readJsonFile } from '../utils'
 import { guessFileNames, guessTrackType } from './add-track-utils/adapter-utils'
 import { loadFile } from './add-track-utils/file-operations'
 import { buildTrackConfig } from './add-track-utils/track-config'

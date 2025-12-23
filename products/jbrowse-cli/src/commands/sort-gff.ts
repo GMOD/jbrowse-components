@@ -3,7 +3,10 @@ import { parseArgs } from 'util'
 import { printHelp } from '../utils'
 import { waitForProcessClose } from './process-utils'
 import { GFF_CONFIG, spawnSortProcess } from './shared/sort-utils'
-import { validateFileArgument, validateRequiredCommands } from './shared/validators'
+import {
+  validateFileArgument,
+  validateRequiredCommands,
+} from './shared/validators'
 
 export async function run(args?: string[]) {
   const options = {

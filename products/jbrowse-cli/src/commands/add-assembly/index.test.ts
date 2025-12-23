@@ -76,6 +76,7 @@ test('fails if trying to add an assembly with a name that already exists', async
       __dirname,
       '..',
       '..',
+      '..',
       'test',
       'data',
       'simple.2bit',
