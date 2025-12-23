@@ -22,7 +22,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const AboutDialogContents = observer(function ({
+const AboutDialogContents = observer(function AboutDialogContents({
   config,
   session,
 }: {

@@ -5,7 +5,7 @@ import type axisPropsFromTickScale from './axisPropsFromTickScale'
 
 type Ticks = ReturnType<typeof axisPropsFromTickScale>
 
-const YScaleBar = observer(function ({
+const YScaleBar = observer(function YScaleBar({
   model,
   orientation,
 }: {

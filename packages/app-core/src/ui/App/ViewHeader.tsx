@@ -32,7 +32,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewHeader = observer(function ({
+const ViewHeader = observer(function ViewHeader({
   view,
   onClose,
   onMinimize,

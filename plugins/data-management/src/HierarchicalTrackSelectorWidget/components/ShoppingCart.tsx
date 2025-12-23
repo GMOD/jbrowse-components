@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
-const ShoppingCart = observer(function ({
+const ShoppingCart = observer(function ShoppingCart({
   model,
 }: {
   model: {

@@ -45,24 +45,29 @@ const Wrapper = ({
     children
   )
 }
-const HierarchicalTrackSelectorContainer = observer(function ({
-  model,
-  toolbarHeight,
-  overrideDimensions,
-}: {
-  model: HierarchicalTrackSelectorModel
-  toolbarHeight: number
-  overrideDimensions?: { width: number; height: number }
-}) {
-  return (
-    <Wrapper overrideDimensions={overrideDimensions}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={toolbarHeight} />
-      <HierarchicalFab model={model} />
-    </Wrapper>
-  )
-})
+const HierarchicalTrackSelectorContainer = observer(
+  function HierarchicalTrackSelectorContainer({
+    model,
+    toolbarHeight,
+    overrideDimensions,
+  }: {
+    model: HierarchicalTrackSelectorModel
+    toolbarHeight: number
+    overrideDimensions?: { width: number; height: number }
+  }) {
+    return (
+      <Wrapper overrideDimensions={overrideDimensions}>
+        <HierarchicalTrackSelector
+          model={model}
+          toolbarHeight={toolbarHeight}
+        />
+        <HierarchicalFab model={model} />
+      </Wrapper>
+    )
+  },
+)
 
-const HierarchicalTrackSelector = observer(function ({
+const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   model,
   toolbarHeight = 0,
 }: {

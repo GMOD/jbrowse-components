@@ -39,7 +39,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewTitle = observer(({ view }: { view: IBaseViewModel }) => {
+const ViewTitle = observer(function ViewTitle({
+  view,
+}: {
+  view: IBaseViewModel
+}) {
   const { classes } = useStyles()
   const { displayName } = view
   const [dialogOpen, setDialogOpen] = useState(false)

@@ -8,7 +8,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-const ConfigureConnection = observer(function ({
+const ConfigureConnection = observer(function ConfigureConnection({
   connectionType,
   model,
   session,

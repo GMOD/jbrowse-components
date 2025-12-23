@@ -17,7 +17,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const HeaderSearchBoxes = observer(function ({
+const HeaderSearchBoxes = observer(function HeaderSearchBoxes({
   view,
 }: {
   view: LinearGenomeViewModel

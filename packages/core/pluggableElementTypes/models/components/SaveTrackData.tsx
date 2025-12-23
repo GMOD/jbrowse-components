@@ -63,7 +63,7 @@ function roundRegions(regions: Region[]) {
   }))
 }
 
-const SaveTrackDataDialog = observer(function ({
+const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   model,
   handleClose,
 }: {

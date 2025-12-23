@@ -13,7 +13,7 @@ import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel } from '../../model'
 
-const EditHighlightColorDialog = observer(function ({
+const EditHighlightColorDialog = observer(function EditHighlightColorDialog({
   onClose,
   model,
 }: {

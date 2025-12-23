@@ -9,7 +9,7 @@ import PasteConfigWorkflow from './PasteConfigWorkflow'
 
 import type { AddTrackModel } from '../model'
 
-const AddTrackSelector = observer(function ({
+const AddTrackSelector = observer(function AddTrackSelector({
   model,
 }: {
   model: AddTrackModel

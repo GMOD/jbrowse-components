@@ -8,7 +8,7 @@ import SequenceDisplay from './SequenceDisplay'
 import type { Feat } from '../../util'
 import type { SequenceFeatureDetailsModel } from '../model'
 
-const ProteinSequence = observer(function ({
+const ProteinSequence = observer(function ProteinSequence({
   cds,
   sequence,
   codonTable,

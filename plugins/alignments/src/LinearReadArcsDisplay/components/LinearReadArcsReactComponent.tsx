@@ -10,7 +10,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const Arcs = observer(function ({
+const Arcs = observer(function Arcs({
   model,
 }: {
   model: LinearReadArcsDisplayModel
@@ -41,16 +41,18 @@ const Arcs = observer(function ({
   )
 })
 
-const LinearReadArcsReactComponent = observer(function ({
-  model,
-}: {
-  model: LinearReadArcsDisplayModel
-}) {
-  return (
-    <BaseDisplayComponent model={model}>
-      <Arcs model={model} />
-    </BaseDisplayComponent>
-  )
-})
+const LinearReadArcsReactComponent = observer(
+  function LinearReadArcsReactComponent({
+    model,
+  }: {
+    model: LinearReadArcsDisplayModel
+  }) {
+    return (
+      <BaseDisplayComponent model={model}>
+        <Arcs model={model} />
+      </BaseDisplayComponent>
+    )
+  },
+)
 
 export default LinearReadArcsReactComponent

@@ -6,7 +6,7 @@ import BlockMsg from '../components/BlockMsg'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-const TooLargeMessage = observer(function ({
+const TooLargeMessage = observer(function TooLargeMessage({
   model,
 }: {
   model: {

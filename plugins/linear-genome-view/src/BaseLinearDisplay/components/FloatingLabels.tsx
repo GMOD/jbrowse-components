@@ -3,8 +3,6 @@ import { useMemo } from 'react'
 import { clamp, getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { clampToViewport } from './util'
-
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FloatingLabelData, LayoutRecord } from '../types'
@@ -239,6 +237,7 @@ interface LabelProps {
   labelWidth: number
   y: number
   offsetPx: number
+  viewportLeft: number
   tooltip?: string
 }
 
@@ -252,13 +251,12 @@ function FloatingLabel({
   labelWidth,
   y,
   offsetPx,
+  viewportLeft,
   tooltip,
 }: LabelProps) {
-  const { leftPx, rightPx } = clampToViewport(
-    featureLeftPx,
-    featureRightPx,
-    offsetPx,
-  )
+  // Optimize: Use pre-calculated viewportLeft instead of recalculating
+  const leftPx = Math.max(featureLeftPx, viewportLeft)
+  const rightPx = Math.max(featureRightPx, viewportLeft)
 
   const naturalX = leftPx - offsetPx
   const maxX = rightPx - offsetPx - labelWidth
@@ -285,7 +283,7 @@ function FloatingLabel({
   )
 }
 
-const FloatingLabels = observer(function ({
+const FloatingLabels = observer(function FloatingLabels({
   model,
 }: {
   model: FeatureTrackModel
@@ -296,14 +294,13 @@ const FloatingLabels = observer(function ({
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { layoutFeatures } = model
   const { offsetPx, bpPerPx } = view
-
-  const featureLabels = useMemo(() => {
-    const result = assembly
-      ? deduplicateFeatureLabels(layoutFeatures, view, assembly, bpPerPx)
-      : undefined
-
-    return result
-  }, [layoutFeatures, view, assembly, bpPerPx])
+  const featureLabels = useMemo(
+    () =>
+      assembly
+        ? deduplicateFeatureLabels(layoutFeatures, view, assembly, bpPerPx)
+        : undefined,
+    [layoutFeatures, view, assembly, bpPerPx],
+  )
 
   // @ts-expect-error
   const { onFeatureClick, onFeatureContextMenu, onMouseMove } =
@@ -314,6 +311,9 @@ const FloatingLabels = observer(function ({
   }
 
   const labels: React.ReactElement[] = []
+
+  // Optimize: Calculate viewport left edge once per render instead of per label
+  const viewportLeft = Math.max(0, offsetPx)
 
   for (const [
     key,
@@ -359,6 +359,7 @@ const FloatingLabels = observer(function ({
           labelWidth={labelWidth}
           y={y}
           offsetPx={offsetPx}
+          viewportLeft={viewportLeft}
           tooltip={tooltip}
         />,
       )

@@ -7,7 +7,7 @@ import type { DotplotViewModel } from '../model'
 
 type Coord = [number, number] | undefined
 
-const DotplotTooltipMouseover = observer(function ({
+const DotplotTooltipMouseover = observer(function DotplotTooltipMouseover({
   model,
   mouserect,
   mouserectClient,

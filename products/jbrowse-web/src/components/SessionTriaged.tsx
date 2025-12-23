@@ -8,7 +8,7 @@ import factoryReset from '../factoryReset'
 import type { SessionLoaderModel } from '../SessionLoader'
 import type { SessionTriagedInfo } from '../types'
 
-const SessionTriaged = observer(function ({
+const SessionTriaged = observer(function SessionTriaged({
   sessionTriaged,
   loader,
 }: {

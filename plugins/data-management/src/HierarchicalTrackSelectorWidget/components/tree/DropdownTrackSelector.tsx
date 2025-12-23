@@ -12,7 +12,7 @@ import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
-const DropdownTrackSelector = observer(function ({
+const DropdownTrackSelector = observer(function DropdownTrackSelector({
   model,
   tracks,
   extraMenuItems,

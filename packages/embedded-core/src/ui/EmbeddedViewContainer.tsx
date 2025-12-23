@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewContainer = observer(function ({
+const ViewContainer = observer(function ViewContainer({
   view,
   children,
 }: {
@@ -48,7 +48,7 @@ const ViewContainer = observer(function ({
   )
 })
 
-const ViewContainerWrapper = observer(function ({
+const ViewContainerWrapper = observer(function ViewContainerWrapper({
   view,
   children,
 }: {

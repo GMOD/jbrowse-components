@@ -24,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const DropDownMenu = observer(function ({
+const DropDownMenu = observer(function DropDownMenu({
   menuTitle,
   session,
   menuItems,

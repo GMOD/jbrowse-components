@@ -27,7 +27,7 @@ interface MinimizedVariantRecord {
   length: number
 }
 
-const MultiVariantRendering = observer(function (props: {
+const MultiVariantRendering = observer(function MultiVariantRendering(props: {
   regions: Region[]
   features: Map<string, Feature>
   bpPerPx: number

@@ -23,7 +23,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ScalebarRefNameLabels = observer(function ({ model }: { model: LGV }) {
+const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
+  model,
+}: {
+  model: LGV
+}) {
   const { classes, cx } = useStyles()
   const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
 

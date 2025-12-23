@@ -6,7 +6,7 @@ import TreeItem from './TreeItem'
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 
-const HierarchicalTree = observer(function ({
+const HierarchicalTree = observer(function HierarchicalTree({
   height,
   model,
 }: {

@@ -11,7 +11,7 @@ import { readQueryParams, setQueryParams } from '../useQueryParam'
 import type { WebSessionModel } from '../sessionModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const JBrowse = observer(function ({
+const JBrowse = observer(function JBrowse({
   pluginManager,
 }: {
   pluginManager: PluginManager

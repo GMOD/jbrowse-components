@@ -70,7 +70,11 @@ function RenderedBlockLines({
     </ContentBlockComponent>
   )
 }
-const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
+const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
+  model,
+}: {
+  model: LGV
+}) {
   const { staticBlocks, bpPerPx } = model
   return (
     <>
@@ -94,7 +98,7 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
     </>
   )
 })
-const Gridlines = observer(function ({
+const Gridlines = observer(function Gridlines({
   model,
   offset = 0,
 }: {

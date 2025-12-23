@@ -59,7 +59,7 @@ const colorMap: Record<string, string> = {
   acen: '#800',
 }
 
-const Cytobands = observer(function ({
+const Cytobands = observer(function Cytobands({
   overview,
   block,
   assembly,

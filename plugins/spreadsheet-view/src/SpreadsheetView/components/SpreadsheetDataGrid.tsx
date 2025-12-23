@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import type { SpreadsheetModel } from '../SpreadsheetModel'
 
-const SpreadsheetDataGrid = observer(function ({
+const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
   model,
 }: {
   model: SpreadsheetModel

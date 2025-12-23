@@ -26,7 +26,7 @@ import {
 
 import type { OverlayProps } from './overlayUtils'
 
-const AlignmentConnections = observer(function ({
+const AlignmentConnections = observer(function AlignmentConnections({
   model,
   trackId,
   parentRef,

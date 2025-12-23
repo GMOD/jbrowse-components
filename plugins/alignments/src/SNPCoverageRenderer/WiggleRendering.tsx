@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-const WiggleRendering = observer(function (props: {
+const WiggleRendering = observer(function WiggleRendering(props: {
   regions: Region[]
   features: Map<string, Feature>
   bpPerPx: number

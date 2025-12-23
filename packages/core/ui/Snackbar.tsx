@@ -12,7 +12,11 @@ interface SnackbarSession extends AbstractSessionModel {
   popSnackbarMessage: () => void
 }
 
-const Snackbar = observer(function ({ session }: { session: SnackbarSession }) {
+const Snackbar = observer(function Snackbar({
+  session,
+}: {
+  session: SnackbarSession
+}) {
   const { snackbarMessages } = session
   const latestMessage = snackbarMessages.at(-1)
 

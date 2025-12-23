@@ -23,7 +23,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const BookmarkGrid = observer(function ({
+const BookmarkGrid = observer(function BookmarkGrid({
   model,
 }: {
   model: GridBookmarkModel

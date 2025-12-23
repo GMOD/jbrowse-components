@@ -16,7 +16,7 @@ import type { ReducedModel } from './types'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const ClusterDialogAuto = observer(function ({
+const ClusterDialogAuto = observer(function ClusterDialogAuto({
   model,
   children,
   handleClose,

@@ -20,7 +20,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const AppFab = observer(function ({
+const AppFab = observer(function AppFab({
   session,
 }: {
   session: SessionWithDrawerWidgets

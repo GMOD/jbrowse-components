@@ -74,7 +74,7 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-const OverviewBox = observer(function ({
+const OverviewBox = observer(function OverviewBox({
   scale,
   model,
   block,
@@ -143,7 +143,7 @@ const OverviewBox = observer(function ({
   )
 })
 
-const VisibleRegionBox = observer(function ({
+const VisibleRegionBox = observer(function VisibleRegionBox({
   model,
   overview,
   className,
@@ -192,7 +192,7 @@ const VisibleRegionBox = observer(function ({
   )
 })
 
-const Scalebar = observer(function ({
+const Scalebar = observer(function Scalebar({
   model,
   scale,
   overview,
@@ -248,7 +248,7 @@ const Scalebar = observer(function ({
   )
 })
 
-const OverviewScalebar = observer(function ({
+const OverviewScalebar = observer(function OverviewScalebar({
   model,
   children,
 }: {

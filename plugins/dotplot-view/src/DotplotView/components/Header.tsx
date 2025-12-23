@@ -24,7 +24,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const DotplotHeader = observer(function ({
+const DotplotHeader = observer(function DotplotHeader({
   model,
   selection,
 }: {

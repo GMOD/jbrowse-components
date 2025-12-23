@@ -27,7 +27,7 @@ const useStyles = makeStyles()(() => ({
     userSelect: 'none',
   },
 }))
-export const HorizontalAxis = observer(function ({
+export const HorizontalAxis = observer(function HorizontalAxis({
   model,
 }: {
   model: DotplotViewModel
@@ -41,7 +41,7 @@ export const HorizontalAxis = observer(function ({
   )
 })
 
-export const HorizontalAxisRaw = observer(function ({
+export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
   model,
 }: {
   model: DotplotViewModel
@@ -140,7 +140,7 @@ export const HorizontalAxisRaw = observer(function ({
     </>
   )
 })
-export const VerticalAxis = observer(function ({
+export const VerticalAxis = observer(function VerticalAxis({
   model,
 }: {
   model: DotplotViewModel
@@ -154,7 +154,7 @@ export const VerticalAxis = observer(function ({
   )
 })
 
-export const VerticalAxisRaw = observer(function ({
+export const VerticalAxisRaw = observer(function VerticalAxisRaw({
   model,
 }: {
   model: DotplotViewModel

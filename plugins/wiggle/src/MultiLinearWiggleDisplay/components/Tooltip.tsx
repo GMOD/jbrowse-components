@@ -82,7 +82,7 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
 
 type Coord = [number, number]
 
-const WiggleTooltip = observer(function (props: {
+const WiggleTooltip = observer(function WiggleTooltip(props: {
   model: { featureUnderMouse: Feature; sources: Source[]; rowHeight: number }
   height: number
   offsetMouseCoord: Coord
