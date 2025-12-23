@@ -18,7 +18,7 @@ export async function indexFileList(flags: TextIndexFlags): Promise<void> {
   const outFlag = target || out || '.'
   ensureTrixDir(outFlag)
 
-  const trackConfigs = prepareFileTrackConfigs(file, fileId)
+  const trackConfigs = prepareFileTrackConfigs(file!, fileId)
 
   const name =
     trackConfigs.length > 1
@@ -29,7 +29,7 @@ export async function indexFileList(flags: TextIndexFlags): Promise<void> {
     trackConfigs,
     outLocation: outFlag,
     name,
-    quiet,
+    quiet: quiet ?? false,
     attributes: parseCommaSeparatedString(attributes),
     typesToExclude: parseCommaSeparatedString(exclude),
     assemblyNames: [],

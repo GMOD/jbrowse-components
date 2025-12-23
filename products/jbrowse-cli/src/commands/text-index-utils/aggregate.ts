@@ -69,7 +69,7 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
       await indexDriver({
         trackConfigs,
         outLocation,
-        quiet,
+        quiet: quiet ?? false,
         name: asm,
         attributes: parseCommaSeparatedString(attributes),
         typesToExclude: parseCommaSeparatedString(exclude),

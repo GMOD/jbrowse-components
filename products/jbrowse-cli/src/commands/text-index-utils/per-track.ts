@@ -60,7 +60,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
       trackConfigs: [trackConfig],
       attributes: parseCommaSeparatedString(attributes),
       outLocation,
-      quiet,
+      quiet: quiet ?? false,
       name: trackId,
       typesToExclude: parseCommaSeparatedString(exclude),
       assemblyNames,

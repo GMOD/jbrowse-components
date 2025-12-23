@@ -8,13 +8,13 @@ import type { Config, Track } from '../../base'
 /**
  * Parses a comma-separated string into an array of trimmed, non-empty strings
  */
-export function parseCommaSeparatedString(
-  value?: string,
-): string[] | undefined {
-  return value
-    ?.split(',')
-    .map(s => s.trim())
-    .filter(Boolean)
+export function parseCommaSeparatedString(value?: string): string[] {
+  return (
+    value
+      ?.split(',')
+      .map(s => s.trim())
+      .filter(Boolean) ?? []
+  )
 }
 
 /**
@@ -62,9 +62,11 @@ export function getAssemblyNames(
   config: Config,
   assemblies?: string,
 ): string[] {
-  const asms =
-    parseCommaSeparatedString(assemblies) ||
-    (config.assembly ? [config.assembly.name] : [])
+  const asms = assemblies
+    ? parseCommaSeparatedString(assemblies)
+    : config.assembly
+      ? [config.assembly.name]
+      : []
 
   if (!asms.length) {
     throw new Error('No assemblies found')
