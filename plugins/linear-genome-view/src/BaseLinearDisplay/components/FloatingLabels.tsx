@@ -182,7 +182,7 @@ function deduplicateFeatureLabels(
       totalFeatureHeight,
       actualTopPx,
       featureWidth,
-      totalLayoutWidth,
+      leftPadding,
     } = feature
     const effectiveTopPx = actualTopPx ?? topPx
 
@@ -191,7 +191,7 @@ function deduplicateFeatureLabels(
       floatingLabels.length === 0 ||
       !totalFeatureHeight ||
       featureWidth === undefined ||
-      totalLayoutWidth === undefined
+      leftPadding === undefined
     ) {
       continue
     }
@@ -221,7 +221,7 @@ function deduplicateFeatureLabels(
         totalFeatureHeight,
         floatingLabels,
         featureWidth,
-        totalLayoutWidth,
+        leftPadding,
       })
     }
   }
@@ -324,11 +324,10 @@ const FloatingLabels = observer(function ({
       totalFeatureHeight,
       floatingLabels,
       featureWidth,
-      totalLayoutWidth,
+      leftPadding,
     },
   ] of featureLabels.entries()) {
     const featureVisualBottom = topPx + totalFeatureHeight
-    const leftPadding = totalLayoutWidth - featureWidth
     const featureLeftPx = leftPx + leftPadding
     const featureRightPx = featureLeftPx + featureWidth
 
