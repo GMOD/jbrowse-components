@@ -50,6 +50,15 @@ export function createFeatureFloatingLabels({
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
 
+  console.log('[createFeatureFloatingLabels]', {
+    name,
+    description,
+    showLabels,
+    showDescriptions,
+    shouldShowLabel,
+    shouldShowDescription,
+  })
+
   if (!shouldShowLabel && !shouldShowDescription) {
     return []
   }
