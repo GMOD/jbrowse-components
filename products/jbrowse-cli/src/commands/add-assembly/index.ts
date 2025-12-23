@@ -1,6 +1,5 @@
 import { parseArgs } from 'util'
 
-import { debug, printHelp } from '../utils'
 import {
   addAssemblyToConfig,
   enhanceAssembly,
@@ -8,7 +7,8 @@ import {
   loadOrCreateConfig,
   resolveTargetPath,
   saveConfigAndReport,
-} from './assembly-utils'
+} from './utils'
+import { debug, printHelp } from '../../utils'
 
 export async function run(args?: string[]) {
   const options = {

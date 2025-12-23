@@ -13,9 +13,9 @@ import {
   readConfAlt,
   runCommand,
   runInTmpDir,
-} from '../testUtil'
+} from '../../testUtil'
 
-jest.mock('../fetchWithProxy')
+jest.mock('../../fetchWithProxy')
 
 const { copyFile, writeFile, mkdir } = fs.promises
 
@@ -74,6 +74,7 @@ test('fails if trying to add an assembly with a name that already exists', async
   await runInTmpDir(async ctx => {
     const simple2bit = path.join(
       __dirname,
+      '..',
       '..',
       '..',
       'test',

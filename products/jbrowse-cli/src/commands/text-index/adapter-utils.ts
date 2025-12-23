@@ -1,3 +1,5 @@
+import { sanitizeNameForPath } from './config-utils'
+
 import type {
   LocalPathLocation,
   TrixTextSearchAdapter,
@@ -13,19 +15,20 @@ export function createTrixAdapter(
   assemblyNames: string[],
   idSuffix = 'index',
 ): TrixTextSearchAdapter {
+  const safeName = sanitizeNameForPath(name)
   return {
     type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: `${name}-${idSuffix}`,
+    textSearchAdapterId: `${safeName}-${idSuffix}`,
     ixFilePath: {
-      uri: `trix/${name}.ix`,
+      uri: `trix/${safeName}.ix`,
       locationType: 'UriLocation',
     },
     ixxFilePath: {
-      uri: `trix/${name}.ixx`,
+      uri: `trix/${safeName}.ixx`,
       locationType: 'UriLocation',
     },
     metaFilePath: {
-      uri: `trix/${name}_meta.json`,
+      uri: `trix/${safeName}_meta.json`,
       locationType: 'UriLocation',
     },
     assemblyNames,
@@ -40,8 +43,12 @@ const ADAPTER_LOCATION_KEYS: Record<string, string> = {
 }
 
 export function getAdapterLocation(
-  adapter: any,
+  adapter: { type?: string; [key: string]: unknown } | undefined,
 ): UriLocation | LocalPathLocation | undefined {
-  const key = ADAPTER_LOCATION_KEYS[adapter?.type]
-  return key ? (adapter[key] ?? adapter) : undefined
+  const key = ADAPTER_LOCATION_KEYS[adapter?.type ?? '']
+  return key
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      ((adapter?.[key] as UriLocation | LocalPathLocation) ??
+        (adapter as UriLocation | LocalPathLocation | undefined))
+    : undefined
 }
