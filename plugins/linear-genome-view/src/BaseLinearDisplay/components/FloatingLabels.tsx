@@ -254,13 +254,19 @@ function FloatingLabel({
   viewportLeft,
   tooltip,
 }: LabelProps) {
-  // Optimize: Use pre-calculated viewportLeft instead of recalculating
-  const leftPx = Math.max(featureLeftPx, viewportLeft)
-  const rightPx = Math.max(featureRightPx, viewportLeft)
+  const featureWidth = featureRightPx - featureLeftPx
 
-  const naturalX = leftPx - offsetPx
-  const maxX = rightPx - offsetPx - labelWidth
-  const x = clamp(0, naturalX, maxX)
+  let x: number
+  if (labelWidth > featureWidth) {
+    // Label doesn't fit within feature - don't float, use fixed position
+    x = featureLeftPx - offsetPx
+  } else {
+    // Label fits within feature - apply floating logic
+    const leftPx = Math.max(featureLeftPx, viewportLeft)
+    const naturalX = leftPx - offsetPx
+    const maxX = featureRightPx - offsetPx - labelWidth
+    x = clamp(naturalX, 0, maxX)
+  }
 
   return (
     <div
