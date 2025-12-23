@@ -81,7 +81,6 @@ export function drawLine(
         clamp(height - (n - niceMin) * linearRatio, 0, height) + offset
 
   let lastVal: number | undefined
-  let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []
 
   // when staticColor is set, batch all path operations into a single stroke
@@ -98,12 +97,9 @@ export function drawLine(
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-      // create reduced features, avoiding multiple features per px
-      // bitwise OR is faster than Math.floor for positive numbers
-      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-        reducedFeatures.push(feature)
-        prevLeftPx = leftPx
-      }
+      // Add all features to reducedFeatures
+      reducedFeatures.push(feature)
+
       const score = feature.get('score')
       const scoreY = toY(score)
 
@@ -163,12 +159,9 @@ export function drawLine(
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-      // create reduced features, avoiding multiple features per px
-      // bitwise OR is faster than Math.floor for positive numbers
-      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-        reducedFeatures.push(feature)
-        prevLeftPx = leftPx
-      }
+      // Add all features to reducedFeatures
+      reducedFeatures.push(feature)
+
       const score = feature.get('score')
       const scoreY = toY(score)
       const w = rightPx - leftPx + WIGGLE_FUDGE_FACTOR
@@ -292,7 +285,6 @@ export function drawLineArrays(
   const reducedStarts: number[] = []
   const reducedEnds: number[] = []
   const reducedScores: number[] = []
-  let prevLeftPx = Number.NEGATIVE_INFINITY
   const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
 
   // Batch all line operations into single path
@@ -322,13 +314,10 @@ export function drawLineArrays(
     const score = scores[i]!
     const scoreY = toY(score)
 
-    // Track reduced features (one per pixel column)
-    if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-      reducedStarts.push(fstart)
-      reducedEnds.push(fend)
-      reducedScores.push(score)
-      prevLeftPx = leftPx
-    }
+    // Add all features to reducedFeatures
+    reducedStarts.push(fstart)
+    reducedEnds.push(fend)
+    reducedScores.push(score)
 
     // Track clipping
     if (score > niceMax) {

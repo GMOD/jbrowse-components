@@ -253,8 +253,6 @@ export function drawXYArrays(
 
   // Handle whiskers mode with 3-pass rendering (max, avg, min scores)
   if (summaryScoreMode === 'whiskers' && isSummary && filled) {
-    let prevLeftPx = Number.NEGATIVE_INFINITY
-
     const toY = (n: number) => {
       const scaled = isLog
         ? (Math.log(n) / log2 - logMin) * logRatio
@@ -328,17 +326,15 @@ export function drawXYArrays(
         const score = scores[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
 
-        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-          reducedStarts.push(fstart)
-          reducedEnds.push(fend)
-          reducedScores.push(score)
-          if (reducedMinScores) {
-            reducedMinScores.push(minScores[i]!)
-          }
-          if (reducedMaxScores) {
-            reducedMaxScores.push(maxScores![i]!)
-          }
-          prevLeftPx = leftPx
+        // Add all features to reducedFeatures
+        reducedStarts.push(fstart)
+        reducedEnds.push(fend)
+        reducedScores.push(score)
+        if (reducedMinScores) {
+          reducedMinScores.push(minScores[i]!)
+        }
+        if (reducedMaxScores) {
+          reducedMaxScores.push(maxScores![i]!)
         }
 
         const featureColor = colors[i]!
@@ -421,18 +417,17 @@ export function drawXYArrays(
         const score = scores[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
 
-        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
-          reducedStarts.push(fstart)
-          reducedEnds.push(fend)
-          reducedScores.push(score)
-          if (reducedMinScores) {
-            reducedMinScores.push(minScores[i]!)
-          }
-          if (reducedMaxScores) {
-            reducedMaxScores.push(maxScores![i]!)
-          }
-          prevLeftPx = leftPx
+        // Add all features to reducedFeatures
+        reducedStarts.push(fstart)
+        reducedEnds.push(fend)
+        reducedScores.push(score)
+        if (reducedMinScores) {
+          reducedMinScores.push(minScores[i]!)
         }
+        if (reducedMaxScores) {
+          reducedMaxScores.push(maxScores![i]!)
+        }
+
         addRectToPath(leftPx, toY(score), w, toOrigin(score), ctx)
       }
       ctx.fillStyle = staticColor
