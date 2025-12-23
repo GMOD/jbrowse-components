@@ -1301,6 +1301,78 @@ describe('CanvasFeatureRenderer', () => {
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
 
+    test('negative strand gene with labels - visual regression test', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 20,
+        end: 180,
+        strand: -1,
+        name: 'NegativeGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 20,
+            end: 180,
+            strand: -1,
+            name: 'Transcript-1',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 40,
+                end: 160,
+                strand: -1,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'below',
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
     test('negative strand genes', async () => {
       const feature = new SimpleFeature({
         uniqueId: 'gene1',
@@ -1726,6 +1798,413 @@ describe('CanvasFeatureRenderer', () => {
     })
   })
 
+  describe('tooltip callbacks with label positioning', () => {
+    test('tooltip included in floating labels for negative strand feature', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'NegativeFeature',
+        description: 'Test description',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      // Verify tooltip is present in layout data
+      expect(layoutRecords[0]!.label).toBe('NegativeFeature')
+      expect(layoutRecords[0]!.description).toBe('Test description')
+    })
+
+    test('custom mouseover callback with feature labels', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'TestFeature',
+        score: 95,
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        mouseover: `jexl:label + ' (score: ' + get(feature, 'score') + ')'`,
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe('TestFeature (score: 95)')
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+    })
+
+    test('subfeature mouseover callback with below labels', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: -1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: -1,
+            name: 'TestTranscript',
+            id: 'transcript-001',
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'below',
+        subfeatureMouseover: `jexl:name + ' (' + type + ')'`,
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.subfeatureInfos).toHaveLength(1)
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe(
+        'TestTranscript (mRNA)',
+      )
+    })
+
+    test('subfeature mouseover callback with overlay labels', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: 1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: 1,
+            name: 'Isoform-A',
+            id: 'iso-a',
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'overlay',
+        subfeatureMouseover: `jexl:id + ': ' + name`,
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.subfeatureInfos).toHaveLength(1)
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe('iso-a: Isoform-A')
+    })
+
+    test('tooltip with _mouseOver attribute on negative strand', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'TestFeature',
+        _mouseOver: 'Custom tooltip text',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe('Custom tooltip text')
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+    })
+
+    test('complex mouseover callback accessing feature attributes', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'TestGene',
+        biotype: 'protein_coding',
+        source: 'ENSEMBL',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        mouseover: `jexl:label + ' [' + get(feature, 'biotype') + '] from ' + get(feature, 'source')`,
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe(
+        'TestGene [protein_coding] from ENSEMBL',
+      )
+    })
+
+    test('default tooltip format with name and description', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: 1,
+        name: 'MyFeature',
+        description: 'Important feature',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe('MyFeature<br/>Important feature')
+    })
+  })
+
   describe('strand arrow padding and label positioning', () => {
     test('positive strand feature has leftPadding: 0', () => {
       const feature = new SimpleFeature({
@@ -1924,6 +2403,153 @@ describe('CanvasFeatureRenderer', () => {
       // Transcript has its own leftPadding based on strand, but labels use leftPadding: 0
       expect(transcriptLayout.leftPadding).toBe(8)
       expect(transcriptLayout.width).toBe(400)
+    })
+
+    test('feature with no strand information has no padding', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        name: 'NoStrand',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(0)
+      expect(layoutRecords[0]!.layout.width).toBe(100)
+      // No strand means no padding on either side
+      expect(layoutRecords[0]!.layout.totalLayoutWidth).toBe(100)
+    })
+
+    test('reversed region flips strand arrow padding', () => {
+      const forwardFeature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: 1,
+        name: 'ForwardInReversed',
+      })
+      const features = new Map([['test1', forwardFeature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      // Override the region to be reversed for this test
+      const reversedRegion = { ...args.region, reversed: true }
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: reversedRegion,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      // In reversed region, strand 1 should get left padding
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+    })
+
+    test('overlay subfeature labels include featureWidth and leftPadding', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: -1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: -1,
+            name: 'TestTranscript',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 250,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'overlay',
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(layoutRecords).toHaveLength(1)
+      const geneLayout = layoutRecords[0]!.layout
+      expect(geneLayout.children).toHaveLength(1)
+      const transcriptLayout = geneLayout.children[0]!
+      expect(transcriptLayout.width).toBe(400)
+      expect(transcriptLayout.leftPadding).toBe(8)
     })
 
     test('gene feature with negative strand has correct padding in layout', async () => {

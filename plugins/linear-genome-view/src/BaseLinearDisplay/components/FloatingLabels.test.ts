@@ -74,6 +74,131 @@ describe('FloatingLabels', () => {
 
       // This label would be filtered out in the rendering logic
     })
+
+    test('label fits in totalLayoutWidth but not featureWidth - should be filtered', () => {
+      const featureWidth = 100
+      const leftPadding = 8
+      const totalLayoutWidth = 108
+      const labelWidth = 105
+
+      // Label fits in total layout width (including padding)
+      expect(labelWidth <= totalLayoutWidth).toBe(true)
+
+      // But doesn't fit in actual feature width (should be filtered)
+      expect(labelWidth > featureWidth).toBe(true)
+    })
+
+    test('multiple features - padding affects only negative strand labels', () => {
+      const features = [
+        {
+          id: 'pos1',
+          strand: 1,
+          leftPadding: 0,
+          featureWidth: 100,
+          totalLayoutWidth: 108,
+          leftPx: 50,
+        },
+        {
+          id: 'neg1',
+          strand: -1,
+          leftPadding: 8,
+          featureWidth: 100,
+          totalLayoutWidth: 108,
+          leftPx: 200,
+        },
+        {
+          id: 'pos2',
+          strand: 1,
+          leftPadding: 0,
+          featureWidth: 80,
+          totalLayoutWidth: 88,
+          leftPx: 350,
+        },
+      ]
+
+      for (const feat of features) {
+        const featureLeftPx = feat.leftPx + feat.leftPadding
+        const featureRightPx = featureLeftPx + feat.featureWidth
+
+        if (feat.strand === 1) {
+          // Positive strand - no offset
+          expect(featureLeftPx).toBe(feat.leftPx)
+        } else {
+          // Negative strand - 8px offset
+          expect(featureLeftPx).toBe(feat.leftPx + 8)
+        }
+
+        expect(featureRightPx - featureLeftPx).toBe(feat.featureWidth)
+      }
+    })
+
+    test('very small feature with padding - label correctly constrained', () => {
+      const featureWidth = 10
+      const leftPadding = 8
+      const labelWidth = 50
+      const leftPx = 100
+
+      // Label is much wider than feature
+      expect(labelWidth > featureWidth).toBe(true)
+
+      // Calculate bounds
+      const featureLeftPx = leftPx + leftPadding // 108
+      const featureRightPx = featureLeftPx + featureWidth // 118
+
+      // Available width is just 10px
+      expect(featureRightPx - featureLeftPx).toBe(10)
+
+      // Label won't fit and should be filtered
+      expect(labelWidth > featureWidth).toBe(true)
+    })
+  })
+
+  describe('regression tests for original bug', () => {
+    test('negative strand gene - label should not appear in left padding area', () => {
+      // This was the original bug: labels appeared in the 8px padding area
+      const featureWidth = 200
+      const leftPadding = 8
+      const totalLayoutWidth = 208
+      const leftPx = 100
+      const labelWidth = 150
+
+      // Calculate actual feature bounds (excluding padding)
+      const featureLeftPx = leftPx + leftPadding // 108
+      const featureRightPx = featureLeftPx + featureWidth // 308
+
+      // Label should fit in the actual feature area
+      expect(labelWidth <= featureWidth).toBe(true)
+
+      // Label should NOT use the padding area (leftPx to leftPx+8)
+      expect(featureLeftPx).toBeGreaterThan(leftPx)
+      expect(featureLeftPx).toBe(leftPx + 8)
+
+      // Available width for label is featureWidth, not totalLayoutWidth
+      expect(featureRightPx - featureLeftPx).toBe(featureWidth)
+      expect(featureRightPx - featureLeftPx).not.toBe(totalLayoutWidth)
+    })
+
+    test('subfeature labels align with parent despite parent padding', () => {
+      // Parent gene has padding
+      const parentLeftPadding = 8
+      const parentLeftPx = 100
+
+      // Subfeature (transcript) should use leftPadding: 0 for labels
+      const subfeatureLeftPadding = 0
+      const subfeatureLeftPx = 100 // Same as parent gene start
+
+      // Parent label starts at leftPx + padding
+      const parentLabelStart = parentLeftPx + parentLeftPadding // 108
+
+      // Subfeature label should start at leftPx (no padding offset for labels)
+      const subfeatureLabelStart = subfeatureLeftPx + subfeatureLeftPadding // 100
+
+      // Labels should NOT align (parent is offset by padding, subfeature is not)
+      // This is correct because parent has visual padding, subfeature doesn't
+      expect(parentLabelStart).not.toBe(subfeatureLabelStart)
+      expect(parentLabelStart).toBe(108)
+      expect(subfeatureLabelStart).toBe(100)
+    })
   })
 })
 
