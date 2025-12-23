@@ -115,7 +115,7 @@ export async function indexDriver({
   quiet: boolean
   typesToExclude: string[]
   assemblyNames: string[]
-  prefixSize?: string | number
+  prefixSize?: number
 }): Promise<void> {
   const readStream = Readable.from(
     indexFiles({
@@ -131,8 +131,7 @@ export async function indexDriver({
     readStream,
     outLocation,
     name,
-    prefixSize:
-      typeof prefixSize === 'string' ? parseInt(prefixSize) : prefixSize,
+    prefixSize,
     quiet,
   })
 
@@ -150,15 +149,13 @@ export function prepareFileTrackConfigs(
   files: string[],
   fileIds?: string[],
 ): Track[] {
-  const trackConfigs = files
-    .map(file => guessAdapterFromFileName(file))
+  return files
+    .map((file, i) => {
+      const config = guessAdapterFromFileName(file)
+      if (fileIds?.[i]) {
+        config.trackId = fileIds[i]!
+      }
+      return config
+    })
     .filter(fileConfig => supported(fileConfig.adapter?.type))
-
-  if (fileIds?.length) {
-    for (const [i, element] of fileIds.entries()) {
-      trackConfigs[i]!.trackId = element!
-    }
-  }
-
-  return trackConfigs
 }

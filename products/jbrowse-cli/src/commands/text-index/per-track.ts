@@ -1,21 +1,23 @@
-import path from 'path'
-
 import { createTrixAdapter } from './adapter-utils'
 import {
-  ensureTrixDir,
   getTrackConfigs,
-  readConf,
+  loadConfigForIndexing,
+  parseCommaSeparatedString,
+  prepareIndexDriverFlags,
   writeConf,
 } from './config-utils'
 import { indexDriver } from './indexing-utils'
 import { validateAssembliesForPerTrack } from './validators'
 import { resolveConfigPath } from '../../utils'
 
-export async function perTrackIndex(flags: any) {
+import type { TextIndexFlags } from './index'
+
+export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
   const {
     out,
     target,
     tracks,
+    excludeTracks,
     assemblies,
     attributes,
     quiet,
@@ -23,13 +25,19 @@ export async function perTrackIndex(flags: any) {
     exclude,
     prefixSize,
   } = flags
-  const confFilePath = await resolveConfigPath(target, out)
-  const outLocation = path.dirname(confFilePath)
-  const config = readConf(confFilePath)
+  const { config, configPath, outLocation } = await loadConfigForIndexing(
+    target,
+    out,
+    resolveConfigPath,
+  )
   const configTracks = config.tracks || []
-  ensureTrixDir(outLocation)
   validateAssembliesForPerTrack(assemblies)
-  const confs = getTrackConfigs(config, tracks?.split(','))
+  const confs = getTrackConfigs(
+    config,
+    parseCommaSeparatedString(tracks),
+    undefined,
+    parseCommaSeparatedString(excludeTracks),
+  )
   if (!confs.length) {
     throw new Error(
       'Tracks not found in config.json, please add track configurations before indexing.',
@@ -48,13 +56,10 @@ export async function perTrackIndex(flags: any) {
 
     await indexDriver({
       trackConfigs: [trackConfig],
-      attributes: attributes.split(','),
       outLocation,
-      quiet,
       name: trackId,
-      typesToExclude: exclude.split(','),
       assemblyNames,
-      prefixSize,
+      ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
     })
     if (!textSearching?.textSearchAdapter) {
       // modifies track with new text search adapter
@@ -75,6 +80,6 @@ export async function perTrackIndex(flags: any) {
   }
 
   if (hasChanges) {
-    writeConf({ ...config, tracks: configTracks }, confFilePath)
+    writeConf({ ...config, tracks: configTracks }, configPath)
   }
 }

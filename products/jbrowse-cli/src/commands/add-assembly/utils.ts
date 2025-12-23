@@ -1,16 +1,19 @@
 import fs from 'fs'
 import path from 'path'
 
-import { isURL } from '../types/common'
+import { isURL } from '../../types/common'
 import {
   debug,
   readInlineOrFileJson,
   readJsonFile,
   resolveFileLocation,
-  writeJsonFile,
-} from '../utils'
+} from '../../utils'
+import {
+  findAndUpdateOrAdd,
+  saveConfigAndReport as saveConfigAndReportBase,
+} from '../shared/config-operations'
 
-import type { Assembly, Config, Sequence } from '../base'
+import type { Assembly, Config, Sequence } from '../../base'
 
 const { rename, copyFile, symlink } = fs.promises
 
@@ -72,41 +75,32 @@ export async function loadData({
     return false
   }
 
+  if (load === 'inPlace') {
+    return false
+  }
+
   const destDir = path.dirname(destination)
   const validPaths = filePaths.filter(f => !!f)
 
-  switch (load) {
-    case 'copy': {
-      await Promise.all(
-        validPaths.map(filePath =>
-          copyFile(filePath, path.join(destDir, path.basename(filePath))),
-        ),
-      )
-      return true
-    }
-    case 'symlink': {
-      await Promise.all(
-        validPaths.map(filePath =>
-          symlink(
-            path.resolve(filePath),
-            path.join(destDir, path.basename(filePath)),
-          ),
-        ),
-      )
-      return true
-    }
-    case 'move': {
-      await Promise.all(
-        validPaths.map(filePath =>
-          rename(filePath, path.join(destDir, path.basename(filePath))),
-        ),
-      )
-      return true
-    }
-    case 'inPlace': {
-      return false
-    }
+  const operations: Record<
+    string,
+    (src: string, dest: string) => Promise<void>
+  > = {
+    copy: copyFile,
+    symlink: (src, dest) => symlink(path.resolve(src), dest),
+    move: rename,
   }
+
+  const operation = operations[load]
+  if (operation) {
+    await Promise.all(
+      validPaths.map(filePath =>
+        operation(filePath, path.join(destDir, path.basename(filePath))),
+      ),
+    )
+    return true
+  }
+
   return false
 }
 
@@ -480,30 +474,18 @@ export async function addAssemblyToConfig({
   assembly: Assembly
   runFlags: any
 }): Promise<{ config: Config; wasOverwritten: boolean }> {
-  const updatedConfig = { ...config }
+  const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
+    items: config.assemblies || [],
+    newItem: assembly,
+    idField: 'name',
+    getId: item => item.name,
+    allowOverwrite: runFlags.overwrite || runFlags.force || false,
+    itemType: 'assembly',
+  })
 
-  if (!updatedConfig.assemblies) {
-    updatedConfig.assemblies = []
-  }
-
-  const idx = updatedConfig.assemblies.findIndex(
-    configAssembly => configAssembly.name === assembly.name,
-  )
-
-  if (idx !== -1) {
-    debug(`Found existing assembly ${assembly.name} in configuration`)
-    if (runFlags.overwrite || runFlags.force) {
-      debug(`Overwriting assembly ${assembly.name} in configuration`)
-      updatedConfig.assemblies[idx] = assembly
-      return { config: updatedConfig, wasOverwritten: true }
-    } else {
-      throw new Error(
-        `Cannot add assembly with name ${assembly.name}, an assembly with that name already exists`,
-      )
-    }
-  } else {
-    updatedConfig.assemblies.push(assembly)
-    return { config: updatedConfig, wasOverwritten: false }
+  return {
+    config: { ...config, assemblies: updatedItems },
+    wasOverwritten,
   }
 }
 
@@ -518,12 +500,11 @@ export async function saveConfigAndReport({
   assembly: Assembly
   wasOverwritten: boolean
 }): Promise<void> {
-  debug(`Writing configuration to file ${target}`)
-  await writeJsonFile(target, config)
-
-  console.log(
-    `${wasOverwritten ? 'Overwrote' : 'Added'} assembly "${assembly.name}" ${
-      wasOverwritten ? 'in' : 'to'
-    } ${target}`,
-  )
+  await saveConfigAndReportBase({
+    config,
+    target,
+    itemType: 'assembly',
+    itemName: assembly.name,
+    wasOverwritten,
+  })
 }

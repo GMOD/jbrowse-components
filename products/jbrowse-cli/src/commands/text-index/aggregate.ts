@@ -1,21 +1,23 @@
-import path from 'path'
-
 import { createTrixAdapter } from './adapter-utils'
 import {
-  ensureTrixDir,
   getAssemblyNames,
   getTrackConfigs,
-  readConf,
+  loadConfigForIndexing,
+  parseCommaSeparatedString,
+  prepareIndexDriverFlags,
   writeConf,
 } from './config-utils'
 import { indexDriver } from './indexing-utils'
 import { resolveConfigPath } from '../../utils'
 
-export async function aggregateIndex(flags: any) {
+import type { TextIndexFlags } from './index'
+
+export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
   const {
     out,
     target,
     tracks,
+    excludeTracks,
     assemblies,
     attributes,
     quiet,
@@ -24,16 +26,22 @@ export async function aggregateIndex(flags: any) {
     dryrun,
     prefixSize,
   } = flags
-  const confPath = await resolveConfigPath(target, out)
-  const outLocation = path.dirname(confPath)
-  const config = readConf(confPath)
-  ensureTrixDir(outLocation)
+  const { config, configPath, outLocation } = await loadConfigForIndexing(
+    target,
+    out,
+    resolveConfigPath,
+  )
 
   const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters || []
   const asms = getAssemblyNames(config, assemblies)
 
   for (const asm of asms) {
-    const trackConfigs = getTrackConfigs(config, tracks?.split(','), asm)
+    const trackConfigs = getTrackConfigs(
+      config,
+      parseCommaSeparatedString(tracks),
+      asm,
+      parseCommaSeparatedString(excludeTracks),
+    )
     if (!trackConfigs.length) {
       console.log(`Indexing assembly ${asm}...(no tracks found)...`)
       continue
@@ -59,12 +67,9 @@ export async function aggregateIndex(flags: any) {
       await indexDriver({
         trackConfigs,
         outLocation,
-        quiet,
         name: asm,
-        attributes: attributes.split(','),
-        typesToExclude: exclude.split(','),
         assemblyNames: [asm],
-        prefixSize,
+        ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
       })
 
       const trixConf = createTrixAdapter(asm, [asm])
@@ -83,7 +88,7 @@ export async function aggregateIndex(flags: any) {
         ...config,
         aggregateTextSearchAdapters,
       },
-      confPath,
+      configPath,
     )
   }
 }

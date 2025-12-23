@@ -6,8 +6,8 @@ import {
   readInlineOrFileJson,
   readJsonFile,
   resolveConfigPath,
-  writeJsonFile,
 } from '../utils'
+import { findAndUpdateOrAdd, saveConfigAndReport } from './shared/config-operations'
 
 import type { Config, Track } from '../base'
 
@@ -75,28 +75,24 @@ export async function run(args?: string[]) {
   if (!config.tracks) {
     config.tracks = []
   }
-  const idx = config.tracks.findIndex(
-    ({ trackId }: { trackId: string }) => trackId === trackConfig.trackId,
-  )
-  if (idx !== -1) {
-    const existing = config.tracks[idx]?.name
-    debug(`Found existing track ${existing} in configuration`)
-    if (update) {
-      debug(`Overwriting track ${existing} in configuration`)
-      config.tracks[idx] = trackConfig
-    } else {
-      throw new Error(
-        `Cannot add track ${trackConfig.name}, a track with that trackId already exists: ${existing}`,
-      )
-    }
-  } else {
-    config.tracks.push(trackConfig)
-  }
-  debug(`Writing configuration to file ${target}`)
-  await writeJsonFile(target, config)
-  console.log(
-    `${idx !== -1 ? 'Overwrote' : 'Added'} track "${trackConfig.name}" ${
-      idx !== -1 ? 'in' : 'to'
-    } ${target}`,
-  )
+
+  const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
+    items: config.tracks,
+    newItem: trackConfig,
+    idField: 'trackId',
+    getId: item => item.trackId,
+    allowOverwrite: update ?? false,
+    itemType: 'track',
+  })
+
+  config.tracks = updatedItems
+
+  await saveConfigAndReport({
+    config,
+    target,
+    itemType: 'track',
+    itemName: trackConfig.name,
+    itemId: trackConfig.trackId,
+    wasOverwritten,
+  })
 }
