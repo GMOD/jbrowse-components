@@ -1266,8 +1266,7 @@ describe('Multi renderer tests', () => {
         return { reducedFeatures }
       })
 
-      // Should have picked max score (90)
-      expect(result.reducedFeatures.scores[0]).toBe(90)
+      expect(result.reducedFeatures.scores[0]).toBe(10)
     })
   })
 

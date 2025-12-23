@@ -73,6 +73,7 @@ export function drawDensity(
   const niceMin = domain[0]!
   const niceMax = domain[1]!
 
+  let prevLeftPx = -1
   const reducedFeatures = []
   const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
   const isLog = scaleOpts.scaleType === 'log'
@@ -92,8 +93,11 @@ export function drawDensity(
       ? (regionEnd - fstart) * invBpPerPx
       : (fend - regionStart) * invBpPerPx
 
-    // Add all features to reducedFeatures
-    reducedFeatures.push(feature)
+    // Reduce features for tooltips (one per pixel column)
+    if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+      reducedFeatures.push(feature)
+      prevLeftPx = leftPx
+    }
 
     const score = feature.get('score')
     const w = rightPx - leftPx + WIGGLE_FUDGE_FACTOR
@@ -131,7 +135,6 @@ export function drawDensity(
 
 /**
  * Optimized drawDensity that takes structure-of-arrays directly from BigWig adapter.
- * Uses two-pass rendering to reduce fillRect calls when zoomed out.
  */
 export function drawDensityArrays(
   ctx: CanvasRenderingContext2D,
@@ -196,6 +199,7 @@ export function drawDensityArrays(
   const reducedStarts: number[] = []
   const reducedEnds: number[] = []
   const reducedScores: number[] = []
+  let prevLeftPx = -1
 
   let lastCheck = Date.now()
 
@@ -219,10 +223,13 @@ export function drawDensityArrays(
     const score = scores[i]!
     const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, 1)
 
-    // Add all features to reducedFeatures
-    reducedStarts.push(fstart)
-    reducedEnds.push(fend)
-    reducedScores.push(score)
+    // Reduce features for tooltips (one per pixel column)
+    if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+      reducedStarts.push(fstart)
+      reducedEnds.push(fend)
+      reducedScores.push(score)
+      prevLeftPx = leftPx
+    }
 
     // Draw the feature
     ctx.fillStyle = score >= domainMin ? `${colorScale(score)}` : '#eee'

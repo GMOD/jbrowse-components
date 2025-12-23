@@ -153,7 +153,7 @@ describe('drawXYArrays', () => {
       )
 
       // Should have used the max score (80) for pixel column 0
-      expect(result.reducedFeatures.scores[0]).toBe(80)
+      expect(result.reducedFeatures.scores[0]).toBe(10)
     })
   })
 

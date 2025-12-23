@@ -253,6 +253,8 @@ export function drawXYArrays(
 
   // Handle whiskers mode with 3-pass rendering (max, avg, min scores)
   if (summaryScoreMode === 'whiskers' && isSummary && filled) {
+    let prevLeftPx = -1
+
     const toY = (n: number) => {
       const scaled = isLog
         ? (Math.log(n) / log2 - logMin) * logRatio
@@ -326,15 +328,18 @@ export function drawXYArrays(
         const score = scores[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
 
-        // Add all features to reducedFeatures
-        reducedStarts.push(fstart)
-        reducedEnds.push(fend)
-        reducedScores.push(score)
-        if (reducedMinScores) {
-          reducedMinScores.push(minScores[i]!)
-        }
-        if (reducedMaxScores) {
-          reducedMaxScores.push(maxScores![i]!)
+        // Reduce features for tooltips (one per pixel column)
+        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+          reducedStarts.push(fstart)
+          reducedEnds.push(fend)
+          reducedScores.push(score)
+          if (reducedMinScores) {
+            reducedMinScores.push(minScores[i]!)
+          }
+          if (reducedMaxScores) {
+            reducedMaxScores.push(maxScores![i]!)
+          }
+          prevLeftPx = leftPx
         }
 
         const featureColor = colors[i]!
@@ -417,15 +422,18 @@ export function drawXYArrays(
         const score = scores[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
 
-        // Add all features to reducedFeatures
-        reducedStarts.push(fstart)
-        reducedEnds.push(fend)
-        reducedScores.push(score)
-        if (reducedMinScores) {
-          reducedMinScores.push(minScores[i]!)
-        }
-        if (reducedMaxScores) {
-          reducedMaxScores.push(maxScores![i]!)
+        // Reduce features for tooltips (one per pixel column)
+        if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+          reducedStarts.push(fstart)
+          reducedEnds.push(fend)
+          reducedScores.push(score)
+          if (reducedMinScores) {
+            reducedMinScores.push(minScores[i]!)
+          }
+          if (reducedMaxScores) {
+            reducedMaxScores.push(maxScores![i]!)
+          }
+          prevLeftPx = leftPx
         }
 
         addRectToPath(leftPx, toY(score), w, toOrigin(score), ctx)
@@ -486,105 +494,8 @@ export function drawXYArrays(
   // Set initial fill color (will be changed per-feature in bicolor mode)
   ctx.fillStyle = staticColor
 
-  // Use pixel deduplication when features are sub-pixel for efficiency.
-  // The first pass marks all pixel columns each feature covers (not just the
-  // starting column), so variable-width features are handled correctly even
-  // if only the first feature is checked here.
-  const firstFeatureWidth = len > 0 ? (ends[0]! - starts[0]!) * invBpPerPx : 0
-  const usePixelDedup = filled && firstFeatureWidth < 1
-
-  if (usePixelDedup) {
-    // Two-pass approach for sub-pixel features: collect max scores per pixel column,
-    // then draw once per column. This reduces fillRect calls significantly.
-    const widthPx = Math.ceil(width) + 1
-    const maxScorePerPx = new Float32Array(widthPx)
-    const hasData = new Uint8Array(widthPx)
-    const featureIdxPerPx = new Int32Array(widthPx)
-    const clipFlag = new Uint8Array(widthPx)
-
-    // First pass: collect max score per pixel column, marking all columns each feature covers
-    for (let i = 0; i < len; i++) {
-      checkStopToken2(stopToken, i, lastCheck)
-      const fstart = starts[i]!
-      const fend = ends[i]!
-      const leftPx = reversed
-        ? (regionEnd - fend) * invBpPerPx
-        : (fstart - regionStart) * invBpPerPx
-      const rightPx = reversed
-        ? (regionEnd - fstart) * invBpPerPx
-        : (fend - regionStart) * invBpPerPx
-
-      // Mark all pixel columns this feature covers
-      const startCol = Math.max(0, leftPx | 0)
-      const endCol = Math.min(widthPx - 1, rightPx | 0)
-      const score = scoreArr[i]!
-
-      for (let pxCol = startCol; pxCol <= endCol; pxCol++) {
-        if (!hasData[pxCol] || score > maxScorePerPx[pxCol]!) {
-          maxScorePerPx[pxCol] = score
-          hasData[pxCol] = 1
-          featureIdxPerPx[pxCol] = i
-        }
-        if (score > niceMax) {
-          clipFlag[pxCol] = 1
-        } else if (score < niceMin && !isLog && clipFlag[pxCol] !== 1) {
-          clipFlag[pxCol] = 2
-        }
-      }
-    }
-
-    // Second pass: draw one rect per pixel column and build reduced features
-    const rectW = Math.max(1 + WIGGLE_FUDGE_FACTOR, minSize)
-    let lastAddedIdx = -1
-    for (let px = 0; px < widthPx; px++) {
-      if (hasData[px]) {
-        const idx = featureIdxPerPx[px]!
-        const score = maxScorePerPx[px]!
-        const scaled = isLog
-          ? (Math.log(score) / log2 - logMin) * logRatio
-          : (score - niceMin) * linearRatio
-        const yClamped = clamp(inverted ? scaled : height - scaled, 0, height)
-        const y = yClamped + offset
-        if (usePerFeatureColors) {
-          ctx.fillStyle = colors[idx]!
-        } else if (useBicolor) {
-          ctx.fillStyle = score < pivotValue ? negColor : posColor
-        }
-        ctx.fillRect(px, y, rectW, originYPx - y)
-
-        // Build reduced features for tooltip support (avoid duplicates)
-        if (idx !== lastAddedIdx) {
-          reducedStarts.push(starts[idx]!)
-          reducedEnds.push(ends[idx]!)
-          reducedScores.push(scores[idx]!)
-          if (reducedMinScores && minScores) {
-            reducedMinScores.push(minScores[idx]!)
-          }
-          if (reducedMaxScores && maxScores) {
-            reducedMaxScores.push(maxScores[idx]!)
-          }
-          lastAddedIdx = idx
-        }
-      }
-    }
-
-    // Draw clipping indicators
-    ctx.fillStyle = clipColor
-    for (let px = 0; px < widthPx; px++) {
-      if (clipFlag[px] === 1) {
-        ctx.fillRect(px, offset, rectW, WIGGLE_CLIP_HEIGHT)
-      } else if (clipFlag[px] === 2) {
-        ctx.fillRect(
-          px,
-          unadjustedHeight - WIGGLE_CLIP_HEIGHT,
-          rectW,
-          WIGGLE_CLIP_HEIGHT,
-        )
-      }
-    }
-  } else if (filled) {
-    // Filled mode with features >= 1px
-    let prevLeftPx = Number.NEGATIVE_INFINITY
+  if (filled) {
+    let prevLeftPx = -1
     const clipHighPx: number[] = []
     const clipHighW: number[] = []
     const clipLowPx: number[] = []
@@ -607,6 +518,7 @@ export function drawXYArrays(
         const score = scoreArr[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
 
+        // Reduce features for tooltips (one per pixel column)
         if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
           reducedStarts.push(fstart)
           reducedEnds.push(fend)
@@ -652,6 +564,7 @@ export function drawXYArrays(
         const score = scoreArr[i]!
         const w = Math.max(rightPx - leftPx + WIGGLE_FUDGE_FACTOR, minSize)
 
+        // Reduce features for tooltips (one per pixel column)
         if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
           reducedStarts.push(fstart)
           reducedEnds.push(fend)
@@ -710,13 +623,13 @@ export function drawXYArrays(
     }
   } else {
     // Non-filled (scatterplot) mode
+    let prevLeftPx = -1
     const clipHighPx: number[] = []
     const clipHighW: number[] = []
     const clipLowPx: number[] = []
     const clipLowW: number[] = []
     let clipHighCount = 0
     let clipLowCount = 0
-    let prevLeftPx = Number.NEGATIVE_INFINITY
     const dotSize = Math.max(minSize, 1)
 
     if (canBatch) {
@@ -734,6 +647,7 @@ export function drawXYArrays(
         const score = scoreArr[i]!
         const w = rightPx - leftPx + WIGGLE_FUDGE_FACTOR
 
+        // Reduce features for tooltips (one per pixel column)
         if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
           reducedStarts.push(fstart)
           reducedEnds.push(fend)
@@ -783,6 +697,7 @@ export function drawXYArrays(
         const score = scoreArr[i]!
         const w = rightPx - leftPx + WIGGLE_FUDGE_FACTOR
 
+        // Reduce features for tooltips (one per pixel column)
         if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
           reducedStarts.push(fstart)
           reducedEnds.push(fend)

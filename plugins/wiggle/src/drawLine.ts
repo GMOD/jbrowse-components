@@ -81,6 +81,7 @@ export function drawLine(
         clamp(height - (n - niceMin) * linearRatio, 0, height) + offset
 
   let lastVal: number | undefined
+  let prevLeftPx = -1
   const reducedFeatures = []
 
   // when staticColor is set, batch all path operations into a single stroke
@@ -97,8 +98,11 @@ export function drawLine(
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-      // Add all features to reducedFeatures
-      reducedFeatures.push(feature)
+      // Reduce features for tooltips (one per pixel column)
+      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+        reducedFeatures.push(feature)
+        prevLeftPx = leftPx
+      }
 
       const score = feature.get('score')
       const scoreY = toY(score)
@@ -159,8 +163,11 @@ export function drawLine(
       }
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-      // Add all features to reducedFeatures
-      reducedFeatures.push(feature)
+      // Reduce features for tooltips (one per pixel column)
+      if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+        reducedFeatures.push(feature)
+        prevLeftPx = leftPx
+      }
 
       const score = feature.get('score')
       const scoreY = toY(score)
@@ -285,6 +292,7 @@ export function drawLineArrays(
   const reducedStarts: number[] = []
   const reducedEnds: number[] = []
   const reducedScores: number[] = []
+  let prevLeftPx = -1
   const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
 
   // Batch all line operations into single path
@@ -314,10 +322,13 @@ export function drawLineArrays(
     const score = scores[i]!
     const scoreY = toY(score)
 
-    // Add all features to reducedFeatures
-    reducedStarts.push(fstart)
-    reducedEnds.push(fend)
-    reducedScores.push(score)
+    // Reduce features for tooltips (one per pixel column)
+    if ((leftPx | 0) !== (prevLeftPx | 0) || rightPx - leftPx > 1) {
+      reducedStarts.push(fstart)
+      reducedEnds.push(fend)
+      reducedScores.push(score)
+      prevLeftPx = leftPx
+    }
 
     // Track clipping
     if (score > niceMax) {
