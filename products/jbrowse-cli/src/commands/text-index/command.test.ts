@@ -11,7 +11,7 @@ import {
   openWebStream,
   runCommand,
   runInTmpDir,
-} from '../testUtil'
+} from '../../testUtil'
 
 jest.mock('../fetchWithProxy')
 

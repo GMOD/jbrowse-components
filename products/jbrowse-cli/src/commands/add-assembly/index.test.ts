@@ -13,9 +13,9 @@ import {
   readConfAlt,
   runCommand,
   runInTmpDir,
-} from '../testUtil'
+} from '../../testUtil'
 
-jest.mock('../fetchWithProxy')
+jest.mock('../../fetchWithProxy')
 
 const { copyFile, writeFile, mkdir } = fs.promises
 
