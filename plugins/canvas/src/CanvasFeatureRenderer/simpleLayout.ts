@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
 import {
@@ -68,7 +69,6 @@ export function layoutFeature(args: {
     labelAllowed,
     geneGlyphMode,
     featureHeight,
-    isHeightCallback,
   } = configContext
 
   const glyphType = chooseGlyphType({ feature, configContext })
@@ -82,9 +82,7 @@ export function layoutFeature(args: {
     x = parentX + relativeX / bpPerPx
   }
 
-  const height = isHeightCallback
-    ? (readConfObject(config, 'height', { feature }) as number)
-    : featureHeight
+  const height = readConfObject(config, 'height', { feature }) as number
   const actualHeight = displayMode === 'compact' ? height / 2 : height
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const y = parentY

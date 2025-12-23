@@ -75,7 +75,6 @@ export async function drawDotplot(
   const lineWidth = readConfObject(config, 'lineWidth')
   const thresholds = readConfObject(config, 'thresholds')
   const palette = readConfObject(config, 'thresholdsPalette') as string[]
-  const isCallback = config.color.isCallback
   const hview = views[0]!
   const vview = views[1]!
   const db1 = hview.dynamicBlocks.contentBlocks[0]?.offsetPx
@@ -104,7 +103,6 @@ export async function drawDotplot(
   // Pre-compute colors with alpha for common cases (major optimization)
   let posColorWithAlpha: string | undefined
   let negColorWithAlpha: string | undefined
-  let defaultColorWithAlpha: string | undefined
 
   // Cache for query colors with alpha applied
   const queryColorCache = new Map<string, string>()
@@ -121,10 +119,6 @@ export async function drawDotplot(
     // Pre-compute strand colors once instead of per-feature
     posColorWithAlpha = applyAlpha(posColor, alpha)
     negColorWithAlpha = applyAlpha(negColor, alpha)
-  } else if (colorBy === 'default' && !isCallback) {
-    // Pre-compute default color once instead of per-feature
-    const c = color === '#f0f' ? t.palette.text.primary : color
-    defaultColorWithAlpha = applyAlpha(c, alpha)
   }
 
   for (const feature of features) {
@@ -159,9 +153,6 @@ export async function drawDotplot(
       // Color by query sequence name
       const queryName = refName
       colorWithAlpha = getQueryColorWithAlpha(queryName)
-    } else if (colorBy === 'default' && !isCallback) {
-      // Use pre-computed color (avoids applyAlpha call per feature)
-      colorWithAlpha = defaultColorWithAlpha!
     } else {
       // Calculate color dynamically for other modes
       let r = 'black'
@@ -178,7 +169,7 @@ export async function drawDotplot(
         r = `hsl(${feature.get('meanScore') * 200},100%,40%)`
       } else if (colorBy === 'mappingQuality') {
         r = `hsl(${feature.get('mappingQual')},100%,40%)`
-      } else if (colorBy === 'default' && isCallback) {
+      } else if (colorBy === 'default') {
         r = readConfObject(config, 'color', { feature })
       }
       colorWithAlpha = applyAlpha(r, alpha)

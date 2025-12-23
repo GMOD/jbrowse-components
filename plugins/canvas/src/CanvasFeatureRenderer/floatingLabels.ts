@@ -37,8 +37,7 @@ export function createFeatureFloatingLabels({
   name: string
   description: string
 }): FloatingLabelData[] {
-  const { showLabels, showDescriptions, fontHeight, isFontHeightCallback } =
-    configContext
+  const { showLabels, showDescriptions, fontHeight } = configContext
 
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
@@ -51,9 +50,11 @@ export function createFeatureFloatingLabels({
     return []
   }
 
-  const actualFontHeight = isFontHeightCallback
-    ? (readConfObject(config, ['labels', 'fontSize'], { feature }) as number)
-    : fontHeight
+  const actualFontHeight = readConfObject(
+    config,
+    ['labels', 'fontSize'],
+    { feature },
+  ) as number
 
   const floatingLabels: FloatingLabelData[] = []
 

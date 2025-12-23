@@ -80,7 +80,6 @@ export function isUTR(feature: Feature) {
 
 export function getConfigColor({
   config,
-  configContext,
   colorKey,
   feature,
 }: {
@@ -89,15 +88,7 @@ export function getConfigColor({
   colorKey: 'color1' | 'color2' | 'color3' | 'outline'
   feature: Feature
 }) {
-  const callbackKey = `is${colorKey.charAt(0).toUpperCase()}${colorKey.slice(1)}Callback` as
-    | 'isColor1Callback'
-    | 'isColor2Callback'
-    | 'isColor3Callback'
-    | 'isOutlineCallback'
-  const isCallback = configContext[callbackKey]
-  return isCallback
-    ? (readConfObject(config, colorKey, { feature }) as string)
-    : configContext[colorKey]!
+  return readConfObject(config, colorKey, { feature }) as string
 }
 
 export function getBoxColor({
