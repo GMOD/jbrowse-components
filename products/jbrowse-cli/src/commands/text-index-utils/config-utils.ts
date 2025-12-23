@@ -41,12 +41,15 @@ export function getTrackConfigs(
   config: Config,
   trackIds?: string[],
   assemblyName?: string,
+  excludeTrackIds?: string[],
 ): Track[] {
   const { tracks } = config
   if (!tracks) {
     return []
   }
   const trackIdsToIndex = trackIds || tracks.map(track => track.trackId)
+  const excludeSet = new Set(excludeTrackIds || [])
+
   return trackIdsToIndex
     .map(trackId => {
       const currentTrack = tracks.find(t => trackId === t.trackId)
@@ -57,6 +60,7 @@ export function getTrackConfigs(
       }
       return currentTrack
     })
+    .filter(track => !excludeSet.has(track.trackId))
     .filter(track => supported(track.adapter?.type))
     .filter(track =>
       assemblyName ? track.assemblyNames.includes(assemblyName) : true,

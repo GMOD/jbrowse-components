@@ -19,6 +19,11 @@ export async function run(args?: string[]) {
       description:
         'Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks',
     },
+    excludeTracks: {
+      type: 'string',
+      description:
+        'Specific tracks to exclude from indexing, formatted as comma separated trackIds',
+    },
     target: {
       type: 'string',
       description:
@@ -93,6 +98,9 @@ export async function run(args?: string[]) {
     '',
     "# indexes specific trackIds that it can find in the current directory's config.json",
     '$ jbrowse text-index --tracks=track1,track2,track3',
+    '',
+    '# indexes all tracks except specific trackIds',
+    '$ jbrowse text-index --exclude-tracks=track1,track2,track3',
     '',
     "# indexes all tracks in a directory's config.json or in a specific config file",
     '$ jbrowse text-index --out /path/to/jb2/',

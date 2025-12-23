@@ -318,19 +318,16 @@ const FloatingLabels = observer(function ({
   const { layoutFeatures } = model
   const { offsetPx, bpPerPx } = view
 
-  const featureLabels = useMemo(
-    () => {
-      const result = assembly
-        ? deduplicateFeatureLabels(layoutFeatures, view, assembly, bpPerPx)
-        : undefined
-      console.log('[FloatingLabels] featureLabels:', {
-        count: result?.size || 0,
-        labels: result ? Array.from(result.keys()) : [],
-      })
-      return result
-    },
-    [layoutFeatures, view, assembly, bpPerPx],
-  )
+  const featureLabels = useMemo(() => {
+    const result = assembly
+      ? deduplicateFeatureLabels(layoutFeatures, view, assembly, bpPerPx)
+      : undefined
+    console.log('[FloatingLabels] featureLabels:', {
+      count: result?.size || 0,
+      labels: result ? Array.from(result.keys()) : [],
+    })
+    return result
+  }, [layoutFeatures, view, assembly, bpPerPx])
 
   // @ts-expect-error
   const { onFeatureClick, onFeatureContextMenu, onMouseMove } =

@@ -16,6 +16,7 @@ export async function perTrackIndex(flags: any) {
     out,
     target,
     tracks,
+    excludeTracks,
     assemblies,
     attributes,
     quiet,
@@ -29,7 +30,12 @@ export async function perTrackIndex(flags: any) {
   const configTracks = config.tracks || []
   ensureTrixDir(outLocation)
   validateAssembliesForPerTrack(assemblies)
-  const confs = getTrackConfigs(config, tracks?.split(','))
+  const confs = getTrackConfigs(
+    config,
+    tracks?.split(','),
+    undefined,
+    excludeTracks?.split(','),
+  )
   if (!confs.length) {
     throw new Error(
       'Tracks not found in config.json, please add track configurations before indexing.',

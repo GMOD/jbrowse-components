@@ -16,6 +16,7 @@ export async function aggregateIndex(flags: any) {
     out,
     target,
     tracks,
+    excludeTracks,
     assemblies,
     attributes,
     quiet,
@@ -33,7 +34,12 @@ export async function aggregateIndex(flags: any) {
   const asms = getAssemblyNames(config, assemblies)
 
   for (const asm of asms) {
-    const trackConfigs = getTrackConfigs(config, tracks?.split(','), asm)
+    const trackConfigs = getTrackConfigs(
+      config,
+      tracks?.split(','),
+      asm,
+      excludeTracks?.split(','),
+    )
     if (!trackConfigs.length) {
       console.log(`Indexing assembly ${asm}...(no tracks found)...`)
       continue
