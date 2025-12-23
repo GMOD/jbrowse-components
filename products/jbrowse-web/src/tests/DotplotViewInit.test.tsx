@@ -111,3 +111,34 @@ test('DotplotView showImportForm is true when no init', () => {
   expect(view.showImportForm).toBe(true)
   expect(view.hasSomethingToShow).toBe(false)
 }, 40000)
+
+test('DotplotView can re-initialize with different assemblies', async () => {
+  const { view } = await createDotplotViewWithInit({
+    views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+  })
+
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+
+  expect(view.assemblyNames).toEqual(['peach', 'grape'])
+  expect(view.hview.displayedRegions.length).toBeGreaterThan(0)
+  expect(view.vview.displayedRegions.length).toBeGreaterThan(0)
+
+  view.setAssemblyNames('grape', 'peach')
+
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+
+  expect(view.assemblyNames).toEqual(['grape', 'peach'])
+  expect(view.hview.displayedRegions.length).toBeGreaterThan(0)
+  expect(view.vview.displayedRegions.length).toBeGreaterThan(0)
+  expect(view.showLoading).toBe(false)
+}, 40000)
