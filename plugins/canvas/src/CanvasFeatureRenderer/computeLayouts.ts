@@ -82,6 +82,7 @@ export function computeLayouts({
         totalFeatureHeight,
         totalLayoutWidth,
         featureWidth: featureLayout.width,
+        leftPadding: featureLayout.leftPadding,
       },
     )
 

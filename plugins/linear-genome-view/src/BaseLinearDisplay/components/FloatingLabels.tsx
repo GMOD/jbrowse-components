@@ -69,6 +69,8 @@ interface FeatureLabelData {
   topPx: number
   totalFeatureHeight: number
   floatingLabels: FloatingLabelData[]
+  featureWidth: number
+  leftPadding: number
 }
 
 /**
@@ -174,10 +176,23 @@ function deduplicateFeatureLabels(
     }
 
     const [left, topPx, right, , feature] = val
-    const { refName, floatingLabels, totalFeatureHeight, actualTopPx } = feature
+    const {
+      refName,
+      floatingLabels,
+      totalFeatureHeight,
+      actualTopPx,
+      featureWidth,
+      totalLayoutWidth,
+    } = feature
     const effectiveTopPx = actualTopPx ?? topPx
 
-    if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
+    if (
+      !floatingLabels ||
+      floatingLabels.length === 0 ||
+      !totalFeatureHeight ||
+      featureWidth === undefined ||
+      totalLayoutWidth === undefined
+    ) {
       continue
     }
 
@@ -205,6 +220,8 @@ function deduplicateFeatureLabels(
         topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
+        featureWidth,
+        totalLayoutWidth,
       })
     }
   }
@@ -300,10 +317,20 @@ const FloatingLabels = observer(function ({
 
   for (const [
     key,
-    { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels },
+    {
+      leftPx,
+      rightPx,
+      topPx,
+      totalFeatureHeight,
+      floatingLabels,
+      featureWidth,
+      totalLayoutWidth,
+    },
   ] of featureLabels.entries()) {
     const featureVisualBottom = topPx + totalFeatureHeight
-    const featureWidth = rightPx - leftPx
+    const leftPadding = totalLayoutWidth - featureWidth
+    const featureLeftPx = leftPx + leftPadding
+    const featureRightPx = featureLeftPx + featureWidth
 
     for (let i = 0, l = floatingLabels.length; i < l; i++) {
       const floatingLabel = floatingLabels[i]!
@@ -328,8 +355,8 @@ const FloatingLabels = observer(function ({
           text={text}
           color={color}
           isOverlay={isOverlay ?? false}
-          featureLeftPx={leftPx}
-          featureRightPx={rightPx}
+          featureLeftPx={featureLeftPx}
+          featureRightPx={featureRightPx}
           featureId={key}
           labelWidth={labelWidth}
           y={y}
