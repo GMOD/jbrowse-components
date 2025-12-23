@@ -989,7 +989,7 @@
     "@babel/plugin-transform-modules-commonjs" "^7.27.1"
     "@babel/plugin-transform-typescript" "^7.28.5"
 
-"@babel/runtime@^7.10.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.17.9", "@babel/runtime@^7.18.3", "@babel/runtime@^7.28.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
+"@babel/runtime@^7.12.5", "@babel/runtime@^7.17.9", "@babel/runtime@^7.18.3", "@babel/runtime@^7.28.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
   version "7.28.4"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.28.4.tgz#a70226016fabe25c5783b2f22d3e1c9bc5ca3326"
   integrity sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ==
@@ -1879,6 +1879,11 @@
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.3.tgz#e45e384e4b8ec16bce2fd903af78450f6bf7ec98"
   integrity sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==
+
+"@jbrowse/jexl@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@jbrowse/jexl/-/jexl-2.3.1.tgz#9d039a602054b645509022dd61379f08d4818edc"
+  integrity sha512-3a0kabS6wB3K2sokV0pTYH4uEVxk/QCeXk37CItJC7g3ajQ53n6m4vPBD/FkK1iNWUgRdwaZuC4Mx3Dq49up2Q==
 
 "@jbrowse/mobx-state-tree@^5.4.7":
   version "5.5.0"
@@ -10003,13 +10008,6 @@ jest@^30.2.0:
     "@jest/types" "30.2.0"
     import-local "^3.2.0"
     jest-cli "30.2.0"
-
-jexl@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/jexl/-/jexl-2.3.0.tgz#73e0694d86ca917ac24fed753f201c1db59a46c5"
-  integrity sha512-ecqln4kTWNkMwbFvTukOMDq1jy1GcPzvshhMp/s4pxU86xdLDq7HbDRa87DfMfbSAOS8V6EwvCdfs0S+w/iycA==
-  dependencies:
-    "@babel/runtime" "^7.10.2"
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
