@@ -261,6 +261,56 @@ export function serializeWiggleFeature(f: {
   }
 }
 
+/**
+ * Convert ReducedFeatureArrays (structure-of-arrays) to serialized feature objects.
+ * Used by array-based renderers to provide features for tooltips.
+ */
+export function serializeReducedFeatures(
+  reducedFeatures: ReducedFeatureArrays,
+  region: { refName: string },
+  source?: string,
+) {
+  const { starts, ends, scores, minScores, maxScores } = reducedFeatures
+  const len = starts.length
+  const features = []
+
+  for (let i = 0; i < len; i++) {
+    const start = starts[i]!
+    const end = ends[i]!
+    const score = scores[i]!
+    features.push({
+      uniqueId: `${region.refName}:${start}-${end}`,
+      start,
+      end,
+      score,
+      refName: region.refName,
+      source,
+      minScore: minScores?.[i],
+      maxScore: maxScores?.[i],
+      summary: minScores !== undefined || maxScores !== undefined,
+    })
+  }
+
+  return features
+}
+
+/**
+ * Convert multi-source ReducedFeatureArrays to serialized feature objects.
+ * Used by multi-track array-based renderers to provide features for tooltips.
+ */
+export function serializeMultiReducedFeatures(
+  reducedFeaturesBySource: Record<string, ReducedFeatureArrays>,
+  region: { refName: string },
+) {
+  const allFeatures = []
+  for (const [sourceName, reducedFeatures] of Object.entries(
+    reducedFeaturesBySource,
+  )) {
+    allFeatures.push(...serializeReducedFeatures(reducedFeatures, region, sourceName))
+  }
+  return allFeatures
+}
+
 export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
@@ -352,4 +402,51 @@ export function fillRectCtx(
     ctx.fillStyle = color
   }
   ctx.fillRect(x, y, width, height)
+}
+
+/**
+ * Convert Feature objects to structure-of-arrays format.
+ * Optionally computes per-feature colors using the provided callback.
+ */
+export function featuresToArrays(
+  features: Map<string, Feature> | Feature[],
+  colorCallback?: (f: Feature, score: number) => string,
+): WiggleFeatureArrays & { colors?: string[] } {
+  const featureList = Array.isArray(features)
+    ? features
+    : Array.from(features.values())
+  const len = featureList.length
+  const starts = new Int32Array(len)
+  const ends = new Int32Array(len)
+  const scores = new Float32Array(len)
+  const minScoresArr = new Float32Array(len)
+  const maxScoresArr = new Float32Array(len)
+  const colors = colorCallback ? new Array<string>(len) : undefined
+  let hasSummary = false
+
+  for (let i = 0; i < len; i++) {
+    const f = featureList[i]!
+    const score = f.get('score')
+    starts[i] = f.get('start')
+    ends[i] = f.get('end')
+    scores[i] = score
+    const isSummary = f.get('summary')
+    if (isSummary) {
+      hasSummary = true
+      minScoresArr[i] = f.get('minScore')
+      maxScoresArr[i] = f.get('maxScore')
+    }
+    if (colors && colorCallback) {
+      colors[i] = colorCallback(f, score)
+    }
+  }
+
+  return {
+    starts,
+    ends,
+    scores,
+    minScores: hasSummary ? minScoresArr : undefined,
+    maxScores: hasSummary ? maxScoresArr : undefined,
+    colors,
+  }
 }

@@ -4,6 +4,7 @@ import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXYArrays } from '../drawXY'
+import { serializeMultiReducedFeatures } from '../util'
 
 import type { MultiWiggleFeatureArrays } from '../MultiWiggleAdapter/MultiWiggleAdapter'
 import type { MultiRenderArgsDeserialized } from '../types'
@@ -61,7 +62,7 @@ export async function renderMultiRowXYPlotArrays(
 
   const serialized = {
     ...rest,
-    reducedFeatures,
+    features: serializeMultiReducedFeatures(reducedFeatures, region),
     height,
     width,
   }
