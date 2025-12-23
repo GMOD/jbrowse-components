@@ -1,7 +1,11 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { chooseGlyphType, getChildFeatures, truncateLabel } from './util'
+import {
+  chooseGlyphType,
+  getChildFeatures,
+  readFeatureLabels,
+  truncateLabel,
+} from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { FeatureLayout } from './types'
@@ -204,16 +208,14 @@ export function layoutFeature(args: {
       ? false
       : showDescriptions
 
-    const name = truncateLabel(
-      String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
+    const { name: rawName, description: rawDescription } = readFeatureLabels(
+      config,
+      feature,
     )
+    const name = truncateLabel(rawName)
     const shouldShowName = /\S/.test(name) && effectiveShowLabels
 
-    const description = truncateLabel(
-      String(
-        readConfObject(config, ['labels', 'description'], { feature }) || '',
-      ),
-    )
+    const description = truncateLabel(rawDescription)
     const shouldShowDescription =
       /\S/.test(description) && effectiveShowDescriptions
 

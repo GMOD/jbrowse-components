@@ -15,6 +15,33 @@ export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
 }
 
+export function readFeatureLabels(
+  config: AnyConfigurationModel,
+  feature: Feature,
+) {
+  return {
+    name: String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
+    description: String(
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    ),
+  }
+}
+
+export function readLabelColors(
+  config: AnyConfigurationModel,
+  feature: Feature,
+) {
+  return {
+    nameColor: String(
+      readConfObject(config, ['labels', 'nameColor'], { feature }) || '',
+    ),
+    descriptionColor: String(
+      readConfObject(config, ['labels', 'descriptionColor'], { feature }) ||
+        '',
+    ),
+  }
+}
+
 /**
  * Build tooltip string from mouseOver, label, and description.
  * Used by both CanvasFeatureRendering and FloatingLabels to ensure consistency.
@@ -51,6 +78,28 @@ export function isUTR(feature: Feature) {
   )
 }
 
+export function getConfigColor({
+  config,
+  configContext,
+  colorKey,
+  feature,
+}: {
+  config: AnyConfigurationModel
+  configContext: RenderConfigContext
+  colorKey: 'color1' | 'color2' | 'color3' | 'outline'
+  feature: Feature
+}) {
+  const callbackKey = `is${colorKey.charAt(0).toUpperCase()}${colorKey.slice(1)}Callback` as
+    | 'isColor1Callback'
+    | 'isColor2Callback'
+    | 'isColor3Callback'
+    | 'isOutlineCallback'
+  const isCallback = configContext[callbackKey]
+  return isCallback
+    ? (readConfObject(config, colorKey, { feature }) as string)
+    : configContext[colorKey]!
+}
+
 export function getBoxColor({
   feature,
   config,
@@ -64,17 +113,11 @@ export function getBoxColor({
   colorByCDS: boolean
   theme: Theme
 }) {
-  const { color1, color3, isColor1Callback, isColor3Callback } = configContext
-
   let fill: string
   if (isUTR(feature)) {
-    fill = isColor3Callback
-      ? readConfObject(config, 'color3', { feature })
-      : color3!
+    fill = getConfigColor({ config, configContext, colorKey: 'color3', feature })
   } else {
-    fill = isColor1Callback
-      ? readConfObject(config, 'color1', { feature })
-      : color1!
+    fill = getConfigColor({ config, configContext, colorKey: 'color1', feature })
   }
 
   const featureType: string | undefined = feature.get('type')
@@ -162,9 +205,7 @@ export function getStrokeColor({
   configContext: RenderConfigContext
   theme: Theme
 }) {
-  const { color2, isColor2Callback } = configContext
-  const c = isColor2Callback
-    ? readConfObject(config, 'color2', { feature })
-    : color2!
+  const c = getConfigColor({ config, configContext, colorKey: 'color2', feature })
+  // #f0f is a sentinel value in the schema that means "use theme color"
   return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 }

@@ -524,7 +524,7 @@ exports[`fails if it cannot guess the sequence type 1`] = `"Error: Could not det
 
 exports[`fails if load flag is passed with a URL 1`] = `"Error: URL detected with --load flag. Please rerun the function without the --load flag"`;
 
-exports[`fails if trying to add an assembly with a name that already exists 1`] = `"Error: Cannot add assembly with name simple, an assembly with that name already exists"`;
+exports[`fails if trying to add an assembly with a name that already exists 1`] = `"Error: Cannot add assembly with name simple, a assembly with that name already exists"`;
 
 exports[`fails if using inline JSON sequence custom with no --name 1`] = `"Error: Must provide --name when using custom inline JSON sequence"`;
 

@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { buildFeatureTooltip, truncateLabel } from './util'
+import { buildFeatureTooltip, readLabelColors, truncateLabel } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -28,16 +28,12 @@ export function createFeatureFloatingLabels({
   feature,
   config,
   configContext,
-  nameColor,
-  descriptionColor,
   name: rawName,
   description: rawDescription,
 }: {
   feature: Feature
   config: AnyConfigurationModel
   configContext: RenderConfigContext
-  nameColor: string
-  descriptionColor: string
   name: string
   description: string
 }): FloatingLabelData[] {
@@ -46,6 +42,7 @@ export function createFeatureFloatingLabels({
 
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
+  const { nameColor, descriptionColor } = readLabelColors(config, feature)
 
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
