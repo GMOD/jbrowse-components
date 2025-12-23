@@ -1726,6 +1726,279 @@ describe('CanvasFeatureRenderer', () => {
     })
   })
 
+  describe('strand arrow padding and label positioning', () => {
+    test('positive strand feature has leftPadding: 0', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: 1,
+        name: 'PositiveStrand',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(0)
+      expect(layoutRecords[0]!.layout.width).toBe(100)
+      expect(layoutRecords[0]!.layout.totalLayoutWidth).toBe(108)
+    })
+
+    test('negative strand feature has leftPadding: 8', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'NegativeStrand',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+      expect(layoutRecords[0]!.layout.width).toBe(100)
+      expect(layoutRecords[0]!.layout.totalLayoutWidth).toBe(108)
+    })
+
+    test('layout record includes featureWidth and leftPadding for labels', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'TestFeature',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      const layoutRect = args.layout.getByID('test1')
+      expect(layoutRect).toBeDefined()
+      expect(layoutRect![4]).toMatchObject({
+        featureWidth: 100,
+        leftPadding: 8,
+        totalLayoutWidth: 108,
+      })
+    })
+
+    test('subfeature labels have leftPadding: 0', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: -1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: -1,
+            name: 'TestTranscript',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 250,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'below',
+      })
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      const transcriptRect = args.layout.getByID('mrna1')
+      expect(transcriptRect).toBeDefined()
+      expect(transcriptRect![4]).toMatchObject({
+        floatingLabels: expect.arrayContaining([
+          expect.objectContaining({
+            text: expect.any(String),
+          }),
+        ]),
+        featureWidth: 400,
+        leftPadding: 0,
+      })
+    })
+
+    test('gene feature with negative strand has correct padding in layout', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: -1,
+        name: 'NegativeGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: -1,
+            name: 'NegativeTranscript',
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = computeLayouts({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      const geneRect = args.layout.getByID('gene1')
+      expect(geneRect).toBeDefined()
+      expect(geneRect![4].leftPadding).toBe(8)
+      expect(geneRect![4].featureWidth).toBe(400)
+    })
+  })
+
   describe('edge cases and error handling', () => {
     test('handles features at region boundaries', () => {
       const feature = new SimpleFeature({

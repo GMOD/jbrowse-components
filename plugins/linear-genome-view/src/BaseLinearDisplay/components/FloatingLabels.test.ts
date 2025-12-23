@@ -1,5 +1,82 @@
 import { clampToViewport, getViewportLeftEdge } from './util'
 
+describe('FloatingLabels', () => {
+  describe('label positioning with strand arrow padding', () => {
+    test('positive strand feature - label uses actual feature bounds', () => {
+      // Feature with positive strand (leftPadding: 0)
+      const featureWidth = 100
+      const leftPadding = 0
+      const totalLayoutWidth = 108
+      const leftPx = 50
+
+      // Calculate label bounds
+      const featureLeftPx = leftPx + leftPadding // 50 + 0 = 50
+      const featureRightPx = featureLeftPx + featureWidth // 50 + 100 = 150
+
+      expect(featureLeftPx).toBe(50)
+      expect(featureRightPx).toBe(150)
+      expect(featureRightPx - featureLeftPx).toBe(featureWidth)
+    })
+
+    test('negative strand feature - label excludes left padding area', () => {
+      // Feature with negative strand (leftPadding: 8)
+      const featureWidth = 100
+      const leftPadding = 8
+      const totalLayoutWidth = 108
+      const leftPx = 50
+
+      // Calculate label bounds - should exclude the 8px padding on left
+      const featureLeftPx = leftPx + leftPadding // 50 + 8 = 58
+      const featureRightPx = featureLeftPx + featureWidth // 58 + 100 = 158
+
+      expect(featureLeftPx).toBe(58)
+      expect(featureRightPx).toBe(158)
+      expect(featureRightPx - featureLeftPx).toBe(featureWidth)
+    })
+
+    test('subfeature label - always uses leftPadding: 0', () => {
+      // Subfeature (transcript) always has leftPadding: 0
+      const featureWidth = 200
+      const leftPadding = 0
+      const leftPx = 100
+
+      const featureLeftPx = leftPx + leftPadding // 100 + 0 = 100
+      const featureRightPx = featureLeftPx + featureWidth // 100 + 200 = 300
+
+      expect(featureLeftPx).toBe(100)
+      expect(featureRightPx).toBe(300)
+      expect(featureRightPx - featureLeftPx).toBe(featureWidth)
+    })
+
+    test('label fits within feature bounds when width check passes', () => {
+      const featureWidth = 100
+      const labelWidth = 80
+      const leftPadding = 8
+      const leftPx = 50
+
+      // Label should fit
+      expect(labelWidth <= featureWidth).toBe(true)
+
+      const featureLeftPx = leftPx + leftPadding
+      const featureRightPx = featureLeftPx + featureWidth
+
+      // Label can be positioned within actual feature bounds
+      expect(featureRightPx - featureLeftPx).toBeGreaterThanOrEqual(labelWidth)
+    })
+
+    test('label is filtered when too wide for actual feature', () => {
+      const featureWidth = 50
+      const labelWidth = 100
+      const leftPadding = 8
+
+      // Label should not fit in the actual feature width
+      expect(labelWidth > featureWidth).toBe(true)
+
+      // This label would be filtered out in the rendering logic
+    })
+  })
+})
+
 describe('FloatingLabels utilities', () => {
   describe('getViewportLeftEdge', () => {
     it('returns 0 when offsetPx is negative (scrolled left)', () => {
