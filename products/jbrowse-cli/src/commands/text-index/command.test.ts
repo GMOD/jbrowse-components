@@ -11,13 +11,14 @@ import {
   openWebStream,
   runCommand,
   runInTmpDir,
-} from '../testUtil'
+} from '../../testUtil'
 
-jest.mock('../fetchWithProxy')
+jest.mock('../../fetchWithProxy')
 
 const configPath = dataDir('indexing_config.json')
 const volvoxDir = path.join(
   __dirname,
+  '..',
   '..',
   '..',
   '..',

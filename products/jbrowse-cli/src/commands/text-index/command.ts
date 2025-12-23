@@ -1,11 +1,7 @@
 import { parseArgs } from 'util'
 
+import { aggregateIndex, indexFileList, perTrackIndex } from './index'
 import { printHelp } from '../../utils'
-import {
-  aggregateIndex,
-  indexFileList,
-  perTrackIndex,
-} from './index'
 
 export async function run(args?: string[]) {
   const options = {

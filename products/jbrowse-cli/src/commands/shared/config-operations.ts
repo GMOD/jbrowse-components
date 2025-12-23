@@ -6,7 +6,7 @@ import type { Config } from '../../base'
  * Generic function to find and update or add an item to a config array
  * Returns the updated config and whether an item was overwritten
  */
-export function findAndUpdateOrAdd<T extends { [key: string]: any }>({
+export function findAndUpdateOrAdd<T extends Record<string, any>>({
   items,
   newItem,
   idField,
