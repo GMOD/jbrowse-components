@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 
-import { clamp, getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
+import { calculateFloatingLabelPosition } from './util'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -254,19 +256,13 @@ function FloatingLabel({
   viewportLeft,
   tooltip,
 }: LabelProps) {
-  const featureWidth = featureRightPx - featureLeftPx
-
-  let x: number
-  if (labelWidth > featureWidth) {
-    // Label doesn't fit within feature - don't float, use fixed position
-    x = featureLeftPx - offsetPx
-  } else {
-    // Label fits within feature - apply floating logic
-    const leftPx = Math.max(featureLeftPx, viewportLeft)
-    const naturalX = leftPx - offsetPx
-    const maxX = featureRightPx - offsetPx - labelWidth
-    x = clamp(naturalX, 0, maxX)
-  }
+  const x = calculateFloatingLabelPosition(
+    featureLeftPx,
+    featureRightPx,
+    labelWidth,
+    offsetPx,
+    viewportLeft,
+  )
 
   return (
     <div

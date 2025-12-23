@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition,@typescript-eslint/no-unused-vars */
-import { clampToViewport, getViewportLeftEdge } from './util'
+import {
+  calculateFloatingLabelPosition,
+  clampToViewport,
+  getViewportLeftEdge,
+} from './util'
 
 describe('FloatingLabels', () => {
   describe('label positioning with strand arrow padding', () => {
@@ -295,6 +299,302 @@ describe('FloatingLabels utilities', () => {
         const result = clampToViewport(200, 100, 50)
         expect(result.leftPx).toBe(200)
         expect(result.rightPx).toBe(100)
+      })
+    })
+  })
+
+  describe('calculateFloatingLabelPosition', () => {
+    describe('label wider than feature (no floating)', () => {
+      it('uses fixed position when label is wider than feature', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 150
+        const labelWidth = 80
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+      })
+
+      it('allows label to extend beyond feature right edge when wider', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 120
+        const labelWidth = 50
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x + labelWidth).toBe(150)
+        expect(x + labelWidth).toBeGreaterThan(featureRightPx)
+      })
+
+      it('maintains fixed position when scrolling with wide label', () => {
+        const featureLeftPx = 200
+        const featureRightPx = 220
+        const labelWidth = 50
+        const offsetPx = 100
+        const viewportLeft = 100
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+      })
+    })
+
+    describe('label fits within feature (floating)', () => {
+      it('positions label at feature left when fully visible', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 200
+        const labelWidth = 80
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+      })
+
+      it('constrains label right edge to feature right edge', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 200
+        const labelWidth = 80
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x + labelWidth).toBeLessThanOrEqual(featureRightPx)
+      })
+
+      it('floats label to viewport edge when feature partially scrolled off', () => {
+        const featureLeftPx = 50
+        const featureRightPx = 200
+        const labelWidth = 80
+        const offsetPx = 100
+        const viewportLeft = 100
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(0)
+      })
+
+      it('keeps label within feature when scrolled', () => {
+        const featureLeftPx = 50
+        const featureRightPx = 200
+        const labelWidth = 80
+        const offsetPx = 100
+        const viewportLeft = 100
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        const labelLeftInAbsoluteCoords = x + offsetPx
+        const labelRightInAbsoluteCoords = labelLeftInAbsoluteCoords + labelWidth
+
+        expect(labelLeftInAbsoluteCoords).toBeGreaterThanOrEqual(viewportLeft)
+        expect(labelRightInAbsoluteCoords).toBeLessThanOrEqual(featureRightPx)
+      })
+    })
+
+    describe('small features', () => {
+      it('handles small feature with fitting label', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 150
+        const labelWidth = 40
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x + labelWidth).toBeLessThanOrEqual(featureRightPx)
+      })
+
+      it('handles very small feature with wide label (no floating)', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 110
+        const labelWidth = 50
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x + labelWidth).toBeGreaterThan(featureRightPx)
+      })
+
+      it('positions small feature label at left edge, not right', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 110
+        const labelWidth = 8
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x).not.toBe(featureRightPx - labelWidth)
+      })
+    })
+
+    describe('scrolling edge cases', () => {
+      it('clamps to viewport left when feature is off-screen left', () => {
+        const featureLeftPx = -50
+        const featureRightPx = 100
+        const labelWidth = 40
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBeGreaterThanOrEqual(0)
+      })
+
+      it('handles negative offsetPx (scrolled left)', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 200
+        const labelWidth = 40
+        const offsetPx = -50
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBeGreaterThanOrEqual(0)
+      })
+
+      it('handles feature partially visible on right edge', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 200
+        const labelWidth = 50
+        const offsetPx = 50
+        const viewportLeft = 50
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(50)
+        expect(x + offsetPx).toBe(featureLeftPx)
+      })
+    })
+
+    describe('regression tests for pinning bug', () => {
+      it('does not pin label to right edge for small features', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 115
+        const labelWidth = 10
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x).toBe(featureLeftPx - offsetPx)
+      })
+
+      it('does not show label fragments at left edge when scrolling', () => {
+        const featureLeftPx = 50
+        const featureRightPx = 60
+        const labelWidth = 8
+        const offsetPx = 55
+        const viewportLeft = 55
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        const labelLeftInAbsoluteCoords = x + offsetPx
+        const labelRightInAbsoluteCoords = labelLeftInAbsoluteCoords + labelWidth
+
+        expect(labelRightInAbsoluteCoords).toBeLessThanOrEqual(featureRightPx)
       })
     })
   })
