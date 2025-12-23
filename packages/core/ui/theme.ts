@@ -164,6 +164,9 @@ function getDarkStockTheme() {
     palette: {
       ...defaults,
       mode: 'dark',
+      description: refTheme.palette.augmentColor({
+        color: { main: blue[300] },
+      }),
     },
     components: {
       MuiAppBar: {
@@ -187,6 +190,9 @@ function getDarkMinimalTheme() {
       primary: { main: grey[700] },
       secondary: { main: grey[800] },
       tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
+      description: refTheme.palette.augmentColor({
+        color: { main: blue[300] },
+      }),
     },
   } satisfies ThemeOptions & { name: string }
 }

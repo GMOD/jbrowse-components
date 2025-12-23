@@ -341,10 +341,6 @@ const FloatingLabels = observer(function FloatingLabels({
         tooltip,
       } = floatingLabel
 
-      if (labelWidth > featureWidth) {
-        continue
-      }
-
       const y = featureVisualBottom + relativeY
 
       labels.push(
