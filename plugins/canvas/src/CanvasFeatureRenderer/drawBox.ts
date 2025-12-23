@@ -1,16 +1,15 @@
-import { getBoxColor, getConfigColor, isOffScreen, isUTR } from './util'
+import { readConfObject } from '@jbrowse/core/configuration'
+
+import { getBoxColor, isOffScreen, isUTR } from './util'
 
 import type { DrawFeatureArgs } from './types'
 
 function getOutline(args: DrawFeatureArgs) {
-  const { feature, config, configContext, theme } = args
-  return getConfigColor({
-    config,
-    configContext,
-    colorKey: 'outline',
+  const { feature, config, theme } = args
+  return readConfObject(config, 'outline', {
     feature,
     theme,
-  })
+  }) as string | undefined
 }
 
 const utrHeightFraction = 0.65

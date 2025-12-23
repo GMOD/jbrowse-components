@@ -81,27 +81,9 @@ export function isUTR(feature: Feature) {
   )
 }
 
-export function getConfigColor({
-  config,
-  colorKey,
-  feature,
-  theme,
-}: {
-  config: AnyConfigurationModel
-  configContext: RenderConfigContext
-  colorKey: 'color1' | 'color2' | 'color3' | 'outline'
-  feature: Feature
-  theme: Theme
-}) {
-  return readConfObject(config, colorKey, { feature, theme }) as
-    | string
-    | undefined
-}
-
 export function getBoxColor({
   feature,
   config,
-  configContext,
   colorByCDS,
   theme,
 }: {
@@ -111,19 +93,12 @@ export function getBoxColor({
   colorByCDS: boolean
   theme: Theme
 }) {
-  let fill: string
-  fill = isUTR(feature)
-    ? getConfigColor({
-        config,
-        configContext,
-        colorKey: 'color3',
+  let fill = isUTR(feature)
+    ? readConfObject(config, 'color3', {
         feature,
         theme,
       })
-    : getConfigColor({
-        config,
-        configContext,
-        colorKey: 'color1',
+    : readConfObject(config, 'color1', {
         feature,
         theme,
       })
@@ -205,7 +180,6 @@ export function getChildFeatures({
 export function getStrokeColor({
   feature,
   config,
-  configContext,
   theme,
 }: {
   feature: Feature
@@ -213,10 +187,7 @@ export function getStrokeColor({
   configContext: RenderConfigContext
   theme: Theme
 }) {
-  const c = getConfigColor({
-    config,
-    configContext,
-    colorKey: 'color2',
+  const c = readConfObject(config, 'color2', {
     feature,
     theme,
   })

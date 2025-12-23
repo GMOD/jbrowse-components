@@ -1,3 +1,4 @@
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
 import { computeLayouts } from './computeLayouts'
@@ -10,16 +11,6 @@ import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
-/**
- * Main rendering pipeline for CanvasFeatureRenderer
- *
- * IMPORTANT: Config values are read ONCE at the start via createRenderConfigContext()
- * and passed through the entire pipeline. This is critical for performance since
- * readConfObject() is expensive (JEXL evaluation, MobX reactions, tree traversal).
- *
- * DO NOT call readConfObject() in hot paths (per-feature loops). If you need a new
- * config value, add it to RenderConfigContext and createRenderConfigContext().
- */
 export async function doAll({
   layout,
   features,
@@ -56,7 +47,7 @@ export async function doAll({
         config,
         configContext,
         layout,
-        theme,
+        theme: createJBrowseTheme(theme),
       })
     },
   )

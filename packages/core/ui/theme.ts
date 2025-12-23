@@ -25,6 +25,7 @@ declare module '@mui/material/styles/createPalette' {
     quaternary: PaletteColor
     highlight: PaletteColor
     description: PaletteColor
+    segments: PaletteColor
     stopCodon: string
     startCodon: string
     insertion: string
@@ -46,6 +47,7 @@ declare module '@mui/material/styles/createPalette' {
     quaternary?: PaletteColorOptions
     highlight?: PaletteColorOptions
     description?: PaletteColorOptions
+    segments?: PaletteColorOptions
     stopCodon?: string
     startCodon?: string
     hardclip?: string
@@ -72,6 +74,9 @@ const mandarin = refTheme.palette.augmentColor({ color: { main: '#FFB11D' } })
 const lightgrey = refTheme.palette.augmentColor({ color: { main: '#aaa' } })
 const descriptionColor = refTheme.palette.augmentColor({
   color: { main: '#00f' },
+})
+const segmentsColor = refTheme.palette.augmentColor({
+  color: { main: '#000' },
 })
 const bases = {
   A: refTheme.palette.augmentColor({ color: green }),
@@ -112,6 +117,7 @@ const defaults = {
   quaternary: mandarin,
   highlight: mandarin,
   description: descriptionColor,
+  segments: segmentsColor,
   stopCodon,
   startCodon,
   insertion,
@@ -513,6 +519,7 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
     'quaternary',
     'highlight',
     'description',
+    'segments',
   ] as const) {
     const paletteEntry = theme.palette?.[entry]
     if (paletteEntry) {
@@ -538,6 +545,7 @@ function addMissingColors(theme: ThemeOptions = {}) {
         tertiary: palette?.tertiary || lightgrey,
         highlight: palette?.highlight || mandarin,
         description: palette?.description || descriptionColor,
+        segments: palette?.segments || segmentsColor,
         insertion: palette?.insertion || insertion,
         softclip: palette?.softclip || softclip,
         skip: palette?.skip || skip,

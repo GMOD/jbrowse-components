@@ -22,10 +22,10 @@ const CanvasFeatureRenderer = ConfigurationSchema(
      * #slot
      */
     color2: {
-      type: 'maybeColor',
+      type: 'color',
       description:
         'the secondary color of each feature, used for connecting lines, etc',
-      defaultValue: undefined,
+      defaultValue: 'jexl:theme.palette.segments.main',
       contextVariable: ['feature', 'theme'],
     },
     /**

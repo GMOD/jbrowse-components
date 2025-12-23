@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -77,6 +78,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -119,6 +121,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -152,6 +155,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -207,6 +211,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -260,6 +265,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -338,6 +344,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -413,6 +420,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -488,6 +496,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -542,6 +551,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -572,6 +582,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -624,6 +635,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -676,6 +688,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -740,6 +753,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -835,6 +849,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -893,6 +908,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1001,6 +1017,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1093,6 +1110,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1164,6 +1182,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1268,6 +1287,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1340,6 +1360,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1388,6 +1409,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1458,6 +1480,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1543,6 +1566,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1597,6 +1621,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1665,6 +1690,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1705,6 +1731,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1764,6 +1791,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1814,6 +1842,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1872,6 +1901,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1939,6 +1969,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2008,6 +2039,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2060,6 +2092,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2115,6 +2148,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2168,6 +2202,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2220,6 +2255,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2253,6 +2289,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2286,6 +2323,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2363,6 +2401,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2418,6 +2457,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2455,6 +2495,7 @@ describe('CanvasFeatureRenderer', () => {
       const reversedRegion = { ...args.region, reversed: true }
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: reversedRegion,
@@ -2511,6 +2552,7 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2578,6 +2620,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2632,6 +2675,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2662,6 +2706,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2691,6 +2736,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -2721,6 +2767,7 @@ describe('CanvasFeatureRenderer', () => {
       const args = createRenderArgs(features, region)
 
       const layoutRecords = computeLayouts({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
