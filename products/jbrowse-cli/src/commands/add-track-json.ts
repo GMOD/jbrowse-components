@@ -7,7 +7,7 @@ import {
   readJsonFile,
   resolveConfigPath,
 } from '../utils'
-import { findAndUpdateOrAdd, saveConfigAndReport } from './config-utils'
+import { findAndUpdateOrAdd, saveConfigAndReport } from './shared/config-operations'
 
 import type { Config, Track } from '../base'
 

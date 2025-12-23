@@ -1,19 +1,19 @@
 import fs from 'fs'
 import path from 'path'
 
-import { isURL } from '../types/common'
+import { isURL } from '../../types/common'
 import {
   debug,
   readInlineOrFileJson,
   readJsonFile,
   resolveFileLocation,
-} from '../utils'
+} from '../../utils'
 import {
   findAndUpdateOrAdd,
   saveConfigAndReport as saveConfigAndReportBase,
-} from './config-utils'
+} from '../shared/config-operations'
 
-import type { Assembly, Config, Sequence } from '../base'
+import type { Assembly, Config, Sequence } from '../../base'
 
 const { rename, copyFile, symlink } = fs.promises
 

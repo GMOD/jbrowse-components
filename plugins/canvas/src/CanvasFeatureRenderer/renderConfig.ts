@@ -51,8 +51,15 @@ export interface RenderConfigContext {
   geneGlyphMode: string
 
   displayDirectionalChevrons: boolean
+}
 
-  isMouseoverCallback: boolean
+function readColorConfig(
+  config: AnyConfigurationModel,
+  key: 'color1' | 'color2' | 'color3' | 'outline',
+) {
+  const isCallback = config[key]?.isCallback ?? false
+  const value = isCallback ? undefined : (readConfObject(config, key) as string)
+  return { isCallback, value }
 }
 
 export function createRenderConfigContext(
@@ -70,22 +77,22 @@ export function createRenderConfigContext(
     'displayDirectionalChevrons',
   ) as boolean
 
-  const isColor1Callback = config.color1?.isCallback ?? false
-  const isColor2Callback = config.color2?.isCallback ?? false
-  const isColor3Callback = config.color3?.isCallback ?? false
-  const isOutlineCallback = config.outline?.isCallback ?? false
-  const color1 = isColor1Callback
-    ? undefined
-    : (readConfObject(config, 'color1') as string)
-  const color2 = isColor2Callback
-    ? undefined
-    : (readConfObject(config, 'color2') as string)
-  const color3 = isColor3Callback
-    ? undefined
-    : (readConfObject(config, 'color3') as string)
-  const outline = isOutlineCallback
-    ? undefined
-    : (readConfObject(config, 'outline') as string)
+  const { isCallback: isColor1Callback, value: color1 } = readColorConfig(
+    config,
+    'color1',
+  )
+  const { isCallback: isColor2Callback, value: color2 } = readColorConfig(
+    config,
+    'color2',
+  )
+  const { isCallback: isColor3Callback, value: color3 } = readColorConfig(
+    config,
+    'color3',
+  )
+  const { isCallback: isOutlineCallback, value: outline } = readColorConfig(
+    config,
+    'outline',
+  )
 
   const isHeightCallback = config.height?.isCallback ?? false
   const featureHeight = isHeightCallback
@@ -96,8 +103,6 @@ export function createRenderConfigContext(
   const fontHeight = isFontHeightCallback
     ? 12
     : (readConfObject(config, ['labels', 'fontSize']) as number)
-
-  const isMouseoverCallback = config.mouseover?.isCallback ?? false
 
   return {
     displayMode,
@@ -121,6 +126,5 @@ export function createRenderConfigContext(
     labelAllowed: displayMode !== 'collapse',
     geneGlyphMode,
     displayDirectionalChevrons,
-    isMouseoverCallback,
   }
 }

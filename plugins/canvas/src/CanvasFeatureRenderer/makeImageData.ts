@@ -10,7 +10,6 @@ import {
   addSubfeaturesToLayoutAndFlatbush,
   adjustChildPositions,
 } from './layoutUtils'
-import { buildFeatureTooltip } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type {
@@ -126,19 +125,13 @@ export function makeImageData({
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
-    const tooltip = configContext.isMouseoverCallback
-      ? String(
-          readConfObject(config, 'mouseover', {
-            feature,
-            label: label || undefined,
-            description: description || undefined,
-          }) || '',
-        )
-      : buildFeatureTooltip({
-          mouseOver: feature.get('_mouseOver') as string | undefined,
-          label: label || undefined,
-          description: description || undefined,
-        })
+    const tooltip = String(
+      readConfObject(config, 'mouseover', {
+        feature,
+        label: label || undefined,
+        description: description || undefined,
+      }) || '',
+    )
 
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({

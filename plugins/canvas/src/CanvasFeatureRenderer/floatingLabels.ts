@@ -64,24 +64,7 @@ export function createFeatureFloatingLabels({
     description: rawDescription,
   })
 
-  if (shouldShowLabel && shouldShowDescription) {
-    floatingLabels.push(
-      {
-        text: name,
-        relativeY: 0,
-        color: nameColor,
-        textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
-        tooltip,
-      },
-      {
-        text: description,
-        relativeY: actualFontHeight,
-        color: descriptionColor,
-        textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
-        tooltip,
-      },
-    )
-  } else if (shouldShowLabel) {
+  if (shouldShowLabel) {
     floatingLabels.push({
       text: name,
       relativeY: 0,
@@ -89,10 +72,12 @@ export function createFeatureFloatingLabels({
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
       tooltip,
     })
-  } else if (shouldShowDescription) {
+  }
+
+  if (shouldShowDescription) {
     floatingLabels.push({
       text: description,
-      relativeY: 0,
+      relativeY: shouldShowLabel ? actualFontHeight : 0,
       color: descriptionColor,
       textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
       tooltip,

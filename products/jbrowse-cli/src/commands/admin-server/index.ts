@@ -12,8 +12,8 @@ import {
   setupConfigFile,
   setupRoutes,
   startServer,
-} from './admin-server-utils'
-import { debug, printHelp } from '../utils'
+} from './utils'
+import { debug, printHelp } from '../../utils'
 
 import type { Request, Response } from 'express'
 

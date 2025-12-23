@@ -1,13 +1,13 @@
 import { parseArgs } from 'util'
 
-import { printHelp } from '../utils'
+import { printHelp } from '../../utils'
 import {
   createPIF,
   getOutputFilename,
   spawnSortProcess,
   waitForProcessClose,
-} from './make-pif-utils/pif-generator'
-import { validateFileArgument, validateRequiredCommands } from './validators'
+} from './pif-generator'
+import { validateFileArgument, validateRequiredCommands } from '../shared/validators'
 
 export async function run(args?: string[]) {
   const options = {

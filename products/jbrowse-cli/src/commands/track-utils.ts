@@ -8,7 +8,7 @@ import { validateTrackId } from './add-track-utils/validators'
 import {
   findAndUpdateOrAdd,
   saveConfigAndReport as saveConfigAndReportBase,
-} from './config-utils'
+} from './shared/config-operations'
 
 import type { Config } from '../base'
 

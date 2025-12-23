@@ -2,7 +2,7 @@ import { parseArgs } from 'util'
 
 import { printHelp } from '../utils'
 import { waitForProcessClose } from './process-utils'
-import { GFF_CONFIG, spawnSortProcess } from './sort-utils'
+import { GFF_CONFIG, spawnSortProcess } from './shared/sort-utils'
 import { validateFileArgument, validateRequiredCommands } from './validators'
 
 export async function run(args?: string[]) {
