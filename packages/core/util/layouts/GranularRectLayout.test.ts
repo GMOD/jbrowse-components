@@ -120,7 +120,6 @@ test('tests adding features far apart in coordinate space', () => {
   l.addRect('test2', 1000000, 1000100, 1)
   l.addRect('test3', 0, 10000, 1)
 
-  // @ts-expect-error
   expect(l.rectangles.size).toBe(3)
 
   // Verify the features are laid out correctly
@@ -141,6 +140,5 @@ test('tests adding a gigantic feature that fills entire row with another smaller
   expect(l.getByCoord(50000, 0)).toEqual('test1')
   l.addRect('test2', 0, 1000, 1, 'feat2')
   expect(l.getByCoord(500, 1)).toEqual('test2')
-  // @ts-expect-error
   expect(l.rectangles.size).toBe(2)
 })

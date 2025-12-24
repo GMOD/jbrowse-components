@@ -214,7 +214,7 @@ export default function ConfigSlot(
               getEnv(self).pluginManager.jexl,
             )
           : {
-              evalSync: () => self.value,
+              eval: () => self.value,
             }
       },
 
@@ -262,7 +262,7 @@ export default function ConfigSlot(
         }
         // try calling it with no arguments
         try {
-          const funcResult = self.expr.evalSync()
+          const funcResult = self.expr.eval()
           if (funcResult !== undefined) {
             self.value = funcResult
             return

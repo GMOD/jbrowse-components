@@ -15,7 +15,7 @@ describe('function string parsing', () => {
     const str = 'jexl:\na+b+c+5'
     const expr = stringToJexlExpression(str)
     expect(expr._exprStr).toEqual('\na+b+c+5')
-    const result = expr.evalSync({ a: 5, b: 10, c: 15 })
+    const result = expr.eval({ a: 5, b: 10, c: 15 })
     expect(result).toEqual(35)
   })
   it('can use the loaded core helper functions to access feature info', () => {
@@ -27,19 +27,19 @@ describe('function string parsing', () => {
       end: 9,
     })
     expect(
-      stringToJexlExpression(`jexl:get(feature,'score')`).evalSync({
+      stringToJexlExpression(`jexl:get(feature,'score')`).eval({
         feature,
       }),
     ).toEqual(10)
     expect(
-      stringToJexlExpression(`jexl:get(feature,'uniqueId')`).evalSync({
+      stringToJexlExpression(`jexl:get(feature,'uniqueId')`).eval({
         feature,
       }),
     ).toBe('jexlFeature')
     expect(
       stringToJexlExpression(
         `jexl:get(feature,'end') - get(feature,'start') == 8`,
-      ).evalSync({ feature }),
+      ).eval({ feature }),
     ).toBe(true)
   })
 })

@@ -16,7 +16,7 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       type: 'color',
       description: 'the main color of each feature',
       defaultValue: 'goldenrod',
-      contextVariable: ['feature'],
+      contextVariable: ['feature', 'theme'],
     },
     /**
      * #slot
@@ -25,8 +25,8 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       type: 'color',
       description:
         'the secondary color of each feature, used for connecting lines, etc',
-      defaultValue: '#f0f',
-      contextVariable: ['feature'],
+      defaultValue: 'jexl:theme.palette.segments.main',
+      contextVariable: ['feature', 'theme'],
     },
     /**
      * #slot
@@ -36,7 +36,7 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       description:
         'the tertiary color of each feature, often used for contrasting fills, like on UTRs',
       defaultValue: '#357089',
-      contextVariable: ['feature'],
+      contextVariable: ['feature', 'theme'],
     },
 
     /**
@@ -46,7 +46,7 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       type: 'color',
       description: 'the outline for features',
       defaultValue: '',
-      contextVariable: ['feature'],
+      contextVariable: ['feature', 'theme'],
     },
     /**
      * #slot
@@ -55,7 +55,7 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       type: 'number',
       description: 'height in pixels of the main body of each feature',
       defaultValue: 10,
-      contextVariable: ['feature'],
+      contextVariable: ['feature', 'theme'],
     },
     /**
      * #slot
@@ -88,6 +88,28 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       defaultValue: 'none',
     },
 
+    /**
+     * #slot
+     */
+    mouseover: {
+      type: 'string',
+      description:
+        'the mouseover tooltip label for features. Available variables: feature (the feature object), label (evaluated name), description (evaluated description)',
+      defaultValue: `jexl:get(feature,'_mouseOver') || (label && description ? label + '<br/>' + description : (label || description || ''))`,
+      contextVariable: ['feature', 'label', 'description'],
+    },
+
+    /**
+     * #slot
+     */
+    subfeatureMouseover: {
+      type: 'string',
+      description:
+        'the mouseover tooltip label for subfeatures (e.g. transcripts). Available variables: feature (the subfeature object)',
+      defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
+      contextVariable: ['feature'],
+    },
+
     labels: ConfigurationSchema('CanvasFeatureLabels', {
       /**
        * #slot labels.name
@@ -105,8 +127,8 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       nameColor: {
         type: 'color',
         description: 'the color of the name label, if shown',
-        defaultValue: '#f0f',
-        contextVariable: ['feature'],
+        defaultValue: `jexl:theme.palette.text.primary`,
+        contextVariable: ['feature', 'theme'],
       },
       /**
        * #slot labels.description
@@ -115,7 +137,7 @@ const CanvasFeatureRenderer = ConfigurationSchema(
         type: 'string',
         description: 'the text description to show, if space is available',
         defaultValue: `jexl:get(feature,'note') || get(feature,'description')`,
-        contextVariable: ['feature'],
+        contextVariable: ['feature', 'theme'],
       },
       /**
        * #slot labels.descriptionColor
@@ -123,8 +145,8 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       descriptionColor: {
         type: 'color',
         description: 'the color of the description, if shown',
-        defaultValue: 'blue',
-        contextVariable: ['feature'],
+        defaultValue: `jexl:theme.palette.description.main`,
+        contextVariable: ['feature', 'theme'],
       },
 
       /**
@@ -135,7 +157,7 @@ const CanvasFeatureRenderer = ConfigurationSchema(
         description:
           'height in pixels of the text to use for names and descriptions',
         defaultValue: 12,
-        contextVariable: ['feature'],
+        contextVariable: ['feature', 'theme'],
       },
     }),
 
@@ -214,9 +236,10 @@ const CanvasFeatureRenderer = ConfigurationSchema(
         'all',
         'longest',
         'longestCoding',
+        'auto',
       ]),
       description:
-        'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript, "longestCoding" shows only the longest coding transcript',
+        'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript, "longestCoding" shows only the longest coding transcript, "auto" shows longestCoding when viewing >2Mbp, otherwise all',
       defaultValue: 'all',
     },
 

@@ -1,6 +1,6 @@
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
-import { computeLayouts } from './computeLayouts'
+import { layoutFeatures } from './layoutFeatures'
 import { makeImageData } from './makeImageData'
 import { fetchPeptideData } from './peptideUtils'
 import { createRenderConfigContext } from './renderConfig'
@@ -43,7 +43,7 @@ export async function doAll({
     'Computing feature layout',
     statusCallback,
     async () => {
-      return computeLayouts({
+      return layoutFeatures({
         features,
         bpPerPx,
         region,

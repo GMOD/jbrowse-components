@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import { createFeatureFloatingLabels } from './floatingLabels'
-import { layoutFeature } from './simpleLayout'
+import { layoutFeature } from './layoutFeature'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { LayoutRecord } from './types'
@@ -11,7 +11,7 @@ import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 const yPadding = 5
 
-export function computeLayouts({
+export function layoutFeatures({
   features,
   bpPerPx,
   region,
