@@ -5,21 +5,13 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseRecordsSync } from 'gff-nostream'
-
-import { featureData } from '../featureData'
+import { parseRecordsJBrowse } from 'gff-nostream'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
+import type { JBrowseFeature, LineRecord } from 'gff-nostream'
 import type { Observer } from 'rxjs'
-
-interface LineFeature {
-  start: number
-  end: number
-  lineHash: number
-  fields: string[]
-}
 
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   private configured?: Promise<{
@@ -92,23 +84,28 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
   ) {
     const { statusCallback = () => {} } = opts
     try {
-      const lines: LineFeature[] = []
+      const lines: (LineRecord & { type: string })[] = []
 
       const { dontRedispatchSet, gff } = await this.configure(opts)
-      const { start: startCol, end: endCol } = metadata.columnNumbers
       await updateStatus('Downloading features', statusCallback, () =>
         gff.getLines(
           query.refName,
           query.start,
           query.end,
-          (line, fileOffset) => {
-            const fields = line.split('\t')
+          (line, fileOffset, start, end) => {
+            // Extract type (column 3) without full split - find 2nd and 3rd tabs
+            const t1 = line.indexOf('\t')
+            const t2 = line.indexOf('\t', t1 + 1)
+            const t3 = line.indexOf('\t', t2 + 1)
+            const type = line.slice(t2 + 1, t3)
+
             lines.push({
-              // note: index column numbers are 1-based
-              start: +fields[startCol - 1]!,
-              end: +fields[endCol - 1]!,
+              line,
               lineHash: fileOffset,
-              fields,
+              start,
+              end,
+              hasEscapes: line.includes('%'),
+              type,
             })
           },
         ),
@@ -117,17 +114,16 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
       if (allowRedispatch && lines.length) {
         let minStart = Number.POSITIVE_INFINITY
         let maxEnd = Number.NEGATIVE_INFINITY
-        for (const line of lines) {
-          const featureType = line.fields[2]!
+        for (const rec of lines) {
           // only expand redispatch range if feature is not a "dontRedispatch"
           // type skips large regions like chromosome,region
-          if (!dontRedispatchSet.has(featureType)) {
-            const start = line.start - 1 // gff is 1-based
+          if (!dontRedispatchSet.has(rec.type)) {
+            const start = rec.start - 1 // gff is 1-based
             if (start < minStart) {
               minStart = start
             }
-            if (line.end > maxEnd) {
-              maxEnd = line.end
+            if (rec.end > maxEnd) {
+              maxEnd = rec.end
             }
           }
         }
@@ -146,23 +142,21 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      for (const featureLocs of parseRecordsSync(lines)) {
-        for (const featureLoc of featureLocs) {
-          // Check intersection before creating SimpleFeature to avoid
-          // unnecessary allocations GFF3 coordinates are 1-based, so subtract
-          // 1 from start for 0-based
-          const start = featureLoc.start! - 1
-          const end = featureLoc.end!
-          if (
-            doesIntersect2(start, end, originalQuery.start, originalQuery.end)
-          ) {
-            observer.next(
-              new SimpleFeature({
-                data: featureData(featureLoc),
-                id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
-              }),
-            )
-          }
+      for (const feature of parseRecordsJBrowse(lines)) {
+        if (
+          doesIntersect2(
+            feature.start,
+            feature.end,
+            originalQuery.start,
+            originalQuery.end,
+          )
+        ) {
+          observer.next(
+            new SimpleFeature({
+              data: feature as unknown as Record<string, unknown>,
+              id: `${this.id}-offset-${feature._lineHash}`,
+            }),
+          )
         }
       }
       observer.complete()

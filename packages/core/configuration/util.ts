@@ -66,7 +66,7 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
       //   })`,
       // )
     } else {
-      const val = slot.expr ? slot.expr.evalSync(args) : slot
+      const val = slot.expr ? slot.expr.eval(args) : slot
       return isStateTreeNode(val)
         ? JSON.parse(JSON.stringify(getSnapshot(val)))
         : val

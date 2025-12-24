@@ -40,7 +40,7 @@
     "@gmod/tabix": "^3.2.1",
     "@jbrowse/core": "^3.7.0",
     "@jbrowse/mobx-state-tree": "^5.4.7",
-    "gff-nostream": "^2.0.0",
+    "gff-nostream": "^3.0.1",
     "mobx": "^6.0.0",
     "rxjs": "^7.0.0"
   },
