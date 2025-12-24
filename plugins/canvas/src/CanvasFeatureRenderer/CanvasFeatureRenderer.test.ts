@@ -5,7 +5,7 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Image, createCanvas } from 'canvas'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { computeLayouts } from './computeLayouts'
+import { layoutFeatures } from './layoutFeatures'
 import configSchema from './configSchema'
 import { makeImageData } from './makeImageData'
 import { createRenderConfigContext } from './renderConfig'
@@ -58,7 +58,7 @@ function createRenderArgs(
 }
 
 describe('CanvasFeatureRenderer', () => {
-  describe('computeLayouts', () => {
+  describe('layoutFeatures', () => {
     test('simple box feature', () => {
       const feature = new SimpleFeature({
         uniqueId: 'test1',
@@ -76,7 +76,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -118,7 +118,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -151,7 +151,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -206,7 +206,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -284,7 +284,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -340,7 +340,7 @@ describe('CanvasFeatureRenderer', () => {
         displayMode: 'compact',
       })
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -370,7 +370,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -422,7 +422,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -474,7 +474,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -538,7 +538,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -633,7 +633,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -691,7 +691,7 @@ describe('CanvasFeatureRenderer', () => {
         displayMode: 'compact',
       })
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -799,7 +799,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -891,7 +891,7 @@ describe('CanvasFeatureRenderer', () => {
         geneGlyphMode: 'longest',
       })
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -962,7 +962,7 @@ describe('CanvasFeatureRenderer', () => {
         displayMode: 'reducedRepresentation',
       })
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1066,7 +1066,7 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
