@@ -1624,9 +1624,9 @@
     "@jridgewell/resolve-uri" "^3.1.2"
 
 "@gmod/tabix@^3.2.1":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.2.1.tgz#70cb327df7059163b90b484f3d04c3773e9eef6f"
-  integrity sha512-2CjZ7SN3UER/55SvBpQ4DRJgzYHXXXZV78Kyk6R/FH40miIwiLBhz6Um4ZC1aLuAS+EwELZHWUKpMJxQqNuEDg==
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.2.2.tgz#55c2142e8bc2ef867212c2ff1825b65b8e313dcb"
+  integrity sha512-lQQCuanjsnVNzH9n21LTMGykvRbpLbEQk3AL+aKnjf72gfV07mLZ116gtvDFu5huxbxWialOHGGC7iJAQDEi5Q==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     "@gmod/bgzf-filehandle" "^6.0.9"
@@ -8358,10 +8358,10 @@ get-uri@^6.0.1:
     data-uri-to-buffer "^6.0.2"
     debug "^4.3.4"
 
-gff-nostream@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/gff-nostream/-/gff-nostream-2.0.1.tgz#b77836767eae47db72abe03685c216511029830c"
-  integrity sha512-MzClw7CMHnJRklRq21aEQqaUIZ3johhY/0PrMx8KyfD1oi0CAMJ/DwUDAuB5pOEjkamA67T/jd5wDjSzPXYQWw==
+gff-nostream@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/gff-nostream/-/gff-nostream-3.0.0.tgz#105a194dceb9d99e0e089da6a098af4293283317"
+  integrity sha512-n7TKbGSuMM2pGilOdcffk3lZCvcd91r1WK8Zd5P1PYGN6iGKBJ8y1VfSfmGV0XF9P60X4WRRSCCvo5Jy71NvKA==
 
 git-raw-commits@^3.0.0:
   version "3.0.0"
