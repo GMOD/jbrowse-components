@@ -33,6 +33,7 @@ export type LayoutRecord =
         totalFeatureHeight?: number
         totalLayoutWidth?: number
         featureWidth?: number
+        leftPadding?: number
         actualTopPx?: number
       },
     ]

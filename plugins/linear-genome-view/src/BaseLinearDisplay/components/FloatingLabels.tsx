@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 
-import { clamp, getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
+import { calculateFloatingLabelPosition } from './util'
 
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
@@ -67,6 +69,9 @@ interface FeatureLabelData {
   topPx: number
   totalFeatureHeight: number
   floatingLabels: FloatingLabelData[]
+  featureWidth: number
+  leftPadding: number
+  totalLayoutWidth: number
 }
 
 /**
@@ -172,10 +177,25 @@ function deduplicateFeatureLabels(
     }
 
     const [left, topPx, right, , feature] = val
-    const { refName, floatingLabels, totalFeatureHeight, actualTopPx } = feature
+    const {
+      refName,
+      floatingLabels,
+      totalFeatureHeight,
+      actualTopPx,
+      featureWidth,
+      leftPadding,
+      totalLayoutWidth,
+    } = feature
     const effectiveTopPx = actualTopPx ?? topPx
 
-    if (!floatingLabels || floatingLabels.length === 0 || !totalFeatureHeight) {
+    if (
+      !floatingLabels ||
+      floatingLabels.length === 0 ||
+      !totalFeatureHeight ||
+      featureWidth === undefined ||
+      leftPadding === undefined ||
+      totalLayoutWidth === undefined
+    ) {
       continue
     }
 
@@ -203,6 +223,9 @@ function deduplicateFeatureLabels(
         topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
+        featureWidth,
+        leftPadding,
+        totalLayoutWidth,
       })
     }
   }
@@ -237,13 +260,13 @@ function FloatingLabel({
   viewportLeft,
   tooltip,
 }: LabelProps) {
-  // Optimize: Use pre-calculated viewportLeft instead of recalculating
-  const leftPx = Math.max(featureLeftPx, viewportLeft)
-  const rightPx = Math.max(featureRightPx, viewportLeft)
-
-  const naturalX = leftPx - offsetPx
-  const maxX = rightPx - offsetPx - labelWidth
-  const x = clamp(0, naturalX, maxX)
+  const x = calculateFloatingLabelPosition(
+    featureLeftPx,
+    featureRightPx,
+    labelWidth,
+    offsetPx,
+    viewportLeft,
+  )
 
   return (
     <div
@@ -300,10 +323,21 @@ const FloatingLabels = observer(function FloatingLabels({
 
   for (const [
     key,
-    { leftPx, rightPx, topPx, totalFeatureHeight, floatingLabels },
+    {
+      leftPx,
+      topPx,
+      totalFeatureHeight,
+      floatingLabels,
+      featureWidth,
+      leftPadding,
+    },
   ] of featureLabels.entries()) {
     const featureVisualBottom = topPx + totalFeatureHeight
-    const featureWidth = rightPx - leftPx
+
+    // leftPadding is already in visual terms (calculated with effectiveStrand)
+    // so we can use it directly regardless of reversed state
+    const featureLeftPx = leftPx + leftPadding
+    const featureRightPx = featureLeftPx + featureWidth
 
     for (let i = 0, l = floatingLabels.length; i < l; i++) {
       const floatingLabel = floatingLabels[i]!
@@ -316,10 +350,6 @@ const FloatingLabels = observer(function FloatingLabels({
         tooltip,
       } = floatingLabel
 
-      if (labelWidth > featureWidth) {
-        continue
-      }
-
       const y = featureVisualBottom + relativeY
 
       labels.push(
@@ -328,8 +358,8 @@ const FloatingLabels = observer(function FloatingLabels({
           text={text}
           color={color}
           isOverlay={isOverlay ?? false}
-          featureLeftPx={leftPx}
-          featureRightPx={rightPx}
+          featureLeftPx={featureLeftPx}
+          featureRightPx={featureRightPx}
           featureId={key}
           labelWidth={labelWidth}
           y={y}
