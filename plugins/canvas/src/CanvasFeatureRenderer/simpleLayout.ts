@@ -71,7 +71,15 @@ export function layoutFeature(args: {
     fontHeight,
     labelAllowed,
     geneGlyphMode,
+    regionSize,
   } = configContext
+
+  const effectiveGeneGlyphMode =
+    geneGlyphMode === 'auto'
+      ? regionSize > 2_000_000
+        ? 'longestCoding'
+        : 'all'
+      : geneGlyphMode
 
   const glyphType = chooseGlyphType({ feature, configContext })
 
@@ -121,7 +129,8 @@ export function layoutFeature(args: {
       })
 
       if (
-        (geneGlyphMode === 'longest' || geneGlyphMode === 'longestCoding') &&
+        (effectiveGeneGlyphMode === 'longest' ||
+          effectiveGeneGlyphMode === 'longestCoding') &&
         sortedSubfeatures.length > 1
       ) {
         const transcriptSubfeatures = sortedSubfeatures.filter(sub =>
@@ -132,7 +141,7 @@ export function layoutFeature(args: {
             ? transcriptSubfeatures
             : sortedSubfeatures
 
-        if (geneGlyphMode === 'longestCoding') {
+        if (effectiveGeneGlyphMode === 'longestCoding') {
           const codingCandidates = candidates.filter(hasCodingSubfeature)
           if (codingCandidates.length > 0) {
             candidates = codingCandidates

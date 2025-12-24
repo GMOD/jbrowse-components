@@ -34,7 +34,7 @@ export async function doAll({
 
   // Create config context ONCE at the start - this reads all config values upfront
   // to avoid expensive readConfObject calls in per-feature hot paths
-  const configContext = createRenderConfigContext(config)
+  const configContext = createRenderConfigContext(config, region)
 
   const layoutRecords = await updateStatus(
     'Computing feature layout',

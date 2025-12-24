@@ -44,12 +44,13 @@ function createRenderArgs(
   const config = configSchema.create(configOverrides, { pluginManager })
   const bpPerPx = 1
   const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
-  const configContext = createRenderConfigContext(config)
+  const fullRegion = { ...region, reversed: false }
+  const configContext = createRenderConfigContext(config, fullRegion)
 
   return {
     features,
     bpPerPx,
-    region: { ...region, reversed: false },
+    region: fullRegion,
     config,
     configContext,
     layout,

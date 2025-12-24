@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Region } from '@jbrowse/core/util'
 
 export interface RenderConfigContext {
   displayMode: string
@@ -19,10 +20,13 @@ export interface RenderConfigContext {
   geneGlyphMode: string
 
   displayDirectionalChevrons: boolean
+
+  regionSize: number
 }
 
 export function createRenderConfigContext(
   config: AnyConfigurationModel,
+  region: Region,
 ): RenderConfigContext {
   const displayMode = readConfObject(config, 'displayMode') as string
   const showLabels = readConfObject(config, 'showLabels') as boolean
@@ -39,6 +43,8 @@ export function createRenderConfigContext(
   const featureHeight = readConfObject(config, 'height') as number
   const fontHeight = readConfObject(config, ['labels', 'fontSize']) as number
 
+  const regionSize = region.end - region.start
+
   return {
     displayMode,
     showLabels,
@@ -51,5 +57,6 @@ export function createRenderConfigContext(
     labelAllowed: displayMode !== 'collapse',
     geneGlyphMode,
     displayDirectionalChevrons,
+    regionSize,
   }
 }

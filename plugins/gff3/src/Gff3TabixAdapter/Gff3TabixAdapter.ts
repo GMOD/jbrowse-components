@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseRecordsSync } from 'gff-nostream'
+import { parseRecordsSyncFast } from 'gff-nostream'
 
 import { featureData } from '../featureData'
 
@@ -146,7 +146,20 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      for (const featureLocs of parseRecordsSync(lines)) {
+      let hasEscapes = false
+      for (const line of lines) {
+        for (const field of line.fields) {
+          if (field.includes('%')) {
+            hasEscapes = true
+            break
+          }
+        }
+        if (hasEscapes) {
+          break
+        }
+      }
+
+      for (const featureLocs of parseRecordsSyncFast(lines, hasEscapes)) {
         for (const featureLoc of featureLocs) {
           // Check intersection before creating SimpleFeature to avoid
           // unnecessary allocations GFF3 coordinates are 1-based, so subtract

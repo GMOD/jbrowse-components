@@ -435,6 +435,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       value: 'longestCoding',
                       label: 'Longest coding transcript',
                     },
+                    {
+                      value: 'auto',
+                      label: 'Auto (longest coding if >2Mbp)',
+                    },
                   ].map(({ value, label }) => ({
                     label,
                     type: 'radio' as const,

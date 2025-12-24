@@ -236,9 +236,10 @@ const CanvasFeatureRenderer = ConfigurationSchema(
         'all',
         'longest',
         'longestCoding',
+        'auto',
       ]),
       description:
-        'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript, "longestCoding" shows only the longest coding transcript',
+        'Gene glyph display mode: "all" shows all transcripts, "longest" shows only the longest transcript, "longestCoding" shows only the longest coding transcript, "auto" shows longestCoding when viewing >2Mbp, otherwise all',
       defaultValue: 'all',
     },
 
