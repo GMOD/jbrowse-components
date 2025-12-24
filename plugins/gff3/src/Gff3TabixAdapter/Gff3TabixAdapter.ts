@@ -5,14 +5,12 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseRecords } from 'gff-nostream'
-
-import { featureData } from '../featureData'
+import { parseRecordsJBrowse } from 'gff-nostream'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
-import type { LineRecord } from 'gff-nostream'
+import type { JBrowseFeature, LineRecord } from 'gff-nostream'
 import type { Observer } from 'rxjs'
 
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
@@ -144,23 +142,21 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      for (const featureLocs of parseRecords(lines)) {
-        for (const featureLoc of featureLocs) {
-          // Check intersection before creating SimpleFeature to avoid
-          // unnecessary allocations GFF3 coordinates are 1-based, so subtract
-          // 1 from start for 0-based
-          const start = featureLoc.start! - 1
-          const end = featureLoc.end!
-          if (
-            doesIntersect2(start, end, originalQuery.start, originalQuery.end)
-          ) {
-            observer.next(
-              new SimpleFeature({
-                data: featureData(featureLoc),
-                id: `${this.id}-offset-${featureLoc.attributes?._lineHash?.[0]}`,
-              }),
-            )
-          }
+      for (const feature of parseRecordsJBrowse(lines)) {
+        if (
+          doesIntersect2(
+            feature.start,
+            feature.end,
+            originalQuery.start,
+            originalQuery.end,
+          )
+        ) {
+          observer.next(
+            new SimpleFeature({
+              data: feature as unknown as Record<string, unknown>,
+              id: `${this.id}-offset-${feature._lineHash}`,
+            }),
+          )
         }
       }
       observer.complete()
