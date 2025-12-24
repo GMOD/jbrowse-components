@@ -99,6 +99,8 @@ export function addSubfeaturesToLayoutAndFlatbush({
               totalFeatureHeight: child.height,
               totalLayoutWidth: child.totalLayoutWidth,
               actualTopPx: topPx,
+              featureWidth: child.width,
+              leftPadding: 0,
             }
           : {}),
       },
