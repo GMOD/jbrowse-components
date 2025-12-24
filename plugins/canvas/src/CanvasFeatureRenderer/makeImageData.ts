@@ -124,21 +124,10 @@ export function makeImageData({
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
-    const mouseOverAttr =
-      feature.get('_mouseover') || feature.get('_mouseOver')
     const tooltip = String(
       readConfObject(config, 'mouseover', { feature, label, description }) ||
         '',
     )
-    console.log('mouseover debug', {
-      mouseOverAttr,
-      mouseover: feature.get('_mouseover'),
-      mouseOver: feature.get('_mouseOver'),
-      tooltip,
-      label,
-      description,
-      featureId: feature.id(),
-    })
 
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({

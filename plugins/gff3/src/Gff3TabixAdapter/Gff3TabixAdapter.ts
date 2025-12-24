@@ -10,7 +10,7 @@ import { parseRecordsJBrowse } from 'gff-nostream'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
-import type { JBrowseFeature, LineRecord } from 'gff-nostream'
+import type { LineRecord } from 'gff-nostream'
 import type { Observer } from 'rxjs'
 
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {

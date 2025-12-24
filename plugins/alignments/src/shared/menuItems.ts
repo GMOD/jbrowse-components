@@ -45,7 +45,6 @@ export function getModificationsSubMenu(
     visibleModificationTypes,
   } = model
 
-  console.log(modificationsReady, visibleModificationTypes)
   if (!modificationsReady) {
     return [
       {

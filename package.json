@@ -38,7 +38,7 @@
     "@jbrowse/mobx-state-tree": "^5.4.7",
     "@mui/material": "^7.0.0",
     "@mui/system": "^7.0.1",
-    "@mui/x-data-grid": "^8.22.1",
+    "@mui/x-data-grid": "^8.23.0",
     "@node-oauth/express-oauth-server": "^4.0.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
     "@r2wc/react-to-web-component": "^2.0.3",

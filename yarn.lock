@@ -1623,7 +1623,7 @@
     "@jbrowse/quick-lru" "^7.3.5"
     "@jridgewell/resolve-uri" "^3.1.2"
 
-"@gmod/tabix@^3.2.1":
+"@gmod/tabix@^3.2.1", "@gmod/tabix@^3.2.2":
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-3.2.2.tgz#55c2142e8bc2ef867212c2ff1825b65b8e313dcb"
   integrity sha512-lQQCuanjsnVNzH9n21LTMGykvRbpLbEQk3AL+aKnjf72gfV07mLZ116gtvDFu5huxbxWialOHGGC7iJAQDEi5Q==
@@ -2443,7 +2443,7 @@
     flatqueue "^3.0.0"
     internmap "^2.0.3"
 
-"@mui/x-data-grid@^8.22.1":
+"@mui/x-data-grid@^8.22.1", "@mui/x-data-grid@^8.23.0":
   version "8.23.0"
   resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-8.23.0.tgz#5be712334c5c99673e8f1d575fd12dc8b741401b"
   integrity sha512-fv8AiibTgwPKJsXtYdc5bYDDW3EQp/ieQ0iUejvZ2JbYikMIPTYjI4pHy7zW3F3RDsi6DGQnw5AW6LeoDcT0fA==

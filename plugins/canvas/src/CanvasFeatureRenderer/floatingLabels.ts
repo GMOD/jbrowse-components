@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { buildFeatureTooltip, truncateLabel } from './util'
+import { truncateLabel } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -143,6 +143,5 @@ export function createTranscriptFloatingLabel({
     color,
     textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
     isOverlay,
-    tooltip: buildFeatureTooltip({ label: displayLabel }),
   }
 }
