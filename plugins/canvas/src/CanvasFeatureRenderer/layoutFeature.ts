@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
 import {
@@ -8,9 +8,8 @@ import {
   truncateLabel,
 } from './util'
 
-import type { RenderConfigContext } from './renderConfig'
+import type { JexlLike, RenderConfigContext } from './renderConfig'
 import type { FeatureLayout } from './types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
@@ -41,9 +40,10 @@ export function layoutFeature(args: {
   feature: Feature
   bpPerPx: number
   reversed: boolean
-  config: AnyConfigurationModel
+  configSnapshot: Record<string, any>
   configContext: RenderConfigContext
   theme: Theme
+  jexl: JexlLike
   parentX?: number
   parentY?: number
   isNested?: boolean
@@ -53,9 +53,10 @@ export function layoutFeature(args: {
     feature,
     bpPerPx,
     reversed,
-    config,
+    configSnapshot,
     configContext,
     theme,
+    jexl,
     parentX = 0,
     parentY = 0,
     isNested = false,
@@ -92,7 +93,12 @@ export function layoutFeature(args: {
     x = parentX + relativeX / bpPerPx
   }
 
-  const height = readConfObject(config, 'height', { feature, theme }) as number
+  const height = readStaticConfObject(
+    configSnapshot,
+    'height',
+    { feature, theme },
+    jexl,
+  ) as number
   const actualHeight = displayMode === 'compact' ? height / 2 : height
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const y = parentY
@@ -163,9 +169,10 @@ export function layoutFeature(args: {
           feature: subfeature,
           bpPerPx,
           reversed,
-          config,
+          configSnapshot,
           configContext,
           theme,
+          jexl,
           parentX: x,
           parentY: currentY,
           isNested: true,
@@ -190,16 +197,17 @@ export function layoutFeature(args: {
       for (const subfeature of getChildFeatures({
         feature,
         glyphType,
-        config,
+        configSnapshot,
       })) {
         layout.children.push(
           layoutFeature({
             feature: subfeature,
             bpPerPx,
             reversed,
-            config,
+            configSnapshot,
             configContext,
             theme,
+            jexl,
             parentX: x,
             parentY,
             isNested: true,
@@ -220,8 +228,9 @@ export function layoutFeature(args: {
       : showDescriptions
 
     const { name: rawName, description: rawDescription } = readFeatureLabels(
-      config,
+      configSnapshot,
       feature,
+      jexl,
     )
 
     layout.name = rawName

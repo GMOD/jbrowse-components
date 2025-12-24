@@ -12,3 +12,10 @@ export type {
 } from './types'
 
 export * from './util'
+
+export {
+  readStaticConfObject,
+  readStaticConfObjectBatch,
+  readStaticFeatureLabels,
+  readStaticLabelColors,
+} from './staticReader'

@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -46,10 +46,11 @@ export function makeImageData({
   configContext: RenderConfigContext
 }) {
   const {
-    config,
+    configSnapshot,
     bpPerPx,
     regions,
     theme: configTheme,
+    jexl,
     stopToken,
     layout,
     peptideDataMap,
@@ -100,9 +101,10 @@ export function makeImageData({
       featureLayout: adjustedLayout,
       region,
       bpPerPx,
-      config,
+      configSnapshot,
       configContext,
       theme,
+      jexl,
       reversed: region.reversed || false,
       topLevel: true,
       canvasWidth,
@@ -126,11 +128,16 @@ export function makeImageData({
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
     const tooltip = String(
-      readConfObject(config, 'mouseover', {
-        feature,
-        label: label || undefined,
-        description: description || undefined,
-      }) || '',
+      readStaticConfObject(
+        configSnapshot,
+        'mouseover',
+        {
+          feature,
+          label: label || undefined,
+          description: description || undefined,
+        },
+        jexl,
+      ) || '',
     )
 
     coords.push(leftPx, topPx, rightPx, bottomPx)
@@ -152,7 +159,8 @@ export function makeImageData({
         featureLayout: adjustedLayout,
         subfeatureCoords,
         subfeatureInfos,
-        config,
+        configSnapshot,
+        jexl,
         subfeatureLabels,
         transcriptTypes,
         labelColor: theme.palette.text.primary,

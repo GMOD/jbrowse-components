@@ -1,10 +1,9 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
 import { buildFeatureTooltip, readLabelColors, truncateLabel } from './util'
 
-import type { RenderConfigContext } from './renderConfig'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { JexlLike, RenderConfigContext } from './renderConfig'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
@@ -27,27 +26,30 @@ export interface FloatingLabelData {
  */
 export function createFeatureFloatingLabels({
   feature,
-  config,
+  configSnapshot,
   configContext,
   name: rawName,
   description: rawDescription,
   theme,
+  jexl,
 }: {
   feature: Feature
-  config: AnyConfigurationModel
+  configSnapshot: Record<string, any>
   configContext: RenderConfigContext
   name: string
   description: string
   theme: Theme
+  jexl: JexlLike
 }): FloatingLabelData[] {
   const { showLabels, showDescriptions } = configContext
 
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
   const { nameColor, descriptionColor } = readLabelColors(
-    config,
+    configSnapshot,
     feature,
     theme,
+    jexl,
   )
 
   const shouldShowLabel = /\S/.test(name) && showLabels
@@ -57,10 +59,12 @@ export function createFeatureFloatingLabels({
     return []
   }
 
-  const actualFontHeight = readConfObject(config, ['labels', 'fontSize'], {
-    feature,
-    theme,
-  }) as number
+  const actualFontHeight = readStaticConfObject(
+    configSnapshot,
+    ['labels', 'fontSize'],
+    { feature, theme },
+    jexl,
+  ) as number
 
   const floatingLabels: FloatingLabelData[] = []
 

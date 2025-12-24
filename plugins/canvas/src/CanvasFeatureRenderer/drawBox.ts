@@ -1,15 +1,17 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 
 import { getBoxColor, isOffScreen, isUTR } from './util'
 
 import type { DrawFeatureArgs } from './types'
 
 function getOutline(args: DrawFeatureArgs) {
-  const { feature, config, theme } = args
-  return readConfObject(config, 'outline', {
-    feature,
-    theme,
-  }) as string | undefined
+  const { feature, configSnapshot, theme, jexl } = args
+  return readStaticConfObject(
+    configSnapshot,
+    'outline',
+    { feature, theme },
+    jexl,
+  ) as string | undefined
 }
 
 const utrHeightFraction = 0.65
@@ -21,9 +23,10 @@ export function drawBox(args: DrawFeatureArgs) {
     featureLayout,
     region,
     bpPerPx,
-    config,
+    configSnapshot,
     configContext,
     theme,
+    jexl,
     canvasWidth,
     colorByCDS = false,
   } = args
@@ -52,10 +55,11 @@ export function drawBox(args: DrawFeatureArgs) {
 
   const fill = getBoxColor({
     feature,
-    config,
+    configSnapshot,
     configContext,
     colorByCDS,
     theme,
+    jexl,
   })
   const stroke = getOutline(args)
 

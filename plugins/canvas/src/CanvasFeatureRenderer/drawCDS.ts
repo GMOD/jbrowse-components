@@ -16,9 +16,10 @@ export function drawCDS(args: DrawFeatureArgs) {
     feature,
     featureLayout,
     bpPerPx,
-    config,
+    configSnapshot,
     configContext,
     theme,
+    jexl,
     reversed,
     canvasWidth,
     peptideDataMap,
@@ -54,10 +55,11 @@ export function drawCDS(args: DrawFeatureArgs) {
 
     const baseColor = getBoxColor({
       feature,
-      config,
+      configSnapshot,
       configContext,
       colorByCDS,
       theme,
+      jexl,
     })
 
     drawCDSBackground({

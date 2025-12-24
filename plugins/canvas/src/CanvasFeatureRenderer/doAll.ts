@@ -1,5 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { layoutFeatures } from './layoutFeatures'
 import { makeImageData } from './makeImageData'
@@ -32,9 +33,17 @@ export async function doAll({
   const region = regions[0]!
   const width = Math.max(1, (region.end - region.start) / bpPerPx)
 
+  // Get config as plain snapshot for fast static reads (zero MobX overhead)
+  const configSnapshot = isStateTreeNode(config)
+    ? getSnapshot(config)
+    : (config as Record<string, any>)
+
+  // Get jexl instance for evaluating callbacks
+  const jexl = pluginManager.jexl
+
   // Create config context ONCE at the start - this reads all config values upfront
   // to avoid expensive readConfObject calls in per-feature hot paths
-  const configContext = createRenderConfigContext(config, region)
+  const configContext = createRenderConfigContext(configSnapshot, region)
 
   const layoutRecords = await updateStatus(
     'Computing feature layout',
@@ -44,10 +53,11 @@ export async function doAll({
         features,
         bpPerPx,
         region,
-        config,
+        configSnapshot,
         configContext,
         layout,
         theme: createJBrowseTheme(theme),
+        jexl,
       })
     },
   )
@@ -69,10 +79,15 @@ export async function doAll({
         layoutRecords,
         canvasWidth: width,
         renderArgs: {
-          ...renderProps,
           features,
           layout,
+          regions,
+          bpPerPx,
+          configSnapshot,
           displayMode: configContext.displayMode,
+          theme,
+          jexl,
+          stopToken: renderProps.stopToken,
           peptideDataMap,
           colorByCDS: (renderProps as any).colorByCDS,
           pluginManager,

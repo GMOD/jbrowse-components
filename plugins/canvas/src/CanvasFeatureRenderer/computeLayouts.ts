@@ -1,9 +1,8 @@
 import { createFeatureFloatingLabels } from './floatingLabels'
 import { layoutFeature } from './layoutFeature'
 
-import type { RenderConfigContext } from './renderConfig'
+import type { JexlLike, RenderConfigContext } from './renderConfig'
 import type { LayoutRecord } from './types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 import type { Theme } from '@mui/material'
@@ -14,18 +13,20 @@ export function computeLayouts({
   features,
   bpPerPx,
   region,
-  config,
+  configSnapshot,
   configContext,
   layout,
   theme,
+  jexl,
 }: {
   features: Map<string, Feature>
   bpPerPx: number
   region: Region
-  config: AnyConfigurationModel
+  configSnapshot: Record<string, any>
   configContext: RenderConfigContext
   layout: BaseLayout<unknown>
   theme: Theme
+  jexl: JexlLike
 }): LayoutRecord[] {
   const reversed = region.reversed || false
   const layoutRecords: LayoutRecord[] = []
@@ -35,9 +36,10 @@ export function computeLayouts({
       feature,
       bpPerPx,
       reversed,
-      config,
+      configSnapshot,
       configContext,
       theme,
+      jexl,
     })
 
     const totalLayoutWidth = featureLayout.totalLayoutWidth
@@ -49,11 +51,12 @@ export function computeLayouts({
 
     const floatingLabels = createFeatureFloatingLabels({
       feature,
-      config,
+      configSnapshot,
       configContext,
       name,
       description,
       theme,
+      jexl,
     })
 
     const featureStart = feature.get('start')
