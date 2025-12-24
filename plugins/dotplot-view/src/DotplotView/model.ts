@@ -485,6 +485,8 @@ export default function stateModelFactory(pm: PluginManager) {
        */
       setAssemblyNames(target: string, query: string) {
         self.assemblyNames = cast([target, query])
+        // Clear displayed regions to trigger re-initialization with the new
+        // assemblies. The dotplotRegionsAutorun will re-populate them.
         self.hview.setDisplayedRegions([])
         self.vview.setDisplayedRegions([])
       },

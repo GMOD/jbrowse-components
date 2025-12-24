@@ -55,6 +55,7 @@ async function fetchRegionSequence(
   const region = regions[0]!
   return (seqAdapter as BaseSequenceAdapter).getSequence({
     ...region,
+    refName: region.originalRefName || region.refName,
     start: Math.max(0, region.start - 1),
     end: region.end + 1,
   })
