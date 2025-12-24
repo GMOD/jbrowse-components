@@ -101,7 +101,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           query.refName,
           query.start,
           query.end,
-          function gff3Getter(line, fileOffset) {
+          function gff3Getter(line, fileOffset, start, end) {
             const fields = line.split('\t')
             lines.push({
               // note: index column numbers are 1-based
@@ -114,6 +114,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
         ),
       )
 
+      let hasEscapes = false
       if (allowRedispatch && lines.length) {
         let minStart = Number.POSITIVE_INFINITY
         let maxEnd = Number.NEGATIVE_INFINITY
@@ -130,12 +131,24 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
               maxEnd = line.end
             }
           }
+          if (!hasEscapes) {
+            for (const field of line.fields) {
+              if (field.includes('%')) {
+                hasEscapes = true
+                break
+              }
+            }
+          }
         }
         if (maxEnd > query.end || minStart < query.start) {
           // make a new feature callback to only return top-level features
           // in the original query range
           await this.getFeaturesHelper(
-            { ...query, start: minStart, end: maxEnd },
+            {
+              ...query,
+              start: minStart,
+              end: maxEnd,
+            },
             opts,
             metadata,
             observer,
@@ -144,18 +157,17 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           )
           return
         }
-      }
-
-      let hasEscapes = false
-      for (const line of lines) {
-        for (const field of line.fields) {
-          if (field.includes('%')) {
-            hasEscapes = true
+      } else if (lines.length) {
+        for (const line of lines) {
+          for (const field of line.fields) {
+            if (field.includes('%')) {
+              hasEscapes = true
+              break
+            }
+          }
+          if (hasEscapes) {
             break
           }
-        }
-        if (hasEscapes) {
-          break
         }
       }
 

@@ -25,6 +25,24 @@ import type {
   ConfigurationSlotName,
 } from './types'
 
+// Cache for config snapshots to avoid repeated MST traversal in webworker context
+// WeakMap ensures configs can be garbage collected
+const snapshotCache = new WeakMap<AnyConfigurationModel, any>()
+
+function getCachedSnapshot(confObject: AnyConfigurationModel): any {
+  // only cache if it's actually an MST node
+  if (!isStateTreeNode(confObject)) {
+    return confObject
+  }
+
+  let snapshot = snapshotCache.get(confObject)
+  if (!snapshot) {
+    snapshot = getSnapshot(confObject)
+    snapshotCache.set(confObject, snapshot)
+  }
+  return snapshot
+}
+
 /**
  * given a configuration model (an instance of a ConfigurationSchema),
  * read the configuration variable at the given path
@@ -42,8 +60,27 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
   args: Record<string, unknown> = {},
 ): any {
   if (!slotPath) {
-    return structuredClone(getSnapshot(confObject))
+    return structuredClone(getCachedSnapshot(confObject))
   } else if (typeof slotPath === 'string') {
+    // optimization: try reading from cached snapshot first to avoid MST property access
+    // only fall back to MST access for callbacks or if snapshot doesn't have the value
+    if (isStateTreeNode(confObject)) {
+      const snapshot = getCachedSnapshot(confObject)
+      const snapshotValue = snapshot[slotPath]
+
+      // check if this looks like a jexl callback that needs evaluation
+      const needsEval =
+        typeof snapshotValue === 'string' && snapshotValue.startsWith('jexl:')
+
+      if (!needsEval && snapshotValue !== undefined) {
+        // fast path: return snapshot value directly (no MST access, no JSON.parse/stringify)
+        return typeof snapshotValue === 'object' && snapshotValue !== null
+          ? structuredClone(snapshotValue)
+          : snapshotValue
+      }
+    }
+
+    // slow path: need to access MST for callbacks or missing values
     let slot = confObject[slotPath]
     // check for the subconf being a map if we don't find it immediately
     if (
@@ -68,13 +105,28 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     } else {
       const val = slot.expr ? slot.expr.eval(args) : slot
       return isStateTreeNode(val)
-        ? JSON.parse(JSON.stringify(getSnapshot(val)))
+        ? JSON.parse(JSON.stringify(getCachedSnapshot(val)))
         : val
     }
   } else if (Array.isArray(slotPath)) {
     const slotName = slotPath[0]!
     if (slotPath.length > 1) {
       const newPath = slotPath.slice(1)
+
+      // optimization: try to navigate through snapshot first
+      if (isStateTreeNode(confObject)) {
+        const snapshot = getCachedSnapshot(confObject)
+        const snapshotValue = snapshot[slotName]
+
+        // if snapshot has the nested config, try to read from it recursively
+        if (snapshotValue !== undefined && typeof snapshotValue === 'object') {
+          // recurse into the snapshot value for nested path
+          // note: snapshotValue might not be an MST node, so we need to handle plain objects
+          return readConfObject(snapshotValue as any, newPath, args)
+        }
+      }
+
+      // slow path: access MST for missing or callback values
       let subConf = confObject[slotName]
       // check for the subconf being a map if we don't find it immediately
       if (
