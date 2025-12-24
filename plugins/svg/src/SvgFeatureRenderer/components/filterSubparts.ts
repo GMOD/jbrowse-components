@@ -40,5 +40,6 @@ export function getSubparts(f: Feature, config: AnyConfigurationModel) {
     c = makeUTRs(f, c)
   }
 
-  return c.filter(element => filterSubpart(element, config))
+  const subpartFilter = makeSubpartsFilter('subParts', config)
+  return c.filter(subpartFilter)
 }
