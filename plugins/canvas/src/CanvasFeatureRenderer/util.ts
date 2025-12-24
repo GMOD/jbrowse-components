@@ -1,10 +1,11 @@
-import { readStaticConfObject } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
 import { getSubparts } from './filterSubparts'
 
-import type { JexlLike, RenderConfigContext } from './renderConfig'
+import type { RenderConfigContext } from './renderConfig'
 import type { GlyphType } from './types'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
@@ -15,52 +16,28 @@ export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
 }
 
 export function readFeatureLabels(
-  configSnapshot: Record<string, any>,
+  config: AnyConfigurationModel,
   feature: Feature,
-  jexl: JexlLike,
 ) {
   return {
-    name: String(
-      readStaticConfObject(
-        configSnapshot,
-        ['labels', 'name'],
-        { feature },
-        jexl,
-      ) || '',
-    ),
+    name: String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
     description: String(
-      readStaticConfObject(
-        configSnapshot,
-        ['labels', 'description'],
-        { feature },
-        jexl,
-      ) || '',
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
     ),
   }
 }
 
 export function readLabelColors(
-  configSnapshot: Record<string, any>,
+  config: AnyConfigurationModel,
   feature: Feature,
-  theme: Theme,
-  jexl: JexlLike,
 ) {
   return {
     nameColor: String(
-      readStaticConfObject(
-        configSnapshot,
-        ['labels', 'nameColor'],
-        { feature, theme },
-        jexl,
-      ) || '',
+      readConfObject(config, ['labels', 'nameColor'], { feature }) || '',
     ),
     descriptionColor: String(
-      readStaticConfObject(
-        configSnapshot,
-        ['labels', 'descriptionColor'],
-        { feature, theme },
-        jexl,
-      ) || '',
+      readConfObject(config, ['labels', 'descriptionColor'], { feature }) ||
+        '',
     ),
   }
 }
@@ -101,23 +78,47 @@ export function isUTR(feature: Feature) {
   )
 }
 
+export function getConfigColor({
+  config,
+  configContext,
+  colorKey,
+  feature,
+}: {
+  config: AnyConfigurationModel
+  configContext: RenderConfigContext
+  colorKey: 'color1' | 'color2' | 'color3' | 'outline'
+  feature: Feature
+}) {
+  const callbackKey = `is${colorKey.charAt(0).toUpperCase()}${colorKey.slice(1)}Callback` as
+    | 'isColor1Callback'
+    | 'isColor2Callback'
+    | 'isColor3Callback'
+    | 'isOutlineCallback'
+  const isCallback = configContext[callbackKey]
+  return isCallback
+    ? (readConfObject(config, colorKey, { feature }) as string)
+    : configContext[colorKey]!
+}
+
 export function getBoxColor({
   feature,
-  configSnapshot,
+  config,
+  configContext,
   colorByCDS,
   theme,
-  jexl,
 }: {
   feature: Feature
-  configSnapshot: Record<string, any>
+  config: AnyConfigurationModel
   configContext: RenderConfigContext
   colorByCDS: boolean
   theme: Theme
-  jexl: JexlLike
 }) {
-  let fill = isUTR(feature)
-    ? readStaticConfObject(configSnapshot, 'color3', { feature, theme }, jexl)
-    : readStaticConfObject(configSnapshot, 'color1', { feature, theme }, jexl)
+  let fill: string
+  if (isUTR(feature)) {
+    fill = getConfigColor({ config, configContext, colorKey: 'color3', feature })
+  } else {
+    fill = getConfigColor({ config, configContext, colorKey: 'color1', feature })
+  }
 
   const featureType: string | undefined = feature.get('type')
   const featureStrand: -1 | 1 | undefined = feature.get('strand')
@@ -181,35 +182,30 @@ export function chooseGlyphType({
 export function getChildFeatures({
   feature,
   glyphType,
-  configSnapshot,
+  config,
 }: {
   feature: Feature
   glyphType: GlyphType
-  configSnapshot: Record<string, any>
+  config: AnyConfigurationModel
 }): Feature[] {
   if (glyphType === 'ProcessedTranscript') {
-    return getSubparts(feature, configSnapshot)
+    return getSubparts(feature, config)
   }
   return feature.get('subfeatures') || []
 }
 
 export function getStrokeColor({
   feature,
-  configSnapshot,
+  config,
+  configContext,
   theme,
-  jexl,
 }: {
   feature: Feature
-  configSnapshot: Record<string, any>
+  config: AnyConfigurationModel
   configContext: RenderConfigContext
   theme: Theme
-  jexl: JexlLike
 }) {
-  const c = readStaticConfObject(
-    configSnapshot,
-    'color2',
-    { feature, theme },
-    jexl,
-  )
-  return c ?? stripAlpha(theme.palette.text.secondary)
+  const c = getConfigColor({ config, configContext, colorKey: 'color2', feature })
+  // #f0f is a sentinel value in the schema that means "use theme color"
+  return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 }

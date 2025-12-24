@@ -10,13 +10,25 @@ export async function makeImageData(
   renderProps: RenderArgsDeserialized,
   pluginManager: PluginManager,
 ) {
-  const { sessionId, adapterConfig, regions } = renderProps
+  const { sessionId, adapterConfig, regions, config } = renderProps
   const { dataAdapter } = await getAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
   )
   const region = regions[0]!
+
+  const colorIsCallback = config.color?.isCallback
+  if (!colorIsCallback && 'getFeaturesAsArrays' in dataAdapter) {
+    const featureArrays = await (dataAdapter as any).getFeaturesAsArrays(
+      region,
+      renderProps,
+    )
+    if (featureArrays && featureArrays.starts.length > 0) {
+      const { renderLinePlotArrays } = await import('./renderLinePlotArrays')
+      return renderLinePlotArrays(renderProps, featureArrays)
+    }
+  }
 
   const features = await firstValueFrom(
     (dataAdapter as BaseFeatureDataAdapter)

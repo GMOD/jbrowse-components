@@ -1,11 +1,11 @@
-import { readStaticConfObject } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
 import { buildFeatureTooltip, readLabelColors, truncateLabel } from './util'
 
-import type { JexlLike, RenderConfigContext } from './renderConfig'
+import type { RenderConfigContext } from './renderConfig'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Theme } from '@mui/material'
 
 const FLOATING_LABEL_FONT_SIZE = 11
 
@@ -26,31 +26,23 @@ export interface FloatingLabelData {
  */
 export function createFeatureFloatingLabels({
   feature,
-  configSnapshot,
+  config,
   configContext,
   name: rawName,
   description: rawDescription,
-  theme,
-  jexl,
 }: {
   feature: Feature
-  configSnapshot: Record<string, any>
+  config: AnyConfigurationModel
   configContext: RenderConfigContext
   name: string
   description: string
-  theme: Theme
-  jexl: JexlLike
 }): FloatingLabelData[] {
-  const { showLabels, showDescriptions } = configContext
+  const { showLabels, showDescriptions, fontHeight, isFontHeightCallback } =
+    configContext
 
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
-  const { nameColor, descriptionColor } = readLabelColors(
-    configSnapshot,
-    feature,
-    theme,
-    jexl,
-  )
+  const { nameColor, descriptionColor } = readLabelColors(config, feature)
 
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
@@ -59,12 +51,9 @@ export function createFeatureFloatingLabels({
     return []
   }
 
-  const actualFontHeight = readStaticConfObject(
-    configSnapshot,
-    ['labels', 'fontSize'],
-    { feature, theme },
-    jexl,
-  ) as number
+  const actualFontHeight = isFontHeightCallback
+    ? (readConfObject(config, ['labels', 'fontSize'], { feature }) as number)
+    : fontHeight
 
   const floatingLabels: FloatingLabelData[] = []
 
