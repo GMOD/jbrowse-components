@@ -1,23 +1,29 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 
 import { isUTR } from './util'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+// Default from configSchema
+const DEFAULT_SUBPARTS = 'CDS,UTR,five_prime_UTR,three_prime_UTR'
 
 function makeSubpartsFilter(
   confKey: string | string[],
-  config: AnyConfigurationModel,
+  configSnapshot: Record<string, any>,
 ) {
-  const filter = readConfObject(config, confKey) as string[] | string
+  const filter =
+    (readStaticConfObject(configSnapshot, confKey) as string[] | string) ??
+    DEFAULT_SUBPARTS
   const ret = typeof filter === 'string' ? filter.split(/\s*,\s*/) : filter
   const lowerRet = new Set(ret.map(t => t.toLowerCase()))
 
   return (feature: Feature) => lowerRet.has(feature.get('type').toLowerCase())
 }
 
-export function filterSubpart(feature: Feature, config: AnyConfigurationModel) {
-  return makeSubpartsFilter('subParts', config)(feature)
+export function filterSubpart(
+  feature: Feature,
+  configSnapshot: Record<string, any>,
+) {
+  return makeSubpartsFilter('subParts', configSnapshot)(feature)
 }
 
 export function makeUTRs(parent: Feature, subs: Feature[]) {
@@ -108,7 +114,7 @@ export function makeUTRs(parent: Feature, subs: Feature[]) {
   return subparts
 }
 
-export function getSubparts(f: Feature, config: AnyConfigurationModel) {
+export function getSubparts(f: Feature, configSnapshot: Record<string, any>) {
   let c = f.get('subfeatures')
   if (!c || c.length === 0) {
     return []
@@ -117,10 +123,10 @@ export function getSubparts(f: Feature, config: AnyConfigurationModel) {
   const isTranscript = ['mRNA', 'transcript'].includes(f.get('type'))
   const impliedUTRs = !hasUTRs && isTranscript
 
-  if (impliedUTRs || readConfObject(config, 'impliedUTRs')) {
+  if (impliedUTRs || readStaticConfObject(configSnapshot, 'impliedUTRs')) {
     c = makeUTRs(f, c)
   }
 
-  const subpartFilter = makeSubpartsFilter('subParts', config)
+  const subpartFilter = makeSubpartsFilter('subParts', configSnapshot)
   return c.filter(subpartFilter)
 }

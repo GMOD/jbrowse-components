@@ -7,9 +7,10 @@ export function drawArrow(args: DrawFeatureArgs) {
     ctx,
     feature,
     featureLayout,
-    config,
+    configSnapshot,
     configContext,
     theme,
+    jexl,
     reversed,
     canvasWidth,
   } = args
@@ -29,7 +30,7 @@ export function drawArrow(args: DrawFeatureArgs) {
   const height = featureLayout.height
   const y = top + height / 2
 
-  const color2 = getStrokeColor({ feature, config, configContext, theme })
+  const color2 = getStrokeColor({ feature, configSnapshot, configContext, theme, jexl })
   const p =
     strand * reverseFlip === -1
       ? left

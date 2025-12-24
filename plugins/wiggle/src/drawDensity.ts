@@ -65,7 +65,7 @@ export function drawDensity(
 
   const scale2 = getScale({ ...scaleOpts, range: [0, height] })
   const cb =
-    color === '#f0f'
+    color == null
       ? (_: Feature, score: number) => scale(score)
       : (feature: Feature, score: number) =>
           readConfObject(config, 'color', { feature, score })

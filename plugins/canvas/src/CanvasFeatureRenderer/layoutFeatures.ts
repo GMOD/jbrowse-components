@@ -9,7 +9,7 @@ import type { Theme } from '@mui/material'
 
 const yPadding = 5
 
-export function computeLayouts({
+export function layoutFeatures({
   features,
   bpPerPx,
   region,

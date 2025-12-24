@@ -1,0 +1,42 @@
+# Example GFF3 file demonstrating _mouseOver attributes for custom tooltips
+# Features on both positive and negative strands to test label positioning with strand arrow padding
+##gff-version 3
+##sequence-region ctgA 1 50001
+ctgA	example	five_prime_UTR	1050	1200	.	+	.	Parent=GENE001.1;_mouseOver=5' untranslated region
+ctgA	example	five_prime_UTR	1050	1200	.	+	.	Parent=GENE001.2;_mouseOver=5' UTR - isoform 2
+ctgA	example	gene	1050	9000	.	+	.	ID=GENE001;Name=KINASE1;_mouseOver=Protein kinase gene - positive strand - labels should not overlap strand arrow padding
+ctgA	example	mRNA	1050	9000	.	+	.	ID=GENE001.1;Parent=GENE001;Name=KINASE1.1;_mouseOver=Primary transcript isoform 1
+ctgA	example	mRNA	1050	9000	.	+	.	ID=GENE001.2;Parent=GENE001;Name=KINASE1.2;_mouseOver=Alternative splice isoform 2 - shorter transcript
+ctgA	example	CDS	1201	1500	.	+	0	Parent=GENE001.1;_mouseOver=Coding sequence exon 1
+ctgA	example	CDS	1201	1500	.	+	0	Parent=GENE001.2;_mouseOver=CDS exon 1 - isoform 2
+ctgA	example	CDS	3000	3902	.	+	0	Parent=GENE001.1;_mouseOver=Coding sequence exon 2
+ctgA	example	CDS	3000	3902	.	+	0	Parent=GENE001.2;_mouseOver=CDS exon 2 - isoform 2
+ctgA	example	CDS	5000	5500	.	+	1	Parent=GENE001.1;_mouseOver=Coding sequence exon 3
+ctgA	example	CDS	7000	9000	.	+	1	Parent=GENE001.1;_mouseOver=Coding sequence exon 4
+ctgA	example	CDS	7000	9000	.	+	1	Parent=GENE001.2;_mouseOver=CDS exon 3 - isoform 2
+ctgA	example	three_prime_UTR	7500	9000	.	+	.	Parent=GENE001.1;_mouseOver=3' untranslated region
+ctgA	example	three_prime_UTR	7500	9000	.	+	.	Parent=GENE001.2;_mouseOver=3' UTR - isoform 2
+ctgA	example	gene	10000	15000	.	-	.	ID=GENE002;Name=RECEPTOR;_mouseOver=Receptor gene - NEGATIVE STRAND - label should avoid left padding area (8px offset)
+ctgA	example	mRNA	10000	15000	.	-	.	ID=GENE002.1;Parent=GENE002;Name=RECEPTOR.1;_mouseOver=Receptor transcript on minus strand
+ctgA	example	three_prime_UTR	10000	10500	.	-	.	Parent=GENE002.1;_mouseOver=3' UTR (appears first on negative strand)
+ctgA	example	CDS	10501	11500	.	-	0	Parent=GENE002.1;_mouseOver=CDS exon 1 (reading 3' to 5')
+ctgA	example	CDS	12000	13000	.	-	2	Parent=GENE002.1;_mouseOver=CDS exon 2
+ctgA	example	CDS	13500	14500	.	-	1	Parent=GENE002.1;_mouseOver=CDS exon 3
+ctgA	example	five_prime_UTR	14501	15000	.	-	.	Parent=GENE002.1;_mouseOver=5' UTR (appears last on negative strand)
+ctgA	example	gene	20000	22000	.	+	.	ID=GENE003;Name=TRANSPORTER;_mouseOver=Small transporter gene (positive strand) - demonstrates label positioning on compact features
+ctgA	example	mRNA	20000	22000	.	+	.	ID=GENE003.1;Parent=GENE003;Name=TRANSPORTER.1;_mouseOver=Single-exon transporter transcript
+ctgA	example	CDS	20050	21950	.	+	0	Parent=GENE003.1;_mouseOver=Complete CDS in single exon
+ctgA	example	gene	25000	30000	.	-	.	ID=GENE004;Name=REGULATOR;_mouseOver=Regulatory gene on NEGATIVE strand - complex structure with multiple isoforms
+ctgA	example	mRNA	25000	29000	.	-	.	ID=GENE004.2;Parent=GENE004;Name=REGULATOR.2;_mouseOver=Short isoform with 3 exons
+ctgA	example	mRNA	25000	30000	.	-	.	ID=GENE004.1;Parent=GENE004;Name=REGULATOR.1;_mouseOver=Long isoform with 5 exons
+ctgA	example	CDS	25100	25500	.	-	0	Parent=GENE004.1;_mouseOver=Exon 1 of long isoform
+ctgA	example	CDS	25100	25500	.	-	0	Parent=GENE004.2;_mouseOver=Exon 1 of short isoform
+ctgA	example	CDS	26000	26400	.	-	2	Parent=GENE004.1;_mouseOver=Exon 2 of long isoform
+ctgA	example	CDS	26000	26400	.	-	2	Parent=GENE004.2;_mouseOver=Exon 2 of short isoform
+ctgA	example	CDS	27000	27300	.	-	0	Parent=GENE004.1;_mouseOver=Exon 3 of long isoform
+ctgA	example	CDS	28000	28500	.	-	0	Parent=GENE004.1;_mouseOver=Exon 4 of long isoform
+ctgA	example	CDS	28000	28900	.	-	0	Parent=GENE004.2;_mouseOver=Exon 3 of short isoform (merged exons 4+5)
+ctgA	example	CDS	29000	29900	.	-	2	Parent=GENE004.1;_mouseOver=Exon 5 of long isoform
+ctgA	example	gene	35000	36000	.	.	.	ID=GENE005;Name=UNSTRANDED;_mouseOver=Gene with no strand information - should have no padding on either side
+ctgA	example	mRNA	35000	36000	.	.	.	ID=GENE005.1;Parent=GENE005;Name=UNSTRANDED.1;_mouseOver=Unstranded transcript (no directional arrow)
+ctgA	example	CDS	35100	35900	.	.	0	Parent=GENE005.1;_mouseOver=Unstranded CDS

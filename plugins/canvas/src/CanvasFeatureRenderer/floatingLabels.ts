@@ -1,11 +1,11 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { buildFeatureTooltip, truncateLabel } from './util'
+import { buildFeatureTooltip, readLabelColors, truncateLabel } from './util'
 
-import type { RenderConfigContext } from './renderConfig'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { JexlLike, RenderConfigContext } from './renderConfig'
 import type { Feature } from '@jbrowse/core/util'
+import type { Theme } from '@mui/material'
 
 const FLOATING_LABEL_FONT_SIZE = 11
 
@@ -26,26 +26,31 @@ export interface FloatingLabelData {
  */
 export function createFeatureFloatingLabels({
   feature,
-  config,
+  configSnapshot,
   configContext,
-  nameColor,
-  descriptionColor,
   name: rawName,
   description: rawDescription,
+  theme,
+  jexl,
 }: {
   feature: Feature
-  config: AnyConfigurationModel
+  configSnapshot: Record<string, any>
   configContext: RenderConfigContext
-  nameColor: string
-  descriptionColor: string
   name: string
   description: string
+  theme: Theme
+  jexl: JexlLike
 }): FloatingLabelData[] {
-  const { showLabels, showDescriptions, fontHeight, isFontHeightCallback } =
-    configContext
+  const { showLabels, showDescriptions } = configContext
 
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
+  const { nameColor, descriptionColor } = readLabelColors(
+    configSnapshot,
+    feature,
+    theme,
+    jexl,
+  )
 
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
@@ -54,9 +59,12 @@ export function createFeatureFloatingLabels({
     return []
   }
 
-  const actualFontHeight = isFontHeightCallback
-    ? (readConfObject(config, ['labels', 'fontSize'], { feature }) as number)
-    : fontHeight
+  const actualFontHeight = readStaticConfObject(
+    configSnapshot,
+    ['labels', 'fontSize'],
+    { feature, theme },
+    jexl,
+  ) as number
 
   const floatingLabels: FloatingLabelData[] = []
 
@@ -67,24 +75,7 @@ export function createFeatureFloatingLabels({
     description: rawDescription,
   })
 
-  if (shouldShowLabel && shouldShowDescription) {
-    floatingLabels.push(
-      {
-        text: name,
-        relativeY: 0,
-        color: nameColor,
-        textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
-        tooltip,
-      },
-      {
-        text: description,
-        relativeY: actualFontHeight,
-        color: descriptionColor,
-        textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
-        tooltip,
-      },
-    )
-  } else if (shouldShowLabel) {
+  if (shouldShowLabel) {
     floatingLabels.push({
       text: name,
       relativeY: 0,
@@ -92,10 +83,12 @@ export function createFeatureFloatingLabels({
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
       tooltip,
     })
-  } else if (shouldShowDescription) {
+  }
+
+  if (shouldShowDescription) {
     floatingLabels.push({
       text: description,
-      relativeY: 0,
+      relativeY: shouldShowLabel ? actualFontHeight : 0,
       color: descriptionColor,
       textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
       tooltip,
@@ -112,21 +105,21 @@ export function createFeatureFloatingLabels({
  * For 'below' mode, labels are positioned at the bottom.
  */
 export function createTranscriptFloatingLabel({
-  transcriptName,
+  displayLabel,
   featureHeight,
   subfeatureLabels,
   color,
 }: {
-  transcriptName: string
+  displayLabel: string
   featureHeight: number
   subfeatureLabels: string
   color: string
 }): FloatingLabelData | null {
-  if (!transcriptName) {
+  if (!displayLabel) {
     return null
   }
 
-  const truncatedName = truncateLabel(transcriptName)
+  const truncatedName = truncateLabel(displayLabel)
 
   // For 'overlay' mode, position label at top of feature (negative relativeY)
   // For 'below' mode, position label at bottom of feature (relativeY = 0)
@@ -141,6 +134,6 @@ export function createTranscriptFloatingLabel({
     color,
     textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
     isOverlay,
-    tooltip: buildFeatureTooltip({ label: transcriptName }),
+    tooltip: buildFeatureTooltip({ label: displayLabel }),
   }
 }

@@ -7,9 +7,10 @@ export function drawSegments(args: DrawFeatureArgs) {
   const {
     ctx,
     featureLayout,
-    config,
+    configSnapshot,
     configContext,
     theme,
+    jexl,
     feature,
     canvasWidth,
     reversed,
@@ -22,7 +23,7 @@ export function drawSegments(args: DrawFeatureArgs) {
     return
   }
 
-  const color2 = getStrokeColor({ feature, config, configContext, theme })
+  const color2 = getStrokeColor({ feature, configSnapshot, configContext, theme, jexl })
   const top = featureLayout.y
   const height = featureLayout.height
   const y = top + height / 2

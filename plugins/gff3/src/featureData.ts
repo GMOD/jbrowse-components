@@ -52,19 +52,34 @@ export function featureData(data: GFF3FeatureLineWithRefs): GFF3Feature {
 
   const dataAttributes = attributes || {}
   const resultAttributes = {} as Record<string, unknown>
-  for (const a of Object.keys(dataAttributes)) {
+  for (const a in dataAttributes) {
+    if (a === '_lineHash') {
+      continue
+    }
+    const value = dataAttributes[a]
+    if (!value) {
+      continue
+    }
     let b = a.toLowerCase()
     if (DEFAULT_FIELDS.has(b)) {
       // add "suffix" to tag name if it already exists
       // reproduces behavior of NCList
       b += '2'
     }
-    if (dataAttributes[a] && a !== '_lineHash') {
-      let attr: string | string[] | undefined = dataAttributes[a]
-      if (Array.isArray(attr) && attr.length === 1) {
-        ;[attr] = attr
+    let attr: string | string[] | undefined = value
+    if (Array.isArray(attr) && attr.length === 1) {
+      ;[attr] = attr
+    }
+    resultAttributes[b] = attr
+  }
+
+  let subfeatures: GFF3Feature[] | undefined
+  if (child_features.length > 0) {
+    subfeatures = []
+    for (const childLocs of child_features) {
+      for (const childLoc of childLocs) {
+        subfeatures.push(featureData(childLoc))
       }
-      resultAttributes[b] = attr
     }
   }
 
@@ -79,8 +94,6 @@ export function featureData(data: GFF3FeatureLineWithRefs): GFF3Feature {
     derived_features,
     phase: phase === null ? undefined : Number(phase),
     score: score === null ? undefined : score,
-    subfeatures: child_features.flatMap(childLocs =>
-      childLocs.map(childLoc => featureData(childLoc)),
-    ),
+    subfeatures,
   }
 }

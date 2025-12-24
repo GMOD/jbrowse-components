@@ -10,7 +10,7 @@ export async function makeImageData(
   renderProps: RenderArgsDeserialized,
   pluginManager: PluginManager,
 ) {
-  const { sessionId, adapterConfig, regions, config } = renderProps
+  const { sessionId, adapterConfig, regions } = renderProps
   const { dataAdapter } = await getAdapter(
     pluginManager,
     sessionId,
@@ -18,26 +18,12 @@ export async function makeImageData(
   )
   const region = regions[0]!
 
-  // Use array-based rendering when:
-  // 1. The adapter supports getFeaturesAsArrays
-  // 2. The color is NOT a callback (jexl expression)
-  const colorIsCallback = config.color?.isCallback
-  if (!colorIsCallback && 'getFeaturesAsArrays' in dataAdapter) {
-    const featureArrays = await (dataAdapter as any).getFeaturesAsArrays(
-      region,
-      renderProps,
-    )
-    const { renderXYPlotArrays } = await import('./renderXYPlotArrays')
-    return renderXYPlotArrays(renderProps, featureArrays)
-  } else {
-    // Fallback to feature-based rendering
-    const features = await firstValueFrom(
-      (dataAdapter as BaseFeatureDataAdapter)
-        .getFeatures(region, renderProps)
-        .pipe(toArray()),
-    )
+  const features = await firstValueFrom(
+    (dataAdapter as BaseFeatureDataAdapter)
+      .getFeatures(region, renderProps)
+      .pipe(toArray()),
+  )
 
-    const { renderXYPlot } = await import('./renderXYPlot')
-    return renderXYPlot(renderProps, features)
-  }
+  const { renderXYPlot } = await import('./renderXYPlot')
+  return renderXYPlot(renderProps, features)
 }

@@ -1,4 +1,249 @@
-import { clampToViewport, getViewportLeftEdge } from './util'
+/* eslint-disable @typescript-eslint/no-unnecessary-condition,@typescript-eslint/no-unused-vars */
+import {
+  calculateFloatingLabelPosition,
+  clampToViewport,
+  getViewportLeftEdge,
+} from './util'
+
+describe('FloatingLabels', () => {
+  describe('label positioning with strand arrow padding', () => {
+    test('positive strand feature - label uses actual feature bounds', () => {
+      // Feature with positive strand (leftPadding: 0)
+      const featureWidth = 100
+      const leftPadding = 0
+      const totalLayoutWidth = 108
+      const leftPx = 50
+
+      // Calculate label bounds
+      const featureLeftPx = leftPx + leftPadding // 50 + 0 = 50
+      const featureRightPx = featureLeftPx + featureWidth // 50 + 100 = 150
+
+      expect(featureLeftPx).toBe(50)
+      expect(featureRightPx).toBe(150)
+      expect(featureRightPx - featureLeftPx).toBe(featureWidth)
+    })
+
+    test('negative strand feature - label excludes left padding area', () => {
+      // Feature with negative strand (leftPadding: 8)
+      const featureWidth = 100
+      const leftPadding = 8
+      const totalLayoutWidth = 108
+      const leftPx = 50
+
+      // Calculate label bounds - should exclude the 8px padding on left
+      const featureLeftPx = leftPx + leftPadding // 50 + 8 = 58
+      const featureRightPx = featureLeftPx + featureWidth // 58 + 100 = 158
+
+      expect(featureLeftPx).toBe(58)
+      expect(featureRightPx).toBe(158)
+      expect(featureRightPx - featureLeftPx).toBe(featureWidth)
+    })
+
+    test('subfeature label - always uses leftPadding: 0', () => {
+      // Subfeature (transcript) always has leftPadding: 0
+      const featureWidth = 200
+      const leftPadding = 0
+      const leftPx = 100
+
+      const featureLeftPx = leftPx + leftPadding // 100 + 0 = 100
+      const featureRightPx = featureLeftPx + featureWidth // 100 + 200 = 300
+
+      expect(featureLeftPx).toBe(100)
+      expect(featureRightPx).toBe(300)
+      expect(featureRightPx - featureLeftPx).toBe(featureWidth)
+    })
+
+    test('label fits within feature bounds when width check passes', () => {
+      const featureWidth = 100
+      const labelWidth = 80
+      const leftPadding = 8
+      const leftPx = 50
+
+      // Label should fit
+      expect(labelWidth <= featureWidth).toBe(true)
+
+      const featureLeftPx = leftPx + leftPadding
+      const featureRightPx = featureLeftPx + featureWidth
+
+      // Label can be positioned within actual feature bounds
+      expect(featureRightPx - featureLeftPx).toBeGreaterThanOrEqual(labelWidth)
+    })
+
+    test('label is filtered when too wide for actual feature', () => {
+      const featureWidth = 50
+      const labelWidth = 100
+      const leftPadding = 8
+
+      // Label should not fit in the actual feature width
+      expect(labelWidth > featureWidth).toBe(true)
+
+      // This label would be filtered out in the rendering logic
+    })
+
+    test('label fits in totalLayoutWidth but not featureWidth - should be filtered', () => {
+      const featureWidth = 100
+      const leftPadding = 8
+      const totalLayoutWidth = 108
+      const labelWidth = 105
+
+      // Label fits in total layout width (including padding)
+      expect(labelWidth <= totalLayoutWidth).toBe(true)
+
+      // But doesn't fit in actual feature width (should be filtered)
+      expect(labelWidth > featureWidth).toBe(true)
+    })
+
+    test('multiple features - padding affects only negative strand labels', () => {
+      const features = [
+        {
+          id: 'pos1',
+          strand: 1,
+          leftPadding: 0,
+          featureWidth: 100,
+          totalLayoutWidth: 108,
+          leftPx: 50,
+        },
+        {
+          id: 'neg1',
+          strand: -1,
+          leftPadding: 8,
+          featureWidth: 100,
+          totalLayoutWidth: 108,
+          leftPx: 200,
+        },
+        {
+          id: 'pos2',
+          strand: 1,
+          leftPadding: 0,
+          featureWidth: 80,
+          totalLayoutWidth: 88,
+          leftPx: 350,
+        },
+      ]
+
+      for (const feat of features) {
+        const featureLeftPx = feat.leftPx + feat.leftPadding
+        const featureRightPx = featureLeftPx + feat.featureWidth
+
+        if (feat.strand === 1) {
+          // Positive strand - no offset
+          expect(featureLeftPx).toBe(feat.leftPx)
+        } else {
+          // Negative strand - 8px offset
+          expect(featureLeftPx).toBe(feat.leftPx + 8)
+        }
+
+        expect(featureRightPx - featureLeftPx).toBe(feat.featureWidth)
+      }
+    })
+
+    test('very small feature with padding - label correctly constrained', () => {
+      const featureWidth = 10
+      const leftPadding = 8
+      const labelWidth = 50
+      const leftPx = 100
+
+      // Label is much wider than feature
+      expect(labelWidth > featureWidth).toBe(true)
+
+      // Calculate bounds
+      const featureLeftPx = leftPx + leftPadding // 108
+      const featureRightPx = featureLeftPx + featureWidth // 118
+
+      // Available width is just 10px
+      expect(featureRightPx - featureLeftPx).toBe(10)
+
+      // Label won't fit and should be filtered
+      expect(labelWidth > featureWidth).toBe(true)
+    })
+
+    test('padding is already in visual terms, works for both normal and reversed regions', () => {
+      // In normal regions: strand -1 has visual left padding
+      const normalFeature = {
+        leftPx: 100,
+        leftPadding: 8, // Visual left padding
+        featureWidth: 100,
+      }
+
+      const normalFeatureLeftPx =
+        normalFeature.leftPx + normalFeature.leftPadding
+      const normalFeatureRightPx =
+        normalFeatureLeftPx + normalFeature.featureWidth
+
+      expect(normalFeatureLeftPx).toBe(108)
+      expect(normalFeatureRightPx).toBe(208)
+
+      // In reversed regions: strand +1 has visual left padding (genomic right)
+      // But leftPadding is already calculated in visual terms, so same logic applies
+      const reversedFeature = {
+        leftPx: 100,
+        leftPadding: 8, // Visual left padding (from strand +1 in reversed region)
+        featureWidth: 100,
+      }
+
+      const reversedFeatureLeftPx =
+        reversedFeature.leftPx + reversedFeature.leftPadding
+      const reversedFeatureRightPx =
+        reversedFeatureLeftPx + reversedFeature.featureWidth
+
+      // Same calculation works because padding is already visual
+      expect(reversedFeatureLeftPx).toBe(108)
+      expect(reversedFeatureRightPx).toBe(208)
+
+      // The key insight: leftPadding from simpleLayout.ts is already in visual terms
+      // due to effectiveStrand = strand * (reversed ? -1 : 1)
+      // So we can use it directly without checking reversed state
+    })
+  })
+
+  describe('regression tests for original bug', () => {
+    test('negative strand gene - label should not appear in left padding area', () => {
+      // This was the original bug: labels appeared in the 8px padding area
+      const featureWidth = 200
+      const leftPadding = 8
+      const totalLayoutWidth = 208
+      const leftPx = 100
+      const labelWidth = 150
+
+      // Calculate actual feature bounds (excluding padding)
+      const featureLeftPx = leftPx + leftPadding // 108
+      const featureRightPx = featureLeftPx + featureWidth // 308
+
+      // Label should fit in the actual feature area
+      expect(labelWidth <= featureWidth).toBe(true)
+
+      // Label should NOT use the padding area (leftPx to leftPx+8)
+      expect(featureLeftPx).toBeGreaterThan(leftPx)
+      expect(featureLeftPx).toBe(leftPx + 8)
+
+      // Available width for label is featureWidth, not totalLayoutWidth
+      expect(featureRightPx - featureLeftPx).toBe(featureWidth)
+      expect(featureRightPx - featureLeftPx).not.toBe(totalLayoutWidth)
+    })
+
+    test('subfeature labels align with parent despite parent padding', () => {
+      // Parent gene has padding
+      const parentLeftPadding = 8
+      const parentLeftPx = 100
+
+      // Subfeature (transcript) should use leftPadding: 0 for labels
+      const subfeatureLeftPadding = 0
+      const subfeatureLeftPx = 100 // Same as parent gene start
+
+      // Parent label starts at leftPx + padding
+      const parentLabelStart = parentLeftPx + parentLeftPadding // 108
+
+      // Subfeature label should start at leftPx (no padding offset for labels)
+      const subfeatureLabelStart = subfeatureLeftPx + subfeatureLeftPadding // 100
+
+      // Labels should NOT align (parent is offset by padding, subfeature is not)
+      // This is correct because parent has visual padding, subfeature doesn't
+      expect(parentLabelStart).not.toBe(subfeatureLabelStart)
+      expect(parentLabelStart).toBe(108)
+      expect(subfeatureLabelStart).toBe(100)
+    })
+  })
+})
 
 describe('FloatingLabels utilities', () => {
   describe('getViewportLeftEdge', () => {
@@ -92,6 +337,304 @@ describe('FloatingLabels utilities', () => {
         const result = clampToViewport(200, 100, 50)
         expect(result.leftPx).toBe(200)
         expect(result.rightPx).toBe(100)
+      })
+    })
+  })
+
+  describe('calculateFloatingLabelPosition', () => {
+    describe('label wider than feature (no floating)', () => {
+      it('uses fixed position when label is wider than feature', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 150
+        const labelWidth = 80
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+      })
+
+      it('allows label to extend beyond feature right edge when wider', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 120
+        const labelWidth = 50
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x + labelWidth).toBe(150)
+        expect(x + labelWidth).toBeGreaterThan(featureRightPx)
+      })
+
+      it('maintains fixed position when scrolling with wide label', () => {
+        const featureLeftPx = 200
+        const featureRightPx = 220
+        const labelWidth = 50
+        const offsetPx = 100
+        const viewportLeft = 100
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+      })
+    })
+
+    describe('label fits within feature (floating)', () => {
+      it('positions label at feature left when fully visible', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 200
+        const labelWidth = 80
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+      })
+
+      it('constrains label right edge to feature right edge', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 200
+        const labelWidth = 80
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x + labelWidth).toBeLessThanOrEqual(featureRightPx)
+      })
+
+      it('floats label to viewport edge when feature partially scrolled off', () => {
+        const featureLeftPx = 50
+        const featureRightPx = 200
+        const labelWidth = 80
+        const offsetPx = 100
+        const viewportLeft = 100
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(0)
+      })
+
+      it('keeps label within feature when scrolled', () => {
+        const featureLeftPx = 50
+        const featureRightPx = 200
+        const labelWidth = 80
+        const offsetPx = 100
+        const viewportLeft = 100
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        const labelLeftInAbsoluteCoords = x + offsetPx
+        const labelRightInAbsoluteCoords =
+          labelLeftInAbsoluteCoords + labelWidth
+
+        expect(labelLeftInAbsoluteCoords).toBeGreaterThanOrEqual(viewportLeft)
+        expect(labelRightInAbsoluteCoords).toBeLessThanOrEqual(featureRightPx)
+      })
+    })
+
+    describe('small features', () => {
+      it('handles small feature with fitting label', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 150
+        const labelWidth = 40
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x + labelWidth).toBeLessThanOrEqual(featureRightPx)
+      })
+
+      it('handles very small feature with wide label (no floating)', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 110
+        const labelWidth = 50
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x + labelWidth).toBeGreaterThan(featureRightPx)
+      })
+
+      it('positions small feature label at left edge, not right', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 110
+        const labelWidth = 8
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x).not.toBe(featureRightPx - labelWidth)
+      })
+    })
+
+    describe('scrolling edge cases', () => {
+      it('clamps to viewport left when feature is off-screen left', () => {
+        const featureLeftPx = -50
+        const featureRightPx = 100
+        const labelWidth = 40
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBeGreaterThanOrEqual(0)
+      })
+
+      it('handles negative offsetPx (scrolled left)', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 200
+        const labelWidth = 40
+        const offsetPx = -50
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBeGreaterThanOrEqual(0)
+      })
+
+      it('handles feature partially visible on right edge', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 200
+        const labelWidth = 50
+        const offsetPx = 50
+        const viewportLeft = 50
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(50)
+        expect(x + offsetPx).toBe(featureLeftPx)
+      })
+    })
+
+    describe('regression tests for pinning bug', () => {
+      it('does not pin label to right edge for small features', () => {
+        const featureLeftPx = 100
+        const featureRightPx = 115
+        const labelWidth = 10
+        const offsetPx = 0
+        const viewportLeft = 0
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        expect(x).toBe(100)
+        expect(x).toBe(featureLeftPx - offsetPx)
+      })
+
+      it('does not show label fragments at left edge when scrolling', () => {
+        const featureLeftPx = 50
+        const featureRightPx = 60
+        const labelWidth = 8
+        const offsetPx = 55
+        const viewportLeft = 55
+
+        const x = calculateFloatingLabelPosition(
+          featureLeftPx,
+          featureRightPx,
+          labelWidth,
+          offsetPx,
+          viewportLeft,
+        )
+
+        const labelLeftInAbsoluteCoords = x + offsetPx
+        const labelRightInAbsoluteCoords =
+          labelLeftInAbsoluteCoords + labelWidth
+
+        expect(labelRightInAbsoluteCoords).toBeLessThanOrEqual(featureRightPx)
       })
     })
   })

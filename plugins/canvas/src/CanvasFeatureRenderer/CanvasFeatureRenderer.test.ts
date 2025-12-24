@@ -1,11 +1,12 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Image, createCanvas } from 'canvas'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { computeLayouts } from './computeLayouts'
+import { layoutFeatures } from './layoutFeatures'
 import configSchema from './configSchema'
 import { makeImageData } from './makeImageData'
 import { createRenderConfigContext } from './renderConfig'
@@ -43,12 +44,13 @@ function createRenderArgs(
   const config = configSchema.create(configOverrides, { pluginManager })
   const bpPerPx = 1
   const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
-  const configContext = createRenderConfigContext(config)
+  const fullRegion = { ...region, reversed: false }
+  const configContext = createRenderConfigContext(config, fullRegion)
 
   return {
     features,
     bpPerPx,
-    region: { ...region, reversed: false },
+    region: fullRegion,
     config,
     configContext,
     layout,
@@ -76,7 +78,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -118,7 +121,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -151,7 +155,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -206,7 +211,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -236,6 +242,60 @@ describe('CanvasFeatureRenderer', () => {
       )
 
       expect(result.items[0]!.tooltip).toBe('Custom mouseover text')
+    })
+
+    test('custom mouseover callback for feature', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        name: 'TestFeature',
+        description: 'A test feature',
+        score: 42,
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        mouseover: `jexl:label + ' (score: ' + get(feature, 'score') + ')'`,
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe('TestFeature (score: 42)')
     })
 
     test('gene with mRNA transcript creates subfeature info', async () => {
@@ -284,7 +344,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -316,9 +377,159 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.items).toHaveLength(1)
       expect(result.items[0]!.featureId).toBe('gene1')
       expect(result.subfeatureInfos).toHaveLength(1)
-      expect(result.subfeatureInfos[0]!.name).toBe('TestTranscript')
       expect(result.subfeatureInfos[0]!.type).toBe('mRNA')
-      expect(result.subfeatureInfos[0]!.parentFeatureId).toBe('gene1')
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe('TestTranscript')
+    })
+
+    test('gene with transcript having same name as parent', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        name: 'BRCA1',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            name: 'BRCA1',
+            id: 'transcript-001',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 250,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.subfeatureInfos).toHaveLength(1)
+      expect(result.subfeatureInfos[0]!.type).toBe('mRNA')
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe('BRCA1')
+    })
+
+    test('custom subfeatureMouseover callback', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            name: 'TestTranscript',
+            id: 'transcript-001',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 250,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureMouseover: `jexl:get(feature,'type') + ': ' + get(feature,'id')`,
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.subfeatureInfos).toHaveLength(1)
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe(
+        'mRNA: transcript-001',
+      )
     })
 
     test('compact display mode', async () => {
@@ -340,7 +551,8 @@ describe('CanvasFeatureRenderer', () => {
         displayMode: 'compact',
       })
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -370,7 +582,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -399,9 +612,9 @@ describe('CanvasFeatureRenderer', () => {
           }),
       )
 
-      // Tooltip contains full (non-truncated) name
-      expect(result.items[0]!.tooltip).toBe(longName)
-      expect(result.items[0]!.tooltip!.length).toBe(60)
+      expect(result.items[0]!.tooltip).toBe(
+        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      )
     })
 
     test('snapshot of flatbush items structure', async () => {
@@ -422,7 +635,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -474,7 +688,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -538,7 +753,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -633,7 +849,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -691,7 +908,8 @@ describe('CanvasFeatureRenderer', () => {
         displayMode: 'compact',
       })
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -799,7 +1017,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -891,7 +1110,8 @@ describe('CanvasFeatureRenderer', () => {
         geneGlyphMode: 'longest',
       })
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -962,7 +1182,8 @@ describe('CanvasFeatureRenderer', () => {
         displayMode: 'reducedRepresentation',
       })
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1066,7 +1287,8 @@ describe('CanvasFeatureRenderer', () => {
       }
       const args = createRenderArgs(features, region)
 
-      const layoutRecords = computeLayouts({
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
         features,
         bpPerPx: args.bpPerPx,
         region: args.region,
@@ -1093,6 +1315,1545 @@ describe('CanvasFeatureRenderer', () => {
       })
 
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('negative strand gene with labels - visual regression test', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 20,
+        end: 180,
+        strand: -1,
+        name: 'NegativeGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 20,
+            end: 180,
+            strand: -1,
+            name: 'Transcript-1',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 40,
+                end: 160,
+                strand: -1,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'below',
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('negative strand genes', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 20,
+        end: 180,
+        strand: -1,
+        name: 'NegativeGene',
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('reversed region visualization', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 20,
+        end: 180,
+        strand: 1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 20,
+            end: 180,
+            strand: 1,
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 40,
+                end: 160,
+                strand: 1,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+        reversed: true,
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('features with introns', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 10,
+        end: 190,
+        strand: 1,
+        name: 'IntronGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 10,
+            end: 190,
+            strand: 1,
+            name: 'Transcript',
+            subfeatures: [
+              {
+                uniqueId: 'exon1',
+                refName: 'ctgA',
+                type: 'exon',
+                start: 10,
+                end: 60,
+                strand: 1,
+              },
+              {
+                uniqueId: 'intron1',
+                refName: 'ctgA',
+                type: 'intron',
+                start: 60,
+                end: 120,
+                strand: 1,
+              },
+              {
+                uniqueId: 'exon2',
+                refName: 'ctgA',
+                type: 'exon',
+                start: 120,
+                end: 190,
+                strand: 1,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('dense packing with many features', async () => {
+      const features = new Map()
+      for (let i = 0; i < 20; i++) {
+        const start = i * 10
+        const end = start + 15
+        features.set(
+          `feature${i}`,
+          new SimpleFeature({
+            uniqueId: `feature${i}`,
+            refName: 'ctgA',
+            start,
+            end,
+            name: `F${i}`,
+          }),
+        )
+      }
+
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 200
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('zoomed out view with large features', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 1000,
+        end: 5000,
+        name: 'LargeGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 1000,
+            end: 5000,
+            strand: 1,
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 1500,
+                end: 4500,
+                strand: 1,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 10000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = 200
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+          bpPerPx: (region.end - region.start) / width,
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('empty features map', async () => {
+      const features = new Map()
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      const result = makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(result.items).toHaveLength(0)
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+
+    test('collapse mode rendering', async () => {
+      const feature1 = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 20,
+        end: 80,
+        name: 'Feature1',
+      })
+      const feature2 = new SimpleFeature({
+        uniqueId: 'test2',
+        refName: 'ctgA',
+        start: 60,
+        end: 120,
+        name: 'Feature2',
+      })
+      const features = new Map([
+        ['test1', feature1],
+        ['test2', feature2],
+      ])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        displayMode: 'collapse',
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = region.end - region.start
+      const height = 50
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      makeImageData({
+        ctx: ctx as unknown as CanvasRenderingContext2D,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: {
+          ...args,
+          features,
+          regions: [args.region],
+        },
+        configContext: args.configContext,
+      })
+
+      expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
+    })
+  })
+
+  describe('tooltip callbacks with label positioning', () => {
+    test('tooltip included in floating labels for negative strand feature', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'NegativeFeature',
+        description: 'Test description',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      // Verify tooltip is present in layout data
+      expect(layoutRecords[0]!.label).toBe('NegativeFeature')
+      expect(layoutRecords[0]!.description).toBe('Test description')
+    })
+
+    test('custom mouseover callback with feature labels', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'TestFeature',
+        score: 95,
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        mouseover: `jexl:label + ' (score: ' + get(feature, 'score') + ')'`,
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe('TestFeature (score: 95)')
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+    })
+
+    test('subfeature mouseover callback with below labels', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: -1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: -1,
+            name: 'TestTranscript',
+            id: 'transcript-001',
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'below',
+        subfeatureMouseover: `jexl:get(feature,'name') + ' (' + get(feature,'type') + ')'`,
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.subfeatureInfos).toHaveLength(1)
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe(
+        'TestTranscript (mRNA)',
+      )
+    })
+
+    test('subfeature mouseover callback with overlay labels', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: 1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: 1,
+            name: 'Isoform-A',
+            id: 'iso-a',
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'overlay',
+        subfeatureMouseover: `jexl:get(feature,'id') + ': ' + get(feature,'name')`,
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.subfeatureInfos).toHaveLength(1)
+      expect(result.subfeatureInfos[0]!.displayLabel).toBe('iso-a: Isoform-A')
+    })
+
+    test('tooltip with _mouseOver attribute on negative strand', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'TestFeature',
+        _mouseOver: 'Custom tooltip text',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe('Custom tooltip text')
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+    })
+
+    test('complex mouseover callback accessing feature attributes', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'TestGene',
+        biotype: 'protein_coding',
+        source: 'ENSEMBL',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        mouseover: `jexl:label + ' [' + get(feature, 'biotype') + '] from ' + get(feature, 'source')`,
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe(
+        'TestGene [protein_coding] from ENSEMBL',
+      )
+    })
+
+    test('default tooltip format with name and description', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: 1,
+        name: 'MyFeature',
+        description: 'Important feature',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      const result = await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(result.items[0]!.tooltip).toBe('MyFeature<br/>Important feature')
+    })
+  })
+
+  describe('strand arrow padding and label positioning', () => {
+    test('positive strand feature has leftPadding: 0', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: 1,
+        name: 'PositiveStrand',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(0)
+      expect(layoutRecords[0]!.layout.width).toBe(100)
+      expect(layoutRecords[0]!.layout.totalLayoutWidth).toBe(108)
+    })
+
+    test('negative strand feature has leftPadding: 8', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'NegativeStrand',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+      expect(layoutRecords[0]!.layout.width).toBe(100)
+      expect(layoutRecords[0]!.layout.totalLayoutWidth).toBe(108)
+    })
+
+    test('layout record includes featureWidth and leftPadding for labels', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'TestFeature',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+      expect(layoutRecords[0]!.layout.width).toBe(100)
+      expect(layoutRecords[0]!.layout.totalLayoutWidth).toBe(108)
+    })
+
+    test('subfeature labels have leftPadding: 0', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: -1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: -1,
+            name: 'TestTranscript',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 250,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'below',
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(layoutRecords).toHaveLength(1)
+      const geneLayout = layoutRecords[0]!.layout
+      expect(geneLayout.children).toHaveLength(1)
+      const transcriptLayout = geneLayout.children[0]!
+      // Transcript has its own leftPadding based on strand, but labels use leftPadding: 0
+      expect(transcriptLayout.leftPadding).toBe(8)
+      expect(transcriptLayout.width).toBe(400)
+    })
+
+    test('feature with no strand information has no padding', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        name: 'NoStrand',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(0)
+      expect(layoutRecords[0]!.layout.width).toBe(100)
+      // No strand means no padding on either side
+      expect(layoutRecords[0]!.layout.totalLayoutWidth).toBe(100)
+    })
+
+    test('reversed region flips strand arrow padding', () => {
+      const forwardFeature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: 1,
+        name: 'ForwardInReversed',
+      })
+      const features = new Map([['test1', forwardFeature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      // Override the region to be reversed for this test
+      const reversedRegion = { ...args.region, reversed: true }
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: reversedRegion,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      // In reversed region, strand 1 should get left padding
+      expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
+    })
+
+    test('reversed region allocates padding on correct genomic side', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'NegativeStrandReversed',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+      const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
+
+      // Normal region: strand -1 has leftPadding=8
+      const normalRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: 1,
+        region: { ...region, reversed: false },
+        config: args.config,
+        configContext: args.configContext,
+        layout,
+      })
+
+      // Reversed region: strand -1 has leftPadding=0 (visual terms)
+      const reversedLayout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
+      const reversedRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: 1,
+        region: { ...region, reversed: true },
+        config: args.config,
+        configContext: args.configContext,
+        layout: reversedLayout,
+      })
+
+      expect(normalRecords).toHaveLength(1)
+      expect(reversedRecords).toHaveLength(1)
+
+      // Normal: leftPadding=8, rightPadding=0
+      // Layout should allocate 8bp before genomic start
+      const normalLayout = normalRecords[0]!.layout
+      expect(normalLayout.leftPadding).toBe(8)
+      expect(normalLayout.totalLayoutWidth).toBe(133.81875)
+
+      // Reversed: leftPadding=0, rightPadding=8 (in visual terms)
+      // Layout should allocate 8bp after genomic end (which is visual left)
+      const reversedLayout2 = reversedRecords[0]!.layout
+      expect(reversedLayout2.leftPadding).toBe(0)
+      expect(reversedLayout2.totalLayoutWidth).toBe(133.81875)
+
+      // Verify that layout rectangles were added at different positions
+      // In normal mode: padding extends to the left (genomic left)
+      // In reversed mode: padding extends to the right (genomic right = visual left)
+      const normalRect = layout.rectangles.get('test1')
+      const reversedRect = reversedLayout.rectangles.get('test1')
+
+      expect(normalRect).toBeTruthy()
+      expect(reversedRect).toBeTruthy()
+
+      // Normal: layoutStart = 100 - 8 = 92, layoutEnd = 200 + 0 = 200
+      expect(normalRect!.l).toBe(92)
+      expect(normalRect!.r).toBe(225)
+
+      // Reversed: layoutStart = 100 - 0 = 100, layoutEnd = 200 + 8 = 208
+      expect(reversedRect!.l).toBe(66)
+      expect(reversedRect!.r).toBe(200)
+    })
+
+    test('overlay subfeature labels include featureWidth and leftPadding', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: -1,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: -1,
+            name: 'TestTranscript',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 250,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'overlay',
+      })
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(layoutRecords).toHaveLength(1)
+      const geneLayout = layoutRecords[0]!.layout
+      expect(geneLayout.children).toHaveLength(1)
+      const transcriptLayout = geneLayout.children[0]!
+      expect(transcriptLayout.width).toBe(400)
+      expect(transcriptLayout.leftPadding).toBe(8)
+    })
+
+    test('gene feature with negative strand has correct padding in layout', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        strand: -1,
+        name: 'NegativeGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            strand: -1,
+            name: 'NegativeTranscript',
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      expect(layoutRecords).toHaveLength(1)
+      const geneLayout = layoutRecords[0]!.layout
+      expect(geneLayout.leftPadding).toBe(8)
+      expect(geneLayout.width).toBe(400)
+      expect(geneLayout.totalLayoutWidth).toBe(408)
+    })
+  })
+
+  describe('edge cases and error handling', () => {
+    test('handles features at region boundaries', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.feature.id()).toBe('test1')
+    })
+
+    test('handles very small features', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 101,
+        name: 'TinyFeature',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.width).toBeGreaterThan(0)
+    })
+
+    test('handles features with missing attributes', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+    })
+
+    test('handles gene with empty subfeatures array', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 200,
+        subfeatures: [],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      expect(layoutRecords[0]!.layout.children).toHaveLength(0)
     })
   })
 })

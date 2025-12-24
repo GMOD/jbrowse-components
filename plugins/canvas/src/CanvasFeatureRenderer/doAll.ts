@@ -1,6 +1,8 @@
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import { computeLayouts } from './computeLayouts'
+import { layoutFeatures } from './layoutFeatures'
 import { makeImageData } from './makeImageData'
 import { fetchPeptideData } from './peptideUtils'
 import { createRenderConfigContext } from './renderConfig'
@@ -10,16 +12,6 @@ import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
-/**
- * Main rendering pipeline for CanvasFeatureRenderer
- *
- * IMPORTANT: Config values are read ONCE at the start via createRenderConfigContext()
- * and passed through the entire pipeline. This is critical for performance since
- * readConfObject() is expensive (JEXL evaluation, MobX reactions, tree traversal).
- *
- * DO NOT call readConfObject() in hot paths (per-feature loops). If you need a new
- * config value, add it to RenderConfigContext and createRenderConfigContext().
- */
 export async function doAll({
   layout,
   features,
@@ -31,25 +23,41 @@ export async function doAll({
   features: Map<string, Feature>
   renderProps: RenderArgsDeserialized
 }) {
-  const { statusCallback = () => {}, regions, bpPerPx, config } = renderProps
+  const {
+    statusCallback = () => {},
+    regions,
+    bpPerPx,
+    config,
+    theme,
+  } = renderProps
   const region = regions[0]!
   const width = Math.max(1, (region.end - region.start) / bpPerPx)
 
+  // Get config as plain snapshot for fast static reads (zero MobX overhead)
+  const configSnapshot = isStateTreeNode(config)
+    ? getSnapshot(config)
+    : (config as Record<string, any>)
+
+  // Get jexl instance for evaluating callbacks
+  const jexl = pluginManager.jexl
+
   // Create config context ONCE at the start - this reads all config values upfront
   // to avoid expensive readConfObject calls in per-feature hot paths
-  const configContext = createRenderConfigContext(config)
+  const configContext = createRenderConfigContext(configSnapshot, region)
 
   const layoutRecords = await updateStatus(
     'Computing feature layout',
     statusCallback,
     async () => {
-      return computeLayouts({
+      return layoutFeatures({
         features,
         bpPerPx,
         region,
-        config,
+        configSnapshot,
         configContext,
         layout,
+        theme: createJBrowseTheme(theme),
+        jexl,
       })
     },
   )
@@ -71,10 +79,15 @@ export async function doAll({
         layoutRecords,
         canvasWidth: width,
         renderArgs: {
-          ...renderProps,
           features,
           layout,
+          regions,
+          bpPerPx,
+          configSnapshot,
           displayMode: configContext.displayMode,
+          theme,
+          jexl,
+          stopToken: renderProps.stopToken,
           peptideDataMap,
           colorByCDS: (renderProps as any).colorByCDS,
           pluginManager,

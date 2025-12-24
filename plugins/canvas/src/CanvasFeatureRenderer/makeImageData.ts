@@ -1,3 +1,4 @@
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -8,7 +9,6 @@ import {
   addSubfeaturesToLayoutAndFlatbush,
   adjustChildPositions,
 } from './layoutUtils'
-import { buildFeatureTooltip } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type {
@@ -45,10 +45,11 @@ export function makeImageData({
   configContext: RenderConfigContext
 }) {
   const {
-    config,
+    configSnapshot,
     bpPerPx,
     regions,
     theme: configTheme,
+    jexl,
     stopToken,
     layout,
     peptideDataMap,
@@ -99,9 +100,10 @@ export function makeImageData({
       featureLayout: adjustedLayout,
       region,
       bpPerPx,
-      config,
+      configSnapshot,
       configContext,
       theme,
+      jexl,
       reversed: region.reversed || false,
       topLevel: true,
       canvasWidth,
@@ -124,11 +126,18 @@ export function makeImageData({
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
-    const tooltip = buildFeatureTooltip({
-      mouseOver: feature.get('_mouseOver') as string | undefined,
-      label: label || undefined,
-      description: description || undefined,
-    })
+    const tooltip = String(
+      readStaticConfObject(
+        configSnapshot,
+        'mouseover',
+        {
+          feature,
+          label: label || undefined,
+          description: description || undefined,
+        },
+        jexl,
+      ) || '',
+    )
 
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({
@@ -147,10 +156,10 @@ export function makeImageData({
       addSubfeaturesToLayoutAndFlatbush({
         layout,
         featureLayout: adjustedLayout,
-        parentFeatureId: feature.id(),
         subfeatureCoords,
         subfeatureInfos,
-        config,
+        configSnapshot,
+        jexl,
         subfeatureLabels,
         transcriptTypes,
         labelColor: theme.palette.text.primary,

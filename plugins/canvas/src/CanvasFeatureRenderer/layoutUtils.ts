@@ -1,10 +1,10 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 
 import { createTranscriptFloatingLabel } from './floatingLabels'
 
+import type { JexlLike } from './renderConfig'
 import type { FloatingLabelData } from './floatingLabels'
 import type { FeatureLayout, SubfeatureInfo } from './types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 export function adjustChildPositions(
@@ -23,20 +23,20 @@ export function adjustChildPositions(
 export function addSubfeaturesToLayoutAndFlatbush({
   layout,
   featureLayout,
-  parentFeatureId,
   subfeatureCoords,
   subfeatureInfos,
-  config,
+  configSnapshot,
+  jexl,
   subfeatureLabels,
   transcriptTypes,
   labelColor,
 }: {
   layout: BaseLayout<unknown>
   featureLayout: FeatureLayout
-  parentFeatureId: string
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
-  config: AnyConfigurationModel
+  configSnapshot: Record<string, any>
+  jexl: JexlLike
   subfeatureLabels: string
   transcriptTypes: string[]
   labelColor: string
@@ -60,22 +60,24 @@ export function addSubfeaturesToLayoutAndFlatbush({
     const bottomPx = child.y + child.totalLayoutHeight
     subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
-    const transcriptName = String(
-      readConfObject(config, ['labels', 'name'], { feature: childFeature }) ||
-        '',
+    const displayLabel = String(
+      readStaticConfObject(
+        configSnapshot,
+        'subfeatureMouseover',
+        { feature: childFeature },
+        jexl,
+      ) || '',
     )
 
     subfeatureInfos.push({
-      subfeatureId: childFeature.id(),
-      parentFeatureId,
+      displayLabel,
       type: childType,
-      name: transcriptName,
     })
 
     const floatingLabels: FloatingLabelData[] = []
     if (showSubfeatureLabels) {
       const label = createTranscriptFloatingLabel({
-        transcriptName,
+        displayLabel,
         featureHeight: child.height,
         subfeatureLabels,
         color: labelColor,
@@ -99,6 +101,8 @@ export function addSubfeaturesToLayoutAndFlatbush({
               totalFeatureHeight: child.height,
               totalLayoutWidth: child.totalLayoutWidth,
               actualTopPx: topPx,
+              featureWidth: child.width,
+              leftPadding: 0,
             }
           : {}),
       },

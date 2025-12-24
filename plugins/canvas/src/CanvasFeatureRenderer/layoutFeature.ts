@@ -1,12 +1,17 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { chooseGlyphType, getChildFeatures, truncateLabel } from './util'
+import {
+  chooseGlyphType,
+  getChildFeatures,
+  readFeatureLabels,
+  truncateLabel,
+} from './util'
 
-import type { RenderConfigContext } from './renderConfig'
+import type { JexlLike, RenderConfigContext } from './renderConfig'
 import type { FeatureLayout } from './types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { Theme } from '@mui/material'
 
 const TRANSCRIPT_PADDING = 2
 const STRAND_ARROW_PADDING = 8
@@ -35,8 +40,10 @@ export function layoutFeature(args: {
   feature: Feature
   bpPerPx: number
   reversed: boolean
-  config: AnyConfigurationModel
+  configSnapshot: Record<string, any>
   configContext: RenderConfigContext
+  theme: Theme
+  jexl: JexlLike
   parentX?: number
   parentY?: number
   isNested?: boolean
@@ -46,8 +53,10 @@ export function layoutFeature(args: {
     feature,
     bpPerPx,
     reversed,
-    config,
+    configSnapshot,
     configContext,
+    theme,
+    jexl,
     parentX = 0,
     parentY = 0,
     isNested = false,
@@ -63,9 +72,15 @@ export function layoutFeature(args: {
     fontHeight,
     labelAllowed,
     geneGlyphMode,
-    featureHeight,
-    isHeightCallback,
+    regionSize,
   } = configContext
+
+  const effectiveGeneGlyphMode =
+    geneGlyphMode === 'auto'
+      ? regionSize > 2_000_000
+        ? 'longestCoding'
+        : 'all'
+      : geneGlyphMode
 
   const glyphType = chooseGlyphType({ feature, configContext })
 
@@ -78,9 +93,12 @@ export function layoutFeature(args: {
     x = parentX + relativeX / bpPerPx
   }
 
-  const height = isHeightCallback
-    ? (readConfObject(config, 'height', { feature }) as number)
-    : featureHeight
+  const height = readStaticConfObject(
+    configSnapshot,
+    'height',
+    { feature, theme },
+    jexl,
+  ) as number
   const actualHeight = displayMode === 'compact' ? height / 2 : height
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const y = parentY
@@ -117,7 +135,8 @@ export function layoutFeature(args: {
       })
 
       if (
-        (geneGlyphMode === 'longest' || geneGlyphMode === 'longestCoding') &&
+        (effectiveGeneGlyphMode === 'longest' ||
+          effectiveGeneGlyphMode === 'longestCoding') &&
         sortedSubfeatures.length > 1
       ) {
         const transcriptSubfeatures = sortedSubfeatures.filter(sub =>
@@ -128,7 +147,7 @@ export function layoutFeature(args: {
             ? transcriptSubfeatures
             : sortedSubfeatures
 
-        if (geneGlyphMode === 'longestCoding') {
+        if (effectiveGeneGlyphMode === 'longestCoding') {
           const codingCandidates = candidates.filter(hasCodingSubfeature)
           if (codingCandidates.length > 0) {
             candidates = codingCandidates
@@ -150,8 +169,10 @@ export function layoutFeature(args: {
           feature: subfeature,
           bpPerPx,
           reversed,
-          config,
+          configSnapshot,
           configContext,
+          theme,
+          jexl,
           parentX: x,
           parentY: currentY,
           isNested: true,
@@ -176,15 +197,17 @@ export function layoutFeature(args: {
       for (const subfeature of getChildFeatures({
         feature,
         glyphType,
-        config,
+        configSnapshot,
       })) {
         layout.children.push(
           layoutFeature({
             feature: subfeature,
             bpPerPx,
             reversed,
-            config,
+            configSnapshot,
             configContext,
+            theme,
+            jexl,
             parentX: x,
             parentY,
             isNested: true,
@@ -204,16 +227,19 @@ export function layoutFeature(args: {
       ? false
       : showDescriptions
 
-    const name = truncateLabel(
-      String(readConfObject(config, ['labels', 'name'], { feature }) || ''),
+    const { name: rawName, description: rawDescription } = readFeatureLabels(
+      configSnapshot,
+      feature,
+      jexl,
     )
+
+    layout.name = rawName
+    layout.description = rawDescription
+
+    const name = truncateLabel(rawName)
     const shouldShowName = /\S/.test(name) && effectiveShowLabels
 
-    const description = truncateLabel(
-      String(
-        readConfObject(config, ['labels', 'description'], { feature }) || '',
-      ),
-    )
+    const description = truncateLabel(rawDescription)
     const shouldShowDescription =
       /\S/.test(description) && effectiveShowDescriptions
 

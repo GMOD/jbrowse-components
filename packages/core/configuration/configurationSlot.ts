@@ -15,6 +15,9 @@ const typeModels: Record<string, any> = {
   numberMap: types.map(types.number),
   boolean: types.boolean,
   color: types.refinement('Color', types.string, isValidColorString),
+  maybeColor: types.maybe(
+    types.refinement('Color', types.string, isValidColorString),
+  ),
   integer: types.integer,
   number: types.number,
   string: types.string,
@@ -30,6 +33,7 @@ const fallbackDefaults: Record<string, any> = {
   numberMap: {},
   boolean: true,
   color: 'black',
+  maybeColor: undefined,
   integer: 1,
   number: 1,
   string: '',
@@ -186,8 +190,9 @@ export default function ConfigSlot(
     )
   }
 
-  if (defaultValue === undefined) {
-    throw new Error("no 'defaultValue' provided")
+  const actualDefaultValue = defaultValue ?? fallbackDefaults[type]
+  if (actualDefaultValue === undefined && !(type in fallbackDefaults)) {
+    throw new Error("no 'defaultValue' provided and no fallback available")
   }
 
   const configSlotModelName = `${slotName.charAt(0).toUpperCase()}${slotName.slice(1)}ConfigSlot`
@@ -196,7 +201,10 @@ export default function ConfigSlot(
       name: types.literal(slotName),
       description: types.literal(description),
       type: types.literal(type),
-      value: types.optional(types.union(JexlStringType, model), defaultValue),
+      value: types.optional(
+        types.union(JexlStringType, model),
+        actualDefaultValue,
+      ),
     })
     .volatile(() => ({
       contextVariable,
@@ -214,7 +222,7 @@ export default function ConfigSlot(
               getEnv(self).pluginManager.jexl,
             )
           : {
-              evalSync: () => self.value,
+              eval: () => self.value,
             }
       },
 
@@ -237,18 +245,18 @@ export default function ConfigSlot(
     )
     .postProcessSnapshot(snap => {
       if (typeof snap.value === 'object') {
-        return JSON.stringify(snap.value) !== JSON.stringify(defaultValue)
+        return JSON.stringify(snap.value) !== JSON.stringify(actualDefaultValue)
           ? snap.value
           : undefined
       }
-      return snap.value !== defaultValue ? snap.value : undefined
+      return snap.value !== actualDefaultValue ? snap.value : undefined
     })
     .actions(self => ({
       set(newVal: any) {
         self.value = newVal
       },
       reset() {
-        self.value = defaultValue
+        self.value = actualDefaultValue
       },
       convertToCallback() {
         if (self.isCallback) {
@@ -262,7 +270,7 @@ export default function ConfigSlot(
         }
         // try calling it with no arguments
         try {
-          const funcResult = self.expr.evalSync()
+          const funcResult = self.expr.eval()
           if (funcResult !== undefined) {
             self.value = funcResult
             return

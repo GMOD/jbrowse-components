@@ -1,6 +1,5 @@
-import type { RenderConfigContext } from './renderConfig'
+import type { JexlLike, RenderConfigContext } from './renderConfig'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 import type { Theme } from '@mui/material'
@@ -26,6 +25,8 @@ export interface FeatureLayout {
   totalLayoutWidth: number
   leftPadding: number
   children: FeatureLayout[]
+  name?: string
+  description?: string
 }
 
 export interface LayoutRecord {
@@ -42,9 +43,10 @@ export interface DrawFeatureArgs {
   featureLayout: FeatureLayout
   region: Region
   bpPerPx: number
-  config: AnyConfigurationModel
+  configSnapshot: Record<string, any>
   configContext: RenderConfigContext
   theme: Theme
+  jexl: JexlLike
   reversed: boolean
   topLevel: boolean
   canvasWidth: number
@@ -66,10 +68,8 @@ export interface FlatbushItem {
 }
 
 export interface SubfeatureInfo {
-  subfeatureId: string
-  parentFeatureId: string
+  displayLabel: string
   type: string
-  name: string
 }
 
 export interface RenderArgs {
@@ -77,9 +77,10 @@ export interface RenderArgs {
   layout: BaseLayout<unknown>
   regions: Region[]
   bpPerPx: number
-  config: AnyConfigurationModel
+  configSnapshot: Record<string, any>
   displayMode: string
   theme: Record<string, any>
+  jexl: JexlLike
   highResolutionScaling?: number
   stopToken?: string
   peptideDataMap?: Map<string, PeptideData>

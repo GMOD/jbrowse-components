@@ -100,7 +100,6 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
             const t2 = line.indexOf('\t', t1 + 1)
             const t3 = line.indexOf('\t', t2 + 1)
             const type = line.slice(t2 + 1, t3)
-
             lines.push({
               line,
               lineHash: fileOffset,

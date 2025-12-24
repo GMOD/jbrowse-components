@@ -1,26 +1,11 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readStaticConfObject } from '@jbrowse/core/configuration'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Region } from '@jbrowse/core/util'
 
-/**
- * IMPORTANT: Config Reading Performance Optimization
- *
- * Reading config values via readConfObject is expensive because:
- * 1. It may involve JEXL expression evaluation
- * 2. It traverses the config tree
- * 3. It can trigger MobX reactions
- *
- * In rendering code, we process thousands of features in tight loops.
- * Calling readConfObject per-feature creates significant overhead.
- *
- * SOLUTION: Read all non-feature-dependent config values ONCE at the start
- * of the rendering pipeline and pass them through as a context object.
- *
- * For feature-dependent configs (callbacks), we check `isCallback` to determine
- * if we need to call readConfObject per-feature or can use a cached value.
- *
- * This pattern should be maintained for any new config values added.
- */
+// Jexl-like interface for type safety
+export interface JexlLike {
+  compile: (expr: string) => { evalSync: (context: unknown) => unknown }
+}
 
 export interface RenderConfigContext {
   displayMode: string
@@ -31,69 +16,78 @@ export interface RenderConfigContext {
   transcriptTypes: string[]
   containerTypes: string[]
 
-  color1?: string
-  color2?: string
-  color3?: string
-  outline?: string
-  isColor1Callback: boolean
-  isColor2Callback: boolean
-  isColor3Callback: boolean
-  isOutlineCallback: boolean
-
   featureHeight: number
-  isHeightCallback: boolean
-
   fontHeight: number
-  isFontHeightCallback: boolean
 
   labelAllowed: boolean
 
   geneGlyphMode: string
 
   displayDirectionalChevrons: boolean
+
+  regionSize: number
 }
 
+// Default values from configSchema - used when snapshot omits keys at defaults
+const DEFAULTS = {
+  displayMode: 'normal',
+  showLabels: true,
+  showDescriptions: true,
+  subfeatureLabels: 'none',
+  transcriptTypes: ['mRNA', 'transcript', 'primary_transcript'],
+  containerTypes: ['proteoform_orf'],
+  geneGlyphMode: 'all',
+  displayDirectionalChevrons: true,
+  height: 10,
+  fontSize: 12,
+}
+
+/**
+ * Create render config context from a plain config snapshot.
+ * Uses static reader for zero MobX overhead.
+ *
+ * @param configSnapshot - Plain object snapshot of the config (not MST node)
+ * @param region - The region being rendered
+ */
 export function createRenderConfigContext(
-  config: AnyConfigurationModel,
+  configSnapshot: Record<string, any>,
+  region: Region,
 ): RenderConfigContext {
-  const displayMode = readConfObject(config, 'displayMode') as string
-  const showLabels = readConfObject(config, 'showLabels') as boolean
-  const showDescriptions = readConfObject(config, 'showDescriptions') as boolean
-  const subfeatureLabels = readConfObject(config, 'subfeatureLabels') as string
-  const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
-  const containerTypes = readConfObject(config, 'containerTypes') as string[]
-  const geneGlyphMode = readConfObject(config, 'geneGlyphMode') as string
-  const displayDirectionalChevrons = readConfObject(
-    config,
-    'displayDirectionalChevrons',
-  ) as boolean
+  const displayMode =
+    (readStaticConfObject(configSnapshot, 'displayMode') as string) ??
+    DEFAULTS.displayMode
+  const showLabels =
+    (readStaticConfObject(configSnapshot, 'showLabels') as boolean) ??
+    DEFAULTS.showLabels
+  const showDescriptions =
+    (readStaticConfObject(configSnapshot, 'showDescriptions') as boolean) ??
+    DEFAULTS.showDescriptions
+  const subfeatureLabels =
+    (readStaticConfObject(configSnapshot, 'subfeatureLabels') as string) ??
+    DEFAULTS.subfeatureLabels
+  const transcriptTypes =
+    (readStaticConfObject(configSnapshot, 'transcriptTypes') as string[]) ??
+    DEFAULTS.transcriptTypes
+  const containerTypes =
+    (readStaticConfObject(configSnapshot, 'containerTypes') as string[]) ??
+    DEFAULTS.containerTypes
+  const geneGlyphMode =
+    (readStaticConfObject(configSnapshot, 'geneGlyphMode') as string) ??
+    DEFAULTS.geneGlyphMode
+  const displayDirectionalChevrons =
+    (readStaticConfObject(
+      configSnapshot,
+      'displayDirectionalChevrons',
+    ) as boolean) ?? DEFAULTS.displayDirectionalChevrons
 
-  const isColor1Callback = config.color1?.isCallback ?? false
-  const isColor2Callback = config.color2?.isCallback ?? false
-  const isColor3Callback = config.color3?.isCallback ?? false
-  const isOutlineCallback = config.outline?.isCallback ?? false
-  const color1 = isColor1Callback
-    ? undefined
-    : (readConfObject(config, 'color1') as string)
-  const color2 = isColor2Callback
-    ? undefined
-    : (readConfObject(config, 'color2') as string)
-  const color3 = isColor3Callback
-    ? undefined
-    : (readConfObject(config, 'color3') as string)
-  const outline = isOutlineCallback
-    ? undefined
-    : (readConfObject(config, 'outline') as string)
+  const featureHeight =
+    (readStaticConfObject(configSnapshot, 'height') as number) ??
+    DEFAULTS.height
+  const fontHeight =
+    (readStaticConfObject(configSnapshot, ['labels', 'fontSize']) as number) ??
+    DEFAULTS.fontSize
 
-  const isHeightCallback = config.height?.isCallback ?? false
-  const featureHeight = isHeightCallback
-    ? 10
-    : (readConfObject(config, 'height') as number)
-
-  const isFontHeightCallback = config.labels?.fontSize?.isCallback ?? false
-  const fontHeight = isFontHeightCallback
-    ? 12
-    : (readConfObject(config, ['labels', 'fontSize']) as number)
+  const regionSize = region.end - region.start
 
   return {
     displayMode,
@@ -102,20 +96,11 @@ export function createRenderConfigContext(
     subfeatureLabels,
     transcriptTypes,
     containerTypes,
-    color1,
-    color2,
-    color3,
-    outline,
-    isColor1Callback,
-    isColor2Callback,
-    isColor3Callback,
-    isOutlineCallback,
     featureHeight,
-    isHeightCallback,
     fontHeight,
-    isFontHeightCallback,
     labelAllowed: displayMode !== 'collapse',
     geneGlyphMode,
     displayDirectionalChevrons,
+    regionSize,
   }
 }
