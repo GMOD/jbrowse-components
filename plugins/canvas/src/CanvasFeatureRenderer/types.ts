@@ -66,10 +66,8 @@ export interface FlatbushItem {
 }
 
 export interface SubfeatureInfo {
-  subfeatureId: string
-  parentFeatureId: string
+  displayLabel: string
   type: string
-  name: string
 }
 
 export interface RenderArgs {

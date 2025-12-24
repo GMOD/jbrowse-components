@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -8,7 +9,6 @@ import {
   addSubfeaturesToLayoutAndFlatbush,
   adjustChildPositions,
 } from './layoutUtils'
-import { buildFeatureTooltip } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type {
@@ -124,10 +124,20 @@ export function makeImageData({
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
-    const tooltip = buildFeatureTooltip({
-      mouseOver: feature.get('_mouseOver') as string | undefined,
-      label: label || undefined,
-      description: description || undefined,
+    const mouseOverAttr =
+      feature.get('_mouseover') || feature.get('_mouseOver')
+    const tooltip = String(
+      readConfObject(config, 'mouseover', { feature, label, description }) ||
+        '',
+    )
+    console.log('mouseover debug', {
+      mouseOverAttr,
+      mouseover: feature.get('_mouseover'),
+      mouseOver: feature.get('_mouseOver'),
+      tooltip,
+      label,
+      description,
+      featureId: feature.id(),
     })
 
     coords.push(leftPx, topPx, rightPx, bottomPx)
@@ -147,7 +157,6 @@ export function makeImageData({
       addSubfeaturesToLayoutAndFlatbush({
         layout,
         featureLayout: adjustedLayout,
-        parentFeatureId: feature.id(),
         subfeatureCoords,
         subfeatureInfos,
         config,

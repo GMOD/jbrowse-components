@@ -2,9 +2,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { createTranscriptFloatingLabel } from './floatingLabels'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FloatingLabelData } from './floatingLabels'
 import type { FeatureLayout, SubfeatureInfo } from './types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 export function adjustChildPositions(
@@ -23,7 +23,6 @@ export function adjustChildPositions(
 export function addSubfeaturesToLayoutAndFlatbush({
   layout,
   featureLayout,
-  parentFeatureId,
   subfeatureCoords,
   subfeatureInfos,
   config,
@@ -33,7 +32,6 @@ export function addSubfeaturesToLayoutAndFlatbush({
 }: {
   layout: BaseLayout<unknown>
   featureLayout: FeatureLayout
-  parentFeatureId: string
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
   config: AnyConfigurationModel
@@ -60,22 +58,21 @@ export function addSubfeaturesToLayoutAndFlatbush({
     const bottomPx = child.y + child.totalLayoutHeight
     subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
-    const transcriptName = String(
-      readConfObject(config, ['labels', 'name'], { feature: childFeature }) ||
-        '',
+    const displayLabel = String(
+      readConfObject(config, 'subfeatureMouseover', {
+        feature: childFeature,
+      }) || '',
     )
 
     subfeatureInfos.push({
-      subfeatureId: childFeature.id(),
-      parentFeatureId,
+      displayLabel,
       type: childType,
-      name: transcriptName,
     })
 
     const floatingLabels: FloatingLabelData[] = []
     if (showSubfeatureLabels) {
       const label = createTranscriptFloatingLabel({
-        transcriptName,
+        displayLabel,
         featureHeight: child.height,
         subfeatureLabels,
         color: labelColor,
@@ -99,6 +96,8 @@ export function addSubfeaturesToLayoutAndFlatbush({
               totalFeatureHeight: child.height,
               totalLayoutWidth: child.totalLayoutWidth,
               actualTopPx: topPx,
+              featureWidth: child.width,
+              leftPadding: 0,
             }
           : {}),
       },
