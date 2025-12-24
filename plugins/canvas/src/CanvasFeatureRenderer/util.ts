@@ -10,6 +10,7 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
 const MAX_LABEL_LENGTH = 50
+const UTR_REGEX = /(\bUTR|_UTR|untranslated[_\s]region)\b/i
 
 export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
@@ -46,9 +47,7 @@ export function isOffScreen(left: number, width: number, canvasWidth: number) {
 }
 
 export function isUTR(feature: Feature) {
-  return /(\bUTR|_UTR|untranslated[_\s]region)\b/i.test(
-    feature.get('type') || '',
-  )
+  return UTR_REGEX.test(feature.get('type') || '')
 }
 
 export function getBoxColor({
