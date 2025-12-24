@@ -526,7 +526,10 @@ exports[`fails if load flag is passed with a URL 1`] = `"Error: URL detected wit
 
 exports[`fails if trying to add an assembly with a name that already exists 1`] = `"Error: Cannot add assembly with name simple, a assembly with that name already exists"`;
 
-exports[`fails if using inline JSON sequence custom with no --name 1`] = `"Error: Must provide --name when using custom inline JSON sequence"`;
+exports[`fails if using inline JSON sequence custom with no --name 1`] = `
+"(node:133116) Warning: Closing file descriptor 25 on garbage collection
+Error: Must provide --name when using custom inline JSON sequence"
+`;
 
 exports[`fails if using invalid inline JSON 1`] = `"Error: Error: ENOENT: no such file or directory, open 'notValidJSON'"`;
 
