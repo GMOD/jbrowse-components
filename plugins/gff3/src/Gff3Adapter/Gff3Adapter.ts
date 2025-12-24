@@ -42,7 +42,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
             sc?.('Parsing GFF data')
             const intervalTree = new IntervalTree<Feature>()
             const features = parseStringSyncJBrowse(lines)
-            for (let i = 0; i < features.length; i++) {
+            for (let i = 0, l = features.length; i < l; i++) {
               const f = features[i]!
               const obj = new SimpleFeature({
                 data: f as unknown as Record<string, unknown>,
