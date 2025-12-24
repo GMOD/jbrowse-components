@@ -101,7 +101,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter {
           query.refName,
           query.start,
           query.end,
-          (line, fileOffset) => {
+          function gff3Getter(line, fileOffset) {
             const fields = line.split('\t')
             lines.push({
               // note: index column numbers are 1-based

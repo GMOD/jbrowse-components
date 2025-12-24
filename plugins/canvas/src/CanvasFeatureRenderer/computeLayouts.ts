@@ -1,6 +1,5 @@
 import { createFeatureFloatingLabels } from './floatingLabels'
 import { layoutFeature } from './simpleLayout'
-import { readFeatureLabels } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { LayoutRecord } from './types'
@@ -45,7 +44,8 @@ export function computeLayouts({
     const totalLayoutHeight = featureLayout.totalLayoutHeight
     const totalFeatureHeight = featureLayout.totalFeatureHeight
 
-    const { name, description } = readFeatureLabels(config, feature)
+    const name = featureLayout.name || ''
+    const description = featureLayout.description || ''
 
     const floatingLabels = createFeatureFloatingLabels({
       feature,

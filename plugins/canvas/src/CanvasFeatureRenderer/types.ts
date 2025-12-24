@@ -26,6 +26,8 @@ export interface FeatureLayout {
   totalLayoutWidth: number
   leftPadding: number
   children: FeatureLayout[]
+  name?: string
+  description?: string
 }
 
 export interface LayoutRecord {

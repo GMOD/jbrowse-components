@@ -214,6 +214,10 @@ export function layoutFeature(args: {
       config,
       feature,
     )
+
+    layout.name = rawName
+    layout.description = rawDescription
+
     const name = truncateLabel(rawName)
     const shouldShowName = /\S/.test(name) && effectiveShowLabels
 
