@@ -8358,10 +8358,10 @@ get-uri@^6.0.1:
     data-uri-to-buffer "^6.0.2"
     debug "^4.3.4"
 
-gff-nostream@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/gff-nostream/-/gff-nostream-3.0.1.tgz#c5e3c89adb0ca19b65a8a963a222fc095425b35e"
-  integrity sha512-MS7ypQ7PZMi8htopuXnt8VH6MHkzBs48qS4pvwTK69xYjTi4bJqAL4ck3TTvQVD5LwKb4gDb0WU/9RfujLyQ1A==
+gff-nostream@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/gff-nostream/-/gff-nostream-3.0.2.tgz#b59aef064d003f74032f84b4c4fb3d2fcbef7b12"
+  integrity sha512-delfrjpVL3uN6UbeO/aReuiWfg4kH01iGMyrOW2LXJFf1ohS46/RId+3y+lrJBRGmCa+QAnw3LqYGMMp2i/P6g==
 
 git-raw-commits@^3.0.0:
   version "3.0.0"
