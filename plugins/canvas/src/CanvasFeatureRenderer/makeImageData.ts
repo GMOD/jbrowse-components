@@ -5,7 +5,6 @@ import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { drawFeature } from './drawFeature'
 import {
-  addNestedSubfeaturesToLayout,
   addSubfeaturesToLayoutAndFlatbush,
   adjustChildPositions,
 } from './layoutUtils'
@@ -155,11 +154,6 @@ export function makeImageData({
         subfeatureLabels,
         transcriptTypes,
         labelColor: theme.palette.text.primary,
-      })
-    } else if (adjustedLayout.children.length > 0) {
-      addNestedSubfeaturesToLayout({
-        layout,
-        featureLayout: adjustedLayout,
       })
     }
     checkStopToken2(stopToken, idx++, lastCheck)
