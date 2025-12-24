@@ -316,9 +316,7 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.items).toHaveLength(1)
       expect(result.items[0]!.featureId).toBe('gene1')
       expect(result.subfeatureInfos).toHaveLength(1)
-      expect(result.subfeatureInfos[0]!.name).toBe('TestTranscript')
       expect(result.subfeatureInfos[0]!.type).toBe('mRNA')
-      expect(result.subfeatureInfos[0]!.parentFeatureId).toBe('gene1')
     })
 
     test('compact display mode', async () => {

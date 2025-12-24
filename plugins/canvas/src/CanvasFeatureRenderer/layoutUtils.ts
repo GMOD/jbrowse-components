@@ -23,7 +23,6 @@ export function adjustChildPositions(
 export function addSubfeaturesToLayoutAndFlatbush({
   layout,
   featureLayout,
-  parentFeatureId,
   subfeatureCoords,
   subfeatureInfos,
   config,
@@ -60,22 +59,21 @@ export function addSubfeaturesToLayoutAndFlatbush({
     const bottomPx = child.y + child.totalLayoutHeight
     subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
-    const transcriptName = String(
-      readConfObject(config, ['labels', 'name'], { feature: childFeature }) ||
-        '',
+    const displayLabel = String(
+      readConfObject(config, 'subfeatureMouseover', {
+        feature: childFeature,
+      }) || '',
     )
 
     subfeatureInfos.push({
-      subfeatureId: childFeature.id(),
-      parentFeatureId,
+      displayLabel,
       type: childType,
-      name: transcriptName,
     })
 
     const floatingLabels: FloatingLabelData[] = []
     if (showSubfeatureLabels) {
       const label = createTranscriptFloatingLabel({
-        transcriptName,
+        displayLabel,
         featureHeight: child.height,
         subfeatureLabels,
         color: labelColor,

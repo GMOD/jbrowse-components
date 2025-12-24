@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { buildFeatureTooltip, truncateLabel } from './util'
+import { truncateLabel } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -60,12 +60,14 @@ export function createFeatureFloatingLabels({
 
   const floatingLabels: FloatingLabelData[] = []
 
-  // Build tooltip using shared function (same as CanvasFeatureRendering)
-  const tooltip = buildFeatureTooltip({
-    mouseOver: feature.get('_mouseOver') as string | undefined,
-    label: rawName,
-    description: rawDescription,
-  })
+  // Evaluate mouseover config for tooltip
+  const tooltip = String(
+    readConfObject(config, 'mouseover', {
+      feature,
+      label: rawName,
+      description: rawDescription,
+    }) || '',
+  )
 
   if (shouldShowLabel && shouldShowDescription) {
     floatingLabels.push(
@@ -112,21 +114,21 @@ export function createFeatureFloatingLabels({
  * For 'below' mode, labels are positioned at the bottom.
  */
 export function createTranscriptFloatingLabel({
-  transcriptName,
+  displayLabel,
   featureHeight,
   subfeatureLabels,
   color,
 }: {
-  transcriptName: string
+  displayLabel: string
   featureHeight: number
   subfeatureLabels: string
   color: string
 }): FloatingLabelData | null {
-  if (!transcriptName) {
+  if (!displayLabel) {
     return null
   }
 
-  const truncatedName = truncateLabel(transcriptName)
+  const truncatedName = truncateLabel(displayLabel)
 
   // For 'overlay' mode, position label at top of feature (negative relativeY)
   // For 'below' mode, position label at bottom of feature (relativeY = 0)
@@ -141,6 +143,5 @@ export function createTranscriptFloatingLabel({
     color,
     textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
     isOverlay,
-    tooltip: buildFeatureTooltip({ label: transcriptName }),
   }
 }
