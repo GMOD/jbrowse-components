@@ -10,6 +10,7 @@ import {
   isType,
   isUnionType,
 } from '@jbrowse/mobx-state-tree'
+import { untracked } from 'mobx'
 
 import {
   getDefaultValue,
@@ -28,6 +29,28 @@ import type {
 // Cache for config snapshots to avoid repeated MST traversal in webworker context
 // WeakMap ensures configs can be garbage collected
 const snapshotCache = new WeakMap<AnyConfigurationModel, any>()
+
+// Debug counters
+let cacheHits = 0
+let cacheMisses = 0
+let untrackedReads = 0
+let trackedReads = 0
+let lastLogTime = 0
+
+function logDebugStats() {
+  const now = Date.now()
+  if (now - lastLogTime > 5000) {
+    console.log('[readConfObject] Stats:', {
+      cacheHits,
+      cacheMisses,
+      cacheHitRate: cacheHits / (cacheHits + cacheMisses) || 0,
+      untrackedReads,
+      trackedReads,
+      untrackedRatio: untrackedReads / (untrackedReads + trackedReads) || 0,
+    })
+    lastLogTime = now
+  }
+}
 
 function getCachedSnapshot(confObject: AnyConfigurationModel): any {
   // only cache if it's actually an MST node
@@ -59,7 +82,10 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     | string[],
   args: Record<string, unknown> = {},
 ): any {
+  logDebugStats()
+
   if (!slotPath) {
+    untrackedReads++
     return structuredClone(getCachedSnapshot(confObject))
   } else if (typeof slotPath === 'string') {
     // optimization: try reading from cached snapshot first to avoid MST property access
@@ -74,6 +100,8 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
 
       if (!needsEval && snapshotValue !== undefined) {
         // fast path: return snapshot value directly (no MST access, no JSON.parse/stringify)
+        cacheHits++
+        untrackedReads++
         return typeof snapshotValue === 'object' && snapshotValue !== null
           ? structuredClone(snapshotValue)
           : snapshotValue
@@ -81,33 +109,38 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
     }
 
     // slow path: need to access MST for callbacks or missing values
-    let slot = confObject[slotPath]
-    // check for the subconf being a map if we don't find it immediately
-    if (
-      !slot &&
-      isStateTreeNode(confObject) &&
-      isMapType(getType(confObject))
-    ) {
-      slot = confObject.get(slotPath)
-    }
-    if (!slot) {
-      return undefined
-      // if we want to be very strict about config slots, we could uncomment the below
-      // instead of returning undefined
-      //
-      // const modelType = getType(model)
-      // const schemaType = model.configuration && getType(model.configuration)
-      // throw new Error(
-      //   `no slot "${slotName}" found in ${modelType.name} configuration (${
-      //     schemaType.name
-      //   })`,
-      // )
-    } else {
-      const val = slot.expr ? slot.expr.eval(args) : slot
-      return isStateTreeNode(val)
-        ? JSON.parse(JSON.stringify(getCachedSnapshot(val)))
-        : val
-    }
+    // Use untracked() to prevent MobX from tracking these reads, which is expensive
+    cacheMisses++
+    return untracked(() => {
+      trackedReads++
+      let slot = confObject[slotPath]
+      // check for the subconf being a map if we don't find it immediately
+      if (
+        !slot &&
+        isStateTreeNode(confObject) &&
+        isMapType(getType(confObject))
+      ) {
+        slot = confObject.get(slotPath)
+      }
+      if (!slot) {
+        return undefined
+        // if we want to be very strict about config slots, we could uncomment the below
+        // instead of returning undefined
+        //
+        // const modelType = getType(model)
+        // const schemaType = model.configuration && getType(model.configuration)
+        // throw new Error(
+        //   `no slot "${slotName}" found in ${modelType.name} configuration (${
+        //     schemaType.name
+        //   })`,
+        // )
+      } else {
+        const val = slot.expr ? slot.expr.eval(args) : slot
+        return isStateTreeNode(val)
+          ? JSON.parse(JSON.stringify(getCachedSnapshot(val)))
+          : val
+      }
+    })
   } else if (Array.isArray(slotPath)) {
     const slotName = slotPath[0]!
     if (slotPath.length > 1) {
@@ -122,21 +155,27 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
         if (snapshotValue !== undefined && typeof snapshotValue === 'object') {
           // recurse into the snapshot value for nested path
           // note: snapshotValue might not be an MST node, so we need to handle plain objects
+          cacheHits++
           return readConfObject(snapshotValue as any, newPath, args)
         }
       }
 
       // slow path: access MST for missing or callback values
-      let subConf = confObject[slotName]
-      // check for the subconf being a map if we don't find it immediately
-      if (
-        !subConf &&
-        isStateTreeNode(confObject) &&
-        isMapType(getType(confObject))
-      ) {
-        subConf = confObject.get(slotName)
-      }
-      return subConf ? readConfObject(subConf, newPath, args) : undefined
+      // Use untracked() to prevent MobX from tracking these reads
+      cacheMisses++
+      return untracked(() => {
+        trackedReads++
+        let subConf = confObject[slotName]
+        // check for the subconf being a map if we don't find it immediately
+        if (
+          !subConf &&
+          isStateTreeNode(confObject) &&
+          isMapType(getType(confObject))
+        ) {
+          subConf = confObject.get(slotName)
+        }
+        return subConf ? readConfObject(subConf, newPath, args) : undefined
+      })
     }
     return readConfObject(
       confObject,
