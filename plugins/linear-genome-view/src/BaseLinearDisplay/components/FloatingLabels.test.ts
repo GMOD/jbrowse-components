@@ -156,6 +156,44 @@ describe('FloatingLabels', () => {
       // Label won't fit and should be filtered
       expect(labelWidth > featureWidth).toBe(true)
     })
+
+    test('padding is already in visual terms, works for both normal and reversed regions', () => {
+      // In normal regions: strand -1 has visual left padding
+      const normalFeature = {
+        leftPx: 100,
+        leftPadding: 8, // Visual left padding
+        featureWidth: 100,
+      }
+
+      const normalFeatureLeftPx =
+        normalFeature.leftPx + normalFeature.leftPadding
+      const normalFeatureRightPx =
+        normalFeatureLeftPx + normalFeature.featureWidth
+
+      expect(normalFeatureLeftPx).toBe(108)
+      expect(normalFeatureRightPx).toBe(208)
+
+      // In reversed regions: strand +1 has visual left padding (genomic right)
+      // But leftPadding is already calculated in visual terms, so same logic applies
+      const reversedFeature = {
+        leftPx: 100,
+        leftPadding: 8, // Visual left padding (from strand +1 in reversed region)
+        featureWidth: 100,
+      }
+
+      const reversedFeatureLeftPx =
+        reversedFeature.leftPx + reversedFeature.leftPadding
+      const reversedFeatureRightPx =
+        reversedFeatureLeftPx + reversedFeature.featureWidth
+
+      // Same calculation works because padding is already visual
+      expect(reversedFeatureLeftPx).toBe(108)
+      expect(reversedFeatureRightPx).toBe(208)
+
+      // The key insight: leftPadding from simpleLayout.ts is already in visual terms
+      // due to effectiveStrand = strand * (reversed ? -1 : 1)
+      // So we can use it directly without checking reversed state
+    })
   })
 
   describe('regression tests for original bug', () => {

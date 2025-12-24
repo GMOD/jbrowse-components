@@ -230,7 +230,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private bitmap: LayoutRow<T>[]
 
-  private rectangles: Map<string, Rectangle<T>>
+  public rectangles: Map<string, Rectangle<T>>
 
   public maxHeightReached: boolean
 

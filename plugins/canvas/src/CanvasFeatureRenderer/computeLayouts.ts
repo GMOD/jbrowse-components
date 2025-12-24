@@ -62,8 +62,14 @@ export function computeLayouts({
     const rightPaddingBp =
       (totalLayoutWidth - featureLayout.width - featureLayout.leftPadding) *
       bpPerPx
-    const layoutStart = featureStart - leftPaddingBp
-    const layoutEnd = featureEnd + rightPaddingBp
+
+    // When reversed, visual left = genomic right, so swap padding allocation
+    const layoutStart = reversed
+      ? featureStart - rightPaddingBp
+      : featureStart - leftPaddingBp
+    const layoutEnd = reversed
+      ? featureEnd + leftPaddingBp
+      : featureEnd + rightPaddingBp
 
     const topPx = layout.addRect(
       feature.id(),

@@ -71,6 +71,7 @@ interface FeatureLabelData {
   floatingLabels: FloatingLabelData[]
   featureWidth: number
   leftPadding: number
+  totalLayoutWidth: number
 }
 
 /**
@@ -183,6 +184,7 @@ function deduplicateFeatureLabels(
       actualTopPx,
       featureWidth,
       leftPadding,
+      totalLayoutWidth,
     } = feature
     const effectiveTopPx = actualTopPx ?? topPx
 
@@ -191,7 +193,8 @@ function deduplicateFeatureLabels(
       floatingLabels.length === 0 ||
       !totalFeatureHeight ||
       featureWidth === undefined ||
-      leftPadding === undefined
+      leftPadding === undefined ||
+      totalLayoutWidth === undefined
     ) {
       continue
     }
@@ -222,6 +225,7 @@ function deduplicateFeatureLabels(
         floatingLabels,
         featureWidth,
         leftPadding,
+        totalLayoutWidth,
       })
     }
   }
@@ -329,6 +333,9 @@ const FloatingLabels = observer(function FloatingLabels({
     },
   ] of featureLabels.entries()) {
     const featureVisualBottom = topPx + totalFeatureHeight
+
+    // leftPadding is already in visual terms (calculated with effectiveStrand)
+    // so we can use it directly regardless of reversed state
     const featureLeftPx = leftPx + leftPadding
     const featureRightPx = featureLeftPx + featureWidth
 

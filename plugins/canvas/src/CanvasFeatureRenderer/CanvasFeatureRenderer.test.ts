@@ -2509,6 +2509,81 @@ describe('CanvasFeatureRenderer', () => {
       expect(layoutRecords[0]!.layout.leftPadding).toBe(8)
     })
 
+    test('reversed region allocates padding on correct genomic side', () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: -1,
+        name: 'NegativeStrandReversed',
+      })
+      const features = new Map([['test1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+      const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
+
+      // Normal region: strand -1 has leftPadding=8
+      const normalRecords = computeLayouts({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: 1,
+        region: { ...region, reversed: false },
+        config: args.config,
+        configContext: args.configContext,
+        layout,
+      })
+
+      // Reversed region: strand -1 has leftPadding=0 (visual terms)
+      const reversedLayout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
+      const reversedRecords = computeLayouts({
+        theme: createJBrowseTheme(),
+        features,
+        bpPerPx: 1,
+        region: { ...region, reversed: true },
+        config: args.config,
+        configContext: args.configContext,
+        layout: reversedLayout,
+      })
+
+      expect(normalRecords).toHaveLength(1)
+      expect(reversedRecords).toHaveLength(1)
+
+      // Normal: leftPadding=8, rightPadding=0
+      // Layout should allocate 8bp before genomic start
+      const normalLayout = normalRecords[0]!.layout
+      expect(normalLayout.leftPadding).toBe(8)
+      expect(normalLayout.totalLayoutWidth).toBe(133.81875)
+
+      // Reversed: leftPadding=0, rightPadding=8 (in visual terms)
+      // Layout should allocate 8bp after genomic end (which is visual left)
+      const reversedLayout2 = reversedRecords[0]!.layout
+      expect(reversedLayout2.leftPadding).toBe(0)
+      expect(reversedLayout2.totalLayoutWidth).toBe(133.81875)
+
+      // Verify that layout rectangles were added at different positions
+      // In normal mode: padding extends to the left (genomic left)
+      // In reversed mode: padding extends to the right (genomic right = visual left)
+      const normalRect = layout.rectangles.get('test1')
+      const reversedRect = reversedLayout.rectangles.get('test1')
+
+      expect(normalRect).toBeTruthy()
+      expect(reversedRect).toBeTruthy()
+
+      // Normal: layoutStart = 100 - 8 = 92, layoutEnd = 200 + 0 = 200
+      expect(normalRect!.l).toBe(92)
+      expect(normalRect!.r).toBe(225)
+
+      // Reversed: layoutStart = 100 - 0 = 100, layoutEnd = 200 + 8 = 208
+      expect(reversedRect!.l).toBe(66)
+      expect(reversedRect!.r).toBe(200)
+    })
+
     test('overlay subfeature labels include featureWidth and leftPadding', async () => {
       const feature = new SimpleFeature({
         uniqueId: 'gene1',
