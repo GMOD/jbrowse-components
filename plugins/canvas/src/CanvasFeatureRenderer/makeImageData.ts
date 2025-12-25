@@ -146,13 +146,13 @@ export function makeImageData({
       addSubfeaturesToLayoutAndFlatbush({
         layout,
         featureLayout: adjustedLayout,
-        parentFeatureId: feature.id(),
         subfeatureCoords,
         subfeatureInfos,
         config,
         subfeatureLabels,
         transcriptTypes,
         labelColor: theme.palette.text.primary,
+        parentTooltip: tooltip,
       })
     }
     checkStopToken2(stopToken, idx++, lastCheck)

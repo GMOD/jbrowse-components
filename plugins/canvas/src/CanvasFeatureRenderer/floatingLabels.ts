@@ -1,6 +1,6 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
+import { readCachedConfig } from './renderConfig'
 import { truncateLabel } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
@@ -15,6 +15,7 @@ export interface FloatingLabelData {
   color: string
   textWidth: number
   isOverlay?: boolean
+  parentFeatureId?: string
   tooltip?: string
 }
 
@@ -41,8 +42,7 @@ export function createFeatureFloatingLabels({
   name: string
   description: string
 }): FloatingLabelData[] {
-  const { showLabels, showDescriptions, fontHeight, isFontHeightCallback } =
-    configContext
+  const { showLabels, showDescriptions, fontHeight } = configContext
 
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
@@ -54,20 +54,14 @@ export function createFeatureFloatingLabels({
     return []
   }
 
-  const actualFontHeight = isFontHeightCallback
-    ? (readConfObject(config, ['labels', 'fontSize'], { feature }) as number)
-    : fontHeight
+  const actualFontHeight = readCachedConfig(
+    fontHeight,
+    config,
+    ['labels', 'fontSize'],
+    feature,
+  )
 
   const floatingLabels: FloatingLabelData[] = []
-
-  // Evaluate mouseover config for tooltip
-  const tooltip = String(
-    readConfObject(config, 'mouseover', {
-      feature,
-      label: rawName,
-      description: rawDescription,
-    }) || '',
-  )
 
   if (shouldShowLabel && shouldShowDescription) {
     floatingLabels.push(
@@ -76,14 +70,12 @@ export function createFeatureFloatingLabels({
         relativeY: 0,
         color: nameColor,
         textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
-        tooltip,
       },
       {
         text: description,
         relativeY: actualFontHeight,
         color: descriptionColor,
         textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
-        tooltip,
       },
     )
   } else if (shouldShowLabel) {
@@ -92,7 +84,6 @@ export function createFeatureFloatingLabels({
       relativeY: 0,
       color: nameColor,
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
-      tooltip,
     })
   } else if (shouldShowDescription) {
     floatingLabels.push({
@@ -100,7 +91,6 @@ export function createFeatureFloatingLabels({
       relativeY: 0,
       color: descriptionColor,
       textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
-      tooltip,
     })
   }
 
@@ -118,11 +108,15 @@ export function createTranscriptFloatingLabel({
   featureHeight,
   subfeatureLabels,
   color,
+  parentFeatureId,
+  tooltip,
 }: {
   displayLabel: string
   featureHeight: number
   subfeatureLabels: string
   color: string
+  parentFeatureId: string
+  tooltip: string
 }): FloatingLabelData | null {
   if (!displayLabel) {
     return null
@@ -143,5 +137,7 @@ export function createTranscriptFloatingLabel({
     color,
     textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
     isOverlay,
+    parentFeatureId,
+    tooltip,
   }
 }

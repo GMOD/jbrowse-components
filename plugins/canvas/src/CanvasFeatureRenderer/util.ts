@@ -1,7 +1,7 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
 import { getSubparts } from './filterSubparts'
+import { readCachedConfig } from './renderConfig'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { GlyphType } from './types'
@@ -37,17 +37,13 @@ export function getBoxColor({
   colorByCDS: boolean
   theme: Theme
 }) {
-  const { color1, color3, isColor1Callback, isColor3Callback } = configContext
+  const { color1, color3 } = configContext
 
   let fill: string
   if (isUTR(feature)) {
-    fill = isColor3Callback
-      ? readConfObject(config, 'color3', { feature })
-      : color3!
+    fill = readCachedConfig(color3, config, 'color3', feature)
   } else {
-    fill = isColor1Callback
-      ? readConfObject(config, 'color1', { feature })
-      : color1!
+    fill = readCachedConfig(color1, config, 'color1', feature)
   }
 
   const featureType: string | undefined = feature.get('type')
@@ -78,6 +74,52 @@ export function getBoxColor({
   return fill
 }
 
+function getSubfeatures(feature: Feature): Feature[] | undefined {
+  return feature.get('subfeatures') as Feature[] | undefined
+}
+
+function hasCDSChild(subfeatures: Feature[]) {
+  return subfeatures.some(f => f.get('type') === 'CDS')
+}
+
+function hasNestedSubfeatures(subfeatures: Feature[]) {
+  return subfeatures.some(f => getSubfeatures(f)?.length)
+}
+
+function isTopLevel(feature: Feature) {
+  return !feature.parent?.()
+}
+
+function isCodingTranscript(
+  type: string,
+  subfeatures: Feature[],
+  transcriptTypes: string[],
+) {
+  return transcriptTypes.includes(type) && hasCDSChild(subfeatures)
+}
+
+function isContainer(
+  feature: Feature,
+  type: string,
+  subfeatures: Feature[],
+  containerTypes: string[],
+) {
+  if (containerTypes.includes(type)) {
+    return true
+  }
+  return isTopLevel(feature) && hasNestedSubfeatures(subfeatures)
+}
+
+/**
+ * Determine which glyph type to use for rendering a feature.
+ *
+ * Glyph types:
+ * - Box: Simple rectangular feature with no children
+ * - CDS: Coding sequence with optional amino acid coloring
+ * - Segments: Feature with children connected by lines (e.g., exons)
+ * - ProcessedTranscript: Like Segments, but synthesizes UTRs from exon/CDS
+ * - Subfeatures: Container with independently-rendered children (e.g., gene with transcripts)
+ */
 export function chooseGlyphType({
   feature,
   configContext,
@@ -85,28 +127,27 @@ export function chooseGlyphType({
   feature: Feature
   configContext: RenderConfigContext
 }): GlyphType {
-  const type = feature.get('type')
-  const subfeatures = feature.get('subfeatures')
-  const { transcriptTypes, containerTypes } = configContext
-
-  if (subfeatures?.length && type !== 'CDS') {
-    const hasSubSub = subfeatures.some(f => f.get('subfeatures')?.length)
-    const hasCDS = subfeatures.some(f => f.get('type') === 'CDS')
-    if (transcriptTypes.includes(type) && hasCDS) {
-      return 'ProcessedTranscript'
-    } else if (
-      (!feature.parent?.() && hasSubSub) ||
-      containerTypes.includes(type)
-    ) {
-      return 'Subfeatures'
-    } else {
-      return 'Segments'
-    }
-  } else if (type === 'CDS') {
+  const type = feature.get('type') as string
+  if (type === 'CDS') {
     return 'CDS'
-  } else {
+  }
+
+  const subfeatures = getSubfeatures(feature)
+  if (!subfeatures?.length) {
     return 'Box'
   }
+
+  const { transcriptTypes, containerTypes } = configContext
+
+  if (isCodingTranscript(type, subfeatures, transcriptTypes)) {
+    return 'ProcessedTranscript'
+  }
+
+  if (isContainer(feature, type, subfeatures, containerTypes)) {
+    return 'Subfeatures'
+  }
+
+  return 'Segments'
 }
 
 export function getChildFeatures({
@@ -135,9 +176,7 @@ export function getStrokeColor({
   configContext: RenderConfigContext
   theme: Theme
 }) {
-  const { color2, isColor2Callback } = configContext
-  const c = isColor2Callback
-    ? readConfObject(config, 'color2', { feature })
-    : color2!
+  const { color2 } = configContext
+  const c = readCachedConfig(color2, config, 'color2', feature)
   return c === '#f0f' ? stripAlpha(theme.palette.text.secondary) : c
 }

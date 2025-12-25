@@ -17,6 +17,7 @@ export interface PeptideData {
 
 export interface FeatureLayout {
   feature: Feature
+  glyphType: GlyphType
   x: number
   y: number
   width: number

@@ -2,7 +2,6 @@ import { drawArrow } from './drawArrow'
 import { drawBox } from './drawBox'
 import { drawCDS } from './drawCDS'
 import { drawSegments } from './drawSegments'
-import { chooseGlyphType } from './util'
 
 import type { DrawFeatureArgs } from './types'
 
@@ -18,21 +17,14 @@ function findMatchingGlyph(args: DrawFeatureArgs) {
 }
 
 export function drawFeature(args: DrawFeatureArgs) {
-  const { feature, configContext, topLevel, featureLayout } = args
+  const { topLevel, featureLayout } = args
 
   const pluggableGlyph = findMatchingGlyph(args)
   if (pluggableGlyph) {
     pluggableGlyph.draw({
       ctx: args.ctx,
       feature: args.feature,
-      featureLayout: {
-        feature: args.featureLayout.feature,
-        x: args.featureLayout.x,
-        y: args.featureLayout.y,
-        width: args.featureLayout.width,
-        height: args.featureLayout.height,
-        children: args.featureLayout.children,
-      },
+      featureLayout: args.featureLayout,
       region: args.region,
       bpPerPx: args.bpPerPx,
       config: args.config,
@@ -44,7 +36,8 @@ export function drawFeature(args: DrawFeatureArgs) {
     return
   }
 
-  const glyphType = chooseGlyphType({ feature, configContext })
+  // Use the glyph type computed during layout - no need to recalculate
+  const { glyphType } = featureLayout
 
   switch (glyphType) {
     case 'ProcessedTranscript':

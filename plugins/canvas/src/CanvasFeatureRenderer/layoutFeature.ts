@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
+import { readCachedConfig } from './renderConfig'
 import { chooseGlyphType, getChildFeatures, truncateLabel } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
@@ -64,7 +65,6 @@ export function layoutFeature(args: {
     labelAllowed,
     geneGlyphMode,
     featureHeight,
-    isHeightCallback,
   } = configContext
 
   const glyphType = chooseGlyphType({ feature, configContext })
@@ -78,9 +78,7 @@ export function layoutFeature(args: {
     x = parentX + relativeX / bpPerPx
   }
 
-  const height = isHeightCallback
-    ? (readConfObject(config, 'height', { feature }) as number)
-    : featureHeight
+  const height = readCachedConfig(featureHeight, config, 'height', feature)
   const actualHeight = displayMode === 'compact' ? height / 2 : height
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const y = parentY
@@ -90,6 +88,7 @@ export function layoutFeature(args: {
 
   const layout: FeatureLayout = {
     feature,
+    glyphType,
     x,
     y,
     width,
@@ -217,17 +216,27 @@ export function layoutFeature(args: {
     const shouldShowDescription =
       /\S/.test(description) && effectiveShowDescriptions
 
+    const actualFontHeight = readCachedConfig(
+      fontHeight,
+      config,
+      ['labels', 'fontSize'],
+      feature,
+    )
+
     let extraHeight = 0
     let maxLabelWidth = 0
     if (shouldShowName) {
-      extraHeight += fontHeight
-      maxLabelWidth = Math.max(maxLabelWidth, measureText(name, fontHeight))
-    }
-    if (shouldShowDescription) {
-      extraHeight += fontHeight
+      extraHeight += actualFontHeight
       maxLabelWidth = Math.max(
         maxLabelWidth,
-        measureText(description, fontHeight),
+        measureText(name, actualFontHeight),
+      )
+    }
+    if (shouldShowDescription) {
+      extraHeight += actualFontHeight
+      maxLabelWidth = Math.max(
+        maxLabelWidth,
+        measureText(description, actualFontHeight),
       )
     }
 

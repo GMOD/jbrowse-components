@@ -347,6 +347,7 @@ const FloatingLabels = observer(function FloatingLabels({
         color,
         isOverlay,
         textWidth: labelWidth,
+        parentFeatureId,
         tooltip,
       } = floatingLabel
 
@@ -360,7 +361,7 @@ const FloatingLabels = observer(function FloatingLabels({
           isOverlay={isOverlay ?? false}
           featureLeftPx={featureLeftPx}
           featureRightPx={featureRightPx}
-          featureId={key}
+          featureId={parentFeatureId ?? key}
           labelWidth={labelWidth}
           y={y}
           offsetPx={offsetPx}
@@ -389,8 +390,9 @@ const FloatingLabels = observer(function FloatingLabels({
       }}
       onMouseOver={e => {
         const target = e.target as HTMLElement
-        const { featureId, tooltip } = target.dataset
+        const featureId = target.dataset.featureId
         if (featureId) {
+          const tooltip = target.dataset.tooltip
           onMouseMove?.(e, featureId, tooltip)
         }
       }}

@@ -29,16 +29,17 @@ export function addSubfeaturesToLayoutAndFlatbush({
   subfeatureLabels,
   transcriptTypes,
   labelColor,
+  parentTooltip,
 }: {
   layout: BaseLayout<unknown>
   featureLayout: FeatureLayout
-  parentFeatureId: string
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
   config: AnyConfigurationModel
   subfeatureLabels: string
   transcriptTypes: string[]
   labelColor: string
+  parentTooltip: string
 }) {
   const showSubfeatureLabels = subfeatureLabels !== 'none'
   for (const child of featureLayout.children) {
@@ -77,6 +78,8 @@ export function addSubfeaturesToLayoutAndFlatbush({
         featureHeight: child.height,
         subfeatureLabels,
         color: labelColor,
+        parentFeatureId: featureLayout.feature.id(),
+        tooltip: parentTooltip,
       })
       if (label) {
         floatingLabels.push(label)

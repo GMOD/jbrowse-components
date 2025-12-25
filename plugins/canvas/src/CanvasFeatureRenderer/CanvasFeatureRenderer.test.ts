@@ -89,6 +89,52 @@ describe('CanvasFeatureRenderer', () => {
       expect(layoutRecords[0]!.feature.id()).toBe('test1')
       expect(layoutRecords[0]!.layout.width).toBe(100)
       expect(layoutRecords[0]!.topPx).toBe(0)
+      expect(layoutRecords[0]!.layout.glyphType).toBe('Box')
+    })
+
+    test('layout stores glyphType for use during drawing', () => {
+      const geneFeature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            subfeatures: [
+              { uniqueId: 'cds1', refName: 'ctgA', type: 'CDS', start: 150, end: 450, phase: 0 },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', geneFeature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region)
+
+      const layoutRecords = layoutFeatures({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      expect(layoutRecords).toHaveLength(1)
+      const geneLayout = layoutRecords[0]!.layout
+      expect(geneLayout.glyphType).toBe('Subfeatures')
+      expect(geneLayout.children).toHaveLength(1)
+      expect(geneLayout.children[0]!.glyphType).toBe('ProcessedTranscript')
     })
 
     test('multiple features get stacked', () => {
@@ -317,6 +363,87 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.items[0]!.featureId).toBe('gene1')
       expect(result.subfeatureInfos).toHaveLength(1)
       expect(result.subfeatureInfos[0]!.type).toBe('mRNA')
+    })
+
+    test('subfeature floating labels include parentFeatureId and tooltip for mouseover', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            name: 'TestTranscript',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 450,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const region = {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'volvox',
+      }
+      const args = createRenderArgs(features, region, {
+        subfeatureLabels: 'below',
+      })
+
+      const layoutRecords = layoutFeatures({
+        features,
+        bpPerPx: args.bpPerPx,
+        region: args.region,
+        config: args.config,
+        configContext: args.configContext,
+        layout: args.layout,
+      })
+
+      const width = (region.end - region.start) / args.bpPerPx
+
+      await renderToAbstractCanvas(
+        width,
+        100,
+        { highResolutionScaling: 1 },
+        ctx =>
+          makeImageData({
+            ctx,
+            layoutRecords,
+            canvasWidth: width,
+            renderArgs: {
+              ...args,
+              features,
+              regions: [args.region],
+            },
+            configContext: args.configContext,
+          }),
+      )
+
+      const transcriptLayout = args.layout.getRectangles().get('mrna1')
+      expect(transcriptLayout).toBeDefined()
+
+      const layoutData = transcriptLayout![4]
+      expect(layoutData).toBeDefined()
+      expect(layoutData.floatingLabels).toBeDefined()
+      expect(layoutData.floatingLabels!.length).toBeGreaterThan(0)
+
+      const floatingLabel = layoutData.floatingLabels![0]!
+      expect(floatingLabel.parentFeatureId).toBe('gene1')
     })
 
     test('compact display mode', async () => {
