@@ -6,17 +6,8 @@ export async function makeImageData(
   pluginManager: PluginManager,
 ) {
   const { renderMultiWiggle } = await import('../multiRendererHelper')
-  return renderMultiWiggle(
-    pluginManager,
-    renderProps,
-    async (props, arrays) => {
-      const { renderMultiXYPlotArrays } =
-        await import('./renderMultiXYPlotArrays')
-      return renderMultiXYPlotArrays(props, arrays)
-    },
-    async (props, features) => {
-      const { renderMultiXYPlot } = await import('./renderMultiXYPlot')
-      return renderMultiXYPlot(props, features)
-    },
-  )
+  return renderMultiWiggle(pluginManager, renderProps, async (props, features) => {
+    const { renderMultiXYPlot } = await import('./renderMultiXYPlot')
+    return renderMultiXYPlot(props, features)
+  })
 }

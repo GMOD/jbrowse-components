@@ -1555,10 +1555,10 @@
     crc "^4.3.2"
     generic-filehandle2 "^2.0.16"
 
-"@gmod/bbi@^8.0.4":
-  version "8.0.4"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-8.0.4.tgz#8f35bce087aa75553ddfeb901805359b796ca2e6"
-  integrity sha512-HuOxSwru+lYXYZHInJ8DNaiqV8hfASicTaELQdlxjE5Ns+SiNuB8pSXimnSpiiH00JDpfnupg8Srkh7XEXXaCA==
+"@gmod/bbi@^8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-8.1.0.tgz#30f7579cadd83652e2a5dc29e120b7c7190febdb"
+  integrity sha512-WfUu2d6IhHUcJ0S+XjpXr6JE4/ikoCNr5sX+6CZ70QJU8s6pkRrrCz+lv2sTJFqjRODZgXDm7PzUqTvheN2G8Q==
   dependencies:
     "@gmod/abortable-promise-cache" "^3.0.1"
     "@jbrowse/quick-lru" "^7.0.0"

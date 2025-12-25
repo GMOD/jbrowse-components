@@ -8,7 +8,6 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
 
-import type { WiggleFeatureArrays } from '../drawXY'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type {
@@ -20,8 +19,6 @@ interface WiggleOptions extends BaseOptions {
   resolution?: number
   staticBlocks?: Region[]
 }
-
-export type MultiWiggleFeatureArrays = Record<string, WiggleFeatureArrays>
 
 function getFilename(uri: string) {
   const filename = uri.slice(uri.lastIndexOf('/') + 1)
@@ -168,106 +165,18 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }, opts.stopToken)
   }
 
-  /**
-   * Returns raw feature arrays for each source.
-   * This is more efficient than getFeatures() when you don't need Feature objects.
-   */
-  public async getFeaturesAsArrays(
-    region: Region,
-    opts: WiggleOptions = {},
-  ): Promise<MultiWiggleFeatureArrays> {
-    const adapters = await this.getAdapters()
-    const results = await Promise.all(
-      adapters.map(async adp => {
-        const { source, dataAdapter } = adp
-        // Check if adapter supports getFeaturesAsArrays
-        if ('getFeaturesAsArrays' in dataAdapter) {
-          const arrays = await (dataAdapter as any).getFeaturesAsArrays(
-            region,
-            opts,
-          )
-          return { source, arrays }
-        }
-        return { source, arrays: null }
-      }),
-    )
-
-    const arraysBySource: MultiWiggleFeatureArrays = {}
-    for (const { source, arrays } of results) {
-      if (arrays) {
-        arraysBySource[source] = arrays
-      }
-    }
-    return arraysBySource
-  }
-
-  /**
-   * Optimized stats calculation using arrays directly instead of Feature objects.
-   */
   public async getRegionQuantitativeStats(
     region: Region,
     opts?: WiggleOptions,
   ) {
-    const { start, end } = region
-    const arraysBySource = await this.getFeaturesAsArrays(region, {
-      ...opts,
-      // use low resolution for stats estimation
-      bpPerPx: (end - start) / 1000,
-    })
-
-    let scoreMin = Number.MAX_VALUE
-    let scoreMax = Number.MIN_VALUE
-    let scoreSum = 0
-    let scoreSumSquares = 0
-    let featureCount = 0
-
-    for (const arrays of Object.values(arraysBySource)) {
-      const { scores, minScores, maxScores } = arrays
-      const len = scores.length
-
-      for (let i = 0; i < len; i++) {
-        const score = scores[i]!
-        const min = minScores?.[i] ?? score
-        const max = maxScores?.[i] ?? score
-
-        scoreMin = Math.min(scoreMin, min)
-        scoreMax = Math.max(scoreMax, max)
-        scoreSum += score
-        scoreSumSquares += score * score
-        featureCount++
-      }
-    }
-
-    if (featureCount === 0) {
-      return {
-        scoreMin: 0,
-        scoreMax: 0,
-        scoreSum: 0,
-        scoreSumSquares: 0,
-        scoreMean: 0,
-        scoreStdDev: 0,
-        featureCount: 0,
-        basesCovered: end - start,
-        featureDensity: 0,
-      }
-    }
-
-    const scoreMean = scoreSum / featureCount
-    const scoreStdDev = Math.sqrt(
-      scoreSumSquares / featureCount - scoreMean * scoreMean,
+    const adapters = await this.getAdapters()
+    const allStats = await Promise.all(
+      adapters.map(async adp => {
+        const { dataAdapter } = adp
+        return dataAdapter.getRegionQuantitativeStats(region, opts)
+      }),
     )
-
-    return {
-      scoreMin,
-      scoreMax,
-      scoreSum,
-      scoreSumSquares,
-      scoreMean,
-      scoreStdDev,
-      featureCount,
-      basesCovered: end - start,
-      featureDensity: featureCount / (end - start),
-    }
+    return aggregateQuantitativeStats(allStats.filter(Boolean))
   }
 
   // always render bigwig instead of calculating a feature density for it

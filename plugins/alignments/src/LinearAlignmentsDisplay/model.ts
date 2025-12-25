@@ -92,6 +92,23 @@ function stateModelFactory(
       get showLegend() {
         return self.PileupDisplay?.showLegend
       },
+
+      /**
+       * #getter
+       * Returns true when both sub-displays have finished rendering.
+       */
+      get renderingComplete() {
+        const pileup = self.PileupDisplay
+        const snpCov = self.SNPCoverageDisplay
+        if (!pileup || !snpCov) {
+          return false
+        }
+        const pileupComplete =
+          'renderingComplete' in pileup ? pileup.renderingComplete : true
+        const snpCovComplete =
+          'renderingComplete' in snpCov ? snpCov.renderingComplete : true
+        return pileupComplete && snpCovComplete
+      },
     }))
     .views(self => ({
       /**
