@@ -6,6 +6,7 @@ import {
   forEachWithStopTokenCheck,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import {
   YSCALEBAR_LABEL_OFFSET,
@@ -16,7 +17,12 @@ import { rpcResult } from 'librpc-web-mod'
 
 import { alphaColor } from '../shared/util'
 
-import type { RenderArgsDeserializedWithFeatures } from './types'
+import type {
+  ClickMapItem,
+  InterbaseIndicatorItem,
+  RenderArgsDeserializedWithFeatures,
+  SNPItem,
+} from './types'
 import type { BaseCoverageBin } from '../shared/types'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -109,6 +115,22 @@ interface SkipFeatureSerialized {
   effectiveStrand: number
 }
 
+function buildClickMap(coords: number[], items: ClickMapItem[]) {
+  const flatbush = new Flatbush(Math.max(items.length, 1))
+  if (coords.length) {
+    for (let i = 0; i < coords.length; i += 4) {
+      flatbush.add(coords[i]!, coords[i + 1]!, coords[i + 2], coords[i + 3])
+    }
+  } else {
+    flatbush.add(0, 0)
+  }
+  flatbush.finish()
+  return {
+    flatbush: flatbush.data,
+    items,
+  }
+}
+
 export async function renderSNPCoverageToCanvas(
   props: RenderArgsDeserializedWithFeatures,
 ) {
@@ -139,7 +161,7 @@ export async function renderSNPCoverageToCanvas(
     }
   }
 
-  const { reducedFeatures, ...rest } = await renderToAbstractCanvas(
+  const { reducedFeatures, coords, items, ...rest } = await renderToAbstractCanvas(
     width,
     height,
     props,
@@ -153,6 +175,7 @@ export async function renderSNPCoverageToCanvas(
       uniqueId: `${adapterId}-${f.start}-${idx}`,
     })),
     skipFeatures,
+    clickMap: buildClickMap(coords as number[], items as ClickMapItem[]),
     height,
     width,
   }
@@ -226,6 +249,10 @@ function drawSNPCoverage(
   // Collect reduced features for serialization (one per pixel)
   const reducedFeatures: ReducedFeature[] = []
   let prevReducedLeftPx = Number.NEGATIVE_INFINITY
+
+  // Collect clickMap data
+  const coords: number[] = []
+  const items: ClickMapItem[] = []
 
   // First pass: draw the gray background
   ctx.fillStyle = colorMap.total!
@@ -371,65 +398,127 @@ function drawSNPCoverage(
         curr += entryDepth
       }
     } else {
-      const { depth, snps } = snpinfo
+      const { depth, snps, refbase } = snpinfo
       let curr = 0
       for (const base of Object.keys(snps).sort().reverse()) {
-        const { entryDepth } = snps[base]!
+        const entry = snps[base]!
+        const { entryDepth } = entry
         const h = toHeight(score0)
         const bottom = toY(score0) + h
+        const y1 = bottom - ((entryDepth + curr) / depth) * h
+        const barHeight = (entryDepth / depth) * h
         ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * h,
-          w,
-          (entryDepth / depth) * h,
-        )
+        ctx.fillRect(Math.round(leftPx), y1, w, barHeight)
+
+        // Add to clickMap if significant (>4% of reads)
+        const frequency = entryDepth / score0
+        if (frequency >= 0.04) {
+          coords.push(Math.round(leftPx), y1, Math.round(leftPx) + w, y1 + barHeight)
+          const snpItem: SNPItem = {
+            type: 'snp',
+            base,
+            count: entryDepth,
+            total: score0,
+            refbase: refbase?.toUpperCase(),
+            avgQual: entry.avgProbability,
+            fwdCount: entry['1'] || 0,
+            revCount: entry['-1'] || 0,
+            bin: snpinfo,
+            start: feature.get('start'),
+            end: feature.get('end'),
+          }
+          items.push(snpItem)
+        }
         curr += entryDepth
       }
     }
 
     const interbaseEvents = Object.keys(snpinfo.noncov)
-    if (showInterbaseCounts) {
-      let curr = 0
-      for (const base of interbaseEvents) {
-        const { entryDepth } = snpinfo.noncov[base]!
-        const r = 0.6
-        ctx.fillStyle = colorMap[base]!
-        ctx.fillRect(
-          leftPx - r + extraHorizontallyFlippedOffset,
-          INTERBASE_INDICATOR_HEIGHT + toHeight2(curr),
-          r * 2,
-          toHeight2(entryDepth),
-        )
-        curr += entryDepth
-      }
-    }
-
-    if (showInterbaseIndicators) {
-      let accum = 0
+    if (interbaseEvents.length > 0) {
+      let totalCount = 0
       let max = 0
       let maxBase = ''
       for (const base of interbaseEvents) {
         const { entryDepth } = snpinfo.noncov[base]!
-        accum += entryDepth
+        totalCount += entryDepth
         if (entryDepth > max) {
           max = entryDepth
           maxBase = base
         }
       }
 
-      const indicatorComparatorScore = Math.max(score0, prevTotal)
-      if (
-        accum > indicatorComparatorScore * indicatorThreshold &&
-        indicatorComparatorScore > MINIMUM_INTERBASE_INDICATOR_READ_DEPTH
-      ) {
-        ctx.fillStyle = colorMap[maxBase]!
-        ctx.beginPath()
-        const l = leftPx + extraHorizontallyFlippedOffset
-        ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)
-        ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
-        ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
-        ctx.fill()
+      const fstart = feature.get('start')
+      const maxEntry = snpinfo.noncov[maxBase]
+
+      if (showInterbaseCounts) {
+        const r = 0.6
+        const x = leftPx - r + extraHorizontallyFlippedOffset
+        let currHeight = 0
+        let totalHeight = 0
+        for (const base of interbaseEvents) {
+          const { entryDepth } = snpinfo.noncov[base]!
+          const barHeight = toHeight2(entryDepth)
+          ctx.fillStyle = colorMap[base]!
+          ctx.fillRect(x, INTERBASE_INDICATOR_HEIGHT + currHeight, r * 2, barHeight)
+          currHeight += barHeight
+          totalHeight += barHeight
+        }
+
+        // Add to clickmap when zoomed in or when significant
+        const isMajorityInterbase = score0 > 0 && totalCount > score0 * indicatorThreshold
+        if (bpPerPx < 50 || isMajorityInterbase) {
+          const clickWidth = Math.max(r * 2, 4)
+          coords.push(x, INTERBASE_INDICATOR_HEIGHT, x + clickWidth, INTERBASE_INDICATOR_HEIGHT + totalHeight)
+          const interbaseItem: InterbaseIndicatorItem = {
+            type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+            base: maxBase,
+            count: totalCount,
+            total: score0,
+            avgLength: maxEntry?.avgLength,
+            minLength: maxEntry?.minLength,
+            maxLength: maxEntry?.maxLength,
+            topSequence: maxEntry?.topSequence,
+            start: fstart,
+          }
+          items.push(interbaseItem)
+        }
+      }
+
+      if (showInterbaseIndicators) {
+        const indicatorComparatorScore = Math.max(score0, prevTotal)
+        if (
+          totalCount > indicatorComparatorScore * indicatorThreshold &&
+          indicatorComparatorScore > MINIMUM_INTERBASE_INDICATOR_READ_DEPTH
+        ) {
+          ctx.fillStyle = colorMap[maxBase]!
+          ctx.beginPath()
+          const l = leftPx + extraHorizontallyFlippedOffset
+          ctx.moveTo(l - INTERBASE_INDICATOR_WIDTH / 2, 0)
+          ctx.lineTo(l + INTERBASE_INDICATOR_WIDTH / 2, 0)
+          ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
+          ctx.fill()
+
+          // Add triangle to clickmap
+          const hitboxPadding = 3
+          coords.push(
+            l - INTERBASE_INDICATOR_WIDTH / 2 - hitboxPadding,
+            0,
+            l + INTERBASE_INDICATOR_WIDTH / 2 + hitboxPadding,
+            INTERBASE_INDICATOR_HEIGHT + hitboxPadding,
+          )
+          const interbaseItem: InterbaseIndicatorItem = {
+            type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+            base: maxBase,
+            count: totalCount,
+            total: indicatorComparatorScore,
+            avgLength: maxEntry?.avgLength,
+            minLength: maxEntry?.minLength,
+            maxLength: maxEntry?.maxLength,
+            topSequence: maxEntry?.topSequence,
+            start: fstart,
+          }
+          items.push(interbaseItem)
+        }
       }
     }
     prevTotal = score0
@@ -476,5 +565,5 @@ function drawSNPCoverage(
     }
   }
 
-  return { reducedFeatures }
+  return { reducedFeatures, coords, items }
 }
