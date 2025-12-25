@@ -133,40 +133,40 @@ gttacgaaatccgcgcacaagtgtcgtgccactctcgtaaagaa"
 
 exports[`save track data for GFF track 1`] = `
 "##gff-version 3
-ctgA	example	contig	1	50001	.	.	.	Name=ctgA;multivalue=val1,val2,val3;_lineHash=790962
-ctgA	example	BAC	1000	20000	.	.	.	ID=b101.2;Name=b101.2;Note=Fingerprinted BAC with end reads;_lineHash=791032
-ctgA	example	clone_start	1000	1500	.	+	.	Parent=b101.2;_lineHash=791253
-ctgA	example	clone_end	19500	20000	.	-	.	Parent=b101.2;_lineHash=797050
-ctgA	est	EST_match	1050	7300	.	+	.	ID=Match3;Name=agt221.5;Target=agt221.5 1 1253;_lineHash=791451
-ctgA	est	match_part	1050	1500	.	+	.	Parent=Match3;Name=agt221.5;Target=agt221.5 1 451;_lineHash=791619
-ctgA	est	match_part	5000	5500	.	+	.	Parent=Match3;Name=agt221.5;Target=agt221.5 452 952;_lineHash=793283
-ctgA	est	match_part	7000	7300	.	+	.	Parent=Match3;Name=agt221.5;Target=agt221.5 953 1253;_lineHash=794042
-ctgA	example	gene	1050	9000	.	+	.	ID=EDEN;Name=EDEN;Note=protein kinase;_lineHash=791705
-ctgA	example	mRNA	1050	9000	.	+	.	Parent=EDEN;ID=EDEN.1;Name=EDEN.1;Note=Eden splice form 1;index=1;_lineHash=791777
-ctgA	example	five_prime_UTR	1050	1200	.	+	.	Parent=EDEN.1;_lineHash=791977
-ctgA	example	CDS	1201	1500	.	+	0	Parent=EDEN.1;_lineHash=792416
-ctgA	example	CDS	3000	3902	.	+	0	Parent=EDEN.1;_lineHash=792980
-ctgA	example	CDS	5000	5500	.	+	0	Parent=EDEN.1;_lineHash=793459
-ctgA	example	CDS	7000	7608	.	+	0	Parent=EDEN.1;_lineHash=794264
-ctgA	example	three_prime_UTR	7609	9000	.	+	.	Parent=EDEN.1;_lineHash=794590
-ctgA	example	mRNA	1050	9000	.	+	.	Parent=EDEN;ID=EDEN.2;Name=EDEN.2;Note=Eden splice form 2;index=1;_lineHash=791877
-ctgA	example	five_prime_UTR	1050	1200	.	+	.	Parent=EDEN.2;_lineHash=792035
-ctgA	example	CDS	1201	1500	.	+	0	Parent=EDEN.2;_lineHash=792463
-ctgA	example	CDS	5000	5500	.	+	0	Parent=EDEN.2;_lineHash=793506
-ctgA	example	CDS	7000	7608	.	+	0	Parent=EDEN.2;_lineHash=794311
-ctgA	example	three_prime_UTR	7609	9000	.	+	.	Parent=EDEN.2;_lineHash=794649
-ctgA	example	mRNA	1300	9000	.	+	.	Parent=EDEN;ID=EDEN.3;Name=EDEN.3;Note=Eden splice form 3;index=1;_lineHash=792510
-ctgA	example	five_prime_UTR	1300	1500	.	+	.	Parent=EDEN.3;_lineHash=792610
-ctgA	example	five_prime_UTR	3000	3300	.	+	.	Parent=EDEN.3;_lineHash=793027
-ctgA	example	CDS	3301	3902	.	+	0	Parent=EDEN.3;_lineHash=793159
-ctgA	example	CDS	5000	5500	.	+	1	Parent=EDEN.3;_lineHash=793553
-ctgA	example	CDS	7000	7600	.	+	1	Parent=EDEN.3;_lineHash=794217
-ctgA	example	three_prime_UTR	7601	9000	.	+	.	Parent=EDEN.3;_lineHash=794531
-ctgA	est	EST_match	1150	7200	.	+	.	ID=Match5;Name=agt767.5;Target=agt767.5 1 1153;_lineHash=792180
-ctgA	est	match_part	1150	1500	.	+	.	Parent=Match5;Name=agt767.5;Target=agt767.5 1 351;_lineHash=792262
-ctgA	est	match_part	5000	5500	.	+	.	Parent=Match5;Name=agt767.5;Target=agt767.5 352 852;_lineHash=793371
-ctgA	est	match_part	7000	7200	.	+	.	Parent=Match5;Name=agt767.5;Target=agt767.5 853 1153;_lineHash=793953
-ctgA	example	remark	3014	6130	.	+	.	Name=f06;Note=This is another example;_lineHash=793085"
+ctgA	example	contig	1	50001	.	.	.	Name=ctgA;multivalue=val1,val2,val3
+ctgA	example	BAC	1000	20000	.	.	.	ID=b101.2;Name=b101.2;Note=Fingerprinted BAC with end reads
+ctgA	example	clone_start	1000	1500	.	+	.	Parent=b101.2
+ctgA	example	clone_end	19500	20000	.	-	.	Parent=b101.2
+ctgA	est	EST_match	1050	7300	.	+	.	ID=Match3;Name=agt221.5;Target=agt221.5 1 1253
+ctgA	est	match_part	1050	1500	.	+	.	Parent=Match3;Name=agt221.5;Target=agt221.5 1 451
+ctgA	est	match_part	5000	5500	.	+	.	Parent=Match3;Name=agt221.5;Target=agt221.5 452 952
+ctgA	est	match_part	7000	7300	.	+	.	Parent=Match3;Name=agt221.5;Target=agt221.5 953 1253
+ctgA	example	gene	1050	9000	.	+	.	ID=EDEN;Name=EDEN;Note=protein kinase
+ctgA	example	mRNA	1050	9000	.	+	.	Parent=EDEN;ID=EDEN.1;Name=EDEN.1;Note=Eden splice form 1;index=1
+ctgA	example	five_prime_UTR	1050	1200	.	+	.	Parent=EDEN.1
+ctgA	example	CDS	1201	1500	.	+	0	Parent=EDEN.1
+ctgA	example	CDS	3000	3902	.	+	0	Parent=EDEN.1
+ctgA	example	CDS	5000	5500	.	+	0	Parent=EDEN.1
+ctgA	example	CDS	7000	7608	.	+	0	Parent=EDEN.1
+ctgA	example	three_prime_UTR	7609	9000	.	+	.	Parent=EDEN.1
+ctgA	example	mRNA	1050	9000	.	+	.	Parent=EDEN;ID=EDEN.2;Name=EDEN.2;Note=Eden splice form 2;index=1
+ctgA	example	five_prime_UTR	1050	1200	.	+	.	Parent=EDEN.2
+ctgA	example	CDS	1201	1500	.	+	0	Parent=EDEN.2
+ctgA	example	CDS	5000	5500	.	+	0	Parent=EDEN.2
+ctgA	example	CDS	7000	7608	.	+	0	Parent=EDEN.2
+ctgA	example	three_prime_UTR	7609	9000	.	+	.	Parent=EDEN.2
+ctgA	example	mRNA	1300	9000	.	+	.	Parent=EDEN;ID=EDEN.3;Name=EDEN.3;Note=Eden splice form 3;index=1
+ctgA	example	five_prime_UTR	1300	1500	.	+	.	Parent=EDEN.3
+ctgA	example	five_prime_UTR	3000	3300	.	+	.	Parent=EDEN.3
+ctgA	example	CDS	3301	3902	.	+	0	Parent=EDEN.3
+ctgA	example	CDS	5000	5500	.	+	1	Parent=EDEN.3
+ctgA	example	CDS	7000	7600	.	+	1	Parent=EDEN.3
+ctgA	example	three_prime_UTR	7601	9000	.	+	.	Parent=EDEN.3
+ctgA	est	EST_match	1150	7200	.	+	.	ID=Match5;Name=agt767.5;Target=agt767.5 1 1153
+ctgA	est	match_part	1150	1500	.	+	.	Parent=Match5;Name=agt767.5;Target=agt767.5 1 351
+ctgA	est	match_part	5000	5500	.	+	.	Parent=Match5;Name=agt767.5;Target=agt767.5 352 852
+ctgA	est	match_part	7000	7200	.	+	.	Parent=Match5;Name=agt767.5;Target=agt767.5 853 1153
+ctgA	example	remark	3014	6130	.	+	.	Name=f06;Note=This is another example"
 `;
 
 exports[`save track data for VCF track 1`] = `
