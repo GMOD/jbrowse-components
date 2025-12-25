@@ -35,13 +35,6 @@ describe('CachedConfig', () => {
         isCallback: true,
       }
 
-      // Create a mock config that returns a different value per-feature
-      const mockConfig = {
-        color1: {
-          isCallback: true,
-        },
-      }
-
       // Since readConfObject is complex, we test the structure
       // The actual readConfObject call is tested in core
       expect(cached.isCallback).toBe(true)

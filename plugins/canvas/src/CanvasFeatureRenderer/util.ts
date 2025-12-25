@@ -40,11 +40,9 @@ export function getBoxColor({
   const { color1, color3 } = configContext
 
   let fill: string
-  if (isUTR(feature)) {
-    fill = readCachedConfig(color3, config, 'color3', feature)
-  } else {
-    fill = readCachedConfig(color1, config, 'color1', feature)
-  }
+  fill = isUTR(feature)
+    ? readCachedConfig(color3, config, 'color3', feature)
+    : readCachedConfig(color1, config, 'color1', feature)
 
   const featureType: string | undefined = feature.get('type')
   const featureStrand: -1 | 1 | undefined = feature.get('strand')
@@ -75,7 +73,7 @@ export function getBoxColor({
 }
 
 function getSubfeatures(feature: Feature): Feature[] | undefined {
-  return feature.get('subfeatures') as Feature[] | undefined
+  return feature.get('subfeatures')
 }
 
 function hasCDSChild(subfeatures: Feature[]) {

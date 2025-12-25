@@ -107,7 +107,14 @@ describe('CanvasFeatureRenderer', () => {
             start: 100,
             end: 500,
             subfeatures: [
-              { uniqueId: 'cds1', refName: 'ctgA', type: 'CDS', start: 150, end: 450, phase: 0 },
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 450,
+                phase: 0,
+              },
             ],
           },
         ],
