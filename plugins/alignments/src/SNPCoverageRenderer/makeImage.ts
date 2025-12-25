@@ -4,17 +4,21 @@ import {
   bpSpanPx,
   featureSpanPx,
   forEachWithStopTokenCheck,
+  renderToAbstractCanvas,
 } from '@jbrowse/core/util'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import {
   YSCALEBAR_LABEL_OFFSET,
   getOrigin,
   getScale,
 } from '@jbrowse/plugin-wiggle'
+import { rpcResult } from 'librpc-web-mod'
 
 import { alphaColor } from '../shared/util'
 
 import type { RenderArgsDeserializedWithFeatures } from './types'
 import type { BaseCoverageBin } from '../shared/types'
+import type { Feature } from '@jbrowse/core/util'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
@@ -54,17 +58,6 @@ interface ModificationCountsResult {
   readonly detectable: number
 }
 
-/**
- * Calculate modifiable and detectable counts for a modification following IGV's algorithm.
- *
- * @param params.base - The canonical base (e.g., 'A' for A+a modification)
- * @param params.isSimplex - Whether this modification is simplex (only on one strand)
- * @param params.refbase - The reference base at this position
- * @param params.snps - SNP counts at this position
- * @param params.ref - Reference match counts at this position
- * @param params.score0 - Total coverage at this position
- * @returns Object with modifiable and detectable counts
- */
 function calculateModificationCounts({
   base,
   isSimplex,
@@ -73,28 +66,19 @@ function calculateModificationCounts({
   ref,
   score0,
 }: ModificationCountsParams): ModificationCountsResult {
-  // Handle N base (all bases are modifiable/detectable)
   if (base === 'N') {
     return { modifiable: score0, detectable: score0 }
   }
 
   const cmp = complementBase[base as keyof typeof complementBase]
 
-  // Calculate total reads for base and complement
-  // IGV: getCount(pos, base) = reads matching that base (from SNPs or ref)
   const baseCount =
     (snps[base]?.entryDepth || 0) + (refbase === base ? ref.entryDepth : 0)
   const complCount =
     (snps[cmp]?.entryDepth || 0) + (refbase === cmp ? ref.entryDepth : 0)
 
-  // Modifiable: reads that COULD have this modification (base or complement)
-  // IGV: modifiable = getCount(pos, base) + getCount(pos, compl)
   const modifiable = baseCount + complCount
 
-  // Detectable: reads where we can DETECT this modification
-  // For simplex: only specific strands (+ for base, - for complement)
-  // For duplex: all reads (same as modifiable)
-  // IGV: detectable = simplex ? getPosCount(base) + getNegCount(compl) : modifiable
   const detectable = isSimplex
     ? (snps[base]?.['1'] || 0) +
       (snps[cmp]?.['-1'] || 0) +
@@ -105,9 +89,81 @@ function calculateModificationCounts({
   return { modifiable, detectable }
 }
 
-export async function makeImage(
+interface ReducedFeature {
+  uniqueId: string
+  start: number
+  end: number
+  score: number
+  snpinfo: BaseCoverageBin
+  refName: string
+}
+
+interface SkipFeatureSerialized {
+  uniqueId: string
+  type: 'skip'
+  refName: string
+  start: number
+  end: number
+  strand: number
+  score: number
+  effectiveStrand: number
+}
+
+export async function renderSNPCoverageToCanvas(
+  props: RenderArgsDeserializedWithFeatures,
+) {
+  const { features, regions, bpPerPx, adapterConfig } = props
+  const region = regions[0]!
+  const width = (region.end - region.start) / bpPerPx
+  const height = props.height
+  const adapterId = adapterConfig.adapterId ?? 'unknown'
+
+  // Separate skip features from coverage features
+  const skipFeatures: SkipFeatureSerialized[] = []
+  const coverageFeatures: Feature[] = []
+
+  for (const feature of features.values()) {
+    if (feature.get('type') === 'skip') {
+      skipFeatures.push({
+        uniqueId: feature.id(),
+        type: 'skip',
+        refName: region.refName,
+        start: feature.get('start'),
+        end: feature.get('end'),
+        strand: feature.get('strand'),
+        score: feature.get('score'),
+        effectiveStrand: feature.get('effectiveStrand'),
+      })
+    } else {
+      coverageFeatures.push(feature)
+    }
+  }
+
+  const { reducedFeatures, ...rest } = await renderToAbstractCanvas(
+    width,
+    height,
+    props,
+    ctx => drawSNPCoverage(ctx, props, coverageFeatures),
+  )
+
+  const serialized = {
+    ...rest,
+    features: (reducedFeatures as ReducedFeature[]).map((f, idx) => ({
+      ...f,
+      uniqueId: `${adapterId}-${f.start}-${idx}`,
+    })),
+    skipFeatures,
+    height,
+    width,
+  }
+
+  return rpcResult(serialized, collectTransferables(rest))
+}
+
+function drawSNPCoverage(
   ctx: CanvasRenderingContext2D,
   props: RenderArgsDeserializedWithFeatures,
+  coverageFeatures: Feature[],
 ) {
   const {
     features,
@@ -128,16 +184,12 @@ export async function makeImage(
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
-  // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
-  // wiggle display, and makes the height of the actual drawn area add
-  // "padding" to the top and bottom of the display
   const offset = YSCALEBAR_LABEL_OFFSET
   const height = unadjustedHeight - offset * 2
 
   const opts = { ...scaleOpts, range: [0, height] }
   const viewScale = getScale(opts)
 
-  // clipping and insertion indicators, uses a smaller height/2 scale
   const indicatorViewScale = getScale({
     ...opts,
     range: [0, height / 2],
@@ -151,10 +203,8 @@ export async function makeImage(
   const showArcs = readConfObject(cfg, 'showArcs')
   const showInterbaseIndicators = readConfObject(cfg, 'showInterbaseIndicators')
 
-  // get the y coordinate that we are plotting at, this can be log scale
   const toY = (n: number) => height - (viewScale(n) || 0) + offset
   const toHeight = (n: number) => toY(originY) - toY(n)
-  // used specifically for indicator
   const toY2 = (n: number) => height - (indicatorViewScale(n) || 0) + offset
   const toHeight2 = (n: number) => toY2(originLinear) - toY2(n)
 
@@ -173,57 +223,53 @@ export async function makeImage(
     cpg_unmeth: 'blue',
   }
 
-  // Use two pass rendering, which helps in visualizing the SNPs at higher
-  // bpPerPx First pass: draw the gray background
+  // Collect reduced features for serialization (one per pixel)
+  const reducedFeatures: ReducedFeature[] = []
+  let prevReducedLeftPx = Number.NEGATIVE_INFINITY
+
+  // First pass: draw the gray background
   ctx.fillStyle = colorMap.total!
-  forEachWithStopTokenCheck(features.values(), stopToken, feature => {
-    if (feature.get('type') === 'skip') {
-      return
-    }
+  forEachWithStopTokenCheck(coverageFeatures, stopToken, feature => {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = rightPx - leftPx + fudgeFactor
     const score = feature.get('score') as number
     ctx.fillRect(leftPx, toY(score), w, toHeight(score))
+
+    // Collect one feature per pixel for reduced features
+    if (leftPx > prevReducedLeftPx + 1) {
+      reducedFeatures.push({
+        uniqueId: feature.id(),
+        start: feature.get('start'),
+        end: feature.get('end'),
+        score,
+        snpinfo: feature.get('snpinfo'),
+        refName: region.refName,
+      })
+      prevReducedLeftPx = leftPx
+    }
   })
 
-  // Keep track of previous total which we will use it to draw the interbase
-  // indicator (if there is a sudden clip, there will be no read coverage but
-  // there will be "clip" coverage) at that position beyond the read.
-  //
-  // if the clip is right at a block boundary then prevTotal will not be
-  // available, so this is a best attempt to plot interbase indicator at the
-  // "cliffs"
   let prevTotal = 0
-
-  // extraHorizontallyFlippedOffset is used to draw interbase items, which
-  // are located to the left when forward and right when reversed
   const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
 
   const drawingModifications = colorBy.type === 'modifications'
   const drawingMethylation = colorBy.type === 'methylation'
   const isolatedModification = colorBy.modifications?.isolatedModification
-  // Pre-create Set for O(1) simplex lookups during rendering
   const simplexSet = new Set(simplexModifications)
 
-  // Second pass: draw the SNP data, and add a minimum feature width of 1px
-  // which can be wider than the actual bpPerPx This reduces overdrawing of
-  // the grey background over the SNPs
-  forEachWithStopTokenCheck(features.values(), stopToken, feature => {
-    if (feature.get('type') === 'skip') {
-      return
-    }
+  // Second pass: draw the SNP data
+  forEachWithStopTokenCheck(coverageFeatures, stopToken, feature => {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin
     const w = Math.max(rightPx - leftPx, 1)
     const score0 = feature.get('score')
+
     if (drawingModifications) {
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
-      // Sort keys once outside the loop
       const nonmodKeys = Object.keys(nonmods).sort().reverse()
       for (const m of nonmodKeys) {
-        // Remove prefix once for lookup
         const modKey = m.replace(/^(nonmod_|mod_)/, '')
         const mod = visibleModifications[modKey]
         if (!mod) {
@@ -246,19 +292,18 @@ export async function makeImage(
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const nonModColor = 'blue'
         const c = alphaColor(nonModColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
 
         ctx.fillStyle = c
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - (curr + modFraction * height),
+          bottom - (curr + modFraction * h),
           w,
-          modFraction * height,
+          modFraction * h,
         )
-        curr += modFraction * height
+        curr += modFraction * h
       }
-      // Sort keys once outside the loop
       const modKeys = Object.keys(mods).sort().reverse()
       for (const m of modKeys) {
         const modKey = m.replace('mod_', '')
@@ -283,17 +328,17 @@ export async function makeImage(
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const baseColor = mod.color || 'black'
         const c = alphaColor(baseColor, avgProbability)
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
 
         ctx.fillStyle = c
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - (curr + modFraction * height),
+          bottom - (curr + modFraction * h),
           w,
-          modFraction * height,
+          modFraction * h,
         )
-        curr += modFraction * height
+        curr += modFraction * h
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = snpinfo
@@ -301,27 +346,27 @@ export async function makeImage(
 
       for (const base of Object.keys(mods).sort().reverse()) {
         const { entryDepth } = mods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
       for (const base of Object.keys(nonmods).sort().reverse()) {
         const { entryDepth } = nonmods[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
@@ -330,14 +375,14 @@ export async function makeImage(
       let curr = 0
       for (const base of Object.keys(snps).sort().reverse()) {
         const { entryDepth } = snps[base]!
-        const height = toHeight(score0)
-        const bottom = toY(score0) + height
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(
           Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * height,
+          bottom - ((entryDepth + curr) / depth) * h,
           w,
-          (entryDepth / depth) * height,
+          (entryDepth / depth) * h,
         )
         curr += entryDepth
       }
@@ -373,8 +418,6 @@ export async function makeImage(
         }
       }
 
-      // avoid drawing a bunch of indicators if coverage is very low. note:
-      // also uses the prev total in the case of the "cliff"
       const indicatorComparatorScore = Math.max(score0, prevTotal)
       if (
         accum > indicatorComparatorScore * indicatorThreshold &&
@@ -432,4 +475,6 @@ export async function makeImage(
       ctx.stroke()
     }
   }
+
+  return { reducedFeatures }
 }
