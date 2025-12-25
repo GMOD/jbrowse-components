@@ -113,4 +113,12 @@ export {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
+export {
+  configSchema as linearFeatureDisplayConfigSchemaFactory,
+  modelFactory as linearFeatureDisplayModelFactory,
+} from './LinearFeatureDisplay'
+export type {
+  LinearFeatureDisplayModel,
+  LinearFeatureDisplayStateModel,
+} from './LinearFeatureDisplay'
 export { default as LinearBasicDisplayComponent } from './LinearBasicDisplay/components/LinearBasicDisplayComponent'

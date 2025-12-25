@@ -40,7 +40,7 @@ test('opens a vcf track and clusters genotypes', async () => {
   const elt = await findByText('Run clustering', ...opts)
   await waitFor(() => {
     expect(elt).toHaveProperty('disabled', false)
-  })
+  }, delay)
   fireEvent.click(elt)
 
   await waitFor(() => {
