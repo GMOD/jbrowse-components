@@ -63,7 +63,7 @@ export async function renderMultiRowXYPlot(
 
   const serialized = {
     ...rest,
-    reducedFeatures: reducedFeatures.map(serializeWiggleFeature),
+    features: reducedFeatures.map(serializeWiggleFeature),
     height,
     width,
   }

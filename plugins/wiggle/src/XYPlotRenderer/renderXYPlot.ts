@@ -39,7 +39,7 @@ export async function renderXYPlot(
 
   const serialized = {
     ...rest,
-    reducedFeatures: reducedFeatures.map(serializeWiggleFeature),
+    features: reducedFeatures.map(serializeWiggleFeature),
     height,
     width,
   }
