@@ -5,7 +5,6 @@ import {
   blankStats,
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { updateStatus } from '@jbrowse/core/util'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
@@ -17,12 +16,6 @@ import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
-  staticBlocks?: Region[]
-}
-
-interface CachedStats {
-  view: ArrayFeatureView
-  region: Region
 }
 
 function computeStatsFromView(
@@ -110,25 +103,11 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     header: Awaited<ReturnType<BigWig['getHeader']>>
   }>
 
-  // Cache for stats arrays (keyed by region string)
-  private statsCache = new QuickLRU<string, CachedStats>({
-    maxSize: 50,
-    maxAge: 5 * 60 * 1000, // 5 minute TTL
-  })
-
   public static capabilities = [
     'hasResolution',
     'hasLocalStats',
     'hasGlobalStats',
   ]
-
-  // private estimateCacheBytes() {
-  //   let total = 0
-  //   for (const cached of this.statsCache.values()) {
-  //     total += estimateArraysByteSize(cached.arrays)
-  //   }
-  //   return total
-  // }
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
@@ -264,11 +243,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  /**
-   * Override to use static blocks for caching when available.
-   * Static blocks are stable "tiles" that don't change on small pans,
-   * providing better cache hit rates than dynamic blocks.
-   */
   async getMultiRegionQuantitativeStats(
     regions: Region[] = [],
     opts: WiggleOptions = {},
@@ -276,66 +250,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     if (!regions.length) {
       return blankStats()
     }
-
-    const { staticBlocks } = opts
-
-    // If staticBlocks provided, use them for caching and subselect for dynamic regions
-    if (staticBlocks?.length) {
-      // Fetch data for all static blocks (with caching)
-      const staticBlockData = await Promise.all(
-        staticBlocks.map(async block => {
-          const cacheKey = `${block.refName}:${block.start}-${block.end}`
-          let cached = this.statsCache.get(cacheKey)
-
-          if (!cached) {
-            const { start, end } = block
-            const view = await this.getArrayFeatureView(block, {
-              ...opts,
-              bpPerPx: (end - start) / 1000,
-            })
-            cached = { view, region: block }
-            this.statsCache.set(cacheKey, cached)
-          }
-
-          return cached
-        }),
-      )
-
-      // For each dynamic region, find overlapping static blocks and compute stats
-      const regionStats = regions.map(region => {
-        const overlappingBlocks = staticBlockData.filter(
-          ({ region: block }) =>
-            block.refName === region.refName &&
-            block.start < region.end &&
-            block.end > region.start,
-        )
-
-        if (overlappingBlocks.length === 0) {
-          return {
-            scoreMin: 0,
-            scoreMax: 0,
-            scoreSum: 0,
-            scoreSumSquares: 0,
-            scoreMean: 0,
-            scoreStdDev: 0,
-            featureCount: 0,
-            basesCovered: region.end - region.start,
-            featureDensity: 0,
-          }
-        }
-
-        // Compute stats from overlapping blocks, subselecting to region bounds
-        const blockStats = overlappingBlocks.map(({ view }) =>
-          computeStatsFromView(view, region.start, region.end),
-        )
-
-        return aggregateQuantitativeStats(blockStats)
-      })
-
-      return aggregateQuantitativeStats(regionStats)
-    }
-
-    // Fallback: fetch directly for each dynamic region (original behavior)
     const stats = await Promise.all(
       regions.map(region => this.getRegionQuantitativeStats(region, opts)),
     )
