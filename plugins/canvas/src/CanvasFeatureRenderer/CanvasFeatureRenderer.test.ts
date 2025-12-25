@@ -10,6 +10,18 @@ import { layoutFeatures } from './layoutFeatures'
 import { makeImageData } from './makeImageData'
 import { createRenderConfigContext } from './renderConfig'
 
+import type { FloatingLabelData } from './floatingLabels'
+
+interface LayoutSerializableData {
+  refName?: string
+  floatingLabels?: FloatingLabelData[]
+  totalFeatureHeight?: number
+  totalLayoutWidth?: number
+  actualTopPx?: number
+  featureWidth?: number
+  leftPadding?: number
+}
+
 const pluginManager = new PluginManager([])
 pluginManager.configure()
 
@@ -42,7 +54,10 @@ function createRenderArgs(
 ) {
   const config = configSchema.create(configOverrides, { pluginManager })
   const bpPerPx = 1
-  const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
+  const layout = new GranularRectLayout<LayoutSerializableData>({
+    pitchX: 1,
+    pitchY: 1,
+  })
   const configContext = createRenderConfigContext(config)
 
   return {
@@ -444,12 +459,12 @@ describe('CanvasFeatureRenderer', () => {
       const transcriptLayout = args.layout.getRectangles().get('mrna1')
       expect(transcriptLayout).toBeDefined()
 
-      const layoutData = transcriptLayout![4]
+      const layoutData = args.layout.getSerializableDataByID('mrna1')
       expect(layoutData).toBeDefined()
-      expect(layoutData.floatingLabels).toBeDefined()
-      expect(layoutData.floatingLabels!.length).toBeGreaterThan(0)
+      expect(layoutData!.floatingLabels).toBeDefined()
+      expect(layoutData!.floatingLabels!.length).toBeGreaterThan(0)
 
-      const floatingLabel = layoutData.floatingLabels![0]!
+      const floatingLabel = layoutData!.floatingLabels![0]!
       expect(floatingLabel.parentFeatureId).toBe('gene1')
     })
 

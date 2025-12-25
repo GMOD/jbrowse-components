@@ -1,7 +1,5 @@
 import { chooseGlyphType, isUTR, truncateLabel } from './util'
 
-import type { RenderConfigContext } from './renderConfig'
-
 // Mock feature factory
 function createMockFeature(opts: {
   type?: string
@@ -19,10 +17,7 @@ function createMockFeature(opts: {
 }
 
 // Default config context for tests
-const defaultConfigContext: Pick<
-  RenderConfigContext,
-  'transcriptTypes' | 'containerTypes'
-> = {
+const defaultConfigContext = {
   transcriptTypes: ['mRNA', 'transcript'],
   containerTypes: ['gene'],
 }
@@ -37,7 +32,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('CDS')
     })
@@ -47,7 +42,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('CDS')
     })
@@ -59,7 +54,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Box')
     })
@@ -69,7 +64,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Box')
     })
@@ -79,7 +74,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Box')
     })
@@ -97,7 +92,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('ProcessedTranscript')
     })
@@ -110,7 +105,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('ProcessedTranscript')
     })
@@ -126,7 +121,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Segments')
     })
@@ -146,7 +141,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Subfeatures')
     })
@@ -165,7 +160,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Subfeatures')
     })
@@ -185,7 +180,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Segments')
     })
@@ -204,7 +199,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Subfeatures')
     })
@@ -222,7 +217,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Segments')
     })
@@ -235,7 +230,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: defaultConfigContext as RenderConfigContext,
+          configContext: defaultConfigContext,
         }),
       ).toBe('Segments')
     })
@@ -245,7 +240,7 @@ describe('chooseGlyphType', () => {
     it('respects custom transcriptTypes', () => {
       const customConfig = {
         transcriptTypes: ['custom_transcript'],
-        containerTypes: [],
+        containerTypes: [] as string[],
       }
       const feature = createMockFeature({
         type: 'custom_transcript',
@@ -254,14 +249,14 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: customConfig as RenderConfigContext,
+          configContext: customConfig,
         }),
       ).toBe('ProcessedTranscript')
     })
 
     it('respects custom containerTypes', () => {
       const customConfig = {
-        transcriptTypes: [],
+        transcriptTypes: [] as string[],
         containerTypes: ['custom_container'],
       }
       const feature = createMockFeature({
@@ -271,7 +266,7 @@ describe('chooseGlyphType', () => {
       expect(
         chooseGlyphType({
           feature: feature as any,
-          configContext: customConfig as RenderConfigContext,
+          configContext: customConfig,
         }),
       ).toBe('Subfeatures')
     })

@@ -123,7 +123,7 @@ export function chooseGlyphType({
   configContext,
 }: {
   feature: Feature
-  configContext: RenderConfigContext
+  configContext: Pick<RenderConfigContext, 'transcriptTypes' | 'containerTypes'>
 }): GlyphType {
   const type = feature.get('type') as string
   if (type === 'CDS') {
