@@ -9,8 +9,8 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type { RenderArgsDeserialized } from './types'
-import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 interface SNPCoverageResultsSerialized extends ResultsSerialized {
   skipFeatures?: SimpleFeatureSerialized[]
