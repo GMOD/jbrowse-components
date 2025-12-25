@@ -1,12 +1,20 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { clamp, featureSpanPx } from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { WIGGLE_CLIP_HEIGHT, WIGGLE_FUDGE_FACTOR, getScale } from './util'
 
 import type { ScaleOpts } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type {
+  Feature,
+  LastStopTokenCheck,
+  Region,
+  StopToken,
+} from '@jbrowse/core/util'
 
 export function drawLine(
   ctx: CanvasRenderingContext2D,
@@ -21,7 +29,8 @@ export function drawLine(
     colorCallback: (f: Feature, score: number) => string
     config: AnyConfigurationModel
     offset?: number
-    stopToken?: string
+    stopToken?: StopToken
+    lastCheck?: LastStopTokenCheck
     // when color is static (e.g. in Multi renderers), set strokeStyle once and skip callback
     staticColor?: string
   },
@@ -37,8 +46,9 @@ export function drawLine(
     colorCallback,
     config,
     offset = 0,
-    stopToken,
     staticColor,
+    stopToken,
+    lastCheck = createStopTokenChecker(stopToken),
   } = props
   const region = regions[0]!
   const regionStart = region.start
@@ -86,12 +96,8 @@ export function drawLine(
     ctx.strokeStyle = staticColor
     const clippingFeatures: { leftPx: number; w: number; high: boolean }[] = []
 
-    let start = performance.now()
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
+      checkStopToken2(lastCheck)
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
       // create reduced features, avoiding multiple features per px
@@ -151,12 +157,8 @@ export function drawLine(
     }
   } else {
     // non-static color: stroke per feature (original behavior)
-    let start = performance.now()
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
+      checkStopToken2(lastCheck)
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
       // create reduced features, avoiding multiple features per px

@@ -4,7 +4,7 @@ import {
   updateStatus,
 } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawDensity } from '../drawDensity'
@@ -29,6 +29,7 @@ export async function renderMultiDensity(
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const rowHeight = height / sources.length
+  const lastCheck = createStopTokenChecker(stopToken)
 
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
@@ -38,17 +39,15 @@ export async function renderMultiDensity(
         const groups = groupBy(features.values(), f => f.get('source'))
         let feats: Feature[] = []
         ctx.save()
-        const lastCheck = { time: Date.now() }
-        let idx = 0
         for (const source of sources) {
           const { reducedFeatures } = drawDensity(ctx, {
             ...renderProps,
             features: groups[source.name] || [],
             height: rowHeight,
+            lastCheck,
           })
           ctx.translate(0, rowHeight)
           feats = feats.concat(reducedFeatures)
-          checkStopToken2(stopToken, idx++, lastCheck)
         }
         ctx.restore()
         return { reducedFeatures: feats }

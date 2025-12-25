@@ -2,15 +2,28 @@ import { clusterData, toNewick } from '@gmod/hclust'
 
 import { getGenotypeMatrix } from './getGenotypeMatrix'
 
-import type { ClusterGenotypeMatrixArgs } from './types'
+import type { Source } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Region, StopToken } from '@jbrowse/core/util'
 
 export async function executeClusterGenotypeMatrix({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: ClusterGenotypeMatrixArgs
+  args: {
+    adapterConfig: AnyConfigurationModel
+    stopToken?: StopToken
+    sessionId: string
+    headers?: Record<string, string>
+    regions: Region[]
+    bpPerPx: number
+    minorAlleleFrequencyFilter: number
+    lengthCutoffFilter: number
+    statusCallback: (arg: string) => void
+    sources: Source[]
+  }
 }) {
   const matrix = await getGenotypeMatrix({
     pluginManager,

@@ -1,10 +1,10 @@
 import type { Source } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StopToken } from '@jbrowse/core/util'
 
 interface BaseVariantRpcArgs {
   adapterConfig: AnyConfigurationModel
-  stopToken?: string
+  stopToken?: StopToken
   sessionId: string
   headers?: Record<string, string>
   regions: Region[]

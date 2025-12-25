@@ -1,12 +1,19 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { featureSpanPx } from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { fillRectCtx, getScale } from './util'
 
 import type { ScaleOpts } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type {
+  LastStopTokenCheck,
+  StopToken,
+} from '@jbrowse/core/util/stopToken'
 
 const fudgeFactor = 0.3
 const clipHeight = 2
@@ -22,11 +29,20 @@ export function drawDensity(
     ticks: { values: number[] }
     displayCrossHatches: boolean
     config: AnyConfigurationModel
-    stopToken?: string
+    stopToken?: StopToken
+    lastCheck?: LastStopTokenCheck
   },
 ) {
-  const { stopToken, features, regions, bpPerPx, scaleOpts, height, config } =
-    props
+  const {
+    features,
+    regions,
+    bpPerPx,
+    scaleOpts,
+    height,
+    config,
+    stopToken,
+    lastCheck = createStopTokenChecker(stopToken),
+  } = props
   const region = regions[0]!
   const pivot = readConfObject(config, 'bicolorPivot')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
@@ -54,12 +70,8 @@ export function drawDensity(
   let prevLeftPx = Number.NEGATIVE_INFINITY
   let hasClipping = false
   const reducedFeatures = []
-  let start = performance.now()
   for (const feature of features.values()) {
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
+    checkStopToken2(lastCheck)
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
     // create reduced features, avoiding multiple features per px
@@ -85,10 +97,7 @@ export function drawDensity(
   if (hasClipping) {
     ctx.fillStyle = clipColor
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
+      checkStopToken2(lastCheck)
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score')

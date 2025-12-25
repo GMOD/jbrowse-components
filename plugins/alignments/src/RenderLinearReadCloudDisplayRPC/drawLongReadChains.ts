@@ -1,4 +1,7 @@
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import {
   chainIsPairedEnd,
@@ -77,19 +80,18 @@ export function drawLongReadChains({
   const allItems: FlatbushItem[] = []
 
   let lastFillStyle = ''
-  const lastCheck = { time: Date.now() }
-  let idx = 0
+  const lastCheck = createStopTokenChecker(stopToken)
   for (const computedChain of computedChains) {
     const { id, chain } = computedChain
 
     if (chainIsPairedEnd(chain)) {
-      checkStopToken2(stopToken, idx++, lastCheck)
+      checkStopToken2(lastCheck)
       continue
     }
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
-      checkStopToken2(stopToken, idx++, lastCheck)
+      checkStopToken2(lastCheck)
       continue
     }
 
@@ -223,7 +225,7 @@ export function drawLongReadChains({
         allItems,
       })
     }
-    checkStopToken2(stopToken, idx++, lastCheck)
+    checkStopToken2(lastCheck)
   }
 
   return { coords: allCoords, items: allItems }

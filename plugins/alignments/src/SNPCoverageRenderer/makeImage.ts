@@ -2,8 +2,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   bpSpanPx,
+  checkStopToken2,
+  createStopTokenChecker,
   featureSpanPx,
-  forEachWithStopTokenCheck,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -21,10 +22,9 @@ import type {
   ClickMapItem,
   InterbaseIndicatorItem,
   RenderArgsDeserializedWithFeatures,
-  SNPItem,
 } from './types'
 import type { BaseCoverageBin } from '../shared/types'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
 
 // width/height of the triangle above e.g. insertion indicators
 const INTERBASE_INDICATOR_WIDTH = 7
@@ -42,6 +42,114 @@ const complementBase = {
 } as const
 
 const fudgeFactor = 0.6
+const SNP_CLICKMAP_THRESHOLD = 0.04
+
+// Note: We iterate object keys directly rather than sorting for performance.
+// Modern JS guarantees insertion order for string keys, so as long as the
+// adapter creates bins consistently, the visual stacking order will be stable.
+const iterateKeys = (obj: object) => Object.keys(obj)
+
+function createInterbaseItem(
+  maxBase: string,
+  count: number,
+  total: number,
+  start: number,
+  maxEntry?: {
+    avgLength?: number
+    minLength?: number
+    maxLength?: number
+    topSequence?: string
+  },
+): InterbaseIndicatorItem {
+  return {
+    type: maxBase as 'insertion' | 'softclip' | 'hardclip',
+    base: maxBase,
+    count,
+    total,
+    avgLength: maxEntry?.avgLength,
+    minLength: maxEntry?.minLength,
+    maxLength: maxEntry?.maxLength,
+    topSequence: maxEntry?.topSequence,
+    start,
+  }
+}
+
+function drawStackedBars(
+  ctx: CanvasRenderingContext2D,
+  entries: Record<string, { entryDepth: number }>,
+  colorMap: Record<string, string>,
+  x: number,
+  bottom: number,
+  w: number,
+  h: number,
+  depth: number,
+  startCurr: number,
+) {
+  let curr = startCurr
+  for (const base of iterateKeys(entries)) {
+    const { entryDepth } = entries[base]!
+    ctx.fillStyle = colorMap[base] || 'black'
+    ctx.fillRect(
+      x,
+      bottom - ((entryDepth + curr) / depth) * h,
+      w,
+      (entryDepth / depth) * h,
+    )
+    curr += entryDepth
+  }
+  return curr
+}
+
+function drawArcs(
+  ctx: CanvasRenderingContext2D,
+  features: Map<string, Feature>,
+  region: { start: number; end: number; refName: string; reversed?: boolean },
+  bpPerPx: number,
+  height: number,
+  lastCheck: LastStopTokenCheck,
+) {
+  for (const feature of features.values()) {
+    checkStopToken2(lastCheck)
+    if (feature.get('type') !== 'skip') {
+      continue
+    }
+    const [left, right] = bpSpanPx(
+      feature.get('start'),
+      feature.get('end'),
+      region,
+      bpPerPx,
+    )
+    const effectiveStrand = feature.get('effectiveStrand')
+
+    ctx.beginPath()
+    ctx.strokeStyle =
+      effectiveStrand === 1
+        ? 'rgba(255,200,200,0.7)'
+        : effectiveStrand === -1
+          ? 'rgba(200,200,255,0.7)'
+          : 'rgba(200,200,200,0.7)'
+    ctx.lineWidth = Math.log(feature.get('score') + 1)
+    ctx.moveTo(left, height)
+    ctx.bezierCurveTo(left, 0, right, 0, right, height)
+    ctx.stroke()
+  }
+}
+
+function drawCrossHatches(
+  ctx: CanvasRenderingContext2D,
+  ticks: { values: number[] },
+  width: number,
+  toY: (n: number) => number,
+) {
+  ctx.lineWidth = 1
+  ctx.strokeStyle = 'rgba(140,140,140,0.8)'
+  for (const tick of ticks.values) {
+    ctx.beginPath()
+    ctx.moveTo(0, Math.round(toY(tick)))
+    ctx.lineTo(width, Math.round(toY(tick)))
+    ctx.stroke()
+  }
+}
 
 interface StrandCounts {
   readonly entryDepth: number
@@ -161,21 +269,19 @@ export async function renderSNPCoverageToCanvas(
     }
   }
 
-  const { reducedFeatures, coords, items, ...rest } = await renderToAbstractCanvas(
-    width,
-    height,
-    props,
-    ctx => drawSNPCoverage(ctx, props, coverageFeatures),
-  )
+  const { reducedFeatures, coords, items, ...rest } =
+    await renderToAbstractCanvas(width, height, props, ctx =>
+      drawSNPCoverage(ctx, props, coverageFeatures),
+    )
 
   const serialized = {
     ...rest,
-    features: (reducedFeatures as ReducedFeature[]).map((f, idx) => ({
+    features: reducedFeatures.map((f, idx) => ({
       ...f,
       uniqueId: `${adapterId}-${f.start}-${idx}`,
     })),
     skipFeatures,
-    clickMap: buildClickMap(coords as number[], items as ClickMapItem[]),
+    clickMap: buildClickMap(coords, items),
     height,
     width,
   }
@@ -256,7 +362,10 @@ function drawSNPCoverage(
 
   // First pass: draw the gray background
   ctx.fillStyle = colorMap.total!
-  forEachWithStopTokenCheck(coverageFeatures, stopToken, feature => {
+  const lastCheck = createStopTokenChecker(stopToken)
+  for (let i = 0, l = coverageFeatures.length; i < l; i++) {
+    checkStopToken2(lastCheck)
+    const feature = coverageFeatures[i]!
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = rightPx - leftPx + fudgeFactor
     const score = feature.get('score') as number
@@ -274,7 +383,7 @@ function drawSNPCoverage(
       })
       prevReducedLeftPx = leftPx
     }
-  })
+  }
 
   let prevTotal = 0
   const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
@@ -285,7 +394,9 @@ function drawSNPCoverage(
   const simplexSet = new Set(simplexModifications)
 
   // Second pass: draw the SNP data
-  forEachWithStopTokenCheck(coverageFeatures, stopToken, feature => {
+  for (let i = 0, l = coverageFeatures.length; i < l; i++) {
+    checkStopToken2(lastCheck)
+    const feature = coverageFeatures[i]!
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin
     const w = Math.max(rightPx - leftPx, 1)
@@ -295,8 +406,7 @@ function drawSNPCoverage(
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
-      const nonmodKeys = Object.keys(nonmods).sort().reverse()
-      for (const m of nonmodKeys) {
+      for (const m of iterateKeys(nonmods)) {
         const modKey = m.replace(/^(nonmod_|mod_)/, '')
         const mod = visibleModifications[modKey]
         if (!mod) {
@@ -331,8 +441,7 @@ function drawSNPCoverage(
         )
         curr += modFraction * h
       }
-      const modKeys = Object.keys(mods).sort().reverse()
-      for (const m of modKeys) {
+      for (const m of iterateKeys(mods)) {
         const modKey = m.replace('mod_', '')
         const mod = visibleModifications[modKey]
         if (!mod) {
@@ -369,52 +478,52 @@ function drawSNPCoverage(
       }
     } else if (drawingMethylation) {
       const { depth, nonmods, mods } = snpinfo
-      let curr = 0
-
-      for (const base of Object.keys(mods).sort().reverse()) {
-        const { entryDepth } = mods[base]!
-        const h = toHeight(score0)
-        const bottom = toY(score0) + h
-        ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * h,
-          w,
-          (entryDepth / depth) * h,
-        )
-        curr += entryDepth
-      }
-      for (const base of Object.keys(nonmods).sort().reverse()) {
-        const { entryDepth } = nonmods[base]!
-        const h = toHeight(score0)
-        const bottom = toY(score0) + h
-        ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - ((entryDepth + curr) / depth) * h,
-          w,
-          (entryDepth / depth) * h,
-        )
-        curr += entryDepth
-      }
+      const h = toHeight(score0)
+      const bottom = toY(score0) + h
+      const curr = drawStackedBars(
+        ctx,
+        mods,
+        colorMap,
+        Math.round(leftPx),
+        bottom,
+        w,
+        h,
+        depth,
+        0,
+      )
+      drawStackedBars(
+        ctx,
+        nonmods,
+        colorMap,
+        Math.round(leftPx),
+        bottom,
+        w,
+        h,
+        depth,
+        curr,
+      )
     } else {
       const { depth, snps, refbase } = snpinfo
+      const h = toHeight(score0)
+      const bottom = toY(score0) + h
       let curr = 0
-      for (const base of Object.keys(snps).sort().reverse()) {
+      for (const base of iterateKeys(snps)) {
         const entry = snps[base]!
         const { entryDepth } = entry
-        const h = toHeight(score0)
-        const bottom = toY(score0) + h
         const y1 = bottom - ((entryDepth + curr) / depth) * h
         const barHeight = (entryDepth / depth) * h
         ctx.fillStyle = colorMap[base] || 'black'
         ctx.fillRect(Math.round(leftPx), y1, w, barHeight)
 
-        // Add to clickMap if significant (>4% of reads)
-        const frequency = entryDepth / score0
-        if (frequency >= 0.04) {
-          coords.push(Math.round(leftPx), y1, Math.round(leftPx) + w, y1 + barHeight)
-          const snpItem: SNPItem = {
+        // Add to clickMap if significant
+        if (entryDepth / score0 >= SNP_CLICKMAP_THRESHOLD) {
+          coords.push(
+            Math.round(leftPx),
+            y1,
+            Math.round(leftPx) + w,
+            y1 + barHeight,
+          )
+          items.push({
             type: 'snp',
             base,
             count: entryDepth,
@@ -426,8 +535,7 @@ function drawSNPCoverage(
             bin: snpinfo,
             start: feature.get('start'),
             end: feature.get('end'),
-          }
-          items.push(snpItem)
+          })
         }
         curr += entryDepth
       }
@@ -459,28 +567,30 @@ function drawSNPCoverage(
           const { entryDepth } = snpinfo.noncov[base]!
           const barHeight = toHeight2(entryDepth)
           ctx.fillStyle = colorMap[base]!
-          ctx.fillRect(x, INTERBASE_INDICATOR_HEIGHT + currHeight, r * 2, barHeight)
+          ctx.fillRect(
+            x,
+            INTERBASE_INDICATOR_HEIGHT + currHeight,
+            r * 2,
+            barHeight,
+          )
           currHeight += barHeight
           totalHeight += barHeight
         }
 
         // Add to clickmap when zoomed in or when significant
-        const isMajorityInterbase = score0 > 0 && totalCount > score0 * indicatorThreshold
+        const isMajorityInterbase =
+          score0 > 0 && totalCount > score0 * indicatorThreshold
         if (bpPerPx < 50 || isMajorityInterbase) {
           const clickWidth = Math.max(r * 2, 4)
-          coords.push(x, INTERBASE_INDICATOR_HEIGHT, x + clickWidth, INTERBASE_INDICATOR_HEIGHT + totalHeight)
-          const interbaseItem: InterbaseIndicatorItem = {
-            type: maxBase as 'insertion' | 'softclip' | 'hardclip',
-            base: maxBase,
-            count: totalCount,
-            total: score0,
-            avgLength: maxEntry?.avgLength,
-            minLength: maxEntry?.minLength,
-            maxLength: maxEntry?.maxLength,
-            topSequence: maxEntry?.topSequence,
-            start: fstart,
-          }
-          items.push(interbaseItem)
+          coords.push(
+            x,
+            INTERBASE_INDICATOR_HEIGHT,
+            x + clickWidth,
+            INTERBASE_INDICATOR_HEIGHT + totalHeight,
+          )
+          items.push(
+            createInterbaseItem(maxBase, totalCount, score0, fstart, maxEntry),
+          )
         }
       }
 
@@ -506,63 +616,27 @@ function drawSNPCoverage(
             l + INTERBASE_INDICATOR_WIDTH / 2 + hitboxPadding,
             INTERBASE_INDICATOR_HEIGHT + hitboxPadding,
           )
-          const interbaseItem: InterbaseIndicatorItem = {
-            type: maxBase as 'insertion' | 'softclip' | 'hardclip',
-            base: maxBase,
-            count: totalCount,
-            total: indicatorComparatorScore,
-            avgLength: maxEntry?.avgLength,
-            minLength: maxEntry?.minLength,
-            maxLength: maxEntry?.maxLength,
-            topSequence: maxEntry?.topSequence,
-            start: fstart,
-          }
-          items.push(interbaseItem)
+          items.push(
+            createInterbaseItem(
+              maxBase,
+              totalCount,
+              indicatorComparatorScore,
+              fstart,
+              maxEntry,
+            ),
+          )
         }
       }
     }
     prevTotal = score0
-  })
+  }
 
   if (showArcs) {
-    forEachWithStopTokenCheck(features.values(), stopToken, feature => {
-      if (feature.get('type') !== 'skip') {
-        return
-      }
-      const s = feature.get('start')
-      const e = feature.get('end')
-      const [left, right] = bpSpanPx(s, e, region, bpPerPx)
-
-      ctx.beginPath()
-      const effectiveStrand = feature.get('effectiveStrand')
-      const pos = 'rgba(255,200,200,0.7)'
-      const neg = 'rgba(200,200,255,0.7)'
-      const neutral = 'rgba(200,200,200,0.7)'
-
-      if (effectiveStrand === 1) {
-        ctx.strokeStyle = pos
-      } else if (effectiveStrand === -1) {
-        ctx.strokeStyle = neg
-      } else {
-        ctx.strokeStyle = neutral
-      }
-
-      ctx.lineWidth = Math.log(feature.get('score') + 1)
-      ctx.moveTo(left, height - offset * 2)
-      ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
-      ctx.stroke()
-    })
+    drawArcs(ctx, features, region, bpPerPx, height - offset * 2, lastCheck)
   }
 
   if (displayCrossHatches) {
-    ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(140,140,140,0.8)'
-    for (const tick of ticks.values) {
-      ctx.beginPath()
-      ctx.moveTo(0, Math.round(toY(tick)))
-      ctx.lineTo(width, Math.round(toY(tick)))
-      ctx.stroke()
-    }
+    drawCrossHatches(ctx, ticks, width, toY)
   }
 
   return { reducedFeatures, coords, items }

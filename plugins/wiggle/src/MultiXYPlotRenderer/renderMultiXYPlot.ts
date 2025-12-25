@@ -4,7 +4,7 @@ import {
   updateStatus,
 } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
@@ -29,6 +29,7 @@ export async function renderMultiXYPlot(
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
+  const lastCheck = createStopTokenChecker(stopToken)
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
     statusCallback,
@@ -36,18 +37,18 @@ export async function renderMultiXYPlot(
       renderToAbstractCanvas(width, height, renderProps, ctx => {
         const groups = groupBy(features.values(), f => f.get('source'))
         let allReducedFeatures: Feature[] = []
-        const lastCheck = { time: Date.now() }
-        let idx = 0
         for (const source of sources) {
           const { reducedFeatures: reduced } = drawXY(ctx, {
             ...renderProps,
             features: groups[source.name] || [],
             colorCallback: () => source.color || 'blue',
+            lastCheck,
           })
           allReducedFeatures = allReducedFeatures.concat(reduced)
-          checkStopToken2(stopToken, idx++, lastCheck)
         }
-        return { reducedFeatures: allReducedFeatures }
+        return {
+          reducedFeatures: allReducedFeatures,
+        }
       }),
   )
 
