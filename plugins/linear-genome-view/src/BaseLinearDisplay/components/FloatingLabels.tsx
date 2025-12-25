@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 
 import { calculateFloatingLabelPosition } from './util'
 
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FloatingLabelData, LayoutRecord } from '../types'
@@ -21,9 +22,7 @@ interface PixelPositions {
  */
 function calculateFeaturePixelPositions(
   view: LinearGenomeViewModel,
-  assembly:
-    | { getCanonicalRefName: (refName: string) => string | undefined }
-    | undefined,
+  assembly: Assembly | undefined,
   refName: string,
   left: number,
   right: number,
@@ -80,13 +79,11 @@ interface FeatureLabelData {
  */
 function calculateMultiRegionPositions(
   view: LinearGenomeViewModel,
-  assembly:
-    | { getCanonicalRefName: (refName: string) => string | undefined }
-    | undefined,
+  assembly: Assembly | undefined,
   refName: string,
   left: number,
   right: number,
-): { leftPx: number; rightPx: number } | undefined {
+): PixelPositions | undefined {
   const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
   const visibleRegions = view.displayedRegions.filter(
     r => r.refName === canonicalRefName && r.start < right && r.end > left,
@@ -133,9 +130,7 @@ function calculateMultiRegionPositions(
  */
 function getFeaturePositions(
   view: LinearGenomeViewModel,
-  assembly:
-    | { getCanonicalRefName: (refName: string) => string | undefined }
-    | undefined,
+  assembly: Assembly | undefined,
   refName: string,
   left: number,
   right: number,
@@ -164,9 +159,7 @@ function deduplicateFeatureLabels(
     entries(): IterableIterator<readonly [string, LayoutRecord | undefined]>
   },
   view: LinearGenomeViewModel,
-  assembly:
-    | { getCanonicalRefName: (refName: string) => string | undefined }
-    | undefined,
+  assembly: Assembly | undefined,
   bpPerPx: number,
 ): Map<string, FeatureLabelData> {
   const featureLabels = new Map<string, FeatureLabelData>()
