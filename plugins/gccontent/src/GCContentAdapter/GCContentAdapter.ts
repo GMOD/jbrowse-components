@@ -9,12 +9,6 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-interface WiggleFeatureArrays {
-  starts: Int32Array
-  ends: Int32Array
-  scores: Float32Array
-}
-
 export default class GCContentAdapter extends BaseFeatureDataAdapter {
   private gcMode = 'content'
 
@@ -163,18 +157,6 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
 
       return { starts, ends, scores }
     })
-  }
-
-  public async getFeaturesAsArrays(
-    query: Region,
-    opts?: BaseOptions,
-  ): Promise<WiggleFeatureArrays> {
-    const result = await this.calculateGCContent(query, opts)
-    return {
-      starts: new Int32Array(result.starts),
-      ends: new Int32Array(result.ends),
-      scores: new Float32Array(result.scores),
-    }
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {

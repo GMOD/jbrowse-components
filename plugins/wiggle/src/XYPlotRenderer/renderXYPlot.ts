@@ -3,7 +3,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
-import { getColorCallback } from '../util'
+import { getColorCallback, serializeWiggleFeature } from '../util'
 
 import type { RenderArgsDeserialized } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -39,7 +39,7 @@ export async function renderXYPlot(
 
   const serialized = {
     ...rest,
-    reducedFeatures,
+    reducedFeatures: reducedFeatures.map(serializeWiggleFeature),
     height,
     width,
   }
