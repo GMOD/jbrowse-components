@@ -1,15 +1,13 @@
-'use strict'
+import fs from 'fs'
+import path from 'path'
 
-const fs = require('fs')
-const path = require('path')
-
-const chalk = require('chalk')
+import chalk from 'chalk'
 
 function canReadAsset(asset) {
   return /\.(js|css)$/.test(asset)
 }
 
-function printFileSizesAfterBuild(webpackStats, previousSizeMap, buildFolder) {
+export function printFileSizesAfterBuild(webpackStats, previousSizeMap, buildFolder) {
   const root = previousSizeMap.root
   const assets = (webpackStats.stats || [webpackStats])
     .map(stats =>
@@ -19,10 +17,7 @@ function printFileSizesAfterBuild(webpackStats, previousSizeMap, buildFolder) {
         .map(asset => {
           const fileContents = fs.readFileSync(path.join(root, asset.name))
           return {
-            folder: path.join(
-              path.basename(buildFolder),
-              path.dirname(asset.name),
-            ),
+            folder: path.join(path.basename(buildFolder), path.dirname(asset.name)),
             name: path.basename(asset.name),
             size: fileContents.length,
           }
@@ -32,22 +27,13 @@ function printFileSizesAfterBuild(webpackStats, previousSizeMap, buildFolder) {
 
   assets.sort((a, b) => b.size - a.size)
   for (const asset of assets) {
-    const sizeKB = `${(asset.size / 1024).toFixed(1)  } KB`
+    const sizeKB = `${(asset.size / 1024).toFixed(1)} KB`
     console.log(
-      `  ${ 
-        sizeKB.padStart(10) 
-        }  ${ 
-        chalk.dim(asset.folder + path.sep) 
-        }${chalk.cyan(asset.name)}`,
+      `  ${sizeKB.padStart(10)}  ${chalk.dim(asset.folder + path.sep)}${chalk.cyan(asset.name)}`,
     )
   }
 }
 
-function measureFileSizesBeforeBuild(buildFolder) {
+export function measureFileSizesBeforeBuild(buildFolder) {
   return Promise.resolve({ root: buildFolder, sizes: {} })
-}
-
-module.exports = {
-  measureFileSizesBeforeBuild,
-  printFileSizesAfterBuild,
 }

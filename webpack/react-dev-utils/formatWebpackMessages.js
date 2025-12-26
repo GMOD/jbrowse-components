@@ -1,5 +1,3 @@
-'use strict'
-
 function formatMessage(message) {
   if (typeof message === 'string') {
     return message
@@ -10,11 +8,9 @@ function formatMessage(message) {
   return String(message)
 }
 
-function formatWebpackMessages(json) {
+export default function formatWebpackMessages(json) {
   return {
     errors: json.errors.map(formatMessage),
     warnings: json.warnings.map(formatMessage),
   }
 }
-
-module.exports = formatWebpackMessages

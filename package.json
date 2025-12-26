@@ -93,7 +93,6 @@
     "electron": "39.2.7",
     "electron-builder": "^25.1.6",
     "electron-mock-ipc": "^0.3.8",
-    "escape-string-regexp": "^4.0.0",
     "eslint": "^9.39.1",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-react": "^7.33.2",

@@ -1,11 +1,9 @@
-'use strict'
+import chalk from 'chalk'
+import detect from 'detect-port-alt'
 
-const chalk = require('chalk')
-const detect = require('detect-port-alt')
+import formatWebpackMessages from './formatWebpackMessages.js'
 
-const formatWebpackMessages = require('./formatWebpackMessages')
-
-function prepareUrls(protocol, host, port, pathname = '/') {
+export function prepareUrls(protocol, host, port, pathname = '/') {
   const prettyHost = host === '0.0.0.0' || host === '::' ? 'localhost' : host
   return {
     localUrlForTerminal: `${protocol}://${prettyHost}:${chalk.bold(port)}${pathname}`,
@@ -13,7 +11,7 @@ function prepareUrls(protocol, host, port, pathname = '/') {
   }
 }
 
-function createCompiler({ appName, config, urls, webpack }) {
+export function createCompiler({ appName, config, urls, webpack }) {
   let compiler
   try {
     compiler = webpack(config)
@@ -39,9 +37,7 @@ function createCompiler({ appName, config, urls, webpack }) {
     }
     if (isSuccessful && isFirstCompile) {
       console.log()
-      console.log(
-        `You can view ${chalk.bold(appName)} at ${urls.localUrlForTerminal}`,
-      )
+      console.log(`You can view ${chalk.bold(appName)} at ${urls.localUrlForTerminal}`)
       console.log()
     }
     isFirstCompile = false
@@ -61,7 +57,7 @@ function createCompiler({ appName, config, urls, webpack }) {
   return compiler
 }
 
-function choosePort(host, defaultPort) {
+export function choosePort(host, defaultPort) {
   return detect(defaultPort, host).then(port => {
     if (port !== defaultPort) {
       console.log(chalk.yellow(`Port ${defaultPort} in use, using ${port}`))
@@ -69,5 +65,3 @@ function choosePort(host, defaultPort) {
     return port
   })
 }
-
-module.exports = { choosePort, createCompiler, prepareUrls }
