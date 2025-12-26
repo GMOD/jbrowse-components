@@ -437,7 +437,7 @@ export default function MultiVariantBaseModelF(
          */
         get hierarchy() {
           const r = self.root
-          if (!r) {
+          if (!r || !self.sources?.length) {
             return undefined
           }
           const clust = cluster()

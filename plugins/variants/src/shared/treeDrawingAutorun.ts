@@ -34,6 +34,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           // eslint-disable-next-line  @typescript-eslint/no-unused-vars
           totalHeight: _totalHeight,
         } = self
+
         if (!treeCanvas || !hierarchy) {
           return
         }
@@ -124,7 +125,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           // (e.g., SAMPLE1 -> SAMPLE1 HP0, SAMPLE1 HP1)
           ctx.fillStyle = 'rgba(255,165,0,0.2)'
           const descendantSet = new Set(hoveredTreeNode.descendantNames)
-          for (let i = 0; i < sources.length; i++) {
+          for (let i = 0, l = sources.length; i < l; i++) {
             const source = sources[i]!
             if (descendantSet.has(source.name)) {
               const y = (i + 0.5) * rowHeight

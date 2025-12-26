@@ -23,11 +23,11 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
 
+import { calculateSvgLegendWidth } from '.'
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
 import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
-import { calculateSvgLegendWidth } from './SVGLegend'
 import { getTranscripts, hasExonsOrCDS } from './util'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'

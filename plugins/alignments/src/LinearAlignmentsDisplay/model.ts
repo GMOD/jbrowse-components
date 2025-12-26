@@ -99,7 +99,8 @@ function stateModelFactory(
        */
       svgLegendWidth(theme?: unknown) {
         const pileupWidth = self.PileupDisplay?.svgLegendWidth?.(theme) ?? 0
-        const snpCovWidth = self.SNPCoverageDisplay?.svgLegendWidth?.(theme) ?? 0
+        const snpCovWidth =
+          self.SNPCoverageDisplay?.svgLegendWidth?.(theme) ?? 0
         return Math.max(pileupWidth, snpCovWidth)
       },
     }))

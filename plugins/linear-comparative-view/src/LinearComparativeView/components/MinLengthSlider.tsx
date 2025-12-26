@@ -8,6 +8,7 @@ import SliderTooltip from './SliderTooltip'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
 import type { LinearComparativeViewModel } from '../model'
+import { toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   container: {
@@ -69,9 +70,7 @@ const MinLengthSlider = observer(function MinLengthSlider({
         min={0}
         max={Math.log2(1000000) * 100}
         valueLabelDisplay="auto"
-        valueLabelFormat={newValue =>
-          Math.round(2 ** (newValue / 100)).toLocaleString()
-        }
+        valueLabelFormat={val => toLocale(Math.round(2 ** (val / 100)))}
         size="small"
         style={{ minWidth: 100 }}
         slots={{

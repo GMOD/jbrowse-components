@@ -134,7 +134,7 @@ const TreeSidebar = observer(function TreeSidebar({
     model.setHoveredTreeNode(undefined)
   }, [model])
 
-  if (!hierarchy || !showTree || !sources) {
+  if (!hierarchy || !showTree || !sources?.length) {
     return null
   }
 

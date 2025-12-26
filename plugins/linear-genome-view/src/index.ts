@@ -90,13 +90,13 @@ export {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
   BlockMsg,
-  calculateSvgLegendWidth,
   FeatureDensityMixin,
   FloatingLegend,
   SVGLegend,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
+  calculateSvgLegendWidth,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,

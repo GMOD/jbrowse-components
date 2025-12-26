@@ -1,5 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
 import { observer } from 'mobx-react'
+import { toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   legend: {
@@ -34,6 +36,17 @@ const colorGradients: Record<string, string> = {
     'linear-gradient(to right, #440154, #482878, #3e4a89, #31688e, #26828e, #1f9e89, #35b779, #6ece58, #b5de2b, #fde725)',
 }
 
+function getNiceScale(maxScore: number, useLogScale?: boolean) {
+  if (useLogScale) {
+    const scale = scaleLog().domain([1, maxScore]).nice()
+    const [min, max] = scale.domain()
+    return { min, max }
+  }
+  const scale = scaleLinear().domain([0, maxScore]).nice()
+  const [min, max] = scale.domain()
+  return { min, max }
+}
+
 const HicColorLegend = observer(function HicColorLegend({
   maxScore,
   colorScheme = 'juicebox',
@@ -45,15 +58,15 @@ const HicColorLegend = observer(function HicColorLegend({
 }) {
   const { classes } = useStyles()
   const gradient = colorGradients[colorScheme] || colorGradients.juicebox
-  const displayMax = useLogScale ? maxScore : Math.round(maxScore / 20)
+  const { min, max } = getNiceScale(maxScore, useLogScale)
 
   return (
     <div className={classes.legend}>
       <div className={classes.gradientBar} style={{ background: gradient }} />
       <div className={classes.labels}>
-        <span>{useLogScale ? '1' : '0'}</span>
+        <span>{min !== undefined ? toLocale(min) : ''}</span>
         <span>
-          {displayMax.toLocaleString()}
+          {max !== undefined ? toLocale(max) : ''}
           {useLogScale ? ' (log)' : ''}
         </span>
       </div>
