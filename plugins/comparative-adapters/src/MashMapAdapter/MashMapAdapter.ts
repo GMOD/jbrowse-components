@@ -3,6 +3,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
+import { getWeightedMeans } from '../PAFAdapter/util'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -20,7 +21,7 @@ export default class MashMapAdapter extends PAFAdapter {
       },
       opts?.statusCallback,
     )
-    return lines
+    return getWeightedMeans(lines)
   }
 }
 

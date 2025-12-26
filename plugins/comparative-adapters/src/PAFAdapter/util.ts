@@ -1,5 +1,3 @@
-import { zip } from '../util'
-
 export interface PAFRecord {
   qname: string
   qstart: number
@@ -56,53 +54,39 @@ export interface PAFRecord {
 // situations
 
 export function getWeightedMeans(ret: PAFRecord[]) {
-  const scoreMap: Record<string, { quals: number[]; len: number[] }> = {}
+  // First pass: compute weighted sums per query-target pair
+  const scoreMap: Record<string, { valueSum: number; weightSum: number }> = {}
   for (const entry of ret) {
-    const query = entry.qname
-    const target = entry.tname
-    const key = `${query}-${target}`
-    if (!scoreMap[key]) {
-      scoreMap[key] = { quals: [], len: [] }
+    const key = `${entry.qname}-${entry.tname}`
+    const qual = entry.extra.mappingQual || 1
+    const len = entry.extra.blockLen || 1
+    const existing = scoreMap[key]
+    if (existing) {
+      existing.valueSum += qual * len
+      existing.weightSum += len
+    } else {
+      scoreMap[key] = { valueSum: qual * len, weightSum: len }
     }
-    scoreMap[key].quals.push(entry.extra.mappingQual || 1)
-    scoreMap[key].len.push(entry.extra.blockLen || 1)
   }
 
-  const meanScoreMap = Object.fromEntries(
-    Object.entries(scoreMap).map(([key, val]) => {
-      const vals = zip(val.quals, val.len)
-      return [key, weightedMean(vals)]
-    }),
-  )
-  for (const entry of ret) {
-    const query = entry.qname
-    const target = entry.tname
-    const key = `${query}-${target}`
-    entry.extra.meanScore = meanScoreMap[key]
+  // Convert sums to means and find min/max in one pass
+  const meanScoreMap: Record<string, number> = {}
+  let min = Infinity
+  let max = -Infinity
+  for (const [key, { valueSum, weightSum }] of Object.entries(scoreMap)) {
+    const mean = valueSum / weightSum
+    meanScoreMap[key] = mean
+    min = Math.min(mean, min)
+    max = Math.max(mean, max)
   }
 
-  let min = 10000
-  let max = 0
+  // Second pass: attach normalized scores
+  const range = max - min
   for (const entry of ret) {
-    min = Math.min(entry.extra.meanScore || 0, min)
-    max = Math.max(entry.extra.meanScore || 0, max)
-  }
-  for (const entry of ret) {
-    const b = entry.extra.meanScore || 0
-    entry.extra.meanScore = (b - min) / (max - min)
+    const key = `${entry.qname}-${entry.tname}`
+    const score = meanScoreMap[key]!
+    entry.extra.meanScore = range > 0 ? (score - min) / range : 1
   }
 
   return ret
-}
-
-// https://gist.github.com/stekhn/a12ed417e91f90ecec14bcfa4c2ae16a
-function weightedMean(tuples: [number, number][]) {
-  const [valueSum, weightSum] = tuples.reduce(
-    ([valueSum, weightSum], [value, weight]) => [
-      valueSum + value * weight,
-      weightSum + weight,
-    ],
-    [0, 0],
-  )
-  return valueSum / weightSum
 }

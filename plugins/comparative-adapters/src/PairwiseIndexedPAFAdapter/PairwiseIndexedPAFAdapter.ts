@@ -3,9 +3,12 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import SyntenyFeature from '../SyntenyFeature'
-import { parsePAFLine } from '../util'
+import { flipCigar, parsePAFLine, swapIndelCigar } from '../util'
+
+const { parseCigar } = MismatchParser
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -93,15 +96,44 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         this.pif.getLines(letter + query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
             const r = parsePAFLine(line)
-            const refName = r.qname.slice(1)
-            const start = r.qstart
-            const end = r.qend
-            const mateName = r.tname
-            const mateStart = r.tstart
-            const mateEnd = r.tend
-
             const { extra, strand } = r
             const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
+
+            // Strip 'q'/'t' prefix from names in the indexed format
+            const qname = r.qname.slice(1)
+            const tname = r.tname.slice(1)
+
+            let start: number
+            let end: number
+            let refName: string
+            let mateName: string
+            let mateStart: number
+            let mateEnd: number
+
+            if (flip) {
+              start = r.qstart
+              end = r.qend
+              refName = qname
+              mateName = tname
+              mateStart = r.tstart
+              mateEnd = r.tend
+            } else {
+              start = r.tstart
+              end = r.tend
+              refName = tname
+              mateName = qname
+              mateStart = r.qstart
+              mateEnd = r.qend
+            }
+
+            let CIGAR = extra.cg
+            if (extra.cg) {
+              if (flip && strand === -1) {
+                CIGAR = flipCigar(parseCigar(extra.cg)).join('')
+              } else if (flip) {
+                CIGAR = swapIndelCigar(extra.cg)
+              }
+            }
 
             observer.next(
               new SyntenyFeature({
@@ -113,7 +145,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 refName,
                 strand,
                 ...rest,
-                CIGAR: extra.cg,
+                CIGAR,
                 syntenyId: fileOffset,
                 identity: numMatches / blockLen,
                 numMatches,
