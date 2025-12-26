@@ -6,6 +6,7 @@ import {
   getSerializedSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { SVGLegend } from '@jbrowse/plugin-linear-genome-view'
 
 import type { LinearReadArcsDisplayModel } from './model'
 import type {
@@ -87,6 +88,9 @@ export async function renderSvg(
   // Apply clipping BEFORE transform, at the view level
   const clipId = `clip-${self.id}-svg`
 
+  // Get legend items if legend is enabled
+  const legendItems = self.showLegend ? self.legendItems() : []
+
   return (
     <>
       <defs>
@@ -99,6 +103,13 @@ export async function renderSvg(
           <ReactRendering rendering={finalRendering} />
         </g>
       </g>
+      {legendItems.length > 0 ? (
+        <SVGLegend
+          items={legendItems}
+          width={visibleWidth}
+          legendAreaWidth={opts.legendWidth}
+        />
+      ) : null}
     </>
   )
 }

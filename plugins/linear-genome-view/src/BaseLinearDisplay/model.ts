@@ -27,6 +27,7 @@ import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
 import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
+import { calculateSvgLegendWidth } from './SVGLegend'
 import { getTranscripts, hasExonsOrCDS } from './util'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
@@ -142,6 +143,18 @@ function stateModelFactory() {
        */
       legendItems(_theme?: Theme): LegendItem[] {
         return []
+      },
+
+      /**
+       * #method
+       * Returns the width needed for the SVG legend if showLegend is enabled.
+       * Used by SVG export to add extra width for the legend area.
+       * @param theme - MUI theme for accessing palette colors
+       */
+      svgLegendWidth(theme?: Theme): number {
+        return self.showLegend
+          ? calculateSvgLegendWidth(this.legendItems(theme))
+          : 0
       },
 
       /**

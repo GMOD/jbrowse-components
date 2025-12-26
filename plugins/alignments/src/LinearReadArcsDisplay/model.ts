@@ -11,7 +11,10 @@ import {
 import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
-import { getReadDisplayLegendItems } from '../shared/legendUtils'
+import {
+  calculateSvgLegendWidth,
+  getReadDisplayLegendItems,
+} from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -75,6 +78,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       legendItems(): LegendItem[] {
         return getReadDisplayLegendItems(self.colorBy)
+      },
+
+      /**
+       * #method
+       * Returns the width needed for the SVG legend if showLegend is enabled.
+       * Used by SVG export to add extra width for the legend area.
+       */
+      svgLegendWidth(): number {
+        return self.showLegend ? calculateSvgLegendWidth(this.legendItems()) : 0
       },
     }))
     .views(self => {

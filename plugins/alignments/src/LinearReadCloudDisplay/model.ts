@@ -21,7 +21,10 @@ import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWit
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
 import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
-import { getReadDisplayLegendItems } from '../shared/legendUtils'
+import {
+  calculateSvgLegendWidth,
+  getReadDisplayLegendItems,
+} from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
@@ -230,6 +233,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.colorBy,
           self.visibleModifications,
         )
+      },
+
+      /**
+       * #method
+       * Returns the width needed for the SVG legend if showLegend is enabled.
+       * Used by SVG export to add extra width for the legend area.
+       */
+      svgLegendWidth(): number {
+        return self.showLegend ? calculateSvgLegendWidth(this.legendItems()) : 0
       },
     }))
     .views(self => {

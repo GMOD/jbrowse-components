@@ -91,6 +91,17 @@ function stateModelFactory(
       get showLegend() {
         return self.PileupDisplay?.showLegend
       },
+
+      /**
+       * #method
+       * Returns the width needed for the SVG legend from subdisplays.
+       * Used by SVG export to add extra width for the legend area.
+       */
+      svgLegendWidth(theme?: unknown) {
+        const pileupWidth = self.PileupDisplay?.svgLegendWidth?.(theme) ?? 0
+        const snpCovWidth = self.SNPCoverageDisplay?.svgLegendWidth?.(theme) ?? 0
+        return Math.max(pileupWidth, snpCovWidth)
+      },
     }))
     .views(self => ({
       /**

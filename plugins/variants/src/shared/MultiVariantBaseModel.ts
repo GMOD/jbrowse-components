@@ -709,7 +709,7 @@ export default function MultiVariantBaseModelF(
             }
           }
           const items: LegendItem[] = [
-            { color: REFERENCE_COLOR, label: 'Reference (0)' },
+            { color: REFERENCE_COLOR, label: 'Reference' },
             { color: set1[0], label: 'Alt allele 1' },
           ]
           if (maxAltAlleles >= 2) {
