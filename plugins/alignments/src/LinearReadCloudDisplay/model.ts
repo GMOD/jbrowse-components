@@ -326,7 +326,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: "Show using 'read cloud' mode",
+                  label: "Show as 'read cloud'",
                   type: 'checkbox',
                   helpText:
                     'In read cloud mode, the y-coordinate of the reads is proportional to TLEN (template length)',

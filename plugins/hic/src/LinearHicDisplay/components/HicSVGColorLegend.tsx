@@ -1,5 +1,5 @@
-import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
 import { toLocale } from '@jbrowse/core/util'
+import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
 
 const colorStops: Record<string, { offset: string; color: string }[]> = {
   juicebox: [
@@ -35,7 +35,8 @@ const colorStops: Record<string, { offset: string; color: string }[]> = {
 
 function getNiceScale(maxScore: number, useLogScale?: boolean) {
   if (useLogScale) {
-    const scale = scaleLog().domain([1, maxScore]).nice()
+    // Use base 2 for log scale like wiggle plugin does
+    const scale = scaleLog().base(2).domain([1, maxScore]).nice()
     const [min, max] = scale.domain()
     return { min, max }
   }

@@ -1,7 +1,7 @@
+import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
 import { observer } from 'mobx-react'
-import { toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   legend: {
@@ -38,7 +38,8 @@ const colorGradients: Record<string, string> = {
 
 function getNiceScale(maxScore: number, useLogScale?: boolean) {
   if (useLogScale) {
-    const scale = scaleLog().domain([1, maxScore]).nice()
+    // Use base 2 for log scale like wiggle plugin does
+    const scale = scaleLog().base(2).domain([1, maxScore]).nice()
     const [min, max] = scale.domain()
     return { min, max }
   }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Box, Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -8,7 +9,6 @@ import SliderTooltip from './SliderTooltip'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
 import type { LinearComparativeViewModel } from '../model'
-import { toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   container: {
