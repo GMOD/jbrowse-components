@@ -111,7 +111,9 @@ export interface AuthServerOptions {
   dataPath?: string
 }
 
-export function startOAuthServer(options: AuthServerOptions): Promise<http.Server> {
+export function startOAuthServer(
+  options: AuthServerOptions,
+): Promise<http.Server> {
   const { port, redirectPort = 3000, dataPath = defaultDataPath } = options
 
   return new Promise(resolve => {
@@ -197,7 +199,9 @@ export function startOAuthServer(options: AuthServerOptions): Promise<http.Serve
   })
 }
 
-export function startBasicAuthServer(options: AuthServerOptions): Promise<http.Server> {
+export function startBasicAuthServer(
+  options: AuthServerOptions,
+): Promise<http.Server> {
   const { port, dataPath = defaultDataPath } = options
 
   return new Promise(resolve => {

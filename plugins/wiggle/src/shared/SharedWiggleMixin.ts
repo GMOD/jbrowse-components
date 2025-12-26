@@ -353,9 +353,7 @@ export default function SharedWiggleMixin(
           ...configBlob,
           ...(scaleType ? { scaleType } : {}),
           ...(fill !== undefined ? { filled: fill } : {}),
-          ...(displayCrossHatches !== undefined
-            ? { displayCrossHatches }
-            : {}),
+          ...(displayCrossHatches !== undefined ? { displayCrossHatches } : {}),
           ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
           ...(color !== undefined ? { color } : {}),
           ...(negColor !== undefined ? { negColor } : {}),

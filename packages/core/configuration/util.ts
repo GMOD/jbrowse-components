@@ -21,7 +21,7 @@ interface ConfigSlot {
 // - a primitive value (string, number, etc.)
 // - undefined/null
 function isConfigSlot(slot: unknown): slot is ConfigSlot {
-  return typeof (slot as ConfigSlot)?.getValue === 'function'
+  return typeof (slot as ConfigSlot | undefined)?.getValue === 'function'
 }
 
 import {

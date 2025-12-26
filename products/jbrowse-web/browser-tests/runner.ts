@@ -181,7 +181,7 @@ async function snapshot(page: Page, name: string) {
   }
 }
 
-async function handleOAuthLogin(browser: Browser, page: Page) {
+async function handleOAuthLogin(browser: Browser, _page: Page) {
   const popupPromise = new Promise<Page>(resolve => {
     browser.once('targetcreated', async target => {
       const popup = await target.page()
@@ -206,8 +206,16 @@ async function handleBasicAuthLogin(page: Page) {
     throw new Error('BasicAuth login dialog not found')
   }
 
-  const usernameInput = await findByTestId(page, 'login-httpbasic-username', 10000)
-  const passwordInput = await findByTestId(page, 'login-httpbasic-password', 10000)
+  const usernameInput = await findByTestId(
+    page,
+    'login-httpbasic-username',
+    10000,
+  )
+  const passwordInput = await findByTestId(
+    page,
+    'login-httpbasic-password',
+    10000,
+  )
   await usernameInput?.type('admin')
   await passwordInput?.type('password')
 
@@ -219,7 +227,10 @@ async function handleBasicAuthLogin(page: Page) {
 // Test suites
 interface TestSuite {
   name: string
-  tests: { name: string; fn: (page: Page, browser?: Browser) => Promise<void> }[]
+  tests: {
+    name: string
+    fn: (page: Page, browser?: Browser) => Promise<void>
+  }[]
   requiresAuth?: boolean
 }
 
