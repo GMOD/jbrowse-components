@@ -137,7 +137,7 @@ function RenderedSequenceComponent({
   }
 }
 
-const SequenceContents = observer(function ({
+const SequenceContents = observer(function SequenceContents({
   mode,
   feature,
   sequence,

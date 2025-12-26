@@ -26,7 +26,11 @@ export interface ArcDisplayModel {
   skipFeatures: Feature[]
 }
 
-const SashimiArcs = observer(function ({ model }: { model: ArcDisplayModel }) {
+const SashimiArcs = observer(function SashimiArcs({
+  model,
+}: {
+  model: ArcDisplayModel
+}) {
   const { showArcsSetting, height, skipFeatures } = model
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)

@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewContainer = observer(function ({
+const ViewContainer = observer(function ViewContainer({
   view,
   session,
 }: {

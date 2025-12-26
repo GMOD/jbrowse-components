@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg'
 
-const BlockErrorMessage = observer(function ({
+const BlockErrorMessage = observer(function BlockErrorMessage({
   model,
 }: {
   model: {

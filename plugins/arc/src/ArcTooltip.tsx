@@ -21,7 +21,11 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
   },
 )
 
-const ArcTooltip = observer(function ({ contents }: { contents?: string }) {
+const ArcTooltip = observer(function ArcTooltip({
+  contents,
+}: {
+  contents?: string
+}) {
   return contents ? (
     <Suspense fallback={null}>
       <BaseTooltip>

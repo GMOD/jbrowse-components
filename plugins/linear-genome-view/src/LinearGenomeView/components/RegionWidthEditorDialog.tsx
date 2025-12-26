@@ -13,9 +13,11 @@ import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model'
 
-const toP = (s = 0) => +s.toFixed(1)
+function format(n: number) {
+  return toLocale(Math.floor(n))
+}
 
-const RegionWidthEditorDialog = observer(function ({
+const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
   model,
   handleClose,
 }: {
@@ -23,11 +25,12 @@ const RegionWidthEditorDialog = observer(function ({
   handleClose: () => void
 }) {
   const { bpPerPx, width } = model
-  const [val, setVal] = useState(toLocale(toP(bpPerPx * width)))
+  const [val, setVal] = useState(format(bpPerPx * width))
   useEffect(() => {
-    setVal(toLocale(bpPerPx * width))
+    setVal(format(bpPerPx * width))
   }, [bpPerPx, width])
   const val2 = val.replace(/,/g, '')
+
   return (
     <Dialog title="Edit zoom level" open onClose={handleClose}>
       <DialogContent

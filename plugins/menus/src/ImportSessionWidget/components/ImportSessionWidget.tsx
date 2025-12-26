@@ -50,7 +50,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ImportSessionWidget = observer(function ({
+const ImportSessionWidget = observer(function ImportSessionWidget({
   model,
 }: {
   model: IAnyStateTreeNode

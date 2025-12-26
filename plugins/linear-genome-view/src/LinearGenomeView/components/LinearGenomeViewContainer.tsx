@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const LinearGenomeViewContainer = observer(function ({
+const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   model,
 }: {
   model: LinearGenomeViewModel

@@ -12,41 +12,43 @@ interface ScrollableVariantContainerProps {
   testId?: string
 }
 
-const ScrollableVariantContainer = observer(function ({
-  model,
-  topOffset = 0,
-  testId,
-}: ScrollableVariantContainerProps) {
-  const { setScrollTop, autoHeight, availableHeight } = model
+const ScrollableVariantContainer = observer(
+  function ScrollableVariantContainer({
+    model,
+    topOffset = 0,
+    testId,
+  }: ScrollableVariantContainerProps) {
+    const { setScrollTop, autoHeight, availableHeight } = model
 
-  return (
-    <div
-      data-testid={testId}
-      style={{
-        position: 'absolute',
-        top: topOffset,
-        height: availableHeight,
-        width: '100%',
-        overflowY: autoHeight ? 'hidden' : 'auto',
-        overflowX: 'hidden',
-      }}
-      onScroll={evt => {
-        setScrollTop(evt.currentTarget.scrollTop)
-      }}
-    >
-      <TreeSidebar model={model} />
-      <LegendBar model={model} />
+    return (
       <div
+        data-testid={testId}
         style={{
           position: 'absolute',
-          left: 0,
+          top: topOffset,
+          height: availableHeight,
           width: '100%',
+          overflowY: autoHeight ? 'hidden' : 'auto',
+          overflowX: 'hidden',
+        }}
+        onScroll={evt => {
+          setScrollTop(evt.currentTarget.scrollTop)
         }}
       >
-        <BaseLinearDisplayComponent model={model} />
+        <TreeSidebar model={model} />
+        <LegendBar model={model} />
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            width: '100%',
+          }}
+        >
+          <BaseLinearDisplayComponent model={model} />
+        </div>
       </div>
-    </div>
-  )
-})
+    )
+  },
+)
 
 export default ScrollableVariantContainer

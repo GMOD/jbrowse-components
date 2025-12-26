@@ -4,10 +4,12 @@ import FeatureRendererType, {
   type ResultsDeserialized,
   type ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { updateStatus } from '@jbrowse/core/util'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
 import type { RenderArgsDeserialized } from './types'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 interface SNPCoverageResultsSerialized extends ResultsSerialized {
@@ -41,24 +43,19 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
   }
 
   async render(renderProps: RenderArgsDeserialized) {
-    const {
-      sessionId,
-      adapterConfig,
-      regions,
-      statusCallback = () => {},
-    } = renderProps
+    const { sessionId, adapterConfig, regions } = renderProps
     const pm = this.pluginManager
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     const region = regions[0]!
 
-    // Use array-based rendering when the adapter supports getFeaturesAsArrays
-    const featureArrays = await (dataAdapter as any).getFeaturesAsArrays(
-      region,
-      renderProps,
+    const feats = await firstValueFrom(
+      (dataAdapter as BaseFeatureDataAdapter)
+        .getFeatures(region, renderProps)
+        .pipe(toArray()),
     )
-    const { renderSNPCoverageArrays } = await import('./makeImageArrays')
-    return updateStatus('Rendering coverage', statusCallback, () =>
-      renderSNPCoverageArrays({ ...renderProps, featureArrays }),
-    )
+    const features = new Map(feats.map(f => [f.id(), f] as const))
+
+    const { renderSNPCoverageToCanvas } = await import('./makeImage')
+    return renderSNPCoverageToCanvas({ ...renderProps, features })
   }
 }

@@ -7,7 +7,7 @@ import SequenceDisplay from './SequenceDisplay'
 import type { SimpleFeatureSerialized } from '../../../util'
 import type { SequenceFeatureDetailsModel } from '../model'
 
-const GenomicSequence = observer(function ({
+const GenomicSequence = observer(function GenomicSequence({
   sequence,
   upstream,
   feature,

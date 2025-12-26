@@ -10,7 +10,7 @@ import type {
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
 
-const ViewWrapper = observer(function ({
+const ViewWrapper = observer(function ViewWrapper({
   view,
   session,
 }: {

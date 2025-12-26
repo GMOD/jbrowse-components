@@ -18,7 +18,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const LoadingBar = observer(function ({
+const LoadingBar = observer(function LoadingBar({
   model,
 }: {
   model: LinearArcDisplayModel

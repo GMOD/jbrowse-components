@@ -22,7 +22,7 @@ const useStyles = makeStyles()(theme => ({
 
 type Coord = [number, number]
 
-const SNPCoverageTooltip = observer(function (props: {
+const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
   model: {
     featureUnderMouse?: Feature
     mouseoverExtraInformation?: string

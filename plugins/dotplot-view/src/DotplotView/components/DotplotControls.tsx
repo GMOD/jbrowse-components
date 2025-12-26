@@ -21,7 +21,7 @@ const DiagonalizationProgressDialog = lazy(
   () => import('./DiagonalizationProgressDialog'),
 )
 
-const DotplotControls = observer(function ({
+const DotplotControls = observer(function DotplotControls({
   model,
 }: {
   model: DotplotViewModel

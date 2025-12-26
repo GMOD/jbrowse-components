@@ -125,118 +125,128 @@ async function runDiagonalization({
   }
 }
 
-const DiagonalizationProgressDialog = observer(function ({
-  handleClose,
-  model,
-}: {
-  handleClose: () => void
-  model: Pick<
-    DotplotViewModel,
-    'tracks' | 'hview' | 'vview' | 'id' | 'type' | 'displayName'
-  >
-}) {
-  const [progress, setProgress] = useState(0)
-  const [message, setMessage] = useState('Ready to start diagonalization')
-  const [error, setError] = useState<unknown>()
-  const [isRunning, setIsRunning] = useState(false)
-  const [stopToken, setStopToken] = useState<StopToken>()
+const DiagonalizationProgressDialog = observer(
+  function DiagonalizationProgressDialog({
+    handleClose,
+    model,
+  }: {
+    handleClose: () => void
+    model: Pick<
+      DotplotViewModel,
+      'tracks' | 'hview' | 'vview' | 'id' | 'type' | 'displayName'
+    >
+  }) {
+    const [progress, setProgress] = useState(0)
+    const [message, setMessage] = useState('Ready to start diagonalization')
+    const [error, setError] = useState<unknown>()
+    const [isRunning, setIsRunning] = useState(false)
+    const [stopToken, setStopToken] = useState<StopToken>()
 
-  const handleStart = async () => {
-    const session = getSession(model)
-    const token = createStopToken()
-    setStopToken(token)
+    const handleStart = async () => {
+      const session = getSession(model)
+      const token = createStopToken()
+      setStopToken(token)
 
-    try {
-      setIsRunning(true)
-      await runDiagonalization({
-        model,
-        session,
-        stopToken: token,
-        setProgress,
-        setMessage,
-      })
+      try {
+        setIsRunning(true)
+        await runDiagonalization({
+          model,
+          session,
+          stopToken: token,
+          setProgress,
+          setMessage,
+        })
 
-      // Auto-close after success
-      setTimeout(() => {
-        handleClose()
-      }, 2000)
-    } catch (err) {
-      console.error(err)
-      setError(err)
-    } finally {
-      setIsRunning(false)
+        // Auto-close after success
+        setTimeout(() => {
+          handleClose()
+        }, 2000)
+      } catch (err) {
+        console.error(err)
+        setError(err)
+      } finally {
+        setIsRunning(false)
+      }
     }
-  }
 
-  const handleCancel = () => {
-    if (stopToken) {
-      stopStopToken(stopToken)
-      setStopToken(undefined)
-    }
-    handleClose()
-  }
-
-  const handleDialogClose = () => {
-    // Only allow closing if not running
-    if (!isRunning) {
+    const handleCancel = () => {
+      if (stopToken) {
+        stopStopToken(stopToken)
+        setStopToken(undefined)
+      }
       handleClose()
     }
-  }
 
-  return (
-    <Dialog
-      open
-      title="Diagonalize Dotplot"
-      onClose={handleDialogClose}
-      maxWidth="lg"
-    >
-      <DialogContent style={{ minWidth: 400 }}>
-        {message ? <Typography>{message}</Typography> : null}
-        {error ? <ErrorMessage error={error} /> : null}
-        {isRunning ? (
-          <>
-            <LinearProgress
-              variant="determinate"
-              value={progress}
-              style={{ marginTop: 16 }}
-              color={error ? 'error' : 'primary'}
-            />
-            <Typography
-              variant="caption"
-              color="textSecondary"
-              style={{ marginTop: 8, display: 'block' }}
-            >
-              {Math.round(progress)}% complete
-            </Typography>
-          </>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        {!isRunning ? (
-          <>
-            <Button onClick={handleClose} color="secondary" variant="contained">
-              Cancel
-            </Button>
+    const handleDialogClose = () => {
+      // Only allow closing if not running
+      if (!isRunning) {
+        handleClose()
+      }
+    }
+
+    return (
+      <Dialog
+        open
+        title="Diagonalize Dotplot"
+        onClose={handleDialogClose}
+        maxWidth="lg"
+      >
+        <DialogContent style={{ minWidth: 400 }}>
+          {message ? <Typography>{message}</Typography> : null}
+          {error ? <ErrorMessage error={error} /> : null}
+          {isRunning ? (
+            <>
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                style={{ marginTop: 16 }}
+                color={error ? 'error' : 'primary'}
+              />
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                style={{ marginTop: 8, display: 'block' }}
+              >
+                {Math.round(progress)}% complete
+              </Typography>
+            </>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          {!isRunning ? (
+            <>
+              <Button
+                onClick={handleClose}
+                color="secondary"
+                variant="contained"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                  handleStart()
+                }}
+                color="primary"
+                variant="contained"
+              >
+                Start
+              </Button>
+            </>
+          ) : null}
+          {isRunning ? (
             <Button
-              onClick={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                handleStart()
-              }}
-              color="primary"
+              onClick={handleCancel}
+              color="secondary"
               variant="contained"
             >
-              Start
+              Cancel
             </Button>
-          </>
-        ) : null}
-        {isRunning ? (
-          <Button onClick={handleCancel} color="secondary" variant="contained">
-            Cancel
-          </Button>
-        ) : null}
-      </DialogActions>
-    </Dialog>
-  )
-})
+          ) : null}
+        </DialogActions>
+      </Dialog>
+    )
+  },
+)
 
 export default DiagonalizationProgressDialog

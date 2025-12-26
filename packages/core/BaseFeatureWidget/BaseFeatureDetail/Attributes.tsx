@@ -20,6 +20,7 @@ const globalOmit = [
   'parentId',
   'thickStart',
   'thickEnd',
+  '_lineHash',
 ]
 
 export default function Attributes(props: {

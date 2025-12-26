@@ -13,6 +13,7 @@ const coreFields = new Set([
   'score',
   'subfeatures',
   'phase',
+  '_lineHash',
 ])
 
 const retitle = {

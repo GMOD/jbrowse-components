@@ -5,7 +5,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { SceneGraph } from '@jbrowse/core/util/layouts'
 
-const FeatureGlyph = observer(function (props: {
+const FeatureGlyph = observer(function FeatureGlyph(props: {
   feature: Feature
   rootLayout: SceneGraph
   config: AnyConfigurationModel

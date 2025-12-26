@@ -22,7 +22,7 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
-const TrackLabelContainer = observer(function ({
+const TrackLabelContainer = observer(function TrackLabelContainer({
   track,
   view,
 }: {

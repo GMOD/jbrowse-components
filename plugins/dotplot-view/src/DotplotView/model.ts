@@ -485,6 +485,10 @@ export default function stateModelFactory(pm: PluginManager) {
        */
       setAssemblyNames(target: string, query: string) {
         self.assemblyNames = cast([target, query])
+        // Clear displayed regions to trigger re-initialization with the new
+        // assemblies. The dotplotRegionsAutorun will re-populate them.
+        self.hview.setDisplayedRegions([])
+        self.vview.setDisplayedRegions([])
       },
       /**
        * #action
@@ -737,6 +741,12 @@ export default function stateModelFactory(pm: PluginManager) {
           self,
           autorun(
             function dotplotRegionsAutorun() {
+              // IMPORTANT: Must actually read assemblyNames array (via slice) to
+              // force MobX to track it. Just referencing it without reading won't
+              // make the autorun re-run when assembly names change. This ensures
+              // the autorun fires when setAssemblyNames is called with different
+              // assemblies, which is critical for re-initializing displayed regions
+              void self.assemblyNames.slice()
               if (
                 self.volatileWidth !== undefined &&
                 self.assembliesInitialized

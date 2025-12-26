@@ -50,7 +50,7 @@ function OverlayRect({
 type ME = React.MouseEvent<SVGRectElement>
 type MEFE = ME | React.FocusEvent<SVGRectElement>
 
-const SvgOverlay = observer(function ({
+const SvgOverlay = observer(function SvgOverlay({
   displayModel = {},
   blockKey,
   region,

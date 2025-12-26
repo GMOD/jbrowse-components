@@ -61,7 +61,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
+const RenderedComponent = observer(function RenderedComponent({
+  model,
+}: {
+  model: DotplotViewModel
+}) {
   const { classes } = useStyles()
   return (
     <div className={classes.overlay}>
@@ -79,7 +83,7 @@ const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
   )
 })
 
-const DotplotViewInternal = observer(function ({
+const DotplotViewInternal = observer(function DotplotViewInternal({
   model,
 }: {
   model: DotplotViewModel
@@ -212,7 +216,11 @@ const DotplotViewInternal = observer(function ({
     </div>
   )
 })
-const DotplotView = observer(function ({ model }: { model: DotplotViewModel }) {
+const DotplotView = observer(function DotplotView({
+  model,
+}: {
+  model: DotplotViewModel
+}) {
   const { initialized, showLoading, error, loadingMessage } = model
 
   if (showLoading) {

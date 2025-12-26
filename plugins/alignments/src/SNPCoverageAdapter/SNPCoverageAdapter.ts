@@ -40,7 +40,7 @@ function makeFilterByKey(filterBy?: FilterBy) {
 }
 
 function makeRegionFilterKey(region: Region, opts: SNPCoverageOptions) {
-  return `${region.refName}:${region.start}-${region.end}|${makeFilterByKey(opts.filterBy)}|${opts.trackId || ''}`
+  return `${region.refName}:${region.start}-${region.end}|${makeFilterByKey(opts.filterBy)}|${opts.trackInstanceId || ''}`
 }
 
 function makeCacheKey(region: Region, opts: SNPCoverageOptions) {
@@ -187,7 +187,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { starts, ends, scores, snpinfo, skipmap } =
-        await this.getFeaturesAsArrays(region, opts)
+        await this.getCoverageBins(region, opts)
 
       // Emit coverage features
       for (const [i, start_] of starts.entries()) {
@@ -228,7 +228,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     }, opts.stopToken)
   }
 
-  async getFeaturesAsArrays(
+  private async getCoverageBins(
     region: Region,
     opts: SNPCoverageOptions = {},
   ): Promise<CoverageBinsSoA> {
@@ -339,7 +339,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       // Fetch data for all static blocks (these will be cached)
       const staticBlockData = await Promise.all(
         staticBlocks.map(block =>
-          this.getFeaturesAsArrays(block, {
+          this.getCoverageBins(block, {
             ...opts,
             statsEstimationMode: true,
           }).then(bins => ({ block, bins })),

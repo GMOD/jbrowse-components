@@ -526,6 +526,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return this.rectangles.get(id)?.data
   }
 
+  getSerializableDataByID(id: string) {
+    return this.rectangles.get(id)?.serializableData
+  }
+
   cleanup() {}
 
   getTotalHeight() {

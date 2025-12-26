@@ -14,7 +14,7 @@ import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
 
 import type { DotplotViewModel } from '../../model'
 
-const TrackSelector = observer(function ({
+const TrackSelector = observer(function TrackSelector({
   assembly1,
   assembly2,
   model,

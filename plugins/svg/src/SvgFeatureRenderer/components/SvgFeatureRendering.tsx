@@ -160,7 +160,7 @@ function RenderedFeatureGlyph(props: {
   }
 }
 
-const RenderedFeatures = observer(function (props: {
+const RenderedFeatures = observer(function RenderedFeatures(props: {
   features?: Map<string, Feature>
   isFeatureDisplayed?: (f: Feature) => boolean
   bpPerPx: number

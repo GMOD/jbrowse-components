@@ -5,10 +5,22 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Image, createCanvas } from 'canvas'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { computeLayouts } from './computeLayouts'
 import configSchema from './configSchema'
+import { layoutFeatures } from './layoutFeatures'
 import { makeImageData } from './makeImageData'
 import { createRenderConfigContext } from './renderConfig'
+
+import type { FloatingLabelData } from './floatingLabels'
+
+interface LayoutSerializableData {
+  refName?: string
+  floatingLabels?: FloatingLabelData[]
+  totalFeatureHeight?: number
+  totalLayoutWidth?: number
+  actualTopPx?: number
+  featureWidth?: number
+  leftPadding?: number
+}
 
 const pluginManager = new PluginManager([])
 pluginManager.configure()
@@ -35,14 +47,24 @@ const defaultTheme = {
   },
 }
 
+const defaultRegion = {
+  refName: 'ctgA',
+  start: 0,
+  end: 1000,
+  assemblyName: 'volvox',
+}
+
 function createRenderArgs(
   features: Map<string, SimpleFeature>,
-  region: { refName: string; start: number; end: number; assemblyName: string },
+  region = defaultRegion,
   configOverrides: Record<string, unknown> = {},
 ) {
   const config = configSchema.create(configOverrides, { pluginManager })
   const bpPerPx = 1
-  const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
+  const layout = new GranularRectLayout<LayoutSerializableData>({
+    pitchX: 1,
+    pitchY: 1,
+  })
   const configContext = createRenderConfigContext(config)
 
   return {
@@ -57,8 +79,63 @@ function createRenderArgs(
   }
 }
 
+function doLayout(
+  args: ReturnType<typeof createRenderArgs>,
+  features: Map<string, SimpleFeature>,
+) {
+  return layoutFeatures({
+    features,
+    bpPerPx: args.bpPerPx,
+    region: args.region,
+    config: args.config,
+    configContext: args.configContext,
+    layout: args.layout,
+  })
+}
+
+async function renderAndGetResult(
+  args: ReturnType<typeof createRenderArgs>,
+  features: Map<string, SimpleFeature>,
+  layoutRecords: ReturnType<typeof layoutFeatures>,
+  height = 100,
+) {
+  const width = (args.region.end - args.region.start) / args.bpPerPx
+  return renderToAbstractCanvas(
+    width,
+    height,
+    { highResolutionScaling: 1 },
+    ctx =>
+      makeImageData({
+        ctx,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: { ...args, features, regions: [args.region] },
+        configContext: args.configContext,
+      }),
+  )
+}
+
+function renderToCanvas(
+  args: ReturnType<typeof createRenderArgs>,
+  features: Map<string, SimpleFeature>,
+  layoutRecords: ReturnType<typeof layoutFeatures>,
+  height: number,
+) {
+  const width = args.region.end - args.region.start
+  const canvas = createCanvas(width, height)
+  const ctx = canvas.getContext('2d')
+  makeImageData({
+    ctx: ctx as unknown as CanvasRenderingContext2D,
+    layoutRecords,
+    canvasWidth: width,
+    renderArgs: { ...args, features, regions: [args.region] },
+    configContext: args.configContext,
+  })
+  return canvas
+}
+
 describe('CanvasFeatureRenderer', () => {
-  describe('computeLayouts', () => {
+  describe('layoutFeatures', () => {
     test('simple box feature', () => {
       const feature = new SimpleFeature({
         uniqueId: 'test1',
@@ -68,27 +145,52 @@ describe('CanvasFeatureRenderer', () => {
         name: 'TestFeature',
       })
       const features = new Map([['test1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
+      const args = createRenderArgs(features)
+      const layoutRecords = doLayout(args, features)
 
       expect(layoutRecords).toHaveLength(1)
       expect(layoutRecords[0]!.feature.id()).toBe('test1')
       expect(layoutRecords[0]!.layout.width).toBe(100)
       expect(layoutRecords[0]!.topPx).toBe(0)
+      expect(layoutRecords[0]!.layout.glyphType).toBe('Box')
+    })
+
+    test('layout stores glyphType for use during drawing', () => {
+      const geneFeature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 450,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', geneFeature]])
+      const args = createRenderArgs(features)
+      const layoutRecords = doLayout(args, features)
+
+      expect(layoutRecords).toHaveLength(1)
+      const geneLayout = layoutRecords[0]!.layout
+      expect(geneLayout.glyphType).toBe('Subfeatures')
+      expect(geneLayout.children).toHaveLength(1)
+      expect(geneLayout.children[0]!.glyphType).toBe('ProcessedTranscript')
     })
 
     test('multiple features get stacked', () => {
@@ -110,22 +212,8 @@ describe('CanvasFeatureRenderer', () => {
         ['test1', feature1],
         ['test2', feature2],
       ])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
+      const args = createRenderArgs(features)
+      const layoutRecords = doLayout(args, features)
 
       expect(layoutRecords).toHaveLength(2)
       expect(layoutRecords[0]!.topPx).not.toBe(layoutRecords[1]!.topPx)
@@ -143,47 +231,13 @@ describe('CanvasFeatureRenderer', () => {
         description: 'A test feature',
       })
       const features = new Map([['test1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = (region.end - region.start) / args.bpPerPx
-
-      const result = await renderToAbstractCanvas(
-        width,
-        100,
-        { highResolutionScaling: 1 },
-        ctx =>
-          makeImageData({
-            ctx,
-            layoutRecords,
-            canvasWidth: width,
-            renderArgs: {
-              ...args,
-              features,
-              regions: [args.region],
-            },
-            configContext: args.configContext,
-          }),
-      )
+      const args = createRenderArgs(features)
+      const layoutRecords = doLayout(args, features)
+      const result = await renderAndGetResult(args, features, layoutRecords)
 
       expect(result.items).toHaveLength(1)
       expect(result.items[0]!.featureId).toBe('test1')
-      expect(result.items[0]!.label).toBe('TestFeature')
-      expect(result.items[0]!.description).toBe('A test feature')
+      expect(result.items[0]!.tooltip).toBe('TestFeature<br/>A test feature')
       expect(result.items[0]!.startBp).toBe(100)
       expect(result.items[0]!.endBp).toBe(200)
       expect(result.flatbush).toBeDefined()
@@ -199,44 +253,11 @@ describe('CanvasFeatureRenderer', () => {
         _mouseOver: 'Custom mouseover text',
       })
       const features = new Map([['test1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
+      const args = createRenderArgs(features)
+      const layoutRecords = doLayout(args, features)
+      const result = await renderAndGetResult(args, features, layoutRecords)
 
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = (region.end - region.start) / args.bpPerPx
-
-      const result = await renderToAbstractCanvas(
-        width,
-        100,
-        { highResolutionScaling: 1 },
-        ctx =>
-          makeImageData({
-            ctx,
-            layoutRecords,
-            canvasWidth: width,
-            renderArgs: {
-              ...args,
-              features,
-              regions: [args.region],
-            },
-            configContext: args.configContext,
-          }),
-      )
-
-      expect(result.items[0]!.mouseOver).toBe('Custom mouseover text')
+      expect(result.items[0]!.tooltip).toBe('Custom mouseover text')
     })
 
     test('gene with mRNA transcript creates subfeature info', async () => {
@@ -277,49 +298,57 @@ describe('CanvasFeatureRenderer', () => {
         ],
       })
       const features = new Map([['gene1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = (region.end - region.start) / args.bpPerPx
-
-      const result = await renderToAbstractCanvas(
-        width,
-        100,
-        { highResolutionScaling: 1 },
-        ctx =>
-          makeImageData({
-            ctx,
-            layoutRecords,
-            canvasWidth: width,
-            renderArgs: {
-              ...args,
-              features,
-              regions: [args.region],
-            },
-            configContext: args.configContext,
-          }),
-      )
+      const args = createRenderArgs(features)
+      const layoutRecords = doLayout(args, features)
+      const result = await renderAndGetResult(args, features, layoutRecords)
 
       expect(result.items).toHaveLength(1)
       expect(result.items[0]!.featureId).toBe('gene1')
       expect(result.subfeatureInfos).toHaveLength(1)
-      expect(result.subfeatureInfos[0]!.name).toBe('TestTranscript')
       expect(result.subfeatureInfos[0]!.type).toBe('mRNA')
-      expect(result.subfeatureInfos[0]!.parentFeatureId).toBe('gene1')
+    })
+
+    test('subfeature floating labels include parentFeatureId and tooltip for mouseover', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            name: 'TestTranscript',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 450,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const args = createRenderArgs(features, defaultRegion, {
+        subfeatureLabels: 'below',
+      })
+      const layoutRecords = doLayout(args, features)
+      await renderAndGetResult(args, features, layoutRecords)
+
+      const layoutData = args.layout.getSerializableDataByID('mrna1')
+      expect(layoutData).toBeDefined()
+      expect(layoutData!.floatingLabels).toBeDefined()
+      expect(layoutData!.floatingLabels!.length).toBeGreaterThan(0)
+      expect(layoutData!.floatingLabels![0]!.parentFeatureId).toBe('gene1')
     })
 
     test('compact display mode', async () => {
@@ -331,24 +360,10 @@ describe('CanvasFeatureRenderer', () => {
         name: 'TestFeature',
       })
       const features = new Map([['test1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region, {
+      const args = createRenderArgs(features, defaultRegion, {
         displayMode: 'compact',
       })
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
+      const layoutRecords = doLayout(args, features)
 
       expect(layoutRecords[0]!.layout.height).toBe(5)
     })
@@ -363,45 +378,12 @@ describe('CanvasFeatureRenderer', () => {
         name: longName,
       })
       const features = new Map([['test1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
+      const args = createRenderArgs(features)
+      const layoutRecords = doLayout(args, features)
+      const result = await renderAndGetResult(args, features, layoutRecords)
 
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = (region.end - region.start) / args.bpPerPx
-
-      const result = await renderToAbstractCanvas(
-        width,
-        100,
-        { highResolutionScaling: 1 },
-        ctx =>
-          makeImageData({
-            ctx,
-            layoutRecords,
-            canvasWidth: width,
-            renderArgs: {
-              ...args,
-              features,
-              regions: [args.region],
-            },
-            configContext: args.configContext,
-          }),
-      )
-
-      expect(result.items[0]!.label).toBe(longName)
-      expect(result.items[0]!.label!.length).toBe(60)
+      expect(result.items[0]!.tooltip).toBe(longName)
+      expect(result.items[0]!.tooltip!.length).toBe(60)
     })
 
     test('snapshot of flatbush items structure', async () => {
@@ -414,42 +396,9 @@ describe('CanvasFeatureRenderer', () => {
         note: 'Test description',
       })
       const features = new Map([['test1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = (region.end - region.start) / args.bpPerPx
-
-      const result = await renderToAbstractCanvas(
-        width,
-        100,
-        { highResolutionScaling: 1 },
-        ctx =>
-          makeImageData({
-            ctx,
-            layoutRecords,
-            canvasWidth: width,
-            renderArgs: {
-              ...args,
-              features,
-              regions: [args.region],
-            },
-            configContext: args.configContext,
-          }),
-      )
+      const args = createRenderArgs(features)
+      const layoutRecords = doLayout(args, features)
+      const result = await renderAndGetResult(args, features, layoutRecords)
 
       expect(result.items).toMatchSnapshot()
       expect(result.subfeatureInfos).toMatchSnapshot()
@@ -457,6 +406,13 @@ describe('CanvasFeatureRenderer', () => {
   })
 
   describe('canvas snapshots', () => {
+    const snapshotRegion = {
+      refName: 'ctgA',
+      start: 0,
+      end: 200,
+      assemblyName: 'volvox',
+    }
+
     test('simple box feature rendering', async () => {
       const feature = new SimpleFeature({
         uniqueId: 'test1',
@@ -466,39 +422,9 @@ describe('CanvasFeatureRenderer', () => {
         name: 'SimpleFeature',
       })
       const features = new Map([['test1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 200,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = region.end - region.start
-      const height = 50
-      const canvas = createCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-
-      makeImageData({
-        ctx: ctx as unknown as CanvasRenderingContext2D,
-        layoutRecords,
-        canvasWidth: width,
-        renderArgs: {
-          ...args,
-          features,
-          regions: [args.region],
-        },
-        configContext: args.configContext,
-      })
+      const args = createRenderArgs(features, snapshotRegion)
+      const layoutRecords = doLayout(args, features)
+      const canvas = renderToCanvas(args, features, layoutRecords, 50)
 
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
@@ -530,39 +456,9 @@ describe('CanvasFeatureRenderer', () => {
         ['test2', feature2],
         ['test3', feature3],
       ])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 200,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = region.end - region.start
-      const height = 100
-      const canvas = createCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-
-      makeImageData({
-        ctx: ctx as unknown as CanvasRenderingContext2D,
-        layoutRecords,
-        canvasWidth: width,
-        renderArgs: {
-          ...args,
-          features,
-          regions: [args.region],
-        },
-        configContext: args.configContext,
-      })
+      const args = createRenderArgs(features, snapshotRegion)
+      const layoutRecords = doLayout(args, features)
+      const canvas = renderToCanvas(args, features, layoutRecords, 100)
 
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
@@ -625,39 +521,9 @@ describe('CanvasFeatureRenderer', () => {
         ],
       })
       const features = new Map([['gene1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 200,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = region.end - region.start
-      const height = 50
-      const canvas = createCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-
-      makeImageData({
-        ctx: ctx as unknown as CanvasRenderingContext2D,
-        layoutRecords,
-        canvasWidth: width,
-        renderArgs: {
-          ...args,
-          features,
-          regions: [args.region],
-        },
-        configContext: args.configContext,
-      })
+      const args = createRenderArgs(features, snapshotRegion)
+      const layoutRecords = doLayout(args, features)
+      const canvas = renderToCanvas(args, features, layoutRecords, 50)
 
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
@@ -681,41 +547,11 @@ describe('CanvasFeatureRenderer', () => {
         ['test1', feature1],
         ['test2', feature2],
       ])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 200,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region, {
+      const args = createRenderArgs(features, snapshotRegion, {
         displayMode: 'compact',
       })
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = region.end - region.start
-      const height = 50
-      const canvas = createCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-
-      makeImageData({
-        ctx: ctx as unknown as CanvasRenderingContext2D,
-        layoutRecords,
-        canvasWidth: width,
-        renderArgs: {
-          ...args,
-          features,
-          regions: [args.region],
-        },
-        configContext: args.configContext,
-      })
+      const layoutRecords = doLayout(args, features)
+      const canvas = renderToCanvas(args, features, layoutRecords, 50)
 
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
@@ -791,39 +627,9 @@ describe('CanvasFeatureRenderer', () => {
         ],
       })
       const features = new Map([['gene1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 200,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = region.end - region.start
-      const height = 80
-      const canvas = createCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-
-      makeImageData({
-        ctx: ctx as unknown as CanvasRenderingContext2D,
-        layoutRecords,
-        canvasWidth: width,
-        renderArgs: {
-          ...args,
-          features,
-          regions: [args.region],
-        },
-        configContext: args.configContext,
-      })
+      const args = createRenderArgs(features, snapshotRegion)
+      const layoutRecords = doLayout(args, features)
+      const canvas = renderToCanvas(args, features, layoutRecords, 80)
 
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
@@ -881,41 +687,11 @@ describe('CanvasFeatureRenderer', () => {
         ],
       })
       const features = new Map([['gene1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 200,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region, {
+      const args = createRenderArgs(features, snapshotRegion, {
         geneGlyphMode: 'longest',
       })
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = region.end - region.start
-      const height = 50
-      const canvas = createCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-
-      makeImageData({
-        ctx: ctx as unknown as CanvasRenderingContext2D,
-        layoutRecords,
-        canvasWidth: width,
-        renderArgs: {
-          ...args,
-          features,
-          regions: [args.region],
-        },
-        configContext: args.configContext,
-      })
+      const layoutRecords = doLayout(args, features)
+      const canvas = renderToCanvas(args, features, layoutRecords, 50)
 
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
@@ -952,41 +728,11 @@ describe('CanvasFeatureRenderer', () => {
         ],
       })
       const features = new Map([['gene1', feature]])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 200,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region, {
+      const args = createRenderArgs(features, snapshotRegion, {
         displayMode: 'reducedRepresentation',
       })
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = region.end - region.start
-      const height = 50
-      const canvas = createCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-
-      makeImageData({
-        ctx: ctx as unknown as CanvasRenderingContext2D,
-        layoutRecords,
-        canvasWidth: width,
-        renderArgs: {
-          ...args,
-          features,
-          regions: [args.region],
-        },
-        configContext: args.configContext,
-      })
+      const layoutRecords = doLayout(args, features)
+      const canvas = renderToCanvas(args, features, layoutRecords, 50)
 
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })
@@ -1058,39 +804,9 @@ describe('CanvasFeatureRenderer', () => {
         ['gene1', forwardGene],
         ['gene2', reverseGene],
       ])
-      const region = {
-        refName: 'ctgA',
-        start: 0,
-        end: 200,
-        assemblyName: 'volvox',
-      }
-      const args = createRenderArgs(features, region)
-
-      const layoutRecords = computeLayouts({
-        features,
-        bpPerPx: args.bpPerPx,
-        region: args.region,
-        config: args.config,
-        configContext: args.configContext,
-        layout: args.layout,
-      })
-
-      const width = region.end - region.start
-      const height = 50
-      const canvas = createCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-
-      makeImageData({
-        ctx: ctx as unknown as CanvasRenderingContext2D,
-        layoutRecords,
-        canvasWidth: width,
-        renderArgs: {
-          ...args,
-          features,
-          regions: [args.region],
-        },
-        configContext: args.configContext,
-      })
+      const args = createRenderArgs(features, snapshotRegion)
+      const layoutRecords = doLayout(args, features)
+      const canvas = renderToCanvas(args, features, layoutRecords, 50)
 
       expect(canvasToBuffer(canvas)).toMatchImageSnapshot()
     })

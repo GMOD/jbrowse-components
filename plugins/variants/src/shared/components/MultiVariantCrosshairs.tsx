@@ -33,7 +33,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const MultiVariantCrosshairs = observer(function ({
+const MultiVariantCrosshairs = observer(function MultiVariantCrosshairs({
   mouseX,
   mouseY,
   model,

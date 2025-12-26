@@ -7,7 +7,7 @@ import type { DotplotViewModel } from '../model'
 // lazy components
 const WarningDialog = lazy(() => import('./WarningDialog'))
 
-const DotplotWarnings = observer(function ({
+const DotplotWarnings = observer(function DotplotWarnings({
   model,
 }: {
   model: DotplotViewModel

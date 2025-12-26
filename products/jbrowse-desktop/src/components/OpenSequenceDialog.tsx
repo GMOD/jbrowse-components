@@ -46,7 +46,7 @@ function isBlank(location: FileLocation) {
   return 'uri' in location && location.uri === ''
 }
 
-const AdapterSelector = observer(function ({
+const AdapterSelector = observer(function AdapterSelector({
   adapterSelection,
   setAdapterSelection,
   adapterTypes,
@@ -76,7 +76,7 @@ const AdapterSelector = observer(function ({
   )
 })
 
-const FastaAdapterInput = observer(function ({
+const FastaAdapterInput = observer(function FastaAdapterInput({
   fastaLocation,
   setFastaLocation,
 }: {
@@ -99,7 +99,7 @@ const FastaAdapterInput = observer(function ({
   )
 })
 
-const IndexedFastaAdapterInput = observer(function ({
+const IndexedFastaAdapterInput = observer(function IndexedFastaAdapterInput({
   fastaLocation,
   faiLocation,
   setFastaLocation,
@@ -128,7 +128,7 @@ const IndexedFastaAdapterInput = observer(function ({
   )
 })
 
-const BgzipFastaAdapterInput = observer(function ({
+const BgzipFastaAdapterInput = observer(function BgzipFastaAdapterInput({
   fastaLocation,
   faiLocation,
   gziLocation,
@@ -167,7 +167,7 @@ const BgzipFastaAdapterInput = observer(function ({
   )
 })
 
-const TwoBitAdapterInput = observer(function ({
+const TwoBitAdapterInput = observer(function TwoBitAdapterInput({
   twoBitLocation,
   chromSizesLocation,
   setTwoBitLocation,
@@ -209,7 +209,7 @@ type AdapterType =
   | 'FastaAdapter'
   | 'TwoBitAdapter'
 
-const OpenSequenceDialog = observer(function ({
+const OpenSequenceDialog = observer(function OpenSequenceDialog({
   onClose,
 }: {
   onClose: (conf?: unknown) => Promise<void>

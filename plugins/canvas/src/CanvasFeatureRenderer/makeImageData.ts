@@ -1,11 +1,14 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { drawFeature } from './drawFeature'
 import {
-  addNestedSubfeaturesToLayout,
   addSubfeaturesToLayoutAndFlatbush,
   adjustChildPositions,
 } from './layoutUtils'
@@ -67,9 +70,7 @@ export function makeImageData({
   ctx.textAlign = 'left'
 
   const { subfeatureLabels, transcriptTypes } = configContext
-  const lastCheck = { time: Date.now() }
-  let idx = 0
-
+  const lastCheck = createStopTokenChecker(stopToken)
   for (const record of layoutRecords) {
     const {
       feature,
@@ -124,7 +125,10 @@ export function makeImageData({
     const topPx = adjustedLayout.y
     const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
-    const mouseOver = feature.get('_mouseOver') as string | undefined
+    const tooltip = String(
+      readConfObject(config, 'mouseover', { feature, label, description }) ||
+        '',
+    )
 
     coords.push(leftPx, topPx, rightPx, bottomPx)
     items.push({
@@ -136,30 +140,23 @@ export function makeImageData({
       rightPx,
       topPx,
       bottomPx,
-      label: label || undefined,
-      description: description || undefined,
-      mouseOver,
+      tooltip,
     })
 
     if (isGene && hasTranscriptChildren) {
       addSubfeaturesToLayoutAndFlatbush({
         layout,
         featureLayout: adjustedLayout,
-        parentFeatureId: feature.id(),
         subfeatureCoords,
         subfeatureInfos,
         config,
         subfeatureLabels,
         transcriptTypes,
         labelColor: theme.palette.text.primary,
-      })
-    } else if (adjustedLayout.children.length > 0) {
-      addNestedSubfeaturesToLayout({
-        layout,
-        featureLayout: adjustedLayout,
+        parentTooltip: tooltip,
       })
     }
-    checkStopToken2(stopToken, idx++, lastCheck)
+    checkStopToken2(lastCheck)
   }
 
   return {

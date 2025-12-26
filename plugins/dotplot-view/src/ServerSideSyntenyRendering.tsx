@@ -16,36 +16,34 @@ interface ModelType {
     highResolutionScaling?: number
   }
 }
-const ServerSideSyntenyRendering = observer(function ({
-  model,
-}: {
-  model: ModelType
-}) {
-  const { imageData, style, renderProps } = model
-  const { width, height, highResolutionScaling = 1 } = renderProps
+const ServerSideSyntenyRendering = observer(
+  function ServerSideSyntenyRendering({ model }: { model: ModelType }) {
+    const { imageData, style, renderProps } = model
+    const { width, height, highResolutionScaling = 1 } = renderProps
 
-  const featureCanvas = useRef<HTMLCanvasElement>(null)
-  const [done, setDone] = useState(false)
+    const featureCanvas = useRef<HTMLCanvasElement>(null)
+    const [done, setDone] = useState(false)
 
-  useEffect(() => {
-    if (!imageData) {
-      return
-    }
-    const canvas = featureCanvas.current!
-    const context = canvas.getContext('2d')!
-    drawImageOntoCanvasContext(imageData, context)
-    setDone(true)
-  }, [imageData])
+    useEffect(() => {
+      if (!imageData) {
+        return
+      }
+      const canvas = featureCanvas.current!
+      const context = canvas.getContext('2d')!
+      drawImageOntoCanvasContext(imageData, context)
+      setDone(true)
+    }, [imageData])
 
-  return (
-    <canvas
-      data-testid={`prerendered_canvas${done ? '_done' : ''}`}
-      ref={featureCanvas}
-      width={width * highResolutionScaling}
-      height={height * highResolutionScaling}
-      style={{ width, height, ...style }}
-    />
-  )
-})
+    return (
+      <canvas
+        data-testid={`prerendered_canvas${done ? '_done' : ''}`}
+        ref={featureCanvas}
+        width={width * highResolutionScaling}
+        height={height * highResolutionScaling}
+        style={{ width, height, ...style }}
+      />
+    )
+  },
+)
 
 export default ServerSideSyntenyRendering

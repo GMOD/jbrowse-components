@@ -20,6 +20,9 @@ export default function CascadingMenuHelpDialog({
       onClick={e => {
         e.stopPropagation()
       }}
+      onMouseDown={e => {
+        e.stopPropagation()
+      }}
     >
       <DialogContent>{helpText}</DialogContent>
     </Dialog>

@@ -10,7 +10,7 @@ import type {
   SvgIconProps,
 } from '@mui/material'
 
-const ViewMenu = observer(function ({
+const ViewMenu = observer(function ViewMenu({
   model,
   IconButtonProps,
   IconProps,

@@ -34,7 +34,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const ImportWizard = observer(function ({
+const ImportWizard = observer(function ImportWizard({
   model,
 }: {
   model: ImportWizardModel

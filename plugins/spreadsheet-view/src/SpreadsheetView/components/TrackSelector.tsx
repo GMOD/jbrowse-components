@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 
 import type { ImportWizardModel } from '../ImportWizard'
 
-const TrackSelector = observer(function ({
+const TrackSelector = observer(function TrackSelector({
   model,
   selectedAssembly,
 }: {

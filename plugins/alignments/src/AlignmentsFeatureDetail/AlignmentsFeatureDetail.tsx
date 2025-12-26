@@ -17,7 +17,7 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
 const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))
 
-const FeatDefined = observer(function (props: {
+const FeatDefined = observer(function FeatDefined(props: {
   feat: SimpleFeatureSerialized
   model: AlignmentFeatureWidgetModel
 }) {
@@ -55,20 +55,22 @@ const FeatDefined = observer(function (props: {
   )
 })
 
-const AlignmentsFeatureDetails = observer(function (props: {
-  model: AlignmentFeatureWidgetModel
-}) {
-  const { model } = props
-  const { featureData } = model
-  const feat = structuredClone(featureData)
-  return feat ? (
-    <FeatDefined feat={feat} {...props} />
-  ) : (
-    <div>
-      No feature loaded, may not be available after page refresh because it was
-      too large for localStorage
-    </div>
-  )
-})
+const AlignmentsFeatureDetails = observer(
+  function AlignmentsFeatureDetails(props: {
+    model: AlignmentFeatureWidgetModel
+  }) {
+    const { model } = props
+    const { featureData } = model
+    const feat = structuredClone(featureData)
+    return feat ? (
+      <FeatDefined feat={feat} {...props} />
+    ) : (
+      <div>
+        No feature loaded, may not be available after page refresh because it
+        was too large for localStorage
+      </div>
+    )
+  },
+)
 
 export default AlignmentsFeatureDetails

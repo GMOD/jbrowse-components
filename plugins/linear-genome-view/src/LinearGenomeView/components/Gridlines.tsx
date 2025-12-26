@@ -1,17 +1,19 @@
-import { useEffect, useRef } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useTheme } from '@mui/material'
-import { autorun } from 'mobx'
+import { observer } from 'mobx-react'
 
-import { getCachedElements, makeTicks } from '../util'
+import {
+  ContentBlock as ContentBlockComponent,
+  ElidedBlock as ElidedBlockComponent,
+  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
+} from '../../BaseLinearDisplay/components/Block'
+import { makeTicks } from '../util'
 
 import type { LinearGenomeViewModel } from '..'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   verticalGuidesZoomContainer: {
     position: 'absolute',
     top: 0,
@@ -21,156 +23,110 @@ const useStyles = makeStyles()({
   },
   verticalGuidesContainer: {
     position: 'absolute',
-    display: 'flex',
     height: '100%',
     pointerEvents: 'none',
+    display: 'flex',
   },
-})
-
-function createBlockElement(
-  block: BaseBlock,
-  bpPerPx: number,
-  colors: {
-    major: string
-    minor: string
-    interRegionPadding: string
-    boundaryPadding: string
+  tick: {
+    position: 'absolute',
+    height: '100%',
+    width: 1,
   },
-) {
-  const div = document.createElement('div')
-  div.style.height = '100%'
-  div.style.flexShrink = '0'
-  div.style.position = 'relative'
-  div.style.width = `${block.widthPx}px`
+  majorTick: {
+    background: theme.palette.action.disabled,
+  },
+  minorTick: {
+    background: theme.palette.divider,
+  },
+}))
 
-  if (block.type === 'ContentBlock') {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.style.position = 'absolute'
-    svg.style.top = '0'
-    svg.style.left = '0'
-    svg.style.width = '100%'
-    svg.style.height = '100%'
-    svg.style.pointerEvents = 'none'
-    div.append(svg)
-
-    const ticks = makeTicks(block.start, block.end, bpPerPx)
-    const fragment = document.createDocumentFragment()
-    for (const { type, base } of ticks) {
-      const x =
-        (block.reversed ? block.end - base : base - block.start) / bpPerPx
-      const line = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'line',
-      )
-      line.setAttribute('x1', String(x))
-      line.setAttribute('y1', '0')
-      line.setAttribute('x2', String(x))
-      line.setAttribute('y2', '100%')
-      line.setAttribute(
-        'stroke',
-        type === 'major' || type === 'labeledMajor'
-          ? colors.major
-          : colors.minor,
-      )
-      line.setAttribute('stroke-width', '1')
-      fragment.append(line)
-    }
-    svg.append(fragment)
-  } else if (block.type === 'ElidedBlock') {
-    div.style.backgroundColor = '#999'
-    div.style.backgroundImage =
-      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)'
-  } else if (block.type === 'InterRegionPaddingBlock') {
-    div.style.backgroundColor =
-      block.variant === 'boundary'
-        ? colors.boundaryPadding
-        : colors.interRegionPadding
-  }
-
-  return div
-}
-function Gridlines({ model, offset = 0 }: { model: LGV; offset?: number }) {
-  const { classes } = useStyles()
-  const theme = useTheme()
-  const containerRef = useRef<HTMLDivElement>(null)
-  const innerRef = useRef<HTMLDivElement>(null)
-  const lastBpPerPxRef = useRef<number | null>(null)
-
-  useEffect(() => {
-    return autorun(
-      function gridlinesZoomAutorun() {
-        const { scaleFactor } = model
-        const container = containerRef.current
-        if (container) {
-          container.style.transform =
-            scaleFactor !== 1 ? `scaleX(${scaleFactor})` : ''
-        }
-      },
-      { name: 'GridlinesZoom' },
-    )
-  }, [model])
-
-  useEffect(() => {
-    return autorun(
-      function gridlinesTransformAutorun() {
-        const { staticBlocks, offsetPx } = model
-        const inner = innerRef.current
-        if (inner) {
-          const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
-          inner.style.transform = `translateX(${offsetLeft - offset}px)`
-          inner.style.width = `${staticBlocks.totalWidthPx}px`
-        }
-      },
-      { name: 'GridlinesTransform' },
-    )
-  }, [model, offset])
-
-  useEffect(() => {
-    const colors = {
-      major: theme.palette.action.disabled,
-      minor: theme.palette.divider,
-      interRegionPadding: theme.palette.text.disabled,
-      boundaryPadding: theme.palette.action.disabledBackground,
-    }
-
-    return autorun(
-      function gridlinesLayoutAutorun() {
-        const { staticBlocks, bpPerPx } = model
-        const inner = innerRef.current
-        if (!inner) {
-          return
-        }
-
-        const existingKeys = getCachedElements<HTMLDivElement>(
-          inner,
-          bpPerPx,
-          lastBpPerPxRef,
-          'blockKey',
-        )
-
-        const fragment = document.createDocumentFragment()
-
-        for (const block of staticBlocks) {
-          const key = block.key
-          let div = existingKeys.get(key)
-          if (!div) {
-            div = createBlockElement(block, bpPerPx, colors)
-            div.dataset.blockKey = key
-          }
-          fragment.append(div)
-        }
-
-        inner.replaceChildren(fragment)
-      },
-      { name: 'GridlinesLayout' },
-    )
-  }, [model, theme])
-
+function RenderedBlockLines({
+  block,
+  bpPerPx,
+}: {
+  block: ContentBlock
+  bpPerPx: number
+}) {
+  const { classes, cx } = useStyles()
+  const ticks = makeTicks(block.start, block.end, bpPerPx)
   return (
-    <div ref={containerRef} className={classes.verticalGuidesZoomContainer}>
-      <div ref={innerRef} className={classes.verticalGuidesContainer} />
-    </div>
+    <ContentBlockComponent block={block}>
+      {ticks.map(({ type, base }) => {
+        const x =
+          (block.reversed ? block.end - base : base - block.start) / bpPerPx
+        return (
+          <div
+            key={base}
+            className={cx(
+              classes.tick,
+              type === 'major' || type === 'labeledMajor'
+                ? classes.majorTick
+                : classes.minorTick,
+            )}
+            style={{ left: x }}
+          />
+        )
+      })}
+    </ContentBlockComponent>
   )
 }
+const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
+  model,
+}: {
+  model: LGV
+}) {
+  const { staticBlocks, bpPerPx } = model
+  return (
+    <>
+      {staticBlocks.map((block, index) => {
+        const k = `${block.key}-${index}`
+        if (block.type === 'ContentBlock') {
+          return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
+        } else if (block.type === 'ElidedBlock') {
+          return <ElidedBlockComponent key={k} width={block.widthPx} />
+        } else if (block.type === 'InterRegionPaddingBlock') {
+          return (
+            <InterRegionPaddingBlockComponent
+              key={k}
+              width={block.widthPx}
+              boundary={block.variant === 'boundary'}
+            />
+          )
+        }
+        return null
+      })}
+    </>
+  )
+})
+const Gridlines = observer(function Gridlines({
+  model,
+  offset = 0,
+}: {
+  model: LGV
+  offset?: number
+}) {
+  const { classes } = useStyles()
+  // find the block that needs pinning to the left side for context
+  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
+  return (
+    <div
+      className={classes.verticalGuidesZoomContainer}
+      style={{
+        transform:
+          model.scaleFactor !== 1 ? `scaleX(${model.scaleFactor})` : undefined,
+      }}
+    >
+      <div
+        className={classes.verticalGuidesContainer}
+        style={{
+          left: offsetLeft - offset,
+          width: model.staticBlocks.totalWidthPx,
+        }}
+      >
+        <RenderedVerticalGuides model={model} />
+      </div>
+    </div>
+  )
+})
 
 export default Gridlines

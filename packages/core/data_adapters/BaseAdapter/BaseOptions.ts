@@ -4,7 +4,7 @@ export interface BaseOptions {
   stopToken?: StopToken
   bpPerPx?: number
   sessionId?: string
-  trackId?: string
+  trackInstanceId?: string
   statusCallback?: (message: string) => void
   headers?: Record<string, string>
   statsEstimationMode?: boolean

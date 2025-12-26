@@ -44,7 +44,7 @@ interface DialogDetails {
   connectionConf: AnyConfigurationModel
 }
 
-const HamburgerMenu = observer(function ({
+const HamburgerMenu = observer(function HamburgerMenu({
   model,
 }: {
   model: HierarchicalTrackSelectorModel

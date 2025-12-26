@@ -1,5 +1,8 @@
 import { updateStatus } from '@jbrowse/core/util'
-import { checkStopToken2, checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
 import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
@@ -46,10 +49,9 @@ function drawPhasedMode(drawCtx: DrawContext, mafs: Maf[]) {
   } = drawCtx
 
   const arr = [] as string[][]
-  const lastCheck = { time: Date.now() }
-  let idx = 0
-
-  for (const { feature } of mafs) {
+  const lastCheck = createStopTokenChecker(stopToken)
+  for (let idx = 0, l = mafs.length; idx < l; idx++) {
+    const { feature } = mafs[idx]!
     const arr2 = [] as string[]
     const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(
       'PS',
@@ -107,7 +109,7 @@ function drawPhasedMode(drawCtx: DrawContext, mafs: Maf[]) {
       }
     }
     arr.push(arr2)
-    checkStopToken2(stopToken, idx++, lastCheck)
+    checkStopToken2(lastCheck)
   }
 
   return arr
@@ -123,16 +125,16 @@ function drawAlleleCountMode(drawCtx: DrawContext, mafs: Maf[]) {
     w,
     scrollTop,
     splitCache,
+    stopToken,
     colorCache,
     genotypesCache,
-    stopToken,
   } = drawCtx
 
   const arr = [] as string[][]
-  const lastCheck = { time: Date.now() }
-  let idx = 0
+  const lastCheck = createStopTokenChecker(stopToken)
 
-  for (const { feature, mostFrequentAlt } of mafs) {
+  for (let idx = 0, l = mafs.length; idx < l; idx++) {
+    const { feature, mostFrequentAlt } = mafs[idx]!
     const arr2 = [] as string[]
     const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(
       'PS',
@@ -189,7 +191,7 @@ function drawAlleleCountMode(drawCtx: DrawContext, mafs: Maf[]) {
       }
     }
     arr.push(arr2)
-    checkStopToken2(stopToken, idx++, lastCheck)
+    checkStopToken2(lastCheck)
   }
 
   return arr
@@ -223,15 +225,14 @@ export async function makeImageData({
     sources.length,
     Math.ceil((scrollTop + canvasHeight) / h),
   )
-  checkStopToken(stopToken)
-
+  const lastCheck = createStopTokenChecker(stopToken)
   const genotypesCache = new Map<string, Record<string, string>>()
   const colorCache = {} as Record<string, string | undefined>
   const splitCache = {} as Record<string, string[]>
 
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
-      stopToken,
+      lastCheck,
       features: features.values(),
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
@@ -239,7 +240,6 @@ export async function makeImageData({
       splitCache,
     }),
   )
-  checkStopToken(stopToken)
 
   const m = mafs.length
   const w = canvasWidth / m

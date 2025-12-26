@@ -1,16 +1,16 @@
 import {
+  createStopTokenChecker,
   groupBy,
   renderToAbstractCanvas,
   updateStatus,
 } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawXY } from '../drawXY'
+import { serializeWiggleFeature } from '../util'
 
 import type { MultiRenderArgsDeserialized } from '../types'
-import type { ReducedFeatureArrays } from '../util'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiRowXYPlot(
@@ -30,41 +30,39 @@ export async function renderMultiRowXYPlot(
   const width = (region.end - region.start) / bpPerPx
   const rowHeight = height / sources.length
 
+  const lastCheck = createStopTokenChecker(stopToken)
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
     statusCallback,
     () =>
       renderToAbstractCanvas(width, height, renderProps, ctx => {
         const groups = groupBy(features.values(), f => f.get('source'))
-        const reducedFeatures: Record<string, ReducedFeatureArrays> = {}
+        let allReducedFeatures: Feature[] = []
         ctx.save()
-        const lastCheck = { time: Date.now() }
-        let idx = 0
         for (const source of sources) {
           const { reducedFeatures: reduced } = drawXY(ctx, {
             ...renderProps,
             features: groups[source.name] || [],
             height: rowHeight,
-            staticColor: source.color || 'blue',
-            colorCallback: () => '', // unused when staticColor is set
+            colorCallback: () => source.color || 'blue',
+            lastCheck,
           })
-          reducedFeatures[source.name] = reduced
+          allReducedFeatures = allReducedFeatures.concat(reduced)
           ctx.strokeStyle = 'rgba(200,200,200,0.8)'
           ctx.beginPath()
           ctx.moveTo(0, rowHeight)
           ctx.lineTo(width, rowHeight)
           ctx.stroke()
           ctx.translate(0, rowHeight)
-          checkStopToken2(stopToken, idx++, lastCheck)
         }
         ctx.restore()
-        return { reducedFeatures }
+        return { reducedFeatures: allReducedFeatures }
       }),
   )
 
   const serialized = {
     ...rest,
-    reducedFeatures,
+    features: reducedFeatures.map(serializeWiggleFeature),
     height,
     width,
   }

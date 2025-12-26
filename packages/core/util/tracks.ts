@@ -14,10 +14,21 @@ import type {
 
 /* utility functions for use by track models and so forth */
 
+// Cache for track assembly names - keyed by trackId string since configuration
+// objects may be recreated on each access when tracks are frozen
+const trackAssemblyNamesCache = new Map<string, string[]>()
+
 export function getTrackAssemblyNames(
   track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
-  return getConfAssemblyNames(track.configuration)
+  const conf = track.configuration
+  const trackId = conf.trackId as string
+  let cached = trackAssemblyNamesCache.get(trackId)
+  if (!cached) {
+    cached = getConfAssemblyNames(conf)
+    trackAssemblyNamesCache.set(trackId, cached)
+  }
+  return cached
 }
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {

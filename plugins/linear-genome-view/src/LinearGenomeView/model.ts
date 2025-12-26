@@ -628,10 +628,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #getter
+       */
+      get trackMap() {
+        const map = new Map()
+        for (const track of self.tracks) {
+          map.set(track.configuration.trackId, track)
+        }
+        return map
+      },
+
+      /**
        * #method
        */
       getTrack(id: string) {
-        return self.tracks.find(t => t.configuration.trackId === id)
+        return this.trackMap.get(id)
       },
 
       /**
@@ -781,12 +792,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         // tweak the offset so that the center of the view remains at the same
         // coordinate
-        this.scrollTo(
-          Math.round(
-            ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
-              (centerAtOffset ? self.width / 2 : offset),
-          ),
+        const newOffsetPx = Math.round(
+          ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx -
+            (centerAtOffset ? self.width / 2 : offset),
         )
+        this.scrollTo(newOffsetPx)
         return newBpPerPx
       },
 
@@ -1011,16 +1021,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       center() {
-        const centerBp = self.totalBp / 2
-        const centerPx = centerBp / self.bpPerPx
-        self.scrollTo(Math.round(centerPx - self.width / 2))
+        // Calculate total content width including inter-region padding
+        const numPaddings = Math.max(0, self.displayedRegions.length - 1)
+        const totalPaddingPx = numPaddings * self.interRegionPaddingWidth
+        const totalContentPx = self.totalBp / self.bpPerPx + totalPaddingPx
+        const centerPx = totalContentPx / 2
+        const targetOffsetPx = Math.round(centerPx - self.width / 2)
+        self.scrollTo(targetOffsetPx)
       },
 
       /**
        * #action
        */
       showAllRegions() {
-        self.zoomTo(self.maxBpPerPx)
+        // Set zoom to show all regions, then center the view
+        self.bpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
         this.center()
       },
 
@@ -1398,7 +1413,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
-      let stringifiedCurrentlyCalculatedStaticBlocks = ''
+      let currentBlockKeys: string | undefined
       return {
         /**
          * #getter
@@ -1409,13 +1424,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * blocks to render their data for the region represented by the block
          */
         get staticBlocks() {
-          const ret = calculateStaticBlocks(self)
-          const sret = JSON.stringify(ret)
-          if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
-            currentlyCalculatedStaticBlocks = ret
-            stringifiedCurrentlyCalculatedStaticBlocks = sret
+          const newBlocks = calculateStaticBlocks(self)
+          const newKeys = newBlocks.blocks.map(b => b.key).join(',')
+          if (
+            currentlyCalculatedStaticBlocks === undefined ||
+            currentBlockKeys !== newKeys
+          ) {
+            currentlyCalculatedStaticBlocks = newBlocks
+            currentBlockKeys = newKeys
+            return currentlyCalculatedStaticBlocks
+          } else {
+            return currentlyCalculatedStaticBlocks
           }
-          return currentlyCalculatedStaticBlocks!
         },
         /**
          * #getter

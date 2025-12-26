@@ -11,7 +11,7 @@ import {
 
 import type { HierarchicalTrackSelectorModel } from '../../model'
 
-const RecentlyUsedTracks = observer(function ({
+const RecentlyUsedTracks = observer(function RecentlyUsedTracks({
   model,
 }: {
   model: HierarchicalTrackSelectorModel

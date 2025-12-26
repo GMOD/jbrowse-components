@@ -8,7 +8,7 @@ import LinkToSyntenyView from './LinkToSyntenyView'
 
 import type { SyntenyFeatureDetailModel } from './types'
 
-const SyntenyFeatureDetail = observer(function (props: {
+const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail(props: {
   model: SyntenyFeatureDetailModel
 }) {
   const { model } = props

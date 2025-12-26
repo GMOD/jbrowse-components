@@ -1,7 +1,7 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { f2 } from './constants'
+import { REFERENCE_COLOR, UNPHASED_COLOR, f2 } from './constants'
 
 function colorify(n: number) {
   return `hsl(${n % 255}, 50%, 50%)`
@@ -22,10 +22,10 @@ export function drawPhased(
   const allele = +alleles[HP]!
   const c = allele
     ? PS !== undefined
-      ? colorify(+PS) || 'black'
-      : set1[allele - 1] || 'black'
+      ? colorify(+PS) || UNPHASED_COLOR
+      : set1[allele - 1] || UNPHASED_COLOR
     : drawReference
-      ? '#ccc'
+      ? REFERENCE_COLOR
       : undefined
   if (c) {
     ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c

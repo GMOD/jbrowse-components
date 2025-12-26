@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory'
 import type { DotplotViewModel } from '../model'
 
-const ColorBySelector = observer(function ({
+const ColorBySelector = observer(function ColorBySelector({
   model,
 }: {
   model: DotplotViewModel

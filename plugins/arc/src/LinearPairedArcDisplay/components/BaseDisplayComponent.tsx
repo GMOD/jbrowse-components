@@ -8,7 +8,7 @@ import type { LinearArcDisplayModel } from '../model'
 
 const ErrorMessage = lazy(() => import('./ErrorMessage'))
 
-const BaseDisplayComponent = observer(function ({
+const BaseDisplayComponent = observer(function BaseDisplayComponent({
   model,
   children,
 }: {
@@ -27,7 +27,7 @@ const BaseDisplayComponent = observer(function ({
   )
 })
 
-const DataDisplay = observer(function ({
+const DataDisplay = observer(function DataDisplay({
   model,
   children,
 }: {

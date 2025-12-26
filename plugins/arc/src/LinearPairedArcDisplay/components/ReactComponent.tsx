@@ -5,7 +5,7 @@ import BaseDisplayComponent from './BaseDisplayComponent'
 
 import type { LinearArcDisplayModel } from '../model'
 
-const LinearArcReactComponent = observer(function ({
+const LinearArcReactComponent = observer(function LinearArcReactComponent({
   model,
   exportSVG,
 }: {

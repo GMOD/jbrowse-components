@@ -167,7 +167,7 @@ function Wrapper({
   )
 }
 
-const DivSequenceRendering = observer(function ({
+const DivSequenceRendering = observer(function DivSequenceRendering({
   exportSVG,
   features,
   regions,

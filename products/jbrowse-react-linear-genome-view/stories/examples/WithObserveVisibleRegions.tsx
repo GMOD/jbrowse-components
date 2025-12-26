@@ -13,7 +13,7 @@ function loc(r: Region) {
 
 type ViewState = ReturnType<typeof createViewState>
 
-const VisibleRegions = observer(function ({
+const VisibleRegions = observer(function VisibleRegions({
   viewState,
 }: {
   viewState: ViewState

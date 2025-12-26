@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const BlockErrorMessage = observer(function ({
+const BlockErrorMessage = observer(function BlockErrorMessage({
   model,
 }: {
   model: {

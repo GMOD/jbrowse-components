@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { linearFeatureDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -15,10 +15,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearVariantDisplay
- * similar to basic display, but provides custom widget on feature click
+ * Similar to feature display, but provides custom widget on feature click.
+ * Does not include gene glyph options since variants are not genes.
  * extends
  *
- * - [LinearBasicDisplay](../linearbasicdisplay)
+ * - [LinearFeatureDisplay](../linearfeaturedisplay)
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -26,7 +27,7 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearVariantDisplay',
-      linearBasicDisplayModelFactory(configSchema),
+      linearFeatureDisplayModelFactory(configSchema),
       types.model({
         /**
          * #property

@@ -37,39 +37,41 @@ function View({ view }: { view: LinearGenomeViewModel }) {
   return <ReactComponent model={view} />
 }
 
-const LinearComparativeRenderArea = observer(function ({
-  model,
-}: {
-  model: LinearComparativeViewModel
-}) {
-  const { classes } = useStyles()
-  const { views, levels } = model
+const LinearComparativeRenderArea = observer(
+  function LinearComparativeRenderArea({
+    model,
+  }: {
+    model: LinearComparativeViewModel
+  }) {
+    const { classes } = useStyles()
+    const { views, levels } = model
 
-  return (
-    <div className={classes.container}>
-      {views.map((view, i) => (
-        <Fragment key={view.id}>
-          {i > 0 ? (
-            <>
-              <div className={classes.container}>
-                <Overlays model={model} level={i - 1} />
-              </div>
-              <ResizeHandle
-                onDrag={n =>
-                  levels[i - 1]?.setHeight((levels[i - 1]?.height || 0) + n)
-                }
-                className={classes.resizeHandle}
-              />
-            </>
-          ) : null}
-          <View view={view} />
-        </Fragment>
-      ))}
-    </div>
-  )
-})
+    return (
+      <div className={classes.container}>
+        {views.map((view, i) => (
+          <Fragment key={view.id}>
+            {i > 0 ? (
+              <>
+                <div className={classes.container}>
+                  <Overlays model={model} level={i - 1} />
+                </div>
+                <ResizeHandle
+                  onDrag={n =>
+                    levels[i - 1]?.setHeight((levels[i - 1]?.height || 0) + n)
+                  }
+                  className={classes.resizeHandle}
+                />
+              </>
+            ) : null}
+            <View view={view} />
+          </Fragment>
+        ))}
+      </div>
+    )
+  },
+)
 
-const Overlays = observer(function ({
+const Overlays = observer(function Overlays({
   model,
   level,
 }: {

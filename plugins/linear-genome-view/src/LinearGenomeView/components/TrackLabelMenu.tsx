@@ -15,7 +15,7 @@ import { observer } from 'mobx-react'
 import type { LinearGenomeViewModel } from '../model'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-const TrackLabelMenu = observer(function ({
+const TrackLabelMenu = observer(function TrackLabelMenu({
   track,
 }: {
   track: BaseTrackModel

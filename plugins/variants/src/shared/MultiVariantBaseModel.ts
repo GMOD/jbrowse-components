@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { set1 } from '@jbrowse/core/ui/colors'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -12,18 +13,26 @@ import FilterListIcon from '@mui/icons-material/FilterList'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-// @ts-expect-error
 import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
 
 import { cluster, hierarchy } from '../d3-hierarchy2'
+import {
+  NO_CALL_COLOR,
+  OTHER_ALT_COLOR,
+  REFERENCE_COLOR,
+  UNPHASED_COLOR,
+  getAltColorForDosage,
+} from './constants'
 import { getSources } from './getSources'
 
+import type { ClusterHierarchyNode, HoveredTreeNode } from './components/types'
 import type { SampleInfo, Source } from './types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
@@ -161,7 +170,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
-      hoveredTreeNode: undefined as any,
+      hoveredTreeNode: undefined as HoveredTreeNode | undefined,
       /**
        * #volatile
        */
@@ -193,7 +202,7 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredTreeNode(node: any) {
+      setHoveredTreeNode(node?: HoveredTreeNode) {
         self.hoveredTreeNode = node
       },
       /**
@@ -380,9 +389,9 @@ export default function MultiVariantBaseModelF(
           return undefined
         }
         const tree = fromNewick(newick)
-        return hierarchy(tree, (d: any) => d.children)
-          .sum((d: any) => (d.children ? 0 : 1))
-          .sort((a: any, b: any) =>
+        return hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
+          .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
+          .sort((a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
             ascending(a.data.height || 1, b.data.height || 1),
           )
       },
@@ -428,13 +437,12 @@ export default function MultiVariantBaseModelF(
          */
         get hierarchy() {
           const r = self.root
-          if (!r) {
+          if (!r || !self.sources?.length) {
             return undefined
           }
           const clust = cluster()
-            .size([this.rowHeight * this.nrow, self.treeAreaWidth])!
-            // @ts-expect-error
-            .separation(() => 1)
+          clust.size([this.rowHeight * this.nrow, self.treeAreaWidth])
+          clust.separation(() => 1)
           clust(r)
           return r
         },
@@ -460,25 +468,49 @@ export default function MultiVariantBaseModelF(
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show sidebar labels',
+              label: 'Show...',
               icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showSidebarLabelsSetting,
-              onClick: () => {
-                self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
-              },
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Show sidebar labels',
+                  type: 'checkbox',
+                  checked: self.showSidebarLabelsSetting,
+                  onClick: () => {
+                    self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
+                  },
+                },
+                {
+                  label: 'Show tree',
+                  type: 'checkbox',
+                  checked: self.showTree,
+                  disabled: !self.clusterTree,
+                  onClick: () => {
+                    self.setShowTree(!self.showTree)
+                  },
+                },
+                {
+                  label: 'Show reference alleles',
+                  helpText:
+                    'When this setting is off, the background is colored solid grey and only ALT alleles are colored on top of it. This makes it easier to see potentially overlapping structural variants',
+                  type: 'checkbox',
+                  checked: self.referenceDrawingMode !== 'skip',
+                  onClick: () => {
+                    self.setReferenceDrawingMode(
+                      self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
+                    )
+                  },
+                },
+                {
+                  label: 'Show legend',
+                  type: 'checkbox',
+                  checked: self.showLegend,
+                  onClick: () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                },
+              ],
             },
-            {
-              label: 'Show tree',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showTree,
-              disabled: !self.clusterTree,
-              onClick: () => {
-                self.setShowTree(!self.showTree)
-              },
-            },
-
             {
               label: 'Row height',
               icon: HeightIcon,
@@ -537,18 +569,7 @@ export default function MultiVariantBaseModelF(
                 },
               ],
             },
-            {
-              label: 'Skip drawing reference alleles',
-              helpText:
-                'When this setting is on, the background is filled with grey, and then we skip drawing reference alleles. This helps drawing with drawing overlapping SVs. When this setting is off, each reference allele is colored grey',
-              type: 'checkbox',
-              checked: self.referenceDrawingMode === 'skip',
-              onClick: () => {
-                self.setReferenceDrawingMode(
-                  self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
-                )
-              },
-            },
+
             {
               label: 'Filter by',
               icon: FilterListIcon,
@@ -670,6 +691,43 @@ export default function MultiVariantBaseModelF(
             filters: self.activeFilters,
           }),
         }
+      },
+      /**
+       * #method
+       * Returns legend items for rendering colors based on current mode
+       */
+      legendItems(): LegendItem[] {
+        if (self.renderingMode === 'phased') {
+          let maxAltAlleles = 1
+          const features = self.featuresVolatile
+          if (features) {
+            for (const feature of features) {
+              const alt = feature.get('ALT') as string[] | undefined
+              if (alt && alt.length > maxAltAlleles) {
+                maxAltAlleles = alt.length
+              }
+            }
+          }
+          const items: LegendItem[] = [
+            { color: REFERENCE_COLOR, label: 'Reference' },
+            { color: set1[0], label: 'Alt allele 1' },
+          ]
+          if (maxAltAlleles >= 2) {
+            items.push({ color: set1[1], label: 'Alt allele 2' })
+          }
+          if (maxAltAlleles >= 3) {
+            items.push({ color: set1[2], label: 'Alt allele 3' })
+          }
+          items.push({ color: UNPHASED_COLOR, label: 'Unphased' })
+          return items
+        }
+        return [
+          { color: REFERENCE_COLOR, label: 'Homozygous reference' },
+          { color: getAltColorForDosage(0.5), label: 'Heterozygous alt' },
+          { color: getAltColorForDosage(1), label: 'Homozygous alt' },
+          { color: OTHER_ALT_COLOR, label: 'Other alt allele' },
+          { color: NO_CALL_COLOR, label: 'No call' },
+        ]
       },
     }))
     .actions(self => ({

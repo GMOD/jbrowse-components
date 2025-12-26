@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model'
 
-const DotplotGrid = observer(function ({
+const DotplotGrid = observer(function DotplotGrid({
   model,
   children,
 }: {
@@ -14,6 +14,7 @@ const DotplotGrid = observer(function ({
   const { viewWidth, viewHeight, hview, vview } = model
   const hblocks = hview.dynamicBlocks.contentBlocks
   const vblocks = vview.dynamicBlocks.contentBlocks
+  const theme = useTheme()
   if (!hblocks.length || !vblocks.length) {
     return null
   }
@@ -21,7 +22,6 @@ const DotplotGrid = observer(function ({
   const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
   const hbottom = hblocks[0]!.offsetPx - hview.offsetPx
   const vbottom = vblocks[0]!.offsetPx - vview.offsetPx
-  const theme = useTheme()
   const stroke = theme.palette.divider
 
   // Uses math.max/min avoid making very large SVG rect offscreen element,

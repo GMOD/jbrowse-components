@@ -2943,6 +2943,82 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox_cram_webworker",
       "type": "AlignmentsTrack",
     },
+    {
+      "adapter": {
+        "gffGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3.gz",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.sort.gff3.gz.tbi",
+          },
+        },
+        "type": "Gff3TabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Label Positioning Examples",
+      ],
+      "displays": [
+        {
+          "displayId": "gff3_custom_tooltips_linear",
+          "renderer": {
+            "labels": {
+              "description": "jexl:get(feature,'note') || get(feature,'description') || ''",
+              "name": "jexl:get(feature,'name') || get(feature,'id')",
+            },
+            "mouseover": "jexl:\`\${get(feature,'name')} [\${get(feature,'type')}] at \${get(feature,'start')} - \${get(feature,'end')} (strand: \${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})\`",
+            "showDescriptions": true,
+            "showLabels": true,
+            "subfeatureLabels": "below",
+            "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
+            "type": "CanvasFeatureRenderer",
+          },
+          "type": "LinearBasicDisplay",
+        },
+      ],
+      "name": "Custom Tooltips (mouseover callback)",
+      "trackId": "gff3_custom_tooltips",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "gffLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_mouseover.sorted.gff3",
+        },
+        "type": "Gff3Adapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Label Positioning Examples",
+      ],
+      "displays": [
+        {
+          "displayId": "gff3_mouseover_attr_linear",
+          "renderer": {
+            "labels": {
+              "description": "jexl:get(feature,'note') || get(feature,'description') || ''",
+              "name": "jexl:get(feature,'name') || get(feature,'id')",
+            },
+            "showDescriptions": false,
+            "showLabels": true,
+            "subfeatureLabels": "below",
+            "type": "CanvasFeatureRenderer",
+          },
+          "type": "LinearBasicDisplay",
+        },
+      ],
+      "name": "_mouseOver Attributes",
+      "trackId": "gff3_mouseover_attr",
+      "type": "FeatureTrack",
+    },
   ],
 }
 `;

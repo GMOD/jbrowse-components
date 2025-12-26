@@ -27,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const AssemblyRows = observer(function ({
+const AssemblyRows = observer(function AssemblyRows({
   selectedRow,
   selectedAssemblyNames,
   setSelectedRow,
@@ -92,7 +92,7 @@ const AssemblyRows = observer(function ({
   ))
 })
 
-const LeftPanel = observer(function ({
+const LeftPanel = observer(function LeftPanel({
   model,
   selectedAssemblyNames,
   setSelectedAssemblyNames,

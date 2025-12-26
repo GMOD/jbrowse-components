@@ -40,7 +40,9 @@ function layoutFeat(args: {
   })
 }
 
-const LollipopRendering = observer(function (props: Record<string, any>) {
+const LollipopRendering = observer(function LollipopRendering(
+  props: Record<string, any>,
+) {
   const onMouseDown = (event: MouseEvent) => {
     const { onMouseDown: handler } = props
     return handler?.(event)

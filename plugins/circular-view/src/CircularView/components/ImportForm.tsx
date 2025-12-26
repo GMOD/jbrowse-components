@@ -14,7 +14,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ImportForm = observer(function ({ model }: { model: CircularViewModel }) {
+const ImportForm = observer(function ImportForm({
+  model,
+}: {
+  model: CircularViewModel
+}) {
   const { classes } = useStyles()
   const session = getSession(model)
   const { error } = model

@@ -38,7 +38,7 @@ export function renderBlockData(self: IAnyStateTreeNode) {
         adapterConfig,
         rendererType: rendererType.name,
         sessionId: getRpcSessionId(self),
-        trackId: getContainingTrack(self).id,
+        trackInstanceId: getContainingTrack(self).id,
         timeout: 1000000, // 10000,
         alpha: self.alpha,
         minAlignmentLength: self.minAlignmentLength,

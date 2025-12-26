@@ -17,6 +17,7 @@ export interface PeptideData {
 
 export interface FeatureLayout {
   feature: Feature
+  glyphType: GlyphType
   x: number
   y: number
   width: number
@@ -62,16 +63,12 @@ export interface FlatbushItem {
   rightPx: number
   topPx: number
   bottomPx: number
-  label?: string
-  description?: string
-  mouseOver?: string
+  tooltip?: string
 }
 
 export interface SubfeatureInfo {
-  subfeatureId: string
-  parentFeatureId: string
+  displayLabel: string
   type: string
-  name: string
 }
 
 export interface RenderArgs {

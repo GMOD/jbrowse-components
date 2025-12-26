@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 
 // core
 import { getEnv, getSession } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import Cytobands from './Cytobands'
@@ -75,7 +74,7 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-const OverviewBox = observer(function ({
+const OverviewBox = observer(function OverviewBox({
   scale,
   model,
   block,
@@ -144,7 +143,7 @@ const OverviewBox = observer(function ({
   )
 })
 
-function VisibleRegionBox({
+const VisibleRegionBox = observer(function VisibleRegionBox({
   model,
   overview,
   className,
@@ -154,49 +153,46 @@ function VisibleRegionBox({
   className: string
 }) {
   const theme = useTheme()
-  const boxRef = useRef<HTMLDivElement>(null)
   const scalebarColor = theme.palette.tertiary.light
 
-  useEffect(() => {
-    return autorun(
-      function overviewRubberBandAutorun() {
-        const { dynamicBlocks, showCytobands, cytobandOffset } = model
-        const visibleRegions = dynamicBlocks.contentBlocks
-        const box = boxRef.current
-        if (!box || !visibleRegions.length) {
-          return
-        }
+  const { dynamicBlocks, showCytobands, cytobandOffset } = model
+  const visibleRegions = dynamicBlocks.contentBlocks
 
-        const first = visibleRegions.at(0)!
-        const last = visibleRegions.at(-1)!
-        const firstOverviewPx =
-          overview.bpToPx({
-            refName: first.refName,
-            coord: first.reversed ? first.end : first.start,
-          }) || 0
-        const lastOverviewPx =
-          overview.bpToPx({
-            refName: last.refName,
-            coord: last.reversed ? last.start : last.end,
-          }) || 0
+  if (!visibleRegions.length) {
+    return null
+  }
 
-        const color = showCytobands ? '#f00' : scalebarColor
-        const transparency = showCytobands ? 0.1 : 0.3
-        const left = firstOverviewPx + cytobandOffset
+  const first = visibleRegions.at(0)!
+  const last = visibleRegions.at(-1)!
+  const firstOverviewPx =
+    overview.bpToPx({
+      refName: first.refName,
+      coord: first.reversed ? first.end : first.start,
+    }) || 0
+  const lastOverviewPx =
+    overview.bpToPx({
+      refName: last.refName,
+      coord: last.reversed ? last.start : last.end,
+    }) || 0
 
-        box.style.width = `${lastOverviewPx - firstOverviewPx}px`
-        box.style.transform = `translateX(${left}px)`
-        box.style.background = alpha(color, transparency)
-        box.style.borderColor = color
-      },
-      { name: 'OverviewRubberBand' },
-    )
-  }, [model, overview, scalebarColor])
+  const color = showCytobands ? '#f00' : scalebarColor
+  const transparency = showCytobands ? 0.1 : 0.3
+  const left = firstOverviewPx + cytobandOffset
 
-  return <div ref={boxRef} className={className} />
-}
+  return (
+    <div
+      className={className}
+      style={{
+        width: lastOverviewPx - firstOverviewPx,
+        transform: `translateX(${left}px)`,
+        background: alpha(color, transparency),
+        borderColor: color,
+      }}
+    />
+  )
+})
 
-const Scalebar = observer(function ({
+const Scalebar = observer(function Scalebar({
   model,
   scale,
   overview,
@@ -252,7 +248,7 @@ const Scalebar = observer(function ({
   )
 })
 
-const OverviewScalebar = observer(function ({
+const OverviewScalebar = observer(function OverviewScalebar({
   model,
   children,
 }: {

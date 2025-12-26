@@ -25,7 +25,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const LinearComparativeView = observer(function ({
+const LinearComparativeView = observer(function LinearComparativeView({
   model,
 }: {
   model: LinearComparativeViewModel

@@ -31,7 +31,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const ShareBookmarksDialog = observer(function ({
+const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
   onClose,
   model,
 }: {
