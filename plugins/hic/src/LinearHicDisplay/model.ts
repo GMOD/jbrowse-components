@@ -3,7 +3,7 @@ import type React from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { getEnv, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
@@ -132,16 +132,14 @@ export default function stateModelFactory(
        * #method
        */
       renderProps() {
+        // Return plain object instead of MST model to avoid expensive .create()
         return {
-          config: self.rendererType.configSchema.create(
-            {
-              ...getConf(self, 'renderer'),
-              ...(self.colorScheme
-                ? { color: 'jexl:interpolate(count,scale)' }
-                : {}),
-            },
-            getEnv(self),
-          ),
+          config: {
+            ...getConf(self, 'renderer'),
+            ...(self.colorScheme
+              ? { color: 'jexl:interpolate(count,scale)' }
+              : {}),
+          },
           resolution: self.resolution,
           useLogScale: self.useLogScale,
           colorScheme: self.colorScheme,

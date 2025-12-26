@@ -3,13 +3,7 @@ import { lazy } from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import {
-  cast,
-  getEnv,
-  getSnapshot,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -160,17 +154,15 @@ function stateModelFactory(
 
           const { showArcs, showInterbaseCounts, showInterbaseIndicators } =
             self
-          return self.rendererType.configSchema.create(
-            {
-              ...configBlob,
-              showInterbaseCounts:
-                showInterbaseCounts ?? configBlob.showInterbaseCounts,
-              showInterbaseIndicators:
-                showInterbaseIndicators ?? configBlob.showInterbaseIndicators,
-              showArcs: showArcs ?? configBlob.showArcs,
-            },
-            getEnv(self),
-          )
+          // Return plain object instead of MST model to avoid expensive .create()
+          return {
+            ...configBlob,
+            showInterbaseCounts:
+              showInterbaseCounts ?? configBlob.showInterbaseCounts,
+            showInterbaseIndicators:
+              showInterbaseIndicators ?? configBlob.showInterbaseIndicators,
+            showArcs: showArcs ?? configBlob.showArcs,
+          }
         },
         /**
          * #getter

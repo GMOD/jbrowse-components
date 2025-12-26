@@ -5,7 +5,7 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import ColorLensIcon from '@mui/icons-material/ColorLens'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -192,20 +192,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           hideMismatches,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-        return self.rendererType.configSchema.create(
-          {
-            ...configBlob,
-            ...(featureHeight !== undefined ? { height: featureHeight } : {}),
-            ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
-            ...(hideMismatches !== undefined ? { hideMismatches } : {}),
-            ...(noSpacing !== undefined ? { noSpacing } : {}),
-            ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
-            ...(trackMaxHeight !== undefined
-              ? { maxHeight: trackMaxHeight }
-              : {}),
-          },
-          getEnv(self),
-        )
+        // Return plain object instead of MST model to avoid expensive .create()
+        return {
+          ...configBlob,
+          ...(featureHeight !== undefined ? { height: featureHeight } : {}),
+          ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
+          ...(hideMismatches !== undefined ? { hideMismatches } : {}),
+          ...(noSpacing !== undefined ? { noSpacing } : {}),
+          ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+          ...(trackMaxHeight !== undefined
+            ? { maxHeight: trackMaxHeight }
+            : {}),
+        }
       },
     }))
     .views(self => {

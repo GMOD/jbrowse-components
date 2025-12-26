@@ -1,5 +1,4 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getEnv } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -35,9 +34,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
-        const config = configBlob as Omit<typeof configBlob, symbol>
-
-        return self.rendererType.configSchema.create(config, getEnv(self))
+        // Return plain object instead of MST model to avoid expensive .create()
+        return configBlob as Omit<typeof configBlob, symbol>
       },
       /**
        * #getter

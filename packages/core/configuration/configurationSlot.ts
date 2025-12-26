@@ -218,19 +218,20 @@ export default function ConfigSlot(
             }
       },
 
+      // JS representation of the value of this slot, suitable
+      // for embedding in either JSON or a JS function string.
+      // many of the data types override this in typeModelExtensions
+      get valueJSON(): any[] | Record<string, any> | string | undefined {
+        return self.isCallback ? undefined : json(self.value)
+      },
+    }))
+    .views(self => ({
       // Resolve the slot value, evaluating jexl if needed
       getValue(args: Record<string, unknown> = {}) {
         const v = self.value
         return typeof v === 'string' && v.startsWith('jexl:')
           ? self.expr.eval(args)
           : v
-      },
-
-      // JS representation of the value of this slot, suitable
-      // for embedding in either JSON or a JS function string.
-      // many of the data types override this in typeModelExtensions
-      get valueJSON(): any[] | Record<string, any> | string | undefined {
-        return self.isCallback ? undefined : json(self.value)
       },
     }))
     .preProcessSnapshot(val =>

@@ -1,5 +1,4 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getEnv } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 
@@ -66,13 +65,11 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
         const config = configBlob as Omit<typeof configBlob, symbol>
-        return self.rendererType.configSchema.create(
-          {
-            ...config,
-            displayMode: self.displayModeSetting,
-          },
-          getEnv(self),
-        )
+        // Return plain object instead of MST model to avoid expensive .create()
+        return {
+          ...config,
+          displayMode: self.displayModeSetting,
+        }
       },
     }))
     .views(self => {

@@ -1,5 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getEnv, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { modelFactory as LinearFeatureDisplayModelFactory } from '../LinearFeatureDisplay'
 
@@ -87,19 +87,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const configBlob = getConf(self, ['renderer']) || {}
         const config = configBlob as Omit<typeof configBlob, symbol>
 
-        return self.rendererType.configSchema.create(
-          {
-            ...config,
-            showLabels: self.showLabels,
-            showDescriptions: self.showDescriptions,
-            subfeatureLabels: self.subfeatureLabels,
-            displayMode: self.displayMode,
-            maxHeight: self.maxHeight,
-            geneGlyphMode: self.geneGlyphMode,
-            displayDirectionalChevrons: self.displayDirectionalChevrons,
-          },
-          getEnv(self),
-        )
+        // Return plain object instead of MST model to avoid expensive .create()
+        // calls and object identity changes on every access
+        return {
+          ...config,
+          showLabels: self.showLabels,
+          showDescriptions: self.showDescriptions,
+          subfeatureLabels: self.subfeatureLabels,
+          displayMode: self.displayMode,
+          maxHeight: self.maxHeight,
+          geneGlyphMode: self.geneGlyphMode,
+          displayDirectionalChevrons: self.displayDirectionalChevrons,
+        }
       },
     }))
     .actions(self => ({

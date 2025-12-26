@@ -55,7 +55,10 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
   args: Record<string, unknown> = {},
 ): any {
   if (!slotPath) {
-    return structuredClone(getSnapshot(confObject))
+    // Handle both MST nodes and plain objects
+    return isStateTreeNode(confObject)
+      ? structuredClone(getSnapshot(confObject))
+      : structuredClone(confObject)
   } else if (typeof slotPath === 'string') {
     // slot can be a config slot model, sub-configuration, primitive, or undefined
     let slot: unknown = confObject[slotPath]

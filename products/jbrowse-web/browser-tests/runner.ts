@@ -138,14 +138,14 @@ function startServer(port: number): Promise<http.Server> {
 }
 
 // Test helpers
-async function navigateToApp(page: Page) {
-  await page.goto(
-    `http://localhost:${PORT}/?config=test_data/volvox/config.json`,
-    {
-      waitUntil: 'networkidle0',
-      timeout: 60000,
-    },
-  )
+async function navigateToApp(
+  page: Page,
+  config = 'test_data/volvox/config.json',
+) {
+  await page.goto(`http://localhost:${PORT}/?config=${config}`, {
+    waitUntil: 'networkidle0',
+    timeout: 60000,
+  })
   await findByText(page, 'ctgA')
 }
 
@@ -266,6 +266,48 @@ const testSuites: TestSuite[] = [
           await findByTestId(page, 'Blockset-pileup', 60000)
           await waitForLoadingToComplete(page)
           await snapshot(page, 'alignments-bam')
+        },
+      },
+    ],
+  },
+  {
+    name: 'MainThreadRPC',
+    tests: [
+      {
+        name: 'loads with main thread RPC',
+        fn: async page => {
+          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
+          await findByText(page, 'Help', 10000)
+        },
+      },
+      {
+        name: 'loads BAM track with main thread RPC',
+        fn: async page => {
+          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
+          await openTrack(page, 'volvox_bam_pileup')
+          await findByTestId(page, 'Blockset-pileup', 60000)
+        },
+      },
+      {
+        name: 'loads GFF3 track with main thread RPC',
+        fn: async page => {
+          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
+          await openTrack(page, 'gff3tabix_genes')
+          await findByTestId(
+            page,
+            'display-gff3tabix_genes-LinearBasicDisplay',
+            60000,
+          )
+        },
+      },
+      {
+        name: 'main thread RPC BAM screenshot',
+        fn: async page => {
+          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
+          await openTrack(page, 'volvox_bam_pileup')
+          await findByTestId(page, 'Blockset-pileup', 60000)
+          await waitForLoadingToComplete(page)
+          await snapshot(page, 'main-thread-rpc-bam')
         },
       },
     ],

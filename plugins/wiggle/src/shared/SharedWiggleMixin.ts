@@ -348,22 +348,20 @@ export default function SharedWiggleMixin(
           rendererTypeName,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-        return self.rendererType.configSchema.create(
-          {
-            ...configBlob,
-            ...(scaleType ? { scaleType } : {}),
-            ...(fill !== undefined ? { filled: fill } : {}),
-            ...(displayCrossHatches !== undefined
-              ? { displayCrossHatches }
-              : {}),
-            ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
-            ...(color !== undefined ? { color } : {}),
-            ...(negColor !== undefined ? { negColor } : {}),
-            ...(posColor !== undefined ? { posColor } : {}),
-            ...(minSize !== undefined ? { minSize } : {}),
-          },
-          getEnv(self),
-        )
+        // Return plain object instead of MST model to avoid expensive .create()
+        return {
+          ...configBlob,
+          ...(scaleType ? { scaleType } : {}),
+          ...(fill !== undefined ? { filled: fill } : {}),
+          ...(displayCrossHatches !== undefined
+            ? { displayCrossHatches }
+            : {}),
+          ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
+          ...(color !== undefined ? { color } : {}),
+          ...(negColor !== undefined ? { negColor } : {}),
+          ...(posColor !== undefined ? { posColor } : {}),
+          ...(minSize !== undefined ? { minSize } : {}),
+        }
       },
 
       /**
