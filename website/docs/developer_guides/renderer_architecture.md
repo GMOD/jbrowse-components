@@ -249,7 +249,7 @@ class BoxRendererType extends FeatureRendererType {
 }
 ```
 
-Layouts are cached by `sessionId + layoutId` for incremental updates when
+Layouts are cached by `sessionId + trackInstanceId` for incremental updates when
 scrolling.
 
 ## Creating a new renderer

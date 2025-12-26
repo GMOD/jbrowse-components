@@ -1,5 +1,9 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
@@ -29,9 +33,11 @@ export async function getQuantitativeStats(
   const numStdDev = getConf(self, 'numStdDev') || 3
   const { adapterConfig, autoscaleType, effectiveRpcDriverName } = self
   const sessionId = getRpcSessionId(self)
+  const trackInstanceId = getContainingTrack(self).id
   const { currStatsBpPerPx } = opts
   const params = {
     sessionId,
+    trackInstanceId,
     adapterConfig,
     rpcDriverName: effectiveRpcDriverName,
     statusCallback: (message: string) => {

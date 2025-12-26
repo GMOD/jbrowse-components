@@ -1086,12 +1086,22 @@ export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
 
 export function getLayoutId({
   sessionId,
-  layoutId,
+  trackInstanceId,
 }: {
   sessionId: string
-  layoutId: string
+  trackInstanceId: string
 }) {
-  return `${sessionId}-${layoutId}`
+  return `${sessionId}-${trackInstanceId}`
+}
+
+export function getStatsId({
+  sessionId,
+  trackInstanceId,
+}: {
+  sessionId: string
+  trackInstanceId: string
+}) {
+  return `${sessionId}-${trackInstanceId}`
 }
 
 // Hook from https://usehooks.com/useLocalStorage/

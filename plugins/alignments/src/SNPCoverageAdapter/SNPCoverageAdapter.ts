@@ -40,7 +40,7 @@ function makeFilterByKey(filterBy?: FilterBy) {
 }
 
 function makeRegionFilterKey(region: Region, opts: SNPCoverageOptions) {
-  return `${region.refName}:${region.start}-${region.end}|${makeFilterByKey(opts.filterBy)}`
+  return `${region.refName}:${region.start}-${region.end}|${makeFilterByKey(opts.filterBy)}|${opts.trackInstanceId || ''}`
 }
 
 function makeCacheKey(region: Region, opts: SNPCoverageOptions) {
