@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Box, Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -69,9 +70,7 @@ const MinLengthSlider = observer(function MinLengthSlider({
         min={0}
         max={Math.log2(1000000) * 100}
         valueLabelDisplay="auto"
-        valueLabelFormat={newValue =>
-          Math.round(2 ** (newValue / 100)).toLocaleString()
-        }
+        valueLabelFormat={val => toLocale(Math.round(2 ** (val / 100)))}
         size="small"
         style={{ minWidth: 100 }}
         slots={{

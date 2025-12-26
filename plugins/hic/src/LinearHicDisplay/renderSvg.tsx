@@ -5,10 +5,10 @@ import {
   ReactRendering,
   getSerializedSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { SVGLegend } from '@jbrowse/plugin-linear-genome-view'
 
-import type { LinearReadArcsDisplayModel } from './model'
+import HicSVGColorLegend from './components/HicSVGColorLegend'
+
+import type { LinearHicDisplayModel } from './model'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -20,10 +20,11 @@ interface RenderingResult {
   reactElement?: React.ReactNode
   html?: string
   canvasRecordedData?: unknown
+  maxScore?: number
 }
 
 export async function renderSvg(
-  self: LinearReadArcsDisplayModel,
+  self: LinearHicDisplayModel,
   opts: ExportSvgDisplayOptions,
 ) {
   const view = getContainingView(self) as LGV
@@ -31,44 +32,27 @@ export async function renderSvg(
   const { rpcManager } = session
   const height = opts.overrideHeight ?? self.height
 
-  const {
-    colorBy,
-    filterBy,
-    drawInter,
-    drawLongRange,
-    lineWidthSetting,
-    jitterVal,
-  } = self
+  const { useLogScale, colorScheme, showLegend, adapterConfig } = self
+  const { bpPerPx, dynamicBlocks } = view
+  const regions = dynamicBlocks.contentBlocks
 
-  // Serialize the full view snapshot for RPC
-  // Include staticBlocks and width which are not part of the regular snapshot
-  const viewSnapshot = structuredClone({
-    ...getSnapshot(view),
-    staticBlocks: view.staticBlocks,
-    width: view.width,
-  })
+  if (!regions.length) {
+    return null
+  }
 
-  // Call RPC method with exportSVG options
-  const rendering = (await rpcManager.call(
-    self.id,
-    'RenderLinearReadArcsDisplay',
-    {
-      sessionId: session.id,
-      view: viewSnapshot,
-      adapterConfig: self.adapterConfig,
-      config: getSnapshot(self.configuration),
-      theme: opts.theme,
-      filterBy,
-      colorBy,
-      drawInter,
-      drawLongRange,
-      lineWidth: lineWidthSetting,
-      jitter: jitterVal,
-      height,
-      exportSVG: opts,
-      rpcDriverName: self.effectiveRpcDriverName,
-    },
-  )) as RenderingResult
+  const renderProps = self.renderProps()
+
+  // Call CoreRender RPC method (same as afterAttach uses)
+  const rendering = (await rpcManager.call(self.id, 'CoreRender', {
+    sessionId: session.id,
+    rendererType: 'HicRenderer',
+    regions: [...regions],
+    adapterConfig,
+    bpPerPx,
+    highResolutionScaling: 2,
+    exportSVG: opts,
+    ...renderProps,
+  })) as RenderingResult
 
   // Convert canvasRecordedData to SVG if present (vector SVG mode)
   let finalRendering = rendering
@@ -85,11 +69,10 @@ export async function renderSvg(
   const visibleWidth = view.width
 
   // Create a clip path to clip to the visible region
-  // Apply clipping BEFORE transform, at the view level
   const clipId = `clip-${self.id}-svg`
 
-  // Get legend items if legend is enabled
-  const legendItems = self.showLegend ? self.legendItems() : []
+  // Use maxScore from rendering result or from model
+  const maxScore = rendering.maxScore ?? self.maxScore
 
   return (
     <>
@@ -103,9 +86,11 @@ export async function renderSvg(
           <ReactRendering rendering={finalRendering} />
         </g>
       </g>
-      {legendItems.length > 0 ? (
-        <SVGLegend
-          items={legendItems}
+      {showLegend && maxScore > 0 ? (
+        <HicSVGColorLegend
+          maxScore={maxScore}
+          colorScheme={colorScheme}
+          useLogScale={useLogScale}
           width={visibleWidth}
           legendAreaWidth={opts.legendWidth}
         />

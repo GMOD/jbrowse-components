@@ -92,9 +92,11 @@ export {
   BlockMsg,
   FeatureDensityMixin,
   FloatingLegend,
+  SVGLegend,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
+  calculateSvgLegendWidth,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,

@@ -41,16 +41,30 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const { allThemes } = session
 
   const theme = allThemes?.()[themeName]
+  const jbrowseTheme = createJBrowseTheme(theme)
   const { width, pinnedTracks, unpinnedTracks, tracks, showCytobands } = model
   const shift = 50
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 10
   const height = totalHeight(tracks, textHeight, trackLabels) + offset + 100
+
+  // Calculate maximum legend width across all displays
+  const legendWidth = max(
+    [...pinnedTracks, ...unpinnedTracks].map(track => {
+      const display = track.displays[0]
+      return display?.svgLegendWidth?.(jbrowseTheme) ?? 0
+    }),
+    0,
+  )
+
   const displayResults = await Promise.all(
     [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
       await when(() => isReadyOrHasError(display))
-      return { track, result: await display.renderSvg({ ...opts, theme }) }
+      return {
+        track,
+        result: await display.renderSvg({ ...opts, theme, legendWidth }),
+      }
     }),
   )
   const trackLabelMaxLen =
@@ -61,7 +75,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       0,
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
-  const w = width + trackLabelOffset
+  const w = width + trackLabelOffset + legendWidth
   const tracksHeight = totalHeight(tracks, textHeight, trackLabels)
 
   // the xlink namespace is used for rendering <image> tag

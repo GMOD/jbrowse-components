@@ -52,7 +52,8 @@ const TreeSidebar = observer(function TreeSidebar({
   const [nodeIndex, setNodeIndex] = useState<Flatbush | null>(null)
   const [nodeData, setNodeData] = useState<ClusterHierarchyNode[]>([])
 
-  const { hierarchy, treeAreaWidth, height, scrollTop, showTree } = model
+  const { hierarchy, treeAreaWidth, height, scrollTop, showTree, sources } =
+    model
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const treeCanvasRef = useCallback(
@@ -133,7 +134,7 @@ const TreeSidebar = observer(function TreeSidebar({
     model.setHoveredTreeNode(undefined)
   }, [model])
 
-  if (!hierarchy || !showTree) {
+  if (!hierarchy || !showTree || !sources?.length) {
     return null
   }
 

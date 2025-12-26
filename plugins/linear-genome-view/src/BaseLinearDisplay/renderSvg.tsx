@@ -145,7 +145,11 @@ export async function renderBaseLinearDisplaySvg(
         ))}
       </g>
       {legendItems.length > 0 ? (
-        <SVGLegend items={legendItems} width={width} />
+        <SVGLegend
+          items={legendItems}
+          width={width}
+          legendAreaWidth={opts.legendWidth}
+        />
       ) : null}
     </>
   )

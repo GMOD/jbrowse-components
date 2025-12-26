@@ -5,6 +5,7 @@ import {
   getStrokeProps,
   polarToCartesian,
   radToDeg,
+  toLocale,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -70,7 +71,7 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
   // TODO: draw the elision
   const centerRadians = (endRadians + startRadians) / 2
-  const regionCount = `[${region.regions.length.toLocaleString()}]`
+  const regionCount = `[${toLocale(region.regions.length)}]`
   return (
     <>
       <RulerLabel
