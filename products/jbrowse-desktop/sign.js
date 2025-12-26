@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
@@ -10,10 +11,10 @@ if (!fs.existsSync(TEMP_DIR)) {
 
 export default function sign(configuration) {
   if (!process.env.WINDOWS_SIGN_CREDENTIAL_ID) {
-    console.log(`Skipping code signing for ${configuration.path}`)
+    console.warn(`Skipping code signing for ${configuration.path}`)
     return
   }
-  console.log(`Signing ${configuration.path}`)
+  console.warn(`Signing ${configuration.path}`)
 
   const tmpExe = `tmp-${Math.random()}.exe`
 
@@ -29,5 +30,7 @@ export default function sign(configuration) {
 
   execSync(`cp "${configuration.path}" "${tmpExe}"`, { stdio: 'inherit' })
   execSync(signFile, { stdio: 'inherit' })
-  execSync(`cp "${path.join(TEMP_DIR, tmpExe)}" "${configuration.path}"`, { stdio: 'inherit' })
+  execSync(`cp "${path.join(TEMP_DIR, tmpExe)}" "${configuration.path}"`, {
+    stdio: 'inherit',
+  })
 }

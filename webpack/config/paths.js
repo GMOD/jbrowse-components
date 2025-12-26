@@ -20,7 +20,9 @@ const resolveModule = (resolveFn, filePath) => {
   const extension = moduleFileExtensions.find(ext =>
     fs.existsSync(resolveFn(`${filePath}.${ext}`)),
   )
-  return extension ? resolveFn(`${filePath}.${extension}`) : resolveFn(`${filePath}.js`)
+  return extension
+    ? resolveFn(`${filePath}.${extension}`)
+    : resolveFn(`${filePath}.js`)
 }
 
 export default {

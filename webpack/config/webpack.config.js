@@ -9,7 +9,7 @@ import { WebpackManifestPlugin } from 'webpack-manifest-plugin'
 
 import getClientEnvironment from './env.js'
 import modules from './modules.js'
-import paths from './paths.js'
+import paths, { moduleFileExtensions } from './paths.js'
 import InlineChunkHtmlPlugin from '../react-dev-utils/InlineChunkHtmlPlugin.js'
 import InterpolateHtmlPlugin from '../react-dev-utils/InterpolateHtmlPlugin.js'
 
@@ -82,7 +82,7 @@ export default function webpackBuilder() {
       modules: ['node_modules', paths.appNodeModules].concat(
         modules.additionalModulePaths || [],
       ),
-      extensions: paths.moduleFileExtensions.map(ext => `.${ext}`),
+      extensions: moduleFileExtensions.map(ext => `.${ext}`),
       plugins: [],
     },
     module: {

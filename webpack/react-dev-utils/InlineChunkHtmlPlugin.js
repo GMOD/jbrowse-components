@@ -28,7 +28,8 @@ export default class InlineChunkHtmlPlugin {
     }
 
     compiler.hooks.compilation.tap('InlineChunkHtmlPlugin', compilation => {
-      const tagFunction = tag => this.getInlinedTag(publicPath, compilation.assets, tag)
+      const tagFunction = tag =>
+        this.getInlinedTag(publicPath, compilation.assets, tag)
 
       const hooks = this.htmlWebpackPlugin.getHooks(compilation)
       hooks.alterAssetTagGroups.tap('InlineChunkHtmlPlugin', assets => {

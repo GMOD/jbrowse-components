@@ -37,7 +37,9 @@ export function createCompiler({ appName, config, urls, webpack }) {
     }
     if (isSuccessful && isFirstCompile) {
       console.log()
-      console.log(`You can view ${chalk.bold(appName)} at ${urls.localUrlForTerminal}`)
+      console.log(
+        `You can view ${chalk.bold(appName)} at ${urls.localUrlForTerminal}`,
+      )
       console.log()
     }
     isFirstCompile = false

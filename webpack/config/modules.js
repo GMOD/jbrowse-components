@@ -1,7 +1,6 @@
 import fs from 'fs'
-import path from 'path'
-
 import { createRequire } from 'module'
+import path from 'path'
 
 import paths from './paths.js'
 
@@ -27,7 +26,9 @@ function getAdditionalModulePaths(options = {}) {
     return null
   }
 
-  throw new Error("Your project's `baseUrl` can only be set to `src` or `node_modules`.")
+  throw new Error(
+    "Your project's `baseUrl` can only be set to `src` or `node_modules`.",
+  )
 }
 
 function getModules() {

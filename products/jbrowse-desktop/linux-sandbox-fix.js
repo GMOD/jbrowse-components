@@ -1,7 +1,11 @@
 import fs from 'fs/promises'
 import path from 'path'
 
-export default async function afterPack({ appOutDir, electronPlatformName, packager }) {
+export default async function afterPack({
+  appOutDir,
+  electronPlatformName,
+  packager,
+}) {
   if (electronPlatformName !== 'linux') {
     return
   }

@@ -6,7 +6,10 @@ import chalk from 'chalk'
 import webpack from 'webpack'
 
 import paths from '../config/paths.js'
-import { measureFileSizesBeforeBuild, printFileSizesAfterBuild } from '../react-dev-utils/FileSizeReporter.js'
+import {
+  measureFileSizesBeforeBuild,
+  printFileSizesAfterBuild,
+} from '../react-dev-utils/FileSizeReporter.js'
 import formatWebpackMessages from '../react-dev-utils/formatWebpackMessages.js'
 
 process.on('unhandledRejection', err => {
@@ -25,52 +28,62 @@ for (const filePath of [paths.appHtml, paths.appIndexJs]) {
 
 // Check browserslist is configured
 if (browserslist.loadConfig({ path: paths.appPath }) == null) {
-  console.error(chalk.red('You must specify targeted browsers in package.json browserslist.'))
+  console.error(
+    chalk.red(
+      'You must specify targeted browsers in package.json browserslist.',
+    ),
+  )
   process.exit(1)
 }
 
 const writeStatsJson = process.argv.includes('--stats')
 
 export default function buildWebpack(config) {
-  return measureFileSizesBeforeBuild(paths.appBuild)
-    .then(previousFileSizes => {
-      fs.rmSync(paths.appBuild, { recursive: true, force: true })
-      fs.cpSync(paths.appPublic, paths.appBuild, {
-        recursive: true,
-        dereference: true,
-        filter: file => file !== paths.appHtml,
+  return (
+    measureFileSizesBeforeBuild(paths.appBuild)
+      .then(previousFileSizes => {
+        fs.rmSync(paths.appBuild, { recursive: true, force: true })
+        fs.cpSync(paths.appPublic, paths.appBuild, {
+          recursive: true,
+          dereference: true,
+          filter: file => file !== paths.appHtml,
+        })
+        return build(config, previousFileSizes)
       })
-      return build(config, previousFileSizes)
-    })
-    .then(
-      ({ stats, previousFileSizes, warnings }) => {
-        if (warnings.length) {
-          console.log(chalk.yellow('Compiled with warnings.\n'))
-          console.log(warnings.join('\n\n'))
-        } else {
-          console.log(chalk.green('Compiled successfully.\n'))
+      .then(
+        ({ stats, previousFileSizes, warnings }) => {
+          if (warnings.length) {
+            console.log(chalk.yellow('Compiled with warnings.\n'))
+            console.log(warnings.join('\n\n'))
+          } else {
+            console.log(chalk.green('Compiled successfully.\n'))
+          }
+
+          console.log('File sizes:\n')
+          printFileSizesAfterBuild(stats, previousFileSizes, paths.appBuild)
+          console.log()
+
+          const buildFolder = path.relative(process.cwd(), paths.appBuild)
+          console.log(
+            `The ${chalk.cyan(buildFolder)} folder is ready to be deployed.`,
+          )
+          console.log()
+        },
+        // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
+        err => {
+          console.log(chalk.red('Failed to compile.\n'))
+          console.log(err?.message || err)
+          process.exit(1)
+        },
+      )
+      // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
+      .catch(err => {
+        if (err?.message) {
+          console.log(err.message)
         }
-
-        console.log('File sizes:\n')
-        printFileSizesAfterBuild(stats, previousFileSizes, paths.appBuild)
-        console.log()
-
-        const buildFolder = path.relative(process.cwd(), paths.appBuild)
-        console.log(`The ${chalk.cyan(buildFolder)} folder is ready to be deployed.`)
-        console.log()
-      },
-      err => {
-        console.log(chalk.red('Failed to compile.\n'))
-        console.log(err?.message || err)
         process.exit(1)
-      },
-    )
-    .catch(err => {
-      if (err?.message) {
-        console.log(err.message)
-      }
-      process.exit(1)
-    })
+      })
+  )
 }
 
 function build(config, previousFileSizes) {
@@ -85,7 +98,10 @@ function build(config, previousFileSizes) {
           reject(err)
           return
         }
-        messages = formatWebpackMessages({ errors: [err.message], warnings: [] })
+        messages = formatWebpackMessages({
+          errors: [err.message],
+          warnings: [],
+        })
       } else {
         messages = formatWebpackMessages(
           stats.toJson({ all: false, warnings: true, errors: true }),

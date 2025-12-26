@@ -5,8 +5,6 @@ import webpack from 'webpack'
 import configFactory from '../../../webpack/config/webpack.config.js'
 import build from '../../../webpack/scripts/build.js'
 
-process.env.NODE_ENV = 'production'
-
 const config = configFactory()
 config.plugins.push(
   new webpack.DefinePlugin({
