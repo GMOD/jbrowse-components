@@ -1,14 +1,15 @@
 {
   "name": "@jbrowse/web",
   "version": "3.7.0",
+  "type": "module",
   "license": "Apache-2.0",
   "homepage": ".",
   "main": "build",
   "dir": "src",
   "scripts": {
-    "start": "node scripts/start.js",
+    "start": "NODE_ENV=development node scripts/start.js",
+    "build": "NODE_ENV=production node scripts/build.js",
     "prebuild": "rimraf build",
-    "build": "node scripts/build.js",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "prepack": "yarn build",
     "test:browser": "yarn build && node --experimental-strip-types browser-tests/runner.ts",
