@@ -225,6 +225,15 @@ export default function ConfigSlot(
         return self.isCallback ? undefined : json(self.value)
       },
     }))
+    .views(self => ({
+      // Resolve the slot value, evaluating jexl if needed
+      getValue(args: Record<string, unknown> = {}) {
+        const v = self.value
+        return typeof v === 'string' && v.startsWith('jexl:')
+          ? self.expr.eval(args)
+          : v
+      },
+    }))
     .preProcessSnapshot(val =>
       typeof val === 'object' && val.name === slotName
         ? val

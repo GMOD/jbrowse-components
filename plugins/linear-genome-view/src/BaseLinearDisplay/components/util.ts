@@ -1,5 +1,208 @@
 import { clamp } from '@jbrowse/core/util'
 
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { FloatingLabelData, LayoutRecord } from '../types'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+
+interface PixelPositions {
+  leftPx: number
+  rightPx: number
+}
+
+export interface FeatureLabelData {
+  leftPx: number
+  rightPx: number
+  topPx: number
+  totalFeatureHeight: number
+  floatingLabels: FloatingLabelData[]
+  featureWidth: number
+  leftPadding: number
+  totalLayoutWidth: number
+}
+
+/**
+ * Calculate pixel positions for a feature given its BP coordinates.
+ * Handles cases where one or both ends might be off-screen by estimating
+ * positions based on feature width and bpPerPx.
+ */
+function calculateFeaturePixelPositions(
+  view: LinearGenomeViewModel,
+  assembly: Assembly | undefined,
+  refName: string,
+  left: number,
+  right: number,
+  bpPerPx: number,
+): PixelPositions | undefined {
+  const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
+
+  const leftBpPx = view.bpToPx({
+    refName: canonicalRefName,
+    coord: left,
+  })?.offsetPx
+
+  const rightBpPx = view.bpToPx({
+    refName: canonicalRefName,
+    coord: right,
+  })?.offsetPx
+
+  if (leftBpPx !== undefined) {
+    const rightEstimate =
+      rightBpPx !== undefined ? rightBpPx : leftBpPx + (right - left) / bpPerPx
+    return {
+      leftPx: Math.min(leftBpPx, rightEstimate),
+      rightPx: Math.max(leftBpPx, rightEstimate),
+    }
+  } else if (rightBpPx !== undefined) {
+    const leftEstimate = rightBpPx - (right - left) / bpPerPx
+    return {
+      leftPx: Math.min(leftEstimate, rightBpPx),
+      rightPx: Math.max(leftEstimate, rightBpPx),
+    }
+  }
+  return undefined
+}
+
+/**
+ * Calculate pixel positions for features that span multiple regions
+ * (e.g., genes with collapsed introns where both ends are off-screen)
+ */
+function calculateMultiRegionPositions(
+  view: LinearGenomeViewModel,
+  assembly: Assembly | undefined,
+  refName: string,
+  left: number,
+  right: number,
+): PixelPositions | undefined {
+  const canonicalRefName = assembly?.getCanonicalRefName(refName) || refName
+  const visibleRegions = view.displayedRegions.filter(
+    r => r.refName === canonicalRefName && r.start < right && r.end > left,
+  )
+
+  if (visibleRegions.length === 0) {
+    return undefined
+  }
+
+  let minLeftPx = Infinity
+  let maxRightPx = -Infinity
+
+  for (const region of visibleRegions) {
+    const regionStart = Math.max(left, region.start)
+    const regionEnd = Math.min(right, region.end)
+
+    const startPx = view.bpToPx({
+      refName: canonicalRefName,
+      coord: regionStart,
+    })?.offsetPx
+
+    const endPx = view.bpToPx({
+      refName: canonicalRefName,
+      coord: regionEnd,
+    })?.offsetPx
+
+    if (startPx !== undefined && endPx !== undefined) {
+      minLeftPx = Math.min(minLeftPx, startPx, endPx)
+      maxRightPx = Math.max(maxRightPx, startPx, endPx)
+    }
+  }
+
+  if (minLeftPx === Infinity || maxRightPx === -Infinity) {
+    return undefined
+  }
+
+  return { leftPx: minLeftPx, rightPx: maxRightPx }
+}
+
+function getFeaturePositions(
+  view: LinearGenomeViewModel,
+  assembly: Assembly | undefined,
+  refName: string,
+  left: number,
+  right: number,
+  bpPerPx: number,
+): PixelPositions | undefined {
+  return (
+    calculateFeaturePixelPositions(
+      view,
+      assembly,
+      refName,
+      left,
+      right,
+      bpPerPx,
+    ) || calculateMultiRegionPositions(view, assembly, refName, left, right)
+  )
+}
+
+export function deduplicateFeatureLabels(
+  layoutFeatures: {
+    entries(): IterableIterator<readonly [string, LayoutRecord | undefined]>
+  },
+  view: LinearGenomeViewModel,
+  assembly: Assembly | undefined,
+  bpPerPx: number,
+): Map<string, FeatureLabelData> {
+  const featureLabels = new Map<string, FeatureLabelData>()
+
+  for (const [key, val] of layoutFeatures.entries()) {
+    if (!val?.[4]) {
+      continue
+    }
+
+    const [left, topPx, right, , feature] = val
+    const {
+      refName,
+      floatingLabels,
+      totalFeatureHeight,
+      actualTopPx,
+      featureWidth,
+      leftPadding,
+      totalLayoutWidth,
+    } = feature
+    const effectiveTopPx = actualTopPx ?? topPx
+
+    if (
+      !floatingLabels ||
+      floatingLabels.length === 0 ||
+      !totalFeatureHeight ||
+      featureWidth === undefined ||
+      leftPadding === undefined ||
+      totalLayoutWidth === undefined
+    ) {
+      continue
+    }
+
+    const positions = getFeaturePositions(
+      view,
+      assembly,
+      refName,
+      left,
+      right,
+      bpPerPx,
+    )
+
+    if (!positions) {
+      continue
+    }
+
+    const { leftPx, rightPx } = positions
+
+    const existing = featureLabels.get(key)
+    if (!existing || leftPx < existing.leftPx) {
+      featureLabels.set(key, {
+        leftPx,
+        rightPx,
+        topPx: effectiveTopPx,
+        totalFeatureHeight,
+        floatingLabels,
+        featureWidth,
+        leftPadding,
+        totalLayoutWidth,
+      })
+    }
+  }
+
+  return featureLabels
+}
+
 /**
  * Get the left edge of the viewport in pixels.
  * When scrolled left (offsetPx < 0), viewport starts at 0.

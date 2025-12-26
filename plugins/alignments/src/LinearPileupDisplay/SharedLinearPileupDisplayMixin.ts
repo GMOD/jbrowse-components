@@ -10,7 +10,6 @@ import {
   SimpleFeature,
   getContainingTrack,
   getContainingView,
-  getEnv,
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
@@ -326,17 +325,14 @@ export function SharedLinearPileupDisplayMixin(
           rendererTypeName,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-        return self.rendererType.configSchema.create(
-          {
-            ...configBlob,
-            ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
-            ...(hideMismatches !== undefined ? { hideMismatches } : {}),
-            ...(height !== undefined ? { height } : {}),
-            ...(noSpacing !== undefined ? { noSpacing } : {}),
-            ...(maxHeight !== undefined ? { maxHeight } : {}),
-          },
-          getEnv(self),
-        )
+        return {
+          ...configBlob,
+          ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
+          ...(hideMismatches !== undefined ? { hideMismatches } : {}),
+          ...(height !== undefined ? { height } : {}),
+          ...(noSpacing !== undefined ? { noSpacing } : {}),
+          ...(maxHeight !== undefined ? { maxHeight } : {}),
+        }
       },
     }))
     .views(self => ({

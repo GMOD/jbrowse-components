@@ -121,7 +121,19 @@ export default class ServerSideRenderer extends RendererType {
    */
   async renderDirect(args: RenderArgs) {
     const { renderingProps, ...rest } = args
-    const results = await this.render(rest as RenderArgsDeserialized)
+
+    // Ensure config is an MST model for render() - it may be a plain object
+    // if rendererConfig returns a plain object for performance
+    const config = isStateTreeNode(args.config)
+      ? args.config
+      : this.configSchema.create(args.config || {}, {
+          pluginManager: this.pluginManager,
+        })
+
+    const results = await this.render({
+      ...rest,
+      config,
+    } as RenderArgsDeserialized)
 
     // For RpcResult (canvas renderers with transferables), unwrap directly
     // No need for transfer semantics since we're on the same thread
