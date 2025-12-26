@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { clamp, featureSpanPx } from '@jbrowse/core/util'
+import { clamp } from '@jbrowse/core/util'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -98,7 +98,14 @@ export function drawLine(
 
     for (const feature of features.values()) {
       checkStopToken2(lastCheck)
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const fStart = feature.get('start')
+      const fEnd = feature.get('end')
+      const leftPx = reversed
+        ? (regionEnd - fEnd) * invBpPerPx
+        : (fStart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fStart) * invBpPerPx
+        : (fEnd - regionStart) * invBpPerPx
 
       // create reduced features, avoiding multiple features per px
       // bitwise OR is faster than Math.floor for positive numbers
@@ -159,7 +166,14 @@ export function drawLine(
     // non-static color: stroke per feature (original behavior)
     for (const feature of features.values()) {
       checkStopToken2(lastCheck)
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const fStart = feature.get('start')
+      const fEnd = feature.get('end')
+      const leftPx = reversed
+        ? (regionEnd - fEnd) * invBpPerPx
+        : (fStart - regionStart) * invBpPerPx
+      const rightPx = reversed
+        ? (regionEnd - fStart) * invBpPerPx
+        : (fEnd - regionStart) * invBpPerPx
 
       // create reduced features, avoiding multiple features per px
       // bitwise OR is faster than Math.floor for positive numbers

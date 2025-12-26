@@ -204,7 +204,6 @@ function calculateModificationCounts({
 }
 
 interface ReducedFeature {
-  uniqueId: string
   start: number
   end: number
   score: number
@@ -374,7 +373,6 @@ function drawSNPCoverage(
     // Collect one feature per pixel for reduced features
     if (leftPx > prevReducedLeftPx + 1) {
       reducedFeatures.push({
-        uniqueId: feature.id(),
         start: feature.get('start'),
         end: feature.get('end'),
         score,
@@ -406,16 +404,25 @@ function drawSNPCoverage(
       let curr = 0
       const refbase = snpinfo.refbase?.toUpperCase()
       const { nonmods, mods, snps, ref } = snpinfo
-      for (const m of iterateKeys(nonmods)) {
-        const modKey = m.replace(/^(nonmod_|mod_)/, '')
+      const h = toHeight(score0)
+      const bottom = toY(score0) + h
+
+      // Process both nonmods and mods in a single combined loop
+      const modEntries: { key: string; isUnmodified: boolean }[] = [
+        ...iterateKeys(nonmods).map(k => ({ key: k, isUnmodified: true })),
+        ...iterateKeys(mods).map(k => ({ key: k, isUnmodified: false })),
+      ]
+
+      for (const { key, isUnmodified } of modEntries) {
+        const modKey = key.replace(/^(nonmod_|mod_)/, '')
         const mod = visibleModifications[modKey]
-        if (!mod) {
-          console.warn(`${m} not known yet`)
+        if (
+          !mod ||
+          (isolatedModification && mod.type !== isolatedModification)
+        ) {
           continue
         }
-        if (isolatedModification && mod.type !== isolatedModification) {
-          continue
-        }
+
         const { modifiable, detectable } = calculateModificationCounts({
           base: mod.base,
           isSimplex: simplexSet.has(mod.type),
@@ -425,49 +432,12 @@ function drawSNPCoverage(
           score0,
         })
 
-        const { entryDepth, avgProbability = 0 } = snpinfo.nonmods[m]!
+        const source = isUnmodified ? nonmods : mods
+        const { entryDepth, avgProbability = 0 } = source[key]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const nonModColor = 'blue'
-        const c = alphaColor(nonModColor, avgProbability)
-        const h = toHeight(score0)
-        const bottom = toY(score0) + h
+        const color = isUnmodified ? 'blue' : mod.color || 'black'
 
-        ctx.fillStyle = c
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - (curr + modFraction * h),
-          w,
-          modFraction * h,
-        )
-        curr += modFraction * h
-      }
-      for (const m of iterateKeys(mods)) {
-        const modKey = m.replace('mod_', '')
-        const mod = visibleModifications[modKey]
-        if (!mod) {
-          console.warn(`${m} not known yet`)
-          continue
-        }
-        if (isolatedModification && mod.type !== isolatedModification) {
-          continue
-        }
-        const { modifiable, detectable } = calculateModificationCounts({
-          base: mod.base,
-          isSimplex: simplexSet.has(mod.type),
-          refbase,
-          snps,
-          ref,
-          score0,
-        })
-
-        const { entryDepth, avgProbability = 0 } = mods[m]!
-        const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const baseColor = mod.color || 'black'
-        const c = alphaColor(baseColor, avgProbability)
-        const h = toHeight(score0)
-        const bottom = toY(score0) + h
-
-        ctx.fillStyle = c
+        ctx.fillStyle = alphaColor(color, avgProbability)
         ctx.fillRect(
           Math.round(leftPx),
           bottom - (curr + modFraction * h),

@@ -1,9 +1,13 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import {
+  CLIP_RECT_HEIGHT,
+  chainIsPairedEnd,
+  collectNonSupplementary,
+} from './drawChainsUtil'
 import { drawLongReadChains } from './drawLongReadChains'
 import { drawPairChains } from './drawPairChains'
 import { PairType, getPairedType } from '../shared/color'
-import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
@@ -42,33 +46,17 @@ export function filterChains(
 ) {
   const filtered: Feature[][] = []
 
-  for (const chain_ of chains) {
-    const chain = chain_
-
+  for (const chain of chains) {
     // Filter out singletons if drawSingletons is false
     if (!drawSingletons && chain.length === 1) {
       continue
     }
 
     // Filter out proper pairs if drawProperPairs is false
-    // Check if this is a paired-end read
-    let isPairedEnd = false
-    for (const element of chain) {
-      if (element.get('flags') & SAM_FLAG_PAIRED) {
-        isPairedEnd = true
-        break
-      }
-    }
+    const isPairedEnd = chainIsPairedEnd(chain)
 
     if (!drawProperPairs && isPairedEnd) {
-      // Collect non-supplementary alignments
-      const nonSupplementary: Feature[] = []
-      for (const element of chain) {
-        if (!(element.get('flags') & SAM_FLAG_SUPPLEMENTARY)) {
-          nonSupplementary.push(element)
-        }
-      }
-
+      const nonSupplementary = collectNonSupplementary(chain)
       if (nonSupplementary.length === 2) {
         const v0 = nonSupplementary[0]!
         const pairType = getPairedType({
@@ -103,8 +91,7 @@ export function computeChainBounds(chains: Feature[][], view: LGV) {
   const { bpPerPx } = view
 
   // get bounds on the 'distances' (TLEN for pairs, pixel span for others)
-  for (const chain_ of chains) {
-    const chain = chain_
+  for (const chain of chains) {
     let minX = Number.MAX_VALUE
     let maxX = Number.MIN_VALUE
     let chainId = ''
@@ -354,7 +341,7 @@ export function drawFeatsCore({
     // Set up clipping rect for this region
     const regionStartPx = region.offsetPx - viewOffsetPx
     ctx.beginPath()
-    ctx.rect(regionStartPx, 0, region.widthPx, 100000)
+    ctx.rect(regionStartPx, 0, region.widthPx, CLIP_RECT_HEIGHT)
     ctx.clip()
 
     // Translate coordinate system for this region

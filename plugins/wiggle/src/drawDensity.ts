@@ -1,5 +1,4 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { featureSpanPx } from '@jbrowse/core/util'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -44,6 +43,11 @@ export function drawDensity(
     lastCheck = createStopTokenChecker(stopToken),
   } = props
   const region = regions[0]!
+  const regionStart = region.start
+  const regionEnd = region.end
+  const regionReversed = region.reversed
+  const inverseBpPerPx = 1 / bpPerPx
+
   const pivot = readConfObject(config, 'bicolorPivot')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const negColor = readConfObject(config, 'negColor')
@@ -72,7 +76,14 @@ export function drawDensity(
   const reducedFeatures = []
   for (const feature of features.values()) {
     checkStopToken2(lastCheck)
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    const fStart = feature.get('start')
+    const fEnd = feature.get('end')
+    const leftPx = regionReversed
+      ? (regionEnd - fEnd) * inverseBpPerPx
+      : (fStart - regionStart) * inverseBpPerPx
+    const rightPx = regionReversed
+      ? (regionEnd - fStart) * inverseBpPerPx
+      : (fEnd - regionStart) * inverseBpPerPx
 
     // create reduced features, avoiding multiple features per px
     if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
@@ -98,7 +109,14 @@ export function drawDensity(
     ctx.fillStyle = clipColor
     for (const feature of features.values()) {
       checkStopToken2(lastCheck)
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const fStart = feature.get('start')
+      const fEnd = feature.get('end')
+      const leftPx = regionReversed
+        ? (regionEnd - fEnd) * inverseBpPerPx
+        : (fStart - regionStart) * inverseBpPerPx
+      const rightPx = regionReversed
+        ? (regionEnd - fStart) * inverseBpPerPx
+        : (fEnd - regionStart) * inverseBpPerPx
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score')
       if (score > niceMax) {

@@ -4,20 +4,21 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import {
+  CONNECTING_LINE_COLOR,
+  calculateFeaturePositionPx,
   chainIsPairedEnd,
   collectNonSupplementary,
   featureOverlapsRegion,
   getMismatchRenderingConfig,
+  lineIntersectsRegion,
   renderFeatureMismatchesAndModifications,
+  renderFeatureShape,
 } from './drawChainsUtil'
-import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { drawChevron } from '../shared/chevron'
+import { lineToCtx } from '../shared/canvasUtils'
 import { getPairedColor } from '../shared/color'
-import { CHEVRON_WIDTH } from '../shared/util'
 
 import type { MismatchData } from './drawChainsUtil'
 import type { ComputedChain } from './drawFeatsCommon'
-import type { FlatbushItem } from '../PileupRenderer/types'
 import type {
   ChainData,
   ColorBy,
@@ -73,10 +74,10 @@ export function drawPairChains({
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start
-  let lastColor = ''
+  const colorCtx = { lastFillStyle: '' }
 
-  const allCoords: number[] = []
-  const allItems: FlatbushItem[] = []
+  const allCoords: MismatchData['coords'] = []
+  const allItems: MismatchData['items'] = []
   const lastCheck = createStopTokenChecker(stopToken)
 
   for (const computedChain of computedChains) {
@@ -114,19 +115,13 @@ export function drawPairChains({
       const v0Start = v0.get('start')
       const v1Start = v1.get('start')
 
-      // Line intersects region if both mates are on same refName and line spans the region
-      const bothOnRefName =
-        v0RefName === region.refName && v1RefName === region.refName
-      const lineMin = Math.min(v0Start, v1Start)
-      const lineMax = Math.max(v0Start, v1Start)
-      const lineIntersectsRegion =
-        bothOnRefName && lineMin < region.end && lineMax > regionStart
-
-      if (lineIntersectsRegion) {
+      if (
+        lineIntersectsRegion(v0RefName, v1RefName, v0Start, v1Start, region)
+      ) {
         const r1s = (v0Start - regionStart) / bpPerPx
         const r2s = (v1Start - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2
-        lineToCtx(r1s, lineY, r2s, lineY, ctx, '#6665')
+        lineToCtx(r1s, lineY, r2s, lineY, ctx, CONNECTING_LINE_COLOR)
       }
     }
 
@@ -140,10 +135,13 @@ export function drawPairChains({
         continue
       }
 
-      const clippedStart = Math.max(featStart, regionStart)
-      const clippedEnd = Math.min(featEnd, region.end)
-      const xPos = (clippedStart - regionStart) / bpPerPx
-      const width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
+      const { xPos, width } = calculateFeaturePositionPx(
+        featStart,
+        featEnd,
+        regionStart,
+        region.end,
+        bpPerPx,
+      )
 
       const layoutFeat = {
         feature: feat,
@@ -151,39 +149,18 @@ export function drawPairChains({
         topPx: chainY,
       }
 
-      if (renderChevrons) {
-        drawChevron(
-          ctx,
-          xPos,
-          chainY,
-          width,
-          featureHeight,
-          feat.get('strand'),
-          pairedFill,
-          CHEVRON_WIDTH,
-          pairedStroke,
-        )
-      } else {
-        // Handle negative dimensions for SVG exports
-        let drawX = xPos
-        let drawY = chainY
-        let drawWidth = width
-        if (drawWidth < 0) {
-          drawX += drawWidth
-          drawWidth = -drawWidth
-        }
-        if (featureHeight < 0) {
-          drawY += featureHeight
-        }
-
-        if (pairedFill && lastColor !== pairedFill) {
-          ctx.fillStyle = pairedFill
-          lastColor = pairedFill
-        }
-
-        ctx.fillRect(drawX, drawY, drawWidth, featureHeight)
-        strokeRectCtx(drawX, drawY, drawWidth, featureHeight, ctx, pairedStroke)
-      }
+      renderFeatureShape({
+        ctx,
+        xPos,
+        yPos: chainY,
+        width,
+        height: featureHeight,
+        strand: feat.get('strand'),
+        fillStyle: pairedFill,
+        strokeStyle: pairedStroke,
+        renderChevrons,
+        colorCtx,
+      })
 
       renderFeatureMismatchesAndModifications({
         ctx,
