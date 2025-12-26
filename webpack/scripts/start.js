@@ -11,6 +11,10 @@ require('../config/env')
 const fs = require('fs')
 
 const chalk = require('chalk')
+const webpack = require('webpack')
+const WebpackDevServer = require('webpack-dev-server')
+
+const paths = require('../config/paths')
 const {
   choosePort,
   createCompiler,
@@ -18,10 +22,7 @@ const {
 } = require('../react-dev-utils/WebpackDevServerUtils')
 const { checkBrowsers } = require('../react-dev-utils/browsersHelper')
 const openBrowser = require('../react-dev-utils/openBrowser')
-const webpack = require('webpack')
-const WebpackDevServer = require('webpack-dev-server')
 
-const paths = require('../config/paths')
 
 const useYarn = fs.existsSync(paths.yarnLockFile)
 const isInteractive = process.stdout.isTTY
@@ -92,7 +93,7 @@ module.exports = function startWebpack(config) {
         openBrowser(urls.localUrlForBrowser)
       })
     })
-    .catch(err => {
+    .catch((err:unknown) => {
       if (err?.message) {
         console.log(err.message)
       }

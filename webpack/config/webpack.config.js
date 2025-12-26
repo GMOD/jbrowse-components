@@ -4,17 +4,14 @@ const path = require('path')
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const InlineChunkHtmlPlugin = require('../react-dev-utils/InlineChunkHtmlPlugin')
-const InterpolateHtmlPlugin = require('../react-dev-utils/InterpolateHtmlPlugin')
-const ModuleNotFoundPlugin = require('../react-dev-utils/ModuleNotFoundPlugin')
-const ModuleScopePlugin = require('../react-dev-utils/ModuleScopePlugin')
-const getCSSModuleLocalIdent = require('../react-dev-utils/getCSSModuleLocalIdent')
 const webpack = require('webpack')
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin')
 
 const getClientEnvironment = require('./env')
 const modules = require('./modules')
 const paths = require('./paths')
+const InlineChunkHtmlPlugin = require('../react-dev-utils/InlineChunkHtmlPlugin')
+const InterpolateHtmlPlugin = require('../react-dev-utils/InterpolateHtmlPlugin')
 
 // Source maps are resource heavy and can cause out of memory issue for large
 // source files.
@@ -22,10 +19,6 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 
 // Disable minimization for production builds (useful for debugging)
 const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
-
-const reactRefreshRuntimeEntry = require.resolve('react-refresh/runtime')
-const reactRefreshWebpackPluginRuntimeEntry =
-  require.resolve('@pmmmwh/react-refresh-webpack-plugin')
 
 function getWorkspaces(fromDir) {
   const cwd = fromDir || process.cwd()
@@ -144,20 +137,7 @@ module.exports = function webpackBuilder(webpackEnv) {
       // extension prefixes have been added for better support for React Native
       // Web.
       extensions: paths.moduleFileExtensions.map(ext => `.${ext}`),
-      plugins: [
-        // Prevents users from importing files from outside of src/ (or
-        // node_modules/). This often causes confusion because we only process
-        // files within src/ with babel. To fix this, we prevent you from
-        // importing files out of src/ -- if you'd like to, please link the
-        // files into your node_modules/ and let module-resolution kick in.
-        // Make sure your source files are compiled, as they will not be
-        // processed in any way.
-        new ModuleScopePlugin(paths.appSrc, [
-          paths.appPackageJson,
-          reactRefreshRuntimeEntry,
-          reactRefreshWebpackPluginRuntimeEntry,
-        ]),
-      ],
+      plugins: [],
     },
     module: {
       strictExportPresence: true,
@@ -237,7 +217,6 @@ module.exports = function webpackBuilder(webpackEnv) {
                   : isEnvDevelopment,
                 modules: {
                   mode: 'local',
-                  getLocalIdent: getCSSModuleLocalIdent,
                 },
               }),
             },
@@ -300,9 +279,6 @@ module.exports = function webpackBuilder(webpackEnv) {
       // It will be an empty string unless you specify "homepage"
       // in `package.json`, in which case it will be the pathname of that URL.
       new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
-      // This gives some necessary context to module not found errors, such as
-      // the requesting resource.
-      new ModuleNotFoundPlugin(paths.appPath),
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === 'production') { ... }. See `./env.js`.
       // It is absolutely essential that NODE_ENV is set to production

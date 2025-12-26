@@ -5,34 +5,33 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-'use strict';
+'use strict'
 
-const chalk = require('chalk');
+const chalk = require('chalk')
 
 function printHostingInstructions(
-  appPackage,
+  _appPackage,
   publicUrl,
   publicPath,
   buildFolder,
-  useYarn
 ) {
   console.log(
     `The project was built assuming it is hosted at ${chalk.green(
-      publicUrl || publicPath || 'the server root'
-    )}.`
-  );
+      publicUrl || publicPath || 'the server root',
+    )}.`,
+  )
   console.log(
     `You can control this with the ${chalk.green(
-      'homepage'
-    )} field in your ${chalk.cyan('package.json')}.`
-  );
-  console.log();
-  console.log(`The ${chalk.cyan(buildFolder)} folder is ready to be deployed.`);
-  console.log();
-  console.log('You may serve it with a static server:');
-  console.log();
-  console.log(`  ${chalk.cyan('npx serve')} -s ${buildFolder}`);
-  console.log();
+      'homepage',
+    )} field in your ${chalk.cyan('package.json')}.`,
+  )
+  console.log()
+  console.log(`The ${chalk.cyan(buildFolder)} folder is ready to be deployed.`)
+  console.log()
+  console.log('You may serve it with a static server:')
+  console.log()
+  console.log(`  ${chalk.cyan('npx serve')} -s ${buildFolder}`)
+  console.log()
 }
 
-module.exports = printHostingInstructions;
+module.exports = printHostingInstructions

@@ -5,23 +5,25 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-'use strict';
+'use strict'
 
-const open = require('open');
+const open = require('open')
 
 function openBrowser(url) {
   // Honor BROWSER environment variable
-  const browser = process.env.BROWSER;
+  const browser = process.env.BROWSER
   if (browser && browser.toLowerCase() === 'none') {
-    return false;
+    return false
   }
 
   try {
-    open(url, { app: browser || undefined, wait: false, url: true }).catch(() => {});
-    return true;
+    open(url, { app: browser || undefined, wait: false, url: true }).catch(
+      () => {},
+    )
+    return true
   } catch (err) {
-    return false;
+    return false
   }
 }
 
-module.exports = openBrowser;
+module.exports = openBrowser

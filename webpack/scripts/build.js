@@ -12,15 +12,15 @@ const fs = require('fs')
 const path = require('path')
 
 const chalk = require('chalk')
+const webpack = require('webpack')
+
+const paths = require('../config/paths')
 const FileSizeReporter = require('../react-dev-utils/FileSizeReporter')
 const { checkBrowsers } = require('../react-dev-utils/browsersHelper')
 const checkRequiredFiles = require('../react-dev-utils/checkRequiredFiles')
 const formatWebpackMessages = require('../react-dev-utils/formatWebpackMessages')
 const printBuildError = require('../react-dev-utils/printBuildError')
 const printHostingInstructions = require('../react-dev-utils/printHostingInstructions')
-const webpack = require('webpack')
-
-const paths = require('../config/paths')
 
 const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild
@@ -44,80 +44,84 @@ const writeStatsJson = argv.includes('--stats')
 // browserslist defaults.
 
 module.exports = function buildWebpack(config) {
-  return checkBrowsers(paths.appPath, isInteractive)
-    .then(() => {
-      // First, read the current file sizes in build directory.
-      // This lets us display how much they changed later.
-      return measureFileSizesBeforeBuild(paths.appBuild)
-    })
-    .then(previousFileSizes => {
-      // Remove all content but keep the directory so that
-      // if you're in it, you don't end up in Trash
-      fs.rmSync(paths.appBuild, { recursive: true, force: true })
-      // Merge with the public folder
-      copyPublicFolder()
-      // Start the webpack build
-      return build(previousFileSizes)
-    })
-    .then(
-      ({ stats, previousFileSizes, warnings }) => {
-        if (warnings.length) {
-          console.log(chalk.yellow('Compiled with warnings.\n'))
-          console.log(warnings.join('\n\n'))
-          console.log(
-            `\nSearch for the ${chalk.underline(chalk.yellow('keywords'))} to learn more about each warning.`,
-          )
-          console.log(
-            `To ignore, add ${chalk.cyan('// eslint-disable-next-line')} to the line before.\n`,
-          )
-        } else {
-          console.log(chalk.green('Compiled successfully.\n'))
-        }
+  return (
+    checkBrowsers(paths.appPath, isInteractive)
+      .then(() => {
+        // First, read the current file sizes in build directory.
+        // This lets us display how much they changed later.
+        return measureFileSizesBeforeBuild(paths.appBuild)
+      })
+      .then(previousFileSizes => {
+        // Remove all content but keep the directory so that
+        // if you're in it, you don't end up in Trash
+        fs.rmSync(paths.appBuild, { recursive: true, force: true })
+        // Merge with the public folder
+        copyPublicFolder()
+        // Start the webpack build
+        return build(previousFileSizes)
+      })
+      .then(
+        ({ stats, previousFileSizes, warnings }) => {
+          if (warnings.length) {
+            console.log(chalk.yellow('Compiled with warnings.\n'))
+            console.log(warnings.join('\n\n'))
+            console.log(
+              `\nSearch for the ${chalk.underline(chalk.yellow('keywords'))} to learn more about each warning.`,
+            )
+            console.log(
+              `To ignore, add ${chalk.cyan('// eslint-disable-next-line')} to the line before.\n`,
+            )
+          } else {
+            console.log(chalk.green('Compiled successfully.\n'))
+          }
 
-        console.log('File sizes after gzip:\n')
-        printFileSizesAfterBuild(
-          stats,
-          previousFileSizes,
-          paths.appBuild,
-          WARN_AFTER_BUNDLE_GZIP_SIZE,
-          WARN_AFTER_CHUNK_GZIP_SIZE,
-        )
-        console.log()
-
-        const appPackage = require(paths.appPackageJson)
-        const publicUrl = paths.publicUrlOrPath
-        const publicPath = config.output.publicPath
-        const buildFolder = path.relative(process.cwd(), paths.appBuild)
-        printHostingInstructions(
-          appPackage,
-          publicUrl,
-          publicPath,
-          buildFolder,
-          useYarn,
-        )
-      },
-      err => {
-        const tscCompileOnError = process.env.TSC_COMPILE_ON_ERROR === 'true'
-        if (tscCompileOnError) {
-          console.log(
-            chalk.yellow(
-              'Compiled with the following type errors (you may want to check these before deploying your app):\n',
-            ),
+          console.log('File sizes after gzip:\n')
+          printFileSizesAfterBuild(
+            stats,
+            previousFileSizes,
+            paths.appBuild,
+            WARN_AFTER_BUNDLE_GZIP_SIZE,
+            WARN_AFTER_CHUNK_GZIP_SIZE,
           )
-          printBuildError(err)
-        } else {
-          console.log(chalk.red('Failed to compile.\n'))
-          printBuildError(err)
-          process.exit(1)
+          console.log()
+
+          const appPackage = require(paths.appPackageJson)
+          const publicUrl = paths.publicUrlOrPath
+          const publicPath = config.output.publicPath
+          const buildFolder = path.relative(process.cwd(), paths.appBuild)
+          printHostingInstructions(
+            appPackage,
+            publicUrl,
+            publicPath,
+            buildFolder,
+            useYarn,
+          )
+        },
+        // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
+        err => {
+          const tscCompileOnError = process.env.TSC_COMPILE_ON_ERROR === 'true'
+          if (tscCompileOnError) {
+            console.log(
+              chalk.yellow(
+                'Compiled with the following type errors (you may want to check these before deploying your app):\n',
+              ),
+            )
+            printBuildError(err)
+          } else {
+            console.log(chalk.red('Failed to compile.\n'))
+            printBuildError(err)
+            process.exit(1)
+          }
+        },
+      )
+      // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
+      .catch(err => {
+        if (err?.message) {
+          console.log(err.message)
         }
-      },
-    )
-    .catch(err => {
-      if (err?.message) {
-        console.log(err.message)
-      }
-      process.exit(1)
-    })
+        process.exit(1)
+      })
+  )
 
   // Create the production build and print the deployment instructions.
   function build(previousFileSizes) {
