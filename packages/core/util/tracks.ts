@@ -14,19 +14,18 @@ import type {
 
 /* utility functions for use by track models and so forth */
 
-// Cache for track assembly names - keyed by trackId string since configuration
-// objects may be recreated on each access when tracks are frozen
-const trackAssemblyNamesCache = new Map<string, string[]>()
+// Cache for track assembly names - keyed by track object to avoid
+// repeated track.configuration access which triggers MobX machinery
+const trackAssemblyNamesCache = new WeakMap<IAnyStateTreeNode, string[]>()
 
 export function getTrackAssemblyNames(
   track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
-  const conf = track.configuration
-  const trackId = conf.trackId as string
-  let cached = trackAssemblyNamesCache.get(trackId)
+  let cached = trackAssemblyNamesCache.get(track)
   if (!cached) {
-    cached = getConfAssemblyNames(conf)
-    trackAssemblyNamesCache.set(trackId, cached)
+    // Only access track.configuration on cache miss
+    cached = getConfAssemblyNames(track.configuration)
+    trackAssemblyNamesCache.set(track, cached)
   }
   return cached
 }

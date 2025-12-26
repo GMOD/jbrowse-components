@@ -8,13 +8,7 @@ import {
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  cast,
-  getEnv,
-  getParent,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
@@ -159,17 +153,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
         const config = configBlob as Omit<typeof configBlob, symbol>
-
-        return self.rendererType.configSchema.create(
-          {
-            ...config,
-            showLabels: self.showLabels,
-            showDescriptions: self.showDescriptions,
-            displayMode: self.displayMode,
-            maxHeight: self.maxHeight,
-          },
-          getEnv(self),
-        )
+        return {
+          ...config,
+          showLabels: self.showLabels,
+          showDescriptions: self.showDescriptions,
+          displayMode: self.displayMode,
+          maxHeight: self.maxHeight,
+        }
       },
     }))
 

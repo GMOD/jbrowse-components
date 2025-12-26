@@ -21,6 +21,9 @@ const Highlight = lazy(() => import('./Highlight'))
 const RubberbandSpan = lazy(() => import('./RubberbandSpan'))
 
 const useStyles = makeStyles()({
+  // Main container for all tracks
+  // Sets --offset-px CSS variable so children can use calc() for positioning
+  // instead of each observing offsetPx and recalculating in JS
   tracksContainer: {
     position: 'relative',
     contain: 'layout style',
@@ -70,6 +73,7 @@ const TracksContainer = observer(function TracksContainer({
       ref={ref}
       data-testid="tracksContainer"
       className={classes.tracksContainer}
+      style={{ '--offset-px': `${model.offsetPx}px` } as React.CSSProperties}
       onMouseDown={event => {
         mouseDown1(event)
         mouseDown2(event)

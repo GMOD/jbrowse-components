@@ -234,10 +234,9 @@ const blockState = types
             stopCurrentToken()
             // use stored renderArgs from last successful render instead of
             // recalculating via renderBlockData which is expensive
-            if (self.renderArgs) {
-              const display = getContainingDisplay(self)
+            if (self.renderArgs && self.cachedDisplay) {
               const { rpcManager } = getSession(self)
-              const { rendererType } = display
+              const { rendererType } = self.cachedDisplay
               await rendererType.freeResourcesInClient(
                 rpcManager,
                 JSON.parse(JSON.stringify(self.renderArgs)),
@@ -294,7 +293,11 @@ export function renderBlockData(
   optDisplay?: AbstractDisplayModel,
 ) {
   try {
-    const display = optDisplay || (getContainingDisplay(self) as any)
+    // Use optDisplay (for SVG export), cachedDisplay (set in addBlock), or
+    // fall back to tree traversal
+    const display = (optDisplay ||
+      self.cachedDisplay ||
+      getContainingDisplay(self)) as any
     const { assemblyManager, rpcManager } = getSession(display)
     const { adapterConfig, rendererType, error, parentTrack } = display
     const assemblyNames = getTrackAssemblyNames(parentTrack)

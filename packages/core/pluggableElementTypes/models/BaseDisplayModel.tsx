@@ -1,9 +1,9 @@
 import type React from 'react'
 
-import { getParent, isRoot, types } from '@jbrowse/mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration'
-import { getContainingView, getEnv } from '../../util'
+import { getContainingTrack, getContainingView, getEnv } from '../../util'
 import { getParentRenderProps } from '../../util/tracks'
 import { ElementId } from '../../util/types/mst'
 
@@ -71,14 +71,7 @@ function stateModelFactory() {
        * #getter
        */
       get parentTrack() {
-        let track = getParent<any>(self)
-        while (!(track.configuration && getConf(track, 'trackId'))) {
-          if (isRoot(track)) {
-            throw new Error(`No parent track found for ${self.type} ${self.id}`)
-          }
-          track = getParent<any>(track)
-        }
-        return track
+        return getContainingTrack(self)
       },
 
       /**

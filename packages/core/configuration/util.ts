@@ -11,6 +11,19 @@ import {
   isUnionType,
 } from '@jbrowse/mobx-state-tree'
 
+interface ConfigSlot {
+  getValue: (args: Record<string, unknown>) => unknown
+}
+
+// confObject[slotPath] can return:
+// - a config slot model (has getValue method)
+// - a sub-configuration object (nested config schema)
+// - a primitive value (string, number, etc.)
+// - undefined/null
+function isConfigSlot(slot: unknown): slot is ConfigSlot {
+  return typeof (slot as ConfigSlot | undefined)?.getValue === 'function'
+}
+
 import {
   getDefaultValue,
   getSubType,
@@ -42,35 +55,31 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
   args: Record<string, unknown> = {},
 ): any {
   if (!slotPath) {
-    return structuredClone(getSnapshot(confObject))
+    // Handle both MST nodes and plain objects
+    return isStateTreeNode(confObject)
+      ? structuredClone(getSnapshot(confObject))
+      : structuredClone(confObject)
   } else if (typeof slotPath === 'string') {
-    let slot = confObject[slotPath]
+    // slot can be a config slot model, sub-configuration, primitive, or undefined
+    let slot: unknown = confObject[slotPath]
     // check for the subconf being a map if we don't find it immediately
-    if (
-      !slot &&
-      isStateTreeNode(confObject) &&
-      isMapType(getType(confObject))
-    ) {
-      slot = confObject.get(slotPath)
-    }
+    // (only do expensive type check if slot is falsy)
     if (!slot) {
-      return undefined
-      // if we want to be very strict about config slots, we could uncomment the below
-      // instead of returning undefined
-      //
-      // const modelType = getType(model)
-      // const schemaType = model.configuration && getType(model.configuration)
-      // throw new Error(
-      //   `no slot "${slotName}" found in ${modelType.name} configuration (${
-      //     schemaType.name
-      //   })`,
-      // )
-    } else {
-      const val = slot.expr ? slot.expr.eval(args) : slot
-      return isStateTreeNode(val)
-        ? JSON.parse(JSON.stringify(getSnapshot(val)))
-        : val
+      if (isStateTreeNode(confObject) && isMapType(getType(confObject))) {
+        slot = confObject.get(slotPath)
+      }
+      if (!slot) {
+        return undefined
+      }
     }
+    const val = isConfigSlot(slot) ? slot.getValue(args) : slot
+    // Fast path for primitives (most common case)
+    if (val === null || typeof val !== 'object') {
+      return val
+    }
+    // For objects, clone to prevent mutation of config state
+    // Use structuredClone for MST snapshots (faster than JSON.parse/stringify)
+    return isStateTreeNode(val) ? structuredClone(getSnapshot(val)) : val
   } else if (Array.isArray(slotPath)) {
     const slotName = slotPath[0]!
     if (slotPath.length > 1) {
@@ -108,11 +117,8 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
   slotPath?: Parameters<typeof readConfObject<CONFMODEL>>[1],
   args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
 ) {
-  const { configuration } = model
-  if (isConfigurationModel(configuration)) {
-    return readConfObject<CONFMODEL>(configuration, slotPath, args)
-  }
-  throw new TypeError('cannot getConf on this model, it has no configuration')
+  // Trust TypeScript types - the generic constraint ensures configuration is valid
+  return readConfObject<CONFMODEL>(model.configuration, slotPath, args)
 }
 
 /**
@@ -200,10 +206,21 @@ export function isConfigurationSchemaType(
   }
 }
 
+// Cache for isConfigurationModel results to avoid expensive repeated type checks
+const configurationModelCache = new WeakMap<object, boolean>()
+
 export function isConfigurationModel(
   thing: unknown,
 ): thing is AnyConfigurationModel {
-  return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
+  if (!thing || typeof thing !== 'object') {
+    return false
+  }
+  let cached = configurationModelCache.get(thing)
+  if (cached === undefined) {
+    cached = isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
+    configurationModelCache.set(thing, cached)
+  }
+  return cached
 }
 
 export function isConfigurationSlotType(thing: unknown) {

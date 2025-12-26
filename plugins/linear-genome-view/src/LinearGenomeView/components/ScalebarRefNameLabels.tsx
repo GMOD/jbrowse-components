@@ -1,5 +1,4 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '..'
@@ -7,6 +6,8 @@ import type { LinearGenomeViewModel } from '..'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
+  // Base styles for ref name labels (chromosome names in scalebar)
+  // Uses --offset-px CSS variable from parent Scalebar component
   refLabel: {
     fontSize: 11,
     position: 'absolute',
@@ -17,6 +18,7 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 1,
     background: theme.palette.background.paper,
   },
+  // First block label when it's not a ContentBlock
   b0: {
     left: 0,
     zIndex: 100,
@@ -51,9 +53,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   return (
     <>
       {b0?.type !== 'ContentBlock' && val ? (
-        <Typography className={cx(classes.b0, classes.refLabel)}>
-          {val}
-        </Typography>
+        <span className={cx(classes.b0, classes.refLabel)}>{val}</span>
       ) : null}
       {staticBlocks.map((block, index) => {
         const {
@@ -66,12 +66,12 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
         const last = index === lastLeftBlock
         return type === 'ContentBlock' &&
           (isLeftEndOfDisplayedRegion || last) ? (
-          <Typography
+          <span
             key={`refLabel-${key}-${index}`}
             style={{
               left: last
-                ? Math.max(0, -offsetPx)
-                : blockOffsetPx - offsetPx - 1,
+                ? 'max(0px, calc(-1 * var(--offset-px)))'
+                : `calc(${blockOffsetPx}px - var(--offset-px) - 1px)`,
               paddingLeft: last ? 0 : 1,
             }}
             className={classes.refLabel}
@@ -79,7 +79,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           >
             {last && val ? `${val}:` : ''}
             {refName}
-          </Typography>
+          </span>
         ) : null
       })}
     </>
