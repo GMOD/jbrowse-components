@@ -6,16 +6,29 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import {
+  type LegendItem,
+  linearBareDisplayStateModelFactory,
+} from '@jbrowse/plugin-linear-genome-view'
 import CategoryIcon from '@mui/icons-material/Category'
 import FilterListIcon from '@mui/icons-material/FilterList'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
 
+import { set1 } from '@jbrowse/core/ui/colors'
+
 import { cluster, hierarchy } from '../d3-hierarchy2'
+import {
+  NO_CALL_COLOR,
+  OTHER_ALT_COLOR,
+  REFERENCE_COLOR,
+  UNPHASED_COLOR,
+  getAltColorForDosage,
+} from './constants'
 import { getSources } from './getSources'
 
 import type { ClusterHierarchyNode, HoveredTreeNode } from './components/types'
@@ -459,25 +472,49 @@ export default function MultiVariantBaseModelF(
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show sidebar labels',
+              label: 'Show...',
               icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showSidebarLabelsSetting,
-              onClick: () => {
-                self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
-              },
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Show sidebar labels',
+                  type: 'checkbox',
+                  checked: self.showSidebarLabelsSetting,
+                  onClick: () => {
+                    self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
+                  },
+                },
+                {
+                  label: 'Show tree',
+                  type: 'checkbox',
+                  checked: self.showTree,
+                  disabled: !self.clusterTree,
+                  onClick: () => {
+                    self.setShowTree(!self.showTree)
+                  },
+                },
+                {
+                  label: 'Show reference alleles',
+                  helpText:
+                    'When this setting is off, the background is colored solid grey and only ALT alleles are colored on top of it. This makes it easier to see potentially overlapping structural variants',
+                  type: 'checkbox',
+                  checked: self.referenceDrawingMode !== 'skip',
+                  onClick: () => {
+                    self.setReferenceDrawingMode(
+                      self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
+                    )
+                  },
+                },
+                {
+                  label: 'Show legend',
+                  type: 'checkbox',
+                  checked: self.showLegend,
+                  onClick: () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                },
+              ],
             },
-            {
-              label: 'Show tree',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showTree,
-              disabled: !self.clusterTree,
-              onClick: () => {
-                self.setShowTree(!self.showTree)
-              },
-            },
-
             {
               label: 'Row height',
               icon: HeightIcon,
@@ -536,18 +573,7 @@ export default function MultiVariantBaseModelF(
                 },
               ],
             },
-            {
-              label: 'Skip drawing reference alleles',
-              helpText:
-                'When this setting is on, the background is filled with grey, and then we skip drawing reference alleles. This helps drawing with drawing overlapping SVs. When this setting is off, each reference allele is colored grey',
-              type: 'checkbox',
-              checked: self.referenceDrawingMode === 'skip',
-              onClick: () => {
-                self.setReferenceDrawingMode(
-                  self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
-                )
-              },
-            },
+
             {
               label: 'Filter by',
               icon: FilterListIcon,
@@ -669,6 +695,28 @@ export default function MultiVariantBaseModelF(
             filters: self.activeFilters,
           }),
         }
+      },
+      /**
+       * #method
+       * Returns legend items for rendering colors based on current mode
+       */
+      legendItems(): LegendItem[] {
+        if (self.renderingMode === 'phased') {
+          return [
+            { color: REFERENCE_COLOR, label: 'Reference (0)' },
+            { color: set1[0], label: 'Alt allele 1' },
+            { color: set1[1], label: 'Alt allele 2' },
+            { color: set1[2], label: 'Alt allele 3' },
+            { color: UNPHASED_COLOR, label: 'Unphased' },
+          ]
+        }
+        return [
+          { color: REFERENCE_COLOR, label: 'Homozygous reference' },
+          { color: getAltColorForDosage(0.5), label: 'Heterozygous alt' },
+          { color: getAltColorForDosage(1), label: 'Homozygous alt' },
+          { color: OTHER_ALT_COLOR, label: 'Other alt allele' },
+          { color: NO_CALL_COLOR, label: 'No call' },
+        ]
       },
     }))
     .actions(self => ({

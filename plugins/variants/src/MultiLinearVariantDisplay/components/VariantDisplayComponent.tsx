@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiVariantCrosshairs'
@@ -13,7 +14,8 @@ const MultiLinearVariantDisplayComponent = observer(
     model: MultiLinearVariantDisplayModel
   }) {
     const { model } = props
-    const { height } = model
+    const { height, showLegend } = model
+    const legendItems = model.legendItems()
     const ref = useRef<HTMLDivElement>(null)
     const { mouseState, handleMouseMove, handleMouseLeave } =
       useMouseTracking(ref)
@@ -35,6 +37,10 @@ const MultiLinearVariantDisplayComponent = observer(
             offsetY={mouseState.offsetY}
             model={model}
           />
+        ) : null}
+
+        {showLegend && legendItems.length > 0 ? (
+          <FloatingLegend items={legendItems} />
         ) : null}
       </div>
     )
