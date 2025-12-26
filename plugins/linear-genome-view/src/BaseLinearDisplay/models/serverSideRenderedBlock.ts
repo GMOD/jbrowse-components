@@ -224,6 +224,9 @@ const blockState = types
         clearRenderState()
         getParent<any>(self, 2).reload()
       },
+      setCachedDisplay(display: AbstractDisplayModel) {
+        self.cachedDisplay = display
+      },
       beforeDestroy() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
@@ -259,8 +262,7 @@ const blockState = types
   }))
   .actions(self => ({
     afterAttach() {
-      const display = getContainingDisplay(self)
-      self.cachedDisplay = display
+      const display = self.cachedDisplay || getContainingDisplay(self)
       setTimeout(() => {
         if (isAlive(self)) {
           makeAbortableReaction(

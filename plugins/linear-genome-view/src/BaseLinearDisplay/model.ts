@@ -248,13 +248,13 @@ function stateModelFactory() {
        * #action
        */
       addBlock(key: string, block: BaseBlock) {
-        self.blockState.set(
+        const blockInstance = BlockState.create({
           key,
-          BlockState.create({
-            key,
-            region: block.toRegion(),
-          }),
-        )
+          region: block.toRegion(),
+        })
+        self.blockState.set(key, blockInstance)
+        // minor optimization: pre-populate display to avoid tree traversal in afterAttach
+        blockInstance.setCachedDisplay(self as any)
       },
 
       /**
