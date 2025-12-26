@@ -252,9 +252,10 @@ function stateModelFactory() {
           key,
           region: block.toRegion(),
         })
-        self.blockState.set(key, blockInstance)
-        // minor optimization: pre-populate display to avoid tree traversal in afterAttach
+        // Set cached display BEFORE adding to map - afterAttach fires when
+        // the block is added, so cachedDisplay must be set first
         blockInstance.setCachedDisplay(self as any)
+        self.blockState.set(key, blockInstance)
       },
 
       /**
