@@ -15,9 +15,9 @@ const {
   choosePort,
   createCompiler,
   prepareUrls,
-} = require('react-dev-utils/WebpackDevServerUtils')
-const { checkBrowsers } = require('react-dev-utils/browsersHelper')
-const openBrowser = require('react-dev-utils/openBrowser')
+} = require('../react-dev-utils/WebpackDevServerUtils')
+const { checkBrowsers } = require('../react-dev-utils/browsersHelper')
+const openBrowser = require('../react-dev-utils/openBrowser')
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 
