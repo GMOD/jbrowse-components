@@ -102,8 +102,13 @@ jobs:
         run: node --experimental-strip-types browser-tests/runner.ts
         working-directory: products/jbrowse-web
         continue-on-error: true
+      - name: Run auth browser tests with Puppeteer
+        id: auth-browser-tests
+        run: node --experimental-strip-types browser-tests/runner.ts --auth
+        working-directory: products/jbrowse-web
+        continue-on-error: true
       - name: Upload snapshot diffs to S3
-        if: steps.browser-tests.outcome == 'failure'
+        if: steps.browser-tests.outcome == 'failure' || steps.auth-browser-tests.outcome == 'failure'
         run: |
           SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
           S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
@@ -125,7 +130,7 @@ jobs:
             echo "No snapshot diff files found"
           fi
       - name: Fail if browser tests failed
-        if: steps.browser-tests.outcome == 'failure'
+        if: steps.browser-tests.outcome == 'failure' || steps.auth-browser-tests.outcome == 'failure'
         run: exit 1
 
       # Deploy storybooks
