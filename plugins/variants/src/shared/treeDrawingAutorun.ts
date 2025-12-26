@@ -3,6 +3,7 @@ import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type { ClusterHierarchyNode, HoveredTreeNode } from './components/types'
+import type { Source } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface TreeDrawingModel {
@@ -15,6 +16,7 @@ interface TreeDrawingModel {
   rowHeight: number
   totalHeight: number
   hoveredTreeNode?: HoveredTreeNode
+  sources?: Source[]
 }
 
 export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
@@ -91,6 +93,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           hoveredTreeNode,
           height,
           scrollTop,
+          sources,
           // eslint-disable-next-line  @typescript-eslint/no-unused-vars
           totalHeight,
         } = self
@@ -108,7 +111,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
 
         ctx.clearRect(0, 0, viewWidth, height)
 
-        if (hierarchy && hoveredTreeNode) {
+        if (hierarchy && hoveredTreeNode && sources) {
           // Save the context state
           ctx.save()
 
@@ -117,11 +120,14 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
 
           // Draw highlight rectangles for descendant leaf rows
           // Note: accessing totalHeight ensures we redraw when row height changes
+          // In phased mode, each sample name may correspond to multiple rows
+          // (e.g., SAMPLE1 -> SAMPLE1 HP0, SAMPLE1 HP1)
           ctx.fillStyle = 'rgba(255,165,0,0.2)'
-          for (const name of hoveredTreeNode.descendantNames) {
-            const leaf = hierarchy.leaves().find(l => l.data.name === name)
-            if (leaf) {
-              const y = leaf.x!
+          const descendantSet = new Set(hoveredTreeNode.descendantNames)
+          for (let i = 0; i < sources.length; i++) {
+            const source = sources[i]!
+            if (descendantSet.has(source.name)) {
+              const y = (i + 0.5) * rowHeight
               ctx.fillRect(0, y - rowHeight / 2, viewWidth, rowHeight)
             }
           }

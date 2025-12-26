@@ -21,6 +21,7 @@ export interface TreeSidebarModel {
   height: number
   scrollTop: number
   showTree: boolean
+  sources?: Source[]
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void

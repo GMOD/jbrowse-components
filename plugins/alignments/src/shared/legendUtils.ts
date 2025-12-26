@@ -1,12 +1,12 @@
 import { fillColor } from './color'
 
 import type { ColorBy, ModificationTypeWithColor } from './types'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
 
-export interface LegendItem {
-  color?: string
-  label: string
-}
+// Re-export from linear-genome-view for convenience
+export { calculateSvgLegendWidth } from '@jbrowse/plugin-linear-genome-view'
+export type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Get legend items for pileup display based on colorBy setting
@@ -162,18 +162,4 @@ export function getReadDisplayLegendItems(
   }
 
   return []
-}
-
-/**
- * Calculate the width needed for an SVG legend based on the legend items.
- * Used by SVG export to add extra width for the legend area.
- */
-export function calculateSvgLegendWidth(items: LegendItem[]): number {
-  if (items.length === 0) {
-    return 0
-  }
-  const boxSize = 12
-  const padding = 3
-  const maxLabelWidth = Math.max(...items.map(item => item.label.length * 6))
-  return boxSize + 8 + maxLabelWidth + padding * 2 + 20
 }
