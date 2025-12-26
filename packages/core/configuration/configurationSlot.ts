@@ -218,6 +218,14 @@ export default function ConfigSlot(
             }
       },
 
+      // Resolve the slot value, evaluating jexl if needed
+      getValue(args: Record<string, unknown> = {}) {
+        const v = self.value
+        return typeof v === 'string' && v.startsWith('jexl:')
+          ? self.expr.eval(args)
+          : v
+      },
+
       // JS representation of the value of this slot, suitable
       // for embedding in either JSON or a JS function string.
       // many of the data types override this in typeModelExtensions

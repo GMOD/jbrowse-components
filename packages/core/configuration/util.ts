@@ -11,6 +11,19 @@ import {
   isUnionType,
 } from '@jbrowse/mobx-state-tree'
 
+interface ConfigSlot {
+  getValue: (args: Record<string, unknown>) => unknown
+}
+
+// confObject[slotPath] can return:
+// - a config slot model (has getValue method)
+// - a sub-configuration object (nested config schema)
+// - a primitive value (string, number, etc.)
+// - undefined/null
+function isConfigSlot(slot: unknown): slot is ConfigSlot {
+  return typeof (slot as ConfigSlot)?.getValue === 'function'
+}
+
 import {
   getDefaultValue,
   getSubType,
@@ -44,7 +57,8 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
   if (!slotPath) {
     return structuredClone(getSnapshot(confObject))
   } else if (typeof slotPath === 'string') {
-    let slot = confObject[slotPath]
+    // slot can be a config slot model, sub-configuration, primitive, or undefined
+    let slot: unknown = confObject[slotPath]
     // check for the subconf being a map if we don't find it immediately
     if (
       !slot &&
@@ -66,7 +80,7 @@ export function readConfObject<CONFMODEL extends AnyConfigurationModel>(
       //   })`,
       // )
     } else {
-      const val = slot.expr ? slot.expr.eval(args) : slot
+      const val = isConfigSlot(slot) ? slot.getValue(args) : slot
       return isStateTreeNode(val)
         ? JSON.parse(JSON.stringify(getSnapshot(val)))
         : val
