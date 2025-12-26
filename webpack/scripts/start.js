@@ -7,7 +7,11 @@ import webpack from 'webpack'
 import WebpackDevServer from 'webpack-dev-server'
 
 import paths from '../config/paths.js'
-import { choosePort, createCompiler, prepareUrls } from '../react-dev-utils/WebpackDevServerUtils.js'
+import {
+  choosePort,
+  createCompiler,
+  prepareUrls,
+} from '../react-dev-utils/WebpackDevServerUtils.js'
 
 process.on('unhandledRejection', err => {
   throw err
@@ -17,7 +21,11 @@ process.env.NODE_ENV = 'development'
 
 // Check browserslist is configured
 if (browserslist.loadConfig({ path: paths.appPath }) == null) {
-  console.error(chalk.red('You must specify targeted browsers in package.json browserslist.'))
+  console.error(
+    chalk.red(
+      'You must specify targeted browsers in package.json browserslist.',
+    ),
+  )
   process.exit(1)
 }
 
@@ -32,11 +40,23 @@ export default function startWebpack(config) {
       }
 
       const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
-      const appName = JSON.parse(fs.readFileSync(paths.appPackageJson, 'utf8')).name
+      const appName = JSON.parse(
+        fs.readFileSync(paths.appPackageJson, 'utf8'),
+      ).name
 
-      const urls = prepareUrls(protocol, HOST, port, paths.publicUrlOrPath.slice(0, -1))
+      const urls = prepareUrls(
+        protocol,
+        HOST,
+        port,
+        paths.publicUrlOrPath.slice(0, -1),
+      )
 
-      const compiler = createCompiler({ appName, config, urls, webpack })
+      const compiler = createCompiler({
+        appName,
+        config,
+        urls,
+        webpack,
+      })
 
       const devServer = new WebpackDevServer({ host: HOST, port }, compiler)
       devServer.startCallback(() => {

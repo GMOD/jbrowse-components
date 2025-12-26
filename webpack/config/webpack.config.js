@@ -28,9 +28,9 @@ function getWorkspaces(fromDir) {
 const cssRegex = /\.css$/
 const cssModuleRegex = /\.module\.css$/
 
-export default function webpackBuilder(webpackEnv) {
-  const isEnvDevelopment = webpackEnv === 'development'
-  const isEnvProduction = webpackEnv === 'production'
+export default function webpackBuilder() {
+  const isEnvDevelopment = process.env.NODE_ENV === 'development'
+  const isEnvProduction = process.env.NODE_ENV === 'production'
 
   const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1))
   const shouldUseReactRefresh = env.raw.FAST_REFRESH
@@ -40,7 +40,9 @@ export default function webpackBuilder(webpackEnv) {
       isEnvDevelopment && 'style-loader',
       isEnvProduction && {
         loader: MiniCssExtractPlugin.loader,
-        options: paths.publicUrlOrPath.startsWith('.') ? { publicPath: '../../' } : {},
+        options: paths.publicUrlOrPath.startsWith('.')
+          ? { publicPath: '../../' }
+          : {},
       },
       { loader: 'css-loader', options: cssOptions },
     ].filter(Boolean)
@@ -53,7 +55,9 @@ export default function webpackBuilder(webpackEnv) {
     mode: isEnvProduction ? 'production' : 'development',
     bail: isEnvProduction,
     devtool: isEnvProduction
-      ? shouldUseSourceMap ? 'source-map' : false
+      ? shouldUseSourceMap
+        ? 'source-map'
+        : false
       : 'eval',
     entry: paths.appIndexJs,
     output: {
@@ -67,12 +71,17 @@ export default function webpackBuilder(webpackEnv) {
         : 'static/js/[name].chunk.js',
       assetModuleFilename: 'static/media/[name].[hash][ext]',
       devtoolModuleFilenameTemplate: isEnvProduction
-        ? info => path.relative(paths.appSrc, info.absoluteResourcePath).replace(/\\/g, '/')
+        ? info =>
+            path
+              .relative(paths.appSrc, info.absoluteResourcePath)
+              .replace(/\\/g, '/')
         : info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     },
     resolve: {
       conditionNames: ['mui-modern', '...'],
-      modules: ['node_modules', paths.appNodeModules].concat(modules.additionalModulePaths || []),
+      modules: ['node_modules', paths.appNodeModules].concat(
+        modules.additionalModulePaths || [],
+      ),
       extensions: paths.moduleFileExtensions.map(ext => `.${ext}`),
       plugins: [],
     },
@@ -103,7 +112,9 @@ export default function webpackBuilder(webpackEnv) {
               exclude: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                sourceMap: isEnvProduction
+                  ? shouldUseSourceMap
+                  : isEnvDevelopment,
                 modules: { mode: 'icss' },
               }),
               sideEffects: true,
@@ -112,7 +123,9 @@ export default function webpackBuilder(webpackEnv) {
               test: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                sourceMap: isEnvProduction
+                  ? shouldUseSourceMap
+                  : isEnvDevelopment,
                 modules: { mode: 'local' },
               }),
             },
@@ -128,31 +141,36 @@ export default function webpackBuilder(webpackEnv) {
       new HtmlWebpackPlugin({
         inject: true,
         template: paths.appHtml,
-        ...(isEnvProduction && shouldMinimize ? {
-          minify: {
-            removeComments: true,
-            collapseWhitespace: true,
-            removeRedundantAttributes: true,
-            useShortDoctype: true,
-            removeEmptyAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-            keepClosingSlash: true,
-            minifyJS: true,
-            minifyCSS: true,
-            minifyURLs: true,
-          },
-        } : {}),
+        ...(isEnvProduction && shouldMinimize
+          ? {
+              minify: {
+                removeComments: true,
+                collapseWhitespace: true,
+                removeRedundantAttributes: true,
+                useShortDoctype: true,
+                removeEmptyAttributes: true,
+                removeStyleLinkTypeAttributes: true,
+                keepClosingSlash: true,
+                minifyJS: true,
+                minifyCSS: true,
+                minifyURLs: true,
+              },
+            }
+          : {}),
       }),
-      isEnvProduction && shouldInlineRuntimeChunk &&
+      isEnvProduction &&
+        shouldInlineRuntimeChunk &&
         new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
       new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
       new webpack.DefinePlugin(env.stringified),
-      isEnvDevelopment && shouldUseReactRefresh &&
+      isEnvDevelopment &&
+        shouldUseReactRefresh &&
         new ReactRefreshWebpackPlugin({ overlay: false }),
-      isEnvProduction && new MiniCssExtractPlugin({
-        filename: 'static/css/[name].[contenthash:8].css',
-        chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
-      }),
+      isEnvProduction &&
+        new MiniCssExtractPlugin({
+          filename: 'static/css/[name].[contenthash:8].css',
+          chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+        }),
       new WebpackManifestPlugin({
         fileName: 'asset-manifest.json',
         publicPath: paths.publicUrlOrPath,
@@ -161,7 +179,9 @@ export default function webpackBuilder(webpackEnv) {
             manifest[file.name] = file.path
             return manifest
           }, seed),
-          entrypoints: entrypoints.main.filter(fileName => !fileName.endsWith('.map')),
+          entrypoints: entrypoints.main.filter(
+            fileName => !fileName.endsWith('.map'),
+          ),
         }),
       }),
     ].filter(Boolean),
