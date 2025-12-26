@@ -7,7 +7,6 @@ import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
 import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
@@ -157,6 +156,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               type: 'subMenu',
               subMenu: [
                 {
+                  label: 'Show legend',
+                  type: 'checkbox',
+                  checked: self.showLegend,
+                  onClick: () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                },
+                {
                   label:
                     'Inter-chromosomal connections (purple vertical lines)',
                   type: 'checkbox',
@@ -176,15 +183,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             getColorSchemeMenuItem(self),
-            {
-              label: 'Show legend',
-              icon: FormatListBulletedIcon,
-              type: 'checkbox',
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
-              },
-            },
           ]
         },
 

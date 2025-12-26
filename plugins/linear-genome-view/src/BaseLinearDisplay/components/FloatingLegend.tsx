@@ -1,12 +1,12 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   legend: {
     position: 'absolute',
     right: 10,
     top: 10,
-    background: 'rgba(255,255,255,0.4)',
+    background: theme.palette.background.paper,
     padding: 3,
     fontSize: 10,
     pointerEvents: 'none',
@@ -32,7 +32,7 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-})
+}))
 
 export interface LegendItem {
   color?: string

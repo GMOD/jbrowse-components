@@ -4,7 +4,6 @@ import {
   ALT_COLOR_HUE,
   ALT_COLOR_SATURATION,
   NO_CALL_COLOR,
-  OTHER_ALT_COLOR,
   REFERENCE_COLOR,
   f2,
 } from './constants'
@@ -73,7 +72,7 @@ export function getColorAlleleCount(
   }
   if (uncalled) {
     const alpha = uncalled / total
-    const l = `${NO_CALL_COLOR.replace(')', `,${alpha})`).replace('hsl', 'hsla')}`
+    const l = NO_CALL_COLOR.replace(')', `,${alpha})`).replace('hsl', 'hsla')
     a1 = a1 ? a1.mix(l) : colord(l)
   }
   return a1?.toHex() || 'black'

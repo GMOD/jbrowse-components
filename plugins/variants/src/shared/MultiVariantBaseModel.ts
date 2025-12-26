@@ -3,23 +3,18 @@ import { lazy } from 'react'
 import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { set1 } from '@jbrowse/core/ui/colors'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
-import {
-  type LegendItem,
-  linearBareDisplayStateModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
+import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import CategoryIcon from '@mui/icons-material/Category'
 import FilterListIcon from '@mui/icons-material/FilterList'
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
-
-import { set1 } from '@jbrowse/core/ui/colors'
 
 import { cluster, hierarchy } from '../d3-hierarchy2'
 import {
@@ -37,6 +32,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
@@ -702,13 +698,28 @@ export default function MultiVariantBaseModelF(
        */
       legendItems(): LegendItem[] {
         if (self.renderingMode === 'phased') {
-          return [
+          let maxAltAlleles = 1
+          const features = self.featuresVolatile
+          if (features) {
+            for (const feature of features) {
+              const alt = feature.get('ALT') as string[] | undefined
+              if (alt && alt.length > maxAltAlleles) {
+                maxAltAlleles = alt.length
+              }
+            }
+          }
+          const items: LegendItem[] = [
             { color: REFERENCE_COLOR, label: 'Reference (0)' },
             { color: set1[0], label: 'Alt allele 1' },
-            { color: set1[1], label: 'Alt allele 2' },
-            { color: set1[2], label: 'Alt allele 3' },
-            { color: UNPHASED_COLOR, label: 'Unphased' },
           ]
+          if (maxAltAlleles >= 2) {
+            items.push({ color: set1[1], label: 'Alt allele 2' })
+          }
+          if (maxAltAlleles >= 3) {
+            items.push({ color: set1[2], label: 'Alt allele 3' })
+          }
+          items.push({ color: UNPHASED_COLOR, label: 'Unphased' })
+          return items
         }
         return [
           { color: REFERENCE_COLOR, label: 'Homozygous reference' },

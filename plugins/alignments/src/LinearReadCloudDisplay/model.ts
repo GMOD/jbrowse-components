@@ -11,12 +11,9 @@ import {
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  type ExportSvgDisplayOptions,
   FeatureDensityMixin,
-  type LegendItem,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 
 import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
@@ -33,6 +30,10 @@ import {
 import type { ReducedFeature } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  ExportSvgDisplayOptions,
+  LegendItem,
+} from '@jbrowse/plugin-linear-genome-view'
 
 const SetFeatureHeightDialog = lazy(
   () => import('./components/SetFeatureHeightDialog'),
@@ -301,72 +302,80 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
             {
-              label: 'Toggle read cloud',
-              type: 'checkbox',
-              helpText:
-                'In read cloud mode, the y-coordinate of the reads is proportional to TLEN (template length)',
-              checked: self.drawCloud,
-              onClick: () => {
-                self.setDrawCloud(!self.drawCloud)
-              },
+              label: 'Show...',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Show legend',
+                  type: 'checkbox',
+                  checked: self.showLegend,
+                  onClick: () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                },
+                {
+                  label: "Show using 'read cloud' mode",
+                  type: 'checkbox',
+                  helpText:
+                    'In read cloud mode, the y-coordinate of the reads is proportional to TLEN (template length)',
+                  checked: self.drawCloud,
+                  onClick: () => {
+                    self.setDrawCloud(!self.drawCloud)
+                  },
+                },
+                {
+                  label: 'Show singletons',
+                  type: 'checkbox',
+                  helpText:
+                    'If disabled, does not single parts of a paired end read, or a single long read alignment. Will only draw paired reads or split alignments',
+                  checked: self.drawSingletons,
+                  onClick: () => {
+                    self.setDrawSingletons(!self.drawSingletons)
+                  },
+                },
+                {
+                  label: 'Show proper pairs',
+                  helpText:
+                    'If disabled, will not draw "normally paired" reads which can help highlight structural variants',
+                  type: 'checkbox',
+                  checked: self.drawProperPairs,
+                  onClick: () => {
+                    self.setDrawProperPairs(!self.drawProperPairs)
+                  },
+                },
+                {
+                  label: 'Show read strand relative to primary',
+                  helpText:
+                    'This makes all the reads draw their strand relative to the primary alignment, which can be helpful in seeing patterns of flipping orientation in split long-read alignments',
+                  type: 'checkbox',
+                  checked: self.flipStrandLongReadChains,
+                  onClick: () => {
+                    self.setFlipStrandLongReadChains(
+                      !self.flipStrandLongReadChains,
+                    )
+                  },
+                },
+                {
+                  label: 'Show small indels (<10bp)',
+                  type: 'checkbox',
+                  checked: !self.hideSmallIndels,
+                  onClick: () => {
+                    self.setHideSmallIndels(!self.hideSmallIndels)
+                  },
+                },
+                {
+                  label: 'Show mismatches',
+                  type: 'checkbox',
+                  checked: !self.hideMismatches,
+                  onClick: () => {
+                    self.setHideMismatches(!self.hideMismatches)
+                  },
+                },
+              ],
             },
-            {
-              label: 'Draw singletons',
-              type: 'checkbox',
-              helpText:
-                'If disabled, does not single parts of a paired end read, or a single long read alignment. Will only draw paired reads or split alignments',
-              checked: self.drawSingletons,
-              onClick: () => {
-                self.setDrawSingletons(!self.drawSingletons)
-              },
-            },
-            {
-              label: 'Draw proper pairs',
-              helpText:
-                'If disabled, will not draw "normally paired" reads which can help highlight structural variants',
-              type: 'checkbox',
-              checked: self.drawProperPairs,
-              onClick: () => {
-                self.setDrawProperPairs(!self.drawProperPairs)
-              },
-            },
-            {
-              label: 'Draw read strand relative to primary',
-              helpText:
-                'This makes all the reads draw their strand relative to the primary alignment, which can be helpful in seeing patterns of flipping orientation in split long-read alignments',
-              type: 'checkbox',
-              checked: self.flipStrandLongReadChains,
-              onClick: () => {
-                self.setFlipStrandLongReadChains(!self.flipStrandLongReadChains)
-              },
-            },
-            {
-              label: 'Hide small indels (<10bp)',
-              type: 'checkbox',
-              checked: self.hideSmallIndels,
-              onClick: () => {
-                self.setHideSmallIndels(!self.hideSmallIndels)
-              },
-            },
-            {
-              label: 'Hide mismatches',
-              type: 'checkbox',
-              checked: self.hideMismatches,
-              onClick: () => {
-                self.setHideMismatches(!self.hideMismatches)
-              },
-            },
+
             getFilterByMenuItem(self),
             getColorSchemeMenuItem(self),
-            {
-              label: 'Show legend',
-              icon: FormatListBulletedIcon,
-              type: 'checkbox',
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
-              },
-            },
           ]
         },
 

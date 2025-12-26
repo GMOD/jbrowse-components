@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition'
@@ -15,8 +14,7 @@ const MultiLinearVariantMatrixDisplayComponent = observer(
     model: MultiLinearVariantMatrixDisplayModel
   }) {
     const { model } = props
-    const { lineZoneHeight, height, showLegend } = model
-    const legendItems = model.legendItems()
+    const { lineZoneHeight, height } = model
     const ref = useRef<HTMLDivElement>(null)
     const { mouseState, handleMouseMove, handleMouseLeave } =
       useMouseTracking(ref)
@@ -47,10 +45,6 @@ const MultiLinearVariantMatrixDisplayComponent = observer(
             offsetY={mouseState.offsetY}
             model={model}
           />
-        ) : null}
-
-        {showLegend && legendItems.length > 0 ? (
-          <FloatingLegend items={legendItems} />
         ) : null}
       </div>
     )

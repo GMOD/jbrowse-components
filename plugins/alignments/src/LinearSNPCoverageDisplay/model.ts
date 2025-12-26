@@ -12,7 +12,6 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import FilterListIcon from '@mui/icons-material/FilterList'
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
@@ -429,6 +428,14 @@ function stateModelFactory(
               type: 'subMenu',
               subMenu: [
                 {
+                  label: 'Show legend',
+                  type: 'checkbox',
+                  checked: self.showLegend,
+                  onClick: () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                },
+                {
                   label: 'Insertion/clipping indicators',
                   type: 'checkbox',
                   checked: self.showInterbaseIndicatorsSetting,
@@ -466,15 +473,6 @@ function stateModelFactory(
                   FilterArcsByScoreDialog,
                   { model: self, handleClose },
                 ])
-              },
-            },
-            {
-              label: 'Show legend',
-              icon: FormatListBulletedIcon,
-              type: 'checkbox',
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
               },
             },
           ]

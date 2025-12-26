@@ -1,7 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
@@ -328,33 +327,18 @@ function stateModelFactory(
               self.setLowerPanelType(d.name)
             },
           }))
-          const filterLegendItem = (items: MenuItem[]) =>
-            items.filter(
-              item => !('label' in item && item.label === 'Show legend'),
-            )
 
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show legend',
-              icon: FormatListBulletedIcon,
-              type: 'checkbox' as const,
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
-              },
-            },
-            {
               type: 'subMenu' as const,
               label: 'Pileup settings',
-              subMenu: filterLegendItem(self.PileupDisplay.trackMenuItems()),
+              subMenu: self.PileupDisplay.trackMenuItems(),
             },
             {
               type: 'subMenu' as const,
               label: 'SNPCoverage settings',
-              subMenu: filterLegendItem(
-                self.SNPCoverageDisplay.trackMenuItems(),
-              ),
+              subMenu: self.SNPCoverageDisplay.trackMenuItems(),
             },
             {
               type: 'subMenu' as const,
