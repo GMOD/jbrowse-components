@@ -14,6 +14,7 @@ import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
+  // Outer container that handles zoom scaling via CSS transform
   verticalGuidesZoomContainer: {
     position: 'absolute',
     top: 0,
@@ -21,6 +22,7 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     pointerEvents: 'none',
   },
+  // Inner container positioned using CSS calc() with --offset-px variable
   verticalGuidesContainer: {
     position: 'absolute',
     height: '100%',
@@ -70,6 +72,7 @@ function RenderedBlockLines({
     </ContentBlockComponent>
   )
 }
+
 const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
   model,
 }: {
@@ -98,6 +101,7 @@ const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
     </>
   )
 })
+
 const Gridlines = observer(function Gridlines({
   model,
   offset = 0,
@@ -106,21 +110,20 @@ const Gridlines = observer(function Gridlines({
   offset?: number
 }) {
   const { classes } = useStyles()
-  // find the block that needs pinning to the left side for context
-  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
+  const { staticBlocks, scaleFactor } = model
   return (
     <div
       className={classes.verticalGuidesZoomContainer}
       style={{
-        transform:
-          model.scaleFactor !== 1 ? `scaleX(${model.scaleFactor})` : undefined,
+        transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
       }}
     >
       <div
         className={classes.verticalGuidesContainer}
         style={{
-          left: offsetLeft - offset,
-          width: model.staticBlocks.totalWidthPx,
+          // Uses --offset-px CSS variable from parent (TracksContainer or Scalebar)
+          left: `calc(${staticBlocks.offsetPx}px - var(--offset-px) - ${offset}px)`,
+          width: staticBlocks.totalWidthPx,
         }}
       >
         <RenderedVerticalGuides model={model} />
