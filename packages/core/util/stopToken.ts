@@ -30,36 +30,52 @@ import { isWebWorker } from './isWebWorker'
  * IN THE SOFTWARE.
  */
 
-export type StopToken = string | SharedArrayBuffer
+// export type StopToken = string | SharedArrayBuffer
+export type StopToken = string
 
 // Check if SharedArrayBuffer is available (requires cross-origin isolation)
-function isSharedArrayBufferAvailable() {
-  try {
-    // Need to actually try to use it, not just check typeof
-    return (
-      typeof SharedArrayBuffer !== 'undefined' &&
-      new SharedArrayBuffer(4).byteLength === 4
-    )
-  } catch {
-    return false
+// function isSharedArrayBufferAvailable() {
+//   try {
+//     // Need to actually try to use it, not just check typeof
+//     return (
+//       typeof SharedArrayBuffer !== 'undefined' &&
+//       new SharedArrayBuffer(4).byteLength === 4
+//     )
+//   } catch {
+//     return false
+//   }
+// }
+
+// const useSharedArrayBuffer = isSharedArrayBufferAvailable()
+
+export function createStopTokenChecker(stopToken: StopToken | undefined) {
+  return {
+    time: Date.now(),
+    iters: 0,
+    stopToken,
   }
 }
-
-const useSharedArrayBuffer = isSharedArrayBufferAvailable()
 
 export function createStopToken(): StopToken {
-  // Prefer SharedArrayBuffer when available (faster, just memory access)
-  if (useSharedArrayBuffer) {
-    const buffer = new SharedArrayBuffer(4)
-    new Int32Array(buffer)[0] = 0 // Initialize to not-aborted
-    return buffer
-  } else {
-    // Fallback to blob URL approach
-    // URL not available in jest and can't properly mock it
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
-  }
+  // URL not available in jest and can't properly mock it
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
 }
+
+// unused SharedArrayBuffer
+// export function createStopToken(): StopToken {
+//   // Prefer SharedArrayBuffer when available (faster, just memory access)
+//   if (useSharedArrayBuffer) {
+//     const buffer = new SharedArrayBuffer(4)
+//     new Int32Array(buffer)[0] = 0 // Initialize to not-aborted
+//     return buffer
+//   } else {
+//     // Fallback to blob URL approach
+//     // URL not available in jest and can't properly mock it
+//     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+//     return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
+//   }
+// }
 
 // Safely check if a value is a SharedArrayBuffer
 function isSharedArrayBuffer(value: unknown): value is SharedArrayBuffer {
@@ -109,21 +125,29 @@ export function checkStopToken(stopToken: StopToken | undefined) {
   }
 }
 
-export function checkStopToken2(
-  stopToken: StopToken | undefined,
-  iters: number,
-  lastCheck: {
-    time: number
-    backoff?: boolean
-    checkInterval?: number
-    checkIters?: number
-  },
-) {
-  const { backoff = true, checkInterval = 50, checkIters = 100 } = lastCheck
+export interface LastStopTokenCheck {
+  time: number
+  iters: number
+  backoff?: boolean
+  checkInterval?: number
+  checkIters?: number
+  stopToken?: StopToken
+}
+export function checkStopToken2(lastCheck?: LastStopTokenCheck) {
+  if (!lastCheck) {
+    return
+  }
+  const {
+    stopToken,
+    backoff = true,
+    checkInterval = 50,
+    checkIters = 100,
+  } = lastCheck
+  lastCheck.iters++
   if (stopToken === undefined) {
     return
   }
-  if (iters % checkIters !== 0) {
+  if (lastCheck.iters % checkIters !== 0) {
     return
   }
 
@@ -156,13 +180,15 @@ export function forEachWithStopTokenCheck<T>(
 ) {
   const lastCheck = {
     time: Date.now(),
+    iters: 0,
     checkInterval: durationMs,
     backoff,
     checkIters,
+    stopToken,
   }
   let iters = 0
   for (const t of iter) {
     arg(t, iters++)
-    checkStopToken2(stopToken, iters, lastCheck)
+    checkStopToken2(lastCheck)
   }
 }

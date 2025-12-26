@@ -9,11 +9,6 @@ export async function makeImageData(
   return renderMultiWiggle(
     pluginManager,
     renderProps,
-    async (props, arrays) => {
-      const { renderMultiRowLineArrays } =
-        await import('./renderMultiRowLineArrays')
-      return renderMultiRowLineArrays(props, arrays)
-    },
     async (props, features) => {
       const { renderMultiRowLine } = await import('./renderMultiRowLine')
       return renderMultiRowLine(props, features)

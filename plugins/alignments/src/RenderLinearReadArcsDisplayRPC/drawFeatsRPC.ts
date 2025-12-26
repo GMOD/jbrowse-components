@@ -1,4 +1,7 @@
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { featurizeSA, getTag } from '../MismatchParser'
 import {
@@ -277,8 +280,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     }
   }
 
-  const lastCheck = { time: Date.now() }
-  let idx = 0
+  const lastCheck = createStopTokenChecker(stopToken)
   for (const chain of chains) {
     if (chain.length === 1 && drawLongRange) {
       const f = chain[0]!
@@ -292,6 +294,6 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     } else {
       drawMultiFeatureChain(chain)
     }
-    checkStopToken2(stopToken, idx++, lastCheck)
+    checkStopToken2(lastCheck)
   }
 }

@@ -1,6 +1,9 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
@@ -40,17 +43,16 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
     const sampleInfo = {} as Record<string, SampleInfo>
     const genotypesCache = new Map<string, Record<string, string>>()
     let hasPhased = false
+    const lastCheck = createStopTokenChecker(stopToken)
 
     const features = getFeaturesThatPassMinorAlleleFrequencyFilter({
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
-      stopToken,
+      lastCheck,
       features: rawFeatures,
       genotypesCache,
     })
 
-    const lastCheck = { time: Date.now() }
-    let idx = 0
     for (const { feature } of features) {
       const featureId = feature.id()
       let samp = genotypesCache.get(featureId)
@@ -76,7 +78,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
           isPhased: existing?.isPhased || isPhased,
         }
       }
-      checkStopToken2(stopToken, idx++, lastCheck)
+      checkStopToken2(lastCheck)
     }
     return {
       hasPhased,

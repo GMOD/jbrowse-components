@@ -5,10 +5,10 @@ import { observer } from 'mobx-react'
 
 import { calculateFloatingLabelPosition } from './util'
 
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
 import type { FloatingLabelData, LayoutRecord } from '../types'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 interface PixelPositions {
   leftPx: number

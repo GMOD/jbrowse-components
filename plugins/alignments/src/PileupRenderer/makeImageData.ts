@@ -3,7 +3,10 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { layoutFeats } from './layoutFeatures'
 import { renderAlignment } from './renderers/renderAlignment'
@@ -98,8 +101,7 @@ function renderFeatures({
   const drawIndels = shouldDrawIndels()
   const coords = [] as number[]
   const items = [] as FlatbushItem[]
-  const lastCheck = { time: Date.now() }
-  let idx = 0
+  const lastCheck = createStopTokenChecker(stopToken)
 
   for (const feat of layoutRecords) {
     const alignmentRet = renderAlignment({
@@ -154,7 +156,7 @@ function renderFeatures({
         canvasWidth,
       })
     }
-    checkStopToken2(stopToken, idx++, lastCheck)
+    checkStopToken2(lastCheck)
   }
 
   const flatbush = new Flatbush(Math.max(items.length, 1))

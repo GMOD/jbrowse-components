@@ -1,6 +1,5 @@
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
 
-import type { CoverageBinsSoA } from '../SNPCoverageAdapter/generateCoverageBinsPrefixSum'
 import type {
   BaseCoverageBin,
   ColorBy,
@@ -338,9 +337,3 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: Map<string, Feature>
 }
-
-export interface RenderArgsDeserializedWithArrays extends RenderArgsDeserialized {
-  featureArrays: CoverageBinsSoA
-}
-
-export type { CoverageBinsSoA as SNPCoverageArrays } from '../SNPCoverageAdapter/generateCoverageBinsPrefixSum'

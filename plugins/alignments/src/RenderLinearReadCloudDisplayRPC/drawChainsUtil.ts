@@ -4,8 +4,11 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil'
 import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
 import { renderModifications } from '../PileupRenderer/renderers/renderModifications'
+import { strokeRectCtx } from '../shared/canvasUtils'
+import { drawChevron } from '../shared/chevron'
 import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
 import {
+  CHEVRON_WIDTH,
   getCharWidthHeight,
   getColorBaseMap,
   getContrastBaseMap,
@@ -20,6 +23,73 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
+
+// Constants for rendering
+export const CONNECTING_LINE_COLOR = '#6665'
+export const MIN_FEATURE_WIDTH_PX = 3
+export const CLIP_RECT_HEIGHT = 100000
+
+export interface RenderFeatureShapeContext {
+  lastFillStyle: string
+}
+
+export function renderFeatureShape({
+  ctx,
+  xPos,
+  yPos,
+  width,
+  height,
+  strand,
+  fillStyle,
+  strokeStyle,
+  renderChevrons,
+  colorCtx,
+}: {
+  ctx: CanvasRenderingContext2D
+  xPos: number
+  yPos: number
+  width: number
+  height: number
+  strand: number
+  fillStyle: string
+  strokeStyle: string
+  renderChevrons: boolean
+  colorCtx: RenderFeatureShapeContext
+}) {
+  if (renderChevrons) {
+    drawChevron(
+      ctx,
+      xPos,
+      yPos,
+      width,
+      height,
+      strand,
+      fillStyle,
+      CHEVRON_WIDTH,
+      strokeStyle,
+    )
+  } else {
+    // Handle negative dimensions for SVG exports
+    let drawX = xPos
+    let drawY = yPos
+    let drawWidth = width
+    if (drawWidth < 0) {
+      drawX += drawWidth
+      drawWidth = -drawWidth
+    }
+    if (height < 0) {
+      drawY += height
+    }
+
+    if (fillStyle && colorCtx.lastFillStyle !== fillStyle) {
+      ctx.fillStyle = fillStyle
+      colorCtx.lastFillStyle = fillStyle
+    }
+
+    ctx.fillRect(drawX, drawY, drawWidth, height)
+    strokeRectCtx(drawX, drawY, drawWidth, height, ctx, strokeStyle)
+  }
+}
 
 export interface MismatchData {
   coords: number[]
@@ -118,7 +188,38 @@ export function featureOverlapsRegion(
   )
 }
 
-export function aggregateMismatchData(
+export function calculateFeaturePositionPx(
+  featStart: number,
+  featEnd: number,
+  regionStart: number,
+  regionEnd: number,
+  bpPerPx: number,
+) {
+  const clippedStart = Math.max(featStart, regionStart)
+  const clippedEnd = Math.min(featEnd, regionEnd)
+  const xPos = (clippedStart - regionStart) / bpPerPx
+  const width = Math.max(
+    (clippedEnd - clippedStart) / bpPerPx,
+    MIN_FEATURE_WIDTH_PX,
+  )
+  return { xPos, width }
+}
+
+export function lineIntersectsRegion(
+  refName1: string,
+  refName2: string,
+  coord1: number,
+  coord2: number,
+  region: BaseBlock,
+) {
+  const bothOnRefName =
+    refName1 === region.refName && refName2 === region.refName
+  const lineMin = Math.min(coord1, coord2)
+  const lineMax = Math.max(coord1, coord2)
+  return bothOnRefName && lineMin < region.end && lineMax > region.start
+}
+
+function aggregateMismatchData(
   ret: MismatchData,
   regionStartPx: number,
   allCoords: number[],

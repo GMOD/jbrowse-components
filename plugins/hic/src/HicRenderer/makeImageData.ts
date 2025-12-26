@@ -2,7 +2,11 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { colord } from '@jbrowse/core/util/colord'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { checkStopToken2, checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  checkStopToken,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import {
   scaleSequential,
@@ -66,6 +70,7 @@ export async function makeImageData(
     bpPerPx / resolution,
   )
 
+  const lastCheck = createStopTokenChecker(stopToken)
   const w = res / (bpPerPx * Math.sqrt(2))
   const baseColor = colord(readConfObject(config, 'baseColor'))
 
@@ -135,12 +140,8 @@ export async function makeImageData(
   // Client will transform mouse coords with inverse rotation to query
   const coords: number[] = []
   const items: HicFlatbushItem[] = []
-  const lastCheck = { time: Date.now() }
-  let idx = 0
-
-  for (const f of features) {
-    const { bin1, bin2, counts, region1Idx, region2Idx } = f
-
+  for (let i = 0, l = features.length; i < l; i++) {
+    const { bin1, bin2, counts, region1Idx, region2Idx } = features[i]!
     ctx.fillStyle = readConfObject(config, 'color', {
       count: counts,
       maxScore,
@@ -156,7 +157,7 @@ export async function makeImageData(
     // Store the unrotated rectangle coordinates for Flatbush
     coords.push(x, y, x + w, y + w)
     items.push({ bin1, bin2, counts, region1Idx, region2Idx })
-    checkStopToken2(stopToken, idx++, lastCheck)
+    checkStopToken2(lastCheck)
   }
   ctx.restore()
 

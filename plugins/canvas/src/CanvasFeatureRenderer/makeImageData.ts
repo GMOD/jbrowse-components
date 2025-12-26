@@ -2,7 +2,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { drawFeature } from './drawFeature'
 import {
@@ -67,9 +70,7 @@ export function makeImageData({
   ctx.textAlign = 'left'
 
   const { subfeatureLabels, transcriptTypes } = configContext
-  const lastCheck = { time: Date.now() }
-  let idx = 0
-
+  const lastCheck = createStopTokenChecker(stopToken)
   for (const record of layoutRecords) {
     const {
       feature,
@@ -155,7 +156,7 @@ export function makeImageData({
         parentTooltip: tooltip,
       })
     }
-    checkStopToken2(stopToken, idx++, lastCheck)
+    checkStopToken2(lastCheck)
   }
 
   return {

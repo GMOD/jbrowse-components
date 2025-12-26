@@ -1,22 +1,26 @@
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import {
+  CONNECTING_LINE_COLOR,
+  calculateFeaturePositionPx,
   chainIsPairedEnd,
   collectNonSupplementary,
   featureOverlapsRegion,
   getMismatchRenderingConfig,
   getStrandColorKey,
+  lineIntersectsRegion,
   renderFeatureMismatchesAndModifications,
+  renderFeatureShape,
 } from './drawChainsUtil'
-import { lineToCtx, strokeRectCtx } from '../shared/canvasUtils'
-import { drawChevron } from '../shared/chevron'
+import { lineToCtx } from '../shared/canvasUtils'
 import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
 import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
-import { CHEVRON_WIDTH } from '../shared/util'
 
 import type { MismatchData } from './drawChainsUtil'
 import type { ComputedChain } from './drawFeatsCommon'
-import type { FlatbushItem } from '../PileupRenderer/types'
 import type {
   ChainData,
   ColorBy,
@@ -72,24 +76,22 @@ export function drawLongReadChains({
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start
+  const colorCtx = { lastFillStyle: '' }
 
-  const allCoords: number[] = []
-  const allItems: FlatbushItem[] = []
+  const allCoords: MismatchData['coords'] = []
+  const allItems: MismatchData['items'] = []
 
-  let lastFillStyle = ''
-  const lastCheck = { time: Date.now() }
-  let idx = 0
+  const lastCheck = createStopTokenChecker(stopToken)
   for (const computedChain of computedChains) {
+    checkStopToken2(lastCheck)
     const { id, chain } = computedChain
 
     if (chainIsPairedEnd(chain)) {
-      checkStopToken2(stopToken, idx++, lastCheck)
       continue
     }
 
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
-      checkStopToken2(stopToken, idx++, lastCheck)
       continue
     }
 
@@ -109,20 +111,19 @@ export function drawLongReadChains({
       const firstStart = firstFeat.get('start')
       const lastEnd = lastFeat.get('end')
 
-      // Line intersects region if both ends are on same refName and line spans the region
-      // Use min/max in case features aren't sorted by position
-      const bothOnRefName =
-        firstRefName === region.refName && lastRefName === region.refName
-      const lineMin = Math.min(firstStart, lastEnd)
-      const lineMax = Math.max(firstStart, lastEnd)
-      const lineIntersectsRegion =
-        bothOnRefName && lineMin < region.end && lineMax > regionStart
-
-      if (lineIntersectsRegion) {
+      if (
+        lineIntersectsRegion(
+          firstRefName,
+          lastRefName,
+          firstStart,
+          lastEnd,
+          region,
+        )
+      ) {
         const firstPx = (firstStart - regionStart) / bpPerPx
         const lastPx = (lastEnd - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2
-        lineToCtx(firstPx, lineY, lastPx, lineY, ctx, '#6665')
+        lineToCtx(firstPx, lineY, lastPx, lineY, ctx, CONNECTING_LINE_COLOR)
       }
     }
 
@@ -156,10 +157,13 @@ export function drawLongReadChains({
             strokeColor[getStrandColorKey(effectiveStrand)],
           ]
 
-      const clippedStart = Math.max(featStart, regionStart)
-      const clippedEnd = Math.min(featEnd, region.end)
-      const xPos = (clippedStart - regionStart) / bpPerPx
-      const width = Math.max((clippedEnd - clippedStart) / bpPerPx, 3)
+      const { xPos, width } = calculateFeaturePositionPx(
+        featStart,
+        featEnd,
+        regionStart,
+        region.end,
+        bpPerPx,
+      )
 
       const layoutFeat = {
         feature: feat,
@@ -167,46 +171,18 @@ export function drawLongReadChains({
         topPx: chainY,
       }
 
-      if (renderChevrons) {
-        drawChevron(
-          ctx,
-          xPos,
-          chainY,
-          width,
-          featureHeight,
-          effectiveStrand,
-          featureFill,
-          CHEVRON_WIDTH,
-          featureStroke,
-        )
-      } else {
-        // Handle negative dimensions for SVG exports
-        let drawX = xPos
-        let drawY = chainY
-        let drawWidth = width
-        if (drawWidth < 0) {
-          drawX += drawWidth
-          drawWidth = -drawWidth
-        }
-        if (featureHeight < 0) {
-          drawY += featureHeight
-        }
-
-        if (featureFill && lastFillStyle !== featureFill) {
-          ctx.fillStyle = featureFill
-          lastFillStyle = featureFill
-        }
-
-        ctx.fillRect(drawX, drawY, drawWidth, featureHeight)
-        strokeRectCtx(
-          drawX,
-          drawY,
-          drawWidth,
-          featureHeight,
-          ctx,
-          featureStroke,
-        )
-      }
+      renderFeatureShape({
+        ctx,
+        xPos,
+        yPos: chainY,
+        width,
+        height: featureHeight,
+        strand: effectiveStrand,
+        fillStyle: featureFill,
+        strokeStyle: featureStroke,
+        renderChevrons,
+        colorCtx,
+      })
 
       renderFeatureMismatchesAndModifications({
         ctx,
@@ -223,8 +199,10 @@ export function drawLongReadChains({
         allItems,
       })
     }
-    checkStopToken2(stopToken, idx++, lastCheck)
   }
 
-  return { coords: allCoords, items: allItems }
+  return {
+    coords: allCoords,
+    items: allItems,
+  }
 }

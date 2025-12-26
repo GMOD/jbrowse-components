@@ -100,14 +100,18 @@ async function renderAndGetResult(
   height = 100,
 ) {
   const width = (args.region.end - args.region.start) / args.bpPerPx
-  return renderToAbstractCanvas(width, height, { highResolutionScaling: 1 }, ctx =>
-    makeImageData({
-      ctx,
-      layoutRecords,
-      canvasWidth: width,
-      renderArgs: { ...args, features, regions: [args.region] },
-      configContext: args.configContext,
-    }),
+  return renderToAbstractCanvas(
+    width,
+    height,
+    { highResolutionScaling: 1 },
+    ctx =>
+      makeImageData({
+        ctx,
+        layoutRecords,
+        canvasWidth: width,
+        renderArgs: { ...args, features, regions: [args.region] },
+        configContext: args.configContext,
+      }),
   )
 }
 
@@ -166,7 +170,14 @@ describe('CanvasFeatureRenderer', () => {
             start: 100,
             end: 500,
             subfeatures: [
-              { uniqueId: 'cds1', refName: 'ctgA', type: 'CDS', start: 150, end: 450, phase: 0 },
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 450,
+                phase: 0,
+              },
             ],
           },
         ],
@@ -266,8 +277,22 @@ describe('CanvasFeatureRenderer', () => {
             end: 500,
             name: 'TestTranscript',
             subfeatures: [
-              { uniqueId: 'cds1', refName: 'ctgA', type: 'CDS', start: 150, end: 250, phase: 0 },
-              { uniqueId: 'cds2', refName: 'ctgA', type: 'CDS', start: 300, end: 400, phase: 0 },
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 250,
+                phase: 0,
+              },
+              {
+                uniqueId: 'cds2',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 300,
+                end: 400,
+                phase: 0,
+              },
             ],
           },
         ],
@@ -300,13 +325,22 @@ describe('CanvasFeatureRenderer', () => {
             end: 500,
             name: 'TestTranscript',
             subfeatures: [
-              { uniqueId: 'cds1', refName: 'ctgA', type: 'CDS', start: 150, end: 450, phase: 0 },
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 450,
+                phase: 0,
+              },
             ],
           },
         ],
       })
       const features = new Map([['gene1', feature]])
-      const args = createRenderArgs(features, defaultRegion, { subfeatureLabels: 'below' })
+      const args = createRenderArgs(features, defaultRegion, {
+        subfeatureLabels: 'below',
+      })
       const layoutRecords = doLayout(args, features)
       await renderAndGetResult(args, features, layoutRecords)
 
@@ -326,7 +360,9 @@ describe('CanvasFeatureRenderer', () => {
         name: 'TestFeature',
       })
       const features = new Map([['test1', feature]])
-      const args = createRenderArgs(features, defaultRegion, { displayMode: 'compact' })
+      const args = createRenderArgs(features, defaultRegion, {
+        displayMode: 'compact',
+      })
       const layoutRecords = doLayout(args, features)
 
       expect(layoutRecords[0]!.layout.height).toBe(5)
@@ -370,7 +406,12 @@ describe('CanvasFeatureRenderer', () => {
   })
 
   describe('canvas snapshots', () => {
-    const snapshotRegion = { refName: 'ctgA', start: 0, end: 200, assemblyName: 'volvox' }
+    const snapshotRegion = {
+      refName: 'ctgA',
+      start: 0,
+      end: 200,
+      assemblyName: 'volvox',
+    }
 
     test('simple box feature rendering', async () => {
       const feature = new SimpleFeature({
@@ -389,9 +430,27 @@ describe('CanvasFeatureRenderer', () => {
     })
 
     test('multiple overlapping features', async () => {
-      const feature1 = new SimpleFeature({ uniqueId: 'test1', refName: 'ctgA', start: 20, end: 80, name: 'Feature1' })
-      const feature2 = new SimpleFeature({ uniqueId: 'test2', refName: 'ctgA', start: 60, end: 120, name: 'Feature2' })
-      const feature3 = new SimpleFeature({ uniqueId: 'test3', refName: 'ctgA', start: 100, end: 180, name: 'Feature3' })
+      const feature1 = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 20,
+        end: 80,
+        name: 'Feature1',
+      })
+      const feature2 = new SimpleFeature({
+        uniqueId: 'test2',
+        refName: 'ctgA',
+        start: 60,
+        end: 120,
+        name: 'Feature2',
+      })
+      const feature3 = new SimpleFeature({
+        uniqueId: 'test3',
+        refName: 'ctgA',
+        start: 100,
+        end: 180,
+        name: 'Feature3',
+      })
       const features = new Map([
         ['test1', feature1],
         ['test2', feature2],
@@ -423,10 +482,40 @@ describe('CanvasFeatureRenderer', () => {
             strand: 1,
             name: 'Transcript-1',
             subfeatures: [
-              { uniqueId: 'utr1', refName: 'ctgA', type: 'five_prime_UTR', start: 10, end: 30, strand: 1 },
-              { uniqueId: 'cds1', refName: 'ctgA', type: 'CDS', start: 30, end: 70, strand: 1, phase: 0 },
-              { uniqueId: 'cds2', refName: 'ctgA', type: 'CDS', start: 100, end: 150, strand: 1, phase: 0 },
-              { uniqueId: 'utr2', refName: 'ctgA', type: 'three_prime_UTR', start: 150, end: 180, strand: 1 },
+              {
+                uniqueId: 'utr1',
+                refName: 'ctgA',
+                type: 'five_prime_UTR',
+                start: 10,
+                end: 30,
+                strand: 1,
+              },
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 30,
+                end: 70,
+                strand: 1,
+                phase: 0,
+              },
+              {
+                uniqueId: 'cds2',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 100,
+                end: 150,
+                strand: 1,
+                phase: 0,
+              },
+              {
+                uniqueId: 'utr2',
+                refName: 'ctgA',
+                type: 'three_prime_UTR',
+                start: 150,
+                end: 180,
+                strand: 1,
+              },
             ],
           },
         ],
@@ -440,13 +529,27 @@ describe('CanvasFeatureRenderer', () => {
     })
 
     test('compact display mode', async () => {
-      const feature1 = new SimpleFeature({ uniqueId: 'test1', refName: 'ctgA', start: 20, end: 80, name: 'Feature1' })
-      const feature2 = new SimpleFeature({ uniqueId: 'test2', refName: 'ctgA', start: 60, end: 120, name: 'Feature2' })
+      const feature1 = new SimpleFeature({
+        uniqueId: 'test1',
+        refName: 'ctgA',
+        start: 20,
+        end: 80,
+        name: 'Feature1',
+      })
+      const feature2 = new SimpleFeature({
+        uniqueId: 'test2',
+        refName: 'ctgA',
+        start: 60,
+        end: 120,
+        name: 'Feature2',
+      })
       const features = new Map([
         ['test1', feature1],
         ['test2', feature2],
       ])
-      const args = createRenderArgs(features, snapshotRegion, { displayMode: 'compact' })
+      const args = createRenderArgs(features, snapshotRegion, {
+        displayMode: 'compact',
+      })
       const layoutRecords = doLayout(args, features)
       const canvas = renderToCanvas(args, features, layoutRecords, 50)
 
@@ -472,8 +575,24 @@ describe('CanvasFeatureRenderer', () => {
             strand: 1,
             name: 'Transcript-1',
             subfeatures: [
-              { uniqueId: 'cds1a', refName: 'ctgA', type: 'CDS', start: 20, end: 60, strand: 1, phase: 0 },
-              { uniqueId: 'cds1b', refName: 'ctgA', type: 'CDS', start: 120, end: 170, strand: 1, phase: 0 },
+              {
+                uniqueId: 'cds1a',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 20,
+                end: 60,
+                strand: 1,
+                phase: 0,
+              },
+              {
+                uniqueId: 'cds1b',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 120,
+                end: 170,
+                strand: 1,
+                phase: 0,
+              },
             ],
           },
           {
@@ -485,8 +604,24 @@ describe('CanvasFeatureRenderer', () => {
             strand: 1,
             name: 'Transcript-2',
             subfeatures: [
-              { uniqueId: 'cds2a', refName: 'ctgA', type: 'CDS', start: 30, end: 80, strand: 1, phase: 0 },
-              { uniqueId: 'cds2b', refName: 'ctgA', type: 'CDS', start: 100, end: 140, strand: 1, phase: 0 },
+              {
+                uniqueId: 'cds2a',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 30,
+                end: 80,
+                strand: 1,
+                phase: 0,
+              },
+              {
+                uniqueId: 'cds2b',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 100,
+                end: 140,
+                strand: 1,
+                phase: 0,
+              },
             ],
           },
         ],
@@ -518,7 +653,15 @@ describe('CanvasFeatureRenderer', () => {
             strand: 1,
             name: 'Short-Transcript',
             subfeatures: [
-              { uniqueId: 'cds1', refName: 'ctgA', type: 'CDS', start: 20, end: 90, strand: 1, phase: 0 },
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 20,
+                end: 90,
+                strand: 1,
+                phase: 0,
+              },
             ],
           },
           {
@@ -530,13 +673,23 @@ describe('CanvasFeatureRenderer', () => {
             strand: 1,
             name: 'Long-Transcript',
             subfeatures: [
-              { uniqueId: 'cds2', refName: 'ctgA', type: 'CDS', start: 30, end: 170, strand: 1, phase: 0 },
+              {
+                uniqueId: 'cds2',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 30,
+                end: 170,
+                strand: 1,
+                phase: 0,
+              },
             ],
           },
         ],
       })
       const features = new Map([['gene1', feature]])
-      const args = createRenderArgs(features, snapshotRegion, { geneGlyphMode: 'longest' })
+      const args = createRenderArgs(features, snapshotRegion, {
+        geneGlyphMode: 'longest',
+      })
       const layoutRecords = doLayout(args, features)
       const canvas = renderToCanvas(args, features, layoutRecords, 50)
 
@@ -561,13 +714,23 @@ describe('CanvasFeatureRenderer', () => {
             end: 180,
             strand: 1,
             subfeatures: [
-              { uniqueId: 'cds1', refName: 'ctgA', type: 'CDS', start: 40, end: 160, strand: 1, phase: 0 },
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 40,
+                end: 160,
+                strand: 1,
+                phase: 0,
+              },
             ],
           },
         ],
       })
       const features = new Map([['gene1', feature]])
-      const args = createRenderArgs(features, snapshotRegion, { displayMode: 'reducedRepresentation' })
+      const args = createRenderArgs(features, snapshotRegion, {
+        displayMode: 'reducedRepresentation',
+      })
       const layoutRecords = doLayout(args, features)
       const canvas = renderToCanvas(args, features, layoutRecords, 50)
 
@@ -593,7 +756,15 @@ describe('CanvasFeatureRenderer', () => {
             strand: 1,
             name: 'Forward-Transcript',
             subfeatures: [
-              { uniqueId: 'cds1', refName: 'ctgA', type: 'CDS', start: 20, end: 80, strand: 1, phase: 0 },
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 20,
+                end: 80,
+                strand: 1,
+                phase: 0,
+              },
             ],
           },
         ],
@@ -616,7 +787,15 @@ describe('CanvasFeatureRenderer', () => {
             strand: -1,
             name: 'Reverse-Transcript',
             subfeatures: [
-              { uniqueId: 'cds2', refName: 'ctgA', type: 'CDS', start: 120, end: 180, strand: -1, phase: 0 },
+              {
+                uniqueId: 'cds2',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 120,
+                end: 180,
+                strand: -1,
+                phase: 0,
+              },
             ],
           },
         ],
