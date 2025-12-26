@@ -266,7 +266,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: parentTrack.id,
+                      trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
@@ -295,7 +295,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: parentTrack.id,
+                      trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
