@@ -332,7 +332,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       serializableData,
     }
 
-    const maxTop = this.maxHeight - pHeight
+    // Allow features to start at any position up to maxHeight
+    // Features starting at maxHeight or beyond are filtered out, but features
+    // that start below maxHeight and extend past it are allowed
+    const maxTop = this.maxHeight
     // Use startingRow hint if provided (in pixels), convert to pitch rows
     let top =
       startingRow !== undefined
