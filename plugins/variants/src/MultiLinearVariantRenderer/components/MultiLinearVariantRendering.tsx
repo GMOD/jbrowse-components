@@ -27,6 +27,10 @@ interface MinimizedVariantRecord {
   length: number
 }
 
+interface MultiVariantDisplayModel {
+  setHoveredGenotype?: (genotype?: Record<string, unknown>) => void
+}
+
 const MultiVariantRendering = observer(function MultiVariantRendering(props: {
   regions: Region[]
   features: Map<string, Feature>
@@ -39,10 +43,7 @@ const MultiVariantRendering = observer(function MultiVariantRendering(props: {
   totalHeight: number
   flatbush: any
   items: Item[]
-  displayModel: any
-  onMouseLeave?: (event: React.MouseEvent) => void
-  onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
-  onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
+  displayModel: MultiVariantDisplayModel
 }) {
   const {
     flatbush,

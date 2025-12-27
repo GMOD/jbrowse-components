@@ -4,6 +4,10 @@ import WiggleRendering from './WiggleRendering'
 
 // these tests do very little, let's try to expand them at some point
 test('one', async () => {
+  const mockDisplayModel = {
+    setFeatureIdUnderMouse: jest.fn(),
+    selectFeatureById: jest.fn(),
+  }
   const { container, getByTestId } = render(
     <WiggleRendering
       width={500}
@@ -12,9 +16,7 @@ test('one', async () => {
       regions={[{ refName: 'chr1', start: 1, end: 3, assemblyName: 'volvox' }]}
       bpPerPx={3}
       blockKey="test"
-      onMouseMove={() => {}}
-      onMouseLeave={() => {}}
-      onFeatureClick={() => {}}
+      displayModel={mockDisplayModel as any}
     />,
   )
   const test = getByTestId('wiggle-rendering-test')

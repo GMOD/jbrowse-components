@@ -55,26 +55,9 @@ const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
     flatbush: ArrayBuffer
     items: ClickMapItem[]
   }
-  onMouseLeave?: (event: React.MouseEvent) => void
-  onMouseMove?: (
-    event: React.MouseEvent,
-    featureId?: string,
-    extra?: string,
-  ) => void
-  onFeatureClick?: (event: React.MouseEvent, featureId?: string) => void
 }) {
-  const {
-    regions,
-    features,
-    bpPerPx,
-    width,
-    height,
-    clickMap,
-    displayModel,
-    onMouseLeave,
-    onMouseMove,
-    onFeatureClick,
-  } = props
+  const { regions, features, bpPerPx, width, height, clickMap, displayModel } =
+    props
   const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
   const [isOverIndicator, setIsOverIndicator] = useState(false)
@@ -142,9 +125,13 @@ const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
         const label = getItemLabel(item, region.refName)
         setIsOverIndicator(!!item)
         if (label) {
-          onMouseMove?.(e, undefined, label)
+          displayModel?.setFeatureIdUnderMouse(undefined)
+          displayModel?.setMouseoverExtraInformation(label)
         } else {
-          onMouseMove?.(e, getFeatureUnderMouse(e.clientX)?.id())
+          displayModel?.setFeatureIdUnderMouse(
+            getFeatureUnderMouse(e.clientX)?.id(),
+          )
+          displayModel?.setMouseoverExtraInformation(undefined)
         }
       }}
       onClick={e => {
@@ -166,12 +153,16 @@ const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
             session.showWidget(featureWidget)
           }
         } else {
-          onFeatureClick?.(e, getFeatureUnderMouse(e.clientX)?.id())
+          const featureId = getFeatureUnderMouse(e.clientX)?.id()
+          if (featureId) {
+            displayModel?.selectFeatureById(featureId)
+          }
         }
       }}
-      onMouseLeave={e => {
+      onMouseLeave={() => {
         setIsOverIndicator(false)
-        onMouseLeave?.(e)
+        displayModel?.setFeatureIdUnderMouse(undefined)
+        displayModel?.setMouseoverExtraInformation(undefined)
       }}
       style={{
         overflow: 'visible',

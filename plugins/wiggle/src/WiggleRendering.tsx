@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
+import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 const WiggleRendering = observer(function WiggleRendering(props: {
   regions: Region[]
@@ -13,20 +14,9 @@ const WiggleRendering = observer(function WiggleRendering(props: {
   width: number
   height: number
   blockKey: string
-  onMouseLeave?: (event: React.MouseEvent) => void
-  onMouseMove?: (event: React.MouseEvent, arg?: string) => void
-  onFeatureClick?: (event: React.MouseEvent, arg?: string) => void
+  displayModel: BaseLinearDisplayModel
 }) {
-  const {
-    regions,
-    features,
-    bpPerPx,
-    width,
-    height,
-    onMouseLeave,
-    onMouseMove,
-    onFeatureClick,
-  } = props
+  const { regions, features, bpPerPx, width, height, displayModel } = props
   const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
 
@@ -56,9 +46,20 @@ const WiggleRendering = observer(function WiggleRendering(props: {
     <div
       ref={ref}
       data-testid="wiggle-rendering-test"
-      onMouseMove={e => onMouseMove?.(e, getFeatureUnderMouse(e.clientX)?.id())}
-      onClick={e => onFeatureClick?.(e, getFeatureUnderMouse(e.clientX)?.id())}
-      onMouseLeave={e => onMouseLeave?.(e)}
+      onMouseMove={e => {
+        displayModel.setFeatureIdUnderMouse(
+          getFeatureUnderMouse(e.clientX)?.id(),
+        )
+      }}
+      onClick={e => {
+        const featureId = getFeatureUnderMouse(e.clientX)?.id()
+        if (featureId) {
+          displayModel.selectFeatureById(featureId)
+        }
+      }}
+      onMouseLeave={() => {
+        displayModel.setFeatureIdUnderMouse(undefined)
+      }}
       style={{
         overflow: 'visible',
         position: 'relative',

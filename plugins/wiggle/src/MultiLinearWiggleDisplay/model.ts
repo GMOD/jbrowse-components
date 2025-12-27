@@ -407,12 +407,6 @@ export function stateModelFactory(
       renderingProps() {
         return {
           displayModel: self,
-          onMouseMove: (_: unknown, f: Feature) => {
-            self.setFeatureUnderMouse(f)
-          },
-          onMouseLeave: () => {
-            self.setFeatureUnderMouse(undefined)
-          },
         }
       },
 

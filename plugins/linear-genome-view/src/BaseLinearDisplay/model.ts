@@ -29,26 +29,7 @@ import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
 import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
-import { getTranscripts, hasExonsOrCDS } from './util'
-
-function findSubfeatureById(
-  feature: Feature,
-  targetId: string,
-): Feature | undefined {
-  const subfeatures = feature.get('subfeatures')
-  if (subfeatures) {
-    for (const sub of subfeatures) {
-      if (sub.id() === targetId) {
-        return sub
-      }
-      const found = findSubfeatureById(sub, targetId)
-      if (found) {
-        return found
-      }
-    }
-  }
-  return undefined
-}
+import { findSubfeatureById, getTranscripts, hasExonsOrCDS } from './util'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type { LegendItem } from './components/FloatingLegend'
@@ -218,6 +199,25 @@ function stateModelFactory() {
       get featureUnderMouse() {
         const feat = self.featureIdUnderMouse
         return feat ? this.features.get(feat) : undefined
+      },
+
+      /**
+       * #method
+       * Finds a feature by ID, checking both top-level features and
+       * subfeatures if parentFeatureId is provided
+       */
+      getFeatureById(featureId: string, parentFeatureId?: string) {
+        const feature = this.features.get(featureId)
+        if (feature) {
+          return feature
+        }
+        if (parentFeatureId) {
+          const parent = this.features.get(parentFeatureId)
+          if (parent) {
+            return findSubfeatureById(parent, featureId)
+          }
+        }
+        return undefined
       },
 
       /**
@@ -391,14 +391,7 @@ function stateModelFactory() {
        * Select a feature by ID, looking up in features map and subfeatures
        */
       selectFeatureById(featureId: string, parentFeatureId?: string) {
-        const { features } = self
-        let feature = features.get(featureId)
-        if (!feature && parentFeatureId) {
-          const parent = features.get(parentFeatureId)
-          if (parent) {
-            feature = findSubfeatureById(parent, featureId)
-          }
-        }
+        const feature = self.getFeatureById(featureId, parentFeatureId)
         if (feature) {
           this.selectFeature(feature)
         }
@@ -408,15 +401,7 @@ function stateModelFactory() {
        * Set context menu feature by ID, looking up in features map and subfeatures
        */
       setContextMenuFeatureById(featureId: string, parentFeatureId?: string) {
-        const { features } = self
-        let feature = features.get(featureId)
-        if (!feature && parentFeatureId) {
-          const parent = features.get(parentFeatureId)
-          if (parent) {
-            feature = findSubfeatureById(parent, featureId)
-          }
-        }
-        self.contextMenuFeature = feature
+        self.contextMenuFeature = self.getFeatureById(featureId, parentFeatureId)
       },
       /**
        * #action
@@ -530,12 +515,17 @@ function stateModelFactory() {
       renderingProps() {
         return {
           displayModel: self,
+          // @deprecated - renderers should call displayModel methods directly
+          // e.g. displayModel.setFeatureIdUnderMouse(featureId)
           onMouseMove(_: unknown, featureId?: string) {
             self.setFeatureIdUnderMouse(featureId)
           },
+          // @deprecated - renderers should call displayModel methods directly
+          // e.g. displayModel.setFeatureIdUnderMouse(undefined)
           onMouseLeave(_: unknown) {
             self.setFeatureIdUnderMouse(undefined)
           },
+          // @deprecated - renderers should call displayModel methods directly
           onContextMenu(_: unknown) {
             self.setContextMenuFeature(undefined)
             self.clearFeatureSelection()
