@@ -69,9 +69,23 @@ export interface Region {
   assemblyName?: string
 }
 
+/**
+ * Splits a region at a breakend position into two overlapping regions.
+ *
+ * JBrowse uses 0-based, half-open coordinates where `end` is exclusive.
+ * To ensure the breakend position is visible in both regions:
+ * - Left region: ends at pos + 1 (includes position pos)
+ * - Right region: starts at pos (includes position pos)
+ *
+ * This intentional overlap ensures features at the breakend are displayed.
+ */
 export function splitRegionAtPosition<
   T extends { refName: string; start: number; end: number },
->(region: T, pos: number, assemblyName?: string): [T & { assemblyName?: string }, T & { assemblyName?: string }] {
+>(
+  region: T,
+  pos: number,
+  assemblyName?: string,
+): [T & { assemblyName?: string }, T & { assemblyName?: string }] {
   return [
     {
       ...region,

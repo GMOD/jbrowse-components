@@ -61,7 +61,20 @@ test('opens a track with minimal adapter config via "Open from track"', async ()
 
   fireEvent.click(openButton)
 
-  await findByTestId('chord-vcf-0', {}, delay)
+  fireEvent.click(await findByTestId('chord-vcf-6', {}, delay))
 
-  expect(session.views.length).toBe(2)
+  await waitFor(() => {
+    expect(session.views.length).toBe(3)
+  }, delay)
+
+  const breakpointView = session.views[2] as { views: { showTrack: (t: string) => void }[] }
+  breakpointView.views[0]!.showTrack('volvox_sv_test_renamed')
+  breakpointView.views[1]!.showTrack('volvox_sv_test_renamed')
+
+  const container = await findByTestId(
+    'volvox_sv_test_renamed-loaded',
+    {},
+    delay,
+  )
+  expect(container.querySelectorAll('path').length).toBe(3)
 }, 60000)
