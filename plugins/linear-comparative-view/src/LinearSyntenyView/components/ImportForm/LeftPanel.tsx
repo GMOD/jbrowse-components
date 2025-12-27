@@ -32,7 +32,7 @@ const useStyles = makeStyles()(theme => ({
 
 function rowNeedsConfiguration(model: LinearSyntenyViewModel, idx: number) {
   const selection = model.importFormSyntenyTrackSelections[idx]
-  if (!selection || selection.type === 'none') {
+  if (!selection) {
     return true
   }
   if (selection.type === 'preConfigured' && !selection.value) {
