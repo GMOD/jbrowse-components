@@ -110,7 +110,7 @@ test('plugin store admin - removes a custom plugin correctly', async () => {
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
-  await user.click(await findByTestId('removePlugin-SVGPlugin'))
+  await user.click(await findByTestId('removePlugin-CanvasPlugin'))
   await user.click(await findByText('Confirm'))
   await waitFor(() => {
     expect(reloadPluginManagerMock).toHaveBeenCalled()

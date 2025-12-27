@@ -39,7 +39,7 @@ function getAdapterInfo(adapter: Record<string, unknown>) {
     return undefined
   }
   const loc =
-    (adapter[entry.locationKey] as FileLocation) ??
+    (adapter[entry.locationKey] as FileLocation | undefined) ??
     (adapter as unknown as FileLocation)
   return { fileType: entry.fileType, loc }
 }

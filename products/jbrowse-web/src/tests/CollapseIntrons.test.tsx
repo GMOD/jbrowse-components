@@ -85,7 +85,7 @@ test('collapse introns dialog shows transcript table', async () => {
   await findAllByTestId(/prerendered_canvas.*done/, ...opts)
 
   // Find the floating label for EDEN and right-click it to open context menu
-  const edenLabel = await screen.findByTestId('floatingLabel-EDEN', ...opts)
+  const edenLabel = await screen.findByText('EDEN', ...opts)
   fireEvent.contextMenu(edenLabel)
 
   // Click on "Collapse introns" (waits for menu to appear)
