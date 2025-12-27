@@ -3,7 +3,7 @@ import { getSession, notEmpty } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
-import { Button, IconButton } from '@mui/material'
+import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model'
@@ -22,10 +22,24 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 30,
   },
+  synbuttonNeedsConfig: {
+    color: theme.palette.warning.main,
+  },
   bg: {
     background: theme.palette.divider,
   },
 }))
+
+function rowNeedsConfiguration(model: LinearSyntenyViewModel, idx: number) {
+  const selection = model.importFormSyntenyTrackSelections[idx]
+  if (!selection || selection.type === 'none') {
+    return true
+  }
+  if (selection.type === 'preConfigured' && !selection.value) {
+    return true
+  }
+  return false
+}
 
 const AssemblyRows = observer(function AssemblyRows({
   selectedRow,
@@ -75,18 +89,23 @@ const AssemblyRows = observer(function AssemblyRows({
         session={session}
       />
       {idx !== selectedAssemblyNames.length - 1 ? (
-        <IconButton
-          data-testid="synbutton"
-          className={cx(
-            classes.synbutton,
-            idx === selectedRow ? classes.bg : undefined,
-          )}
-          onClick={() => {
-            setSelectedRow(idx)
-          }}
-        >
-          <ArrowForwardIosIcon />
-        </IconButton>
+        <Tooltip title="Click to configure synteny track for this row pair">
+          <IconButton
+            data-testid="synbutton"
+            className={cx(
+              classes.synbutton,
+              idx === selectedRow ? classes.bg : undefined,
+              rowNeedsConfiguration(model, idx)
+                ? classes.synbuttonNeedsConfig
+                : undefined,
+            )}
+            onClick={() => {
+              setSelectedRow(idx)
+            }}
+          >
+            <ArrowForwardIosIcon />
+          </IconButton>
+        </Tooltip>
       ) : null}
     </div>
   ))
@@ -110,6 +129,10 @@ const LeftPanel = observer(function LeftPanel({
   onLaunch: () => void
 }) {
   const { classes } = useStyles()
+  const numRowPairs = selectedAssemblyNames.length - 1
+  const canLaunch = !Array.from({ length: numRowPairs }, (_, i) => i).some(i =>
+    rowNeedsConfiguration(model, i),
+  )
 
   return (
     <>
@@ -140,6 +163,7 @@ const LeftPanel = observer(function LeftPanel({
         </Button>
         <Button
           className={classes.button}
+          disabled={!canLaunch}
           onClick={onLaunch}
           variant="contained"
           color="primary"
