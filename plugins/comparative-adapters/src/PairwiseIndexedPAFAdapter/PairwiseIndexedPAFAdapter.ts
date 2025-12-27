@@ -3,12 +3,9 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import SyntenyFeature from '../SyntenyFeature'
-import { flipCigar, parsePAFLine, swapIndelCigar } from '../util'
-
-const { parseCigar } = MismatchParser
+import { parsePAFLine } from '../util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -99,9 +96,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             const { extra, strand } = r
             const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
 
-            // Strip 'q'/'t' prefix from names in the indexed format
+            // Strip 'q'/'t' prefix from first column only (tname has no prefix)
             const qname = r.qname.slice(1)
-            const tname = r.tname.slice(1)
+            const tname = r.tname
 
             let start: number
             let end: number
@@ -126,14 +123,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               mateEnd = r.qend
             }
 
-            let CIGAR = extra.cg
-            if (extra.cg) {
-              if (flip && strand === -1) {
-                CIGAR = flipCigar(parseCigar(extra.cg)).join('')
-              } else if (flip) {
-                CIGAR = swapIndelCigar(extra.cg)
-              }
-            }
+            // PIF format already has pre-computed CIGARs for each perspective
+            const CIGAR = extra.cg
 
             observer.next(
               new SyntenyFeature({
