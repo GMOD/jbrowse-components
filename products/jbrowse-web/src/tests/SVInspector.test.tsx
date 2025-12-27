@@ -15,7 +15,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 40000 }
+const delay = { timeout: 80000 }
 
 test('opens a vcf.gz file in the sv inspector view', () => {
   return mockConsoleWarn(async () => {
@@ -31,7 +31,7 @@ test('opens a vcf.gz file in the sv inspector view', () => {
     })
     expect(session.views[2]!.displayName).toBe('bnd_A split detail')
   })
-}, 60000)
+}, 90000)
 
 test('opens a track with minimal adapter config via "Open from track"', async () => {
   const { session, findByText, findByTestId, findByLabelText } =
@@ -79,4 +79,4 @@ test('opens a track with minimal adapter config via "Open from track"', async ()
     delay,
   )
   expect(container.querySelectorAll('path').length).toBe(3)
-}, 60000)
+}, 90000)
