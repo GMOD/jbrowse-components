@@ -204,7 +204,7 @@ export function drawBezierBox(
   mid: number,
 ) {
   const len1 = Math.abs(x1 - x2)
-  const len2 = Math.abs(x1 - x2)
+  const len2 = Math.abs(x3 - x4)
 
   // heuristic to not draw hourglass inversions with bezier curves when they
   // are thin and far apart because it results in areas that are not drawn well

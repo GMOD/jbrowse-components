@@ -89,6 +89,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   //
   // uses a reaction to say "we know the positions don't change in any relevant
   // way unless bpPerPx changes or displayedRegions changes"
+  //
+  // Cache parsed CIGARs by feature ID to avoid re-parsing on every pan/zoom
+  const cigarCache = new Map<string, string[]>()
+  let lastFeatures: typeof self.features = undefined
+
   addDisposer(
     self,
     reaction(
@@ -110,7 +115,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             ),
         }
       },
-      ({ initialized }) => {
+      ({ initialized, features }) => {
         if (!initialized) {
           return
         }
@@ -126,22 +131,30 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }))
 
         const map = [] as FeatPos[]
-        const feats = self.features || []
+        const feats = features || []
+
+        // Clear cache when features array changes
+        if (features !== lastFeatures) {
+          cigarCache.clear()
+          lastFeatures = features
+        }
 
         for (const f of feats) {
           const mate = f.get('mate')
+          const strand = f.get('strand')
           let f1s = f.get('start')
           let f1e = f.get('end')
           const f2s = mate.start
           const f2e = mate.end
 
-          if (f.get('strand') === -1) {
+          if (strand === -1) {
             ;[f1e, f1s] = [f1s, f1e]
           }
-          const a1 = assemblyManager.get(f.get('assemblyName'))
-          const a2 = assemblyManager.get(mate.assemblyName)
+          const assemblyName = f.get('assemblyName')
           const r1 = f.get('refName')
           const r2 = mate.refName
+          const a1 = assemblyManager.get(assemblyName)
+          const a2 = assemblyManager.get(mate.assemblyName)
           const ref1 = a1?.getCanonicalRefName(r1) || r1
           const ref2 = a2?.getCanonicalRefName(r2) || r2
           const v1 = viewSnaps[level]!
@@ -160,14 +173,22 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             continue
           }
 
-          const cigar = f.get('CIGAR') as string | undefined
+          // Cache parsed CIGAR to avoid re-parsing on pan/zoom
+          const fid = f.id()
+          let parsedCigar = cigarCache.get(fid)
+          if (!parsedCigar) {
+            const cigar = f.get('CIGAR') as string | undefined
+            parsedCigar = MismatchParser.parseCigar(cigar)
+            cigarCache.set(fid, parsedCigar)
+          }
+
           map.push({
             p11,
             p12,
             p21,
             p22,
             f,
-            cigar: MismatchParser.parseCigar(cigar),
+            cigar: parsedCigar,
           })
         }
 
