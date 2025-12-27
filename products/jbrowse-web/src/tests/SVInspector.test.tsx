@@ -78,7 +78,7 @@ test('opens a track with minimal adapter config via "Open from track"', async ()
     {},
     delay,
   )
-  waitFor(() => {
+  await waitFor(() => {
     expect(container.querySelectorAll('path').length).toBe(3)
   }, delay)
 }, 90000)

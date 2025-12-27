@@ -41,9 +41,16 @@ function processFeatureData(children: any[], feature: SimpleFeatureSerialized) {
   // Filter duplicate entries in cds and exon lists Duplicate entries may be
   // rare but were seen in Gencode v36 track NCList (produces broken protein
   // translations if included)
-  const cds = filterSuccessiveElementsWithSameStartAndEndCoord(
-    children.filter(sub => sub.type?.toLowerCase() === 'cds'),
-  )
+  const featureType = feature.type?.toLowerCase()
+  const isMatureProteinRegion = featureType === 'mature_protein_region_of_cds'
+  const cds = isMatureProteinRegion
+    ? [{ start: 0, end: feature.end - feature.start, type: 'CDS' }]
+    : filterSuccessiveElementsWithSameStartAndEndCoord(
+        children.filter(sub => {
+          const type = sub.type?.toLowerCase()
+          return type === 'cds' || type === 'mature_protein_region_of_cds'
+        }),
+      )
   const exons = filterSuccessiveElementsWithSameStartAndEndCoord(
     children.filter(sub => sub.type === 'exon'),
   )

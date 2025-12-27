@@ -179,7 +179,12 @@ const PileupRendering = observer(function PileupRendering(props: {
               session.showWidget(featureWidget)
             }
           } else if (featureIdUnderMouse) {
-            displayModel.selectFeatureById(featureIdUnderMouse)
+            displayModel
+              .selectFeatureById(featureIdUnderMouse)
+              .catch((e: unknown) => {
+                console.error(e)
+                getSession(displayModel).notifyError(`${e}`, e)
+              })
           }
         }
       }}
@@ -192,7 +197,12 @@ const PileupRendering = observer(function PileupRendering(props: {
             item: itemUnderMouse,
           })
         } else if (featureIdUnderMouse) {
-          displayModel.setContextMenuFeatureById(featureIdUnderMouse)
+          displayModel
+            .setContextMenuFeatureById(featureIdUnderMouse)
+            .catch((e: unknown) => {
+              console.error(e)
+              getSession(displayModel).notifyError(`${e}`, e)
+            })
         } else {
           displayModel.setContextMenuFeature(undefined)
           displayModel.clearFeatureSelection()

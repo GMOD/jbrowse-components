@@ -408,6 +408,7 @@ export function SharedLinearPileupDisplayMixin(
                   icon: MenuOpenIcon,
                   onClick: () => {
                     self.clearFeatureSelection()
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.selectFeature(feat)
                   },
                 },
@@ -473,6 +474,7 @@ export function SharedLinearPileupDisplayMixin(
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
                   if (isAlive(self) && feature) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.selectFeature(new SimpleFeature(feature))
                   }
                 }

@@ -52,13 +52,13 @@ function sortByPosition<T extends { feature: Feature } | Feature>(items: T[]) {
   return [...items].sort((a, b) => {
     const aFeat = getFeature(a)
     const bFeat = getFeature(b)
-    const aStart = aFeat.get('start') as number
-    const bStart = bFeat.get('start') as number
+    const aStart = aFeat.get('start')
+    const bStart = bFeat.get('start')
     if (aStart !== bStart) {
       return aStart - bStart
     }
-    const aEnd = aFeat.get('end') as number
-    const bEnd = bFeat.get('end') as number
+    const aEnd = aFeat.get('end')
+    const bEnd = bFeat.get('end')
     return bEnd - aEnd
   })
 }

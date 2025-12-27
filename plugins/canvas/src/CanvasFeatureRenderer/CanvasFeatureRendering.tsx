@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -239,11 +240,12 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
           if (item) {
             // Pass the top-level feature ID for RPC lookup since nested
             // subfeature parents may not be in the layout cache
-            displayModel.selectFeatureById(
-              featureId,
-              parentFeatureId,
-              item.featureId,
-            )
+            displayModel
+              .selectFeatureById(featureId, parentFeatureId, item.featureId)
+              .catch((e: unknown) => {
+                console.error(e)
+                getSession(displayModel).notifyError(`${e}`, e)
+              })
           } else {
             displayModel.clearFeatureSelection()
           }
@@ -261,11 +263,16 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
             offsetY,
           )
           if (item) {
-            displayModel.setContextMenuFeatureById(
-              featureId,
-              parentFeatureId,
-              item.featureId,
-            )
+            displayModel
+              .setContextMenuFeatureById(
+                featureId,
+                parentFeatureId,
+                item.featureId,
+              )
+              .catch((e: unknown) => {
+                console.error(e)
+                getSession(displayModel).notifyError(`${e}`, e)
+              })
           } else {
             onContextMenu?.(event)
           }

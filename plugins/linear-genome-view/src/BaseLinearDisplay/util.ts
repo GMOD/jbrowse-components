@@ -1,7 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import type { Feature } from '@jbrowse/core/util'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+import type { Feature } from '@jbrowse/core/util'
 
 /**
  * Fetch a feature by ID via RPC from the renderer's layout cache.
