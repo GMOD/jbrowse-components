@@ -412,6 +412,12 @@ function stateModelFactory() {
         // Fall back to RPC for canvas renderer which doesn't serialize features
         const session = getSession(self)
         const { rpcManager } = session
+        // Use topLevelFeatureId for RPC lookup, but only if we're looking for
+        // a subfeature (featureId !== topLevelFeatureId)
+        const rpcParentId =
+          topLevelFeatureId && topLevelFeatureId !== featureId
+            ? topLevelFeatureId
+            : parentFeatureId
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
@@ -421,7 +427,7 @@ function stateModelFactory() {
               trackId: getContainingTrack(self).id,
               rendererType: self.rendererTypeName,
               featureId,
-              parentFeatureId: topLevelFeatureId || parentFeatureId,
+              parentFeatureId: rpcParentId,
             })
             if (f && isAlive(self)) {
               this.selectFeature(f)
@@ -453,6 +459,12 @@ function stateModelFactory() {
         // Fall back to RPC for canvas renderer which doesn't serialize features
         const session = getSession(self)
         const { rpcManager } = session
+        // Use topLevelFeatureId for RPC lookup, but only if we're looking for
+        // a subfeature (featureId !== topLevelFeatureId)
+        const rpcParentId =
+          topLevelFeatureId && topLevelFeatureId !== featureId
+            ? topLevelFeatureId
+            : parentFeatureId
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
@@ -462,7 +474,7 @@ function stateModelFactory() {
               trackId: getContainingTrack(self).id,
               rendererType: self.rendererTypeName,
               featureId,
-              parentFeatureId: topLevelFeatureId || parentFeatureId,
+              parentFeatureId: rpcParentId,
             })
             if (f && isAlive(self)) {
               self.contextMenuFeature = f
