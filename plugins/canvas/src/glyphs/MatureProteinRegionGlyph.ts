@@ -6,9 +6,11 @@
  * Common in viral genomes like enteroviruses where a single polyprotein
  * is processed into multiple functional proteins (VP0, VP1, VP2, etc.)
  */
+import { readConfObject } from '@jbrowse/core/configuration'
 import { GlyphType } from '@jbrowse/core/pluggableElementTypes'
 import { measureText } from '@jbrowse/core/util'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   GlyphFeatureLayout,
   GlyphRenderContext,
@@ -121,6 +123,7 @@ function drawMatureProteinBox(
   color: string,
   tierTop: number,
   tierHeight: number,
+  subfeatureLabels: string,
 ) {
   const { x: left, width, feature } = childLayout
 
@@ -128,9 +131,13 @@ function drawMatureProteinBox(
     return
   }
 
+  const hasLabelsBelow = subfeatureLabels === 'below'
   const padding = 1
   const boxTop = tierTop + padding
-  const boxHeight = tierHeight - padding * 2
+  // For 'below' labels, use half the tier height for the box
+  const boxHeight = hasLabelsBelow
+    ? Math.floor(tierHeight / 2) - padding
+    : tierHeight - padding * 2
 
   context.fillStyle = color
   context.fillRect(left, boxTop, width, boxHeight)
@@ -139,9 +146,8 @@ function drawMatureProteinBox(
   context.lineWidth = 1
   context.strokeRect(left, boxTop, width, boxHeight)
 
-  if (width >= MIN_WIDTH_FOR_LABEL) {
+  if (subfeatureLabels !== 'none' && width >= MIN_WIDTH_FOR_LABEL) {
     const label = getFeatureLabel(feature)
-    console.log('Label debug:', { width, label, boxHeight })
     if (label) {
       const maxLabelWidth = width - 4
       const truncatedLabel = truncateLabel(label, maxLabelWidth)
@@ -149,10 +155,18 @@ function drawMatureProteinBox(
         context.font = `${LABEL_FONT_SIZE}px sans-serif`
         context.fillStyle = 'black'
         context.textAlign = 'left'
-        context.textBaseline = 'middle'
-        const textX = left + 2
-        const textY = boxTop + boxHeight / 2
-        context.fillText(truncatedLabel, textX, textY)
+
+        if (subfeatureLabels === 'below') {
+          context.textBaseline = 'top'
+          const textX = left + 2
+          const textY = boxTop + boxHeight + padding + 1
+          context.fillText(truncatedLabel, textX, textY)
+        } else {
+          context.textBaseline = 'middle'
+          const textX = left + 2
+          const textY = boxTop + boxHeight / 2
+          context.fillText(truncatedLabel, textX, textY)
+        }
       }
     }
   }
@@ -208,8 +222,10 @@ function drawArrow(ctx: GlyphRenderContext) {
 }
 
 function draw(ctx: GlyphRenderContext) {
-  const { ctx: context, featureLayout, canvasWidth } = ctx
+  const { ctx: context, featureLayout, canvasWidth, config } = ctx
   const { y: top, height } = featureLayout
+
+  const subfeatureLabels = readConfObject(config, 'subfeatureLabels') as string
 
   const tieredChildren = assignTiers(featureLayout.children)
   const numTiers = Math.max(1, ...tieredChildren.map(t => t.tier + 1))
@@ -218,7 +234,7 @@ function draw(ctx: GlyphRenderContext) {
   for (const { layout, tier, colorIndex } of tieredChildren) {
     const color = matureProteinColors[colorIndex % matureProteinColors.length]!
     const tierTop = top + tier * tierHeight
-    drawMatureProteinBox(context, layout, canvasWidth, color, tierTop, tierHeight)
+    drawMatureProteinBox(context, layout, canvasWidth, color, tierTop, tierHeight, subfeatureLabels)
   }
 
   drawArrow(ctx)
@@ -269,11 +285,13 @@ function getSubfeatureMouseover(feature: Feature) {
   return parts.length > 0 ? parts.join(' ') : undefined
 }
 
-function getHeightMultiplier(feature: Feature) {
+function getHeightMultiplier(feature: Feature, config: AnyConfigurationModel) {
   const children = getChildFeatures(feature)
   if (children.length === 0) {
     return 1
   }
+
+  const subfeatureLabels = readConfObject(config, 'subfeatureLabels') as string
 
   const sorted = [...children].sort((a, b) => {
     const aStart = a.get('start') as number
@@ -313,7 +331,10 @@ function getHeightMultiplier(feature: Feature) {
     lastAssignedTier = assignedTier
   }
 
-  return Math.max(1, tierEnds.length)
+  const numTiers = Math.max(1, tierEnds.length)
+  // For 'below' labels, each tier needs roughly double height to fit box + label
+  const perTierMultiplier = subfeatureLabels === 'below' ? 2 : 1
+  return numTiers * perTierMultiplier
 }
 
 export default new GlyphType({
