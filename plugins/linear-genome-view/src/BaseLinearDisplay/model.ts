@@ -10,7 +10,6 @@ import {
   isFeature,
   isSelectionContainer,
   isSessionModelWithWidgets,
-  SimpleFeature,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
@@ -30,7 +29,12 @@ import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
 import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
-import { findSubfeatureById, getTranscripts, hasExonsOrCDS } from './util'
+import {
+  fetchFeatureByIdRpc,
+  findSubfeatureById,
+  getTranscripts,
+  hasExonsOrCDS,
+} from './util'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type { LegendItem } from './components/FloatingLegend'
@@ -391,24 +395,40 @@ function stateModelFactory() {
        * #action
        * Select a feature by ID, looking up in features map and subfeatures.
        * Falls back to RPC if not found locally (e.g., for canvas renderer).
+       * @param featureId - The ID of the feature to select
+       * @param parentFeatureId - The immediate parent's ID for subfeature lookup
+       * @param topLevelFeatureId - The top-level feature ID for RPC lookup
        */
-      selectFeatureById(featureId: string, parentFeatureId?: string) {
+      selectFeatureById(
+        featureId: string,
+        parentFeatureId?: string,
+        topLevelFeatureId?: string,
+      ) {
         const feature = self.getFeatureById(featureId, parentFeatureId)
         if (feature) {
           this.selectFeature(feature)
           return
         }
         // Fall back to RPC for canvas renderer which doesn't serialize features
+        const session = getSession(self)
+        const { rpcManager } = session
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const f = await this.fetchFeatureById(featureId, parentFeatureId)
+            const f = await fetchFeatureByIdRpc({
+              rpcManager,
+              sessionId: getRpcSessionId(self),
+              trackId: getContainingTrack(self).id,
+              rendererType: self.rendererTypeName,
+              featureId,
+              parentFeatureId: topLevelFeatureId || parentFeatureId,
+            })
             if (f && isAlive(self)) {
               this.selectFeature(f)
             }
           } catch (e) {
             console.error(e)
-            getSession(self).notifyError(`${e}`, e)
+            session.notifyError(`${e}`, e)
           }
         })()
       },
@@ -416,67 +436,42 @@ function stateModelFactory() {
        * #action
        * Set context menu feature by ID, looking up in features map and subfeatures.
        * Falls back to RPC if not found locally (e.g., for canvas renderer).
+       * @param featureId - The ID of the feature to set
+       * @param parentFeatureId - The immediate parent's ID for subfeature lookup
+       * @param topLevelFeatureId - The top-level feature ID for RPC lookup
        */
-      setContextMenuFeatureById(featureId: string, parentFeatureId?: string) {
+      setContextMenuFeatureById(
+        featureId: string,
+        parentFeatureId?: string,
+        topLevelFeatureId?: string,
+      ) {
         const feature = self.getFeatureById(featureId, parentFeatureId)
         if (feature) {
           self.contextMenuFeature = feature
           return
         }
         // Fall back to RPC for canvas renderer which doesn't serialize features
+        const session = getSession(self)
+        const { rpcManager } = session
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const f = await this.fetchFeatureById(featureId, parentFeatureId)
+            const f = await fetchFeatureByIdRpc({
+              rpcManager,
+              sessionId: getRpcSessionId(self),
+              trackId: getContainingTrack(self).id,
+              rendererType: self.rendererTypeName,
+              featureId,
+              parentFeatureId: topLevelFeatureId || parentFeatureId,
+            })
             if (f && isAlive(self)) {
               self.contextMenuFeature = f
             }
           } catch (e) {
             console.error(e)
-            getSession(self).notifyError(`${e}`, e)
+            session.notifyError(`${e}`, e)
           }
         })()
-      },
-      /**
-       * #action
-       * Fetch a feature by ID via RPC. For subfeatures, fetches the parent
-       * and finds the subfeature within it.
-       */
-      async fetchFeatureById(
-        featureId: string,
-        parentFeatureId?: string,
-      ): Promise<Feature | undefined> {
-        const session = getSession(self)
-        const { rpcManager } = session
-        const sessionId = getRpcSessionId(self)
-        const track = getContainingTrack(self)
-        const rendererType = self.rendererTypeName
-
-        // Fetch the feature (or parent if looking for subfeature)
-        const lookupId = parentFeatureId || featureId
-        const { feature: featureData } = (await rpcManager.call(
-          sessionId,
-          'CoreGetFeatureDetails',
-          {
-            featureId: lookupId,
-            sessionId,
-            trackInstanceId: track.id,
-            rendererType,
-          },
-        )) as { feature: Record<string, unknown> | undefined }
-
-        if (!featureData) {
-          return undefined
-        }
-
-        const feature = new SimpleFeature(featureData)
-
-        // If looking for a subfeature, find it within the parent
-        if (parentFeatureId) {
-          return findSubfeatureById(feature, featureId)
-        }
-
-        return feature
       },
       /**
        * #action

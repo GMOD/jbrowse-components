@@ -308,6 +308,53 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.subfeatureInfos[0]!.type).toBe('mRNA')
     })
 
+    test('subfeatureInfos has all required fields for click handling', async () => {
+      const feature = new SimpleFeature({
+        uniqueId: 'gene1',
+        refName: 'ctgA',
+        type: 'gene',
+        start: 100,
+        end: 500,
+        name: 'TestGene',
+        subfeatures: [
+          {
+            uniqueId: 'mrna1',
+            refName: 'ctgA',
+            type: 'mRNA',
+            start: 100,
+            end: 500,
+            name: 'TestTranscript',
+            subfeatures: [
+              {
+                uniqueId: 'cds1',
+                refName: 'ctgA',
+                type: 'CDS',
+                start: 150,
+                end: 450,
+                phase: 0,
+              },
+            ],
+          },
+        ],
+      })
+      const features = new Map([['gene1', feature]])
+      const args = createRenderArgs(features)
+      const layoutRecords = doLayout(args, features)
+      const result = await renderAndGetResult(args, features, layoutRecords)
+
+      expect(result.subfeatureInfos).toHaveLength(1)
+      const subInfo = result.subfeatureInfos[0]!
+
+      // These fields are required for click handling to work
+      expect(subInfo.featureId).toBe('mrna1')
+      expect(subInfo.parentFeatureId).toBe('gene1')
+      expect(subInfo.type).toBe('mRNA')
+      expect(typeof subInfo.leftPx).toBe('number')
+      expect(typeof subInfo.topPx).toBe('number')
+      expect(typeof subInfo.rightPx).toBe('number')
+      expect(typeof subInfo.bottomPx).toBe('number')
+    })
+
     test('subfeature floating labels include parentFeatureId and tooltip for mouseover', async () => {
       const feature = new SimpleFeature({
         uniqueId: 'gene1',

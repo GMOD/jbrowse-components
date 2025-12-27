@@ -237,7 +237,13 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
             offsetY,
           )
           if (item) {
-            displayModel.selectFeatureById(featureId, parentFeatureId)
+            // Pass the top-level feature ID for RPC lookup since nested
+            // subfeature parents may not be in the layout cache
+            displayModel.selectFeatureById(
+              featureId,
+              parentFeatureId,
+              item.featureId,
+            )
           } else {
             displayModel.clearFeatureSelection()
           }
@@ -255,7 +261,11 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
             offsetY,
           )
           if (item) {
-            displayModel.setContextMenuFeatureById(featureId, parentFeatureId)
+            displayModel.setContextMenuFeatureById(
+              featureId,
+              parentFeatureId,
+              item.featureId,
+            )
           } else {
             onContextMenu?.(event)
           }
