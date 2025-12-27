@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 
 import {
   LEFT,
+  buildBreakpointPath,
   createMouseHandlers,
   getTestId,
   getYOffset,
@@ -94,20 +95,9 @@ const Translocations = observer(function Translocations({
               yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
               yOffset
 
-            const path = [
-              'M',
-              x1 - 20 * str(myDirection) * (reversed1 ? -1 : 1),
-              y1,
-              'L',
-              x1,
-              y1,
-              'L',
-              x2,
-              y2,
-              'L',
-              x2 - 20 * str(mateDirection) * (reversed2 ? -1 : 1),
-              y2,
-            ].join(' ')
+            const x1Tick = x1 - 20 * str(myDirection) * (reversed1 ? -1 : 1)
+            const x2Tick = x2 - 20 * str(mateDirection) * (reversed2 ? -1 : 1)
+            const path = buildBreakpointPath(x1, y1, x2, y2, x1Tick, x2Tick)
 
             const mouseHandlers = createMouseHandlers(
               id,

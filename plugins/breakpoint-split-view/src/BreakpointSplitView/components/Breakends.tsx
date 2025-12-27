@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 
 import {
   LEFT,
+  buildBreakpointPath,
   createMouseHandlers,
   getCanonicalRefs,
   getTestId,
@@ -79,26 +80,17 @@ const Breakends = observer(function Breakends({
           if (!relevantAlt) {
             console.warn('the relevant ALT allele was not found, cannot render')
           } else {
-            const path = [
-              'M',
+            const x1Tick =
               x1 -
-                20 *
-                  (relevantAlt.Join === 'left' ? -1 : 1) *
-                  (reversed1 ? -1 : 1),
-              y1,
-              'L',
-              x1,
-              y1,
-              'L',
-              x2,
-              y2,
-              'L',
+              20 *
+                (relevantAlt.Join === 'left' ? -1 : 1) *
+                (reversed1 ? -1 : 1)
+            const x2Tick =
               x2 -
-                20 *
-                  (relevantAlt.MateDirection === 'left' ? 1 : -1) *
-                  (reversed2 ? -1 : 1),
-              y2,
-            ].join(' ')
+              20 *
+                (relevantAlt.MateDirection === 'left' ? 1 : -1) *
+                (reversed2 ? -1 : 1)
+            const path = buildBreakpointPath(x1, y1, x2, y2, x1Tick, x2Tick)
 
             const mouseHandlers = createMouseHandlers(
               id,
