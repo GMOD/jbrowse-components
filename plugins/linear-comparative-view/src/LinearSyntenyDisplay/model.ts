@@ -2,6 +2,7 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
+import { SyntenyWebGLRenderer } from './drawSyntenyWebGL'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -76,6 +77,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * mouseover shading
        */
       mouseoverCanvas: null as HTMLCanvasElement | null,
+
+      /**
+       * #volatile
+       * WebGL renderer instance for GPU-accelerated rendering
+       */
+      webglRenderer: null as SyntenyWebGLRenderer | null,
+
+      /**
+       * #volatile
+       * Whether WebGL was successfully initialized
+       */
+      webglInitialized: false,
 
       /**
        * #volatile
@@ -179,6 +192,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setColorBy(value: string) {
         self.colorBy = value
+      },
+      /**
+       * #action
+       */
+      setWebGLRenderer(renderer: SyntenyWebGLRenderer | null) {
+        self.webglRenderer = renderer
+      },
+      /**
+       * #action
+       */
+      setWebGLInitialized(value: boolean) {
+        self.webglInitialized = value
       },
     }))
 

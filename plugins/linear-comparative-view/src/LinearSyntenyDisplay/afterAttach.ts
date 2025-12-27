@@ -9,6 +9,7 @@ import {
   drawMouseoverClickMap,
   drawRef,
 } from './drawSynteny'
+import { createColorFunction } from './drawSyntenyWebGL'
 
 import type { LinearSyntenyDisplayModel } from './model'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
@@ -30,6 +31,10 @@ interface FeatPos {
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
+  // Track when geometry needs rebuilding (features, colors, curves changed)
+  let lastGeometryKey = ''
+  let fastPathCount = 0
+
   addDisposer(
     self,
     autorun(
@@ -42,17 +47,62 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
+        // Access alpha and colorBy to make autorun react to changes
+        const { alpha, colorBy, featPositions, level } = self
+        const height = self.height
+        const width = view.width
+
+        // Check if WebGL mode is enabled
+        if (view.useWebGL && self.webglRenderer && self.webglInitialized) {
+          // Create a key to track when geometry needs rebuilding
+          // Only rebuild when features, colors, alpha, or curves change
+          const geometryKey = `${featPositions.length}-${colorBy}-${alpha}-${view.drawCurves}`
+
+          if (geometryKey !== lastGeometryKey) {
+            // Geometry changed - rebuild (this is the expensive operation)
+            const colorFn = createColorFunction(colorBy)
+            self.webglRenderer.resize(width, height)
+            self.webglRenderer.buildGeometry(
+              featPositions,
+              level,
+              alpha,
+              colorFn,
+              view.drawCurves,
+            )
+            lastGeometryKey = geometryKey
+            if (fastPathCount > 0) {
+              console.log(
+                '%c[Synteny] WebGL had',
+                'color: green',
+                fastPathCount,
+                'fast renders before this rebuild',
+              )
+            }
+            fastPathCount = 0
+            console.log(
+              '%c[Synteny] WebGL SLOW PATH - geometry rebuilt:',
+              'color: orange; font-weight: bold',
+              featPositions.length,
+              'features',
+            )
+          } else {
+            fastPathCount++
+          }
+
+          // Render with current offsets - this is fast, just updates uniforms
+          const offsets = view.views.map(v => v.offsetPx)
+          self.webglRenderer.render(offsets[level]!, offsets[level + 1]!, height)
+          self.webglRenderer.renderPicking(offsets[level]!, offsets[level + 1]!, height)
+          return
+        }
+
+        // Fall back to Canvas 2D rendering
         const ctx1 = self.mainCanvas?.getContext('2d')
         const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
         if (!ctx1 || !ctx3) {
           return
         }
 
-        // Access alpha to make autorun react to alpha changes
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { alpha } = self
-        const height = self.height
-        const width = view.width
         ctx1.clearRect(0, 0, width, height)
 
         // Draw main canvas immediately
