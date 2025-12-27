@@ -100,16 +100,8 @@ const Chord = observer(function Chord({
         onClick={evt => {
           onClick(feature, startBlock.region, endBlock.region, evt)
         }}
-        onMouseOver={() => {
-          if (!selected) {
-            setHovered(true)
-          }
-        }}
-        onMouseOut={() => {
-          if (!selected) {
-            setHovered(false)
-          }
-        }}
+        onMouseOver={() => setHovered(true)}
+        onMouseOut={() => setHovered(false)}
       />
     )
   }
