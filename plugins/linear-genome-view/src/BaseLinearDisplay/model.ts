@@ -31,6 +31,25 @@ import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
 import { getTranscripts, hasExonsOrCDS } from './util'
 
+function findSubfeatureById(
+  feature: Feature,
+  targetId: string,
+): Feature | undefined {
+  const subfeatures = feature.get('subfeatures')
+  if (subfeatures) {
+    for (const sub of subfeatures) {
+      if (sub.id() === targetId) {
+        return sub
+      }
+      const found = findSubfeatureById(sub, targetId)
+      if (found) {
+        return found
+      }
+    }
+  }
+  return undefined
+}
+
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type { LegendItem } from './components/FloatingLegend'
 import type { ExportSvgDisplayOptions, LayoutRecord } from './types'
@@ -89,6 +108,10 @@ function stateModelFactory() {
        * #volatile
        */
       featureIdUnderMouse: undefined as undefined | string,
+      /**
+       * #volatile
+       */
+      subfeatureIdUnderMouse: undefined as undefined | string,
       /**
        * #volatile
        */
@@ -353,7 +376,46 @@ function stateModelFactory() {
       /**
        * #action
        */
+      setSubfeatureIdUnderMouse(subfeatureId?: string) {
+        self.subfeatureIdUnderMouse = subfeatureId
+      },
+
+      /**
+       * #action
+       */
       setContextMenuFeature(feature?: Feature) {
+        self.contextMenuFeature = feature
+      },
+      /**
+       * #action
+       * Select a feature by ID, looking up in features map and subfeatures
+       */
+      selectFeatureById(featureId: string, parentFeatureId?: string) {
+        const { features } = self
+        let feature = features.get(featureId)
+        if (!feature && parentFeatureId) {
+          const parent = features.get(parentFeatureId)
+          if (parent) {
+            feature = findSubfeatureById(parent, featureId)
+          }
+        }
+        if (feature) {
+          this.selectFeature(feature)
+        }
+      },
+      /**
+       * #action
+       * Set context menu feature by ID, looking up in features map and subfeatures
+       */
+      setContextMenuFeatureById(featureId: string, parentFeatureId?: string) {
+        const { features } = self
+        let feature = features.get(featureId)
+        if (!feature && parentFeatureId) {
+          const parent = features.get(parentFeatureId)
+          if (parent) {
+            feature = findSubfeatureById(parent, featureId)
+          }
+        }
         self.contextMenuFeature = feature
       },
       /**
@@ -466,40 +528,13 @@ function stateModelFactory() {
        * only, never sent to the worker. includes displayModel and callbacks
        */
       renderingProps() {
-        const getFeatureId = (featureId?: string) =>
-          featureId || self.featureIdUnderMouse
-
         return {
           displayModel: self,
-          onFeatureClick(_: unknown, featureId?: string) {
-            const f = getFeatureId(featureId)
-            if (f) {
-              const feature = self.features.get(f)
-              if (feature) {
-                self.selectFeature(feature)
-              }
-            } else {
-              self.clearFeatureSelection()
-            }
-          },
-          onClick() {
-            self.clearFeatureSelection()
-          },
-          onFeatureContextMenu(_: unknown, featureId?: string) {
-            const f = getFeatureId(featureId)
-            if (f) {
-              self.setContextMenuFeature(self.features.get(f))
-            } else {
-              self.clearFeatureSelection()
-            }
-          },
-          onMouseMove(_: unknown, featureId?: string, extra?: string) {
+          onMouseMove(_: unknown, featureId?: string) {
             self.setFeatureIdUnderMouse(featureId)
-            self.setMouseoverExtraInformation(extra)
           },
           onMouseLeave(_: unknown) {
             self.setFeatureIdUnderMouse(undefined)
-            self.setMouseoverExtraInformation(undefined)
           },
           onContextMenu(_: unknown) {
             self.setContextMenuFeature(undefined)

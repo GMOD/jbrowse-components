@@ -67,8 +67,14 @@ export function addSubfeaturesToLayoutAndFlatbush({
     )
 
     subfeatureInfos.push({
+      featureId: childFeature.id(),
+      parentFeatureId: featureLayout.feature.id(),
       displayLabel,
       type: childType,
+      leftPx: childLeftPx,
+      topPx,
+      rightPx: childRightPx,
+      bottomPx,
     })
 
     const floatingLabels: FloatingLabelData[] = []

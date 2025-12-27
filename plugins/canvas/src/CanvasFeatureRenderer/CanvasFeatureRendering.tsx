@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -19,15 +19,9 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
   flatbush: ArrayBufferLike
   subfeatureInfos?: SubfeatureInfo[]
   subfeatureFlatbush?: ArrayBufferLike
-  onMouseMove?: (e: React.MouseEvent, featId?: string, extra?: string) => void
-  onMouseLeave?: (e: React.MouseEvent) => void
-  onFeatureClick?: (e: React.MouseEvent, featId: string) => void
-  onFeatureContextMenu?: (e: React.MouseEvent, featId: string) => void
   onContextMenu?: (e: React.MouseEvent) => void
 }) {
   const {
-    onMouseMove,
-    onMouseLeave,
     displayModel,
     width,
     height,
@@ -35,8 +29,6 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
     items,
     subfeatureFlatbush,
     subfeatureInfos = [],
-    onFeatureClick,
-    onFeatureContextMenu,
     onContextMenu,
   } = props
   const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
@@ -54,40 +46,118 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
     return map
   }, [items])
 
-  const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
-    displayModel
+  const {
+    selectedFeatureId,
+    featureIdUnderMouse,
+    subfeatureIdUnderMouse,
+    contextMenuFeature,
+  } = displayModel
 
   const ref = useRef<HTMLDivElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const mouseDownPos = useRef<{ x: number; y: number } | null>(null)
-  // For selected features, look up in items map (O(1) instead of O(n))
-  const selectedItem = selectedFeatureId
-    ? itemsById.get(selectedFeatureId)
-    : undefined
 
-  // For highlighted features, use the items map for O(1) lookup
+  // Create lookup map for subfeatureInfos by featureId
+  const subfeatureInfosById = useMemo(() => {
+    const map = new Map<string, SubfeatureInfo>()
+    for (const info of subfeatureInfos) {
+      map.set(info.featureId, info)
+    }
+    return map
+  }, [subfeatureInfos])
+
+  // Hit detection helper - finds feature/subfeature at given coordinates
+  const getFeatureAtPosition = useCallback(
+    (offsetX: number, offsetY: number) => {
+      const search = flatbush2.search(
+        offsetX,
+        offsetY,
+        offsetX + 1,
+        offsetY + 1,
+      )
+      const item = search.length ? items[search[0]!] : undefined
+      if (!item) {
+        return {
+          item: undefined,
+          featureId: undefined,
+          parentFeatureId: undefined,
+        }
+      }
+
+      let featureId = item.featureId
+      let parentFeatureId: string | undefined
+
+      if (subfeatureFlatbush2 && subfeatureInfos.length) {
+        const subSearch = subfeatureFlatbush2.search(
+          offsetX,
+          offsetY,
+          offsetX + 1,
+          offsetY + 1,
+        )
+        if (subSearch.length) {
+          const info = subfeatureInfos[subSearch[0]!]
+          if (info) {
+            featureId = info.featureId
+            parentFeatureId = info.parentFeatureId
+          }
+        }
+      }
+      return { item, featureId, parentFeatureId }
+    },
+    [flatbush2, items, subfeatureFlatbush2, subfeatureInfos],
+  )
+
+  // For selected features, check subfeatures first, then items
+  const selectedSubfeature = selectedFeatureId
+    ? subfeatureInfosById.get(selectedFeatureId)
+    : undefined
+  const selectedItem =
+    selectedFeatureId && !selectedSubfeature
+      ? itemsById.get(selectedFeatureId)
+      : undefined
+
+  // For highlighted features, use subfeature bounds if available
   const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
-  const highlightedItem = highlightedFeature
-    ? itemsById.get(highlightedFeature)
+  const highlightedSubfeature = subfeatureIdUnderMouse
+    ? subfeatureInfosById.get(subfeatureIdUnderMouse)
     : undefined
+  const highlightedItem =
+    highlightedFeature && !highlightedSubfeature
+      ? itemsById.get(highlightedFeature)
+      : undefined
 
-  // Convert FlatbushItem to display rectangle
-  function itemToRect(item: FlatbushItem, offset = 2) {
-    // Use the stored pixel coordinates which include label extent
-    const rectTop = Math.round(item.topPx)
-    const rectHeight = Math.round(item.bottomPx - item.topPx)
+  // Convert pixel bounds to display rectangle
+  function boundsToRect(
+    bounds: {
+      leftPx: number
+      topPx: number
+      rightPx: number
+      bottomPx: number
+    },
+    offset = 2,
+  ) {
+    const rectTop = Math.round(bounds.topPx)
+    const rectHeight = Math.round(bounds.bottomPx - bounds.topPx)
     return {
-      left: item.leftPx - offset,
+      left: bounds.leftPx - offset,
       top: rectTop - offset,
-      width: item.rightPx - item.leftPx,
+      width: bounds.rightPx - bounds.leftPx,
       height: rectHeight,
     }
   }
 
-  const selected = selectedItem ? itemToRect(selectedItem) : undefined
-  const highlight = highlightedItem ? itemToRect(highlightedItem, 0) : undefined
+  const selected = selectedSubfeature
+    ? boundsToRect(selectedSubfeature)
+    : selectedItem
+      ? boundsToRect(selectedItem)
+      : undefined
+  const highlight = highlightedSubfeature
+    ? boundsToRect(highlightedSubfeature, 0)
+    : highlightedItem
+      ? boundsToRect(highlightedItem, 0)
+      : undefined
 
   const canvasWidth = Math.ceil(width)
   return (
@@ -95,7 +165,11 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
       ref={ref}
       data-testid="canvas-feature-overlay"
       style={{ position: 'relative', width: canvasWidth, height }}
-      onMouseLeave={onMouseLeave}
+      onMouseLeave={() => {
+        displayModel.setFeatureIdUnderMouse(undefined)
+        displayModel.setSubfeatureIdUnderMouse(undefined)
+        displayModel.setMouseoverExtraInformation(undefined)
+      }}
       onMouseDown={(event: React.MouseEvent) => {
         setMouseIsDown(true)
         setMovedDuringLastMouseDown(false)
@@ -130,47 +204,61 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
           }
         }
 
-        // Search primary flatbush for feature to highlight
-        const search = flatbush2.search(
+        const { item, featureId, parentFeatureId } = getFeatureAtPosition(
           offsetX,
           offsetY,
-          offsetX + 1,
-          offsetY + 1,
         )
-        const item = search.length ? items[search[0]!] : undefined
-        const featureId = item?.featureId
 
-        // Use pre-built tooltip, optionally append subfeature info
+        // Build tooltip with subfeature info
         let extra = item?.tooltip
-        if (extra && subfeatureFlatbush2 && subfeatureInfos.length) {
-          const subfeatureSearch = subfeatureFlatbush2.search(
-            offsetX,
-            offsetY,
-            offsetX + 1,
-            offsetY + 1,
-          )
-          if (subfeatureSearch.length) {
-            const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
-            if (subfeatureInfo) {
-              const { displayLabel, type } = subfeatureInfo
-              extra += `<br/>${displayLabel ? `${displayLabel} (${type})` : type}`
-            }
+        if (extra && parentFeatureId) {
+          const subInfo = subfeatureInfosById.get(featureId)
+          if (subInfo) {
+            const { displayLabel, type } = subInfo
+            extra += `<br/>${displayLabel ? `${displayLabel} (${type})` : type}`
           }
         }
-        onMouseMove?.(event, featureId, extra)
+
+        displayModel.setFeatureIdUnderMouse(item?.featureId)
+        displayModel.setSubfeatureIdUnderMouse(
+          parentFeatureId ? featureId : undefined,
+        )
+        displayModel.setMouseoverExtraInformation(extra)
       }}
       onClick={event => {
-        if (
-          !movedDuringLastMouseDown &&
-          onFeatureClick &&
-          featureIdUnderMouse
-        ) {
-          onFeatureClick(event, featureIdUnderMouse)
+        if (!movedDuringLastMouseDown && ref.current) {
+          const rect = ref.current.getBoundingClientRect()
+          const scrollT = ref.current.scrollTop
+          const offsetX = event.clientX - rect.left
+          const offsetY = event.clientY - rect.top + scrollT
+
+          const { item, featureId, parentFeatureId } = getFeatureAtPosition(
+            offsetX,
+            offsetY,
+          )
+          if (item) {
+            displayModel.selectFeatureById(featureId, parentFeatureId)
+          } else {
+            displayModel.clearFeatureSelection()
+          }
         }
       }}
       onContextMenu={event => {
-        if (onFeatureContextMenu && featureIdUnderMouse) {
-          onFeatureContextMenu(event, featureIdUnderMouse)
+        if (ref.current) {
+          const rect = ref.current.getBoundingClientRect()
+          const scrollT = ref.current.scrollTop
+          const offsetX = event.clientX - rect.left
+          const offsetY = event.clientY - rect.top + scrollT
+
+          const { item, featureId, parentFeatureId } = getFeatureAtPosition(
+            offsetX,
+            offsetY,
+          )
+          if (item) {
+            displayModel.setContextMenuFeatureById(featureId, parentFeatureId)
+          } else {
+            onContextMenu?.(event)
+          }
         } else {
           onContextMenu?.(event)
         }
