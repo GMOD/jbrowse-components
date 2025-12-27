@@ -1,20 +1,15 @@
-import jexl from 'jexl'
+import { Jexl } from '@jbrowse/jexl'
 
 import type { Feature } from './simpleFeature'
 
-type JexlWithAddFunction = typeof jexl & {
-  addFunction(name: string, func: (...args: unknown[]) => unknown): void
-}
-type JexlNonBuildable = Omit<typeof jexl, 'Jexl'>
-
-export default function JexlF(/* config?: any*/): JexlNonBuildable {
-  const j = new jexl.Jexl() as JexlWithAddFunction
+export default function JexlF(/* config?: any*/) {
+  const j = new Jexl()
   // someday will make sure all of configs callbacks are added in, including
   // ones passed in
 
   // below are core functions
   j.addFunction('get', (feature: Feature, data: string) => feature.get(data))
-  j.addFunction('parent', (feature: Feature) => feature.parent())
+  j.addFunction('parent', (feature: Feature) => feature.parent?.())
 
   j.addFunction('id', (feature: Feature) => feature.id())
 

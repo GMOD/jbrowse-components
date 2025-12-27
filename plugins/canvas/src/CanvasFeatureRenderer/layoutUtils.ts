@@ -23,23 +23,23 @@ export function adjustChildPositions(
 export function addSubfeaturesToLayoutAndFlatbush({
   layout,
   featureLayout,
-  parentFeatureId,
   subfeatureCoords,
   subfeatureInfos,
   config,
   subfeatureLabels,
   transcriptTypes,
   labelColor,
+  parentTooltip,
 }: {
   layout: BaseLayout<unknown>
   featureLayout: FeatureLayout
-  parentFeatureId: string
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
   config: AnyConfigurationModel
   subfeatureLabels: string
   transcriptTypes: string[]
   labelColor: string
+  parentTooltip: string
 }) {
   const showSubfeatureLabels = subfeatureLabels !== 'none'
   for (const child of featureLayout.children) {
@@ -48,7 +48,6 @@ export function addSubfeaturesToLayoutAndFlatbush({
     const isTranscript = transcriptTypes.includes(childType)
 
     if (!isTranscript) {
-      addNestedSubfeaturesToLayout({ layout, featureLayout: child })
       continue
     }
 
@@ -61,25 +60,26 @@ export function addSubfeaturesToLayoutAndFlatbush({
     const bottomPx = child.y + child.totalLayoutHeight
     subfeatureCoords.push(childLeftPx, topPx, childRightPx, bottomPx)
 
-    const transcriptName = String(
-      readConfObject(config, ['labels', 'name'], { feature: childFeature }) ||
-        '',
+    const displayLabel = String(
+      readConfObject(config, 'subfeatureMouseover', {
+        feature: childFeature,
+      }) || '',
     )
 
     subfeatureInfos.push({
-      subfeatureId: childFeature.id(),
-      parentFeatureId,
+      displayLabel,
       type: childType,
-      name: transcriptName,
     })
 
     const floatingLabels: FloatingLabelData[] = []
     if (showSubfeatureLabels) {
       const label = createTranscriptFloatingLabel({
-        transcriptName,
+        displayLabel,
         featureHeight: child.height,
         subfeatureLabels,
         color: labelColor,
+        parentFeatureId: featureLayout.feature.id(),
+        tooltip: parentTooltip,
       })
       if (label) {
         floatingLabels.push(label)
@@ -100,42 +100,11 @@ export function addSubfeaturesToLayoutAndFlatbush({
               totalFeatureHeight: child.height,
               totalLayoutWidth: child.totalLayoutWidth,
               actualTopPx: topPx,
+              featureWidth: child.width,
+              leftPadding: 0,
             }
           : {}),
       },
     )
-
-    if (child.children.length > 0) {
-      addNestedSubfeaturesToLayout({ layout, featureLayout: child })
-    }
-  }
-}
-
-export function addNestedSubfeaturesToLayout({
-  layout,
-  featureLayout,
-}: {
-  layout: BaseLayout<unknown>
-  featureLayout: FeatureLayout
-}) {
-  for (const child of featureLayout.children) {
-    const childFeature = child.feature
-    const childStart = childFeature.get('start')
-    const childEnd = childFeature.get('end')
-
-    layout.addRect(
-      childFeature.id(),
-      childStart,
-      childEnd,
-      child.height,
-      childFeature,
-      {
-        refName: childFeature.get('refName'),
-      },
-    )
-
-    if (child.children.length > 0) {
-      addNestedSubfeaturesToLayout({ layout, featureLayout: child })
-    }
   }
 }

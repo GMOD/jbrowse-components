@@ -29,7 +29,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Controls = observer(function ({ model }: { model: CircularViewModel }) {
+const Controls = observer(function Controls({
+  model,
+}: {
+  model: CircularViewModel
+}) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   return (

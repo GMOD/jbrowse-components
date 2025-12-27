@@ -1,6 +1,6 @@
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
-import { computeLayouts } from './computeLayouts'
+import { layoutFeatures } from './layoutFeatures'
 import { makeImageData } from './makeImageData'
 import { fetchPeptideData } from './peptideUtils'
 import { createRenderConfigContext } from './renderConfig'
@@ -8,7 +8,7 @@ import { createRenderConfigContext } from './renderConfig'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature } from '@jbrowse/core/util'
-import type { GranularRectLayout } from '@jbrowse/core/util/layouts'
+import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
 /**
  * Main rendering pipeline for CanvasFeatureRenderer
@@ -27,7 +27,7 @@ export async function doAll({
   pluginManager,
 }: {
   pluginManager: PluginManager
-  layout: GranularRectLayout<unknown>
+  layout: BaseLayout<unknown>
   features: Map<string, Feature>
   renderProps: RenderArgsDeserialized
 }) {
@@ -43,7 +43,7 @@ export async function doAll({
     'Computing feature layout',
     statusCallback,
     async () => {
-      return computeLayouts({
+      return layoutFeatures({
         features,
         bpPerPx,
         region,
@@ -77,6 +77,7 @@ export async function doAll({
           displayMode: configContext.displayMode,
           peptideDataMap,
           colorByCDS: (renderProps as any).colorByCDS,
+          pluginManager,
         },
         configContext,
       }),

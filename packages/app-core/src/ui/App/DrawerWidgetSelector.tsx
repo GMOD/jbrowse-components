@@ -27,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const DrawerWidgetSelector = observer(function ({
+const DrawerWidgetSelector = observer(function DrawerWidgetSelector({
   session,
 }: {
   session: SessionWithFocusedViewAndDrawerWidgets

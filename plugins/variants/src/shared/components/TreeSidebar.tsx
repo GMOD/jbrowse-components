@@ -42,13 +42,18 @@ function getDescendantNames(node: ClusterHierarchyNode): string[] {
  * The sticky container keeps the tree visible when the parent scrolls.
  * The tree drawing uses translate(-scrollTop) to show the correct portion.
  */
-const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
+const TreeSidebar = observer(function TreeSidebar({
+  model,
+}: {
+  model: TreeSidebarModel
+}) {
   const { classes } = useStyles()
   const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
   const [nodeIndex, setNodeIndex] = useState<Flatbush | null>(null)
   const [nodeData, setNodeData] = useState<ClusterHierarchyNode[]>([])
 
-  const { hierarchy, treeAreaWidth, height, scrollTop, showTree } = model
+  const { hierarchy, treeAreaWidth, height, scrollTop, showTree, sources } =
+    model
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const treeCanvasRef = useCallback(
@@ -129,7 +134,7 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
     model.setHoveredTreeNode(undefined)
   }, [model])
 
-  if (!hierarchy || !showTree) {
+  if (!hierarchy || !showTree || !sources?.length) {
     return null
   }
 
@@ -137,14 +142,22 @@ const TreeSidebar = observer(function ({ model }: { model: TreeSidebarModel }) {
     <>
       {/* Sticky container keeps tree visible when parent scrolls */}
       <div
-        style={{ position: 'sticky', top: 0, left: 0, height: 0, zIndex: 100 }}
+        style={{
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          height: 0,
+          zIndex: 100,
+        }}
       >
         {/* Tree structure canvas - draws lines via treeDrawingAutorun */}
         <canvas
           ref={treeCanvasRef}
-          width={treeAreaWidth}
-          height={height}
+          width={treeAreaWidth * 2}
+          height={height * 2}
           style={{
+            width: treeAreaWidth,
+            height,
             position: 'absolute',
             top: 0,
             left: 0,

@@ -68,7 +68,7 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
         ) : (
           <span>
             {obj2?.name || source}{' '}
-            {summary
+            {summary && feature.get('minScore') != null
               ? `min:${toP(feature.get('minScore'))} avg:${toP(
                   feature.get('score'),
                 )} max:${toP(feature.get('maxScore'))}`
@@ -82,7 +82,7 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
 
 type Coord = [number, number]
 
-const WiggleTooltip = observer(function (props: {
+const WiggleTooltip = observer(function WiggleTooltip(props: {
   model: { featureUnderMouse: Feature; sources: Source[]; rowHeight: number }
   height: number
   offsetMouseCoord: Coord

@@ -1,12 +1,18 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { featureSpanPx } from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { fillRectCtx, getScale } from './util'
 
 import type { ScaleOpts } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type {
+  LastStopTokenCheck,
+  StopToken,
+} from '@jbrowse/core/util/stopToken'
 
 const fudgeFactor = 0.3
 const clipHeight = 2
@@ -22,12 +28,26 @@ export function drawDensity(
     ticks: { values: number[] }
     displayCrossHatches: boolean
     config: AnyConfigurationModel
-    stopToken?: string
+    stopToken?: StopToken
+    lastCheck?: LastStopTokenCheck
   },
 ) {
-  const { stopToken, features, regions, bpPerPx, scaleOpts, height, config } =
-    props
+  const {
+    features,
+    regions,
+    bpPerPx,
+    scaleOpts,
+    height,
+    config,
+    stopToken,
+    lastCheck = createStopTokenChecker(stopToken),
+  } = props
   const region = regions[0]!
+  const regionStart = region.start
+  const regionEnd = region.end
+  const regionReversed = region.reversed
+  const inverseBpPerPx = 1 / bpPerPx
+
   const pivot = readConfObject(config, 'bicolorPivot')
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const negColor = readConfObject(config, 'negColor')
@@ -54,13 +74,16 @@ export function drawDensity(
   let prevLeftPx = Number.NEGATIVE_INFINITY
   let hasClipping = false
   const reducedFeatures = []
-  let start = performance.now()
   for (const feature of features.values()) {
-    if (performance.now() - start > 400) {
-      checkStopToken(stopToken)
-      start = performance.now()
-    }
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    checkStopToken2(lastCheck)
+    const fStart = feature.get('start')
+    const fEnd = feature.get('end')
+    const leftPx = regionReversed
+      ? (regionEnd - fEnd) * inverseBpPerPx
+      : (fStart - regionStart) * inverseBpPerPx
+    const rightPx = regionReversed
+      ? (regionEnd - fStart) * inverseBpPerPx
+      : (fEnd - regionStart) * inverseBpPerPx
 
     // create reduced features, avoiding multiple features per px
     if (Math.floor(leftPx) !== Math.floor(prevLeftPx) || rightPx - leftPx > 1) {
@@ -85,11 +108,15 @@ export function drawDensity(
   if (hasClipping) {
     ctx.fillStyle = clipColor
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      checkStopToken2(lastCheck)
+      const fStart = feature.get('start')
+      const fEnd = feature.get('end')
+      const leftPx = regionReversed
+        ? (regionEnd - fEnd) * inverseBpPerPx
+        : (fStart - regionStart) * inverseBpPerPx
+      const rightPx = regionReversed
+        ? (regionEnd - fStart) * inverseBpPerPx
+        : (fEnd - regionStart) * inverseBpPerPx
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score')
       if (score > niceMax) {

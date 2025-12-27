@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -18,7 +19,9 @@ interface BaseDisplayModel {
   drawn: boolean
   loading: boolean
   lastDrawnOffsetPx?: number
-  message?: string
+  statusMessage?: string
+  showLegend?: boolean
+  legendItems?: () => { color?: string; label: string }[]
 }
 
 const useStyles = makeStyles()({
@@ -42,7 +45,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const BaseDisplayComponent = observer(function ({
+const BaseDisplayComponent = observer(function BaseDisplayComponent({
   model,
   children,
 }: {
@@ -61,33 +64,48 @@ const BaseDisplayComponent = observer(function ({
   )
 })
 
-const DataDisplay = observer(function ({
+const DataDisplay = observer(function DataDisplay({
   model,
   children,
 }: {
   model: BaseDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading } = model
+  const { drawn, loading, showLegend, legendItems } = model
   const view = getContainingView(model) as LinearGenomeViewModel
-  const left = (model.lastDrawnOffsetPx || 0) - view.offsetPx
+  const calculatedLeft = (model.lastDrawnOffsetPx || 0) - view.offsetPx
+  const styleLeft = calculatedLeft
+  const items = legendItems?.() ?? []
+
   return (
     // this data-testid is located here because changing props on the canvas
     // itself is very sensitive to triggering ref invalidation
     <div data-testid={`drawn-${drawn}`}>
-      <div style={{ position: 'absolute', left }}>{children}</div>
-      {left !== 0 || loading ? <LoadingBar model={model} /> : null}
+      <div
+        style={{
+          position: 'absolute',
+          left: styleLeft,
+        }}
+      >
+        {children}
+      </div>
+      {showLegend && items.length > 0 ? <FloatingLegend items={items} /> : null}
+      {calculatedLeft !== 0 || loading ? <LoadingBar model={model} /> : null}
     </div>
   )
 })
 
-const LoadingBar = observer(function ({ model }: { model: BaseDisplayModel }) {
+const LoadingBar = observer(function LoadingBar({
+  model,
+}: {
+  model: BaseDisplayModel
+}) {
   const { classes } = useStyles()
-  const { message } = model
+  const { statusMessage } = model
   return (
     <div className={classes.loading}>
       <div className={classes.loadingMessage}>
-        <LoadingEllipses message={message} />
+        <LoadingEllipses message={statusMessage} />
       </div>
     </div>
   )

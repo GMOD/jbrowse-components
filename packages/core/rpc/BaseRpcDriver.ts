@@ -71,24 +71,34 @@ export default abstract class BaseRpcDriver {
 
   // filter the given object and just remove any non-cloneable things from it
   filterArgs<THING_TYPE>(thing: THING_TYPE, sessionId: string): THING_TYPE {
+    // Fast path for primitives (most common case)
+    if (thing === null || thing === undefined) {
+      return thing
+    }
+    const type = typeof thing
+    if (type === 'string' || type === 'number' || type === 'boolean') {
+      return thing
+    }
+    if (type !== 'object') {
+      // functions and other non-cloneables
+      return undefined as unknown as THING_TYPE
+    }
+
+    // Object cases
     if (Array.isArray(thing)) {
       return thing
         .filter(thing => isCloneable(thing))
         .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
-    } else if (typeof thing === 'object' && thing !== null) {
-      if (isStateTreeNode(thing) && !isAlive(thing)) {
-        throw new Error('dead state tree node passed to RPC call')
-      } else if (thing instanceof File) {
-        return thing
-      } else {
-        return Object.fromEntries(
-          Object.entries(thing)
-            .filter(e => isCloneable(e[1]))
-            .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
-        ) as THING_TYPE
-      }
-    } else {
+    } else if (isStateTreeNode(thing) && !isAlive(thing)) {
+      throw new Error('dead state tree node passed to RPC call')
+    } else if (thing instanceof File) {
       return thing
+    } else {
+      return Object.fromEntries(
+        Object.entries(thing)
+          .filter(e => isCloneable(e[1]))
+          .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
+      ) as THING_TYPE
     }
   }
 

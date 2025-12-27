@@ -7,7 +7,16 @@ import Translocations from './Translocations'
 
 import type { BreakpointViewModel } from '../model'
 
-const Overlay = observer(function (props: {
+// Routes to the appropriate overlay component based on track type:
+//
+// - AlignmentsTrack (BAM/CRAM): renders split read / paired-end connections
+//   using AlignmentConnections (curvy bezier arcs)
+//
+// - VariantTrack (VCF): renders structural variant connections using one of:
+//   - Translocations: for TRA type variants (uses INFO.CHR2, INFO.END)
+//   - PairedFeatures: for paired_feature type (e.g. BEDPE-style)
+//   - Breakends: for BND type variants (uses ALT field breakend notation)
+const Overlay = observer(function Overlay(props: {
   parentRef: React.RefObject<SVGSVGElement | null>
   model: BreakpointViewModel
   trackId: string
@@ -17,13 +26,11 @@ const Overlay = observer(function (props: {
   const tracks = model.getMatchedTracks(trackId)
   const type = tracks[0]?.type
 
-  // curvy line type arcs
   if (type === 'AlignmentsTrack') {
     return <AlignmentConnections {...props} />
   }
 
-  // translocation type arcs
-  else if (type === 'VariantTrack') {
+  if (type === 'VariantTrack') {
     return model.hasTranslocations(trackId) ? (
       <Translocations {...props} />
     ) : model.hasPairedFeatures(trackId) ? (
@@ -33,10 +40,7 @@ const Overlay = observer(function (props: {
     )
   }
 
-  // unknown
-  else {
-    return null
-  }
+  return null
 })
 
 export default Overlay

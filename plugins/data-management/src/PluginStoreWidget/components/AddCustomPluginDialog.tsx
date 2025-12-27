@@ -34,7 +34,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const AddCustomPluginDialog = observer(function ({
+const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
   onClose,
   model,
 }: {

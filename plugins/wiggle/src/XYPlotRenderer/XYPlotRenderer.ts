@@ -6,8 +6,7 @@ export default class XYPlotRenderer extends FeatureRendererType {
   supportsSVG = true
 
   async render(renderProps: RenderArgsDeserialized) {
-    const features = await this.getFeatures(renderProps)
-    const { renderXYPlot } = await import('./renderXYPlot')
-    return renderXYPlot(renderProps, features)
+    const { makeImageData } = await import('./makeImageData')
+    return makeImageData(renderProps, this.pluginManager)
   }
 }

@@ -26,6 +26,9 @@ export async function* indexGff3({
     quiet,
   })
 
+  const excludeSet = new Set(typesToExclude)
+  const encodedTrackId = encodeURIComponent(trackId)
+
   for await (const line of rl) {
     if (!line.trim()) {
       continue
@@ -36,22 +39,20 @@ export async function* indexGff3({
     }
 
     const [seq_id, , type, start, end, , , , col9] = line.split('\t')
-    const locStr = `${seq_id}:${start}..${end}`
 
-    if (!typesToExclude.includes(type!)) {
+    if (!excludeSet.has(type!)) {
       const col9attrs = parseAttributes(col9!, decodeURIComponentNoThrow)
       const attrs = attributesToIndex
         .map(attr => col9attrs[attr])
         .filter((f): f is string => !!f)
 
-      if (attrs.length) {
-        const record = JSON.stringify([
-          encodeURIComponent(locStr),
-          encodeURIComponent(trackId),
-          ...attrs.map(a => encodeURIComponent(a)),
-        ]).replaceAll(',', '|')
+      if (attrs.length > 0) {
+        const locStr = `${seq_id}:${start}..${end}`
+        const encodedAttrs = attrs.map(a => `"${encodeURIComponent(a)}"`)
+        const record = `["${encodeURIComponent(locStr)}"|"${encodedTrackId}"|${encodedAttrs.join('|')}]`
+        const uniqueAttrs = [...new Set(attrs)]
 
-        yield `${record} ${[...new Set(attrs)].join(' ')}\n`
+        yield `${record} ${uniqueAttrs.join(' ')}\n`
       }
     }
   }

@@ -12,7 +12,7 @@ import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/
 
 const ModalWidget = lazy(() => import('./ModalWidget'))
 
-const DrawerWidget = observer(function ({
+const DrawerWidget = observer(function DrawerWidget({
   session,
 }: {
   session: SessionWithFocusedViewAndDrawerWidgets

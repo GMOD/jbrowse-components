@@ -13,7 +13,7 @@ export const ColorSlot = (props: {
   }
   onChange: (arg: string) => void
 }) => {
-  const { value = '#000', label = '', TextFieldProps = {}, onChange } = props
+  const { value, label = '', TextFieldProps = {}, onChange } = props
   const [displayed, setDisplayed] = useState(false)
 
   return (
@@ -43,7 +43,7 @@ export const ColorSlot = (props: {
   )
 }
 
-const ColorEditor = observer(function (props: {
+const ColorEditor = observer(function ColorEditor(props: {
   slot: {
     name: string
     value: string

@@ -59,9 +59,7 @@ describe('cigarToMismatches2', () => {
   test('simple deletion', () => {
     const ops = parseCigar2('56M1D45M')
     const result = cigarToMismatches2(ops, seq)
-    expect(result).toEqual([
-      { start: 56, type: 'deletion', base: '*', length: 1 },
-    ])
+    expect(result).toEqual([{ start: 56, type: 'deletion', length: 1 }])
   })
 
   test('simple insertion', () => {
@@ -73,8 +71,8 @@ describe('cigarToMismatches2', () => {
       {
         start: 89,
         type: 'insertion',
+        insertlen: 1,
         insertedBases: 'T',
-        base: '1',
         length: 0,
       },
     ])
@@ -84,7 +82,6 @@ describe('cigarToMismatches2', () => {
     const ops = parseCigar2('50M100N50M')
     const result = cigarToMismatches2(ops, seq)
     expect(result).toContainEqual({
-      base: 'N',
       length: 100,
       start: 50,
       type: 'skip',
@@ -97,7 +94,6 @@ describe('cigarToMismatches2', () => {
 
     expect(result).toContainEqual({
       cliplen: 10,
-      base: 'S10',
       length: 1,
       start: 0,
       type: 'softclip',
@@ -105,7 +101,6 @@ describe('cigarToMismatches2', () => {
 
     expect(result).toContainEqual({
       cliplen: 10,
-      base: 'S10',
       length: 1,
       start: 90,
       type: 'softclip',

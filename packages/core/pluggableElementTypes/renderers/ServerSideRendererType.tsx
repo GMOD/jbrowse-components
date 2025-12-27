@@ -15,6 +15,7 @@ import type { ThemeOptions } from '@mui/material'
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
+  trackInstanceId: string
   stopToken?: string
   theme: ThemeOptions
   exportSVG?: {

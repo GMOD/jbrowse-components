@@ -23,26 +23,28 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
     .compose(
       BaseSessionModel(pluginManager),
       DrawerWidgetSessionMixin(pluginManager),
+      types.model({
+        /**
+         * #property
+         */
+        views: types.array(
+          pluginManager.pluggableMstType('view', 'stateModel'),
+        ),
+        /**
+         * #property
+         */
+        stickyViewHeaders: types.optional(types.boolean, () =>
+          localStorageGetBoolean('stickyViewHeaders', true),
+        ),
+        /**
+         * #property
+         * enables the dockview-based tabbed/tiled workspace layout
+         */
+        useWorkspaces: types.optional(types.boolean, () =>
+          localStorageGetBoolean('useWorkspaces', false),
+        ),
+      }),
     )
-    .props({
-      /**
-       * #property
-       */
-      views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
-      /**
-       * #property
-       */
-      stickyViewHeaders: types.optional(types.boolean, () =>
-        localStorageGetBoolean('stickyViewHeaders', true),
-      ),
-      /**
-       * #property
-       * enables the dockview-based tabbed/tiled workspace layout
-       */
-      useWorkspaces: types.optional(types.boolean, () =>
-        localStorageGetBoolean('useWorkspaces', false),
-      ),
-    })
     .actions(self => ({
       /**
        * #action
@@ -150,6 +152,21 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         )
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { stickyViewHeaders, useWorkspaces, ...rest } = snap as Omit<
+        typeof snap,
+        symbol
+      >
+      return {
+        ...rest,
+        ...(!stickyViewHeaders ? { stickyViewHeaders } : {}),
+        ...(useWorkspaces ? { useWorkspaces } : {}),
+      } as typeof snap
+    })
 }
 
 /** Session mixin MST type for a session that manages multiple views */

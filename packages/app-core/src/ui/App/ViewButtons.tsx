@@ -13,7 +13,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewButtons = observer(function ({
+const ViewButtons = observer(function ViewButtons({
   view,
   onClose,
   onMinimize,

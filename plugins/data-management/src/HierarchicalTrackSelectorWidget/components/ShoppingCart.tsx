@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
-const ShoppingCart = observer(function ({
+const ShoppingCart = observer(function ShoppingCart({
   model,
 }: {
   model: {
@@ -41,9 +41,9 @@ const ShoppingCart = observer(function ({
               {
                 label: 'Delete tracks',
                 onClick: () => {
-                  for (const s of selection) {
+                  for (const track of selection) {
                     // @ts-expect-error
-                    session.deleteTrackConf?.(s)
+                    session.deleteTrackConf?.(track)
                   }
                 },
               },

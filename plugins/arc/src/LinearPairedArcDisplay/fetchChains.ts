@@ -19,7 +19,7 @@ export interface ReducedFeature {
   pair_orientation: string
   next_ref?: string
   next_pos?: number
-  clipPos: number
+  clipLengthAtStartOfRead: number
   SA?: string
 }
 

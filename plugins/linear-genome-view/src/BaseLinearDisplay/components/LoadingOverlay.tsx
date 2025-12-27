@@ -1,5 +1,4 @@
-import { LoadingEllipses } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
   container: {
@@ -22,29 +21,47 @@ const useStyles = makeStyles()({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    opacity: 0,
   },
-  message: {
-    zIndex: 2,
-    pointerEvents: 'none',
+  visible: {
+    opacity: 1,
+  },
+  dots: {
+    fontSize: '0.8rem',
+    fontWeight: 300,
+    '&::after': {
+      display: 'inline-block',
+      content: '""',
+      width: '1em',
+      textAlign: 'left',
+      animation: `${keyframes`
+        0% { content: ''; }
+        25% { content: '.'; }
+        50% { content: '..'; }
+        75% { content: '...'; }
+      `} 1.2s infinite ease-in-out`,
+    },
   },
 })
 
 export default function LoadingOverlay({
-  message,
+  statusMessage,
   children,
 }: {
-  message?: string
+  statusMessage?: string
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
+  const isLoading = !!statusMessage
   return (
     <div className={classes.container}>
       {children}
-      <div className={classes.overlay} data-testid="loading-overlay">
-        <div className={classes.message}>
-          <LoadingEllipses message={message} />
-        </div>
-      </div>
+      <span
+        className={cx(classes.overlay, isLoading && classes.visible)}
+        data-testid={isLoading ? 'loading-overlay' : undefined}
+      >
+        <span className={classes.dots}>{statusMessage || 'Loading'}</span>
+      </span>
     </div>
   )
 }

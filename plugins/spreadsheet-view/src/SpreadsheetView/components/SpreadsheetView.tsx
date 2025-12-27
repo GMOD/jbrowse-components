@@ -8,7 +8,7 @@ import type { SpreadsheetViewModel } from '../SpreadsheetViewModel'
 
 const ImportWizard = lazy(() => import('./ImportWizard'))
 
-const SpreadsheetContainer = observer(function ({
+const SpreadsheetContainer = observer(function SpreadsheetContainer({
   model,
 }: {
   model: SpreadsheetViewModel

@@ -1,13 +1,21 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
 
-import { createPortal } from 'react-dom'
+import {
+  FloatingPortal,
+  offset,
+  useFloating,
+  useHover,
+  useInteractions,
+} from '@floating-ui/react'
+
+import type { CSSProperties, ReactElement, ReactNode } from 'react'
 
 interface TooltipProps {
-  title: React.ReactNode
-  children: React.ReactElement
+  title: ReactNode
+  children: ReactElement
 }
 
-const tooltipStyle: React.CSSProperties = {
+const tooltipStyle: CSSProperties = {
   position: 'fixed',
   zIndex: 10000,
   backgroundColor: 'rgba(97, 97, 97, 0.92)',
@@ -23,67 +31,17 @@ const tooltipStyle: React.CSSProperties = {
 }
 
 export default function Tooltip({ title, children }: TooltipProps) {
-  const [show, setShow] = useState(false)
-  const [coords, setCoords] = useState({ x: 0, y: 0 })
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [])
+  const { refs, floatingStyles, context } = useFloating({
+    open: isOpen,
+    onOpenChange: setIsOpen,
+    placement: 'bottom-start',
+    middleware: [offset(8)],
+  })
 
-  const handleMouseEnter = useCallback((e: React.MouseEvent) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    setCoords({ x: rect.left, y: rect.bottom + 8 })
-    timeoutRef.current = setTimeout(() => {
-      setShow(true)
-    }, 500)
-  }, [])
-
-  const handleMouseLeave = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-    setShow(false)
-  }, [])
-
-  const childProps = children.props as Record<string, unknown>
-  const existingOnMouseEnter = childProps.onMouseEnter as
-    | ((e: React.MouseEvent) => void)
-    | undefined
-  const existingOnMouseLeave = childProps.onMouseLeave as
-    | ((e: React.MouseEvent) => void)
-    | undefined
-
-  const onMouseEnter = useCallback(
-    (e: React.MouseEvent) => {
-      existingOnMouseEnter?.(e)
-      handleMouseEnter(e)
-    },
-    [existingOnMouseEnter, handleMouseEnter],
-  )
-
-  const onMouseLeave = useCallback(
-    (e: React.MouseEvent) => {
-      existingOnMouseLeave?.(e)
-      handleMouseLeave()
-    },
-    [existingOnMouseLeave, handleMouseLeave],
-  )
-
-  const clonedChild = useMemo(
-    () =>
-      title
-        ? React.cloneElement(children, { onMouseEnter, onMouseLeave } as Record<
-            string,
-            unknown
-          >)
-        : children,
-    [children, title, onMouseEnter, onMouseLeave],
-  )
+  const hover = useHover(context, { delay: { open: 500, close: 0 } })
+  const { getReferenceProps, getFloatingProps } = useInteractions([hover])
 
   if (!title) {
     return children
@@ -91,14 +49,20 @@ export default function Tooltip({ title, children }: TooltipProps) {
 
   return (
     <>
-      {clonedChild}
-      {show &&
-        createPortal(
-          <div style={{ ...tooltipStyle, left: coords.x, top: coords.y }}>
+      <span ref={refs.setReference} {...getReferenceProps()}>
+        {children}
+      </span>
+      {isOpen && (
+        <FloatingPortal>
+          <div
+            ref={refs.setFloating}
+            style={{ ...tooltipStyle, ...floatingStyles }}
+            {...getFloatingProps()}
+          >
             {title}
-          </div>,
-          document.body,
-        )}
+          </div>
+        </FloatingPortal>
+      )}
     </>
   )
 }

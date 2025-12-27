@@ -1,4 +1,8 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  aggregateQuantitativeStats,
+  blankStats,
+} from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { SimpleFeature, max, min } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { merge } from 'rxjs'
@@ -13,6 +17,7 @@ import type {
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
+  staticBlocks?: Region[]
 }
 
 function getFilename(uri: string) {
@@ -64,7 +69,16 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     'hasGlobalStats',
   ]
 
+  private adaptersP?: Promise<AdapterEntry[]>
+
   public async getAdapters(): Promise<AdapterEntry[]> {
+    if (!this.adaptersP) {
+      this.adaptersP = this.getAdaptersImpl()
+    }
+    return this.adaptersP
+  }
+
+  private async getAdaptersImpl(): Promise<AdapterEntry[]> {
     const getSubAdapter = this.getSubAdapter
     if (!getSubAdapter) {
       throw new Error('no getSubAdapter available')
@@ -86,7 +100,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     // BigWigAdapter, even in the BigWigAdapter configSchema.ts, use a 'source'
     // field though, while the word 'name' still allowed in the config too. To
     // solve, we made name===source
-    const ret = await Promise.all(
+    return Promise.all(
       subConfs.map(async (conf: any) => {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
@@ -102,7 +116,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         }
       }),
     )
-    return ret
   }
 
   // note: can't really have dis-agreeing refNames
@@ -132,22 +145,38 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const adapters = await this.getAdapters()
       merge(
-        ...adapters.map(adp =>
-          adp.dataAdapter.getFeatures(region, opts).pipe(
-            map(p =>
-              // add source field if it does not exist
-              p.get('source')
-                ? p
-                : new SimpleFeature({
-                    ...p.toJSON(),
-                    uniqueId: `${adp.source}-${p.id()}`,
-                    source: adp.source,
-                  }),
-            ),
-          ),
-        ),
+        ...adapters.map(adp => {
+          const { source, dataAdapter } = adp
+          return dataAdapter.getFeatures(region, opts).pipe(
+            map(f => {
+              // BigWigAdapter sets source, so avoid expensive wrapping when possible
+              if (f.get('source')) {
+                return f
+              }
+              // Fallback for adapters that don't set source
+              const data = f.toJSON()
+              data.uniqueId = `${source}-${f.id()}`
+              data.source = source
+              return new SimpleFeature(data)
+            }),
+          )
+        }),
       ).subscribe(observer)
     }, opts.stopToken)
+  }
+
+  public async getRegionQuantitativeStats(
+    region: Region,
+    opts?: WiggleOptions,
+  ) {
+    const adapters = await this.getAdapters()
+    const allStats = await Promise.all(
+      adapters.map(async adp => {
+        const { dataAdapter } = adp
+        return dataAdapter.getRegionQuantitativeStats(region, opts)
+      }),
+    )
+    return aggregateQuantitativeStats(allStats.filter(Boolean))
   }
 
   // always render bigwig instead of calculating a feature density for it
@@ -155,6 +184,30 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     return {
       featureDensity: 0,
     }
+  }
+
+  /**
+   * Override to pass staticBlocks through to sub-adapters for caching.
+   */
+  async getMultiRegionQuantitativeStats(
+    regions: Region[] = [],
+    opts: WiggleOptions = {},
+  ) {
+    if (!regions.length) {
+      return blankStats()
+    }
+
+    const adapters = await this.getAdapters()
+
+    // Delegate to sub-adapters, passing staticBlocks through
+    const allStats = await Promise.all(
+      adapters.map(async adp => {
+        const { dataAdapter } = adp
+        return dataAdapter.getMultiRegionQuantitativeStats(regions, opts)
+      }),
+    )
+
+    return aggregateQuantitativeStats(allStats.filter(Boolean))
   }
 
   // in another adapter type, this could be dynamic depending on region or

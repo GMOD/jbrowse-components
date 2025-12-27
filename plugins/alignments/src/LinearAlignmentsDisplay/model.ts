@@ -18,6 +18,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 const minDisplayHeight = 20
+const defaultDisplayHeight = 250
+const defaultSnpCovHeight = 45
 
 /**
  * #stateModel LinearAlignmentsDisplay
@@ -55,6 +57,14 @@ function stateModelFactory(
       setSNPCoverageHeight(n: number) {
         self.snpCovHeight = n
       },
+
+      /**
+       * #action
+       * Toggle legend visibility on the PileupDisplay sub-display
+       */
+      setShowLegend(s: boolean) {
+        self.PileupDisplay?.setShowLegend(s)
+      },
     }))
     .views(self => ({
       /**
@@ -72,6 +82,26 @@ function stateModelFactory(
           self.PileupDisplay.featureIdUnderMouse ||
           self.SNPCoverageDisplay.featureIdUnderMouse
         )
+      },
+
+      /**
+       * #getter
+       * Returns true if PileupDisplay has legend shown
+       */
+      get showLegend() {
+        return self.PileupDisplay?.showLegend
+      },
+
+      /**
+       * #method
+       * Returns the width needed for the SVG legend from subdisplays.
+       * Used by SVG export to add extra width for the legend area.
+       */
+      svgLegendWidth(theme?: unknown) {
+        const pileupWidth = self.PileupDisplay?.svgLegendWidth?.(theme) ?? 0
+        const snpCovWidth =
+          self.SNPCoverageDisplay?.svgLegendWidth?.(theme) ?? 0
+        return Math.max(pileupWidth, snpCovWidth)
       },
     }))
     .views(self => ({
@@ -253,6 +283,35 @@ function stateModelFactory(
             { name: 'PileupHeight' },
           ),
         )
+
+        addDisposer(
+          self,
+          autorun(
+            function syncColorByAutorun() {
+              const colorBy = self.PileupDisplay.colorBy
+              if (
+                colorBy?.type === 'modifications' ||
+                colorBy?.type === 'methylation'
+              ) {
+                self.SNPCoverageDisplay.setColorScheme(colorBy)
+              } else if (self.SNPCoverageDisplay.colorBy) {
+                self.SNPCoverageDisplay.setColorScheme(undefined)
+              }
+            },
+            { name: 'SyncColorBy' },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(
+            function syncFilterByAutorun() {
+              const filterBy = self.PileupDisplay.filterBy
+              self.SNPCoverageDisplay.setFilterBy(filterBy)
+            },
+            { name: 'SyncFilterBy' },
+          ),
+        )
       },
       /**
        * #action
@@ -273,27 +332,28 @@ function stateModelFactory(
             return []
           }
           const extra = getLowerPanelDisplays(pluginManager).map(d => ({
-            type: 'radio',
+            type: 'radio' as const,
             label: d.displayName,
             checked: d.name === self.PileupDisplay.type,
             onClick: () => {
               self.setLowerPanelType(d.name)
             },
           }))
+
           return [
             ...superTrackMenuItems(),
             {
-              type: 'subMenu',
+              type: 'subMenu' as const,
               label: 'Pileup settings',
               subMenu: self.PileupDisplay.trackMenuItems(),
             },
             {
-              type: 'subMenu',
+              type: 'subMenu' as const,
               label: 'SNPCoverage settings',
               subMenu: self.SNPCoverageDisplay.trackMenuItems(),
             },
             {
-              type: 'subMenu',
+              type: 'subMenu' as const,
               label: 'Replace lower panel with...',
               subMenu: extra,
             },
@@ -309,6 +369,23 @@ function stateModelFactory(
       // @ts-expect-error
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { heightPreConfig, lowerPanelType, snpCovHeight, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(heightPreConfig !== undefined &&
+        heightPreConfig !== defaultDisplayHeight
+          ? { height: heightPreConfig }
+          : {}),
+        ...(lowerPanelType !== 'LinearPileupDisplay' ? { lowerPanelType } : {}),
+        ...(snpCovHeight !== defaultSnpCovHeight ? { snpCovHeight } : {}),
+      } as typeof snap
     })
 }
 

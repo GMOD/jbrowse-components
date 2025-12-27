@@ -73,7 +73,6 @@
     "@jbrowse/plugin-sequence": "^3.7.0",
     "@jbrowse/plugin-spreadsheet-view": "^3.7.0",
     "@jbrowse/plugin-sv-inspector": "^3.7.0",
-    "@jbrowse/plugin-svg": "^3.7.0",
     "@jbrowse/plugin-trix": "^3.7.0",
     "@jbrowse/plugin-variants": "^3.7.0",
     "@jbrowse/plugin-wiggle": "^3.7.0",
@@ -85,7 +84,7 @@
     "file-saver-es": "^2.0.0",
     "mobx": "^6.6.0",
     "mobx-react": "^9.0.0",
-    "pako-esm2": "^1.0.0"
+    "pako-esm2": "^2.0.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

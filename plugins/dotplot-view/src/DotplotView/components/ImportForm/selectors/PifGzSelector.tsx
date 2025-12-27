@@ -5,14 +5,14 @@ import SwapAssemblies from './SwapAssemblies'
 
 import type { SelectorProps } from './SelectorTypes'
 
-const PifGzSelector = observer(function ({
+const PifGzSelector = observer(function PifGzSelector({
   assembly1,
   assembly2,
   swap,
   setSwap,
   fileLocation,
   setFileLocation,
-  indexFileLocation = undefined,
+  indexFileLocation,
   setIndexFileLocation = () => {},
   radioOption,
 }: SelectorProps) {

@@ -14,7 +14,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const SyntenyFileSelector = observer(function ({
+const SyntenyFileSelector = observer(function SyntenyFileSelector({
   assembly1,
   assembly2,
   swap,

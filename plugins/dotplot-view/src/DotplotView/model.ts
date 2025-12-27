@@ -49,6 +49,13 @@ const ReturnToImportFormDialog = lazy(
 )
 type Coord = [number, number]
 
+// defaults for postProcessSnapshot filtering
+const defaultHeight = 600
+const defaultBorderSize = 20
+const defaultTickSize = 5
+const defaultHtextRotation = -90
+const defaultFontSize = 15
+
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
@@ -96,15 +103,15 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        height: 600,
+        height: defaultHeight,
         /**
          * #property
          */
-        borderSize: 20,
+        borderSize: defaultBorderSize,
         /**
          * #property
          */
-        tickSize: 5,
+        tickSize: defaultTickSize,
         /**
          * #property
          */
@@ -112,11 +119,11 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        htextRotation: -90,
+        htextRotation: defaultHtextRotation,
         /**
          * #property
          */
-        fontSize: 15,
+        fontSize: defaultFontSize,
         /**
          * #property
          */
@@ -478,6 +485,10 @@ export default function stateModelFactory(pm: PluginManager) {
        */
       setAssemblyNames(target: string, query: string) {
         self.assemblyNames = cast([target, query])
+        // Clear displayed regions to trigger re-initialization with the new
+        // assemblies. The dotplotRegionsAutorun will re-populate them.
+        self.hview.setDisplayedRegions([])
+        self.vview.setDisplayedRegions([])
       },
       /**
        * #action
@@ -730,6 +741,12 @@ export default function stateModelFactory(pm: PluginManager) {
           self,
           autorun(
             function dotplotRegionsAutorun() {
+              // IMPORTANT: Must actually read assemblyNames array (via slice) to
+              // force MobX to track it. Just referencing it without reading won't
+              // make the autorun re-run when assembly names change. This ensures
+              // the autorun fires when setAssemblyNames is called with different
+              // assemblies, which is critical for re-initializing displayed regions
+              void self.assemblyNames.slice()
               if (
                 self.volatileWidth !== undefined &&
                 self.assembliesInitialized
@@ -838,8 +855,37 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { init, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        init,
+        height,
+        borderSize,
+        tickSize,
+        vtextRotation,
+        htextRotation,
+        fontSize,
+        trackSelectorType,
+        drawCigar,
+        assemblyNames,
+        viewTrackConfigs,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(height !== defaultHeight ? { height } : {}),
+        ...(borderSize !== defaultBorderSize ? { borderSize } : {}),
+        ...(tickSize !== defaultTickSize ? { tickSize } : {}),
+        ...(vtextRotation ? { vtextRotation } : {}),
+        ...(htextRotation !== defaultHtextRotation ? { htextRotation } : {}),
+        ...(fontSize !== defaultFontSize ? { fontSize } : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(!drawCigar ? { drawCigar } : {}),
+        ...(assemblyNames.length ? { assemblyNames } : {}),
+        ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
+      } as typeof snap
     })
 }
 

@@ -6,8 +6,7 @@ export default class MultiRowXYPlotRenderer extends FeatureRendererType {
   supportsSVG = true
 
   async render(renderProps: MultiRenderArgsDeserialized) {
-    const features = await this.getFeatures(renderProps)
-    const { renderMultiRowXYPlot } = await import('./renderMultiRowXYPlot')
-    return renderMultiRowXYPlot(renderProps, features)
+    const { makeImageData } = await import('./makeImageData')
+    return makeImageData(renderProps, this.pluginManager)
   }
 }

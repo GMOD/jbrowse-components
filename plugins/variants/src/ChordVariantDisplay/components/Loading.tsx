@@ -17,7 +17,7 @@ const useStyles = makeStyles()(() => {
   }
 })
 
-const Loading = observer(function ({
+const Loading = observer(function Loading({
   model: {
     renderProps: { radius },
   },

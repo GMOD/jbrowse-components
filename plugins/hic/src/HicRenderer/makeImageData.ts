@@ -1,9 +1,12 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  checkStopToken,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import {
   scaleSequential,
@@ -12,10 +15,7 @@ import {
 
 import interpolateViridis from './viridis'
 
-import type {
-  HicFeature,
-  RenderArgsDeserializedWithFeatures,
-} from './HicRenderer'
+import type { RenderArgsDeserializedWithFeatures } from './HicRenderer'
 import type { HicFlatbushItem } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -70,6 +70,7 @@ export async function makeImageData(
     bpPerPx / resolution,
   )
 
+  const lastCheck = createStopTokenChecker(stopToken)
   const w = res / (bpPerPx * Math.sqrt(2))
   const baseColor = colord(readConfObject(config, 'baseColor'))
 
@@ -139,10 +140,8 @@ export async function makeImageData(
   // Client will transform mouse coords with inverse rotation to query
   const coords: number[] = []
   const items: HicFlatbushItem[] = []
-
-  forEachWithStopTokenCheck(features, stopToken, (f: HicFeature) => {
-    const { bin1, bin2, counts, region1Idx, region2Idx } = f
-
+  for (let i = 0, l = features.length; i < l; i++) {
+    const { bin1, bin2, counts, region1Idx, region2Idx } = features[i]!
     ctx.fillStyle = readConfObject(config, 'color', {
       count: counts,
       maxScore,
@@ -158,7 +157,8 @@ export async function makeImageData(
     // Store the unrotated rectangle coordinates for Flatbush
     coords.push(x, y, x + w, y + w)
     items.push({ bin1, bin2, counts, region1Idx, region2Idx })
-  })
+    checkStopToken2(lastCheck)
+  }
   ctx.restore()
 
   // Build Flatbush spatial index

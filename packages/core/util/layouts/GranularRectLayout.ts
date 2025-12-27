@@ -279,6 +279,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   /**
    * @returns top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
+   * @param startingRow - Optional hint (in pixels) for where to start searching for free space.
+   *  Use when you know features overlap (e.g., sorted reads at the same position).
+   *  The hint is only used as a starting point; collision detection still verifies.
    */
   addRect(
     id: string,
@@ -287,6 +290,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     height: number,
     data?: T,
     serializableData?: T,
+    startingRow?: number,
   ): number | null {
     const pitchX = this.pitchX
     const pitchY = this.pitchY
@@ -329,7 +333,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
 
     const maxTop = this.maxHeight - pHeight
-    let top = 0
+    // Use startingRow hint if provided (in pixels), convert to pitch rows
+    let top =
+      startingRow !== undefined
+        ? Math.min(Math.floor(startingRow / pitchY), maxTop)
+        : 0
 
     if (this.displayMode !== 'collapse') {
       // OPTIMIZATION: Inline collision checking for hot path
@@ -516,6 +524,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getDataByID(id: string) {
     return this.rectangles.get(id)?.data
+  }
+
+  getSerializableDataByID(id: string) {
+    return this.rectangles.get(id)?.serializableData
   }
 
   cleanup() {}

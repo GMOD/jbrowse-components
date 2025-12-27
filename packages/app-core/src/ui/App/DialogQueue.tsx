@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
-const DialogQueue = observer(function ({
+const DialogQueue = observer(function DialogQueue({
   session,
 }: {
   session: SessionWithDrawerWidgets

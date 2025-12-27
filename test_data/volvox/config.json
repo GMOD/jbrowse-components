@@ -757,6 +757,99 @@
     },
     {
       "type": "MultiQuantitativeTrack",
+      "trackId": "volvox_microarray_multi_multirowxy",
+      "name": "MultiWig (multirowxy)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "name": "k1",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v1.cram.bw"
+            }
+          },
+          {
+            "name": "k2",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v2.cram.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "multirowxy"
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "volvox_microarray_multi_multirowdensity",
+      "name": "MultiWig (multirowdensity)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "name": "k1",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v1.cram.bw"
+            }
+          },
+          {
+            "name": "k2",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v2.cram.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "multirowdensity"
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "volvox_microarray_multi_multirowline",
+      "name": "MultiWig (multirowline)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "name": "k1",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v1.cram.bw"
+            }
+          },
+          {
+            "name": "k2",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "v2.cram.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "multirowline"
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
       "trackId": "mytrack",
       "name": "MultiWig (w/ colors and default line rendering)",
       "assemblyNames": ["volvox"],
@@ -2221,6 +2314,74 @@
         "uri": "volvox-sorted-altname.cram"
       },
       "rpcDriverName": "WebWorkerRpcDriver"
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3_custom_tooltips",
+      "assemblyNames": ["volvox"],
+      "name": "Custom Tooltips (mouseover callback)",
+      "category": ["Label Positioning Examples"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gff3_custom_tooltips_linear",
+          "renderer": {
+            "type": "CanvasFeatureRenderer",
+            "mouseover": "jexl:`${get(feature,'name')} [${get(feature,'type')}] at ${get(feature,'start')} - ${get(feature,'end')} (strand: ${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})`",
+            "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
+            "labels": {
+              "name": "jexl:get(feature,'name') || get(feature,'id')",
+              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+            },
+            "showLabels": true,
+            "showDescriptions": true,
+            "subfeatureLabels": "below"
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3_mouseover_attr",
+      "assemblyNames": ["volvox"],
+      "name": "_mouseOver Attributes",
+      "category": ["Label Positioning Examples"],
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "volvox_mouseover.sorted.gff3",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gff3_mouseover_attr_linear",
+          "renderer": {
+            "type": "CanvasFeatureRenderer",
+            "labels": {
+              "name": "jexl:get(feature,'name') || get(feature,'id')",
+              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+            },
+            "showLabels": true,
+            "showDescriptions": false,
+            "subfeatureLabels": "below"
+          }
+        }
+      ]
     }
   ],
   "plugins": [

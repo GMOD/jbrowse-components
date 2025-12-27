@@ -11,7 +11,7 @@ import {
   getPairedOrientationColor,
   isAbnormalOrientation,
 } from './getOrientationColor'
-import { LEFT, RIGHT, getTestId, getYOffset } from './useBreakpointOverlay'
+import { LEFT, RIGHT, getTestId, getYOffset } from './overlayUtils'
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
@@ -24,9 +24,9 @@ import {
   yPos,
 } from '../util'
 
-import type { OverlayProps } from './useBreakpointOverlay'
+import type { OverlayProps } from './overlayUtils'
 
-const AlignmentConnections = observer(function ({
+const AlignmentConnections = observer(function AlignmentConnections({
   model,
   trackId,
   parentRef,
@@ -50,7 +50,7 @@ const AlignmentConnections = observer(function ({
     const layoutMatches = model.getMatchedFeaturesInLayout(trackId, matched)
     if (!hasPaired) {
       for (const m of layoutMatches) {
-        m.sort((a, b) => a.clipPos - b.clipPos)
+        m.sort((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
       }
     }
     return layoutMatches
@@ -58,6 +58,8 @@ const AlignmentConnections = observer(function ({
 
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const yOffset = getYOffset(parentRef)
+
+  const tracks = views.map(v => v.getTrack(trackId))
 
   if (!assembly) {
     return null
@@ -70,11 +72,6 @@ const AlignmentConnections = observer(function ({
         for (let i = 0; i < chunk.length - 1; i++) {
           const { layout: c1, feature: f1, level: level1 } = chunk[i]!
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
-
-          if (!c1 || !c2) {
-            console.warn('received null layout for a overlay feature')
-            return null
-          }
 
           if (!showIntraviewLinks && level1 === level2) {
             return null
@@ -113,7 +110,6 @@ const AlignmentConnections = observer(function ({
           const reversed2 = views[level2]!.pxToBp(x2).reversed
           const rf1 = reversed1 ? -1 : 1
           const rf2 = reversed2 ? -1 : 1
-          const tracks = views.map(v => v.getTrack(trackId))
           const y1 =
             yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
             yOffset

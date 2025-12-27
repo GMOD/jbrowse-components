@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 
 /**
  * IMPORTANT: Config Reading Performance Optimization
@@ -16,11 +17,47 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  * SOLUTION: Read all non-feature-dependent config values ONCE at the start
  * of the rendering pipeline and pass them through as a context object.
  *
- * For feature-dependent configs (callbacks), we check `isCallback` to determine
- * if we need to call readConfObject per-feature or can use a cached value.
- *
- * This pattern should be maintained for any new config values added.
+ * For feature-dependent configs (callbacks), we use CachedConfig which stores
+ * both the cached value and whether it needs per-feature evaluation.
  */
+
+/**
+ * A cached config value that may need per-feature evaluation.
+ * - If isCallback is false, use `value` directly (fast path)
+ * - If isCallback is true, call readCachedConfig() to evaluate per-feature
+ */
+export interface CachedConfig<T> {
+  value: T
+  isCallback: boolean
+}
+
+/**
+ * Read a potentially cached config value.
+ * Uses cached value if not a callback, otherwise evaluates per-feature.
+ */
+export function readCachedConfig<T>(
+  cached: CachedConfig<T>,
+  config: AnyConfigurationModel,
+  key: string | string[],
+  feature: Feature,
+): T {
+  return cached.isCallback
+    ? (readConfObject(config, key, { feature }) as T)
+    : cached.value
+}
+
+function createCachedConfig<T>(
+  config: AnyConfigurationModel,
+  key: string | string[],
+  defaultValue: T,
+): CachedConfig<T> {
+  const configSlot = Array.isArray(key)
+    ? key.reduce((acc: any, k) => acc?.[k], config)
+    : config[key]
+  const isCallback = configSlot?.isCallback ?? false
+  const value = isCallback ? defaultValue : (readConfObject(config, key) as T)
+  return { value, isCallback }
+}
 
 export interface RenderConfigContext {
   displayMode: string
@@ -31,25 +68,16 @@ export interface RenderConfigContext {
   transcriptTypes: string[]
   containerTypes: string[]
 
-  color1?: string
-  color2?: string
-  color3?: string
-  outline?: string
-  isColor1Callback: boolean
-  isColor2Callback: boolean
-  isColor3Callback: boolean
-  isOutlineCallback: boolean
+  color1: CachedConfig<string>
+  color2: CachedConfig<string>
+  color3: CachedConfig<string>
+  outline: CachedConfig<string>
 
-  featureHeight: number
-  isHeightCallback: boolean
-
-  fontHeight: number
-  isFontHeightCallback: boolean
+  featureHeight: CachedConfig<number>
+  fontHeight: CachedConfig<number>
 
   labelAllowed: boolean
-
   geneGlyphMode: string
-
   displayDirectionalChevrons: boolean
 }
 
@@ -57,65 +85,28 @@ export function createRenderConfigContext(
   config: AnyConfigurationModel,
 ): RenderConfigContext {
   const displayMode = readConfObject(config, 'displayMode') as string
-  const showLabels = readConfObject(config, 'showLabels') as boolean
-  const showDescriptions = readConfObject(config, 'showDescriptions') as boolean
-  const subfeatureLabels = readConfObject(config, 'subfeatureLabels') as string
-  const transcriptTypes = readConfObject(config, 'transcriptTypes') as string[]
-  const containerTypes = readConfObject(config, 'containerTypes') as string[]
-  const geneGlyphMode = readConfObject(config, 'geneGlyphMode') as string
-  const displayDirectionalChevrons = readConfObject(
-    config,
-    'displayDirectionalChevrons',
-  ) as boolean
-
-  const isColor1Callback = config.color1?.isCallback ?? false
-  const isColor2Callback = config.color2?.isCallback ?? false
-  const isColor3Callback = config.color3?.isCallback ?? false
-  const isOutlineCallback = config.outline?.isCallback ?? false
-  const color1 = isColor1Callback
-    ? undefined
-    : (readConfObject(config, 'color1') as string)
-  const color2 = isColor2Callback
-    ? undefined
-    : (readConfObject(config, 'color2') as string)
-  const color3 = isColor3Callback
-    ? undefined
-    : (readConfObject(config, 'color3') as string)
-  const outline = isOutlineCallback
-    ? undefined
-    : (readConfObject(config, 'outline') as string)
-
-  const isHeightCallback = config.height?.isCallback ?? false
-  const featureHeight = isHeightCallback
-    ? 10
-    : (readConfObject(config, 'height') as number)
-
-  const isFontHeightCallback = config.labels?.fontSize?.isCallback ?? false
-  const fontHeight = isFontHeightCallback
-    ? 12
-    : (readConfObject(config, ['labels', 'fontSize']) as number)
 
   return {
     displayMode,
-    showLabels,
-    showDescriptions,
-    subfeatureLabels,
-    transcriptTypes,
-    containerTypes,
-    color1,
-    color2,
-    color3,
-    outline,
-    isColor1Callback,
-    isColor2Callback,
-    isColor3Callback,
-    isOutlineCallback,
-    featureHeight,
-    isHeightCallback,
-    fontHeight,
-    isFontHeightCallback,
+    showLabels: readConfObject(config, 'showLabels') as boolean,
+    showDescriptions: readConfObject(config, 'showDescriptions') as boolean,
+    subfeatureLabels: readConfObject(config, 'subfeatureLabels') as string,
+    transcriptTypes: readConfObject(config, 'transcriptTypes') as string[],
+    containerTypes: readConfObject(config, 'containerTypes') as string[],
+    geneGlyphMode: readConfObject(config, 'geneGlyphMode') as string,
+    displayDirectionalChevrons: readConfObject(
+      config,
+      'displayDirectionalChevrons',
+    ) as boolean,
+
+    color1: createCachedConfig(config, 'color1', 'goldenrod'),
+    color2: createCachedConfig(config, 'color2', '#f0f'),
+    color3: createCachedConfig(config, 'color3', '#357089'),
+    outline: createCachedConfig(config, 'outline', ''),
+
+    featureHeight: createCachedConfig(config, 'height', 10),
+    fontHeight: createCachedConfig(config, ['labels', 'fontSize'], 12),
+
     labelAllowed: displayMode !== 'collapse',
-    geneGlyphMode,
-    displayDirectionalChevrons,
   }
 }

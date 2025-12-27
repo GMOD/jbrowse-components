@@ -36,12 +36,12 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/tabix": "^3.0.1",
+    "@gmod/tabix": "^3.2.2",
     "@jbrowse/core": "^3.7.0",
     "@jbrowse/mobx-state-tree": "^5.4.7",
     "@jbrowse/plugin-alignments": "^3.7.0",
     "@mui/material": "^7.0.0",
-    "generic-filehandle2": "^2.0.1",
+    "generic-filehandle2": "^2.0.16",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "rxjs": "^7.0.0"

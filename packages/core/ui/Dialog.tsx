@@ -47,7 +47,7 @@ export interface Props extends DialogProps {
   titleNode?: React.ReactNode
 }
 
-const Dialog = observer(function (props: Props) {
+const Dialog = observer(function Dialog(props: Props) {
   const { classes } = useStyles()
   const { titleNode, ...rest } = props
   const { title, header, children, onClose } = rest

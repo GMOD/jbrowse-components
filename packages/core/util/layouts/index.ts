@@ -1,6 +1,8 @@
 export * from './BaseLayout'
 export { default as GranularRectLayout } from './GranularRectLayout'
 export { default as MultiLayout } from './MultiLayout'
+export { default as PileupLayout } from './PileupLayout'
+export type { PileupLayoutOptions, PileupRectangle } from './PileupLayout'
 export { default as PrecomputedLayout } from './PrecomputedLayout'
 export type { Layout } from './PrecomputedLayout'
 export { default as PrecomputedMultiLayout } from './PrecomputedMultiLayout'

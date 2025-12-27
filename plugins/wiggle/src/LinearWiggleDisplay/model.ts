@@ -171,8 +171,7 @@ function stateModelFactory(
           notReady:
             superProps.notReady ||
             !domain ||
-            !self.stats ||
-            self.statsRegion !== statsRegion,
+            self.stats?.statsRegion !== statsRegion,
           height,
           ticks,
           inverted,
@@ -210,8 +209,9 @@ function stateModelFactory(
       return {
         /**
          * #method
+         * Base track menu items shared by all wiggle displays (Score submenu)
          */
-        trackMenuItems() {
+        wiggleBaseTrackMenuItems() {
           return [
             ...superTrackMenuItems(),
             {
@@ -219,6 +219,16 @@ function stateModelFactory(
               icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
             },
+          ]
+        },
+
+        /**
+         * #method
+         * Menu items specific to LinearWiggleDisplay (Color, Inverted, etc.)
+         * Not used by SNPCoverageDisplay
+         */
+        wiggleOnlyTrackMenuItems() {
+          return [
             ...(self.graphType
               ? [
                   {
@@ -297,6 +307,17 @@ function stateModelFactory(
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       */
+      trackMenuItems() {
+        return [
+          ...self.wiggleBaseTrackMenuItems(),
+          ...self.wiggleOnlyTrackMenuItems(),
+        ]
+      },
+    }))
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
 
@@ -317,6 +338,17 @@ function stateModelFactory(
           return renderSvg(self, opts, superRenderSvg)
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { invertedSetting, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(invertedSetting !== undefined ? { invertedSetting } : {}),
+      } as typeof snap
     })
 }
 

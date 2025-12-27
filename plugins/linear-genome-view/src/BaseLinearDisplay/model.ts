@@ -23,81 +23,29 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
 
+import { calculateSvgLegendWidth } from '.'
 import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
 import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
+import { getTranscripts, hasExonsOrCDS } from './util'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
-import type { ExportSvgOptions } from '../LinearGenomeView/types'
+import type { LegendItem } from './components/FloatingLegend'
+import type { ExportSvgDisplayOptions, LayoutRecord } from './types'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ThemeOptions } from '@mui/material'
+import type { Theme } from '@mui/material'
 
 // lazies
 const Tooltip = lazy(() => import('./components/Tooltip'))
 const CollapseIntronsDialog = lazy(
-  () => import('./components/CollapseIntronsDialog'),
+  () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog'),
 )
 
 type LGV = LinearGenomeViewModel
-
-function hasExonsOrCDS(transcripts: Feature[]) {
-  return transcripts.some(t => {
-    const subs = t.get('subfeatures') ?? []
-    return subs.some(f => f.get('type') === 'exon' || f.get('type') === 'CDS')
-  })
-}
-
-function getTranscripts(feature?: Feature): Feature[] {
-  if (!feature) {
-    return []
-  }
-  return feature.get('type') === 'mRNA'
-    ? [feature]
-    : (feature.get('subfeatures') ?? [])
-}
-
-export interface Layout {
-  minX: number
-  minY: number
-  maxX: number
-  maxY: number
-  name: string
-}
-
-export interface FloatingLabelData {
-  text: string
-  relativeY: number
-  color: string
-  isOverlay?: boolean
-}
-
-export type LayoutRecord =
-  | [number, number, number, number]
-  | [
-      number,
-      number,
-      number,
-      number,
-      {
-        label?: string
-        description?: string
-        refName: string
-        floatingLabels?: FloatingLabelData[]
-        totalFeatureHeight?: number
-        totalLayoutWidth?: number
-        featureWidth?: number
-        actualTopPx?: number
-      },
-    ]
-
-export interface ExportSvgDisplayOptions extends ExportSvgOptions {
-  overrideHeight?: number
-  theme?: ThemeOptions
-}
 
 /**
  * #stateModel BaseLinearDisplay
@@ -128,6 +76,10 @@ function stateModelFactory() {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -182,6 +134,27 @@ function stateModelFactory() {
        */
       get TooltipComponent(): AnyReactComponentType {
         return Tooltip as AnyReactComponentType
+      },
+
+      /**
+       * #method
+       * Override in subclasses to provide legend items for the display
+       * @param _theme - MUI theme for accessing palette colors
+       */
+      legendItems(_theme?: Theme): LegendItem[] {
+        return []
+      },
+
+      /**
+       * #method
+       * Returns the width needed for the SVG legend if showLegend is enabled.
+       * Used by SVG export to add extra width for the legend area.
+       * @param theme - MUI theme for accessing palette colors
+       */
+      svgLegendWidth(theme?: Theme): number {
+        return self.showLegend
+          ? calculateSvgLegendWidth(this.legendItems(theme))
+          : 0
       },
 
       /**
@@ -275,13 +248,13 @@ function stateModelFactory() {
        * #action
        */
       addBlock(key: string, block: BaseBlock) {
-        self.blockState.set(
+        const blockInstance = BlockState.create({
           key,
-          BlockState.create({
-            key,
-            region: block.toRegion(),
-          }),
-        )
+          region: block.toRegion(),
+        })
+        self.blockState.set(key, blockInstance)
+        // minor optimization: pre-populate display to avoid tree traversal in afterAttach
+        blockInstance.setCachedDisplay(self as any)
       },
 
       /**
@@ -368,6 +341,12 @@ function stateModelFactory() {
       setMouseoverExtraInformation(extra?: string) {
         self.mouseoverExtraInformation = extra
       },
+      /**
+       * #action
+       */
+      setShowLegend(s: boolean) {
+        self.showLegend = s
+      },
     }))
 
     .actions(self => {
@@ -439,17 +418,20 @@ function stateModelFactory() {
                       onClick: () => {
                         const view = getContainingView(self) as LGV
                         const { assemblyManager } = getSession(self)
-                        getSession(self).queueDialog(handleClose => [
-                          CollapseIntronsDialog,
-                          {
-                            view,
-                            transcripts,
-                            handleClose,
-                            assembly: assemblyManager.get(
-                              view.assemblyNames[0]!,
-                            ),
-                          },
-                        ])
+                        const assembly = assemblyManager.get(
+                          view.assemblyNames[0]!,
+                        )
+                        if (assembly) {
+                          getSession(self).queueDialog(handleClose => [
+                            CollapseIntronsDialog,
+                            {
+                              view,
+                              transcripts,
+                              handleClose,
+                              assembly,
+                            },
+                          ])
+                        }
                       },
                     },
                   ]
@@ -536,19 +518,23 @@ function stateModelFactory() {
                 if (!isAlive(self)) {
                   return
                 }
-                const blocksPresent: Record<string, boolean> = {}
                 const view = getContainingView(self) as LGV
                 if (!view.initialized) {
                   return
                 }
-                for (const block of self.blockDefinitions.contentBlocks) {
-                  blocksPresent[block.key] = true
+                const contentBlocks = self.blockDefinitions.contentBlocks
+                const newKeys = new Set(contentBlocks.map(b => b.key))
+
+                // Add new blocks
+                for (const block of contentBlocks) {
                   if (!self.blockState.has(block.key)) {
                     self.addBlock(block.key, block)
                   }
                 }
+
+                // Remove old blocks
                 for (const key of self.blockState.keys()) {
-                  if (!blocksPresent[key]) {
+                  if (!newKeys.has(key)) {
                     self.deleteBlock(key)
                   }
                 }
@@ -557,7 +543,10 @@ function stateModelFactory() {
                 // the display is not properly attached to a view
               }
             },
-            { name: 'BaseLinearDisplayBlockDefinitions' },
+            {
+              name: 'BaseLinearDisplayBlockDefinitions',
+              delay: 60,
+            },
           ),
         )
       },
@@ -585,3 +574,5 @@ export const BaseLinearDisplay = stateModelFactory()
 
 export type BaseLinearDisplayStateModel = typeof BaseLinearDisplay
 export type BaseLinearDisplayModel = Instance<BaseLinearDisplayStateModel>
+
+export { type LegendItem } from './components/FloatingLegend'

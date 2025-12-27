@@ -1,4 +1,5 @@
 import type { RenderConfigContext } from './renderConfig'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -16,6 +17,7 @@ export interface PeptideData {
 
 export interface FeatureLayout {
   feature: Feature
+  glyphType: GlyphType
   x: number
   y: number
   width: number
@@ -49,6 +51,7 @@ export interface DrawFeatureArgs {
   canvasWidth: number
   peptideDataMap?: Map<string, PeptideData>
   colorByCDS?: boolean
+  pluginManager?: PluginManager
 }
 
 export interface FlatbushItem {
@@ -60,16 +63,12 @@ export interface FlatbushItem {
   rightPx: number
   topPx: number
   bottomPx: number
-  label?: string
-  description?: string
-  mouseOver?: string
+  tooltip?: string
 }
 
 export interface SubfeatureInfo {
-  subfeatureId: string
-  parentFeatureId: string
+  displayLabel: string
   type: string
-  name: string
 }
 
 export interface RenderArgs {
@@ -84,6 +83,7 @@ export interface RenderArgs {
   stopToken?: string
   peptideDataMap?: Map<string, PeptideData>
   colorByCDS?: boolean
+  pluginManager?: PluginManager
 }
 
 export type GlyphType =

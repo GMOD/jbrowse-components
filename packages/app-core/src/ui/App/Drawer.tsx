@@ -24,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Drawer = observer(function ({
+const Drawer = observer(function Drawer({
   children,
   session,
 }: {

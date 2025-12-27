@@ -1,4 +1,4 @@
-import { clamp } from '@jbrowse/core/util'
+import { clamp, sum } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
@@ -33,10 +33,9 @@ function heightFromSpecificLevel(
   trackConfigId: string,
   level: number,
 ) {
-  const heightUpUntilThisPoint = views
-    .slice(0, level)
-    .map(v => v.height + 7)
-    .reduce((a, b) => a + b, 0)
+  const heightUpUntilThisPoint = sum(
+    views.slice(0, level).map(v => v.height + 7),
+  )
 
   const v = views[level]!
   return (

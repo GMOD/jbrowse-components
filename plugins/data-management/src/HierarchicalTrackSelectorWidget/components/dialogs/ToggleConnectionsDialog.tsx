@@ -58,7 +58,7 @@ const ConnectionRow = observer(function ConnectionRow({
         name,
         assemblyNames.length ? `(${ellipses(assemblyNames.join(','))})` : '',
       ]
-        .filter(f => !!f)
+        .filter(Boolean)
         .join(' ')}
     />
   )
@@ -91,7 +91,7 @@ const ConnectionList = observer(function ConnectionsList({
   )
 })
 
-const ToggleConnectionDialog = observer(function ({
+const ToggleConnectionDialog = observer(function ToggleConnectionDialog({
   session,
   handleClose,
   breakConnection,

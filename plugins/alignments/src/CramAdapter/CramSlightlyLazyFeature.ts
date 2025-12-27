@@ -1,10 +1,27 @@
-import { readFeaturesToMismatches } from './readFeaturesToMismatches'
+import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
-import { cacheGetter } from '../shared/util'
+import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
+import {
+  DELETION_TYPE,
+  HARDCLIP_TYPE,
+  INSERTION_TYPE,
+  MISMATCH_TYPE,
+  SKIP_TYPE,
+  SOFTCLIP_TYPE,
+} from '../shared/forEachMismatchTypes'
+import { cacheGetter, convertTagsToPlainArrays } from '../shared/util'
 
 import type CramAdapter from './CramAdapter'
+import type { MismatchCallback } from '../shared/forEachMismatchTypes'
+import type { Mismatch } from '../shared/types'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+
+// Module-level constant for CIGAR code conversion (avoids recreation on each call)
+// Maps packed CIGAR op codes to ASCII: M=77, I=73, D=68, N=78, S=83, H=72, P=80, ==61, X=88
+const NUMERIC_CIGAR_CODES = new Uint8Array([
+  77, 73, 68, 78, 83, 72, 80, 61, 88, 63, 63, 63, 63, 63, 63, 63,
+])
 
 export default class CramSlightlyLazyFeature implements Feature {
   private record: CramRecord
@@ -104,16 +121,13 @@ export default class CramSlightlyLazyFeature implements Feature {
 
   // generate a CIGAR string from NUMERIC_CIGAR
   get CIGAR() {
-    const NUMERIC_CIGAR_CODES = [
-      77, 73, 68, 78, 83, 72, 80, 61, 88, 63, 63, 63, 63, 63, 63, 63,
-    ]
     const numeric = this.NUMERIC_CIGAR
     let result = ''
     for (let i = 0, l = numeric.length; i < l; i++) {
       const packed = numeric[i]!
       const length = packed >> 4
       const opCode = NUMERIC_CIGAR_CODES[packed & 0xf]!
-      result += length + String.fromCharCode(opCode)
+      result += length + CHAR_FROM_CODE[opCode]!
     }
     return result
   }
@@ -123,15 +137,18 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get(field: string): any {
-    return field === 'mismatches'
-      ? this.mismatches
-      : field === 'qual'
-        ? this.qual
-        : field === 'CIGAR'
-          ? this.CIGAR
-          : field === 'NUMERIC_CIGAR'
-            ? this.NUMERIC_CIGAR
-            : this.fields[field]
+    switch (field) {
+      case 'mismatches':
+        return this.mismatches
+      case 'qual':
+        return this.qual
+      case 'CIGAR':
+        return this.CIGAR
+      case 'NUMERIC_CIGAR':
+        return this.NUMERIC_CIGAR
+      default:
+        return this.fields[field]
+    }
   }
 
   parent() {
@@ -143,23 +160,143 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get mismatches() {
-    return readFeaturesToMismatches(
-      this.record.readFeatures,
-      this.start,
-      this.qualRaw,
+    const mismatches: Mismatch[] = []
+    this.forEachMismatch(
+      (type, start, length, base, qual, altbase, cliplen) => {
+        if (type === MISMATCH_TYPE) {
+          mismatches.push({
+            type: 'mismatch',
+            start,
+            length,
+            base,
+            qual: qual !== undefined && qual >= 0 ? qual : undefined,
+            altbase:
+              altbase !== undefined && altbase > 0
+                ? CHAR_FROM_CODE[altbase]
+                : undefined,
+          })
+        } else if (type === INSERTION_TYPE) {
+          mismatches.push({
+            type: 'insertion',
+            start,
+            length,
+            insertlen: cliplen!,
+            insertedBases: base,
+          })
+        } else if (type === SOFTCLIP_TYPE) {
+          mismatches.push({
+            type: 'softclip',
+            start,
+            length,
+            cliplen: cliplen!,
+          })
+        } else if (type === HARDCLIP_TYPE) {
+          mismatches.push({
+            type: 'hardclip',
+            start,
+            length,
+            cliplen: cliplen!,
+          })
+        } else {
+          mismatches.push({
+            type: type === 2 ? 'deletion' : 'skip',
+            start,
+            length,
+          })
+        }
+      },
     )
-    // this commented code can try to resolve MD tags, xref https://github.com/galaxyproject/tools-iuc/issues/6523#issuecomment-2462927211 but put on hold
-    // return this.tags.MD && this.seq
-    //   ? mismatches.concat(
-    //       mdToMismatches(
-    //         this.tags.MD,
-    //         parseCigar(this.CIGAR),
-    //         mismatches,
-    //         this.seq,
-    //         this.qualRaw,
-    //       ),
-    //     )
-    //   : mismatches
+    return mismatches
+  }
+
+  forEachMismatch(callback: MismatchCallback) {
+    const readFeatures = this.record.readFeatures
+    if (!readFeatures) {
+      return
+    }
+
+    const featStart = this.start
+    const qual = this.qualRaw
+    const len = readFeatures.length
+
+    let refPos = 0
+    let lastPos = featStart
+    let insertedBases = ''
+    let insertedBasesLen = 0
+
+    for (let i = 0; i < len; i++) {
+      const rf = readFeatures[i]!
+      const { refPos: p, code, pos, data, sub, ref } = rf
+      const sublen = refPos - lastPos
+      lastPos = refPos
+
+      // Flush accumulated single-base insertions
+      if (sublen && insertedBasesLen > 0) {
+        callback(
+          INSERTION_TYPE,
+          refPos,
+          0,
+          insertedBases,
+          -1,
+          0,
+          insertedBasesLen,
+        )
+        insertedBases = ''
+        insertedBasesLen = 0
+      }
+      refPos = p - 1 - featStart
+
+      const codeChar = code.charCodeAt(0)
+
+      if (codeChar === CODE_X) {
+        // substitution/mismatch
+        // Convert ref base to uppercase char code using bitwise AND
+        // (clears bit 5, converting lowercase a-z to uppercase A-Z)
+        const refCharCode = ref ? ref.charCodeAt(0) & ~0x20 : 0
+        callback(
+          MISMATCH_TYPE,
+          refPos,
+          1,
+          sub!,
+          qual?.[pos - 1] ?? -1,
+          refCharCode,
+          0,
+        )
+      } else if (codeChar === CODE_I) {
+        // insertion
+        callback(INSERTION_TYPE, refPos, 0, data, -1, 0, data.length)
+      } else if (codeChar === CODE_N) {
+        // reference skip
+        callback(SKIP_TYPE, refPos, data, 'N', -1, 0, 0)
+      } else if (codeChar === CODE_S) {
+        // soft clip
+        const dataLen = data.length
+        callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
+      } else if (codeChar === CODE_H) {
+        // hard clip
+        callback(HARDCLIP_TYPE, refPos, 1, `H${data}`, -1, 0, data)
+      } else if (codeChar === CODE_D) {
+        // deletion
+        callback(DELETION_TYPE, refPos, data, '*', -1, 0, 0)
+      } else if (codeChar === CODE_i) {
+        // single-base insertion - accumulate
+        insertedBases += data
+        insertedBasesLen++
+      }
+    }
+
+    // Flush any remaining accumulated insertions
+    if (insertedBasesLen > 0) {
+      callback(
+        INSERTION_TYPE,
+        refPos,
+        0,
+        insertedBases,
+        -1,
+        0,
+        insertedBasesLen,
+      )
+    }
   }
 
   get fields(): SimpleFeatureSerialized {
@@ -171,7 +308,7 @@ export default class CramSlightlyLazyFeature implements Feature {
       strand: this.strand,
       template_length: this.template_length,
       flags: this.flags,
-      tags: this.tags,
+      tags: convertTagsToPlainArrays(this.tags),
       refName: this.refName,
       seq: this.seq,
       type: 'match',

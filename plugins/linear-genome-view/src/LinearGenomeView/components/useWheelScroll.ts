@@ -14,8 +14,10 @@ export function useWheelScroll(
     horizontalScroll: (arg: number) => void
   },
 ) {
-  const delta = useRef(0)
+  const zoomDelta = useRef(0)
+  const scrollDelta = useRef(0)
   const timeout = useRef<Timer>(null)
+  const rafId = useRef(0)
   const scheduled = useRef(false)
 
   useEffect(() => {
@@ -44,9 +46,11 @@ export function useWheelScroll(
                 ? 500
                 : 150
               : 75
-        delta.current += event.deltaY / normalizer
+        zoomDelta.current += event.deltaY / normalizer
         model.setScaleFactor(
-          delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
+          zoomDelta.current < 0
+            ? 1 - zoomDelta.current
+            : 1 / (1 + zoomDelta.current),
         )
         if (timeout.current) {
           clearTimeout(timeout.current)
@@ -54,12 +58,12 @@ export function useWheelScroll(
         timeout.current = setTimeout(() => {
           model.setScaleFactor(1)
           model.zoomTo(
-            delta.current > 0
-              ? model.bpPerPx * (1 + delta.current)
-              : model.bpPerPx / (1 - delta.current),
+            zoomDelta.current > 0
+              ? model.bpPerPx * (1 + zoomDelta.current)
+              : model.bpPerPx / (1 - zoomDelta.current),
             event.clientX - (curr?.getBoundingClientRect().left || 0),
           )
-          delta.current = 0
+          zoomDelta.current = 0
           samples = []
         }, 300)
       } else {
@@ -69,23 +73,29 @@ export function useWheelScroll(
         if (Math.abs(event.deltaX) > Math.abs(2 * event.deltaY)) {
           event.preventDefault()
         }
-        delta.current += event.deltaX
+        scrollDelta.current += event.deltaX
         if (!scheduled.current) {
           // use rAF to make it so multiple event handlers aren't fired per-frame
           // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
           scheduled.current = true
-          window.requestAnimationFrame(() => {
-            model.horizontalScroll(delta.current)
-            delta.current = 0
+          rafId.current = window.requestAnimationFrame(() => {
+            model.horizontalScroll(scrollDelta.current)
+            scrollDelta.current = 0
             scheduled.current = false
           })
         }
       }
     }
     if (curr) {
-      curr.addEventListener('wheel', onWheel)
+      curr.addEventListener('wheel', onWheel, { passive: false })
       return () => {
         curr.removeEventListener('wheel', onWheel)
+        if (timeout.current) {
+          clearTimeout(timeout.current)
+        }
+        if (rafId.current) {
+          cancelAnimationFrame(rafId.current)
+        }
       }
     }
     return () => {}

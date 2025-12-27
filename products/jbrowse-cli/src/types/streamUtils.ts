@@ -83,15 +83,17 @@ export function parseAttributes(
   infoString: string,
   decodeFunc: (s: string) => string,
 ) {
-  return Object.fromEntries(
-    infoString
-      .split(';')
-      .map(f => f.trim())
-      .filter(f => !!f)
-      .map(f => f.split('='))
-      .map(([key, val]) => [
-        key!.trim(),
-        val ? decodeFunc(val).trim().split(',').join(' ') : undefined,
-      ]),
-  )
+  const result: Record<string, string | undefined> = {}
+  for (const field of infoString.split(';')) {
+    const trimmed = field.trim()
+    if (trimmed) {
+      const eqIdx = trimmed.indexOf('=')
+      if (eqIdx !== -1) {
+        const key = trimmed.slice(0, eqIdx).trim()
+        const val = trimmed.slice(eqIdx + 1)
+        result[key] = decodeFunc(val).trim().replaceAll(',', ' ')
+      }
+    }
+  }
+  return result
 }

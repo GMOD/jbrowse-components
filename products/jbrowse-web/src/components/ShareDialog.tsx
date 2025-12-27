@@ -28,7 +28,7 @@ const SettingsDialog = lazy(() => import('./ShareSettingsDialog'))
 
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
 
-const ShareDialog = observer(function ({
+const ShareDialog = observer(function ShareDialog({
   handleClose,
   session,
 }: {

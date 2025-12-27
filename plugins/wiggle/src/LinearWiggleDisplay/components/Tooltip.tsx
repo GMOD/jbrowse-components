@@ -29,15 +29,19 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
       .filter(f => !!f)
       .join(':')
 
-    return feature.get('summary') !== undefined ? (
+    const minScore = feature.get('minScore')
+    const maxScore = feature.get('maxScore')
+    const hasSummary = feature.get('summary') && minScore != null
+
+    return hasSummary ? (
       <div ref={ref}>
         {loc}
         <br />
-        Max: {toP(feature.get('maxScore'))}
+        Max: {toP(maxScore)}
         <br />
         Avg: {toP(feature.get('score'))}
         <br />
-        Min: {toP(feature.get('minScore'))}
+        Min: {toP(minScore)}
       </div>
     ) : (
       <div ref={ref}>
@@ -51,7 +55,7 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
 
 type Coord = [number, number]
 
-const WiggleTooltip = observer(function (props: {
+const WiggleTooltip = observer(function WiggleTooltip(props: {
   model: {
     featureUnderMouse?: Feature
   }

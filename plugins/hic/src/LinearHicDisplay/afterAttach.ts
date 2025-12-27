@@ -84,7 +84,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         {
           statusCallback: (msg: string) => {
             if (isAlive(self)) {
-              self.setMessage(msg)
+              self.setStatusMessage(msg)
             }
           },
         },
@@ -143,7 +143,10 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         performRender()
       },
-      { delay: 1000, name: 'LinearHicDisplayRender' },
+      {
+        delay: 1000,
+        name: 'LinearHicDisplayRender',
+      },
     ),
   )
 
@@ -172,7 +175,9 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         ctx.drawImage(renderingImageData, 0, 0)
       },
-      { name: 'LinearHicDisplayCanvas' },
+      {
+        name: 'LinearHicDisplayCanvas',
+      },
     ),
   )
 }

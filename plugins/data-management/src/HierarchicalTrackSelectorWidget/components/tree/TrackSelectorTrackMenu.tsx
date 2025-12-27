@@ -38,20 +38,19 @@ const MoreHorizIcon = memo(function MoreHorizIcon({
 
 const TrackSelectorTrackMenu = memo(function TrackSelectorTrackMenu({
   id,
-  trackId,
   stopPropagation,
   model,
   setOpen,
   conf,
 }: {
   id: string
-  trackId: string
   stopPropagation?: boolean
   conf: AnyConfigurationModel
   setOpen?: (arg: boolean) => void
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
+  const trackId = conf.trackId as string
 
   const getMenuItems = useCallback(
     () => [

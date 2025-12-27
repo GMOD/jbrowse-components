@@ -1,10 +1,51 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   scaleLinear,
   scaleLog,
   scaleQuantize,
 } from '@mui/x-charts-vendor/d3-scale'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+
 export const YSCALEBAR_LABEL_OFFSET = 5
+
+// Default color used by wiggle config schema
+export const WIGGLE_COLOR_DEFAULT = '#f0f'
+
+/**
+ * Determines the appropriate color callback for wiggle plots.
+ *
+ * Priority:
+ * 1. If color is a jexl callback expression, evaluate per feature
+ * 2. If color is explicitly set (not default), use static color
+ * 3. If defaultColor provided (e.g. 'grey' for line plots), use it
+ * 4. Otherwise use bicolor pivot logic (posColor/negColor based on score)
+ */
+export function getColorCallback(
+  config: AnyConfigurationModel,
+  opts?: { defaultColor?: string },
+) {
+  const color = readConfObject(config, 'color')
+  const colorIsCallback = config.color?.isCallback
+  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
+
+  if (colorIsCallback) {
+    return (feature: Feature) => readConfObject(config, 'color', { feature })
+  }
+  if (!colorIsDefault) {
+    return () => color
+  }
+  if (opts?.defaultColor) {
+    return () => opts.defaultColor!
+  }
+  // Bicolor pivot logic
+  const pivotValue = readConfObject(config, 'bicolorPivotValue')
+  const negColor = readConfObject(config, 'negColor')
+  const posColor = readConfObject(config, 'posColor')
+  return (_feature: Feature, score: number) =>
+    score < pivotValue ? negColor : posColor
+}
 
 export interface ScaleOpts {
   domain: number[]
@@ -38,8 +79,8 @@ export interface Source {
  *   - inverted (boolean)
  */
 export function getScale({
-  domain = [],
-  range = [],
+  domain,
+  range,
   scaleType,
   pivotValue,
   inverted,
@@ -167,8 +208,77 @@ export function toP(s = 0) {
   return +s.toPrecision(6)
 }
 
+/**
+ * Lightweight feature serialization for wiggle features.
+ * Only serializes properties needed for mouse interaction,
+ * avoiding the overhead of full toJSON() serialization.
+ */
+export function serializeWiggleFeature(f: {
+  get: (key: string) => unknown
+  id: () => string
+}) {
+  return {
+    uniqueId: f.id(),
+    start: f.get('start'),
+    end: f.get('end'),
+    score: f.get('score'),
+    source: f.get('source'),
+    refName: f.get('refName'),
+    maxScore: f.get('maxScore'),
+    minScore: f.get('minScore'),
+    summary: f.get('summary'),
+  }
+}
+
 export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
+}
+
+// Shared constants for wiggle drawing
+export const WIGGLE_FUDGE_FACTOR = 0.3
+export const WIGGLE_CLIP_HEIGHT = 2
+
+// Precomputed scale values for fast rendering
+export interface ScaleValues {
+  niceMin: number
+  niceMax: number
+  height: number
+  linearRatio: number
+  log2: number
+  logMin: number
+  logRatio: number
+  isLog: boolean
+}
+
+// Precompute scale values once for use in hot loops
+export function getScaleValues(
+  scaleOpts: ScaleOpts,
+  height: number,
+): ScaleValues {
+  const scale = getScale({ ...scaleOpts, range: [0, height] })
+  const domain = scale.domain() as [number, number]
+  const niceMin = domain[0]
+  const niceMax = domain[1]
+  const domainSpan = niceMax - niceMin
+  const isLog = scaleOpts.scaleType === 'log'
+
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+  const log2 = Math.log(2)
+  const logMin = Math.log(niceMin) / log2
+  const logMax = Math.log(niceMax) / log2
+  const logSpan = logMax - logMin
+  const logRatio = logSpan !== 0 ? height / logSpan : 0
+
+  return {
+    niceMin,
+    niceMax,
+    height,
+    linearRatio,
+    log2,
+    logMin,
+    logRatio,
+    isLog,
+  }
 }
 
 // avoid drawing negative width features for SVG exports

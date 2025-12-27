@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
-const DrawerControls = observer(function ({
+const DrawerControls = observer(function DrawerControls({
   session,
 }: {
   session: SessionWithFocusedViewAndDrawerWidgets

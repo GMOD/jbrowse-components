@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import type { Coord } from './types'
 import type { BaseLinearDisplayModel } from '../model'
 
-const MenuPage = observer(function ({
+const MenuPage = observer(function MenuPage({
   onClose,
   contextCoord,
   model,

@@ -1,12 +1,17 @@
-import { bpSpanPx } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { getMethBins } from '../../ModificationParser/getMethBins'
-import { fillRectCtx } from '../util'
+import { buildMismatchMap } from '../../shared/util'
 
-import type { ProcessedRenderArgs } from '../types'
+import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 import type { Region } from '@jbrowse/core/util'
+
+// Pre-compute colord objects for methylation colors
+const RED_COLORD = colord('red')
+const BLUE_COLORD = colord('blue')
+const PINK_COLORD = colord('pink')
+const PURPLE_COLORD = colord('purple')
 
 // Color by methylation is slightly modified version of color by modifications
 // at reference CpG sites, with non-methylated CpG colored (looking only at the
@@ -17,7 +22,6 @@ export function renderMethylation({
   region,
   bpPerPx,
   renderArgs,
-  canvasWidth,
   cigarOps,
 }: {
   ctx: CanvasRenderingContext2D
@@ -25,66 +29,115 @@ export function renderMethylation({
   region: Region
   bpPerPx: number
   renderArgs: ProcessedRenderArgs
-  canvasWidth: number
-  cigarOps: Uint32Array | number[]
+  cigarOps: ArrayLike<number>
 }) {
+  const items = [] as FlatbushItem[]
+  const coords = [] as number[]
   const { regionSequence } = renderArgs
   const { feature, topPx, heightPx } = feat
+  const bottomPx = topPx + heightPx
   if (!regionSequence) {
     throw new Error('region sequence required for methylation')
   }
 
   const seq = feature.get('seq') as string | undefined
   if (!seq) {
-    return
+    return { items, coords }
   }
   const fstart = feature.get('start')
   const fend = feature.get('end')
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
     getMethBins(feature, cigarOps)
+  const mismatchMap = buildMismatchMap(feature, fstart)
 
-  function getCol(k: number) {
+  function getColAndProb(
+    k: number,
+  ): { color: string; prob: number; type: string } | undefined {
     if (methBins[k]) {
       const p = methProbs[k] || 0
-      return (
-        p > 0.5
-          ? colord('red').alpha((p - 0.5) * 2)
-          : colord('blue').alpha(1 - p * 2)
-      ).toHslString()
+      return {
+        color: (p > 0.5
+          ? RED_COLORD.alpha((p - 0.5) * 2)
+          : BLUE_COLORD.alpha(1 - p * 2)
+        ).toHslString(),
+        prob: p,
+        type: 'm (5mC)',
+      }
     }
     if (hydroxyMethBins[k]) {
       const p = hydroxyMethProbs[k] || 0
-      return (
-        p > 0.5
-          ? colord('pink').alpha((p - 0.5) * 2)
-          : colord('purple').alpha(1 - p * 2)
-      ).toHslString()
+      return {
+        color: (p > 0.5
+          ? PINK_COLORD.alpha((p - 0.5) * 2)
+          : PURPLE_COLORD.alpha(1 - p * 2)
+        ).toHslString(),
+        prob: p,
+        type: 'h (5hmC)',
+      }
     }
     return undefined
   }
+
+  const regionStart = region.start
+  const regionEnd = region.end
+  const reversed = region.reversed
+  const invBpPerPx = 1 / bpPerPx
   const r = regionSequence.toLowerCase()
-  for (let i = 0; i < fend - fstart; i++) {
+
+  function drawBase(
+    start: number,
+    end: number,
+    info: { color: string; prob: number; type: string } | undefined,
+    label: string,
+  ) {
+    const leftPx = reversed
+      ? (regionEnd - end) * invBpPerPx
+      : (start - regionStart) * invBpPerPx
+    const rightPx = reversed
+      ? (regionEnd - start) * invBpPerPx
+      : (end - regionStart) * invBpPerPx
+    const w = rightPx - leftPx + 0.5
+    ctx.fillStyle = info?.color || 'blue'
+    ctx.fillRect(leftPx, topPx, w, heightPx)
+
+    if (rightPx - leftPx >= 0.2) {
+      const prob = info?.prob ?? 0
+      const modType = info?.type ?? 'unmethylated'
+      const mismatchBase = mismatchMap.get(start)
+      items.push({
+        type: 'modification',
+        info: `${label} ${modType} (${(prob * 100).toFixed(1)}%)`,
+        modType: 'methylation',
+        probability: prob,
+        start,
+        mismatch: mismatchBase,
+      })
+      coords.push(leftPx, topPx, rightPx, bottomPx)
+    }
+  }
+
+  // Calculate visible range within feature
+  const visStart = Math.max(0, regionStart - fstart)
+  const visEnd = Math.min(fend - fstart, regionEnd - fstart)
+
+  for (let i = visStart; i < visEnd; i++) {
     const j = i + fstart
 
-    const l1 = r[j - region.start + 1]
-    const l2 = r[j - region.start + 2]
+    const l1 = r[j - regionStart + 1]
+    const l2 = r[j - regionStart + 2]
 
     if (l1 === 'c' && l2 === 'g') {
+      const info1 = getColAndProb(i)
+      const info2 = getColAndProb(i + 1)
+
       if (bpPerPx > 2) {
-        const [leftPx, rightPx] = bpSpanPx(j, j + 2, region, bpPerPx)
-        const w = rightPx - leftPx + 0.5
-        const c = getCol(i) || getCol(i + 1) || 'blue'
-        fillRectCtx(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
+        drawBase(j, j + 2, info1 || info2, 'CpG')
       } else {
-        const [leftPx, rightPx] = bpSpanPx(j, j + 1, region, bpPerPx)
-        const w = rightPx - leftPx + 0.5
-        const c = getCol(i) || 'blue'
-        fillRectCtx(ctx, leftPx, topPx, w, heightPx, canvasWidth, c)
-        const [leftPx2, rightPx2] = bpSpanPx(j + 1, j + 2, region, bpPerPx)
-        const w2 = rightPx2 - leftPx2 + 0.5
-        const c2 = getCol(i + 1) || 'blue'
-        fillRectCtx(ctx, leftPx2, topPx, w2, heightPx, canvasWidth, c2)
+        drawBase(j, j + 1, info1, 'CpG C')
+        drawBase(j + 1, j + 2, info2, 'CpG G')
       }
     }
   }
+
+  return { items, coords }
 }

@@ -1,15 +1,11 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-
+import { readCachedConfig } from './renderConfig'
 import { getBoxColor, isOffScreen, isUTR } from './util'
 
 import type { DrawFeatureArgs } from './types'
 
 function getOutline(args: DrawFeatureArgs) {
   const { feature, config, configContext } = args
-  const { outline, isOutlineCallback } = configContext
-  return isOutlineCallback
-    ? (readConfObject(config, 'outline', { feature }) as string)
-    : outline!
+  return readCachedConfig(configContext.outline, config, 'outline', feature)
 }
 
 const utrHeightFraction = 0.65
@@ -36,7 +32,7 @@ export function drawBox(args: DrawFeatureArgs) {
 
   if (
     isOffScreen(left, width, canvasWidth) ||
-    (feature.parent() && feature.get('type') === 'intron')
+    (feature.parent?.() && feature.get('type') === 'intron')
   ) {
     return
   }

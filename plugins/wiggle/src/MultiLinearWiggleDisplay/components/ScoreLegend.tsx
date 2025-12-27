@@ -8,7 +8,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const ScoreLegend = observer(({ model }: { model: WiggleDisplayModel }) => {
+const ScoreLegend = observer(function ScoreLegend({
+  model,
+}: {
+  model: WiggleDisplayModel
+}) {
   const { ticks, scaleType } = model
   const { width } = getContainingView(model) as LGV
   const legend = `[${ticks?.values[0]}-${ticks?.values[1]}]${scaleType === 'log' ? ' (log scale)' : ''}`

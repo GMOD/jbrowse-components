@@ -43,9 +43,11 @@ const useStyles = makeStyles()({
 })
 
 async function fetchFeatures(track: IAnyStateTreeNode, regions: Region[]) {
-  const { rpcManager } = getSession(track)
+  const session = getSession(track)
+  const { rpcManager } = session
   const adapterConfig = getConf(track, ['adapter'])
   const sessionId = getRpcSessionId(track)
+
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
     regions,
@@ -61,7 +63,7 @@ function roundRegions(regions: Region[]) {
   }))
 }
 
-const SaveTrackDataDialog = observer(function ({
+const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   model,
   handleClose,
 }: {
@@ -165,7 +167,9 @@ const SaveTrackDataDialog = observer(function ({
 
         <FormControl>
           <FormLabel>
-            File type {usedAdapterExport ? '(adapter export)' : ''}
+            {['File type', usedAdapterExport ? '(adapter export)' : '']
+              .filter(f => !!f)
+              .join(' ')}
           </FormLabel>
           <RadioGroup
             value={type}

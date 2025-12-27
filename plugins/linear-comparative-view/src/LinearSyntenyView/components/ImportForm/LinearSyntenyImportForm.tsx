@@ -32,69 +32,71 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const LinearSyntenyViewImportForm = observer(function ({
-  model,
-}: {
-  model: LinearSyntenyViewModel
-}) {
-  const { classes } = useStyles()
-  const session = getSession(model)
-  const { assemblyNames } = session
-  const defaultAssemblyName = assemblyNames[0] || ''
-  const [selectedRow, setSelectedRow] = useState(0)
-  const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
-    defaultAssemblyName,
-    defaultAssemblyName,
-  ])
-  const [error, setError] = useState<unknown>()
+const LinearSyntenyViewImportForm = observer(
+  function LinearSyntenyViewImportForm({
+    model,
+  }: {
+    model: LinearSyntenyViewModel
+  }) {
+    const { classes } = useStyles()
+    const session = getSession(model)
+    const { assemblyNames } = session
+    const defaultAssemblyName = assemblyNames[0] || ''
+    const [selectedRow, setSelectedRow] = useState(0)
+    const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
+      defaultAssemblyName,
+      defaultAssemblyName,
+    ])
+    const [error, setError] = useState<unknown>()
 
-  const handleLaunch = async () => {
-    try {
-      setError(undefined)
-      await doSubmit({
-        selectedAssemblyNames,
-        model,
-      })
-    } catch (e) {
-      console.error(e)
-      setError(e)
+    const handleLaunch = async () => {
+      try {
+        setError(undefined)
+        await doSubmit({
+          selectedAssemblyNames,
+          model,
+        })
+      } catch (e) {
+        console.error(e)
+        setError(e)
+      }
     }
-  }
 
-  return (
-    <Container className={classes.importFormContainer}>
-      {error ? <ErrorMessage error={error} /> : null}
-      <div className={classes.flex}>
-        <div className={classes.leftPanel}>
-          <LeftPanel
-            model={model}
-            selectedAssemblyNames={selectedAssemblyNames}
-            setSelectedAssemblyNames={setSelectedAssemblyNames}
-            selectedRow={selectedRow}
-            setSelectedRow={setSelectedRow}
-            defaultAssemblyName={defaultAssemblyName}
-            onLaunch={() => {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              handleLaunch()
-            }}
-          />
-        </div>
-
-        <div className={classes.rightPanel}>
-          <div>
-            Synteny dataset to display between row {selectedRow + 1} and{' '}
-            {selectedRow + 2}
+    return (
+      <Container className={classes.importFormContainer}>
+        {error ? <ErrorMessage error={error} /> : null}
+        <div className={classes.flex}>
+          <div className={classes.leftPanel}>
+            <LeftPanel
+              model={model}
+              selectedAssemblyNames={selectedAssemblyNames}
+              setSelectedAssemblyNames={setSelectedAssemblyNames}
+              selectedRow={selectedRow}
+              setSelectedRow={setSelectedRow}
+              defaultAssemblyName={defaultAssemblyName}
+              onLaunch={() => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                handleLaunch()
+              }}
+            />
           </div>
-          <ImportSyntenyTrackSelector
-            model={model}
-            selectedRow={selectedRow}
-            assembly1={selectedAssemblyNames[selectedRow]!}
-            assembly2={selectedAssemblyNames[selectedRow + 1]!}
-          />
+
+          <div className={classes.rightPanel}>
+            <div>
+              Synteny dataset to display between row {selectedRow + 1} and{' '}
+              {selectedRow + 2}
+            </div>
+            <ImportSyntenyTrackSelector
+              model={model}
+              selectedRow={selectedRow}
+              assembly1={selectedAssemblyNames[selectedRow]!}
+              assembly2={selectedAssemblyNames[selectedRow + 1]!}
+            />
+          </div>
         </div>
-      </div>
-    </Container>
-  )
-})
+      </Container>
+    )
+  },
+)
 
 export default LinearSyntenyViewImportForm

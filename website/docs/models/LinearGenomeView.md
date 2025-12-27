@@ -80,7 +80,7 @@ entire set of chromosomes if your assembly is very fragmented
 // type signature
 IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 // code
-displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
+displayedRegions: types.optional(types.frozen<Region[]>(), [])
 ```
 
 #### property: tracks
@@ -218,7 +218,7 @@ colorByCDS: types.optional(types.boolean, () =>
 
 #### property: showTrackOutlines
 
-color by CDS
+show the track outlines
 
 ```js
 // type signature
@@ -359,6 +359,38 @@ any
 ```
 
 #### getter: hasDisplayedRegions
+
+```js
+// type
+boolean
+```
+
+#### getter: loadingMessage
+
+```js
+// type
+string
+```
+
+#### getter: hasSomethingToShow
+
+```js
+// type
+any
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+any
+```
+
+#### getter: showImportForm
+
+Whether to show the import form
 
 ```js
 // type
@@ -816,7 +848,7 @@ showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) 
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => 0 | 1
 ```
 
 #### action: moveTrackDown
@@ -858,7 +890,7 @@ moveTrack: (movingId: string, targetId: string) => void
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string) => void
 ```
 
 #### action: setTrackLabels
@@ -887,15 +919,6 @@ setDisplayedRegions: (regions: Region[]) => void
 ```js
 // type signature
 activateTrackSelector: () => Widget
-```
-
-#### action: afterDisplayedRegionsSet
-
-schedule something to be run after the next time displayedRegions is set
-
-```js
-// type signature
-afterDisplayedRegionsSet: (cb: () => void) => void
 ```
 
 #### action: horizontalScroll

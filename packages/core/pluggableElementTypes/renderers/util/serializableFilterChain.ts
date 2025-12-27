@@ -12,7 +12,7 @@ export type SerializedFilterChain = string[]
 export default class SerializableFilterChain {
   filterChain: Filter[]
 
-  constructor({ filters = [] }: { filters: SerializedFilterChain }) {
+  constructor({ filters }: { filters: SerializedFilterChain }) {
     this.filterChain = filters
       .map(f => f.trim())
       .filter(f => !!f)
@@ -29,7 +29,7 @@ export default class SerializableFilterChain {
     for (const entry of this.filterChain) {
       if (
         // @ts-expect-error
-        !entry.expr.evalSync({ feature: args[0] })
+        !entry.expr.eval({ feature: args[0] })
       ) {
         return false
       }

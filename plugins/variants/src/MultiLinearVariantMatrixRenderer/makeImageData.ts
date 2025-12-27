@@ -1,5 +1,8 @@
-import { forEachWithStopTokenCheck, updateStatus } from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { updateStatus } from '@jbrowse/core/util'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
 import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
@@ -46,8 +49,9 @@ function drawPhasedMode(drawCtx: DrawContext, mafs: Maf[]) {
   } = drawCtx
 
   const arr = [] as string[][]
-
-  forEachWithStopTokenCheck(mafs, stopToken, ({ feature }, idx) => {
+  const lastCheck = createStopTokenChecker(stopToken)
+  for (let idx = 0, l = mafs.length; idx < l; idx++) {
+    const { feature } = mafs[idx]!
     const arr2 = [] as string[]
     const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(
       'PS',
@@ -105,7 +109,8 @@ function drawPhasedMode(drawCtx: DrawContext, mafs: Maf[]) {
       }
     }
     arr.push(arr2)
-  })
+    checkStopToken2(lastCheck)
+  }
 
   return arr
 }
@@ -120,57 +125,30 @@ function drawAlleleCountMode(drawCtx: DrawContext, mafs: Maf[]) {
     w,
     scrollTop,
     splitCache,
+    stopToken,
     colorCache,
     genotypesCache,
-    stopToken,
   } = drawCtx
 
   const arr = [] as string[][]
+  const lastCheck = createStopTokenChecker(stopToken)
 
-  forEachWithStopTokenCheck(
-    mafs,
-    stopToken,
-    ({ feature, mostFrequentAlt }, idx) => {
-      const arr2 = [] as string[]
-      const hasPhaseSet = (
-        feature.get('FORMAT') as string | undefined
-      )?.includes('PS')
-      const x = idx * w
+  for (let idx = 0, l = mafs.length; idx < l; idx++) {
+    const { feature, mostFrequentAlt } = mafs[idx]!
+    const arr2 = [] as string[]
+    const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(
+      'PS',
+    )
+    const x = idx * w
 
-      if (hasPhaseSet) {
-        const samp = feature.get('samples') as Record<string, SampleGenotype>
-        for (let j = startRow; j < endRow; j++) {
-          const y = j * h - scrollTop
-          const { name } = sources[j]!
-          const s = samp[name]
-          if (s) {
-            const genotype = s.GT?.[0]
-            if (genotype) {
-              arr2.push(genotype)
-              const c = getAlleleColor(
-                genotype,
-                mostFrequentAlt,
-                colorCache,
-                splitCache,
-                true,
-              )
-              if (c) {
-                drawColorAlleleCount(c, ctx, x, y, w, h)
-              }
-            }
-          }
-        }
-      } else {
-        const featureId = feature.id()
-        let samp = genotypesCache.get(featureId)
-        if (!samp) {
-          samp = feature.get('genotypes') as Record<string, string>
-          genotypesCache.set(featureId, samp)
-        }
-        for (let j = startRow; j < endRow; j++) {
-          const y = j * h - scrollTop
-          const { name } = sources[j]!
-          const genotype = samp[name]
+    if (hasPhaseSet) {
+      const samp = feature.get('samples') as Record<string, SampleGenotype>
+      for (let j = startRow; j < endRow; j++) {
+        const y = j * h - scrollTop
+        const { name } = sources[j]!
+        const s = samp[name]
+        if (s) {
+          const genotype = s.GT?.[0]
           if (genotype) {
             arr2.push(genotype)
             const c = getAlleleColor(
@@ -186,9 +164,35 @@ function drawAlleleCountMode(drawCtx: DrawContext, mafs: Maf[]) {
           }
         }
       }
-      arr.push(arr2)
-    },
-  )
+    } else {
+      const featureId = feature.id()
+      let samp = genotypesCache.get(featureId)
+      if (!samp) {
+        samp = feature.get('genotypes') as Record<string, string>
+        genotypesCache.set(featureId, samp)
+      }
+      for (let j = startRow; j < endRow; j++) {
+        const y = j * h - scrollTop
+        const { name } = sources[j]!
+        const genotype = samp[name]
+        if (genotype) {
+          arr2.push(genotype)
+          const c = getAlleleColor(
+            genotype,
+            mostFrequentAlt,
+            colorCache,
+            splitCache,
+            true,
+          )
+          if (c) {
+            drawColorAlleleCount(c, ctx, x, y, w, h)
+          }
+        }
+      }
+    }
+    arr.push(arr2)
+    checkStopToken2(lastCheck)
+  }
 
   return arr
 }
@@ -221,15 +225,14 @@ export async function makeImageData({
     sources.length,
     Math.ceil((scrollTop + canvasHeight) / h),
   )
-  checkStopToken(stopToken)
-
+  const lastCheck = createStopTokenChecker(stopToken)
   const genotypesCache = new Map<string, Record<string, string>>()
   const colorCache = {} as Record<string, string | undefined>
   const splitCache = {} as Record<string, string[]>
 
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
-      stopToken,
+      lastCheck,
       features: features.values(),
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
@@ -237,7 +240,6 @@ export async function makeImageData({
       splitCache,
     }),
   )
-  checkStopToken(stopToken)
 
   const m = mafs.length
   const w = canvasWidth / m

@@ -25,7 +25,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const DrawerHeader = observer(function ({
+const DrawerHeader = observer(function DrawerHeader({
   session,
   setToolbarHeight,
   onPopoutDrawer,

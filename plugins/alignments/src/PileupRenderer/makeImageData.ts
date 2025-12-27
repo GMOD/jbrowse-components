@@ -1,15 +1,16 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  forEachWithStopTokenCheck,
-  renderToAbstractCanvas,
-} from '@jbrowse/core/util'
+import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { layoutFeats } from './layoutFeatures'
 import { renderAlignment } from './renderers/renderAlignment'
-import { renderMismatches } from './renderers/renderMismatches'
+import { renderMismatchesCallback } from './renderers/renderMismatchesCallback'
 import { renderSoftClipping } from './renderers/renderSoftClipping'
 import {
   getCharWidthHeight,
@@ -18,7 +19,7 @@ import {
   setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
-} from './util'
+} from '../shared/util'
 
 import type {
   FlatbushItem,
@@ -57,6 +58,7 @@ async function fetchRegionSequence(
   const region = regions[0]!
   return (seqAdapter as BaseSequenceAdapter).getSequence({
     ...region,
+    refName: region.originalRefName || region.refName,
     start: Math.max(0, region.start - 1),
     end: region.end + 1,
   })
@@ -87,6 +89,7 @@ function renderFeatures({
     'largeInsertionIndicatorScale',
   )
   const hideSmallIndels = readConfObject(config, 'hideSmallIndels') as boolean
+  const hideMismatches = readConfObject(config, 'hideMismatches') as boolean
   const defaultColor = readConfObject(config, 'color') === '#f0f'
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
@@ -98,8 +101,9 @@ function renderFeatures({
   const drawIndels = shouldDrawIndels()
   const coords = [] as number[]
   const items = [] as FlatbushItem[]
+  const lastCheck = createStopTokenChecker(stopToken)
 
-  forEachWithStopTokenCheck(layoutRecords, stopToken, feat => {
+  for (const feat of layoutRecords) {
     const alignmentRet = renderAlignment({
       ctx,
       feat,
@@ -117,12 +121,13 @@ function renderFeatures({
     for (let i = 0, l = alignmentRet.items.length; i < l; i++) {
       items.push(alignmentRet.items[i]!)
     }
-    const ret = renderMismatches({
+    const ret = renderMismatchesCallback({
       ctx,
       feat,
       bpPerPx: renderArgs.bpPerPx,
       regions: renderArgs.regions,
       hideSmallIndels,
+      hideMismatches,
       mismatchAlpha,
       drawSNPsMuted,
       drawIndels,
@@ -151,7 +156,8 @@ function renderFeatures({
         canvasWidth,
       })
     }
-  })
+    checkStopToken2(lastCheck)
+  }
 
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (coords.length) {
@@ -178,7 +184,7 @@ export async function makeImageData({
   renderArgs: PreProcessedRenderArgs
   pluginManager: PluginManager
 }) {
-  const { statusCallback = () => {} } = renderArgs
+  const { statusCallback = () => {}, features } = renderArgs
 
   statusCallback('Creating layout')
   const { layoutRecords, height } = layoutFeats(renderArgs)
@@ -199,5 +205,13 @@ export async function makeImageData({
     }),
   )
 
-  return { result, height }
+  const featureNames: Record<string, string> = {}
+  for (const [id, feature] of features) {
+    const name = feature.get('name')
+    if (name) {
+      featureNames[id] = name
+    }
+  }
+
+  return { result, height, featureNames }
 }

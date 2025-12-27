@@ -1,10 +1,9 @@
-import {
-  featureSpanPx,
-  forEachWithStopTokenCheck,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { featureSpanPx, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants'
 import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
@@ -58,8 +57,8 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
     stopToken,
   } = drawCtx
   const { items, coords } = itemData
-
-  forEachWithStopTokenCheck(mafs, stopToken, ({ feature }) => {
+  const lastCheck = createStopTokenChecker(stopToken)
+  for (const { feature } of mafs) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const featureId = feature.id()
     const bpLen = feature.get('end') - feature.get('start')
@@ -92,7 +91,8 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
         }
       }
     }
-  })
+    checkStopToken2(lastCheck)
+  }
 }
 
 function drawAlleleCountMode(
@@ -117,8 +117,8 @@ function drawAlleleCountMode(
     stopToken,
   } = drawCtx
   const { items, coords } = itemData
-
-  forEachWithStopTokenCheck(mafs, stopToken, ({ mostFrequentAlt, feature }) => {
+  const lastCheck = createStopTokenChecker(stopToken)
+  for (const { mostFrequentAlt, feature } of mafs) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const featureId = feature.id()
     const bpLen = feature.get('end') - feature.get('start')
@@ -162,7 +162,8 @@ function drawAlleleCountMode(
         }
       }
     }
-  })
+    checkStopToken2(lastCheck)
+  }
 }
 
 export async function makeImageData(
@@ -185,7 +186,7 @@ export async function makeImageData(
     statusCallback = () => {},
   } = props
   const region = regions[0]!
-  checkStopToken(stopToken)
+  const lastCheck = createStopTokenChecker(stopToken)
 
   const coords = [] as number[]
   const items = [] as {
@@ -208,7 +209,7 @@ export async function makeImageData(
 
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
-      stopToken,
+      lastCheck,
       features: features.values(),
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
@@ -216,7 +217,6 @@ export async function makeImageData(
       splitCache,
     }),
   )
-  checkStopToken(stopToken)
 
   const drawCtx: DrawContext = {
     ctx,

@@ -14,7 +14,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const LinearWiggleDisplay = observer(function (props: {
+const LinearWiggleDisplay = observer(function LinearWiggleDisplay(props: {
   model: WiggleDisplayModel
 }) {
   const { model } = props

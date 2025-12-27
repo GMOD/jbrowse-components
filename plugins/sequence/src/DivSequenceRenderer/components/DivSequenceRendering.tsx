@@ -17,7 +17,7 @@ function SequenceSVG({
   regions,
   width,
   colorByCDS,
-  features = new Map(),
+  features,
   showReverse = true,
   showForward = true,
   showTranslation = true,
@@ -47,10 +47,6 @@ function SequenceSVG({
     return null
   }
 
-  // incrementer for the y-position of the current sequence being rendered
-  // (applies to both translation rows and dna rows)
-  let currY = -rowHeight
-
   const showSequence = bpPerPx <= 1
 
   const forwardFrames: Frame[] = showTranslation && showForward ? [3, 2, 1] : []
@@ -61,67 +57,83 @@ function SequenceSVG({
   const [topFrames, bottomFrames] = region.reversed
     ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
     : [forwardFrames, reverseFrames]
-  return (
-    <>
-      {topFrames.map(index => (
-        <Translation
-          key={`translation-${index}`}
-          width={width}
-          colorByCDS={colorByCDS}
-          seq={seq}
-          y={(currY += rowHeight)}
-          codonTable={codonTable}
-          frame={index}
-          bpPerPx={bpPerPx}
-          region={region}
-          seqStart={feature.get('start')}
-          height={rowHeight}
-          reverse={region.reversed}
-        />
-      ))}
 
-      {showForward && showSequence ? (
-        <Sequence
-          height={rowHeight}
-          sequenceType={sequenceType}
-          y={(currY += rowHeight)}
-          feature={feature}
-          region={region}
-          seq={region.reversed ? complement(seq) : seq}
-          bpPerPx={bpPerPx}
-        />
-      ) : null}
+  const elements: ReactNode[] = []
+  let currentY = 0
 
-      {showReverse && showSequence ? (
-        <Sequence
-          height={rowHeight}
-          sequenceType={sequenceType}
-          y={(currY += rowHeight)}
-          feature={feature}
-          region={region}
-          seq={region.reversed ? seq : complement(seq)}
-          bpPerPx={bpPerPx}
-        />
-      ) : null}
+  for (const index of topFrames) {
+    elements.push(
+      <Translation
+        key={`translation-${index}`}
+        width={width}
+        colorByCDS={colorByCDS}
+        seq={seq}
+        y={currentY}
+        codonTable={codonTable}
+        frame={index}
+        bpPerPx={bpPerPx}
+        region={region}
+        seqStart={feature.get('start')}
+        height={rowHeight}
+        reverse={region.reversed}
+      />,
+    )
+    currentY += rowHeight
+  }
 
-      {bottomFrames.map(index => (
-        <Translation
-          key={`rev-translation-${index}`}
-          width={width}
-          colorByCDS={colorByCDS}
-          seq={seq}
-          y={(currY += rowHeight)}
-          codonTable={codonTable}
-          frame={index}
-          bpPerPx={bpPerPx}
-          region={region}
-          seqStart={feature.get('start')}
-          height={rowHeight}
-          reverse={!region.reversed}
-        />
-      ))}
-    </>
-  )
+  if (showForward && showSequence) {
+    elements.push(
+      <Sequence
+        key="forward_seq"
+        height={rowHeight}
+        sequenceType={sequenceType}
+        y={currentY}
+        feature={feature}
+        region={region}
+        seq={region.reversed ? complement(seq) : seq}
+        bpPerPx={bpPerPx}
+      />,
+    )
+    currentY += rowHeight
+  }
+
+  if (showReverse && showSequence) {
+    elements.push(
+      <Sequence
+        key="reverse_seq"
+        height={rowHeight}
+        sequenceType={sequenceType}
+        y={currentY}
+        feature={feature}
+        region={region}
+        seq={region.reversed ? seq : complement(seq)}
+        bpPerPx={bpPerPx}
+      />,
+    )
+    currentY += rowHeight
+  }
+
+  for (const index of bottomFrames) {
+    elements.push(
+      <Translation
+        key={`rev-translation-${index}`}
+        width={width}
+        colorByCDS={colorByCDS}
+        seq={seq}
+        y={currentY}
+        codonTable={codonTable}
+        frame={index}
+        bpPerPx={bpPerPx}
+        region={region}
+        seqStart={feature.get('start')}
+        height={rowHeight}
+        reverse={!region.reversed}
+      />,
+    )
+    currentY += rowHeight
+  }
+
+  return <>{elements}</>
 }
 
 function Wrapper({
@@ -155,7 +167,7 @@ function Wrapper({
   )
 }
 
-const DivSequenceRendering = observer(function ({
+const DivSequenceRendering = observer(function DivSequenceRendering({
   exportSVG,
   features,
   regions,

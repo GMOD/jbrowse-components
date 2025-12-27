@@ -100,7 +100,11 @@ function Checkbox({
 
   const iconClass = cx(
     classes.icon,
-    disabled ? classes.disabledIcon : checked ? classes.checked : classes.unchecked,
+    disabled
+      ? classes.disabledIcon
+      : checked
+        ? classes.checked
+        : classes.unchecked,
   )
 
   return (

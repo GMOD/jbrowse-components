@@ -110,7 +110,7 @@ export async function getBlockFeatures(
   return Promise.all(
     views.flatMap(
       async view =>
-        (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+        (await rpcManager.call(sessionId, 'BreakpointGetFeatures', {
           adapterConfig: getConf(track, ['adapter']),
           sessionId,
           regions: view.staticBlocks.contentBlocks,

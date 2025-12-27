@@ -6,8 +6,7 @@ export default class LinePlotRenderer extends FeatureRendererType {
   supportsSVG = true
 
   async render(renderProps: RenderArgsDeserialized) {
-    const features = await this.getFeatures(renderProps)
-    const { renderLinePlot } = await import('./renderLinePlot')
-    return renderLinePlot(renderProps, features)
+    const { makeImageData } = await import('./makeImageData')
+    return makeImageData(renderProps, this.pluginManager)
   }
 }

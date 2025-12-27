@@ -12,7 +12,7 @@ import type { HierarchicalTrackSelectorModel } from '../../model'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
-const DropdownTrackSelector = observer(function ({
+const DropdownTrackSelector = observer(function DropdownTrackSelector({
   model,
   tracks,
   extraMenuItems,
@@ -40,7 +40,6 @@ const DropdownTrackSelector = observer(function ({
               <SanitizedHTML html={getTrackName(t, session)} />{' '}
               <TrackSelectorTrackMenu
                 id={t.trackId}
-                trackId={t.trackId}
                 model={model}
                 conf={t}
                 setOpen={setOpen}

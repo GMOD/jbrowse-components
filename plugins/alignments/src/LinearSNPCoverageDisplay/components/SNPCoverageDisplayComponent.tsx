@@ -5,17 +5,19 @@ import SashimiArcs from './SashimiArcs'
 
 import type { SNPCoverageDisplayModel } from '../model'
 
-const SNPCoverageDisplayComponent = observer(function (props: {
-  model: SNPCoverageDisplayModel
-}) {
-  const { model } = props
+const SNPCoverageDisplayComponent = observer(
+  function SNPCoverageDisplayComponent(props: {
+    model: SNPCoverageDisplayModel
+  }) {
+    const { model } = props
 
-  return (
-    <div style={{ position: 'relative' }}>
-      <SashimiArcs model={model} />
-      <LinearWiggleDisplayReactComponent {...props} />
-    </div>
-  )
-})
+    return (
+      <div style={{ position: 'relative' }}>
+        <LinearWiggleDisplayReactComponent {...props} />
+        <SashimiArcs model={model} />
+      </div>
+    )
+  },
+)
 
 export default SNPCoverageDisplayComponent

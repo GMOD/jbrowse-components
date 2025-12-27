@@ -9,9 +9,16 @@ import type { AnyConfigurationModel } from '../configuration'
 import type { Assembly } from './assembly'
 import type PluginManager from '../PluginManager'
 import type RpcManager from '../rpc/RpcManager'
+import type { StopToken } from '../util/stopToken'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
+
+export interface AssemblyBaseOpts {
+  stopToken?: StopToken
+  sessionId: string
+  statusCallback?: (arg: string) => void
+}
 
 /**
  * #stateModel AssemblyManager
@@ -156,7 +163,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { stopToken?: string; sessionId: string },
+        opts: AssemblyBaseOpts,
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
@@ -171,7 +178,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       async getReverseRefNameMapForAdapter(
         adapterConf: AdapterConf,
         assemblyName: string | undefined,
-        opts: { stopToken?: string; sessionId: string },
+        opts: AssemblyBaseOpts,
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)

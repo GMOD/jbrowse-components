@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState, useTransition } from 'react'
 
-import { useDebounce } from '@jbrowse/core/util'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
@@ -8,8 +7,6 @@ import HelpIcon from '@mui/icons-material/Help'
 import { IconButton, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// Optimize by using system default fonts:
-// https://css-tricks.com/snippets/css/font-stacks/
 const fontFamily =
   'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
 
@@ -34,7 +31,27 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const CallbackEditor = observer(function ({
+function validateAndSetCode(
+  code: string,
+  slot: { set: (arg: string) => void },
+  setCodeError: (e: unknown) => void,
+) {
+  try {
+    const jexlCode = code.startsWith('jexl:') ? code : `jexl:${code}`
+
+    if (jexlCode === 'jexl:') {
+      throw new Error('Empty jexl expression is not valid')
+    }
+    stringToJexlExpression(jexlCode, getEnv(slot).pluginManager?.jexl)
+    slot.set(jexlCode)
+    setCodeError(undefined)
+  } catch (e) {
+    console.error({ e })
+    setCodeError(e)
+  }
+}
+
+const CallbackEditor = observer(function CallbackEditor({
   slot,
 }: {
   slot: {
@@ -49,28 +66,7 @@ const CallbackEditor = observer(function ({
 
   const [code, setCode] = useState(slot.value)
   const [error, setCodeError] = useState<unknown>()
-  const debouncedCode = useDebounce(code, 400)
-
-  useEffect(() => {
-    try {
-      const jexlDebouncedCode = debouncedCode.startsWith('jexl:')
-        ? debouncedCode
-        : `jexl:${debouncedCode}`
-
-      if (jexlDebouncedCode === 'jexl:') {
-        throw new Error('Empty jexl expression is not valid')
-      }
-      stringToJexlExpression(
-        jexlDebouncedCode,
-        getEnv(slot).pluginManager?.jexl,
-      )
-      slot.set(jexlDebouncedCode)
-      setCodeError(undefined)
-    } catch (e) {
-      console.error({ e })
-      setCodeError(e)
-    }
-  }, [debouncedCode, slot])
+  const [, startTransition] = useTransition()
 
   // if default value is a callback, will have to remove jexl:
   // do this last
@@ -83,7 +79,11 @@ const CallbackEditor = observer(function ({
           className={classes.callbackEditor}
           value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
           onChange={event => {
-            setCode(event.target.value)
+            const value = event.target.value
+            setCode(value)
+            startTransition(() => {
+              validateAndSetCode(value, slot, setCodeError)
+            })
           }}
           style={{ background: error ? '#fdd' : undefined }}
           slotProps={{

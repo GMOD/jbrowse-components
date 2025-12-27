@@ -11,7 +11,7 @@ const useStyles = makeStyles()({
     maxHeight: 600,
   },
 })
-const AssemblyEditor = observer(function ({
+const AssemblyEditor = observer(function AssemblyEditor({
   assembly,
   onClose,
 }: {

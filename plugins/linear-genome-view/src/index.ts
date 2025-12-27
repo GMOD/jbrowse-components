@@ -79,6 +79,7 @@ export type {
   BaseLinearDisplayModel,
   BlockModel,
   ExportSvgDisplayOptions,
+  LegendItem,
 } from './BaseLinearDisplay'
 
 export {
@@ -90,9 +91,12 @@ export {
   BaseLinearDisplayComponent,
   BlockMsg,
   FeatureDensityMixin,
+  FloatingLegend,
+  SVGLegend,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
+  calculateSvgLegendWidth,
 } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,
@@ -111,4 +115,12 @@ export {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
+export {
+  configSchema as linearFeatureDisplayConfigSchemaFactory,
+  modelFactory as linearFeatureDisplayModelFactory,
+} from './LinearFeatureDisplay'
+export type {
+  LinearFeatureDisplayModel,
+  LinearFeatureDisplayStateModel,
+} from './LinearFeatureDisplay'
 export { default as LinearBasicDisplayComponent } from './LinearBasicDisplay/components/LinearBasicDisplayComponent'

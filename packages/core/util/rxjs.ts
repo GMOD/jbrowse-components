@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs'
 
+import type { StopToken } from './stopToken'
 import type { Observer } from 'rxjs'
 
 /**
@@ -10,7 +11,7 @@ import type { Observer } from 'rxjs'
  */
 export function ObservableCreate<T>(
   func: (arg: Observer<T>) => void | Promise<void>,
-  _stopToken?: string,
+  _stopToken?: StopToken,
 ): Observable<T> {
   return new Observable((observer: Observer<T>) => {
     try {

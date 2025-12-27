@@ -147,7 +147,7 @@ export default function stateModelFactory() {
        */
       tracksForAssembly(selectedAssembly: string) {
         const session = getSession(self)
-        const { tracks = [], sessionTracks = [] } = session
+        const { tracks, sessionTracks = [] } = session
         const allTracks = [
           ...tracks,
           ...sessionTracks,

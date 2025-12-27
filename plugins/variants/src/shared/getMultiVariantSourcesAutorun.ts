@@ -7,15 +7,16 @@ import { autorun } from 'mobx'
 
 import type { Source } from './types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getMultiVariantSourcesAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   adapterProps: () => Record<string, unknown>
-  setSourcesLoading: (aborter: string) => void
+  setSourcesLoading: (aborter: StopToken) => void
   setError: (error: unknown) => void
-  setMessage: (str: string) => void
+  setStatusMessage: (str: string) => void
   setSources: (sources: Source[]) => void
 }) {
   addDisposer(
@@ -39,6 +40,11 @@ export function getMultiVariantSourcesAutorun(self: {
               sessionId,
               adapterConfig,
               stopToken,
+              statusCallback: (arg: string) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(arg)
+                }
+              },
             },
           )) as Source[]
           if (isAlive(self)) {
@@ -51,7 +57,10 @@ export function getMultiVariantSourcesAutorun(self: {
           }
         }
       },
-      { delay: 1000 },
+      {
+        delay: 1000,
+        name: 'GetMultiVariantSources',
+      },
     ),
   )
 }

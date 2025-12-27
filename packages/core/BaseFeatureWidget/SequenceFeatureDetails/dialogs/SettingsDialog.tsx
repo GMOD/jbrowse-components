@@ -47,97 +47,99 @@ function FormControl2({ children }: { children: React.ReactNode }) {
   )
 }
 
-const SequenceFeatureSettingsDialog = observer(function ({
-  handleClose,
-  model,
-}: {
-  handleClose: () => void
-  model: SequenceFeatureDetailsModel
-}) {
-  const { classes } = useStyles()
-  const { upperCaseCDS } = model
-  const [intronBp, setIntronBp] = useState(`${model.intronBp}`)
-  const [upDownBp, setUpDownBp] = useState(`${model.upDownBp}`)
-  const intronBpValid = !Number.isNaN(+intronBp)
-  const upDownBpValid = !Number.isNaN(+upDownBp)
-  return (
-    <Dialog
-      maxWidth="xl"
-      open
-      onClose={() => {
-        handleClose()
-      }}
-      title="Feature sequence settings"
-    >
-      <DialogContent className={classes.dialogContent}>
-        <TextField2
-          label="Number of intronic bases around splice site to display"
-          className={classes.formElt}
-          value={intronBp}
-          helperText={!intronBpValid ? 'Not a number' : ''}
-          error={!intronBpValid}
-          onChange={event => {
-            setIntronBp(event.target.value)
-          }}
-        />
-        <TextField2
-          label="Number of bases up/down stream of feature to display"
-          className={classes.formElt}
-          value={upDownBp}
-          helperText={!upDownBpValid ? 'Not a number' : ''}
-          error={!upDownBpValid}
-          onChange={event => {
-            setUpDownBp(event.target.value)
-          }}
-        />
-        <FormControl2>
-          <FormLabel>Sequence capitalization</FormLabel>
-          <RadioGroup
-            value={upperCaseCDS ? 'cds' : 'unchanged'}
-            onChange={e => {
-              model.setUpperCaseCDS(e.target.value === 'cds')
+const SequenceFeatureSettingsDialog = observer(
+  function SequenceFeatureSettingsDialog({
+    handleClose,
+    model,
+  }: {
+    handleClose: () => void
+    model: SequenceFeatureDetailsModel
+  }) {
+    const { classes } = useStyles()
+    const { upperCaseCDS } = model
+    const [intronBp, setIntronBp] = useState(`${model.intronBp}`)
+    const [upDownBp, setUpDownBp] = useState(`${model.upDownBp}`)
+    const intronBpValid = !Number.isNaN(+intronBp)
+    const upDownBpValid = !Number.isNaN(+upDownBp)
+    return (
+      <Dialog
+        maxWidth="xl"
+        open
+        onClose={() => {
+          handleClose()
+        }}
+        title="Feature sequence settings"
+      >
+        <DialogContent className={classes.dialogContent}>
+          <TextField2
+            label="Number of intronic bases around splice site to display"
+            className={classes.formElt}
+            value={intronBp}
+            helperText={!intronBpValid ? 'Not a number' : ''}
+            error={!intronBpValid}
+            onChange={event => {
+              setIntronBp(event.target.value)
             }}
-          >
-            <FormControlLabel
-              value="cds"
-              control={<Radio className={classes.root} size="small" />}
-              label="Capitalize CDS and lower case everything else"
-            />
-            <FormControlLabel
-              value="unchanged"
-              control={<Radio className={classes.root} size="small" />}
-              label="Capitalization from reference genome sequence"
-            />
-          </RadioGroup>
-        </FormControl2>
-      </DialogContent>
+          />
+          <TextField2
+            label="Number of bases up/down stream of feature to display"
+            className={classes.formElt}
+            value={upDownBp}
+            helperText={!upDownBpValid ? 'Not a number' : ''}
+            error={!upDownBpValid}
+            onChange={event => {
+              setUpDownBp(event.target.value)
+            }}
+          />
+          <FormControl2>
+            <FormLabel>Sequence capitalization</FormLabel>
+            <RadioGroup
+              value={upperCaseCDS ? 'cds' : 'unchanged'}
+              onChange={e => {
+                model.setUpperCaseCDS(e.target.value === 'cds')
+              }}
+            >
+              <FormControlLabel
+                value="cds"
+                control={<Radio className={classes.root} size="small" />}
+                label="Capitalize CDS and lower case everything else"
+              />
+              <FormControlLabel
+                value="unchanged"
+                control={<Radio className={classes.root} size="small" />}
+                label="Capitalization from reference genome sequence"
+              />
+            </RadioGroup>
+          </FormControl2>
+        </DialogContent>
 
-      <DialogActions>
-        <Button
-          onClick={() => {
-            model.setIntronBp(+intronBp)
-            model.setUpDownBp(+upDownBp)
-            handleClose()
-          }}
-          disabled={!intronBpValid || !upDownBpValid}
-          color="primary"
-          variant="contained"
-        >
-          Submit
-        </Button>
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          color="secondary"
-          autoFocus
-          variant="contained"
-        >
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-})
+        <DialogActions>
+          <Button
+            onClick={() => {
+              model.setIntronBp(+intronBp)
+              model.setUpDownBp(+upDownBp)
+              handleClose()
+            }}
+            disabled={!intronBpValid || !upDownBpValid}
+            color="primary"
+            variant="contained"
+          >
+            Submit
+          </Button>
+          <Button
+            onClick={() => {
+              handleClose()
+            }}
+            color="secondary"
+            autoFocus
+            variant="contained"
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  },
+)
 
 export default SequenceFeatureSettingsDialog

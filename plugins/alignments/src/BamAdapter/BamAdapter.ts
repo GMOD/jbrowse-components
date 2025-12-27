@@ -1,13 +1,12 @@
 import { BamFile } from '@gmod/bam'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
-import QuickLRU from '@jbrowse/core/util/QuickLRU'
+import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
-import { filterReadFlag, filterTagValue, parseSamHeader } from '../shared/util'
+import { parseSamHeader } from '../shared/util'
 
 import type { FilterBy } from '../shared/types'
 import type { ParsedSamHeader } from '../shared/util'
@@ -23,15 +22,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private setupP?: Promise<ParsedSamHeader>
 
-  private ultraLongFeatureCache = new QuickLRU<number, Feature>({
-    maxSize: 500,
-  })
-
-  private configureResult?: { bam: BamFile }
+  protected configureResult?: { bam: BamFile<BamSlightlyLazyFeature> }
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
-
-  public sequenceAdapterConfig?: Record<string, unknown>
 
   protected configure() {
     if (!this.configureResult) {
@@ -48,6 +41,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           baiFilehandle: !csi
             ? openLocation(location, this.pluginManager)
             : undefined,
+          recordClass: BamSlightlyLazyFeature,
         }),
       }
     }
@@ -78,17 +72,24 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return bam.getHeaderText()
   }
 
-  private async setup(_opts?: BaseOptions) {
-    this.setupP ??= (async () => {
-      const { bam } = this.configure()
-      const rawHeader = await bam.getHeader()
-      this.samHeader = parseSamHeader(rawHeader ?? [])
-      return this.samHeader
-    })().catch((e: unknown) => {
-      this.setupP = undefined
-      this.configureResult = undefined
-      throw e
-    })
+  private async setup(opts?: BaseOptions) {
+    const { statusCallback } = opts || {}
+    this.setupP ??= updateStatus(
+      'Downloading index',
+      statusCallback,
+      async () => {
+        try {
+          const { bam } = this.configure()
+          const rawHeader = await bam.getHeader()
+          this.samHeader = parseSamHeader(rawHeader ?? [])
+          return this.samHeader
+        } catch (e) {
+          this.setupP = undefined
+          this.configureResult = undefined
+          throw e
+        }
+      },
+    )
     return this.setupP
   }
 
@@ -113,62 +114,50 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const records = await updateStatus(
         'Downloading alignments',
         statusCallback,
-        () => bam.getRecordsForRange(refName, start, end),
+        () => bam.getRecordsForRange(refName, start, end, { filterBy }),
       )
       checkStopToken(stopToken)
 
       await updateStatus('Processing alignments', statusCallback, async () => {
-        const {
-          flagInclude = 0,
-          flagExclude = 0,
-          tagFilter,
-          readName,
-        } = filterBy || {}
+        const { readName } = filterBy || {}
+
+        // Pre-fetch reference sequence for all records that need it
+        let regionSeq: string | undefined
+        let regionStart = Infinity
+        let regionEnd = 0
+        if (sequenceAdapter) {
+          for (const record of records) {
+            if (!record.NUMERIC_MD) {
+              regionStart = Math.min(regionStart, record.start)
+              regionEnd = Math.max(regionEnd, record.end)
+            }
+          }
+          if (regionEnd > 0) {
+            regionSeq = await sequenceAdapter.getSequence({
+              refName: originalRefName || refName,
+              start: regionStart,
+              end: regionEnd,
+            })
+          }
+        }
 
         for (const record of records) {
-          // Filter first before expensive sequence fetch
-          if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
-            continue
-          }
-          if (
-            tagFilter &&
-            filterTagValue(record.tags[tagFilter.tag], tagFilter.value)
-          ) {
-            continue
-          }
           if (readName && record.name !== readName) {
             continue
           }
 
-          if (record.end - record.start > 5_000) {
-            const ret = this.ultraLongFeatureCache.get(record.id)
-            if (ret) {
-              observer.next(ret)
-            } else {
-              const ref =
-                !record.tags.MD && sequenceAdapter
-                  ? await sequenceAdapter.getSequence({
-                      refName: originalRefName || refName,
-                      start: record.start,
-                      end: record.end,
-                    })
-                  : undefined
-              const elt = new BamSlightlyLazyFeature(record, this, ref)
-              this.ultraLongFeatureCache.set(record.id, elt)
-              observer.next(elt)
-            }
-          } else {
-            const ref =
-              !record.tags.MD && sequenceAdapter
-                ? await sequenceAdapter.getSequence({
-                    refName: originalRefName || refName,
-                    start: record.start,
-                    end: record.end,
-                  })
-                : undefined
+          // Set adapter reference for id() and refIdToName()
+          record.adapter = this
 
-            observer.next(new BamSlightlyLazyFeature(record, this, ref))
+          // Only fetch reference sequence if MD tag is missing
+          if (!record.NUMERIC_MD && regionSeq) {
+            record.ref = regionSeq.slice(
+              record.start - regionStart,
+              record.end - regionStart,
+            )
           }
+
+          observer.next(record)
         }
         observer.complete()
       })
@@ -182,7 +171,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { bam } = this.configure()
     // this is a method to avoid calling on htsget adapters
     if (bam.index) {
-      const bytes = await bytesForRegions(regions, bam)
+      const bytes = await bam.estimatedBytesForRegions(regions)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
       return {
         bytes,

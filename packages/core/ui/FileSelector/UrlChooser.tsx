@@ -5,7 +5,7 @@ import { isUriLocation } from '../../util/types'
 
 import type { FileLocation } from '../../util/types'
 
-const UrlChooser = observer(function ({
+const UrlChooser = observer(function UrlChooser({
   location,
   label,
   style,

@@ -1,7 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { clamp, featureSpanPx } from '@jbrowse/core/util'
+import { clamp } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 // required to import this for typescript purposes
 import mix from 'colord/plugins/mix' // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -11,6 +14,10 @@ import type { ScaleOpts } from './util'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { Colord } from '@jbrowse/core/util/colord'
+import type {
+  LastStopTokenCheck,
+  StopToken,
+} from '@jbrowse/core/util/stopToken'
 
 function lighten(color: Colord, amount: number) {
   const hslColor = color.toHsl()
@@ -36,7 +43,6 @@ const clipHeight = 2
 export function drawXY(
   ctx: CanvasRenderingContext2D,
   props: {
-    stopToken?: string
     features: Map<string, Feature> | Feature[]
     bpPerPx: number
     regions: Region[]
@@ -47,6 +53,8 @@ export function drawXY(
     displayCrossHatches: boolean
     inverted: boolean
     offset?: number
+    lastCheck?: LastStopTokenCheck
+    stopToken?: StopToken
     colorCallback: (f: Feature, score: number) => string
   },
 ) {
@@ -63,10 +71,19 @@ export function drawXY(
     colorCallback,
     inverted,
     stopToken,
+    lastCheck = createStopTokenChecker(stopToken),
   } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
+  // Extract region values once to avoid repeated property access in hot loop
+  const regionStart = region.start
+  const regionEnd = region.end
+  const regionReversed = region.reversed
+
+  // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
+  // wiggle display, and makes the height of the actual drawn area add
+  // "padding" to the top and bottom of the display
   const height = unadjustedHeight - offset * 2
 
   const filled = readConfObject(config, 'filled')
@@ -75,50 +92,49 @@ export function drawXY(
   const pivotValue = readConfObject(config, 'bicolorPivotValue')
   const minSize = readConfObject(config, 'minSize')
 
-  // Use d3-scale only to get the "niced" domain, then use simple arithmetic
   const scale = getScale({ ...scaleOpts, range: [0, height], inverted })
   const originY = getOrigin(scaleOpts.scaleType)
-  const domain = scale.domain() as [number, number]
-  const niceMin = domain[0]
-  const niceMax = domain[1]
-  const domainSpan = niceMax - niceMin
+  const domain = scale.domain()
+  const niceMin = domain[0]!
+  const niceMax = domain[1]!
+
+  // Precompute scale values for fast toY calculation
   const isLog = scaleOpts.scaleType === 'log'
-
-  // Precompute values for linear scale
-  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
-
-  // Precompute values for log scale (base 2)
   const log2 = Math.log(2)
-  const logMin = Math.log(niceMin) / log2
-  const logMax = Math.log(niceMax) / log2
+  const domainSpan = niceMax - niceMin
+  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
+  const logMin = isLog ? Math.log(niceMin) / log2 : 0
+  const logMax = isLog ? Math.log(niceMax) / log2 : 0
   const logSpan = logMax - logMin
   const logRatio = logSpan !== 0 ? height / logSpan : 0
+  const effectiveRange = inverted ? [height, 0] : [0, height]
+  const rangeFlipped = effectiveRange[0] === height
 
-  // Simple arithmetic scale function - avoid d3-scale overhead in hot path
+  // Inlined toY - avoids d3-scale function call overhead
   const toY = isLog
     ? (n: number) => {
-        const scaled = (Math.log(n) / log2 - logMin) * logRatio
-        return (
-          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
-          offset
-        )
+        const logVal = Math.log(n) / log2
+        const scaled = (logVal - logMin) * logRatio
+        const result = rangeFlipped ? scaled : height - scaled
+        return clamp(result, 0, height) + offset
       }
     : (n: number) => {
         const scaled = (n - niceMin) * linearRatio
-        return (
-          clamp(height - (inverted ? height - scaled : scaled), 0, height) +
-          offset
-        )
+        const result = rangeFlipped ? scaled : height - scaled
+        return clamp(result, 0, height) + offset
       }
+
   const toOrigin = (n: number) => toY(originY) - toY(n)
   const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
+
+  // Precompute for inline px calculation (avoids featureSpanPx function call overhead)
+  const inverseBpPerPx = 1 / bpPerPx
+
   let hasClipping = false
 
   let prevLeftPx = Number.NEGATIVE_INFINITY
   const reducedFeatures = []
   const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
-
-  let start = performance.now()
 
   // we handle whiskers separately to render max row, min row, and avg in three
   // passes. this reduces subpixel rendering issues. note: for stylistic
@@ -126,13 +142,17 @@ export function drawXY(
   if (summaryScoreMode === 'whiskers') {
     let lastCol: string | undefined
     let lastMix: string | undefined
-    start = performance.now()
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      checkStopToken2(lastCheck)
+
+      const fStart = feature.get('start')
+      const fEnd = feature.get('end')
+      const leftPx = regionReversed
+        ? (regionEnd - fEnd) * inverseBpPerPx
+        : (fStart - regionStart) * inverseBpPerPx
+      const rightPx = regionReversed
+        ? (regionEnd - fStart) * inverseBpPerPx
+        : (fEnd - regionStart) * inverseBpPerPx
       if (feature.get('summary')) {
         const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
         const max = feature.get('maxScore')
@@ -148,13 +168,16 @@ export function drawXY(
     }
     lastMix = undefined
     lastCol = undefined
-    start = performance.now()
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      checkStopToken2(lastCheck)
+      const fStart = feature.get('start')
+      const fEnd = feature.get('end')
+      const leftPx = regionReversed
+        ? (regionEnd - fEnd) * inverseBpPerPx
+        : (fStart - regionStart) * inverseBpPerPx
+      const rightPx = regionReversed
+        ? (regionEnd - fStart) * inverseBpPerPx
+        : (fEnd - regionStart) * inverseBpPerPx
       const score = feature.get('score')
       const max = feature.get('maxScore')
       const min = feature.get('minScore')
@@ -182,13 +205,16 @@ export function drawXY(
     }
     lastMix = undefined
     lastCol = undefined
-    start = performance.now()
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      checkStopToken2(lastCheck)
+      const fStart = feature.get('start')
+      const fEnd = feature.get('end')
+      const leftPx = regionReversed
+        ? (regionEnd - fEnd) * inverseBpPerPx
+        : (fStart - regionStart) * inverseBpPerPx
+      const rightPx = regionReversed
+        ? (regionEnd - fStart) * inverseBpPerPx
+        : (fEnd - regionStart) * inverseBpPerPx
 
       if (feature.get('summary')) {
         const min = feature.get('minScore')
@@ -205,13 +231,16 @@ export function drawXY(
       }
     }
   } else {
-    start = performance.now()
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      checkStopToken2(lastCheck)
+      const fStart = feature.get('start')
+      const fEnd = feature.get('end')
+      const leftPx = regionReversed
+        ? (regionEnd - fEnd) * inverseBpPerPx
+        : (fStart - regionStart) * inverseBpPerPx
+      const rightPx = regionReversed
+        ? (regionEnd - fStart) * inverseBpPerPx
+        : (fEnd - regionStart) * inverseBpPerPx
 
       // create reduced features, avoiding multiple features per px
       if (
@@ -245,13 +274,16 @@ export function drawXY(
   ctx.save()
   if (hasClipping) {
     ctx.fillStyle = clipColor
-    start = performance.now()
     for (const feature of features.values()) {
-      if (performance.now() - start > 400) {
-        checkStopToken(stopToken)
-        start = performance.now()
-      }
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      checkStopToken2(lastCheck)
+      const fStart = feature.get('start')
+      const fEnd = feature.get('end')
+      const leftPx = regionReversed
+        ? (regionEnd - fEnd) * inverseBpPerPx
+        : (fStart - regionStart) * inverseBpPerPx
+      const rightPx = regionReversed
+        ? (regionEnd - fStart) * inverseBpPerPx
+        : (fEnd - regionStart) * inverseBpPerPx
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score')
       if (score > niceMax) {

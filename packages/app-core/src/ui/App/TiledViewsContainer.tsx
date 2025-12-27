@@ -10,7 +10,8 @@ import { observer } from 'mobx-react'
 import { DockviewContext } from './DockviewContext'
 import DockviewLeftHeaderActions from './DockviewLeftHeaderActions'
 import DockviewRightHeaderActions from './DockviewRightHeaderActions'
-import JBrowseViewPanel, { JBrowseViewTab } from './JBrowseViewPanel'
+import JBrowseViewPanel from './JBrowseViewPanel'
+import JBrowseViewTab from './JBrowseViewTab'
 import {
   cleanLayoutForStorage,
   createPanelConfig,

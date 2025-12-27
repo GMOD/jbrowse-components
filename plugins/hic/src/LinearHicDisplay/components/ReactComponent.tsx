@@ -6,6 +6,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent'
+import HicColorLegend from '../../HicRenderer/components/HicColorLegend'
 
 import type { HicFlatbushItem } from '../../HicRenderer/types'
 import type { LinearHicDisplayModel } from '../model'
@@ -81,7 +82,7 @@ function screenToUnrotated(
   return { x, y }
 }
 
-const HicCanvas = observer(function ({
+const HicCanvas = observer(function HicCanvas({
   model,
 }: {
   model: LinearHicDisplayModel
@@ -89,7 +90,18 @@ const HicCanvas = observer(function ({
   const view = getContainingView(model) as LGV
   const screenWidth = Math.round(view.dynamicBlocks.totalWidthPx)
   const { offsetPx } = view
-  const { height, drawn, loading, flatbush, flatbushItems, yScalar } = model
+  const {
+    height,
+    drawn,
+    loading,
+    flatbush,
+    flatbushItems,
+    yScalar,
+    showLegend,
+    maxScore,
+    colorScheme,
+    useLogScale,
+  } = model
 
   // Adjust canvas width and position when offsetPx is negative
   const canvasWidth = offsetPx < 0 ? screenWidth + offsetPx : screenWidth
@@ -194,11 +206,18 @@ const HicCanvas = observer(function ({
           y={mousePosition.y}
         />
       ) : null}
+      {showLegend && maxScore > 0 ? (
+        <HicColorLegend
+          maxScore={maxScore}
+          colorScheme={colorScheme}
+          useLogScale={useLogScale}
+        />
+      ) : null}
     </div>
   )
 })
 
-const LinearHicReactComponent = observer(function ({
+const LinearHicReactComponent = observer(function LinearHicReactComponent({
   model,
 }: {
   model: LinearHicDisplayModel

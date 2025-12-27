@@ -23,7 +23,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const JobsListWidget = observer(function ({ model }: { model: JobsListModel }) {
+const JobsListWidget = observer(function JobsListWidget({
+  model,
+}: {
+  model: JobsListModel
+}) {
   const { classes } = useStyles()
   const { jobs, finished, queued, aborted } = model
   return (

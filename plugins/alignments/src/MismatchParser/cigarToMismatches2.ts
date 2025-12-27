@@ -1,15 +1,15 @@
-import type { Mismatch } from '../shared/types'
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_H,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_S,
+  CIGAR_X,
+} from '../PileupRenderer/renderers/cigarUtil'
 
-// CIGAR operation indices (from BAM spec)
-const CIGAR_M = 0
-const CIGAR_I = 1
-const CIGAR_D = 2
-const CIGAR_N = 3
-const CIGAR_S = 4
-const CIGAR_H = 5
-// const CIGAR_P = 6
-const CIGAR_EQ = 7
-const CIGAR_X = 8
+import type { Mismatch } from '../shared/types'
 
 // Handles packed NUMERIC_CIGAR format from @gmod/bam
 // Format: Uint32Array where each value is (length << 4) | opIndex
@@ -53,7 +53,7 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'insertion',
-        base: `${len}`,
+        insertlen: len,
         insertedBases: seq?.slice(soffset, soffset + len),
         length: 0,
       })
@@ -62,7 +62,6 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'deletion',
-        base: '*',
         length: len,
       })
       roffset += len
@@ -70,7 +69,6 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'skip',
-        base: 'N',
         length: len,
       })
       roffset += len
@@ -90,7 +88,6 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'hardclip',
-        base: `H${len}`,
         cliplen: len,
         length: 1,
       })
@@ -98,7 +95,6 @@ export function cigarToMismatches2(
       mismatches.push({
         start: roffset,
         type: 'softclip',
-        base: `S${len}`,
         cliplen: len,
         length: 1,
       })

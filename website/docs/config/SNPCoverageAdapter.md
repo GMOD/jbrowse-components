@@ -30,3 +30,14 @@ subadapter: {
       defaultValue: null,
     }
 ```
+
+#### slot: sequenceAdapter
+
+sequence adapter for fetching reference sequences (needed by CRAM)
+
+```js
+sequenceAdapter: {
+      type: 'frozen',
+      defaultValue: null,
+    }
+```

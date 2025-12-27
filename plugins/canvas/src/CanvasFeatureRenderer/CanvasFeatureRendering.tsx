@@ -8,7 +8,7 @@ import type { FlatbushItem, SubfeatureInfo } from './types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-const CanvasFeatureRendering = observer(function (props: {
+const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
   blockKey: string
   displayModel: BaseLinearDisplayModel
   width: number
@@ -140,37 +140,22 @@ const CanvasFeatureRendering = observer(function (props: {
         const item = search.length ? items[search[0]!] : undefined
         const featureId = item?.featureId
 
-        // Build extra tooltip info - prioritize _mouseOver if set
-        let extra: string | undefined
-        if (item?.mouseOver) {
-          extra = item.mouseOver
-        } else {
-          const parts: string[] = []
-          if (item?.label) {
-            parts.push(item.label)
-          }
-          if (item?.description) {
-            parts.push(item.description)
-          }
-
-          // Search secondary flatbush for subfeature info (transcript tooltips)
-          if (subfeatureFlatbush2 && subfeatureInfos.length) {
-            const subfeatureSearch = subfeatureFlatbush2.search(
-              offsetX,
-              offsetY,
-              offsetX + 1,
-              offsetY + 1,
-            )
-            if (subfeatureSearch.length) {
-              const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
-              if (subfeatureInfo) {
-                const { name, type } = subfeatureInfo
-                parts.push(name ? `${name} (${type})` : type)
-              }
+        // Use pre-built tooltip, optionally append subfeature info
+        let extra = item?.tooltip
+        if (extra && subfeatureFlatbush2 && subfeatureInfos.length) {
+          const subfeatureSearch = subfeatureFlatbush2.search(
+            offsetX,
+            offsetY,
+            offsetX + 1,
+            offsetY + 1,
+          )
+          if (subfeatureSearch.length) {
+            const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
+            if (subfeatureInfo) {
+              const { displayLabel, type } = subfeatureInfo
+              extra += `<br/>${displayLabel ? `${displayLabel} (${type})` : type}`
             }
           }
-
-          extra = parts.length > 0 ? parts.join('<br/>') : undefined
         }
         onMouseMove?.(event, featureId, extra)
       }}

@@ -120,11 +120,30 @@ adapterProps: () => any
 renderProps: () => any
 ```
 
+#### method: wiggleBaseTrackMenuItems
+
+Base track menu items shared by all wiggle displays (Score submenu)
+
+```js
+// type signature
+wiggleBaseTrackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+```
+
+#### method: wiggleOnlyTrackMenuItems
+
+Menu items specific to LinearWiggleDisplay (Color, Inverted, etc.) Not used by
+SNPCoverageDisplay
+
+```js
+// type signature
+wiggleOnlyTrackMenuItems: () => ({ label: string; type: string; checked: boolean; onClick: () => void; subMenu?: undefined; icon?: undefined; } | { label: string; subMenu: { label: string; type: string; checked: boolean; onClick: () => void; }[]; type?: undefined; checked?: undefined; onClick?: undefined; icon?: undefined; } | { ...; } | { ....
+```
+
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
+trackMenuItems: () => any[]
 ```
 
 ### LinearWiggleDisplay - Actions

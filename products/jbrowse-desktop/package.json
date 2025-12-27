@@ -10,13 +10,13 @@
   "dir": "src",
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
-    "start": "node scripts/start.cjs",
+    "start": "NODE_ENV=development node scripts/start.js",
     "electron": "electron . --no-sandbox",
     "electron-ts": "tsc -p tsconfig.electron.json",
     "preelectron": "yarn electron-ts",
     "prebuild": "yarn electron-ts",
     "prepack": "yarn build",
-    "build": "node scripts/build.cjs",
+    "build": "NODE_ENV=production node scripts/build.js",
     "build-electron": "yarn build && electron-builder build --windows --mac --linux",
     "build-electron:win": "yarn build && electron-builder build --windows",
     "build-electron:mac": "yarn build && electron-builder build --mac",
@@ -71,7 +71,6 @@
     "@jbrowse/plugin-sequence": "^3.7.0",
     "@jbrowse/plugin-spreadsheet-view": "^3.7.0",
     "@jbrowse/plugin-sv-inspector": "^3.7.0",
-    "@jbrowse/plugin-svg": "^3.7.0",
     "@jbrowse/plugin-text-indexing": "^3.7.0",
     "@jbrowse/plugin-trix": "^3.7.0",
     "@jbrowse/plugin-variants": "^3.7.0",
@@ -80,7 +79,7 @@
     "@jbrowse/text-indexing": "^3.7.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
-    "@mui/x-data-grid": "^8.0.0",
+    "@mui/x-data-grid": "^8.22.1",
     "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.0.0",
     "deepmerge": "^4.2.2",
@@ -92,19 +91,19 @@
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "node-fetch": "^2.6.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "sanitize-filename": "^1.6.3",
-    "swr": "^2.3.3"
+    "swr": "^2.3.8"
   },
   "devDependencies": {
-    "electron": "39.2.6"
+    "electron": "39.2.7"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "39.2.6",
+    "electronVersion": "39.2.7",
     "extraMetadata": {
       "main": "build/electron.js"
     },
@@ -122,7 +121,7 @@
       "perMachine": true
     },
     "win": {
-      "sign": "./sign.cjs",
+      "sign": "./sign.js",
       "signingHashAlgorithms": [
         "sha256"
       ],
@@ -188,8 +187,8 @@
     "directories": {
       "buildResources": "assets/"
     },
-    "afterSign": "scripts/notarize.cjs",
-    "afterPack": "./linux-sandbox-fix.cjs"
+    "afterSign": "scripts/notarize.js",
+    "afterPack": "./linux-sandbox-fix.js"
   },
   "private": true
 }

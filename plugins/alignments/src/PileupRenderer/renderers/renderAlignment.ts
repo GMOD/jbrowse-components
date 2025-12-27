@@ -9,6 +9,19 @@ import { renderPerBaseQuality } from './renderPerBaseQuality'
 import type { FlatbushItem, ProcessedRenderArgs } from '../types'
 import type { LayoutFeature } from '../util'
 
+function collectResults(
+  ret: { coords: number[]; items: FlatbushItem[] },
+  coords: number[],
+  items: FlatbushItem[],
+) {
+  for (let i = 0, l = ret.coords.length; i < l; i++) {
+    coords.push(ret.coords[i]!)
+  }
+  for (let i = 0, l = ret.items.length; i < l; i++) {
+    items.push(ret.items[i]!)
+  }
+}
+
 export function renderAlignment({
   ctx,
   feat,
@@ -45,35 +58,33 @@ export function renderAlignment({
     colorType,
     colorTagMap,
   })
-
+  const cigarOps = getCigarOps(
+    feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
+  )
   renderAlignmentShape({
     ctx,
     feat,
     renderArgs,
     canvasWidth,
     color: alignmentColor,
+    cigarOps,
   })
 
   // second pass for color types that render per-base things that go over the
   // existing drawing
   switch (colorType) {
     case 'perBaseQuality': {
-      const cigarOps = feature.get('NUMERIC_CIGAR') || feature.get('CIGAR')
       renderPerBaseQuality({
         ctx,
         feat,
         region,
         bpPerPx,
-        canvasWidth,
         cigarOps,
       })
       break
     }
 
     case 'perBaseLettering': {
-      const cigarOps = getCigarOps(
-        feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
-      )
       renderPerBaseLettering({
         ctx,
         feat,
@@ -90,40 +101,27 @@ export function renderAlignment({
     }
 
     case 'modifications': {
-      const cigarOps = getCigarOps(
-        feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
+      collectResults(
+        renderModifications({
+          ctx,
+          feat,
+          region,
+          bpPerPx,
+          renderArgs,
+          cigarOps,
+        }),
+        coords,
+        items,
       )
-      const ret = renderModifications({
-        ctx,
-        feat,
-        region,
-        bpPerPx,
-        renderArgs,
-        canvasWidth,
-        cigarOps,
-      })
-      for (let i = 0, l = ret.coords.length; i < l; i++) {
-        coords.push(ret.coords[i]!)
-      }
-      for (let i = 0, l = ret.items.length; i < l; i++) {
-        items.push(ret.items[i]!)
-      }
       break
     }
 
     case 'methylation': {
-      const cigarOps = getCigarOps(
-        feature.get('NUMERIC_CIGAR') || feature.get('CIGAR'),
+      collectResults(
+        renderMethylation({ ctx, feat, region, bpPerPx, renderArgs, cigarOps }),
+        coords,
+        items,
       )
-      renderMethylation({
-        ctx,
-        feat,
-        region,
-        bpPerPx,
-        renderArgs,
-        canvasWidth,
-        cigarOps,
-      })
       break
     }
   }

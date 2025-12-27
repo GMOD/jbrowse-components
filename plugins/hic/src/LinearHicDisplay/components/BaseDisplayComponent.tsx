@@ -41,7 +41,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const BaseDisplayComponent = observer(function ({
+const BaseDisplayComponent = observer(function BaseDisplayComponent({
   model,
   children,
 }: {
@@ -60,7 +60,7 @@ const BaseDisplayComponent = observer(function ({
   )
 })
 
-const DataDisplay = observer(function ({
+const DataDisplay = observer(function DataDisplay({
   model,
   children,
 }: {
@@ -78,7 +78,11 @@ const DataDisplay = observer(function ({
   )
 })
 
-const LoadingBar = observer(function ({ model }: { model: BaseDisplayModel }) {
+const LoadingBar = observer(function LoadingBar({
+  model,
+}: {
+  model: BaseDisplayModel
+}) {
   const { classes } = useStyles()
   const { message } = model
   return (

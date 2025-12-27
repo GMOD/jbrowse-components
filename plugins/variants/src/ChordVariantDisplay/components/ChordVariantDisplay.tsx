@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import DisplayError from './DisplayError'
 import Loading from './Loading'
 
-const ChordVariantDisplay = observer(function ({
+const ChordVariantDisplay = observer(function ChordVariantDisplay({
   display,
 }: {
   display: {

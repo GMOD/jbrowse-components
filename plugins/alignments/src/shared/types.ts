@@ -1,3 +1,4 @@
+import type { MismatchCallback } from './forEachMismatchTypes'
 import type { Feature } from '@jbrowse/core/util'
 
 export type SkipMap = Record<
@@ -55,6 +56,12 @@ export interface PreBinEntry {
   lengthMin: number
   lengthMax: number
   sequenceCounts?: Map<string, number>
+  // Computed fields added during finalization
+  avgProbability?: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
+  topSequence?: string
 }
 
 type PreBinType = Record<string, PreBinEntry>
@@ -120,17 +127,43 @@ export interface SortedBy {
   tag?: string
 }
 
-export interface Mismatch {
-  qual?: number
+interface BaseMismatch {
   start: number
   length: number
-  insertedBases?: string
-  type: MismatchType
-  base: string
-  altbase?: string
-  seq?: string
-  cliplen?: number
 }
+
+export interface SNPMismatch extends BaseMismatch {
+  type: 'mismatch'
+  base: string
+  qual?: number
+  altbase?: string
+}
+
+export interface InsertionMismatch extends BaseMismatch {
+  type: 'insertion'
+  insertlen: number
+  insertedBases?: string
+}
+
+export interface DeletionMismatch extends BaseMismatch {
+  type: 'deletion'
+}
+
+export interface SkipMismatch extends BaseMismatch {
+  type: 'skip'
+}
+
+export interface ClipMismatch extends BaseMismatch {
+  type: 'softclip' | 'hardclip'
+  cliplen: number
+}
+
+export type Mismatch =
+  | SNPMismatch
+  | InsertionMismatch
+  | DeletionMismatch
+  | SkipMismatch
+  | ClipMismatch
 
 export interface ReducedFeature {
   name: string
@@ -144,7 +177,7 @@ export interface ReducedFeature {
   pair_orientation: string
   next_ref?: string
   next_pos?: number
-  clipPos: number
+  clipLengthAtStartOfRead: number
   SA?: string
 }
 
@@ -167,3 +200,7 @@ export type MismatchType =
   | 'skip'
   | 'softclip'
   | 'hardclip'
+
+export interface FeatureWithMismatchIterator extends Feature {
+  forEachMismatch(callback: MismatchCallback): void
+}

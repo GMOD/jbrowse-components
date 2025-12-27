@@ -10,14 +10,12 @@ import GFF3 from '@jbrowse/plugin-gff3'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import Sequence from '@jbrowse/plugin-sequence'
-import SVG from '@jbrowse/plugin-svg'
 import Trix from '@jbrowse/plugin-trix'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
 const corePlugins = [
   Canvas,
-  SVG,
   Alignments,
   Authentication,
   BED,
