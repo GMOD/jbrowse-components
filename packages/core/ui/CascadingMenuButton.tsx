@@ -48,15 +48,17 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
       >
         {children}
       </IconButton>
-      <CascadingMenu
-        {...bindPopover(popupState)}
-        onMenuItemClick={(_: unknown, callback: () => void) => {
-          callback()
-        }}
-        menuItems={menuItems}
-        closeAfterItemClick={closeAfterItemClick}
-        popupState={popupState}
-      />
+      {isOpen ? (
+        <CascadingMenu
+          {...bindPopover(popupState)}
+          onMenuItemClick={(_: unknown, callback: () => void) => {
+            callback()
+          }}
+          menuItems={menuItems}
+          closeAfterItemClick={closeAfterItemClick}
+          popupState={popupState}
+        />
+      ) : null}
     </>
   )
 })

@@ -52,8 +52,9 @@ jobs:
         with:
           node-version: '22'
           cache: 'yarn'
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@3e063b974f0d209807684aa23e534b3dde517fd9 # v1.11.2
 
       # Deploy jbrowse-web first
       - name: Validate branch/tag name for S3 path safety
@@ -184,8 +185,10 @@ jobs:
           node-version: '22'
           cache: 'yarn'
           cache-dependency-path: 'website/yarn.lock'
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@3e063b974f0d209807684aa23e534b3dde517fd9 # v1.11.2
+
         working-directory: website
       - name: Build website
         run: |

@@ -284,7 +284,7 @@ const testSuites: TestSuite[] = [
         name: 'loads BAM track with main thread RPC',
         fn: async page => {
           await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await openTrack(page, 'volvox_bam_pileup')
+          await openTrack(page, 'volvox_sv')
           await findByTestId(page, 'Blockset-pileup', 60000)
         },
       },
@@ -304,7 +304,7 @@ const testSuites: TestSuite[] = [
         name: 'main thread RPC BAM screenshot',
         fn: async page => {
           await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await openTrack(page, 'volvox_bam_pileup')
+          await openTrack(page, 'volvox_sv')
           await findByTestId(page, 'Blockset-pileup', 60000)
           await waitForLoadingToComplete(page)
           await snapshot(page, 'main-thread-rpc-bam')
