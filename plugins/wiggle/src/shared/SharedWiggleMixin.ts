@@ -348,7 +348,6 @@ export default function SharedWiggleMixin(
           rendererTypeName,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-        // Return plain object instead of MST model to avoid expensive .create()
         return {
           ...configBlob,
           ...(scaleType ? { scaleType } : {}),

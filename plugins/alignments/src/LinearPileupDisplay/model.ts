@@ -192,7 +192,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           hideMismatches,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-        // Return plain object instead of MST model to avoid expensive .create()
         return {
           ...configBlob,
           ...(featureHeight !== undefined ? { height: featureHeight } : {}),

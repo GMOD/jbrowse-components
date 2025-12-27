@@ -128,18 +128,23 @@ export default function stateModelFactory(
       get rendererTypeName() {
         return 'HicRenderer'
       },
+
+      get rendererConfig() {
+        return {
+          ...getConf(self, 'renderer'),
+          ...(self.colorScheme
+            ? { color: 'jexl:interpolate(count,scale)' }
+            : {}),
+        }
+      },
+    }))
+    .views(self => ({
       /**
        * #method
        */
       renderProps() {
-        // Return plain object instead of MST model to avoid expensive .create()
         return {
-          config: {
-            ...getConf(self, 'renderer'),
-            ...(self.colorScheme
-              ? { color: 'jexl:interpolate(count,scale)' }
-              : {}),
-          },
+          config: self.rendererConfig,
           resolution: self.resolution,
           useLogScale: self.useLogScale,
           colorScheme: self.colorScheme,
@@ -160,7 +165,11 @@ export default function stateModelFactory(
         const minLabel = self.useLogScale ? '1' : '0'
         const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
 
-        return [{ label: `${minLabel} - ${maxLabel} (${colorScheme})` }]
+        return [
+          {
+            label: `${minLabel} - ${maxLabel} (${colorScheme})`,
+          },
+        ]
       },
 
       /**

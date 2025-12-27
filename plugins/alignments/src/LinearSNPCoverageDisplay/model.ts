@@ -154,7 +154,6 @@ function stateModelFactory(
 
           const { showArcs, showInterbaseCounts, showInterbaseIndicators } =
             self
-          // Return plain object instead of MST model to avoid expensive .create()
           return {
             ...configBlob,
             showInterbaseCounts:

@@ -153,9 +153,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
         const config = configBlob as Omit<typeof configBlob, symbol>
-
-        // Return plain object instead of MST model to avoid expensive .create()
-        // calls and object identity changes on every access
         return {
           ...config,
           showLabels: self.showLabels,

@@ -47,7 +47,6 @@
     "@jbrowse/plugin-sequence": "^3.7.0",
     "@jbrowse/plugin-spreadsheet-view": "^3.7.0",
     "@jbrowse/plugin-sv-inspector": "^3.7.0",
-    "@jbrowse/plugin-svg": "^3.7.0",
     "@jbrowse/plugin-trix": "^3.7.0",
     "@jbrowse/plugin-variants": "^3.7.0",
     "@jbrowse/plugin-wiggle": "^3.7.0",

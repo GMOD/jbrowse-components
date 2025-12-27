@@ -65,7 +65,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
         const config = configBlob as Omit<typeof configBlob, symbol>
-        // Return plain object instead of MST model to avoid expensive .create()
         return {
           ...config,
           displayMode: self.displayModeSetting,

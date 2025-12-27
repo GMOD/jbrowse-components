@@ -3,7 +3,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import Alignments from '@jbrowse/plugin-alignments'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
-import SVG from '@jbrowse/plugin-svg'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
@@ -95,7 +94,7 @@ test('renders all the different types of built-in slots', () => {
 })
 
 test('renders with defaults of the PileupTrack schema', () => {
-  const pm = new PluginManager([new Alignments(), new SVG()])
+  const pm = new PluginManager([new Alignments()])
   pm.createPluggableElements()
   pm.configure()
   const PileupDisplaySchema = linearBasicDisplayConfigSchemaFactory(pm)
