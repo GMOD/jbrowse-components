@@ -67,7 +67,7 @@ test('opens a track with minimal adapter config via "Open from track"', async ()
     expect(session.views.length).toBe(3)
   }, delay)
 
-  const breakpointView = session.views[2] as {
+  const breakpointView = session.views[2] as unknown as {
     views: { showTrack: (t: string) => void }[]
   }
   breakpointView.views[0]!.showTrack('volvox_sv_test_renamed')
