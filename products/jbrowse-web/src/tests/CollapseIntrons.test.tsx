@@ -29,7 +29,7 @@ test('collapse introns on gene feature', async () => {
   await findAllByTestId(/prerendered_canvas.*done/, ...opts)
 
   // Find the floating label for EDEN and right-click it to open context menu
-  const edenLabel = await screen.findByTestId('floatingLabel-EDEN', ...opts)
+  const edenLabel = await screen.findByText('EDEN', ...opts)
   fireEvent.contextMenu(edenLabel)
 
   // Click on "Collapse introns" in the context menu (waits for menu to appear)
