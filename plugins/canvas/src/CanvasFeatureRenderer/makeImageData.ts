@@ -9,6 +9,7 @@ import {
 
 import { drawFeature } from './drawFeature'
 import {
+  addPluggableGlyphSubfeaturesToFlatbush,
   addSubfeaturesToLayoutAndFlatbush,
   adjustChildPositions,
 } from './layoutUtils'
@@ -154,6 +155,16 @@ export function makeImageData({
         transcriptTypes,
         labelColor: theme.palette.text.primary,
         parentTooltip: tooltip,
+      })
+    }
+
+    if (pluginManager) {
+      addPluggableGlyphSubfeaturesToFlatbush({
+        featureLayout: adjustedLayout,
+        subfeatureCoords,
+        subfeatureInfos,
+        config,
+        pluginManager,
       })
     }
     checkStopToken2(lastCheck)
