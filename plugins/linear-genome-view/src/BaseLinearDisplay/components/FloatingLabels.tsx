@@ -75,7 +75,6 @@ function FloatingLabel({
 
   return (
     <div
-      data-testid={`floatingLabel-${text}`}
       data-feature-id={featureId}
       data-tooltip={tooltip}
       className={isOverlay ? `${labelClass} ${overlayClass}` : labelClass}

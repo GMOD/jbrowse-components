@@ -12,9 +12,10 @@
     "prebuild": "rimraf build",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "prepack": "yarn build",
-    "test:browser": "yarn build && node --experimental-strip-types browser-tests/runner.ts",
-    "test:browser:headed": "yarn build && node --experimental-strip-types browser-tests/runner.ts --headed",
-    "test:browser:update": "yarn build && node --experimental-strip-types browser-tests/runner.ts --update-snapshots"
+    "pretest:browser": "yarn build",
+    "test:browser": "node --experimental-strip-types browser-tests/runner.ts",
+    "test:browser:headed": "node --experimental-strip-types browser-tests/runner.ts --headed",
+    "test:browser:update": "node --experimental-strip-types browser-tests/runner.ts --update-snapshots"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.0.2",
