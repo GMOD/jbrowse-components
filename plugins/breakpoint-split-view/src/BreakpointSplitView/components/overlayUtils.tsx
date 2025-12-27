@@ -57,6 +57,21 @@ export function getCanonicalRefs(
   return { f1ref, f2ref }
 }
 
+export function strandToSign(s: string) {
+  return s === '+' ? 1 : s === '-' ? -1 : 0
+}
+
+export function buildSimplePath(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+) {
+  return y1 === y2
+    ? `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1 - 30} ${x2} ${y2}`
+    : `M ${x1} ${y1} L ${x2} ${y2}`
+}
+
 export function buildBreakpointPath(
   x1: number,
   y1: number,
@@ -65,8 +80,7 @@ export function buildBreakpointPath(
   x1Tick: number,
   x2Tick: number,
 ) {
-  const isFlat = y1 === y2
-  return isFlat
+  return y1 === y2
     ? `M ${x1Tick} ${y1} L ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1 - 30} ${x2} ${y2} L ${x2Tick} ${y2}`
     : `M ${x1Tick} ${y1} L ${x1} ${y1} L ${x2} ${y2} L ${x2Tick} ${y2}`
 }

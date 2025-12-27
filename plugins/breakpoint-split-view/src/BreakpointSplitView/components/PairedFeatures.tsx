@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 
 import {
   LEFT,
+  buildSimplePath,
   createMouseHandlers,
   getCanonicalRefs,
   getTestId,
@@ -72,10 +73,7 @@ const PairedFeatures = observer(function PairedFeatures({
             yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
             yOffset
 
-          const isFlat = y1 === y2
-          const path = isFlat
-            ? `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1 - 30} ${x2} ${y2}`
-            : `M ${x1} ${y1} L ${x2} ${y2}`
+          const path = buildSimplePath(x1, y1, x2, y2)
           const mouseHandlers = createMouseHandlers(
             id,
             setMouseoverElt,

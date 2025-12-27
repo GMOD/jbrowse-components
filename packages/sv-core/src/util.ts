@@ -61,3 +61,27 @@ export function stripIds(arr: Track[]) {
 export function makeTitle(f: Feature) {
   return `${f.get('name') || f.get('id') || 'breakend'} split detail`
 }
+
+export interface Region {
+  refName: string
+  start: number
+  end: number
+  assemblyName?: string
+}
+
+export function splitRegionAtPosition<
+  T extends { refName: string; start: number; end: number },
+>(region: T, pos: number, assemblyName?: string): [T & { assemblyName?: string }, T & { assemblyName?: string }] {
+  return [
+    {
+      ...region,
+      end: pos + 1,
+      ...(assemblyName !== undefined && { assemblyName }),
+    },
+    {
+      ...region,
+      start: pos,
+      ...(assemblyName !== undefined && { assemblyName }),
+    },
+  ]
+}

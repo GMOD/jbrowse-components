@@ -10,16 +10,13 @@ import {
   createMouseHandlers,
   getTestId,
   getYOffset,
+  strandToSign,
 } from './overlayUtils'
 import { getMatchedTranslocationFeatures } from './util'
 import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
 
 import type { OverlayProps } from './overlayUtils'
 import type { LayoutRecord } from '../types'
-
-function str(s: string) {
-  return s === '+' ? 1 : s === '-' ? -1 : 0
-}
 
 const Translocations = observer(function Translocations({
   model,
@@ -95,8 +92,10 @@ const Translocations = observer(function Translocations({
               yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
               yOffset
 
-            const x1Tick = x1 - 20 * str(myDirection) * (reversed1 ? -1 : 1)
-            const x2Tick = x2 - 20 * str(mateDirection) * (reversed2 ? -1 : 1)
+            const x1Tick =
+              x1 - 20 * strandToSign(myDirection) * (reversed1 ? -1 : 1)
+            const x2Tick =
+              x2 - 20 * strandToSign(mateDirection) * (reversed2 ? -1 : 1)
             const path = buildBreakpointPath(x1, y1, x2, y2, x1Tick, x2Tick)
 
             const mouseHandlers = createMouseHandlers(

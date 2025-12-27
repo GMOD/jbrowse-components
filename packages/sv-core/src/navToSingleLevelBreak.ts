@@ -43,7 +43,7 @@ export function singleLevelFocusedSnapshotFromBreakendFeature({
           displayedRegions: gatherOverlaps([
             {
               ...topRegion,
-              end: coverage.pos + windowSize,
+              end: coverage.pos + 1 + windowSize,
               assemblyName,
             },
             {

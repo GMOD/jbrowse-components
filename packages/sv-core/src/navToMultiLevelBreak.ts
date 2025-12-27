@@ -1,6 +1,11 @@
 import { when } from '@jbrowse/core/util'
 
-import { getBreakendCoveringRegions, makeTitle, stripIds } from './util'
+import {
+  getBreakendCoveringRegions,
+  makeTitle,
+  splitRegionAtPosition,
+  stripIds,
+} from './util'
 
 import type { BreakpointSplitView, Track } from './types'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
@@ -63,34 +68,10 @@ export async function navToMultiLevelBreak({
     throw new Error("can't find regions")
   }
   await Promise.all([
-    view.views[0]!.navToLocations([
-      {
-        refName,
-        start: r1.start,
-        end: pos,
-        assemblyName,
-      },
-      {
-        refName,
-        start: pos + 1,
-        end: r1.end,
-        assemblyName,
-      },
-    ]),
-    view.views[1]!.navToLocations([
-      {
-        refName: mateRefName,
-        start: r2.start,
-        end: matePos,
-        assemblyName,
-      },
-      {
-        refName: mateRefName,
-        start: matePos + 1,
-        end: r2.end,
-        assemblyName,
-      },
-    ]),
+    view.views[0]!.navToLocations(splitRegionAtPosition(r1, pos, assemblyName)),
+    view.views[1]!.navToLocations(
+      splitRegionAtPosition(r2, matePos, assemblyName),
+    ),
   ])
   await when(() => view.views[1]!.initialized && view.views[0]!.initialized)
   view.views[1]!.zoomTo(10)

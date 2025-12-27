@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+import { splitRegionAtPosition } from '@jbrowse/sv-core'
 
 import type { ReducedFeature } from './getSAFeatures'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -29,16 +30,11 @@ export function getBreakpointSplitView({
       'unable to find the refName for the top or bottom of the breakpoint view',
     )
   }
-  const topMarkedRegion = [{ ...topRegion }, { ...topRegion }]
-  const bottomMarkedRegion = [{ ...bottomRegion }, { ...bottomRegion }]
-
   const s = f1.strand === 1 ? f1.end : f1.start
   const e = f2.strand === 1 ? f2.start : f2.end
 
-  topMarkedRegion[0]!.end = s
-  topMarkedRegion[1]!.start = s + 1
-  bottomMarkedRegion[0]!.end = e
-  bottomMarkedRegion[1]!.start = e + 1
+  const topMarkedRegion = splitRegionAtPosition(topRegion, s)
+  const bottomMarkedRegion = splitRegionAtPosition(bottomRegion, e)
   const bpPerPx = 10
   return {
     type: 'BreakpointSplitView',
