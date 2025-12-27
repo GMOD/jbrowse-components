@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { types } from '@jbrowse/mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration'
 import { getContainingTrack, getContainingView, getEnv } from '../../util'
