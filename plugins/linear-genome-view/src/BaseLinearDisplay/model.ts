@@ -29,7 +29,7 @@ import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
 import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
-import { getTranscripts, hasExonsOrCDS } from './util'
+import { findSubfeatureById, getTranscripts, hasExonsOrCDS } from './util'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type { LegendItem } from './components/FloatingLegend'
@@ -89,6 +89,10 @@ function stateModelFactory() {
        * #volatile
        */
       featureIdUnderMouse: undefined as undefined | string,
+      /**
+       * #volatile
+       */
+      subfeatureIdUnderMouse: undefined as undefined | string,
       /**
        * #volatile
        */
@@ -195,6 +199,25 @@ function stateModelFactory() {
       get featureUnderMouse() {
         const feat = self.featureIdUnderMouse
         return feat ? this.features.get(feat) : undefined
+      },
+
+      /**
+       * #method
+       * Finds a feature by ID, checking both top-level features and
+       * subfeatures if parentFeatureId is provided
+       */
+      getFeatureById(featureId: string, parentFeatureId?: string) {
+        const feature = this.features.get(featureId)
+        if (feature) {
+          return feature
+        }
+        if (parentFeatureId) {
+          const parent = this.features.get(parentFeatureId)
+          if (parent) {
+            return findSubfeatureById(parent, featureId)
+          }
+        }
+        return undefined
       },
 
       /**
@@ -353,8 +376,32 @@ function stateModelFactory() {
       /**
        * #action
        */
+      setSubfeatureIdUnderMouse(subfeatureId?: string) {
+        self.subfeatureIdUnderMouse = subfeatureId
+      },
+
+      /**
+       * #action
+       */
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
+      },
+      /**
+       * #action
+       * Select a feature by ID, looking up in features map and subfeatures
+       */
+      selectFeatureById(featureId: string, parentFeatureId?: string) {
+        const feature = self.getFeatureById(featureId, parentFeatureId)
+        if (feature) {
+          this.selectFeature(feature)
+        }
+      },
+      /**
+       * #action
+       * Set context menu feature by ID, looking up in features map and subfeatures
+       */
+      setContextMenuFeatureById(featureId: string, parentFeatureId?: string) {
+        self.contextMenuFeature = self.getFeatureById(featureId, parentFeatureId)
       },
       /**
        * #action
@@ -466,41 +513,19 @@ function stateModelFactory() {
        * only, never sent to the worker. includes displayModel and callbacks
        */
       renderingProps() {
-        const getFeatureId = (featureId?: string) =>
-          featureId || self.featureIdUnderMouse
-
         return {
           displayModel: self,
-          onFeatureClick(_: unknown, featureId?: string) {
-            const f = getFeatureId(featureId)
-            if (f) {
-              const feature = self.features.get(f)
-              if (feature) {
-                self.selectFeature(feature)
-              }
-            } else {
-              self.clearFeatureSelection()
-            }
-          },
-          onClick() {
-            self.clearFeatureSelection()
-          },
-          onFeatureContextMenu(_: unknown, featureId?: string) {
-            const f = getFeatureId(featureId)
-            if (f) {
-              self.setContextMenuFeature(self.features.get(f))
-            } else {
-              self.clearFeatureSelection()
-            }
-          },
-          onMouseMove(_: unknown, featureId?: string, extra?: string) {
+          // @deprecated - renderers should call displayModel methods directly
+          // e.g. displayModel.setFeatureIdUnderMouse(featureId)
+          onMouseMove(_: unknown, featureId?: string) {
             self.setFeatureIdUnderMouse(featureId)
-            self.setMouseoverExtraInformation(extra)
           },
+          // @deprecated - renderers should call displayModel methods directly
+          // e.g. displayModel.setFeatureIdUnderMouse(undefined)
           onMouseLeave(_: unknown) {
             self.setFeatureIdUnderMouse(undefined)
-            self.setMouseoverExtraInformation(undefined)
           },
+          // @deprecated - renderers should call displayModel methods directly
           onContextMenu(_: unknown) {
             self.setContextMenuFeature(undefined)
             self.clearFeatureSelection()

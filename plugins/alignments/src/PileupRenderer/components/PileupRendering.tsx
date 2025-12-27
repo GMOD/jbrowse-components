@@ -34,19 +34,8 @@ const PileupRendering = observer(function PileupRendering(props: {
   items: FlatbushItem[]
   flatbush: ArrayBufferLike
   featureNames?: Record<string, string>
-  onMouseMove?: (
-    event: React.MouseEvent,
-    featureId?: string,
-    extra?: string,
-  ) => void
-  onMouseLeave?: (event: React.MouseEvent) => void
-  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
-  onFeatureContextMenu?: (event: React.MouseEvent, featureId: string) => void
-  onContextMenu?: (event: React.MouseEvent) => void
 }) {
   const {
-    onMouseMove,
-    onMouseLeave,
     blockKey,
     displayModel,
     width,
@@ -59,9 +48,6 @@ const PileupRendering = observer(function PileupRendering(props: {
     flatbush,
     items,
     featureNames = {},
-    onFeatureClick,
-    onFeatureContextMenu,
-    onContextMenu,
   } = props
   const { refName } = regions[0]!
   const flatbush2 = useMemo(() => Flatbush.from(flatbush), [flatbush])
@@ -117,11 +103,11 @@ const PileupRendering = observer(function PileupRendering(props: {
         height,
         cursor: isClickable ? 'pointer' : 'default',
       }}
-      onMouseLeave={event => {
+      onMouseLeave={() => {
         setItemUnderMouse(undefined)
         setFeatureNameUnderMouse(undefined)
         setMousePosition(undefined)
-        onMouseLeave?.(event)
+        displayModel.setFeatureIdUnderMouse(undefined)
       }}
       onMouseDown={(_event: React.MouseEvent) => {
         setMouseIsDown(true)
@@ -165,10 +151,9 @@ const PileupRendering = observer(function PileupRendering(props: {
               }
             : undefined,
         )
-        // Don't pass label - we handle tooltips ourselves
-        onMouseMove?.(event, featureId)
+        displayModel.setFeatureIdUnderMouse(featureId)
       }}
-      onClick={event => {
+      onClick={() => {
         if (!movedDuringLastMouseDown) {
           if (itemUnderMouse) {
             const session = getSession(displayModel)
@@ -193,8 +178,8 @@ const PileupRendering = observer(function PileupRendering(props: {
               )
               session.showWidget(featureWidget)
             }
-          } else if (onFeatureClick && featureIdUnderMouse) {
-            onFeatureClick(event, featureIdUnderMouse)
+          } else if (featureIdUnderMouse) {
+            displayModel.selectFeatureById(featureIdUnderMouse)
           }
         }
       }}
@@ -206,10 +191,11 @@ const PileupRendering = observer(function PileupRendering(props: {
             mouseY: event.clientY,
             item: itemUnderMouse,
           })
-        } else if (onFeatureContextMenu && featureIdUnderMouse) {
-          onFeatureContextMenu(event, featureIdUnderMouse)
+        } else if (featureIdUnderMouse) {
+          displayModel.setContextMenuFeatureById(featureIdUnderMouse)
         } else {
-          onContextMenu?.(event)
+          displayModel.setContextMenuFeature(undefined)
+          displayModel.clearFeatureSelection()
         }
       }}
     >

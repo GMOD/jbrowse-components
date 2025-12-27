@@ -8,6 +8,12 @@ import type { Source } from './util'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
+interface MultiWiggleDisplayModel {
+  isMultiRow: boolean
+  setFeatureUnderMouse: (f?: Feature) => void
+  selectFeature: (f: Feature) => void
+}
+
 const MultiWiggleRendering = observer(function MultiWiggleRendering(props: {
   regions: Region[]
   features: Map<string, Feature>
@@ -16,26 +22,13 @@ const MultiWiggleRendering = observer(function MultiWiggleRendering(props: {
   height: number
   blockKey: string
   sources: Source[]
-  displayModel?: { isMultiRow: boolean }
-  onMouseLeave?: (event: React.MouseEvent) => void
-  onMouseMove?: (event: React.MouseEvent, arg?: Feature) => void
-  onFeatureClick?: (event: React.MouseEvent, arg?: Feature) => void
+  displayModel: MultiWiggleDisplayModel
 }) {
-  const {
-    regions,
-    features,
-    bpPerPx,
-    width,
-    height,
-    sources,
-    onMouseLeave = () => {},
-    onMouseMove = () => {},
-    onFeatureClick = () => {},
-    displayModel,
-  } = props
+  const { regions, features, bpPerPx, width, height, sources, displayModel } =
+    props
   const region = regions[0]!
   const ref = useRef<HTMLDivElement>(null)
-  const { isMultiRow } = displayModel || {}
+  const { isMultiRow } = displayModel
 
   function getFeatureUnderMouse(eventClientX: number, eventClientY: number) {
     if (!ref.current) {
@@ -102,15 +95,17 @@ const MultiWiggleRendering = observer(function MultiWiggleRendering(props: {
       onMouseMove={event => {
         const { clientX, clientY } = event
         const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
-        onMouseMove(event, featureUnderMouse)
+        displayModel.setFeatureUnderMouse(featureUnderMouse)
       }}
       onClick={event => {
         const { clientX, clientY } = event
         const featureUnderMouse = getFeatureUnderMouse(clientX, clientY)
-        onFeatureClick(event, featureUnderMouse)
+        if (featureUnderMouse) {
+          displayModel.selectFeature(featureUnderMouse)
+        }
       }}
-      onMouseLeave={event => {
-        onMouseLeave(event)
+      onMouseLeave={() => {
+        displayModel.setFeatureUnderMouse(undefined)
       }}
       style={{
         overflow: 'visible',
