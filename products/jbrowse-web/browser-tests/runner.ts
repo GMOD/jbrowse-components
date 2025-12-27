@@ -6,8 +6,13 @@ import { fileURLToPath } from 'url'
 
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
-import { type Page, launch } from 'puppeteer'
+import { type Browser, type Page, launch } from 'puppeteer'
 import handler from 'serve-handler'
+
+import {
+  startBasicAuthServer,
+  startOAuthServer,
+} from '../../../auth_test_utils/servers.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -21,7 +26,11 @@ const updateSnapshots =
 const snapshotsDir = path.resolve(__dirname, '__snapshots__')
 const buildPath = path.resolve(__dirname, '../build')
 const testDataPath = path.resolve(__dirname, '..')
+const volvoxDataPath = path.resolve(__dirname, '../test_data/volvox')
 const PORT = 3333
+const OAUTH_PORT = 3030
+const BASICAUTH_PORT = 3040
+const runAuthTests = args.includes('--auth')
 
 // Helpers
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -172,10 +181,71 @@ async function snapshot(page: Page, name: string) {
   }
 }
 
+async function handleOAuthLogin(browser: Browser) {
+  // Wait for OAuth popup to appear
+  const target = await browser.waitForTarget(
+    t => t.url().includes('localhost:3030/oauth'),
+    { timeout: 15000 },
+  )
+  const popup = await target.page()
+  if (!popup) {
+    throw new Error('Could not get OAuth popup page')
+  }
+  // Wait for the form to be ready
+  await popup.waitForSelector('input[type="submit"]', { timeout: 10000 })
+  // Small delay to ensure page is fully loaded
+  await delay(500)
+  const submitBtn = await popup.$('input[type="submit"]')
+  await submitBtn?.click()
+  // Wait for popup to close after successful auth
+  await delay(2000)
+}
+
+async function handleBasicAuthLogin(page: Page) {
+  const dialog = await findByTestId(page, 'login-httpbasic', 10000)
+  if (!dialog) {
+    throw new Error('BasicAuth login dialog not found')
+  }
+
+  const usernameInput = await findByTestId(
+    page,
+    'login-httpbasic-username',
+    10000,
+  )
+  const passwordInput = await findByTestId(
+    page,
+    'login-httpbasic-password',
+    10000,
+  )
+  await usernameInput?.type('admin')
+  await passwordInput?.type('password')
+
+  const submitBtn = await findByText(page, 'Submit', 10000)
+  await submitBtn?.click()
+  await delay(500)
+}
+
+async function clearStorageAndNavigate(page: Page, config: string) {
+  await page.goto(`http://localhost:${PORT}/`)
+  await page.evaluate(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+  await navigateToApp(page, config)
+}
+
+async function waitForDisplay(page: Page, trackId: string, timeout = 60000) {
+  await page.waitForSelector(`[data-testid^="display-${trackId}"]`, { timeout })
+}
+
 // Test suites
 interface TestSuite {
   name: string
-  tests: { name: string; fn: (page: Page) => Promise<void> }[]
+  tests: {
+    name: string
+    fn: (page: Page, browser?: Browser) => Promise<void>
+  }[]
+  requiresAuth?: boolean
 }
 
 const testSuites: TestSuite[] = [
@@ -312,14 +382,86 @@ const testSuites: TestSuite[] = [
       },
     ],
   },
+  {
+    name: 'Authentication (WebWorker RPC)',
+    requiresAuth: true,
+    tests: [
+      {
+        name: 'loads with auth config',
+        fn: async page => {
+          await navigateToApp(page, 'test_data/volvox/config_auth.json')
+          await findByText(page, 'Help', 10000)
+        },
+      },
+      {
+        name: 'loads OAuth BigWig track after login',
+        fn: async (page, browser) => {
+          await navigateToApp(page, 'test_data/volvox/config_auth.json')
+          await openTrack(page, 'oauth_bigwig')
+          await handleOAuthLogin(browser!)
+          await waitForDisplay(page, 'oauth_bigwig')
+        },
+      },
+      {
+        name: 'loads BasicAuth BigWig track after login',
+        fn: async page => {
+          await navigateToApp(page, 'test_data/volvox/config_auth.json')
+          await openTrack(page, 'basicauth_bigwig')
+          await handleBasicAuthLogin(page)
+          await waitForDisplay(page, 'basicauth_bigwig')
+        },
+      },
+    ],
+  },
+  {
+    name: 'Authentication (MainThread RPC)',
+    requiresAuth: true,
+    tests: [
+      {
+        name: 'loads with main thread auth config',
+        fn: async page => {
+          await navigateToApp(page, 'test_data/volvox/config_auth_main.json')
+          await findByText(page, 'Help', 10000)
+        },
+      },
+      {
+        name: 'loads OAuth BigWig track after login (main thread)',
+        fn: async (page, browser) => {
+          await clearStorageAndNavigate(
+            page,
+            'test_data/volvox/config_auth_main.json',
+          )
+          await openTrack(page, 'oauth_bigwig')
+          await handleOAuthLogin(browser!)
+          await waitForDisplay(page, 'oauth_bigwig')
+        },
+      },
+      {
+        name: 'loads BasicAuth BigWig track after login (main thread)',
+        fn: async page => {
+          await clearStorageAndNavigate(
+            page,
+            'test_data/volvox/config_auth_main.json',
+          )
+          await openTrack(page, 'basicauth_bigwig')
+          await handleBasicAuthLogin(page)
+          await waitForDisplay(page, 'basicauth_bigwig')
+        },
+      },
+    ],
+  },
 ]
 
 // Runner
-async function runTests(page: Page) {
+async function runTests(page: Page, browser: Browser, includeAuth: boolean) {
   let passed = 0
   let failed = 0
 
-  for (const suite of testSuites) {
+  const suitesToRun = testSuites.filter(
+    suite => !suite.requiresAuth || includeAuth,
+  )
+
+  for (const suite of suitesToRun) {
     console.log(`\n  ${suite.name}`)
 
     for (const test of suite.tests) {
@@ -328,7 +470,7 @@ async function runTests(page: Page) {
 
       try {
         await page.goto('about:blank')
-        await test.fn(page)
+        await test.fn(page, browser)
 
         const duration = performance.now() - start
         passed++
@@ -366,9 +508,24 @@ async function main() {
   console.log('Starting test server...')
   const server = await startServer(PORT)
 
-  let browser: Awaited<ReturnType<typeof launch>> | undefined
+  let browser: Browser | undefined
+  let oauthServer: http.Server | undefined
+  let basicAuthServer: http.Server | undefined
 
   try {
+    if (runAuthTests) {
+      console.log('Starting auth servers...')
+      oauthServer = await startOAuthServer({
+        port: OAUTH_PORT,
+        redirectPort: PORT,
+        dataPath: volvoxDataPath,
+      })
+      basicAuthServer = await startBasicAuthServer({
+        port: BASICAUTH_PORT,
+        dataPath: volvoxDataPath,
+      })
+    }
+
     console.log(`Launching browser (headed: ${headed})...`)
     browser = await launch({
       headless: !headed,
@@ -377,6 +534,7 @@ async function main() {
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-web-security',
+        '--disable-popup-blocking',
       ],
       defaultViewport: { width: 1280, height: 800 },
     })
@@ -389,7 +547,10 @@ async function main() {
     })
 
     console.log('\nRunning browser tests...')
-    const { passed, failed } = await runTests(page)
+    if (runAuthTests) {
+      console.log('(including auth tests)')
+    }
+    const { passed, failed } = await runTests(page, browser, runAuthTests)
 
     console.log(`\n${'─'.repeat(50)}`)
     console.log(`  Tests: ${passed} passed, ${failed} failed`)
@@ -402,6 +563,8 @@ async function main() {
   } finally {
     await browser?.close()
     server.close()
+    oauthServer?.close()
+    basicAuthServer?.close()
   }
 }
 
