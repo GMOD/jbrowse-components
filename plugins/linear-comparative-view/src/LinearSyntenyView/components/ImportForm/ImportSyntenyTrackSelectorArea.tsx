@@ -21,7 +21,7 @@ export default function ImportSyntenyTrackSelectorArea({
   const [choice, setChoice] = useState('tracklist')
 
   useEffect(() => {
-    if (choice === 'none') {
+    if (choice === 'none' || choice === 'custom') {
       model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
     }
   }, [choice, model, selectedRow])
