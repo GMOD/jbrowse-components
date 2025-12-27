@@ -8,7 +8,7 @@ import type { SelectorProps } from './SelectorTypes'
 /**
  * Component for selecting ANCHORS format files and their related BED files
  */
-const AnchorsSelector = observer(function ({
+const AnchorsSelector = observer(function AnchorsSelector({
   assembly1,
   assembly2,
   swap,

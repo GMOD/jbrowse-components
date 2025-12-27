@@ -22,7 +22,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const Rubberband = observer(function ({
+const Rubberband = observer(function Rubberband({
   model,
   ControlComponent = <div />,
 }: {

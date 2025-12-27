@@ -16,7 +16,7 @@ import type { BreakpointViewModel } from '../model'
 //   - Translocations: for TRA type variants (uses INFO.CHR2, INFO.END)
 //   - PairedFeatures: for paired_feature type (e.g. BEDPE-style)
 //   - Breakends: for BND type variants (uses ALT field breakend notation)
-const Overlay = observer(function (props: {
+const Overlay = observer(function Overlay(props: {
   parentRef: React.RefObject<SVGSVGElement | null>
   model: BreakpointViewModel
   trackId: string

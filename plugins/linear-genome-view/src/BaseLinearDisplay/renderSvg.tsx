@@ -14,7 +14,8 @@ import { ErrorBox } from '../LinearGenomeView/SVGErrorBox'
 import { calculateLabelPositions } from './models/calculateLabelPositions'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
-import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from './model'
+import type { BaseLinearDisplayModel } from './model'
+import type { ExportSvgDisplayOptions } from './types'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
@@ -144,7 +145,11 @@ export async function renderBaseLinearDisplaySvg(
         ))}
       </g>
       {legendItems.length > 0 ? (
-        <SVGLegend items={legendItems} width={width} />
+        <SVGLegend
+          items={legendItems}
+          width={width}
+          legendAreaWidth={opts.legendWidth}
+        />
       ) : null}
     </>
   )

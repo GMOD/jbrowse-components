@@ -8,7 +8,7 @@ import type { FlatbushItem, SubfeatureInfo } from './types'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-const CanvasFeatureRendering = observer(function (props: {
+const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
   blockKey: string
   displayModel: BaseLinearDisplayModel
   width: number
@@ -152,8 +152,8 @@ const CanvasFeatureRendering = observer(function (props: {
           if (subfeatureSearch.length) {
             const subfeatureInfo = subfeatureInfos[subfeatureSearch[0]!]
             if (subfeatureInfo) {
-              const { name, type } = subfeatureInfo
-              extra += `<br/>${name ? `${name} (${type})` : type}`
+              const { displayLabel, type } = subfeatureInfo
+              extra += `<br/>${displayLabel ? `${displayLabel} (${type})` : type}`
             }
           }
         }

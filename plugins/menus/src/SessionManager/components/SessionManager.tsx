@@ -25,7 +25,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SessionManager = observer(function ({
+const SessionManager = observer(function SessionManager({
   session,
 }: {
   session: SessionModel

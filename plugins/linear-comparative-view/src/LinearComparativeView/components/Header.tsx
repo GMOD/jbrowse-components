@@ -21,7 +21,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const Header = observer(function ({
+const Header = observer(function Header({
   model,
 }: {
   model: LinearComparativeViewModel

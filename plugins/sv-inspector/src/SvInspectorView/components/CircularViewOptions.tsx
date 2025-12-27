@@ -10,7 +10,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const CircularViewOptions = observer(function ({
+const CircularViewOptions = observer(function CircularViewOptions({
   svInspector,
 }: {
   svInspector: SvInspectorViewModel

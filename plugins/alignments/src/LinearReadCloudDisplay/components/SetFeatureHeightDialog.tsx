@@ -12,7 +12,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const SetFeatureHeightDialog = observer(function (props: {
+const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   model: {
     setFeatureHeight: (arg?: number) => void
     setNoSpacing: (arg?: boolean) => void

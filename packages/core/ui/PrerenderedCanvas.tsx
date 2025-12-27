@@ -6,8 +6,8 @@ function PrerenderedCanvas(props: {
   width: number
   height: number
   highResolutionScaling?: number
-  style?: any
-  imageData?: any
+  style?: React.CSSProperties
+  imageData?: unknown
   showSoftClip?: boolean
   blockKey?: string
 }) {
@@ -36,6 +36,7 @@ function PrerenderedCanvas(props: {
     if (!context) {
       return
     }
+    context.clearRect(0, 0, canvas.width, canvas.height)
     drawImageOntoCanvasContext(imageData, context)
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDone(true)

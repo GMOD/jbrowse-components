@@ -15,7 +15,7 @@ interface Tag {
   tag: string
 }
 
-const ColorByTagDialog = observer(function ({
+const ColorByTagDialog = observer(function ColorByTagDialog({
   model,
   handleClose,
 }: {

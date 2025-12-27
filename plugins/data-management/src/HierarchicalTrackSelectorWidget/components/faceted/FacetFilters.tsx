@@ -6,7 +6,7 @@ import { getRowStr } from './util'
 import type { Row } from './util'
 import type { HierarchicalTrackSelectorModel } from '../../model'
 
-const FacetFilters = observer(function ({
+const FacetFilters = observer(function FacetFilters({
   rows,
   columns,
   model,

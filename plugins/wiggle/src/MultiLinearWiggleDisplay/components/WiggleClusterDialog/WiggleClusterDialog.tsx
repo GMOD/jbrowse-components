@@ -51,7 +51,7 @@ function Header({
   )
 }
 
-const WiggleClusterDialog = observer(function ({
+const WiggleClusterDialog = observer(function WiggleClusterDialog({
   model,
   handleClose,
 }: {

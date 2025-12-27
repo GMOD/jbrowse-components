@@ -6,7 +6,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const BooleanEditor = observer(function ({
+const BooleanEditor = observer(function BooleanEditor({
   slot,
 }: {
   slot: {

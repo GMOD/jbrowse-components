@@ -14,7 +14,7 @@ import type { Option } from './util'
 import type { LinearGenomeViewModel } from '../../model'
 import type { TextFieldProps as TFP } from '@mui/material'
 
-const RefNameAutocomplete = observer(function ({
+const RefNameAutocomplete = observer(function RefNameAutocomplete({
   model,
   onSelect,
   assemblyName,

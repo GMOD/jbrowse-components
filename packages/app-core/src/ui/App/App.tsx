@@ -52,7 +52,7 @@ interface Props {
   }
 }
 
-const LazyDrawerWidget = observer(function (props: Props) {
+const LazyDrawerWidget = observer(function LazyDrawerWidget(props: Props) {
   const { session } = props
   return (
     <Suspense fallback={null}>
@@ -61,7 +61,7 @@ const LazyDrawerWidget = observer(function (props: Props) {
   )
 })
 
-const App = observer(function (props: Props) {
+const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
   const { minimized, visibleWidget, drawerWidth, drawerPosition } = session

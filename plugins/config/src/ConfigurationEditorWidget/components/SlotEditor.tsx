@@ -27,7 +27,7 @@ import type { FileLocation } from '@jbrowse/core/util'
 import type { ILiteralType } from '@jbrowse/core/util/mst-reflection'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
-const StringEditor = observer(function ({
+const StringEditor = observer(function StringEditor({
   slot,
 }: {
   slot: {
@@ -49,7 +49,7 @@ const StringEditor = observer(function ({
   )
 })
 
-const TextEditor = observer(function ({
+const TextEditor = observer(function TextEditor({
   slot,
 }: {
   slot: {
@@ -79,7 +79,7 @@ const SvgCheckbox = () => (
   </SvgIcon>
 )
 
-const IntegerEditor = observer(function ({
+const IntegerEditor = observer(function IntegerEditor({
   slot,
 }: {
   slot: {
@@ -109,7 +109,7 @@ const IntegerEditor = observer(function ({
   )
 })
 
-const StringEnumEditor = observer(function ({
+const StringEnumEditor = observer(function StringEnumEditor({
   slot,
   slotSchema,
 }: {
@@ -140,7 +140,7 @@ const StringEnumEditor = observer(function ({
   )
 })
 
-const FileSelectorWrapper = observer(function ({
+const FileSelectorWrapper = observer(function FileSelectorWrapper({
   slot,
 }: {
   slot: {
@@ -179,7 +179,7 @@ const valueComponents = {
   configRelationships: JsonEditor,
 }
 
-const SlotEditor = observer(function ({
+const SlotEditor = observer(function SlotEditor({
   slot,
   slotSchema,
 }: {

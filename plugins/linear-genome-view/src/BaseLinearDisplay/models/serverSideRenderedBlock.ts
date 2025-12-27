@@ -224,6 +224,9 @@ const blockState = types
         clearRenderState()
         getParent<any>(self, 2).reload()
       },
+      setCachedDisplay(display: AbstractDisplayModel) {
+        self.cachedDisplay = display
+      },
       beforeDestroy() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
@@ -259,8 +262,7 @@ const blockState = types
   }))
   .actions(self => ({
     afterAttach() {
-      const display = getContainingDisplay(self)
-      self.cachedDisplay = display
+      const display = self.cachedDisplay || getContainingDisplay(self)
       setTimeout(() => {
         if (isAlive(self)) {
           makeAbortableReaction(
@@ -317,7 +319,7 @@ export function renderBlockData(
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
-    const layoutId = parentTrack.id
+    const trackInstanceId = parentTrack.id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
@@ -338,7 +340,7 @@ export function renderBlockData(
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
-        layoutId,
+        trackInstanceId,
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
         timeout: 1_000_000,

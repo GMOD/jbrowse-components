@@ -38,29 +38,31 @@ function BlockError({ error }: { error: unknown }) {
   return <ErrorMessage error={error} />
 }
 
-const ServerSideRenderedDotplotContent = observer(function ({
-  model,
-  style,
-}: {
-  model: {
-    error?: unknown
-    message?: string
-    filled?: boolean
-    shouldDisplay?: boolean
-    reactElement?: React.ReactElement
-  }
-  style: CSSProperties
-}) {
-  if (model.error) {
-    return <BlockError error={model.error} data-testid="reload_button" />
-  } else if (model.message) {
-    return <BlockMessage messageText={model.message} />
-  } else if (!model.filled) {
-    return <LoadingMessage />
-  } else if (model.shouldDisplay) {
-    return <div style={style}>{model.reactElement}</div>
-  }
-  return null
-})
+const ServerSideRenderedDotplotContent = observer(
+  function ServerSideRenderedDotplotContent({
+    model,
+    style,
+  }: {
+    model: {
+      error?: unknown
+      message?: string
+      filled?: boolean
+      shouldDisplay?: boolean
+      reactElement?: React.ReactElement
+    }
+    style: CSSProperties
+  }) {
+    if (model.error) {
+      return <BlockError error={model.error} data-testid="reload_button" />
+    } else if (model.message) {
+      return <BlockMessage messageText={model.message} />
+    } else if (!model.filled) {
+      return <LoadingMessage />
+    } else if (model.shouldDisplay) {
+      return <div style={style}>{model.reactElement}</div>
+    }
+    return null
+  },
+)
 
 export default ServerSideRenderedDotplotContent

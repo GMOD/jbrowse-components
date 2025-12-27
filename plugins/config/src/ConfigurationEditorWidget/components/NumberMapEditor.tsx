@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const NumberMapEditor = observer(function ({
+const NumberMapEditor = observer(function NumberMapEditor({
   slot,
 }: {
   slot: {

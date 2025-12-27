@@ -17,7 +17,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const OpacitySlider = observer(function ({
+const OpacitySlider = observer(function OpacitySlider({
   model,
 }: {
   model: LinearComparativeViewModel

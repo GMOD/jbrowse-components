@@ -12,7 +12,8 @@ import { getId } from './util'
 import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { BaseLinearDisplayModel, ExportSvgDisplayOptions } from '../model'
+import type { BaseLinearDisplayModel } from '../model'
+import type { ExportSvgDisplayOptions } from '../types'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,

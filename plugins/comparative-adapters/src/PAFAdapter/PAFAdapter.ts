@@ -50,7 +50,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       },
       opts?.statusCallback,
     )
-    return lines
+    return getWeightedMeans(lines)
   }
 
   async hasDataForRefName() {
@@ -89,7 +89,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const pafRecords = getWeightedMeans(await this.setup(opts))
+      const pafRecords = await this.setup(opts)
 
       // note: this is not the adapter config, it is responding to a display
       // setting passed in via the opts parameter

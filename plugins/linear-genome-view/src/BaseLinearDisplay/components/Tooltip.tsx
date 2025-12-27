@@ -27,7 +27,7 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
 
 type Coord = [number, number]
 
-const Tooltip = observer(function ({
+const Tooltip = observer(function Tooltip({
   model,
   clientMouseCoord,
 }: {

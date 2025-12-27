@@ -8,7 +8,7 @@ import type { SelectorProps } from './SelectorTypes'
 /**
  * Component for selecting PIF.GZ format files and their indexes
  */
-const PifGzSelector = observer(function ({
+const PifGzSelector = observer(function PifGzSelector({
   assembly1,
   assembly2,
   swap,

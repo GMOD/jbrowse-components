@@ -27,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SvInspectorView = observer(function ({
+const SvInspectorView = observer(function SvInspectorView({
   model,
 }: {
   model: SvInspectorViewModel

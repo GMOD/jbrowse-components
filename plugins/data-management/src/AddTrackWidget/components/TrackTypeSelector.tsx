@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import type { AddTrackModel } from '../model'
 
-const TrackTypeSelector = observer(function ({
+const TrackTypeSelector = observer(function TrackTypeSelector({
   model,
 }: {
   model: AddTrackModel

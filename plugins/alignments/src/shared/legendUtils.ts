@@ -1,12 +1,12 @@
 import { fillColor } from './color'
 
 import type { ColorBy, ModificationTypeWithColor } from './types'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
 
-export interface LegendItem {
-  color?: string
-  label: string
-}
+// Re-export from linear-genome-view for convenience
+export { calculateSvgLegendWidth } from '@jbrowse/plugin-linear-genome-view'
+export type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Get legend items for pileup display based on colorBy setting

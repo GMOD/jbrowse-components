@@ -15,37 +15,39 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const HierarchicalTrackSelectorHeader = observer(function ({
-  model,
-  setHeaderHeight,
-}: {
-  model: HierarchicalTrackSelectorModel
-  setHeaderHeight: (n: number) => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <div
-      ref={ref => {
-        setHeaderHeight(ref?.getBoundingClientRect().height || 0)
-      }}
-      data-testid="hierarchical_track_selector"
-    >
-      <div style={{ display: 'flex' }}>
-        <HamburgerMenu model={model} />
-        <ShoppingCart model={model} />
-        <ClearableSearchField
-          className={classes.searchBox}
-          label="Filter tracks"
-          value={model.filterText}
-          onChange={value => {
-            model.setFilterText(value)
-          }}
-        />
-        <RecentlyUsedTracks model={model} />
-        <FavoriteTracks model={model} />
+const HierarchicalTrackSelectorHeader = observer(
+  function HierarchicalTrackSelectorHeader({
+    model,
+    setHeaderHeight,
+  }: {
+    model: HierarchicalTrackSelectorModel
+    setHeaderHeight: (n: number) => void
+  }) {
+    const { classes } = useStyles()
+    return (
+      <div
+        ref={ref => {
+          setHeaderHeight(ref?.getBoundingClientRect().height || 0)
+        }}
+        data-testid="hierarchical_track_selector"
+      >
+        <div style={{ display: 'flex' }}>
+          <HamburgerMenu model={model} />
+          <ShoppingCart model={model} />
+          <ClearableSearchField
+            className={classes.searchBox}
+            label="Filter tracks"
+            value={model.filterText}
+            onChange={value => {
+              model.setFilterText(value)
+            }}
+          />
+          <RecentlyUsedTracks model={model} />
+          <FavoriteTracks model={model} />
+        </div>
       </div>
-    </div>
-  )
-})
+    )
+  },
+)
 
 export default HierarchicalTrackSelectorHeader

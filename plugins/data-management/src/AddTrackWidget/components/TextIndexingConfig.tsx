@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const TextIndexingConfig = observer(function ({
+const TextIndexingConfig = observer(function TextIndexingConfig({
   model,
 }: {
   model: AddTrackModel

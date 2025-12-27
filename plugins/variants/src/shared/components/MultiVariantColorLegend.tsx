@@ -56,7 +56,7 @@ const LegendItemText = function ({
   )
 }
 
-const MultiVariantColorLegend = observer(function ({
+const MultiVariantColorLegend = observer(function MultiVariantColorLegend({
   model,
   labelWidth,
 }: {

@@ -334,6 +334,9 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
           ;[mateStart, mateEnd] = [mateEnd, mateStart]
           mateStrand = -1
         }
+        // Convert from BLAST 1-based to JBrowse 0-based coordinates
+        start -= 1
+        mateStart -= 1
         if (
           refName === queryRefName &&
           doesIntersect2(queryStart, queryEnd, start, end)

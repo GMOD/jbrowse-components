@@ -2,7 +2,7 @@ import { Dialog } from '@jbrowse/core/ui'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const SetDefaultSession = observer(function ({
+const SetDefaultSession = observer(function SetDefaultSession({
   rootModel,
   onClose,
 }: {

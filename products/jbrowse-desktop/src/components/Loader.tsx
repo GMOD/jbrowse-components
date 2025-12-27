@@ -13,7 +13,7 @@ import { loadPluginManager } from './StartScreen/util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const Loader = observer(() => {
+const Loader = observer(function Loader() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [config, setConfig] = useQueryParam('config')
   const [error, setError] = useState<unknown>()

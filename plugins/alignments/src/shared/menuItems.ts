@@ -39,95 +39,103 @@ export function getModificationsSubMenu(
   options: ModificationsMenuOptions = {},
 ) {
   const { includeMethylation = false } = options
+  const {
+    modificationThreshold,
+    modificationsReady,
+    visibleModificationTypes,
+  } = model
 
-  if (!model.modificationsReady) {
+  if (!modificationsReady) {
     return [
       {
         label: 'Loading modifications...',
         onClick: () => {},
       },
     ]
+  } else {
+    return visibleModificationTypes.length
+      ? [
+          {
+            label: `All modifications (>= ${modificationThreshold}% prob)`,
+            onClick: () => {
+              model.setColorScheme({
+                type: 'modifications',
+                modifications: {
+                  threshold: modificationThreshold,
+                },
+              })
+            },
+          },
+          ...model.visibleModificationTypes.map(key => ({
+            label: `Show only ${modificationData[key]?.name || key} (>= ${modificationThreshold}% prob)`,
+            onClick: () => {
+              model.setColorScheme({
+                type: 'modifications',
+                modifications: {
+                  isolatedModification: key,
+                  threshold: modificationThreshold,
+                },
+              })
+            },
+          })),
+          { type: 'divider' as const },
+          {
+            label: 'All modifications (<50% prob colored blue)',
+            onClick: () => {
+              model.setColorScheme({
+                type: 'modifications',
+                modifications: {
+                  twoColor: true,
+                  threshold: modificationThreshold,
+                },
+              })
+            },
+          },
+          ...model.visibleModificationTypes.map(key => ({
+            label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
+            onClick: () => {
+              model.setColorScheme({
+                type: 'modifications',
+                modifications: {
+                  isolatedModification: key,
+                  twoColor: true,
+                  threshold: modificationThreshold,
+                },
+              })
+            },
+          })),
+          ...(includeMethylation
+            ? [
+                { type: 'divider' as const },
+                {
+                  label: 'All reference CpGs',
+                  onClick: () => {
+                    model.setColorScheme({
+                      type: 'methylation',
+                      modifications: {
+                        threshold: modificationThreshold,
+                      },
+                    })
+                  },
+                },
+              ]
+            : []),
+          { type: 'divider' as const },
+          {
+            label: `Adjust threshold (${modificationThreshold}%)`,
+            onClick: () => {
+              getSession(model).queueDialog(handleClose => [
+                SetModificationThresholdDialog,
+                {
+                  model,
+                  handleClose,
+                },
+              ])
+            },
+          },
+        ]
+      : [{ label: 'No modifications currently visible' }]
   }
-
-  const methylationItems = includeMethylation
-    ? [
-        { type: 'divider' as const },
-        {
-          label: 'All reference CpGs',
-          onClick: () => {
-            model.setColorScheme({
-              type: 'methylation',
-              modifications: {
-                threshold: model.modificationThreshold,
-              },
-            })
-          },
-        },
-      ]
-    : []
-
-  return [
-    {
-      label: `All modifications (>= ${model.modificationThreshold}% prob)`,
-      onClick: () => {
-        model.setColorScheme({
-          type: 'modifications',
-          modifications: {
-            threshold: model.modificationThreshold,
-          },
-        })
-      },
-    },
-    ...model.visibleModificationTypes.map(key => ({
-      label: `Show only ${modificationData[key]?.name || key} (>= ${model.modificationThreshold}% prob)`,
-      onClick: () => {
-        model.setColorScheme({
-          type: 'modifications',
-          modifications: {
-            isolatedModification: key,
-            threshold: model.modificationThreshold,
-          },
-        })
-      },
-    })),
-    { type: 'divider' as const },
-    {
-      label: 'All modifications (<50% prob colored blue)',
-      onClick: () => {
-        model.setColorScheme({
-          type: 'modifications',
-          modifications: {
-            twoColor: true,
-            threshold: model.modificationThreshold,
-          },
-        })
-      },
-    },
-    ...model.visibleModificationTypes.map(key => ({
-      label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
-      onClick: () => {
-        model.setColorScheme({
-          type: 'modifications',
-          modifications: {
-            isolatedModification: key,
-            twoColor: true,
-            threshold: model.modificationThreshold,
-          },
-        })
-      },
-    })),
-    ...methylationItems,
-    { type: 'divider' as const },
-    {
-      label: `Adjust threshold (${model.modificationThreshold}%)`,
-      onClick: () => {
-        getSession(model).queueDialog((handleClose: () => void) => [
-          SetModificationThresholdDialog,
-          { model, handleClose },
-        ])
-      },
-    },
-  ]
 }
 
 export function getModificationsMenuItem(

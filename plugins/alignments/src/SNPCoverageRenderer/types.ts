@@ -1,12 +1,12 @@
-import { type Feature, reducePrecision, toLocale } from '@jbrowse/core/util'
+import { reducePrecision, toLocale } from '@jbrowse/core/util'
 
-import type { CoverageBinsSoA } from '../SNPCoverageAdapter/generateCoverageBinsPrefixSum'
 import type {
   BaseCoverageBin,
   ColorBy,
   ModificationTypeWithColor,
 } from '../shared/types'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
+import type { Feature } from '@jbrowse/core/util'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
 
 export interface InterbaseIndicatorItem {
@@ -124,7 +124,7 @@ export function formatBinAsTableRows(bin: BaseCoverageBin) {
       strands: formatStrandCounts(entry),
       prob:
         entry.avgProbability !== undefined
-          ? `qual:${reducePrecision(entry.avgProbability, 1)}`
+          ? `qual:${reducePrecision(entry.avgProbability)}`
           : undefined,
     })
   }
@@ -212,7 +212,7 @@ export function formatInterbaseStats(
   let result = formatCountPct(count, total)
   if (lengthStats?.avgLength !== undefined) {
     const { avgLength, minLength, maxLength, topSequence } = lengthStats
-    const avgStr = reducePrecision(avgLength, 1)
+    const avgStr = reducePrecision(avgLength)
     if (minLength !== undefined && maxLength !== undefined) {
       if (minLength === maxLength) {
         if (topSequence !== undefined) {
@@ -272,7 +272,7 @@ export function formatSNPStats(item: SNPItem) {
       const pctVal = ((entry.entryDepth / readsCounted) * 100).toFixed(1)
       result += `${snpBase}: ${entry.entryDepth} (${pctVal}%) ${formatStrandCounts(entry)}`
       if (entry.avgProbability !== undefined) {
-        result += ` qual:${reducePrecision(entry.avgProbability, 1)}`
+        result += ` qual:${reducePrecision(entry.avgProbability)}`
       }
       result += '\n'
     }
@@ -294,7 +294,7 @@ export function formatSNPStats(item: SNPItem) {
   const mutation = refbase ? `${refbase}→${base}` : base
   let result = `${mutation}: ${formatCountPct(count, total)}`
   if (avgQual !== undefined) {
-    result += `\nAvg quality: ${reducePrecision(avgQual, 1)}`
+    result += `\nAvg quality: ${reducePrecision(avgQual)}`
   }
   result += formatStrandFromCounts(fwdCount, revCount)
   return result
@@ -314,7 +314,7 @@ export function formatModificationStats(item: ModificationItem) {
   const label = isUnmodified ? `Unmodified ${base}` : `${modType} (${base})`
   let result = `${label}: ${formatCountPct(count, total)}`
   if (avgProb !== undefined) {
-    result += `\nAvg probability: ${reducePrecision(avgProb * 100, 1)}%`
+    result += `\nAvg probability: ${reducePrecision(avgProb * 100)}%`
   }
   result += formatStrandFromCounts(fwdCount, revCount)
   return result
@@ -337,9 +337,3 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: Map<string, Feature>
 }
-
-export interface RenderArgsDeserializedWithArrays extends RenderArgsDeserialized {
-  featureArrays: CoverageBinsSoA
-}
-
-export type { CoverageBinsSoA as SNPCoverageArrays } from '../SNPCoverageAdapter/generateCoverageBinsPrefixSum'

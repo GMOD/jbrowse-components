@@ -2,7 +2,8 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { ClusterHierarchyNode } from './components/types'
+import type { ClusterHierarchyNode, HoveredTreeNode } from './components/types'
+import type { Source } from './types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface TreeDrawingModel {
@@ -14,10 +15,8 @@ interface TreeDrawingModel {
   scrollTop: number
   rowHeight: number
   totalHeight: number
-  hoveredTreeNode?: {
-    node: ClusterHierarchyNode
-    descendantNames: string[]
-  }
+  hoveredTreeNode?: HoveredTreeNode
+  sources?: Source[]
 }
 
 export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
@@ -33,8 +32,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           height,
           scrollTop,
           // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-          totalHeight,
+          totalHeight: _totalHeight,
         } = self
+
         if (!treeCanvas || !hierarchy) {
           return
         }
@@ -45,10 +45,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
 
         // Clear the entire canvas
+        ctx.resetTransform()
+        ctx.scale(2, 2)
         ctx.clearRect(0, 0, treeAreaWidth, height)
-
-        // Save the context state
-        ctx.save()
 
         // Translate to simulate scrolling
         ctx.translate(0, -scrollTop)
@@ -76,11 +75,10 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           ctx.lineTo(tx, ty)
         }
         ctx.stroke()
-
-        // Restore the context state
-        ctx.restore()
       },
-      { name: 'TreeDraw' },
+      {
+        name: 'TreeDraw',
+      },
     ),
   )
 
@@ -96,6 +94,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           hoveredTreeNode,
           height,
           scrollTop,
+          sources,
           // eslint-disable-next-line  @typescript-eslint/no-unused-vars
           totalHeight,
         } = self
@@ -113,7 +112,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
 
         ctx.clearRect(0, 0, viewWidth, height)
 
-        if (hierarchy && hoveredTreeNode) {
+        if (hierarchy && hoveredTreeNode && sources) {
           // Save the context state
           ctx.save()
 
@@ -122,11 +121,14 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
 
           // Draw highlight rectangles for descendant leaf rows
           // Note: accessing totalHeight ensures we redraw when row height changes
+          // In phased mode, each sample name may correspond to multiple rows
+          // (e.g., SAMPLE1 -> SAMPLE1 HP0, SAMPLE1 HP1)
           ctx.fillStyle = 'rgba(255,165,0,0.2)'
-          for (const name of hoveredTreeNode.descendantNames) {
-            const leaf = hierarchy.leaves().find(l => l.data.name === name)
-            if (leaf) {
-              const y = leaf.x!
+          const descendantSet = new Set(hoveredTreeNode.descendantNames)
+          for (let i = 0, l = sources.length; i < l; i++) {
+            const source = sources[i]!
+            if (descendantSet.has(source.name)) {
+              const y = (i + 0.5) * rowHeight
               ctx.fillRect(0, y - rowHeight / 2, viewWidth, rowHeight)
             }
           }

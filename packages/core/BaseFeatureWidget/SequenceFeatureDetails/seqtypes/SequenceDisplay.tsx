@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import type { SequenceFeatureDetailsModel } from '../model'
 
-const SequenceDisplay = observer(function ({
+const SequenceDisplay = observer(function SequenceDisplay({
   chunks,
   start,
   color,

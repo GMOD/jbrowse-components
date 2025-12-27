@@ -29,7 +29,7 @@ export default class SerializableFilterChain {
     for (const entry of this.filterChain) {
       if (
         // @ts-expect-error
-        !entry.expr.evalSync({ feature: args[0] })
+        !entry.expr.eval({ feature: args[0] })
       ) {
         return false
       }

@@ -1,7 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
@@ -91,6 +90,18 @@ function stateModelFactory(
        */
       get showLegend() {
         return self.PileupDisplay?.showLegend
+      },
+
+      /**
+       * #method
+       * Returns the width needed for the SVG legend from subdisplays.
+       * Used by SVG export to add extra width for the legend area.
+       */
+      svgLegendWidth(theme?: unknown) {
+        const pileupWidth = self.PileupDisplay?.svgLegendWidth?.(theme) ?? 0
+        const snpCovWidth =
+          self.SNPCoverageDisplay?.svgLegendWidth?.(theme) ?? 0
+        return Math.max(pileupWidth, snpCovWidth)
       },
     }))
     .views(self => ({
@@ -328,33 +339,18 @@ function stateModelFactory(
               self.setLowerPanelType(d.name)
             },
           }))
-          const filterLegendItem = (items: MenuItem[]) =>
-            items.filter(
-              item => !('label' in item && item.label === 'Show legend'),
-            )
 
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Show legend',
-              icon: FormatListBulletedIcon,
-              type: 'checkbox' as const,
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
-              },
-            },
-            {
               type: 'subMenu' as const,
               label: 'Pileup settings',
-              subMenu: filterLegendItem(self.PileupDisplay.trackMenuItems()),
+              subMenu: self.PileupDisplay.trackMenuItems(),
             },
             {
               type: 'subMenu' as const,
               label: 'SNPCoverage settings',
-              subMenu: filterLegendItem(
-                self.SNPCoverageDisplay.trackMenuItems(),
-              ),
+              subMenu: self.SNPCoverageDisplay.trackMenuItems(),
             },
             {
               type: 'subMenu' as const,

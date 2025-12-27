@@ -1,6 +1,12 @@
 import { colord } from '@jbrowse/core/util/colord'
 
-import { f2 } from './constants'
+import {
+  ALT_COLOR_HUE,
+  ALT_COLOR_SATURATION,
+  NO_CALL_COLOR,
+  REFERENCE_COLOR,
+  f2,
+} from './constants'
 
 export function getAlleleColor(
   genotype: string,
@@ -47,7 +53,7 @@ export function getColorAlleleCount(
   drawReference = true,
 ) {
   if (ref === total) {
-    return drawReference ? '#ccc' : ''
+    return drawReference ? REFERENCE_COLOR : ''
   }
 
   if (!(alt || alt2 || uncalled)) {
@@ -57,7 +63,7 @@ export function getColorAlleleCount(
   let a1
   if (alt) {
     const lightness = 80 - (alt / total) * 50
-    a1 = colord(`hsl(200,50%,${lightness}%)`)
+    a1 = colord(`hsl(${ALT_COLOR_HUE},${ALT_COLOR_SATURATION}%,${lightness}%)`)
   }
   if (alt2) {
     const alpha = alt2 / total
@@ -66,7 +72,7 @@ export function getColorAlleleCount(
   }
   if (uncalled) {
     const alpha = uncalled / total
-    const l = `hsl(50,50%,50%,${alpha})`
+    const l = NO_CALL_COLOR.replace(')', `,${alpha})`).replace('hsl', 'hsla')
     a1 = a1 ? a1.mix(l) : colord(l)
   }
   return a1?.toHex() || 'black'

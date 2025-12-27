@@ -6,7 +6,7 @@ import YScaleBarsWrapper from './YScaleBarsWrapper'
 
 import type { WiggleDisplayModel } from '../model'
 
-const YScaleBars = observer(function (props: {
+const YScaleBars = observer(function YScaleBars(props: {
   model: WiggleDisplayModel
   orientation?: string
   exportSVG?: boolean

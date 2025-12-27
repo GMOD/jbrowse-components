@@ -10,7 +10,7 @@ import AssemblyTable from './AssemblyTable'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-const AssemblyManager = observer(function ({
+const AssemblyManager = observer(function AssemblyManager({
   session,
   onClose,
 }: {

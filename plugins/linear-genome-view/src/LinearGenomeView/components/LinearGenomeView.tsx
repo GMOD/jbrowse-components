@@ -10,7 +10,7 @@ import type { LinearGenomeViewModel } from '..'
 // lazies
 const ImportForm = lazy(() => import('./ImportForm'))
 
-const LinearGenomeView = observer(function ({
+const LinearGenomeView = observer(function LinearGenomeView({
   model,
 }: {
   model: LinearGenomeViewModel

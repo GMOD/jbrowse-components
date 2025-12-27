@@ -32,7 +32,7 @@ interface MinimalModel {
   featuresVolatile: Feature[] | undefined
 }
 
-const Wrapper = observer(function ({
+const Wrapper = observer(function Wrapper({
   children,
   model,
   exportSVG,
@@ -67,59 +67,61 @@ interface MouseOverLine {
   c: number
 }
 
-const LinesConnectingMatrixToGenomicPosition = observer(function ({
-  model,
-  exportSVG,
-}: {
-  model: MinimalModel
-  exportSVG?: boolean
-}) {
-  const { classes } = useStyles()
-  const { assemblyManager } = getSession(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const [mouseOverLine, setMouseOverLine] = useState<MouseOverLine>()
-  const { lineZoneHeight, featuresVolatile } = model
-  const { assemblyNames, dynamicBlocks } = view
-  const assembly = assemblyManager.get(assemblyNames[0]!)
-  const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
-  const w = b0 / (featuresVolatile?.length || 1)
-  return assembly && featuresVolatile ? (
-    <>
-      <Wrapper exportSVG={exportSVG} model={model}>
-        <AllLines model={model} setMouseOverLine={setMouseOverLine} />
-        {mouseOverLine ? (
-          <>
-            <line
-              stroke="#f00c"
-              strokeWidth={2}
-              style={{
-                pointerEvents: 'none',
-              }}
-              x1={mouseOverLine.idx * w + w / 2}
-              x2={mouseOverLine.c}
-              y1={lineZoneHeight}
-              y2={0}
-              onMouseLeave={() => {
-                setMouseOverLine(undefined)
-              }}
-            />
-            <LineTooltip contents={mouseOverLine.f.get('name')} />
-          </>
+const LinesConnectingMatrixToGenomicPosition = observer(
+  function LinesConnectingMatrixToGenomicPosition({
+    model,
+    exportSVG,
+  }: {
+    model: MinimalModel
+    exportSVG?: boolean
+  }) {
+    const { classes } = useStyles()
+    const { assemblyManager } = getSession(model)
+    const view = getContainingView(model) as LinearGenomeViewModel
+    const [mouseOverLine, setMouseOverLine] = useState<MouseOverLine>()
+    const { lineZoneHeight, featuresVolatile } = model
+    const { assemblyNames, dynamicBlocks } = view
+    const assembly = assemblyManager.get(assemblyNames[0]!)
+    const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
+    const w = b0 / (featuresVolatile?.length || 1)
+    return assembly && featuresVolatile ? (
+      <>
+        <Wrapper exportSVG={exportSVG} model={model}>
+          <AllLines model={model} setMouseOverLine={setMouseOverLine} />
+          {mouseOverLine ? (
+            <>
+              <line
+                stroke="#f00c"
+                strokeWidth={2}
+                style={{
+                  pointerEvents: 'none',
+                }}
+                x1={mouseOverLine.idx * w + w / 2}
+                x2={mouseOverLine.c}
+                y1={lineZoneHeight}
+                y2={0}
+                onMouseLeave={() => {
+                  setMouseOverLine(undefined)
+                }}
+              />
+              <LineTooltip contents={mouseOverLine.f.get('name')} />
+            </>
+          ) : null}
+        </Wrapper>
+        {!exportSVG ? (
+          <ResizeHandle
+            style={{
+              position: 'absolute',
+              top: lineZoneHeight - 4,
+            }}
+            onDrag={n => model.setLineZoneHeight(lineZoneHeight + n)}
+            className={classes.resizeHandle}
+          />
         ) : null}
-      </Wrapper>
-      {!exportSVG ? (
-        <ResizeHandle
-          style={{
-            position: 'absolute',
-            top: lineZoneHeight - 4,
-          }}
-          onDrag={n => model.setLineZoneHeight(lineZoneHeight + n)}
-          className={classes.resizeHandle}
-        />
-      ) : null}
-    </>
-  ) : null
-})
+      </>
+    ) : null
+  },
+)
 interface Props {
   message: React.ReactNode | string
 }
@@ -136,7 +138,11 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
     )
   },
 )
-const LineTooltip = observer(function ({ contents }: { contents?: string }) {
+const LineTooltip = observer(function LineTooltip({
+  contents,
+}: {
+  contents?: string
+}) {
   return contents ? (
     <BaseTooltip>
       <TooltipContents message={contents} />
@@ -144,7 +150,7 @@ const LineTooltip = observer(function ({ contents }: { contents?: string }) {
   ) : null
 })
 
-const AllLines = observer(function ({
+const AllLines = observer(function AllLines({
   model,
   setMouseOverLine,
 }: {

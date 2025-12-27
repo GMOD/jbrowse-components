@@ -22,7 +22,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Slices = observer(({ model }: { model: CircularViewModel }) => {
+const Slices = observer(function Slices({
+  model,
+}: {
+  model: CircularViewModel
+}) {
   return (
     <>
       {model.staticSlices.map(slice => (
@@ -48,7 +52,11 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
   )
 })
 
-const CircularView = observer(({ model }: { model: CircularViewModel }) => {
+const CircularView = observer(function CircularView({
+  model,
+}: {
+  model: CircularViewModel
+}) {
   const { showLoading, showView, showImportForm, loadingMessage } = model
 
   if (showLoading) {
@@ -62,7 +70,7 @@ const CircularView = observer(({ model }: { model: CircularViewModel }) => {
   }
 })
 
-const CircularViewLoaded = observer(function ({
+const CircularViewLoaded = observer(function CircularViewLoaded({
   model,
 }: {
   model: CircularViewModel

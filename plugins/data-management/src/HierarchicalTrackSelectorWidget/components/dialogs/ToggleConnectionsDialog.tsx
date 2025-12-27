@@ -91,7 +91,7 @@ const ConnectionList = observer(function ConnectionsList({
   )
 })
 
-const ToggleConnectionDialog = observer(function ({
+const ToggleConnectionDialog = observer(function ToggleConnectionDialog({
   session,
   handleClose,
   breakConnection,

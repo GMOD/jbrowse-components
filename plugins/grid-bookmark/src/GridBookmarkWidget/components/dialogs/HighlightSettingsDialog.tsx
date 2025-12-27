@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 
 import type { GridBookmarkModel } from '../../model'
 
-const HighlightSettingsDialog = observer(function ({
+const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
   onClose,
   model,
 }: {

@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 
 import type { ViewModel } from '../createModel/createModel'
 
-const JBrowseCircularGenomeView = observer(function ({
+const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
   viewState,
 }: {
   viewState: ViewModel

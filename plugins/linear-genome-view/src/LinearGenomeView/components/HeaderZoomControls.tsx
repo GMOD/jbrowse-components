@@ -40,7 +40,7 @@ function ValueLabelComponent(props: SliderValueLabelProps) {
     </Tooltip>
   )
 }
-const HeaderZoomControls = observer(function ({
+const HeaderZoomControls = observer(function HeaderZoomControls({
   model,
 }: {
   model: LinearGenomeViewModel

@@ -8,7 +8,7 @@ import SequenceDisplay from './SequenceDisplay'
 import type { Feat } from '../../util'
 import type { SequenceFeatureDetailsModel } from '../model'
 
-const CDSSequence = observer(function ({
+const CDSSequence = observer(function CDSSequence({
   cds,
   sequence,
   model,

@@ -4,9 +4,8 @@ import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseStringSync } from 'gff-nostream'
+import { parseStringSyncJBrowse } from 'gff-nostream'
 
-import { featureData } from '../featureData'
 import { parseGffBuffer } from './gffParser'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -42,16 +41,14 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GFF data')
             const intervalTree = new IntervalTree<Feature>()
-            for (const obj of parseStringSync(lines)
-              .flat()
-              .map(
-                (f, i) =>
-                  new SimpleFeature({
-                    data: featureData(f),
-                    id: `${this.id}-${refName}-${i}`,
-                  }),
-              )) {
-              intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+            const features = parseStringSyncJBrowse(lines)
+            for (let i = 0, l = features.length; i < l; i++) {
+              const f = features[i]!
+              const obj = new SimpleFeature({
+                data: f as unknown as Record<string, unknown>,
+                id: `${this.id}-${refName}-${i}`,
+              })
+              intervalTree.insert([f.start, f.end], obj)
             }
 
             this.calculatedIntervalTreeMap[refName] = intervalTree

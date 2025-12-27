@@ -126,7 +126,7 @@ function ArcFeature({
   )
 }
 
-const ArcRendering = observer(function ({
+const ArcRendering = observer(function ArcRendering({
   features,
   config,
   regions,

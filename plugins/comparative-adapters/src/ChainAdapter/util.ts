@@ -154,16 +154,18 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
 
   // Emit last PAF row, if available
   if (cigar) {
-    generate_record(
-      q_name,
-      q_start,
-      q_end,
-      q_strand,
-      t_name,
-      t_start,
-      t_end,
-      cigar,
-      num_matches,
+    records.push(
+      generate_record(
+        q_name,
+        q_start,
+        q_end,
+        q_strand,
+        t_name,
+        t_start,
+        t_end,
+        cigar,
+        num_matches,
+      ),
     )
   }
 

@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
@@ -11,6 +13,10 @@ import type { HicFlatbushItem } from '../HicRenderer/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  ExportSvgDisplayOptions,
+  LegendItem,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearHicDisplay
@@ -61,6 +67,10 @@ export default function stateModelFactory(
          * #property
          */
         mode: 'triangular',
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -138,6 +148,31 @@ export default function stateModelFactory(
           normalization: self.activeNormalization,
           displayHeight: self.mode === 'adjust' ? self.height : undefined,
         }
+      },
+
+      /**
+       * #method
+       * Returns legend items for the Hi-C color scale
+       */
+      legendItems(): LegendItem[] {
+        const colorScheme = self.colorScheme ?? 'juicebox'
+        const displayMax = self.useLogScale
+          ? self.maxScore
+          : Math.round(self.maxScore / 20)
+        const minLabel = self.useLogScale ? '1' : '0'
+        const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
+
+        return [{ label: `${minLabel} - ${maxLabel} (${colorScheme})` }]
+      },
+
+      /**
+       * #method
+       * Returns the width needed for the SVG legend if showLegend is enabled.
+       */
+      svgLegendWidth(): number {
+        // Hi-C legend is a fixed width gradient bar (120px + margin)
+        // Only show when we have data (maxScore > 0)
+        return self.showLegend && self.maxScore > 0 ? 140 : 0
       },
     }))
     .actions(self => ({
@@ -227,6 +262,12 @@ export default function stateModelFactory(
       setMode(arg: string) {
         self.mode = arg
       },
+      /**
+       * #action
+       */
+      setShowLegend(arg: boolean) {
+        self.showLegend = arg
+      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
@@ -243,6 +284,14 @@ export default function stateModelFactory(
               checked: self.useLogScale,
               onClick: () => {
                 self.setUseLogScale(!self.useLogScale)
+              },
+            },
+            {
+              label: 'Show legend',
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
               },
             },
             {
@@ -339,6 +388,16 @@ export default function stateModelFactory(
                 ]
               : []),
           ]
+        },
+
+        /**
+         * #method
+         */
+        async renderSvg(
+          opts: ExportSvgDisplayOptions,
+        ): Promise<React.ReactNode> {
+          const { renderSvg } = await import('./renderSvg')
+          return renderSvg(self as LinearHicDisplayModel, opts)
         },
       }
     })

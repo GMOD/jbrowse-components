@@ -9,11 +9,6 @@ export async function makeImageData(
   return renderMultiWiggle(
     pluginManager,
     renderProps,
-    async (props, arrays) => {
-      const { renderMultiDensityArrays } =
-        await import('./renderMultiDensityArrays')
-      return renderMultiDensityArrays(props, arrays)
-    },
     async (props, features) => {
       const { renderMultiDensity } = await import('./renderMultiDensity')
       return renderMultiDensity(props, features)

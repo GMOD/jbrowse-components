@@ -14,7 +14,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const ModalWidget = observer(function ({
+const ModalWidget = observer(function ModalWidget({
   session,
 }: {
   session: SessionWithWidgets

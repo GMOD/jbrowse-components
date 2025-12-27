@@ -11,7 +11,7 @@ import type { SelectorProps } from './SelectorTypes'
 /**
  * Component for selecting PAF, OUT, DELTA, or CHAIN format files
  */
-const StandardFormatSelector = observer(function ({
+const StandardFormatSelector = observer(function StandardFormatSelector({
   assembly1,
   assembly2,
   swap,

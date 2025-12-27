@@ -24,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const RefNameInfoDialog = observer(function ({
+const RefNameInfoDialog = observer(function RefNameInfoDialog({
   config,
   session,
   onClose,

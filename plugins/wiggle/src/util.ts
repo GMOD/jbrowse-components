@@ -47,37 +47,6 @@ export function getColorCallback(
     score < pivotValue ? negColor : posColor
 }
 
-/**
- * Determines the color for arrays-based rendering.
- * Returns either a static color or bicolor config for drawXYArrays.
- */
-export function getArraysColorConfig(config: AnyConfigurationModel) {
-  const color = readConfObject(config, 'color')
-  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
-
-  if (!colorIsDefault) {
-    return { color }
-  }
-  // Return bicolor config
-  return {
-    posColor: readConfObject(config, 'posColor'),
-    negColor: readConfObject(config, 'negColor'),
-    pivotValue: readConfObject(config, 'bicolorPivotValue'),
-  }
-}
-
-/**
- * Gets a static color for line/density arrays rendering.
- * Returns the configured color, or the defaultColor if color is default.
- */
-export function getStaticColor(
-  config: AnyConfigurationModel,
-  defaultColor: string,
-) {
-  const color = readConfObject(config, 'color')
-  return color === WIGGLE_COLOR_DEFAULT ? defaultColor : color
-}
-
 export interface ScaleOpts {
   domain: number[]
   range: number[]
@@ -268,24 +237,6 @@ export function round(value: number) {
 // Shared constants for wiggle drawing
 export const WIGGLE_FUDGE_FACTOR = 0.3
 export const WIGGLE_CLIP_HEIGHT = 2
-
-// Structure-of-arrays for efficient BigWig rendering
-export interface WiggleFeatureArrays {
-  starts: ArrayLike<number>
-  ends: ArrayLike<number>
-  scores: ArrayLike<number>
-  minScores?: ArrayLike<number>
-  maxScores?: ArrayLike<number>
-}
-
-// Reduced feature arrays (one entry per pixel column) for tooltips
-export interface ReducedFeatureArrays {
-  starts: number[]
-  ends: number[]
-  scores: number[]
-  minScores?: number[]
-  maxScores?: number[]
-}
 
 // Precomputed scale values for fast rendering
 export interface ScaleValues {

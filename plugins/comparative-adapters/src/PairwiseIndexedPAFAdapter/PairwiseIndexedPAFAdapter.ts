@@ -93,15 +93,38 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         this.pif.getLines(letter + query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
             const r = parsePAFLine(line)
-            const refName = r.qname.slice(1)
-            const start = r.qstart
-            const end = r.qend
-            const mateName = r.tname
-            const mateStart = r.tstart
-            const mateEnd = r.tend
-
             const { extra, strand } = r
             const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
+
+            // Strip 'q'/'t' prefix from first column only (tname has no prefix)
+            const qname = r.qname.slice(1)
+            const tname = r.tname
+
+            let start: number
+            let end: number
+            let refName: string
+            let mateName: string
+            let mateStart: number
+            let mateEnd: number
+
+            if (flip) {
+              start = r.qstart
+              end = r.qend
+              refName = qname
+              mateName = tname
+              mateStart = r.tstart
+              mateEnd = r.tend
+            } else {
+              start = r.tstart
+              end = r.tend
+              refName = tname
+              mateName = qname
+              mateStart = r.qstart
+              mateEnd = r.qend
+            }
+
+            // PIF format already has pre-computed CIGARs for each perspective
+            const CIGAR = extra.cg
 
             observer.next(
               new SyntenyFeature({
@@ -113,7 +136,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 refName,
                 strand,
                 ...rest,
-                CIGAR: extra.cg,
+                CIGAR,
                 syntenyId: fileOffset,
                 identity: numMatches / blockLen,
                 numMatches,

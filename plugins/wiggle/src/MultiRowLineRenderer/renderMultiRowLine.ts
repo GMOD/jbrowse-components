@@ -4,7 +4,7 @@ import {
   updateStatus,
 } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import { rpcResult } from 'librpc-web-mod'
 
 import { drawLine } from '../drawLine'
@@ -29,6 +29,7 @@ export async function renderMultiRowLine(
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const rowHeight = height / sources.length
+  const lastCheck = createStopTokenChecker(stopToken)
 
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
@@ -38,8 +39,6 @@ export async function renderMultiRowLine(
         const groups = groupBy(features.values(), f => f.get('source'))
         let feats: Feature[] = []
         ctx.save()
-        const lastCheck = { time: Date.now() }
-        let idx = 0
         for (const source of sources) {
           const { reducedFeatures } = drawLine(ctx, {
             ...renderProps,
@@ -47,6 +46,7 @@ export async function renderMultiRowLine(
             height: rowHeight,
             staticColor: source.color || 'blue',
             colorCallback: () => '', // unused when staticColor is set
+            lastCheck,
           })
           ctx.strokeStyle = 'rgba(200,200,200,0.8)'
           ctx.beginPath()
@@ -55,7 +55,6 @@ export async function renderMultiRowLine(
           ctx.stroke()
           ctx.translate(0, rowHeight)
           feats = feats.concat(reducedFeatures)
-          checkStopToken2(stopToken, idx++, lastCheck)
         }
         ctx.restore()
         return { reducedFeatures: feats }

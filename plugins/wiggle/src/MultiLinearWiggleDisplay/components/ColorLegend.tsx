@@ -10,7 +10,7 @@ import RectBg from './RectBg'
 
 import type { MinimalModel } from './types'
 
-const ColorLegend = observer(function ({
+const ColorLegend = observer(function ColorLegend({
   model,
   rowHeight,
   exportSVG,

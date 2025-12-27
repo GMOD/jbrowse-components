@@ -38,7 +38,7 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-const TrackContainer = observer(function ({
+const TrackContainer = observer(function TrackContainer({
   model,
   track,
 }: {

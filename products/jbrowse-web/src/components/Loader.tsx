@@ -92,7 +92,7 @@ export function Loader({
   return <Renderer loader={loader} />
 }
 
-const Renderer = observer(function ({
+const Renderer = observer(function Renderer({
   loader: firstLoader,
 }: {
   loader: SessionLoaderModel

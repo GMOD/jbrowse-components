@@ -16,7 +16,7 @@ import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
 
 import type { OverlayProps } from './overlayUtils'
 
-const PairedFeatures = observer(function ({
+const PairedFeatures = observer(function PairedFeatures({
   model,
   trackId,
   parentRef,

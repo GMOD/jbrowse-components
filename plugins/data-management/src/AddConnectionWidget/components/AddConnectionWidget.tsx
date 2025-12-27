@@ -33,7 +33,11 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Select a Connection Type', 'Configure Connection']
 
-const AddConnectionWidget = observer(function ({ model }: { model: unknown }) {
+const AddConnectionWidget = observer(function AddConnectionWidget({
+  model,
+}: {
+  model: unknown
+}) {
   const [connectionType, setConnectionType] = useState<ConnectionType>()
   const [connectionId, setConnectionId] = useState<string>()
   const [activeStep, setActiveStep] = useState(0)

@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const MiniControls = observer(function ({
+const MiniControls = observer(function MiniControls({
   model,
 }: {
   model: LinearGenomeViewModel

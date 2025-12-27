@@ -18,17 +18,6 @@ export async function makeImageData(
   )
   const region = regions[0]!
 
-  if ('getFeaturesAsArrays' in dataAdapter) {
-    const featureArrays = await (dataAdapter as any).getFeaturesAsArrays(
-      region,
-      renderProps,
-    )
-    if (featureArrays && featureArrays.starts.length > 0) {
-      const { renderDensityArrays } = await import('./renderDensityArrays')
-      return renderDensityArrays(renderProps, featureArrays)
-    }
-  }
-
   const features = await firstValueFrom(
     (dataAdapter as BaseFeatureDataAdapter)
       .getFeatures(region, renderProps)

@@ -27,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
 
 const ShareDialog = lazy(() => import('./ShareDialog'))
 
-const ShareButton = observer(function (props: {
+const ShareButton = observer(function ShareButton(props: {
   session: AbstractSessionModel & { shareURL: string }
 }) {
   const [open, setOpen] = useState(false)

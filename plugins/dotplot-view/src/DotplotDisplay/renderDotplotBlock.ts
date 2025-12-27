@@ -1,5 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
@@ -34,6 +38,7 @@ export function renderBlockData(self: IAnyStateTreeNode) {
         adapterConfig,
         rendererType: rendererType.name,
         sessionId: getRpcSessionId(self),
+        trackInstanceId: getContainingTrack(self).id,
         timeout: 1000000, // 10000,
         alpha: self.alpha,
         minAlignmentLength: self.minAlignmentLength,

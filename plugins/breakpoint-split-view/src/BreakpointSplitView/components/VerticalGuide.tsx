@@ -16,7 +16,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const VerticalGuide = observer(function ({
+const VerticalGuide = observer(function VerticalGuide({
   model,
   coordX,
 }: {

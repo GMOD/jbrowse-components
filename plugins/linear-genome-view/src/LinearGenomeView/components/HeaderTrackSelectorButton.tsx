@@ -13,7 +13,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const HeaderTrackSelectorButton = observer(function ({
+const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
   model,
 }: {
   model: LinearGenomeViewModel
