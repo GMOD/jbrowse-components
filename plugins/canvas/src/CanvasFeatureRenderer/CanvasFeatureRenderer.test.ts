@@ -90,6 +90,7 @@ function doLayout(
     config: args.config,
     configContext: args.configContext,
     layout: args.layout,
+    pluginManager,
   })
 }
 

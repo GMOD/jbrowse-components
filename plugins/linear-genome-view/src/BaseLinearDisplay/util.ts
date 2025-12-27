@@ -39,7 +39,9 @@ export async function fetchFeatureByIdRpc({
     return undefined
   }
 
-  const feature = new SimpleFeature(featureData)
+  const feature = new SimpleFeature(
+    featureData as Parameters<typeof SimpleFeature.fromJSON>[0],
+  )
 
   // If looking for a subfeature, find it within the parent
   if (parentFeatureId) {

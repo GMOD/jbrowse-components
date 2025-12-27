@@ -44,10 +44,14 @@ function isOffScreen(left: number, width: number, canvasWidth: number) {
   return left + width < 0 || left > canvasWidth
 }
 
+function getFeature(item: { feature: Feature } | Feature): Feature {
+  return 'feature' in item ? item.feature : item
+}
+
 function sortByPosition<T extends { feature: Feature } | Feature>(items: T[]) {
   return [...items].sort((a, b) => {
-    const aFeat = 'feature' in a ? a.feature : a
-    const bFeat = 'feature' in b ? b.feature : b
+    const aFeat = getFeature(a)
+    const bFeat = getFeature(b)
     const aStart = aFeat.get('start') as number
     const bStart = bFeat.get('start') as number
     if (aStart !== bStart) {

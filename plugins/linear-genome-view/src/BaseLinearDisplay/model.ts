@@ -477,7 +477,7 @@ function stateModelFactory() {
               parentFeatureId: rpcParentId,
             })
             if (f && isAlive(self)) {
-              self.contextMenuFeature = f
+              this.setContextMenuFeature(f)
             }
           } catch (e) {
             console.error(e)

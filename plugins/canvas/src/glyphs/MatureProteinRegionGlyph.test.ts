@@ -273,12 +273,14 @@ describe('MatureProteinRegionGlyph', () => {
     test('matches CDS with mature_protein_region subfeatures', () => {
       const feature = new SimpleFeature({
         uniqueId: 'cds-alt',
+        refName: 'ctgA',
         type: 'CDS',
         start: 100,
         end: 300,
         subfeatures: [
           {
             uniqueId: 'mature-1',
+            refName: 'ctgA',
             type: 'mature_protein_region',
             start: 100,
             end: 200,
@@ -291,12 +293,14 @@ describe('MatureProteinRegionGlyph', () => {
     test('does not match CDS without mature protein subfeatures', () => {
       const feature = new SimpleFeature({
         uniqueId: 'cds-normal',
+        refName: 'ctgA',
         type: 'CDS',
         start: 100,
         end: 300,
         subfeatures: [
           {
             uniqueId: 'exon-1',
+            refName: 'ctgA',
             type: 'exon',
             start: 100,
             end: 300,
@@ -309,12 +313,14 @@ describe('MatureProteinRegionGlyph', () => {
     test('does not match non-CDS features', () => {
       const feature = new SimpleFeature({
         uniqueId: 'gene-1',
+        refName: 'ctgA',
         type: 'gene',
         start: 100,
         end: 300,
         subfeatures: [
           {
             uniqueId: 'mature-1',
+            refName: 'ctgA',
             type: 'mature_protein_region_of_CDS',
             start: 100,
             end: 200,
@@ -327,6 +333,7 @@ describe('MatureProteinRegionGlyph', () => {
     test('does not match CDS without subfeatures', () => {
       const feature = new SimpleFeature({
         uniqueId: 'cds-empty',
+        refName: 'ctgA',
         type: 'CDS',
         start: 100,
         end: 300,
@@ -339,24 +346,28 @@ describe('MatureProteinRegionGlyph', () => {
     test('returns only mature protein region subfeatures', () => {
       const feature = new SimpleFeature({
         uniqueId: 'cds-mixed',
+        refName: 'ctgA',
         type: 'CDS',
         start: 100,
         end: 500,
         subfeatures: [
           {
             uniqueId: 'mature-1',
+            refName: 'ctgA',
             type: 'mature_protein_region_of_CDS',
             start: 100,
             end: 200,
           },
           {
             uniqueId: 'exon-1',
+            refName: 'ctgA',
             type: 'exon',
             start: 200,
             end: 300,
           },
           {
             uniqueId: 'mature-2',
+            refName: 'ctgA',
             type: 'mature_protein_region',
             start: 300,
             end: 400,
@@ -376,12 +387,14 @@ describe('MatureProteinRegionGlyph', () => {
     test('returns empty array for CDS without mature protein subfeatures', () => {
       const feature = new SimpleFeature({
         uniqueId: 'cds-no-mature',
+        refName: 'ctgA',
         type: 'CDS',
         start: 100,
         end: 300,
         subfeatures: [
           {
             uniqueId: 'exon-1',
+            refName: 'ctgA',
             type: 'exon',
             start: 100,
             end: 300,
@@ -401,6 +414,7 @@ describe('MatureProteinRegionGlyph', () => {
     test('returns 1 for CDS without mature protein children', () => {
       const feature = new SimpleFeature({
         uniqueId: 'cds-empty',
+        refName: 'ctgA',
         type: 'CDS',
         start: 100,
         end: 300,
@@ -441,6 +455,7 @@ describe('MatureProteinRegionGlyph', () => {
     test('returns product and protein_id', () => {
       const feature = new SimpleFeature({
         uniqueId: 'mature-1',
+        refName: 'ctgA',
         type: 'mature_protein_region_of_CDS',
         start: 100,
         end: 200,
@@ -454,6 +469,7 @@ describe('MatureProteinRegionGlyph', () => {
     test('returns only product when no protein_id', () => {
       const feature = new SimpleFeature({
         uniqueId: 'mature-1',
+        refName: 'ctgA',
         type: 'mature_protein_region_of_CDS',
         start: 100,
         end: 200,
@@ -466,6 +482,7 @@ describe('MatureProteinRegionGlyph', () => {
     test('returns only protein_id when no product', () => {
       const feature = new SimpleFeature({
         uniqueId: 'mature-1',
+        refName: 'ctgA',
         type: 'mature_protein_region_of_CDS',
         start: 100,
         end: 200,
@@ -478,6 +495,7 @@ describe('MatureProteinRegionGlyph', () => {
     test('returns undefined when no product or protein_id', () => {
       const feature = new SimpleFeature({
         uniqueId: 'mature-1',
+        refName: 'ctgA',
         type: 'mature_protein_region_of_CDS',
         start: 100,
         end: 200,
