@@ -22,14 +22,16 @@ const fileTypeParsers = {
     ),
 }
 
-const adapterTypeMap: Record<string, { fileType: string; locationKey: string }> =
-  {
-    VcfAdapter: { fileType: 'VCF', locationKey: 'vcfLocation' },
-    VcfTabixAdapter: { fileType: 'VCF', locationKey: 'vcfGzLocation' },
-    BedAdapter: { fileType: 'BED', locationKey: 'bedLocation' },
-    BedTabixAdapter: { fileType: 'BED', locationKey: 'bedGzLocation' },
-    BedpeAdapter: { fileType: 'BEDPE', locationKey: 'bedpeLocation' },
-  }
+const adapterTypeMap: Record<
+  string,
+  { fileType: string; locationKey: string }
+> = {
+  VcfAdapter: { fileType: 'VCF', locationKey: 'vcfLocation' },
+  VcfTabixAdapter: { fileType: 'VCF', locationKey: 'vcfGzLocation' },
+  BedAdapter: { fileType: 'BED', locationKey: 'bedLocation' },
+  BedTabixAdapter: { fileType: 'BED', locationKey: 'bedGzLocation' },
+  BedpeAdapter: { fileType: 'BEDPE', locationKey: 'bedpeLocation' },
+}
 
 function getAdapterInfo(adapter: Record<string, unknown>) {
   const entry = adapterTypeMap[adapter.type as string]

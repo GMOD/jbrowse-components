@@ -82,9 +82,7 @@ const Breakends = observer(function Breakends({
           } else {
             const x1Tick =
               x1 -
-              20 *
-                (relevantAlt.Join === 'left' ? -1 : 1) *
-                (reversed1 ? -1 : 1)
+              20 * (relevantAlt.Join === 'left' ? -1 : 1) * (reversed1 ? -1 : 1)
             const x2Tick =
               x2 -
               20 *

@@ -16,7 +16,11 @@ function bpToRadians(block: Block, pos: number) {
   return bpOffset / block.bpPerRadian + block.startRadians
 }
 
-function getEndpoint(feature: Feature, blocksForRefs: Record<string, Block>, startBlock: Block) {
+function getEndpoint(
+  feature: Feature,
+  blocksForRefs: Record<string, Block>,
+  startBlock: Block,
+) {
   const alt = feature.get('ALT')?.[0]
   const bnd = alt && parseBreakend(alt)
   const mate = feature.get('mate')
@@ -26,7 +30,10 @@ function getEndpoint(feature: Feature, blocksForRefs: Record<string, Block>, sta
   } else if (alt === '<TRA>') {
     const chr2 = feature.get('INFO')?.CHR2?.[0]
     const end = feature.get('INFO')?.END?.[0]
-    return { endBlock: blocksForRefs[chr2], endPosition: Number.parseInt(end, 10) }
+    return {
+      endBlock: blocksForRefs[chr2],
+      endPosition: Number.parseInt(end, 10),
+    }
   } else if (mate) {
     return { endBlock: blocksForRefs[mate.refName], endPosition: mate.start }
   }
@@ -56,7 +63,11 @@ const Chord = observer(function Chord({
     return null
   }
   const startPos = feature.get('start')
-  const { endBlock, endPosition } = getEndpoint(feature, blocksForRefs, startBlock)
+  const { endBlock, endPosition } = getEndpoint(
+    feature,
+    blocksForRefs,
+    startBlock,
+  )
   if (!endBlock) {
     return null
   }
@@ -64,10 +75,17 @@ const Chord = observer(function Chord({
   const endRadians = bpToRadians(endBlock, endPosition)
   const [x1, y1] = polarToCartesian(radius, startRadians)
   const [x2, y2] = polarToCartesian(radius, endRadians)
-  const [cx, cy] = polarToCartesian(bezierRadius, (endRadians + startRadians) / 2)
+  const [cx, cy] = polarToCartesian(
+    bezierRadius,
+    (endRadians + startRadians) / 2,
+  )
   const stroke = readConfObject(
     config,
-    hovered ? 'strokeColorHover' : selected ? 'strokeColorSelected' : 'strokeColor',
+    hovered
+      ? 'strokeColorHover'
+      : selected
+        ? 'strokeColorSelected'
+        : 'strokeColor',
     { feature },
   )
   return (
@@ -78,9 +96,15 @@ const Chord = observer(function Chord({
       d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
       {...getStrokeProps(stroke)}
       strokeWidth={hovered ? 3 : 1}
-      onClick={evt => onClick(feature, startBlock.region, endBlock.region, evt)}
-      onMouseOver={() => setHovered(true)}
-      onMouseOut={() => setHovered(false)}
+      onClick={evt => {
+        onClick(feature, startBlock.region, endBlock.region, evt)
+      }}
+      onMouseOver={() => {
+        setHovered(true)
+      }}
+      onMouseOut={() => {
+        setHovered(false)
+      }}
     />
   )
 })
