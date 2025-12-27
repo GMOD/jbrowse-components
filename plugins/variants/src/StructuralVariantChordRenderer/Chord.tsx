@@ -16,6 +16,23 @@ function bpToRadians(block: Block, pos: number) {
   return bpOffset / block.bpPerRadian + block.startRadians
 }
 
+function getEndpoint(feature: Feature, blocksForRefs: Record<string, Block>, startBlock: Block) {
+  const alt = feature.get('ALT')?.[0]
+  const bnd = alt && parseBreakend(alt)
+  const mate = feature.get('mate')
+  if (bnd) {
+    const [chr, pos] = bnd.MatePosition.split(':')
+    return { endBlock: blocksForRefs[chr], endPosition: +pos }
+  } else if (alt === '<TRA>') {
+    const chr2 = feature.get('INFO')?.CHR2?.[0]
+    const end = feature.get('INFO')?.END?.[0]
+    return { endBlock: blocksForRefs[chr2], endPosition: Number.parseInt(end, 10) }
+  } else if (mate) {
+    return { endBlock: blocksForRefs[mate.refName], endPosition: mate.start }
+  }
+  return { endBlock: startBlock, endPosition: feature.get('end') }
+}
+
 const Chord = observer(function Chord({
   feature,
   blocksForRefs,
@@ -34,79 +51,38 @@ const Chord = observer(function Chord({
   onClick: (feat: Feature, reg: AnyRegion, end: AnyRegion, evt: unknown) => void
 }) {
   const [hovered, setHovered] = useState(false)
-  // find the blocks that our start and end points belong to
   const startBlock = blocksForRefs[feature.get('refName')]
   if (!startBlock) {
     return null
   }
-  let svType: string | undefined
-  if (feature.get('INFO')) {
-    ;[svType] = feature.get('INFO').SVTYPE || []
-  } else if (feature.get('mate')) {
-    svType = 'mate'
-  }
-  let endPosition: number
-  let endBlock: Block | undefined
-  const alt = feature.get('ALT')?.[0]
-  const bnd = alt && parseBreakend(alt)
   const startPos = feature.get('start')
-  if (bnd) {
-    // VCF BND
-    const matePosition = bnd.MatePosition.split(':')
-    endPosition = +matePosition[1]
-    endBlock = blocksForRefs[matePosition[0]]
-  } else if (alt === '<TRA>') {
-    // VCF TRA
-    const chr2 = feature.get('INFO')?.CHR2?.[0]
-    const end = feature.get('INFO')?.END?.[0]
-    endPosition = Number.parseInt(end, 10)
-    endBlock = blocksForRefs[chr2]
-  } else if (svType === 'mate') {
-    // generic simplefeatures arcs
-    const mate = feature.get('mate')
-    const chr2 = mate.refName
-    endPosition = mate.start
-    endBlock = blocksForRefs[chr2]
-  } else {
-    endBlock = startBlock
-    endPosition = feature.get('end')
+  const { endBlock, endPosition } = getEndpoint(feature, blocksForRefs, startBlock)
+  if (!endBlock) {
+    return null
   }
-
-  if (endBlock) {
-    const startRadians = bpToRadians(startBlock, startPos)
-    const endRadians = bpToRadians(endBlock, endPosition)
-    const startXY = polarToCartesian(radius, startRadians)
-    const endXY = polarToCartesian(radius, endRadians)
-    const controlXY = polarToCartesian(
-      bezierRadius,
-      (endRadians + startRadians) / 2,
-    )
-
-    const strokeColor = selected
-      ? readConfObject(config, 'strokeColorSelected', { feature })
-      : readConfObject(config, 'strokeColor', { feature })
-
-    const hoverStrokeColor = readConfObject(config, 'strokeColorHover', {
-      feature,
-    })
-    return (
-      <path
-        data-testid={`chord-${feature.id()}`}
-        cursor="crosshair"
-        fill="none"
-        d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
-        {...getStrokeProps(hovered ? hoverStrokeColor : strokeColor)}
-        strokeWidth={hovered ? 3 : 1}
-        onClick={evt => {
-          onClick(feature, startBlock.region, endBlock.region, evt)
-        }}
-        onMouseOver={() => setHovered(true)}
-        onMouseOut={() => setHovered(false)}
-      />
-    )
-  }
-
-  return null
+  const startRadians = bpToRadians(startBlock, startPos)
+  const endRadians = bpToRadians(endBlock, endPosition)
+  const [x1, y1] = polarToCartesian(radius, startRadians)
+  const [x2, y2] = polarToCartesian(radius, endRadians)
+  const [cx, cy] = polarToCartesian(bezierRadius, (endRadians + startRadians) / 2)
+  const stroke = readConfObject(
+    config,
+    hovered ? 'strokeColorHover' : selected ? 'strokeColorSelected' : 'strokeColor',
+    { feature },
+  )
+  return (
+    <path
+      data-testid={`chord-${feature.id()}`}
+      cursor="crosshair"
+      fill="none"
+      d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
+      {...getStrokeProps(stroke)}
+      strokeWidth={hovered ? 3 : 1}
+      onClick={evt => onClick(feature, startBlock.region, endBlock.region, evt)}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered(false)}
+    />
+  )
 })
 
 export default Chord

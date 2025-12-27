@@ -22,27 +22,24 @@ const fileTypeParsers = {
     ),
 }
 
-function getType(adapter: Record<string, unknown>) {
-  if (adapter.vcfLocation || adapter.vcfGzLocation) {
-    return 'VCF'
-  } else if (adapter.bedLocation || adapter.bedGzLocation) {
-    return 'BED'
-  } else if (adapter.bedpeLocation) {
-    return 'BEDPE'
-  } else {
+const adapterTypeMap: Record<string, { fileType: string; locationKey: string }> =
+  {
+    VcfAdapter: { fileType: 'VCF', locationKey: 'vcfLocation' },
+    VcfTabixAdapter: { fileType: 'VCF', locationKey: 'vcfGzLocation' },
+    BedAdapter: { fileType: 'BED', locationKey: 'bedLocation' },
+    BedTabixAdapter: { fileType: 'BED', locationKey: 'bedGzLocation' },
+    BedpeAdapter: { fileType: 'BEDPE', locationKey: 'bedpeLocation' },
+  }
+
+function getAdapterInfo(adapter: Record<string, unknown>) {
+  const entry = adapterTypeMap[adapter.type as string]
+  if (!entry) {
     return undefined
   }
-}
-
-// hardcodes a couple different adapter types
-function getAdapterLoc(adapter: Record<string, FileLocation>) {
-  return (
-    adapter.vcfLocation ||
-    adapter.vcfGzLocation ||
-    adapter.bedLocation ||
-    adapter.bedGzLocation ||
-    adapter.bedpeLocation
-  )
+  const loc =
+    (adapter[entry.locationKey] as FileLocation) ??
+    (adapter as unknown as FileLocation)
+  return { fileType: entry.fileType, loc }
 }
 
 // regexp used to guess the type of a file or URL from its file extension
@@ -153,27 +150,31 @@ export default function stateModelFactory() {
           ...sessionTracks,
         ] as AnyConfigurationModel[]
         return allTracks
-          .map(track => {
-            const assemblyNames = readConfObject(track, 'assemblyNames')
+          .flatMap(track => {
+            const assemblyNames = readConfObject(track, 'assemblyNames') ?? []
+            if (!assemblyNames.includes(selectedAssembly)) {
+              return []
+            }
             const adapter = readConfObject(track, 'adapter')
-            const category = readConfObject(track, 'category').join(',')
-            const loc = getAdapterLoc(adapter)
-            return assemblyNames.includes(selectedAssembly) && loc
-              ? {
-                  track,
-                  label: [
-                    category ? `[${category}]` : '',
-                    getTrackName(track, session),
-                  ]
-                    .filter(f => !!f)
-                    .join(' '),
-                  assemblyNames,
-                  type: getType(adapter) || 'UNKNOWN',
-                  loc,
-                }
-              : undefined
+            const info = getAdapterInfo(adapter)
+            if (!info) {
+              return []
+            }
+            const category = readConfObject(track, 'category') ?? []
+            const categoryStr = category.join(',')
+            return {
+              track,
+              label: [
+                categoryStr ? `[${categoryStr}]` : '',
+                getTrackName(track, session),
+              ]
+                .filter(f => !!f)
+                .join(' '),
+              assemblyNames,
+              type: info.fileType,
+              loc: info.loc,
+            }
           })
-          .filter(f => !!f)
           .sort((a, b) => a.label.localeCompare(b.label))
       },
     }))

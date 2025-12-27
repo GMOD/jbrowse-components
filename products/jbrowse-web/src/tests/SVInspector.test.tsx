@@ -2,6 +2,7 @@ import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 
 import {
+  createView,
   doBeforeEach,
   mockConsoleWarn,
   openViewWithFileInput,
@@ -30,4 +31,37 @@ test('opens a vcf.gz file in the sv inspector view', () => {
     })
     expect(session.views[2]!.displayName).toBe('bnd_A split detail')
   })
+}, 60000)
+
+test('opens a track with minimal adapter config via "Open from track"', async () => {
+  const { session, findByText, findByTestId, findByLabelText } =
+    await createView()
+
+  fireEvent.click(await findByText('File'))
+  fireEvent.click(await findByText('Add'))
+  fireEvent.click(await findByText('SV inspector'))
+
+  fireEvent.click(await findByLabelText('Open from track', {}, delay))
+
+  const trackDropdown = await findByLabelText('Tracks', {}, delay)
+  fireEvent.mouseDown(trackDropdown)
+
+  fireEvent.click(
+    await findByText(
+      '[Variants] volvox structural variant test w/renamed refs',
+      {},
+      delay,
+    ),
+  )
+
+  const openButton = await findByTestId('open_spreadsheet', {}, delay)
+  await waitFor(() => {
+    expect(openButton.closest('button')).not.toBeDisabled()
+  }, delay)
+
+  fireEvent.click(openButton)
+
+  await findByTestId('chord-vcf-0', {}, delay)
+
+  expect(session.views.length).toBe(2)
 }, 60000)
