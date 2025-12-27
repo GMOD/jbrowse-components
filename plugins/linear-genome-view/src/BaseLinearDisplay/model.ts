@@ -10,6 +10,7 @@ import {
   isFeature,
   isSelectionContainer,
   isSessionModelWithWidgets,
+  SimpleFeature,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
@@ -388,20 +389,94 @@ function stateModelFactory() {
       },
       /**
        * #action
-       * Select a feature by ID, looking up in features map and subfeatures
+       * Select a feature by ID, looking up in features map and subfeatures.
+       * Falls back to RPC if not found locally (e.g., for canvas renderer).
        */
       selectFeatureById(featureId: string, parentFeatureId?: string) {
         const feature = self.getFeatureById(featureId, parentFeatureId)
         if (feature) {
           this.selectFeature(feature)
+          return
         }
+        // Fall back to RPC for canvas renderer which doesn't serialize features
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const f = await this.fetchFeatureById(featureId, parentFeatureId)
+            if (f && isAlive(self)) {
+              this.selectFeature(f)
+            }
+          } catch (e) {
+            console.error(e)
+            getSession(self).notifyError(`${e}`, e)
+          }
+        })()
       },
       /**
        * #action
-       * Set context menu feature by ID, looking up in features map and subfeatures
+       * Set context menu feature by ID, looking up in features map and subfeatures.
+       * Falls back to RPC if not found locally (e.g., for canvas renderer).
        */
       setContextMenuFeatureById(featureId: string, parentFeatureId?: string) {
-        self.contextMenuFeature = self.getFeatureById(featureId, parentFeatureId)
+        const feature = self.getFeatureById(featureId, parentFeatureId)
+        if (feature) {
+          self.contextMenuFeature = feature
+          return
+        }
+        // Fall back to RPC for canvas renderer which doesn't serialize features
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const f = await this.fetchFeatureById(featureId, parentFeatureId)
+            if (f && isAlive(self)) {
+              self.contextMenuFeature = f
+            }
+          } catch (e) {
+            console.error(e)
+            getSession(self).notifyError(`${e}`, e)
+          }
+        })()
+      },
+      /**
+       * #action
+       * Fetch a feature by ID via RPC. For subfeatures, fetches the parent
+       * and finds the subfeature within it.
+       */
+      async fetchFeatureById(
+        featureId: string,
+        parentFeatureId?: string,
+      ): Promise<Feature | undefined> {
+        const session = getSession(self)
+        const { rpcManager } = session
+        const sessionId = getRpcSessionId(self)
+        const track = getContainingTrack(self)
+        const rendererType = self.rendererTypeName
+
+        // Fetch the feature (or parent if looking for subfeature)
+        const lookupId = parentFeatureId || featureId
+        const { feature: featureData } = (await rpcManager.call(
+          sessionId,
+          'CoreGetFeatureDetails',
+          {
+            featureId: lookupId,
+            sessionId,
+            trackInstanceId: track.id,
+            rendererType,
+          },
+        )) as { feature: Record<string, unknown> | undefined }
+
+        if (!featureData) {
+          return undefined
+        }
+
+        const feature = new SimpleFeature(featureData)
+
+        // If looking for a subfeature, find it within the parent
+        if (parentFeatureId) {
+          return findSubfeatureById(feature, featureId)
+        }
+
+        return feature
       },
       /**
        * #action

@@ -160,11 +160,14 @@ export function makeImageData({
 
     if (pluginManager) {
       addPluggableGlyphSubfeaturesToFlatbush({
+        layout,
         featureLayout: adjustedLayout,
         subfeatureCoords,
         subfeatureInfos,
         config,
         pluginManager,
+        subfeatureLabels,
+        labelColor: theme.palette.text.primary,
       })
     }
     checkStopToken2(lastCheck)

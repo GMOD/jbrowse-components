@@ -4,11 +4,11 @@ import { measureText } from '@jbrowse/core/util'
 import { readCachedConfig } from './renderConfig'
 import { chooseGlyphType, getChildFeatures, truncateLabel } from './util'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 import type { RenderConfigContext } from './renderConfig'
 import type { FeatureLayout } from './types'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 import type { Feature } from '@jbrowse/core/util'
 
 const TRANSCRIPT_PADDING = 2
@@ -96,7 +96,8 @@ export function layoutFeature(args: {
   }
 
   const height = readCachedConfig(featureHeight, config, 'height', feature)
-  const heightMultiplier = pluggableGlyph?.getHeightMultiplier?.(feature, config) ?? 1
+  const heightMultiplier =
+    pluggableGlyph?.getHeightMultiplier?.(feature, config) ?? 1
   const baseHeight = displayMode === 'compact' ? height / 2 : height
   const actualHeight = baseHeight * heightMultiplier
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
@@ -192,8 +193,9 @@ export function layoutFeature(args: {
       layout.totalFeatureHeight = totalStackedHeight
       layout.totalLayoutHeight = totalStackedHeight
     } else {
-      const childFeatures = pluggableGlyph?.getChildFeatures?.(feature, config)
-        ?? getChildFeatures({ feature, glyphType, config })
+      const childFeatures =
+        pluggableGlyph?.getChildFeatures?.(feature, config) ??
+        getChildFeatures({ feature, glyphType, config })
       for (const subfeature of childFeatures) {
         layout.children.push(
           layoutFeature({

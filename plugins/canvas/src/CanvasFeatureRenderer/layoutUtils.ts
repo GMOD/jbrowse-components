@@ -2,9 +2,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { createTranscriptFloatingLabel } from './floatingLabels'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FloatingLabelData } from './floatingLabels'
 import type { FeatureLayout, SubfeatureInfo } from './types'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -117,48 +117,26 @@ export function addSubfeaturesToLayoutAndFlatbush({
   }
 }
 
-function computeTierAssignments(children: FeatureLayout[]) {
-  const sorted = [...children].sort((a, b) => {
-    const aStart = a.feature.get('start') as number
-    const bStart = b.feature.get('start') as number
+function sortByPosition(children: FeatureLayout[]) {
+  return [...children].sort((a, b) => {
+    const aStart = a.feature.get('start')
+    const bStart = b.feature.get('start')
     if (aStart !== bStart) {
       return aStart - bStart
     }
-    const aEnd = a.feature.get('end') as number
-    const bEnd = b.feature.get('end') as number
+    const aEnd = a.feature.get('end')
+    const bEnd = b.feature.get('end')
     return bEnd - aEnd
   })
+}
 
-  const tierMap = new Map<FeatureLayout, number>()
-  const tierEnds: number[] = []
-  let lastAssignedTier = -1
-
-  for (const child of sorted) {
-    const start = child.feature.get('start') as number
-    const end = child.feature.get('end') as number
-
-    const availableTiers: number[] = []
-    for (let t = 0; t < tierEnds.length; t++) {
-      if (tierEnds[t]! <= start) {
-        availableTiers.push(t)
-      }
-    }
-
-    let assignedTier: number
-    if (availableTiers.length === 0) {
-      assignedTier = tierEnds.length
-      tierEnds.push(end)
-    } else {
-      const preferredTier = availableTiers.find(t => t !== lastAssignedTier)
-      assignedTier = preferredTier ?? availableTiers[0]!
-      tierEnds[assignedTier] = end
-    }
-
-    lastAssignedTier = assignedTier
-    tierMap.set(child, assignedTier)
+function computeRowAssignments(children: FeatureLayout[]) {
+  const sorted = sortByPosition(children)
+  const rowMap = new Map<FeatureLayout, number>()
+  for (const [i, element] of sorted.entries()) {
+    rowMap.set(element, i)
   }
-
-  return { tierMap, numTiers: Math.max(1, tierEnds.length) }
+  return { rowMap, numRows: Math.max(1, sorted.length) }
 }
 
 function findMatchingPluggableGlyph(
@@ -171,17 +149,23 @@ function findMatchingPluggableGlyph(
 }
 
 function addPluggableGlyphSubfeaturesRecursive({
+  layout,
   featureLayout,
   subfeatureCoords,
   subfeatureInfos,
   config,
   pluginManager,
+  subfeatureLabels,
+  labelColor,
 }: {
+  layout: BaseLayout<unknown>
   featureLayout: FeatureLayout
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
   config: AnyConfigurationModel
   pluginManager: PluginManager
+  subfeatureLabels: string
+  labelColor: string
 }) {
   const feature = featureLayout.feature
   const matchingGlyph = findMatchingPluggableGlyph(feature, pluginManager)
@@ -189,25 +173,25 @@ function addPluggableGlyphSubfeaturesRecursive({
   if (matchingGlyph?.getChildFeatures) {
     const childFeatures = matchingGlyph.getChildFeatures(feature, config)
     if (childFeatures.length > 0 && featureLayout.children.length > 0) {
-      const { tierMap, numTiers } = computeTierAssignments(
-        featureLayout.children,
-      )
-      const tierHeight = featureLayout.height / numTiers
+      const { rowMap, numRows } = computeRowAssignments(featureLayout.children)
+      const rowHeight = featureLayout.height / numRows
       const parentTop = featureLayout.y
+      const showSubfeatureLabels = subfeatureLabels !== 'none'
 
       for (const child of featureLayout.children) {
         const childFeature = child.feature
         const childType = childFeature.get('type') as string
-        const tier = tierMap.get(child) ?? 0
+        const row = rowMap.get(child) ?? 0
 
         const leftPx = child.x
         const rightPx = child.x + child.width
-        const topPx = parentTop + tier * tierHeight
-        const bottomPx = topPx + tierHeight
+        const topPx = parentTop + row * rowHeight
+        const bottomPx = topPx + rowHeight
 
         subfeatureCoords.push(leftPx, topPx, rightPx, bottomPx)
 
-        const glyphMouseover = matchingGlyph.getSubfeatureMouseover?.(childFeature)
+        const glyphMouseover =
+          matchingGlyph.getSubfeatureMouseover?.(childFeature)
         const displayLabel =
           glyphMouseover ??
           String(
@@ -217,42 +201,103 @@ function addPluggableGlyphSubfeaturesRecursive({
           )
 
         subfeatureInfos.push({
+          featureId: childFeature.id(),
+          parentFeatureId: featureLayout.feature.id(),
           displayLabel,
           type: childType,
+          leftPx,
+          topPx,
+          rightPx,
+          bottomPx,
         })
+
+        const floatingLabels: FloatingLabelData[] = []
+        const padding = 1
+        const boxHeight =
+          subfeatureLabels === 'below'
+            ? Math.floor(rowHeight / 2) - padding
+            : rowHeight - padding * 2
+        if (showSubfeatureLabels && displayLabel) {
+          const label = createTranscriptFloatingLabel({
+            displayLabel,
+            featureHeight: boxHeight,
+            subfeatureLabels,
+            color: labelColor,
+            parentFeatureId: featureLayout.feature.id(),
+            tooltip: displayLabel,
+          })
+          if (label) {
+            floatingLabels.push(label)
+          }
+        }
+
+        const childStart = childFeature.get('start')
+        const childEnd = childFeature.get('end')
+        layout.addRect(
+          childFeature.id(),
+          childStart,
+          childEnd,
+          bottomPx - topPx,
+          childFeature,
+          {
+            refName: childFeature.get('refName'),
+            ...(showSubfeatureLabels && floatingLabels.length > 0
+              ? {
+                  floatingLabels,
+                  totalFeatureHeight: boxHeight,
+                  totalLayoutWidth: child.width,
+                  actualTopPx: topPx + padding,
+                  featureWidth: child.width,
+                  leftPadding: 0,
+                }
+              : {}),
+          },
+        )
       }
     }
   }
 
   for (const child of featureLayout.children) {
     addPluggableGlyphSubfeaturesRecursive({
+      layout,
       featureLayout: child,
       subfeatureCoords,
       subfeatureInfos,
       config,
       pluginManager,
+      subfeatureLabels,
+      labelColor,
     })
   }
 }
 
 export function addPluggableGlyphSubfeaturesToFlatbush({
+  layout,
   featureLayout,
   subfeatureCoords,
   subfeatureInfos,
   config,
   pluginManager,
+  subfeatureLabels,
+  labelColor,
 }: {
+  layout: BaseLayout<unknown>
   featureLayout: FeatureLayout
   subfeatureCoords: number[]
   subfeatureInfos: SubfeatureInfo[]
   config: AnyConfigurationModel
   pluginManager: PluginManager
+  subfeatureLabels: string
+  labelColor: string
 }) {
   addPluggableGlyphSubfeaturesRecursive({
+    layout,
     featureLayout,
     subfeatureCoords,
     subfeatureInfos,
     config,
     pluginManager,
+    subfeatureLabels,
+    labelColor,
   })
 }
