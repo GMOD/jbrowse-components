@@ -1,4 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getSession } from '@jbrowse/core/util'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
@@ -10,6 +11,9 @@ const ColorBySelector = observer(function ColorBySelector({
 }: {
   model: LinearComparativeViewModel
 }) {
+  const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   // Get the first display from the first level (if it exists)
   const firstDisplay = model.levels[0]?.tracks[0]?.displays[0] as
     | LinearSyntenyDisplayModel
@@ -30,6 +34,7 @@ const ColorBySelector = observer(function ColorBySelector({
 
   return (
     <CascadingMenuButton
+      showShortcuts={showShortcuts}
       menuItems={[
         {
           label: 'Default',

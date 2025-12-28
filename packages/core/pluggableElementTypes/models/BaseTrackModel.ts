@@ -263,6 +263,7 @@ export function createBaseTrackModel(
           ...menuItems,
           {
             label: 'Save track data',
+            shortcut: 'x',
             icon: Save,
             priority: 998,
             onClick: () => {
@@ -280,13 +281,15 @@ export function createBaseTrackModel(
                 {
                   type: 'subMenu',
                   label: 'Display types',
+                  shortcut: 'y',
                   priority: -1000,
-                  subMenu: compatDisp.map(d => {
+                  subMenu: compatDisp.map((d, idx) => {
                     const displayType = pm.getDisplayType(d.type)!
                     return {
                       type: 'radio',
                       label: displayType.displayName,
                       helpText: displayType.helpText,
+                      shortcut: `${idx + 1}`,
                       checked: d.displayId === shownId,
                       onClick: () => {
                         if (d.displayId !== shownId) {

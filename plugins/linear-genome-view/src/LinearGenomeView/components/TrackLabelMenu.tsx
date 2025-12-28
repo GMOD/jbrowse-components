@@ -35,6 +35,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
         : [
             {
               label: pinned ? 'Unpin track' : 'Pin track',
+              shortcut: 'p',
               icon: PushPinIcon,
               onClick: () => {
                 track.setPinned(!pinned)
@@ -44,10 +45,12 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
       {
         label: 'Track order',
         type: 'subMenu' as const,
+        shortcut: 'o',
         priority: 2000,
         subMenu: [
           {
             label: minimized ? 'Restore track' : 'Minimize track',
+            shortcut: 'i',
             icon: minimized ? AddIcon : MinimizeIcon,
             onClick: () => {
               track.setMinimized(!minimized)
@@ -68,6 +71,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
             ? [
                 {
                   label: 'Move track up',
+                  shortcut: 'u',
                   icon: KeyboardArrowUpIcon,
                   onClick: () => {
                     view.moveTrackUp(track.id)
@@ -75,6 +79,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
                 },
                 {
                   label: 'Move track down',
+                  shortcut: 'd',
                   icon: KeyboardArrowDownIcon,
                   onClick: () => {
                     view.moveTrackDown(track.id)

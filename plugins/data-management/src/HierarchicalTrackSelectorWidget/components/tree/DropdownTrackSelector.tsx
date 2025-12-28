@@ -28,8 +28,11 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
   const { view } = model
   const [open, setOpen] = useState(false)
   const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   return view ? (
     <CascadingMenuButton
+      showShortcuts={showShortcuts}
       closeAfterItemClick={false}
       onClick={onClick}
       menuItems={[

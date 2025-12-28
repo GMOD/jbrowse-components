@@ -8,15 +8,31 @@ import {
   FormControlLabel,
   FormGroup,
   MenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
+  Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { ThemeOptions } from '@mui/material'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   container: {
     width: 800,
+  },
+  shortcutSection: {
+    marginTop: theme.spacing(3),
+  },
+  shortcutTable: {
+    marginTop: theme.spacing(1),
+  },
+  keyCell: {
+    fontFamily: 'monospace',
+    fontWeight: 'bold',
   },
 }))
 
@@ -78,6 +94,60 @@ const PreferencesDialog = observer(function PreferencesDialog({
             label="Show keyboard shortcuts in menus"
           />
         </FormGroup>
+
+        <div className={classes.shortcutSection}>
+          <Typography variant="h6">Keyboard Shortcuts</Typography>
+          <Typography variant="body2" color="text.secondary">
+            These shortcuts work when a Linear Genome View is focused (click on
+            it first).
+          </Typography>
+          <Table size="small" className={classes.shortcutTable}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Shortcut</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell className={classes.keyCell}>v</TableCell>
+                <TableCell>Open view menu</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className={classes.keyCell}>Alt + ↓</TableCell>
+                <TableCell>Focus next track</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className={classes.keyCell}>Alt + ↑</TableCell>
+                <TableCell>Focus previous track</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className={classes.keyCell}>m</TableCell>
+                <TableCell>Open focused track menu</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className={classes.keyCell}>Escape</TableCell>
+                <TableCell>Clear track focus</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className={classes.keyCell}>+ / =</TableCell>
+                <TableCell>Zoom in</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className={classes.keyCell}>-</TableCell>
+                <TableCell>Zoom out</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 1, fontStyle: 'italic' }}
+          >
+            Tip: Menu items also show keyboard shortcuts. Press the shortcut key
+            while a menu is open to activate that item.
+          </Typography>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Close</Button>

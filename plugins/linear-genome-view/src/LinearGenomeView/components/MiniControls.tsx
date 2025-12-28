@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from 'react'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
@@ -10,6 +12,14 @@ import { observer } from 'mobx-react'
 import type { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(theme => ({
+  '@keyframes focusFade': {
+    '0%': {
+      background: alpha(theme.palette.secondary.light, 0.4),
+    },
+    '100%': {
+      background: theme.palette.background.paper,
+    },
+  },
   background: {
     position: 'absolute',
     right: 0,
@@ -18,8 +28,8 @@ const useStyles = makeStyles()(theme => ({
     // needed when sticky header is off in lgv, e.g. in breakpoint split view
     zIndex: 2,
   },
-  focusedBackground: {
-    background: alpha(theme.palette.secondary.light, 0.2),
+  focused: {
+    animation: '$focusFade 3s ease-out forwards',
   },
 }))
 
@@ -34,10 +44,22 @@ const MiniControls = observer(function MiniControls({
   const { focusedViewId } = session
   const showShortcuts =
     'showMenuShortcuts' in session ? session.showMenuShortcuts : true
+  const isFocused = focusedViewId === id
+  const prevFocused = useRef(isFocused)
+  const [animationKey, setAnimationKey] = useState(0)
+
+  useEffect(() => {
+    if (isFocused && !prevFocused.current) {
+      setAnimationKey(k => k + 1)
+    }
+    prevFocused.current = isFocused
+  }, [isFocused])
+
   return hideHeader ? (
     <Paper className={classes.background}>
       <Paper
-        className={focusedViewId === id ? classes.focusedBackground : undefined}
+        key={animationKey}
+        className={cx(isFocused && classes.focused)}
       >
         <CascadingMenuButton
           menuItems={model.menuItems()}

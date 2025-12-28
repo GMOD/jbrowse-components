@@ -16,6 +16,8 @@ const ShoppingCart = observer(function ShoppingCart({
   }
 }) {
   const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   const { selection } = model
   const { pluginManager } = getEnv(model)
   const { adminMode, sessionTracks } = session
@@ -29,6 +31,7 @@ const ShoppingCart = observer(function ShoppingCart({
 
   return selection.length ? (
     <CascadingMenuButton
+      showShortcuts={showShortcuts}
       menuItems={[
         {
           label: 'Clear selection',

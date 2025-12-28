@@ -1,4 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getSession } from '@jbrowse/core/util'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
@@ -10,6 +11,9 @@ const ColorBySelector = observer(function ColorBySelector({
 }: {
   model: DotplotViewModel
 }) {
+  const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   // Get the first display from the first track (if it exists)
   const firstDisplay = model.tracks[0]?.displays[0] as
     | DotplotDisplayModel
@@ -28,6 +32,7 @@ const ColorBySelector = observer(function ColorBySelector({
 
   return (
     <CascadingMenuButton
+      showShortcuts={showShortcuts}
       menuItems={[
         {
           label: 'Default',

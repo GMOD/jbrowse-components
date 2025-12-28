@@ -43,6 +43,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
       return [
         {
           label: 'About track',
+          shortcut: 'a',
           onClick: () => {
             session.queueDialog(doneCallback => [
               AboutDialog,
@@ -53,6 +54,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
         },
         {
           label: 'Settings',
+          shortcut: 's',
           onClick: () => {
             session.editConfiguration(trackConfig)
           },
@@ -60,6 +62,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
         },
         {
           label: 'Delete track',
+          shortcut: 'd',
           onClick: () => {
             session.deleteTrackConf(trackConfig)
           },
@@ -67,6 +70,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
         },
         {
           label: 'Copy track',
+          shortcut: 'c',
           onClick: () => {
             const now = Date.now()
             trackSnapshot.trackId += `-${now}`
@@ -87,6 +91,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
                 label: trackSnapshot.textSearching
                   ? 'Re-index track'
                   : 'Index track',
+                shortcut: 'i',
                 onClick: () => {
                   const rootModel = getParent<DesktopRootModel>(self)
                   const { jobsManager } = rootModel

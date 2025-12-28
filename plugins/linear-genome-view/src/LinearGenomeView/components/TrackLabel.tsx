@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
@@ -16,6 +16,14 @@ import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
+  '@keyframes focusFade': {
+    '0%': {
+      background: alpha(theme.palette.secondary.light, 0.4),
+    },
+    '100%': {
+      background: alpha(theme.palette.background.paper, 0.8),
+    },
+  },
   root: {
     // above breakpoint split view
     zIndex: 200,
@@ -23,6 +31,9 @@ const useStyles = makeStyles()(theme => ({
     '&:hover': {
       background: theme.palette.background.paper,
     },
+  },
+  focused: {
+    animation: '$focusFade 3s ease-out forwards',
   },
   trackName: {
     margin: '0 auto',
@@ -40,11 +51,12 @@ type LGV = LinearGenomeViewModel
 interface Props {
   track: BaseTrackModel
   className?: string
+  isFocused?: boolean
 }
 
 const TrackLabel = observer(
   forwardRef<HTMLDivElement, Props>(function TrackLabel2(
-    { track, className },
+    { track, className, isFocused },
     ref,
   ) {
     const { classes } = useStyles()
@@ -53,11 +65,21 @@ const TrackLabel = observer(
     const { minimized } = track
     const trackId = getConf(track, 'trackId')
     const trackName = getTrackName(track.configuration, session)
+    const prevFocused = useRef(isFocused)
+    const [animationKey, setAnimationKey] = useState(0)
+
+    useEffect(() => {
+      if (isFocused && !prevFocused.current) {
+        setAnimationKey(k => k + 1)
+      }
+      prevFocused.current = isFocused
+    }, [isFocused])
 
     return (
       <Paper
         ref={ref}
-        className={cx(className, classes.root)}
+        key={animationKey}
+        className={cx(className, classes.root, isFocused && classes.focused)}
         onClick={event => {
           // avoid clicks on track label from turning into double-click zoom
           event.stopPropagation()

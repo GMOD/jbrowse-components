@@ -386,6 +386,7 @@ export function BaseWebSession({
         return [
           {
             label: 'About track',
+            shortcut: 'a',
             priority: 1002,
             onClick: () => {
               self.queueDialog(handleClose => [
@@ -401,6 +402,7 @@ export function BaseWebSession({
           },
           {
             label: 'Settings',
+            shortcut: 's',
             priority: 1001,
             disabled: !canEdit,
             icon: SettingsIcon,
@@ -410,6 +412,7 @@ export function BaseWebSession({
           },
           {
             label: 'Delete track',
+            shortcut: 'd',
             priority: 1000,
             disabled: !canEdit || isRefSeq,
             icon: DeleteIcon,
@@ -419,6 +422,7 @@ export function BaseWebSession({
           },
           {
             label: 'Copy track',
+            shortcut: 'c',
             priority: 999,
             disabled: isRefSeq,
             onClick: () => {

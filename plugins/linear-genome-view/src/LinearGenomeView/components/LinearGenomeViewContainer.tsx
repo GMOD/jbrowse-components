@@ -138,6 +138,24 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           openViewMenu()
         }
       },
+      '=': event => {
+        if (shouldHandleShortcut(event)) {
+          event.preventDefault()
+          model.zoom(model.bpPerPx / 2)
+        }
+      },
+      '+': event => {
+        if (shouldHandleShortcut(event)) {
+          event.preventDefault()
+          model.zoom(model.bpPerPx / 2)
+        }
+      },
+      '-': event => {
+        if (shouldHandleShortcut(event)) {
+          event.preventDefault()
+          model.zoom(model.bpPerPx * 2)
+        }
+      },
     })
 
     return unsubscribe

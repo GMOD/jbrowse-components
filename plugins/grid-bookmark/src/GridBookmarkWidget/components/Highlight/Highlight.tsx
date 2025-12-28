@@ -80,6 +80,7 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
             {bookmarkLabelsVisible && width > 20 ? (
               <div className={classes.bookmarkButton} style={{ left }}>
                 <CascadingMenuButton
+                  showShortcuts={showShortcuts}
                   menuItems={[
                     {
                       label: 'Open bookmark widget',

@@ -35,9 +35,14 @@ const TrackLabelContainer = observer(function TrackLabelContainer({
     view.trackLabelsSetting !== 'overlapping' || display.prefersOffset
       ? classes.trackLabelOffset
       : classes.trackLabelOverlap
+  const isFocused = view.focusedTrackId === track.id
 
   return view.trackLabelsSetting !== 'hidden' ? (
-    <TrackLabel track={track} className={cx(classes.trackLabel, labelStyle)} />
+    <TrackLabel
+      track={track}
+      className={cx(classes.trackLabel, labelStyle)}
+      isFocused={isFocused}
+    />
   ) : null
 })
 

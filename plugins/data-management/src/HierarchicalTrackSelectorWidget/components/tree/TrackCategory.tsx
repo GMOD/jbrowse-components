@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { CascadingMenuButton, SanitizedHTML } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
@@ -50,6 +51,9 @@ const TrackCategory = observer(function TrackCategory({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
+  const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   const [menuOpen, setMenuOpen] = useState(false)
   const { name, id } = item
   const isOpen = !model.collapsed.get(id)
@@ -139,6 +143,7 @@ const TrackCategory = observer(function TrackCategory({
           className={classes.contrastColor}
           stopPropagation
           setOpen={setMenuOpen}
+          showShortcuts={showShortcuts}
         >
           <MoreHorizIcon />
         </CascadingMenuButton>

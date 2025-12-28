@@ -50,6 +50,9 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
   model: GridBookmarkModel
 }) {
   const { classes } = useStyles()
+  const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   return (
     <div>
       <Alert severity="info">
@@ -59,6 +62,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
       <div className={classes.flex}>
         <CascadingMenuButton
           data-testid="grid_bookmark_menu"
+          showShortcuts={showShortcuts}
           menuItems={[
             {
               label: 'Export',

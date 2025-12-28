@@ -194,6 +194,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Show forward',
                   type: 'checkbox',
+                  shortcut: 'f',
                   checked: self.showForward,
                   onClick: () => {
                     self.toggleShowForward()
@@ -202,6 +203,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Show reverse',
                   type: 'checkbox',
+                  shortcut: 'r',
                   checked: self.showReverse,
                   onClick: () => {
                     self.toggleShowReverse()
@@ -210,6 +212,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Show translation',
                   type: 'checkbox',
+                  shortcut: 't',
                   checked: self.showTranslation,
                   onClick: () => {
                     self.toggleShowTranslation()

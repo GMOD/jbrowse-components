@@ -135,6 +135,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return [
           {
             label: 'About track',
+            shortcut: 'a',
             onClick: () => {
               self.queueDialog(doneCallback => [
                 AboutDialog,
