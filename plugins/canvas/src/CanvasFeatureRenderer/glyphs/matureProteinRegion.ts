@@ -126,11 +126,18 @@ export const matureProteinRegionGlyph: Glyph = {
     const rowHeight = baseHeightPx * perRowMultiplier
     const totalHeight = rowHeight * numRows
 
-    // Position each child in its row
+    // Position each child in its row, accounting for padding and label space
+    const padding = 1
+    const boxHeight =
+      subfeatureLabels === 'below'
+        ? Math.floor(rowHeight / 2) - padding
+        : rowHeight - padding * 2
+
     for (let i = 0; i < sortedChildren.length; i++) {
       const child = sortedChildren[i]!
-      child.y = i * rowHeight
-      child.height = rowHeight
+      // Position at actual box location (with padding offset)
+      child.y = i * rowHeight + padding
+      child.height = boxHeight
       child.totalLayoutHeight = rowHeight
     }
 
@@ -182,18 +189,12 @@ function drawMatureProteinBox(
   reversed: boolean,
   arrowColor: string,
 ) {
-  const { x: left, y: top, width, height: rowHeight, feature } = childLayout
+  // Layout already accounts for padding and label space
+  const { x: left, y: boxTop, width, height: boxHeight, feature } = childLayout
 
   if (isOffScreen(left, width, canvasWidth)) {
     return
   }
-
-  const hasLabelsBelow = subfeatureLabels === 'below'
-  const padding = 1
-  const boxTop = top + padding
-  const boxHeight = hasLabelsBelow
-    ? Math.floor(rowHeight / 2) - padding
-    : rowHeight - padding * 2
 
   ctx.fillStyle = color
   ctx.fillRect(left, boxTop, width, boxHeight)
