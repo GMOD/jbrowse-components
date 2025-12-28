@@ -56,6 +56,7 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
         </Typography>
         <TextField
           value={value}
+          autoFocus
           onChange={e => {
             setValue(e.target.value)
           }}

@@ -6,6 +6,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
+import tinykeys from '@jbrowse/core/util/tinykeys'
+
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 
@@ -61,6 +63,84 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
     }
+  }, [session, model])
+
+  // Keyboard navigation for tracks using tinykeys
+  useEffect(() => {
+    // Helper to check if shortcuts should be handled
+    function shouldHandleShortcut(event: KeyboardEvent) {
+      // Don't handle if a menu is open
+      if (document.querySelector('[role="menu"]')) {
+        return false
+      }
+      // Don't handle if this view is not focused
+      if (session.focusedViewId !== model.id) {
+        return false
+      }
+      // Don't handle if in an input
+      const target = event.target as HTMLElement
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return false
+      }
+      return true
+    }
+
+    function openTrackMenu() {
+      const menuButton = ref.current?.querySelector(
+        `[data-track-id="${model.focusedTrackId}"] [data-testid="track_menu_icon"]`,
+      ) as HTMLButtonElement | null
+      menuButton?.click()
+    }
+
+    function openViewMenu() {
+      let el = ref.current?.parentElement
+      let viewMenuButton: HTMLButtonElement | null = null
+      while (el && !viewMenuButton) {
+        viewMenuButton = el.querySelector(
+          '[data-testid="view_menu_icon"]',
+        ) as HTMLButtonElement | null
+        el = el.parentElement
+      }
+      viewMenuButton?.click()
+    }
+
+    const unsubscribe = tinykeys(window, {
+      'Alt+ArrowDown': event => {
+        if (shouldHandleShortcut(event)) {
+          event.preventDefault()
+          model.focusNextTrack()
+        }
+      },
+      'Alt+ArrowUp': event => {
+        if (shouldHandleShortcut(event)) {
+          event.preventDefault()
+          model.focusPrevTrack()
+        }
+      },
+      Escape: event => {
+        if (shouldHandleShortcut(event)) {
+          model.clearFocusedTrack()
+        }
+      },
+      m: event => {
+        if (shouldHandleShortcut(event) && model.focusedTrackId) {
+          event.preventDefault()
+          openTrackMenu()
+        }
+      },
+      v: event => {
+        if (shouldHandleShortcut(event)) {
+          event.preventDefault()
+          openViewMenu()
+        }
+      },
+    })
+
+    return unsubscribe
   }, [session, model])
 
   return (

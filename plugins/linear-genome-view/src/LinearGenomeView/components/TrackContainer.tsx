@@ -25,6 +25,10 @@ const useStyles = makeStyles()(theme => ({
   unpinnedTrack: {
     background: 'none',
   },
+  focused: {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: -2,
+  },
   resizeHandle: {
     height: 4,
     boxSizing: 'border-box',
@@ -47,16 +51,23 @@ const TrackContainer = observer(function TrackContainer({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
-  const { draggingTrackId, showTrackOutlines } = model
+  const { draggingTrackId, showTrackOutlines, focusedTrackId } = model
   const ref = useRef<HTMLDivElement>(null)
+  const isFocused = focusedTrackId === track.id
 
   return (
     <Paper
       ref={ref}
-      className={cx(classes.root, track.pinned ? null : classes.unpinnedTrack)}
+      data-track-id={track.id}
+      className={cx(
+        classes.root,
+        track.pinned ? null : classes.unpinnedTrack,
+        isFocused ? classes.focused : null,
+      )}
       variant={showTrackOutlines ? 'outlined' : undefined}
       elevation={showTrackOutlines ? undefined : 0}
       onClick={event => {
+        model.setFocusedTrackId(track.id)
         if (event.detail === 2 && !display.featureIdUnderMouse) {
           const left = ref.current?.getBoundingClientRect().left || 0
           model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)

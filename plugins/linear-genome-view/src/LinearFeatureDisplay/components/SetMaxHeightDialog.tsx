@@ -40,6 +40,7 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog({
         </Typography>
         <TextField
           value={max}
+          autoFocus
           onChange={event => {
             setMax(event.target.value)
           }}
@@ -52,7 +53,6 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog({
           variant="contained"
           color="primary"
           type="submit"
-          autoFocus
           disabled={!ok}
           onClick={() => {
             model.setMaxHeight(+max)

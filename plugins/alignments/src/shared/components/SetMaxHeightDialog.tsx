@@ -49,7 +49,6 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
             variant="contained"
             color="primary"
             type="submit"
-            autoFocus
             onClick={() => {
               model.setMaxHeight(
                 max !== '' && !Number.isNaN(+max) ? +max : undefined,

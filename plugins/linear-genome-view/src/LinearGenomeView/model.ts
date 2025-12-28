@@ -294,6 +294,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       rightOffset: undefined as undefined | BpOffset,
+      /**
+       * #volatile
+       */
+      focusedTrackId: undefined as undefined | string,
     }))
     .views(self => ({
       /**
@@ -1079,6 +1083,55 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setLastTrackDragY(y: number) {
         self.lastTrackDragY = y
+      },
+
+      /**
+       * #action
+       */
+      setFocusedTrackId(trackId?: string) {
+        self.focusedTrackId = trackId
+      },
+
+      /**
+       * #action
+       */
+      focusNextTrack() {
+        const tracks = self.tracks
+        if (tracks.length === 0) {
+          return
+        }
+        if (self.focusedTrackId === undefined) {
+          self.focusedTrackId = tracks[0]?.id
+        } else {
+          const idx = tracks.findIndex(t => t.id === self.focusedTrackId)
+          const nextIdx = idx === -1 ? 0 : (idx + 1) % tracks.length
+          self.focusedTrackId = tracks[nextIdx]?.id
+        }
+      },
+
+      /**
+       * #action
+       */
+      focusPrevTrack() {
+        const tracks = self.tracks
+        if (tracks.length === 0) {
+          return
+        }
+        if (self.focusedTrackId === undefined) {
+          self.focusedTrackId = tracks[tracks.length - 1]?.id
+        } else {
+          const idx = tracks.findIndex(t => t.id === self.focusedTrackId)
+          const prevIdx =
+            idx === -1 ? tracks.length - 1 : (idx - 1 + tracks.length) % tracks.length
+          self.focusedTrackId = tracks[prevIdx]?.id
+        }
+      },
+
+      /**
+       * #action
+       */
+      clearFocusedTrack() {
+        self.focusedTrackId = undefined
       },
 
       /**

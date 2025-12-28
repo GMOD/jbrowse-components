@@ -38,6 +38,7 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
         </Typography>
         <TextField
           value={height}
+          autoFocus
           helperText="Feature height"
           onChange={event => {
             setHeight(event.target.value)
@@ -59,7 +60,6 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
             variant="contained"
             color="primary"
             type="submit"
-            autoFocus
             disabled={!ok}
             onClick={() => {
               model.setFeatureHeight(
