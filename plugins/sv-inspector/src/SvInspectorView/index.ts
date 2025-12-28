@@ -11,7 +11,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 
-const ChordClickDialog = lazy(() => import('./ChordClickDialog'))
+const BreakpointSplitViewChoiceDialog = lazy(
+  () => import('./BreakpointSplitViewChoiceDialog'),
+)
 
 function defaultOnChordClick(feature: Feature, chordTrack: IAnyStateTreeNode) {
   const session = getSession(chordTrack)
@@ -22,7 +24,7 @@ function defaultOnChordClick(feature: Feature, chordTrack: IAnyStateTreeNode) {
     const stableViewId = `${parentView.id}_spawned`
     const assemblyName = view.assemblyNames[0]!
     session.queueDialog(handleClose => [
-      ChordClickDialog,
+      BreakpointSplitViewChoiceDialog,
       {
         handleClose,
         session,

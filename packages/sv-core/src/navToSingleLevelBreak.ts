@@ -176,10 +176,7 @@ export async function navToSingleLevelBreak({
       refName: mateRefName,
     })
     if (l0 && r0) {
-      lgv.moveTo(
-        { ...l0, offset: l0.offsetPx },
-        { ...r0, offset: r0.offsetPx },
-      )
+      lgv.moveTo({ ...l0, offset: l0.offsetPx }, { ...r0, offset: r0.offsetPx })
     } else {
       getSession(lgv).notify('Unable to navigate to breakpoint')
     }

@@ -1,17 +1,14 @@
 import { lazy } from 'react'
 
 import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
+import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
-// lazies
-const BreakendMultiLevelOptionDialog = lazy(
-  () => import('./BreakendMultiLevelOptionDialog'),
-)
-const BreakendSingleLevelOptionDialog = lazy(
-  () => import('./BreakendSingleLevelOptionDialog'),
+const BreakpointSplitViewChoiceDialog = lazy(
+  () => import('./BreakpointSplitViewChoiceDialog'),
 )
 
 export default function LaunchPairedEndBreakpointSplitViewPanel({
@@ -36,6 +33,7 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
     end: (feature.next_pos as number) + 1,
     strand: feature.strand as number,
   }
+  const assemblyName = getAssemblyName(model.view)
   return (
     <div>
       <Typography>Launch split view</Typography>
@@ -48,36 +46,18 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
             onClick={event => {
               event.preventDefault()
               session.queueDialog(handleClose => [
-                BreakendMultiLevelOptionDialog,
+                BreakpointSplitViewChoiceDialog,
                 {
                   handleClose,
                   session,
                   feature: new SimpleFeature({ ...f1, mate: f2 }),
                   view: model.view,
-                  assemblyName: model.view.displayedRegions[0].assemblyName,
+                  assemblyName,
                 },
               ])
             }}
           >
-            (top/bottom)
-          </Link>{' '}
-          <Link
-            href="#"
-            onClick={event => {
-              event.preventDefault()
-              session.queueDialog(handleClose => [
-                BreakendSingleLevelOptionDialog,
-                {
-                  handleClose,
-                  session,
-                  feature: new SimpleFeature({ ...f1, mate: f2 }),
-                  view: model.view,
-                  assemblyName: model.view.displayedRegions[0].assemblyName,
-                },
-              ])
-            }}
-          >
-            (single row)
+            (breakpoint split view)
           </Link>
         </li>
       </ul>
