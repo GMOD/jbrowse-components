@@ -15,6 +15,7 @@ export interface PeptideData {
   protein?: string
 }
 
+// The rectangle allocated for a feature
 export interface FeatureLayout {
   feature: Feature
   glyphType: GlyphType
@@ -29,29 +30,45 @@ export interface FeatureLayout {
   children: FeatureLayout[]
 }
 
+// Arguments passed to glyph layout functions
+export interface LayoutArgs {
+  feature: Feature
+  bpPerPx: number
+  reversed: boolean
+  configContext: RenderConfigContext
+  pluginManager?: PluginManager
+  parentFeature?: Feature
+}
+
+// Context passed to glyph draw functions
+export interface DrawContext {
+  region: Region
+  bpPerPx: number
+  configContext: RenderConfigContext
+  theme: Theme
+  canvasWidth: number
+  peptideDataMap?: Map<string, PeptideData>
+  colorByCDS?: boolean
+}
+
+// Polymorphic glyph interface
+export interface Glyph {
+  type: GlyphType
+  match(feature: Feature, configContext: RenderConfigContext): boolean
+  layout(args: LayoutArgs): FeatureLayout
+  draw(
+    ctx: CanvasRenderingContext2D,
+    layout: FeatureLayout,
+    drawContext: DrawContext,
+  ): void
+}
+
 export interface LayoutRecord {
   feature: Feature
   layout: FeatureLayout
   topPx: number
   label: string
   description: string
-}
-
-export interface DrawFeatureArgs {
-  ctx: CanvasRenderingContext2D
-  feature: Feature
-  featureLayout: FeatureLayout
-  region: Region
-  bpPerPx: number
-  config: AnyConfigurationModel
-  configContext: RenderConfigContext
-  theme: Theme
-  reversed: boolean
-  topLevel: boolean
-  canvasWidth: number
-  peptideDataMap?: Map<string, PeptideData>
-  colorByCDS?: boolean
-  pluginManager?: PluginManager
 }
 
 export interface FlatbushItem {

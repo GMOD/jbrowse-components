@@ -93,7 +93,6 @@ function doLayout(
     features,
     bpPerPx: args.bpPerPx,
     region: args.region,
-    config: args.config,
     configContext: args.configContext,
     layout: args.layout,
     pluginManager: args.pluginManager,
