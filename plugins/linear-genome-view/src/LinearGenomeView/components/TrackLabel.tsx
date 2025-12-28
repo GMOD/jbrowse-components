@@ -16,14 +16,6 @@ import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
-  '@keyframes focusFade': {
-    '0%': {
-      background: alpha(theme.palette.secondary.light, 0.4),
-    },
-    '100%': {
-      background: alpha(theme.palette.background.paper, 0.8),
-    },
-  },
   root: {
     // above breakpoint split view
     zIndex: 200,
@@ -32,8 +24,23 @@ const useStyles = makeStyles()(theme => ({
       background: theme.palette.background.paper,
     },
   },
-  focused: {
-    animation: '$focusFade 3s ease-out forwards',
+  focusHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: alpha(theme.palette.secondary.light, 0.4),
+    pointerEvents: 'none',
+    animation: 'focusFadeOut 3s ease-out forwards',
+    '@keyframes focusFadeOut': {
+      '0%': {
+        opacity: 1,
+      },
+      '100%': {
+        opacity: 0,
+      },
+    },
   },
   trackName: {
     margin: '0 auto',
@@ -78,13 +85,16 @@ const TrackLabel = observer(
     return (
       <Paper
         ref={ref}
-        key={animationKey}
-        className={cx(className, classes.root, isFocused && classes.focused)}
+        className={cx(className, classes.root)}
+        style={{ position: 'relative' }}
         onClick={event => {
           // avoid clicks on track label from turning into double-click zoom
           event.stopPropagation()
         }}
       >
+        {isFocused ? (
+          <div key={animationKey} className={classes.focusHighlight} />
+        ) : null}
         <TrackLabelDragHandle track={track} trackId={trackId} view={view} />
         <IconButton
           onClick={() => view.hideTrack(trackId)}

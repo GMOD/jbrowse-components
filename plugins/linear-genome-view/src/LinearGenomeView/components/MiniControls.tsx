@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
-import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
@@ -12,14 +12,6 @@ import { observer } from 'mobx-react'
 import type { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(theme => ({
-  '@keyframes focusFade': {
-    '0%': {
-      background: alpha(theme.palette.secondary.light, 0.4),
-    },
-    '100%': {
-      background: theme.palette.background.paper,
-    },
-  },
   background: {
     position: 'absolute',
     right: 0,
@@ -28,8 +20,26 @@ const useStyles = makeStyles()(theme => ({
     // needed when sticky header is off in lgv, e.g. in breakpoint split view
     zIndex: 2,
   },
-  focused: {
-    animation: '$focusFade 3s ease-out forwards',
+  innerPaper: {
+    position: 'relative',
+  },
+  focusHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: alpha(theme.palette.secondary.light, 0.4),
+    pointerEvents: 'none',
+    animation: 'focusFadeOut 3s ease-out forwards',
+    '@keyframes focusFadeOut': {
+      '0%': {
+        opacity: 1,
+      },
+      '100%': {
+        opacity: 0,
+      },
+    },
   },
 }))
 
@@ -57,10 +67,10 @@ const MiniControls = observer(function MiniControls({
 
   return hideHeader ? (
     <Paper className={classes.background}>
-      <Paper
-        key={animationKey}
-        className={cx(isFocused && classes.focused)}
-      >
+      <Paper className={classes.innerPaper}>
+        {isFocused ? (
+          <div key={animationKey} className={classes.focusHighlight} />
+        ) : null}
         <CascadingMenuButton
           menuItems={model.menuItems()}
           showShortcuts={showShortcuts}
