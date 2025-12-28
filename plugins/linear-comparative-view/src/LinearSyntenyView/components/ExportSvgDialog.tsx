@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage, useEnterSubmit } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
 import {
   Button,
@@ -49,126 +49,127 @@ export default function ExportSvgDialog({
     session.themeName || 'default',
   )
   const [error, setError] = useState<unknown>()
+
+  async function onSubmit() {
+    setLoading(true)
+    setError(undefined)
+    try {
+      await model.exportSvg({
+        rasterizeLayers,
+        filename,
+        themeName,
+        trackLabels,
+        showGridlines,
+      })
+      handleClose()
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEnterSubmit(onSubmit)
+
   return (
     <Dialog open onClose={handleClose} title="Export SVG">
-      <DialogContent>
-        {error ? (
-          <ErrorMessage error={error} />
-        ) : loading ? (
-          <LoadingMessage />
-        ) : null}
-        <TextField2
-          helperText="filename"
-          value={filename}
-          onChange={event => {
-            setFilename(event.target.value)
-          }}
-        />
+      <form
+        onSubmit={event => {
+          event.preventDefault()
+          onSubmit()
+        }}
+      >
+        <DialogContent>
+          {error ? (
+            <ErrorMessage error={error} />
+          ) : loading ? (
+            <LoadingMessage />
+          ) : null}
+          <TextField2
+            helperText="filename"
+            value={filename}
+            onChange={event => {
+              setFilename(event.target.value)
+            }}
+          />
 
-        <TextField2
-          select
-          label="Track label positioning"
-          variant="outlined"
-          value={trackLabels}
-          style={{ width: 150 }}
-          onChange={event => {
-            setTrackLabels(event.target.value)
-          }}
-        >
-          <MenuItem value="offset">Offset</MenuItem>
-          <MenuItem value="overlay">Overlay</MenuItem>
-          <MenuItem value="left">Left</MenuItem>
-          <MenuItem value="none">None</MenuItem>
-        </TextField2>
-        <br />
-        {session.allThemes ? (
           <TextField2
             select
-            label="Theme"
+            label="Track label positioning"
             variant="outlined"
-            value={themeName}
+            value={trackLabels}
+            style={{ width: 150 }}
             onChange={event => {
-              setThemeName(event.target.value)
+              setTrackLabels(event.target.value)
             }}
           >
-            {Object.entries(session.allThemes()).map(([key, val]) => (
-              <MenuItem key={key} value={key}>
-                {
-                  // @ts-expect-error
-                  val.name || '(Unknown name)'
-                }
-              </MenuItem>
-            ))}
+            <MenuItem value="offset">Offset</MenuItem>
+            <MenuItem value="overlay">Overlay</MenuItem>
+            <MenuItem value="left">Left</MenuItem>
+            <MenuItem value="none">None</MenuItem>
           </TextField2>
-        ) : null}
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={showGridlines}
-              onChange={() => {
-                setShowGridlines(val => !val)
+          <br />
+          {session.allThemes ? (
+            <TextField2
+              select
+              label="Theme"
+              variant="outlined"
+              value={themeName}
+              onChange={event => {
+                setThemeName(event.target.value)
               }}
-            />
-          }
-          label="Show gridlines"
-        />
-
-        {offscreenCanvas ? (
+            >
+              {Object.entries(session.allThemes()).map(([key, val]) => (
+                <MenuItem key={key} value={key}>
+                  {
+                    // @ts-expect-error
+                    val.name || '(Unknown name)'
+                  }
+                </MenuItem>
+              ))}
+            </TextField2>
+          ) : null}
           <FormControlLabel
             control={
               <Checkbox
-                checked={rasterizeLayers}
+                checked={showGridlines}
                 onChange={() => {
-                  setRasterizeLayers(val => !val)
+                  setShowGridlines(val => !val)
                 }}
               />
             }
-            label="Rasterize canvas based tracks? File may be much larger if this is turned off"
+            label="Show gridlines"
           />
-        ) : (
-          <Typography>
-            Note: rasterizing layers not yet supported in this browser, so SVG
-            size may be large
-          </Typography>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          onClick={async () => {
-            setLoading(true)
-            setError(undefined)
-            try {
-              await model.exportSvg({
-                rasterizeLayers,
-                filename,
-                themeName,
-                trackLabels,
-                showGridlines,
-              })
-              handleClose()
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            } finally {
-              setLoading(false)
-            }
-          }}
-        >
-          Submit
-        </Button>
-      </DialogActions>
+
+          {offscreenCanvas ? (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rasterizeLayers}
+                  onChange={() => {
+                    setRasterizeLayers(val => !val)
+                  }}
+                />
+              }
+              label="Rasterize canvas based tracks? File may be much larger if this is turned off"
+            />
+          ) : (
+            <Typography>
+              Note: rasterizing layers not yet supported in this browser, so SVG
+              size may be large
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" color="secondary" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="contained" color="primary" type="submit">
+            Submit
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 }

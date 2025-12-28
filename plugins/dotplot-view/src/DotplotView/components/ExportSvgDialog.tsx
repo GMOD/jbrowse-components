@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage, useEnterSubmit } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
 import {
   Button,
@@ -54,94 +54,95 @@ export default function ExportSvgDialog({
     'theme',
     session.themeName || 'default',
   )
+
+  async function onSubmit() {
+    setLoading(true)
+    setError(undefined)
+    try {
+      await model.exportSvg({
+        rasterizeLayers,
+        filename,
+        themeName,
+      })
+      handleClose()
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEnterSubmit(onSubmit)
+
   return (
     <Dialog open onClose={handleClose} title="Export SVG">
-      <DialogContent>
-        {error ? (
-          <ErrorMessage error={error} />
-        ) : loading ? (
-          <LoadingMessage />
-        ) : null}
-        <TextField2
-          helperText="filename"
-          value={filename}
-          onChange={event => {
-            setFilename(event.target.value)
-          }}
-        />
-        {session.allThemes ? (
+      <form
+        onSubmit={event => {
+          event.preventDefault()
+          onSubmit()
+        }}
+      >
+        <DialogContent>
+          {error ? (
+            <ErrorMessage error={error} />
+          ) : loading ? (
+            <LoadingMessage />
+          ) : null}
           <TextField2
-            select
-            label="Theme"
-            value={themeName}
+            helperText="filename"
+            value={filename}
             onChange={event => {
-              setThemeName(event.target.value)
+              setFilename(event.target.value)
             }}
-          >
-            {Object.entries(session.allThemes()).map(([key, val]) => (
-              <MenuItem key={key} value={key}>
-                {
-                  // @ts-expect-error
-                  val.name || '(Unknown name)'
-                }
-              </MenuItem>
-            ))}
-          </TextField2>
-        ) : null}
-        {offscreenCanvas ? (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={rasterizeLayers}
-                onChange={() => {
-                  setRasterizeLayers(val => !val)
-                }}
-              />
-            }
-            label="Rasterize canvas based tracks? File may be much larger if this is turned off"
           />
-        ) : (
-          <Typography>
-            Note: rasterizing layers not yet supported in this browser, so SVG
-            size may be large
-          </Typography>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          onClick={async () => {
-            setLoading(true)
-            setError(undefined)
-            try {
-              await model.exportSvg({
-                rasterizeLayers,
-                filename,
-                themeName,
-              })
-              handleClose()
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            } finally {
-              setLoading(false)
-            }
-          }}
-        >
-          Submit
-        </Button>
-      </DialogActions>
+          {session.allThemes ? (
+            <TextField2
+              select
+              label="Theme"
+              value={themeName}
+              onChange={event => {
+                setThemeName(event.target.value)
+              }}
+            >
+              {Object.entries(session.allThemes()).map(([key, val]) => (
+                <MenuItem key={key} value={key}>
+                  {
+                    // @ts-expect-error
+                    val.name || '(Unknown name)'
+                  }
+                </MenuItem>
+              ))}
+            </TextField2>
+          ) : null}
+          {offscreenCanvas ? (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rasterizeLayers}
+                  onChange={() => {
+                    setRasterizeLayers(val => !val)
+                  }}
+                />
+              }
+              label="Rasterize canvas based tracks? File may be much larger if this is turned off"
+            />
+          ) : (
+            <Typography>
+              Note: rasterizing layers not yet supported in this browser, so SVG
+              size may be large
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" color="secondary" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="contained" color="primary" type="submit">
+            Submit
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 }

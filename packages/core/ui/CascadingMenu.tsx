@@ -63,6 +63,7 @@ function CascadingSubmenu({
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
   const submenuListRef = useRef<HTMLDivElement>(null)
+  const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -82,18 +83,16 @@ function CascadingSubmenu({
     [onOpen],
   )
 
-  const handleSubmenuKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault()
-        event.stopPropagation()
-        onClose()
-        // Return focus to the parent menu item
-        anchorEl?.focus()
-      }
-    },
-    [onClose, anchorEl],
-  )
+  const handleSubmenuKeyDown = useMenuKeyboardHandler({
+    menuItems,
+    closeAfterItemClick,
+    onCloseRoot,
+    onMenuItemClick,
+    onCloseSubmenu: onClose,
+    parentAnchorEl: anchorEl,
+    setOpenSubmenuIdx,
+    containerRef: submenuListRef,
+  })
 
   return (
     <>
@@ -133,10 +132,94 @@ function CascadingSubmenu({
             onCloseRoot={onCloseRoot}
             onCloseSubmenu={onClose}
             parentAnchorEl={anchorEl}
+            openSubmenuIdx={openSubmenuIdx}
+            setOpenSubmenuIdx={setOpenSubmenuIdx}
           />
         </div>
       </HoverMenu>
     </>
+  )
+}
+
+function useMenuKeyboardHandler({
+  menuItems,
+  closeAfterItemClick,
+  onCloseRoot,
+  onMenuItemClick,
+  onCloseSubmenu,
+  parentAnchorEl,
+  setOpenSubmenuIdx,
+  containerRef,
+}: {
+  menuItems: JBMenuItem[]
+  closeAfterItemClick: boolean
+  onCloseRoot: () => void
+  onMenuItemClick: Function
+  onCloseSubmenu?: () => void
+  parentAnchorEl?: HTMLElement | null
+  setOpenSubmenuIdx: (idx: number | undefined) => void
+  containerRef?: React.RefObject<HTMLDivElement | null>
+}) {
+  const sortedItems = menuItems.toSorted(
+    (a, b) => (b.priority || 0) - (a.priority || 0),
+  )
+
+  return useCallback(
+    (event: React.KeyboardEvent) => {
+      // Handle ArrowLeft to go back to parent menu
+      if (event.key === 'ArrowLeft' && onCloseSubmenu) {
+        event.preventDefault()
+        event.stopPropagation()
+        onCloseSubmenu()
+        parentAnchorEl?.focus()
+        return
+      }
+
+      // Handle single character shortcuts
+      const key = event.key.toLowerCase()
+      if (key.length === 1 && /[a-z0-9]/.test(key)) {
+        for (const item of sortedItems) {
+          if (item.type === 'divider' || item.type === 'subHeader') {
+            continue
+          }
+          const menuItem = item as ActionableMenuItem | SubMenuItem
+          if (menuItem.shortcut?.toLowerCase() === key && !menuItem.disabled) {
+            event.preventDefault()
+            event.stopPropagation()
+            if ('subMenu' in menuItem) {
+              const idx = sortedItems.indexOf(item)
+              setOpenSubmenuIdx(idx)
+              // Focus the first item in the submenu after it opens
+              setTimeout(() => {
+                const submenu = containerRef?.current?.querySelector(
+                  '[role="menu"]',
+                ) as HTMLElement | null
+                const firstItem = submenu?.querySelector(
+                  '[role="menuitem"]:not([aria-disabled="true"])',
+                ) as HTMLElement | null
+                firstItem?.focus()
+              }, 0)
+            } else if ('onClick' in menuItem) {
+              if (closeAfterItemClick) {
+                onCloseRoot()
+              }
+              onMenuItemClick(event, menuItem.onClick)
+            }
+            return
+          }
+        }
+      }
+    },
+    [
+      sortedItems,
+      onCloseSubmenu,
+      parentAnchorEl,
+      closeAfterItemClick,
+      onCloseRoot,
+      onMenuItemClick,
+      setOpenSubmenuIdx,
+      containerRef,
+    ],
   )
 }
 
@@ -147,6 +230,9 @@ function CascadingMenuList({
   onCloseRoot,
   onCloseSubmenu,
   parentAnchorEl,
+  onKeyDown,
+  openSubmenuIdx: openSubmenuIdxProp,
+  setOpenSubmenuIdx: setOpenSubmenuIdxProp,
 }: {
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
@@ -154,8 +240,15 @@ function CascadingMenuList({
   onCloseRoot: () => void
   onCloseSubmenu?: () => void
   parentAnchorEl?: HTMLElement | null
+  onKeyDown?: (event: React.KeyboardEvent) => void
+  openSubmenuIdx?: number
+  setOpenSubmenuIdx?: (idx: number | undefined) => void
 }) {
-  const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
+  const [openSubmenuIdxLocal, setOpenSubmenuIdxLocal] = useState<
+    number | undefined
+  >()
+  const openSubmenuIdx = openSubmenuIdxProp ?? openSubmenuIdxLocal
+  const setOpenSubmenuIdx = setOpenSubmenuIdxProp ?? setOpenSubmenuIdxLocal
   const closeSubmenu = () => {
     setOpenSubmenuIdx(undefined)
   }
@@ -175,58 +268,9 @@ function CascadingMenuList({
     (a, b) => (b.priority || 0) - (a.priority || 0),
   )
 
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      // Handle ArrowLeft to go back to parent menu
-      if (event.key === 'ArrowLeft' && onCloseSubmenu) {
-        event.preventDefault()
-        event.stopPropagation()
-        onCloseSubmenu()
-        parentAnchorEl?.focus()
-        return
-      }
-
-      // Handle single character shortcuts
-      const key = event.key.toLowerCase()
-      if (key.length === 1 && /[a-z0-9]/.test(key)) {
-        for (const item of sortedItems) {
-          if (item.type === 'divider' || item.type === 'subHeader') {
-            continue
-          }
-          const menuItem = item as ActionableMenuItem | SubMenuItem
-          if (
-            menuItem.shortcut?.toLowerCase() === key &&
-            !menuItem.disabled
-          ) {
-            event.preventDefault()
-            event.stopPropagation()
-            if ('subMenu' in menuItem) {
-              const idx = sortedItems.indexOf(item)
-              setOpenSubmenuIdx(idx)
-            } else if ('onClick' in menuItem) {
-              if (closeAfterItemClick) {
-                onCloseRoot()
-              }
-              onMenuItemClick(event, menuItem.onClick)
-            }
-            return
-          }
-        }
-      }
-    },
-    [
-      sortedItems,
-      onCloseSubmenu,
-      parentAnchorEl,
-      closeAfterItemClick,
-      onCloseRoot,
-      onMenuItemClick,
-    ],
-  )
-
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    <div onKeyDown={handleKeyDown}>
+    <div onKeyDown={onKeyDown}>
       {sortedItems.map((item, idx) => {
         if ('subMenu' in item) {
           return (
@@ -334,6 +378,17 @@ export default function CascadingMenuChildren(props: {
     popupState.isOpen,
   )
   const { anchorEl, onClose, ...menuProps } = bindMenu(popupState)
+  const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const handleKeyDown = useMenuKeyboardHandler({
+    menuItems: items,
+    closeAfterItemClick,
+    onCloseRoot: onClose,
+    onMenuItemClick: props.onMenuItemClick,
+    setOpenSubmenuIdx,
+    containerRef,
+  })
 
   return (
     <Menu
@@ -342,19 +397,24 @@ export default function CascadingMenuChildren(props: {
       onClose={() => {
         onClose()
       }}
+      onKeyDown={handleKeyDown}
     >
-      {loading ? (
-        <LoadingMenuItem />
-      ) : error ? (
-        <ErrorMenuItem error={error} />
-      ) : (
-        <CascadingMenuList
-          menuItems={items}
-          closeAfterItemClick={closeAfterItemClick}
-          onMenuItemClick={props.onMenuItemClick}
-          onCloseRoot={onClose}
-        />
-      )}
+      <div ref={containerRef}>
+        {loading ? (
+          <LoadingMenuItem />
+        ) : error ? (
+          <ErrorMenuItem error={error} />
+        ) : (
+          <CascadingMenuList
+            menuItems={items}
+            closeAfterItemClick={closeAfterItemClick}
+            onMenuItemClick={props.onMenuItemClick}
+            onCloseRoot={onClose}
+            openSubmenuIdx={openSubmenuIdx}
+            setOpenSubmenuIdx={setOpenSubmenuIdx}
+          />
+        )}
+      </div>
     </Menu>
   )
 }

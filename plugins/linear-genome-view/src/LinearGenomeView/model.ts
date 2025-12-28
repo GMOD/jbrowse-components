@@ -1231,6 +1231,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const menuItems: MenuItem[] = [
           {
             label: 'Return to import form',
+            shortcut: 'r',
             onClick: () => {
               session.queueDialog(handleClose => [
                 ReturnToImportFormDialog,
@@ -1243,6 +1244,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ? [
                 {
                   label: 'Sequence search',
+                  shortcut: 'q',
                   icon: SearchIcon,
                   onClick: () => {
                     session.queueDialog(handleClose => [
@@ -1258,6 +1260,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             : []),
           {
             label: 'Export SVG',
+            shortcut: 'e',
             icon: PhotoCameraIcon,
             onClick: () => {
               session.queueDialog(handleClose => [
@@ -1271,16 +1274,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
           },
           {
             label: 'Open track selector',
+            shortcut: 't',
             onClick: self.activateTrackSelector,
             icon: TrackSelectorIcon,
           },
           {
             label: 'Horizontally flip',
+            shortcut: 'f',
             icon: SyncAltIcon,
             onClick: self.horizontallyFlip,
           },
           {
             label: 'Color by CDS and draw amino acids',
+            shortcut: 'c',
             type: 'checkbox',
             checked: self.colorByCDS,
             icon: PaletteIcon,
@@ -1290,14 +1296,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
           },
           {
             label: 'Show...',
+            shortcut: 's',
             icon: VisibilityIcon,
             subMenu: [
               {
                 label: 'Show all regions in assembly',
+                shortcut: 'a',
                 onClick: self.showAllRegionsInAssembly,
               },
               {
                 label: 'Show center line',
+                shortcut: 'c',
                 type: 'checkbox',
                 checked: self.showCenterLine,
                 onClick: () => {
@@ -1306,6 +1315,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               },
               {
                 label: 'Show header',
+                shortcut: 'h',
                 type: 'checkbox',
                 checked: !self.hideHeader,
                 onClick: () => {
@@ -1315,6 +1325,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
               {
                 label: 'Show track outlines',
+                shortcut: 't',
                 type: 'checkbox',
                 checked: self.showTrackOutlines,
                 onClick: () => {
@@ -1323,6 +1334,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               },
               {
                 label: 'Show header overview',
+                shortcut: 'o',
                 type: 'checkbox',
                 checked: !self.hideHeaderOverview,
                 onClick: () => {
@@ -1332,6 +1344,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               },
               {
                 label: 'Show no tracks active button',
+                shortcut: 'n',
                 type: 'checkbox',
                 checked: !self.hideNoTracksActive,
                 onClick: () => {
@@ -1340,6 +1353,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               },
               {
                 label: 'Show guidelines',
+                shortcut: 'g',
                 type: 'checkbox',
                 checked: self.showGridlines,
                 onClick: () => {
@@ -1350,6 +1364,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 ? [
                     {
                       label: 'Show ideogram',
+                      shortcut: 'i',
                       type: 'checkbox' as const,
                       checked: self.showCytobands,
                       onClick: () => {
@@ -1362,10 +1377,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
           },
           {
             label: 'Track labels',
+            shortcut: 'l',
             icon: LabelIcon,
             subMenu: [
               {
                 label: 'Overlapping',
+                shortcut: 'o',
                 icon: VisibilityIcon,
                 type: 'radio',
                 checked: self.trackLabelsSetting === 'overlapping',
@@ -1375,6 +1392,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               },
               {
                 label: 'Offset',
+                shortcut: 'f',
                 icon: VisibilityIcon,
                 type: 'radio',
                 checked: self.trackLabelsSetting === 'offset',
@@ -1384,6 +1402,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               },
               {
                 label: 'Hidden',
+                shortcut: 'h',
                 icon: VisibilityIcon,
                 type: 'radio',
                 checked: self.trackLabelsSetting === 'hidden',

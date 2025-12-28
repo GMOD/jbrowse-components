@@ -277,12 +277,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...superTrackMenuItems(),
             {
               label: 'Sort by...',
+              shortcut: 's',
               icon: SwapVertIcon,
               disabled: self.showSoftClipping,
               subMenu: [
-                ...['Start location', 'Read strand', 'Base pair'].map(
-                  option => ({
+                ...(['Start location', 'Read strand', 'Base pair'] as const).map(
+                  (option, idx) => ({
                     label: option,
+                    shortcut: `${idx + 1}`,
                     onClick: () => {
                       self.setSortedBy(option)
                     },
@@ -290,6 +292,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ),
                 {
                   label: 'Sort by tag...',
+                  shortcut: 't',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SortByTagDialog,
@@ -302,6 +305,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Clear sort',
+                  shortcut: 'x',
                   onClick: () => {
                     self.clearSelected()
                   },
@@ -310,10 +314,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Color by...',
+              shortcut: 'c',
               icon: ColorLensIcon,
               subMenu: [
                 {
                   label: 'Pair orientation',
+                  shortcut: 'p',
                   onClick: () => {
                     self.setColorScheme({
                       type: 'pairOrientation',
@@ -322,6 +328,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Modifications',
+                  shortcut: 'm',
                   type: 'subMenu',
                   subMenu: getModificationsSubMenu(self, {
                     includeMethylation: true,
@@ -329,6 +336,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Insert size',
+                  shortcut: 'i',
                   onClick: () => {
                     self.setColorScheme({
                       type: 'insertSize',
@@ -340,6 +348,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Group by...',
+              shortcut: 'g',
               icon: WorkspacesIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
@@ -353,6 +362,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Show soft clipping',
+              shortcut: 'o',
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showSoftClipping,
@@ -367,6 +377,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Fade mismatches by quality',
+              shortcut: 'q',
               type: 'checkbox',
               checked: self.mismatchAlphaSetting,
               onClick: () => {

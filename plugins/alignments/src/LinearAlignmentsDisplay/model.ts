@@ -345,16 +345,19 @@ function stateModelFactory(
             {
               type: 'subMenu' as const,
               label: 'Pileup settings',
+              shortcut: 'p',
               subMenu: self.PileupDisplay.trackMenuItems(),
             },
             {
               type: 'subMenu' as const,
               label: 'SNPCoverage settings',
+              shortcut: 'n',
               subMenu: self.SNPCoverageDisplay.trackMenuItems(),
             },
             {
               type: 'subMenu' as const,
               label: 'Replace lower panel with...',
+              shortcut: 'r',
               subMenu: extra,
             },
           ]

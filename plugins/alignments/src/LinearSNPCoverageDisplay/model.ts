@@ -415,11 +415,13 @@ function stateModelFactory(
             ...wiggleBaseTrackMenuItems(),
             {
               label: 'Show...',
+              shortcut: 's',
               icon: VisibilityIcon,
               type: 'subMenu',
               subMenu: [
                 {
                   label: 'Show legend',
+                  shortcut: 'l',
                   type: 'checkbox',
                   checked: self.showLegend,
                   onClick: () => {
@@ -428,6 +430,7 @@ function stateModelFactory(
                 },
                 {
                   label: 'Insertion/clipping indicators',
+                  shortcut: 'i',
                   type: 'checkbox',
                   checked: self.showInterbaseIndicatorsSetting,
                   onClick: () => {
@@ -438,6 +441,7 @@ function stateModelFactory(
                 },
                 {
                   label: 'Insertion/clipping counts',
+                  shortcut: 'c',
                   type: 'checkbox',
                   checked: self.showInterbaseCountsSetting,
                   onClick: () => {
@@ -448,6 +452,7 @@ function stateModelFactory(
                 },
                 {
                   label: 'Sashimi arcs',
+                  shortcut: 'a',
                   type: 'checkbox',
                   checked: self.showArcsSetting,
                   onClick: () => {
@@ -458,6 +463,7 @@ function stateModelFactory(
             },
             {
               label: 'Filter arcs by score...',
+              shortcut: 'f',
               icon: FilterListIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [

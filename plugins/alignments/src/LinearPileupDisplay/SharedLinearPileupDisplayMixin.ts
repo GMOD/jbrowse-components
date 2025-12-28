@@ -526,6 +526,7 @@ export function SharedLinearPileupDisplayMixin(
           return [
             {
               label: 'Normal',
+              shortcut: 'n',
               onClick: () => {
                 self.setColorScheme({
                   type: 'normal',
@@ -534,6 +535,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Mapping quality',
+              shortcut: 'q',
               onClick: () => {
                 self.setColorScheme({
                   type: 'mappingQuality',
@@ -542,6 +544,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Strand',
+              shortcut: 's',
               onClick: () => {
                 self.setColorScheme({
                   type: 'strand',
@@ -550,6 +553,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Per-base quality',
+              shortcut: 'b',
               onClick: () => {
                 self.setColorScheme({
                   type: 'perBaseQuality',
@@ -558,6 +562,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Per-base lettering',
+              shortcut: 'l',
               onClick: () => {
                 self.setColorScheme({
                   type: 'perBaseLettering',
@@ -566,6 +571,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'First-of-pair strand',
+              shortcut: 'f',
               onClick: () => {
                 self.setColorScheme({
                   type: 'stranded',
@@ -574,6 +580,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Color by tag...',
+              shortcut: 't',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   ColorByTagDialog,
@@ -595,10 +602,12 @@ export function SharedLinearPileupDisplayMixin(
             ...superTrackMenuItems(),
             {
               label: 'Set feature height...',
+              shortcut: 'h',
               priority: 0,
               subMenu: [
                 {
                   label: 'Normal',
+                  shortcut: 'n',
                   type: 'radio',
                   checked: self.featureHeight === 7 && self.noSpacing === false,
                   onClick: () => {
@@ -608,6 +617,7 @@ export function SharedLinearPileupDisplayMixin(
                 },
                 {
                   label: 'Compact',
+                  shortcut: 'c',
                   type: 'radio',
                   checked: self.featureHeight === 2 && self.noSpacing === true,
                   onClick: () => {
@@ -617,6 +627,7 @@ export function SharedLinearPileupDisplayMixin(
                 },
                 {
                   label: 'Super-compact',
+                  shortcut: 's',
                   type: 'radio',
                   checked: self.featureHeight === 1 && self.noSpacing === true,
                   onClick: () => {
@@ -626,6 +637,7 @@ export function SharedLinearPileupDisplayMixin(
                 },
                 {
                   label: 'Custom',
+                  shortcut: 'u',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SetFeatureHeightDialog,
@@ -640,6 +652,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Hide small indels (<10bp)',
+              shortcut: 'i',
               priority: -1,
               type: 'checkbox',
               checked: self.hideSmallIndels,
@@ -649,6 +662,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Hide mismatches',
+              shortcut: 'm',
               priority: -1,
               type: 'checkbox',
               checked: self.hideMismatches,
@@ -658,6 +672,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Set max track height...',
+              shortcut: 't',
               priority: -1,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
@@ -671,6 +686,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Filter by...',
+              shortcut: 'f',
               icon: FilterListIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
@@ -684,6 +700,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Show legend',
+              shortcut: 'l',
               icon: FormatListBulletedIcon,
               type: 'checkbox',
               checked: self.showLegend,

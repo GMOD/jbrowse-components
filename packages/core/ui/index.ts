@@ -16,5 +16,6 @@ export { default as ResizeHandle } from './ResizeHandle'
 export { default as ExternalLink } from './ExternalLink'
 export { default as SanitizedHTML } from './SanitizedHTML'
 export { default as BaseTooltip } from './BaseTooltip'
+export { default as useEnterSubmit } from './useEnterSubmit'
 export * from './Menu'
 export const VIEW_HEADER_HEIGHT = 28
