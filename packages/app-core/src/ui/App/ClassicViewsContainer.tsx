@@ -17,7 +17,7 @@ const useStyles = makeStyles()({
     overflowY: 'auto',
   },
   spacer: {
-    height: 20,
+    height: 300,
   },
 })
 
