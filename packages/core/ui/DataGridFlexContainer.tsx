@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
@@ -10,9 +12,15 @@ const useStyles = makeStyles()({
 // https://mui.com/x/react-data-grid/layout/#flex-parent-container
 export default function DataGridFlexContainer({
   children,
+  style,
 }: {
   children: React.ReactNode
+  style?: CSSProperties
 }) {
   const { classes } = useStyles()
-  return <div className={classes.flexContainer}>{children}</div>
+  return (
+    <div className={classes.flexContainer} style={style}>
+      {children}
+    </div>
+  )
 }
