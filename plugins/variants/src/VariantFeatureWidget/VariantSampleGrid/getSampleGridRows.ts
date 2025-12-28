@@ -2,11 +2,23 @@ import { makeSimpleAltString } from '../../VcfFeature/util'
 
 import type { Filters, InfoFields, VariantSampleGridRow } from './types'
 
+function gtToAlleleCounts(gt: string) {
+  const alleleCounts = {} as Record<string, number>
+  const alleles = gt.split(/[/|]/)
+  for (const allele of alleles) {
+    alleleCounts[allele] = (alleleCounts[allele] || 0) + 1
+  }
+  return Object.entries(alleleCounts)
+    .map(([key, val]) => `${key}:${val}`)
+    .join(';')
+}
+
 export function getSampleGridRows(
   samples: Record<string, InfoFields>,
   REF: string,
   ALT: string[],
   filter: Filters,
+  useCounts?: boolean,
 ): {
   rows: VariantSampleGridRow[]
   error: unknown
@@ -19,10 +31,16 @@ export function getSampleGridRows(
     rows = Object.entries(samples)
       .map(([key, val]) => {
         const gt = val.GT?.[0]
+        const gtStr = gt ? `${gt}` : undefined
+        const displayGT = gtStr
+          ? useCounts
+            ? gtToAlleleCounts(gtStr)
+            : gtStr
+          : undefined
         return {
           ...val,
-          ...(gt
-            ? { GT: `${gt}`, genotype: makeSimpleAltString(`${gt}`, REF, ALT) }
+          ...(gtStr
+            ? { GT: displayGT, genotype: makeSimpleAltString(gtStr, REF, ALT) }
             : {}),
           sample: key,
           id: key,

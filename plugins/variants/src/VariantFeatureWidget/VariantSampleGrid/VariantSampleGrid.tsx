@@ -36,11 +36,12 @@ export default function VariantSampleGrid(props: {
   const [columnDisplayMode, setColumnDisplayMode] =
     useState<ColumnDisplayMode>('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [useCounts, setUseCounts] = useState(false)
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const ALT = feature.ALT as string[]
   const REF = feature.REF as string
 
-  const { rows, error } = getSampleGridRows(samples, REF, ALT, filter)
+  const { rows, error } = getSampleGridRows(samples, REF, ALT, filter, useCounts)
 
   const keys = [
     'sample',
@@ -59,7 +60,11 @@ export default function VariantSampleGrid(props: {
     <>
       <BaseCard {...props} title="Genotype frequencies">
         <ErrorBoundary FallbackComponent={ErrorMessage}>
-          <VariantGenotypeFrequencyTable rows={rows} />
+          <VariantGenotypeFrequencyTable
+            rows={rows}
+            useCounts={useCounts}
+            setUseCounts={setUseCounts}
+          />
         </ErrorBoundary>
       </BaseCard>
       <BaseCard {...props} title="Samples">
