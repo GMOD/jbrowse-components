@@ -67,16 +67,21 @@ export function flatbushItemToFeatureData(
       return {
         ...base,
         start: item.start,
-        end: item.start + item.sequence.length,
+        end: item.start + 1,
         sequence: item.sequence,
       }
     case 'deletion':
+      return {
+        ...base,
+        start: item.start,
+        end: item.start + item.length,
+      }
     case 'softclip':
     case 'hardclip':
       return {
         ...base,
         start: item.start,
-        end: item.start + item.length,
+        end: item.start + 1,
       }
     case 'modification':
       return {

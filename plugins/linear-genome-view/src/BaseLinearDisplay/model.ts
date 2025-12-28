@@ -326,7 +326,7 @@ function stateModelFactory() {
       /**
        * #action
        */
-      selectFeature: flow(function* (feature: Feature) {
+      selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSelectionContainer(session)) {
           session.setSelection(feature)
@@ -338,28 +338,26 @@ function stateModelFactory() {
           const view = getContainingView(self)
           const adapterConfig = getConf(track, 'adapter')
           const { type, id } = self.featureWidgetType
-          try {
-            const descriptions = yield rpcManager.call(
-              sessionId,
-              'CoreGetMetadata',
-              { adapterConfig },
-            )
-            if (isAlive(self)) {
-              session.showWidget(
-                session.addWidget(type, id, {
-                  featureData: feature.toJSON(),
-                  view,
-                  track,
-                  descriptions,
-                }),
-              )
-            }
-          } catch (e) {
-            console.error(e)
-            getSession(self).notifyError(`${e}`, e)
-          }
+          rpcManager
+            .call(sessionId, 'CoreGetMetadata', { adapterConfig })
+            .then(descriptions => {
+              if (isAlive(self)) {
+                session.showWidget(
+                  session.addWidget(type, id, {
+                    featureData: feature.toJSON(),
+                    view,
+                    track,
+                    descriptions,
+                  }),
+                )
+              }
+            })
+            .catch((e: unknown) => {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            })
         }
-      }),
+      },
 
       /**
        * #action
@@ -447,7 +445,6 @@ function stateModelFactory() {
       ) {
         const feature = self.getFeatureById(featureId, parentFeatureId)
         if (feature) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           self.selectFeature(feature)
           return
         }
@@ -466,7 +463,6 @@ function stateModelFactory() {
             parentFeatureId: rpcParentId,
           })
           if (f && isAlive(self)) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             self.selectFeature(f)
           }
         } catch (e) {
@@ -537,7 +533,6 @@ function stateModelFactory() {
                 label: 'Open feature details',
                 icon: MenuOpenIcon,
                 onClick: () => {
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   self.selectFeature(feat)
                 },
               },
