@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
@@ -9,6 +9,7 @@ import {
   ListSubheader,
   Menu,
   MenuItem,
+  Typography,
 } from '@mui/material'
 
 import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton'
@@ -27,6 +28,7 @@ import type {
   MenuItemsGetter,
   NormalMenuItem,
   RadioMenuItem,
+  SubMenuItem,
 } from './MenuTypes'
 import type { PopupState } from './hooks'
 import type { SvgIconProps } from '@mui/material'
@@ -36,6 +38,7 @@ type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
 
 function CascadingSubmenu({
   title,
+  shortcut,
   Icon,
   inset,
   menuItems,
@@ -47,6 +50,7 @@ function CascadingSubmenu({
   onClose,
 }: {
   title: React.ReactNode
+  shortcut?: string
   onMenuItemClick: Function
   Icon: React.ComponentType<SvgIconProps> | undefined
   inset: boolean
@@ -58,16 +62,59 @@ function CascadingSubmenu({
   onClose: () => void
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
+  const submenuListRef = useRef<HTMLDivElement>(null)
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'ArrowRight' || event.key === 'Enter') {
+        event.preventDefault()
+        event.stopPropagation()
+        onOpen()
+        // Focus the first item in the submenu after it opens
+        setTimeout(() => {
+          const firstItem = submenuListRef.current?.querySelector(
+            '[role="menuitem"]:not([aria-disabled="true"])',
+          ) as HTMLElement | null
+          firstItem?.focus()
+        }, 0)
+      }
+    },
+    [onOpen],
+  )
+
+  const handleSubmenuKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        event.stopPropagation()
+        onClose()
+        // Return focus to the parent menu item
+        anchorEl?.focus()
+      }
+    },
+    [onClose, anchorEl],
+  )
 
   return (
     <>
-      <MenuItem ref={setAnchorEl} onMouseOver={onOpen} onFocus={onOpen}>
+      <MenuItem
+        ref={setAnchorEl}
+        onMouseOver={onOpen}
+        onFocus={onOpen}
+        onKeyDown={handleKeyDown}
+      >
         {Icon ? (
           <ListItemIcon>
             <Icon />
           </ListItemIcon>
         ) : null}
         <ListItemText primary={title} inset={inset} />
+        <div style={{ flexGrow: 1, minWidth: 10 }} />
+        {shortcut ? (
+          <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+            {shortcut.toUpperCase()}
+          </Typography>
+        ) : null}
         <ChevronRight />
       </MenuItem>
       <HoverMenu
@@ -76,13 +123,18 @@ function CascadingSubmenu({
         onClose={onClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        onKeyDown={handleSubmenuKeyDown}
       >
-        <CascadingMenuList
-          closeAfterItemClick={closeAfterItemClick}
-          onMenuItemClick={onMenuItemClick}
-          menuItems={menuItems}
-          onCloseRoot={onCloseRoot}
-        />
+        <div ref={submenuListRef}>
+          <CascadingMenuList
+            closeAfterItemClick={closeAfterItemClick}
+            onMenuItemClick={onMenuItemClick}
+            menuItems={menuItems}
+            onCloseRoot={onCloseRoot}
+            onCloseSubmenu={onClose}
+            parentAnchorEl={anchorEl}
+          />
+        </div>
       </HoverMenu>
     </>
   )
@@ -93,11 +145,15 @@ function CascadingMenuList({
   closeAfterItemClick,
   menuItems,
   onCloseRoot,
+  onCloseSubmenu,
+  parentAnchorEl,
 }: {
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
   onMenuItemClick: Function
   onCloseRoot: () => void
+  onCloseSubmenu?: () => void
+  parentAnchorEl?: HTMLElement | null
 }) {
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
   const closeSubmenu = () => {
@@ -111,19 +167,73 @@ function CascadingMenuList({
       'helpText' in m &&
       m.helpText,
   )
+  const hasShortcut = menuItems.some(
+    m => 'shortcut' in m && m.shortcut && m.type !== 'divider',
+  )
 
   const sortedItems = menuItems.toSorted(
     (a, b) => (b.priority || 0) - (a.priority || 0),
   )
 
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      // Handle ArrowLeft to go back to parent menu
+      if (event.key === 'ArrowLeft' && onCloseSubmenu) {
+        event.preventDefault()
+        event.stopPropagation()
+        onCloseSubmenu()
+        parentAnchorEl?.focus()
+        return
+      }
+
+      // Handle single character shortcuts
+      const key = event.key.toLowerCase()
+      if (key.length === 1 && /[a-z0-9]/.test(key)) {
+        for (const item of sortedItems) {
+          if (item.type === 'divider' || item.type === 'subHeader') {
+            continue
+          }
+          const menuItem = item as ActionableMenuItem | SubMenuItem
+          if (
+            menuItem.shortcut?.toLowerCase() === key &&
+            !menuItem.disabled
+          ) {
+            event.preventDefault()
+            event.stopPropagation()
+            if ('subMenu' in menuItem) {
+              const idx = sortedItems.indexOf(item)
+              setOpenSubmenuIdx(idx)
+            } else if ('onClick' in menuItem) {
+              if (closeAfterItemClick) {
+                onCloseRoot()
+              }
+              onMenuItemClick(event, menuItem.onClick)
+            }
+            return
+          }
+        }
+      }
+    },
+    [
+      sortedItems,
+      onCloseSubmenu,
+      parentAnchorEl,
+      closeAfterItemClick,
+      onCloseRoot,
+      onMenuItemClick,
+    ],
+  )
+
   return (
-    <>
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div onKeyDown={handleKeyDown}>
       {sortedItems.map((item, idx) => {
         if ('subMenu' in item) {
           return (
             <CascadingSubmenu
               key={`subMenu-${item.label}-${idx}`}
               title={item.label}
+              shortcut={item.shortcut}
               Icon={item.icon}
               inset={hasIcon && !item.icon}
               onMenuItemClick={onMenuItemClick}
@@ -177,6 +287,17 @@ function CascadingMenuList({
               inset={hasIcon && !actionItem.icon}
             />
             <div style={{ flexGrow: 1, minWidth: 10 }} />
+            {actionItem.shortcut ? (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ ml: 2, mr: isCheckOrRadio || helpText ? 1 : 0 }}
+              >
+                {actionItem.shortcut.toUpperCase()}
+              </Typography>
+            ) : hasShortcut && !isCheckOrRadio && !helpText ? (
+              <div style={{ width: 24 }} />
+            ) : null}
             {isCheckOrRadio ? (
               <MenuItemEndDecoration
                 type={actionItem.type}
@@ -197,7 +318,7 @@ function CascadingMenuList({
           </MenuItem>
         )
       })}
-    </>
+    </div>
   )
 }
 

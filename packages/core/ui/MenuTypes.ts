@@ -19,6 +19,8 @@ export interface BaseMenuItem {
   icon?: React.ComponentType<SvgIconProps>
   disabled?: boolean
   helpText?: string
+  /** Single character keyboard shortcut for quick selection */
+  shortcut?: string
 }
 
 export interface NormalMenuItem extends BaseMenuItem {
