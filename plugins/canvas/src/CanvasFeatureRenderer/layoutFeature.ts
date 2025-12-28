@@ -6,12 +6,26 @@ import { chooseGlyphType, getChildFeatures, truncateLabel } from './util'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { FeatureLayout } from './types'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 import type { Feature } from '@jbrowse/core/util'
 
 const TRANSCRIPT_PADDING = 2
 const STRAND_ARROW_PADDING = 8
 const CODING_TYPES = new Set(['CDS', 'cds'])
+
+function findMatchingPluggableGlyph(
+  feature: Feature,
+  pluginManager?: PluginManager,
+): GlyphType | undefined {
+  if (!pluginManager) {
+    return undefined
+  }
+  const glyphTypes = pluginManager.getGlyphTypes()
+  const sortedGlyphs = [...glyphTypes].sort((a, b) => b.priority - a.priority)
+  return sortedGlyphs.find(glyph => glyph.match?.(feature))
+}
 
 function getStrandArrowPadding(strand: number, reversed: boolean) {
   const reverseFlip = reversed ? -1 : 1
@@ -38,6 +52,7 @@ export function layoutFeature(args: {
   reversed: boolean
   config: AnyConfigurationModel
   configContext: RenderConfigContext
+  pluginManager?: PluginManager
   parentX?: number
   parentY?: number
   isNested?: boolean
@@ -49,6 +64,7 @@ export function layoutFeature(args: {
     reversed,
     config,
     configContext,
+    pluginManager,
     parentX = 0,
     parentY = 0,
     isNested = false,
@@ -68,6 +84,7 @@ export function layoutFeature(args: {
   } = configContext
 
   const glyphType = chooseGlyphType({ feature, configContext })
+  const pluggableGlyph = findMatchingPluggableGlyph(feature, pluginManager)
 
   const parentFeature = feature.parent?.()
   let x = parentX
@@ -79,7 +96,10 @@ export function layoutFeature(args: {
   }
 
   const height = readCachedConfig(featureHeight, config, 'height', feature)
-  const actualHeight = displayMode === 'compact' ? height / 2 : height
+  const heightMultiplier =
+    pluggableGlyph?.getHeightMultiplier?.(feature, config) ?? 1
+  const baseHeight = displayMode === 'compact' ? height / 2 : height
+  const actualHeight = baseHeight * heightMultiplier
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const y = parentY
 
@@ -151,6 +171,7 @@ export function layoutFeature(args: {
           reversed,
           config,
           configContext,
+          pluginManager,
           parentX: x,
           parentY: currentY,
           isNested: true,
@@ -172,11 +193,10 @@ export function layoutFeature(args: {
       layout.totalFeatureHeight = totalStackedHeight
       layout.totalLayoutHeight = totalStackedHeight
     } else {
-      for (const subfeature of getChildFeatures({
-        feature,
-        glyphType,
-        config,
-      })) {
+      const childFeatures =
+        pluggableGlyph?.getChildFeatures?.(feature, config) ??
+        getChildFeatures({ feature, glyphType, config })
+      for (const subfeature of childFeatures) {
         layout.children.push(
           layoutFeature({
             feature: subfeature,
@@ -184,6 +204,7 @@ export function layoutFeature(args: {
             reversed,
             config,
             configContext,
+            pluginManager,
             parentX: x,
             parentY,
             isNested: true,

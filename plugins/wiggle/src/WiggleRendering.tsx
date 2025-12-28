@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -54,7 +55,10 @@ const WiggleRendering = observer(function WiggleRendering(props: {
       onClick={e => {
         const featureId = getFeatureUnderMouse(e.clientX)?.id()
         if (featureId) {
-          displayModel.selectFeatureById(featureId)
+          displayModel.selectFeatureById(featureId).catch((err: unknown) => {
+            console.error(err)
+            getSession(displayModel).notifyError(`${err}`, err)
+          })
         }
       }}
       onMouseLeave={() => {

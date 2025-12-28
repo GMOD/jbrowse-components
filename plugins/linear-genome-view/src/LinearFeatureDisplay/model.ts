@@ -262,6 +262,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
                   if (isAlive(self) && feature) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.selectFeature(new SimpleFeature(feature))
                   }
                 }

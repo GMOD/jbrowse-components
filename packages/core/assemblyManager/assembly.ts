@@ -199,6 +199,15 @@ export default function assemblyFactory(
 
       /**
        * #volatile
+       * Maps canonical refName -> sequence adapter refName (in FASTA).
+       * These may differ when refNameAliases with override:true remap names.
+       */
+      canonicalToSeqAdapterRefNames: undefined as
+        | Record<string, string>
+        | undefined,
+
+      /**
+       * #volatile
        */
       cytobands: undefined as Feature[] | undefined,
     }))
@@ -330,7 +339,10 @@ export default function assemblyFactory(
     .views(self => ({
       /**
        * #method
-       * returns canonical refname
+       * Returns the canonical refName for a given alias or refName.
+       * Note: The canonical name may differ from what's in the FASTA file when
+       * refNameAliases with override:true are configured. To get the name that
+       * matches the FASTA file, use getSeqAdapterRefName().
        */
       getCanonicalRefName(refName: string) {
         if (!self.refNameAliases || !self.lowerCaseRefNameAliases) {
@@ -345,10 +357,11 @@ export default function assemblyFactory(
       },
       /**
        * #method
-       * returns canonical or fallback
+       * Returns canonical refName, falling back to input if not found.
+       * See getCanonicalRefName() for details.
        */
-      getCanonicalRefName2(asmName: string) {
-        return this.getCanonicalRefName(asmName) || asmName
+      getCanonicalRefName2(refName: string) {
+        return this.getCanonicalRefName(refName) || refName
       },
       /**
        * #method
@@ -372,6 +385,18 @@ export default function assemblyFactory(
           )
         }
         return !!this.getCanonicalRefName(refName)
+      },
+      /**
+       * #method
+       * Given a canonical refName, returns the refName used by the sequence
+       * adapter (what's in the FASTA file). Falls back to the input if no
+       * mapping exists.
+       */
+      getSeqAdapterRefName(canonicalRefName: string) {
+        return (
+          self.canonicalToSeqAdapterRefNames?.[canonicalRefName] ??
+          canonicalRefName
+        )
       },
     }))
     .actions(self => ({
@@ -414,6 +439,12 @@ export default function assemblyFactory(
        */
       setCytobands(cytobands: Feature[]) {
         self.cytobands = cytobands
+      },
+      /**
+       * #action
+       */
+      setCanonicalToSeqAdapterRefNames(map: Record<string, string>) {
+        self.canonicalToSeqAdapterRefNames = map
       },
       /**
        * #action
@@ -476,6 +507,18 @@ export default function assemblyFactory(
           // mapping for the primary region to be an alias
           refNameAliases[region.refName] ||= region.refName
         }
+
+        // Build sparse mapping from canonical names to sequence adapter names.
+        // Only stores entries where the names differ (for performance with large
+        // assemblies). getSeqAdapterRefName() falls back to input if not found.
+        const canonicalToSeqAdapterRefNames = {} as Record<string, string>
+        for (const region of regions) {
+          const canonicalName = refNameAliases[region.refName] || region.refName
+          if (canonicalName !== region.refName) {
+            canonicalToSeqAdapterRefNames[canonicalName] = region.refName
+          }
+        }
+        this.setCanonicalToSeqAdapterRefNames(canonicalToSeqAdapterRefNames)
 
         this.setLoaded({
           refNameAliases,

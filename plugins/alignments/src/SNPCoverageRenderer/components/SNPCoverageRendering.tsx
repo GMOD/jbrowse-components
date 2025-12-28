@@ -155,7 +155,10 @@ const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
         } else {
           const featureId = getFeatureUnderMouse(e.clientX)?.id()
           if (featureId) {
-            displayModel?.selectFeatureById(featureId)
+            displayModel?.selectFeatureById(featureId).catch((e: unknown) => {
+              console.error(e)
+              getSession(displayModel).notifyError(`${e}`, e)
+            })
           }
         }
       }}

@@ -5,6 +5,7 @@ import { layoutFeature } from './layoutFeature'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { LayoutRecord } from './types'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
@@ -18,6 +19,7 @@ export function layoutFeatures({
   config,
   configContext,
   layout,
+  pluginManager,
 }: {
   features: Map<string, Feature>
   bpPerPx: number
@@ -25,6 +27,7 @@ export function layoutFeatures({
   config: AnyConfigurationModel
   configContext: RenderConfigContext
   layout: BaseLayout<unknown>
+  pluginManager: PluginManager
 }): LayoutRecord[] {
   const reversed = region.reversed || false
   const layoutRecords: LayoutRecord[] = []
@@ -36,6 +39,7 @@ export function layoutFeatures({
       reversed,
       config,
       configContext,
+      pluginManager,
     })
 
     const totalLayoutWidth = featureLayout.totalLayoutWidth

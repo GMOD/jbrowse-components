@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -33,10 +33,11 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   const [forceLoad, setForceLoad] = useState(false)
   const session = getSession(model)
   const assemblyName = model.view?.assemblyNames?.[0]
+  const simpleFeature = useMemo(() => new SimpleFeature(feature), [feature])
   const { sequence, error } = useFeatureSequence({
     assemblyName,
     session,
-    feature: new SimpleFeature(feature),
+    feature: simpleFeature,
     upDownBp,
     forceLoad,
   })

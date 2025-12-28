@@ -127,9 +127,14 @@ export function SequenceFeatureDetailsF() {
        * #getter
        */
       get hasCDS() {
-        return self.feature?.subfeatures?.some(
-          sub => sub.type?.toLowerCase() === 'cds',
-        )
+        const featureType = self.feature?.type?.toLowerCase()
+        if (featureType === 'mature_protein_region_of_cds') {
+          return true
+        }
+        return self.feature?.subfeatures?.some(sub => {
+          const type = sub.type?.toLowerCase()
+          return type === 'cds' || type === 'mature_protein_region_of_cds'
+        })
       },
       /**
        * #getter

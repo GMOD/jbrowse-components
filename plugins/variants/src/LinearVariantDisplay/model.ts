@@ -1,16 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import {
-  getContainingTrack,
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearFeatureDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -40,36 +32,15 @@ export default function stateModelFactory(
       }),
     )
 
-    .actions(self => ({
+    .views(() => ({
       /**
-       * #action
+       * #getter
        */
-      async selectFeature(feature: Feature) {
-        const session = getSession(self)
-        if (isSessionModelWithWidgets(session)) {
-          const { rpcManager } = session
-          const sessionId = getRpcSessionId(self)
-          const track = getContainingTrack(self)
-          const view = getContainingView(self)
-          const adapterConfig = getConf(track, 'adapter')
-          const descriptions = await rpcManager.call(
-            sessionId,
-            'CoreGetMetadata',
-            {
-              adapterConfig,
-            },
-          )
-          session.showWidget(
-            session.addWidget('VariantFeatureWidget', 'variantFeature', {
-              featureData: feature.toJSON(),
-              view,
-              track,
-              descriptions,
-            }),
-          )
+      get featureWidgetType() {
+        return {
+          type: 'VariantFeatureWidget',
+          id: 'variantFeature',
         }
-
-        session.setSelection(feature)
       },
     }))
 }

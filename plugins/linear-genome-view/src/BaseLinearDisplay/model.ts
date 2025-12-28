@@ -16,7 +16,7 @@ import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -29,7 +29,12 @@ import FeatureDensityMixin from './models/FeatureDensityMixin'
 import TrackHeightMixin from './models/TrackHeightMixin'
 import configSchema from './models/configSchema'
 import BlockState from './models/serverSideRenderedBlock'
-import { findSubfeatureById, getTranscripts, hasExonsOrCDS } from './util'
+import {
+  fetchFeatureByIdRpc,
+  findSubfeatureById,
+  getTranscripts,
+  hasExonsOrCDS,
+} from './util'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView'
 import type { LegendItem } from './components/FloatingLegend'
@@ -176,6 +181,17 @@ function stateModelFactory() {
         }
         return undefined
       },
+
+      /**
+       * #getter
+       * Override in subclasses to use a different feature widget
+       */
+      get featureWidgetType() {
+        return {
+          type: 'BaseFeatureWidget',
+          id: 'baseFeature',
+        }
+      },
     }))
     .views(self => ({
       /**
@@ -297,7 +313,7 @@ function stateModelFactory() {
         })
         // Set cached display BEFORE adding to map - afterAttach fires when
         // the block is added, so cachedDisplay must be set first
-        blockInstance.setCachedDisplay(self as any)
+        blockInstance.setCachedDisplay(self)
         self.blockState.set(key, blockInstance)
       },
 
@@ -310,44 +326,40 @@ function stateModelFactory() {
       /**
        * #action
        */
-      selectFeature(feature: Feature) {
+      selectFeature: flow(function* (feature: Feature) {
         const session = getSession(self)
+        if (isSelectionContainer(session)) {
+          session.setSelection(feature)
+        }
         if (isSessionModelWithWidgets(session)) {
           const { rpcManager } = session
           const sessionId = getRpcSessionId(self)
           const track = getContainingTrack(self)
           const view = getContainingView(self)
           const adapterConfig = getConf(track, 'adapter')
-
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const descriptions = await rpcManager.call(
-                sessionId,
-                'CoreGetMetadata',
-                {
-                  adapterConfig,
-                },
-              )
+          const { type, id } = self.featureWidgetType
+          try {
+            const descriptions = yield rpcManager.call(
+              sessionId,
+              'CoreGetMetadata',
+              { adapterConfig },
+            )
+            if (isAlive(self)) {
               session.showWidget(
-                session.addWidget('BaseFeatureWidget', 'baseFeature', {
+                session.addWidget(type, id, {
                   featureData: feature.toJSON(),
                   view,
                   track,
                   descriptions,
                 }),
               )
-            } catch (e) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
             }
-          })()
+          } catch (e) {
+            console.error(e)
+            getSession(self).notifyError(`${e}`, e)
+          }
         }
-
-        if (isSelectionContainer(session)) {
-          session.setSelection(feature)
-        }
-      },
+      }),
 
       /**
        * #action
@@ -388,23 +400,6 @@ function stateModelFactory() {
       },
       /**
        * #action
-       * Select a feature by ID, looking up in features map and subfeatures
-       */
-      selectFeatureById(featureId: string, parentFeatureId?: string) {
-        const feature = self.getFeatureById(featureId, parentFeatureId)
-        if (feature) {
-          this.selectFeature(feature)
-        }
-      },
-      /**
-       * #action
-       * Set context menu feature by ID, looking up in features map and subfeatures
-       */
-      setContextMenuFeatureById(featureId: string, parentFeatureId?: string) {
-        self.contextMenuFeature = self.getFeatureById(featureId, parentFeatureId)
-      },
-      /**
-       * #action
        */
       setMouseoverExtraInformation(extra?: string) {
         self.mouseoverExtraInformation = extra
@@ -436,6 +431,91 @@ function stateModelFactory() {
       }
     })
 
+    .actions(self => ({
+      /**
+       * #action
+       * Select a feature by ID, looking up in features map and subfeatures.
+       * Falls back to RPC if not found locally (e.g., for canvas renderer).
+       * @param featureId - The ID of the feature to select
+       * @param parentFeatureId - The immediate parent's ID for subfeature lookup
+       * @param topLevelFeatureId - The top-level feature ID for RPC lookup
+       */
+      selectFeatureById: flow(function* (
+        featureId: string,
+        parentFeatureId?: string,
+        topLevelFeatureId?: string,
+      ) {
+        const feature = self.getFeatureById(featureId, parentFeatureId)
+        if (feature) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          self.selectFeature(feature)
+          return
+        }
+        const rpcParentId =
+          topLevelFeatureId && topLevelFeatureId !== featureId
+            ? topLevelFeatureId
+            : parentFeatureId
+        try {
+          const session = getSession(self)
+          const f = yield fetchFeatureByIdRpc({
+            rpcManager: session.rpcManager,
+            sessionId: getRpcSessionId(self),
+            trackId: getContainingTrack(self).id,
+            rendererType: self.rendererTypeName,
+            featureId,
+            parentFeatureId: rpcParentId,
+          })
+          if (f && isAlive(self)) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            self.selectFeature(f)
+          }
+        } catch (e) {
+          console.error(e)
+          getSession(self).notifyError(`${e}`, e)
+        }
+      }),
+      /**
+       * #action
+       * Set context menu feature by ID, looking up in features map and subfeatures.
+       * Falls back to RPC if not found locally (e.g., for canvas renderer).
+       * @param featureId - The ID of the feature to set
+       * @param parentFeatureId - The immediate parent's ID for subfeature lookup
+       * @param topLevelFeatureId - The top-level feature ID for RPC lookup
+       */
+      setContextMenuFeatureById: flow(function* (
+        featureId: string,
+        parentFeatureId?: string,
+        topLevelFeatureId?: string,
+      ) {
+        const feature = self.getFeatureById(featureId, parentFeatureId)
+        if (feature) {
+          self.setContextMenuFeature(feature)
+          return
+        }
+        const rpcParentId =
+          topLevelFeatureId && topLevelFeatureId !== featureId
+            ? topLevelFeatureId
+            : parentFeatureId
+        try {
+          const session = getSession(self)
+          const f = yield fetchFeatureByIdRpc({
+            rpcManager: session.rpcManager,
+            sessionId: getRpcSessionId(self),
+            trackId: getContainingTrack(self).id,
+            rendererType: self.rendererTypeName,
+            featureId,
+            parentFeatureId: rpcParentId,
+          })
+          if (f && isAlive(self)) {
+            self.setContextMenuFeature(f)
+          }
+        } catch (e) {
+          console.error(e)
+          getSession(self).notifyError(`${e}`, e)
+        }
+      }),
+    }))
+
     .views(self => ({
       /**
        * #method
@@ -457,6 +537,7 @@ function stateModelFactory() {
                 label: 'Open feature details',
                 icon: MenuOpenIcon,
                 onClick: () => {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   self.selectFeature(feat)
                 },
               },

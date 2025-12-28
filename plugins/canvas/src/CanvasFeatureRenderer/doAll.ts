@@ -50,6 +50,7 @@ export async function doAll({
         config,
         configContext,
         layout,
+        pluginManager,
       })
     },
   )
