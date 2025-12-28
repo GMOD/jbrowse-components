@@ -8,12 +8,7 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import { drawFeature } from './drawFeature'
-import {
-  buildBuiltinGlyphIndex,
-  buildPluggableGlyphIndex,
-  buildSubfeatureIndex,
-  convertToCanvasCoords,
-} from './layoutUtils'
+import { buildChildrenIndex, convertToCanvasCoords } from './layoutUtils'
 
 import type { RenderConfigContext } from './renderConfig'
 import type {
@@ -138,51 +133,19 @@ export function makeImageData({
       tooltip,
     })
 
-    // Add subfeature hit detection for genes with transcripts
-    const featureType = feature.get('type')
-    const isGene = featureType === 'gene'
-    const hasTranscriptChildren = canvasLayout.children.some(child => {
-      const childType = child.feature.get('type')
-      return transcriptTypes.includes(childType)
-    })
-
-    if (isGene && hasTranscriptChildren) {
-      buildSubfeatureIndex({
-        layout,
-        featureLayout: canvasLayout,
-        subfeatureCoords,
-        subfeatureInfos,
-        config,
-        subfeatureLabels,
-        transcriptTypes,
-        labelColor: theme.palette.text.primary,
-        parentTooltip: tooltip,
-      })
-    }
-
-    if (pluginManager) {
-      buildPluggableGlyphIndex({
-        layout,
-        featureLayout: canvasLayout,
-        subfeatureCoords,
-        subfeatureInfos,
-        config,
-        pluginManager,
-        subfeatureLabels,
-        labelColor: theme.palette.text.primary,
-      })
-    }
-
-    // Build subfeature index for builtin glyphs with indexable children
-    buildBuiltinGlyphIndex({
+    // Build subfeature index for hit detection and floating labels
+    buildChildrenIndex({
       layout,
       featureLayout: canvasLayout,
       subfeatureCoords,
       subfeatureInfos,
       config,
       configContext,
+      pluginManager,
       subfeatureLabels,
+      transcriptTypes,
       labelColor: theme.palette.text.primary,
+      parentTooltip: tooltip,
     })
 
     checkStopToken2(lastCheck)

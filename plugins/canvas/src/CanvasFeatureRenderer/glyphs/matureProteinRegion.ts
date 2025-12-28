@@ -119,9 +119,20 @@ export const matureProteinRegionGlyph: Glyph = {
     const matureProteins = getMatureProteinChildren(feature)
     const children = matureProteins.map(child => layoutChild(child, feature, args))
 
-    const numRows = Math.max(1, children.length)
+    // Sort children by position and assign row y-positions
+    const sortedChildren = sortByPosition(children)
+    const numRows = Math.max(1, sortedChildren.length)
     const perRowMultiplier = subfeatureLabels === 'below' ? 2 : 1
-    const totalHeight = baseHeightPx * numRows * perRowMultiplier
+    const rowHeight = baseHeightPx * perRowMultiplier
+    const totalHeight = rowHeight * numRows
+
+    // Position each child in its row
+    for (let i = 0; i < sortedChildren.length; i++) {
+      const child = sortedChildren[i]!
+      child.y = i * rowHeight
+      child.height = rowHeight
+      child.totalLayoutHeight = rowHeight
+    }
 
     return {
       feature,
@@ -134,32 +145,26 @@ export const matureProteinRegionGlyph: Glyph = {
       totalLayoutHeight: totalHeight,
       totalLayoutWidth: widthPx,
       leftPadding: 0,
-      children,
+      children: sortedChildren,
     }
   },
 
   draw(ctx: CanvasRenderingContext2D, layout: FeatureLayout, dc: DrawContext) {
-    const { children, height } = layout
+    const { children } = layout
     const { region, configContext, theme, canvasWidth } = dc
     const { subfeatureLabels } = configContext
     const reversed = region.reversed ?? false
-
-    const sortedChildren = sortByPosition(children)
-    const numRows = Math.max(1, sortedChildren.length)
-    const rowHeight = height / numRows
     const arrowColor = theme.palette.text.secondary
 
-    for (const [i, childLayout] of sortedChildren.entries()) {
+    // Children are already sorted and positioned by layout()
+    for (const [i, childLayout] of children.entries()) {
       const color = MATURE_PROTEIN_COLORS[i % MATURE_PROTEIN_COLORS.length]!
-      const rowTop = layout.y + i * rowHeight
 
       drawMatureProteinBox(
         ctx,
         childLayout,
         canvasWidth,
         color,
-        rowTop,
-        rowHeight,
         subfeatureLabels,
         reversed,
         arrowColor,
@@ -173,13 +178,11 @@ function drawMatureProteinBox(
   childLayout: FeatureLayout,
   canvasWidth: number,
   color: string,
-  rowTop: number,
-  rowHeight: number,
   subfeatureLabels: string,
   reversed: boolean,
   arrowColor: string,
 ) {
-  const { x: left, width, feature } = childLayout
+  const { x: left, y: top, width, height: rowHeight, feature } = childLayout
 
   if (isOffScreen(left, width, canvasWidth)) {
     return
@@ -187,7 +190,7 @@ function drawMatureProteinBox(
 
   const hasLabelsBelow = subfeatureLabels === 'below'
   const padding = 1
-  const boxTop = rowTop + padding
+  const boxTop = top + padding
   const boxHeight = hasLabelsBelow
     ? Math.floor(rowHeight / 2) - padding
     : rowHeight - padding * 2
