@@ -23,7 +23,6 @@ export interface FeatureLayout {
   y: number
   width: number
   height: number
-  totalFeatureHeight: number
   totalLayoutHeight: number
   totalLayoutWidth: number
   leftPadding: number

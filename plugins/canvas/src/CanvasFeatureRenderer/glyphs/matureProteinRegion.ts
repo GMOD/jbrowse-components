@@ -111,7 +111,6 @@ export const matureProteinRegionGlyph: Glyph = {
       y: 0,
       width: widthPx,
       height: totalHeight,
-      totalFeatureHeight: totalHeight,
       totalLayoutHeight: totalHeight,
       totalLayoutWidth: widthPx,
       leftPadding: 0,

@@ -41,7 +41,6 @@ export function layoutFeatures({
 
     const totalLayoutWidth = featureLayout.totalLayoutWidth
     const totalLayoutHeight = featureLayout.totalLayoutHeight
-    const totalFeatureHeight = featureLayout.totalFeatureHeight
 
     const name = String(
       readConfObject(config, ['labels', 'name'], { feature }) || '',
@@ -80,7 +79,7 @@ export function layoutFeatures({
         description,
         refName: feature.get('refName'),
         floatingLabels,
-        totalFeatureHeight,
+        totalFeatureHeight: featureLayout.height,
         totalLayoutWidth,
         featureWidth: featureLayout.width,
         leftPadding: featureLayout.leftPadding,

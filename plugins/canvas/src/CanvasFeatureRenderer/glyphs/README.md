@@ -84,18 +84,47 @@ Returns a `FeatureLayout`:
 ```typescript
 interface FeatureLayout {
   feature: Feature
-  glyphType: GlyphType // Your glyph type
-  x: number // Left position (local coords)
-  y: number // Top position (local coords)
-  width: number // Feature width in pixels
-  height: number // Feature height in pixels
-  totalFeatureHeight: number
-  totalLayoutHeight: number // Including labels if below
-  totalLayoutWidth: number // Including arrows if any
-  leftPadding: number // Space for left arrow
-  children: FeatureLayout[] // Child feature layouts
+  glyphType: GlyphType
+
+  // Position in local coordinates (relative to parent, starts at 0,0)
+  x: number
+  y: number
+
+  // Feature's own dimensions (the genomic extent converted to pixels)
+  // - width: (end - start) / bpPerPx
+  // - height: the box height used for drawing
+  width: number
+  height: number
+
+  // Bounding box dimensions (includes decorations like strand arrows and labels)
+  // Used for: hit detection, row allocation, stacking calculations
+  //
+  // ┌─────────────────────────────────────────────────┐
+  // │←leftPadding→┌─────────────────┐←rightPadding→   │
+  // │   (arrow)   │     feature     │   (arrow)       │
+  // │             │  width×height   │                 │
+  // │             └─────────────────┘                 │
+  // │             │   label text    │ ← extra height  │
+  // └─────────────────────────────────────────────────┘
+  // ├──────────── totalLayoutWidth ──────────────────┤
+  //
+  // totalLayoutHeight:  height + label height (when labels are below the feature)
+  // totalLayoutWidth:   width + leftPadding + rightPadding (or label width if wider)
+  // leftPadding:        pixels reserved on the left (e.g., for left-pointing arrow)
+  totalLayoutHeight: number
+  totalLayoutWidth: number
+  leftPadding: number
+
+  children: FeatureLayout[]
 }
 ```
+
+**When are these different?**
+
+- For simple boxes: all dimensions are equal (`width = totalLayoutWidth`,
+  `height = totalLayoutHeight`)
+- With strand arrows: `totalLayoutWidth = width + leftPadding + rightPadding`
+- With labels below: `totalLayoutHeight = height + labelHeight`
 
 Example layout function:
 
@@ -117,7 +146,6 @@ layout(args: LayoutArgs): FeatureLayout {
     y: 0,
     width: widthPx,
     height: baseHeight,
-    totalFeatureHeight: baseHeight,
     totalLayoutHeight: baseHeight,
     totalLayoutWidth: widthPx,
     leftPadding: 0,
@@ -216,7 +244,6 @@ layout(args: LayoutArgs): FeatureLayout {
       y: yRelative,
       width: (childEnd - childStart) / bpPerPx,
       height: rowHeight,
-      totalFeatureHeight: rowHeight,
       totalLayoutHeight: rowHeight,
       totalLayoutWidth: (childEnd - childStart) / bpPerPx,
       leftPadding: 0,
@@ -285,7 +312,6 @@ export const coloredBoxGlyph: Glyph = {
       y: 0,
       width: widthPx,
       height: baseHeight,
-      totalFeatureHeight: baseHeight,
       totalLayoutHeight: baseHeight,
       totalLayoutWidth: widthPx,
       leftPadding: 0,

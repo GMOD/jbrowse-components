@@ -81,7 +81,7 @@ export function applyLabelDimensions(
 
   const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
   if (!isOverlayMode) {
-    layout.totalLayoutHeight = layout.totalFeatureHeight + extraHeightPx
+    layout.totalLayoutHeight = layout.height + extraHeightPx
   }
 
   layout.totalLayoutWidth = Math.max(layout.totalLayoutWidth, maxLabelWidthPx)

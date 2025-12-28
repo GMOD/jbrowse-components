@@ -33,7 +33,6 @@ export const cdsGlyph: Glyph = {
       y: 0,
       width,
       height: baseHeight,
-      totalFeatureHeight: baseHeight,
       totalLayoutHeight: baseHeight,
       totalLayoutWidth: width,
       leftPadding: 0,

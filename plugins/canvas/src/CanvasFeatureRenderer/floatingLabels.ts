@@ -126,8 +126,8 @@ export function createTranscriptFloatingLabel({
 
   // For 'overlay' mode, position label at top of feature (negative relativeY)
   // For 'below' mode, position label at bottom of feature (relativeY = 0)
-  // The label Y formula is: featureTop + totalFeatureHeight + relativeY
-  // For overlay: we want featureTop + 2, so relativeY = 2 - totalFeatureHeight
+  // The label Y formula is: featureTop + featureHeight + relativeY
+  // For overlay: we want featureTop + 2, so relativeY = 2 - featureHeight
   const isOverlay = subfeatureLabels === 'overlay'
   const relativeY = isOverlay ? 2 - featureHeight : 0
 

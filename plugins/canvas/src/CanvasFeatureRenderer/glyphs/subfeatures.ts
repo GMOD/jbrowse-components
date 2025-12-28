@@ -183,7 +183,6 @@ export const subfeaturesGlyph: Glyph = {
       y: 0,
       width: widthPx,
       height: totalHeightPx,
-      totalFeatureHeight: totalHeightPx,
       totalLayoutHeight: totalHeightPx,
       totalLayoutWidth: widthPx,
       leftPadding: 0,

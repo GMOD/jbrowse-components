@@ -77,7 +77,6 @@ export function layoutFeature(args: {
 
     // Apply height multiplier from pluggable glyph
     layout.height *= heightMultiplier
-    layout.totalFeatureHeight *= heightMultiplier
     layout.totalLayoutHeight *= heightMultiplier
   } else {
     // Use builtin polymorphic glyph

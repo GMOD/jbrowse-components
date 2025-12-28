@@ -51,7 +51,6 @@ export function layoutChild(
     y: 0,
     width: widthPx,
     height: baseHeightPx,
-    totalFeatureHeight: baseHeightPx,
     totalLayoutHeight: baseHeightPx,
     totalLayoutWidth: widthPx,
     leftPadding: 0,

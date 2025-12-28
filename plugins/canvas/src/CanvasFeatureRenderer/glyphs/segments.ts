@@ -75,7 +75,6 @@ export const segmentsGlyph: Glyph = {
       y: 0,
       width: widthPx,
       height: baseHeightPx,
-      totalFeatureHeight: baseHeightPx,
       totalLayoutHeight: baseHeightPx,
       totalLayoutWidth: widthPx + arrowPadding.left + arrowPadding.right,
       leftPadding: arrowPadding.left,
