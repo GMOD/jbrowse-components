@@ -35,11 +35,18 @@ export function getBreakendCoveringRegions({
     }
   } else if (feature.get('mate')) {
     const mate = feature.get('mate')
+    const strand = feature.get('strand')
+    const mateStrand = mate.strand
+    // Use the correct "side" of the feature based on strand:
+    // Forward strand (1): use end position (right side)
+    // Reverse strand (-1): use start position (left side)
+    const pos = strand === 1 ? feature.get('end') : startPos
+    const matePos = mateStrand === 1 ? mate.start : (mate.end ?? mate.start)
     return {
-      pos: startPos,
+      pos,
       refName: f(refName),
       mateRefName: f(mate.refName),
-      matePos: mate.start,
+      matePos,
     }
   } else {
     return {
@@ -67,6 +74,18 @@ export interface Region {
   start: number
   end: number
   assemblyName?: string
+}
+
+export interface ViewWithAssemblyNames {
+  assemblyNames: string[]
+}
+
+/**
+ * Safely extracts the first assemblyName from a view's assemblyNames getter.
+ * Returns undefined if the view or assemblyNames are not available.
+ */
+export function getAssemblyName(view?: ViewWithAssemblyNames) {
+  return view?.assemblyNames[0]
 }
 
 /**

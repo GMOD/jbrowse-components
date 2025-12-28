@@ -3019,6 +3019,24 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "gff3_mouseover_attr",
       "type": "FeatureTrack",
     },
+    {
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.del.vcf",
+        },
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Variants",
+      ],
+      "name": "Volvox DEL SV",
+      "trackId": "volvox_del_sv",
+      "type": "VariantTrack",
+    },
   ],
 }
 `;

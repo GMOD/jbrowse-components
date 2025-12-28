@@ -1,5 +1,4 @@
-export { default as BreakendMultiLevelOptionDialog } from './BreakendMultiLevelOptionDialog'
-export { default as BreakendSingleLevelOptionDialog } from './BreakendSingleLevelOptionDialog'
+export { default as BreakpointSplitViewChoiceDialog } from './BreakpointSplitViewChoiceDialog'
 export * from './util'
 export * from './navToSingleLevelBreak'
 export * from './navToMultiLevelBreak'

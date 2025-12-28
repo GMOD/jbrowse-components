@@ -45,6 +45,94 @@ export default function NoConfigMessage() {
           )
         })}
       </ul>
+      <div>Demo website:</div>
+      <ul>
+        <li>
+          <a href="?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt">
+            {
+              'Human instance with HG002 insertion shown (many other tracks available too)'
+            }
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-pjaAq1hNxB&password=Z9teR">
+            {
+              'SKBR3 breast cancer cell line - breakpoint split view translocation'
+            }
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-XyL52LPDoO&password=861E4">
+            {
+              'Human instance coloring methylation/modifications on nanopore reads'
+            }
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fbreakpoint%2Fconfig.json&session=share-xeUuLRakik&password=vh0ca">
+            {
+              'Breakpoint split view demo (showing multi-hop split read connection)'
+            }
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_dotplot.json&session=share-zw51jIwuXb&password=i8WqY">
+            {'Grape vs Peach dotplot'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data/yeast_synteny/config.json">
+            Yeast dotplot
+          </a>
+        </li>
+        <li>
+          <a href="?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-SUK-mntGyB&password=eQF0F">
+            {'1000 genomes extended trio demo'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fvolvox%2Fconfig.json&session=share-JCsm46ATdn&password=ilHg5">
+            {'Volvox sample data (small imaginary test datasets)'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-Pw7kOjagSF&password=e0SuE">
+            {'ENCODE Multi-bigwig example'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-7skGDzEmMi&password=NGzLX">
+            {
+              'COLO829 melanoma cancer cell line tumor vs normal multi-bigwig example'
+            }
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-sA7riIQWhJ&password=3pkHd">
+            {'Inversion example ("single row" breakpoint split view)'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR">
+            {'Inversion example (linked reads mode)'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fplant_synteny_demo%2Fconfig2.json&session=share-pARmvLazem&password=ZPOwE">
+            {'Multi-way synteny demo (grape vs peach vs cacao)'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=/genomes/potato/config.json">
+            {'Tetraploid potato multi-sample VCF rendering'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-vQBatl-Of9&password=Mhl6F">
+            {'Human trio phased VCF rendering'}
+          </a>
+        </li>
+      </ul>
     </div>
   )
 }

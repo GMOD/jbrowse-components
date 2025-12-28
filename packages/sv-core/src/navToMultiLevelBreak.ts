@@ -18,6 +18,7 @@ export async function navToMultiLevelBreak({
   session,
   mirror,
   tracks: viewTracks = [],
+  windowSize = 0,
 }: {
   stableViewId?: string
   feature: Feature
@@ -74,8 +75,15 @@ export async function navToMultiLevelBreak({
     ),
   ])
   await when(() => view.views[1]!.initialized && view.views[0]!.initialized)
-  view.views[1]!.zoomTo(10)
-  view.views[0]!.zoomTo(10)
-  view.views[1]!.centerAt(matePos, mateRefName)
-  view.views[0]!.centerAt(pos, refName)
+
+  // Calculate bpPerPx based on windowSize to show the specified window around each breakpoint
+  // If windowSize is 0, default to bpPerPx of 10
+  const lgv0 = view.views[0]!
+  const lgv1 = view.views[1]!
+  const bpPerPx = windowSize > 0 ? (windowSize * 2) / lgv0.width : 10
+
+  lgv0.zoomTo(bpPerPx)
+  lgv1.zoomTo(bpPerPx)
+  lgv0.centerAt(pos, refName)
+  lgv1.centerAt(matePos, mateRefName)
 }

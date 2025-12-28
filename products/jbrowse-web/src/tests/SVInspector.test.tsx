@@ -19,12 +19,18 @@ const delay = { timeout: 80000 }
 
 test('opens a vcf.gz file in the sv inspector view', () => {
   return mockConsoleWarn(async () => {
-    const { session, findByTestId } = await openViewWithFileInput({
+    const { session, findByTestId, findByText } = await openViewWithFileInput({
       menuPath: ['File', 'Add', 'SV inspector'],
       fileUrl: 'volvox.dup.renamed.vcf.gz',
     })
 
     fireEvent.click(await findByTestId('chord-vcf-0', {}, delay))
+
+    // Click on split level option in the dialog
+    fireEvent.click(await findByText('Split level (top/bottom)', {}, delay))
+
+    // Click Open button
+    fireEvent.click(await findByText('Open', {}, delay))
 
     await waitFor(() => {
       expect(session.views.length).toBe(3)
@@ -62,6 +68,12 @@ test('opens a track with minimal adapter config via "Open from track"', async ()
   fireEvent.click(openButton)
 
   fireEvent.click(await findByTestId('chord-vcf-6', {}, delay))
+
+  // Click on split level option in the dialog
+  fireEvent.click(await findByText('Split level (top/bottom)', {}, delay))
+
+  // Click Open button
+  fireEvent.click(await findByText('Open', {}, delay))
 
   await waitFor(() => {
     expect(session.views.length).toBe(3)
