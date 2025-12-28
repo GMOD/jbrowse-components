@@ -63,7 +63,7 @@ const DEFAULT_EVENT = 'keydown' as const
  * @see https://github.com/jamiebuilds/tinykeys/issues/184
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-const PLATFORM = typeof navigator === 'object' ? (navigator.platform ?? '') : ''
+const PLATFORM = typeof navigator === 'object' ? navigator.platform : ''
 const APPLE_DEVICE = /Mac|iPod|iPhone|iPad/.test(PLATFORM)
 
 /**

@@ -19,9 +19,9 @@ import {
   LoadingMenuItem,
   MenuItemEndDecoration,
 } from './MenuItems'
+import { MenuSettingsContext } from './MenuSettingsContext'
 import { bindMenu } from './hooks'
 import { useAsyncMenuItems } from './menuHooks'
-import { MenuSettingsContext } from './MenuSettingsContext'
 
 import type {
   CheckboxMenuItem,
