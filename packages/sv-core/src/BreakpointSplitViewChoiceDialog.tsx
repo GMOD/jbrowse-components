@@ -149,11 +149,7 @@ const BreakpointSplitViewChoiceDialog = observer(
       <Dialog
         open
         onClose={handleClose}
-        title={
-          isSplitLevel
-            ? 'Split level options'
-            : 'Single level options'
-        }
+        title={isSplitLevel ? 'Split level options' : 'Single level options'}
       >
         <DialogContent>
           {view ? (
@@ -197,7 +193,13 @@ const BreakpointSplitViewChoiceDialog = observer(
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setStep('choose')}>Back</Button>
+          <Button
+            onClick={() => {
+              setStep('choose')
+            }}
+          >
+            Back
+          </Button>
           <Button variant="contained" color="primary" onClick={handleLaunch}>
             Open
           </Button>

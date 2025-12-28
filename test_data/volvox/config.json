@@ -2382,6 +2382,20 @@
           }
         }
       ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_del_sv",
+      "name": "Volvox DEL SV",
+      "category": ["Variants"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "volvox.del.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox"]
     }
   ],
   "plugins": [

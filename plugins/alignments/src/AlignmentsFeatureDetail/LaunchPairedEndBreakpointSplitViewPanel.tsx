@@ -34,7 +34,7 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
     strand: feature.strand as number,
   }
   const assemblyName = getAssemblyName(model.view)
-  return (
+  return assemblyName ? (
     <div>
       <Typography>Launch split view</Typography>
       <ul>
@@ -62,5 +62,5 @@ export default function LaunchPairedEndBreakpointSplitViewPanel({
         </li>
       </ul>
     </div>
-  )
+  ) : null
 }

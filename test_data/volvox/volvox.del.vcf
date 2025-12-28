@@ -1,0 +1,8 @@
+##fileformat=VCFv4.2
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant">
+##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Length of the variant">
+##ALT=<ID=DEL,Description="Deletion">
+##contig=<ID=ctgA,length=50001>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+ctgA	2700	del1	N	<DEL>	.	PASS	SVTYPE=DEL;END=34200;SVLEN=-31500

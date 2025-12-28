@@ -49,7 +49,7 @@ export default function LaunchBreakpointSplitViewPanel({
   }
   const session = getSession(model)
   const assemblyName = getAssemblyName(model.view)
-  return ret.length ? (
+  return ret.length && assemblyName ? (
     <div>
       <Typography>Launch split view</Typography>
       {error ? <ErrorMessage error={error} /> : null}

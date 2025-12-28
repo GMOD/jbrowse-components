@@ -69,7 +69,7 @@ function LaunchBreakpointSplitViewPanel({
   const simpleFeature = new SimpleFeature(feature)
   const assemblyName = getAssemblyName(model.view)
 
-  return (
+  return assemblyName ? (
     <div>
       <Typography>Launch split view</Typography>
       <ul>
@@ -99,7 +99,7 @@ function LaunchBreakpointSplitViewPanel({
         ))}
       </ul>
     </div>
-  )
+  ) : null
 }
 
 export default function LaunchBreakendPanel(props: {

@@ -41,7 +41,7 @@ export function getBreakendCoveringRegions({
     // Forward strand (1): use end position (right side)
     // Reverse strand (-1): use start position (left side)
     const pos = strand === 1 ? feature.get('end') : startPos
-    const matePos = mateStrand === 1 ? mate.start : mate.end ?? mate.start
+    const matePos = mateStrand === 1 ? mate.start : (mate.end ?? mate.start)
     return {
       pos,
       refName: f(refName),
