@@ -130,7 +130,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
                 <TableCell>Clear track focus</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className={classes.keyCell}>+ / =</TableCell>
+                <TableCell className={classes.keyCell}>=</TableCell>
                 <TableCell>Zoom in</TableCell>
               </TableRow>
               <TableRow>

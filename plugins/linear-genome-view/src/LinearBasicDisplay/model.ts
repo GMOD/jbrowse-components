@@ -139,48 +139,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   self.toggleDisplayDirectionalChevrons()
                 },
               },
-              {
-                label: 'Subfeature labels',
-                shortcut: 's',
-                subMenu: ['none', 'below', 'overlay'].map((val, idx) => ({
-                  label: val,
-                  shortcut: `${idx + 1}`,
-                  type: 'radio' as const,
-                  checked: self.subfeatureLabels === val,
-                  onClick: () => {
-                    self.setSubfeatureLabels(val)
-                  },
-                })),
-              },
-              {
-                label: 'Gene glyph',
-                shortcut: 'g',
-                subMenu: [
-                  {
-                    value: 'all',
-                    label: 'All transcripts',
-                    shortcut: '1',
-                  },
-                  {
-                    value: 'longest',
-                    label: 'Longest transcript',
-                    shortcut: '2',
-                  },
-                  {
-                    value: 'longestCoding',
-                    label: 'Longest coding transcript',
-                    shortcut: '3',
-                  },
-                ].map(({ value, label, shortcut }) => ({
-                  label,
-                  shortcut,
-                  type: 'radio' as const,
-                  checked: self.geneGlyphMode === value,
-                  onClick: () => {
-                    self.setGeneGlyphMode(value)
-                  },
-                })),
-              },
             ]
           }
           const filtersMenu = findSubMenu(items, 'Filters')
@@ -208,7 +166,51 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ...filtersMenu.subMenu,
             ]
           }
-          return items
+          return [
+            ...items,
+            {
+              label: 'Subfeature labels',
+              shortcut: 'l',
+              subMenu: ['none', 'below', 'overlay'].map((val, idx) => ({
+                label: val,
+                shortcut: `${idx + 1}`,
+                type: 'radio' as const,
+                checked: self.subfeatureLabels === val,
+                onClick: () => {
+                  self.setSubfeatureLabels(val)
+                },
+              })),
+            },
+            {
+              label: 'Gene glyph',
+              shortcut: 'g',
+              subMenu: [
+                {
+                  value: 'all',
+                  label: 'All transcripts',
+                  shortcut: '1',
+                },
+                {
+                  value: 'longest',
+                  label: 'Longest transcript',
+                  shortcut: '2',
+                },
+                {
+                  value: 'longestCoding',
+                  label: 'Longest coding transcript',
+                  shortcut: '3',
+                },
+              ].map(({ value, label, shortcut }) => ({
+                label,
+                shortcut,
+                type: 'radio' as const,
+                checked: self.geneGlyphMode === value,
+                onClick: () => {
+                  self.setGeneGlyphMode(value)
+                },
+              })),
+            },
+          ]
         },
       }
     })

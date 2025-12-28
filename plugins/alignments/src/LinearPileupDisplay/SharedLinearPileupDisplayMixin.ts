@@ -671,20 +671,6 @@ export function SharedLinearPileupDisplayMixin(
               },
             },
             {
-              label: 'Set max track height...',
-              shortcut: 't',
-              priority: -1,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetMaxHeightDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-            {
               label: 'Filter by...',
               shortcut: 'f',
               icon: FilterListIcon,
@@ -699,14 +685,35 @@ export function SharedLinearPileupDisplayMixin(
               },
             },
             {
-              label: 'Show legend',
-              shortcut: 'l',
-              icon: FormatListBulletedIcon,
-              type: 'checkbox',
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
-              },
+              label: 'Show...',
+              type: 'subMenu' as const,
+              shortcut: 'w',
+              priority: -1,
+              subMenu: [
+                {
+                  label: 'Show legend',
+                  shortcut: 'l',
+                  icon: FormatListBulletedIcon,
+                  type: 'checkbox',
+                  checked: self.showLegend,
+                  onClick: () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                },
+                {
+                  label: 'Set max track height...',
+                  shortcut: 't',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SetMaxHeightDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                },
+              ],
             },
           ]
         },

@@ -333,6 +333,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
               ],
             },
+
             {
               label: 'Display mode',
               shortcut: 'd',
