@@ -281,15 +281,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               icon: SwapVertIcon,
               disabled: self.showSoftClipping,
               subMenu: [
-                ...(['Start location', 'Read strand', 'Base pair'] as const).map(
-                  (option, idx) => ({
-                    label: option,
-                    shortcut: `${idx + 1}`,
-                    onClick: () => {
-                      self.setSortedBy(option)
-                    },
-                  }),
-                ),
+                ...(
+                  ['Start location', 'Read strand', 'Base pair'] as const
+                ).map((option, idx) => ({
+                  label: option,
+                  shortcut: `${idx + 1}`,
+                  onClick: () => {
+                    self.setSortedBy(option)
+                  },
+                })),
                 {
                   label: 'Sort by tag...',
                   shortcut: 't',

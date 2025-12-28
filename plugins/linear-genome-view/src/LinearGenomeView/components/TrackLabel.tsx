@@ -32,13 +32,13 @@ const useStyles = makeStyles()(theme => ({
     bottom: 0,
     background: alpha(theme.palette.secondary.light, 0.4),
     pointerEvents: 'none',
-    animation: 'focusFadeOut 3s ease-out forwards',
+    animation: 'focusFadeOut 1.5s ease-out forwards',
     '@keyframes focusFadeOut': {
       '0%': {
         opacity: 1,
       },
       '100%': {
-        opacity: 0,
+        opacity: 0.3,
       },
     },
   },

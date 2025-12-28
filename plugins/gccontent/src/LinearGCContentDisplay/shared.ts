@@ -68,6 +68,7 @@ export default function SharedModelF(
             ...superTrackMenuItems(),
             {
               label: 'Change GC parameters',
+              shortcut: 'g',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   EditGCContentParamsDialog,

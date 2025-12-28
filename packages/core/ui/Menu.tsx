@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
@@ -11,6 +11,7 @@ import {
   MenuList,
   Paper,
   Popover,
+  Typography,
 } from '@mui/material'
 
 import {
@@ -23,6 +24,9 @@ import { findLastIndex } from '../util'
 
 import type { MenuItem, MenuItemsGetter } from './MenuTypes'
 import type { MenuProps as MUIMenuProps, PopoverProps } from '@mui/material'
+
+// Context for menu settings
+const MenuSettingsContext = createContext({ showShortcuts: true })
 
 export type {
   BaseMenuItem,
@@ -51,6 +55,32 @@ const useStyles = makeStyles()({
     outline: 0,
   },
 })
+
+function ShortcutDisplay({
+  menuItem,
+  hasSubMenu,
+}: {
+  menuItem: MenuItem
+  hasSubMenu: boolean
+}) {
+  const { showShortcuts } = useContext(MenuSettingsContext)
+  if (!showShortcuts) {
+    return null
+  }
+  const shortcut = 'shortcut' in menuItem ? menuItem.shortcut : undefined
+  if (!shortcut) {
+    return hasSubMenu ? <div style={{ width: 24 }} /> : null
+  }
+  return (
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      sx={{ ml: 2, mr: hasSubMenu ? 1 : 0 }}
+    >
+      {shortcut.toUpperCase()}
+    </Typography>
+  )
+}
 
 interface MenuPageProps {
   menuItems: MenuItem[]
@@ -214,6 +244,7 @@ function MenuPage({
                   secondary={menuItem.subLabel}
                   inset={hasIcon && !menuItem.icon}
                 />
+                <ShortcutDisplay menuItem={menuItem} hasSubMenu={hasSubMenu} />
                 {hasSubMenu ? (
                   <MenuItemEndDecoration type="subMenu" />
                 ) : isCheckOrRadio ? (
@@ -262,47 +293,57 @@ export interface MenuProps extends PopoverProps {
     event: React.MouseEvent<HTMLLIElement>,
     callback: (...args: any[]) => void,
   ) => void
+  showShortcuts?: boolean
 }
 
 function Menu(props: MenuProps) {
-  const { open, onClose, menuItems, onMenuItemClick, ...other } = props
+  const {
+    open,
+    onClose,
+    menuItems,
+    onMenuItemClick,
+    showShortcuts = true,
+    ...other
+  } = props
   const { items, loading, error } = useAsyncMenuItems(menuItems, open)
 
   return (
-    <Popover
-      open={open}
-      onClose={onClose}
-      style={{ zIndex: 10000, ...other.style }}
-      anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'right',
-        ...other.anchorOrigin,
-      }}
-      transformOrigin={{
-        vertical: 'top',
-        horizontal: 'left',
-        ...other.transformOrigin,
-      }}
-      {...other}
-    >
-      {loading ? (
-        <MenuList dense>
-          <LoadingMenuItem />
-        </MenuList>
-      ) : error ? (
-        <MenuList dense>
-          <ErrorMenuItem error={error} />
-        </MenuList>
-      ) : (
-        <MenuPage
-          open={open}
-          onClose={onClose}
-          menuItems={items}
-          onMenuItemClick={onMenuItemClick}
-          top
-        />
-      )}
-    </Popover>
+    <MenuSettingsContext.Provider value={{ showShortcuts }}>
+      <Popover
+        open={open}
+        onClose={onClose}
+        style={{ zIndex: 10000, ...other.style }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+          ...other.anchorOrigin,
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+          ...other.transformOrigin,
+        }}
+        {...other}
+      >
+        {loading ? (
+          <MenuList dense>
+            <LoadingMenuItem />
+          </MenuList>
+        ) : error ? (
+          <MenuList dense>
+            <ErrorMenuItem error={error} />
+          </MenuList>
+        ) : (
+          <MenuPage
+            open={open}
+            onClose={onClose}
+            menuItems={items}
+            onMenuItemClick={onMenuItemClick}
+            top
+          />
+        )}
+      </Popover>
+    </MenuSettingsContext.Provider>
   )
 }
 

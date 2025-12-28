@@ -460,6 +460,7 @@ export default function RootModel({
                 {
                   label: 'New session',
                   icon: AddIcon,
+                  shortcut: 'n',
                   onClick: () => {
                     self.setDefaultSession()
                   },
@@ -467,6 +468,7 @@ export default function RootModel({
                 {
                   label: 'Import session...',
                   icon: PublishIcon,
+                  shortcut: 'i',
                   onClick: (session: SessionWithWidgets) => {
                     const widget = session.addWidget(
                       'ImportSessionWidget',
@@ -478,6 +480,7 @@ export default function RootModel({
                 {
                   label: 'Export session',
                   icon: GetAppIcon,
+                  shortcut: 'e',
                   onClick: async (session: IAnyStateTreeNode) => {
                     // eslint-disable-next-line @typescript-eslint/no-deprecated
                     const { saveAs } = await import('file-saver-es')
@@ -501,6 +504,7 @@ export default function RootModel({
                 {
                   label: 'Duplicate session',
                   icon: FileCopyIcon,
+                  shortcut: 'd',
                   onClick: () => {
                     // @ts-expect-error
                     const { id, ...rest } = getSnapshot(self.session)
@@ -594,6 +598,7 @@ export default function RootModel({
                 {
                   label: 'Open track...',
                   icon: StorageIcon,
+                  shortcut: 't',
                   onClick: (session: SessionWithWidgets) => {
                     if (session.views.length === 0) {
                       session.notify('Please open a view to add a track first')
@@ -615,6 +620,7 @@ export default function RootModel({
                 {
                   label: 'Open connection...',
                   icon: Cable,
+                  shortcut: 'c',
                   onClick: (session: SessionWithWidgets) => {
                     session.showWidget(
                       session.addWidget(
@@ -658,6 +664,7 @@ export default function RootModel({
               {
                 label: 'Undo',
                 icon: UndoIcon,
+                shortcut: 'u',
                 onClick: () => {
                   if (self.history.canUndo) {
                     self.history.undo()
@@ -667,6 +674,7 @@ export default function RootModel({
               {
                 label: 'Redo',
                 icon: RedoIcon,
+                shortcut: 'r',
                 onClick: () => {
                   if (self.history.canRedo) {
                     self.history.redo()
@@ -677,6 +685,7 @@ export default function RootModel({
               {
                 label: 'Plugin store',
                 icon: ExtensionIcon,
+                shortcut: 'p',
                 onClick: () => {
                   if (self.session) {
                     self.session.showWidget(
@@ -691,6 +700,7 @@ export default function RootModel({
               {
                 label: 'Assembly manager',
                 icon: DNA,
+                shortcut: 'a',
                 onClick: () => {
                   self.session.queueDialog((onClose: () => void) => [
                     AssemblyManager,
@@ -706,6 +716,7 @@ export default function RootModel({
               {
                 label: 'Preferences',
                 icon: SettingsIcon,
+                shortcut: 's',
                 onClick: () => {
                   if (self.session) {
                     ;(self.session as SessionWithDialogs).queueDialog(

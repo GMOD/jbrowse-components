@@ -148,6 +148,7 @@ export default function rootModelFactory({
                 {
                   label: 'Open session...',
                   icon: OpenIcon,
+                  shortcut: 'o',
                   onClick: async () => {
                     try {
                       const path = await ipcRenderer.invoke('promptOpenFile')
@@ -163,6 +164,7 @@ export default function rootModelFactory({
                 {
                   label: 'Save session as...',
                   icon: SaveAsIcon,
+                  shortcut: 's',
                   onClick: async () => {
                     try {
                       self.setSessionPath(
@@ -181,6 +183,7 @@ export default function rootModelFactory({
                 {
                   label: 'Open assembly...',
                   icon: DNA,
+                  shortcut: 'a',
                   onClick: () => {
                     if (self.session) {
                       const session = self.session as SessionWithDialogs
@@ -209,7 +212,7 @@ export default function rootModelFactory({
                 {
                   label: 'Open track...',
                   icon: StorageIcon,
-
+                  shortcut: 't',
                   onClick: (session: any) => {
                     if (session.views.length === 0) {
                       session.notify('Please open a view to add a track first')
@@ -231,6 +234,7 @@ export default function rootModelFactory({
                 {
                   label: 'Open connection...',
                   icon: Cable,
+                  shortcut: 'c',
                   onClick: () => {
                     if (self.session) {
                       const widget = self.session.addWidget(
@@ -270,6 +274,7 @@ export default function rootModelFactory({
                 {
                   label: 'Undo',
                   icon: UndoIcon,
+                  shortcut: 'u',
                   onClick: () => {
                     if (self.history.canUndo) {
                       self.history.undo()
@@ -279,6 +284,7 @@ export default function rootModelFactory({
                 {
                   label: 'Redo',
                   icon: RedoIcon,
+                  shortcut: 'r',
                   onClick: () => {
                     if (self.history.canRedo) {
                       self.history.redo()
@@ -289,6 +295,7 @@ export default function rootModelFactory({
                 {
                   label: 'Plugin store',
                   icon: ExtensionIcon,
+                  shortcut: 'p',
                   onClick: () => {
                     if (self.session) {
                       const widget = self.session.addWidget(
@@ -302,6 +309,7 @@ export default function rootModelFactory({
                 {
                   label: 'Preferences',
                   icon: SettingsIcon,
+                  shortcut: 's',
                   onClick: () => {
                     if (self.session) {
                       const session = self.session as SessionWithDialogs
@@ -318,6 +326,7 @@ export default function rootModelFactory({
                 {
                   label: 'Open assembly manager',
                   icon: DNA,
+                  shortcut: 'a',
                   onClick: () => {
                     ;(self.session as AbstractSessionModel).queueDialog(
                       handleClose => [

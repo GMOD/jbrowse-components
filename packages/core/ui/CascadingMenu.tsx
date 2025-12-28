@@ -168,6 +168,9 @@ function useMenuKeyboardHandler({
     (a, b) => (b.priority || 0) - (a.priority || 0),
   )
 
+  // Track last activated shortcut for cycling through collisions
+  const lastShortcutRef = useRef<{ key: string; index: number } | null>(null)
+
   return useCallback(
     (event: React.KeyboardEvent) => {
       // Handle ArrowLeft to go back to parent menu
@@ -182,35 +185,58 @@ function useMenuKeyboardHandler({
       // Handle single character shortcuts
       const key = event.key.toLowerCase()
       if (key.length === 1 && /[a-z0-9]/.test(key)) {
-        for (const item of sortedItems) {
+        // Find all items with this shortcut
+        const matchingItems: {
+          item: ActionableMenuItem | SubMenuItem
+          idx: number
+        }[] = []
+        for (const [i, sortedItem] of sortedItems.entries()) {
+          const item = sortedItem
           if (item.type === 'divider' || item.type === 'subHeader') {
             continue
           }
           const menuItem = item as ActionableMenuItem | SubMenuItem
           if (menuItem.shortcut?.toLowerCase() === key && !menuItem.disabled) {
-            event.preventDefault()
-            event.stopPropagation()
-            if ('subMenu' in menuItem) {
-              const idx = sortedItems.indexOf(item)
-              setOpenSubmenuIdx(idx)
-              // Focus the first item in the submenu after it opens
-              setTimeout(() => {
-                const submenu = containerRef?.current?.querySelector(
-                  '[role="menu"]',
-                ) as HTMLElement | null
-                const firstItem = submenu?.querySelector(
-                  '[role="menuitem"]:not([aria-disabled="true"])',
-                ) as HTMLElement | null
-                firstItem?.focus()
-              }, 0)
-            } else if ('onClick' in menuItem) {
-              if (closeAfterItemClick) {
-                onCloseRoot()
-              }
-              onMenuItemClick(event, menuItem.onClick)
-            }
-            return
+            matchingItems.push({ item: menuItem, idx: i })
           }
+        }
+
+        if (matchingItems.length === 0) {
+          return
+        }
+
+        // Determine which item to activate (cycle through on repeated presses)
+        let targetIdx = 0
+        if (lastShortcutRef.current?.key === key && matchingItems.length > 1) {
+          // Find the next item after the last activated one
+          const lastIdx = lastShortcutRef.current.index
+          const currentPos = matchingItems.findIndex(m => m.idx === lastIdx)
+          targetIdx = (currentPos + 1) % matchingItems.length
+        }
+
+        const { item: menuItem, idx } = matchingItems[targetIdx]!
+        lastShortcutRef.current = { key, index: idx }
+
+        event.preventDefault()
+        event.stopPropagation()
+
+        if ('subMenu' in menuItem) {
+          setOpenSubmenuIdx(idx)
+          // Focus the first item in the submenu after it opens
+          setTimeout(() => {
+            const submenu = containerRef?.current?.querySelector(
+              '[role="menu"]',
+            ) as HTMLElement | null
+            const firstItem = submenu?.querySelector(
+              '[role="menuitem"]:not([aria-disabled="true"])',
+            ) as HTMLElement | null
+            firstItem?.focus()
+          }, 0)
+        } else if ('onClick' in menuItem) {
+          if (closeAfterItemClick) {
+            onCloseRoot()
+          }
+          onMenuItemClick(event, menuItem.onClick)
         }
       }
     },
@@ -318,10 +344,10 @@ function CascadingMenuList({
             key={`${actionItem.label}-${idx}`}
             disabled={Boolean(actionItem.disabled)}
             onClick={event => {
+              onMenuItemClick(event, actionItem.onClick)
               if (closeAfterItemClick) {
                 onCloseRoot()
               }
-              onMenuItemClick(event, actionItem.onClick)
             }}
             onMouseOver={closeSubmenu}
           >

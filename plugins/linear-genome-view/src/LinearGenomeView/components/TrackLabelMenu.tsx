@@ -60,6 +60,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
             ? [
                 {
                   label: 'Move track to top',
+                  shortcut: 't',
                   icon: KeyboardDoubleArrowUpIcon,
                   onClick: () => {
                     view.moveTrackToTop(track.id)
@@ -91,6 +92,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
             ? [
                 {
                   label: 'Move track to bottom',
+                  shortcut: 'b',
                   icon: KeyboardDoubleArrowDownIcon,
                   onClick: () => {
                     view.moveTrackToBottom(track.id)

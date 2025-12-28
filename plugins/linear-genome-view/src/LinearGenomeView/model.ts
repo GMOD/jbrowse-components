@@ -1122,7 +1122,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         } else {
           const idx = tracks.findIndex(t => t.id === self.focusedTrackId)
           const prevIdx =
-            idx === -1 ? tracks.length - 1 : (idx - 1 + tracks.length) % tracks.length
+            idx === -1
+              ? tracks.length - 1
+              : (idx - 1 + tracks.length) % tracks.length
           self.focusedTrackId = tracks[prevIdx]?.id
         }
       },

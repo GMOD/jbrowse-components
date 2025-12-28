@@ -1,7 +1,7 @@
 export * from './theme'
 export { LogoFull, Logomark } from './Logo'
 export { default as AssemblySelector } from './AssemblySelector'
-export { default as CascadingMenu, MenuSettingsContext } from './CascadingMenu'
+export { MenuSettingsContext, default as CascadingMenu } from './CascadingMenu'
 export type { MenuItemsGetter } from './CascadingMenu'
 export { default as CascadingMenuButton } from './CascadingMenuButton'
 export { default as Dialog } from './Dialog'

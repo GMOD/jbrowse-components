@@ -12,9 +12,7 @@ export type KeyBindingPress = [mods: string[], key: string | RegExp]
 /**
  * A map of keybinding strings to event handlers.
  */
-export interface KeyBindingMap {
-  [keybinding: string]: (event: KeyboardEvent) => void
-}
+export type KeyBindingMap = Record<string, (event: KeyboardEvent) => void>
 
 export interface KeyBindingHandlerOptions {
   /**
@@ -110,8 +108,8 @@ export function parseKeybinding(str: string): KeyBindingPress[] {
     .split(' ')
     .map(press => {
       const mods = press.split(/\b\+/)
-      let key: string | RegExp = mods.pop() as string
-      const match = key.match(/^\((.+)\)$/)
+      let key: string | RegExp = mods.pop()!
+      const match = /^\((.+)\)$/.exec(key)
       if (match) {
         key = new RegExp(`^${match[1]}$`)
       }
@@ -142,7 +140,8 @@ export function matchKeyBindingPress(
       // keybinding. So if they are pressed but aren't part of the current
       // keybinding press, then we don't have a match.
       KEYBINDING_MODIFIER_KEYS.find(
-        mod => !mods.includes(mod) && key !== mod && getModifierState(event, mod),
+        mod =>
+          !mods.includes(mod) && key !== mod && getModifierState(event, mod),
       )
     )
   )

@@ -168,7 +168,10 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
           self,
           autorun(
             function showMenuShortcutsAutorun() {
-              localStorageSetBoolean('showMenuShortcuts', self.showMenuShortcuts)
+              localStorageSetBoolean(
+                'showMenuShortcuts',
+                self.showMenuShortcuts,
+              )
             },
             { name: 'ShowMenuShortcuts' },
           ),
