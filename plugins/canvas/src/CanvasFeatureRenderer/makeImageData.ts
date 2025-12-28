@@ -102,7 +102,11 @@ export function makeImageData({
     // Convert local coordinates to canvas coordinates
     const featureStartBp = feature.get(region.reversed ? 'end' : 'start')
     const startPx = bpToPx(featureStartBp, region, bpPerPx)
-    const canvasLayout = convertToCanvasCoords(featureLayout, startPx, recordTopPx)
+    const canvasLayout = convertToCanvasCoords(
+      featureLayout,
+      startPx,
+      recordTopPx,
+    )
 
     // Draw the feature (all coordinates are now in canvas space)
     drawFeature(ctx, canvasLayout, drawContext, pluginManager)

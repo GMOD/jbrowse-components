@@ -1,4 +1,4 @@
-import { findGlyph, builtinGlyphs } from './glyphs'
+import { builtinGlyphs, findGlyph } from './glyphs'
 import { applyLabelDimensions } from './labelUtils'
 
 import type { RenderConfigContext } from './renderConfig'

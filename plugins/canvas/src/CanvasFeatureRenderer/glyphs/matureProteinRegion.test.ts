@@ -346,8 +346,8 @@ describe('matureProteinRegionGlyph', () => {
     test('creates layout with children for each mature protein region', () => {
       const feature = createSimpleCDSWithMatureRegions()
       const configContext = createRenderConfigContext(
-      configSchema.create({}, { pluginManager }),
-    )
+        configSchema.create({}, { pluginManager }),
+      )
 
       const layout = matureProteinRegionGlyph.layout({
         feature,
@@ -363,8 +363,8 @@ describe('matureProteinRegionGlyph', () => {
     test('height scales with number of children', () => {
       const feature = createSimpleCDSWithMatureRegions()
       const configContext = createRenderConfigContext(
-      configSchema.create({}, { pluginManager }),
-    )
+        configSchema.create({}, { pluginManager }),
+      )
 
       const layout = matureProteinRegionGlyph.layout({
         feature,

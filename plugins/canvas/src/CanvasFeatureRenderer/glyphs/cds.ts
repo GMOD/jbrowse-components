@@ -1,7 +1,7 @@
-import { readCachedConfig } from '../renderConfig'
 import { drawCDSBackground } from '../drawCDSBackground'
 import { drawPeptidesOnCDS } from '../drawPeptidesOnCDS'
 import { prepareAminoAcidData } from '../prepareAminoAcidData'
+import { readCachedConfig } from '../renderConfig'
 import { getBoxColor, isOffScreen } from '../util'
 import {
   shouldRenderPeptideBackground,
@@ -43,7 +43,14 @@ export const cdsGlyph: Glyph = {
 
   draw(ctx: CanvasRenderingContext2D, layout: FeatureLayout, dc: DrawContext) {
     const { feature } = layout
-    const { region, bpPerPx, configContext, theme, canvasWidth, peptideDataMap } = dc
+    const {
+      region,
+      bpPerPx,
+      configContext,
+      theme,
+      canvasWidth,
+      peptideDataMap,
+    } = dc
     const { config } = configContext
     const colorByCDS = dc.colorByCDS ?? false
     const reversed = region.reversed ?? false

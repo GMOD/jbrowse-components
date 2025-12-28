@@ -1,5 +1,6 @@
 import { readCachedConfig } from '../renderConfig'
 import { isOffScreen } from '../util'
+import { layoutChild } from './glyphUtils'
 
 import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -24,49 +25,11 @@ const MATURE_PROTEIN_TYPES = new Set([
   'mature_protein_region',
 ])
 
-function isMatureProteinType(type: string) {
-  return MATURE_PROTEIN_TYPES.has(type)
-}
-
 function getMatureProteinChildren(feature: Feature): Feature[] {
-  const subfeatures = feature.get('subfeatures') as Feature[] | undefined
-  return subfeatures?.filter(sub => isMatureProteinType(sub.get('type'))) ?? []
-}
-
-function layoutChild(
-  child: Feature,
-  parentFeature: Feature,
-  args: LayoutArgs,
-): FeatureLayout {
-  const { bpPerPx, reversed, configContext } = args
-  const { config, displayMode, featureHeight } = configContext
-
-  const heightPx = readCachedConfig(featureHeight, config, 'height', child)
-  const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
-
-  const childStart = child.get('start') as number
-  const childEnd = child.get('end') as number
-  const parentStart = parentFeature.get('start') as number
-  const parentEnd = parentFeature.get('end') as number
-
-  const widthPx = (childEnd - childStart) / bpPerPx
-
-  const offsetBp = reversed ? parentEnd - childEnd : childStart - parentStart
-  const xRelativePx = offsetBp / bpPerPx
-
-  return {
-    feature: child,
-    glyphType: 'Box',
-    x: xRelativePx,
-    y: 0,
-    width: widthPx,
-    height: baseHeightPx,
-    totalFeatureHeight: baseHeightPx,
-    totalLayoutHeight: baseHeightPx,
-    totalLayoutWidth: widthPx,
-    leftPadding: 0,
-    children: [],
-  }
+  const subfeatures = feature.get('subfeatures')
+  return (
+    subfeatures?.filter(sub => MATURE_PROTEIN_TYPES.has(sub.get('type'))) ?? []
+  )
 }
 
 function sortByPosition(children: FeatureLayout[]) {
@@ -76,9 +39,7 @@ function sortByPosition(children: FeatureLayout[]) {
     if (aStart !== bStart) {
       return aStart - bStart
     }
-    const aEnd = a.feature.get('end')
-    const bEnd = b.feature.get('end')
-    return bEnd - aEnd
+    return b.feature.get('end') - a.feature.get('end')
   })
 }
 
@@ -108,16 +69,19 @@ export const matureProteinRegionGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
-    const { config, displayMode, featureHeight, subfeatureLabels } = configContext
+    const { config, displayMode, featureHeight, subfeatureLabels } =
+      configContext
 
-    const featureStart = feature.get('start') as number
-    const featureEnd = feature.get('end') as number
+    const start = feature.get('start')
+    const end = feature.get('end')
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
     const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
-    const widthPx = (featureEnd - featureStart) / bpPerPx
+    const widthPx = (end - start) / bpPerPx
 
     const matureProteins = getMatureProteinChildren(feature)
-    const children = matureProteins.map(child => layoutChild(child, feature, args))
+    const children = matureProteins.map(child =>
+      layoutChild(child, feature, args),
+    )
 
     // Sort children by position and assign row y-positions
     const sortedChildren = sortByPosition(children)
@@ -133,9 +97,8 @@ export const matureProteinRegionGlyph: Glyph = {
         ? Math.floor(rowHeight / 2) - padding
         : rowHeight - padding * 2
 
-    for (let i = 0; i < sortedChildren.length; i++) {
-      const child = sortedChildren[i]!
-      // Position at actual box location (with padding offset)
+    for (const [i, sortedChild] of sortedChildren.entries()) {
+      const child = sortedChild
       child.y = i * rowHeight + padding
       child.height = boxHeight
       child.totalLayoutHeight = rowHeight
@@ -158,21 +121,17 @@ export const matureProteinRegionGlyph: Glyph = {
 
   draw(ctx: CanvasRenderingContext2D, layout: FeatureLayout, dc: DrawContext) {
     const { children } = layout
-    const { region, configContext, theme, canvasWidth } = dc
-    const { subfeatureLabels } = configContext
+    const { region, theme, canvasWidth } = dc
     const reversed = region.reversed ?? false
     const arrowColor = theme.palette.text.secondary
 
-    // Children are already sorted and positioned by layout()
     for (const [i, childLayout] of children.entries()) {
       const color = MATURE_PROTEIN_COLORS[i % MATURE_PROTEIN_COLORS.length]!
-
       drawMatureProteinBox(
         ctx,
         childLayout,
         canvasWidth,
         color,
-        subfeatureLabels,
         reversed,
         arrowColor,
       )
@@ -185,11 +144,9 @@ function drawMatureProteinBox(
   childLayout: FeatureLayout,
   canvasWidth: number,
   color: string,
-  subfeatureLabels: string,
   reversed: boolean,
   arrowColor: string,
 ) {
-  // Layout already accounts for padding and label space
   const { x: left, y: boxTop, width, height: boxHeight, feature } = childLayout
 
   if (isOffScreen(left, width, canvasWidth)) {

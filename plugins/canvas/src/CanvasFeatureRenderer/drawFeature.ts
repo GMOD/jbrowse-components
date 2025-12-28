@@ -1,27 +1,13 @@
-import {
-  boxGlyph,
-  cdsGlyph,
-  matureProteinRegionGlyph,
-  processedTranscriptGlyph,
-  repeatRegionGlyph,
-  segmentsGlyph,
-  subfeaturesGlyph,
-} from './glyphs'
+import { boxGlyph, builtinGlyphs } from './glyphs'
 
 import type { DrawContext, FeatureLayout, Glyph } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 
-// Map glyph types to their glyph objects
-const glyphMap: Record<string, Glyph> = {
-  Box: boxGlyph,
-  CDS: cdsGlyph,
-  MatureProteinRegion: matureProteinRegionGlyph,
-  ProcessedTranscript: processedTranscriptGlyph,
-  RepeatRegion: repeatRegionGlyph,
-  Segments: segmentsGlyph,
-  Subfeatures: subfeaturesGlyph,
-}
+// Auto-generate glyph map from builtin glyphs
+const glyphMap: Record<string, Glyph> = Object.fromEntries(
+  builtinGlyphs.map(g => [g.type, g]),
+)
 
 /**
  * Find a matching pluggable glyph from the plugin manager.

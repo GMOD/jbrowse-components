@@ -7,8 +7,8 @@ import { processedTranscriptGlyph } from './processed'
 import { repeatRegionGlyph } from './repeatRegion'
 import { segmentsGlyph } from './segments'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
 import type { RenderConfigContext } from '../renderConfig'
+import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 
 // Local glyph list to avoid circular dependency with index.ts
@@ -22,7 +22,10 @@ const childGlyphs: Glyph[] = [
   boxGlyph,
 ]
 
-function findChildGlyph(feature: Feature, configContext: RenderConfigContext): Glyph {
+function findChildGlyph(
+  feature: Feature,
+  configContext: RenderConfigContext,
+): Glyph {
   return childGlyphs.find(g => g.match(feature, configContext)) ?? boxGlyph
 }
 
@@ -42,7 +45,7 @@ export const subfeaturesGlyph: Glyph = {
 
   match(feature, configContext) {
     const type = feature.get('type')
-    const subfeatures = feature.get('subfeatures') as Feature[] | undefined
+    const subfeatures = feature.get('subfeatures')
     if (!subfeatures?.length) {
       return false
     }
@@ -64,12 +67,17 @@ export const subfeaturesGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, reversed, configContext } = args
-    const { config, displayMode, featureHeight, geneGlyphMode, transcriptTypes } =
-      configContext
+    const {
+      config,
+      displayMode,
+      featureHeight,
+      geneGlyphMode,
+      transcriptTypes,
+    } = configContext
 
     const featureBp = {
-      start: feature.get('start') as number,
-      end: feature.get('end') as number,
+      start: feature.get('start'),
+      end: feature.get('end'),
     }
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
     const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
@@ -141,8 +149,8 @@ export const subfeaturesGlyph: Glyph = {
 
       // Position relative to parent
       const childBp = {
-        start: child.get('start') as number,
-        end: child.get('end') as number,
+        start: child.get('start'),
+        end: child.get('end'),
       }
       const offsetBp = reversed
         ? featureBp.end - childBp.end

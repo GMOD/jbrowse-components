@@ -6,8 +6,8 @@ import { repeatRegionGlyph } from './repeatRegion'
 import { segmentsGlyph } from './segments'
 import { subfeaturesGlyph } from './subfeatures'
 
-import type { Glyph } from '../types'
 import type { RenderConfigContext } from '../renderConfig'
+import type { Glyph } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 
 // Glyphs in priority order (first match wins)
@@ -36,12 +36,10 @@ export function findGlyph(
   return match ?? boxGlyph
 }
 
-export {
-  boxGlyph,
-  cdsGlyph,
-  matureProteinRegionGlyph,
-  processedTranscriptGlyph,
-  repeatRegionGlyph,
-  segmentsGlyph,
-  subfeaturesGlyph,
-}
+export { boxGlyph } from './box'
+export { cdsGlyph } from './cds'
+export { matureProteinRegionGlyph } from './matureProteinRegion'
+export { processedTranscriptGlyph } from './processed'
+export { repeatRegionGlyph } from './repeatRegion'
+export { segmentsGlyph } from './segments'
+export { subfeaturesGlyph } from './subfeatures'

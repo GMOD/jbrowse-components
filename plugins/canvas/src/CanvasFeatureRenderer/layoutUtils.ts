@@ -4,8 +4,8 @@ import { createTranscriptFloatingLabel } from './floatingLabels'
 import { builtinGlyphs } from './glyphs'
 
 import type { FloatingLabelData } from './floatingLabels'
-import type { FeatureLayout, Glyph, SubfeatureInfo } from './types'
 import type { RenderConfigContext } from './renderConfig'
+import type { FeatureLayout, SubfeatureInfo } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -179,7 +179,8 @@ function addChildrenRecursive({
       subfeatureCoords.push(leftPx, topPx, rightPx, bottomPx)
 
       // Get mouseover text - prefer glyph's custom mouseover
-      const glyphMouseover = matchingGlyph?.getSubfeatureMouseover?.(childFeature)
+      const glyphMouseover =
+        matchingGlyph?.getSubfeatureMouseover?.(childFeature)
       const displayLabel =
         glyphMouseover ??
         String(

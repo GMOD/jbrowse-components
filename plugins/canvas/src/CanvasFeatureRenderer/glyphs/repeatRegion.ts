@@ -1,8 +1,13 @@
 import { readCachedConfig } from '../renderConfig'
 import { isOffScreen } from '../util'
+import {
+  drawConnectingLine,
+  drawStrandArrow,
+  getStrandArrowPadding,
+  layoutChild,
+} from './glyphUtils'
 
 import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
-import type { Feature } from '@jbrowse/core/util'
 
 const REPEAT_COLOR_MAP: Record<string, string> = {
   CACTA_TIR_transposon: '#e6194b',
@@ -28,59 +33,13 @@ const REPEAT_COLOR_MAP: Record<string, string> = {
 }
 
 const SHORTEN_HEIGHT_FRACTION = 0.65
-const STRAND_ARROW_PADDING = 8
-
-function getStrandArrowPadding(strand: number, reversed: boolean) {
-  const reverseFlip = reversed ? -1 : 1
-  const effectiveStrand = strand * reverseFlip
-  return {
-    leftPadding: effectiveStrand === -1 ? STRAND_ARROW_PADDING : 0,
-    rightPadding: effectiveStrand === 1 ? STRAND_ARROW_PADDING : 0,
-  }
-}
-
-function layoutChild(
-  child: Feature,
-  parentFeature: Feature,
-  args: LayoutArgs,
-): FeatureLayout {
-  const { bpPerPx, reversed, configContext } = args
-  const { config, displayMode, featureHeight } = configContext
-
-  const heightPx = readCachedConfig(featureHeight, config, 'height', child)
-  const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
-
-  const childStart = child.get('start') as number
-  const childEnd = child.get('end') as number
-  const parentStart = parentFeature.get('start') as number
-  const parentEnd = parentFeature.get('end') as number
-
-  const widthPx = (childEnd - childStart) / bpPerPx
-
-  const offsetBp = reversed ? parentEnd - childEnd : childStart - parentStart
-  const xRelativePx = offsetBp / bpPerPx
-
-  return {
-    feature: child,
-    glyphType: 'Box',
-    x: xRelativePx,
-    y: 0,
-    width: widthPx,
-    height: baseHeightPx,
-    totalFeatureHeight: baseHeightPx,
-    totalLayoutHeight: baseHeightPx,
-    totalLayoutWidth: widthPx,
-    leftPadding: 0,
-    children: [],
-  }
-}
 
 export const repeatRegionGlyph: Glyph = {
   type: 'RepeatRegion',
 
   match(feature) {
     const type = feature.get('type')
-    const subfeatures = feature.get('subfeatures') as Feature[] | undefined
+    const subfeatures = feature.get('subfeatures')
     return type === 'repeat_region' && !!subfeatures?.length
   },
 
@@ -88,16 +47,16 @@ export const repeatRegionGlyph: Glyph = {
     const { feature, bpPerPx, reversed, configContext } = args
     const { config, displayMode, featureHeight } = configContext
 
-    const featureStart = feature.get('start') as number
-    const featureEnd = feature.get('end') as number
+    const start = feature.get('start')
+    const end = feature.get('end')
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
     const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
-    const widthPx = (featureEnd - featureStart) / bpPerPx
+    const widthPx = (end - start) / bpPerPx
 
     const strand = feature.get('strand') as number
     const arrowPadding = getStrandArrowPadding(strand, reversed)
 
-    const subfeatures = (feature.get('subfeatures') || []) as Feature[]
+    const subfeatures = feature.get('subfeatures') || []
     const children = subfeatures.map(child => layoutChild(child, feature, args))
 
     return {
@@ -109,16 +68,15 @@ export const repeatRegionGlyph: Glyph = {
       height: baseHeightPx,
       totalFeatureHeight: baseHeightPx,
       totalLayoutHeight: baseHeightPx,
-      totalLayoutWidth: widthPx + arrowPadding.leftPadding + arrowPadding.rightPadding,
-      leftPadding: arrowPadding.leftPadding,
+      totalLayoutWidth: widthPx + arrowPadding.left + arrowPadding.right,
+      leftPadding: arrowPadding.left,
       children,
     }
   },
 
   draw(ctx: CanvasRenderingContext2D, layout: FeatureLayout, dc: DrawContext) {
-    const { feature, children } = layout
-    const { region, theme, canvasWidth } = dc
-    const reversed = region.reversed ?? false
+    const { children } = layout
+    const { theme, canvasWidth } = dc
 
     const left = layout.x
     const width = layout.width
@@ -129,16 +87,10 @@ export const repeatRegionGlyph: Glyph = {
       return
     }
 
-    // Draw connecting line
     const strokeColor = theme.palette.text.secondary
-    const centerY = top + height / 2
 
-    ctx.strokeStyle = strokeColor
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(left, centerY)
-    ctx.lineTo(left + width, centerY)
-    ctx.stroke()
+    // Draw connecting line
+    drawConnectingLine(ctx, left, top, width, height, strokeColor)
 
     // Sort children so retrotransposons are drawn first (underneath)
     const sortedChildren = [...children].sort((a, b) => {
@@ -162,7 +114,7 @@ export const repeatRegionGlyph: Glyph = {
     }
 
     // Draw strand arrow
-    drawArrow(ctx, layout, dc)
+    drawStrandArrow(ctx, layout, dc, strokeColor)
   },
 }
 
@@ -189,59 +141,4 @@ function drawRepeatBox(
 
   ctx.fillStyle = color
   ctx.fillRect(left, top, width, height)
-}
-
-function drawArrow(
-  ctx: CanvasRenderingContext2D,
-  layout: FeatureLayout,
-  dc: DrawContext,
-) {
-  const { feature } = layout
-  const { region, theme, canvasWidth } = dc
-  const reversed = region.reversed ?? false
-
-  const left = layout.x
-  const width = layout.width
-
-  if (isOffScreen(left, width, canvasWidth)) {
-    return
-  }
-
-  const strand = feature.get('strand') as number
-  if (!strand) {
-    return
-  }
-
-  const size = 5
-  const reverseFlip = reversed ? -1 : 1
-  const offset = 7 * strand * reverseFlip
-  const top = layout.y
-  const height = layout.height
-  const centerY = top + height / 2
-
-  const strokeColor = theme.palette.text.secondary
-
-  const p =
-    strand * reverseFlip === -1
-      ? left
-      : strand * reverseFlip === 1
-        ? left + width
-        : null
-
-  if (p !== null) {
-    ctx.strokeStyle = strokeColor
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(p, centerY)
-    ctx.lineTo(p + offset, centerY)
-    ctx.stroke()
-
-    ctx.fillStyle = strokeColor
-    ctx.beginPath()
-    ctx.moveTo(p + offset / 2, centerY - size / 2)
-    ctx.lineTo(p + offset / 2, centerY + size / 2)
-    ctx.lineTo(p + offset, centerY)
-    ctx.closePath()
-    ctx.fill()
-  }
 }
