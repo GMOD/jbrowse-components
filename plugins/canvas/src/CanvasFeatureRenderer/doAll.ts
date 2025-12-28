@@ -47,7 +47,6 @@ export async function doAll({
         features,
         bpPerPx,
         region,
-        config,
         configContext,
         layout,
         pluginManager,

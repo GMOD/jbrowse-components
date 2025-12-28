@@ -1,19 +1,18 @@
 /**
- * Default glyphs for the CanvasFeatureRenderer
+ * Pluggable glyphs for the CanvasFeatureRenderer
  *
- * Glyphs are pluggable rendering components that handle specific feature types.
- * External plugins can add their own glyphs using pluginManager.addGlyphType().
+ * Built-in glyphs (Box, CDS, ProcessedTranscript, Segments, Subfeatures,
+ * MatureProteinRegion, RepeatRegion) are now defined in
+ * CanvasFeatureRenderer/glyphs/.
  *
- * See RepeatRegionGlyph.ts for an example implementation, or
- * test_data/volvox/umd_plugin.js for an example of adding a glyph from an
- * external plugin.
+ * External plugins can still add their own glyphs using
+ * pluginManager.addGlyphType(). See test_data/volvox/umd_plugin.js for an
+ * example of adding a glyph from an external plugin.
  */
-import MatureProteinRegionGlyph from './MatureProteinRegionGlyph'
-import RepeatRegionGlyph from './RepeatRegionGlyph'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default function registerGlyphs(pluginManager: PluginManager) {
-  pluginManager.addGlyphType(() => MatureProteinRegionGlyph)
-  pluginManager.addGlyphType(() => RepeatRegionGlyph)
+export default function registerGlyphs(_pluginManager: PluginManager) {
+  // All default glyphs are now builtin in CanvasFeatureRenderer/glyphs/
+  // This function is kept for backwards compatibility and as a hook for
+  // external plugins to register custom glyphs
 }

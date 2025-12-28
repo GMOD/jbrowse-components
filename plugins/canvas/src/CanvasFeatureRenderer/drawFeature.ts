@@ -1,84 +1,71 @@
-import { drawArrow } from './drawArrow'
-import { drawBox } from './drawBox'
-import { drawCDS } from './drawCDS'
-import { drawSegments } from './drawSegments'
+import { boxGlyph, builtinGlyphs } from './glyphs'
 
-import type { DrawFeatureArgs } from './types'
+import type { DrawContext, FeatureLayout, Glyph } from './types'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 
-function findMatchingGlyph(args: DrawFeatureArgs) {
-  const { feature, pluginManager } = args
+// Auto-generate glyph map from builtin glyphs
+const glyphMap: Record<string, Glyph> = Object.fromEntries(
+  builtinGlyphs.map(g => [g.type, g]),
+)
+
+/**
+ * Find a matching pluggable glyph from the plugin manager.
+ */
+function findPluggableGlyph(
+  layout: FeatureLayout,
+  pluginManager?: PluginManager,
+): GlyphType | undefined {
   if (!pluginManager) {
     return undefined
   }
   const glyphTypes = pluginManager.getGlyphTypes()
-  // Sort by priority descending (higher priority first)
   const sortedGlyphs = [...glyphTypes].sort((a, b) => b.priority - a.priority)
-  return sortedGlyphs.find(glyph => glyph.match?.(feature))
+  return sortedGlyphs.find(glyph => glyph.match?.(layout.feature))
 }
 
-export function drawFeature(args: DrawFeatureArgs) {
-  const { topLevel, featureLayout } = args
+/**
+ * Draw a feature using the polymorphic glyph system.
+ *
+ * Phase 2 of the two-phase rendering:
+ * 1. Look up the glyph by type from the layout
+ * 2. Call the glyph's draw function
+ *
+ * The layout already contains the allocated rectangle - the glyph
+ * just draws itself within that space.
+ */
+export function drawFeature(
+  ctx: CanvasRenderingContext2D,
+  layout: FeatureLayout,
+  drawContext: DrawContext,
+  pluginManager?: PluginManager,
+): void {
+  // Check for pluggable glyph first
+  const pluggableGlyph = findPluggableGlyph(layout, pluginManager)
 
-  const pluggableGlyph = findMatchingGlyph(args)
   if (pluggableGlyph) {
+    // Use pluggable glyph's draw (legacy interface)
     pluggableGlyph.draw({
-      ctx: args.ctx,
-      feature: args.feature,
-      featureLayout: args.featureLayout,
-      region: args.region,
-      bpPerPx: args.bpPerPx,
-      config: args.config,
-      theme: args.theme,
-      reversed: args.reversed,
-      topLevel: args.topLevel,
-      canvasWidth: args.canvasWidth,
+      ctx,
+      feature: layout.feature,
+      featureLayout: layout,
+      region: drawContext.region,
+      bpPerPx: drawContext.bpPerPx,
+      config: drawContext.configContext.config,
+      theme: drawContext.theme,
+      reversed: drawContext.region.reversed ?? false,
+      topLevel: true,
+      canvasWidth: drawContext.canvasWidth,
     })
     return
   }
 
-  // Use the glyph type computed during layout - no need to recalculate
-  const { glyphType } = featureLayout
-
-  switch (glyphType) {
-    case 'ProcessedTranscript':
-    case 'Segments':
-      drawSegments(args)
-      for (const childLayout of featureLayout.children) {
-        drawFeature({
-          ...args,
-          feature: childLayout.feature,
-          featureLayout: childLayout,
-          topLevel: false,
-        })
-      }
-      drawArrow(args)
-      break
-    case 'CDS':
-      drawCDS(args)
-      if (topLevel) {
-        drawArrow(args)
-      }
-      break
-    case 'Subfeatures':
-      if (featureLayout.children.length === 0) {
-        drawBox(args)
-        drawArrow(args)
-      } else {
-        for (const childLayout of featureLayout.children) {
-          drawFeature({
-            ...args,
-            feature: childLayout.feature,
-            featureLayout: childLayout,
-            topLevel: false,
-          })
-        }
-      }
-      break
-    default:
-      drawBox(args)
-      if (topLevel) {
-        drawArrow(args)
-      }
-      break
+  // Use builtin glyph based on layout's glyphType
+  const glyph = glyphMap[layout.glyphType]
+  if (glyph) {
+    glyph.draw(ctx, layout, drawContext)
+  } else {
+    // Fallback to box
+    boxGlyph.draw(ctx, layout, drawContext)
   }
 }

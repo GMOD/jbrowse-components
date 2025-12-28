@@ -8,14 +8,11 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import { drawFeature } from './drawFeature'
-import {
-  addPluggableGlyphSubfeaturesToFlatbush,
-  addSubfeaturesToLayoutAndFlatbush,
-  adjustChildPositions,
-} from './layoutUtils'
+import { buildChildrenIndex, convertToCanvasCoords } from './layoutUtils'
 
 import type { RenderConfigContext } from './renderConfig'
 import type {
+  DrawContext,
   FlatbushItem,
   LayoutRecord,
   RenderArgs,
@@ -35,6 +32,14 @@ function buildFlatbush(coords: number[], count: number) {
   return fb
 }
 
+/**
+ * Phase 2: Render all features to canvas.
+ *
+ * This is the draw phase of the two-phase rendering:
+ * 1. Layouts have already been computed in Phase 1 (layoutFeatures)
+ * 2. Here we convert local coords to canvas coords and draw each feature
+ * 3. Build Flatbush spatial indexes for hit detection
+ */
 export function makeImageData({
   ctx,
   layoutRecords,
@@ -49,7 +54,6 @@ export function makeImageData({
   configContext: RenderConfigContext
 }) {
   const {
-    config,
     bpPerPx,
     regions,
     theme: configTheme,
@@ -59,9 +63,22 @@ export function makeImageData({
     colorByCDS,
     pluginManager,
   } = renderArgs
+
   const region = regions[0]!
   const theme = createJBrowseTheme(configTheme)
 
+  // Create draw context once - shared across all features
+  const drawContext: DrawContext = {
+    region,
+    bpPerPx,
+    configContext,
+    theme,
+    canvasWidth,
+    peptideDataMap,
+    colorByCDS,
+  }
+
+  // Hit detection data
   const coords: number[] = []
   const items: FlatbushItem[] = []
   const subfeatureCoords: number[] = []
@@ -70,8 +87,9 @@ export function makeImageData({
   ctx.textBaseline = 'top'
   ctx.textAlign = 'left'
 
-  const { subfeatureLabels, transcriptTypes } = configContext
+  const { subfeatureLabels, transcriptTypes, config } = configContext
   const lastCheck = createStopTokenChecker(stopToken)
+
   for (const record of layoutRecords) {
     const {
       feature,
@@ -81,95 +99,59 @@ export function makeImageData({
       description,
     } = record
 
-    const start = feature.get(region.reversed ? 'end' : 'start')
-    const startPx = bpToPx(start, region, bpPerPx)
+    // Convert local coordinates to canvas coordinates
+    const featureStartBp = feature.get(region.reversed ? 'end' : 'start')
+    const startPx = bpToPx(featureStartBp, region, bpPerPx)
+    const canvasLayout = convertToCanvasCoords(
+      featureLayout,
+      startPx,
+      recordTopPx,
+    )
 
-    const adjustedLayout = {
-      ...featureLayout,
-      x: startPx + featureLayout.x,
-      y: recordTopPx + featureLayout.y,
-      children: adjustChildPositions(
-        featureLayout.children,
-        startPx,
-        recordTopPx,
-      ),
+    // Draw the feature (all coordinates are now in canvas space)
+    drawFeature(ctx, canvasLayout, drawContext, pluginManager)
+
+    // Build hit detection indexes
+    const bounds = {
+      left: canvasLayout.x,
+      right: canvasLayout.x + canvasLayout.totalLayoutWidth,
+      top: canvasLayout.y,
+      bottom: canvasLayout.y + canvasLayout.totalLayoutHeight,
     }
-
-    drawFeature({
-      ctx,
-      feature,
-      featureLayout: adjustedLayout,
-      region,
-      bpPerPx,
-      config,
-      configContext,
-      theme,
-      reversed: region.reversed || false,
-      topLevel: true,
-      canvasWidth,
-      peptideDataMap,
-      colorByCDS,
-      pluginManager,
-    })
-
-    const featureType = feature.get('type')
-    const isGene = featureType === 'gene'
-    const hasTranscriptChildren = adjustedLayout.children.some(child => {
-      const childType = child.feature.get('type')
-      return transcriptTypes.includes(childType)
-    })
-
-    const featureStartBp = feature.get('start')
-    const featureEndBp = feature.get('end')
-    const leftPx = adjustedLayout.x
-    const rightPx = adjustedLayout.x + adjustedLayout.totalLayoutWidth
-    const topPx = adjustedLayout.y
-    const bottomPx = adjustedLayout.y + adjustedLayout.totalLayoutHeight
 
     const tooltip = String(
       readConfObject(config, 'mouseover', { feature, label, description }) ||
         '',
     )
 
-    coords.push(leftPx, topPx, rightPx, bottomPx)
+    coords.push(bounds.left, bounds.top, bounds.right, bounds.bottom)
     items.push({
       featureId: feature.id(),
       type: 'box',
-      startBp: featureStartBp,
-      endBp: featureEndBp,
-      leftPx,
-      rightPx,
-      topPx,
-      bottomPx,
+      startBp: feature.get('start'),
+      endBp: feature.get('end'),
+      leftPx: bounds.left,
+      rightPx: bounds.right,
+      topPx: bounds.top,
+      bottomPx: bounds.bottom,
       tooltip,
     })
 
-    if (isGene && hasTranscriptChildren) {
-      addSubfeaturesToLayoutAndFlatbush({
-        layout,
-        featureLayout: adjustedLayout,
-        subfeatureCoords,
-        subfeatureInfos,
-        config,
-        subfeatureLabels,
-        transcriptTypes,
-        labelColor: theme.palette.text.primary,
-        parentTooltip: tooltip,
-      })
-    }
+    // Build subfeature index for hit detection and floating labels
+    buildChildrenIndex({
+      layout,
+      featureLayout: canvasLayout,
+      subfeatureCoords,
+      subfeatureInfos,
+      config,
+      configContext,
+      pluginManager,
+      subfeatureLabels,
+      transcriptTypes,
+      labelColor: theme.palette.text.primary,
+      parentTooltip: tooltip,
+    })
 
-    if (pluginManager) {
-      addPluggableGlyphSubfeaturesToFlatbush({
-        layout,
-        featureLayout: adjustedLayout,
-        subfeatureCoords,
-        subfeatureInfos,
-        config,
-        pluginManager,
-        subfeatureLabels,
-        labelColor: theme.palette.text.primary,
-      })
-    }
     checkStopToken2(lastCheck)
   }
 

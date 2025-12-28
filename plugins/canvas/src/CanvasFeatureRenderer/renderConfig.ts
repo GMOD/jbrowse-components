@@ -60,6 +60,9 @@ function createCachedConfig<T>(
 }
 
 export interface RenderConfigContext {
+  // Reference to the raw config for callback evaluation
+  config: AnyConfigurationModel
+
   displayMode: string
   showLabels: boolean
   showDescriptions: boolean
@@ -87,6 +90,7 @@ export function createRenderConfigContext(
   const displayMode = readConfObject(config, 'displayMode') as string
 
   return {
+    config,
     displayMode,
     showLabels: readConfObject(config, 'showLabels') as boolean,
     showDescriptions: readConfObject(config, 'showDescriptions') as boolean,
