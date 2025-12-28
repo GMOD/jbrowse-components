@@ -463,19 +463,6 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-            ...(self.graphType
-              ? [
-                  {
-                    type: 'checkbox',
-                    shortcut: 'x',
-                    label: 'Draw cross hatches',
-                    checked: self.displayCrossHatchesSetting,
-                    onClick: () => {
-                      self.toggleCrossHatches()
-                    },
-                  },
-                ]
-              : []),
             ...(self.isMultiRow
               ? [
                   {
@@ -494,13 +481,33 @@ export function stateModelFactory(
                 ]
               : []),
             {
-              label: 'Show sidebar',
-              shortcut: 'b',
-              type: 'checkbox',
-              checked: self.showSidebar,
-              onClick: () => {
-                self.setShowSidebar(!self.showSidebar)
-              },
+              label: 'Show...',
+              type: 'subMenu' as const,
+              shortcut: 'w',
+              subMenu: [
+                ...(self.graphType
+                  ? [
+                      {
+                        type: 'checkbox',
+                        shortcut: 'x',
+                        label: 'Draw cross hatches',
+                        checked: self.displayCrossHatchesSetting,
+                        onClick: () => {
+                          self.toggleCrossHatches()
+                        },
+                      },
+                    ]
+                  : []),
+                {
+                  label: 'Show sidebar',
+                  shortcut: 'b',
+                  type: 'checkbox',
+                  checked: self.showSidebar,
+                  onClick: () => {
+                    self.setShowSidebar(!self.showSidebar)
+                  },
+                },
+              ],
             },
             {
               label: 'Edit colors/arrangement...',

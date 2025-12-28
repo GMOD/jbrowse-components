@@ -29,25 +29,48 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
     const pinned = track.pinned
     const { isTopLevelView } = view
 
+    const trackMenuItems = track.trackMenuItems()
+    const saveTrackData = trackMenuItems.find(
+      item => 'label' in item && item.label === 'Save track data',
+    )
+    const remainingTrackMenuItems = trackMenuItems.filter(
+      item => !('label' in item) || item.label !== 'Save track data',
+    )
+
+    const sessionItems = session.getTrackActionMenuItems?.(trackConf) || []
+    const modifiedSessionItems = sessionItems.map(item => {
+      if (
+        'label' in item &&
+        item.label === 'Track actions' &&
+        'subMenu' in item
+      ) {
+        return {
+          ...item,
+          subMenu: [...item.subMenu, ...(saveTrackData ? [saveTrackData] : [])],
+        }
+      }
+      return item
+    })
+
     return [
-      ...(!isTopLevelView
-        ? []
-        : [
-            {
-              label: pinned ? 'Unpin track' : 'Pin track',
-              shortcut: 'p',
-              icon: PushPinIcon,
-              onClick: () => {
-                track.setPinned(!pinned)
-              },
-            },
-          ]),
       {
         label: 'Track order',
         type: 'subMenu' as const,
         shortcut: 'o',
-        priority: 2000,
+        priority: 1000,
         subMenu: [
+          ...(!isTopLevelView
+            ? []
+            : [
+                {
+                  label: pinned ? 'Unpin track' : 'Pin track',
+                  shortcut: 'p',
+                  icon: PushPinIcon,
+                  onClick: () => {
+                    track.setPinned(!pinned)
+                  },
+                },
+              ]),
           {
             label: minimized ? 'Restore track' : 'Minimize track',
             shortcut: 'i',
@@ -102,8 +125,8 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
             : []),
         ],
       },
-      ...(session.getTrackActionMenuItems?.(trackConf) || []),
-      ...track.trackMenuItems(),
+      ...modifiedSessionItems,
+      ...remainingTrackMenuItems,
     ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
   }, [track, view, session])
 

@@ -401,55 +401,60 @@ export function BaseWebSession({
             icon: InfoIcon,
           },
           {
-            label: 'Settings',
-            shortcut: 's',
+            type: 'subMenu' as const,
+            label: 'Track actions',
+            shortcut: 't',
             priority: 1001,
-            disabled: !canEdit,
-            icon: SettingsIcon,
-            onClick: () => {
-              self.editTrackConfiguration(config)
-            },
-          },
-          {
-            label: 'Delete track',
-            shortcut: 'd',
-            priority: 1000,
-            disabled: !canEdit || isRefSeq,
-            icon: DeleteIcon,
-            onClick: () => {
-              self.deleteTrackConf(config)
-            },
-          },
-          {
-            label: 'Copy track',
-            shortcut: 'c',
-            priority: 999,
-            disabled: isRefSeq,
-            onClick: () => {
-              const snap = structuredClone(
-                isStateTreeNode(config) ? getSnapshot(config) : config,
-              ) as {
-                [key: string]: unknown
-                displays?: Display[]
-              }
-              const now = Date.now()
-              snap.trackId += `-${now}`
-              if (snap.displays) {
-                for (const display of snap.displays) {
-                  display.displayId += `-${now}`
-                }
-              }
-              // the -sessionTrack suffix to trackId is used as metadata for
-              // the track selector to store the track in a special category,
-              // and default category is also cleared
-              if (!self.adminMode) {
-                snap.trackId += '-sessionTrack'
-                snap.category = undefined
-              }
-              snap.name += ' (copy)'
-              self.addTrackConf(snap)
-            },
-            icon: CopyIcon,
+            subMenu: [
+              {
+                label: 'Settings',
+                shortcut: 's',
+                disabled: !canEdit,
+                icon: SettingsIcon,
+                onClick: () => {
+                  self.editTrackConfiguration(config)
+                },
+              },
+              {
+                label: 'Copy track',
+                shortcut: 'c',
+                disabled: isRefSeq,
+                onClick: () => {
+                  const snap = structuredClone(
+                    isStateTreeNode(config) ? getSnapshot(config) : config,
+                  ) as {
+                    [key: string]: unknown
+                    displays?: Display[]
+                  }
+                  const now = Date.now()
+                  snap.trackId += `-${now}`
+                  if (snap.displays) {
+                    for (const display of snap.displays) {
+                      display.displayId += `-${now}`
+                    }
+                  }
+                  // the -sessionTrack suffix to trackId is used as metadata for
+                  // the track selector to store the track in a special category,
+                  // and default category is also cleared
+                  if (!self.adminMode) {
+                    snap.trackId += '-sessionTrack'
+                    snap.category = undefined
+                  }
+                  snap.name += ' (copy)'
+                  self.addTrackConf(snap)
+                },
+                icon: CopyIcon,
+              },
+              {
+                label: 'Delete track',
+                shortcut: 'd',
+                disabled: !canEdit || isRefSeq,
+                icon: DeleteIcon,
+                onClick: () => {
+                  self.deleteTrackConf(config)
+                },
+              },
+            ],
           },
           { type: 'divider' },
         ]

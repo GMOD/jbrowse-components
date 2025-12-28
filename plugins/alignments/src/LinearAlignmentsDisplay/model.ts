@@ -331,9 +331,10 @@ function stateModelFactory(
           if (!self.PileupDisplay) {
             return []
           }
-          const extra = getLowerPanelDisplays(pluginManager).map(d => ({
+          const extra = getLowerPanelDisplays(pluginManager).map((d, idx) => ({
             type: 'radio' as const,
             label: d.displayName,
+            shortcut: `${idx + 1}`,
             checked: d.name === self.PileupDisplay.type,
             onClick: () => {
               self.setLowerPanelType(d.name)
@@ -345,7 +346,7 @@ function stateModelFactory(
             {
               type: 'subMenu' as const,
               label: 'Pileup settings',
-              shortcut: 'p',
+              shortcut: 'i',
               subMenu: self.PileupDisplay.trackMenuItems(),
             },
             {
