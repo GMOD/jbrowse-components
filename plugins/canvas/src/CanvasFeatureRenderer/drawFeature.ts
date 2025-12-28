@@ -1,7 +1,9 @@
 import {
   boxGlyph,
   cdsGlyph,
+  matureProteinRegionGlyph,
   processedTranscriptGlyph,
+  repeatRegionGlyph,
   segmentsGlyph,
   subfeaturesGlyph,
 } from './glyphs'
@@ -14,8 +16,10 @@ import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 const glyphMap: Record<string, Glyph> = {
   Box: boxGlyph,
   CDS: cdsGlyph,
-  Segments: segmentsGlyph,
+  MatureProteinRegion: matureProteinRegionGlyph,
   ProcessedTranscript: processedTranscriptGlyph,
+  RepeatRegion: repeatRegionGlyph,
+  Segments: segmentsGlyph,
   Subfeatures: subfeaturesGlyph,
 }
 

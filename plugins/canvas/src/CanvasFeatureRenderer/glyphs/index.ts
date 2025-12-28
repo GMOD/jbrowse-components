@@ -1,6 +1,8 @@
 import { boxGlyph } from './box'
 import { cdsGlyph } from './cds'
+import { matureProteinRegionGlyph } from './matureProteinRegion'
 import { processedTranscriptGlyph } from './processed'
+import { repeatRegionGlyph } from './repeatRegion'
 import { segmentsGlyph } from './segments'
 import { subfeaturesGlyph } from './subfeatures'
 
@@ -11,6 +13,8 @@ import type { Feature } from '@jbrowse/core/util'
 // Glyphs in priority order (first match wins)
 // More specific glyphs should come before more general ones
 export const builtinGlyphs: Glyph[] = [
+  matureProteinRegionGlyph, // CDS with mature protein regions
+  repeatRegionGlyph, // repeat_region with subfeatures
   cdsGlyph,
   processedTranscriptGlyph,
   subfeaturesGlyph,
@@ -32,4 +36,12 @@ export function findGlyph(
   return match ?? boxGlyph
 }
 
-export { boxGlyph, cdsGlyph, processedTranscriptGlyph, segmentsGlyph, subfeaturesGlyph }
+export {
+  boxGlyph,
+  cdsGlyph,
+  matureProteinRegionGlyph,
+  processedTranscriptGlyph,
+  repeatRegionGlyph,
+  segmentsGlyph,
+  subfeaturesGlyph,
+}

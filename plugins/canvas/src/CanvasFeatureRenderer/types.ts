@@ -61,6 +61,10 @@ export interface Glyph {
     layout: FeatureLayout,
     drawContext: DrawContext,
   ): void
+  // Optional: custom mouseover text for subfeatures
+  getSubfeatureMouseover?(feature: Feature): string | undefined
+  // Optional: indicates this glyph's children should be indexed for hit detection
+  hasIndexableChildren?: boolean
 }
 
 export interface LayoutRecord {
@@ -115,3 +119,5 @@ export type GlyphType =
   | 'Segments'
   | 'Subfeatures'
   | 'CDS'
+  | 'MatureProteinRegion'
+  | 'RepeatRegion'

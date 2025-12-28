@@ -9,9 +9,10 @@ import {
 
 import { drawFeature } from './drawFeature'
 import {
-  addPluggableGlyphSubfeaturesToFlatbush,
-  addSubfeaturesToLayoutAndFlatbush,
-  adjustChildPositions,
+  buildBuiltinGlyphIndex,
+  buildPluggableGlyphIndex,
+  buildSubfeatureIndex,
+  convertToCanvasCoords,
 } from './layoutUtils'
 
 import type { RenderConfigContext } from './renderConfig'
@@ -41,7 +42,7 @@ function buildFlatbush(coords: number[], count: number) {
  *
  * This is the draw phase of the two-phase rendering:
  * 1. Layouts have already been computed in Phase 1 (layoutFeatures)
- * 2. Here we convert relative coords to absolute and draw each feature
+ * 2. Here we convert local coords to canvas coords and draw each feature
  * 3. Build Flatbush spatial indexes for hit detection
  */
 export function makeImageData({
@@ -103,40 +104,20 @@ export function makeImageData({
       description,
     } = record
 
-    // Convert relative coordinates to absolute canvas coordinates
+    // Convert local coordinates to canvas coordinates
     const featureStartBp = feature.get(region.reversed ? 'end' : 'start')
     const startPx = bpToPx(featureStartBp, region, bpPerPx)
-    const absoluteX = startPx + featureLayout.x
-    const absoluteY = recordTopPx + featureLayout.y
+    const canvasLayout = convertToCanvasCoords(featureLayout, startPx, recordTopPx)
 
-    // For drawing: only adjust top-level position, glyphs handle their own children
-    const layoutForDrawing = {
-      ...featureLayout,
-      x: absoluteX,
-      y: absoluteY,
-    }
-
-    // Draw the feature
-    drawFeature(ctx, layoutForDrawing, drawContext, pluginManager)
-
-    // For hit detection: need fully adjusted children coordinates
-    const layoutForHitDetection = {
-      ...featureLayout,
-      x: absoluteX,
-      y: absoluteY,
-      children: adjustChildPositions(
-        featureLayout.children,
-        absoluteX,
-        absoluteY,
-      ),
-    }
+    // Draw the feature (all coordinates are now in canvas space)
+    drawFeature(ctx, canvasLayout, drawContext, pluginManager)
 
     // Build hit detection indexes
     const bounds = {
-      left: absoluteX,
-      right: absoluteX + featureLayout.totalLayoutWidth,
-      top: absoluteY,
-      bottom: absoluteY + featureLayout.totalLayoutHeight,
+      left: canvasLayout.x,
+      right: canvasLayout.x + canvasLayout.totalLayoutWidth,
+      top: canvasLayout.y,
+      bottom: canvasLayout.y + canvasLayout.totalLayoutHeight,
     }
 
     const tooltip = String(
@@ -160,15 +141,15 @@ export function makeImageData({
     // Add subfeature hit detection for genes with transcripts
     const featureType = feature.get('type')
     const isGene = featureType === 'gene'
-    const hasTranscriptChildren = layoutForHitDetection.children.some(child => {
+    const hasTranscriptChildren = canvasLayout.children.some(child => {
       const childType = child.feature.get('type')
       return transcriptTypes.includes(childType)
     })
 
     if (isGene && hasTranscriptChildren) {
-      addSubfeaturesToLayoutAndFlatbush({
+      buildSubfeatureIndex({
         layout,
-        featureLayout: layoutForHitDetection,
+        featureLayout: canvasLayout,
         subfeatureCoords,
         subfeatureInfos,
         config,
@@ -180,9 +161,9 @@ export function makeImageData({
     }
 
     if (pluginManager) {
-      addPluggableGlyphSubfeaturesToFlatbush({
+      buildPluggableGlyphIndex({
         layout,
-        featureLayout: layoutForHitDetection,
+        featureLayout: canvasLayout,
         subfeatureCoords,
         subfeatureInfos,
         config,
@@ -191,6 +172,18 @@ export function makeImageData({
         labelColor: theme.palette.text.primary,
       })
     }
+
+    // Build subfeature index for builtin glyphs with indexable children
+    buildBuiltinGlyphIndex({
+      layout,
+      featureLayout: canvasLayout,
+      subfeatureCoords,
+      subfeatureInfos,
+      config,
+      configContext,
+      subfeatureLabels,
+      labelColor: theme.palette.text.primary,
+    })
 
     checkStopToken2(lastCheck)
   }

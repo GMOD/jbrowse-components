@@ -1,11 +1,30 @@
 import { applyLabelDimensions } from '../labelUtils'
 import { readCachedConfig } from '../renderConfig'
 import { boxGlyph } from './box'
+import { cdsGlyph } from './cds'
+import { matureProteinRegionGlyph } from './matureProteinRegion'
 import { processedTranscriptGlyph } from './processed'
+import { repeatRegionGlyph } from './repeatRegion'
 import { segmentsGlyph } from './segments'
 
 import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
+import type { RenderConfigContext } from '../renderConfig'
 import type { Feature } from '@jbrowse/core/util'
+
+// Local glyph list to avoid circular dependency with index.ts
+// Order matters - more specific glyphs first
+const childGlyphs: Glyph[] = [
+  matureProteinRegionGlyph,
+  repeatRegionGlyph,
+  cdsGlyph,
+  processedTranscriptGlyph,
+  segmentsGlyph,
+  boxGlyph,
+]
+
+function findChildGlyph(feature: Feature, configContext: RenderConfigContext): Glyph {
+  return childGlyphs.find(g => g.match(feature, configContext)) ?? boxGlyph
+}
 
 const TRANSCRIPT_PADDING = 2
 const CODING_TYPES = new Set(['CDS', 'cds'])
@@ -16,29 +35,6 @@ function hasCodingSubfeature(feature: Feature): boolean {
     (sub: Feature) =>
       CODING_TYPES.has(sub.get('type')) || hasCodingSubfeature(sub),
   )
-}
-
-function getChildGlyph(
-  child: Feature,
-  configContext: LayoutArgs['configContext'],
-): Glyph {
-  const { transcriptTypes } = configContext
-  const childType = child.get('type')
-  const subfeatures = child.get('subfeatures') as Feature[] | undefined
-
-  if (!subfeatures?.length) {
-    return boxGlyph
-  }
-
-  // Check if it's a coding transcript
-  if (transcriptTypes.includes(childType)) {
-    const hasCDS = subfeatures.some((f: Feature) => f.get('type') === 'CDS')
-    if (hasCDS) {
-      return processedTranscriptGlyph
-    }
-  }
-
-  return segmentsGlyph
 }
 
 export const subfeaturesGlyph: Glyph = {
@@ -126,7 +122,7 @@ export const subfeaturesGlyph: Glyph = {
       const child = subfeatures[i]!
       const childType = child.get('type')
       const isChildTranscript = transcriptTypes.includes(childType)
-      const childGlyph = getChildGlyph(child, configContext)
+      const childGlyph = findChildGlyph(child, configContext)
 
       // Layout child using its glyph's layout function
       const childLayout = childGlyph.layout({
@@ -191,37 +187,14 @@ export const subfeaturesGlyph: Glyph = {
     const { children } = layout
 
     if (children.length === 0) {
-      // No children - draw as a box
       boxGlyph.draw(ctx, { ...layout, glyphType: 'Box' }, dc)
       return
     }
 
-    // Draw each child transcript
-    // Children have positions relative to parent, each child glyph will handle its own children
-    const leftPx = layout.x
-    const topPx = layout.y
-
+    // All coordinates are already absolute - just draw each child
     for (const childLayout of children) {
-      // Convert transcript from relative to absolute coordinates
-      // The child glyph (processed/segments) will handle its own exon children
-      const childAbsolute = {
-        ...childLayout,
-        x: leftPx + childLayout.x,
-        y: topPx + childLayout.y,
-      }
-
-      // Dispatch to appropriate glyph
-      switch (childLayout.glyphType) {
-        case 'ProcessedTranscript':
-          processedTranscriptGlyph.draw(ctx, childAbsolute, dc)
-          break
-        case 'Segments':
-          segmentsGlyph.draw(ctx, childAbsolute, dc)
-          break
-        default:
-          boxGlyph.draw(ctx, childAbsolute, dc)
-          break
-      }
+      const childGlyph = findChildGlyph(childLayout.feature, dc.configContext)
+      childGlyph.draw(ctx, childLayout, dc)
     }
   },
 }

@@ -152,18 +152,12 @@ export const processedTranscriptGlyph: Glyph = {
       }
     }
 
-    // Draw children (exons, CDS, UTRs)
+    // Draw children (exons, CDS, UTRs) - coordinates are already absolute
     for (const childLayout of children) {
-      // Convert from relative to absolute coordinates
-      const childAbsolute = {
-        ...childLayout,
-        x: leftPx + childLayout.x,
-        y: topPx + childLayout.y,
-      }
       if (childLayout.glyphType === 'CDS') {
-        cdsGlyph.draw(ctx, childAbsolute, dc)
+        cdsGlyph.draw(ctx, childLayout, dc)
       } else {
-        boxGlyph.draw(ctx, childAbsolute, dc)
+        boxGlyph.draw(ctx, childLayout, dc)
       }
     }
 

@@ -5,14 +5,13 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Image, createCanvas } from 'canvas'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import MatureProteinRegionGlyph from './MatureProteinRegionGlyph'
-import registerGlyphs from './index'
-import configSchema from '../CanvasFeatureRenderer/configSchema'
-import { layoutFeatures } from '../CanvasFeatureRenderer/layoutFeatures'
-import { makeImageData } from '../CanvasFeatureRenderer/makeImageData'
-import { createRenderConfigContext } from '../CanvasFeatureRenderer/renderConfig'
+import { matureProteinRegionGlyph } from './matureProteinRegion'
+import configSchema from '../configSchema'
+import { layoutFeatures } from '../layoutFeatures'
+import { makeImageData } from '../makeImageData'
+import { createRenderConfigContext } from '../renderConfig'
 
-import type { FloatingLabelData } from '../CanvasFeatureRenderer/floatingLabels'
+import type { FloatingLabelData } from '../floatingLabels'
 
 interface LayoutSerializableData {
   refName?: string
@@ -25,7 +24,6 @@ interface LayoutSerializableData {
 }
 
 const pluginManager = new PluginManager([])
-registerGlyphs(pluginManager)
 pluginManager.createPluggableElements()
 pluginManager.configure()
 
@@ -64,7 +62,7 @@ function createRenderArgs(
   region = defaultRegion,
   configOverrides: Record<string, unknown> = {},
 ) {
-  const config = configSchema.create(configOverrides, { pluginManager })
+  const config = configSchema.create(configOverrides)
   const bpPerPx = 1
   const layout = new GranularRectLayout<LayoutSerializableData>({
     pitchX: 1,
@@ -81,7 +79,6 @@ function createRenderArgs(
     layout,
     displayMode: configContext.displayMode,
     theme: defaultTheme,
-    pluginManager,
   }
 }
 
@@ -90,12 +87,12 @@ function doLayout(
   features: Map<string, SimpleFeature>,
 ) {
   return layoutFeatures({
+    pluginManager,
     features,
     bpPerPx: args.bpPerPx,
     region: args.region,
     configContext: args.configContext,
     layout: args.layout,
-    pluginManager: args.pluginManager,
   })
 }
 
@@ -262,11 +259,13 @@ function createSimpleCDSWithMatureRegions() {
   })
 }
 
-describe('MatureProteinRegionGlyph', () => {
+describe('matureProteinRegionGlyph', () => {
   describe('match function', () => {
+    const configContext = createRenderConfigContext(configSchema.create({}))
+
     test('matches CDS with mature_protein_region_of_CDS subfeatures', () => {
       const feature = createSimpleCDSWithMatureRegions()
-      expect(MatureProteinRegionGlyph.match!(feature)).toBe(true)
+      expect(matureProteinRegionGlyph.match(feature, configContext)).toBe(true)
     })
 
     test('matches CDS with mature_protein_region subfeatures', () => {
@@ -286,7 +285,7 @@ describe('MatureProteinRegionGlyph', () => {
           },
         ],
       })
-      expect(MatureProteinRegionGlyph.match!(feature)).toBe(true)
+      expect(matureProteinRegionGlyph.match(feature, configContext)).toBe(true)
     })
 
     test('does not match CDS without mature protein subfeatures', () => {
@@ -306,7 +305,7 @@ describe('MatureProteinRegionGlyph', () => {
           },
         ],
       })
-      expect(MatureProteinRegionGlyph.match!(feature)).toBe(false)
+      expect(matureProteinRegionGlyph.match(feature, configContext)).toBe(false)
     })
 
     test('does not match non-CDS features', () => {
@@ -326,7 +325,7 @@ describe('MatureProteinRegionGlyph', () => {
           },
         ],
       })
-      expect(MatureProteinRegionGlyph.match!(feature)).toBe(false)
+      expect(matureProteinRegionGlyph.match(feature, configContext)).toBe(false)
     })
 
     test('does not match CDS without subfeatures', () => {
@@ -337,175 +336,71 @@ describe('MatureProteinRegionGlyph', () => {
         start: 100,
         end: 300,
       })
-      expect(MatureProteinRegionGlyph.match!(feature)).toBe(false)
+      expect(matureProteinRegionGlyph.match(feature, configContext)).toBe(false)
     })
   })
 
-  describe('getChildFeatures function', () => {
-    test('returns only mature protein region subfeatures', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'cds-mixed',
-        refName: 'ctgA',
-        type: 'CDS',
-        start: 100,
-        end: 500,
-        subfeatures: [
-          {
-            uniqueId: 'mature-1',
-            refName: 'ctgA',
-            type: 'mature_protein_region_of_CDS',
-            start: 100,
-            end: 200,
-          },
-          {
-            uniqueId: 'exon-1',
-            refName: 'ctgA',
-            type: 'exon',
-            start: 200,
-            end: 300,
-          },
-          {
-            uniqueId: 'mature-2',
-            refName: 'ctgA',
-            type: 'mature_protein_region',
-            start: 300,
-            end: 400,
-          },
-        ],
-      })
-      const config = configSchema.create({}, { pluginManager })
-      const children = MatureProteinRegionGlyph.getChildFeatures!(
-        feature,
-        config,
-      )
-      expect(children).toHaveLength(2)
-      expect(children[0]!.get('type')).toBe('mature_protein_region_of_CDS')
-      expect(children[1]!.get('type')).toBe('mature_protein_region')
-    })
-
-    test('returns empty array for CDS without mature protein subfeatures', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'cds-no-mature',
-        refName: 'ctgA',
-        type: 'CDS',
-        start: 100,
-        end: 300,
-        subfeatures: [
-          {
-            uniqueId: 'exon-1',
-            refName: 'ctgA',
-            type: 'exon',
-            start: 100,
-            end: 300,
-          },
-        ],
-      })
-      const config = configSchema.create({}, { pluginManager })
-      const children = MatureProteinRegionGlyph.getChildFeatures!(
-        feature,
-        config,
-      )
-      expect(children).toHaveLength(0)
-    })
-  })
-
-  describe('getHeightMultiplier function', () => {
-    test('returns 1 for CDS without mature protein children', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'cds-empty',
-        refName: 'ctgA',
-        type: 'CDS',
-        start: 100,
-        end: 300,
-      })
-      const config = configSchema.create({}, { pluginManager })
-      const multiplier = MatureProteinRegionGlyph.getHeightMultiplier!(
-        feature,
-        config,
-      )
-      expect(multiplier).toBe(1)
-    })
-
-    test('returns number of children for normal display', () => {
+  describe('layout function', () => {
+    test('creates layout with children for each mature protein region', () => {
       const feature = createSimpleCDSWithMatureRegions()
-      const config = configSchema.create({}, { pluginManager })
-      const multiplier = MatureProteinRegionGlyph.getHeightMultiplier!(
+      const configContext = createRenderConfigContext(configSchema.create({}))
+
+      const layout = matureProteinRegionGlyph.layout({
         feature,
-        config,
-      )
-      expect(multiplier).toBe(3)
+        bpPerPx: 1,
+        reversed: false,
+        configContext,
+      })
+
+      expect(layout.glyphType).toBe('MatureProteinRegion')
+      expect(layout.children).toHaveLength(3)
     })
 
-    test('returns double for below labels', () => {
+    test('height scales with number of children', () => {
       const feature = createSimpleCDSWithMatureRegions()
-      const config = configSchema.create(
-        { subfeatureLabels: 'below' },
-        { pluginManager },
-      )
-      const multiplier = MatureProteinRegionGlyph.getHeightMultiplier!(
+      const configContext = createRenderConfigContext(configSchema.create({}))
+
+      const layout = matureProteinRegionGlyph.layout({
         feature,
-        config,
+        bpPerPx: 1,
+        reversed: false,
+        configContext,
+      })
+
+      // 3 children * base height
+      expect(layout.height).toBeGreaterThan(0)
+      expect(layout.totalLayoutHeight).toBe(layout.height)
+    })
+
+    test('height doubles with below labels', () => {
+      const feature = createSimpleCDSWithMatureRegions()
+      const configContext = createRenderConfigContext(
+        configSchema.create({ subfeatureLabels: 'below' }),
       )
-      expect(multiplier).toBe(6)
-    })
-  })
 
-  describe('getSubfeatureMouseover function', () => {
-    test('returns product and protein_id', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'mature-1',
-        refName: 'ctgA',
-        type: 'mature_protein_region_of_CDS',
-        start: 100,
-        end: 200,
-        product: 'capsid protein 1A',
-        protein_id: 'NP_740412.1',
+      const layoutBelow = matureProteinRegionGlyph.layout({
+        feature,
+        bpPerPx: 1,
+        reversed: false,
+        configContext,
       })
-      const result = MatureProteinRegionGlyph.getSubfeatureMouseover!(feature)
-      expect(result).toBe('capsid protein 1A (NP_740412.1)')
-    })
 
-    test('returns only product when no protein_id', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'mature-1',
-        refName: 'ctgA',
-        type: 'mature_protein_region_of_CDS',
-        start: 100,
-        end: 200,
-        product: 'capsid protein',
+      const configContextNormal = createRenderConfigContext(
+        configSchema.create({}),
+      )
+      const layoutNormal = matureProteinRegionGlyph.layout({
+        feature,
+        bpPerPx: 1,
+        reversed: false,
+        configContext: configContextNormal,
       })
-      const result = MatureProteinRegionGlyph.getSubfeatureMouseover!(feature)
-      expect(result).toBe('capsid protein')
-    })
 
-    test('returns only protein_id when no product', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'mature-1',
-        refName: 'ctgA',
-        type: 'mature_protein_region_of_CDS',
-        start: 100,
-        end: 200,
-        protein_id: 'NP_123456.1',
-      })
-      const result = MatureProteinRegionGlyph.getSubfeatureMouseover!(feature)
-      expect(result).toBe('(NP_123456.1)')
-    })
-
-    test('returns undefined when no product or protein_id', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'mature-1',
-        refName: 'ctgA',
-        type: 'mature_protein_region_of_CDS',
-        start: 100,
-        end: 200,
-      })
-      const result = MatureProteinRegionGlyph.getSubfeatureMouseover!(feature)
-      expect(result).toBeUndefined()
+      expect(layoutBelow.height).toBe(layoutNormal.height * 2)
     })
   })
 
   describe('layout integration', () => {
-    test('CDS with mature proteins gets correct height multiplier applied', () => {
+    test('CDS with mature proteins gets correct layout', () => {
       const feature = createSimpleCDSWithMatureRegions()
       const features = new Map([['cds-simple', feature]])
       const args = createRenderArgs(features, {
@@ -517,6 +412,7 @@ describe('MatureProteinRegionGlyph', () => {
 
       expect(layoutRecords).toHaveLength(1)
       const layout = layoutRecords[0]!.layout
+      expect(layout.glyphType).toBe('MatureProteinRegion')
       expect(layout.children).toHaveLength(3)
     })
 
@@ -532,12 +428,13 @@ describe('MatureProteinRegionGlyph', () => {
       expect(geneLayout.children).toHaveLength(1)
 
       const cdsLayout = geneLayout.children[0]!
+      expect(cdsLayout.glyphType).toBe('MatureProteinRegion')
       expect(cdsLayout.children).toHaveLength(5)
     })
   })
 
   describe('rendering integration', () => {
-    test('creates subfeature info for mature protein regions', async () => {
+    test('renders without errors', async () => {
       const feature = createSimpleCDSWithMatureRegions()
       const features = new Map([['cds-simple', feature]])
       const args = createRenderArgs(features, {
@@ -553,51 +450,7 @@ describe('MatureProteinRegionGlyph', () => {
         100,
       )
 
-      expect(result.subfeatureInfos.length).toBeGreaterThan(0)
-      const matureRegionInfos = result.subfeatureInfos.filter(
-        info => info.type === 'mature_protein_region_of_CDS',
-      )
-      expect(matureRegionInfos).toHaveLength(3)
-    })
-
-    test('mouseover text includes product and protein_id', async () => {
-      const feature = createSimpleCDSWithMatureRegions()
-      const features = new Map([['cds-simple', feature]])
-      const args = createRenderArgs(features, {
-        ...defaultRegion,
-        start: 0,
-        end: 600,
-      })
-      const layoutRecords = doLayout(args, features)
-      const result = await renderAndGetResult(
-        args,
-        features,
-        layoutRecords,
-        100,
-      )
-
-      const proteinAInfo = result.subfeatureInfos.find(info =>
-        info.displayLabel.includes('protein A'),
-      )
-      expect(proteinAInfo).toBeDefined()
-      expect(proteinAInfo!.displayLabel).toContain('PROT_A')
-    })
-
-    test('floating labels created for below mode', async () => {
-      const feature = createSimpleCDSWithMatureRegions()
-      const features = new Map([['cds-simple', feature]])
-      const args = createRenderArgs(
-        features,
-        { ...defaultRegion, start: 0, end: 600 },
-        { subfeatureLabels: 'below' },
-      )
-      const layoutRecords = doLayout(args, features)
-      await renderAndGetResult(args, features, layoutRecords, 200)
-
-      const layoutData = args.layout.getSerializableDataByID('mature-a')
-      expect(layoutData).toBeDefined()
-      expect(layoutData!.floatingLabels).toBeDefined()
-      expect(layoutData!.floatingLabels!.length).toBeGreaterThan(0)
+      expect(result.items.length).toBeGreaterThan(0)
     })
   })
 

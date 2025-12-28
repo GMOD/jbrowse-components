@@ -168,18 +168,12 @@ export const segmentsGlyph: Glyph = {
       }
     }
 
-    // Draw children
+    // Draw children - coordinates are already absolute
     for (const childLayout of children) {
-      // Adjust child position to be absolute
-      const adjustedChild = {
-        ...childLayout,
-        x: left + childLayout.x,
-        y: top + childLayout.y,
-      }
       if (childLayout.glyphType === 'CDS') {
-        cdsGlyph.draw(ctx, adjustedChild, dc)
+        cdsGlyph.draw(ctx, childLayout, dc)
       } else {
-        boxGlyph.draw(ctx, adjustedChild, dc)
+        boxGlyph.draw(ctx, childLayout, dc)
       }
     }
 

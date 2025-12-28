@@ -1,28 +1,39 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import { createTranscriptFloatingLabel } from './floatingLabels'
+import { builtinGlyphs } from './glyphs'
 
 import type { FloatingLabelData } from './floatingLabels'
-import type { FeatureLayout, SubfeatureInfo } from './types'
+import type { FeatureLayout, Glyph, SubfeatureInfo } from './types'
+import type { RenderConfigContext } from './renderConfig'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
-export function adjustChildPositions(
-  children: FeatureLayout[],
-  xOffset: number,
-  yOffset: number,
-): FeatureLayout[] {
-  return children.map(child => ({
-    ...child,
-    x: child.x + xOffset,
-    y: child.y + yOffset,
-    children: adjustChildPositions(child.children, xOffset, yOffset),
-  }))
+/**
+ * Convert a layout from local coordinates to canvas coordinates.
+ * During layout, children are positioned relative to their parent.
+ * This function recursively resolves those to final canvas pixel positions.
+ */
+export function convertToCanvasCoords(
+  layout: FeatureLayout,
+  offsetX: number,
+  offsetY: number,
+): FeatureLayout {
+  const canvasX = offsetX + layout.x
+  const canvasY = offsetY + layout.y
+  return {
+    ...layout,
+    x: canvasX,
+    y: canvasY,
+    children: layout.children.map(child =>
+      convertToCanvasCoords(child, canvasX, canvasY),
+    ),
+  }
 }
 
-export function addSubfeaturesToLayoutAndFlatbush({
+export function buildSubfeatureIndex({
   layout,
   featureLayout,
   subfeatureCoords,
@@ -114,6 +125,165 @@ export function addSubfeaturesToLayoutAndFlatbush({
           : {}),
       },
     )
+  }
+}
+
+function findMatchingBuiltinGlyph(
+  feature: Feature,
+  configContext: RenderConfigContext,
+): Glyph | undefined {
+  return builtinGlyphs.find(
+    glyph => glyph.hasIndexableChildren && glyph.match(feature, configContext),
+  )
+}
+
+export function buildBuiltinGlyphIndex({
+  layout,
+  featureLayout,
+  subfeatureCoords,
+  subfeatureInfos,
+  config,
+  configContext,
+  subfeatureLabels,
+  labelColor,
+}: {
+  layout: BaseLayout<unknown>
+  featureLayout: FeatureLayout
+  subfeatureCoords: number[]
+  subfeatureInfos: SubfeatureInfo[]
+  config: AnyConfigurationModel
+  configContext: RenderConfigContext
+  subfeatureLabels: string
+  labelColor: string
+}) {
+  addBuiltinGlyphSubfeaturesRecursive({
+    layout,
+    featureLayout,
+    subfeatureCoords,
+    subfeatureInfos,
+    config,
+    configContext,
+    subfeatureLabels,
+    labelColor,
+  })
+}
+
+function addBuiltinGlyphSubfeaturesRecursive({
+  layout,
+  featureLayout,
+  subfeatureCoords,
+  subfeatureInfos,
+  config,
+  configContext,
+  subfeatureLabels,
+  labelColor,
+}: {
+  layout: BaseLayout<unknown>
+  featureLayout: FeatureLayout
+  subfeatureCoords: number[]
+  subfeatureInfos: SubfeatureInfo[]
+  config: AnyConfigurationModel
+  configContext: RenderConfigContext
+  subfeatureLabels: string
+  labelColor: string
+}) {
+  const feature = featureLayout.feature
+  const matchingGlyph = findMatchingBuiltinGlyph(feature, configContext)
+
+  if (matchingGlyph && featureLayout.children.length > 0) {
+    const { rowMap, numRows } = computeRowAssignments(featureLayout.children)
+    const rowHeight = featureLayout.height / numRows
+    const parentTop = featureLayout.y
+    const showSubfeatureLabels = subfeatureLabels !== 'none'
+
+    for (const child of featureLayout.children) {
+      const childFeature = child.feature
+      const childType = childFeature.get('type') as string
+      const row = rowMap.get(child) ?? 0
+
+      const leftPx = child.x
+      const rightPx = child.x + child.width
+      const topPx = parentTop + row * rowHeight
+      const bottomPx = topPx + rowHeight
+
+      subfeatureCoords.push(leftPx, topPx, rightPx, bottomPx)
+
+      const glyphMouseover = matchingGlyph.getSubfeatureMouseover?.(childFeature)
+      const displayLabel =
+        glyphMouseover ??
+        String(
+          readConfObject(config, 'subfeatureMouseover', {
+            feature: childFeature,
+          }) || '',
+        )
+
+      subfeatureInfos.push({
+        featureId: childFeature.id(),
+        parentFeatureId: featureLayout.feature.id(),
+        displayLabel,
+        type: childType,
+        leftPx,
+        topPx,
+        rightPx,
+        bottomPx,
+      })
+
+      const floatingLabels: FloatingLabelData[] = []
+      const padding = 1
+      const boxHeight =
+        subfeatureLabels === 'below'
+          ? Math.floor(rowHeight / 2) - padding
+          : rowHeight - padding * 2
+      if (showSubfeatureLabels && displayLabel) {
+        const label = createTranscriptFloatingLabel({
+          displayLabel,
+          featureHeight: boxHeight,
+          subfeatureLabels,
+          color: labelColor,
+          parentFeatureId: featureLayout.feature.id(),
+          tooltip: displayLabel,
+        })
+        if (label) {
+          floatingLabels.push(label)
+        }
+      }
+
+      const childStart = childFeature.get('start')
+      const childEnd = childFeature.get('end')
+      layout.addRect(
+        childFeature.id(),
+        childStart,
+        childEnd,
+        bottomPx - topPx,
+        childFeature,
+        {
+          refName: childFeature.get('refName'),
+          ...(showSubfeatureLabels && floatingLabels.length > 0
+            ? {
+                floatingLabels,
+                totalFeatureHeight: boxHeight,
+                totalLayoutWidth: child.width,
+                actualTopPx: topPx + padding,
+                featureWidth: child.width,
+                leftPadding: 0,
+              }
+            : {}),
+        },
+      )
+    }
+  }
+
+  for (const child of featureLayout.children) {
+    addBuiltinGlyphSubfeaturesRecursive({
+      layout,
+      featureLayout: child,
+      subfeatureCoords,
+      subfeatureInfos,
+      config,
+      configContext,
+      subfeatureLabels,
+      labelColor,
+    })
   }
 }
 
@@ -271,7 +441,7 @@ function addPluggableGlyphSubfeaturesRecursive({
   }
 }
 
-export function addPluggableGlyphSubfeaturesToFlatbush({
+export function buildPluggableGlyphIndex({
   layout,
   featureLayout,
   subfeatureCoords,
