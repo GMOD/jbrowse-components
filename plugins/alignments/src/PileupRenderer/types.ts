@@ -69,6 +69,7 @@ export function flatbushItemToFeatureData(
         start: item.start,
         end: item.start + 1,
         sequence: item.sequence,
+        insertionLength: item.sequence.length,
       }
     case 'deletion':
       return {
@@ -82,6 +83,7 @@ export function flatbushItemToFeatureData(
         ...base,
         start: item.start,
         end: item.start + 1,
+        clipLength: item.length,
       }
     case 'modification':
       return {
