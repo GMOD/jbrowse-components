@@ -62,7 +62,8 @@ const DEFAULT_EVENT = 'keydown' as const
  * Platform detection code.
  * @see https://github.com/jamiebuilds/tinykeys/issues/184
  */
-const PLATFORM = typeof navigator === 'object' ? navigator.platform : ''
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+const PLATFORM = typeof navigator === 'object' ? (navigator.platform ?? '') : ''
 const APPLE_DEVICE = /Mac|iPod|iPhone|iPad/.test(PLATFORM)
 
 /**
@@ -135,11 +136,11 @@ export function matchKeyBindingPress(
         : key.toUpperCase() !== event.key.toUpperCase() &&
           key !== event.code) ||
       // Ensure all the modifiers in the keybinding are pressed.
-      mods.find(mod => !getModifierState(event, mod)) ||
+      mods.some(mod => !getModifierState(event, mod)) ||
       // KEYBINDING_MODIFIER_KEYS (Shift/Control/etc) change the meaning of a
       // keybinding. So if they are pressed but aren't part of the current
       // keybinding press, then we don't have a match.
-      KEYBINDING_MODIFIER_KEYS.find(
+      KEYBINDING_MODIFIER_KEYS.some(
         mod =>
           !mods.includes(mod) && key !== mod && getModifierState(event, mod),
       )
@@ -195,7 +196,7 @@ export function createKeybindingsHandler(
       const callback = keyBinding[1]
 
       const prev = possibleMatches.get(sequence)
-      const remainingExpectedPresses = prev ? prev : sequence
+      const remainingExpectedPresses = prev || sequence
       const currentExpectedPress = remainingExpectedPresses[0]!
 
       const matches = matchKeyBindingPress(event, currentExpectedPress)

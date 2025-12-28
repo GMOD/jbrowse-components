@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { createContext, useCallback, useContext, useRef, useState } from 'react'
+import { useCallback, useContext, useRef, useState } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
@@ -21,6 +21,7 @@ import {
 } from './MenuItems'
 import { bindMenu } from './hooks'
 import { useAsyncMenuItems } from './menuHooks'
+import { MenuSettingsContext } from './MenuSettingsContext'
 
 import type {
   CheckboxMenuItem,
@@ -34,10 +35,8 @@ import type { PopupState } from './hooks'
 import type { SvgIconProps } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes'
+export { MenuSettingsContext } from './MenuSettingsContext'
 type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
-
-// Context for menu settings - exported so callers can provide session settings
-export const MenuSettingsContext = createContext({ showShortcuts: true })
 
 function CascadingSubmenu({
   title,
@@ -258,8 +257,8 @@ function CascadingMenuList({
   closeAfterItemClick,
   menuItems,
   onCloseRoot,
-  onCloseSubmenu,
-  parentAnchorEl,
+  onCloseSubmenu: _onCloseSubmenu,
+  parentAnchorEl: _parentAnchorEl,
   onKeyDown,
   openSubmenuIdx: openSubmenuIdxProp,
   setOpenSubmenuIdx: setOpenSubmenuIdxProp,
@@ -300,7 +299,6 @@ function CascadingMenuList({
   )
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div onKeyDown={onKeyDown}>
       {sortedItems.map((item, idx) => {
         if ('subMenu' in item) {

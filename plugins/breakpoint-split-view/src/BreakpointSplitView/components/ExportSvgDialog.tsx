@@ -82,6 +82,7 @@ export default function ExportSvgDialog({
       <form
         onSubmit={event => {
           event.preventDefault()
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           onSubmit()
         }}
       >

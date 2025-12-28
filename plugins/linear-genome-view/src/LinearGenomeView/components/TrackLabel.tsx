@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import { forwardRef, useRef } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
@@ -73,14 +73,12 @@ const TrackLabel = observer(
     const trackId = getConf(track, 'trackId')
     const trackName = getTrackName(track.configuration, session)
     const prevFocused = useRef(isFocused)
-    const [animationKey, setAnimationKey] = useState(0)
+    const animationKey = useRef(0)
 
-    useEffect(() => {
-      if (isFocused && !prevFocused.current) {
-        setAnimationKey(k => k + 1)
-      }
-      prevFocused.current = isFocused
-    }, [isFocused])
+    if (isFocused && !prevFocused.current) {
+      animationKey.current++
+    }
+    prevFocused.current = isFocused
 
     return (
       <Paper
@@ -93,7 +91,7 @@ const TrackLabel = observer(
         }}
       >
         {isFocused ? (
-          <div key={animationKey} className={classes.focusHighlight} />
+          <div key={animationKey.current} className={classes.focusHighlight} />
         ) : null}
         <TrackLabelDragHandle track={track} trackId={trackId} view={view} />
         <IconButton
