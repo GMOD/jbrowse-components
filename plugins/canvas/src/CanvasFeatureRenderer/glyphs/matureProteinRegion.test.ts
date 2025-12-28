@@ -62,7 +62,7 @@ function createRenderArgs(
   region = defaultRegion,
   configOverrides: Record<string, unknown> = {},
 ) {
-  const config = configSchema.create(configOverrides)
+  const config = configSchema.create(configOverrides, { pluginManager })
   const bpPerPx = 1
   const layout = new GranularRectLayout<LayoutSerializableData>({
     pitchX: 1,
@@ -261,7 +261,9 @@ function createSimpleCDSWithMatureRegions() {
 
 describe('matureProteinRegionGlyph', () => {
   describe('match function', () => {
-    const configContext = createRenderConfigContext(configSchema.create({}))
+    const configContext = createRenderConfigContext(
+      configSchema.create({}, { pluginManager }),
+    )
 
     test('matches CDS with mature_protein_region_of_CDS subfeatures', () => {
       const feature = createSimpleCDSWithMatureRegions()
@@ -343,7 +345,9 @@ describe('matureProteinRegionGlyph', () => {
   describe('layout function', () => {
     test('creates layout with children for each mature protein region', () => {
       const feature = createSimpleCDSWithMatureRegions()
-      const configContext = createRenderConfigContext(configSchema.create({}))
+      const configContext = createRenderConfigContext(
+      configSchema.create({}, { pluginManager }),
+    )
 
       const layout = matureProteinRegionGlyph.layout({
         feature,
@@ -358,7 +362,9 @@ describe('matureProteinRegionGlyph', () => {
 
     test('height scales with number of children', () => {
       const feature = createSimpleCDSWithMatureRegions()
-      const configContext = createRenderConfigContext(configSchema.create({}))
+      const configContext = createRenderConfigContext(
+      configSchema.create({}, { pluginManager }),
+    )
 
       const layout = matureProteinRegionGlyph.layout({
         feature,
@@ -375,7 +381,7 @@ describe('matureProteinRegionGlyph', () => {
     test('height doubles with below labels', () => {
       const feature = createSimpleCDSWithMatureRegions()
       const configContext = createRenderConfigContext(
-        configSchema.create({ subfeatureLabels: 'below' }),
+        configSchema.create({ subfeatureLabels: 'below' }, { pluginManager }),
       )
 
       const layoutBelow = matureProteinRegionGlyph.layout({
@@ -386,7 +392,7 @@ describe('matureProteinRegionGlyph', () => {
       })
 
       const configContextNormal = createRenderConfigContext(
-        configSchema.create({}),
+        configSchema.create({}, { pluginManager }),
       )
       const layoutNormal = matureProteinRegionGlyph.layout({
         feature,
