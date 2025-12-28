@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { useCallback, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useRef, useState } from 'react'
 
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
@@ -36,6 +36,9 @@ import type { SvgIconProps } from '@mui/material'
 export type { MenuItemsGetter } from './MenuTypes'
 type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
 
+// Context for menu settings - exported so callers can provide session settings
+export const MenuSettingsContext = createContext({ showShortcuts: true })
+
 function CascadingSubmenu({
   title,
   shortcut,
@@ -61,6 +64,7 @@ function CascadingSubmenu({
   onOpen: () => void
   onClose: () => void
 }) {
+  const { showShortcuts } = useContext(MenuSettingsContext)
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
   const submenuListRef = useRef<HTMLDivElement>(null)
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
@@ -109,7 +113,7 @@ function CascadingSubmenu({
         ) : null}
         <ListItemText primary={title} inset={inset} />
         <div style={{ flexGrow: 1, minWidth: 10 }} />
-        {shortcut ? (
+        {shortcut && showShortcuts ? (
           <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
             {shortcut.toUpperCase()}
           </Typography>
@@ -244,6 +248,7 @@ function CascadingMenuList({
   openSubmenuIdx?: number
   setOpenSubmenuIdx?: (idx: number | undefined) => void
 }) {
+  const { showShortcuts } = useContext(MenuSettingsContext)
   const [openSubmenuIdxLocal, setOpenSubmenuIdxLocal] = useState<
     number | undefined
   >()
@@ -331,7 +336,7 @@ function CascadingMenuList({
               inset={hasIcon && !actionItem.icon}
             />
             <div style={{ flexGrow: 1, minWidth: 10 }} />
-            {actionItem.shortcut ? (
+            {actionItem.shortcut && showShortcuts ? (
               <Typography
                 variant="body2"
                 color="text.secondary"
@@ -339,7 +344,7 @@ function CascadingMenuList({
               >
                 {actionItem.shortcut.toUpperCase()}
               </Typography>
-            ) : hasShortcut && !isCheckOrRadio && !helpText ? (
+            ) : hasShortcut && showShortcuts && !isCheckOrRadio && !helpText ? (
               <div style={{ width: 24 }} />
             ) : null}
             {isCheckOrRadio ? (
@@ -371,8 +376,14 @@ export default function CascadingMenuChildren(props: {
   closeAfterItemClick?: boolean
   menuItems: MenuItemsGetter
   popupState: PopupState
+  showShortcuts?: boolean
 }) {
-  const { closeAfterItemClick = true, menuItems, popupState } = props
+  const {
+    closeAfterItemClick = true,
+    menuItems,
+    popupState,
+    showShortcuts = true,
+  } = props
   const { items, loading, error } = useAsyncMenuItems(
     menuItems,
     popupState.isOpen,
@@ -391,30 +402,32 @@ export default function CascadingMenuChildren(props: {
   })
 
   return (
-    <Menu
-      {...menuProps}
-      anchorEl={anchorEl ?? null}
-      onClose={() => {
-        onClose()
-      }}
-      onKeyDown={handleKeyDown}
-    >
-      <div ref={containerRef}>
-        {loading ? (
-          <LoadingMenuItem />
-        ) : error ? (
-          <ErrorMenuItem error={error} />
-        ) : (
-          <CascadingMenuList
-            menuItems={items}
-            closeAfterItemClick={closeAfterItemClick}
-            onMenuItemClick={props.onMenuItemClick}
-            onCloseRoot={onClose}
-            openSubmenuIdx={openSubmenuIdx}
-            setOpenSubmenuIdx={setOpenSubmenuIdx}
-          />
-        )}
-      </div>
-    </Menu>
+    <MenuSettingsContext.Provider value={{ showShortcuts }}>
+      <Menu
+        {...menuProps}
+        anchorEl={anchorEl ?? null}
+        onClose={() => {
+          onClose()
+        }}
+        onKeyDown={handleKeyDown}
+      >
+        <div ref={containerRef}>
+          {loading ? (
+            <LoadingMenuItem />
+          ) : error ? (
+            <ErrorMenuItem error={error} />
+          ) : (
+            <CascadingMenuList
+              menuItems={items}
+              closeAfterItemClick={closeAfterItemClick}
+              onMenuItemClick={props.onMenuItemClick}
+              onCloseRoot={onClose}
+              openSubmenuIdx={openSubmenuIdx}
+              setOpenSubmenuIdx={setOpenSubmenuIdx}
+            />
+          )}
+        </div>
+      </Menu>
+    </MenuSettingsContext.Provider>
   )
 }

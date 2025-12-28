@@ -70,7 +70,10 @@ const ViewMenu = observer(function ViewMenu({
     moveViewToBottom: (arg: string) => void
     moveViewToTop: (arg: string) => void
     useWorkspaces: boolean
+    showMenuShortcuts?: boolean
   }
+
+  const showShortcuts = session.showMenuShortcuts ?? true
 
   const popupState = usePopupState({
     variant: 'popover',
@@ -174,6 +177,7 @@ const ViewMenu = observer(function ViewMenu({
           ...model.menuItems(),
         ]}
         popupState={popupState}
+        showShortcuts={showShortcuts}
       />
     </>
   )

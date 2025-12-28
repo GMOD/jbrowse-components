@@ -29,6 +29,8 @@ const useStyles = makeStyles()({
 const Highlight = observer(function Highlight({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const session = getSession(model) as SessionWithWidgets
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   const { assemblyManager } = session
   const { bookmarkHighlightsVisible, bookmarkLabelsVisible } = model
 

@@ -30,13 +30,19 @@ const MiniControls = observer(function MiniControls({
 }) {
   const { classes } = useStyles()
   const { id, bpPerPx, maxBpPerPx, minBpPerPx, hideHeader } = model
-  const { focusedViewId } = getSession(model)
+  const session = getSession(model)
+  const { focusedViewId } = session
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   return hideHeader ? (
     <Paper className={classes.background}>
       <Paper
         className={focusedViewId === id ? classes.focusedBackground : undefined}
       >
-        <CascadingMenuButton menuItems={model.menuItems()}>
+        <CascadingMenuButton
+          menuItems={model.menuItems()}
+          showShortcuts={showShortcuts}
+        >
           <ArrowDown fontSize="small" />
         </CascadingMenuButton>
         <IconButton

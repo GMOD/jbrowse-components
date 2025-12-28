@@ -46,6 +46,9 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
+  const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   const { width, maxBpPerPx, minBpPerPx, bpPerPx } = model
   const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
   useEffect(() => {
@@ -118,7 +121,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
           {
             label: 'Custom zoom',
             onClick: () => {
-              getSession(model).queueDialog(handleClose => [
+              session.queueDialog(handleClose => [
                 RegionWidthEditorDialog,
                 {
                   model,
@@ -128,6 +131,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
             },
           },
         ]}
+        showShortcuts={showShortcuts}
       >
         <MoreVert />
       </CascadingMenuButton>

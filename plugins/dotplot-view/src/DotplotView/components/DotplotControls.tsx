@@ -26,6 +26,9 @@ const DotplotControls = observer(function DotplotControls({
 }: {
   model: DotplotViewModel
 }) {
+  const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   const [showDynamicControls, setShowDynamicControls] = useState(true)
 
   // Check if we have any displays to show sliders
@@ -194,6 +197,7 @@ const DotplotControls = observer(function DotplotControls({
             ],
           },
         ]}
+        showShortcuts={showShortcuts}
       >
         <MoreVert />
       </CascadingMenuButton>

@@ -29,33 +29,35 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
   const { maxHeight = '' } = model
   const [max, setMax] = useState(`${maxHeight}`)
 
+  function onSubmit() {
+    model.setMaxHeight(max !== '' && !Number.isNaN(+max) ? +max : undefined)
+    handleClose()
+  }
+
   return (
     <Dialog open onClose={handleClose} title="Set max track height">
-      <DialogContent className={classes.root}>
-        <Typography>
-          Set max layout height for the track. For example, you can increase
-          this if the layout says &quot;Max height reached&quot;
-        </Typography>
-        <TextField
-          value={max}
-          autoFocus
-          onChange={event => {
-            setMax(event.target.value)
-          }}
-          placeholder="Enter max height for layout"
-        />
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            onClick={() => {
-              model.setMaxHeight(
-                max !== '' && !Number.isNaN(+max) ? +max : undefined,
-              )
-              handleClose()
+      <form
+        onSubmit={event => {
+          event.preventDefault()
+          onSubmit()
+        }}
+      >
+        <DialogContent className={classes.root}>
+          <Typography>
+            Set max layout height for the track. For example, you can increase
+            this if the layout says &quot;Max height reached&quot;
+          </Typography>
+          <TextField
+            value={max}
+            autoFocus
+            onChange={event => {
+              setMax(event.target.value)
             }}
-          >
+            placeholder="Enter max height for layout"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" color="primary" type="submit">
             Submit
           </Button>
           <Button
@@ -68,7 +70,7 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog(props: {
             Cancel
           </Button>
         </DialogActions>
-      </DialogContent>
+      </form>
     </Dialog>
   )
 })

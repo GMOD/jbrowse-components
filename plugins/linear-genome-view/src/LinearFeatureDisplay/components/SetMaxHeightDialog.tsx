@@ -31,46 +31,57 @@ const SetMaxHeightDialog = observer(function SetMaxHeightDialog({
   const { maxHeight = '' } = model
   const [max, setMax] = useState(`${maxHeight}`)
   const ok = max !== '' && !Number.isNaN(+max)
+
+  function onSubmit() {
+    model.setMaxHeight(+max)
+    handleClose()
+  }
+
   return (
     <Dialog open onClose={handleClose} title="Set max track height">
-      <DialogContent className={classes.root}>
-        <Typography>
-          Set max layout height for the track. For example, you can increase
-          this if the layout says &quot;Max height reached&quot;
-        </Typography>
-        <TextField
-          value={max}
-          autoFocus
-          onChange={event => {
-            setMax(event.target.value)
-          }}
-          placeholder="Enter max score"
-        />
-        {!ok ? <div style={{ color: 'red' }}>Invalid number</div> : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          disabled={!ok}
-          onClick={() => {
-            model.setMaxHeight(+max)
-            handleClose()
-          }}
-        >
-          Submit
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
+      <form
+        onSubmit={event => {
+          event.preventDefault()
+          if (ok) {
+            onSubmit()
+          }
+        }}
+      >
+        <DialogContent className={classes.root}>
+          <Typography>
+            Set max layout height for the track. For example, you can increase
+            this if the layout says &quot;Max height reached&quot;
+          </Typography>
+          <TextField
+            value={max}
+            autoFocus
+            onChange={event => {
+              setMax(event.target.value)
+            }}
+            placeholder="Enter max score"
+          />
+          {!ok ? <div style={{ color: 'red' }}>Invalid number</div> : null}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            disabled={!ok}
+          >
+            Submit
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              handleClose()
+            }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 })

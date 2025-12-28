@@ -33,6 +33,8 @@ const PreferencesDialog = observer(function PreferencesDialog({
     setThemeName: (arg: string) => void
     useWorkspaces: boolean
     setUseWorkspaces(useWorkspaces: boolean): void
+    showMenuShortcuts: boolean
+    setShowMenuShortcuts(show: boolean): void
   }
 }) {
   const { classes } = useStyles()
@@ -67,6 +69,13 @@ const PreferencesDialog = observer(function PreferencesDialog({
               session.setUseWorkspaces(checked)
             }}
             label="Use workspaces (tabbed/tiled view layout)"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={session.showMenuShortcuts} />}
+            onChange={(_, checked) => {
+              session.setShowMenuShortcuts(checked)
+            }}
+            label="Show keyboard shortcuts in menus"
           />
         </FormGroup>
       </DialogContent>

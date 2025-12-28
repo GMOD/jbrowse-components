@@ -132,6 +132,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ...showMenu.subMenu,
               {
                 label: 'Show chevrons',
+                shortcut: 'c',
                 type: 'checkbox',
                 checked: self.displayDirectionalChevrons,
                 onClick: () => {
@@ -140,8 +141,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
               {
                 label: 'Subfeature labels',
-                subMenu: ['none', 'below', 'overlay'].map(val => ({
+                shortcut: 's',
+                subMenu: ['none', 'below', 'overlay'].map((val, idx) => ({
                   label: val,
+                  shortcut: `${idx + 1}`,
                   type: 'radio' as const,
                   checked: self.subfeatureLabels === val,
                   onClick: () => {
@@ -151,21 +154,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
               {
                 label: 'Gene glyph',
+                shortcut: 'g',
                 subMenu: [
                   {
                     value: 'all',
                     label: 'All transcripts',
+                    shortcut: '1',
                   },
                   {
                     value: 'longest',
                     label: 'Longest transcript',
+                    shortcut: '2',
                   },
                   {
                     value: 'longestCoding',
                     label: 'Longest coding transcript',
+                    shortcut: '3',
                   },
-                ].map(({ value, label }) => ({
+                ].map(({ value, label, shortcut }) => ({
                   label,
+                  shortcut,
                   type: 'radio' as const,
                   checked: self.geneGlyphMode === value,
                   onClick: () => {
@@ -180,6 +188,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             filtersMenu.subMenu = [
               {
                 label: 'Show only genes',
+                shortcut: 'g',
                 type: 'checkbox',
                 checked: self.activeFilters.includes(
                   "jexl:get(feature,'type')=='gene'",

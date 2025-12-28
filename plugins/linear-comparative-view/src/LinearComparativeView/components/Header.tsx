@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
@@ -27,6 +28,9 @@ const Header = observer(function Header({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
+  const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   const { views, levels, showDynamicControls } = model
   const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
   const [sideBySide, setSideBySide] = useState(views.length <= 3)
@@ -37,6 +41,7 @@ const Header = observer(function Header({
   return (
     <FormGroup row>
       <CascadingMenuButton
+        showShortcuts={showShortcuts}
         menuItems={[
           {
             label: 'Synteny track selectors',
@@ -62,6 +67,7 @@ const Header = observer(function Header({
         <TrackSelectorIcon />
       </CascadingMenuButton>
       <CascadingMenuButton
+        showShortcuts={showShortcuts}
         menuItems={[
           {
             label: 'Row view menus',
@@ -77,6 +83,7 @@ const Header = observer(function Header({
         <MoreVertIcon />
       </CascadingMenuButton>
       <CascadingMenuButton
+        showShortcuts={showShortcuts}
         menuItems={[
           {
             label: 'Show search boxes',

@@ -28,46 +28,56 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
 
   const ok = height !== '' && !Number.isNaN(+height)
 
+  function onSubmit() {
+    model.setFeatureHeight(
+      height !== '' && !Number.isNaN(+height) ? +height : undefined,
+    )
+    model.setNoSpacing(noSpacing)
+    handleClose()
+  }
+
   return (
     <Dialog open onClose={handleClose} title="Set feature height">
-      <DialogContent>
-        <Typography>
-          Adjust the feature height and whether there is any spacing between
-          features. Setting feature height to 1 and removing spacing makes the
-          display very compact.
-        </Typography>
-        <TextField
-          value={height}
-          autoFocus
-          helperText="Feature height"
-          onChange={event => {
-            setHeight(event.target.value)
-          }}
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={!!noSpacing}
-              onChange={() => {
-                setNoSpacing(val => !val)
-              }}
-            />
+      <form
+        onSubmit={event => {
+          event.preventDefault()
+          if (ok) {
+            onSubmit()
           }
-          label="Remove spacing between features in y-direction?"
-        />
+        }}
+      >
+        <DialogContent>
+          <Typography>
+            Adjust the feature height and whether there is any spacing between
+            features. Setting feature height to 1 and removing spacing makes the
+            display very compact.
+          </Typography>
+          <TextField
+            value={height}
+            autoFocus
+            helperText="Feature height"
+            onChange={event => {
+              setHeight(event.target.value)
+            }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={!!noSpacing}
+                onChange={() => {
+                  setNoSpacing(val => !val)
+                }}
+              />
+            }
+            label="Remove spacing between features in y-direction?"
+          />
+        </DialogContent>
         <DialogActions>
           <Button
             variant="contained"
             color="primary"
             type="submit"
             disabled={!ok}
-            onClick={() => {
-              model.setFeatureHeight(
-                height !== '' && !Number.isNaN(+height) ? +height : undefined,
-              )
-              model.setNoSpacing(noSpacing)
-              handleClose()
-            }}
           >
             Submit
           </Button>
@@ -81,7 +91,7 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
             Cancel
           </Button>
         </DialogActions>
-      </DialogContent>
+      </form>
     </Dialog>
   )
 })

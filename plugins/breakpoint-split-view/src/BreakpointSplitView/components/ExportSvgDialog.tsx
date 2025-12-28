@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorMessage, useEnterSubmit } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
 import {
   Button,
@@ -77,8 +77,6 @@ export default function ExportSvgDialog({
     }
   }
 
-  useEnterSubmit(onSubmit)
-
   return (
     <Dialog open onClose={handleClose} title="Export SVG">
       <form
@@ -94,6 +92,7 @@ export default function ExportSvgDialog({
             <LoadingMessage />
           ) : null}
           <TextField2
+            autoFocus
             helperText="filename"
             value={filename}
             onChange={event => {

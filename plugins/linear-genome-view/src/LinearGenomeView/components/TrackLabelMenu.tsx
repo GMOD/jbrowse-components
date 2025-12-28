@@ -100,8 +100,15 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
     ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
   }, [track, view, session])
 
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
+
   return (
-    <CascadingMenuButton menuItems={getMenuItems} data-testid="track_menu_icon">
+    <CascadingMenuButton
+      menuItems={getMenuItems}
+      data-testid="track_menu_icon"
+      showShortcuts={showShortcuts}
+    >
       <MoreVertIcon fontSize="small" />
     </CascadingMenuButton>
   )

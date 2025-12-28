@@ -310,10 +310,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...superTrackMenuItems(),
             {
               label: 'Show...',
+              shortcut: 's',
               icon: VisibilityIcon,
               subMenu: [
                 {
                   label: 'Show labels',
+                  shortcut: 'l',
                   type: 'checkbox',
                   checked: self.showLabels,
                   onClick: () => {
@@ -322,6 +324,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Show descriptions',
+                  shortcut: 'd',
                   type: 'checkbox',
                   checked: self.showDescriptions,
                   onClick: () => {
@@ -332,14 +335,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Display mode',
+              shortcut: 'd',
               icon: VisibilityIcon,
               subMenu: [
                 'normal',
                 'compact',
                 'reducedRepresentation',
                 'collapse',
-              ].map(val => ({
+              ].map((val, idx) => ({
                 label: val,
+                shortcut: `${idx + 1}`,
                 type: 'radio' as const,
                 checked: self.displayMode === val,
                 onClick: () => {
@@ -349,6 +354,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Set max track height',
+              shortcut: 'h',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDialog,
@@ -361,9 +367,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Filters',
+              shortcut: 'f',
               subMenu: [
                 {
                   label: 'Edit filters...',
+                  shortcut: 'e',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       AddFiltersDialog,

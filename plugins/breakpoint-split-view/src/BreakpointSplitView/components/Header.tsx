@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
@@ -23,12 +24,18 @@ const Header = observer(function Header({
   model: BreakpointViewModel
 }) {
   const { classes } = useStyles()
+  const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   const { views } = model
   const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
   const [sideBySide, setSideBySide] = useState(views.length <= 3)
   return (
     <FormGroup row>
-      <CascadingMenuButton menuItems={model.menuItems()}>
+      <CascadingMenuButton
+        menuItems={model.menuItems()}
+        showShortcuts={showShortcuts}
+      >
         <MoreVertIcon />
       </CascadingMenuButton>
       <CascadingMenuButton
@@ -59,6 +66,7 @@ const Header = observer(function Header({
             },
           },
         ]}
+        showShortcuts={showShortcuts}
       >
         <SearchIcon />
       </CascadingMenuButton>

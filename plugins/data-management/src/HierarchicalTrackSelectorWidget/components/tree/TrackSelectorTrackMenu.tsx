@@ -30,6 +30,9 @@ const TrackSelectorTrackMenu = function ({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
+  const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   const trackId = conf.trackId as string
 
   const getMenuItems = useCallback(
@@ -77,6 +80,7 @@ const TrackSelectorTrackMenu = function ({
       setOpen={setOpen}
       data-testid={`htsTrackEntryMenu-${id}`}
       menuItems={getMenuItems}
+      showShortcuts={showShortcuts}
     >
       <MoreHorizIcon />
     </CascadingMenuButton>

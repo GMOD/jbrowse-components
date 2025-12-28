@@ -26,8 +26,11 @@ export default function FeatureMenu({
   session: AbstractSessionModel
   feature: SimpleFeatureSerialized
 }) {
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   return (
     <CascadingMenuButton
+      showShortcuts={showShortcuts}
       menuItems={[
         {
           label: 'Open in linear genome view',

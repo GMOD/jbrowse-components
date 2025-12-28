@@ -43,6 +43,13 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         useWorkspaces: types.optional(types.boolean, () =>
           localStorageGetBoolean('useWorkspaces', false),
         ),
+        /**
+         * #property
+         * show keyboard shortcut hints in menus
+         */
+        showMenuShortcuts: types.optional(types.boolean, () =>
+          localStorageGetBoolean('showMenuShortcuts', true),
+        ),
       }),
     )
     .actions(self => ({
@@ -128,6 +135,13 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         self.useWorkspaces = useWorkspaces
       },
 
+      /**
+       * #action
+       */
+      setShowMenuShortcuts(show: boolean) {
+        self.showMenuShortcuts = show
+      },
+
       afterAttach() {
         addDisposer(
           self,
@@ -150,6 +164,15 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
             { name: 'UseWorkspaces' },
           ),
         )
+        addDisposer(
+          self,
+          autorun(
+            function showMenuShortcutsAutorun() {
+              localStorageSetBoolean('showMenuShortcuts', self.showMenuShortcuts)
+            },
+            { name: 'ShowMenuShortcuts' },
+          ),
+        )
       },
     }))
     .postProcessSnapshot(snap => {
@@ -157,14 +180,13 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      const { stickyViewHeaders, useWorkspaces, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+      const { stickyViewHeaders, useWorkspaces, showMenuShortcuts, ...rest } =
+        snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         ...(!stickyViewHeaders ? { stickyViewHeaders } : {}),
         ...(useWorkspaces ? { useWorkspaces } : {}),
+        ...(!showMenuShortcuts ? { showMenuShortcuts } : {}),
       } as typeof snap
     })
 }

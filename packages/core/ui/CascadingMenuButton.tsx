@@ -15,6 +15,7 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   stopPropagation,
   setOpen,
   onClick: onClickExtra,
+  showShortcuts,
   ...rest
 }: {
   children?: React.ReactElement
@@ -23,6 +24,7 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   stopPropagation?: boolean
   onClick?: () => void
   setOpen?: (arg: boolean) => void
+  showShortcuts?: boolean
   [key: string]: unknown
 }) {
   const popupState = usePopupState()
@@ -57,6 +59,7 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
           menuItems={menuItems}
           closeAfterItemClick={closeAfterItemClick}
           popupState={popupState}
+          showShortcuts={showShortcuts}
         />
       ) : null}
     </>

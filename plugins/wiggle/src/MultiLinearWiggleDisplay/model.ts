@@ -436,6 +436,7 @@ export function stateModelFactory(
             ...superTrackMenuItems(),
             {
               label: 'Score',
+              shortcut: 's',
               subMenu: self.scoreTrackMenuItems(),
             },
 
@@ -443,14 +444,16 @@ export function stateModelFactory(
               ? [
                   {
                     label: 'Renderer type',
+                    shortcut: 'r',
                     subMenu: [
                       'xyplot',
                       'multirowxy',
                       'multirowdensity',
                       'multiline',
                       'multirowline',
-                    ].map(key => ({
+                    ].map((key, idx) => ({
                       label: key,
+                      shortcut: `${idx + 1}`,
                       type: 'radio',
                       checked: self.rendererTypeNameSimple === key,
                       onClick: () => {
@@ -464,6 +467,7 @@ export function stateModelFactory(
               ? [
                   {
                     type: 'checkbox',
+                    shortcut: 'x',
                     label: 'Draw cross hatches',
                     checked: self.displayCrossHatchesSetting,
                     onClick: () => {
@@ -476,6 +480,7 @@ export function stateModelFactory(
               ? [
                   {
                     label: 'Cluster rows by score',
+                    shortcut: 'k',
                     onClick: () => {
                       getSession(self).queueDialog(handleClose => [
                         WiggleClusterDialog,
@@ -490,6 +495,7 @@ export function stateModelFactory(
               : []),
             {
               label: 'Show sidebar',
+              shortcut: 'b',
               type: 'checkbox',
               checked: self.showSidebar,
               onClick: () => {
@@ -498,6 +504,7 @@ export function stateModelFactory(
             },
             {
               label: 'Edit colors/arrangement...',
+              shortcut: 'c',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDialog,

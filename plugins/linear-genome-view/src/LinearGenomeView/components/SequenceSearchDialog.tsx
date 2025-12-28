@@ -46,106 +46,109 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
     error = e
   }
 
+  function onSubmit() {
+    if (value) {
+      const trackId = `sequence_search_${Date.now()}`
+      const session = getSession(model)
+      const { assemblyManager } = session
+      const assemblyName = model.assemblyNames[0]!
+      if (isSessionWithAddTracks(session)) {
+        session.addTrackConf({
+          trackId,
+          name: `Sequence search ${value}`,
+          assemblyNames: [assemblyName],
+          type: 'FeatureTrack',
+          adapter: {
+            type: 'SequenceSearchAdapter',
+            search: value,
+            searchForward,
+            searchReverse,
+            caseInsensitive,
+            sequenceAdapter: getSnapshot(
+              assemblyManager.get(assemblyName)?.configuration.sequence.adapter,
+            ),
+          },
+        })
+        model.showTrack(trackId)
+      }
+    }
+    handleClose()
+  }
+
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Sequence search">
-      <DialogContent className={classes.dialogContent}>
-        <Typography>
-          Supply a sequence to search for. A track will be created with the
-          resulting matches once submitted. You can also supply regex style
-          expressions e.g. AACT(C|T).
-        </Typography>
-        <TextField
-          value={value}
-          autoFocus
-          onChange={e => {
-            setValue(e.target.value)
-          }}
-          helperText="Sequence search pattern"
-        />
-        <FormGroup>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={searchForward}
-                onChange={event => {
-                  setSearchForward(event.target.checked)
-                }}
-              />
-            }
-            label="Search forward strand"
+      <form
+        onSubmit={event => {
+          event.preventDefault()
+          onSubmit()
+        }}
+      >
+        <DialogContent className={classes.dialogContent}>
+          <Typography>
+            Supply a sequence to search for. A track will be created with the
+            resulting matches once submitted. You can also supply regex style
+            expressions e.g. AACT(C|T).
+          </Typography>
+          <TextField
+            value={value}
+            autoFocus
+            onChange={e => {
+              setValue(e.target.value)
+            }}
+            helperText="Sequence search pattern"
           />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={searchReverse}
-                onChange={event => {
-                  setSearchReverse(event.target.checked)
-                }}
-              />
-            }
-            label="Search reverse strand"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={caseInsensitive}
-                onChange={event => {
-                  setCaseInsensitive(event.target.checked)
-                }}
-              />
-            }
-            label="Case insensitive"
-          />
-        </FormGroup>
-        {error ? <Typography color="error">{`${error}`}</Typography> : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            if (value) {
-              const trackId = `sequence_search_${Date.now()}`
-              const session = getSession(model)
-              const { assemblyManager } = session
-              const assemblyName = model.assemblyNames[0]!
-              if (isSessionWithAddTracks(session)) {
-                session.addTrackConf({
-                  trackId,
-                  name: `Sequence search ${value}`,
-                  assemblyNames: [assemblyName],
-                  type: 'FeatureTrack',
-                  adapter: {
-                    type: 'SequenceSearchAdapter',
-                    search: value,
-                    searchForward,
-                    searchReverse,
-                    caseInsensitive,
-                    sequenceAdapter: getSnapshot(
-                      assemblyManager.get(assemblyName)?.configuration.sequence
-                        .adapter,
-                    ),
-                  },
-                })
-                model.showTrack(trackId)
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={searchForward}
+                  onChange={event => {
+                    setSearchForward(event.target.checked)
+                  }}
+                />
               }
-            }
-            handleClose()
-          }}
-          variant="contained"
-          color="primary"
-        >
-          Submit
-        </Button>
-
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          variant="contained"
-          color="secondary"
-        >
-          Close
-        </Button>
-      </DialogActions>
+              label="Search forward strand"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={searchReverse}
+                  onChange={event => {
+                    setSearchReverse(event.target.checked)
+                  }}
+                />
+              }
+              label="Search reverse strand"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={caseInsensitive}
+                  onChange={event => {
+                    setCaseInsensitive(event.target.checked)
+                  }}
+                />
+              }
+              label="Case insensitive"
+            />
+          </FormGroup>
+          {error ? <Typography color="error">{`${error}`}</Typography> : null}
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" color="primary" type="submit">
+            Submit
+          </Button>
+          <Button
+            onClick={() => {
+              handleClose()
+            }}
+            variant="contained"
+            color="secondary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 })

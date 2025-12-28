@@ -476,15 +476,18 @@ export default function SharedWiggleMixin(
             ? [
                 {
                   label: 'Resolution',
+                  shortcut: 'r',
                   subMenu: [
                     {
                       label: 'Finer resolution',
+                      shortcut: 'f',
                       onClick: () => {
                         self.setResolution(self.resolution * 5)
                       },
                     },
                     {
                       label: 'Coarser resolution',
+                      shortcut: 'c',
                       onClick: () => {
                         self.setResolution(self.resolution / 5)
                       },
@@ -493,37 +496,44 @@ export default function SharedWiggleMixin(
                 },
                 {
                   label: 'Summary score mode',
-                  subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => ({
-                    label: elt,
-                    type: 'radio',
-                    checked: self.summaryScoreModeSetting === elt,
-                    onClick: () => {
-                      self.setSummaryScoreMode(elt)
-                    },
-                  })),
+                  shortcut: 's',
+                  subMenu: ['min', 'max', 'avg', 'whiskers'].map(
+                    (elt, idx) => ({
+                      label: elt,
+                      shortcut: `${idx + 1}`,
+                      type: 'radio',
+                      checked: self.summaryScoreModeSetting === elt,
+                      onClick: () => {
+                        self.setSummaryScoreMode(elt)
+                      },
+                    }),
+                  ),
                 },
               ]
             : []),
           {
             label:
               self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
+            shortcut: 'l',
             onClick: () => {
               self.toggleLogScale()
             },
           },
           {
             label: 'Autoscale type',
+            shortcut: 'a',
             subMenu: [
-              ['local', 'Local'],
+              ['local', 'Local', '1'],
               ...(self.hasGlobalStats
                 ? ([
-                    ['global', 'Global'],
-                    ['globalsd', 'Global ± 3σ'],
+                    ['global', 'Global', '2'],
+                    ['globalsd', 'Global ± 3σ', '3'],
                   ] as const)
                 : []),
-              ['localsd', 'Local ± 3σ'],
-            ].map(([val, label]) => ({
+              ['localsd', 'Local ± 3σ', '4'],
+            ].map(([val, label, shortcut]) => ({
               label,
+              shortcut,
               type: 'radio',
               checked: self.autoscaleType === val,
               onClick: () => {
@@ -533,6 +543,7 @@ export default function SharedWiggleMixin(
           },
           {
             label: 'Set min/max score',
+            shortcut: 'm',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SetMinMaxDialog,

@@ -50,6 +50,8 @@ const HamburgerMenu = observer(function HamburgerMenu({
   model: HierarchicalTrackSelectorModel
 }) {
   const session = getSession(model)
+  const showShortcuts =
+    'showMenuShortcuts' in session ? session.showMenuShortcuts : true
   const [modalInfo, setModalInfo] = useState<ModalArgs>()
   const [deleteDialogDetails, setDeleteDialogDetails] =
     useState<DialogDetails>()
@@ -196,6 +198,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
             ],
           },
         ]}
+        showShortcuts={showShortcuts}
       >
         <MenuIcon />
       </CascadingMenuButton>

@@ -216,6 +216,7 @@ function stateModelFactory(
             ...superTrackMenuItems(),
             {
               label: 'Score',
+              shortcut: 's',
               icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
             },
@@ -233,6 +234,7 @@ function stateModelFactory(
               ? [
                   {
                     label: 'Inverted',
+                    shortcut: 'i',
                     type: 'checkbox',
                     checked: self.inverted,
                     onClick: () => {
@@ -246,9 +248,11 @@ function stateModelFactory(
               ? [
                   {
                     label: 'Fill mode',
+                    shortcut: 'f',
                     subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
                       (elt, idx) => ({
                         label: elt,
+                        shortcut: `${idx + 1}`,
                         type: 'radio',
                         checked: self.fillSetting === idx,
                         onClick: () => {
@@ -264,8 +268,10 @@ function stateModelFactory(
               ? [
                   {
                     label: 'Renderer type',
-                    subMenu: ['xyplot', 'density', 'line'].map(key => ({
+                    shortcut: 'r',
+                    subMenu: ['xyplot', 'density', 'line'].map((key, idx) => ({
                       label: key,
+                      shortcut: `${idx + 1}`,
                       type: 'radio',
                       checked: self.rendererTypeNameSimple === key,
                       onClick: () => {
@@ -278,6 +284,7 @@ function stateModelFactory(
 
             {
               label: 'Color',
+              shortcut: 'c',
               icon: PaletteIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
@@ -294,6 +301,7 @@ function stateModelFactory(
               ? [
                   {
                     type: 'checkbox',
+                    shortcut: 'x',
                     icon: VisibilityIcon,
                     label: 'Show cross hatches',
                     checked: self.displayCrossHatchesSetting,
