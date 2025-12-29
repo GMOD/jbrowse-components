@@ -1,4 +1,5 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configSchema from '../LinearReadCloudDisplay/configSchema'
 import { renameViewRegionsForRPC } from '../shared/renameRegionsForRPC'
@@ -70,8 +71,27 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     const renamed = await this.renameRegionsIfNeeded(
       args as unknown as RenderLinearReadCloudDisplayArgs,
     )
+
+    // Ensure sequenceAdapter is set for CRAM files
+    // This is normally done by the caller but we add it here as a fallback
+    // to ensure it's always available regardless of how the RPC is called
+    let { sequenceAdapter } = renamed
+    if (!sequenceAdapter) {
+      const assemblyManager =
+        this.pluginManager.rootModel?.session?.assemblyManager
+      const view = renamed.view as { assemblyNames?: string[] }
+      const assemblyName = view?.assemblyNames?.[0]
+      if (assemblyManager && assemblyName) {
+        const assembly = assemblyManager.get(assemblyName)
+        const seqAdapterConfig = assembly?.configuration?.sequence?.adapter
+        if (seqAdapterConfig) {
+          sequenceAdapter = getSnapshot(seqAdapterConfig)
+        }
+      }
+    }
+
     return super.serializeArguments(
-      renamed as unknown as Record<string, unknown>,
+      { ...renamed, sequenceAdapter } as unknown as Record<string, unknown>,
       rpcDriver,
     )
   }

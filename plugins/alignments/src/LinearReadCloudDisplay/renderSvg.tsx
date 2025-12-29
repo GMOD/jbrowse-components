@@ -8,6 +8,8 @@ import {
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { SVGLegend } from '@jbrowse/plugin-linear-genome-view'
 
+import CloudYScaleBar from './components/CloudYScaleBar'
+
 import type { LinearReadCloudDisplayModel } from './model'
 import type {
   ExportSvgDisplayOptions,
@@ -22,6 +24,7 @@ interface RenderingResult {
   canvasRecordedData?: unknown
   layoutHeight?: number
   featuresForFlatbush?: unknown
+  cloudScaleInfo?: { minDistance: number; maxDistance: number }
 }
 
 export async function renderSvg(
@@ -79,7 +82,7 @@ export async function renderSvg(
       drawProperPairs,
       flipStrandLongReadChains,
       trackMaxHeight,
-      height,
+      cloudModeHeight: height,
       exportSVG: opts,
       rpcDriverName: self.effectiveRpcDriverName,
     },
@@ -105,6 +108,43 @@ export async function renderSvg(
   // Get legend items if legend is enabled
   const legendItems = self.showLegend ? self.legendItems() : []
 
+  // Compute cloudTicks for SVG export if in cloud mode
+  let cloudTicks: {
+    ticks: { value: number; y: number }[]
+    height: number
+    minDistance: number
+    maxDistance: number
+  } | null = null
+
+  if (self.drawCloud && rendering.cloudScaleInfo && self.showYScalebar) {
+    const { minDistance, maxDistance } = rendering.cloudScaleInfo
+    const CLOUD_LOG_OFFSET = 10
+    const CLOUD_HEIGHT_PADDING = 20
+
+    const maxD = Math.log(maxDistance + CLOUD_LOG_OFFSET)
+    const minD = Math.log(Math.max(1, minDistance + CLOUD_LOG_OFFSET))
+    const scaler = (height - CLOUD_HEIGHT_PADDING) / (maxD - minD || 1)
+
+    const tickValues: number[] = []
+    const log2Min = Math.floor(Math.log2(minDistance))
+    const log2Max = Math.ceil(Math.log2(maxDistance))
+
+    for (let power = log2Min; power <= log2Max; power++) {
+      const value = Math.pow(2, power)
+      if (value >= minDistance && value <= maxDistance) {
+        tickValues.push(value)
+      }
+    }
+
+    const uniqueTicks = [...new Set(tickValues)].sort((a, b) => a - b)
+    const ticks = uniqueTicks.map(value => {
+      const y = (Math.log(value + CLOUD_LOG_OFFSET) - minD) * scaler
+      return { value, y }
+    })
+
+    cloudTicks = { ticks, height, minDistance, maxDistance }
+  }
+
   return (
     <>
       <defs>
@@ -117,6 +157,11 @@ export async function renderSvg(
           <ReactRendering rendering={finalRendering} />
         </g>
       </g>
+      {cloudTicks ? (
+        <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>
+          <CloudYScaleBar model={{ cloudTicks }} orientation="left" />
+        </g>
+      ) : null}
       {legendItems.length > 0 ? (
         <SVGLegend
           items={legendItems}

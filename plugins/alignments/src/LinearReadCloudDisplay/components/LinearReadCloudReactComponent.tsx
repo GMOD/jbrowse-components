@@ -10,7 +10,6 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -21,6 +20,7 @@ import {
 import { PairType, getPairedType } from '../../shared/color'
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 import { orientationTypes } from '../../util'
+import CloudYScaleBar from './CloudYScaleBar'
 
 import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'
@@ -183,92 +183,6 @@ const FeatureHighlights = observer(function FeatureHighlights({
         />
       ) : null}
     </>
-  )
-})
-
-function formatTickValue(value: number): string {
-  if (value >= 1000000) {
-    return `${(value / 1000000).toFixed(1)}M`
-  }
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(0)}k`
-  }
-  return `${value}`
-}
-
-const CloudYScaleBar = observer(function CloudYScaleBar({
-  model,
-}: {
-  model: LinearReadCloudDisplayModel
-}) {
-  const theme = useTheme()
-  const cloudTicks = model.cloudTicks
-
-  if (!cloudTicks) {
-    return null
-  }
-
-  const { ticks, height } = cloudTicks
-  const width = 55
-  const tickLength = 5
-
-  return (
-    <svg
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 50,
-        pointerEvents: 'none',
-        height,
-        width,
-        zIndex: 100,
-      }}
-    >
-      {/* Axis line */}
-      <line
-        x1={width - tickLength}
-        y1={0}
-        x2={width - tickLength}
-        y2={height}
-        stroke={theme.palette.text.secondary}
-        strokeWidth={1}
-      />
-      {/* Ticks and labels */}
-      {ticks.map(({ value, y }) => (
-        <g key={value}>
-          <line
-            x1={width - tickLength}
-            y1={y}
-            x2={width}
-            y2={y}
-            stroke={theme.palette.text.secondary}
-            strokeWidth={1}
-          />
-          <text
-            x={width - tickLength - 3}
-            y={y}
-            textAnchor="end"
-            dominantBaseline="middle"
-            fontSize={10}
-            fill={theme.palette.text.primary}
-          >
-            {formatTickValue(value)}
-          </text>
-        </g>
-      ))}
-      {/* Axis label */}
-      <text
-        x={8}
-        y={height / 2}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fontSize={10}
-        fill={theme.palette.text.secondary}
-        transform={`rotate(-90, 8, ${height / 2})`}
-      >
-        Insert size (bp)
-      </text>
-    </svg>
   )
 })
 
@@ -565,7 +479,23 @@ const Cloud = observer(function Cloud({
         hoveredFeature={hoveredFeature}
         canvasLeft={canvasLeft}
       />
-      {model.drawCloud ? <CloudYScaleBar model={model} /> : null}
+      {model.drawCloud && model.cloudTicks ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 50,
+            pointerEvents: 'none',
+            height: model.cloudTicks.height,
+            width: 60,
+            zIndex: 100,
+          }}
+        >
+          <g transform="translate(55, 0)">
+            <CloudYScaleBar model={model} orientation="left" />
+          </g>
+        </svg>
+      ) : null}
       {hoveredMismatchData && mousePosition ? (
         <MismatchTooltip
           mismatchData={hoveredMismatchData}

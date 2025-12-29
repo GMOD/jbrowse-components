@@ -199,14 +199,20 @@ export async function executeRenderLinearReadCloudDisplay({
     },
   )
 
-  const actualHeight = drawCloud
-    ? (cloudModeHeight ?? 1200)
-    : calculateStackYOffsetsUtil(
-        computedChains,
-        featureHeight,
-        noSpacing,
-        trackMaxHeight ?? 1200,
-      ).layoutHeight
+  let actualHeight: number
+  if (drawCloud) {
+    if (cloudModeHeight === undefined) {
+      throw new Error('cloudModeHeight is required when drawCloud is true')
+    }
+    actualHeight = cloudModeHeight
+  } else {
+    actualHeight = calculateStackYOffsetsUtil(
+      computedChains,
+      featureHeight,
+      noSpacing,
+      trackMaxHeight ?? 1200,
+    ).layoutHeight
+  }
 
   const renderOpts: RenderToAbstractCanvasOptions = {
     highResolutionScaling,
