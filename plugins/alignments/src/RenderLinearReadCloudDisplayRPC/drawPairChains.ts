@@ -111,7 +111,11 @@ export function drawPairChains({
     // Draw connecting line spanning all features in chain (including supplementary)
     if (hasBothMates) {
       const bounds = getChainBoundsOnRef(chain, region.refName)
-      if (bounds && bounds.minStart < region.end && bounds.maxEnd > region.start) {
+      if (
+        bounds &&
+        bounds.minStart < region.end &&
+        bounds.maxEnd > region.start
+      ) {
         const r1s = (bounds.minStart - regionStart) / bpPerPx
         const r2s = (bounds.maxEnd - regionStart) / bpPerPx
         // Use orange for chains with supplementary alignments

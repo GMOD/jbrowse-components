@@ -12,6 +12,7 @@ import {
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
+import CloudYScaleBar from './CloudYScaleBar'
 import {
   type FlatbushItem,
   flatbushItemToFeatureData,
@@ -20,7 +21,6 @@ import {
 import { PairType, getPairedType } from '../../shared/color'
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 import { orientationTypes } from '../../util'
-import CloudYScaleBar from './CloudYScaleBar'
 
 import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'

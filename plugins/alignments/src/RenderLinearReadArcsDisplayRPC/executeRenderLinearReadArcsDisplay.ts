@@ -63,7 +63,9 @@ export async function executeRenderLinearReadArcsDisplay({
   const { offsetPx } = view
   const width = view.staticBlocks.totalWidthPx
   // Use regions from viewSnapshot which have originalRefName from renameRegionsIfNeeded
-  const regions = (viewSnapshot as any).staticBlocks?.contentBlocks || view.staticBlocks.contentBlocks
+  const regions =
+    (viewSnapshot as any).staticBlocks?.contentBlocks ||
+    view.staticBlocks.contentBlocks
 
   // Create a snapshot from the live view including computed properties
   // Use the staticBlocks and displayedRegions from viewSnapshot (which have renamed refNames)

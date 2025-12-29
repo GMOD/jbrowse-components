@@ -48,7 +48,10 @@ const CloudYScaleBar = observer(function CloudYScaleBar({
       strokeWidth={1}
     >
       {/* Axis line */}
-      <path stroke={fg} d={`M${k * tickLength},0H0.5V${height}H${k * tickLength}`} />
+      <path
+        stroke={fg}
+        d={`M${k * tickLength},0H0.5V${height}H${k * tickLength}`}
+      />
       {/* Ticks and labels */}
       {ticks.map(({ value, y }) => (
         <g key={value} transform={`translate(0,${y})`}>

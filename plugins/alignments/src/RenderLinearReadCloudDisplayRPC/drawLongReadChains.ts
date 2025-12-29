@@ -102,7 +102,11 @@ export function drawLongReadChains({
     // Draw connecting line for multi-segment long reads
     if (!isSingleton) {
       const bounds = getChainBoundsOnRef(chain, region.refName)
-      if (bounds && bounds.minStart < region.end && bounds.maxEnd > region.start) {
+      if (
+        bounds &&
+        bounds.minStart < region.end &&
+        bounds.maxEnd > region.start
+      ) {
         const firstPx = (bounds.minStart - regionStart) / bpPerPx
         const lastPx = (bounds.maxEnd - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2

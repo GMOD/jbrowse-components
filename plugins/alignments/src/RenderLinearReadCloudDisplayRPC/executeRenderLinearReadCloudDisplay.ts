@@ -80,7 +80,9 @@ export async function executeRenderLinearReadCloudDisplay({
   const { bpPerPx, offsetPx } = view
   const width = view.staticBlocks.totalWidthPx
   // Use regions from viewSnapshot which have originalRefName from renameRegionsIfNeeded
-  const regions = (viewSnapshot as any).staticBlocks?.contentBlocks || view.staticBlocks.contentBlocks
+  const regions =
+    (viewSnapshot as any).staticBlocks?.contentBlocks ||
+    view.staticBlocks.contentBlocks
   const assemblyName = view.assemblyNames[0]
   if (!assemblyName) {
     throw new Error('No assembly name found in view')

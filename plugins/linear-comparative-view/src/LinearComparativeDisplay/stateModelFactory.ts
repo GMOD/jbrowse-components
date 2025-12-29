@@ -229,7 +229,7 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   const view = renderProps.view.views[level]!
   return {
     features: dedupe(
-      (await rpcManager.call('getFeats', 'CoreGetFeatures', {
+      (await rpcManager.call(sessionId, 'CoreGetFeatures', {
         regions: view.staticBlocks.contentBlocks,
         sessionId,
         adapterConfig,

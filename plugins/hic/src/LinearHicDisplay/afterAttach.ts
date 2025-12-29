@@ -1,5 +1,6 @@
 import {
   getContainingView,
+  getRpcSessionId,
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
@@ -29,7 +30,8 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
   ;(async () => {
     try {
       const { rpcManager } = getSession(self)
-      const { norms } = (await rpcManager.call(self.id, 'CoreGetInfo', {
+      const rpcSessionId = getRpcSessionId(self)
+      const { norms } = (await rpcManager.call(rpcSessionId, 'CoreGetInfo', {
         adapterConfig: self.adapterConfig,
       })) as { norms?: string[] }
       if (isAlive(self) && norms) {
@@ -58,6 +60,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
     try {
       const session = getSession(self)
       const { rpcManager } = session
+      const rpcSessionId = getRpcSessionId(self)
 
       const previousToken = untracked(() => self.renderingStopToken)
       if (previousToken) {
@@ -69,10 +72,10 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
       self.setLoading(true)
 
       const result = (await rpcManager.call(
-        self.id,
+        rpcSessionId,
         'CoreRender',
         {
-          sessionId: session.id,
+          sessionId: rpcSessionId,
           rendererType: 'HicRenderer',
           regions: [...regions],
           adapterConfig,

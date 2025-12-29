@@ -1,6 +1,10 @@
 import type React from 'react'
 
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
 import {
   ReactRendering,
   getSerializedSvg,
@@ -56,11 +60,13 @@ export async function renderSvg(
   })
 
   // Call RPC method with exportSVG options
+  // Use getRpcSessionId to ensure we use the same worker as normal rendering
+  const rpcSessionId = getRpcSessionId(self)
   const rendering = (await rpcManager.call(
-    self.id,
+    rpcSessionId,
     'RenderLinearReadArcsDisplay',
     {
-      sessionId: session.id,
+      sessionId: rpcSessionId,
       view: viewSnapshot,
       adapterConfig: self.adapterConfig,
       sequenceAdapter,

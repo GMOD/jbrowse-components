@@ -1,6 +1,10 @@
 import type React from 'react'
 
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
 import {
   ReactRendering,
   getSerializedSvg,
@@ -43,8 +47,10 @@ export async function renderSvg(
   const renderProps = self.renderProps()
 
   // Call CoreRender RPC method (same as afterAttach uses)
-  const rendering = (await rpcManager.call(self.id, 'CoreRender', {
-    sessionId: session.id,
+  // Use getRpcSessionId to ensure we use the same worker as normal rendering
+  const rpcSessionId = getRpcSessionId(self)
+  const rendering = (await rpcManager.call(rpcSessionId, 'CoreRender', {
+    sessionId: rpcSessionId,
     rendererType: 'HicRenderer',
     regions: [...regions],
     adapterConfig,
