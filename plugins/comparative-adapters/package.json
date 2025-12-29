@@ -41,7 +41,7 @@
     "@jbrowse/mobx-state-tree": "^5.4.7",
     "@jbrowse/plugin-alignments": "^3.7.0",
     "@mui/material": "^7.0.0",
-    "generic-filehandle2": "^2.0.16",
+    "generic-filehandle2": "^2.0.17",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0",
     "rxjs": "^7.0.0"

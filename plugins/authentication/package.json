@@ -40,7 +40,7 @@
     "@jbrowse/mobx-state-tree": "^5.4.7",
     "@mui/material": "^7.0.0",
     "crypto-js": "^4.2.0",
-    "generic-filehandle2": "^2.0.16",
+    "generic-filehandle2": "^2.0.17",
     "mobx": "^6.0.0"
   },
   "peerDependencies": {

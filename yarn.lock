@@ -8158,10 +8158,10 @@ generator-function@^2.0.0:
   resolved "https://registry.yarnpkg.com/generator-function/-/generator-function-2.0.1.tgz#0e75dd410d1243687a0ba2e951b94eedb8f737a2"
   integrity sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==
 
-generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.16:
-  version "2.0.16"
-  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.16.tgz#17ac244e278b5ffcb98a165538045024eff52c90"
-  integrity sha512-MwmxPCTvcgS72nL7JEYQpV7QE4vbbUaFX4TqO7zUq5RusOqwUGB8ag2Bnd9+Qm8jnX7kzwteLsSpJ4f1mr+0zw==
+generic-filehandle2@^2.0.1, generic-filehandle2@^2.0.16, generic-filehandle2@^2.0.17:
+  version "2.0.18"
+  resolved "https://registry.yarnpkg.com/generic-filehandle2/-/generic-filehandle2-2.0.18.tgz#a795e4091cf7b8d0569dc98eb9b353579b4b7314"
+  integrity sha512-dcXce+k0lp066pvx+4Me3nPFVqJHgbOp/a0KzMEnyP0qgnPSrUKIKVy3tFBy8mV03NBL6goszU7rwpQMQy72qw==
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
@@ -14229,9 +14229,9 @@ truncate-utf8-bytes@^1.0.0:
     utf8-byte-length "^1.0.1"
 
 ts-api-utils@^2.1.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/ts-api-utils/-/ts-api-utils-2.2.0.tgz#5ebcda090c1656b628a53d08915c8e5c325d8452"
-  integrity sha512-L6f5oQRAoLU1RwXz0Ab9mxsE7LtxeVB6AIR1lpkZMsOyg/JXeaxBaXa/FVCBZyNr9S9I4wkHrlZTklX+im+WMw==
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/ts-api-utils/-/ts-api-utils-2.3.0.tgz#9f397ac9d88ac76e8dd6e8bc4af0dbf98af99f73"
+  integrity sha512-6eg3Y9SF7SsAvGzRHQvvc1skDAhwI4YQ32ui1scxD1Ccr0G5qIIbUBT3pFTKX8kmWIQClHobtUdNuaBgwdfdWg==
 
 ts-dedent@^2.0.0:
   version "2.2.0"
