@@ -11,7 +11,6 @@ import {
   featureOverlapsRegion,
   getMismatchRenderingConfig,
   getStrandColorKey,
-  lineIntersectsRegion,
   renderFeatureMismatchesAndModifications,
   renderFeatureShape,
 } from './drawChainsUtil'
@@ -101,32 +100,34 @@ export function drawLongReadChains({
     const primaryStrand = getPrimaryStrandFromFlags(c1)
 
     // Draw connecting line for multi-segment long reads
-    // Check if the line segment intersects the region (not just if features overlap)
+    // Find min/max coordinates across ALL features in chain (not just first/last)
+    // since chain order is arbitrary and middle features may extend beyond endpoints
     if (!isSingleton) {
-      const firstFeat = chain[0]!
-      const lastFeat = chain[chain.length - 1]!
+      let minStart = Number.MAX_VALUE
+      let maxEnd = Number.MIN_VALUE
 
-      const firstRefName = firstFeat.get('refName')
-      const lastRefName = lastFeat.get('refName')
-      const firstStart = firstFeat.get('start')
-      const lastEnd = lastFeat.get('end')
+      for (let i = 0; i < chain.length; i++) {
+        const f = chain[i]!
+        if (f.get('refName') === region.refName) {
+          minStart = Math.min(minStart, f.get('start'))
+          maxEnd = Math.max(maxEnd, f.get('end'))
+        }
+      }
 
       if (
-        lineIntersectsRegion(
-          firstRefName,
-          lastRefName,
-          firstStart,
-          lastEnd,
-          region,
-        )
+        minStart !== Number.MAX_VALUE &&
+        minStart < region.end &&
+        maxEnd > region.start
       ) {
-        const firstPx = (firstStart - regionStart) / bpPerPx
-        const lastPx = (lastEnd - regionStart) / bpPerPx
+        const firstPx = (minStart - regionStart) / bpPerPx
+        const lastPx = (maxEnd - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2
         lineToCtx(firstPx, lineY, lastPx, lineY, ctx, CONNECTING_LINE_COLOR)
       }
     }
 
+    // First pass: draw all feature shapes
+    const layoutFeats: { feat: typeof chain[0] }[] = []
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const featRefName = feat.get('refName')
@@ -165,11 +166,7 @@ export function drawLongReadChains({
         bpPerPx,
       )
 
-      const layoutFeat = {
-        feature: feat,
-        heightPx: featureHeight,
-        topPx: chainY,
-      }
+      layoutFeats.push({ feat })
 
       renderFeatureShape({
         ctx,
@@ -183,6 +180,15 @@ export function drawLongReadChains({
         renderChevrons,
         colorCtx,
       })
+    }
+
+    // Second pass: draw all mismatches on top
+    for (const { feat } of layoutFeats) {
+      const layoutFeat = {
+        feature: feat,
+        heightPx: featureHeight,
+        topPx: chainY,
+      }
 
       renderFeatureMismatchesAndModifications({
         ctx,

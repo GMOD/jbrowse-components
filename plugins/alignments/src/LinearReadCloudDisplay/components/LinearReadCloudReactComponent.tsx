@@ -48,7 +48,7 @@ function getPairTypeDescription(data: ReducedFeature) {
     case PairType.INTER_CHROM:
       return 'Inter-chromosomal (purple)'
     case PairType.UNMAPPED_MATE:
-      return 'Unmapped mate (magenta)'
+      return 'Unmapped mate (brown)'
     case PairType.ABNORMAL_ORIENTATION: {
       const orientationType = orientationTypes.fr
       const orient = orientationType[data.pair_orientation || ''] || ''

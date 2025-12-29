@@ -212,33 +212,29 @@ export function addChainMouseoverRects(
     const chainMinXPx = minX - viewOffsetPx
     const chainMaxXPx = maxX - viewOffsetPx
     if (chain.length > 0) {
-      const firstFeat = chain[0]!
+      // Use same feature selection as drawing code for consistency
+      const nonSupplementary = collectNonSupplementary(chain)
+      const primaryFeat = nonSupplementary[0] || chain[0]!
       // Pre-compute hasSupplementary to avoid iterating in the UI
-      let hasSupplementary = false
-      for (let i = 0; i < chain.length; i++) {
-        if (chain[i]!.get('flags') & SAM_FLAG_SUPPLEMENTARY) {
-          hasSupplementary = true
-          break
-        }
-      }
+      const hasSupplementary = nonSupplementary.length < chain.length
       featuresForFlatbush.push({
         x1: chainMinXPx,
         y1: chainY,
         x2: chainMaxXPx,
         y2: chainY + featureHeight,
         data: {
-          name: firstFeat.get('name'),
-          refName: firstFeat.get('refName'),
-          start: firstFeat.get('start'),
-          end: firstFeat.get('end'),
-          strand: firstFeat.get('strand'),
-          flags: firstFeat.get('flags'),
-          id: firstFeat.id(),
-          tlen: firstFeat.get('template_length') || 0,
-          pair_orientation: firstFeat.get('pair_orientation') || '',
+          name: primaryFeat.get('name'),
+          refName: primaryFeat.get('refName'),
+          start: primaryFeat.get('start'),
+          end: primaryFeat.get('end'),
+          strand: primaryFeat.get('strand'),
+          flags: primaryFeat.get('flags'),
+          id: primaryFeat.id(),
+          tlen: primaryFeat.get('template_length') || 0,
+          pair_orientation: primaryFeat.get('pair_orientation') || '',
           clipLengthAtStartOfRead:
-            firstFeat.get('clipLengthAtStartOfRead') || 0,
-          next_ref: firstFeat.get('next_ref'),
+            primaryFeat.get('clipLengthAtStartOfRead') || 0,
+          next_ref: primaryFeat.get('next_ref'),
         },
         chainId: id,
         chainMinX: chainMinXPx,

@@ -130,6 +130,9 @@ export function drawPairChains({
       }
     }
 
+    // First pass: draw all feature shapes
+    const layoutFeats: { feat: typeof chain[0]; xPos: number; width: number }[] =
+      []
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const featRefName = feat.get('refName')
@@ -148,11 +151,7 @@ export function drawPairChains({
         bpPerPx,
       )
 
-      const layoutFeat = {
-        feature: feat,
-        heightPx: featureHeight,
-        topPx: chainY,
-      }
+      layoutFeats.push({ feat, xPos, width })
 
       renderFeatureShape({
         ctx,
@@ -166,6 +165,15 @@ export function drawPairChains({
         renderChevrons,
         colorCtx,
       })
+    }
+
+    // Second pass: draw all mismatches on top
+    for (const { feat } of layoutFeats) {
+      const layoutFeat = {
+        feature: feat,
+        heightPx: featureHeight,
+        topPx: chainY,
+      }
 
       renderFeatureMismatchesAndModifications({
         ctx,
