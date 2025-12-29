@@ -45,7 +45,7 @@ export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
   return (view.bpToPx({ refName, coord })?.offsetPx || 0) - view.offsetPx
 }
 
-// get's the yposition of a layout record in a track
+// gets the y-position of a layout record in a track
 export function yPos(
   trackId: string,
   level: number,
@@ -55,25 +55,16 @@ export function yPos(
   getYPosOverride?: (trackId: string, level: number) => number,
 ) {
   const display = tracks[level]!.displays[0]!
-  const min = 0
   const max = display.height
-  let offset = 0
-  const { SNPCoverageDisplay } = display
-  if (SNPCoverageDisplay) {
-    offset = SNPCoverageDisplay.height
-  }
-  const yPos = getYPosOverride ? 0 : display.scrollTop
+  const offset = display.SNPCoverageDisplay?.height ?? 0
+  const scrollTop = getYPosOverride ? 0 : display.scrollTop
   return (
-    clamp(c[TOP] - yPos + cheight(c) / 2 + offset, min, max) +
-    heightFromSpecificLevel(views, trackId, level, getYPosOverride) +
-    display.scrollTop
+    clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) +
+    heightFromSpecificLevel(views, trackId, level, getYPosOverride)
   )
 }
 
-// we combo a useEffect and useState combo to force rerender on snap changing.
-// the setup of this being a useEffect+useState makes it re-render once the
-// useEffect is called, which is generally the "next frame". If we removed the
-// below use
+// forces a re-render on the next frame when the variable changes
 export const useNextFrame = (variable: unknown) => {
   const [, setNextFrameState] = useState<unknown>()
   useEffect(() => {
