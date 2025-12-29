@@ -191,6 +191,16 @@ export function stateModelFactory(
           self.rendererTypeName === 'MultiDensityRenderer'
         )
       },
+
+      /**
+       * #getter
+       */
+      get canHaveFill() {
+        return (
+          self.rendererTypeName === 'MultiXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowXYPlotRenderer'
+        )
+      },
       /**
        * #getter
        * can be used to give it a "color scale" like a R heatmap, not
@@ -423,6 +433,19 @@ export function stateModelFactory(
       get hasGlobalStats() {
         return self.adapterCapabilities.includes('hasGlobalStats')
       },
+
+      /**
+       * #getter
+       */
+      get fillSetting() {
+        if (self.filled) {
+          return 0
+        } else if (self.minSize === 1) {
+          return 1
+        } else {
+          return 2
+        }
+      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
@@ -439,6 +462,23 @@ export function stateModelFactory(
               subMenu: self.scoreTrackMenuItems(),
             },
 
+            ...(self.canHaveFill
+              ? [
+                  {
+                    label: 'Fill mode',
+                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
+                      (elt, idx) => ({
+                        label: elt,
+                        type: 'radio',
+                        checked: self.fillSetting === idx,
+                        onClick: () => {
+                          self.setFill(idx)
+                        },
+                      }),
+                    ),
+                  },
+                ]
+              : []),
             ...(hasRenderings
               ? [
                   {
