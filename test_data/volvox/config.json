@@ -612,6 +612,41 @@
       }
     },
     {
+      "type": "VariantTrack",
+      "trackId": "volvox_test_vcf_jexl",
+      "name": "volvox 1000genomes vcf (JEXL filters + coloring)",
+      "assemblyNames": ["volvox"],
+      "category": ["Variants"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.test.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "samplesTsvLocation": {
+          "uri": "1000genomes.tsv",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.test.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
+          "renderer": {
+            "type": "CanvasFeatureRenderer",
+            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
+          },
+          "jexlFilters": ["get(feature,'start')<8000"]
+        }
+      ]
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "nclist_long_names",
       "name": "nclist with long names/descriptions",
