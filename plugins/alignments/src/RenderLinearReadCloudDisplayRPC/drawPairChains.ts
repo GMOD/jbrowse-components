@@ -10,7 +10,6 @@ import {
   collectNonSupplementary,
   featureOverlapsRegion,
   getMismatchRenderingConfig,
-  lineIntersectsRegion,
   renderFeatureMismatchesAndModifications,
   renderFeatureShape,
 } from './drawChainsUtil'
@@ -104,23 +103,29 @@ export function drawPairChains({
       stats: chainData.stats,
     }) || ['lightgrey', '#888']
 
-    // Draw connecting line for pairs with both mates visible
-    // Check if the line segment intersects the region (not just if features overlap)
-    if (hasBothMates) {
-      const v0 = nonSupplementary[0]!
-      const v1 = nonSupplementary[1]!
+    const lineY = chainY + featureHeight / 2
 
-      const v0RefName = v0.get('refName')
-      const v1RefName = v1.get('refName')
-      const v0Start = v0.get('start')
-      const v1Start = v1.get('start')
+    // Draw connecting line spanning all features in chain (including supplementary)
+    if (hasBothMates) {
+      // Find min/max coordinates across all features on this reference
+      let minStart = Number.MAX_VALUE
+      let maxEnd = Number.MIN_VALUE
+
+      for (let i = 0; i < chain.length; i++) {
+        const f = chain[i]!
+        if (f.get('refName') === region.refName) {
+          minStart = Math.min(minStart, f.get('start'))
+          maxEnd = Math.max(maxEnd, f.get('end'))
+        }
+      }
 
       if (
-        lineIntersectsRegion(v0RefName, v1RefName, v0Start, v1Start, region)
+        minStart !== Number.MAX_VALUE &&
+        minStart < region.end &&
+        maxEnd > region.start
       ) {
-        const r1s = (v0Start - regionStart) / bpPerPx
-        const r2s = (v1Start - regionStart) / bpPerPx
-        const lineY = chainY + featureHeight / 2
+        const r1s = (minStart - regionStart) / bpPerPx
+        const r2s = (maxEnd - regionStart) / bpPerPx
         lineToCtx(r1s, lineY, r2s, lineY, ctx, CONNECTING_LINE_COLOR)
       }
     }

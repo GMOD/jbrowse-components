@@ -8,6 +8,7 @@ import {
 import { drawLongReadChains } from './drawLongReadChains'
 import { drawPairChains } from './drawPairChains'
 import { PairType, getPairedType } from '../shared/color'
+import { SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
@@ -212,6 +213,14 @@ export function addChainMouseoverRects(
     const chainMaxXPx = maxX - viewOffsetPx
     if (chain.length > 0) {
       const firstFeat = chain[0]!
+      // Pre-compute hasSupplementary to avoid iterating in the UI
+      let hasSupplementary = false
+      for (let i = 0; i < chain.length; i++) {
+        if (chain[i]!.get('flags') & SAM_FLAG_SUPPLEMENTARY) {
+          hasSupplementary = true
+          break
+        }
+      }
       featuresForFlatbush.push({
         x1: chainMinXPx,
         y1: chainY,
@@ -229,10 +238,12 @@ export function addChainMouseoverRects(
           pair_orientation: firstFeat.get('pair_orientation') || '',
           clipLengthAtStartOfRead:
             firstFeat.get('clipLengthAtStartOfRead') || 0,
+          next_ref: firstFeat.get('next_ref'),
         },
         chainId: id,
         chainMinX: chainMinXPx,
         chainMaxX: chainMaxXPx,
+        hasSupplementary,
         chain: chain.map(f => ({
           name: f.get('name'),
           refName: f.get('refName'),
@@ -244,6 +255,7 @@ export function addChainMouseoverRects(
           tlen: f.get('template_length') || 0,
           pair_orientation: f.get('pair_orientation') || '',
           clipLengthAtStartOfRead: f.get('clipLengthAtStartOfRead') || 0,
+          next_ref: f.get('next_ref'),
         })),
       })
     }

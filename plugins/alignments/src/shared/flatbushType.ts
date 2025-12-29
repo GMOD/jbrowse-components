@@ -9,6 +9,7 @@ export interface ReducedFeatureForFlatbush {
   tlen: number
   pair_orientation: string
   clipLengthAtStartOfRead: number
+  next_ref?: string
 }
 
 export interface FlatbushEntry {
@@ -21,4 +22,5 @@ export interface FlatbushEntry {
   chainMinX: number
   chainMaxX: number
   chain: ReducedFeatureForFlatbush[]
+  hasSupplementary: boolean
 }

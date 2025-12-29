@@ -18,23 +18,70 @@ import {
   getFlatbushItemLabel,
 } from '../../PileupRenderer/types'
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
+import { PairType, getPairedType } from '../../shared/color'
+import { orientationTypes } from '../../util'
 
+import type { ReducedFeatureForFlatbush } from '../../shared/flatbushType'
 import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+function getPairTypeDescription(data: ReducedFeature) {
+  const pairType = getPairedType({
+    type: 'insertSizeAndOrientation',
+    f: {
+      refName: data.refName,
+      next_ref: data.next_ref,
+      pair_orientation: data.pair_orientation,
+      tlen: data.tlen,
+      flags: data.flags,
+    },
+  })
+
+  switch (pairType) {
+    case PairType.LONG_INSERT:
+      return 'Long insert size (red)'
+    case PairType.SHORT_INSERT:
+      return 'Short insert size (pink)'
+    case PairType.INTER_CHROM:
+      return 'Inter-chromosomal (purple)'
+    case PairType.UNMAPPED_MATE:
+      return 'Unmapped mate (magenta)'
+    case PairType.ABNORMAL_ORIENTATION: {
+      const orientationType = orientationTypes.fr
+      const orient = orientationType[data.pair_orientation || ''] || ''
+      if (orient === 'RR') {
+        return 'Abnormal orientation RR (navy)'
+      }
+      if (orient === 'RL') {
+        return 'Abnormal orientation RL (teal)'
+      }
+      if (orient === 'LL') {
+        return 'Abnormal orientation LL (green)'
+      }
+      return `Abnormal orientation ${orient}`
+    }
+    default:
+      return undefined
+  }
+}
+
 function FeatureTooltip({
   hoveredFeatureData,
+  hasSupplementary,
   mousePosition,
 }: {
   hoveredFeatureData: ReducedFeature
+  hasSupplementary: boolean
   mousePosition: {
     x: number
     y: number
   }
 }) {
+  const pairTypeDesc = getPairTypeDescription(hoveredFeatureData)
+
   return (
     <BaseTooltip
       clientPoint={{
@@ -50,6 +97,10 @@ function FeatureTooltip({
         <div>{assembleLocString(hoveredFeatureData)}</div>
         {hoveredFeatureData.tlen !== 0 ? (
           <div>Template length: {hoveredFeatureData.tlen}</div>
+        ) : null}
+        {pairTypeDesc ? <div>{pairTypeDesc}</div> : null}
+        {hasSupplementary ? (
+          <div>Has supplementary alignments</div>
         ) : null}
       </div>
     </BaseTooltip>
@@ -218,6 +269,9 @@ const Cloud = observer(function Cloud({
     height: number
   }>()
   const [hoveredFeatureData, setHoveredFeatureData] = useState<ReducedFeature>()
+  const [hoveredFeatureChain, setHoveredFeatureChain] =
+    useState<ReducedFeatureForFlatbush[]>()
+  const [hoveredHasSupplementary, setHoveredHasSupplementary] = useState(false)
   const [hoveredMismatchData, setHoveredMismatchData] = useState<FlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
     x: number
@@ -322,6 +376,8 @@ const Cloud = observer(function Cloud({
         setHoveredMismatchData(mismatch)
         setHoveredFeature(undefined)
         setHoveredFeatureData(undefined)
+        setHoveredFeatureChain(undefined)
+        setHoveredHasSupplementary(false)
         setMousePosition({ x: event.clientX, y: event.clientY })
         return
       }
@@ -338,10 +394,14 @@ const Cloud = observer(function Cloud({
           height: feature.y2 - feature.y1,
         })
         setHoveredFeatureData(feature.data)
+        setHoveredFeatureChain(feature.chain)
+        setHoveredHasSupplementary(feature.hasSupplementary)
         setMousePosition(position)
       } else {
         setHoveredFeature(undefined)
         setHoveredFeatureData(undefined)
+        setHoveredFeatureChain(undefined)
+        setHoveredHasSupplementary(false)
         setMousePosition(undefined)
       }
     },
@@ -351,6 +411,8 @@ const Cloud = observer(function Cloud({
   const onMouseLeave = useCallback(() => {
     setHoveredFeature(undefined)
     setHoveredFeatureData(undefined)
+    setHoveredFeatureChain(undefined)
+    setHoveredHasSupplementary(false)
     setHoveredMismatchData(undefined)
     setMousePosition(undefined)
   }, [])
@@ -429,6 +491,7 @@ const Cloud = observer(function Cloud({
       ) : hoveredFeatureData && mousePosition ? (
         <FeatureTooltip
           hoveredFeatureData={hoveredFeatureData}
+          hasSupplementary={hoveredHasSupplementary}
           mousePosition={mousePosition}
         />
       ) : null}

@@ -6716,24 +6716,24 @@ dns-packet@^5.2.2:
   dependencies:
     "@leichtgewicht/ip-codec" "^2.0.1"
 
-dockview-core@^4.13.0:
-  version "4.13.0"
-  resolved "https://registry.yarnpkg.com/dockview-core/-/dockview-core-4.13.0.tgz#147935989eecae195a33735d5debd020502e8b70"
-  integrity sha512-B+daxjpntjCIS/o1u3SlpbYOIbelEZTt6DxFhBfwL+G0T0aNxZOjzUY1DSY/VrGAhcvn+yFcWGFZxAUDDgiMiQ==
+dockview-core@^4.13.1:
+  version "4.13.1"
+  resolved "https://registry.yarnpkg.com/dockview-core/-/dockview-core-4.13.1.tgz#619e20ca52d077b83e985c91ce434f404626584c"
+  integrity sha512-+7vR0ZEoL8CNck6NqDVUMqBT22niwBu5CMMI137dZ3c8NDc7c5Si+3dGEqQgM4lNtHBLAtvypo1C4p21J2wkiQ==
 
 dockview-react@^4.12.0:
-  version "4.13.0"
-  resolved "https://registry.yarnpkg.com/dockview-react/-/dockview-react-4.13.0.tgz#cc2a77e10e668fc30250df102d24c1fe8b2aa2e3"
-  integrity sha512-2dazbYlVCui8Ja9v178tgH+tZkVg0rNiHNQNoeV6myx7adqotBEzTpX7t7d+WXGi65b7z66mMMAfR8LUbxCuGA==
+  version "4.13.1"
+  resolved "https://registry.yarnpkg.com/dockview-react/-/dockview-react-4.13.1.tgz#51e0f6887f1b0247dd786889bd93844037823aa6"
+  integrity sha512-xnK0mUq+gzME/QyzM5nn+SsQO26AA2qZlCuqi1KX7wux52KIUSMraQHN5AY9Qm2qCVb/NHhCZoZNSysb/GS79A==
   dependencies:
-    dockview "^4.13.0"
+    dockview "^4.13.1"
 
-dockview@^4.13.0:
-  version "4.13.0"
-  resolved "https://registry.yarnpkg.com/dockview/-/dockview-4.13.0.tgz#c123fd3676d4f05b86553bdbe3872d91d0c50b65"
-  integrity sha512-1/0NqAt98vN62nz8BlpE7J+G0nJKbyC2RTXuQCr6iI2urEhZE/weGRfL27jLI9sK9D368GmL1NQ847EgZYW7mA==
+dockview@^4.13.1:
+  version "4.13.1"
+  resolved "https://registry.yarnpkg.com/dockview/-/dockview-4.13.1.tgz#31b0e45d369516616bddfe0ea0e5f4aaa0388df7"
+  integrity sha512-K8xnYt3Rvkx8MYKHaEsb8aFaPyQclKRRkXS9JcpQPZUgqxumTLnSidgdd6uIfzEps6yJsXoZGQGJ9PtcaKyDcQ==
   dependencies:
-    dockview-core "^4.13.0"
+    dockview-core "^4.13.1"
 
 doctrine@^2.1.0:
   version "2.1.0"
