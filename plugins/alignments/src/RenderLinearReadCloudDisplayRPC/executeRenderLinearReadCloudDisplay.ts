@@ -66,6 +66,7 @@ export async function executeRenderLinearReadCloudDisplay({
     visibleModifications,
     hideSmallIndels,
     hideMismatches,
+    hideLargeIndels,
   } = args
 
   // Recreate the view from the snapshot following DotplotRenderer pattern
@@ -243,6 +244,7 @@ export async function executeRenderLinearReadCloudDisplay({
             visibleModifications,
             hideSmallIndels,
             hideMismatches,
+            hideLargeIndels,
           },
           view: viewSnap,
           calculateYOffsets: (chains: ComputedChain[]) => {

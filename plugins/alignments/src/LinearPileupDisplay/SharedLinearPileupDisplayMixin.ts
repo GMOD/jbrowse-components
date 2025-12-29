@@ -20,10 +20,12 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
 
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getPileupLegendItems } from '../shared/legendUtils'
+import { getMismatchDisplayMenuItem } from '../shared/menuItems'
 import { isDefaultFilterFlags } from '../shared/util'
 
 import type { ColorBy, FilterBy } from '../shared/types'
@@ -110,6 +112,10 @@ export function SharedLinearPileupDisplayMixin(
          * #property
          */
         hideMismatchesSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        hideLargeIndelsSetting: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -163,6 +169,12 @@ export function SharedLinearPileupDisplayMixin(
        */
       get hideMismatches() {
         return self.hideMismatchesSetting
+      },
+      /**
+       * #getter
+       */
+      get hideLargeIndels() {
+        return self.hideLargeIndelsSetting
       },
     }))
     .actions(self => ({
@@ -298,6 +310,12 @@ export function SharedLinearPileupDisplayMixin(
       setHideMismatches(arg: boolean) {
         self.hideMismatchesSetting = arg
       },
+      /**
+       * #action
+       */
+      setHideLargeIndels(arg: boolean) {
+        self.hideLargeIndelsSetting = arg
+      },
     }))
 
     .views(self => ({
@@ -321,6 +339,7 @@ export function SharedLinearPileupDisplayMixin(
           noSpacing,
           hideSmallIndels,
           hideMismatches,
+          hideLargeIndels,
           trackMaxHeight: maxHeight,
           rendererTypeName,
         } = self
@@ -329,6 +348,7 @@ export function SharedLinearPileupDisplayMixin(
           ...configBlob,
           ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
           ...(hideMismatches !== undefined ? { hideMismatches } : {}),
+          ...(hideLargeIndels !== undefined ? { hideLargeIndels } : {}),
           ...(height !== undefined ? { height } : {}),
           ...(noSpacing !== undefined ? { noSpacing } : {}),
           ...(maxHeight !== undefined ? { maxHeight } : {}),
@@ -639,22 +659,21 @@ export function SharedLinearPileupDisplayMixin(
               ],
             },
             {
-              label: 'Hide small indels (<10bp)',
+              label: 'Show...',
+              icon: VisibilityIcon,
               priority: -1,
-              type: 'checkbox',
-              checked: self.hideSmallIndels,
-              onClick: () => {
-                self.setHideSmallIndels(!self.hideSmallIndels)
-              },
-            },
-            {
-              label: 'Hide mismatches',
-              priority: -1,
-              type: 'checkbox',
-              checked: self.hideMismatches,
-              onClick: () => {
-                self.setHideMismatches(!self.hideMismatches)
-              },
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Show legend',
+                  type: 'checkbox',
+                  checked: self.showLegend,
+                  onClick: () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                },
+                getMismatchDisplayMenuItem(self),
+              ],
             },
             {
               label: 'Set max track height...',
@@ -680,15 +699,6 @@ export function SharedLinearPileupDisplayMixin(
                     handleClose,
                   },
                 ])
-              },
-            },
-            {
-              label: 'Show legend',
-              icon: FormatListBulletedIcon,
-              type: 'checkbox',
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
               },
             },
           ]
@@ -735,6 +745,8 @@ export function SharedLinearPileupDisplayMixin(
         filterBySetting,
         jexlFilters,
         hideSmallIndelsSetting,
+        hideMismatchesSetting,
+        hideLargeIndelsSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -747,6 +759,12 @@ export function SharedLinearPileupDisplayMixin(
         ...(jexlFilters?.length ? { jexlFilters } : {}),
         ...(hideSmallIndelsSetting !== undefined
           ? { hideSmallIndelsSetting }
+          : {}),
+        ...(hideMismatchesSetting !== undefined
+          ? { hideMismatchesSetting }
+          : {}),
+        ...(hideLargeIndelsSetting !== undefined
+          ? { hideLargeIndelsSetting }
           : {}),
       } as typeof snap
     })

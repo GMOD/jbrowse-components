@@ -6,8 +6,6 @@ import {
 import {
   CONNECTING_LINE_COLOR,
   calculateFeaturePositionPx,
-  chainIsPairedEnd,
-  collectNonSupplementary,
   featureOverlapsRegion,
   getChainBoundsOnRef,
   getMismatchRenderingConfig,
@@ -48,6 +46,7 @@ export function drawLongReadChains({
   stopToken,
   hideSmallIndels,
   hideMismatches,
+  hideLargeIndels,
 }: {
   ctx: CanvasRenderingContext2D
   chainData: ChainData
@@ -66,13 +65,14 @@ export function drawLongReadChains({
   stopToken?: string
   hideSmallIndels?: boolean
   hideMismatches?: boolean
+  hideLargeIndels?: boolean
 }): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
     config,
     configTheme,
     colorBy,
-    { hideSmallIndels, hideMismatches },
+    { hideSmallIndels, hideMismatches, hideLargeIndels },
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start
@@ -84,9 +84,9 @@ export function drawLongReadChains({
   const lastCheck = createStopTokenChecker(stopToken)
   for (const computedChain of computedChains) {
     checkStopToken2(lastCheck)
-    const { id, chain } = computedChain
+    const { id, chain, isPairedEnd, nonSupplementary } = computedChain
 
-    if (chainIsPairedEnd(chain)) {
+    if (isPairedEnd) {
       continue
     }
 
@@ -95,7 +95,6 @@ export function drawLongReadChains({
       continue
     }
 
-    const nonSupplementary = collectNonSupplementary(chain)
     const isSingleton = chain.length === 1
     const c1 = nonSupplementary[0] || chain[0]!
     const primaryStrand = getPrimaryStrandFromFlags(c1)

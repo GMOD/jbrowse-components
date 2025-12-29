@@ -48,6 +48,7 @@ export function renderMismatchesCallback({
   colorContrastMap,
   hideSmallIndels,
   hideMismatches,
+  hideLargeIndels,
   canvasWidth,
   drawSNPsMuted,
   checkRef,
@@ -66,6 +67,7 @@ export function renderMismatchesCallback({
   largeInsertionIndicatorScale: number
   hideSmallIndels: boolean
   hideMismatches?: boolean
+  hideLargeIndels?: boolean
   checkRef?: boolean
   charWidth: number
   charHeight: number
@@ -195,7 +197,9 @@ export function renderMismatchesCallback({
         }
       }
     } else if (type === DELETION_TYPE && drawIndels) {
-      if (!hideSmallIndels || length >= 10) {
+      const shouldHide =
+        (length < 10 && hideSmallIndels) || (length >= 10 && hideLargeIndels)
+      if (!shouldHide) {
         const w = Math.abs(leftPx - rightPx)
         if (leftPx + w > 0 && leftPx < canvasWidth) {
           const c = colorMap.deletion!
@@ -324,7 +328,7 @@ export function renderMismatchesCallback({
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, bottomPx)
           }
         }
-      } else {
+      } else if (!hideLargeIndels) {
         items.push({
           type: 'insertion',
           sequence: base || 'unknown',
@@ -386,7 +390,10 @@ export function renderMismatchesCallback({
           }
         }
       }
-    } else if (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) {
+    } else if (
+      (type === SOFTCLIP_TYPE || type === HARDCLIP_TYPE) &&
+      !hideLargeIndels
+    ) {
       const typeName = type === SOFTCLIP_TYPE ? 'softclip' : 'hardclip'
       const c = colorMap[typeName]!
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)

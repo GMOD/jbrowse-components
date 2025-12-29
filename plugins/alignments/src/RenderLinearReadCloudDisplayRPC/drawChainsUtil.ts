@@ -125,6 +125,7 @@ export interface MismatchRenderingConfig {
   largeInsertionIndicatorScale: number
   hideSmallIndels: boolean
   hideMismatches: boolean
+  hideLargeIndels: boolean
   colorMap: Record<string, string>
   colorContrastMap: Record<string, string>
   charWidth: number
@@ -138,7 +139,11 @@ export function getMismatchRenderingConfig(
   config: AnyConfigurationModel,
   configTheme: ThemeOptions,
   colorBy: ColorBy,
-  overrides?: { hideSmallIndels?: boolean; hideMismatches?: boolean },
+  overrides?: {
+    hideSmallIndels?: boolean
+    hideMismatches?: boolean
+    hideLargeIndels?: boolean
+  },
 ): MismatchRenderingConfig {
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
   const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth') ?? 1
@@ -152,6 +157,10 @@ export function getMismatchRenderingConfig(
   const hideMismatches =
     overrides?.hideMismatches ??
     (readConfObject(config, 'hideMismatches') as boolean)
+  const hideLargeIndels =
+    overrides?.hideLargeIndels ??
+    (readConfObject(config, 'hideLargeIndels') as boolean | undefined) ??
+    false
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
@@ -166,6 +175,7 @@ export function getMismatchRenderingConfig(
     largeInsertionIndicatorScale,
     hideSmallIndels,
     hideMismatches,
+    hideLargeIndels,
     colorMap,
     colorContrastMap,
     charWidth,

@@ -14,6 +14,7 @@ import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
@@ -28,6 +29,7 @@ import {
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
+  getMismatchDisplayMenuItem,
 } from '../shared/menuItems'
 
 import type { ReducedFeature } from '../shared/types'
@@ -102,6 +104,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        hideLargeIndelsSetting: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
         showLegend: types.maybe(types.boolean),
       }),
     )
@@ -138,6 +145,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get hideMismatches() {
         return self.hideMismatchesSetting ?? getConf(self, 'hideMismatches')
+      },
+      /**
+       * #getter
+       */
+      get hideLargeIndels() {
+        return self.hideLargeIndelsSetting ?? getConf(self, 'hideLargeIndels')
       },
     }))
     .views(self => ({
@@ -214,6 +227,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setHideMismatches(arg: boolean) {
         self.hideMismatchesSetting = arg
+      },
+      /**
+       * #action
+       */
+      setHideLargeIndels(arg: boolean) {
+        self.hideLargeIndelsSetting = arg
       },
 
       /**
@@ -315,6 +334,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Show...',
+              icon: VisibilityIcon,
               type: 'subMenu',
               subMenu: [
                 {
@@ -367,22 +387,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     )
                   },
                 },
-                {
-                  label: 'Show small indels (<10bp)',
-                  type: 'checkbox',
-                  checked: !self.hideSmallIndels,
-                  onClick: () => {
-                    self.setHideSmallIndels(!self.hideSmallIndels)
-                  },
-                },
-                {
-                  label: 'Show mismatches',
-                  type: 'checkbox',
-                  checked: !self.hideMismatches,
-                  onClick: () => {
-                    self.setHideMismatches(!self.hideMismatches)
-                  },
-                },
+                getMismatchDisplayMenuItem(self),
               ],
             },
 
@@ -421,14 +426,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       if (!snap) {
         return snap
       }
-      const { drawCloud, noSpacing, trackMaxHeight, showLegend, ...rest } =
-        snap as Omit<typeof snap, symbol>
+      const {
+        drawCloud,
+        noSpacing,
+        trackMaxHeight,
+        showLegend,
+        hideSmallIndelsSetting,
+        hideMismatchesSetting,
+        hideLargeIndelsSetting,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         ...(drawCloud ? { drawCloud } : {}),
         ...(noSpacing !== undefined ? { noSpacing } : {}),
         ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
         ...(showLegend !== undefined ? { showLegend } : {}),
+        ...(hideSmallIndelsSetting !== undefined
+          ? { hideSmallIndelsSetting }
+          : {}),
+        ...(hideMismatchesSetting !== undefined
+          ? { hideMismatchesSetting }
+          : {}),
+        ...(hideLargeIndelsSetting !== undefined
+          ? { hideLargeIndelsSetting }
+          : {}),
       } as typeof snap
     })
 }

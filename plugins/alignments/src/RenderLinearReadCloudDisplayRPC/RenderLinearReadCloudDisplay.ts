@@ -32,6 +32,7 @@ export interface RenderLinearReadCloudDisplayArgs {
   visibleModifications?: Record<string, ModificationTypeWithColor>
   hideSmallIndels?: boolean
   hideMismatches?: boolean
+  hideLargeIndels?: boolean
 }
 
 export default class RenderLinearReadCloudDisplay extends RpcMethodType {

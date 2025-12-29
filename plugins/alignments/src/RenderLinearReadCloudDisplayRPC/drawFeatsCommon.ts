@@ -8,6 +8,10 @@ import {
 import { drawLongReadChains } from './drawLongReadChains'
 import { drawPairChains } from './drawPairChains'
 import { PairType, getPairedType } from '../shared/color'
+import {
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '../shared/samFlags'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
@@ -32,6 +36,9 @@ export interface ComputedChain {
   maxX: number
   chain: Feature[]
   id: string
+  // Pre-computed to avoid repeated iteration in drawing code
+  isPairedEnd: boolean
+  nonSupplementary: Feature[]
 }
 
 /**
@@ -96,12 +103,24 @@ export function computeChainBounds(chains: Feature[][], view: LGV) {
     let maxX = Number.MIN_VALUE
     let chainId = ''
     let tlenDistance = 0
+    let isPairedEnd = false
+    const nonSupplementary: Feature[] = []
     const chainLength = chain.length
 
     for (let j = 0; j < chainLength; j++) {
       const elt = chain[j]!
       const start = elt.get('start')
       const end = elt.get('end')
+      const flags = elt.get('flags')
+
+      // Pre-compute isPairedEnd and nonSupplementary in single pass
+      if (flags & SAM_FLAG_PAIRED) {
+        isPairedEnd = true
+      }
+      if (!(flags & SAM_FLAG_SUPPLEMENTARY)) {
+        nonSupplementary.push(elt)
+      }
+
       // Only call bpToPx once per feature, calculate end from start + length
       const rs = view.bpToPx({
         refName: elt.get('refName'),
@@ -143,6 +162,8 @@ export function computeChainBounds(chains: Feature[][], view: LGV) {
       maxX,
       chain,
       id: chainId,
+      isPairedEnd,
+      nonSupplementary,
     })
   }
 
@@ -201,7 +222,7 @@ export function addChainMouseoverRects(
   featuresForFlatbush: FlatbushEntry[],
 ) {
   for (const computedChain of computedChains) {
-    const { id, chain, minX, maxX } = computedChain
+    const { id, chain, minX, maxX, nonSupplementary } = computedChain
     const chainY = chainYOffsets.get(id)
     if (chainY === undefined) {
       continue
@@ -211,10 +232,8 @@ export function addChainMouseoverRects(
     const chainMinXPx = minX - viewOffsetPx
     const chainMaxXPx = maxX - viewOffsetPx
     if (chain.length > 0) {
-      // Use same feature selection as drawing code for consistency
-      const nonSupplementary = collectNonSupplementary(chain)
+      // Use pre-computed nonSupplementary from computeChainBounds
       const primaryFeat = nonSupplementary[0] || chain[0]!
-      // Pre-compute hasSupplementary to avoid iterating in the UI
       const hasSupplementary = nonSupplementary.length < chain.length
       featuresForFlatbush.push({
         x1: chainMinXPx,
@@ -275,6 +294,7 @@ export interface DrawFeatsParams {
   visibleModifications?: Record<string, ModificationTypeWithColor>
   hideSmallIndels?: boolean
   hideMismatches?: boolean
+  hideLargeIndels?: boolean
 }
 
 export interface DrawFeatsResult {
@@ -373,6 +393,7 @@ export function drawFeatsCore({
       stopToken,
       hideSmallIndels: params.hideSmallIndels,
       hideMismatches: params.hideMismatches,
+      hideLargeIndels: params.hideLargeIndels,
     })
 
     const longReadMismatches = drawLongReadChains({
@@ -393,6 +414,7 @@ export function drawFeatsCore({
       stopToken,
       hideSmallIndels: params.hideSmallIndels,
       hideMismatches: params.hideMismatches,
+      hideLargeIndels: params.hideLargeIndels,
     })
 
     // Aggregate mismatch data (avoid push(...list) which can cause stack overflow)

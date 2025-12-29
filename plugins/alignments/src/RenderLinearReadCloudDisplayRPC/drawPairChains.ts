@@ -6,8 +6,6 @@ import {
 import {
   CONNECTING_LINE_COLOR,
   calculateFeaturePositionPx,
-  chainIsPairedEnd,
-  collectNonSupplementary,
   featureOverlapsRegion,
   getChainBoundsOnRef,
   getMismatchRenderingConfig,
@@ -46,6 +44,7 @@ export function drawPairChains({
   stopToken,
   hideSmallIndels,
   hideMismatches,
+  hideLargeIndels,
 }: {
   ctx: CanvasRenderingContext2D
   type: string
@@ -64,13 +63,14 @@ export function drawPairChains({
   stopToken?: string
   hideSmallIndels?: boolean
   hideMismatches?: boolean
+  hideLargeIndels?: boolean
 }): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
     config,
     configTheme,
     colorBy,
-    { hideSmallIndels, hideMismatches },
+    { hideSmallIndels, hideMismatches, hideLargeIndels },
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start
@@ -82,9 +82,9 @@ export function drawPairChains({
 
   for (const computedChain of computedChains) {
     checkStopToken2(lastCheck)
-    const { id, chain } = computedChain
+    const { id, chain, isPairedEnd, nonSupplementary } = computedChain
 
-    if (!chainIsPairedEnd(chain)) {
+    if (!isPairedEnd) {
       continue
     }
 
@@ -93,7 +93,6 @@ export function drawPairChains({
       continue
     }
 
-    const nonSupplementary = collectNonSupplementary(chain)
     const hasBothMates = nonSupplementary.length === 2
 
     // Get colors for this read pair/singleton

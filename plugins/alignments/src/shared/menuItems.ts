@@ -208,3 +208,76 @@ export function getFilterByMenuItem(model: unknown) {
     },
   }
 }
+
+interface MismatchDisplayModel {
+  hideMismatches?: boolean
+  hideSmallIndels?: boolean
+  hideLargeIndels?: boolean
+  setHideMismatches: (arg: boolean) => void
+  setHideSmallIndels: (arg: boolean) => void
+  setHideLargeIndels: (arg: boolean) => void
+}
+
+/**
+ * Shared mismatch/indel display submenu for pileup and read cloud displays
+ */
+export function getMismatchDisplayMenuItem(model: MismatchDisplayModel) {
+  return {
+    label: 'Mismatch/indel display',
+    type: 'subMenu' as const,
+    subMenu: [
+      {
+        label: 'Show all mismatches',
+        type: 'radio' as const,
+        checked:
+          !model.hideMismatches &&
+          !model.hideSmallIndels &&
+          !model.hideLargeIndels,
+        onClick: () => {
+          model.setHideMismatches(false)
+          model.setHideSmallIndels(false)
+          model.setHideLargeIndels(false)
+        },
+      },
+      {
+        label: 'Show mismatches and large indels+clipping',
+        type: 'radio' as const,
+        checked:
+          !model.hideMismatches &&
+          model.hideSmallIndels &&
+          !model.hideLargeIndels,
+        onClick: () => {
+          model.setHideMismatches(false)
+          model.setHideSmallIndels(true)
+          model.setHideLargeIndels(false)
+        },
+      },
+      {
+        label: 'Show just large indels',
+        type: 'radio' as const,
+        checked:
+          model.hideMismatches &&
+          model.hideSmallIndels &&
+          !model.hideLargeIndels,
+        onClick: () => {
+          model.setHideMismatches(true)
+          model.setHideSmallIndels(true)
+          model.setHideLargeIndels(false)
+        },
+      },
+      {
+        label: 'Show none',
+        type: 'radio' as const,
+        checked:
+          model.hideMismatches &&
+          model.hideSmallIndels &&
+          model.hideLargeIndels,
+        onClick: () => {
+          model.setHideMismatches(true)
+          model.setHideSmallIndels(true)
+          model.setHideLargeIndels(true)
+        },
+      },
+    ],
+  }
+}

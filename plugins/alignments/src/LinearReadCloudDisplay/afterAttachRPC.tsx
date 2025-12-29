@@ -43,6 +43,7 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
         trackMaxHeight: self.trackMaxHeight,
         hideSmallIndels: self.hideSmallIndels,
         hideMismatches: self.hideMismatches,
+        hideLargeIndels: self.hideLargeIndels,
         visibleModifications: Object.fromEntries(
           self.visibleModifications.toJSON(),
         ),
