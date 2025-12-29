@@ -9,6 +9,7 @@ import {
   chainIsPairedEnd,
   collectNonSupplementary,
   featureOverlapsRegion,
+  getChainBoundsOnRef,
   getMismatchRenderingConfig,
   getStrandColorKey,
   renderFeatureMismatchesAndModifications,
@@ -100,34 +101,18 @@ export function drawLongReadChains({
     const primaryStrand = getPrimaryStrandFromFlags(c1)
 
     // Draw connecting line for multi-segment long reads
-    // Find min/max coordinates across ALL features in chain (not just first/last)
-    // since chain order is arbitrary and middle features may extend beyond endpoints
     if (!isSingleton) {
-      let minStart = Number.MAX_VALUE
-      let maxEnd = Number.MIN_VALUE
-
-      for (let i = 0; i < chain.length; i++) {
-        const f = chain[i]!
-        if (f.get('refName') === region.refName) {
-          minStart = Math.min(minStart, f.get('start'))
-          maxEnd = Math.max(maxEnd, f.get('end'))
-        }
-      }
-
-      if (
-        minStart !== Number.MAX_VALUE &&
-        minStart < region.end &&
-        maxEnd > region.start
-      ) {
-        const firstPx = (minStart - regionStart) / bpPerPx
-        const lastPx = (maxEnd - regionStart) / bpPerPx
+      const bounds = getChainBoundsOnRef(chain, region.refName)
+      if (bounds && bounds.minStart < region.end && bounds.maxEnd > region.start) {
+        const firstPx = (bounds.minStart - regionStart) / bpPerPx
+        const lastPx = (bounds.maxEnd - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2
         lineToCtx(firstPx, lineY, lastPx, lineY, ctx, CONNECTING_LINE_COLOR)
       }
     }
 
     // First pass: draw all feature shapes
-    const layoutFeats: { feat: typeof chain[0] }[] = []
+    const layoutFeats: typeof chain = []
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const featRefName = feat.get('refName')
@@ -166,7 +151,7 @@ export function drawLongReadChains({
         bpPerPx,
       )
 
-      layoutFeats.push({ feat })
+      layoutFeats.push(feat)
 
       renderFeatureShape({
         ctx,
@@ -183,7 +168,7 @@ export function drawLongReadChains({
     }
 
     // Second pass: draw all mismatches on top
-    for (const { feat } of layoutFeats) {
+    for (const feat of layoutFeats) {
       const layoutFeat = {
         feature: feat,
         heightPx: featureHeight,

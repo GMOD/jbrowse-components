@@ -9,6 +9,7 @@ import {
   chainIsPairedEnd,
   collectNonSupplementary,
   featureOverlapsRegion,
+  getChainBoundsOnRef,
   getMismatchRenderingConfig,
   renderFeatureMismatchesAndModifications,
   renderFeatureShape,
@@ -107,32 +108,16 @@ export function drawPairChains({
 
     // Draw connecting line spanning all features in chain (including supplementary)
     if (hasBothMates) {
-      // Find min/max coordinates across all features on this reference
-      let minStart = Number.MAX_VALUE
-      let maxEnd = Number.MIN_VALUE
-
-      for (let i = 0; i < chain.length; i++) {
-        const f = chain[i]!
-        if (f.get('refName') === region.refName) {
-          minStart = Math.min(minStart, f.get('start'))
-          maxEnd = Math.max(maxEnd, f.get('end'))
-        }
-      }
-
-      if (
-        minStart !== Number.MAX_VALUE &&
-        minStart < region.end &&
-        maxEnd > region.start
-      ) {
-        const r1s = (minStart - regionStart) / bpPerPx
-        const r2s = (maxEnd - regionStart) / bpPerPx
+      const bounds = getChainBoundsOnRef(chain, region.refName)
+      if (bounds && bounds.minStart < region.end && bounds.maxEnd > region.start) {
+        const r1s = (bounds.minStart - regionStart) / bpPerPx
+        const r2s = (bounds.maxEnd - regionStart) / bpPerPx
         lineToCtx(r1s, lineY, r2s, lineY, ctx, CONNECTING_LINE_COLOR)
       }
     }
 
     // First pass: draw all feature shapes
-    const layoutFeats: { feat: typeof chain[0]; xPos: number; width: number }[] =
-      []
+    const layoutFeats: typeof chain = []
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const featRefName = feat.get('refName')
@@ -151,7 +136,7 @@ export function drawPairChains({
         bpPerPx,
       )
 
-      layoutFeats.push({ feat, xPos, width })
+      layoutFeats.push(feat)
 
       renderFeatureShape({
         ctx,
@@ -168,7 +153,7 @@ export function drawPairChains({
     }
 
     // Second pass: draw all mismatches on top
-    for (const { feat } of layoutFeats) {
+    for (const feat of layoutFeats) {
       const layoutFeat = {
         feature: feat,
         heightPx: featureHeight,

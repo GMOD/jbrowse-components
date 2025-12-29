@@ -205,18 +205,23 @@ export function calculateFeaturePositionPx(
   return { xPos, width }
 }
 
-export function lineIntersectsRegion(
-  refName1: string,
-  refName2: string,
-  coord1: number,
-  coord2: number,
-  region: BaseBlock,
-) {
-  const bothOnRefName =
-    refName1 === region.refName && refName2 === region.refName
-  const lineMin = Math.min(coord1, coord2)
-  const lineMax = Math.max(coord1, coord2)
-  return bothOnRefName && lineMin < region.end && lineMax > region.start
+/**
+ * Find min start and max end coordinates across all features in a chain
+ * that are on the specified reference. Returns undefined if no features match.
+ */
+export function getChainBoundsOnRef(chain: Feature[], refName: string) {
+  let minStart = Number.MAX_VALUE
+  let maxEnd = Number.MIN_VALUE
+
+  for (let i = 0; i < chain.length; i++) {
+    const f = chain[i]!
+    if (f.get('refName') === refName) {
+      minStart = Math.min(minStart, f.get('start'))
+      maxEnd = Math.max(maxEnd, f.get('end'))
+    }
+  }
+
+  return minStart !== Number.MAX_VALUE ? { minStart, maxEnd } : undefined
 }
 
 function aggregateMismatchData(

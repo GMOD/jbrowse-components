@@ -8,7 +8,6 @@ import {
 import { drawLongReadChains } from './drawLongReadChains'
 import { drawPairChains } from './drawPairChains'
 import { PairType, getPairedType } from '../shared/color'
-import { SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
 import { shouldRenderChevrons } from '../shared/util'
 
 import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'

@@ -42,26 +42,26 @@ function getPairTypeDescription(data: ReducedFeature) {
 
   switch (pairType) {
     case PairType.LONG_INSERT:
-      return 'Long insert size (red)'
+      return 'Long insert size'
     case PairType.SHORT_INSERT:
-      return 'Short insert size (pink)'
+      return 'Short insert size'
     case PairType.INTER_CHROM:
-      return 'Inter-chromosomal (purple)'
+      return `Inter-chromosomal (mate on ${data.next_ref || 'unknown'})`
     case PairType.UNMAPPED_MATE:
-      return 'Unmapped mate (brown)'
+      return 'Unmapped mate'
     case PairType.ABNORMAL_ORIENTATION: {
       const orientationType = orientationTypes.fr
       const orient = orientationType[data.pair_orientation || ''] || ''
       if (orient === 'RR') {
-        return 'Abnormal orientation RR (navy)'
+        return 'Both mates reverse strand'
       }
       if (orient === 'RL') {
-        return 'Abnormal orientation RL (teal)'
+        return 'Outward facing pair'
       }
       if (orient === 'LL') {
-        return 'Abnormal orientation LL (green)'
+        return 'Both mates forward strand'
       }
-      return `Abnormal orientation ${orient}`
+      return `Abnormal orientation ${data.pair_orientation || ''}`
     }
     default:
       return undefined
