@@ -41,14 +41,6 @@ export function forEachMismatchNumeric(
   ref: string | undefined,
   callback: MismatchCallback,
 ) {
-  console.log('DEBUG forEachMismatchNumeric input:', {
-    cigarLength: cigar?.length,
-    numericSeqLength: numericSeq?.length,
-    seqLength,
-    mdLength: md?.length,
-    hasQual: !!qual,
-    hasRef: !!ref,
-  })
   const mdLength = md?.length ?? 0
   const hasQual = !!qual
   const hasMD = md && mdLength > 0
@@ -95,20 +87,11 @@ export function forEachMismatchNumeric(
               const sb = numericSeq[seqIdx >> 1]!
               const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
 
-              const baseChar = SEQRET[nibble]
-              if (!baseChar) {
-                console.log('DEBUG: undefined base from SEQRET (MD path)', {
-                  nibble,
-                  seqIdx,
-                  sb,
-                  SEQRET,
-                })
-              }
               callback(
                 MISMATCH_TYPE,
                 roffset + localOffset,
                 1,
-                baseChar!,
+                SEQRET[nibble]!,
                 hasQual ? qual[seqIdx]! : -1,
                 md[mdIdx],
                 0,
@@ -143,20 +126,11 @@ export function forEachMismatchNumeric(
           const refCharCode = ref.charCodeAt(roffset + j)
           // Compare case-insensitively (| 0x20 converts uppercase to lowercase)
           if (seqBaseCode !== (refCharCode | 0x20)) {
-            const baseChar = SEQRET[nibble]
-            if (!baseChar) {
-              console.log('DEBUG: undefined base from SEQRET (ref path)', {
-                nibble,
-                seqIdx,
-                sb,
-                SEQRET,
-              })
-            }
             callback(
               MISMATCH_TYPE,
               roffset + j,
               1,
-              baseChar!,
+              SEQRET[nibble]!,
               hasQual ? qual[seqIdx]! : -1,
               refCharCode,
               0,
@@ -226,20 +200,11 @@ export function forEachMismatchNumeric(
           }
         }
 
-        const baseChar = SEQRET[nibble]
-        if (!baseChar) {
-          console.log('DEBUG: undefined base from SEQRET (CIGAR_X path)', {
-            nibble,
-            seqIdx,
-            sb,
-            SEQRET,
-          })
-        }
         callback(
           MISMATCH_TYPE,
           roffset + j,
           1,
-          baseChar!,
+          SEQRET[nibble]!,
           hasQual ? qual[seqIdx]! : -1,
           altbaseCode,
           0,

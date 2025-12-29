@@ -80,13 +80,6 @@ export async function executeRenderLinearReadCloudDisplay({
   const width = view.staticBlocks.totalWidthPx
   // Use regions from viewSnapshot which have originalRefName from renameRegionsIfNeeded
   const regions = (viewSnapshot as any).staticBlocks?.contentBlocks || view.staticBlocks.contentBlocks
-  console.log('DEBUG executeRenderLinearReadCloudDisplay:', {
-    width,
-    bpPerPx,
-    regionsCount: regions?.length,
-    regions: regions?.map((r: any) => ({ refName: r.refName, originalRefName: r.originalRefName })),
-    viewSnapshotHasContentBlocks: !!(viewSnapshot as any).staticBlocks?.contentBlocks,
-  })
   const assemblyName = view.assemblyNames[0]
   if (!assemblyName) {
     throw new Error('No assembly name found in view')
@@ -213,14 +206,6 @@ export async function executeRenderLinearReadCloudDisplay({
         noSpacing,
         trackMaxHeight ?? 1200,
       ).layoutHeight
-
-  console.log('DEBUG executeRenderLinearReadCloudDisplay canvas dimensions:', {
-    width,
-    actualHeight,
-    computedChainsCount: computedChains?.length,
-    drawCloud,
-    cloudModeHeight,
-  })
 
   const renderOpts: RenderToAbstractCanvasOptions = {
     highResolutionScaling,
