@@ -48,19 +48,28 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     }
 
     const { view: viewSnapshot, sessionId, adapterConfig } = args
+    const displayedRegions =
+      (viewSnapshot as any).displayedRegions || ([] as any[])
+
+    if (!displayedRegions.length) {
+      return args
+    }
+
+    // Rename displayedRegions (used by bpToPx for coordinate conversion)
+    const renamedDisplayed = await renameRegionsIfNeeded(assemblyManager, {
+      sessionId,
+      adapterConfig,
+      regions: displayedRegions,
+    })
+
+    // Also rename contentBlocks (used for fetching features)
     // contentBlocks is a getter on BlockSet, so we need to filter blocks manually
-    // since structuredClone doesn't preserve getters
     const allBlocks = (viewSnapshot as any).staticBlocks?.blocks || ([] as any[])
     const contentBlocks = allBlocks.filter(
       (b: { type?: string }) => b.type === 'ContentBlock',
     )
 
-    if (!contentBlocks.length) {
-      return args
-    }
-
-    // Rename the actual contentBlocks (viewport blocks), not displayedRegions
-    const result = await renameRegionsIfNeeded(assemblyManager, {
+    const renamedContent = await renameRegionsIfNeeded(assemblyManager, {
       sessionId,
       adapterConfig,
       regions: contentBlocks,
@@ -68,7 +77,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
 
     // Create a map of renamed contentBlocks by key for efficient lookup
     const renamedByKey = new Map(
-      result.regions.map((r: any) => [r.key, r]),
+      renamedContent.regions.map((r: any) => [r.key, r]),
     )
 
     // Update blocks array with renamed contentBlocks while preserving other block types
@@ -82,11 +91,11 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
       ...args,
       view: {
         ...viewSnapshot,
+        displayedRegions: renamedDisplayed.regions,
         staticBlocks: {
           ...(viewSnapshot as any).staticBlocks,
           blocks: updatedBlocks,
-          // Also set contentBlocks directly for code that accesses it
-          contentBlocks: result.regions,
+          contentBlocks: renamedContent.regions,
         },
       },
     }

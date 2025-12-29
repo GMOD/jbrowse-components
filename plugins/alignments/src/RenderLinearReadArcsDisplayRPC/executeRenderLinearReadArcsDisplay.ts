@@ -62,13 +62,16 @@ export async function executeRenderLinearReadArcsDisplay({
   // Extract properties from the recreated view
   const { offsetPx } = view
   const width = view.staticBlocks.totalWidthPx
-  const regions = view.staticBlocks.contentBlocks
+  // Use regions from viewSnapshot which have originalRefName from renameRegionsIfNeeded
+  const regions = (viewSnapshot as any).staticBlocks?.contentBlocks || view.staticBlocks.contentBlocks
 
   // Create a snapshot from the live view including computed properties
-  // Following the DotplotRenderer pattern
+  // Use the staticBlocks and displayedRegions from viewSnapshot (which have renamed refNames)
+  // not from the recreated view (which has the original assembly refNames)
   const viewSnap: any = {
     ...getSnapshot(view),
-    staticBlocks: view.staticBlocks,
+    displayedRegions: (viewSnapshot as any).displayedRegions,
+    staticBlocks: (viewSnapshot as any).staticBlocks,
     width: view.width,
   }
   // Add bpToPx method after viewSnap is defined to avoid circular reference
