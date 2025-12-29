@@ -196,6 +196,8 @@ export function drawLongReadChains({
         allItems,
       })
     }
+    // Reset cached fillStyle since mismatch rendering changes ctx.fillStyle
+    colorCtx.lastFillStyle = ''
   }
 
   return {

@@ -193,6 +193,8 @@ export function drawPairChains({
         allItems,
       })
     }
+    // Reset cached fillStyle since mismatch rendering changes ctx.fillStyle
+    colorCtx.lastFillStyle = ''
     checkStopToken2(lastCheck)
   }
 
