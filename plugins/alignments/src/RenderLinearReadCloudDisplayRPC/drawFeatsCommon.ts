@@ -30,6 +30,10 @@ import type { ThemeOptions } from '@mui/material'
 
 type LGV = LinearGenomeViewModel
 
+// If TLEN is more than this factor larger than the visible bp span,
+// it's likely from a distant mate (e.g., SV) and shouldn't affect scaling
+const TLEN_CONSISTENCY_FACTOR = 100
+
 export interface ComputedChain {
   distance: number
   minX: number
@@ -97,7 +101,6 @@ export function computeChainBounds(chains: Feature[][], view: LGV) {
   const computedChains: ComputedChain[] = []
   const { bpPerPx } = view
 
-  // get bounds on the 'distances' (TLEN for pairs, pixel span for others)
   for (const chain of chains) {
     let minX = Number.MAX_VALUE
     let maxX = Number.MIN_VALUE
@@ -152,9 +155,7 @@ export function computeChainBounds(chains: Feature[][], view: LGV) {
     let distance = 0
     if (tlenDistance > 0) {
       const bpSpan = (maxX - minX) * bpPerPx
-      // If TLEN is within 100x of the visible span, use it; otherwise treat
-      // as no TLEN (place at y=0) to avoid distorting the scale
-      if (tlenDistance <= bpSpan * 100) {
+      if (tlenDistance <= bpSpan * TLEN_CONSISTENCY_FACTOR) {
         distance = tlenDistance
       }
     }
@@ -303,6 +304,7 @@ export interface DrawFeatsParams {
 export interface DrawFeatsResult {
   featuresForFlatbush: FlatbushEntry[]
   layoutHeight?: number
+  cloudScaleInfo?: { minDistance: number; maxDistance: number }
   mismatchFlatbush: ArrayBufferLike
   mismatchItems: FlatbushItem[]
 }
@@ -319,6 +321,7 @@ export function drawFeatsCore({
   calculateYOffsets: (computedChains: ComputedChain[]) => {
     chainYOffsets: Map<string, number>
     layoutHeight?: number
+    cloudScaleInfo?: { minDistance: number; maxDistance: number }
   }
 }): DrawFeatsResult {
   const {
@@ -350,7 +353,8 @@ export function drawFeatsCore({
   sortComputedChains(computedChains)
 
   // Calculate Y-offsets using the provided strategy
-  const { chainYOffsets, layoutHeight } = calculateYOffsets(computedChains)
+  const { chainYOffsets, layoutHeight, cloudScaleInfo } =
+    calculateYOffsets(computedChains)
 
   // Initialize array for Flatbush mouseover data
   const featuresForFlatbush: FlatbushEntry[] = []
@@ -465,6 +469,7 @@ export function drawFeatsCore({
   return {
     featuresForFlatbush,
     layoutHeight,
+    cloudScaleInfo,
     mismatchFlatbush: mismatchFlatbush.data,
     mismatchItems,
   }

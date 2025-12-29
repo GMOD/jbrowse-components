@@ -28,7 +28,7 @@ export function getAlignmentShapeColor({
   config: AnyConfigurationModel
   colorTagMap: Record<string, string>
 }) {
-  // Color supplementary alignments light blue
+  // Color supplementary/split alignments orange
   const flags = feature.get('flags')
   if (flags & SAM_FLAG_SUPPLEMENTARY) {
     return fillColor.color_supplementary

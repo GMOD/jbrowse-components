@@ -110,6 +110,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         showLegend: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        showYScalebar: types.optional(types.boolean, true),
       }),
     )
     .volatile(() => ({
@@ -123,6 +128,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Chain ID of the currently selected feature for persistent highlighting
        */
       selectedFeatureId: undefined as string | undefined,
+      /**
+       * #volatile
+       * Scale info for cloud mode (min/max insert sizes)
+       */
+      cloudScaleInfo: undefined as
+        | { minDistance: number; maxDistance: number }
+        | undefined,
     }))
     .views(self => ({
       get dataTestId() {
@@ -160,6 +172,60 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get modificationThreshold() {
         return self.colorBy?.modifications?.threshold ?? 10
       },
+      /**
+       * #getter
+       * Calculate ticks for the y-axis scalebar in cloud mode
+       */
+      get cloudTicks() {
+        if (!self.drawCloud || !self.cloudScaleInfo || !self.showYScalebar) {
+          return undefined
+        }
+
+        const { minDistance, maxDistance } = self.cloudScaleInfo
+        const height = self.height
+        const CLOUD_LOG_OFFSET = 10
+        const CLOUD_HEIGHT_PADDING = 20
+
+        const maxD = Math.log(maxDistance + CLOUD_LOG_OFFSET)
+        const minD = Math.log(Math.max(1, minDistance + CLOUD_LOG_OFFSET))
+        const scaler = (height - CLOUD_HEIGHT_PADDING) / (maxD - minD || 1)
+
+        // Generate nice tick values (powers of 10 and multiples)
+        const tickValues: number[] = []
+        const logMin = Math.log10(minDistance)
+        const logMax = Math.log10(maxDistance)
+
+        // Start from the nearest power of 10 below minDistance
+        let power = Math.floor(logMin)
+        while (power <= Math.ceil(logMax)) {
+          const value = Math.pow(10, power)
+          // Use fewer multipliers below 1000, more above
+          const multipliers = value >= 1000 ? [1, 2, 3, 5, 7] : [1, 5]
+          for (const mult of multipliers) {
+            const val = value * mult
+            if (val >= minDistance && val <= maxDistance) {
+              tickValues.push(val)
+            }
+          }
+          power++
+        }
+
+        // Sort and dedupe
+        const uniqueTicks = [...new Set(tickValues)].sort((a, b) => a - b)
+
+        // Calculate pixel positions for each tick
+        const ticks = uniqueTicks.map(value => {
+          const y = (Math.log(value + CLOUD_LOG_OFFSET) - minD) * scaler
+          return { value, y }
+        })
+
+        return {
+          ticks,
+          height,
+          minDistance,
+          maxDistance,
+        }
+      },
     }))
     .actions(self => ({
       /**
@@ -182,6 +248,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setLayoutHeight(n: number) {
         self.layoutHeight = n
+      },
+      /**
+       * #action
+       * Set the cloud scale info for the y-axis scalebar
+       */
+      setCloudScaleInfo(
+        info: { minDistance: number; maxDistance: number } | undefined,
+      ) {
+        self.cloudScaleInfo = info
+      },
+      /**
+       * #action
+       */
+      setShowYScalebar(show: boolean) {
+        self.showYScalebar = show
       },
       /**
        * #action

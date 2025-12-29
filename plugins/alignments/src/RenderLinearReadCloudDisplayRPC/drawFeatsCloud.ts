@@ -1,9 +1,13 @@
 import type { ComputedChain } from './drawFeatsCommon'
 
 // Constants for cloud mode logarithmic scaling
-const CLOUD_LOG_OFFSET = 10
-const CLOUD_RANGE_PADDING = 100
-const CLOUD_HEIGHT_PADDING = 20
+export const CLOUD_LOG_OFFSET = 10
+export const CLOUD_HEIGHT_PADDING = 20
+
+export interface CloudScaleInfo {
+  minDistance: number
+  maxDistance: number
+}
 
 /**
  * Calculate Y-offsets using logarithmic scaling for cloud mode
@@ -15,31 +19,24 @@ export function calculateCloudYOffsetsUtil(
   // Find min/max distances for scaling (distance=0 chains are placed at y=0)
   let minDistance = Number.MAX_VALUE
   let maxDistance = Number.MIN_VALUE
-  let hasValidDistances = false
 
   for (const { distance } of computedChains) {
     if (distance > 0) {
-      hasValidDistances = true
-      if (distance < minDistance) {
-        minDistance = distance
-      }
-      if (distance > maxDistance) {
-        maxDistance = distance
-      }
+      minDistance = Math.min(minDistance, distance)
+      maxDistance = Math.max(maxDistance, distance)
     }
   }
 
-  if (!hasValidDistances) {
-    return { chainYOffsets: new Map<string, number>() }
+  if (minDistance === Number.MAX_VALUE) {
+    return {
+      chainYOffsets: new Map<string, number>(),
+      cloudScaleInfo: undefined as CloudScaleInfo | undefined,
+    }
   }
 
   // Use log(distance + offset) instead of log(distance) to smooth out small values
-  // The offset shifts the logarithmic curve, reducing the dramatic variation for small TLEN
-  // This provides a smooth compression without hard thresholds
-  const maxD = Math.log(maxDistance + CLOUD_LOG_OFFSET + CLOUD_RANGE_PADDING)
-  const minD = Math.log(
-    Math.max(1, minDistance + CLOUD_LOG_OFFSET - CLOUD_RANGE_PADDING),
-  )
+  const maxD = Math.log(maxDistance + CLOUD_LOG_OFFSET)
+  const minD = Math.log(Math.max(1, minDistance + CLOUD_LOG_OFFSET))
   const scaler = (height - CLOUD_HEIGHT_PADDING) / (maxD - minD || 1)
 
   // Calculate Y-offsets for each chain
@@ -50,5 +47,8 @@ export function calculateCloudYOffsetsUtil(
     chainYOffsets.set(id, top)
   }
 
-  return { chainYOffsets }
+  return {
+    chainYOffsets,
+    cloudScaleInfo: { minDistance, maxDistance } as CloudScaleInfo,
+  }
 }

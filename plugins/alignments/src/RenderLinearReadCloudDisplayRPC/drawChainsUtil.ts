@@ -223,8 +223,8 @@ export function getChainBoundsOnRef(chain: Feature[], refName: string) {
   let minStart = Number.MAX_VALUE
   let maxEnd = Number.MIN_VALUE
 
-  for (let i = 0; i < chain.length; i++) {
-    const f = chain[i]!
+  for (const element of chain) {
+    const f = element
     if (f.get('refName') === refName) {
       minStart = Math.min(minStart, f.get('start'))
       maxEnd = Math.max(maxEnd, f.get('end'))

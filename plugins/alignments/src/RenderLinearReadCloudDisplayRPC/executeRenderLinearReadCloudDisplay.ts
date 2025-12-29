@@ -221,6 +221,7 @@ export async function executeRenderLinearReadCloudDisplay({
       renderToAbstractCanvas(width, actualHeight, renderOpts, async ctx => {
         const {
           layoutHeight,
+          cloudScaleInfo,
           featuresForFlatbush,
           mismatchFlatbush,
           mismatchItems,
@@ -260,6 +261,7 @@ export async function executeRenderLinearReadCloudDisplay({
         })
         return {
           layoutHeight,
+          cloudScaleInfo,
           featuresForFlatbush,
           mismatchFlatbush,
           mismatchItems,
