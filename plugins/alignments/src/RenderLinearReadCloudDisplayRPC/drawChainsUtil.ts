@@ -24,8 +24,11 @@ import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
-// Constants for rendering
-export const CONNECTING_LINE_COLOR = '#6665'
+// Get connecting line color based on theme mode
+export function getConnectingLineColor(configTheme: ThemeOptions) {
+  const theme = createJBrowseTheme(configTheme)
+  return theme.palette.mode === 'dark' ? '#aaa8' : '#6665'
+}
 export const MIN_FEATURE_WIDTH_PX = 3
 export const CLIP_RECT_HEIGHT = 100000
 

@@ -62,11 +62,10 @@ export async function renderSvg(
       adapterConfig: self.adapterConfig,
       sequenceAdapter,
       config: getSnapshot(self.configuration),
-      theme: opts.theme,
       ...self.renderProps(),
       height,
       exportSVG: opts,
-      rpcDriverName: self.effectiveRpcDriverName,
+      theme: opts.theme,
     },
   )) as RenderingResult
 

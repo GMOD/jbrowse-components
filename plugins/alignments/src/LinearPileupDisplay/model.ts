@@ -9,7 +9,6 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import ColorLensIcon from '@mui/icons-material/ColorLens'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
@@ -233,6 +232,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         adapterRenderProps: superAdapterRenderProps,
         renderProps: superRenderProps,
         colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
+        showSubMenuItems: superShowSubMenuItems,
       } = self
 
       return {
@@ -267,6 +267,36 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...result,
             notReady: result.notReady || !sortReady,
           }
+        },
+
+        /**
+         * #method
+         */
+        showSubMenuItems() {
+          return [
+            ...superShowSubMenuItems(),
+            {
+              label: 'Show soft clipping',
+              type: 'checkbox',
+              checked: self.showSoftClipping,
+              onClick: () => {
+                self.toggleSoftClipping()
+                // if toggling from off to on, will break sort for this track
+                // so clear it
+                if (self.showSoftClipping) {
+                  self.clearSelected()
+                }
+              },
+            },
+            {
+              label: 'Show mismatches faded by quality',
+              type: 'checkbox',
+              checked: self.mismatchAlphaSetting,
+              onClick: () => {
+                self.toggleMismatchAlpha()
+              },
+            },
+          ]
         },
 
         /**
@@ -349,28 +379,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     handleClose,
                   },
                 ])
-              },
-            },
-            {
-              label: 'Show soft clipping',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showSoftClipping,
-              onClick: () => {
-                self.toggleSoftClipping()
-                // if toggling from off to on, will break sort for this track
-                // so clear it
-                if (self.showSoftClipping) {
-                  self.clearSelected()
-                }
-              },
-            },
-            {
-              label: 'Fade mismatches by quality',
-              type: 'checkbox',
-              checked: self.mismatchAlphaSetting,
-              onClick: () => {
-                self.toggleMismatchAlpha()
               },
             },
           ] as const

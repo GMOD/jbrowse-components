@@ -55,9 +55,8 @@ export async function renderSvg(
     regions: [...regions],
     adapterConfig,
     bpPerPx,
-    highResolutionScaling: 2,
-    exportSVG: opts,
     ...renderProps,
+    exportSVG: opts,
   })) as RenderingResult
 
   const finalRendering = await renderingToSvg(

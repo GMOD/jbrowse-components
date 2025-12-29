@@ -4,10 +4,10 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import {
-  CONNECTING_LINE_COLOR,
   calculateFeaturePositionPx,
   featureOverlapsRegion,
   getChainBoundsOnRef,
+  getConnectingLineColor,
   getMismatchRenderingConfig,
   renderFeatureMismatchesAndModifications,
   renderFeatureShape,
@@ -121,7 +121,7 @@ export function drawPairChains({
         // Use orange for chains with supplementary alignments
         const lineColor = hasSupplementary
           ? strokeColor.color_supplementary
-          : CONNECTING_LINE_COLOR
+          : getConnectingLineColor(configTheme)
         lineToCtx(r1s, lineY, r2s, lineY, ctx, lineColor)
       }
     }

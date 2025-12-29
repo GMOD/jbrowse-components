@@ -138,20 +138,23 @@ export default function stateModelFactory(
         }
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      renderProps() {
-        return {
-          config: self.rendererConfig,
-          resolution: self.resolution,
-          useLogScale: self.useLogScale,
-          colorScheme: self.colorScheme,
-          normalization: self.activeNormalization,
-          displayHeight: self.mode === 'adjust' ? self.height : undefined,
-        }
-      },
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        /**
+         * #method
+         */
+        renderProps() {
+          return {
+            ...superRenderProps(),
+            config: self.rendererConfig,
+            resolution: self.resolution,
+            useLogScale: self.useLogScale,
+            colorScheme: self.colorScheme,
+            normalization: self.activeNormalization,
+            displayHeight: self.mode === 'adjust' ? self.height : undefined,
+          }
+        },
 
       /**
        * #method
@@ -181,7 +184,8 @@ export default function stateModelFactory(
         // Only show when we have data (maxScore > 0)
         return self.showLegend && self.maxScore > 0 ? 140 : 0
       },
-    }))
+      }
+    })
     .actions(self => ({
       /**
        * #action

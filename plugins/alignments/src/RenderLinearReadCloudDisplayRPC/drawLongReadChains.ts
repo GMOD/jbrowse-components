@@ -4,10 +4,10 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import {
-  CONNECTING_LINE_COLOR,
   calculateFeaturePositionPx,
   featureOverlapsRegion,
   getChainBoundsOnRef,
+  getConnectingLineColor,
   getMismatchRenderingConfig,
   getStrandColorKey,
   renderFeatureMismatchesAndModifications,
@@ -110,7 +110,7 @@ export function drawLongReadChains({
         const firstPx = (bounds.minStart - regionStart) / bpPerPx
         const lastPx = (bounds.maxEnd - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2
-        lineToCtx(firstPx, lineY, lastPx, lineY, ctx, CONNECTING_LINE_COLOR)
+        lineToCtx(firstPx, lineY, lastPx, lineY, ctx, getConnectingLineColor(configTheme))
       }
     }
 

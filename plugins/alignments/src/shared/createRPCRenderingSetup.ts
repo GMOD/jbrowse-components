@@ -103,9 +103,6 @@ export function createRPCRenderFunction<
         adapterConfig: self.adapterConfig,
         sequenceAdapter,
         config: getSnapshot(self.configuration),
-        theme: session.theme,
-        highResolutionScaling: 2,
-        rpcDriverName: self.effectiveRpcDriverName,
         statusCallback: (msg: string) => {
           if (isAlive(self)) {
             self.setStatusMessage?.(msg)

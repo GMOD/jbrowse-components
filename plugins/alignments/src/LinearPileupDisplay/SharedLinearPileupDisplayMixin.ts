@@ -394,6 +394,23 @@ export function SharedLinearPileupDisplayMixin(
       legendItems(theme: Theme): LegendItem[] {
         return getPileupLegendItems(self.colorBy, theme)
       },
+
+      /**
+       * #method
+       */
+      showSubMenuItems() {
+        return [
+          {
+            label: 'Show legend',
+            type: 'checkbox',
+            checked: self.showLegend,
+            onClick: () => {
+              self.setShowLegend(!self.showLegend)
+            },
+          },
+          getMismatchDisplayMenuItem(self),
+        ]
+      },
     }))
     .views(self => {
       const {
@@ -662,17 +679,7 @@ export function SharedLinearPileupDisplayMixin(
               icon: VisibilityIcon,
               priority: -1,
               type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'Show legend',
-                  type: 'checkbox',
-                  checked: self.showLegend,
-                  onClick: () => {
-                    self.setShowLegend(!self.showLegend)
-                  },
-                },
-                getMismatchDisplayMenuItem(self),
-              ],
+              subMenu: self.showSubMenuItems(),
             },
             {
               label: 'Set max track height...',

@@ -80,7 +80,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
           regions: [...regions],
           adapterConfig,
           bpPerPx,
-          highResolutionScaling: 2,
           stopToken,
           ...renderProps,
         },
