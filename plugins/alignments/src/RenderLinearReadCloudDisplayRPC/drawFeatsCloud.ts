@@ -12,7 +12,7 @@ export function calculateCloudYOffsetsUtil(
   computedChains: ComputedChain[],
   height: number,
 ) {
-  // Single pass: find min/max distances while filtering d > 0
+  // Find min/max distances for scaling (distance=0 chains are placed at y=0)
   let minDistance = Number.MAX_VALUE
   let maxDistance = Number.MIN_VALUE
   let hasValidDistances = false

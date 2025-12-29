@@ -141,19 +141,22 @@ export function computeChainBounds(chains: Feature[][], view: LGV) {
       }
     }
 
-    // For pairs/chains, prefer TLEN over pixel distance; singletons use 0 (for y=0)
-    let distance: number
-    if (tlenDistance > 0) {
-      distance = tlenDistance
-    } else if (chainLength === 1) {
-      // Singletons get distance of 0 to be placed at y=0
-      distance = 0
-    } else if (minX !== Number.MAX_VALUE && maxX !== Number.MIN_VALUE) {
-      // Fall back to pixel distance for long reads (e.g., SA-tagged chains)
-      distance = Math.abs(maxX - minX)
-    } else {
-      // Skip chains with no valid positions and no TLEN
+    // Skip chains with no valid pixel positions
+    if (minX === Number.MAX_VALUE || maxX === Number.MIN_VALUE) {
       continue
+    }
+
+    // Only use TLEN for distance; chains without valid TLEN get distance=0
+    // (placed at y=0 in cloud mode). Also filter out chains where TLEN is
+    // wildly inconsistent with the visible bp span (e.g., distant mate from SV)
+    let distance = 0
+    if (tlenDistance > 0) {
+      const bpSpan = (maxX - minX) * bpPerPx
+      // If TLEN is within 100x of the visible span, use it; otherwise treat
+      // as no TLEN (place at y=0) to avoid distorting the scale
+      if (tlenDistance <= bpSpan * 100) {
+        distance = tlenDistance
+      }
     }
 
     computedChains.push({

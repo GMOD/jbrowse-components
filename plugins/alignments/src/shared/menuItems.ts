@@ -209,6 +209,53 @@ export function getFilterByMenuItem(model: unknown) {
   }
 }
 
+interface EditFiltersModel {
+  drawSingletons: boolean
+  drawProperPairs: boolean
+  setDrawSingletons: (arg: boolean) => void
+  setDrawProperPairs: (arg: boolean) => void
+}
+
+/**
+ * Edit filters submenu for LinearReadCloudDisplay
+ */
+export function getEditFiltersMenuItem(model: EditFiltersModel) {
+  return {
+    label: 'Edit filters',
+    icon: FilterListIcon,
+    type: 'subMenu' as const,
+    subMenu: [
+      {
+        label: 'Show singletons',
+        type: 'checkbox' as const,
+        checked: model.drawSingletons,
+        onClick: () => {
+          model.setDrawSingletons(!model.drawSingletons)
+        },
+      },
+      {
+        label: 'Show proper pairs',
+        type: 'checkbox' as const,
+        checked: model.drawProperPairs,
+        onClick: () => {
+          model.setDrawProperPairs(!model.drawProperPairs)
+        },
+      },
+      { type: 'divider' as const },
+      {
+        label: 'Edit filters...',
+        onClick: () => {
+          // @ts-expect-error getSession works on model
+          getSession(model).queueDialog((handleClose: () => void) => [
+            FilterByTagDialog,
+            { model, handleClose },
+          ])
+        },
+      },
+    ],
+  }
+}
+
 interface MismatchDisplayModel {
   hideMismatches?: boolean
   hideSmallIndels?: boolean

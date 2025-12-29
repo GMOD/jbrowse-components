@@ -97,11 +97,11 @@ function FeatureTooltip({
         </div>
         <div>{assembleLocString(hoveredFeatureData)}</div>
         {hoveredFeatureData.tlen !== 0 ? (
-          <div>Template length: {hoveredFeatureData.tlen}</div>
+          <div>Template length: {toLocale(hoveredFeatureData.tlen)}</div>
         ) : null}
         {pairTypeDesc ? <div>{pairTypeDesc}</div> : null}
         {hasSupplementary ? (
-          <div>Has supplementary alignments</div>
+          <div>Has supplementary/split alignments</div>
         ) : null}
       </div>
     </BaseTooltip>

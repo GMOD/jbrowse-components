@@ -13,7 +13,7 @@ import {
   renderFeatureShape,
 } from './drawChainsUtil'
 import { lineToCtx } from '../shared/canvasUtils'
-import { getPairedColor } from '../shared/color'
+import { fillColor, getPairedColor, strokeColor } from '../shared/color'
 
 import type { MismatchData } from './drawChainsUtil'
 import type { ComputedChain } from './drawFeatsCommon'
@@ -105,13 +105,20 @@ export function drawPairChains({
 
     const lineY = chainY + featureHeight / 2
 
+    // Check if chain has supplementary alignments
+    const hasSupplementary = chain.length > nonSupplementary.length
+
     // Draw connecting line spanning all features in chain (including supplementary)
     if (hasBothMates) {
       const bounds = getChainBoundsOnRef(chain, region.refName)
       if (bounds && bounds.minStart < region.end && bounds.maxEnd > region.start) {
         const r1s = (bounds.minStart - regionStart) / bpPerPx
         const r2s = (bounds.maxEnd - regionStart) / bpPerPx
-        lineToCtx(r1s, lineY, r2s, lineY, ctx, CONNECTING_LINE_COLOR)
+        // Use orange for chains with supplementary alignments
+        const lineColor = hasSupplementary
+          ? strokeColor.color_supplementary
+          : CONNECTING_LINE_COLOR
+        lineToCtx(r1s, lineY, r2s, lineY, ctx, lineColor)
       }
     }
 
@@ -137,6 +144,11 @@ export function drawPairChains({
 
       layoutFeats.push(feat)
 
+      // Use supplementary color for entire chain if it has supplementary alignments
+      const [featFill, featStroke] = hasSupplementary
+        ? [fillColor.color_supplementary, strokeColor.color_supplementary]
+        : [pairedFill, pairedStroke]
+
       renderFeatureShape({
         ctx,
         xPos,
@@ -144,8 +156,8 @@ export function drawPairChains({
         width,
         height: featureHeight,
         strand: feat.get('strand'),
-        fillStyle: pairedFill,
-        strokeStyle: pairedStroke,
+        fillStyle: featFill,
+        strokeStyle: featStroke,
         renderChevrons,
         colorCtx,
       })

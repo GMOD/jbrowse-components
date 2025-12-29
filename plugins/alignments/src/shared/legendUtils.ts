@@ -17,15 +17,22 @@ export function getPileupLegendItems(
 ): LegendItem[] {
   const colorType = colorBy?.type
 
+  const supplementaryItem = {
+    color: fillColor.color_supplementary,
+    label: 'Supplementary/split',
+  }
+
   if (colorType === 'strand') {
     return [
       { color: fillColor.color_fwd_strand, label: 'Forward strand' },
       { color: fillColor.color_rev_strand, label: 'Reverse strand' },
+      supplementaryItem,
     ]
   } else if (colorType === 'stranded') {
     return [
       { color: fillColor.color_fwd_strand, label: 'First-of-pair forward' },
       { color: fillColor.color_rev_strand, label: 'First-of-pair reverse' },
+      supplementaryItem,
     ]
   } else if (colorType === 'insertSize') {
     return [
@@ -34,25 +41,28 @@ export function getPileupLegendItems(
       { color: fillColor.color_shortinsert, label: 'Short insert' },
       { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
       { color: fillColor.color_unmapped_mate, label: 'Unmapped mate' },
+      supplementaryItem,
     ]
   } else if (colorType === 'pairOrientation') {
     return [
-      { color: fillColor.color_pair_lr, label: 'LR (proper)' },
-      { color: fillColor.color_pair_rr, label: 'RR' },
-      { color: fillColor.color_pair_rl, label: 'RL' },
-      { color: fillColor.color_pair_ll, label: 'LL' },
+      { color: fillColor.color_pair_lr, label: 'Normal pair orientation' },
+      { color: fillColor.color_pair_rr, label: 'Both mates reverse strand' },
+      { color: fillColor.color_pair_rl, label: 'Both mates point outward' },
+      { color: fillColor.color_pair_ll, label: 'Both mates forward strand' },
       { color: fillColor.color_unmapped_mate, label: 'Unmapped mate' },
+      supplementaryItem,
     ]
   } else if (colorType === 'insertSizeAndPairOrientation') {
     return [
-      { color: fillColor.color_pair_lr, label: 'Normal (LR)' },
-      { color: fillColor.color_pair_rr, label: 'RR orientation' },
-      { color: fillColor.color_pair_rl, label: 'RL orientation' },
-      { color: fillColor.color_pair_ll, label: 'LL orientation' },
+      { color: fillColor.color_pair_lr, label: 'Normal pair orientation' },
+      { color: fillColor.color_pair_rr, label: 'Both mates reverse strand' },
+      { color: fillColor.color_pair_rl, label: 'Both mates point outward' },
+      { color: fillColor.color_pair_ll, label: 'Both mates forward strand' },
       { color: fillColor.color_longinsert, label: 'Long insert' },
       { color: fillColor.color_shortinsert, label: 'Short insert' },
       { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
       { color: fillColor.color_unmapped_mate, label: 'Unmapped mate' },
+      supplementaryItem,
     ]
   } else {
     // Default: show ACGT, insertion, deletion, hardclip, softclip
@@ -126,22 +136,29 @@ export function getReadDisplayLegendItems(
 ): LegendItem[] {
   const colorType = colorBy?.type
 
+  const supplementaryItem = {
+    color: fillColor.color_supplementary,
+    label: 'Supplementary/split',
+  }
+
   if (colorType === 'modifications' && visibleModifications) {
     const items: LegendItem[] = []
     for (const [type, mod] of visibleModifications.entries()) {
       items.push({ color: mod.color, label: type })
     }
+    items.push(supplementaryItem)
     return items
   }
   if (colorType === 'insertSizeAndOrientation') {
     return [
-      { color: fillColor.color_pair_lr, label: 'Normal (LR)' },
-      { color: fillColor.color_pair_rr, label: 'RR orientation' },
-      { color: fillColor.color_pair_rl, label: 'RL orientation' },
-      { color: fillColor.color_pair_ll, label: 'LL orientation' },
+      { color: fillColor.color_pair_lr, label: 'Normal pair orientation' },
+      { color: fillColor.color_pair_rr, label: 'Both mates reverse strand' },
+      { color: fillColor.color_pair_rl, label: 'Both mates point outward' },
+      { color: fillColor.color_pair_ll, label: 'Both mates forward strand' },
       { color: fillColor.color_longinsert, label: 'Long insert' },
       { color: fillColor.color_shortinsert, label: 'Short insert' },
       { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
+      supplementaryItem,
     ]
   }
   if (colorType === 'insertSize') {
@@ -150,16 +167,18 @@ export function getReadDisplayLegendItems(
       { color: fillColor.color_longinsert, label: 'Long insert' },
       { color: fillColor.color_shortinsert, label: 'Short insert' },
       { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
+      supplementaryItem,
     ]
   }
   if (colorType === 'orientation') {
     return [
-      { color: fillColor.color_pair_lr, label: 'LR (proper)' },
-      { color: fillColor.color_pair_rr, label: 'RR' },
-      { color: fillColor.color_pair_rl, label: 'RL' },
-      { color: fillColor.color_pair_ll, label: 'LL' },
+      { color: fillColor.color_pair_lr, label: 'Normal pair orientation' },
+      { color: fillColor.color_pair_rr, label: 'Both mates reverse strand' },
+      { color: fillColor.color_pair_rl, label: 'Both mates point outward' },
+      { color: fillColor.color_pair_ll, label: 'Both mates forward strand' },
+      supplementaryItem,
     ]
   }
 
-  return []
+  return [supplementaryItem]
 }

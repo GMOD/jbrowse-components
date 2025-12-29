@@ -28,7 +28,7 @@ import {
 } from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
-  getFilterByMenuItem,
+  getEditFiltersMenuItem,
   getMismatchDisplayMenuItem,
 } from '../shared/menuItems'
 
@@ -356,26 +356,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: 'Show singletons',
-                  type: 'checkbox',
-                  helpText:
-                    'If disabled, does not single parts of a paired end read, or a single long read alignment. Will only draw paired reads or split alignments',
-                  checked: self.drawSingletons,
-                  onClick: () => {
-                    self.setDrawSingletons(!self.drawSingletons)
-                  },
-                },
-                {
-                  label: 'Show proper pairs',
-                  helpText:
-                    'If disabled, will not draw "normally paired" reads which can help highlight structural variants',
-                  type: 'checkbox',
-                  checked: self.drawProperPairs,
-                  onClick: () => {
-                    self.setDrawProperPairs(!self.drawProperPairs)
-                  },
-                },
-                {
                   label: 'Show read strand relative to primary',
                   helpText:
                     'This makes all the reads draw their strand relative to the primary alignment, which can be helpful in seeing patterns of flipping orientation in split long-read alignments',
@@ -391,7 +371,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               ],
             },
 
-            getFilterByMenuItem(self),
+            getEditFiltersMenuItem(self),
             getColorSchemeMenuItem(self),
           ]
         },

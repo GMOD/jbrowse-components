@@ -47,6 +47,8 @@ export const fillColor = {
   color_longread_rev_fwd: 'navy',
   color_longread_fwd_rev: 'green',
   color_longread_same: 'grey',
+  // Supplementary/split alignment color (light orange)
+  color_supplementary: '#f0b878',
 }
 
 // manually calculated by running
@@ -78,6 +80,8 @@ export const strokeColor = {
   color_longread_rev_fwd: '#00004D',
   color_longread_fwd_rev: '#005A00',
   color_longread_same: '#444',
+  // Supplementary/split alignment stroke color
+  color_supplementary: '#c88030',
 }
 
 const defaultColor = [
