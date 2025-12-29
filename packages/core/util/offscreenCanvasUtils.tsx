@@ -20,3 +20,23 @@ export function ReactRendering({
 }
 
 export { getSerializedSvg } from './offscreenCanvasGetSerializingSvg'
+
+/**
+ * Converts a rendering result with canvasRecordedData to one with html.
+ * If the rendering already has html or doesn't have canvasRecordedData,
+ * it returns the original rendering unchanged.
+ */
+export async function renderingToSvg<
+  T extends { canvasRecordedData?: unknown; html?: string },
+>(rendering: T, width: number, height: number): Promise<T> {
+  if (rendering.canvasRecordedData && !rendering.html) {
+    const { getSerializedSvg } = await import('./offscreenCanvasGetSerializingSvg')
+    const html = await getSerializedSvg({
+      width,
+      height,
+      canvasRecordedData: rendering.canvasRecordedData,
+    })
+    return { ...rendering, html }
+  }
+  return rendering
+}

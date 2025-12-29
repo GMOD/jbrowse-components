@@ -17,6 +17,7 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
+import { calculateCloudTicks } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCloud'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
@@ -180,43 +181,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (!self.drawCloud || !self.cloudScaleInfo || !self.showYScalebar) {
           return undefined
         }
-
-        const { minDistance, maxDistance } = self.cloudScaleInfo
-        const height = self.height
-        const CLOUD_LOG_OFFSET = 10
-        const CLOUD_HEIGHT_PADDING = 20
-
-        const maxD = Math.log(maxDistance + CLOUD_LOG_OFFSET)
-        const minD = Math.log(Math.max(1, minDistance + CLOUD_LOG_OFFSET))
-        const scaler = (height - CLOUD_HEIGHT_PADDING) / (maxD - minD || 1)
-
-        // Generate tick values using powers of 2
-        const tickValues: number[] = []
-        const log2Min = Math.floor(Math.log2(minDistance))
-        const log2Max = Math.ceil(Math.log2(maxDistance))
-
-        for (let power = log2Min; power <= log2Max; power++) {
-          const value = Math.pow(2, power)
-          if (value >= minDistance && value <= maxDistance) {
-            tickValues.push(value)
-          }
-        }
-
-        // Sort and dedupe
-        const uniqueTicks = [...new Set(tickValues)].sort((a, b) => a - b)
-
-        // Calculate pixel positions for each tick
-        const ticks = uniqueTicks.map(value => {
-          const y = (Math.log(value + CLOUD_LOG_OFFSET) - minD) * scaler
-          return { value, y }
-        })
-
-        return {
-          ticks,
-          height,
-          minDistance,
-          maxDistance,
-        }
+        return calculateCloudTicks(self.cloudScaleInfo, self.height)
       },
     }))
     .actions(self => ({
@@ -335,6 +300,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       svgLegendWidth(): number {
         return self.showLegend ? calculateSvgLegendWidth(this.legendItems()) : 0
       },
+
     }))
     .views(self => {
       const {
@@ -350,6 +316,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return {
             ...superRenderProps(),
             notReady: false,
+            filterBy: self.filterBy,
+            colorBy: self.colorBy,
+            featureHeight: self.featureHeightSetting,
+            noSpacing: self.noSpacing ?? false,
+            drawCloud: self.drawCloud,
+            drawSingletons: self.drawSingletons,
+            drawProperPairs: self.drawProperPairs,
+            flipStrandLongReadChains: self.flipStrandLongReadChains,
+            trackMaxHeight: self.trackMaxHeight,
+            hideSmallIndels: self.hideSmallIndels,
+            hideMismatches: self.hideMismatches,
+            hideLargeIndels: self.hideLargeIndels,
+            visibleModifications: Object.fromEntries(
+              self.visibleModifications.toJSON(),
+            ),
           }
         },
         /**

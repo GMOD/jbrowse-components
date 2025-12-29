@@ -12,15 +12,7 @@ export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
   const performRender = createRPCRenderFunction({
     self,
     rpcMethodName: 'RenderLinearReadArcsDisplay',
-    getRPCParams: () => ({
-      filterBy: self.filterBy,
-      colorBy: self.colorBy,
-      drawInter: self.drawInter,
-      drawLongRange: self.drawLongRange,
-      lineWidth: self.lineWidthSetting,
-      jitter: self.jitterVal,
-      height: self.height,
-    }),
+    getRPCParams: () => self.renderProps(),
     onResult: () => {},
   })
 

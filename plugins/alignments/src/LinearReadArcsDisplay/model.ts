@@ -88,6 +88,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       svgLegendWidth(): number {
         return self.showLegend ? calculateSvgLegendWidth(this.legendItems()) : 0
       },
+
     }))
     .views(self => {
       const {
@@ -102,6 +103,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return {
             ...superRenderProps(),
             notReady: false,
+            filterBy: self.filterBy,
+            colorBy: self.colorBy,
+            drawInter: self.drawInter,
+            drawLongRange: self.drawLongRange,
+            lineWidth: self.lineWidthSetting,
+            jitter: self.jitterVal,
+            height: self.height,
           }
         },
         /**

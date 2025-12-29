@@ -33,21 +33,8 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       self,
       rpcMethodName: 'RenderLinearReadCloudDisplay',
       getRPCParams: () => ({
-        filterBy: self.filterBy,
-        colorBy: self.colorBy,
-        featureHeight: self.featureHeightSetting,
-        noSpacing: self.noSpacing ?? false,
+        ...self.renderProps(),
         drawCloud,
-        drawSingletons: self.drawSingletons,
-        drawProperPairs: self.drawProperPairs,
-        flipStrandLongReadChains: self.flipStrandLongReadChains,
-        trackMaxHeight: self.trackMaxHeight,
-        hideSmallIndels: self.hideSmallIndels,
-        hideMismatches: self.hideMismatches,
-        hideLargeIndels: self.hideLargeIndels,
-        visibleModifications: Object.fromEntries(
-          self.visibleModifications.toJSON(),
-        ),
         ...(drawCloud && { cloudModeHeight: self.height }),
       }),
       onResult: (result: CloudRenderResult) => {

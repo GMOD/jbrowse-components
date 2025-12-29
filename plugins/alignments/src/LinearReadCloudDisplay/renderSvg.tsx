@@ -7,11 +7,12 @@ import {
 } from '@jbrowse/core/util'
 import {
   ReactRendering,
-  getSerializedSvg,
+  renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { SVGLegend } from '@jbrowse/plugin-linear-genome-view'
 
+import { calculateCloudTicks } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCloud'
 import CloudYScaleBar from './components/CloudYScaleBar'
 
 import type { LinearReadCloudDisplayModel } from './model'
@@ -47,17 +48,6 @@ export async function renderSvg(
     ? getSnapshot(sequenceAdapterConfig)
     : undefined
 
-  const {
-    featureHeightSetting: featureHeight,
-    colorBy,
-    filterBy,
-    drawSingletons,
-    drawProperPairs,
-    flipStrandLongReadChains,
-    noSpacing,
-    trackMaxHeight,
-  } = self
-
   // Serialize the full view snapshot for RPC
   // Include staticBlocks and width which are not part of the regular snapshot
   const viewSnapshot = structuredClone({
@@ -79,31 +69,18 @@ export async function renderSvg(
       sequenceAdapter,
       config: getSnapshot(self.configuration),
       theme: opts.theme,
-      filterBy,
-      featureHeight,
-      noSpacing: noSpacing ?? false,
-      drawCloud: self.drawCloud,
-      colorBy,
-      drawSingletons,
-      drawProperPairs,
-      flipStrandLongReadChains,
-      trackMaxHeight,
+      ...self.renderProps(),
       cloudModeHeight: height,
       exportSVG: opts,
       rpcDriverName: self.effectiveRpcDriverName,
     },
   )) as RenderingResult
 
-  // Convert canvasRecordedData to SVG if present (vector SVG mode)
-  let finalRendering = rendering
-  if (rendering.canvasRecordedData && !rendering.html) {
-    const html = await getSerializedSvg({
-      width: view.staticBlocks.totalWidthPx,
-      height,
-      canvasRecordedData: rendering.canvasRecordedData,
-    })
-    finalRendering = { ...rendering, html }
-  }
+  const finalRendering = await renderingToSvg(
+    rendering,
+    view.staticBlocks.totalWidthPx,
+    height,
+  )
 
   // Clip to the visible region (view width), not the full staticBlocks width
   const visibleWidth = view.width
@@ -115,41 +92,10 @@ export async function renderSvg(
   const legendItems = self.showLegend ? self.legendItems() : []
 
   // Compute cloudTicks for SVG export if in cloud mode
-  let cloudTicks: {
-    ticks: { value: number; y: number }[]
-    height: number
-    minDistance: number
-    maxDistance: number
-  } | null = null
-
-  if (self.drawCloud && rendering.cloudScaleInfo && self.showYScalebar) {
-    const { minDistance, maxDistance } = rendering.cloudScaleInfo
-    const CLOUD_LOG_OFFSET = 10
-    const CLOUD_HEIGHT_PADDING = 20
-
-    const maxD = Math.log(maxDistance + CLOUD_LOG_OFFSET)
-    const minD = Math.log(Math.max(1, minDistance + CLOUD_LOG_OFFSET))
-    const scaler = (height - CLOUD_HEIGHT_PADDING) / (maxD - minD || 1)
-
-    const tickValues: number[] = []
-    const log2Min = Math.floor(Math.log2(minDistance))
-    const log2Max = Math.ceil(Math.log2(maxDistance))
-
-    for (let power = log2Min; power <= log2Max; power++) {
-      const value = Math.pow(2, power)
-      if (value >= minDistance && value <= maxDistance) {
-        tickValues.push(value)
-      }
-    }
-
-    const uniqueTicks = [...new Set(tickValues)].sort((a, b) => a - b)
-    const ticks = uniqueTicks.map(value => {
-      const y = (Math.log(value + CLOUD_LOG_OFFSET) - minD) * scaler
-      return { value, y }
-    })
-
-    cloudTicks = { ticks, height, minDistance, maxDistance }
-  }
+  const cloudTicks =
+    self.drawCloud && rendering.cloudScaleInfo && self.showYScalebar
+      ? calculateCloudTicks(rendering.cloudScaleInfo, height)
+      : null
 
   return (
     <>

@@ -1,5 +1,4 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configSchema from '../LinearReadArcsDisplay/configSchema'
 import { renameViewRegionsForRPC } from '../shared/renameRegionsForRPC'
@@ -65,31 +64,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
     const renamed = await this.renameRegionsIfNeeded(
       args as unknown as RenderLinearReadArcsDisplayArgs,
     )
-
-    // Fallback: ensure sequenceAdapter is set for CRAM files. Normally the
-    // adapter gets sequenceAdapterConfig set when it's cached in the worker
-    // during normal rendering. This fallback handles edge cases where the
-    // adapter cache might not have sequenceAdapterConfig (e.g., if the RPC
-    // is called before normal rendering has occurred).
-    let { sequenceAdapter } = renamed
-    if (!sequenceAdapter) {
-      const assemblyManager =
-        this.pluginManager.rootModel?.session?.assemblyManager
-      const view = renamed.view as { assemblyNames?: string[] }
-      const assemblyName = view?.assemblyNames?.[0]
-      if (assemblyManager && assemblyName) {
-        const assembly = assemblyManager.get(assemblyName)
-        const seqAdapterConfig = assembly?.configuration?.sequence?.adapter
-        if (seqAdapterConfig) {
-          sequenceAdapter = getSnapshot(seqAdapterConfig)
-        }
-      }
-    }
-
-    return super.serializeArguments(
-      { ...renamed, sequenceAdapter } as unknown as Record<string, unknown>,
-      rpcDriver,
-    )
+    return super.serializeArguments(renamed, rpcDriver)
   }
 
   async execute(args: Record<string, unknown>, rpcDriver: string) {

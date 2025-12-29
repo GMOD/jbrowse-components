@@ -1,12 +1,7 @@
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-export interface CloudTicks {
-  ticks: { value: number; y: number }[]
-  height: number
-  minDistance: number
-  maxDistance: number
-}
+import type { CloudTicks } from '../../RenderLinearReadCloudDisplayRPC/drawFeatsCloud'
 
 function formatTickValue(value: number): string {
   if (value >= 1000000) {

@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/util'
 import {
   ReactRendering,
-  getSerializedSvg,
+  renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 import HicSVGColorLegend from './components/HicSVGColorLegend'
@@ -60,16 +60,11 @@ export async function renderSvg(
     ...renderProps,
   })) as RenderingResult
 
-  // Convert canvasRecordedData to SVG if present (vector SVG mode)
-  let finalRendering = rendering
-  if (rendering.canvasRecordedData && !rendering.html) {
-    const html = await getSerializedSvg({
-      width: view.staticBlocks.totalWidthPx,
-      height,
-      canvasRecordedData: rendering.canvasRecordedData,
-    })
-    finalRendering = { ...rendering, html }
-  }
+  const finalRendering = await renderingToSvg(
+    rendering,
+    view.staticBlocks.totalWidthPx,
+    height,
+  )
 
   // Clip to the visible region (view width), not the full staticBlocks width
   const visibleWidth = view.width
