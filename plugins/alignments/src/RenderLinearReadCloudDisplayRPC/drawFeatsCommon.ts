@@ -405,6 +405,7 @@ export function drawFeatsCore({
       hideSmallIndels: params.hideSmallIndels,
       hideMismatches: params.hideMismatches,
       hideLargeIndels: params.hideLargeIndels,
+      showOutline: params.showOutline,
     })
 
     const longReadMismatches = drawLongReadChains({
@@ -426,6 +427,7 @@ export function drawFeatsCore({
       hideSmallIndels: params.hideSmallIndels,
       hideMismatches: params.hideMismatches,
       hideLargeIndels: params.hideLargeIndels,
+      showOutline: params.showOutline,
     })
 
     // Aggregate mismatch data (avoid push(...list) which can cause stack overflow)

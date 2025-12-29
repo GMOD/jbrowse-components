@@ -45,6 +45,7 @@ export function drawPairChains({
   hideSmallIndels,
   hideMismatches,
   hideLargeIndels,
+  showOutline,
 }: {
   ctx: CanvasRenderingContext2D
   type: string
@@ -64,6 +65,7 @@ export function drawPairChains({
   hideSmallIndels?: boolean
   hideMismatches?: boolean
   hideLargeIndels?: boolean
+  showOutline?: boolean
 }): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
@@ -164,6 +166,7 @@ export function drawPairChains({
         strokeStyle: featStroke,
         renderChevrons,
         colorCtx,
+        showOutline,
       })
     }
 

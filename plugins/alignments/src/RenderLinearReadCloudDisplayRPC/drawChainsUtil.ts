@@ -47,6 +47,7 @@ export function renderFeatureShape({
   strokeStyle,
   renderChevrons,
   colorCtx,
+  showOutline = true,
 }: {
   ctx: CanvasRenderingContext2D
   xPos: number
@@ -58,6 +59,7 @@ export function renderFeatureShape({
   strokeStyle: string
   renderChevrons: boolean
   colorCtx: RenderFeatureShapeContext
+  showOutline?: boolean
 }) {
   if (renderChevrons) {
     drawChevron(
@@ -69,7 +71,7 @@ export function renderFeatureShape({
       strand,
       fillStyle,
       CHEVRON_WIDTH,
-      strokeStyle,
+      showOutline ? strokeStyle : undefined,
     )
   } else {
     // Handle negative dimensions for SVG exports
@@ -90,7 +92,9 @@ export function renderFeatureShape({
     }
 
     ctx.fillRect(drawX, drawY, drawWidth, height)
-    strokeRectCtx(drawX, drawY, drawWidth, height, ctx, strokeStyle)
+    if (showOutline) {
+      strokeRectCtx(drawX, drawY, drawWidth, height, ctx, strokeStyle)
+    }
   }
 }
 

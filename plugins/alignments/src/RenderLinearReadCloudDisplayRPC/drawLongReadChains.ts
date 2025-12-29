@@ -47,6 +47,7 @@ export function drawLongReadChains({
   hideSmallIndels,
   hideMismatches,
   hideLargeIndels,
+  showOutline,
 }: {
   ctx: CanvasRenderingContext2D
   chainData: ChainData
@@ -66,6 +67,7 @@ export function drawLongReadChains({
   hideSmallIndels?: boolean
   hideMismatches?: boolean
   hideLargeIndels?: boolean
+  showOutline?: boolean
 }): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
@@ -167,6 +169,7 @@ export function drawLongReadChains({
         strokeStyle: featureStroke,
         renderChevrons,
         colorCtx,
+        showOutline,
       })
     }
 
