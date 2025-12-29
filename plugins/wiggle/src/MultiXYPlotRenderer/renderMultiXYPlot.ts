@@ -15,7 +15,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiXYPlot(
   renderProps: MultiRenderArgsDeserialized,
-  features: Map<string, Feature>,
+  features: Feature[],
 ) {
   const {
     sources,
@@ -35,7 +35,7 @@ export async function renderMultiXYPlot(
     statusCallback,
     () =>
       renderToAbstractCanvas(width, height, renderProps, ctx => {
-        const groups = groupBy(features.values(), f => f.get('source'))
+        const groups = groupBy(features, f => f.get('source'))
         let allReducedFeatures: Feature[] = []
         for (const source of sources) {
           const { reducedFeatures: reduced } = drawXY(ctx, {

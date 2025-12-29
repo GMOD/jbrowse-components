@@ -15,7 +15,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiRowLine(
   renderProps: MultiRenderArgsDeserialized,
-  features: Map<string, Feature>,
+  features: Feature[],
 ) {
   const {
     sources,
@@ -36,7 +36,7 @@ export async function renderMultiRowLine(
     statusCallback,
     () =>
       renderToAbstractCanvas(width, height, renderProps, ctx => {
-        const groups = groupBy(features.values(), f => f.get('source'))
+        const groups = groupBy(features, f => f.get('source'))
         let feats: Feature[] = []
         ctx.save()
         for (const source of sources) {

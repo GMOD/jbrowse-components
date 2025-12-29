@@ -10,7 +10,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 type RenderFeaturesFn = (
   props: MultiRenderArgsDeserialized,
-  features: Map<string, Feature>,
+  features: Feature[],
 ) => Promise<RenderReturn>
 
 export async function renderMultiWiggle(
@@ -26,11 +26,10 @@ export async function renderMultiWiggle(
   )
   const region = regions[0]!
 
-  const feats = await firstValueFrom(
+  const features = await firstValueFrom(
     (dataAdapter as BaseFeatureDataAdapter)
       .getFeatures(region, renderProps)
       .pipe(toArray()),
   )
-  const features = new Map(feats.map(f => [f.id(), f] as const))
   return renderFeatures(renderProps, features)
 }
