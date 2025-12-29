@@ -21,7 +21,6 @@ import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 import { PairType, getPairedType } from '../../shared/color'
 import { orientationTypes } from '../../util'
 
-import type { ReducedFeatureForFlatbush } from '../../shared/flatbushType'
 import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -271,8 +270,6 @@ const Cloud = observer(function Cloud({
     height: number
   }>()
   const [hoveredFeatureData, setHoveredFeatureData] = useState<ReducedFeature>()
-  const [hoveredFeatureChain, setHoveredFeatureChain] =
-    useState<ReducedFeatureForFlatbush[]>()
   const [hoveredHasSupplementary, setHoveredHasSupplementary] = useState(false)
   const [hoveredMismatchData, setHoveredMismatchData] = useState<FlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
@@ -378,7 +375,6 @@ const Cloud = observer(function Cloud({
         setHoveredMismatchData(mismatch)
         setHoveredFeature(undefined)
         setHoveredFeatureData(undefined)
-        setHoveredFeatureChain(undefined)
         setHoveredHasSupplementary(false)
         setMousePosition({ x: event.clientX, y: event.clientY })
         return
@@ -396,13 +392,11 @@ const Cloud = observer(function Cloud({
           height: feature.y2 - feature.y1,
         })
         setHoveredFeatureData(feature.data)
-        setHoveredFeatureChain(feature.chain)
         setHoveredHasSupplementary(feature.hasSupplementary)
         setMousePosition(position)
       } else {
         setHoveredFeature(undefined)
         setHoveredFeatureData(undefined)
-        setHoveredFeatureChain(undefined)
         setHoveredHasSupplementary(false)
         setMousePosition(undefined)
       }
@@ -413,7 +407,6 @@ const Cloud = observer(function Cloud({
   const onMouseLeave = useCallback(() => {
     setHoveredFeature(undefined)
     setHoveredFeatureData(undefined)
-    setHoveredFeatureChain(undefined)
     setHoveredHasSupplementary(false)
     setHoveredMismatchData(undefined)
     setMousePosition(undefined)
