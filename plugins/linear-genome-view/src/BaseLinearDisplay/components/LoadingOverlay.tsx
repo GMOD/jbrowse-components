@@ -29,6 +29,7 @@ const useStyles = makeStyles()({
   dots: {
     fontSize: '0.8rem',
     fontWeight: 300,
+    textShadow: '1px 1px 2px rgba(128, 128, 128, 0.8)',
     '&::after': {
       display: 'inline-block',
       content: '""',

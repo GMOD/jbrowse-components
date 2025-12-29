@@ -46,7 +46,9 @@ function getPairTypeDescription(data: ReducedFeature) {
     case PairType.SHORT_INSERT:
       return 'Short insert size'
     case PairType.INTER_CHROM:
-      return `Inter-chromosomal (mate on ${data.next_ref || 'unknown'})`
+      return data.next_ref
+        ? `Inter-chromosomal (mate on ${data.next_ref})`
+        : undefined
     case PairType.UNMAPPED_MATE:
       return 'Unmapped mate'
     case PairType.ABNORMAL_ORIENTATION: {
