@@ -36,7 +36,7 @@ const MiniControls = observer(function MiniControls({
       <Paper
         className={focusedViewId === id ? classes.focusedBackground : undefined}
       >
-        <CascadingMenuButton menuItems={model.menuItems()}>
+        <CascadingMenuButton menuItems={() => model.menuItems()}>
           <ArrowDown fontSize="small" />
         </CascadingMenuButton>
         <IconButton

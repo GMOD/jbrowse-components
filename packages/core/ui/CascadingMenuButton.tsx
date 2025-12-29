@@ -2,17 +2,17 @@ import { useEffect } from 'react'
 
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { IconButton } from '@mui/material'
-import { observer } from 'mobx-react'
 
-import { bindPopover, bindTrigger, usePopupState } from './hooks'
+import { usePopupState } from './hooks'
 
 import type { MenuItemsGetter } from '@jbrowse/core/ui/CascadingMenu'
 
-const CascadingMenuButton = observer(function CascadingMenuButton({
+function CascadingMenuButton({
   children,
   menuItems,
   closeAfterItemClick = true,
   stopPropagation,
+  disabled,
   setOpen,
   onClick: onClickExtra,
   ...rest
@@ -21,16 +21,20 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   menuItems: MenuItemsGetter
   closeAfterItemClick?: boolean
   stopPropagation?: boolean
-  onClick?: () => void
+  disabled?: boolean
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
   setOpen?: (arg: boolean) => void
   [key: string]: unknown
 }) {
   const popupState = usePopupState()
-  const { onClick, ...rest2 } = bindTrigger(popupState)
   const { isOpen } = popupState
+
   useEffect(() => {
     setOpen?.(isOpen)
   }, [isOpen, setOpen])
+
+  const isDisabled =
+    disabled ?? (Array.isArray(menuItems) && menuItems.length === 0)
 
   return (
     <>
@@ -39,28 +43,26 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
           if (stopPropagation) {
             event.stopPropagation()
           }
-          onClick(event)
-          onClickExtra?.()
+          popupState.open(event)
+          onClickExtra?.(event)
         }}
-        {...rest2}
         {...rest}
-        disabled={Array.isArray(menuItems) && menuItems.length === 0}
+        disabled={isDisabled}
       >
         {children}
       </IconButton>
       {isOpen ? (
         <CascadingMenu
-          {...bindPopover(popupState)}
+          popupState={popupState}
+          menuItems={menuItems}
+          closeAfterItemClick={closeAfterItemClick}
           onMenuItemClick={(_: unknown, callback: () => void) => {
             callback()
           }}
-          menuItems={menuItems}
-          closeAfterItemClick={closeAfterItemClick}
-          popupState={popupState}
         />
       ) : null}
     </>
   )
-})
+}
 
 export default CascadingMenuButton

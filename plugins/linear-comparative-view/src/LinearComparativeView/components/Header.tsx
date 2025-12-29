@@ -62,7 +62,7 @@ const Header = observer(function Header({
         <TrackSelectorIcon />
       </CascadingMenuButton>
       <CascadingMenuButton
-        menuItems={[
+        menuItems={() => [
           {
             label: 'Row view menus',
             type: 'subMenu',

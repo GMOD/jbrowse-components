@@ -18,7 +18,6 @@ import {
   LoadingMenuItem,
   MenuItemEndDecoration,
 } from './MenuItems'
-import { bindMenu } from './hooks'
 import { useAsyncMenuItems } from './menuHooks'
 
 import type {
@@ -201,26 +200,26 @@ function CascadingMenuList({
   )
 }
 
-export default function CascadingMenuChildren(props: {
-  onMenuItemClick: Function
+export default function CascadingMenu({
+  onMenuItemClick,
+  closeAfterItemClick = true,
+  menuItems,
+  popupState,
+}: {
+  onMenuItemClick: (event: unknown, callback: () => void) => void
   closeAfterItemClick?: boolean
   menuItems: MenuItemsGetter
   popupState: PopupState
 }) {
-  const { closeAfterItemClick = true, menuItems, popupState } = props
-  const { items, loading, error } = useAsyncMenuItems(
-    menuItems,
-    popupState.isOpen,
-  )
-  const { anchorEl, onClose, ...menuProps } = bindMenu(popupState)
+  const { isOpen, anchorEl, close, popupId } = popupState
+  const { items, loading, error } = useAsyncMenuItems(menuItems, isOpen)
 
   return (
     <Menu
-      {...menuProps}
+      id={popupId}
       anchorEl={anchorEl ?? null}
-      onClose={() => {
-        onClose()
-      }}
+      open={isOpen}
+      onClose={close}
     >
       {loading ? (
         <LoadingMenuItem />
@@ -230,8 +229,8 @@ export default function CascadingMenuChildren(props: {
         <CascadingMenuList
           menuItems={items}
           closeAfterItemClick={closeAfterItemClick}
-          onMenuItemClick={props.onMenuItemClick}
-          onCloseRoot={onClose}
+          onMenuItemClick={onMenuItemClick}
+          onCloseRoot={close}
         />
       )}
     </Menu>

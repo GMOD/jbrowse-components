@@ -28,7 +28,7 @@ const Header = observer(function Header({
   const [sideBySide, setSideBySide] = useState(views.length <= 3)
   return (
     <FormGroup row>
-      <CascadingMenuButton menuItems={model.menuItems()}>
+      <CascadingMenuButton menuItems={() => model.menuItems()}>
         <MoreVertIcon />
       </CascadingMenuButton>
       <CascadingMenuButton
