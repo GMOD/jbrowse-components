@@ -50,7 +50,6 @@ export function renderMismatchesCallback({
   hideMismatches,
   canvasWidth,
   drawSNPsMuted,
-  checkRef,
   drawIndels = true,
 }: {
   ctx: CanvasRenderingContext2D
@@ -66,7 +65,6 @@ export function renderMismatchesCallback({
   largeInsertionIndicatorScale: number
   hideSmallIndels: boolean
   hideMismatches?: boolean
-  checkRef?: boolean
   charWidth: number
   charHeight: number
   canvasWidth: number
@@ -77,13 +75,7 @@ export function renderMismatchesCallback({
   const bottomPx = topPx + heightPx
   const featStart = feature.get('start')
   let lastColor = ''
-  const region = checkRef
-    ? (regions.find(r => {
-        const rn = feature.get('refName')
-        const end = feature.get('end')
-        return r.refName === rn && r.start <= featStart && end <= r.end
-      }) ?? regions[0]!)
-    : regions[0]!
+  const region = regions[0]!
 
   const invBpPerPx = 1 / bpPerPx
   const pxPerBp = Math.min(invBpPerPx, 2)
@@ -242,9 +234,20 @@ export function renderMismatchesCallback({
 
   // First pass: draw mismatches, deletions, skips - accumulate insertions/clips
   if ('forEachMismatch' in feature) {
+    console.log('DEBUG: Using forEachMismatch method', {
+      hasNumericSeq: !!feature.get('NUMERIC_SEQ'),
+      hasNumericCigar: !!feature.get('NUMERIC_CIGAR'),
+      hasNumericMD: !!feature.get('NUMERIC_MD'),
+      seqLength: feature.get('seq_length'),
+      featureType: feature.constructor?.name,
+    })
     featureWithIterator.forEachMismatch(mismatchHandler)
   } else {
     const mismatches = feature.get('mismatches') as Mismatch[] | undefined
+    console.log('DEBUG: Using mismatches array', {
+      hasMismatches: !!mismatches,
+      mismatchCount: mismatches?.length,
+    })
     if (mismatches) {
       for (let i = 0, l = mismatches.length; i < l; i++) {
         const m = mismatches[i]!

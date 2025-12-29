@@ -51,19 +51,38 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
             if (!sequenceAdapter) {
               throw new Error('no sequenceAdapter available')
             }
-            const refName =
-              this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
-            if (!refName) {
+            const originalRefName = this.refIdToOriginalName(seqId)
+            const headerRefName = this.refIdToName(seqId)
+            console.log('DEBUG seqFetch:', { seqId, originalRefName, headerRefName, start, end })
+            if (!originalRefName && !headerRefName) {
               throw new Error('unknown refName')
             }
 
-            return (
-              (await sequenceAdapter.getSequence({
-                refName,
+            // Try originalRefName first, fall back to headerRefName if sequence not found
+            if (originalRefName) {
+              const seq = await sequenceAdapter.getSequence({
+                refName: originalRefName,
                 start: start - 1,
                 end,
-              })) ?? ''
-            )
+              })
+              console.log('DEBUG seqFetch originalRefName result:', { originalRefName, seqLen: seq?.length })
+              if (seq) {
+                return seq
+              }
+            }
+
+            // Fall back to header refName
+            if (headerRefName) {
+              const seq = await sequenceAdapter.getSequence({
+                refName: headerRefName,
+                start: start - 1,
+                end,
+              })
+              console.log('DEBUG seqFetch headerRefName fallback result:', { headerRefName, seqLen: seq?.length })
+              return seq ?? ''
+            }
+
+            return ''
           },
           checkSequenceMD5: false,
         }),

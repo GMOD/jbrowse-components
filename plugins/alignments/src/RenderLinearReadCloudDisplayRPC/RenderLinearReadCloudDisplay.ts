@@ -48,26 +48,44 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     }
 
     const { view: viewSnapshot, sessionId, adapterConfig } = args
-    const displayedRegions =
-      (viewSnapshot as any).displayedRegions || ([] as any[])
+    // contentBlocks is a getter on BlockSet, so we need to filter blocks manually
+    // since structuredClone doesn't preserve getters
+    const allBlocks = (viewSnapshot as any).staticBlocks?.blocks || ([] as any[])
+    const contentBlocks = allBlocks.filter(
+      (b: { type?: string }) => b.type === 'ContentBlock',
+    )
 
-    if (!displayedRegions.length) {
+    if (!contentBlocks.length) {
       return args
     }
 
+    // Rename the actual contentBlocks (viewport blocks), not displayedRegions
     const result = await renameRegionsIfNeeded(assemblyManager, {
       sessionId,
       adapterConfig,
-      regions: displayedRegions,
+      regions: contentBlocks,
     })
+
+    // Create a map of renamed contentBlocks by key for efficient lookup
+    const renamedByKey = new Map(
+      result.regions.map((r: any) => [r.key, r]),
+    )
+
+    // Update blocks array with renamed contentBlocks while preserving other block types
+    const updatedBlocks = allBlocks.map((block: any) =>
+      block.type === 'ContentBlock' && renamedByKey.has(block.key)
+        ? renamedByKey.get(block.key)
+        : block,
+    )
 
     return {
       ...args,
       view: {
         ...viewSnapshot,
-        displayedRegions: result.regions,
         staticBlocks: {
           ...(viewSnapshot as any).staticBlocks,
+          blocks: updatedBlocks,
+          // Also set contentBlocks directly for code that accesses it
           contentBlocks: result.regions,
         },
       },
