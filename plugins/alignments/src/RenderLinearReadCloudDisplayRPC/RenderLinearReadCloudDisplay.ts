@@ -42,7 +42,8 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
   async renameRegionsIfNeeded(
     args: RenderLinearReadCloudDisplayArgs,
   ): Promise<RenderLinearReadCloudDisplayArgs> {
-    const assemblyManager = this.pluginManager.rootModel?.session?.assemblyManager
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
       throw new Error('no assembly manager')
     }
@@ -50,7 +51,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     const { view, sessionId, adapterConfig } = args
     const { displayedRegions } = view
 
-    if (!displayedRegions?.length) {
+    if (!displayedRegions.length) {
       return args
     }
 

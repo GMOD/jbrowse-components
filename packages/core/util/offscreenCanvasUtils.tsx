@@ -30,7 +30,8 @@ export async function renderingToSvg<
   T extends { canvasRecordedData?: unknown; html?: string },
 >(rendering: T, width: number, height: number): Promise<T> {
   if (rendering.canvasRecordedData && !rendering.html) {
-    const { getSerializedSvg } = await import('./offscreenCanvasGetSerializingSvg')
+    const { getSerializedSvg } =
+      await import('./offscreenCanvasGetSerializingSvg')
     const html = await getSerializedSvg({
       width,
       height,

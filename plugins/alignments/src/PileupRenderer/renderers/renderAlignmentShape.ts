@@ -71,7 +71,6 @@ export function renderAlignmentShape({
   const strand = feature.get('strand') * flip
   const renderChevrons = bpPerPx < 10 && heightPx > 5
 
-  let lastColor = color
   ctx.fillStyle = color
 
   let hasSkips = false
@@ -109,10 +108,6 @@ export function renderAlignmentShape({
               : (drawEnd - regionStart) * invBpPerPx
             const w = rightPx - leftPx
             if (leftPx + w > 0 && leftPx < canvasWidth) {
-              if (lastColor !== color) {
-                ctx.fillStyle = color
-                lastColor = color
-              }
               ctx.fillRect(leftPx, topPx, w, heightPx)
             }
           }
@@ -135,10 +130,6 @@ export function renderAlignmentShape({
         } else {
           const w = rightPx - leftPx
           if (leftPx + w > 0 && leftPx < canvasWidth) {
-            if (lastColor !== color) {
-              ctx.fillStyle = color
-              lastColor = color
-            }
             ctx.fillRect(leftPx, topPx, w, heightPx)
           }
         }
@@ -165,10 +156,6 @@ export function renderAlignmentShape({
               : (drawStart - regionStart) * invBpPerPx
             const w = rightPx - leftPx
             if (leftPx + w > 0 && leftPx < canvasWidth) {
-              if (lastColor !== color) {
-                ctx.fillStyle = color
-                lastColor = color
-              }
               ctx.fillRect(leftPx, topPx, w, heightPx)
             }
           }
@@ -191,10 +178,6 @@ export function renderAlignmentShape({
         } else {
           const w = rightPx - leftPx
           if (leftPx + w > 0 && leftPx < canvasWidth) {
-            if (lastColor !== color) {
-              ctx.fillStyle = color
-              lastColor = color
-            }
             ctx.fillRect(leftPx, topPx, w, heightPx)
           }
         }
@@ -218,10 +201,6 @@ export function renderAlignmentShape({
     } else {
       const w = rightPx - leftPx
       if (leftPx + w > 0 && leftPx < canvasWidth) {
-        if (lastColor !== color) {
-          ctx.fillStyle = color
-          lastColor = color
-        }
         ctx.fillRect(leftPx, topPx, w, heightPx)
       }
     }

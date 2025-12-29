@@ -43,7 +43,8 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
   async renameRegionsIfNeeded(
     args: RenderLinearReadArcsDisplayArgs,
   ): Promise<RenderLinearReadArcsDisplayArgs> {
-    const assemblyManager = this.pluginManager.rootModel?.session?.assemblyManager
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
       throw new Error('no assembly manager')
     }
@@ -51,7 +52,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
     const { view, sessionId, adapterConfig } = args
     const { displayedRegions } = view
 
-    if (!displayedRegions?.length) {
+    if (!displayedRegions.length) {
       return args
     }
 

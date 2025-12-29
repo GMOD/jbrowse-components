@@ -78,7 +78,6 @@ export function drawLongReadChains({
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start
-  const colorCtx = { lastFillStyle: '' }
 
   const allCoords: MismatchData['coords'] = []
   const allItems: MismatchData['items'] = []
@@ -112,7 +111,14 @@ export function drawLongReadChains({
         const firstPx = (bounds.minStart - regionStart) / bpPerPx
         const lastPx = (bounds.maxEnd - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2
-        lineToCtx(firstPx, lineY, lastPx, lineY, ctx, getConnectingLineColor(configTheme))
+        lineToCtx(
+          firstPx,
+          lineY,
+          lastPx,
+          lineY,
+          ctx,
+          getConnectingLineColor(configTheme),
+        )
       }
     }
 
@@ -168,7 +174,6 @@ export function drawLongReadChains({
         fillStyle: featureFill,
         strokeStyle: featureStroke,
         renderChevrons,
-        colorCtx,
         showOutline,
       })
     }
@@ -196,8 +201,6 @@ export function drawLongReadChains({
         allItems,
       })
     }
-    // Reset cached fillStyle since mismatch rendering changes ctx.fillStyle
-    colorCtx.lastFillStyle = ''
   }
 
   return {

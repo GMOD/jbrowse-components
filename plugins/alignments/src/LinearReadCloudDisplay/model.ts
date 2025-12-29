@@ -311,7 +311,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       svgLegendWidth(): number {
         return self.showLegend ? calculateSvgLegendWidth(this.legendItems()) : 0
       },
-
     }))
     .views(self => {
       const {
@@ -508,7 +507,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ...(noSpacing !== undefined ? { noSpacing } : {}),
         ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
         ...(showLegend !== undefined ? { showLegend } : {}),
-        ...(showOutline !== true ? { showOutline } : {}),
+        ...(!showOutline ? { showOutline } : {}),
         ...(hideSmallIndelsSetting !== undefined
           ? { hideSmallIndelsSetting }
           : {}),

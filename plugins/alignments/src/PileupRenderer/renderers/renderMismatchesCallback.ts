@@ -78,7 +78,6 @@ export function renderMismatchesCallback({
   const { heightPx, topPx, feature } = feat
   const bottomPx = topPx + heightPx
   const featStart = feature.get('start')
-  let lastColor = ''
   const region = checkRef
     ? (regions.find(r => {
         const rn = feature.get('refName')
@@ -170,10 +169,7 @@ export function renderMismatchesCallback({
           const l = Math.round(leftPx)
           const w = widthPx
           if (l + w > 0 && l < canvasWidth) {
-            if (lastColor !== c) {
-              ctx.fillStyle = c
-              lastColor = c
-            }
+            ctx.fillStyle = c
             ctx.fillRect(l, topPx, w, heightPx)
           }
         }
@@ -187,11 +183,8 @@ export function renderMismatchesCallback({
               ? applyQualAlpha(contrastColor, qualVal)
               : contrastColor
           const x = leftPx + (widthPx - charWidth) / 2 + 1
-          if (x > 0 && x < canvasWidth) {
-            if (textColor && lastColor !== textColor) {
-              ctx.fillStyle = textColor
-              lastColor = textColor
-            }
+          if (x > 0 && x < canvasWidth && textColor) {
+            ctx.fillStyle = textColor
             ctx.fillText(base, x, bottomPx)
           }
         }
@@ -202,11 +195,7 @@ export function renderMismatchesCallback({
       if (!shouldHide) {
         const w = Math.abs(leftPx - rightPx)
         if (leftPx + w > 0 && leftPx < canvasWidth) {
-          const c = colorMap.deletion!
-          if (lastColor !== c) {
-            ctx.fillStyle = c
-            lastColor = c
-          }
+          ctx.fillStyle = colorMap.deletion!
           ctx.fillRect(leftPx, topPx, w, heightPx)
         }
         if (bpPerPx < 3) {
@@ -221,12 +210,8 @@ export function renderMismatchesCallback({
         const rwidth = measureTextSmallNumber(length, 10)
         if (widthPx >= rwidth && canRenderText) {
           const x = (leftPx + rightPx) / 2 - rwidth / 2
-          const c = colorContrastMap.deletion!
           if (x > 0 && x < canvasWidth) {
-            if (lastColor !== c) {
-              ctx.fillStyle = c
-              lastColor = c
-            }
+            ctx.fillStyle = colorContrastMap.deletion!
             ctx.fillText(txt, x, bottomPx)
           }
         }
@@ -234,11 +219,7 @@ export function renderMismatchesCallback({
     } else if (type === SKIP_TYPE) {
       const w = Math.max(widthPx, 1.5)
       if (leftPx + w > 0 && leftPx < canvasWidth) {
-        const c = colorMap.skip!
-        if (lastColor !== c) {
-          ctx.fillStyle = c
-          lastColor = c
-        }
+        ctx.fillStyle = colorMap.skip!
         ctx.fillRect(leftPx, topPx + heightPx / 2 - 1, w, 1)
       }
     }
@@ -301,10 +282,7 @@ export function renderMismatchesCallback({
         if (!hideSmallIndels) {
           const c = colorMap.insertion!
           if (pos + insW > 0 && pos < canvasWidth) {
-            if (lastColor !== c) {
-              ctx.fillStyle = c
-              lastColor = c
-            }
+            ctx.fillStyle = c
             ctx.fillRect(pos, topPx, insW, heightPx)
           }
           if (invBpPerPx >= charWidth && canRenderText) {
@@ -340,11 +318,7 @@ export function renderMismatchesCallback({
           const l = leftPx - 1
           const w = 2
           if (l + w > 0 && l < canvasWidth) {
-            const c = colorMap.insertion!
-            if (lastColor !== c) {
-              ctx.fillStyle = c
-              lastColor = c
-            }
+            ctx.fillStyle = colorMap.insertion!
             ctx.fillRect(l, topPx, w, heightPx)
           }
         } else if (heightPx > charHeight) {
@@ -359,20 +333,12 @@ export function renderMismatchesCallback({
           const l = leftPx - rwidth / 2 - padding
           const w = rwidth + 2 * padding
           if (l + w > 0 && l < canvasWidth) {
-            const c = colorMap.insertion!
-            if (lastColor !== c) {
-              ctx.fillStyle = c
-              lastColor = c
-            }
+            ctx.fillStyle = colorMap.insertion!
             ctx.fillRect(l, topPx, w, heightPx)
           }
           const x = leftPx - rwidth / 2
-          const c = colorContrastMap.insertion!
           if (x > 0 && x < canvasWidth) {
-            if (lastColor !== c) {
-              ctx.fillStyle = c
-              lastColor = c
-            }
+            ctx.fillStyle = colorContrastMap.insertion!
             ctx.fillText(txt, x, bottomPx)
           }
         } else {
@@ -381,11 +347,7 @@ export function renderMismatchesCallback({
           const l = leftPx - padding
           const w = 2 * padding
           if (l + w > 0 && l < canvasWidth) {
-            const c = colorMap.insertion!
-            if (lastColor !== c) {
-              ctx.fillStyle = c
-              lastColor = c
-            }
+            ctx.fillStyle = colorMap.insertion!
             ctx.fillRect(l, topPx, w, heightPx)
           }
         }
@@ -398,10 +360,7 @@ export function renderMismatchesCallback({
       const c = colorMap[typeName]!
       const clipW = Math.max(minSubfeatureWidth, pxPerBp)
       if (pos + clipW > 0 && pos < canvasWidth) {
-        if (lastColor !== c) {
-          ctx.fillStyle = c
-          lastColor = c
-        }
+        ctx.fillStyle = c
         ctx.fillRect(pos, topPx, clipW, heightPx)
       }
       items.push({ type: typeName, length: cliplen, start: mstart })
@@ -410,19 +369,13 @@ export function renderMismatchesCallback({
         const l = pos - clipW
         const clipW3 = clipW * 3
         if (l + clipW3 > 0 && l < canvasWidth) {
-          if (lastColor !== c) {
-            ctx.fillStyle = c
-            lastColor = c
-          }
+          ctx.fillStyle = c
           ctx.fillRect(l, topPx, clipW3, 1)
           ctx.fillRect(l, bottomPx - 1, clipW3, 1)
         }
         const x = pos + 3
         if (x > 0 && x < canvasWidth) {
-          if (lastColor !== c) {
-            ctx.fillStyle = c
-            lastColor = c
-          }
+          ctx.fillStyle = c
           ctx.fillText(`(${base})`, x, bottomPx)
         }
       }

@@ -42,9 +42,9 @@ function getPairTypeDescription(data: ReducedFeature) {
 
   switch (pairType) {
     case PairType.LONG_INSERT:
-      return 'Long insert size'
+      return 'Long insert size (colored red)'
     case PairType.SHORT_INSERT:
-      return 'Short insert size'
+      return 'Short insert size (colored blue)'
     case PairType.INTER_CHROM:
       return data.next_ref
         ? `Inter-chromosomal (mate on ${data.next_ref})`

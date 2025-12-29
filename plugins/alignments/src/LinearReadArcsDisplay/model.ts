@@ -88,7 +88,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       svgLegendWidth(): number {
         return self.showLegend ? calculateSvgLegendWidth(this.legendItems()) : 0
       },
-
     }))
     .views(self => {
       const {

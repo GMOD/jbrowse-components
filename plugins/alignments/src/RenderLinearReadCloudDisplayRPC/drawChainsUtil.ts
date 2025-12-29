@@ -32,10 +32,6 @@ export function getConnectingLineColor(configTheme: ThemeOptions) {
 export const MIN_FEATURE_WIDTH_PX = 3
 export const CLIP_RECT_HEIGHT = 100000
 
-export interface RenderFeatureShapeContext {
-  lastFillStyle: string
-}
-
 export function renderFeatureShape({
   ctx,
   xPos,
@@ -46,7 +42,6 @@ export function renderFeatureShape({
   fillStyle,
   strokeStyle,
   renderChevrons,
-  colorCtx,
   showOutline = true,
 }: {
   ctx: CanvasRenderingContext2D
@@ -58,7 +53,6 @@ export function renderFeatureShape({
   fillStyle: string
   strokeStyle: string
   renderChevrons: boolean
-  colorCtx: RenderFeatureShapeContext
   showOutline?: boolean
 }) {
   if (renderChevrons) {
@@ -86,11 +80,7 @@ export function renderFeatureShape({
       drawY += height
     }
 
-    if (fillStyle && colorCtx.lastFillStyle !== fillStyle) {
-      ctx.fillStyle = fillStyle
-      colorCtx.lastFillStyle = fillStyle
-    }
-
+    ctx.fillStyle = fillStyle
     ctx.fillRect(drawX, drawY, drawWidth, height)
     if (showOutline) {
       strokeRectCtx(drawX, drawY, drawWidth, height, ctx, strokeStyle)

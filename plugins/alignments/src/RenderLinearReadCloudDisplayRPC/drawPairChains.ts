@@ -76,7 +76,6 @@ export function drawPairChains({
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start
-  const colorCtx = { lastFillStyle: '' }
 
   const allCoords: MismatchData['coords'] = []
   const allItems: MismatchData['items'] = []
@@ -122,7 +121,7 @@ export function drawPairChains({
         const r2s = (bounds.maxEnd - regionStart) / bpPerPx
         // Use orange for chains with supplementary alignments
         const lineColor = hasSupplementary
-          ? strokeColor.color_supplementary
+          ? fillColor.color_supplementary
           : getConnectingLineColor(configTheme)
         lineToCtx(r1s, lineY, r2s, lineY, ctx, lineColor)
       }
@@ -165,7 +164,6 @@ export function drawPairChains({
         fillStyle: featFill,
         strokeStyle: featStroke,
         renderChevrons,
-        colorCtx,
         showOutline,
       })
     }
@@ -193,8 +191,6 @@ export function drawPairChains({
         allItems,
       })
     }
-    // Reset cached fillStyle since mismatch rendering changes ctx.fillStyle
-    colorCtx.lastFillStyle = ''
     checkStopToken2(lastCheck)
   }
 
