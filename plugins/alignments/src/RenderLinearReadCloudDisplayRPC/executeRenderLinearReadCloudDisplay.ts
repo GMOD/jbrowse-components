@@ -67,9 +67,10 @@ export async function executeRenderLinearReadCloudDisplay({
     hideSmallIndels,
     hideMismatches,
     hideLargeIndels,
+    showOutline,
   } = args
 
-  // Recreate the view from the snapshot following DotplotRenderer pattern
+  // Recreate the view from the snapshot (displayedRegions already have renamed refNames)
   const view = Base1DView.create(viewSnapshot)
   // Set the volatile width which is not part of the snapshot
   if (viewSnapshot.width) {
@@ -79,37 +80,30 @@ export async function executeRenderLinearReadCloudDisplay({
   // Extract properties from the recreated view
   const { bpPerPx, offsetPx } = view
   const width = view.staticBlocks.totalWidthPx
-  // Use regions from viewSnapshot which have originalRefName from renameRegionsIfNeeded
-  const regions =
-    (viewSnapshot as any).staticBlocks?.contentBlocks ||
-    view.staticBlocks.contentBlocks
+  // contentBlocks are derived from displayedRegions, so they have correct refNames
+  const regions = view.staticBlocks.contentBlocks
   const assemblyName = view.assemblyNames[0]
   if (!assemblyName) {
     throw new Error('No assembly name found in view')
   }
 
   // Create a snapshot from the live view including computed properties
-  // Use the staticBlocks and displayedRegions from viewSnapshot (which have renamed refNames)
-  // not from the recreated view (which has the original assembly refNames)
-  const viewSnap: any = {
-    ...getSnapshot(view),
-    displayedRegions: (viewSnapshot as any).displayedRegions,
-    staticBlocks: (viewSnapshot as any).staticBlocks,
+  // staticBlocks is a getter so must be included explicitly
+  const snap = getSnapshot(view)
+  const viewSnap = {
+    ...snap,
     width: view.width,
-  }
-  // Add bpToPx method after viewSnap is defined to avoid circular reference
-  viewSnap.bpToPx = (arg: { refName: string; coord: number }) => {
-    const res = bpToPx({
-      self: viewSnap,
-      refName: arg.refName,
-      coord: arg.coord,
-    })
-    return res !== undefined
-      ? {
-          offsetPx: res.offsetPx,
-          index: res.index,
-        }
-      : undefined
+    staticBlocks: view.staticBlocks,
+    bpToPx(arg: { refName: string; coord: number }) {
+      const res = bpToPx({
+        self: this,
+        refName: arg.refName,
+        coord: arg.coord,
+      })
+      return res !== undefined
+        ? { offsetPx: res.offsetPx, index: res.index }
+        : undefined
+    },
   }
 
   // Fetch chainData directly in the RPC to avoid serializing features from main thread
@@ -254,6 +248,7 @@ export async function executeRenderLinearReadCloudDisplay({
             hideSmallIndels,
             hideMismatches,
             hideLargeIndels,
+            showOutline,
           },
           view: viewSnap,
           calculateYOffsets: (chains: ComputedChain[]) => {

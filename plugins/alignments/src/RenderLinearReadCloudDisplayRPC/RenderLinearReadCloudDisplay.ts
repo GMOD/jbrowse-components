@@ -1,7 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
 import configSchema from '../LinearReadCloudDisplay/configSchema'
-import { renameViewRegionsForRPC } from '../shared/renameRegionsForRPC'
 
 import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -33,6 +33,7 @@ export interface RenderLinearReadCloudDisplayArgs {
   hideSmallIndels?: boolean
   hideMismatches?: boolean
   hideLargeIndels?: boolean
+  showOutline?: boolean
 }
 
 export default class RenderLinearReadCloudDisplay extends RpcMethodType {
@@ -41,21 +42,31 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
   async renameRegionsIfNeeded(
     args: RenderLinearReadCloudDisplayArgs,
   ): Promise<RenderLinearReadCloudDisplayArgs> {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
+    const assemblyManager = this.pluginManager.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
       throw new Error('no assembly manager')
     }
 
-    const { view: viewSnapshot, sessionId, adapterConfig } = args
-    const renamedView = await renameViewRegionsForRPC({
-      assemblyManager,
-      viewSnapshot: viewSnapshot as Record<string, unknown>,
+    const { view, sessionId, adapterConfig } = args
+    const { displayedRegions } = view
+
+    if (!displayedRegions?.length) {
+      return args
+    }
+
+    const result = await renameRegionsIfNeeded(assemblyManager, {
       sessionId,
       adapterConfig,
+      regions: displayedRegions,
     })
 
-    return { ...args, view: renamedView as typeof viewSnapshot }
+    return {
+      ...args,
+      view: {
+        ...view,
+        displayedRegions: result.regions,
+      } as typeof view,
+    }
   }
 
   deserializeArguments(args: any, _rpcDriver: string) {
@@ -71,7 +82,10 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
     const renamed = await this.renameRegionsIfNeeded(
       args as unknown as RenderLinearReadCloudDisplayArgs,
     )
-    return super.serializeArguments(renamed, rpcDriver)
+    return super.serializeArguments(
+      renamed as unknown as Record<string, unknown>,
+      rpcDriver,
+    )
   }
 
   async execute(args: Record<string, unknown>, rpcDriver: string) {

@@ -116,6 +116,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         showYScalebar: types.optional(types.boolean, true),
+
+        /**
+         * #property
+         */
+        showOutline: types.optional(types.boolean, true),
       }),
     )
     .volatile(() => ({
@@ -224,6 +229,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setShowOutline(show: boolean) {
+        self.showOutline = show
+      },
+      /**
+       * #action
+       */
       selectFeature(chain: ReducedFeature[]) {
         const session = getSession(self)
         const syntheticFeature = chainToSimpleFeature(chain)
@@ -328,6 +339,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             hideSmallIndels: self.hideSmallIndels,
             hideMismatches: self.hideMismatches,
             hideLargeIndels: self.hideLargeIndels,
+            showOutline: self.showOutline,
             visibleModifications: Object.fromEntries(
               self.visibleModifications.toJSON(),
             ),
@@ -431,6 +443,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     )
                   },
                 },
+                {
+                  label: 'Show outline',
+                  helpText: 'Draw an outline around each read',
+                  type: 'checkbox',
+                  checked: self.showOutline,
+                  onClick: () => {
+                    self.setShowOutline(!self.showOutline)
+                  },
+                },
                 getMismatchDisplayMenuItem(self),
               ],
             },
@@ -475,6 +496,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         noSpacing,
         trackMaxHeight,
         showLegend,
+        showOutline,
         hideSmallIndelsSetting,
         hideMismatchesSetting,
         hideLargeIndelsSetting,
@@ -486,6 +508,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ...(noSpacing !== undefined ? { noSpacing } : {}),
         ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
         ...(showLegend !== undefined ? { showLegend } : {}),
+        ...(showOutline !== true ? { showOutline } : {}),
         ...(hideSmallIndelsSetting !== undefined
           ? { hideSmallIndelsSetting }
           : {}),

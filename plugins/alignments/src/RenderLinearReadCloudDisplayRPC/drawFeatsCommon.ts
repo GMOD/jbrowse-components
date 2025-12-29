@@ -22,10 +22,16 @@ import type {
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ThemeOptions } from '@mui/material'
 
-type LGV = LinearGenomeViewModel
+interface ViewForDrawing {
+  bpPerPx: number
+  offsetPx: number
+  bpToPx: (arg: {
+    refName: string
+    coord: number
+  }) => { offsetPx: number } | undefined
+}
 
 // If TLEN is more than this factor larger than the visible bp span,
 // it's likely from a distant mate (e.g., SV) and shouldn't affect scaling
@@ -94,7 +100,7 @@ export function filterChains(
 /**
  * Compute pixel bounds for each chain
  */
-export function computeChainBounds(chains: Feature[][], view: LGV) {
+export function computeChainBounds(chains: Feature[][], view: ViewForDrawing) {
   const computedChains: ComputedChain[] = []
   const { bpPerPx } = view
 
@@ -219,7 +225,7 @@ export function addChainMouseoverRects(
   computedChains: ComputedChain[],
   chainYOffsets: Map<string, number>,
   featureHeight: number,
-  view: LGV,
+  view: ViewForDrawing,
   featuresForFlatbush: FlatbushEntry[],
 ) {
   for (const computedChain of computedChains) {
@@ -296,6 +302,7 @@ export interface DrawFeatsParams {
   hideSmallIndels?: boolean
   hideMismatches?: boolean
   hideLargeIndels?: boolean
+  showOutline?: boolean
 }
 
 export interface DrawFeatsResult {
