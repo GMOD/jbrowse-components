@@ -28,8 +28,15 @@ export async function renderSvg(
 ) {
   const view = getContainingView(self) as LGV
   const session = getSession(self)
-  const { rpcManager } = session
+  const { rpcManager, assemblyManager } = session
   const height = opts.overrideHeight ?? self.height
+
+  const assemblyName = view.assemblyNames[0]
+  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+  const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+  const sequenceAdapter = sequenceAdapterConfig
+    ? getSnapshot(sequenceAdapterConfig)
+    : undefined
 
   const {
     colorBy,
@@ -56,6 +63,7 @@ export async function renderSvg(
       sessionId: session.id,
       view: viewSnapshot,
       adapterConfig: self.adapterConfig,
+      sequenceAdapter,
       config: getSnapshot(self.configuration),
       theme: opts.theme,
       filterBy,

@@ -107,7 +107,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        */
       removeView(view: IBaseViewModel) {
         for (const [, widget] of self.activeWidgets) {
-          if (widget.view && widget.view.id === view.id) {
+          if (widget.view?.id === view.id) {
             self.hideWidget(widget)
           }
         }

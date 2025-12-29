@@ -190,24 +190,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const minD = Math.log(Math.max(1, minDistance + CLOUD_LOG_OFFSET))
         const scaler = (height - CLOUD_HEIGHT_PADDING) / (maxD - minD || 1)
 
-        // Generate nice tick values (powers of 10 and multiples)
+        // Generate tick values using powers of 2
         const tickValues: number[] = []
-        const logMin = Math.log10(minDistance)
-        const logMax = Math.log10(maxDistance)
+        const log2Min = Math.floor(Math.log2(minDistance))
+        const log2Max = Math.ceil(Math.log2(maxDistance))
 
-        // Start from the nearest power of 10 below minDistance
-        let power = Math.floor(logMin)
-        while (power <= Math.ceil(logMax)) {
-          const value = Math.pow(10, power)
-          // Use fewer multipliers below 1000, more above
-          const multipliers = value >= 1000 ? [1, 2, 3, 5, 7] : [1, 5]
-          for (const mult of multipliers) {
-            const val = value * mult
-            if (val >= minDistance && val <= maxDistance) {
-              tickValues.push(val)
-            }
+        for (let power = log2Min; power <= log2Max; power++) {
+          const value = Math.pow(2, power)
+          if (value >= minDistance && value <= maxDistance) {
+            tickValues.push(value)
           }
-          power++
         }
 
         // Sort and dedupe
@@ -434,6 +426,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   checked: self.drawCloud,
                   onClick: () => {
                     self.setDrawCloud(!self.drawCloud)
+                  },
+                },
+                {
+                  label: 'Show y-scalebar',
+                  type: 'checkbox',
+                  helpText:
+                    'Show insert size scale on the y-axis (only visible in cloud mode)',
+                  checked: self.showYScalebar,
+                  onClick: () => {
+                    self.setShowYScalebar(!self.showYScalebar)
                   },
                 },
                 {

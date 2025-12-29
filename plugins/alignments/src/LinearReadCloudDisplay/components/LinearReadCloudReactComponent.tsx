@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { useTheme } from '@mui/material'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   assembleLocString,
@@ -11,6 +10,7 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {

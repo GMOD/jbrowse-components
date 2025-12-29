@@ -125,7 +125,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
             throw new Error(`unknown display type ${type}`)
           }
           const display = self.displays.find(
-            (d: any) => d && d.displayId === displayConf.displayId,
+            (d: any) => d?.displayId === displayConf.displayId,
           )
           if (display) {
             return display

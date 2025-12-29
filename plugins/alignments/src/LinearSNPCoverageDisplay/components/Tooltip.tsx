@@ -58,7 +58,7 @@ const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
     )
   }
 
-  return feat && feat.get('type') === 'skip' ? null : (
+  return feat?.get('type') === 'skip' ? null : (
     <Tooltip TooltipContents={TooltipContents} {...props} />
   )
 })

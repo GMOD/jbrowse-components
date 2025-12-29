@@ -248,8 +248,7 @@ function stateModelFactory(
               }
 
               if (
-                !PileupDisplay ||
-                self.lowerPanelType !== PileupDisplay.type
+                self.lowerPanelType !== PileupDisplay?.type
               ) {
                 self.setPileupDisplay(pileupConf)
               } else if (
