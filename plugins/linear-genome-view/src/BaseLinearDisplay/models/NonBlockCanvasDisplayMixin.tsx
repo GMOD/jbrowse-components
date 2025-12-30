@@ -113,3 +113,7 @@ export default function NonBlockCanvasDisplayMixin() {
       },
     }))
 }
+
+export type NonBlockCanvasDisplayMixinType = ReturnType<
+  typeof NonBlockCanvasDisplayMixin
+>

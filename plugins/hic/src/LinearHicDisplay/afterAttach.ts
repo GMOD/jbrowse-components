@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { drawCanvasImageData } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, untracked } from 'mobx'
 
 import type { LinearHicDisplayModel } from './model'
@@ -160,22 +161,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         if (!view.initialized) {
           return
         }
-
-        const canvas = self.ref
-        const { renderingImageData } = self
-
-        if (!canvas || !renderingImageData) {
-          return
-        }
-
-        const ctx = canvas.getContext('2d')
-        if (!ctx) {
-          return
-        }
-
-        ctx.resetTransform()
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(renderingImageData, 0, 0)
+        drawCanvasImageData(self.ref, self.renderingImageData)
       },
       {
         name: 'LinearHicDisplayCanvas',

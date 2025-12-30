@@ -99,8 +99,12 @@ export {
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
   calculateSvgLegendWidth,
+  drawCanvasImageData,
 } from './BaseLinearDisplay'
-export type { NonBlockCanvasDisplayModel } from './BaseLinearDisplay'
+export type {
+  NonBlockCanvasDisplayMixinType,
+  NonBlockCanvasDisplayModel,
+} from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,

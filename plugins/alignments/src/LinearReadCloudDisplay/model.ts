@@ -451,10 +451,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: "Show as 'read cloud'",
+                  label: "Show as 'read cloud' (paired-end reads)",
                   type: 'checkbox',
                   helpText:
-                    'In read cloud mode, the y-coordinate of the reads is proportional to TLEN (template length)',
+                    'In read cloud mode, the y-coordinate of paired-end reads is proportional to insert size (TLEN). This mode is designed for paired-end short reads; long reads will appear at y=0.',
                   checked: self.drawCloud,
                   onClick: () => {
                     self.setDrawCloud(!self.drawCloud)
