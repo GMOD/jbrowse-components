@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import { waitFor } from '@testing-library/dom'
 import userEvent from '@testing-library/user-event'
 
 import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
@@ -35,8 +36,10 @@ test('change color on track', async () => {
   const elt = await findByDisplayValue('goldenrod', {}, delay)
   await user.clear(elt)
   await user.type(elt, 'green')
+  await new Promise(res => setTimeout(res, 1000))
 
-  expectCanvasMatch(
-    (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-  )
+  const canv = (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!
+  await waitFor(() => {
+    expectCanvasMatch(canv, 0)
+  }, delay)
 }, 40000)
