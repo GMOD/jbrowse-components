@@ -3,7 +3,10 @@
 module.exports = {
   roots: ['.', 'packages/', 'products/', 'plugins/'],
   moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
-
+  moduleNameMapper: {
+    '^.+/CascadingMenuButton$': '<rootDir>/packages/core/ui/MenuButton',
+    '^.+/CascadingMenu$': '<rootDir>/packages/core/ui/Menu',
+  },
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.js',
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
