@@ -387,7 +387,9 @@ const SessionLoader = types
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
-          await this.loadSession(sessionSnap)
+          // Assign new ID to avoid conflicts when same session is opened in
+          // multiple tabs (each tab gets its own copy with unique ID)
+          await this.loadDecodedSession(sessionSnap)
           return true
         }
       }
@@ -406,7 +408,9 @@ const SessionLoader = types
         })
         const sessionSnap = await sessionDB.get('sessions', query)
         if (sessionSnap) {
-          await this.loadSession(sessionSnap)
+          // Assign new ID to avoid conflicts when same session is opened in
+          // multiple tabs (each tab gets its own copy with unique ID)
+          await this.loadDecodedSession(sessionSnap)
           return true
         }
       } catch (e) {
