@@ -27,7 +27,6 @@ import type {
   NormalMenuItem,
   RadioMenuItem,
 } from './MenuTypes'
-import type { PopupState } from './hooks'
 import type { SvgIconProps } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes'
@@ -60,7 +59,7 @@ function CascadingSubmenu({
 
   return (
     <>
-      <MenuItem ref={setAnchorEl} onMouseOver={onOpen} onFocus={onOpen}>
+      <MenuItem ref={setAnchorEl} onMouseOver={onOpen} onFocus={onOpen} onClick={onOpen}>
         {Icon ? (
           <ListItemIcon>
             <Icon />
@@ -204,22 +203,24 @@ export default function CascadingMenu({
   onMenuItemClick,
   closeAfterItemClick = true,
   menuItems,
-  popupState,
+  open,
+  onClose,
+  anchorEl,
 }: {
   onMenuItemClick: (event: unknown, callback: () => void) => void
   closeAfterItemClick?: boolean
   menuItems: MenuItemsGetter
-  popupState: PopupState
+  open: boolean
+  onClose: () => void
+  anchorEl: Element | null
 }) {
-  const { isOpen, anchorEl, close, popupId } = popupState
-  const { items, loading, error } = useAsyncMenuItems(menuItems, isOpen)
+  const { items, loading, error } = useAsyncMenuItems(menuItems, open)
 
   return (
     <Menu
-      id={popupId}
-      anchorEl={anchorEl ?? null}
-      open={isOpen}
-      onClose={close}
+      anchorEl={anchorEl}
+      open={open}
+      onClose={onClose}
     >
       {loading ? (
         <LoadingMenuItem />
@@ -230,7 +231,7 @@ export default function CascadingMenu({
           menuItems={items}
           closeAfterItemClick={closeAfterItemClick}
           onMenuItemClick={onMenuItemClick}
-          onCloseRoot={close}
+          onCloseRoot={onClose}
         />
       )}
     </Menu>

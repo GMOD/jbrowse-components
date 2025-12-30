@@ -25,6 +25,7 @@ test('color by tag', async () => {
   view.setNewView(0.465, 85055)
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await user.click(await screen.findByText('Pileup settings'))
   await user.click(await screen.findByText('Color by...'))
   await user.click(await screen.findByText('Color by tag...'))
   await user.type(
@@ -45,6 +46,7 @@ test('color by stranded rna-seq', async () => {
     await screen.findByTestId(hts('paired_end_stranded_rnaseq'), ...opts),
   )
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await user.click(await screen.findByText('Pileup settings'))
   await user.click(await screen.findByText('Color by...'))
   await user.click(await screen.findByText('First-of-pair strand'))
   await screen.findAllByTestId('pileup-overlay-stranded', ...opts)

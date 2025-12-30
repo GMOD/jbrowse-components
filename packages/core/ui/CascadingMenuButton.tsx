@@ -1,9 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { IconButton } from '@mui/material'
-
-import { usePopupState } from './hooks'
 
 import type { MenuItemsGetter } from '@jbrowse/core/ui/CascadingMenu'
 
@@ -26,12 +24,12 @@ function CascadingMenuButton({
   setOpen?: (arg: boolean) => void
   [key: string]: unknown
 }) {
-  const popupState = usePopupState()
-  const { isOpen } = popupState
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null)
+  const open = Boolean(anchorEl)
 
   useEffect(() => {
-    setOpen?.(isOpen)
-  }, [isOpen, setOpen])
+    setOpen?.(open)
+  }, [open, setOpen])
 
   const isDisabled =
     disabled ?? (Array.isArray(menuItems) && menuItems.length === 0)
@@ -43,7 +41,7 @@ function CascadingMenuButton({
           if (stopPropagation) {
             event.stopPropagation()
           }
-          popupState.open(event)
+          setAnchorEl(event.currentTarget)
           onClickExtra?.(event)
         }}
         {...rest}
@@ -51,9 +49,11 @@ function CascadingMenuButton({
       >
         {children}
       </IconButton>
-      {isOpen ? (
+      {open ? (
         <CascadingMenu
-          popupState={popupState}
+          open={open}
+          onClose={() => setAnchorEl(null)}
+          anchorEl={anchorEl}
           menuItems={menuItems}
           closeAfterItemClick={closeAfterItemClick}
           onMenuItemClick={(_: unknown, callback: () => void) => {
