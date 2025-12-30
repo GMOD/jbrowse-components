@@ -29,7 +29,7 @@ interface RenderingResult {
   canvasRecordedData?: unknown
   layoutHeight?: number
   featuresForFlatbush?: unknown
-  cloudScaleInfo?: { minDistance: number; maxDistance: number }
+  cloudMaxDistance?: number
 }
 
 export async function renderSvg(
@@ -91,9 +91,14 @@ export async function renderSvg(
   const legendItems = self.showLegend ? self.legendItems() : []
 
   // Compute cloudTicks for SVG export if in cloud mode
+  // Use [1, maxDistance] as domain since it's a log scale
+  const cloudDomain =
+    rendering.cloudMaxDistance !== undefined && self.drawCloud
+      ? ([1, rendering.cloudMaxDistance] as [number, number])
+      : null
   const cloudTicks =
-    self.drawCloud && rendering.cloudScaleInfo && self.showYScalebar
-      ? calculateCloudTicks(rendering.cloudScaleInfo, height)
+    cloudDomain && self.showYScalebar
+      ? calculateCloudTicks(cloudDomain, height)
       : null
 
   return (

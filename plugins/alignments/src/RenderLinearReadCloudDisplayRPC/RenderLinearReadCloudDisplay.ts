@@ -25,6 +25,7 @@ export interface RenderLinearReadCloudDisplayArgs {
   flipStrandLongReadChains: boolean
   trackMaxHeight?: number
   cloudModeHeight?: number
+  cloudDomain?: [number, number]
   highResolutionScaling?: number
   exportSVG?: { rasterizeLayers?: boolean; scale?: number }
   statusCallback?: (status: string) => void

@@ -136,11 +136,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       selectedFeatureId: undefined as string | undefined,
       /**
        * #volatile
-       * Scale info for cloud mode (min/max insert sizes)
+       * Max distance for cloud mode scale (min is always 1 for log scale)
        */
-      cloudScaleInfo: undefined as
-        | { minDistance: number; maxDistance: number }
-        | undefined,
+      cloudMaxDistance: undefined as number | undefined,
     }))
     .views(self => ({
       get dataTestId() {
@@ -180,13 +178,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * Domain for cloud mode scale: [1, maxDistance]
+       * Uses 1 as lower bound since it's a log scale
+       */
+      get cloudDomain(): [number, number] | undefined {
+        if (self.cloudMaxDistance === undefined) {
+          return undefined
+        }
+        return [1, self.cloudMaxDistance]
+      },
+      /**
+       * #getter
        * Calculate ticks for the y-axis scalebar in cloud mode
        */
       get cloudTicks() {
-        if (!self.drawCloud || !self.cloudScaleInfo || !self.showYScalebar) {
+        if (!self.drawCloud || !self.cloudDomain || !self.showYScalebar) {
           return undefined
         }
-        return calculateCloudTicks(self.cloudScaleInfo, self.height)
+        return calculateCloudTicks(self.cloudDomain, self.height)
       },
     }))
     .actions(self => ({
@@ -213,12 +222,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
-       * Set the cloud scale info for the y-axis scalebar
+       * Set the max distance for cloud mode scale
+       * Only updates if value differs by more than EPSILON to avoid infinite re-renders
        */
-      setCloudScaleInfo(
-        info: { minDistance: number; maxDistance: number } | undefined,
-      ) {
-        self.cloudScaleInfo = info
+      setCloudMaxDistance(maxDistance: number) {
+        const EPSILON = 0.000001
+        if (
+          self.cloudMaxDistance === undefined ||
+          Math.abs(self.cloudMaxDistance - maxDistance) > EPSILON
+        ) {
+          self.cloudMaxDistance = maxDistance
+        }
       },
       /**
        * #action
@@ -339,6 +353,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             hideMismatches: self.hideMismatches,
             hideLargeIndels: self.hideLargeIndels,
             showOutline: self.showOutline,
+            cloudDomain: self.cloudDomain,
             visibleModifications: Object.fromEntries(
               self.visibleModifications.toJSON(),
             ),

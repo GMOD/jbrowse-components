@@ -313,7 +313,7 @@ export interface DrawFeatsParams {
 export interface DrawFeatsResult {
   featuresForFlatbush: FlatbushEntry[]
   layoutHeight?: number
-  cloudScaleInfo?: { minDistance: number; maxDistance: number }
+  cloudMaxDistance?: number
   mismatchFlatbush: ArrayBufferLike
   mismatchItems: FlatbushItem[]
 }
@@ -330,7 +330,7 @@ export function drawFeatsCore({
   calculateYOffsets: (computedChains: ComputedChain[]) => {
     chainYOffsets: Map<string, number>
     layoutHeight?: number
-    cloudScaleInfo?: { minDistance: number; maxDistance: number }
+    cloudMaxDistance?: number
   }
 }): DrawFeatsResult {
   const {
@@ -362,7 +362,7 @@ export function drawFeatsCore({
   sortComputedChains(computedChains)
 
   // Calculate Y-offsets using the provided strategy
-  const { chainYOffsets, layoutHeight, cloudScaleInfo } =
+  const { chainYOffsets, layoutHeight, cloudMaxDistance } =
     calculateYOffsets(computedChains)
 
   // Initialize array for Flatbush mouseover data
@@ -480,7 +480,7 @@ export function drawFeatsCore({
   return {
     featuresForFlatbush,
     layoutHeight,
-    cloudScaleInfo,
+    cloudMaxDistance,
     mismatchFlatbush: mismatchFlatbush.data,
     mismatchItems,
   }
