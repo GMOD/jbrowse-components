@@ -41,6 +41,7 @@ interface LabelProps {
   featureLeftPx: number
   featureRightPx: number
   featureId: string
+  subfeatureId?: string
   labelWidth: number
   y: number
   offsetPx: number
@@ -57,6 +58,7 @@ function FloatingLabel({
   featureLeftPx,
   featureRightPx,
   featureId,
+  subfeatureId,
   labelWidth,
   y,
   offsetPx,
@@ -76,6 +78,7 @@ function FloatingLabel({
   return (
     <div
       data-feature-id={featureId}
+      data-subfeature-id={subfeatureId}
       data-tooltip={tooltip}
       className={isOverlay ? `${labelClass} ${overlayClass}` : labelClass}
       style={{ color, transform: `translate(${x}px,${y}px)` }}
@@ -131,6 +134,7 @@ const FloatingLabels = observer(function FloatingLabels({
         isOverlay,
         textWidth: labelWidth,
         parentFeatureId,
+        subfeatureId,
         tooltip,
       } = floatingLabel
 
@@ -145,6 +149,7 @@ const FloatingLabels = observer(function FloatingLabels({
           featureLeftPx={featureLeftPx}
           featureRightPx={featureRightPx}
           featureId={parentFeatureId ?? key}
+          subfeatureId={subfeatureId}
           labelWidth={labelWidth}
           y={y}
           offsetPx={offsetPx}
@@ -162,14 +167,16 @@ const FloatingLabels = observer(function FloatingLabels({
       className={classes.container}
       onClick={e => {
         const target = e.target as HTMLElement
-        const featureId = target.dataset.featureId
+        const subfeatureId = target.dataset.subfeatureId
+        const featureId = subfeatureId ?? target.dataset.featureId
         if (featureId) {
           onFeatureClick?.(e, featureId)
         }
       }}
       onContextMenu={e => {
         const target = e.target as HTMLElement
-        const featureId = target.dataset.featureId
+        const subfeatureId = target.dataset.subfeatureId
+        const featureId = subfeatureId ?? target.dataset.featureId
         if (featureId) {
           onFeatureContextMenu?.(e, featureId)
         }
@@ -179,7 +186,9 @@ const FloatingLabels = observer(function FloatingLabels({
         const featureId = target.dataset.featureId
         if (featureId) {
           const tooltip = target.dataset.tooltip
+          const subfeatureId = target.dataset.subfeatureId
           onMouseMove?.(e, featureId, tooltip)
+          model.setSubfeatureIdUnderMouse(subfeatureId)
         }
       }}
     >

@@ -16,6 +16,7 @@ export interface FloatingLabelData {
   textWidth: number
   isOverlay?: boolean
   parentFeatureId?: string
+  subfeatureId?: string
   tooltip?: string
 }
 

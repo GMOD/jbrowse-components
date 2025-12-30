@@ -209,6 +209,7 @@ function addChildrenRecursive({
           subfeatureLabels,
           color: labelColor,
           parentFeatureId: featureLayout.feature.id(),
+          subfeatureId: childFeature.id(),
           tooltip: matchingGlyph ? displayLabel : parentTooltip,
         })
         if (label) {

@@ -16,6 +16,7 @@ export interface FloatingLabelData {
   textWidth: number
   isOverlay?: boolean
   parentFeatureId?: string
+  subfeatureId?: string
   tooltip?: string
 }
 
@@ -109,6 +110,7 @@ export function createTranscriptFloatingLabel({
   subfeatureLabels,
   color,
   parentFeatureId,
+  subfeatureId,
   tooltip,
 }: {
   displayLabel: string
@@ -116,6 +118,7 @@ export function createTranscriptFloatingLabel({
   subfeatureLabels: string
   color: string
   parentFeatureId: string
+  subfeatureId: string
   tooltip: string
 }): FloatingLabelData | null {
   if (!displayLabel) {
@@ -138,6 +141,7 @@ export function createTranscriptFloatingLabel({
     textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
     isOverlay,
     parentFeatureId,
+    subfeatureId,
     tooltip,
   }
 }
