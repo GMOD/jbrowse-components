@@ -104,6 +104,15 @@ export function createPluginManager(
       console.error(e)
     }
 
+    // Show session warning if one was set (e.g., unrecognized session format)
+    if (model.sessionWarning) {
+      rootModel.session?.notifyError(
+        model.sessionWarning,
+        new Error(model.sessionWarning),
+        undefined,
+      )
+    }
+
     // send analytics
     doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
 

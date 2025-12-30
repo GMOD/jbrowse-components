@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 
 import { types } from '@jbrowse/mobx-state-tree'
-import Report from '@mui/icons-material/Report'
 import { observable } from 'mobx'
 
 import type { NotificationLevel, SnackAction } from '../util/types'
@@ -56,7 +55,7 @@ export default function SnackbarModel() {
        */
       notifyError(errorMessage: string, error?: unknown, extra?: unknown) {
         this.notify(errorMessage, 'error', {
-          name: <Report />,
+          name: 'report',
           onClick: () => {
             // @ts-expect-error
             self.queueDialog((onClose: () => void) => [

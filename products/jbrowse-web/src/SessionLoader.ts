@@ -113,6 +113,11 @@ const SessionLoader = types
      * #volatile
      */
     configError: undefined as unknown,
+    /**
+     * #volatile
+     * Warning message to display after session loads (for non-fatal issues)
+     */
+    sessionWarning: undefined as string | undefined,
   }))
   .views(self => ({
     /**
@@ -260,6 +265,12 @@ const SessionLoader = types
      */
     setSessionSnapshot(snap: Record<string, unknown>) {
       self.sessionSnapshot = snap
+    },
+    /**
+     * #action
+     */
+    setSessionWarning(warning: string | undefined) {
+      self.sessionWarning = warning
     },
   }))
   .actions(self => ({
@@ -566,6 +577,11 @@ const SessionLoader = types
                   return
                 }
 
+                // Guard: if session is already loaded, don't re-process
+                if (self.blankSession || self.sessionSpec || self.hubSpec) {
+                  return
+                }
+
                 if (sessionSnapshot) {
                   await this.loadSessionPluginsIfNeeded(sessionSnapshot)
                 } else if (isSharedSession) {
@@ -587,8 +603,12 @@ const SessionLoader = types
                   this.decodeHubSpec()
                   self.setBlankSession(true)
                 } else if (self.sessionQuery) {
-                  // if there was a sessionQuery and we don't recognize it
-                  throw new Error('unrecognized session format')
+                  // if there was a sessionQuery and we don't recognize it,
+                  // start a blank session and show a warning instead of crashing
+                  self.setSessionWarning(
+                    `Unrecognized session format: "${self.sessionQuery}"`,
+                  )
+                  self.setBlankSession(true)
                 } else {
                   // placeholder for session loaded, but none found
                   self.setBlankSession(true)
