@@ -1,8 +1,15 @@
+/**
+ * The pluginManager/rootModel can be destroyed and recreated without a full
+ * page reload. Plugin install passes the session explicitly via the
+ * reloadPluginManager callback. HMR uses a different mechanism: the useEffect
+ * cleanup saves the current session to the loader before destroying, so
+ * createPluginManager can restore it.
+ */
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { destroy } from '@jbrowse/mobx-state-tree'
+import { destroy, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
@@ -97,9 +104,14 @@ const Renderer = observer(function Renderer({
 }: {
   loader: SessionLoaderModel
 }) {
+  // Store loader in state so reloadPluginManager can replace it
   const [loader, setLoader] = useState(firstLoader)
   const pluginManager = useRef<PluginManager | undefined>(undefined)
   const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
+
+  // Called by rootModel when plugins are installed/removed. Creates a new
+  // loader with the updated config and current session, triggering a full
+  // pluginManager recreation.
   const reloadPluginManager = useCallback(
     (
       configSnapshot: Record<string, unknown>,
@@ -131,6 +143,7 @@ const Renderer = observer(function Renderer({
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
+    // Skip destroy in Jest since it interferes with test cleanup
     const isJest = typeof jest !== 'undefined'
     if (ready) {
       try {
@@ -146,6 +159,13 @@ const Renderer = observer(function Renderer({
     }
     return () => {
       if (pluginManager.current?.rootModel && !isJest) {
+        const rootModel = pluginManager.current.rootModel
+        const session = rootModel.session
+        if (session) {
+          // Save session before destroying so it can be restored (see file
+          // header comment for details on when this is needed)
+          loader.setSessionSnapshot(getSnapshot(session))
+        }
         destroy(pluginManager.current.rootModel)
       }
     }
