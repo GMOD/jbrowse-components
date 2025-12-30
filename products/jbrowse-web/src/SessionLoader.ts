@@ -380,7 +380,7 @@ const SessionLoader = types
       }
     },
     /**
-     * action
+     * #action
      */
     async setUpConfig() {
       // @ts-expect-error
@@ -396,18 +396,21 @@ const SessionLoader = types
     /**
      * #action
      */
-    async fetchSessionStorageSession() {
+    async fetchSessionFromSessionStorage(query: string) {
       const sessionStr = sessionStorage.getItem('current')
-      const query = self.sessionQuery!.replace('local-', '')
-
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
-          return this.loadSession(sessionSnap)
+          await this.loadSession(sessionSnap)
+          return true
         }
       }
-
-      // check IndexedDB for saved session
+      return false
+    },
+    /**
+     * #action
+     */
+    async fetchSessionFromIndexedDB(query: string) {
       try {
         const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
           upgrade(db) {
@@ -418,33 +421,61 @@ const SessionLoader = types
         const sessionSnap = await sessionDB.get('sessions', query)
         if (sessionSnap) {
           await this.loadSession(sessionSnap)
+          return true
         }
       } catch (e) {
         console.error(e)
       }
-
-      if (self.bc1) {
-        self.bc1.postMessage(query)
-        try {
-          const result = await new Promise<Record<string, unknown>>(
-            (resolve, reject) => {
-              if (self.bc2) {
-                self.bc2.onmessage = msg => {
-                  resolve(msg.data)
-                }
-              }
-              setTimeout(() => {
-                reject(new Error('timeout'))
-              }, 1000)
-            },
-          )
-          await this.loadSession({ ...result, id: nanoid() })
-        } catch (e) {
-          // the broadcast channels did not find the session in another tab
-          // clear session param, so just ignore
-        }
+      return false
+    },
+    /**
+     * #action
+     */
+    async fetchSessionFromBroadcastChannel(query: string) {
+      if (!self.bc1) {
+        return false
       }
-      throw new Error('Local storage session not found')
+      self.bc1.postMessage(query)
+      try {
+        const result = await new Promise<Record<string, unknown>>(
+          (resolve, reject) => {
+            if (self.bc2) {
+              self.bc2.onmessage = msg => {
+                resolve(msg.data)
+              }
+            }
+            setTimeout(() => {
+              reject(new Error('timeout'))
+            }, 1000)
+          },
+        )
+        await this.loadSession({ ...result, id: nanoid() })
+        return true
+      } catch (e) {
+        // timeout - no other tab responded
+        return false
+      }
+    },
+    /**
+     * #action
+     * Tries to load a local session from multiple sources in order:
+     * 1. sessionStorage (current session)
+     * 2. IndexedDB (saved sessions)
+     * 3. BroadcastChannel (session from another tab)
+     */
+    async fetchLocalSession() {
+      const query = self.sessionQuery!.replace('local-', '')
+
+      if (await this.fetchSessionFromSessionStorage(query)) {
+        return
+      }
+      if (await this.fetchSessionFromIndexedDB(query)) {
+        return
+      }
+      if (await this.fetchSessionFromBroadcastChannel(query)) {
+        return
+      }
+      throw new Error('Local session not found')
     },
     /**
      * #action
@@ -555,6 +586,18 @@ const SessionLoader = types
      * #aftercreate
      */
     afterCreate() {
+      // Set up BroadcastChannel handler once to respond to session requests
+      // from other tabs
+      if (self.bc1) {
+        self.bc1.onmessage = msg => {
+          const r =
+            JSON.parse(sessionStorage.getItem('current') || '{}').session || {}
+          if (r.id === msg.data && self.bc2) {
+            self.bc2.postMessage(r)
+          }
+        }
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ;(async () => {
         try {
@@ -580,16 +623,6 @@ const SessionLoader = types
                   return
                 }
 
-                if (self.bc1) {
-                  self.bc1.onmessage = msg => {
-                    const r =
-                      JSON.parse(sessionStorage.getItem('current') || '{}')
-                        .session || {}
-                    if (r.id === msg.data && self.bc2) {
-                      self.bc2.postMessage(r)
-                    }
-                  }
-                }
                 if (sessionSnapshot) {
                   await this.checkExistingSession(sessionSnapshot)
                 } else if (isSharedSession) {
@@ -603,7 +636,7 @@ const SessionLoader = types
                 } else if (isJsonSession) {
                   await this.decodeJsonUrlSession()
                 } else if (isLocalSession) {
-                  await this.fetchSessionStorageSession()
+                  await this.fetchLocalSession()
                 } else if (isHubSession) {
                   // this is later in the list: prioritiz local session of "hub
                   // spec" since hub is left in URL even when there may be a
