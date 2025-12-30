@@ -73,18 +73,22 @@ export function findSubfeatureById(
   return undefined
 }
 
+export function featureHasExonsOrCDS(feature: Feature) {
+  const subs = feature.get('subfeatures') ?? []
+  return subs.some(
+    (f: Feature) => f.get('type') === 'exon' || f.get('type') === 'CDS',
+  )
+}
+
 export function hasExonsOrCDS(transcripts: Feature[]) {
-  return transcripts.some(t => {
-    const subs = t.get('subfeatures') ?? []
-    return subs.some(f => f.get('type') === 'exon' || f.get('type') === 'CDS')
-  })
+  return transcripts.some(t => featureHasExonsOrCDS(t))
 }
 
 export function getTranscripts(feature?: Feature): Feature[] {
   if (!feature) {
     return []
   }
-  return feature.get('type') === 'mRNA'
+  return featureHasExonsOrCDS(feature)
     ? [feature]
     : (feature.get('subfeatures') ?? [])
 }
