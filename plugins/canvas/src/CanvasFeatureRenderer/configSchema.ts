@@ -192,7 +192,7 @@ const CanvasFeatureRenderer = ConfigurationSchema(
     maxHeight: {
       type: 'integer',
       description: 'the maximum height to be used in a rendering',
-      defaultValue: 1200,
+      defaultValue: 5000,
     },
 
     /**
