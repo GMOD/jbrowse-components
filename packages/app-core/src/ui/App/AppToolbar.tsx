@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
 
 interface Menu {
   label: string
-  menuItems: JBMenuItem[]
+  menuItems: JBMenuItem[] | (() => JBMenuItem[])
 }
 
 type AppSession = SessionWithDrawerWidgets & {
@@ -55,8 +55,22 @@ const AppToolbar = observer(function AppToolbar({
         <DropDownMenu
           key={menu.label}
           menuTitle={menu.label}
-          menuItems={menu.menuItems}
-          session={session}
+          menuItems={() => {
+            const items =
+              typeof menu.menuItems === 'function'
+                ? menu.menuItems()
+                : menu.menuItems
+            return items.map(arg => ({
+              ...arg,
+              ...('onClick' in arg
+                ? {
+                    onClick: () => {
+                      arg.onClick(session)
+                    },
+                  }
+                : {}),
+            }))
+          }}
         />
       ))}
       <div className={classes.grow} />

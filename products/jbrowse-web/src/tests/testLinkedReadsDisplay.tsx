@@ -41,6 +41,7 @@ export async function testLinkedReadsDisplay({
     await user.click((await findAllByText('Linked reads display'))[0]!)
     if (displayMode === 'cloud') {
       await user.click(await findByTestId('track_menu_icon', ...opts))
+      await user.click(await findByText('Pileup settings'))
       await user.click((await findAllByText(/Show.../))[0]!)
       await user.click((await findAllByText(/Show as 'read cloud'/))[0]!)
     }

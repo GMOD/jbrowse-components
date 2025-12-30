@@ -13,12 +13,7 @@ import {
 
 import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton'
 import HoverMenu from './HoverMenu'
-import {
-  ErrorMenuItem,
-  LoadingMenuItem,
-  MenuItemEndDecoration,
-} from './MenuItems'
-import { useAsyncMenuItems } from './menuHooks'
+import { MenuItemEndDecoration } from './MenuItems'
 
 import type {
   CheckboxMenuItem,
@@ -27,7 +22,6 @@ import type {
   NormalMenuItem,
   RadioMenuItem,
 } from './MenuTypes'
-import type { PopupState } from './hooks'
 import type { SvgIconProps } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes'
@@ -60,7 +54,12 @@ function CascadingSubmenu({
 
   return (
     <>
-      <MenuItem ref={setAnchorEl} onMouseOver={onOpen} onFocus={onOpen}>
+      <MenuItem
+        ref={setAnchorEl}
+        onMouseOver={onOpen}
+        onFocus={onOpen}
+        onClick={onOpen}
+      >
         {Icon ? (
           <ListItemIcon>
             <Icon />
@@ -204,35 +203,49 @@ export default function CascadingMenu({
   onMenuItemClick,
   closeAfterItemClick = true,
   menuItems,
-  popupState,
+  open,
+  onClose,
+  anchorEl,
+  anchorOrigin,
+  anchorReference,
+  anchorPosition,
+  slotProps,
+  style,
 }: {
   onMenuItemClick: (event: unknown, callback: () => void) => void
   closeAfterItemClick?: boolean
   menuItems: MenuItemsGetter
-  popupState: PopupState
+  open: boolean
+  onClose: () => void
+  anchorEl?: Element | null
+  anchorOrigin?: {
+    vertical: 'top' | 'center' | 'bottom'
+    horizontal: 'left' | 'center' | 'right'
+  }
+  anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
+  anchorPosition?: { top: number; left: number }
+  slotProps?: { transition?: { onExit?: () => void } }
+  style?: React.CSSProperties
 }) {
-  const { isOpen, anchorEl, close, popupId } = popupState
-  const { items, loading, error } = useAsyncMenuItems(menuItems, isOpen)
+  const items = Array.isArray(menuItems) ? menuItems : menuItems()
 
   return (
     <Menu
-      id={popupId}
-      anchorEl={anchorEl ?? null}
-      open={isOpen}
-      onClose={close}
+      anchorEl={anchorEl}
+      open={open}
+      onClose={onClose}
+      anchorOrigin={anchorOrigin}
+      anchorReference={anchorReference}
+      anchorPosition={anchorPosition}
+      slotProps={slotProps}
+      style={style}
     >
-      {loading ? (
-        <LoadingMenuItem />
-      ) : error ? (
-        <ErrorMenuItem error={error} />
-      ) : (
-        <CascadingMenuList
-          menuItems={items}
-          closeAfterItemClick={closeAfterItemClick}
-          onMenuItemClick={onMenuItemClick}
-          onCloseRoot={close}
-        />
-      )}
+      <CascadingMenuList
+        menuItems={items}
+        closeAfterItemClick={closeAfterItemClick}
+        onMenuItemClick={onMenuItemClick}
+        onCloseRoot={onClose}
+      />
     </Menu>
   )
 }

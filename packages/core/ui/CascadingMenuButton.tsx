@@ -1,9 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { IconButton } from '@mui/material'
-
-import { usePopupState } from './hooks'
 
 import type { MenuItemsGetter } from '@jbrowse/core/ui/CascadingMenu'
 
@@ -14,46 +12,56 @@ function CascadingMenuButton({
   stopPropagation,
   disabled,
   setOpen,
+  ButtonComponent = IconButton,
   onClick: onClickExtra,
   ...rest
 }: {
-  children?: React.ReactElement
+  children?: React.ReactNode
   menuItems: MenuItemsGetter
   closeAfterItemClick?: boolean
   stopPropagation?: boolean
   disabled?: boolean
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
   setOpen?: (arg: boolean) => void
+  ButtonComponent?: React.FC<{
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+    disabled?: boolean
+    children?: React.ReactNode
+  }>
   [key: string]: unknown
 }) {
-  const popupState = usePopupState()
-  const { isOpen } = popupState
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null)
+  const open = Boolean(anchorEl)
 
   useEffect(() => {
-    setOpen?.(isOpen)
-  }, [isOpen, setOpen])
+    setOpen?.(open)
+  }, [open, setOpen])
 
   const isDisabled =
     disabled ?? (Array.isArray(menuItems) && menuItems.length === 0)
 
   return (
     <>
-      <IconButton
+      <ButtonComponent
         onClick={event => {
           if (stopPropagation) {
             event.stopPropagation()
           }
-          popupState.open(event)
+          setAnchorEl(event.currentTarget)
           onClickExtra?.(event)
         }}
         {...rest}
         disabled={isDisabled}
       >
         {children}
-      </IconButton>
-      {isOpen ? (
+      </ButtonComponent>
+      {open ? (
         <CascadingMenu
-          popupState={popupState}
+          open={open}
+          onClose={() => {
+            setAnchorEl(null)
+          }}
+          anchorEl={anchorEl}
           menuItems={menuItems}
           closeAfterItemClick={closeAfterItemClick}
           onMenuItemClick={(_: unknown, callback: () => void) => {

@@ -10,7 +10,7 @@ import AppToolbar from './AppToolbar'
 import DialogQueue from './DialogQueue'
 import ViewsContainer from './ViewsContainer'
 
-import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
+import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 

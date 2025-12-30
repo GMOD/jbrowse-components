@@ -51,7 +51,4 @@ export type MenuItem =
   | RadioMenuItem
   | SubMenuItem
 
-export type MenuItemsGetter =
-  | MenuItem[]
-  | (() => MenuItem[])
-  | (() => Promise<MenuItem[]>)
+export type MenuItemsGetter = MenuItem[] | (() => MenuItem[])

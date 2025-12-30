@@ -24,28 +24,12 @@ export default function SyntenyContextMenu({
   const { clientX, clientY, feature } = anchorEl
   return (
     <Menu
-      onMenuItemClick={(event, callback) => {
-        callback(event)
+      onMenuItemClick={(_, callback) => {
+        callback()
         onClose()
       }}
-      anchorEl={{
-        nodeType: 1,
-        getBoundingClientRect: () => {
-          const x = clientX
-          const y = clientY
-          return {
-            top: y,
-            left: x,
-            bottom: y,
-            right: x,
-            width: 0,
-            height: 0,
-            x,
-            y,
-            toJSON() {},
-          }
-        },
-      }}
+      anchorReference="anchorPosition"
+      anchorPosition={{ top: clientY, left: clientX }}
       onClose={onClose}
       open={Boolean(anchorEl)}
       menuItems={[

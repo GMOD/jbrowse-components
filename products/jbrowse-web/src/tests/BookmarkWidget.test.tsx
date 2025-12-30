@@ -35,6 +35,7 @@ test('Open the bookmarks widget from the view menu', async () => {
 
   const user = userEvent.setup()
   await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Bookmarks'))
   await user.click(await findByText('Open bookmark widget'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
@@ -92,6 +93,7 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
 
   const user = userEvent.setup()
   await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Bookmarks'))
   await user.click(await findByText('Open bookmark widget'))
 
   // @ts-expect-error
