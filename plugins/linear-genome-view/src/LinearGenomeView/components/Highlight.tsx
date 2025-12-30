@@ -109,7 +109,7 @@ const Highlight = observer(function Highlight({
       <Menu
         anchorEl={anchorEl.current}
         onMenuItemClick={(_event, callback) => {
-          callback(session)
+          callback()
           handleClose()
         }}
         open={open}

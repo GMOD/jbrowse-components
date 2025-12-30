@@ -12,16 +12,22 @@ function CascadingMenuButton({
   stopPropagation,
   disabled,
   setOpen,
+  ButtonComponent = IconButton,
   onClick: onClickExtra,
   ...rest
 }: {
-  children?: React.ReactElement
+  children?: React.ReactNode
   menuItems: MenuItemsGetter
   closeAfterItemClick?: boolean
   stopPropagation?: boolean
   disabled?: boolean
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
   setOpen?: (arg: boolean) => void
+  ButtonComponent?: React.FC<{
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+    disabled?: boolean
+    children?: React.ReactNode
+  }>
   [key: string]: unknown
 }) {
   const [anchorEl, setAnchorEl] = useState<Element | null>(null)
@@ -36,7 +42,7 @@ function CascadingMenuButton({
 
   return (
     <>
-      <IconButton
+      <ButtonComponent
         onClick={event => {
           if (stopPropagation) {
             event.stopPropagation()
@@ -48,11 +54,13 @@ function CascadingMenuButton({
         disabled={isDisabled}
       >
         {children}
-      </IconButton>
+      </ButtonComponent>
       {open ? (
         <CascadingMenu
           open={open}
-          onClose={() => setAnchorEl(null)}
+          onClose={() => {
+            setAnchorEl(null)
+          }}
           anchorEl={anchorEl}
           menuItems={menuItems}
           closeAfterItemClick={closeAfterItemClick}
