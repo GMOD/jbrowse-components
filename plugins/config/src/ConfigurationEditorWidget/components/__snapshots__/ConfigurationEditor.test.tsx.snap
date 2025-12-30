@@ -1523,6 +1523,56 @@ exports[`renders with defaults of the PileupTrack schema 1`] = `
                                 class="css-8atqhb"
                               >
                                 <div
+                                  class="MuiFormControl-root MuiFormControl-marginDense css-ylkp5u-MuiFormControl-root"
+                                >
+                                  <label
+                                    class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-19opgx6-MuiFormControlLabel-root"
+                                  >
+                                    <span
+                                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-1bncirt-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
+                                    >
+                                      <input
+                                        class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"
+                                        data-indeterminate="false"
+                                        type="checkbox"
+                                      />
+                                      <svg
+                                        aria-hidden="true"
+                                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                        data-testid="CheckBoxOutlineBlankIcon"
+                                        focusable="false"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                                        />
+                                      </svg>
+                                    </span>
+                                    <span
+                                      class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-1xfjy4j-MuiTypography-root"
+                                    >
+                                      hideLargeIndels
+                                    </span>
+                                  </label>
+                                  <p
+                                    class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-contained css-shvv2y-MuiFormHelperText-root"
+                                  >
+                                    Hides large indels (&gt;=10bp)
+                                  </p>
+                                </div>
+                              </div>
+                              <div
+                                class="css-1sxld2r"
+                              />
+                            </div>
+                            <div
+                              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-f9av6b-MuiPaper-root"
+                              style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+                            >
+                              <div
+                                class="css-8atqhb"
+                              >
+                                <div
                                   class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-xanwcj-MuiFormControl-root-MuiTextField-root"
                                 >
                                   <label

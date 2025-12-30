@@ -152,15 +152,20 @@ export function computeChainBounds(chains: Feature[][], view: ViewForDrawing) {
       continue
     }
 
-    // Only use TLEN for distance; chains without valid TLEN get distance=0
-    // (placed at y=0 in cloud mode). Also filter out chains where TLEN is
-    // wildly inconsistent with the visible bp span (e.g., distant mate from SV)
+    // Use TLEN for distance if available (paired-end reads), otherwise
+    // fall back to pixel distance for long reads (e.g., SA-tagged chains).
+    // Singletons get distance=0 (placed at y=0 in cloud mode).
+    // Also filter out chains where TLEN is wildly inconsistent with the
+    // visible bp span (e.g., distant mate from SV)
     let distance = 0
     if (tlenDistance > 0) {
       const bpSpan = (maxX - minX) * bpPerPx
       if (tlenDistance <= bpSpan * TLEN_CONSISTENCY_FACTOR) {
         distance = tlenDistance
       }
+    } else if (chainLength > 1) {
+      // Fall back to pixel distance for long reads (e.g., SA-tagged chains)
+      distance = Math.abs(maxX - minX)
     }
 
     computedChains.push({
