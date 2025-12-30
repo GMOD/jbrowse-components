@@ -92,12 +92,15 @@ export {
   BlockMsg,
   FeatureDensityMixin,
   FloatingLegend,
+  NonBlockCanvasDisplayComponent,
+  NonBlockCanvasDisplayMixin,
   SVGLegend,
   TooLargeMessage,
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
   calculateSvgLegendWidth,
 } from './BaseLinearDisplay'
+export type { NonBlockCanvasDisplayModel } from './BaseLinearDisplay'
 export {
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,

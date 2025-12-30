@@ -1,17 +1,22 @@
-import React, { Suspense, lazy } from 'react'
+import React from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import BlockErrorMessage from './BlockErrorMessage'
+import FloatingLegend from './FloatingLegend'
 
-const BlockErrorMessage = lazy(() => import('./BlockErrorMessage'))
+import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { LegendItem } from '../model'
 
-// Duck-typed interface to avoid circular dependencies
-interface BaseDisplayModel {
+/**
+ * Interface for models that can be rendered with NonBlockCanvasDisplayComponent.
+ * These are displays that render to a single canvas across the view width
+ * rather than using block-based rendering.
+ */
+export interface NonBlockCanvasDisplayModel {
   error?: unknown
   regionTooLarge?: boolean
   reload: () => void
@@ -21,7 +26,7 @@ interface BaseDisplayModel {
   lastDrawnOffsetPx?: number
   statusMessage?: string
   showLegend?: boolean
-  legendItems?: () => { color?: string; label: string }[]
+  legendItems?: () => LegendItem[]
 }
 
 const useStyles = makeStyles()({
@@ -45,37 +50,51 @@ const useStyles = makeStyles()({
   },
 })
 
-const BaseDisplayComponent = observer(function BaseDisplayComponent({
-  model,
-  children,
-}: {
-  model: BaseDisplayModel
-  children?: React.ReactNode
-}) {
-  const { error, regionTooLarge } = model
-  return error ? (
-    <Suspense fallback={null}>
+/**
+ * Component that handles the display container for non-block-based canvas displays.
+ *
+ * This component:
+ * - Shows error messages when the display has an error
+ * - Shows region-too-large message when appropriate
+ * - Handles the offset positioning during scrolling (shifts the canvas using
+ *   lastDrawnOffsetPx - view.offsetPx to provide smooth scrolling before re-render)
+ * - Shows loading indicator when data is being fetched or the view has scrolled
+ */
+const NonBlockCanvasDisplayComponent = observer(
+  function NonBlockCanvasDisplayComponent({
+    model,
+    children,
+  }: {
+    model: NonBlockCanvasDisplayModel
+    children?: React.ReactNode
+  }) {
+    const { error, regionTooLarge } = model
+    return error ? (
       <BlockErrorMessage model={model} />
-    </Suspense>
-  ) : regionTooLarge ? (
-    model.regionCannotBeRendered()
-  ) : (
-    <DataDisplay model={model}>{children}</DataDisplay>
-  )
-})
+    ) : regionTooLarge ? (
+      model.regionCannotBeRendered()
+    ) : (
+      <DataDisplay model={model}>{children}</DataDisplay>
+    )
+  },
+)
 
 const DataDisplay = observer(function DataDisplay({
   model,
   children,
 }: {
-  model: BaseDisplayModel
+  model: NonBlockCanvasDisplayModel
   children?: React.ReactNode
 }) {
   const { drawn, loading, showLegend, legendItems } = model
   const view = getContainingView(model) as LinearGenomeViewModel
-  const calculatedLeft = (model.lastDrawnOffsetPx || 0) - view.offsetPx
-  const styleLeft = calculatedLeft
   const items = legendItems?.() ?? []
+
+  // Calculate how much to shift the rendered canvas to account for scrolling.
+  // When the user scrolls, view.offsetPx changes but the canvas content
+  // stays the same until a new render completes. This shift keeps the
+  // content aligned during that time.
+  const calculatedLeft = (model.lastDrawnOffsetPx ?? 0) - view.offsetPx
 
   return (
     // this data-testid is located here because changing props on the canvas
@@ -84,7 +103,7 @@ const DataDisplay = observer(function DataDisplay({
       <div
         style={{
           position: 'absolute',
-          left: styleLeft,
+          left: calculatedLeft,
         }}
       >
         {children}
@@ -98,7 +117,7 @@ const DataDisplay = observer(function DataDisplay({
 const LoadingBar = observer(function LoadingBar({
   model,
 }: {
-  model: BaseDisplayModel
+  model: NonBlockCanvasDisplayModel
 }) {
   const { classes } = useStyles()
   const { statusMessage } = model
@@ -111,4 +130,4 @@ const LoadingBar = observer(function LoadingBar({
   )
 })
 
-export default BaseDisplayComponent
+export default NonBlockCanvasDisplayComponent

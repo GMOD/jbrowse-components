@@ -21,7 +21,6 @@ import { calculateCloudTicks } from '../RenderLinearReadCloudDisplayRPC/drawFeat
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
-import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import {
   calculateSvgLegendWidth,
@@ -63,7 +62,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       LinearReadDisplayBaseMixin(),
       LinearReadDisplayWithLayoutMixin(),
       LinearReadDisplayWithPairFiltersMixin(),
-      RPCRenderingMixin(),
       SharedModificationsMixin(),
       types.model({
         /**
@@ -141,6 +139,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       cloudMaxDistance: undefined as number | undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Get the color settings (from override or configuration)
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+      /**
+       * #getter
+       * Get the filter settings (from override or configuration)
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Reload the display (clears error state)
+       */
+      reload() {
+        self.error = undefined
+      },
+    }))
+    .views(self => ({
       get dataTestId() {
         return self.drawCloud ? 'cloud-canvas' : 'stack-canvas'
       },
@@ -187,6 +210,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
         return [1, self.cloudMaxDistance]
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        * Calculate ticks for the y-axis scalebar in cloud mode

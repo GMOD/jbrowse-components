@@ -94,7 +94,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
 
       if (result.imageData) {
         self.setRenderingImageData(result.imageData)
-        self.setLastDrawnOffsetPx(Math.max(0, view.offsetPx))
+        self.setLastDrawnOffsetPx(view.offsetPx)
       }
       // Store flatbush data for mouseover
       self.setFlatbushData(

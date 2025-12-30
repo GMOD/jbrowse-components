@@ -140,9 +140,9 @@ export function computeChainBounds(chains: Feature[][], view: ViewForDrawing) {
       if (!chainId) {
         chainId = elt.id()
       }
-      // Use TLEN from the first feature that has it (only for non-singletons)
+      // Use TLEN from the first feature that has it
       const tlen = elt.get('template_length')
-      if (chainLength > 1 && tlenDistance === 0 && tlen) {
+      if (tlenDistance === 0 && tlen) {
         tlenDistance = Math.abs(tlen)
       }
     }
@@ -152,10 +152,9 @@ export function computeChainBounds(chains: Feature[][], view: ViewForDrawing) {
       continue
     }
 
-    // Use TLEN for distance if available (paired-end reads), otherwise
-    // fall back to pixel distance for long reads (e.g., SA-tagged chains).
-    // Singletons get distance=0 (placed at y=0 in cloud mode).
-    // Also filter out chains where TLEN is wildly inconsistent with the
+    // Use TLEN for distance (template length in bp).
+    // Long reads without TLEN will have distance=0 and appear at y=0.
+    // Filter out chains where TLEN is wildly inconsistent with the
     // visible bp span (e.g., distant mate from SV)
     let distance = 0
     if (tlenDistance > 0) {
@@ -163,9 +162,6 @@ export function computeChainBounds(chains: Feature[][], view: ViewForDrawing) {
       if (tlenDistance <= bpSpan * TLEN_CONSISTENCY_FACTOR) {
         distance = tlenDistance
       }
-    } else if (chainLength > 1) {
-      // Fall back to pixel distance for long reads (e.g., SA-tagged chains)
-      distance = Math.abs(maxX - minX)
     }
 
     computedChains.push({
@@ -240,9 +236,8 @@ export function addChainMouseoverRects(
       continue
     }
 
-    const viewOffsetPx = Math.max(0, view.offsetPx)
-    const chainMinXPx = minX - viewOffsetPx
-    const chainMaxXPx = maxX - viewOffsetPx
+    const chainMinXPx = minX - view.offsetPx
+    const chainMaxXPx = maxX - view.offsetPx
     if (chain.length > 0) {
       // Use pre-computed nonSupplementary from computeChainBounds
       const primaryFeat = nonSupplementary[0] || chain[0]!
@@ -370,8 +365,7 @@ export function drawFeatsCore({
 
   const renderChevrons = shouldRenderChevrons(view.bpPerPx, featureHeight)
 
-  // Clamp viewOffsetPx to 0 when negative
-  const viewOffsetPx = Math.max(0, view.offsetPx)
+  const viewOffsetPx = view.offsetPx
 
   // Collect mismatch data for flatbush tooltips
   const mismatchCoords: number[] = []
