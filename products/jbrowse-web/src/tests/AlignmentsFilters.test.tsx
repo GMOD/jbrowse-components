@@ -74,7 +74,6 @@ xtest('set jexl filters on bam pileup display', async () => {
     expect(view.tracks[0].displays[0]).toBeTruthy()
   })
   const filter = [`jexl:get(feature,'end')==40005`]
-  console.log(view.tracks[0].displays[0])
   view.tracks[0].displays[0].PileupDisplay.setJexlFilters(filter)
 
   expectCanvasMatch(await screen.findByTestId(pv('39805..40176-0'), ...opts))
