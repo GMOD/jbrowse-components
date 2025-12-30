@@ -208,3 +208,123 @@ export function getFilterByMenuItem(model: unknown) {
     },
   }
 }
+
+interface EditFiltersModel {
+  drawSingletons: boolean
+  drawProperPairs: boolean
+  setDrawSingletons: (arg: boolean) => void
+  setDrawProperPairs: (arg: boolean) => void
+}
+
+/**
+ * Edit filters submenu for LinearReadCloudDisplay
+ */
+export function getEditFiltersMenuItem(model: EditFiltersModel) {
+  return {
+    label: 'Edit filters',
+    icon: FilterListIcon,
+    type: 'subMenu' as const,
+    subMenu: [
+      {
+        label: 'Show singletons',
+        type: 'checkbox' as const,
+        checked: model.drawSingletons,
+        onClick: () => {
+          model.setDrawSingletons(!model.drawSingletons)
+        },
+      },
+      {
+        label: 'Show proper pairs',
+        type: 'checkbox' as const,
+        checked: model.drawProperPairs,
+        onClick: () => {
+          model.setDrawProperPairs(!model.drawProperPairs)
+        },
+      },
+      { type: 'divider' as const },
+      {
+        label: 'Edit filters...',
+        onClick: () => {
+          // @ts-expect-error getSession works on model
+          getSession(model).queueDialog((handleClose: () => void) => [
+            FilterByTagDialog,
+            { model, handleClose },
+          ])
+        },
+      },
+    ],
+  }
+}
+
+interface MismatchDisplayModel {
+  hideMismatches?: boolean
+  hideSmallIndels?: boolean
+  hideLargeIndels?: boolean
+  setHideMismatches: (arg: boolean) => void
+  setHideSmallIndels: (arg: boolean) => void
+  setHideLargeIndels: (arg: boolean) => void
+}
+
+/**
+ * Shared mismatch/indel display submenu for pileup and read cloud displays
+ */
+export function getMismatchDisplayMenuItem(model: MismatchDisplayModel) {
+  return {
+    label: 'Mismatch/indel display',
+    type: 'subMenu' as const,
+    subMenu: [
+      {
+        label: 'Show all mismatches',
+        type: 'radio' as const,
+        checked:
+          !model.hideMismatches &&
+          !model.hideSmallIndels &&
+          !model.hideLargeIndels,
+        onClick: () => {
+          model.setHideMismatches(false)
+          model.setHideSmallIndels(false)
+          model.setHideLargeIndels(false)
+        },
+      },
+      {
+        label: 'Show mismatches and large indels+clipping',
+        type: 'radio' as const,
+        checked:
+          !model.hideMismatches &&
+          model.hideSmallIndels &&
+          !model.hideLargeIndels,
+        onClick: () => {
+          model.setHideMismatches(false)
+          model.setHideSmallIndels(true)
+          model.setHideLargeIndels(false)
+        },
+      },
+      {
+        label: 'Show just large indels',
+        type: 'radio' as const,
+        checked:
+          model.hideMismatches &&
+          model.hideSmallIndels &&
+          !model.hideLargeIndels,
+        onClick: () => {
+          model.setHideMismatches(true)
+          model.setHideSmallIndels(true)
+          model.setHideLargeIndels(false)
+        },
+      },
+      {
+        label: 'Show none',
+        type: 'radio' as const,
+        checked:
+          model.hideMismatches &&
+          model.hideSmallIndels &&
+          model.hideLargeIndels,
+        onClick: () => {
+          model.setHideMismatches(true)
+          model.setHideSmallIndels(true)
+          model.setHideLargeIndels(true)
+        },
+      },
+    ],
+  }
+}

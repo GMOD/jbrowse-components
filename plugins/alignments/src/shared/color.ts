@@ -41,12 +41,14 @@ export const fillColor = {
   color_interchrom: 'purple',
   color_longinsert: 'red',
   color_shortinsert: 'pink',
-  color_unmapped_mate: '#8B008B',
+  color_unmapped_mate: '#8B4513',
   color_unknown: 'grey',
   // Long-read split alignment orientation colors
   color_longread_rev_fwd: 'navy',
   color_longread_fwd_rev: 'green',
   color_longread_same: 'grey',
+  // Supplementary/split alignment color (light orange)
+  color_supplementary: '#f0b878',
 }
 
 // manually calculated by running
@@ -72,12 +74,14 @@ export const strokeColor = {
   color_interchrom: '#5A005A',
   color_longinsert: '#B30000',
   color_shortinsert: '#FF3A5C',
-  color_unmapped_mate: '#5A005A',
+  color_unmapped_mate: '#5D2E0D',
   color_unknown: '#444',
   // Long-read split alignment orientation stroke colors
   color_longread_rev_fwd: '#00004D',
   color_longread_fwd_rev: '#005A00',
   color_longread_same: '#444',
+  // Supplementary/split alignment stroke color
+  color_supplementary: '#c88030',
 }
 
 const defaultColor = [
@@ -202,11 +206,14 @@ export function getPairedOrientationColorOrDefault(f: {
   }
 
   const type = orientationTypes.fr
-  const r = type[f.pair_orientation || ''] as keyof typeof pairMap
+  const r = type[f.pair_orientation || ''] as keyof typeof pairMap | undefined
+  // Return undefined if orientation is LR (proper) or unrecognized
+  // This allows fallthrough to insert size checks (e.g., inter-chromosomal)
+  if (!r || r === 'LR') {
+    return undefined
+  }
   const type2 = pairMap[r] as keyof typeof fillColor
-  return r === 'LR'
-    ? undefined
-    : ([fillColor[type2], strokeColor[type2]] as const)
+  return [fillColor[type2], strokeColor[type2]] as const
 }
 
 /**

@@ -49,7 +49,6 @@ export function renderSoftClipping({
   }
 
   const heightLim = charHeight - 2
-  let lastFillStyle = ''
   let seqOffset = 0
   let refOffset = 0
   const CIGAR =
@@ -96,11 +95,8 @@ export function renderSoftClipping({
             const x = leftPx + (widthPx - charWidth) / 2 + 1
             const y = topPx + heightPx
             const color = theme.palette.getContrastText(baseColor)
-            if (x >= 0 && x <= canvasWidth) {
-              if (color && lastFillStyle !== color) {
-                ctx.fillStyle = color
-                lastFillStyle = color
-              }
+            if (x >= 0 && x <= canvasWidth && color) {
+              ctx.fillStyle = color
               ctx.fillText(base, x, y)
             }
           }

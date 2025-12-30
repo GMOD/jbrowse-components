@@ -14,8 +14,10 @@ import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
+import { calculateCloudTicks } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCloud'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
@@ -27,7 +29,8 @@ import {
 } from '../shared/legendUtils'
 import {
   getColorSchemeMenuItem,
-  getFilterByMenuItem,
+  getEditFiltersMenuItem,
+  getMismatchDisplayMenuItem,
 } from '../shared/menuItems'
 
 import type { ReducedFeature } from '../shared/types'
@@ -102,7 +105,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        hideLargeIndelsSetting: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
         showLegend: types.maybe(types.boolean),
+
+        /**
+         * #property
+         */
+        showYScalebar: types.optional(types.boolean, true),
+
+        /**
+         * #property
+         */
+        showOutline: types.optional(types.boolean, true),
       }),
     )
     .volatile(() => ({
@@ -116,6 +134,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Chain ID of the currently selected feature for persistent highlighting
        */
       selectedFeatureId: undefined as string | undefined,
+      /**
+       * #volatile
+       * Scale info for cloud mode (min/max insert sizes)
+       */
+      cloudScaleInfo: undefined as
+        | { minDistance: number; maxDistance: number }
+        | undefined,
     }))
     .views(self => ({
       get dataTestId() {
@@ -139,6 +164,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get hideMismatches() {
         return self.hideMismatchesSetting ?? getConf(self, 'hideMismatches')
       },
+      /**
+       * #getter
+       */
+      get hideLargeIndels() {
+        return self.hideLargeIndelsSetting ?? getConf(self, 'hideLargeIndels')
+      },
     }))
     .views(self => ({
       /**
@@ -146,6 +177,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get modificationThreshold() {
         return self.colorBy?.modifications?.threshold ?? 10
+      },
+      /**
+       * #getter
+       * Calculate ticks for the y-axis scalebar in cloud mode
+       */
+      get cloudTicks() {
+        if (!self.drawCloud || !self.cloudScaleInfo || !self.showYScalebar) {
+          return undefined
+        }
+        return calculateCloudTicks(self.cloudScaleInfo, self.height)
       },
     }))
     .actions(self => ({
@@ -169,6 +210,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setLayoutHeight(n: number) {
         self.layoutHeight = n
+      },
+      /**
+       * #action
+       * Set the cloud scale info for the y-axis scalebar
+       */
+      setCloudScaleInfo(
+        info: { minDistance: number; maxDistance: number } | undefined,
+      ) {
+        self.cloudScaleInfo = info
+      },
+      /**
+       * #action
+       */
+      setShowYScalebar(show: boolean) {
+        self.showYScalebar = show
+      },
+      /**
+       * #action
+       */
+      setShowOutline(show: boolean) {
+        self.showOutline = show
       },
       /**
        * #action
@@ -215,6 +277,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setHideMismatches(arg: boolean) {
         self.hideMismatchesSetting = arg
       },
+      /**
+       * #action
+       */
+      setHideLargeIndels(arg: boolean) {
+        self.hideLargeIndelsSetting = arg
+      },
 
       /**
        * #action
@@ -258,6 +326,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return {
             ...superRenderProps(),
             notReady: false,
+            filterBy: self.filterBy,
+            colorBy: self.colorBy,
+            featureHeight: self.featureHeightSetting,
+            noSpacing: self.noSpacing ?? false,
+            drawCloud: self.drawCloud,
+            drawSingletons: self.drawSingletons,
+            drawProperPairs: self.drawProperPairs,
+            flipStrandLongReadChains: self.flipStrandLongReadChains,
+            trackMaxHeight: self.trackMaxHeight,
+            hideSmallIndels: self.hideSmallIndels,
+            hideMismatches: self.hideMismatches,
+            hideLargeIndels: self.hideLargeIndels,
+            showOutline: self.showOutline,
+            visibleModifications: Object.fromEntries(
+              self.visibleModifications.toJSON(),
+            ),
           }
         },
         /**
@@ -315,6 +399,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Show...',
+              icon: VisibilityIcon,
               type: 'subMenu',
               subMenu: [
                 {
@@ -336,23 +421,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: 'Show singletons',
+                  label: 'Show y-scalebar',
                   type: 'checkbox',
                   helpText:
-                    'If disabled, does not single parts of a paired end read, or a single long read alignment. Will only draw paired reads or split alignments',
-                  checked: self.drawSingletons,
+                    'Show insert size scale on the y-axis (only visible in cloud mode)',
+                  checked: self.showYScalebar,
                   onClick: () => {
-                    self.setDrawSingletons(!self.drawSingletons)
-                  },
-                },
-                {
-                  label: 'Show proper pairs',
-                  helpText:
-                    'If disabled, will not draw "normally paired" reads which can help highlight structural variants',
-                  type: 'checkbox',
-                  checked: self.drawProperPairs,
-                  onClick: () => {
-                    self.setDrawProperPairs(!self.drawProperPairs)
+                    self.setShowYScalebar(!self.showYScalebar)
                   },
                 },
                 {
@@ -368,25 +443,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: 'Show small indels (<10bp)',
+                  label: 'Show outline',
+                  helpText: 'Draw an outline around each read',
                   type: 'checkbox',
-                  checked: !self.hideSmallIndels,
+                  checked: self.showOutline,
                   onClick: () => {
-                    self.setHideSmallIndels(!self.hideSmallIndels)
+                    self.setShowOutline(!self.showOutline)
                   },
                 },
-                {
-                  label: 'Show mismatches',
-                  type: 'checkbox',
-                  checked: !self.hideMismatches,
-                  onClick: () => {
-                    self.setHideMismatches(!self.hideMismatches)
-                  },
-                },
+                getMismatchDisplayMenuItem(self),
               ],
             },
 
-            getFilterByMenuItem(self),
+            getEditFiltersMenuItem(self),
             getColorSchemeMenuItem(self),
           ]
         },
@@ -421,14 +490,33 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       if (!snap) {
         return snap
       }
-      const { drawCloud, noSpacing, trackMaxHeight, showLegend, ...rest } =
-        snap as Omit<typeof snap, symbol>
+      const {
+        drawCloud,
+        noSpacing,
+        trackMaxHeight,
+        showLegend,
+        showOutline,
+        hideSmallIndelsSetting,
+        hideMismatchesSetting,
+        hideLargeIndelsSetting,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         ...(drawCloud ? { drawCloud } : {}),
         ...(noSpacing !== undefined ? { noSpacing } : {}),
         ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
         ...(showLegend !== undefined ? { showLegend } : {}),
+        ...(!showOutline ? { showOutline } : {}),
+        ...(hideSmallIndelsSetting !== undefined
+          ? { hideSmallIndelsSetting }
+          : {}),
+        ...(hideMismatchesSetting !== undefined
+          ? { hideMismatchesSetting }
+          : {}),
+        ...(hideLargeIndelsSetting !== undefined
+          ? { hideLargeIndelsSetting }
+          : {}),
       } as typeof snap
     })
 }

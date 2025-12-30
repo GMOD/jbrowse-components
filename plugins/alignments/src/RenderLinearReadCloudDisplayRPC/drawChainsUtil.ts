@@ -24,14 +24,13 @@ import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
-// Constants for rendering
-export const CONNECTING_LINE_COLOR = '#6665'
+// Get connecting line color based on theme mode
+export function getConnectingLineColor(configTheme: ThemeOptions) {
+  const theme = createJBrowseTheme(configTheme)
+  return theme.palette.mode === 'dark' ? '#aaa8' : '#6665'
+}
 export const MIN_FEATURE_WIDTH_PX = 3
 export const CLIP_RECT_HEIGHT = 100000
-
-export interface RenderFeatureShapeContext {
-  lastFillStyle: string
-}
 
 export function renderFeatureShape({
   ctx,
@@ -43,7 +42,7 @@ export function renderFeatureShape({
   fillStyle,
   strokeStyle,
   renderChevrons,
-  colorCtx,
+  showOutline = true,
 }: {
   ctx: CanvasRenderingContext2D
   xPos: number
@@ -54,7 +53,7 @@ export function renderFeatureShape({
   fillStyle: string
   strokeStyle: string
   renderChevrons: boolean
-  colorCtx: RenderFeatureShapeContext
+  showOutline?: boolean
 }) {
   if (renderChevrons) {
     drawChevron(
@@ -66,7 +65,7 @@ export function renderFeatureShape({
       strand,
       fillStyle,
       CHEVRON_WIDTH,
-      strokeStyle,
+      showOutline ? strokeStyle : undefined,
     )
   } else {
     // Handle negative dimensions for SVG exports
@@ -81,13 +80,11 @@ export function renderFeatureShape({
       drawY += height
     }
 
-    if (fillStyle && colorCtx.lastFillStyle !== fillStyle) {
-      ctx.fillStyle = fillStyle
-      colorCtx.lastFillStyle = fillStyle
-    }
-
+    ctx.fillStyle = fillStyle
     ctx.fillRect(drawX, drawY, drawWidth, height)
-    strokeRectCtx(drawX, drawY, drawWidth, height, ctx, strokeStyle)
+    if (showOutline) {
+      strokeRectCtx(drawX, drawY, drawWidth, height, ctx, strokeStyle)
+    }
   }
 }
 
@@ -125,6 +122,7 @@ export interface MismatchRenderingConfig {
   largeInsertionIndicatorScale: number
   hideSmallIndels: boolean
   hideMismatches: boolean
+  hideLargeIndels: boolean
   colorMap: Record<string, string>
   colorContrastMap: Record<string, string>
   charWidth: number
@@ -138,7 +136,11 @@ export function getMismatchRenderingConfig(
   config: AnyConfigurationModel,
   configTheme: ThemeOptions,
   colorBy: ColorBy,
-  overrides?: { hideSmallIndels?: boolean; hideMismatches?: boolean },
+  overrides?: {
+    hideSmallIndels?: boolean
+    hideMismatches?: boolean
+    hideLargeIndels?: boolean
+  },
 ): MismatchRenderingConfig {
   const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
   const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth') ?? 1
@@ -152,6 +154,10 @@ export function getMismatchRenderingConfig(
   const hideMismatches =
     overrides?.hideMismatches ??
     (readConfObject(config, 'hideMismatches') as boolean)
+  const hideLargeIndels =
+    overrides?.hideLargeIndels ??
+    (readConfObject(config, 'hideLargeIndels') as boolean | undefined) ??
+    false
   const theme = createJBrowseTheme(configTheme)
   const colorMap = getColorBaseMap(theme)
   const colorContrastMap = getContrastBaseMap(theme)
@@ -166,6 +172,7 @@ export function getMismatchRenderingConfig(
     largeInsertionIndicatorScale,
     hideSmallIndels,
     hideMismatches,
+    hideLargeIndels,
     colorMap,
     colorContrastMap,
     charWidth,
@@ -205,18 +212,23 @@ export function calculateFeaturePositionPx(
   return { xPos, width }
 }
 
-export function lineIntersectsRegion(
-  refName1: string,
-  refName2: string,
-  coord1: number,
-  coord2: number,
-  region: BaseBlock,
-) {
-  const bothOnRefName =
-    refName1 === region.refName && refName2 === region.refName
-  const lineMin = Math.min(coord1, coord2)
-  const lineMax = Math.max(coord1, coord2)
-  return bothOnRefName && lineMin < region.end && lineMax > region.start
+/**
+ * Find min start and max end coordinates across all features in a chain
+ * that are on the specified reference. Returns undefined if no features match.
+ */
+export function getChainBoundsOnRef(chain: Feature[], refName: string) {
+  let minStart = Number.MAX_VALUE
+  let maxEnd = Number.MIN_VALUE
+
+  for (const element of chain) {
+    const f = element
+    if (f.get('refName') === refName) {
+      minStart = Math.min(minStart, f.get('start'))
+      maxEnd = Math.max(maxEnd, f.get('end'))
+    }
+  }
+
+  return minStart !== Number.MAX_VALUE ? { minStart, maxEnd } : undefined
 }
 
 function aggregateMismatchData(

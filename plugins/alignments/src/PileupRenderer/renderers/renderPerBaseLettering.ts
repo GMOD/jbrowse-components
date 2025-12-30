@@ -36,7 +36,6 @@ export function renderPerBaseLettering({
 }) {
   const heightLim = charHeight - 2
   const { feature, topPx, heightPx } = feat
-  let lastFillStyle = ''
   const seq = feature.get('seq') as string | undefined
   const invBpPerPx = 1 / bpPerPx
   const w = invBpPerPx
@@ -88,11 +87,8 @@ export function renderPerBaseLettering({
             const x = leftPx + (w - charWidth) / 2 + 1
             const y = topPx + heightPx
             const color = colorContrastMap[letter]
-            if (x >= 0 && x <= canvasWidth) {
-              if (color && lastFillStyle !== color) {
-                ctx.fillStyle = color
-                lastFillStyle = color
-              }
+            if (x >= 0 && x <= canvasWidth && color) {
+              ctx.fillStyle = color
               ctx.fillText(letter, x, y)
             }
           }

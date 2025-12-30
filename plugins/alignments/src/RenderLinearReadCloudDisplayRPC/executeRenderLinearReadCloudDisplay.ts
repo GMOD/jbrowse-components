@@ -66,9 +66,11 @@ export async function executeRenderLinearReadCloudDisplay({
     visibleModifications,
     hideSmallIndels,
     hideMismatches,
+    hideLargeIndels,
+    showOutline,
   } = args
 
-  // Recreate the view from the snapshot following DotplotRenderer pattern
+  // Recreate the view from the snapshot (displayedRegions already have renamed refNames)
   const view = Base1DView.create(viewSnapshot)
   // Set the volatile width which is not part of the snapshot
   if (viewSnapshot.width) {
@@ -78,6 +80,7 @@ export async function executeRenderLinearReadCloudDisplay({
   // Extract properties from the recreated view
   const { bpPerPx, offsetPx } = view
   const width = view.staticBlocks.totalWidthPx
+  // contentBlocks are derived from displayedRegions, so they have correct refNames
   const regions = view.staticBlocks.contentBlocks
   const assemblyName = view.assemblyNames[0]
   if (!assemblyName) {
@@ -85,25 +88,22 @@ export async function executeRenderLinearReadCloudDisplay({
   }
 
   // Create a snapshot from the live view including computed properties
-  // Following the DotplotRenderer pattern
-  const viewSnap: any = {
-    ...getSnapshot(view),
-    staticBlocks: view.staticBlocks,
+  // staticBlocks is a getter so must be included explicitly
+  const snap = getSnapshot(view)
+  const viewSnap = {
+    ...snap,
     width: view.width,
-  }
-  // Add bpToPx method after viewSnap is defined to avoid circular reference
-  viewSnap.bpToPx = (arg: { refName: string; coord: number }) => {
-    const res = bpToPx({
-      self: viewSnap,
-      refName: arg.refName,
-      coord: arg.coord,
-    })
-    return res !== undefined
-      ? {
-          offsetPx: res.offsetPx,
-          index: res.index,
-        }
-      : undefined
+    staticBlocks: view.staticBlocks,
+    bpToPx(arg: { refName: string; coord: number }) {
+      const res = bpToPx({
+        self: this,
+        refName: arg.refName,
+        coord: arg.coord,
+      })
+      return res !== undefined
+        ? { offsetPx: res.offsetPx, index: res.index }
+        : undefined
+    },
   }
 
   // Fetch chainData directly in the RPC to avoid serializing features from main thread
@@ -195,14 +195,20 @@ export async function executeRenderLinearReadCloudDisplay({
     },
   )
 
-  const actualHeight = drawCloud
-    ? (cloudModeHeight ?? 1200)
-    : calculateStackYOffsetsUtil(
-        computedChains,
-        featureHeight,
-        noSpacing,
-        trackMaxHeight ?? 1200,
-      ).layoutHeight
+  let actualHeight: number
+  if (drawCloud) {
+    if (cloudModeHeight === undefined) {
+      throw new Error('cloudModeHeight is required when drawCloud is true')
+    }
+    actualHeight = cloudModeHeight
+  } else {
+    actualHeight = calculateStackYOffsetsUtil(
+      computedChains,
+      featureHeight,
+      noSpacing,
+      trackMaxHeight ?? 1200,
+    ).layoutHeight
+  }
 
   const renderOpts: RenderToAbstractCanvasOptions = {
     highResolutionScaling,
@@ -217,6 +223,7 @@ export async function executeRenderLinearReadCloudDisplay({
       renderToAbstractCanvas(width, actualHeight, renderOpts, async ctx => {
         const {
           layoutHeight,
+          cloudScaleInfo,
           featuresForFlatbush,
           mismatchFlatbush,
           mismatchItems,
@@ -240,6 +247,8 @@ export async function executeRenderLinearReadCloudDisplay({
             visibleModifications,
             hideSmallIndels,
             hideMismatches,
+            hideLargeIndels,
+            showOutline,
           },
           view: viewSnap,
           calculateYOffsets: (chains: ComputedChain[]) => {
@@ -255,6 +264,7 @@ export async function executeRenderLinearReadCloudDisplay({
         })
         return {
           layoutHeight,
+          cloudScaleInfo,
           featuresForFlatbush,
           mismatchFlatbush,
           mismatchItems,

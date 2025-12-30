@@ -4,14 +4,12 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import {
-  CONNECTING_LINE_COLOR,
   calculateFeaturePositionPx,
-  chainIsPairedEnd,
-  collectNonSupplementary,
   featureOverlapsRegion,
+  getChainBoundsOnRef,
+  getConnectingLineColor,
   getMismatchRenderingConfig,
   getStrandColorKey,
-  lineIntersectsRegion,
   renderFeatureMismatchesAndModifications,
   renderFeatureShape,
 } from './drawChainsUtil'
@@ -48,6 +46,8 @@ export function drawLongReadChains({
   stopToken,
   hideSmallIndels,
   hideMismatches,
+  hideLargeIndels,
+  showOutline,
 }: {
   ctx: CanvasRenderingContext2D
   chainData: ChainData
@@ -66,17 +66,18 @@ export function drawLongReadChains({
   stopToken?: string
   hideSmallIndels?: boolean
   hideMismatches?: boolean
+  hideLargeIndels?: boolean
+  showOutline?: boolean
 }): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
     config,
     configTheme,
     colorBy,
-    { hideSmallIndels, hideMismatches },
+    { hideSmallIndels, hideMismatches, hideLargeIndels },
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start
-  const colorCtx = { lastFillStyle: '' }
 
   const allCoords: MismatchData['coords'] = []
   const allItems: MismatchData['items'] = []
@@ -84,9 +85,9 @@ export function drawLongReadChains({
   const lastCheck = createStopTokenChecker(stopToken)
   for (const computedChain of computedChains) {
     checkStopToken2(lastCheck)
-    const { id, chain } = computedChain
+    const { id, chain, isPairedEnd, nonSupplementary } = computedChain
 
-    if (chainIsPairedEnd(chain)) {
+    if (isPairedEnd) {
       continue
     }
 
@@ -95,38 +96,34 @@ export function drawLongReadChains({
       continue
     }
 
-    const nonSupplementary = collectNonSupplementary(chain)
     const isSingleton = chain.length === 1
     const c1 = nonSupplementary[0] || chain[0]!
     const primaryStrand = getPrimaryStrandFromFlags(c1)
 
     // Draw connecting line for multi-segment long reads
-    // Check if the line segment intersects the region (not just if features overlap)
     if (!isSingleton) {
-      const firstFeat = chain[0]!
-      const lastFeat = chain[chain.length - 1]!
-
-      const firstRefName = firstFeat.get('refName')
-      const lastRefName = lastFeat.get('refName')
-      const firstStart = firstFeat.get('start')
-      const lastEnd = lastFeat.get('end')
-
+      const bounds = getChainBoundsOnRef(chain, region.refName)
       if (
-        lineIntersectsRegion(
-          firstRefName,
-          lastRefName,
-          firstStart,
-          lastEnd,
-          region,
-        )
+        bounds &&
+        bounds.minStart < region.end &&
+        bounds.maxEnd > region.start
       ) {
-        const firstPx = (firstStart - regionStart) / bpPerPx
-        const lastPx = (lastEnd - regionStart) / bpPerPx
+        const firstPx = (bounds.minStart - regionStart) / bpPerPx
+        const lastPx = (bounds.maxEnd - regionStart) / bpPerPx
         const lineY = chainY + featureHeight / 2
-        lineToCtx(firstPx, lineY, lastPx, lineY, ctx, CONNECTING_LINE_COLOR)
+        lineToCtx(
+          firstPx,
+          lineY,
+          lastPx,
+          lineY,
+          ctx,
+          getConnectingLineColor(configTheme),
+        )
       }
     }
 
+    // First pass: draw all feature shapes
+    const layoutFeats: typeof chain = []
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const featRefName = feat.get('refName')
@@ -165,11 +162,7 @@ export function drawLongReadChains({
         bpPerPx,
       )
 
-      const layoutFeat = {
-        feature: feat,
-        heightPx: featureHeight,
-        topPx: chainY,
-      }
+      layoutFeats.push(feat)
 
       renderFeatureShape({
         ctx,
@@ -181,8 +174,17 @@ export function drawLongReadChains({
         fillStyle: featureFill,
         strokeStyle: featureStroke,
         renderChevrons,
-        colorCtx,
+        showOutline,
       })
+    }
+
+    // Second pass: draw all mismatches on top
+    for (const feat of layoutFeats) {
+      const layoutFeat = {
+        feature: feat,
+        heightPx: featureHeight,
+        topPx: chainY,
+      }
 
       renderFeatureMismatchesAndModifications({
         ctx,

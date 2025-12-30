@@ -12,12 +12,15 @@ import {
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
+import CloudYScaleBar from './CloudYScaleBar'
 import {
   type FlatbushItem,
   flatbushItemToFeatureData,
   getFlatbushItemLabel,
 } from '../../PileupRenderer/types'
+import { PairType, getPairedType } from '../../shared/color'
 import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
+import { orientationTypes } from '../../util'
 
 import type { ReducedFeature } from '../../shared/types'
 import type { LinearReadCloudDisplayModel } from '../model'
@@ -25,16 +28,62 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+function getPairTypeDescription(data: ReducedFeature) {
+  const pairType = getPairedType({
+    type: 'insertSizeAndOrientation',
+    f: {
+      refName: data.refName,
+      next_ref: data.next_ref,
+      pair_orientation: data.pair_orientation,
+      tlen: data.tlen,
+      flags: data.flags,
+    },
+  })
+
+  switch (pairType) {
+    case PairType.LONG_INSERT:
+      return 'Long insert size (colored red)'
+    case PairType.SHORT_INSERT:
+      return 'Short insert size (colored blue)'
+    case PairType.INTER_CHROM:
+      return data.next_ref
+        ? `Inter-chromosomal (mate on ${data.next_ref})`
+        : undefined
+    case PairType.UNMAPPED_MATE:
+      return 'Unmapped mate'
+    case PairType.ABNORMAL_ORIENTATION: {
+      const orientationType = orientationTypes.fr
+      const orient = orientationType[data.pair_orientation || ''] || ''
+      if (orient === 'RR') {
+        return 'Both mates reverse strand'
+      }
+      if (orient === 'RL') {
+        return 'Outward facing pair'
+      }
+      if (orient === 'LL') {
+        return 'Both mates forward strand'
+      }
+      return `Abnormal orientation ${data.pair_orientation || ''}`
+    }
+    default:
+      return undefined
+  }
+}
+
 function FeatureTooltip({
   hoveredFeatureData,
+  hasSupplementary,
   mousePosition,
 }: {
   hoveredFeatureData: ReducedFeature
+  hasSupplementary: boolean
   mousePosition: {
     x: number
     y: number
   }
 }) {
+  const pairTypeDesc = getPairTypeDescription(hoveredFeatureData)
+
   return (
     <BaseTooltip
       clientPoint={{
@@ -49,7 +98,11 @@ function FeatureTooltip({
         </div>
         <div>{assembleLocString(hoveredFeatureData)}</div>
         {hoveredFeatureData.tlen !== 0 ? (
-          <div>Template length: {hoveredFeatureData.tlen}</div>
+          <div>Template length: {toLocale(hoveredFeatureData.tlen)}</div>
+        ) : null}
+        {pairTypeDesc ? <div>{pairTypeDesc}</div> : null}
+        {hasSupplementary ? (
+          <div>Has supplementary/split alignments</div>
         ) : null}
       </div>
     </BaseTooltip>
@@ -218,6 +271,7 @@ const Cloud = observer(function Cloud({
     height: number
   }>()
   const [hoveredFeatureData, setHoveredFeatureData] = useState<ReducedFeature>()
+  const [hoveredHasSupplementary, setHoveredHasSupplementary] = useState(false)
   const [hoveredMismatchData, setHoveredMismatchData] = useState<FlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
     x: number
@@ -322,6 +376,7 @@ const Cloud = observer(function Cloud({
         setHoveredMismatchData(mismatch)
         setHoveredFeature(undefined)
         setHoveredFeatureData(undefined)
+        setHoveredHasSupplementary(false)
         setMousePosition({ x: event.clientX, y: event.clientY })
         return
       }
@@ -338,10 +393,12 @@ const Cloud = observer(function Cloud({
           height: feature.y2 - feature.y1,
         })
         setHoveredFeatureData(feature.data)
+        setHoveredHasSupplementary(feature.hasSupplementary)
         setMousePosition(position)
       } else {
         setHoveredFeature(undefined)
         setHoveredFeatureData(undefined)
+        setHoveredHasSupplementary(false)
         setMousePosition(undefined)
       }
     },
@@ -351,6 +408,7 @@ const Cloud = observer(function Cloud({
   const onMouseLeave = useCallback(() => {
     setHoveredFeature(undefined)
     setHoveredFeatureData(undefined)
+    setHoveredHasSupplementary(false)
     setHoveredMismatchData(undefined)
     setMousePosition(undefined)
   }, [])
@@ -421,6 +479,23 @@ const Cloud = observer(function Cloud({
         hoveredFeature={hoveredFeature}
         canvasLeft={canvasLeft}
       />
+      {model.drawCloud && model.cloudTicks ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 50,
+            pointerEvents: 'none',
+            height: model.cloudTicks.height,
+            width: 60,
+            zIndex: 100,
+          }}
+        >
+          <g transform="translate(55, 0)">
+            <CloudYScaleBar model={model} orientation="left" />
+          </g>
+        </svg>
+      ) : null}
       {hoveredMismatchData && mousePosition ? (
         <MismatchTooltip
           mismatchData={hoveredMismatchData}
@@ -429,6 +504,7 @@ const Cloud = observer(function Cloud({
       ) : hoveredFeatureData && mousePosition ? (
         <FeatureTooltip
           hoveredFeatureData={hoveredFeatureData}
+          hasSupplementary={hoveredHasSupplementary}
           mousePosition={mousePosition}
         />
       ) : null}

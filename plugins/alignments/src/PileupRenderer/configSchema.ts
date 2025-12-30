@@ -72,6 +72,14 @@ const PileupRenderer = ConfigurationSchema(
     /**
      * #slot
      */
+    hideLargeIndels: {
+      type: 'boolean',
+      description: 'Hides large indels (>=10bp)',
+      defaultValue: false,
+    },
+    /**
+     * #slot
+     */
     maxHeight: {
       type: 'integer',
       description: 'the maximum height to be used in a pileup rendering',

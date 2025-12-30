@@ -1,9 +1,13 @@
 import type React from 'react'
 
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
 import {
   ReactRendering,
-  getSerializedSvg,
+  renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { SVGLegend } from '@jbrowse/plugin-linear-genome-view'
@@ -28,17 +32,15 @@ export async function renderSvg(
 ) {
   const view = getContainingView(self) as LGV
   const session = getSession(self)
-  const { rpcManager } = session
+  const { rpcManager, assemblyManager } = session
   const height = opts.overrideHeight ?? self.height
 
-  const {
-    colorBy,
-    filterBy,
-    drawInter,
-    drawLongRange,
-    lineWidthSetting,
-    jitterVal,
-  } = self
+  const assemblyName = view.assemblyNames[0]
+  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+  const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+  const sequenceAdapter = sequenceAdapterConfig
+    ? getSnapshot(sequenceAdapterConfig)
+    : undefined
 
   // Serialize the full view snapshot for RPC
   // Include staticBlocks and width which are not part of the regular snapshot
@@ -49,37 +51,29 @@ export async function renderSvg(
   })
 
   // Call RPC method with exportSVG options
+  // Use getRpcSessionId to ensure we use the same worker as normal rendering
+  const rpcSessionId = getRpcSessionId(self)
   const rendering = (await rpcManager.call(
-    self.id,
+    rpcSessionId,
     'RenderLinearReadArcsDisplay',
     {
-      sessionId: session.id,
+      sessionId: rpcSessionId,
       view: viewSnapshot,
       adapterConfig: self.adapterConfig,
+      sequenceAdapter,
       config: getSnapshot(self.configuration),
-      theme: opts.theme,
-      filterBy,
-      colorBy,
-      drawInter,
-      drawLongRange,
-      lineWidth: lineWidthSetting,
-      jitter: jitterVal,
+      ...self.renderProps(),
       height,
       exportSVG: opts,
-      rpcDriverName: self.effectiveRpcDriverName,
+      theme: opts.theme,
     },
   )) as RenderingResult
 
-  // Convert canvasRecordedData to SVG if present (vector SVG mode)
-  let finalRendering = rendering
-  if (rendering.canvasRecordedData && !rendering.html) {
-    const html = await getSerializedSvg({
-      width: view.staticBlocks.totalWidthPx,
-      height,
-      canvasRecordedData: rendering.canvasRecordedData,
-    })
-    finalRendering = { ...rendering, html }
-  }
+  const finalRendering = await renderingToSvg(
+    rendering,
+    view.staticBlocks.totalWidthPx,
+    height,
+  )
 
   // Clip to the visible region (view width), not the full staticBlocks width
   const visibleWidth = view.width

@@ -57,29 +57,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       loadingStatus: undefined as string | undefined,
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get level() {
-        return getParent<{ height: number; level: number }>(self, 4).level
-      },
-      /**
-       * #getter
-       */
-      get height() {
-        return getParent<{ height: number; level: number }>(self, 4).height
-      },
-      /**
-       * #getter
-       */
-      renderProps() {
-        return {
-          rpcDriverName: self.rpcDriverName,
-          highResolutionScaling: 2,
-        }
-      },
-    }))
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        /**
+         * #getter
+         */
+        get level() {
+          return getParent<{ height: number; level: number }>(self, 4).level
+        },
+        /**
+         * #getter
+         */
+        get height() {
+          return getParent<{ height: number; level: number }>(self, 4).height
+        },
+        /**
+         * #method
+         */
+        renderProps() {
+          return {
+            ...superRenderProps(),
+          }
+        },
+      }
+    })
     .actions(self => {
       let stopToken: undefined | string
 
@@ -229,7 +231,7 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   const view = renderProps.view.views[level]!
   return {
     features: dedupe(
-      (await rpcManager.call('getFeats', 'CoreGetFeatures', {
+      (await rpcManager.call(sessionId, 'CoreGetFeatures', {
         regions: view.staticBlocks.contentBlocks,
         sessionId,
         adapterConfig,

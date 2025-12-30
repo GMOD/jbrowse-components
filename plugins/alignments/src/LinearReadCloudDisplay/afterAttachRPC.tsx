@@ -21,6 +21,7 @@ type LGV = LinearGenomeViewModel
 
 interface CloudRenderResult {
   layoutHeight?: number
+  cloudScaleInfo?: { minDistance: number; maxDistance: number }
   featuresForFlatbush?: FlatbushEntry[]
   mismatchFlatbush?: ArrayBuffer
   mismatchItems?: FlatbushItem[]
@@ -32,25 +33,16 @@ export function doAfterAttachRPC(self: LinearReadCloudDisplayModel) {
       self,
       rpcMethodName: 'RenderLinearReadCloudDisplay',
       getRPCParams: () => ({
-        filterBy: self.filterBy,
-        colorBy: self.colorBy,
-        featureHeight: self.featureHeightSetting,
-        noSpacing: self.noSpacing ?? false,
+        ...self.renderProps(),
         drawCloud,
-        drawSingletons: self.drawSingletons,
-        drawProperPairs: self.drawProperPairs,
-        flipStrandLongReadChains: self.flipStrandLongReadChains,
-        trackMaxHeight: self.trackMaxHeight,
-        hideSmallIndels: self.hideSmallIndels,
-        hideMismatches: self.hideMismatches,
-        visibleModifications: Object.fromEntries(
-          self.visibleModifications.toJSON(),
-        ),
         ...(drawCloud && { cloudModeHeight: self.height }),
       }),
       onResult: (result: CloudRenderResult) => {
         if (!drawCloud && result.layoutHeight !== undefined) {
           self.setLayoutHeight(result.layoutHeight)
+        }
+        if (drawCloud) {
+          self.setCloudScaleInfo(result.cloudScaleInfo)
         }
         if (result.featuresForFlatbush) {
           buildFlatbushIndex(result.featuresForFlatbush, self)

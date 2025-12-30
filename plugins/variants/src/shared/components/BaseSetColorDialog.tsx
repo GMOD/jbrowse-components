@@ -146,8 +146,7 @@ export default function SetColorDialog({
                 const { sources, clusterTree } = model
                 const orderChanged =
                   clusterTree &&
-                  sources &&
-                  sources.length === currLayout.length &&
+                  sources?.length === currLayout.length &&
                   sources.some(
                     (source, idx) => source.name !== currLayout[idx]?.name,
                   )

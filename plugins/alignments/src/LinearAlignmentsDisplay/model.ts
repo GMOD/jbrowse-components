@@ -247,10 +247,7 @@ function stateModelFactory(
                 SNPCoverageDisplay.setConfig(self.coverageConf)
               }
 
-              if (
-                !PileupDisplay ||
-                self.lowerPanelType !== PileupDisplay.type
-              ) {
+              if (self.lowerPanelType !== PileupDisplay?.type) {
                 self.setPileupDisplay(pileupConf)
               } else if (
                 !deepEqual(pileupConf, getSnapshot(PileupDisplay.configuration))

@@ -1,9 +1,13 @@
 import type React from 'react'
 
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
 import {
   ReactRendering,
-  getSerializedSvg,
+  renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 import HicSVGColorLegend from './components/HicSVGColorLegend'
@@ -43,27 +47,23 @@ export async function renderSvg(
   const renderProps = self.renderProps()
 
   // Call CoreRender RPC method (same as afterAttach uses)
-  const rendering = (await rpcManager.call(self.id, 'CoreRender', {
-    sessionId: session.id,
+  // Use getRpcSessionId to ensure we use the same worker as normal rendering
+  const rpcSessionId = getRpcSessionId(self)
+  const rendering = (await rpcManager.call(rpcSessionId, 'CoreRender', {
+    sessionId: rpcSessionId,
     rendererType: 'HicRenderer',
     regions: [...regions],
     adapterConfig,
     bpPerPx,
-    highResolutionScaling: 2,
-    exportSVG: opts,
     ...renderProps,
+    exportSVG: opts,
   })) as RenderingResult
 
-  // Convert canvasRecordedData to SVG if present (vector SVG mode)
-  let finalRendering = rendering
-  if (rendering.canvasRecordedData && !rendering.html) {
-    const html = await getSerializedSvg({
-      width: view.staticBlocks.totalWidthPx,
-      height,
-      canvasRecordedData: rendering.canvasRecordedData,
-    })
-    finalRendering = { ...rendering, html }
-  }
+  const finalRendering = await renderingToSvg(
+    rendering,
+    view.staticBlocks.totalWidthPx,
+    height,
+  )
 
   // Clip to the visible region (view width), not the full staticBlocks width
   const visibleWidth = view.width

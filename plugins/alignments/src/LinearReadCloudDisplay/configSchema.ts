@@ -53,6 +53,14 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
+      hideLargeIndels: {
+        type: 'boolean',
+        defaultValue: false,
+      },
+
+      /**
+       * #slot
+       */
       colorBy: {
         type: 'frozen',
         defaultValue: { type: 'insertSizeAndOrientation' },

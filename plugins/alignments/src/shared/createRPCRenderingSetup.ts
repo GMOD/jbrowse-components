@@ -4,6 +4,7 @@ import {
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
@@ -95,15 +96,13 @@ export function createRPCRenderFunction<
         width: view.width,
       })
 
-      const result = (await rpcManager.call(self.id, rpcMethodName, {
-        sessionId: session.id,
+      const sessionId = getRpcSessionId(self)
+      const result = (await rpcManager.call(sessionId, rpcMethodName, {
+        sessionId,
         view: viewSnapshot,
         adapterConfig: self.adapterConfig,
         sequenceAdapter,
         config: getSnapshot(self.configuration),
-        theme: session.theme,
-        highResolutionScaling: 2,
-        rpcDriverName: self.effectiveRpcDriverName,
         statusCallback: (msg: string) => {
           if (isAlive(self)) {
             self.setStatusMessage?.(msg)

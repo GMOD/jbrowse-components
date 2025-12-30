@@ -4,18 +4,16 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import {
-  CONNECTING_LINE_COLOR,
   calculateFeaturePositionPx,
-  chainIsPairedEnd,
-  collectNonSupplementary,
   featureOverlapsRegion,
+  getChainBoundsOnRef,
+  getConnectingLineColor,
   getMismatchRenderingConfig,
-  lineIntersectsRegion,
   renderFeatureMismatchesAndModifications,
   renderFeatureShape,
 } from './drawChainsUtil'
 import { lineToCtx } from '../shared/canvasUtils'
-import { getPairedColor } from '../shared/color'
+import { fillColor, getPairedColor, strokeColor } from '../shared/color'
 
 import type { MismatchData } from './drawChainsUtil'
 import type { ComputedChain } from './drawFeatsCommon'
@@ -46,6 +44,8 @@ export function drawPairChains({
   stopToken,
   hideSmallIndels,
   hideMismatches,
+  hideLargeIndels,
+  showOutline,
 }: {
   ctx: CanvasRenderingContext2D
   type: string
@@ -64,17 +64,18 @@ export function drawPairChains({
   stopToken?: string
   hideSmallIndels?: boolean
   hideMismatches?: boolean
+  hideLargeIndels?: boolean
+  showOutline?: boolean
 }): MismatchData {
   const mismatchConfig = getMismatchRenderingConfig(
     ctx,
     config,
     configTheme,
     colorBy,
-    { hideSmallIndels, hideMismatches },
+    { hideSmallIndels, hideMismatches, hideLargeIndels },
   )
   const canvasWidth = region.widthPx
   const regionStart = region.start
-  const colorCtx = { lastFillStyle: '' }
 
   const allCoords: MismatchData['coords'] = []
   const allItems: MismatchData['items'] = []
@@ -82,9 +83,9 @@ export function drawPairChains({
 
   for (const computedChain of computedChains) {
     checkStopToken2(lastCheck)
-    const { id, chain } = computedChain
+    const { id, chain, isPairedEnd, nonSupplementary } = computedChain
 
-    if (!chainIsPairedEnd(chain)) {
+    if (!isPairedEnd) {
       continue
     }
 
@@ -93,7 +94,6 @@ export function drawPairChains({
       continue
     }
 
-    const nonSupplementary = collectNonSupplementary(chain)
     const hasBothMates = nonSupplementary.length === 2
 
     // Get colors for this read pair/singleton
@@ -104,27 +104,31 @@ export function drawPairChains({
       stats: chainData.stats,
     }) || ['lightgrey', '#888']
 
-    // Draw connecting line for pairs with both mates visible
-    // Check if the line segment intersects the region (not just if features overlap)
+    const lineY = chainY + featureHeight / 2
+
+    // Check if chain has supplementary alignments
+    const hasSupplementary = chain.length > nonSupplementary.length
+
+    // Draw connecting line spanning all features in chain (including supplementary)
     if (hasBothMates) {
-      const v0 = nonSupplementary[0]!
-      const v1 = nonSupplementary[1]!
-
-      const v0RefName = v0.get('refName')
-      const v1RefName = v1.get('refName')
-      const v0Start = v0.get('start')
-      const v1Start = v1.get('start')
-
+      const bounds = getChainBoundsOnRef(chain, region.refName)
       if (
-        lineIntersectsRegion(v0RefName, v1RefName, v0Start, v1Start, region)
+        bounds &&
+        bounds.minStart < region.end &&
+        bounds.maxEnd > region.start
       ) {
-        const r1s = (v0Start - regionStart) / bpPerPx
-        const r2s = (v1Start - regionStart) / bpPerPx
-        const lineY = chainY + featureHeight / 2
-        lineToCtx(r1s, lineY, r2s, lineY, ctx, CONNECTING_LINE_COLOR)
+        const r1s = (bounds.minStart - regionStart) / bpPerPx
+        const r2s = (bounds.maxEnd - regionStart) / bpPerPx
+        // Use orange for chains with supplementary alignments
+        const lineColor = hasSupplementary
+          ? fillColor.color_supplementary
+          : getConnectingLineColor(configTheme)
+        lineToCtx(r1s, lineY, r2s, lineY, ctx, lineColor)
       }
     }
 
+    // First pass: draw all feature shapes
+    const layoutFeats: typeof chain = []
     for (let i = 0, l = chain.length; i < l; i++) {
       const feat = chain[i]!
       const featRefName = feat.get('refName')
@@ -143,11 +147,12 @@ export function drawPairChains({
         bpPerPx,
       )
 
-      const layoutFeat = {
-        feature: feat,
-        heightPx: featureHeight,
-        topPx: chainY,
-      }
+      layoutFeats.push(feat)
+
+      // Use supplementary color for entire chain if it has supplementary alignments
+      const [featFill, featStroke] = hasSupplementary
+        ? [fillColor.color_supplementary, strokeColor.color_supplementary]
+        : [pairedFill, pairedStroke]
 
       renderFeatureShape({
         ctx,
@@ -156,11 +161,20 @@ export function drawPairChains({
         width,
         height: featureHeight,
         strand: feat.get('strand'),
-        fillStyle: pairedFill,
-        strokeStyle: pairedStroke,
+        fillStyle: featFill,
+        strokeStyle: featStroke,
         renderChevrons,
-        colorCtx,
+        showOutline,
       })
+    }
+
+    // Second pass: draw all mismatches on top
+    for (const feat of layoutFeats) {
+      const layoutFeat = {
+        feature: feat,
+        heightPx: featureHeight,
+        topPx: chainY,
+      }
 
       renderFeatureMismatchesAndModifications({
         ctx,

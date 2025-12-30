@@ -138,50 +138,54 @@ export default function stateModelFactory(
         }
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      renderProps() {
-        return {
-          config: self.rendererConfig,
-          resolution: self.resolution,
-          useLogScale: self.useLogScale,
-          colorScheme: self.colorScheme,
-          normalization: self.activeNormalization,
-          displayHeight: self.mode === 'adjust' ? self.height : undefined,
-        }
-      },
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        /**
+         * #method
+         */
+        renderProps() {
+          return {
+            ...superRenderProps(),
+            config: self.rendererConfig,
+            resolution: self.resolution,
+            useLogScale: self.useLogScale,
+            colorScheme: self.colorScheme,
+            normalization: self.activeNormalization,
+            displayHeight: self.mode === 'adjust' ? self.height : undefined,
+          }
+        },
 
-      /**
-       * #method
-       * Returns legend items for the Hi-C color scale
-       */
-      legendItems(): LegendItem[] {
-        const colorScheme = self.colorScheme ?? 'juicebox'
-        const displayMax = self.useLogScale
-          ? self.maxScore
-          : Math.round(self.maxScore / 20)
-        const minLabel = self.useLogScale ? '1' : '0'
-        const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
+        /**
+         * #method
+         * Returns legend items for the Hi-C color scale
+         */
+        legendItems(): LegendItem[] {
+          const colorScheme = self.colorScheme ?? 'juicebox'
+          const displayMax = self.useLogScale
+            ? self.maxScore
+            : Math.round(self.maxScore / 20)
+          const minLabel = self.useLogScale ? '1' : '0'
+          const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
 
-        return [
-          {
-            label: `${minLabel} - ${maxLabel} (${colorScheme})`,
-          },
-        ]
-      },
+          return [
+            {
+              label: `${minLabel} - ${maxLabel} (${colorScheme})`,
+            },
+          ]
+        },
 
-      /**
-       * #method
-       * Returns the width needed for the SVG legend if showLegend is enabled.
-       */
-      svgLegendWidth(): number {
-        // Hi-C legend is a fixed width gradient bar (120px + margin)
-        // Only show when we have data (maxScore > 0)
-        return self.showLegend && self.maxScore > 0 ? 140 : 0
-      },
-    }))
+        /**
+         * #method
+         * Returns the width needed for the SVG legend if showLegend is enabled.
+         */
+        svgLegendWidth(): number {
+          // Hi-C legend is a fixed width gradient bar (120px + margin)
+          // Only show when we have data (maxScore > 0)
+          return self.showLegend && self.maxScore > 0 ? 140 : 0
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action
