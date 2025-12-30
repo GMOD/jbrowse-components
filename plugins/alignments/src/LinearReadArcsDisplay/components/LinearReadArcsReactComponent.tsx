@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
+import { NonBlockCanvasDisplayComponent as BaseDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-
-import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 
 import type { LinearReadArcsDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

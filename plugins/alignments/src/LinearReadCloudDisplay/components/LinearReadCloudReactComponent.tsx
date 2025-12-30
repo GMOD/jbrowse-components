@@ -10,6 +10,7 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { NonBlockCanvasDisplayComponent as BaseDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import CloudYScaleBar from './CloudYScaleBar'
@@ -19,7 +20,6 @@ import {
   getFlatbushItemLabel,
 } from '../../PileupRenderer/types'
 import { PairType, getPairedType } from '../../shared/color'
-import BaseDisplayComponent from '../../shared/components/BaseDisplayComponent'
 import { orientationTypes } from '../../util'
 
 import type { ReducedFeature } from '../../shared/types'
@@ -135,7 +135,6 @@ function MismatchTooltip({
 const FeatureHighlights = observer(function FeatureHighlights({
   selectedFeatureBounds,
   hoveredFeature,
-  canvasLeft,
 }: {
   selectedFeatureBounds: {
     x: number
@@ -151,7 +150,6 @@ const FeatureHighlights = observer(function FeatureHighlights({
         height: number
       }
     | undefined
-  canvasLeft: number
 }) {
   return (
     <>
@@ -159,7 +157,7 @@ const FeatureHighlights = observer(function FeatureHighlights({
         <div
           style={{
             position: 'absolute',
-            left: selectedFeatureBounds.x + canvasLeft,
+            left: selectedFeatureBounds.x,
             top: selectedFeatureBounds.y,
             width: selectedFeatureBounds.width,
             height: selectedFeatureBounds.height,
@@ -173,7 +171,7 @@ const FeatureHighlights = observer(function FeatureHighlights({
         <div
           style={{
             position: 'absolute',
-            left: hoveredFeature.x + canvasLeft,
+            left: hoveredFeature.x,
             top: hoveredFeature.y,
             width: hoveredFeature.width,
             height: hoveredFeature.height,
@@ -188,13 +186,11 @@ const FeatureHighlights = observer(function FeatureHighlights({
 
 const CloudCanvases = observer(function CloudCanvases({
   model,
-  canvasWidth,
+  width,
   height,
-  canvasLeft,
 }: {
-  canvasWidth: number
+  width: number
   height: number
-  canvasLeft: number
   model: LinearReadCloudDisplayModel
 }) {
   // biome-ignore lint/correctness/useExhaustiveDependencies:
@@ -203,7 +199,7 @@ const CloudCanvases = observer(function CloudCanvases({
       model.setRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, canvasWidth, height],
+    [model, width, height],
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
@@ -212,7 +208,7 @@ const CloudCanvases = observer(function CloudCanvases({
       model.setMouseoverRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, canvasWidth, height],
+    [model, width, height],
   )
   return (
     <>
@@ -220,27 +216,27 @@ const CloudCanvases = observer(function CloudCanvases({
         data-testid={model.dataTestId}
         ref={cb}
         style={{
-          width: canvasWidth,
+          width,
           height,
           position: 'absolute',
-          left: canvasLeft,
+          left: 0,
           top: 0,
         }}
-        width={canvasWidth * 2}
+        width={width * 2}
         height={height * 2}
       />
       <canvas
         data-testid="cloud-mouseover-canvas"
         ref={mouseoverCb}
         style={{
-          width: canvasWidth,
+          width,
           height,
           position: 'absolute',
-          left: canvasLeft,
+          left: 0,
           top: 0,
           pointerEvents: 'none',
         }}
-        width={canvasWidth * 2}
+        width={width * 2}
         height={height * 2}
       />
     </>
@@ -253,15 +249,7 @@ const Cloud = observer(function Cloud({
   model: LinearReadCloudDisplayModel
 }) {
   const view = getContainingView(model) as LGV
-  const screenWidth = Math.round(view.dynamicBlocks.totalWidthPx)
-  const offsetPx = view.offsetPx
-
-  // Adjust canvas width and position when offsetPx is negative
-  // This ensures drawing code doesn't need to account for negative offsets
-  const canvasWidth = offsetPx < 0 ? screenWidth + offsetPx : screenWidth
-  const canvasLeft = offsetPx < 0 ? -offsetPx : 0
-
-  const width = screenWidth // Keep container full width
+  const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const height = model.drawCloud ? model.height : model.layoutHeight
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredFeature, setHoveredFeature] = useState<{
@@ -320,7 +308,7 @@ const Cloud = observer(function Cloud({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left - canvasLeft
+      const offsetX = event.clientX - rect.left
       const offsetY = event.clientY - rect.top
 
       const results = flatbushIndex.search(
@@ -338,7 +326,7 @@ const Cloud = observer(function Cloud({
 
       return { feature: undefined, position: undefined }
     },
-    [containerRef, flatbushIndex, model.featuresForFlatbush, canvasLeft],
+    [containerRef, flatbushIndex, model.featuresForFlatbush],
   )
 
   const getMismatchUnderMouse = useCallback(
@@ -348,7 +336,7 @@ const Cloud = observer(function Cloud({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const offsetX = event.clientX - rect.left - canvasLeft
+      const offsetX = event.clientX - rect.left
       const offsetY = event.clientY - rect.top
 
       const results = mismatchFlatbushIndex.search(
@@ -365,7 +353,7 @@ const Cloud = observer(function Cloud({
 
       return undefined
     },
-    [containerRef, mismatchFlatbushIndex, model.mismatchItems, canvasLeft],
+    [containerRef, mismatchFlatbushIndex, model.mismatchItems],
   )
 
   const onMouseMove = useCallback(
@@ -468,16 +456,10 @@ const Cloud = observer(function Cloud({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
     >
-      <CloudCanvases
-        model={model}
-        canvasWidth={canvasWidth}
-        height={height}
-        canvasLeft={canvasLeft}
-      />
+      <CloudCanvases model={model} width={width} height={height} />
       <FeatureHighlights
         selectedFeatureBounds={selectedFeatureBounds}
         hoveredFeature={hoveredFeature}
-        canvasLeft={canvasLeft}
       />
       {model.drawCloud && model.cloudTicks ? (
         <svg

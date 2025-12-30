@@ -88,8 +88,7 @@ const HicCanvas = observer(function HicCanvas({
   model: LinearHicDisplayModel
 }) {
   const view = getContainingView(model) as LGV
-  const screenWidth = Math.round(view.dynamicBlocks.totalWidthPx)
-  const { offsetPx } = view
+  const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const {
     height,
     drawn,
@@ -102,10 +101,6 @@ const HicCanvas = observer(function HicCanvas({
     colorScheme,
     useLogScale,
   } = model
-
-  // Adjust canvas width and position when offsetPx is negative
-  const canvasWidth = offsetPx < 0 ? screenWidth + offsetPx : screenWidth
-  const canvasLeft = offsetPx < 0 ? -offsetPx : 0
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<HicFlatbushItem>()
@@ -124,7 +119,7 @@ const HicCanvas = observer(function HicCanvas({
       model.setRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, canvasWidth, height],
+    [model, width, height],
   )
 
   const onMouseMove = useCallback(
@@ -136,7 +131,7 @@ const HicCanvas = observer(function HicCanvas({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const screenX = event.clientX - rect.left - canvasLeft
+      const screenX = event.clientX - rect.left
       const screenY = event.clientY - rect.top
 
       setMousePosition({ x: event.clientX, y: event.clientY })
@@ -155,7 +150,7 @@ const HicCanvas = observer(function HicCanvas({
         setHoveredItem(undefined)
       }
     },
-    [flatbushIndex, flatbushItems, yScalar, canvasLeft],
+    [flatbushIndex, flatbushItems, yScalar],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -170,7 +165,7 @@ const HicCanvas = observer(function HicCanvas({
       style={{
         cursor: hoveredItem && mousePosition ? 'crosshair' : undefined,
         position: 'relative',
-        width: screenWidth,
+        width,
         height,
       }}
       onMouseMove={onMouseMove}
@@ -180,12 +175,12 @@ const HicCanvas = observer(function HicCanvas({
         data-testid={`hic_canvas${drawn && !loading ? '_done' : ''}`}
         ref={cb}
         style={{
-          width: canvasWidth,
+          width,
           height,
           position: 'absolute',
-          left: canvasLeft,
+          left: 0,
         }}
-        width={canvasWidth * 2}
+        width={width * 2}
         height={height * 2}
       />
       {hoveredItem && localMousePos ? (
@@ -193,8 +188,8 @@ const HicCanvas = observer(function HicCanvas({
           x={localMousePos.x}
           y={localMousePos.y}
           yScalar={yScalar}
-          left={canvasLeft}
-          width={canvasWidth}
+          left={0}
+          width={width}
           height={height}
         />
       ) : null}

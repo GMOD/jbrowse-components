@@ -21,7 +21,6 @@ import { calculateCloudTicks } from '../RenderLinearReadCloudDisplayRPC/drawFeat
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
 import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
 import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
-import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
 import {
   calculateSvgLegendWidth,
@@ -63,7 +62,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       LinearReadDisplayBaseMixin(),
       LinearReadDisplayWithLayoutMixin(),
       LinearReadDisplayWithPairFiltersMixin(),
-      RPCRenderingMixin(),
       SharedModificationsMixin(),
       types.model({
         /**
@@ -136,11 +134,34 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       selectedFeatureId: undefined as string | undefined,
       /**
        * #volatile
-       * Scale info for cloud mode (min/max insert sizes)
+       * Max distance for cloud mode scale (min is always 1 for log scale)
        */
-      cloudScaleInfo: undefined as
-        | { minDistance: number; maxDistance: number }
-        | undefined,
+      cloudMaxDistance: undefined as number | undefined,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Get the color settings (from override or configuration)
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+      /**
+       * #getter
+       * Get the filter settings (from override or configuration)
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Reload the display (clears error state)
+       */
+      reload() {
+        self.error = undefined
+      },
     }))
     .views(self => ({
       get dataTestId() {
@@ -180,13 +201,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * Domain for cloud mode scale: [1, maxDistance]
+       * Uses 1 as lower bound since it's a log scale
+       */
+      get cloudDomain(): [number, number] | undefined {
+        if (self.cloudMaxDistance === undefined) {
+          return undefined
+        }
+        return [1, self.cloudMaxDistance]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Calculate ticks for the y-axis scalebar in cloud mode
        */
       get cloudTicks() {
-        if (!self.drawCloud || !self.cloudScaleInfo || !self.showYScalebar) {
+        if (!self.drawCloud || !self.cloudDomain || !self.showYScalebar) {
           return undefined
         }
-        return calculateCloudTicks(self.cloudScaleInfo, self.height)
+        return calculateCloudTicks(self.cloudDomain, self.height)
       },
     }))
     .actions(self => ({
@@ -213,12 +247,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
-       * Set the cloud scale info for the y-axis scalebar
+       * Set the max distance for cloud mode scale
+       * Only updates if value differs by more than EPSILON to avoid infinite re-renders
        */
-      setCloudScaleInfo(
-        info: { minDistance: number; maxDistance: number } | undefined,
-      ) {
-        self.cloudScaleInfo = info
+      setCloudMaxDistance(maxDistance: number) {
+        const EPSILON = 0.000001
+        if (
+          self.cloudMaxDistance === undefined ||
+          Math.abs(self.cloudMaxDistance - maxDistance) > EPSILON
+        ) {
+          self.cloudMaxDistance = maxDistance
+        }
       },
       /**
        * #action
@@ -339,6 +378,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             hideMismatches: self.hideMismatches,
             hideLargeIndels: self.hideLargeIndels,
             showOutline: self.showOutline,
+            cloudDomain: self.cloudDomain,
             visibleModifications: Object.fromEntries(
               self.visibleModifications.toJSON(),
             ),
@@ -411,10 +451,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 },
                 {
-                  label: "Show as 'read cloud'",
+                  label: "Show as 'read cloud' (paired-end reads)",
                   type: 'checkbox',
                   helpText:
-                    'In read cloud mode, the y-coordinate of the reads is proportional to TLEN (template length)',
+                    'In read cloud mode, the y-coordinate of paired-end reads is proportional to insert size (TLEN). This mode is designed for paired-end short reads; long reads will appear at y=0.',
                   checked: self.drawCloud,
                   onClick: () => {
                     self.setDrawCloud(!self.drawCloud)

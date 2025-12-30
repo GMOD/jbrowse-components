@@ -15,7 +15,14 @@ export {
 } from './components/BaseLinearDisplay'
 export { default as TrackHeightMixin } from './models/TrackHeightMixin'
 export { default as FeatureDensityMixin } from './models/FeatureDensityMixin'
+export {
+  type NonBlockCanvasDisplayMixinType,
+  default as NonBlockCanvasDisplayMixin,
+} from './models/NonBlockCanvasDisplayMixin'
+export { drawCanvasImageData } from './util'
 export { default as TooLargeMessage } from './components/TooLargeMessage'
 export { default as FloatingLegend } from './components/FloatingLegend'
+export { default as NonBlockCanvasDisplayComponent } from './components/NonBlockCanvasDisplayComponent'
+export type { NonBlockCanvasDisplayModel } from './components/NonBlockCanvasDisplayComponent'
 export { default as SVGLegend } from './SVGLegend'
 export { calculateSvgLegendWidth } from './calculateSvgLegendWidth'

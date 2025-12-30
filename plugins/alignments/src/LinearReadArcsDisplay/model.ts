@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -10,7 +10,6 @@ import {
 
 import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin'
 import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
-import { RPCRenderingMixin } from '../shared/RPCRenderingMixin'
 import {
   calculateSvgLegendWidth,
   getReadDisplayLegendItems,
@@ -35,8 +34,8 @@ import type {
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
  * - [FeatureDensityMixin](../featuredensitymixin)
+ * - [LinearReadDisplayBaseMixin](../linearreaddisplaybasemixin)
  * - [LinearReadArcsDisplaySettingsMixin](../linearreadarcdisplaysettingsmixin)
- * - [RPCRenderingMixin](../rpcrenderingmixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -47,7 +46,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       FeatureDensityMixin(),
       LinearReadDisplayBaseMixin(),
       LinearReadArcsDisplaySettingsMixin(),
-      RPCRenderingMixin(),
       types.model({
         /**
          * #property
@@ -63,12 +61,35 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         showLegend: types.maybe(types.boolean),
       }),
     )
+    .views(self => ({
+      /**
+       * #getter
+       * Get the color settings (from override or configuration)
+       */
+      get colorBy() {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+      /**
+       * #getter
+       * Get the filter settings (from override or configuration)
+       */
+      get filterBy() {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+    }))
     .actions(self => ({
       /**
        * #action
        */
       setShowLegend(s: boolean) {
         self.showLegend = s
+      },
+      /**
+       * #action
+       * Reload the display (clears error state)
+       */
+      reload() {
+        self.error = undefined
       },
     }))
     .views(self => ({

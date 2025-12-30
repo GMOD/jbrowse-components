@@ -26,6 +26,12 @@ export async function renderToAbstractCanvas<T extends object | undefined>(
 ): Promise<(T extends undefined ? object : T) & RenderResult> {
   const { exportSVG, highResolutionScaling = 1 } = opts
 
+  // Ensure minimum dimensions of 1 because creating a 0-dimension
+  // OffscreenCanvas throws "Failed to create ImageBitmap from OffscreenCanvas"
+  // when transferToImageBitmap is called
+  const safeWidth = Math.max(1, width)
+  const safeHeight = Math.max(1, height)
+
   type Result = (T extends undefined ? object : T) & RenderResult
 
   if (exportSVG) {
@@ -40,7 +46,10 @@ export async function renderToAbstractCanvas<T extends object | undefined>(
       } as unknown as Result
     } else {
       const s = exportSVG.scale || highResolutionScaling
-      const canvas = createCanvas(Math.ceil(width * s), height * s)
+      const canvas = createCanvas(
+        Math.ceil(safeWidth * s),
+        Math.ceil(safeHeight * s),
+      )
       const ctx = canvas.getContext('2d')
       if (!ctx) {
         throw new Error('2d canvas rendering not supported on this platform')
@@ -67,8 +76,8 @@ export async function renderToAbstractCanvas<T extends object | undefined>(
     }
   } else {
     const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
+      Math.ceil(safeWidth * highResolutionScaling),
+      Math.ceil(safeHeight * highResolutionScaling),
     )
     const ctx = canvas.getContext('2d')
     if (!ctx) {

@@ -59,6 +59,7 @@ export async function executeRenderLinearReadCloudDisplay({
     flipStrandLongReadChains,
     trackMaxHeight,
     cloudModeHeight,
+    cloudDomain,
     highResolutionScaling,
     exportSVG,
     statusCallback = () => {},
@@ -223,7 +224,7 @@ export async function executeRenderLinearReadCloudDisplay({
       renderToAbstractCanvas(width, actualHeight, renderOpts, async ctx => {
         const {
           layoutHeight,
-          cloudScaleInfo,
+          cloudMaxDistance,
           featuresForFlatbush,
           mismatchFlatbush,
           mismatchItems,
@@ -253,7 +254,7 @@ export async function executeRenderLinearReadCloudDisplay({
           view: viewSnap,
           calculateYOffsets: (chains: ComputedChain[]) => {
             return drawCloud
-              ? calculateCloudYOffsetsUtil(chains, actualHeight)
+              ? calculateCloudYOffsetsUtil(chains, actualHeight, cloudDomain)
               : calculateStackYOffsetsUtil(
                   chains,
                   featureHeight,
@@ -264,7 +265,7 @@ export async function executeRenderLinearReadCloudDisplay({
         })
         return {
           layoutHeight,
-          cloudScaleInfo,
+          cloudMaxDistance,
           featuresForFlatbush,
           mismatchFlatbush,
           mismatchItems,

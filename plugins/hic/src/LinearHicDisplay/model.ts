@@ -2,16 +2,15 @@ import type React from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
+  NonBlockCanvasDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import type { HicFlatbushItem } from '../HicRenderer/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -26,6 +25,7 @@ import type {
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
  * - [FeatureDensityMixin](../featuredensitymixin)
+ * - [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -38,6 +38,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
+      NonBlockCanvasDisplayMixin(),
       types.model({
         /**
          * #property
@@ -81,26 +82,6 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      loading: false,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      ref: null as HTMLCanvasElement | null,
-      /**
-       * #volatile
-       */
-      renderingImageData: undefined as ImageBitmap | undefined,
-      /**
-       * #volatile
-       */
-      renderingStopToken: undefined as StopToken | undefined,
-      /**
-       * #volatile
-       */
       flatbush: undefined as ArrayBufferLike | undefined,
       /**
        * #volatile
@@ -116,12 +97,6 @@ export default function stateModelFactory(
       yScalar: 1,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get drawn() {
-        return self.lastDrawnOffsetPx !== undefined
-      },
       /**
        * #getter
        */
@@ -187,36 +162,6 @@ export default function stateModelFactory(
       }
     })
     .actions(self => ({
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(n: number) {
-        self.lastDrawnOffsetPx = n
-      },
-      /**
-       * #action
-       */
-      setLoading(f: boolean) {
-        self.loading = f
-      },
-      /**
-       * #action
-       */
-      setRef(ref: HTMLCanvasElement | null) {
-        self.ref = ref
-      },
-      /**
-       * #action
-       */
-      setRenderingImageData(imageData: ImageBitmap | undefined) {
-        self.renderingImageData = imageData
-      },
-      /**
-       * #action
-       */
-      setRenderingStopToken(token: StopToken | undefined) {
-        self.renderingStopToken = token
-      },
       /**
        * #action
        */
@@ -412,13 +357,6 @@ export default function stateModelFactory(
         },
       }
     })
-    .actions(self => ({
-      beforeDestroy() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-        }
-      },
-    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
