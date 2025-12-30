@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import { fillColor } from '../../shared/color'
-import { SAM_FLAG_SUPPLEMENTARY } from '../../shared/samFlags'
 import {
   colorByInsertSize,
   colorByMappingQuality,
@@ -28,12 +27,6 @@ export function getAlignmentShapeColor({
   config: AnyConfigurationModel
   colorTagMap: Record<string, string>
 }) {
-  // Color supplementary/split alignments orange
-  const flags = feature.get('flags')
-  if (flags & SAM_FLAG_SUPPLEMENTARY) {
-    return fillColor.color_supplementary
-  }
-
   // first pass for simple color changes that change the color of the
   // alignment
   switch (colorType) {
