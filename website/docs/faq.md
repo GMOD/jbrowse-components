@@ -492,8 +492,7 @@ query param logic themselves, as this component makes no attempt to access URL
 query params.
 
 Note 2: You can copy and paste your URL bar and put it in another tab on your
-own computer, and JBrowse will restore the session using BroadcastChannel
-(supported on Firefox and Chrome).
+own computer, and JBrowse will restore the session using IndexedDB
 
 ### How does the session sharing work with shortened URLs work in JBrowse Web
 

@@ -113,22 +113,6 @@ const SessionLoader = types
      * #volatile
      */
     configError: undefined as unknown,
-    /**
-     * #volatile
-     */
-    bc1:
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      window.BroadcastChannel
-        ? new window.BroadcastChannel('jb_request_session')
-        : undefined,
-    /**
-     * #volatile
-     */
-    bc2:
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      window.BroadcastChannel
-        ? new window.BroadcastChannel('jb_respond_session')
-        : undefined,
   }))
   .views(self => ({
     /**
@@ -219,14 +203,16 @@ const SessionLoader = types
     get sessionTracksParsed() {
       return self.sessionTracks ? JSON.parse(self.sessionTracks) : []
     },
+    /**
+     * #getter
+     */
+    get resolvedConfigPath() {
+      // @ts-expect-error
+      const path = window.__jbrowseConfigPath as string | undefined
+      return self.configPath || path || 'config.json'
+    },
   }))
   .actions(self => ({
-    /**
-     * #action
-     */
-    setSessionQuery(session?: any) {
-      self.sessionQuery = session
-    },
     /**
      * #action
      */
@@ -280,9 +266,9 @@ const SessionLoader = types
     /**
      * #action
      */
-    async fetchPlugins(config: { plugins: PluginDefinition[] }) {
+    async fetchPlugins(config: { plugins?: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(config.plugins, {
+        const pluginLoader = new PluginLoader(config.plugins || [], {
           fetchESM: url => import(/* webpackIgnore:true */ url),
         })
         pluginLoader.installGlobalReExports(window)
@@ -338,9 +324,7 @@ const SessionLoader = types
      * #action
      */
     async fetchConfig() {
-      // @ts-expect-error
-      const path = window.__jbrowseConfigPath
-      const { configPath = path || 'config.json' } = self
+      const configPath = self.resolvedConfigPath
       const shouldFetchConfig = configPath !== 'none'
 
       // if ?config=none then we will not load the config, which is useful for
@@ -381,14 +365,16 @@ const SessionLoader = types
     },
     /**
      * #action
+     * Called when configSnapshot already exists (e.g., from HMR or plugin reload)
      */
     async setUpConfig() {
-      // @ts-expect-error
-      const path = window.__jbrowseConfigPath
-      const { configPath = path || 'config.json' } = self
+      const configPath = self.resolvedConfigPath
       const configUri = new URL(configPath, window.location.href)
-      const { configSnapshot } = self
-      const config = JSON.parse(JSON.stringify(configSnapshot))
+      // configSnapshot is guaranteed to exist when this method is called
+      const config = structuredClone(self.configSnapshot) as Record<
+        string,
+        unknown
+      >
       addRelativeUris(config, configUri)
       self.setConfigSnapshot(config)
       await this.fetchPlugins(config)
@@ -430,38 +416,9 @@ const SessionLoader = types
     },
     /**
      * #action
-     */
-    async fetchSessionFromBroadcastChannel(query: string) {
-      if (!self.bc1) {
-        return false
-      }
-      self.bc1.postMessage(query)
-      try {
-        const result = await new Promise<Record<string, unknown>>(
-          (resolve, reject) => {
-            if (self.bc2) {
-              self.bc2.onmessage = msg => {
-                resolve(msg.data)
-              }
-            }
-            setTimeout(() => {
-              reject(new Error('timeout'))
-            }, 1000)
-          },
-        )
-        await this.loadSession({ ...result, id: nanoid() })
-        return true
-      } catch (e) {
-        // timeout - no other tab responded
-        return false
-      }
-    },
-    /**
-     * #action
      * Tries to load a local session from multiple sources in order:
      * 1. sessionStorage (current session)
-     * 2. IndexedDB (saved sessions)
-     * 3. BroadcastChannel (session from another tab)
+     * 2. IndexedDB (autosaved sessions)
      */
     async fetchLocalSession() {
       const query = self.sessionQuery!.replace('local-', '')
@@ -472,21 +429,28 @@ const SessionLoader = types
       if (await this.fetchSessionFromIndexedDB(query)) {
         return
       }
-      if (await this.fetchSessionFromBroadcastChannel(query)) {
-        return
-      }
       throw new Error('Local session not found')
     },
     /**
      * #action
+     * When sessionSnapshot is provided during .create() (e.g., from HMR or
+     * plugin reload), plugins haven't been loaded yet. This loads them.
      */
-    async checkExistingSession(sessionSnapshot: Record<string, unknown>) {
+    async loadSessionPluginsIfNeeded(sessionSnapshot: Record<string, unknown>) {
       if (!self.sessionPlugins) {
-        // session snapshot probably provided during .create() but plugins
-        // haven't been loaded yet
         // @ts-expect-error
         await this.loadSession(sessionSnapshot)
       }
+    },
+    /**
+     * #action
+     * Helper to load a decoded session with a fresh ID
+     */
+    async loadDecodedSession(session: Record<string, unknown>) {
+      await this.loadSession({
+        ...session,
+        id: nanoid(),
+      })
     },
     /**
      * #action
@@ -501,35 +465,28 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-      await this.loadSession({
-        ...session,
-        id: nanoid(),
-      })
+      await this.loadDecodedSession(session)
     },
     /**
      * #action
      */
     async decodeEncodedUrlSession() {
+      // sessionQuery is guaranteed to exist when isEncodedSession is true
       const session = JSON.parse(
-        // @ts-expect-error
-        await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
+        await fromUrlSafeB64(self.sessionQuery!.replace('encoded-', '')),
       )
-      await this.loadSession({
-        ...session,
-        id: nanoid(),
-      })
+      await this.loadDecodedSession(session)
     },
     /**
      * #action
      */
     decodeSessionSpec() {
-      if (!self.sessionQuery) {
-        return
-      }
-      self.sessionSpec = JSON.parse(self.sessionQuery.replace('spec-', ''))
+      // sessionQuery is guaranteed to exist when isSpecSession is true
+      self.sessionSpec = JSON.parse(self.sessionQuery!.replace('spec-', ''))
     },
     /**
      * #action
+     * Called when isJb1StyleSession is true (loc or assembly exists)
      */
     decodeJb1StyleSession() {
       const {
@@ -541,22 +498,20 @@ const SessionLoader = types
         highlight,
         sessionTracksParsed: sessionTracks,
       } = self
-      if (loc || assembly) {
-        self.sessionSpec = {
-          sessionTracks,
-          views: [
-            {
-              type: 'LinearGenomeView',
-              tracks: tracks?.split(','),
-              sessionTracks,
-              loc,
-              assembly,
-              tracklist,
-              nav,
-              highlight: highlight?.split(' '),
-            },
-          ],
-        }
+      self.sessionSpec = {
+        sessionTracks,
+        views: [
+          {
+            type: 'LinearGenomeView',
+            tracks: tracks?.split(','),
+            sessionTracks,
+            loc,
+            assembly,
+            tracklist,
+            nav,
+            highlight: highlight?.split(' '),
+          },
+        ],
       }
     },
 
@@ -575,29 +530,14 @@ const SessionLoader = types
      * #action
      */
     async decodeJsonUrlSession() {
-      // @ts-expect-error
-      const { session } = JSON.parse(self.sessionQuery.replace(/^json-/, ''))
-      await this.loadSession({
-        ...session,
-        id: nanoid(),
-      })
+      // sessionQuery is guaranteed to exist when isJsonSession is true
+      const { session } = JSON.parse(self.sessionQuery!.replace(/^json-/, ''))
+      await this.loadDecodedSession(session)
     },
     /**
      * #aftercreate
      */
     afterCreate() {
-      // Set up BroadcastChannel handler once to respond to session requests
-      // from other tabs
-      if (self.bc1) {
-        self.bc1.onmessage = msg => {
-          const r =
-            JSON.parse(sessionStorage.getItem('current') || '{}').session || {}
-          if (r.id === msg.data && self.bc2) {
-            self.bc2.postMessage(r)
-          }
-        }
-      }
-
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ;(async () => {
         try {
@@ -615,7 +555,6 @@ const SessionLoader = types
                   isJsonSession,
                   isJb1StyleSession,
                   isHubSession,
-                  sessionQuery,
                   sessionSnapshot,
                   configSnapshot,
                 } = self
@@ -624,7 +563,7 @@ const SessionLoader = types
                 }
 
                 if (sessionSnapshot) {
-                  await this.checkExistingSession(sessionSnapshot)
+                  await this.loadSessionPluginsIfNeeded(sessionSnapshot)
                 } else if (isSharedSession) {
                   await this.fetchSharedSession()
                 } else if (isSpecSession) {
@@ -638,12 +577,12 @@ const SessionLoader = types
                 } else if (isLocalSession) {
                   await this.fetchLocalSession()
                 } else if (isHubSession) {
-                  // this is later in the list: prioritiz local session of "hub
-                  // spec" since hub is left in URL even when there may be a
-                  // local session
+                  // this is later in the list: prioritize local session over
+                  // "hub spec" since hub is left in URL even when there may be
+                  // a local session
                   this.decodeHubSpec()
                   self.setBlankSession(true)
-                } else if (sessionQuery) {
+                } else if (self.sessionQuery) {
                   // if there was a sessionQuery and we don't recognize it
                   throw new Error('unrecognized session format')
                 } else {
