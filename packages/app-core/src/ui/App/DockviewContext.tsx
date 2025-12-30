@@ -7,6 +7,7 @@ interface DockviewContextValue {
   rearrangePanels: (arrange: (api: DockviewApi) => void) => void
   addEmptyTab: (targetGroup?: DockviewGroupPanel) => void
   moveViewToNewTab: (viewId: string) => void
+  moveViewToSplitRight: (viewId: string) => void
 }
 
 export const DockviewContext = createContext<DockviewContextValue>({
@@ -14,6 +15,7 @@ export const DockviewContext = createContext<DockviewContextValue>({
   rearrangePanels: () => {},
   addEmptyTab: () => {},
   moveViewToNewTab: () => {},
+  moveViewToSplitRight: () => {},
 })
 
 export function useDockview() {

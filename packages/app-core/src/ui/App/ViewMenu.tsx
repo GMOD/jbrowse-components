@@ -8,6 +8,7 @@ import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrow
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import MenuIcon from '@mui/icons-material/Menu'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
 import { observer } from 'mobx-react'
 
 import { useDockview } from './DockviewContext'
@@ -36,7 +37,7 @@ const ViewMenu = observer(function ViewMenu({
     useWorkspaces: boolean
   }
 
-  const { moveViewToNewTab } = useDockview()
+  const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
   return (
     <CascadingMenuButton
       data-testid="view_menu_icon"
@@ -67,6 +68,13 @@ const ViewMenu = observer(function ViewMenu({
                     icon: OpenInNewIcon,
                     onClick: () => {
                       moveViewToNewTab(model.id)
+                    },
+                  },
+                  {
+                    label: 'Move to split view (right side of screen)',
+                    icon: VerticalSplitIcon,
+                    onClick: () => {
+                      moveViewToSplitRight(model.id)
                     },
                   },
                 ]

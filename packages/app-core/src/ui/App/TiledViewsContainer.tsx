@@ -114,9 +114,38 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     [api, session],
   )
 
+  const moveViewToSplitRight = useCallback(
+    (viewId: string) => {
+      if (!api || !isSessionWithDockviewLayout(session)) {
+        return
+      }
+      // Remove view from current panel
+      session.removeViewFromPanel(viewId)
+
+      // Create new panel to the right of the current group
+      const panelId = `panel-${nanoid()}`
+      const group = api.activeGroup
+      api.addPanel({
+        ...createPanelConfig(panelId, session, 'New Tab'),
+        position: group
+          ? { referenceGroup: group, direction: 'right' }
+          : undefined,
+      })
+      session.assignViewToPanel(panelId, viewId)
+      session.setActivePanelId(panelId)
+    },
+    [api, session],
+  )
+
   const contextValue = useMemo(
-    () => ({ api, rearrangePanels, addEmptyTab, moveViewToNewTab }),
-    [api, rearrangePanels, addEmptyTab, moveViewToNewTab],
+    () => ({
+      api,
+      rearrangePanels,
+      addEmptyTab,
+      moveViewToNewTab,
+      moveViewToSplitRight,
+    }),
+    [api, rearrangePanels, addEmptyTab, moveViewToNewTab, moveViewToSplitRight],
   )
 
   const createInitialPanel = useCallback((dockviewApi: DockviewApi) => {
