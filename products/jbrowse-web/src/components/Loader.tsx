@@ -1,3 +1,10 @@
+/**
+ * The pluginManager/rootModel can be destroyed and recreated without a full
+ * page reload. Plugin install passes the session explicitly via the
+ * reloadPluginManager callback. HMR uses a different mechanism: the useEffect
+ * cleanup saves the current session to the loader before destroying, so
+ * createPluginManager can restore it.
+ */
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
@@ -32,42 +39,14 @@ const paramsToDelete = [
   'highlight',
 ] as const
 
-console.log(
-  '[Loader] Module loaded/reloaded at:',
-  new Date().toISOString(),
-  '- HMR debug v5 with fix',
-)
-
 export function Loader({
   initialTimestamp: initialTimestampProp,
 }: {
   initialTimestamp?: number
 }) {
-  console.log(
-    '[Loader] Component initializing, initialTimestampProp:',
-    initialTimestampProp,
-  )
   const [initialTimestamp] = useState(() => initialTimestampProp ?? Date.now())
 
   const [loader] = useState(() => {
-    console.log(
-      '[Loader] Creating SessionLoader state, initialTimestamp:',
-      initialTimestamp,
-    )
-    const queryParams = readQueryParams([
-      'config',
-      'session',
-      'adminKey',
-      'password',
-      'loc',
-      'assembly',
-      'tracks',
-      'sessionTracks',
-      'tracklist',
-      'highlight',
-      'nav',
-      'hubURL',
-    ])
     const {
       config,
       session,
@@ -81,15 +60,22 @@ export function Loader({
       highlight,
       nav,
       hubURL,
-    } = queryParams
-    console.log('[Loader] Query params read:', queryParams)
-    console.log(
-      '[Loader] sessionStorage current:',
-      sessionStorage.getItem('current')?.slice(0, 200),
-    )
-    console.log('[Loader] localStorage keys:', Object.keys(localStorage))
+    } = readQueryParams([
+      'config',
+      'session',
+      'adminKey',
+      'password',
+      'loc',
+      'assembly',
+      'tracks',
+      'sessionTracks',
+      'tracklist',
+      'highlight',
+      'nav',
+      'hubURL',
+    ])
 
-    const loaderInstance = SessionLoader.create({
+    return SessionLoader.create({
       configPath: config,
       sessionQuery: session,
       password,
@@ -104,8 +90,6 @@ export function Loader({
       hubURL: hubURL?.split(','),
       initialTimestamp,
     })
-    console.log('[Loader] SessionLoader created:', loaderInstance)
-    return loaderInstance
   })
 
   useEffect(() => {
@@ -120,24 +104,19 @@ const Renderer = observer(function Renderer({
 }: {
   loader: SessionLoaderModel
 }) {
-  console.log('[Renderer] Component rendering, firstLoader:', firstLoader)
+  // Store loader in state so reloadPluginManager can replace it
   const [loader, setLoader] = useState(firstLoader)
   const pluginManager = useRef<PluginManager | undefined>(undefined)
   const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
+
+  // Called by rootModel when plugins are installed/removed. Creates a new
+  // loader with the updated config and current session, triggering a full
+  // pluginManager recreation.
   const reloadPluginManager = useCallback(
     (
       configSnapshot: Record<string, unknown>,
       sessionSnapshot: Record<string, unknown>,
     ) => {
-      console.log('[Renderer] reloadPluginManager called')
-      console.log(
-        '[Renderer] configSnapshot:',
-        JSON.stringify(configSnapshot).slice(0, 200),
-      )
-      console.log(
-        '[Renderer] sessionSnapshot:',
-        JSON.stringify(sessionSnapshot).slice(0, 200),
-      )
       const newLoader = SessionLoader.create({
         configPath: loader.configPath,
         sessionQuery: loader.sessionQuery,
@@ -155,7 +134,6 @@ const Renderer = observer(function Renderer({
         configSnapshot,
         sessionSnapshot,
       })
-      console.log('[Renderer] newLoader created:', newLoader)
       setLoader(newLoader)
       setPluginManagerCreated(false)
     },
@@ -164,70 +142,30 @@ const Renderer = observer(function Renderer({
   const { configError, ready, sessionTriaged } = loader
   const [error, setError] = useState<unknown>()
 
-  console.log(
-    '[Renderer] loader state - ready:',
-    ready,
-    'configError:',
-    configError,
-    'sessionTriaged:',
-    sessionTriaged,
-  )
-
   useEffect(() => {
-    console.log(
-      '[Renderer] useEffect triggered - ready:',
-      ready,
-      'loader:',
-      loader,
-    )
+    // Skip destroy in Jest since it interferes with test cleanup
     const isJest = typeof jest !== 'undefined'
     if (ready) {
       try {
-        console.log(
-          '[Renderer] ready=true, pluginManager.current?.rootModel:',
-          pluginManager.current?.rootModel,
-        )
         if (pluginManager.current?.rootModel && !isJest) {
-          console.log('[Renderer] Destroying existing rootModel')
           destroy(pluginManager.current.rootModel)
         }
-        console.log('[Renderer] Creating new pluginManager')
         pluginManager.current = createPluginManager(loader, reloadPluginManager)
-        console.log('[Renderer] pluginManager created:', pluginManager.current)
         setPluginManagerCreated(true)
       } catch (e) {
-        console.error('[Renderer] Error creating pluginManager:', e)
+        console.error(e)
         setError(e)
       }
     }
     return () => {
-      console.log(
-        '[Renderer] useEffect cleanup - pluginManager.current?.rootModel:',
-        pluginManager.current?.rootModel,
-      )
       if (pluginManager.current?.rootModel && !isJest) {
         const rootModel = pluginManager.current.rootModel
-        // @ts-expect-error
         const session = rootModel.session
         if (session) {
-          const sessionSnap = getSnapshot(session)
-          console.log(
-            '[Renderer] Cleanup: Current session being destroyed - id:',
-            sessionSnap.id,
-          )
-          console.log('[Renderer] Cleanup: Session name:', sessionSnap.name)
-          console.log(
-            '[Renderer] Cleanup: Session views count:',
-            sessionSnap.views?.length,
-          )
-          // Save current session to loader so it can be restored after HMR
-          console.log(
-            '[Renderer] Cleanup: Saving session to loader for HMR recovery',
-          )
-          loader.setSessionSnapshot(sessionSnap)
-          loader.setBlankSession(false)
+          // Save session before destroying so it can be restored (see file
+          // header comment for details on when this is needed)
+          loader.setSessionSnapshot(getSnapshot(session))
         }
-        console.log('[Renderer] Cleanup: Destroying rootModel')
         destroy(pluginManager.current.rootModel)
       }
     }
