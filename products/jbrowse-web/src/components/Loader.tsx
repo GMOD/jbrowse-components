@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { destroy } from '@jbrowse/mobx-state-tree'
+import { destroy, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
@@ -32,28 +32,29 @@ const paramsToDelete = [
   'highlight',
 ] as const
 
+console.log(
+  '[Loader] Module loaded/reloaded at:',
+  new Date().toISOString(),
+  '- HMR debug v5 with fix',
+)
+
 export function Loader({
   initialTimestamp: initialTimestampProp,
 }: {
   initialTimestamp?: number
 }) {
+  console.log(
+    '[Loader] Component initializing, initialTimestampProp:',
+    initialTimestampProp,
+  )
   const [initialTimestamp] = useState(() => initialTimestampProp ?? Date.now())
 
   const [loader] = useState(() => {
-    const {
-      config,
-      session,
-      adminKey,
-      password,
-      loc,
-      assembly,
-      tracks,
-      sessionTracks,
-      tracklist,
-      highlight,
-      nav,
-      hubURL,
-    } = readQueryParams([
+    console.log(
+      '[Loader] Creating SessionLoader state, initialTimestamp:',
+      initialTimestamp,
+    )
+    const queryParams = readQueryParams([
       'config',
       'session',
       'adminKey',
@@ -67,8 +68,28 @@ export function Loader({
       'nav',
       'hubURL',
     ])
+    const {
+      config,
+      session,
+      adminKey,
+      password,
+      loc,
+      assembly,
+      tracks,
+      sessionTracks,
+      tracklist,
+      highlight,
+      nav,
+      hubURL,
+    } = queryParams
+    console.log('[Loader] Query params read:', queryParams)
+    console.log(
+      '[Loader] sessionStorage current:',
+      sessionStorage.getItem('current')?.slice(0, 200),
+    )
+    console.log('[Loader] localStorage keys:', Object.keys(localStorage))
 
-    return SessionLoader.create({
+    const loaderInstance = SessionLoader.create({
       configPath: config,
       sessionQuery: session,
       password,
@@ -83,6 +104,8 @@ export function Loader({
       hubURL: hubURL?.split(','),
       initialTimestamp,
     })
+    console.log('[Loader] SessionLoader created:', loaderInstance)
+    return loaderInstance
   })
 
   useEffect(() => {
@@ -97,6 +120,7 @@ const Renderer = observer(function Renderer({
 }: {
   loader: SessionLoaderModel
 }) {
+  console.log('[Renderer] Component rendering, firstLoader:', firstLoader)
   const [loader, setLoader] = useState(firstLoader)
   const pluginManager = useRef<PluginManager | undefined>(undefined)
   const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
@@ -105,6 +129,15 @@ const Renderer = observer(function Renderer({
       configSnapshot: Record<string, unknown>,
       sessionSnapshot: Record<string, unknown>,
     ) => {
+      console.log('[Renderer] reloadPluginManager called')
+      console.log(
+        '[Renderer] configSnapshot:',
+        JSON.stringify(configSnapshot).slice(0, 200),
+      )
+      console.log(
+        '[Renderer] sessionSnapshot:',
+        JSON.stringify(sessionSnapshot).slice(0, 200),
+      )
       const newLoader = SessionLoader.create({
         configPath: loader.configPath,
         sessionQuery: loader.sessionQuery,
@@ -122,6 +155,7 @@ const Renderer = observer(function Renderer({
         configSnapshot,
         sessionSnapshot,
       })
+      console.log('[Renderer] newLoader created:', newLoader)
       setLoader(newLoader)
       setPluginManagerCreated(false)
     },
@@ -130,22 +164,70 @@ const Renderer = observer(function Renderer({
   const { configError, ready, sessionTriaged } = loader
   const [error, setError] = useState<unknown>()
 
+  console.log(
+    '[Renderer] loader state - ready:',
+    ready,
+    'configError:',
+    configError,
+    'sessionTriaged:',
+    sessionTriaged,
+  )
+
   useEffect(() => {
+    console.log(
+      '[Renderer] useEffect triggered - ready:',
+      ready,
+      'loader:',
+      loader,
+    )
     const isJest = typeof jest !== 'undefined'
     if (ready) {
       try {
+        console.log(
+          '[Renderer] ready=true, pluginManager.current?.rootModel:',
+          pluginManager.current?.rootModel,
+        )
         if (pluginManager.current?.rootModel && !isJest) {
+          console.log('[Renderer] Destroying existing rootModel')
           destroy(pluginManager.current.rootModel)
         }
+        console.log('[Renderer] Creating new pluginManager')
         pluginManager.current = createPluginManager(loader, reloadPluginManager)
+        console.log('[Renderer] pluginManager created:', pluginManager.current)
         setPluginManagerCreated(true)
       } catch (e) {
-        console.error(e)
+        console.error('[Renderer] Error creating pluginManager:', e)
         setError(e)
       }
     }
     return () => {
+      console.log(
+        '[Renderer] useEffect cleanup - pluginManager.current?.rootModel:',
+        pluginManager.current?.rootModel,
+      )
       if (pluginManager.current?.rootModel && !isJest) {
+        const rootModel = pluginManager.current.rootModel
+        // @ts-expect-error
+        const session = rootModel.session
+        if (session) {
+          const sessionSnap = getSnapshot(session)
+          console.log(
+            '[Renderer] Cleanup: Current session being destroyed - id:',
+            sessionSnap.id,
+          )
+          console.log('[Renderer] Cleanup: Session name:', sessionSnap.name)
+          console.log(
+            '[Renderer] Cleanup: Session views count:',
+            sessionSnap.views?.length,
+          )
+          // Save current session to loader so it can be restored after HMR
+          console.log(
+            '[Renderer] Cleanup: Saving session to loader for HMR recovery',
+          )
+          loader.setSessionSnapshot(sessionSnap)
+          loader.setBlankSession(false)
+        }
+        console.log('[Renderer] Cleanup: Destroying rootModel')
         destroy(pluginManager.current.rootModel)
       }
     }

@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from './corePlugins'
 import { loadHubSpec } from './loadHubSpec'
@@ -16,6 +17,11 @@ export function createPluginManager(
     sessionSnapshot: Record<string, unknown>,
   ) => void,
 ) {
+  console.log('[createPluginManager] called')
+  console.log('[createPluginManager] model.sessionSnapshot id:', (model.sessionSnapshot as any)?.id)
+  console.log('[createPluginManager] model.sessionSpec:', !!model.sessionSpec)
+  console.log('[createPluginManager] model.hubSpec:', !!model.hubSpec)
+  console.log('[createPluginManager] model.blankSession:', model.blankSession)
   // it is ready when a session has loaded and when there is no config error
   //
   // Assuming that the query changes model.sessionError or
@@ -73,18 +79,27 @@ export function createPluginManager(
     // local session if session in query, or loads the default session
     try {
       const { sessionError, sessionSpec, sessionSnapshot, hubSpec } = model
+      console.log('[createPluginManager] Session loading - sessionError:', !!sessionError)
+      console.log('[createPluginManager] Session loading - sessionSnapshot:', !!sessionSnapshot, 'id:', (sessionSnapshot as any)?.id)
+      console.log('[createPluginManager] Session loading - hubSpec:', !!hubSpec)
+      console.log('[createPluginManager] Session loading - sessionSpec:', !!sessionSpec)
       if (sessionError) {
+        console.log('[createPluginManager] Throwing sessionError')
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw sessionError
       } else if (sessionSnapshot) {
+        console.log('[createPluginManager] Calling rootModel.setSession with sessionSnapshot')
         rootModel.setSession(sessionSnapshot)
       } else if (hubSpec) {
+        console.log('[createPluginManager] Setting up hubSpec callback')
         // @ts-expect-error
         afterInitializedCb = () => loadHubSpec(hubSpec, pluginManager)
       } else if (sessionSpec) {
+        console.log('[createPluginManager] Setting up sessionSpec callback')
         // @ts-expect-error
         afterInitializedCb = () => loadSessionSpec(sessionSpec, pluginManager)
       } else {
+        console.log('[createPluginManager] Calling rootModel.setDefaultSession()')
         rootModel.setDefaultSession()
       }
     } catch (e) {
