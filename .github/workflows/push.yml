@@ -87,7 +87,7 @@ jobs:
       - name: Check code formatting
         run: yarn prettier --check .
       - name: Spellcheck
-        uses: crate-ci/typos@2d0ce569feab1f8752f1dde43cc2f2aa53236e06 # v1.40.0
+        uses: crate-ci/typos@5c19779cb52ea50e151f5a10333ccd269227b5ae # v1.41.0
       - name: Lint code
         run: yarn lint
       - name: Typecheck code
