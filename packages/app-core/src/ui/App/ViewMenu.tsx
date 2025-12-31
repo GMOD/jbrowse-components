@@ -9,6 +9,7 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import MenuIcon from '@mui/icons-material/Menu'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
+import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { useDockview } from './DockviewContext'
@@ -35,6 +36,7 @@ const ViewMenu = observer(function ViewMenu({
     moveViewToBottom: (arg: string) => void
     moveViewToTop: (arg: string) => void
     useWorkspaces: boolean
+    setUseWorkspaces: (arg: boolean) => void
   }
 
   const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
@@ -61,24 +63,30 @@ const ViewMenu = observer(function ViewMenu({
                 )
               },
             },
-            ...(session.useWorkspaces
-              ? [
-                  {
-                    label: 'Move to new tab',
-                    icon: OpenInNewIcon,
-                    onClick: () => {
-                      moveViewToNewTab(model.id)
-                    },
-                  },
-                  {
-                    label: 'Move to split view (right side of screen)',
-                    icon: VerticalSplitIcon,
-                    onClick: () => {
-                      moveViewToSplitRight(model.id)
-                    },
-                  },
-                ]
-              : []),
+            {
+              label: 'Move to new tab',
+              icon: OpenInNewIcon,
+              onClick: () => {
+                transaction(() => {
+                  session.setUseWorkspaces(true)
+                })
+                transaction(() => {
+                  moveViewToNewTab(model.id)
+                })
+              },
+            },
+            {
+              label: 'Move to split view (right side of screen)',
+              icon: VerticalSplitIcon,
+              onClick: () => {
+                transaction(() => {
+                  session.setUseWorkspaces(true)
+                })
+                transaction(() => {
+                  moveViewToSplitRight(model.id)
+                })
+              },
+            },
             ...(session.views.length > 2
               ? [
                   {
