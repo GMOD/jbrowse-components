@@ -49,6 +49,8 @@ import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import { autorun, when } from 'mobx'
 
 import { handleSelectedRegion } from '../searchUtils'
@@ -1787,6 +1789,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       rubberBandMenuItems(): MenuItem[] {
+        const { leftOffset, rightOffset } = self
+        const leftRef = leftOffset?.refName ?? ''
+        const rightRef = rightOffset?.refName ?? ''
+        const leftCoord = Math.round((leftOffset?.coord ?? 0) + 1).toLocaleString('en-US')
+        const rightCoord = Math.round(rightOffset?.coord ?? 0).toLocaleString('en-US')
+        const rangeString =
+          leftRef === rightRef
+            ? `${leftRef}:${leftCoord}-${rightCoord}`
+            : `${leftRef}:${leftCoord}..${rightRef}:${rightCoord}`
+
         return [
           {
             label: 'Zoom to region',
@@ -1801,9 +1813,49 @@ export function stateModelFactory(pluginManager: PluginManager) {
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 GetSequenceDialog,
-
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
+            },
+          },
+          {
+            label: 'Copy range',
+            icon: ContentCopyIcon,
+            onClick: () => {
+              navigator.clipboard.writeText(rangeString)
+            },
+          },
+        ]
+      },
+
+      /**
+       * #method
+       */
+      rubberbandClickMenuItems(clickOffset: BpOffset): MenuItem[] {
+        const locString = `${clickOffset.refName}:${Math.round(clickOffset.coord + 1).toLocaleString('en-US')}`
+        return [
+          {
+            label: 'Center view here',
+            icon: CenterFocusStrongIcon,
+            onClick: () => {
+              self.centerAt(clickOffset.coord, clickOffset.refName)
+            },
+          },
+          {
+            label: 'Zoom to base level',
+            icon: ZoomInIcon,
+            onClick: () => {
+              self.centerAt(clickOffset.coord, clickOffset.refName)
+              self.zoomTo(self.minBpPerPx)
+            },
+          },
+          {
+            label: `Copy coordinate (${locString})`,
+            icon: ContentCopyIcon,
+            onClick: () => {
+              navigator.clipboard.writeText(locString)
             },
           },
         ]

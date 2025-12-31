@@ -55,6 +55,8 @@ const TracksContainer = observer(function TracksContainer({
     left,
     anchorPosition,
     open,
+    isClick,
+    clickBpOffset,
     handleMenuItemClick,
     handleClose,
     mouseMove,
@@ -110,7 +112,11 @@ const TracksContainer = observer(function TracksContainer({
           onMenuItemClick={handleMenuItemClick}
           open={open}
           onClose={handleClose}
-          menuItems={model.rubberBandMenuItems()}
+          menuItems={
+            isClick && clickBpOffset
+              ? model.rubberbandClickMenuItems(clickBpOffset)
+              : model.rubberBandMenuItems()
+          }
         />
       ) : null}
 

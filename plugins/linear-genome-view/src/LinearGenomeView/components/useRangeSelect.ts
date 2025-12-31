@@ -9,6 +9,7 @@ interface AnchorPosition {
   offsetX: number
   clientX: number
   clientY: number
+  isClick?: boolean
 }
 
 export function useRangeSelect(
@@ -55,20 +56,19 @@ export function useRangeSelect(
       if (startX !== undefined && ref.current) {
         const { clientX, clientY } = event
         const offsetX = getRelativeX(event, ref.current)
-        if (Math.abs(offsetX - startX) <= 3) {
-          handleClose()
-          return
-        }
-        // as stated above, store both clientX/Y and offsetX for different
-        // purposes
+        const isClick = Math.abs(offsetX - startX) <= 3
+        // store both clientX/Y and offsetX for different purposes
         setAnchorPosition({
           offsetX,
           clientX,
           clientY,
+          isClick,
         })
-        const args = computeOffsets(offsetX)
-        if (args) {
-          model.setOffsets(args.leftOffset, args.rightOffset)
+        if (!isClick) {
+          const args = computeOffsets(offsetX)
+          if (args) {
+            model.setOffsets(args.leftOffset, args.rightOffset)
+          }
         }
         setGuideX(undefined)
       }
@@ -118,14 +118,21 @@ export function useRangeSelect(
   }
 
   const open = Boolean(anchorPosition)
+  const isClick = anchorPosition?.isClick
+  const clickBpOffset = isClick ? model.pxToBp(anchorPosition.offsetX) : undefined
+
   if (startX === undefined) {
     return {
       open,
+      isClick,
+      clickBpOffset,
       guideX,
       mouseDown,
       mouseMove,
       mouseOut,
+      handleClose,
       handleMenuItemClick,
+      anchorPosition,
     }
   }
   const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
@@ -137,7 +144,9 @@ export function useRangeSelect(
 
   return {
     open,
-    rubberbandOn: true,
+    isClick,
+    clickBpOffset,
+    rubberbandOn: !isClick,
     mouseDown,
     mouseMove,
     mouseOut,

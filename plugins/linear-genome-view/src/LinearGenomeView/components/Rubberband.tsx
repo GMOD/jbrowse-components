@@ -42,6 +42,8 @@ const Rubberband = observer(function Rubberband({
     left,
     anchorPosition,
     open,
+    isClick,
+    clickBpOffset,
     handleMenuItemClick,
     handleClose,
     mouseMove,
@@ -74,7 +76,11 @@ const Rubberband = observer(function Rubberband({
           onMenuItemClick={handleMenuItemClick}
           open={open}
           onClose={handleClose}
-          menuItems={model.rubberBandMenuItems()}
+          menuItems={
+            isClick && clickBpOffset
+              ? model.rubberbandClickMenuItems(clickBpOffset)
+              : model.rubberBandMenuItems()
+          }
         />
       ) : null}
       <div
