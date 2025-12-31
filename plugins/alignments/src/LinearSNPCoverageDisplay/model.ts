@@ -419,6 +419,14 @@ function stateModelFactory(
               type: 'subMenu',
               subMenu: [
                 {
+                  label: 'Show tooltips',
+                  type: 'checkbox',
+                  checked: self.showTooltipsEnabled,
+                  onClick: () => {
+                    self.setShowTooltips(!self.showTooltipsEnabled)
+                  },
+                },
+                {
                   label: 'Show legend',
                   type: 'checkbox',
                   checked: self.showLegend,

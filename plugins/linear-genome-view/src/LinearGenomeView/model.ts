@@ -1833,37 +1833,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      rubberbandClickMenuItems(clickOffset: BpOffset): MenuItem[] {
-        const locString = `${clickOffset.refName}:${Math.round(clickOffset.coord + 1).toLocaleString('en-US')}`
-        return [
-          {
-            label: 'Center view here',
-            icon: CenterFocusStrongIcon,
-            onClick: () => {
-              self.centerAt(clickOffset.coord, clickOffset.refName)
-            },
-          },
-          {
-            label: 'Zoom to base level',
-            icon: ZoomInIcon,
-            onClick: () => {
-              self.centerAt(clickOffset.coord, clickOffset.refName)
-              self.zoomTo(self.minBpPerPx)
-            },
-          },
-          {
-            label: `Copy coordinate (${locString})`,
-            icon: ContentCopyIcon,
-            onClick: () => {
-              navigator.clipboard.writeText(locString)
-            },
-          },
-        ]
-      },
-
-      /**
-       * #method
-       */
       bpToPx({
         refName,
         coord,
@@ -1914,6 +1883,42 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       get visibleRegions() {
         return self.dynamicBlocks.contentBlocks
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      rubberbandClickMenuItems(clickOffset: BpOffset): MenuItem[] {
+        const { coord, refName } = clickOffset
+        if (coord === undefined || refName === undefined) {
+          return []
+        }
+        const locString = `${refName}:${Math.round(coord + 1).toLocaleString('en-US')}`
+        return [
+          {
+            label: 'Center view here',
+            icon: CenterFocusStrongIcon,
+            onClick: () => {
+              self.centerAt(coord, refName)
+            },
+          },
+          {
+            label: 'Zoom to base level',
+            icon: ZoomInIcon,
+            onClick: () => {
+              self.centerAt(coord, refName)
+              self.zoomTo(self.minBpPerPx)
+            },
+          },
+          {
+            label: `Copy coordinate (${locString})`,
+            icon: ContentCopyIcon,
+            onClick: () => {
+              navigator.clipboard.writeText(locString)
+            },
+          },
+        ]
       },
     }))
     .actions(self => ({

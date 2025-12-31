@@ -86,6 +86,10 @@ function stateModelFactory() {
          * #property
          */
         showLegend: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        showTooltips: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -194,6 +198,14 @@ function stateModelFactory() {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * whether to show tooltips on mouseover, defaults to true
+       */
+      get showTooltipsEnabled() {
+        return self.showTooltips ?? true
+      },
+
       /**
        * #getter
        * a CompositeMap of `featureId -> feature obj` that
@@ -407,6 +419,12 @@ function stateModelFactory() {
        */
       setShowLegend(s: boolean) {
         self.showLegend = s
+      },
+      /**
+       * #action
+       */
+      setShowTooltips(arg: boolean) {
+        self.showTooltips = arg
       },
     }))
 

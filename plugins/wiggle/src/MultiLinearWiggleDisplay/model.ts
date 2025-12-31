@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
 import SharedWiggleMixin from '../shared/SharedWiggleMixin'
@@ -457,6 +458,20 @@ export function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            {
+              label: 'Show...',
+              icon: VisibilityIcon,
+              subMenu: [
+                {
+                  label: 'Show tooltips',
+                  type: 'checkbox',
+                  checked: self.showTooltipsEnabled,
+                  onClick: () => {
+                    self.setShowTooltips(!self.showTooltipsEnabled)
+                  },
+                },
+              ],
+            },
             {
               label: 'Score',
               subMenu: self.scoreTrackMenuItems(),

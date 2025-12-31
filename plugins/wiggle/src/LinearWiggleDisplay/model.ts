@@ -314,6 +314,20 @@ function stateModelFactory(
       trackMenuItems() {
         return [
           ...self.wiggleBaseTrackMenuItems(),
+          {
+            label: 'Show...',
+            icon: VisibilityIcon,
+            subMenu: [
+              {
+                label: 'Show tooltips',
+                type: 'checkbox',
+                checked: self.showTooltipsEnabled,
+                onClick: () => {
+                  self.setShowTooltips(!self.showTooltipsEnabled)
+                },
+              },
+            ],
+          },
           ...self.wiggleOnlyTrackMenuItems(),
         ]
       },

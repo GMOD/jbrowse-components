@@ -33,8 +33,13 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
   const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
   const [contextCoord, setContextCoord] = useState<Coord>()
   const { model, children } = props
-  const { TooltipComponent, DisplayMessageComponent, height, showLegend } =
-    model
+  const {
+    TooltipComponent,
+    DisplayMessageComponent,
+    height,
+    showLegend,
+    showTooltipsEnabled,
+  } = model
   const theme = useTheme()
   const legendItems = model.legendItems(theme)
   return (
@@ -73,16 +78,18 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
         <FloatingLegend items={legendItems} />
       ) : null}
 
-      <Suspense fallback={null}>
-        <TooltipComponent
-          model={model}
-          height={height}
-          offsetMouseCoord={offsetMouseCoord}
-          clientMouseCoord={clientMouseCoord}
-          clientRect={clientRect}
-          mouseCoord={offsetMouseCoord}
-        />
-      </Suspense>
+      {showTooltipsEnabled ? (
+        <Suspense fallback={null}>
+          <TooltipComponent
+            model={model}
+            height={height}
+            offsetMouseCoord={offsetMouseCoord}
+            clientMouseCoord={clientMouseCoord}
+            clientRect={clientRect}
+            mouseCoord={offsetMouseCoord}
+          />
+        </Suspense>
+      ) : null}
       {contextCoord ? (
         <MenuPage
           contextCoord={contextCoord}

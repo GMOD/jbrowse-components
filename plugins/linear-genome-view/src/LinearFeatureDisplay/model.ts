@@ -313,6 +313,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               icon: VisibilityIcon,
               subMenu: [
                 {
+                  label: 'Show tooltips',
+                  type: 'checkbox',
+                  checked: self.showTooltipsEnabled,
+                  onClick: () => {
+                    self.setShowTooltips(!self.showTooltipsEnabled)
+                  },
+                },
+                {
                   label: 'Show labels',
                   type: 'checkbox',
                   checked: self.showLabels,
