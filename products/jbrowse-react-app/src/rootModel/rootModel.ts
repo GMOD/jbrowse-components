@@ -18,6 +18,7 @@ import AddIcon from '@mui/icons-material/Add'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import StorageIcon from '@mui/icons-material/Storage'
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import { autorun } from 'mobx'
 
 import jbrowseWebFactory from '../jbrowseModel'
@@ -285,6 +286,7 @@ export default function RootModel({
               menuItems: [
                 {
                   label: 'Use workspaces',
+                  icon: SpaceDashboardIcon,
                   type: 'checkbox',
                   checked: self.session?.useWorkspaces ?? false,
                   helpText:

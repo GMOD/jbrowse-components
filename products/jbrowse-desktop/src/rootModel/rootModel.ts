@@ -23,6 +23,7 @@ import SaveAsIcon from '@mui/icons-material/SaveAs'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 
 import { DesktopSessionManagementMixin, getSaveSession } from './Sessions'
 import packageJSON from '../../package.json'
@@ -332,6 +333,7 @@ export default function rootModelFactory({
                 },
                 {
                   label: 'Use workspaces',
+                  icon: SpaceDashboardIcon,
                   type: 'checkbox',
                   checked: self.session?.useWorkspaces ?? false,
                   helpText:
