@@ -8134,10 +8134,10 @@ functions-have-names@^1.2.3:
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.3.tgz#0404fe4ee2ba2f607f0e0ec3c80bae994133b834"
   integrity sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==
 
-g2p_mapper@^1.0.9:
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/g2p_mapper/-/g2p_mapper-1.0.10.tgz#0cb8ab3df2b42ca9b26137227f7372f2831fec81"
-  integrity sha512-RuA9TjCLYNOkuXqytaYuLHpHQC2NJN9Me1sT7nwAMlWiJmKOzC+retwBzQZU+A/KfIYB92fLzbxaDxNlr5iwTw==
+g2p_mapper@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/g2p_mapper/-/g2p_mapper-2.0.0.tgz#7d67abaf7a7df527f1a5d2c776e97cc741071c88"
+  integrity sha512-mOFXTiFXxHS1Y8c+vUxyu32oDBN41gwjf4IWK6yy7xilYw9MVrmkd4S5PbApPno7w7Cp91kKGXOqxxP+oLqLEQ==
 
 gauge@^4.0.3:
   version "4.0.4"
