@@ -8,6 +8,7 @@ describe('floatingLabels', () => {
       subfeatureLabels: 'below',
       color: '#000000',
       parentFeatureId: 'parent-gene-123',
+      subfeatureId: 'subfeature-456',
       tooltip: 'Gene: BRCA1',
     }
 
@@ -75,6 +76,7 @@ describe('floatingLabels', () => {
         subfeatureLabels: 'overlay',
         color: '#333',
         parentFeatureId: 'gene-BRCA1',
+        subfeatureId: 'mRNA-1-id',
         tooltip: 'BRCA1 tooltip',
       })
 

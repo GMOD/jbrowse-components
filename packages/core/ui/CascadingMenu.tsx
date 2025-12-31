@@ -207,9 +207,11 @@ export default function CascadingMenu({
   onClose,
   anchorEl,
   anchorOrigin,
+  transformOrigin,
   anchorReference,
   anchorPosition,
   slotProps,
+  marginThreshold,
   style,
 }: {
   onMenuItemClick: (event: unknown, callback: () => void) => void
@@ -222,9 +224,14 @@ export default function CascadingMenu({
     vertical: 'top' | 'center' | 'bottom'
     horizontal: 'left' | 'center' | 'right'
   }
+  transformOrigin?: {
+    vertical: 'top' | 'center' | 'bottom'
+    horizontal: 'left' | 'center' | 'right'
+  }
   anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
   anchorPosition?: { top: number; left: number }
   slotProps?: { transition?: { onExit?: () => void } }
+  marginThreshold?: number | null
   style?: React.CSSProperties
 }) {
   const items = Array.isArray(menuItems) ? menuItems : menuItems()
@@ -235,9 +242,11 @@ export default function CascadingMenu({
       open={open}
       onClose={onClose}
       anchorOrigin={anchorOrigin}
+      transformOrigin={transformOrigin}
       anchorReference={anchorReference}
       anchorPosition={anchorPosition}
       slotProps={slotProps}
+      marginThreshold={marginThreshold ?? undefined}
       style={style}
     >
       <CascadingMenuList
