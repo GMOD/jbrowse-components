@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { complement, reverse } from '@jbrowse/core/util'
+import { complement, reverse, toLocale } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -88,9 +88,9 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
           if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
             throw new Error(
-              `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                chunkEnd - chunkStart
-              ).toLocaleString()}`,
+              `${loc} returned ${toLocale(chunkSeq.length)} bases, but should have returned ${toLocale(
+                chunkEnd - chunkStart,
+              )}`,
             )
           }
 

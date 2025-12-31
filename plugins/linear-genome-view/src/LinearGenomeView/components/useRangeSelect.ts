@@ -119,7 +119,9 @@ export function useRangeSelect(
 
   const open = Boolean(anchorPosition)
   const isClick = anchorPosition?.isClick
-  const clickBpOffset = isClick ? model.pxToBp(anchorPosition.offsetX) : undefined
+  const clickBpOffset = isClick
+    ? model.pxToBp(anchorPosition.offsetX)
+    : undefined
 
   if (startX === undefined) {
     return {

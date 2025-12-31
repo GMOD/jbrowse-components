@@ -4,7 +4,6 @@ import { lazy } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   assembleLocString,
   clamp,
@@ -12,12 +11,9 @@ import {
   getBpDisplayStr,
   getSession,
   isSessionModelWithWidgets,
-  isSessionWithAddTracks,
   localStorageGetBoolean,
   localStorageGetItem,
-  localStorageSetItem,
   measureText,
-  parseLocString,
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
@@ -32,28 +28,12 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getSnapshot,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import LabelIcon from '@mui/icons-material/Label'
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import PaletteIcon from '@mui/icons-material/Palette'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import SearchIcon from '@mui/icons-material/Search'
-import SyncAltIcon from '@mui/icons-material/SyncAlt'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import { autorun, when } from 'mobx'
+import { when } from 'mobx'
 
 import { handleSelectedRegion } from '../searchUtils'
+import { doAfterAttach } from './afterAttach'
 import Header from './components/Header'
 import MiniControls from './components/MiniControls'
 import {
@@ -63,6 +43,13 @@ import {
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
 } from './consts'
+import { setupKeyboardHandler } from './keyboardHandler'
+import {
+  buildMenuItems,
+  buildRubberBandMenuItems,
+  buildRubberbandClickMenuItems,
+  rewriteOnClicks,
+} from './menuItems'
 import {
   calculateVisibleLocStrings,
   generateLocations,
@@ -86,14 +73,6 @@ import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
-const ReturnToImportFormDialog = lazy(
-  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
-)
-const SequenceSearchDialog = lazy(
-  () => import('./components/SequenceSearchDialog'),
-)
-const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
-const GetSequenceDialog = lazy(() => import('./components/GetSequenceDialog'))
 const SearchResultsDialog = lazy(
   () => import('./components/SearchResultsDialog'),
 )
@@ -656,28 +635,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * #method
-       * modifies view menu action onClick to apply to all tracks of same type
-       */
-      rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
-        for (const action of viewMenuActions) {
-          // go to lowest level menu
-          if ('subMenu' in action) {
-            this.rewriteOnClicks(trackType, action.subMenu)
-          }
-          if ('onClick' in action) {
-            const holdOnClick = action.onClick
-            action.onClick = (...args: unknown[]) => {
-              for (const track of self.tracks) {
-                if (track.type === trackType) {
-                  holdOnClick.apply(track, [track, ...args])
-                }
-              }
-            }
-          }
-        }
-      },
-      /**
        * #getter
        */
       get trackTypeActions() {
@@ -686,7 +643,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
             const viewMenuActions = structuredClone(track.viewMenuActions)
-            this.rewriteOnClicks(track.type, viewMenuActions)
+            rewriteOnClicks(
+              self as LinearGenomeViewModel,
+              track.type,
+              viewMenuActions,
+            )
             allActions.set(track.type, viewMenuActions)
           }
         }
@@ -941,7 +902,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
-        localStorageSetItem('lgv-trackLabels', setting)
         self.trackLabels = setting
       },
 
@@ -1225,192 +1185,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * return the view menu items
        */
       menuItems(): MenuItem[] {
-        if (!self.hasDisplayedRegions) {
-          return []
-        }
-        const { canShowCytobands, showCytobands } = self
-        const session = getSession(self)
-        const menuItems: MenuItem[] = [
-          {
-            label: 'Return to import form',
-            onClick: () => {
-              session.queueDialog(handleClose => [
-                ReturnToImportFormDialog,
-                { model: self, handleClose },
-              ])
-            },
-            icon: FolderOpenIcon,
-          },
-          ...(isSessionWithAddTracks(session)
-            ? [
-                {
-                  label: 'Sequence search',
-                  icon: SearchIcon,
-                  onClick: () => {
-                    session.queueDialog(handleClose => [
-                      SequenceSearchDialog,
-                      {
-                        model: self,
-                        handleClose,
-                      },
-                    ])
-                  },
-                },
-              ]
-            : []),
-          {
-            label: 'Export SVG',
-            icon: PhotoCameraIcon,
-            onClick: () => {
-              session.queueDialog(handleClose => [
-                ExportSvgDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-          },
-          {
-            label: 'Open track selector',
-            onClick: self.activateTrackSelector,
-            icon: TrackSelectorIcon,
-          },
-          {
-            label: 'Horizontally flip',
-            icon: SyncAltIcon,
-            onClick: self.horizontallyFlip,
-          },
-          {
-            label: 'Color by CDS and draw amino acids',
-            type: 'checkbox',
-            checked: self.colorByCDS,
-            icon: PaletteIcon,
-            onClick: () => {
-              self.setColorByCDS(!self.colorByCDS)
-            },
-          },
-          {
-            label: 'Show...',
-            icon: VisibilityIcon,
-            subMenu: [
-              {
-                label: 'Show all regions in assembly',
-                onClick: self.showAllRegionsInAssembly,
-              },
-              {
-                label: 'Show center line',
-                type: 'checkbox',
-                checked: self.showCenterLine,
-                onClick: () => {
-                  self.setShowCenterLine(!self.showCenterLine)
-                },
-              },
-              {
-                label: 'Show header',
-                type: 'checkbox',
-                checked: !self.hideHeader,
-                onClick: () => {
-                  self.setHideHeader(!self.hideHeader)
-                },
-              },
-
-              {
-                label: 'Show track outlines',
-                type: 'checkbox',
-                checked: self.showTrackOutlines,
-                onClick: () => {
-                  self.setShowTrackOutlines(!self.showTrackOutlines)
-                },
-              },
-              {
-                label: 'Show header overview',
-                type: 'checkbox',
-                checked: !self.hideHeaderOverview,
-                onClick: () => {
-                  self.setHideHeaderOverview(!self.hideHeaderOverview)
-                },
-                disabled: self.hideHeader,
-              },
-              {
-                label: 'Show no tracks active button',
-                type: 'checkbox',
-                checked: !self.hideNoTracksActive,
-                onClick: () => {
-                  self.setHideNoTracksActive(!self.hideNoTracksActive)
-                },
-              },
-              {
-                label: 'Show guidelines',
-                type: 'checkbox',
-                checked: self.showGridlines,
-                onClick: () => {
-                  self.setShowGridlines(!self.showGridlines)
-                },
-              },
-              ...(canShowCytobands
-                ? [
-                    {
-                      label: 'Show ideogram',
-                      type: 'checkbox' as const,
-                      checked: self.showCytobands,
-                      onClick: () => {
-                        self.setShowCytobands(!showCytobands)
-                      },
-                    },
-                  ]
-                : []),
-            ],
-          },
-          {
-            label: 'Track labels',
-            icon: LabelIcon,
-            subMenu: [
-              {
-                label: 'Overlapping',
-                icon: VisibilityIcon,
-                type: 'radio',
-                checked: self.trackLabelsSetting === 'overlapping',
-                onClick: () => {
-                  self.setTrackLabels('overlapping')
-                },
-              },
-              {
-                label: 'Offset',
-                icon: VisibilityIcon,
-                type: 'radio',
-                checked: self.trackLabelsSetting === 'offset',
-                onClick: () => {
-                  self.setTrackLabels('offset')
-                },
-              },
-              {
-                label: 'Hidden',
-                icon: VisibilityIcon,
-                type: 'radio',
-                checked: self.trackLabelsSetting === 'hidden',
-                onClick: () => {
-                  self.setTrackLabels('hidden')
-                },
-              },
-            ],
-          },
-        ]
-
-        // add track's view level menu options
-        for (const [key, value] of self.trackTypeActions.entries()) {
-          if (value.length) {
-            menuItems.push(
-              { type: 'divider' },
-              { type: 'subHeader', label: key },
-            )
-            for (const action of value) {
-              menuItems.push(action)
-            }
-          }
-        }
-
-        return menuItems
+        return buildMenuItems(self as LinearGenomeViewModel)
       },
     }))
     .views(self => {
@@ -1789,45 +1564,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       rubberBandMenuItems(): MenuItem[] {
-        const { leftOffset, rightOffset } = self
-        const leftRef = leftOffset?.refName ?? ''
-        const rightRef = rightOffset?.refName ?? ''
-        const leftCoord = Math.round((leftOffset?.coord ?? 0) + 1).toLocaleString('en-US')
-        const rightCoord = Math.round(rightOffset?.coord ?? 0).toLocaleString('en-US')
-        const rangeString =
-          leftRef === rightRef
-            ? `${leftRef}:${leftCoord}-${rightCoord}`
-            : `${leftRef}:${leftCoord}..${rightRef}:${rightCoord}`
-
-        return [
-          {
-            label: 'Zoom to region',
-            icon: ZoomInIcon,
-            onClick: () => {
-              self.moveTo(self.leftOffset, self.rightOffset)
-            },
-          },
-          {
-            label: 'Get sequence',
-            icon: MenuOpenIcon,
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                GetSequenceDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-          },
-          {
-            label: 'Copy range',
-            icon: ContentCopyIcon,
-            onClick: () => {
-              navigator.clipboard.writeText(rangeString)
-            },
-          },
-        ]
+        return buildRubberBandMenuItems(self as LinearGenomeViewModel)
       },
 
       /**
@@ -1890,173 +1627,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       rubberbandClickMenuItems(clickOffset: BpOffset): MenuItem[] {
-        const { coord, refName } = clickOffset
-        if (coord === undefined || refName === undefined) {
-          return []
-        }
-        const locString = `${refName}:${Math.round(coord + 1).toLocaleString('en-US')}`
-        return [
-          {
-            label: 'Center view here',
-            icon: CenterFocusStrongIcon,
-            onClick: () => {
-              self.centerAt(coord, refName)
-            },
-          },
-          {
-            label: 'Zoom to base level',
-            icon: ZoomInIcon,
-            onClick: () => {
-              self.centerAt(coord, refName)
-              self.zoomTo(self.minBpPerPx)
-            },
-          },
-          {
-            label: `Copy coordinate (${locString})`,
-            icon: ContentCopyIcon,
-            onClick: () => {
-              navigator.clipboard.writeText(locString)
-            },
-          },
-        ]
+        return buildRubberbandClickMenuItems(
+          self as LinearGenomeViewModel,
+          clickOffset,
+        )
       },
     }))
     .actions(self => ({
       afterCreate() {
-        function handler(e: KeyboardEvent) {
-          const session = getSession(self)
-          if (session.focusedViewId === self.id && (e.ctrlKey || e.metaKey)) {
-            if (e.code === 'ArrowLeft') {
-              e.preventDefault()
-              self.slide(-0.9)
-            } else if (e.code === 'ArrowRight') {
-              e.preventDefault()
-              self.slide(0.9)
-            } else if (e.code === 'ArrowUp') {
-              e.preventDefault()
-              self.zoom(self.bpPerPx / 2)
-            } else if (e.code === 'ArrowDown') {
-              e.preventDefault()
-              self.zoom(self.bpPerPx * 2)
-            }
-          }
-        }
-        document.addEventListener('keydown', handler)
-        addDisposer(self, () => {
-          document.removeEventListener('keydown', handler)
-        })
+        setupKeyboardHandler(self as LinearGenomeViewModel)
       },
 
       afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function initAutorun() {
-              const { init, initialized } = self
-              if (!initialized) {
-                return
-              }
-              if (init) {
-                const session = getSession(self)
-                const { assemblyManager } = session
-
-                if (init.loc) {
-                  self
-                    .navToLocString(init.loc, init.assembly)
-                    .catch((e: unknown) => {
-                      console.error(init, e)
-                      session.notifyError(`${e}`, e)
-                    })
-                } else {
-                  self.showAllRegionsInAssembly(init.assembly)
-                }
-
-                if (init.tracks) {
-                  const idsNotFound = [] as string[]
-                  for (const t of init.tracks) {
-                    try {
-                      self.showTrack(t)
-                    } catch (e) {
-                      if (/Could not resolve identifier/.exec(`${e}`)) {
-                        idsNotFound.push(t)
-                      } else {
-                        throw e
-                      }
-                    }
-                  }
-                  if (idsNotFound.length) {
-                    session.notifyError(
-                      `Could not resolve identifiers: ${idsNotFound.join(',')}`,
-                      new Error(
-                        `Could not resolve identifiers: ${idsNotFound.join(',')}`,
-                      ),
-                    )
-                  }
-                }
-
-                if (init.tracklist) {
-                  self.activateTrackSelector()
-                }
-
-                if (init.nav !== undefined) {
-                  self.setHideHeader(!init.nav)
-                }
-
-                if (init.highlight) {
-                  for (const h of init.highlight) {
-                    const p = parseLocString(h, refName =>
-                      assemblyManager.isValidRefName(refName, init.assembly),
-                    )
-                    const { start, end } = p
-                    if (start !== undefined && end !== undefined) {
-                      self.addToHighlights({
-                        ...p,
-                        start,
-                        end,
-                        assemblyName: init.assembly,
-                      })
-                    }
-                  }
-                }
-
-                // clear init state
-                self.setInit(undefined)
-              }
-            },
-            { name: 'LGVInit' },
-          ),
-        )
-        addDisposer(
-          self,
-          autorun(
-            function coarseDynamicBlocksAutorun() {
-              if (self.initialized) {
-                self.setCoarseDynamicBlocks(self.dynamicBlocks)
-              }
-            },
-            { delay: 500, name: 'LGVCoarseDynamicBlocks' },
-          ),
-        )
-
-        addDisposer(
-          self,
-          autorun(
-            function localStorageAutorun() {
-              const s = (s: unknown) => JSON.stringify(s)
-              const {
-                showCytobandsSetting,
-                showCenterLine,
-                colorByCDS,
-                showTrackOutlines,
-              } = self
-              localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
-              localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
-              localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
-              localStorageSetItem('lgv-showTrackOutlines', s(showTrackOutlines))
-            },
-            { name: 'LGVLocalStorage' },
-          ),
-        )
+        doAfterAttach(self as LinearGenomeViewModel)
       },
     }))
     .preProcessSnapshot(snap => {
