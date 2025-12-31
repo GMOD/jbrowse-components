@@ -206,6 +206,7 @@ export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
           start: Math.round(block.start),
           end: Math.round(block.end),
           assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+          reversed: block.reversed,
         }),
       )
       .join(' ')
