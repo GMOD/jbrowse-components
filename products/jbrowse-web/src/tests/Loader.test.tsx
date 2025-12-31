@@ -1,9 +1,11 @@
-import { render, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 
 import { handleRequest } from './generateReadBuffer'
 import { App } from './loaderUtil'
+import { createView, doBeforeEach } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -119,4 +121,20 @@ xtest('can catch error from loading a bad config', async () => {
     <App search="?config=test_data/bad_config_test/config.json" />,
   )
   await findAllByText(/Error while converting/)
+}, 20000)
+
+test('can use File->New session', async () => {
+  doBeforeEach()
+  const user = userEvent.setup()
+  const { session, rootModel } = await createView()
+  const initialSessionId = session.id
+
+  await user.click(await screen.findByText('File'))
+  await user.click(await screen.findByText('New session'))
+
+  await waitFor(() => {
+    expect(rootModel.session?.id).not.toBe(initialSessionId)
+  }, delay)
+
+  expect(screen.queryByText(/no session model found/i)).toBeNull()
 }, 20000)
