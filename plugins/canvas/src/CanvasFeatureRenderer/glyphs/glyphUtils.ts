@@ -4,17 +4,30 @@ import { isOffScreen } from '../util'
 import type { DrawContext, FeatureLayout, LayoutArgs } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 
-const STRAND_ARROW_PADDING = 8
+export const STRAND_ARROW_WIDTH = 8
+
+export type StrandArrowVisualSide = 'left' | 'right' | null
 
 /**
  * Compute padding needed for strand arrows.
+ *
+ * Returns both the layout-coordinate padding (left/right relative to feature
+ * origin) and the visual side where the arrow appears on screen.
+ *
+ * The effectiveStrand accounts for region reversal:
+ * - effectiveStrand === -1: arrow points left visually (padding on visual left)
+ * - effectiveStrand === 1: arrow points right visually (padding on visual right)
  */
 export function getStrandArrowPadding(strand: number, reversed: boolean) {
   const reverseFlip = reversed ? -1 : 1
   const effectiveStrand = strand * reverseFlip
+  const visualSide: StrandArrowVisualSide =
+    effectiveStrand === -1 ? 'left' : effectiveStrand === 1 ? 'right' : null
   return {
-    left: effectiveStrand === -1 ? STRAND_ARROW_PADDING : 0,
-    right: effectiveStrand === 1 ? STRAND_ARROW_PADDING : 0,
+    left: effectiveStrand === -1 ? STRAND_ARROW_WIDTH : 0,
+    right: effectiveStrand === 1 ? STRAND_ARROW_WIDTH : 0,
+    visualSide,
+    width: strand ? STRAND_ARROW_WIDTH : 0,
   }
 }
 

@@ -115,14 +115,16 @@ const FloatingLabels = observer(function FloatingLabels({
       totalFeatureHeight,
       floatingLabels,
       featureWidth,
-      leftPadding,
+      strandArrowWidth,
+      strandArrowVisualSide,
     },
   ] of featureLabels.entries()) {
     const featureVisualBottom = topPx + totalFeatureHeight
 
-    // leftPadding is already in visual terms (calculated with effectiveStrand)
-    // so we can use it directly regardless of reversed state
-    const featureLeftPx = leftPx + leftPadding
+    // Calculate feature content bounds (excluding strand arrow)
+    // strandArrowVisualSide tells us which side the arrow is on in screen space
+    const visualLeftPadding = strandArrowVisualSide === 'left' ? strandArrowWidth : 0
+    const featureLeftPx = leftPx + visualLeftPadding
     const featureRightPx = featureLeftPx + featureWidth
 
     for (let i = 0, l = floatingLabels.length; i < l; i++) {
