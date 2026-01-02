@@ -220,6 +220,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           addMiddleware(self, (rawCall, next) => {
+            console.log('[middleware] rawCall:', {
+              type: rawCall.type,
+              name: rawCall.name,
+              id: rawCall.id,
+              rootId: rawCall.rootId,
+              contextPath: rawCall.context ? getPath(rawCall.context) : null,
+              args: rawCall.args,
+            })
+
             if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
               const syncActions = [
                 'horizontalScroll',
@@ -232,19 +241,27 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 'toggleCenterLine',
               ]
 
+              console.log('[middleware] is root action, linkViews:', self.linkViews, 'isSyncAction:', syncActions.includes(rawCall.name))
+
               if (self.linkViews && syncActions.includes(rawCall.name)) {
                 const sourcePath = getPath(rawCall.context)
+                console.log('[middleware] SYNCING action', rawCall.name, 'from', sourcePath)
                 next(rawCall)
+                console.log('[middleware] next() called for originating view')
                 // Sync to all other views
                 for (const view of self.views) {
                   const viewPath = getPath(view)
                   if (viewPath !== sourcePath) {
+                    console.log('[middleware] syncing to other view:', viewPath)
                     // @ts-expect-error
                     view[rawCall.name](rawCall.args[0])
                   }
                 }
+                console.log('[middleware] returning early to prevent double apply')
+                return
               }
             }
+            console.log('[middleware] calling next() (fallthrough)')
             next(rawCall)
           }),
         )
