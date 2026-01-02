@@ -14,6 +14,7 @@ import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 const TrackLabelMenu = observer(function TrackLabelMenu({
   track,
@@ -23,29 +24,43 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
   const view = getContainingView(track) as LinearGenomeViewModel
   const session = getSession(track)
 
-  const getMenuItems = useCallback(() => {
+  const getMenuItems = useCallback((): MenuItem[] => {
     const trackConf = track.configuration
     const minimized = track.minimized
     const pinned = track.pinned
     const { isTopLevelView } = view
 
+    const trackMenuItems = track.trackMenuItems()
+    const saveTrackData = trackMenuItems.find(
+      item => 'label' in item && item.label === 'Save track data',
+    )
+    const remainingTrackMenuItems = trackMenuItems.filter(
+      item => !('label' in item) || item.label !== 'Save track data',
+    )
+
+    const sessionItems =
+      session.getTrackActionMenuItems?.(
+        trackConf,
+        saveTrackData ? [saveTrackData] : [],
+      ) || []
+
     return [
-      ...(!isTopLevelView
-        ? []
-        : [
-            {
-              label: pinned ? 'Unpin track' : 'Pin track',
-              icon: PushPinIcon,
-              onClick: () => {
-                track.setPinned(!pinned)
-              },
-            },
-          ]),
       {
         label: 'Track order',
         type: 'subMenu' as const,
-        priority: 2000,
+        priority: 1000,
         subMenu: [
+          ...(!isTopLevelView
+            ? []
+            : [
+                {
+                  label: pinned ? 'Unpin track' : 'Pin track',
+                  icon: PushPinIcon,
+                  onClick: () => {
+                    track.setPinned(!pinned)
+                  },
+                },
+              ]),
           {
             label: minimized ? 'Restore track' : 'Minimize track',
             icon: minimized ? AddIcon : MinimizeIcon,
@@ -95,9 +110,9 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
             : []),
         ],
       },
-      ...(session.getTrackActionMenuItems?.(trackConf) || []),
-      ...track.trackMenuItems(),
-    ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
+      ...sessionItems,
+      ...remainingTrackMenuItems,
+    ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
   }, [track, view, session])
 
   return (

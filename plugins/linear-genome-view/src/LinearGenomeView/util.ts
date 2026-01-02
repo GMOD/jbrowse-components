@@ -1,7 +1,5 @@
 import { assembleLocString, parseLocString } from '@jbrowse/core/util'
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 
-import type { BpOffset } from './types'
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
@@ -213,39 +211,4 @@ export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
       )
       .join(' ')
   }
-}
-
-/**
- * Helper method for fetching sequence.
- * Retrieves the corresponding regions that were selected by the rubberband.
- * Uses Base1DView to correctly calculate the visible regions after moveTo.
- *
- * @param snap - snapshot of the view state
- * @param interRegionPaddingWidth - padding between regions
- * @param width - view width
- * @param leftOffset - offset for start of selection
- * @param rightOffset - offset for end of selection
- * @returns array of Region-like objects
- */
-export function getSelectedRegions(
-  snap: Record<string, unknown>,
-  interRegionPaddingWidth: number,
-  width: number,
-  leftOffset?: BpOffset,
-  rightOffset?: BpOffset,
-) {
-  const simView = Base1DView.create({
-    ...snap,
-    interRegionPaddingWidth,
-  })
-
-  simView.setVolatileWidth(width)
-  simView.moveTo(leftOffset, rightOffset)
-
-  return simView.dynamicBlocks.contentBlocks.map(region => ({
-    assemblyName: region.assemblyName,
-    refName: region.refName,
-    start: Math.floor(region.start),
-    end: Math.ceil(region.end),
-  }))
 }

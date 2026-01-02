@@ -17,5 +17,6 @@ test('check pin track', async () => {
   await createView()
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Pin track'))
+  await user.click(await screen.findByText('Track order', ...opts))
+  await user.click(await screen.findByText('Pin track', ...opts))
 }, 50000)

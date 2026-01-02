@@ -73,6 +73,14 @@ exports[`adds menus 1`] = `
       {
         "checked": false,
         "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
         "label": "Use workspaces",
         "onClick": [Function],
         "type": "checkbox",
@@ -155,6 +163,14 @@ exports[`adds menus 2`] = `
       {
         "checked": false,
         "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
         "label": "Use workspaces",
         "onClick": [Function],
         "type": "checkbox",

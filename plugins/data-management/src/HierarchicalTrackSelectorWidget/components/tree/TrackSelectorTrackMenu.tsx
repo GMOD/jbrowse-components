@@ -32,9 +32,11 @@ const TrackSelectorTrackMenu = function ({
   const { classes } = useStyles()
   const trackId = conf.trackId as string
 
-  const getMenuItems = useCallback(
-    () => [
-      ...(getSession(model).getTrackActionMenuItems?.(conf) || []),
+  const getMenuItems = useCallback(() => {
+    const session = getSession(model)
+    const flatMenuItems = session.getTrackListMenuItems?.(conf) || []
+    return [
+      ...flatMenuItems,
       model.isFavorite(trackId)
         ? {
             label: 'Remove from favorites',
@@ -66,9 +68,8 @@ const TrackSelectorTrackMenu = function ({
             },
           ]
         : []),
-    ],
-    [conf, model, trackId],
-  )
+    ]
+  }, [conf, model, trackId])
 
   return (
     <CascadingMenuButton

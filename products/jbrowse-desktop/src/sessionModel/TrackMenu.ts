@@ -16,6 +16,7 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import type { DesktopRootModel } from '../rootModel/rootModel'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   SessionWithDialogs,
   SessionWithDrawerWidgets,
@@ -31,39 +32,22 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
   return types.model({}).views(self => ({
     /**
      * #method
+     * raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
      */
-    getTrackActionMenuItems(trackConfig: BaseTrackConfig) {
+    getTrackActions(trackConfig: BaseTrackConfig): MenuItem[] {
       const session = self as SessionWithDialogs &
         SessionWithTracks &
         SessionWithDrawerWidgets
-      // Handle both MST models and frozen/plain objects
       const trackSnapshot = structuredClone(
         isStateTreeNode(trackConfig) ? getSnapshot(trackConfig) : trackConfig,
       )
       return [
-        {
-          label: 'About track',
-          onClick: () => {
-            session.queueDialog(doneCallback => [
-              AboutDialog,
-              { config: trackConfig, session, handleClose: doneCallback },
-            ])
-          },
-          icon: InfoIcon,
-        },
         {
           label: 'Settings',
           onClick: () => {
             session.editConfiguration(trackConfig)
           },
           icon: SettingsIcon,
-        },
-        {
-          label: 'Delete track',
-          onClick: () => {
-            session.deleteTrackConf(trackConfig)
-          },
-          icon: DeleteIcon,
         },
         {
           label: 'Copy track',
@@ -80,6 +64,13 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
             session.addTrackConf(trackSnapshot)
           },
           icon: CopyIcon,
+        },
+        {
+          label: 'Delete track',
+          onClick: () => {
+            session.deleteTrackConf(trackConfig)
+          },
+          icon: DeleteIcon,
         },
         ...(isSupportedIndexingAdapter(trackSnapshot.adapter?.type)
           ? [
@@ -117,7 +108,66 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
               },
             ]
           : []),
-        { type: 'divider' },
+      ]
+    },
+
+    /**
+     * #method
+     * flattened menu items for use in hierarchical track selector
+     */
+    getTrackListMenuItems(trackConfig: BaseTrackConfig): MenuItem[] {
+      const session = self as SessionWithDialogs &
+        SessionWithTracks &
+        SessionWithDrawerWidgets & {
+          getTrackActions: (c: BaseTrackConfig) => MenuItem[]
+        }
+      return [
+        {
+          label: 'About track',
+          onClick: () => {
+            session.queueDialog(doneCallback => [
+              AboutDialog,
+              { config: trackConfig, session, handleClose: doneCallback },
+            ])
+          },
+          icon: InfoIcon,
+        },
+        ...session.getTrackActions(trackConfig),
+      ]
+    },
+
+    /**
+     * #method
+     */
+    getTrackActionMenuItems(
+      trackConfig: BaseTrackConfig,
+      extraTrackActions?: MenuItem[],
+    ): MenuItem[] {
+      const session = self as SessionWithDialogs &
+        SessionWithTracks &
+        SessionWithDrawerWidgets & {
+          getTrackActions: (c: BaseTrackConfig) => MenuItem[]
+        }
+      return [
+        {
+          label: 'About track',
+          onClick: () => {
+            session.queueDialog(doneCallback => [
+              AboutDialog,
+              { config: trackConfig, session, handleClose: doneCallback },
+            ])
+          },
+          icon: InfoIcon,
+        },
+        {
+          type: 'subMenu' as const,
+          label: 'Track actions',
+          subMenu: [
+            ...session.getTrackActions(trackConfig),
+            ...(extraTrackActions || []),
+          ],
+        },
+        { type: 'divider' as const },
       ]
     },
   }))
