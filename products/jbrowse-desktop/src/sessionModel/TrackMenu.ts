@@ -52,71 +52,78 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
           icon: InfoIcon,
         },
         {
-          label: 'Settings',
-          onClick: () => {
-            session.editConfiguration(trackConfig)
-          },
-          icon: SettingsIcon,
-        },
-        {
-          label: 'Delete track',
-          onClick: () => {
-            session.deleteTrackConf(trackConfig)
-          },
-          icon: DeleteIcon,
-        },
-        {
-          label: 'Copy track',
-          onClick: () => {
-            const now = Date.now()
-            trackSnapshot.trackId += `-${now}`
-            if (trackSnapshot.displays) {
-              for (const d of trackSnapshot.displays) {
-                d.displayId += `-${now}`
-              }
-            }
-            trackSnapshot.name += ' (copy)'
-            trackSnapshot.category = undefined
-            session.addTrackConf(trackSnapshot)
-          },
-          icon: CopyIcon,
-        },
-        ...(isSupportedIndexingAdapter(trackSnapshot.adapter?.type)
-          ? [
-              {
-                label: trackSnapshot.textSearching
-                  ? 'Re-index track'
-                  : 'Index track',
-                onClick: () => {
-                  const rootModel = getParent<DesktopRootModel>(self)
-                  const { jobsManager } = rootModel
-                  const { trackId, assemblyNames, textSearching, name } =
-                    trackSnapshot
-                  const indexName = `${name}-index`
-                  // TODO: open jobs list widget
-                  jobsManager.queueJob({
-                    indexingParams: {
-                      attributes: textSearching?.indexingAttributes || [
-                        'Name',
-                        'ID',
-                      ],
-                      exclude: textSearching?.indexingFeatureTypesToExclude || [
-                        'CDS',
-                        'exon',
-                      ],
-                      assemblies: assemblyNames,
-                      tracks: [trackId],
-                      indexType: 'perTrack',
-                      timestamp: new Date().toISOString(),
-                      name: indexName,
-                    },
-                    name: indexName,
-                  })
-                },
-                icon: Indexing,
+          type: 'subMenu' as const,
+          label: 'Track actions',
+          subMenu: [
+            {
+              label: 'Settings',
+              onClick: () => {
+                session.editConfiguration(trackConfig)
               },
-            ]
-          : []),
+              icon: SettingsIcon,
+            },
+            {
+              label: 'Copy track',
+              onClick: () => {
+                const now = Date.now()
+                trackSnapshot.trackId += `-${now}`
+                if (trackSnapshot.displays) {
+                  for (const d of trackSnapshot.displays) {
+                    d.displayId += `-${now}`
+                  }
+                }
+                trackSnapshot.name += ' (copy)'
+                trackSnapshot.category = undefined
+                session.addTrackConf(trackSnapshot)
+              },
+              icon: CopyIcon,
+            },
+            {
+              label: 'Delete track',
+              onClick: () => {
+                session.deleteTrackConf(trackConfig)
+              },
+              icon: DeleteIcon,
+            },
+            ...(isSupportedIndexingAdapter(trackSnapshot.adapter?.type)
+              ? [
+                  {
+                    label: trackSnapshot.textSearching
+                      ? 'Re-index track'
+                      : 'Index track',
+                    onClick: () => {
+                      const rootModel = getParent<DesktopRootModel>(self)
+                      const { jobsManager } = rootModel
+                      const { trackId, assemblyNames, textSearching, name } =
+                        trackSnapshot
+                      const indexName = `${name}-index`
+                      // TODO: open jobs list widget
+                      jobsManager.queueJob({
+                        indexingParams: {
+                          attributes: textSearching?.indexingAttributes || [
+                            'Name',
+                            'ID',
+                          ],
+                          exclude:
+                            textSearching?.indexingFeatureTypesToExclude || [
+                              'CDS',
+                              'exon',
+                            ],
+                          assemblies: assemblyNames,
+                          tracks: [trackId],
+                          indexType: 'perTrack',
+                          timestamp: new Date().toISOString(),
+                          name: indexName,
+                        },
+                        name: indexName,
+                      })
+                    },
+                    icon: Indexing,
+                  },
+                ]
+              : []),
+          ],
+        },
         { type: 'divider' },
       ]
     },
