@@ -14,6 +14,7 @@ import {
 import InfoIcon from '@mui/icons-material/Info'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -131,7 +132,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      getTrackActionMenuItems(config: any) {
+      getTrackActionMenuItems(
+        config: any,
+        extraTrackActions?: MenuItem[],
+      ): MenuItem[] {
         return [
           {
             label: 'About track',
@@ -143,6 +147,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             },
             icon: InfoIcon,
           },
+          ...(extraTrackActions || []),
         ]
       },
     }))

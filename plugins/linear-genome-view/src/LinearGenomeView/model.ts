@@ -5,7 +5,9 @@ import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import {
+  assembleLocString,
   clamp,
+  findLast,
   getBpDisplayStr,
   getSession,
   isSessionModelWithWidgets,
@@ -16,6 +18,7 @@ import {
   sum,
 } from '@jbrowse/core/util'
 import { bpToPx, moveTo, pxToBp } from '@jbrowse/core/util/Base1DUtils'
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import {
@@ -27,6 +30,7 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
+import { when } from 'mobx'
 
 import { handleSelectedRegion } from '../searchUtils'
 import { doAfterAttach } from './afterAttach'
@@ -46,15 +50,11 @@ import {
   buildRubberbandClickMenuItems,
   rewriteOnClicks,
 } from './menuItems'
-import { navToLocString, navToLocations, navToMultiple } from './navigation'
 import {
-  moveTrack,
-  moveTrackDown,
-  moveTrackToBottom,
-  moveTrackToTop,
-  moveTrackUp,
-} from './trackManagement'
-import { calculateVisibleLocStrings, getSelectedRegions } from './util'
+  calculateVisibleLocStrings,
+  generateLocations,
+  parseLocStrings,
+} from './util'
 
 import type {
   BpOffset,
@@ -841,31 +841,54 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       moveTrackDown(id: string) {
-        moveTrackDown(self as LinearGenomeViewModel, id)
+        const idx = self.tracks.findIndex(v => v.id === id)
+        if (idx !== -1 && idx < self.tracks.length - 1) {
+          self.tracks.splice(idx, 2, self.tracks[idx + 1], self.tracks[idx])
+        }
       },
       /**
        * #action
        */
       moveTrackUp(id: string) {
-        moveTrackUp(self as LinearGenomeViewModel, id)
+        const idx = self.tracks.findIndex(track => track.id === id)
+        if (idx > 0) {
+          self.tracks.splice(idx - 1, 2, self.tracks[idx], self.tracks[idx - 1])
+        }
       },
       /**
        * #action
        */
       moveTrackToTop(id: string) {
-        moveTrackToTop(self as LinearGenomeViewModel, id)
+        const track = self.tracks.find(track => track.id === id)
+        if (track) {
+          self.tracks = cast([track, ...self.tracks.filter(t => t.id !== id)])
+        }
       },
       /**
        * #action
        */
       moveTrackToBottom(id: string) {
-        moveTrackToBottom(self as LinearGenomeViewModel, id)
+        const track = self.tracks.find(track => track.id === id)
+        if (track) {
+          self.tracks = cast([...self.tracks.filter(t => t.id !== id), track])
+        }
       },
       /**
        * #action
        */
       moveTrack(movingId: string, targetId: string) {
-        moveTrack(self as LinearGenomeViewModel, movingId, targetId)
+        const oldIndex = self.tracks.findIndex(track => track.id === movingId)
+        if (oldIndex === -1) {
+          throw new Error(`Track ID ${movingId} not found`)
+        }
+        const newIndex = self.tracks.findIndex(track => track.id === targetId)
+        if (newIndex === -1) {
+          throw new Error(`Track ID ${targetId} not found`)
+        }
+
+        const tracks = self.tracks.filter((_, idx) => idx !== oldIndex)
+        tracks.splice(newIndex, 0, self.tracks[oldIndex])
+        self.tracks = cast(tracks)
       },
 
       /**
@@ -929,13 +952,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @returns array of Region[]
        */
       getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
-        return getSelectedRegions(
-          getSnapshot(self),
-          self.interRegionPaddingWidth,
-          self.width,
-          leftOffset,
-          rightOffset,
-        )
+        const snap = getSnapshot(self)
+        const simView = Base1DView.create({
+          ...snap,
+          interRegionPaddingWidth: self.interRegionPaddingWidth,
+        })
+
+        simView.setVolatileWidth(self.width)
+        simView.moveTo(leftOffset, rightOffset)
+
+        return simView.dynamicBlocks.contentBlocks.map(region => ({
+          assemblyName: region.assemblyName,
+          refName: region.refName,
+          start: Math.floor(region.start),
+          end: Math.ceil(region.end),
+        }))
       },
 
       /**
@@ -1270,10 +1301,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
         optAssemblyName?: string,
         grow?: number,
       ) {
-        return navToLocString(
-          self as LinearGenomeViewModel,
-          input,
-          optAssemblyName,
+        const { assemblyNames } = self
+        const { assemblyManager } = getSession(self)
+        const assemblyName = optAssemblyName || assemblyNames[0]!
+        if (assemblyName) {
+          await assemblyManager.waitForAssembly(assemblyName)
+        }
+
+        return this.navToLocations(
+          parseLocStrings(input, assemblyName, (ref, asm) =>
+            assemblyManager.isValidRefName(ref, asm),
+          ),
+          assemblyName,
           grow,
         )
       },
@@ -1309,12 +1348,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         assemblyName?: string,
         grow?: number,
       ) {
-        return navToLocations(
-          self as LinearGenomeViewModel,
-          [parsedLocString],
-          assemblyName,
-          grow,
-        )
+        return this.navToLocations([parsedLocString], assemblyName, grow)
       },
 
       /**
@@ -1328,12 +1362,53 @@ export function stateModelFactory(pluginManager: PluginManager) {
         assemblyName?: string,
         grow?: number,
       ) {
-        return navToLocations(
-          self as LinearGenomeViewModel,
+        const { assemblyManager } = getSession(self)
+        await when(() => self.volatileWidth !== undefined)
+
+        // Generate locations from the parsed regions
+        const locations = await generateLocations({
           regions,
+          assemblyManager,
           assemblyName,
           grow,
-        )
+        })
+
+        // Handle single location case
+        if (locations.length === 1) {
+          const location = locations[0]!
+          const { reversed, parentRegion, start, end } = location
+
+          // Set the displayed region based on the parent region
+          self.setDisplayedRegions([
+            {
+              reversed,
+              ...parentRegion,
+            },
+          ])
+
+          // Navigate to the specific coordinates within the region
+          this.navTo({
+            ...location,
+            start: clamp(start ?? 0, 0, parentRegion.end),
+            end: clamp(end ?? parentRegion.end, 0, parentRegion.end),
+          })
+        }
+        // Handle multiple locations case
+        else {
+          self.setDisplayedRegions(
+            locations.map(location => {
+              const { start, end } = location
+              return start === undefined || end === undefined
+                ? location.parentRegion
+                : {
+                    ...location,
+                    start,
+                    end,
+                  }
+            }),
+          )
+          self.showAllRegions()
+        }
       },
 
       /**
@@ -1349,7 +1424,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param query - a proposed location to navigate to
        */
       navTo(query: NavLocation) {
-        navToMultiple(self as LinearGenomeViewModel, [query])
+        this.navToMultiple([query])
       },
 
       /**
@@ -1365,7 +1440,123 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param locations - proposed location to navigate to
        */
       navToMultiple(locations: NavLocation[]) {
-        navToMultiple(self as LinearGenomeViewModel, locations)
+        if (
+          locations.some(
+            l =>
+              l.start !== undefined && l.end !== undefined && l.start > l.end,
+          )
+        ) {
+          throw new Error('found start greater than end')
+        }
+
+        const firstLocation = locations.at(0)
+        const lastLocation = locations.at(-1)
+        if (!firstLocation || !lastLocation) {
+          return
+        }
+
+        // Get assembly information
+        const defaultAssemblyName = self.assemblyNames[0]!
+        const { assemblyManager } = getSession(self)
+
+        // Process first location
+        const firstAssembly = assemblyManager.get(
+          firstLocation.assemblyName || defaultAssemblyName,
+        )
+        const firstRefName =
+          firstAssembly?.getCanonicalRefName(firstLocation.refName) ||
+          firstLocation.refName
+        const firstRegion = self.displayedRegions.find(
+          r => r.refName === firstRefName,
+        )
+
+        // Process last location
+        const lastAssembly = assemblyManager.get(
+          lastLocation.assemblyName || defaultAssemblyName,
+        )
+        const lastRefName =
+          lastAssembly?.getCanonicalRefName(lastLocation.refName) ||
+          lastLocation.refName
+        const lastRegion = findLast(
+          self.displayedRegions,
+          r => r.refName === lastRefName,
+        )
+
+        // Validate regions exist
+        if (!firstRegion) {
+          throw new Error(
+            `could not find a region with refName "${firstRefName}"`,
+          )
+        }
+        if (!lastRegion) {
+          throw new Error(
+            `could not find a region with refName "${lastRefName}"`,
+          )
+        }
+
+        // Calculate coordinates, using region bounds if not specified
+        const firstStart =
+          firstLocation.start === undefined
+            ? firstRegion.start
+            : firstLocation.start
+        const firstEnd =
+          firstLocation.end === undefined ? firstRegion.end : firstLocation.end
+        const lastStart =
+          lastLocation.start === undefined
+            ? lastRegion.start
+            : lastLocation.start
+        const lastEnd =
+          lastLocation.end === undefined ? lastRegion.end : lastLocation.end
+
+        // Find region indices that contain our locations
+        const firstIndex = self.displayedRegions.findIndex(
+          r =>
+            firstRefName === r.refName &&
+            firstStart >= r.start &&
+            firstStart <= r.end &&
+            firstEnd <= r.end &&
+            firstEnd >= r.start,
+        )
+
+        const lastIndex = self.displayedRegions.findIndex(
+          r =>
+            lastRefName === r.refName &&
+            lastStart >= r.start &&
+            lastStart <= r.end &&
+            lastEnd <= r.end &&
+            lastEnd >= r.start,
+        )
+
+        if (firstIndex === -1 || lastIndex === -1) {
+          throw new Error(
+            `could not find a region that contained "${locations.map(l =>
+              assembleLocString(l),
+            )}"`,
+          )
+        }
+
+        const startDisplayedRegion = self.displayedRegions[firstIndex]!
+        const endDisplayedRegion = self.displayedRegions[lastIndex]!
+
+        // Calculate offsets, accounting for reversed regions
+        const startOffset = startDisplayedRegion.reversed
+          ? startDisplayedRegion.end - firstEnd
+          : firstStart - startDisplayedRegion.start
+
+        const endOffset = endDisplayedRegion.reversed
+          ? endDisplayedRegion.end - lastStart
+          : lastEnd - endDisplayedRegion.start
+
+        this.moveTo(
+          {
+            index: firstIndex,
+            offset: startOffset,
+          },
+          {
+            index: lastIndex,
+            offset: endOffset,
+          },
+        )
       },
     }))
     .views(self => ({

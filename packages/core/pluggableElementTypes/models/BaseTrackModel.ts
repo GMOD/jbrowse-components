@@ -252,7 +252,7 @@ export function createBaseTrackModel(
       /**
        * #method
        */
-      trackMenuItems() {
+      trackMenuItems(): MenuItem[] {
         const menuItems: MenuItem[] = self.displays.flatMap(d =>
           d.trackMenuItems(),
         )
@@ -278,13 +278,13 @@ export function createBaseTrackModel(
           ...(compatDisp.length > 1
             ? [
                 {
-                  type: 'subMenu',
+                  type: 'subMenu' as const,
                   label: 'Display types',
                   priority: -1000,
                   subMenu: compatDisp.map(d => {
                     const displayType = pm.getDisplayType(d.type)!
                     return {
-                      type: 'radio',
+                      type: 'radio' as const,
                       label: displayType.displayName,
                       helpText: displayType.helpText,
                       checked: d.displayId === shownId,

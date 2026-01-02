@@ -32,6 +32,7 @@ async function openSaveTrackDataDialog(
 ) {
   await user.click(await screen.findByTestId(hts(trackId), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await user.click(await screen.findByText('Track actions', ...opts))
   await user.click(await screen.findByText('Save track data', ...opts))
 }
 

@@ -110,7 +110,12 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   notifyError: (message: string, error?: unknown, extra?: unknown) => void
   assemblyManager: AssemblyManager
   version: string
-  getTrackActionMenuItems?: Function
+  getTrackActionMenuItems?: (
+    config: AnyConfigurationModel,
+    extraTrackActions?: MenuItem[],
+  ) => MenuItem[]
+  getTrackActions?: (arg: AnyConfigurationModel) => MenuItem[]
+  getTrackListMenuItems?: (arg: AnyConfigurationModel) => MenuItem[]
   addAssembly?: Function
   removeAssembly?: Function
   textSearchManager?: TextSearchManager

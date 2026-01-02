@@ -14,6 +14,7 @@ import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 const TrackLabelMenu = observer(function TrackLabelMenu({
   track,
@@ -23,7 +24,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
   const view = getContainingView(track) as LinearGenomeViewModel
   const session = getSession(track)
 
-  const getMenuItems = useCallback(() => {
+  const getMenuItems = useCallback((): MenuItem[] => {
     const trackConf = track.configuration
     const minimized = track.minimized
     const pinned = track.pinned
@@ -37,20 +38,11 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
       item => !('label' in item) || item.label !== 'Save track data',
     )
 
-    const sessionItems = session.getTrackActionMenuItems?.(trackConf) || []
-    const modifiedSessionItems = sessionItems.map(item => {
-      if (
-        'label' in item &&
-        item.label === 'Track actions' &&
-        'subMenu' in item
-      ) {
-        return {
-          ...item,
-          subMenu: [...item.subMenu, ...(saveTrackData ? [saveTrackData] : [])],
-        }
-      }
-      return item
-    })
+    const sessionItems =
+      session.getTrackActionMenuItems?.(
+        trackConf,
+        saveTrackData ? [saveTrackData] : [],
+      ) || []
 
     return [
       {
@@ -118,9 +110,9 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
             : []),
         ],
       },
-      ...modifiedSessionItems,
+      ...sessionItems,
       ...remainingTrackMenuItems,
-    ].sort((a, b) => (b?.priority || 0) - (a?.priority || 0))
+    ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
   }, [track, view, session])
 
   return (
