@@ -17,8 +17,8 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
-import StorageIcon from '@mui/icons-material/Storage'
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
+import StorageIcon from '@mui/icons-material/Storage'
 import { autorun } from 'mobx'
 
 import jbrowseWebFactory from '../jbrowseModel'

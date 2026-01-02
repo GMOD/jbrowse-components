@@ -243,21 +243,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     view[rawCall.name](rawCall.args[0])
                   }
                 }
+                return
               }
             }
             next(rawCall)
           }),
         )
-      },
-
-      onSubviewAction(actionName: string, path: string, args?: unknown[]) {
-        for (const view of self.views) {
-          const ret = getPath(view)
-          if (!ret.endsWith(path)) {
-            // @ts-expect-error
-            view[actionName](args?.[0])
-          }
-        }
       },
 
       /**

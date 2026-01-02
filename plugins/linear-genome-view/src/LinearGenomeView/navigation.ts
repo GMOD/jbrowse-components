@@ -11,7 +11,6 @@ import { generateLocations, parseLocStrings } from './util'
 
 import type { LinearGenomeViewModel } from './model'
 import type { NavLocation } from './types'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { ParsedLocString } from '@jbrowse/core/util'
 
 /**
@@ -172,7 +171,9 @@ export function navToMultiple(
   const firstRefName =
     firstAssembly?.getCanonicalRefName(firstLocation.refName) ||
     firstLocation.refName
-  const firstRegion = self.displayedRegions.find(r => r.refName === firstRefName)
+  const firstRegion = self.displayedRegions.find(
+    r => r.refName === firstRefName,
+  )
 
   // Process last location
   const lastAssembly = assemblyManager.get(
