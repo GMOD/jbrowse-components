@@ -20,6 +20,8 @@ export interface FloatingLabelData {
   tooltip?: string
 }
 
+export type StrandArrowVisualSide = 'left' | 'right' | null
+
 export type LayoutRecord =
   | [number, number, number, number]
   | [
@@ -35,7 +37,8 @@ export type LayoutRecord =
         totalFeatureHeight?: number
         totalLayoutWidth?: number
         featureWidth?: number
-        leftPadding?: number
+        strandArrowWidth?: number
+        strandArrowVisualSide?: StrandArrowVisualSide
         actualTopPx?: number
       },
     ]
