@@ -6,16 +6,12 @@ import { Image, createCanvas } from 'canvas'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import configSchema from './configSchema'
-import {
-  getStrandArrowPadding,
-  STRAND_ARROW_WIDTH,
-} from './glyphs/glyphUtils'
+import { STRAND_ARROW_WIDTH, getStrandArrowPadding } from './glyphs/glyphUtils'
 import { layoutFeatures } from './layoutFeatures'
 import { makeImageData } from './makeImageData'
 import { createRenderConfigContext } from './renderConfig'
 
 import type { FloatingLabelData } from './floatingLabels'
-import type { StrandArrowVisualSide } from './glyphs/glyphUtils'
 
 interface LayoutSerializableData {
   refName?: string
@@ -24,8 +20,6 @@ interface LayoutSerializableData {
   totalLayoutWidth?: number
   actualTopPx?: number
   featureWidth?: number
-  strandArrowWidth?: number
-  strandArrowVisualSide?: StrandArrowVisualSide
 }
 
 const pluginManager = new PluginManager([])
@@ -266,114 +260,6 @@ describe('CanvasFeatureRenderer', () => {
       expect(result.width).toBe(0)
       expect(result.left).toBe(0)
       expect(result.right).toBe(0)
-    })
-  })
-
-  describe('strand arrow fields in layout records', () => {
-    test('forward strand feature stores correct strand arrow info', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'test1',
-        refName: 'ctgA',
-        start: 100,
-        end: 200,
-        strand: 1,
-        name: 'ForwardFeature',
-        subfeatures: [
-          { uniqueId: 'sub1', refName: 'ctgA', start: 100, end: 200 },
-        ],
-      })
-      const features = new Map([['test1', feature]])
-      const args = createRenderArgs(features)
-      doLayout(args, features)
-
-      const layoutData = args.layout.getSerializableDataByID('test1')
-      expect(layoutData).toBeDefined()
-      expect(layoutData!.strandArrowWidth).toBe(STRAND_ARROW_WIDTH)
-      expect(layoutData!.strandArrowVisualSide).toBe('right')
-    })
-
-    test('reverse strand feature stores correct strand arrow info', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'test1',
-        refName: 'ctgA',
-        start: 100,
-        end: 200,
-        strand: -1,
-        name: 'ReverseFeature',
-        subfeatures: [
-          { uniqueId: 'sub1', refName: 'ctgA', start: 100, end: 200 },
-        ],
-      })
-      const features = new Map([['test1', feature]])
-      const args = createRenderArgs(features)
-      doLayout(args, features)
-
-      const layoutData = args.layout.getSerializableDataByID('test1')
-      expect(layoutData).toBeDefined()
-      expect(layoutData!.strandArrowWidth).toBe(STRAND_ARROW_WIDTH)
-      expect(layoutData!.strandArrowVisualSide).toBe('left')
-    })
-
-    test('forward strand in reversed region has arrow on visual left', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'test1',
-        refName: 'ctgA',
-        start: 100,
-        end: 200,
-        strand: 1,
-        name: 'ForwardFeature',
-        subfeatures: [
-          { uniqueId: 'sub1', refName: 'ctgA', start: 100, end: 200 },
-        ],
-      })
-      const features = new Map([['test1', feature]])
-      const args = createRenderArgs(features, defaultRegion, {}, true)
-      doLayout(args, features)
-
-      const layoutData = args.layout.getSerializableDataByID('test1')
-      expect(layoutData).toBeDefined()
-      expect(layoutData!.strandArrowWidth).toBe(STRAND_ARROW_WIDTH)
-      expect(layoutData!.strandArrowVisualSide).toBe('left')
-    })
-
-    test('reverse strand in reversed region has arrow on visual right', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'test1',
-        refName: 'ctgA',
-        start: 100,
-        end: 200,
-        strand: -1,
-        name: 'ReverseFeature',
-        subfeatures: [
-          { uniqueId: 'sub1', refName: 'ctgA', start: 100, end: 200 },
-        ],
-      })
-      const features = new Map([['test1', feature]])
-      const args = createRenderArgs(features, defaultRegion, {}, true)
-      doLayout(args, features)
-
-      const layoutData = args.layout.getSerializableDataByID('test1')
-      expect(layoutData).toBeDefined()
-      expect(layoutData!.strandArrowWidth).toBe(STRAND_ARROW_WIDTH)
-      expect(layoutData!.strandArrowVisualSide).toBe('right')
-    })
-
-    test('feature without strand has no arrow', () => {
-      const feature = new SimpleFeature({
-        uniqueId: 'test1',
-        refName: 'ctgA',
-        start: 100,
-        end: 200,
-        name: 'NoStrandFeature',
-      })
-      const features = new Map([['test1', feature]])
-      const args = createRenderArgs(features)
-      doLayout(args, features)
-
-      const layoutData = args.layout.getSerializableDataByID('test1')
-      expect(layoutData).toBeDefined()
-      expect(layoutData!.strandArrowWidth).toBe(0)
-      expect(layoutData!.strandArrowVisualSide).toBe(null)
     })
   })
 

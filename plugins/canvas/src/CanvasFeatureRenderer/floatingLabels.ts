@@ -6,19 +6,9 @@ import { truncateLabel } from './util'
 import type { RenderConfigContext } from './renderConfig'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { FloatingLabelData } from '@jbrowse/plugin-linear-genome-view'
 
 const FLOATING_LABEL_FONT_SIZE = 11
-
-export interface FloatingLabelData {
-  text: string
-  relativeY: number
-  color: string
-  textWidth: number
-  isOverlay?: boolean
-  parentFeatureId?: string
-  subfeatureId?: string
-  tooltip?: string
-}
 
 /**
  * Create floating labels for a top-level feature (gene, etc.)
@@ -145,3 +135,5 @@ export function createTranscriptFloatingLabel({
     tooltip,
   }
 }
+
+export { type FloatingLabelData } from '@jbrowse/plugin-linear-genome-view'

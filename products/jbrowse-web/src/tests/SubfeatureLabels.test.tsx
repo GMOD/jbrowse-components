@@ -12,8 +12,7 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
-// TODO: fix this test - floating labels not rendering in test environment
-xtest('toggle subfeature labels to below and verify eden.1 label appears', async () => {
+test('toggle subfeature labels to below and verify eden.1 label appears', async () => {
   const user = userEvent.setup()
   const { view, findAllByTestId } = await createView()
 

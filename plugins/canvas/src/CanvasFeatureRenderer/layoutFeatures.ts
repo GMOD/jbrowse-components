@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import { createFeatureFloatingLabels } from './floatingLabels'
-import { getStrandArrowPadding } from './glyphs/glyphUtils'
 import { layoutFeature } from './layoutFeature'
 
 import type { RenderConfigContext } from './renderConfig'
@@ -69,11 +68,6 @@ export function layoutFeatures({
     const layoutStart = featureStart - leftPaddingBp
     const layoutEnd = featureEnd + rightPaddingBp
 
-    // Get strand arrow info - visualSide is already in screen coordinates
-    // (accounts for region reversal)
-    const strand = feature.get('strand') as number
-    const strandArrow = getStrandArrowPadding(strand, reversed)
-
     const topPx = layout.addRect(
       feature.id(),
       layoutStart,
@@ -88,8 +82,6 @@ export function layoutFeatures({
         totalFeatureHeight: featureLayout.height,
         totalLayoutWidth,
         featureWidth: featureLayout.width,
-        strandArrowWidth: strandArrow.width,
-        strandArrowVisualSide: strandArrow.visualSide,
       },
     )
 

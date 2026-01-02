@@ -1,11 +1,7 @@
 import { clamp } from '@jbrowse/core/util'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type {
-  FloatingLabelData,
-  LayoutRecord,
-  StrandArrowVisualSide,
-} from '../types'
+import type { FloatingLabelData, LayoutRecord } from '../types'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 interface PixelPositions {
@@ -20,8 +16,6 @@ export interface FeatureLabelData {
   totalFeatureHeight: number
   floatingLabels: FloatingLabelData[]
   featureWidth: number
-  strandArrowWidth: number
-  strandArrowVisualSide: StrandArrowVisualSide
   totalLayoutWidth: number
 }
 
@@ -159,8 +153,6 @@ export function deduplicateFeatureLabels(
       totalFeatureHeight,
       actualTopPx,
       featureWidth,
-      strandArrowWidth,
-      strandArrowVisualSide,
       totalLayoutWidth,
     } = feature
     const effectiveTopPx = actualTopPx ?? topPx
@@ -170,7 +162,6 @@ export function deduplicateFeatureLabels(
       floatingLabels.length === 0 ||
       !totalFeatureHeight ||
       featureWidth === undefined ||
-      strandArrowWidth === undefined ||
       totalLayoutWidth === undefined
     ) {
       continue
@@ -200,8 +191,6 @@ export function deduplicateFeatureLabels(
         totalFeatureHeight,
         floatingLabels,
         featureWidth,
-        strandArrowWidth,
-        strandArrowVisualSide: strandArrowVisualSide ?? null,
         totalLayoutWidth,
       })
     }

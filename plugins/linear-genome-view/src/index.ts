@@ -79,6 +79,8 @@ export type {
   BaseLinearDisplayModel,
   BlockModel,
   ExportSvgDisplayOptions,
+  FloatingLabelData,
+  LayoutFeatureMetadata,
   LegendItem,
 } from './BaseLinearDisplay'
 
@@ -99,6 +101,7 @@ export {
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
   calculateSvgLegendWidth,
+  createSubfeatureLabelMetadata,
   drawCanvasImageData,
 } from './BaseLinearDisplay'
 export type {

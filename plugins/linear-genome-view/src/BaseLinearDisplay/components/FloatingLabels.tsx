@@ -109,23 +109,10 @@ const FloatingLabels = observer(function FloatingLabels({
 
   for (const [
     key,
-    {
-      leftPx,
-      topPx,
-      totalFeatureHeight,
-      floatingLabels,
-      featureWidth,
-      strandArrowWidth,
-      strandArrowVisualSide,
-    },
+    { leftPx, topPx, totalFeatureHeight, floatingLabels, featureWidth },
   ] of featureLabels.entries()) {
     const featureVisualBottom = topPx + totalFeatureHeight
-
-    // Calculate feature content bounds (excluding strand arrow)
-    // strandArrowVisualSide tells us which side the arrow is on in screen space
-    const visualLeftPadding = strandArrowVisualSide === 'left' ? strandArrowWidth : 0
-    const featureLeftPx = leftPx + visualLeftPadding
-    const featureRightPx = featureLeftPx + featureWidth
+    const featureRightPx = leftPx + featureWidth
 
     for (let i = 0, l = floatingLabels.length; i < l; i++) {
       const floatingLabel = floatingLabels[i]!
@@ -148,7 +135,7 @@ const FloatingLabels = observer(function FloatingLabels({
           text={text}
           color={color}
           isOverlay={isOverlay ?? false}
-          featureLeftPx={featureLeftPx}
+          featureLeftPx={leftPx}
           featureRightPx={featureRightPx}
           featureId={parentFeatureId ?? key}
           subfeatureId={subfeatureId}

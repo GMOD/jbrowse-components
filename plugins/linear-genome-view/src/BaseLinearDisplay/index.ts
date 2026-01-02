@@ -6,7 +6,12 @@ export type {
   BaseLinearDisplayStateModel,
   LegendItem,
 } from './model'
-export type { ExportSvgDisplayOptions } from './types'
+export type {
+  ExportSvgDisplayOptions,
+  FloatingLabelData,
+  LayoutFeatureMetadata,
+} from './types'
+export { createSubfeatureLabelMetadata } from './types'
 
 export {
   BlockMsg,

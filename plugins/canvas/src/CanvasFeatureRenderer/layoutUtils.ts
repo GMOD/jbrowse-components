@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { createSubfeatureLabelMetadata } from '@jbrowse/plugin-linear-genome-view'
 
 import { createTranscriptFloatingLabel } from './floatingLabels'
 import { builtinGlyphs } from './glyphs'
@@ -225,19 +226,16 @@ function addChildrenRecursive({
         childEnd,
         bottomPx - topPx,
         childFeature,
-        {
-          refName: childFeature.get('refName'),
-          ...(showSubfeatureLabels && floatingLabels.length > 0
-            ? {
-                floatingLabels,
-                totalFeatureHeight: child.height,
-                totalLayoutWidth: child.totalLayoutWidth,
-                actualTopPx: topPx,
-                featureWidth: child.width,
-                leftPadding: 0,
-              }
-            : {}),
-        },
+        showSubfeatureLabels && floatingLabels.length > 0
+          ? createSubfeatureLabelMetadata({
+              refName: childFeature.get('refName'),
+              floatingLabels,
+              totalFeatureHeight: child.height,
+              totalLayoutWidth: child.totalLayoutWidth,
+              actualTopPx: topPx,
+              featureWidth: child.width,
+            })
+          : { refName: childFeature.get('refName') },
       )
     }
   }
