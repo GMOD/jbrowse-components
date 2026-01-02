@@ -46,12 +46,7 @@ import {
   buildRubberbandClickMenuItems,
   rewriteOnClicks,
 } from './menuItems'
-import {
-  navTo,
-  navToLocations,
-  navToLocString,
-  navToMultiple,
-} from './navigation'
+import { navToLocString, navToLocations, navToMultiple } from './navigation'
 import {
   moveTrack,
   moveTrackDown,
@@ -59,10 +54,7 @@ import {
   moveTrackToTop,
   moveTrackUp,
 } from './trackManagement'
-import {
-  calculateVisibleLocStrings,
-  getSelectedRegions,
-} from './util'
+import { calculateVisibleLocStrings, getSelectedRegions } from './util'
 
 import type {
   BpOffset,

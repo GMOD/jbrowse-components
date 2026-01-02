@@ -5,9 +5,9 @@ import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   addDisposer,
+  addMiddleware,
   cast,
   getPath,
-  onAction,
   types,
 } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -150,22 +150,33 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        // doesn't link showTrack/hideTrack, doesn't make sense in
-        // synteny views most time
-        const actions = new Set([
-          'horizontalScroll',
-          'zoomTo',
-          'setScaleFactor',
-        ])
         addDisposer(
           self,
-          onAction(self, param => {
-            if (self.linkViews) {
-              const { name, path, args } = param
-              if (actions.has(name) && path) {
-                this.onSubviewAction(name, path, args)
+          addMiddleware(self, (rawCall, next) => {
+            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
+              // doesn't link showTrack/hideTrack, doesn't make sense in
+              // synteny views most time
+              const syncActions = [
+                'horizontalScroll',
+                'zoomTo',
+                'setScaleFactor',
+              ]
+
+              if (self.linkViews && syncActions.includes(rawCall.name)) {
+                const sourcePath = getPath(rawCall.context)
+                next(rawCall)
+                // Sync to all other views
+                for (const view of self.views) {
+                  const viewPath = getPath(view)
+                  if (viewPath !== sourcePath) {
+                    // @ts-expect-error
+                    view[rawCall.name](rawCall.args[0])
+                  }
+                }
+                return
               }
             }
+            next(rawCall)
           }),
         )
       },
@@ -176,16 +187,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         const session = getSession(self)
         for (const name of self.assemblyNames) {
           session.removeTemporaryAssembly?.(name)
-        }
-      },
-
-      onSubviewAction(actionName: string, path: string, args?: unknown[]) {
-        for (const view of self.views) {
-          const ret = getPath(view)
-          if (!ret.endsWith(path)) {
-            // @ts-expect-error
-            view[actionName](args?.[0])
-          }
         }
       },
 
