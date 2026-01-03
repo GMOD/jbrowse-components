@@ -29,6 +29,7 @@ import {
 import type { ParsedLocString } from './locString'
 import type {
   AbstractDisplayModel,
+  AbstractSessionModel,
   AbstractTrackModel,
   AbstractViewModel,
   AssemblyManager,
@@ -68,6 +69,7 @@ const containingTrackCache = new WeakMap<
   AbstractTrackModel
 >()
 const containingViewCache = new WeakMap<IAnyStateTreeNode, AbstractViewModel>()
+const sessionCache = new WeakMap<IAnyStateTreeNode, AbstractSessionModel>()
 
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -263,11 +265,17 @@ export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
 
 /**
  * get the current JBrowse session model, starting at any node in the state
- * tree
+ * tree. Results are cached for performance.
  */
-export function getSession(node: IAnyStateTreeNode) {
+export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
+  const cached = sessionCache.get(node)
+  if (cached && isAlive(cached)) {
+    return cached
+  }
   try {
-    return findParentThatIs(node, isSessionModel)
+    const result = findParentThatIs(node, isSessionModel)
+    sessionCache.set(node, result)
+    return result
   } catch (e) {
     throw new Error('no session model found!')
   }
