@@ -155,10 +155,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const config = configBlob as Omit<typeof configBlob, symbol>
         return {
           ...config,
-          showLabels: self.showLabels,
-          showDescriptions: self.showDescriptions,
-          displayMode: self.displayMode,
-          maxHeight: self.maxHeight,
+          // Use track overrides if set, otherwise use what's already in configBlob
+          // This avoids redundant getConf calls for each property
+          showLabels: self.trackShowLabels ?? config.showLabels,
+          showDescriptions: self.trackShowDescriptions ?? config.showDescriptions,
+          displayMode: self.trackDisplayMode ?? config.displayMode,
+          maxHeight: self.trackMaxHeight ?? config.maxHeight,
         }
       },
     }))
