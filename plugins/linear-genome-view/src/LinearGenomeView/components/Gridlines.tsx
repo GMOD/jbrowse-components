@@ -49,22 +49,24 @@ function RenderedBlockLines({
   block: ContentBlock
   bpPerPx: number
 }) {
-  const { classes, cx } = useStyles()
-  const ticks = makeTicks(block.start, block.end, bpPerPx)
+  const { classes } = useStyles()
+  const { start, end, reversed } = block
+  const ticks = makeTicks(start, end, bpPerPx)
+  const majorTickClass = `${classes.tick} ${classes.majorTick}`
+  const minorTickClass = `${classes.tick} ${classes.minorTick}`
+
   return (
     <ContentBlockComponent block={block}>
       {ticks.map(({ type, base }) => {
-        const x =
-          (block.reversed ? block.end - base : base - block.start) / bpPerPx
+        const x = (reversed ? end - base : base - start) / bpPerPx
         return (
           <div
             key={base}
-            className={cx(
-              classes.tick,
+            className={
               type === 'major' || type === 'labeledMajor'
-                ? classes.majorTick
-                : classes.minorTick,
-            )}
+                ? majorTickClass
+                : minorTickClass
+            }
             style={{ left: x }}
           />
         )
