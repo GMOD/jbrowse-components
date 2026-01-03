@@ -1,6 +1,5 @@
 import { Suspense, useEffect, useRef } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -42,7 +41,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   const display = track.displays[0]
   const { height, RenderingComponent, DisplayBlurb } = display
   const { trackRefs, id, scaleFactor } = model
-  const trackId = getConf(track, 'trackId')
+  const trackId = track.configuration.trackId
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
 
