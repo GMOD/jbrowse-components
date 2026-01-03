@@ -1,5 +1,6 @@
 import { readCachedConfig } from '../renderConfig'
-import { getBoxColor, isOffScreen, isUTR } from '../util'
+import { getBoxColor, getStrokeColor, isOffScreen, isUTR } from '../util'
+import { drawStrandArrow, getStrandArrowPadding } from './glyphUtils'
 
 import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
 
@@ -18,12 +19,18 @@ export const boxGlyph: Glyph = {
   },
 
   layout(args: LayoutArgs): FeatureLayout {
-    const { feature, bpPerPx, configContext } = args
+    const { feature, bpPerPx, reversed, configContext } = args
     const { config, displayMode, featureHeight } = configContext
 
     const height = readCachedConfig(featureHeight, config, 'height', feature)
     const baseHeight = displayMode === 'compact' ? height / 2 : height
     const width = (feature.get('end') - feature.get('start')) / bpPerPx
+
+    const isTopLevel = !feature.parent?.()
+    const strand = feature.get('strand') as number
+    const arrowPadding = isTopLevel
+      ? getStrandArrowPadding(strand, reversed)
+      : { left: 0, right: 0 }
 
     return {
       feature,
@@ -33,8 +40,8 @@ export const boxGlyph: Glyph = {
       width,
       height: baseHeight,
       totalLayoutHeight: baseHeight,
-      totalLayoutWidth: width,
-      leftPadding: 0,
+      totalLayoutWidth: width + arrowPadding.left + arrowPadding.right,
+      leftPadding: arrowPadding.left,
       children: [],
     }
   },
@@ -90,6 +97,17 @@ export const boxGlyph: Glyph = {
       ctx.strokeStyle = stroke
       ctx.lineWidth = 1
       ctx.strokeRect(leftWithinBlock, top, widthWithinBlock, height)
+    }
+
+    const isTopLevel = !feature.parent?.()
+    if (isTopLevel) {
+      const strokeColor = getStrokeColor({
+        feature,
+        config,
+        configContext,
+        theme,
+      })
+      drawStrandArrow(ctx, layout, dc, strokeColor)
     }
   },
 }
