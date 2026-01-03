@@ -87,13 +87,17 @@ export function createBaseTrackModel(
     .views(self => ({
       /**
        * #getter
+       */
+      get trackId() {
+        return self.configuration.trackId as string
+      },
+      /**
+       * #getter
        * determines which webworker to send the track to, currently based on trackId
        */
       get rpcSessionId() {
         const adapter = getConf(self, 'adapter')
-        return adapter
-          ? adapterConfigCacheKey(adapter)
-          : self.configuration.trackId
+        return adapter ? adapterConfigCacheKey(adapter) : this.trackId
       },
       /**
        * #getter
@@ -145,8 +149,7 @@ export function createBaseTrackModel(
         const { sessionTracks, adminMode } = session
         return (
           isSessionModelWithConfigEditing(session) &&
-          (adminMode ||
-            sessionTracks?.find(t => t.trackId === self.configuration.trackId))
+          (adminMode || sessionTracks?.find(t => t.trackId === this.trackId))
         )
       },
     }))

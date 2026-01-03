@@ -41,7 +41,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   const display = track.displays[0]
   const { height, RenderingComponent, DisplayBlurb } = display
   const { trackRefs, id, scaleFactor } = model
-  const trackId = track.configuration.trackId
+  const trackId = track.trackId
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
 
