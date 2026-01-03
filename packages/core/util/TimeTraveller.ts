@@ -41,18 +41,23 @@ const TimeTraveller = types
     let targetStore: IAnyStateTreeNode
     let patchDisposer: IDisposer | undefined
     let skipNextUndoState = false
-    let pendingPatches: IJsonPatch[] = []
-    let pendingInversePatches: IJsonPatch[] = []
+    // Map from path to {patch, inversePatch} - coalesces repeated patches to same path
+    let pendingPatchMap = new Map<
+      string,
+      { patch: IJsonPatch; inversePatch: IJsonPatch }
+    >()
     let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
     function flushPatches(addUndoState: (entry: PatchEntry) => void) {
-      if (pendingPatches.length > 0) {
-        addUndoState({
-          patches: pendingPatches,
-          inversePatches: pendingInversePatches,
-        })
-        pendingPatches = []
-        pendingInversePatches = []
+      if (pendingPatchMap.size > 0) {
+        const patches: IJsonPatch[] = []
+        const inversePatches: IJsonPatch[] = []
+        for (const { patch, inversePatch } of pendingPatchMap.values()) {
+          patches.push(patch)
+          inversePatches.push(inversePatch)
+        }
+        addUndoState({ patches, inversePatches })
+        pendingPatchMap = new Map()
       }
     }
 
@@ -106,8 +111,15 @@ const TimeTraveller = types
           if (patch.path.includes('/blockState/')) {
             return
           }
-          pendingPatches.push(patch)
-          pendingInversePatches.push(inversePatch)
+
+          const existing = pendingPatchMap.get(patch.path)
+          if (existing) {
+            // Update to latest patch value but keep original inverse
+            // so undo goes back to the original state
+            existing.patch = patch
+          } else {
+            pendingPatchMap.set(patch.path, { patch, inversePatch })
+          }
 
           if (debounceTimer) {
             clearTimeout(debounceTimer)
