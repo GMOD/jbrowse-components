@@ -4,7 +4,9 @@ import SessionLoader from './SessionLoader'
 
 // Mock dependencies
 jest.mock('@jbrowse/core/util/io', () => ({
-  openLocation: jest.fn(),
+  openLocation: jest.fn().mockReturnValue({
+    readFile: jest.fn().mockResolvedValue('{}'),
+  }),
 }))
 
 jest.mock('./sessionSharing', () => ({
@@ -14,7 +16,7 @@ jest.mock('./sessionSharing', () => ({
 jest.mock('./util', () => ({
   addRelativeUris: jest.fn(),
   checkPlugins: jest.fn().mockResolvedValue(true),
-  fromUrlSafeB64: jest.fn(),
+  fromUrlSafeB64: jest.fn().mockResolvedValue('{"id":"test","name":"Test"}'),
   readConf: jest.fn(),
 }))
 
@@ -26,6 +28,12 @@ describe('SessionLoader', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     sessionStorage.clear()
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
   })
 
   describe('session type detection getters', () => {
