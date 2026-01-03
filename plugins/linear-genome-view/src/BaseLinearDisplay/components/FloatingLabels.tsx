@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -34,23 +36,57 @@ const useStyles = makeStyles()({
   },
 })
 
-interface LabelProps {
+interface BaseLabelProps {
   text: string
   color: string
   isOverlay: boolean
   featureLeftPx: number
-  featureRightPx: number
   featureId: string
   subfeatureId?: string
-  labelWidth: number
   y: number
-  offsetPx: number
-  viewportLeft: number
   tooltip?: string
   labelClass: string
   overlayClass: string
 }
 
+interface FloatingLabelProps extends BaseLabelProps {
+  featureRightPx: number
+  labelWidth: number
+  offsetPx: number
+  viewportLeft: number
+}
+
+// Fixed labels use CSS variable for offset - position updates via CSS, not JS
+// This avoids React re-renders during scroll for labels that don't float
+const FixedLabel = memo(function FixedLabel({
+  text,
+  color,
+  isOverlay,
+  featureLeftPx,
+  featureId,
+  subfeatureId,
+  y,
+  tooltip,
+  labelClass,
+  overlayClass,
+}: BaseLabelProps) {
+  return (
+    <div
+      data-feature-id={featureId}
+      data-subfeature-id={subfeatureId}
+      data-tooltip={tooltip}
+      className={isOverlay ? `${labelClass} ${overlayClass}` : labelClass}
+      style={{
+        color,
+        transform: `translate(calc(${featureLeftPx}px - var(--offset-px)), ${y}px)`,
+      }}
+    >
+      {text}
+    </div>
+  )
+})
+
+// Floating labels need JS calculation for the clamp logic
 function FloatingLabel({
   text,
   color,
@@ -66,7 +102,7 @@ function FloatingLabel({
   tooltip,
   labelClass,
   overlayClass,
-}: LabelProps) {
+}: FloatingLabelProps) {
   const x = calculateFloatingLabelPosition(
     featureLeftPx,
     featureRightPx,
@@ -102,20 +138,21 @@ const FloatingLabels = observer(function FloatingLabels({
   const { onFeatureClick, onFeatureContextMenu, onMouseMove } =
     model.renderingProps()
 
-  const labels: React.ReactElement[] = []
+  const fixedLabels: React.ReactElement[] = []
+  const floatingLabels: React.ReactElement[] = []
 
   // Calculate viewport left edge once per render instead of per label
   const viewportLeft = Math.max(0, offsetPx)
 
   for (const [
     key,
-    { leftPx, topPx, totalFeatureHeight, floatingLabels, featureWidth },
+    { leftPx, topPx, totalFeatureHeight, floatingLabels: labelData, featureWidth },
   ] of featureLabels.entries()) {
     const featureVisualBottom = topPx + totalFeatureHeight
     const featureRightPx = leftPx + featureWidth
 
-    for (let i = 0, l = floatingLabels.length; i < l; i++) {
-      const floatingLabel = floatingLabels[i]!
+    for (let i = 0, l = labelData.length; i < l; i++) {
+      const floatingLabel = labelData[i]!
       const {
         text,
         relativeY,
@@ -128,32 +165,56 @@ const FloatingLabels = observer(function FloatingLabels({
       } = floatingLabel
 
       const y = featureVisualBottom + relativeY
+      const labelKey = `${key}-${i}`
+      const featureId = parentFeatureId ?? key
 
-      labels.push(
-        <FloatingLabel
-          key={`${key}-${i}`}
-          text={text}
-          color={color}
-          isOverlay={isOverlay ?? false}
-          featureLeftPx={leftPx}
-          featureRightPx={featureRightPx}
-          featureId={parentFeatureId ?? key}
-          subfeatureId={subfeatureId}
-          labelWidth={labelWidth}
-          y={y}
-          offsetPx={offsetPx}
-          viewportLeft={viewportLeft}
-          tooltip={tooltip}
-          labelClass={classes.label}
-          overlayClass={classes.overlay}
-        />,
-      )
+      // Labels wider than feature don't float - use CSS variable for offset
+      // This avoids React re-renders during scroll
+      if (labelWidth > featureWidth) {
+        fixedLabels.push(
+          <FixedLabel
+            key={labelKey}
+            text={text}
+            color={color}
+            isOverlay={isOverlay ?? false}
+            featureLeftPx={leftPx}
+            featureId={featureId}
+            subfeatureId={subfeatureId}
+            y={y}
+            tooltip={tooltip}
+            labelClass={classes.label}
+            overlayClass={classes.overlay}
+          />,
+        )
+      } else {
+        // Labels that fit within feature need JS calculation for floating logic
+        floatingLabels.push(
+          <FloatingLabel
+            key={labelKey}
+            text={text}
+            color={color}
+            isOverlay={isOverlay ?? false}
+            featureLeftPx={leftPx}
+            featureRightPx={featureRightPx}
+            featureId={featureId}
+            subfeatureId={subfeatureId}
+            labelWidth={labelWidth}
+            y={y}
+            offsetPx={offsetPx}
+            viewportLeft={viewportLeft}
+            tooltip={tooltip}
+            labelClass={classes.label}
+            overlayClass={classes.overlay}
+          />,
+        )
+      }
     }
   }
 
   return (
     <div
       className={classes.container}
+      style={{ '--offset-px': `${offsetPx}px` } as React.CSSProperties}
       onClick={e => {
         const target = e.target as HTMLElement
         const subfeatureId = target.dataset.subfeatureId
@@ -181,7 +242,8 @@ const FloatingLabels = observer(function FloatingLabels({
         }
       }}
     >
-      {labels}
+      {fixedLabels}
+      {floatingLabels}
     </div>
   )
 })
