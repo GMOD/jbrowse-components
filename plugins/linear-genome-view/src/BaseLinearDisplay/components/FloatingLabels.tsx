@@ -146,7 +146,13 @@ const FloatingLabels = observer(function FloatingLabels({
 
   for (const [
     key,
-    { leftPx, topPx, totalFeatureHeight, floatingLabels: labelData, featureWidth },
+    {
+      leftPx,
+      topPx,
+      totalFeatureHeight,
+      floatingLabels: labelData,
+      featureWidth,
+    },
   ] of featureLabels.entries()) {
     const featureVisualBottom = topPx + totalFeatureHeight
     const featureRightPx = leftPx + featureWidth

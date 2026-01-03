@@ -123,7 +123,7 @@ export function createBaseTrackModel(
        * #getter
        */
       get adapterType() {
-        const adapterConfig = getConf(self, 'adapter')
+        const { adapterConfig } = self
         if (!adapterConfig) {
           throw new Error(`no adapter configuration provided for ${self.type}`)
         }

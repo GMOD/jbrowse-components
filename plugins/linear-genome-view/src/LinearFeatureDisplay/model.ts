@@ -158,7 +158,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           // Use track overrides if set, otherwise use what's already in configBlob
           // This avoids redundant getConf calls for each property
           showLabels: self.trackShowLabels ?? config.showLabels,
-          showDescriptions: self.trackShowDescriptions ?? config.showDescriptions,
+          showDescriptions:
+            self.trackShowDescriptions ?? config.showDescriptions,
           displayMode: self.trackDisplayMode ?? config.displayMode,
           maxHeight: self.trackMaxHeight ?? config.maxHeight,
         }

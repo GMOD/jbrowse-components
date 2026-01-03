@@ -91,13 +91,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           // Use track overrides if set, otherwise use what's already in configBlob
           // This avoids redundant getConf calls for each property
           showLabels: self.trackShowLabels ?? config.showLabels,
-          showDescriptions: self.trackShowDescriptions ?? config.showDescriptions,
-          subfeatureLabels: self.trackSubfeatureLabels ?? config.subfeatureLabels,
+          showDescriptions:
+            self.trackShowDescriptions ?? config.showDescriptions,
+          subfeatureLabels:
+            self.trackSubfeatureLabels ?? config.subfeatureLabels,
           displayMode: self.trackDisplayMode ?? config.displayMode,
           maxHeight: self.trackMaxHeight ?? config.maxHeight,
           geneGlyphMode: self.trackGeneGlyphMode ?? config.geneGlyphMode,
           displayDirectionalChevrons:
-            self.trackDisplayDirectionalChevrons ?? config.displayDirectionalChevrons,
+            self.trackDisplayDirectionalChevrons ??
+            config.displayDirectionalChevrons,
         }
       },
     }))

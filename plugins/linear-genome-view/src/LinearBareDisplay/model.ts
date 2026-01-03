@@ -36,11 +36,14 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const configBlob = getConf(self, ['renderer']) || {}
         return configBlob as Omit<typeof configBlob, symbol>
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        */
       get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
+        // Use rendererConfig.type to avoid redundant getConf traversal
+        return self.rendererConfig.type as string
       },
     }))
     .views(self => {
