@@ -24,6 +24,16 @@ function getItemDataJson(item: ClickMapItem | undefined, refName?: string) {
   return JSON.stringify({ item, refName })
 }
 
+function getFeatureRefName(features: Map<string, Feature>) {
+  for (const feature of features.values()) {
+    const refName = feature.get('refName')
+    if (refName) {
+      return refName as string
+    }
+  }
+  return undefined
+}
+
 const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
   regions: Region[]
   features: Map<string, Feature>
@@ -103,7 +113,10 @@ const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
       data-testid="snpcoverage-rendering-test"
       onMouseMove={e => {
         const item = getInterbaseItemUnderMouse(e.clientX, e.clientY)
-        const itemData = getItemDataJson(item, region.refName)
+        const itemData = getItemDataJson(
+          item,
+          getFeatureRefName(features) ?? region.refName,
+        )
         setIsOverIndicator(!!item)
         if (itemData) {
           displayModel?.setFeatureIdUnderMouse(undefined)
@@ -120,7 +133,10 @@ const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
         if (item && displayModel) {
           const session = getSession(displayModel)
           const view = getContainingView(displayModel)
-          const featureData = clickMapItemToFeatureData(item, region.refName)
+          const featureData = clickMapItemToFeatureData(
+            item,
+            getFeatureRefName(features) ?? region.refName,
+          )
           if (isSessionModelWithWidgets(session)) {
             const featureWidget = session.addWidget(
               'BaseFeatureWidget',

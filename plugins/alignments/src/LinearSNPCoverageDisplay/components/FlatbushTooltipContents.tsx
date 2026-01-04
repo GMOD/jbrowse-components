@@ -1,27 +1,11 @@
 import { forwardRef } from 'react'
 
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { getInterbaseTypeLabel } from '../../SNPCoverageRenderer/types'
+import { formatStrandCounts, pct, useTooltipStyles } from './tooltipUtils'
 
 import type { ClickMapItem } from '../../SNPCoverageRenderer/types'
-
-const useStyles = makeStyles()(() => ({
-  td: {
-    whiteSpace: 'nowrap',
-  },
-}))
-
-function pct(n: number, total = 1) {
-  return `${((n / (total || 1)) * 100).toFixed(1)}%`
-}
-
-function formatStrandCounts(entry: { '1'?: number; '-1'?: number }) {
-  const neg = entry['-1'] ? `${entry['-1']}(-)` : ''
-  const pos = entry['1'] ? `${entry['1']}(+)` : ''
-  return neg + pos || '-'
-}
 
 interface Props {
   item: ClickMapItem
@@ -30,7 +14,7 @@ interface Props {
 
 const FlatbushTooltipContents = forwardRef<HTMLDivElement, Props>(
   function FlatbushTooltipContents2({ item, refName }, ref) {
-    const { classes } = useStyles()
+    const { classes } = useTooltipStyles()
     const pos = toLocale(item.start + 1)
     const location = refName ? `${refName}:${pos}` : pos
 

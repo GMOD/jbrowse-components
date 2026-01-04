@@ -1,4 +1,4 @@
-import { reducePrecision, toLocale } from '@jbrowse/core/util'
+import { reducePrecision } from '@jbrowse/core/util'
 
 import type {
   BaseCoverageBin,
@@ -62,29 +62,10 @@ export function getInterbaseTypeLabel(type: string) {
   return typeLabels[type] ?? type
 }
 
-function truncateSequence(seq: string, maxLength = 20) {
-  if (seq.length <= maxLength) {
-    return { text: seq, truncated: false }
-  }
-  return { text: `${seq.slice(0, maxLength)}...`, truncated: true }
-}
-
 function formatStrandCounts(entry: { '1'?: number; '-1'?: number }) {
   const neg = entry['-1'] ? `${entry['-1']}(-)` : ''
   const pos = entry['1'] ? `${entry['1']}(+)` : ''
   return neg + pos || '-'
-}
-
-function formatStrandFromCounts(fwd?: number, rev?: number) {
-  if (fwd === undefined && rev === undefined) {
-    return ''
-  }
-  return `\nStrand: ${fwd ?? 0} fwd, ${rev ?? 0} rev`
-}
-
-function formatCountPct(count: number, total: number) {
-  const pct = total > 0 ? ((count / total) * 100).toFixed(1) : '0'
-  return `${count}/${total} of reads (${pct}%)`
 }
 
 function pct(n: number, total = 1) {
@@ -196,128 +177,6 @@ export function clickMapItemToFeatureData(
         : `${item.minLength}-${item.maxLength}bp (avg ${item.avgLength?.toFixed(1)}bp)`,
     sequence: item.topSequence,
   }
-}
-
-export function formatInterbaseStats(
-  count: number,
-  total: number,
-  type: 'insertion' | 'softclip' | 'hardclip',
-  lengthStats?: {
-    avgLength?: number
-    minLength?: number
-    maxLength?: number
-    topSequence?: string
-  },
-) {
-  let result = formatCountPct(count, total)
-  if (lengthStats?.avgLength !== undefined) {
-    const { avgLength, minLength, maxLength, topSequence } = lengthStats
-    const avgStr = reducePrecision(avgLength)
-    if (minLength !== undefined && maxLength !== undefined) {
-      if (minLength === maxLength) {
-        if (topSequence !== undefined) {
-          const { text, truncated } = truncateSequence(topSequence)
-          result += `\n${text} (${toLocale(minLength)}bp ${type})`
-          if (truncated) {
-            result += '\nClick to see full sequence'
-          }
-        } else {
-          result += `\n${toLocale(minLength)}bp ${type}`
-        }
-      } else {
-        result += `\n${toLocale(minLength)}bp - ${toLocale(maxLength)}bp ${type} (avg ${avgStr}bp)`
-        if (topSequence !== undefined) {
-          const { text, truncated } = truncateSequence(topSequence)
-          result += `\nMost common: ${text}`
-          if (truncated) {
-            result += '\nClick to see full sequence'
-          }
-        }
-      }
-    } else {
-      result += `\nAvg length: ${avgStr}bp`
-    }
-  }
-  return result
-}
-
-export function formatSNPStats(item: SNPItem) {
-  const {
-    base,
-    count,
-    total,
-    refbase,
-    avgQual,
-    fwdCount,
-    revCount,
-    bin,
-    start,
-    end,
-  } = item
-
-  // If we have full bin data, show detailed tooltip matching the normal tooltip
-  if (bin) {
-    const { readsCounted, ref, snps, mods } = bin
-    const pos =
-      start === end - 1
-        ? toLocale(start + 1)
-        : `${toLocale(start + 1)}..${toLocale(end)}`
-
-    let result = pos ? `Position: ${pos}\n` : ''
-    result += `Total: ${readsCounted}\n`
-    result += `REF${refbase ? ` (${refbase.toUpperCase()})` : ''}: ${ref.entryDepth} (${((ref.entryDepth / readsCounted) * 100).toFixed(1)}%) ${formatStrandCounts(ref)}\n`
-
-    // Add SNPs
-    for (const [snpBase, entry] of Object.entries(snps)) {
-      const pctVal = ((entry.entryDepth / readsCounted) * 100).toFixed(1)
-      result += `${snpBase}: ${entry.entryDepth} (${pctVal}%) ${formatStrandCounts(entry)}`
-      if (entry.avgProbability !== undefined) {
-        result += ` qual:${reducePrecision(entry.avgProbability)}`
-      }
-      result += '\n'
-    }
-
-    // Add mods if present
-    for (const [modKey, entry] of Object.entries(mods)) {
-      const pctVal = ((entry.entryDepth / readsCounted) * 100).toFixed(1)
-      result += `${modKey}: ${entry.entryDepth} (${pctVal}%) ${formatStrandCounts(entry)}`
-      if (entry.avgProbability !== undefined) {
-        result += ` prob:${(entry.avgProbability * 100).toFixed(1)}%`
-      }
-      result += '\n'
-    }
-
-    return result.trim()
-  }
-
-  // Fallback to simple format
-  const mutation = refbase ? `${refbase}→${base}` : base
-  let result = `${mutation}: ${formatCountPct(count, total)}`
-  if (avgQual !== undefined) {
-    result += `\nAvg quality: ${reducePrecision(avgQual)}`
-  }
-  result += formatStrandFromCounts(fwdCount, revCount)
-  return result
-}
-
-export function formatModificationStats(item: ModificationItem) {
-  const {
-    modType,
-    base,
-    count,
-    total,
-    avgProb,
-    fwdCount,
-    revCount,
-    isUnmodified,
-  } = item
-  const label = isUnmodified ? `Unmodified ${base}` : `${modType} (${base})`
-  let result = `${label}: ${formatCountPct(count, total)}`
-  if (avgProb !== undefined) {
-    result += `\nAvg probability: ${reducePrecision(avgProb * 100)}%`
-  }
-  result += formatStrandFromCounts(fwdCount, revCount)
-  return result
 }
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {

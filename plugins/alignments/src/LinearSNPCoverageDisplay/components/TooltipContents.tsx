@@ -1,22 +1,12 @@
 import { forwardRef } from 'react'
 
 import { toLocale } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { getModificationName } from '../../shared/modificationData'
+import { formatStrandCounts, pct, useTooltipStyles } from './tooltipUtils'
 
 import type { BaseCoverageBin } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
-
-const useStyles = makeStyles()(() => ({
-  td: {
-    whiteSpace: 'nowrap',
-  },
-}))
-
-const toP = (s = 0) => +s.toFixed(1)
-
-const pct = (n: number, total = 1) => `${toP((n / (total || 1)) * 100)}%`
 
 interface Props {
   feature: Feature
@@ -69,11 +59,6 @@ function getModificationType(base: string): string {
   return base.replace(/^(mod_|nonmod_)/, '')
 }
 
-function formatStrandCounts(score: StrandCounts): string {
-  const neg = score['-1'] ? `${score['-1']}(-)` : ''
-  const pos = score['1'] ? `${score['1']}(+)` : ''
-  return neg + pos
-}
 
 function shouldShowPercentage(base: string): boolean {
   return base !== 'depth' && base !== 'skip'
@@ -385,7 +370,7 @@ function ModificationRows({
 const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2(props, reactRef) {
     const { feature, model } = props
-    const { classes } = useStyles()
+    const { classes } = useTooltipStyles()
     const start = feature.get('start') + 1
     const end = feature.get('end')
     const name = feature.get('refName')
