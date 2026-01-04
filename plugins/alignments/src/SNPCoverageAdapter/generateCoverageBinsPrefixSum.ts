@@ -53,8 +53,8 @@ function binsMapToSoA(
   // Sort positions for sequential output
   const positions = [...bins.keys()].sort((a, b) => a - b)
 
-  for (const [idx, position] of positions.entries()) {
-    const pos = position
+  for (let idx = 0, l = positions.length; idx < l; idx++) {
+    const pos = positions[idx]!
     const bin = bins.get(pos)!
     const start = regionStart + pos
     starts[idx] = start

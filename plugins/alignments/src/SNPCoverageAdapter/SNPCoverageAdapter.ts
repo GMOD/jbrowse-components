@@ -87,8 +87,8 @@ function computeStatsFromBins(
   let scoreSumSquares = 0
   let featureCount = 0
 
-  for (const [i, start] of starts.entries()) {
-    const pos = start
+  for (let i = 0, l = starts.length; i < l; i++) {
+    const pos = starts[i]!
     if (pos >= regionStart && pos < regionEnd) {
       const score = scores[i]!
       scoreMin = Math.min(scoreMin, score)
