@@ -346,7 +346,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../core/dist
+        version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -447,8 +447,8 @@ importers:
         specifier: ^2.0.17
         version: 2.0.18
       librpc-web-mod:
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^2.1.1
+        version: 2.1.1
       load-script:
         specifier: ^2.0.0
         version: 2.0.0
@@ -473,13 +473,12 @@ importers:
       source-map-js:
         specifier: ^1.0.2
         version: 1.2.1
-    publishDirectory: dist
 
   packages/embedded-core:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../core/dist
+        version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -506,7 +505,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../core/dist
+        version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -539,7 +538,7 @@ importers:
         version: 6.1.0
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../core/dist
+        version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -566,7 +565,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../core/dist
+        version: link:../core
       ixixx:
         specifier: ^3.0.2
         version: 3.0.2
@@ -590,7 +589,7 @@ importers:
         version: link:../app-core
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../core/dist
+        version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -623,7 +622,7 @@ importers:
         version: 7.0.3
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -674,7 +673,7 @@ importers:
         version: 6.1.0
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -707,7 +706,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -746,7 +745,7 @@ importers:
         version: 3.2.2
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -764,7 +763,7 @@ importers:
         version: 6.1.0
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -800,7 +799,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -830,7 +829,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -866,7 +865,7 @@ importers:
         version: 3.2.2
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -899,7 +898,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -935,7 +934,7 @@ importers:
         version: 2.0.3
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -971,7 +970,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1010,7 +1009,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1049,7 +1048,7 @@ importers:
         version: 3.2.2
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1067,7 +1066,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1121,7 +1120,7 @@ importers:
         version: 6.0.9
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1151,7 +1150,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1181,7 +1180,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1208,7 +1207,7 @@ importers:
         version: 3.0.4
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1229,7 +1228,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1268,7 +1267,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1307,7 +1306,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1328,7 +1327,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1364,7 +1363,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1391,7 +1390,7 @@ importers:
         version: 6.0.1
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1421,7 +1420,7 @@ importers:
         version: 6.1.0
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1460,7 +1459,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1496,7 +1495,7 @@ importers:
     dependencies:
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/text-indexing':
         specifier: workspace:^
         version: link:../../packages/text-indexing
@@ -1511,7 +1510,7 @@ importers:
         version: 3.0.4
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       react:
         specifier: '>=18.0.0'
         version: 19.2.3
@@ -1532,7 +1531,7 @@ importers:
         version: 6.1.0
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1592,7 +1591,7 @@ importers:
         version: 1.0.7
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1685,7 +1684,7 @@ importers:
         version: link:../../packages/app-core
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -1898,7 +1897,7 @@ importers:
         version: link:../../packages/app-core
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -2030,7 +2029,7 @@ importers:
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3)
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/embedded-core':
         specifier: workspace:^
         version: link:../../packages/embedded-core
@@ -2093,7 +2092,7 @@ importers:
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3)
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/embedded-core':
         specifier: workspace:^
         version: link:../../packages/embedded-core
@@ -2177,7 +2176,7 @@ importers:
         version: link:../../packages/app-core
       '@jbrowse/core':
         specifier: workspace:^
-        version: link:../../packages/core/dist
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.4.7
         version: 5.5.0(mobx@6.15.0)
@@ -8041,6 +8040,9 @@ packages:
 
   librpc-web-mod@2.1.0:
     resolution: {integrity: sha512-Ce21wd/uLiJMYPZn50iXz9CAqqiLxLdz98dwJgQmOV+RBP+LSx46Pfgc3kk/+h9PUU1Iu5Hr7UB+cPRDt1yCSA==}
+
+  librpc-web-mod@2.1.1:
+    resolution: {integrity: sha512-ybKVK3wkEGj+wGd7P0A6LVCtge7seeTXPjSxhI3kaOkm5NPb/vFGGNO4Iu1G0ht69cCfVRlNjwvwpwUShi9G3g==}
 
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
@@ -17879,6 +17881,8 @@ snapshots:
 
   librpc-web-mod@2.1.0: {}
 
+  librpc-web-mod@2.1.1: {}
+
   lines-and-columns@1.2.4: {}
 
   lines-and-columns@2.0.3: {}
@@ -17938,7 +17942,7 @@ snapshots:
 
   log-symbols@4.1.0:
     dependencies:
-      chalk: 4.1.0
+      chalk: 4.1.2
       is-unicode-supported: 0.1.0
 
   loose-envify@1.4.0:
