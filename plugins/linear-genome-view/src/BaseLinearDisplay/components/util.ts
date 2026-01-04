@@ -146,7 +146,7 @@ export function deduplicateFeatureLabels(
       continue
     }
 
-    const [left, topPx, right, , feature] = val
+    const [, topPx, , , feature] = val
     const {
       refName,
       floatingLabels,
@@ -154,7 +154,8 @@ export function deduplicateFeatureLabels(
       actualTopPx,
       featureWidth,
       totalLayoutWidth,
-      leftPadding,
+      featureStartBp,
+      featureEndBp,
     } = feature
     const effectiveTopPx = actualTopPx ?? topPx
 
@@ -163,17 +164,20 @@ export function deduplicateFeatureLabels(
       floatingLabels.length === 0 ||
       !totalFeatureHeight ||
       featureWidth === undefined ||
-      totalLayoutWidth === undefined
+      totalLayoutWidth === undefined ||
+      featureStartBp === undefined ||
+      featureEndBp === undefined
     ) {
       continue
     }
 
+    // Use actual feature coordinates, not layout coordinates (which include padding)
     const positions = getFeaturePositions(
       view,
       assembly,
       refName,
-      left,
-      right,
+      featureStartBp,
+      featureEndBp,
       bpPerPx,
     )
 
@@ -181,15 +185,10 @@ export function deduplicateFeatureLabels(
       continue
     }
 
-    const adjustedLeftPx = adjustLabelPositionForPadding(
-      positions.leftPx,
-      leftPadding,
-    )
-
     const existing = featureLabels.get(key)
-    if (!existing || adjustedLeftPx < existing.leftPx) {
+    if (!existing || positions.leftPx < existing.leftPx) {
       featureLabels.set(key, {
-        leftPx: adjustedLeftPx,
+        leftPx: positions.leftPx,
         rightPx: positions.rightPx,
         topPx: effectiveTopPx,
         totalFeatureHeight,
@@ -201,18 +200,6 @@ export function deduplicateFeatureLabels(
   }
 
   return featureLabels
-}
-
-/**
- * Adjust label left position to account for strand arrow padding.
- * For reverse strand features, the arrow extends to the left of the body,
- * so the label should start at the body position (leftPx + leftPadding).
- */
-export function adjustLabelPositionForPadding(
-  leftPx: number,
-  leftPadding?: number,
-): number {
-  return leftPx + (leftPadding ?? 0)
 }
 
 /**

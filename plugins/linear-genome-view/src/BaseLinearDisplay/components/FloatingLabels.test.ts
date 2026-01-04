@@ -1,34 +1,10 @@
 import {
-  adjustLabelPositionForPadding,
   calculateFloatingLabelPosition,
   clampToViewport,
   getViewportLeftEdge,
 } from './util'
 
 describe('FloatingLabels utilities', () => {
-  describe('adjustLabelPositionForPadding', () => {
-    it('returns original position when leftPadding is undefined', () => {
-      expect(adjustLabelPositionForPadding(100, undefined)).toBe(100)
-    })
-
-    it('returns original position when leftPadding is 0 (forward strand)', () => {
-      expect(adjustLabelPositionForPadding(100, 0)).toBe(100)
-    })
-
-    it('shifts position right by leftPadding for reverse strand features', () => {
-      // Reverse strand features have leftPadding = 8 (STRAND_ARROW_WIDTH)
-      expect(adjustLabelPositionForPadding(100, 8)).toBe(108)
-    })
-
-    it('handles negative positions correctly', () => {
-      expect(adjustLabelPositionForPadding(-50, 8)).toBe(-42)
-    })
-
-    it('handles zero position correctly', () => {
-      expect(adjustLabelPositionForPadding(0, 8)).toBe(8)
-    })
-  })
-
   describe('getViewportLeftEdge', () => {
     it('returns 0 when offsetPx is negative (scrolled left)', () => {
       expect(getViewportLeftEdge(-100)).toBe(0)

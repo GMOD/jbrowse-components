@@ -33,7 +33,10 @@ export interface LayoutFeatureMetadata {
   totalLayoutWidth?: number
   featureWidth?: number
   actualTopPx?: number
-  leftPadding?: number
+  /** Actual feature start in bp (not layout start which includes padding) */
+  featureStartBp?: number
+  /** Actual feature end in bp (not layout end which includes padding) */
+  featureEndBp?: number
 }
 
 /**
@@ -46,17 +49,10 @@ export function createSubfeatureLabelMetadata(args: {
   totalLayoutWidth: number
   featureWidth: number
   actualTopPx: number
-  leftPadding?: number
+  featureStartBp: number
+  featureEndBp: number
 }): LayoutFeatureMetadata {
-  return {
-    refName: args.refName,
-    floatingLabels: args.floatingLabels,
-    totalFeatureHeight: args.totalFeatureHeight,
-    totalLayoutWidth: args.totalLayoutWidth,
-    featureWidth: args.featureWidth,
-    actualTopPx: args.actualTopPx,
-    leftPadding: args.leftPadding,
-  }
+  return { ...args }
 }
 
 export type LayoutRecord =

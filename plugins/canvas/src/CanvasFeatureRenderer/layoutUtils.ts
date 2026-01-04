@@ -218,8 +218,8 @@ function addChildrenRecursive({
         }
       }
 
-      const childStart = childFeature.get('start')
-      const childEnd = childFeature.get('end')
+      const childStart = childFeature.get('start') as number
+      const childEnd = childFeature.get('end') as number
       layout.addRect(
         childFeature.id(),
         childStart,
@@ -234,7 +234,8 @@ function addChildrenRecursive({
               totalLayoutWidth: child.totalLayoutWidth,
               actualTopPx: topPx,
               featureWidth: child.width,
-              leftPadding: child.leftPadding,
+              featureStartBp: childStart,
+              featureEndBp: childEnd,
             })
           : { refName: childFeature.get('refName') },
       )

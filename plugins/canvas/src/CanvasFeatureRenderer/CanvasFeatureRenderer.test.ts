@@ -20,7 +20,8 @@ interface LayoutSerializableData {
   totalLayoutWidth?: number
   actualTopPx?: number
   featureWidth?: number
-  leftPadding?: number
+  featureStartBp?: number
+  featureEndBp?: number
 }
 
 const pluginManager = new PluginManager([])
@@ -219,6 +220,45 @@ describe('CanvasFeatureRenderer', () => {
 
       expect(layoutRecords).toHaveLength(2)
       expect(layoutRecords[0]!.topPx).not.toBe(layoutRecords[1]!.topPx)
+    })
+
+    test('featureStartBp/featureEndBp in layout metadata stores actual feature coordinates', () => {
+      const forwardFeature = new SimpleFeature({
+        uniqueId: 'forward1',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        name: 'ForwardFeature',
+        strand: 1,
+      })
+      const reverseFeature = new SimpleFeature({
+        uniqueId: 'reverse1',
+        refName: 'ctgA',
+        start: 300,
+        end: 400,
+        name: 'ReverseFeature',
+        strand: -1,
+      })
+      const features = new Map([
+        ['forward1', forwardFeature],
+        ['reverse1', reverseFeature],
+      ])
+      const args = createRenderArgs(features)
+      doLayout(args, features)
+
+      // Forward strand: stores actual feature coordinates
+      const forwardMeta = args.layout.getSerializableDataByID(
+        'forward1',
+      ) as LayoutSerializableData
+      expect(forwardMeta.featureStartBp).toBe(100)
+      expect(forwardMeta.featureEndBp).toBe(200)
+
+      // Reverse strand: also stores actual feature coordinates (not layout coords)
+      const reverseMeta = args.layout.getSerializableDataByID(
+        'reverse1',
+      ) as LayoutSerializableData
+      expect(reverseMeta.featureStartBp).toBe(300)
+      expect(reverseMeta.featureEndBp).toBe(400)
     })
   })
 
