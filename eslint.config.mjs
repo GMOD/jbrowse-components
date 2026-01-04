@@ -22,7 +22,7 @@ export default defineConfig(
       'config/jest/*',
       'benchmarks/*',
       '**/build/**/*',
-      '**/dist/**/*',
+      '**/dist*/**/*',
       'scripts/analyze_cpuprof.ts',
       '**/esm/**/*',
       '**/public/**/*',

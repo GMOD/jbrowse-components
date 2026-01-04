@@ -3,12 +3,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { processDepthPrefixSum } from './processDepthPrefixSum'
 import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
-import {
-  createEmptyBin,
-  createPreBinEntry,
-  isInterbase,
-  mismatchLen,
-} from './util'
+import { isInterbase, mismatchLen } from './util'
 import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
 import {
   DELSKIP_MASK,
@@ -19,7 +14,6 @@ import {
 
 import type { Opts } from './util'
 import type {
-  BaseCoverageBin,
   FeatureWithMismatchIterator,
   Mismatch,
   PreBaseCoverageBin,
@@ -29,41 +23,34 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
-// Structure-of-arrays result format for efficient rendering
-export interface CoverageBinsSoA {
-  starts: Int32Array
-  ends: Int32Array
-  scores: Float32Array
-  snpinfo: BaseCoverageBin[]
+// Type with lazy sub-objects (undefined until needed)
+export interface LazyBin {
+  refbase?: string
+  depth: number
+  readsCounted: number
+  ref: PreBinEntry
+  snps?: Record<string, PreBinEntry>
+  mods?: Record<string, PreBinEntry>
+  nonmods?: Record<string, PreBinEntry>
+  delskips?: Record<string, PreBinEntry>
+  noncov?: Record<string, PreBinEntry>
+}
+
+// Result format - sparse bins array with regionStart for computing positions
+export interface CoverageBinsResult {
+  bins: (LazyBin | undefined)[]
+  regionStart: number
   skipmap: SkipMap
 }
 
-// Convert bins Map to structure-of-arrays format
-function binsMapToSoA(
-  bins: Map<number, PreBaseCoverageBin>,
-  regionStart: number,
-  skipmap: SkipMap,
-): CoverageBinsSoA {
-  const count = bins.size
-  const starts = new Int32Array(count)
-  const ends = new Int32Array(count)
-  const scores = new Float32Array(count)
-  const snpinfo: BaseCoverageBin[] = new Array(count)
-
-  // Sort positions for sequential output
-  const positions = [...bins.keys()].sort((a, b) => a - b)
-
-  for (const [idx, position] of positions.entries()) {
-    const pos = position
-    const bin = bins.get(pos)!
-    const start = regionStart + pos
-    starts[idx] = start
-    ends[idx] = start + 1
-    scores[idx] = bin.depth
-    snpinfo[idx] = bin
-  }
-
-  return { starts, ends, scores, snpinfo, skipmap }
+// Finalize a lazy bin before returning to renderer
+export function finalizeLazyBin(bin: LazyBin): PreBaseCoverageBin {
+  bin.snps ??= {}
+  bin.mods ??= {}
+  bin.nonmods ??= {}
+  bin.delskips ??= {}
+  bin.noncov ??= {}
+  return bin as PreBaseCoverageBin
 }
 
 // Reusable change arrays for deletion prefix sums
@@ -125,7 +112,7 @@ export async function generateCoverageBinsPrefixSum({
   region: Region
   opts: Opts
   fetchSequence?: (arg: Region) => Promise<string | undefined>
-}): Promise<CoverageBinsSoA> {
+}): Promise<CoverageBinsResult> {
   const { stopToken, colorBy, statsEstimationMode } = opts
   const regionStart = region.start
   const regionEnd = region.end
@@ -140,13 +127,13 @@ export async function generateCoverageBinsPrefixSum({
   // example, for an overview of the data or when calculating statistics. Just
   // return depth-only bins for fast coverage estimation
   if (statsEstimationMode) {
-    const bins = new Map<number, PreBaseCoverageBin>()
+    const bins: (LazyBin | undefined)[] = []
     for (let i = 0; i < regionSize; i++) {
       const depth = depthSoA.depth[i]!
       if (depth === 0) {
         continue
       }
-      bins.set(i, {
+      bins[i] = {
         depth,
         readsCounted: depth,
         ref: {
@@ -161,14 +148,9 @@ export async function generateCoverageBinsPrefixSum({
           lengthMin: Infinity,
           lengthMax: -Infinity,
         },
-        snps: {},
-        mods: {},
-        nonmods: {},
-        delskips: {},
-        noncov: {},
-      })
+      }
     }
-    return binsMapToSoA(bins, regionStart, {})
+    return { bins, regionStart, skipmap: {} }
   }
 
   // Step 2: Process mismatches with prefix sums for deletions
@@ -236,9 +218,9 @@ export async function generateCoverageBinsPrefixSum({
     }
   }
 
-  // Step 4: Build final bins Map - only create objects for positions with data
+  // Step 4: Build final bins array - only create objects for positions with data
   checkStopToken(stopToken)
-  const bins = new Map<number, PreBaseCoverageBin>()
+  const bins: (LazyBin | undefined)[] = []
 
   // First pass: create bins only where we have depth > 0 or other data
   for (let i = 0; i < regionSize; i++) {
@@ -250,7 +232,7 @@ export async function generateCoverageBinsPrefixSum({
       continue
     }
 
-    bins.set(i, {
+    bins[i] = {
       depth: depth - delDepth,
       readsCounted: depth,
       ref: {
@@ -265,28 +247,60 @@ export async function generateCoverageBinsPrefixSum({
         lengthMin: Infinity,
         lengthMax: -Infinity,
       },
-      snps: {},
-      mods: {},
-      nonmods: {},
-      delskips: delDepth > 0 ? { deletion: createDeletionEntry(delDepth) } : {},
-      noncov: {},
-    })
+      delskips:
+        delDepth > 0 ? { deletion: createDeletionEntry(delDepth) } : undefined,
+    }
   }
 
   // Apply SNP events
   for (let i = 0, l = snpEvents.length; i < l; i++) {
-    const { pos, entry } = snpEvents[i]!
+    const evt = snpEvents[i]!
+    const pos = evt.pos
+    const entry = evt.entry
 
-    let bin = bins.get(pos)
+    let bin = bins[pos]
     if (!bin) {
-      bin = createEmptyBin()
-      bins.set(pos, bin)
+      bin = {
+        depth: 0,
+        readsCounted: 0,
+        ref: {
+          entryDepth: 0,
+          '-1': 0,
+          '0': 0,
+          '1': 0,
+          probabilityTotal: 0,
+          probabilityCount: 0,
+          lengthTotal: 0,
+          lengthCount: 0,
+          lengthMin: Infinity,
+          lengthMax: -Infinity,
+        },
+      }
+      bins[pos] = bin
     }
-    const snpEntry = (bin.snps[entry.base] ??= createPreBinEntry())
+    const base = entry.base
+    const strand = entry.strand
+    const snps = (bin.snps ??= {})
+    let snpEntry = snps[base]
+    if (!snpEntry) {
+      snpEntry = {
+        entryDepth: 0,
+        '-1': 0,
+        '0': 0,
+        '1': 0,
+        probabilityTotal: 0,
+        probabilityCount: 0,
+        lengthTotal: 0,
+        lengthCount: 0,
+        lengthMin: Infinity,
+        lengthMax: -Infinity,
+      }
+      snps[base] = snpEntry
+    }
     snpEntry.entryDepth++
-    snpEntry[entry.strand]++
+    snpEntry[strand]++
     bin.ref.entryDepth--
-    bin.ref[entry.strand]--
+    bin.ref[strand]--
     if (entry.altbase) {
       bin.refbase = entry.altbase
     }
@@ -294,24 +308,62 @@ export async function generateCoverageBinsPrefixSum({
 
   // Apply noncov events (insertions, clips)
   for (let i = 0, l = noncovEvents.length; i < l; i++) {
-    const { pos, entry } = noncovEvents[i]!
-    let bin = bins.get(pos)
+    const evt = noncovEvents[i]!
+    const pos = evt.pos
+    const entry = evt.entry
+
+    let bin = bins[pos]
     if (!bin) {
-      bin = createEmptyBin()
-      bins.set(pos, bin)
+      bin = {
+        depth: 0,
+        readsCounted: 0,
+        ref: {
+          entryDepth: 0,
+          '-1': 0,
+          '0': 0,
+          '1': 0,
+          probabilityTotal: 0,
+          probabilityCount: 0,
+          lengthTotal: 0,
+          lengthCount: 0,
+          lengthMin: Infinity,
+          lengthMax: -Infinity,
+        },
+      }
+      bins[pos] = bin
     }
-    const noncovEntry = (bin.noncov[entry.type] ??= createPreBinEntry())
+    const strand = entry.strand
+    const type = entry.type
+    const length = entry.length
+    const noncov = (bin.noncov ??= {})
+    let noncovEntry = noncov[type]
+    if (!noncovEntry) {
+      noncovEntry = {
+        entryDepth: 0,
+        '-1': 0,
+        '0': 0,
+        '1': 0,
+        probabilityTotal: 0,
+        probabilityCount: 0,
+        lengthTotal: 0,
+        lengthCount: 0,
+        lengthMin: Infinity,
+        lengthMax: -Infinity,
+      }
+      noncov[type] = noncovEntry
+    }
     noncovEntry.entryDepth++
-    noncovEntry[entry.strand]++
-    noncovEntry.lengthTotal += entry.length
+    noncovEntry[strand]++
+    noncovEntry.lengthTotal += length
     noncovEntry.lengthCount++
-    noncovEntry.lengthMin = Math.min(noncovEntry.lengthMin, entry.length)
-    noncovEntry.lengthMax = Math.max(noncovEntry.lengthMax, entry.length)
-    if (entry.sequence !== undefined) {
+    noncovEntry.lengthMin = Math.min(noncovEntry.lengthMin, length)
+    noncovEntry.lengthMax = Math.max(noncovEntry.lengthMax, length)
+    const seq = entry.sequence
+    if (seq !== undefined) {
       noncovEntry.sequenceCounts ??= new Map()
       noncovEntry.sequenceCounts.set(
-        entry.sequence,
-        (noncovEntry.sequenceCounts.get(entry.sequence) ?? 0) + 1,
+        seq,
+        (noncovEntry.sequenceCounts.get(seq) ?? 0) + 1,
       )
     }
   }
@@ -322,10 +374,14 @@ export async function generateCoverageBinsPrefixSum({
   for (let i = 0, l = modBins.length; i < l; i++) {
     const modBin = modBins[i]
     if (modBin) {
-      const bin = bins.get(i)
+      const bin = bins[i]
       if (bin) {
-        Object.assign(bin.mods, modBin.mods)
-        Object.assign(bin.nonmods, modBin.nonmods)
+        if (Object.keys(modBin.mods).length > 0) {
+          bin.mods = Object.assign(bin.mods ?? {}, modBin.mods)
+        }
+        if (Object.keys(modBin.nonmods).length > 0) {
+          bin.nonmods = Object.assign(bin.nonmods ?? {}, modBin.nonmods)
+        }
         if (modBin.refbase !== undefined) {
           bin.refbase = modBin.refbase
         }
@@ -334,19 +390,28 @@ export async function generateCoverageBinsPrefixSum({
   }
 
   // Finalize entries
-  for (const bin of bins.values()) {
-    for (const key in bin.mods) {
-      finalizeBinEntry(bin.mods[key]!)
-    }
-    for (const key in bin.nonmods) {
-      finalizeBinEntry(bin.nonmods[key]!)
-    }
-    for (const key in bin.noncov) {
-      finalizeBinEntry(bin.noncov[key]!)
+  for (let i = 0, l = bins.length; i < l; i++) {
+    const bin = bins[i]
+    if (bin) {
+      if (bin.mods) {
+        for (const key in bin.mods) {
+          finalizeBinEntry(bin.mods[key]!)
+        }
+      }
+      if (bin.nonmods) {
+        for (const key in bin.nonmods) {
+          finalizeBinEntry(bin.nonmods[key]!)
+        }
+      }
+      if (bin.noncov) {
+        for (const key in bin.noncov) {
+          finalizeBinEntry(bin.noncov[key]!)
+        }
+      }
     }
   }
 
-  return binsMapToSoA(bins, regionStart, skipmap)
+  return { bins, regionStart, skipmap }
 }
 
 function createDeletionEntry(depth: number): PreBinEntry {
@@ -364,6 +429,105 @@ function createDeletionEntry(depth: number): PreBinEntry {
   }
 }
 
+// Shared context to avoid closure allocation per feature
+const featureCtx = {
+  fstart: 0,
+  fstrand: 0 as -1 | 0 | 1,
+  regionStart: 0,
+  regionEnd: 0,
+  regionSize: 0,
+  feature: undefined as FeatureWithMismatchIterator | Feature | undefined,
+  skipmap: undefined as SkipMap | undefined,
+  noncovEvents: undefined as
+    | { pos: number; entry: SparseNoncovEntry }[]
+    | undefined,
+  snpEvents: undefined as { pos: number; entry: SparseSnpEntry }[] | undefined,
+}
+
+function mismatchHandler(
+  type: number,
+  start: number,
+  refLen: number,
+  base: string,
+  _qual: number | undefined,
+  altbase: number | undefined,
+  interbaseLen: number | undefined,
+) {
+  const {
+    fstart,
+    fstrand,
+    regionStart,
+    regionEnd,
+    regionSize,
+    feature,
+    skipmap,
+    noncovEvents,
+    snpEvents,
+  } = featureCtx
+  const mstart = fstart + start
+  const mlen = mismatchLen(type, refLen)
+  const mend = mstart + mlen
+
+  if ((1 << type) & DELSKIP_MASK) {
+    const visStart = Math.max(mstart, regionStart) - regionStart
+    const visEnd = Math.min(mend, regionEnd) - regionStart
+
+    if (visStart < visEnd) {
+      deletionChanges[visStart]!++
+      deletionChanges[visEnd]!--
+    }
+
+    if (type === SKIP_TYPE) {
+      const tags = feature!.get('tags') as Record<string, string> | undefined
+      const xs = tags?.XS || tags?.TS
+      const ts = tags?.ts
+      const effectiveStrand =
+        xs === '+'
+          ? 1
+          : xs === '-'
+            ? -1
+            : (ts === '+' ? 1 : ts === '-' ? -1 : 0) * fstrand
+      const hash = `${mstart}_${mend}_${effectiveStrand}`
+      if (skipmap![hash] === undefined) {
+        skipmap![hash] = {
+          feature: feature!,
+          start: mstart,
+          end: mend,
+          strand: fstrand,
+          effectiveStrand,
+          score: 0,
+        }
+      }
+      skipmap![hash].score++
+    }
+  } else if (isInterbase(type)) {
+    const epos = mstart - regionStart
+    if (epos >= 0 && epos < regionSize) {
+      noncovEvents!.push({
+        pos: epos,
+        entry: {
+          strand: fstrand,
+          type: MISMATCH_MAP[type]! as 'insertion' | 'hardclip' | 'softclip',
+          length: interbaseLen!,
+          sequence: base,
+        },
+      })
+    }
+  } else {
+    const epos = mstart - regionStart
+    if (epos >= 0 && epos < regionSize) {
+      snpEvents!.push({
+        pos: epos,
+        entry: {
+          base,
+          strand: fstrand,
+          altbase: CHAR_FROM_CODE[altbase!],
+        },
+      })
+    }
+  }
+}
+
 function processFeature(
   region: Region,
   feature: FeatureWithMismatchIterator | Feature,
@@ -371,88 +535,15 @@ function processFeature(
   noncovEvents: { pos: number; entry: SparseNoncovEntry }[],
   snpEvents: { pos: number; entry: SparseSnpEntry }[],
 ) {
-  const fstart = feature.get('start')
-  const fstrand = feature.get('strand') as -1 | 0 | 1
-  const regionStart = region.start
-  const regionEnd = region.end
-  const regionSize = regionEnd - regionStart
-
-  const mismatchHandler = (
-    type: number,
-    start: number,
-    refLen: number,
-    base: string,
-    _qual: number | undefined,
-    altbase: number | undefined,
-    interbaseLen: number | undefined,
-  ) => {
-    const mstart = fstart + start
-    const mlen = mismatchLen(type, refLen)
-    const mend = mstart + mlen
-
-    if ((1 << type) & DELSKIP_MASK) {
-      const visStart = Math.max(mstart, regionStart) - regionStart
-      const visEnd = Math.min(mend, regionEnd) - regionStart
-
-      if (visStart < visEnd) {
-        // Use prefix sums for deletions - O(1) per deletion
-        deletionChanges[visStart]!++
-        deletionChanges[visEnd]!--
-      }
-
-      // Track skips for junction rendering
-      if (type === SKIP_TYPE) {
-        const tags = feature.get('tags') as Record<string, string> | undefined
-        const xs = tags?.XS || tags?.TS
-        const ts = tags?.ts
-        const effectiveStrand =
-          xs === '+'
-            ? 1
-            : xs === '-'
-              ? -1
-              : (ts === '+' ? 1 : ts === '-' ? -1 : 0) * fstrand
-        const hash = `${mstart}_${mend}_${effectiveStrand}`
-        if (skipmap[hash] === undefined) {
-          skipmap[hash] = {
-            feature,
-            start: mstart,
-            end: mend,
-            strand: fstrand,
-            effectiveStrand,
-            score: 0,
-          }
-        }
-        skipmap[hash].score++
-      }
-    } else if (isInterbase(type)) {
-      // insertion, softclip, hardclip
-      const epos = mstart - regionStart
-      if (epos >= 0 && epos < regionSize) {
-        noncovEvents.push({
-          pos: epos,
-          entry: {
-            strand: fstrand,
-            type: MISMATCH_MAP[type]! as 'insertion' | 'hardclip' | 'softclip',
-            length: interbaseLen!,
-            sequence: base,
-          },
-        })
-      }
-    } else {
-      // SNP/mismatch - point event
-      const epos = mstart - regionStart
-      if (epos >= 0 && epos < regionSize) {
-        snpEvents.push({
-          pos: epos,
-          entry: {
-            base,
-            strand: fstrand,
-            altbase: CHAR_FROM_CODE[altbase!],
-          },
-        })
-      }
-    }
-  }
+  featureCtx.fstart = feature.get('start')
+  featureCtx.fstrand = feature.get('strand') as -1 | 0 | 1
+  featureCtx.regionStart = region.start
+  featureCtx.regionEnd = region.end
+  featureCtx.regionSize = region.end - region.start
+  featureCtx.feature = feature
+  featureCtx.skipmap = skipmap
+  featureCtx.noncovEvents = noncovEvents
+  featureCtx.snpEvents = snpEvents
 
   if ('forEachMismatch' in feature) {
     feature.forEachMismatch(mismatchHandler)

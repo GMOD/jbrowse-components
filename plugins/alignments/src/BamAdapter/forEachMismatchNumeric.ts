@@ -141,12 +141,33 @@ export function forEachMismatchNumeric(
       soffset += len
       roffset += len
     } else if (op === CIGAR_I) {
-      let insertedBases = ''
-      for (let j = 0; j < len && soffset + j < seqLength; j++) {
-        const seqIdx = soffset + j
-        const sb = numericSeq[seqIdx >> 1]!
-        const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
-        insertedBases += SEQRET[nibble]!
+      // Optimized insertion base extraction - avoid string concat for common cases
+      const safeLen = Math.min(len, seqLength - soffset)
+      let insertedBases: string
+      if (safeLen === 1) {
+        // Single base insertion - most common case
+        const sb = numericSeq[soffset >> 1]!
+        const nibble = (sb >> ((1 - (soffset & 1)) << 2)) & 0xf
+        insertedBases = SEQRET[nibble]!
+      } else if (safeLen === 2) {
+        // Two base insertion - second most common
+        const seqIdx0 = soffset
+        const sb0 = numericSeq[seqIdx0 >> 1]!
+        const nibble0 = (sb0 >> ((1 - (seqIdx0 & 1)) << 2)) & 0xf
+        const seqIdx1 = soffset + 1
+        const sb1 = numericSeq[seqIdx1 >> 1]!
+        const nibble1 = (sb1 >> ((1 - (seqIdx1 & 1)) << 2)) & 0xf
+        insertedBases = SEQRET[nibble0]! + SEQRET[nibble1]!
+      } else {
+        // Longer insertions - use array join (avoids intermediate string allocations)
+        const bases = new Array<string>(safeLen)
+        for (let j = 0; j < safeLen; j++) {
+          const seqIdx = soffset + j
+          const sb = numericSeq[seqIdx >> 1]!
+          const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
+          bases[j] = SEQRET[nibble]!
+        }
+        insertedBases = bases.join('')
       }
       callback(INSERTION_TYPE, roffset, 0, insertedBases, -1, 0, len)
       soffset += len
@@ -198,6 +219,9 @@ export function forEachMismatchNumeric(
           } else if (mdMatchRemaining > 0) {
             mdMatchRemaining--
           }
+        } else if (ref) {
+          // No MD tag - get reference base from ref string
+          altbaseCode = ref.charCodeAt(roffset + j)
         }
 
         callback(

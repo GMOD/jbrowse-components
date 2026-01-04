@@ -2,7 +2,7 @@ import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 import { unzip } from '@gmod/bgzf-filehandle'
-import useMeasure from './useMeasure'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import {
   getEnv as getEnvMST,
   getParent,
