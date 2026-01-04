@@ -1,6 +1,5 @@
-import SimpleFeature from '../../../util/simpleFeature'
-
 import { stringifyGFF3 } from './gff3'
+import SimpleFeature from '../../../util/simpleFeature'
 
 import type { Feature } from '../../../util/simpleFeature'
 

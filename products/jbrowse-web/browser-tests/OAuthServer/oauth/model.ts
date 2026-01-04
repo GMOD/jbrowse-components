@@ -65,7 +65,6 @@ const model: MyModel = {
   async revokeToken(token) {
     /* Delete the token from the database */
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!token) {
       return false
     }

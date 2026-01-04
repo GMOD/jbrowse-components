@@ -38,13 +38,13 @@
   "dependencies": {
     "@gmod/tabix": "^3.2.2",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-alignments": "workspace:^",
-    "@mui/material": "^7.0.0",
-    "generic-filehandle2": "^2.0.17",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "rxjs": "^7.0.0"
+    "@mui/material": "^7.3.6",
+    "generic-filehandle2": "^2.0.18",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1",
+    "rxjs": "^7.8.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

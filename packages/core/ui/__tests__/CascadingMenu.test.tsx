@@ -1,5 +1,6 @@
-import CascadingMenuButton from '../CascadingMenuButton'
 import { fireEvent, render, screen } from '@testing-library/react'
+
+import CascadingMenuButton from '../CascadingMenuButton'
 
 const menuItems = [
   { label: 'Item 1', onClick: () => {} },

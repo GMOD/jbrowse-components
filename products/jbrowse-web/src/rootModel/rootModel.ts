@@ -480,7 +480,6 @@ export default function RootModel({
                   label: 'Export session',
                   icon: GetAppIcon,
                   onClick: async (session: IAnyStateTreeNode) => {
-                    // eslint-disable-next-line @typescript-eslint/no-deprecated
                     const { saveAs } = await import('file-saver-es')
 
                     saveAs(

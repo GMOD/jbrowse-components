@@ -1,8 +1,6 @@
 import type { CxArg } from './tools/classnames'
-import type {
-  CSSObject as CSSObject_base,
-  Interpolation,
-} from '@emotion/serialize'
+// Use @emotion/react (direct dep) instead of @emotion/serialize (transitive)
+import type { CSSObject as CSSObject_base, Interpolation } from '@emotion/react'
 
 export type CSSInterpolation = Interpolation<undefined>
 

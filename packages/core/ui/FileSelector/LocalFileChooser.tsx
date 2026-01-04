@@ -1,8 +1,8 @@
-import { makeStyles } from '../../util/tss-react'
 import { Box, Button, FormControl, Typography } from '@mui/material'
 
 import { isElectron } from '../../util'
 import { getBlob, storeBlobLocation } from '../../util/tracks'
+import { makeStyles } from '../../util/tss-react'
 
 import type {
   BlobLocation,

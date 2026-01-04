@@ -4,8 +4,10 @@ module.exports = {
   roots: ['.', 'packages/', 'products/', 'plugins/'],
   moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
   moduleNameMapper: {
-    '^@jbrowse/core/util/useMeasure$': '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
-    '^@jbrowse/core/ui/SanitizedHTML$': '<rootDir>/packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
+    '^@jbrowse/core/util/useMeasure$':
+      '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
+    '^@jbrowse/core/ui/SanitizedHTML$':
+      '<rootDir>/packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
     '^@jbrowse/core/(.*)$': '<rootDir>/packages/core/$1',
     '^@jbrowse/product-core/(.*)$': '<rootDir>/packages/product-core/$1',
     '^@jbrowse/app-core/(.*)$': '<rootDir>/packages/app-core/$1',
@@ -18,42 +20,63 @@ module.exports = {
     '^@jbrowse/plugin-alignments/(.*)$': '<rootDir>/plugins/alignments/$1',
     '^@jbrowse/plugin-arc$': '<rootDir>/plugins/arc/src/index.ts',
     '^@jbrowse/plugin-arc/(.*)$': '<rootDir>/plugins/arc/$1',
-    '^@jbrowse/plugin-authentication$': '<rootDir>/plugins/authentication/src/index.ts',
-    '^@jbrowse/plugin-authentication/(.*)$': '<rootDir>/plugins/authentication/$1',
+    '^@jbrowse/plugin-authentication$':
+      '<rootDir>/plugins/authentication/src/index.ts',
+    '^@jbrowse/plugin-authentication/(.*)$':
+      '<rootDir>/plugins/authentication/$1',
     '^@jbrowse/plugin-bed$': '<rootDir>/plugins/bed/src/index.ts',
     '^@jbrowse/plugin-bed/(.*)$': '<rootDir>/plugins/bed/$1',
-    '^@jbrowse/plugin-breakpoint-split-view$': '<rootDir>/plugins/breakpoint-split-view/src/index.ts',
-    '^@jbrowse/plugin-breakpoint-split-view/(.*)$': '<rootDir>/plugins/breakpoint-split-view/$1',
+    '^@jbrowse/plugin-breakpoint-split-view$':
+      '<rootDir>/plugins/breakpoint-split-view/src/index.ts',
+    '^@jbrowse/plugin-breakpoint-split-view/(.*)$':
+      '<rootDir>/plugins/breakpoint-split-view/$1',
     '^@jbrowse/plugin-canvas$': '<rootDir>/plugins/canvas/src/index.ts',
     '^@jbrowse/plugin-canvas/(.*)$': '<rootDir>/plugins/canvas/$1',
-    '^@jbrowse/plugin-circular-view$': '<rootDir>/plugins/circular-view/src/index.ts',
-    '^@jbrowse/plugin-circular-view/(.*)$': '<rootDir>/plugins/circular-view/$1',
-    '^@jbrowse/plugin-comparative-adapters$': '<rootDir>/plugins/comparative-adapters/src/index.ts',
-    '^@jbrowse/plugin-comparative-adapters/(.*)$': '<rootDir>/plugins/comparative-adapters/$1',
+    '^@jbrowse/plugin-circular-view$':
+      '<rootDir>/plugins/circular-view/src/index.ts',
+    '^@jbrowse/plugin-circular-view/(.*)$':
+      '<rootDir>/plugins/circular-view/$1',
+    '^@jbrowse/plugin-comparative-adapters$':
+      '<rootDir>/plugins/comparative-adapters/src/index.ts',
+    '^@jbrowse/plugin-comparative-adapters/(.*)$':
+      '<rootDir>/plugins/comparative-adapters/$1',
     '^@jbrowse/plugin-config$': '<rootDir>/plugins/config/src/index.ts',
     '^@jbrowse/plugin-config/(.*)$': '<rootDir>/plugins/config/$1',
-    '^@jbrowse/plugin-data-management$': '<rootDir>/plugins/data-management/src/index.ts',
-    '^@jbrowse/plugin-data-management/(.*)$': '<rootDir>/plugins/data-management/$1',
-    '^@jbrowse/plugin-dotplot-view$': '<rootDir>/plugins/dotplot-view/src/index.ts',
+    '^@jbrowse/plugin-data-management$':
+      '<rootDir>/plugins/data-management/src/index.ts',
+    '^@jbrowse/plugin-data-management/(.*)$':
+      '<rootDir>/plugins/data-management/$1',
+    '^@jbrowse/plugin-dotplot-view$':
+      '<rootDir>/plugins/dotplot-view/src/index.ts',
     '^@jbrowse/plugin-dotplot-view/(.*)$': '<rootDir>/plugins/dotplot-view/$1',
     '^@jbrowse/plugin-gccontent$': '<rootDir>/plugins/gccontent/src/index.ts',
     '^@jbrowse/plugin-gccontent/(.*)$': '<rootDir>/plugins/gccontent/$1',
     '^@jbrowse/plugin-gff3$': '<rootDir>/plugins/gff3/src/index.ts',
     '^@jbrowse/plugin-gff3/(.*)$': '<rootDir>/plugins/gff3/$1',
-    '^@jbrowse/plugin-grid-bookmark$': '<rootDir>/plugins/grid-bookmark/src/index.ts',
-    '^@jbrowse/plugin-grid-bookmark/(.*)$': '<rootDir>/plugins/grid-bookmark/$1',
+    '^@jbrowse/plugin-grid-bookmark$':
+      '<rootDir>/plugins/grid-bookmark/src/index.ts',
+    '^@jbrowse/plugin-grid-bookmark/(.*)$':
+      '<rootDir>/plugins/grid-bookmark/$1',
     '^@jbrowse/plugin-gtf$': '<rootDir>/plugins/gtf/src/index.ts',
     '^@jbrowse/plugin-gtf/(.*)$': '<rootDir>/plugins/gtf/$1',
     '^@jbrowse/plugin-hic$': '<rootDir>/plugins/hic/src/index.ts',
     '^@jbrowse/plugin-hic/(.*)$': '<rootDir>/plugins/hic/$1',
-    '^@jbrowse/plugin-jobs-management$': '<rootDir>/plugins/jobs-management/src/index.ts',
-    '^@jbrowse/plugin-jobs-management/(.*)$': '<rootDir>/plugins/jobs-management/$1',
-    '^@jbrowse/plugin-legacy-jbrowse$': '<rootDir>/plugins/legacy-jbrowse/src/index.ts',
-    '^@jbrowse/plugin-legacy-jbrowse/(.*)$': '<rootDir>/plugins/legacy-jbrowse/$1',
-    '^@jbrowse/plugin-linear-comparative-view$': '<rootDir>/plugins/linear-comparative-view/src/index.ts',
-    '^@jbrowse/plugin-linear-comparative-view/(.*)$': '<rootDir>/plugins/linear-comparative-view/$1',
-    '^@jbrowse/plugin-linear-genome-view$': '<rootDir>/plugins/linear-genome-view/src/index.ts',
-    '^@jbrowse/plugin-linear-genome-view/(.*)$': '<rootDir>/plugins/linear-genome-view/$1',
+    '^@jbrowse/plugin-jobs-management$':
+      '<rootDir>/plugins/jobs-management/src/index.ts',
+    '^@jbrowse/plugin-jobs-management/(.*)$':
+      '<rootDir>/plugins/jobs-management/$1',
+    '^@jbrowse/plugin-legacy-jbrowse$':
+      '<rootDir>/plugins/legacy-jbrowse/src/index.ts',
+    '^@jbrowse/plugin-legacy-jbrowse/(.*)$':
+      '<rootDir>/plugins/legacy-jbrowse/$1',
+    '^@jbrowse/plugin-linear-comparative-view$':
+      '<rootDir>/plugins/linear-comparative-view/src/index.ts',
+    '^@jbrowse/plugin-linear-comparative-view/(.*)$':
+      '<rootDir>/plugins/linear-comparative-view/$1',
+    '^@jbrowse/plugin-linear-genome-view$':
+      '<rootDir>/plugins/linear-genome-view/src/index.ts',
+    '^@jbrowse/plugin-linear-genome-view/(.*)$':
+      '<rootDir>/plugins/linear-genome-view/$1',
     '^@jbrowse/plugin-lollipop$': '<rootDir>/plugins/lollipop/src/index.ts',
     '^@jbrowse/plugin-lollipop/(.*)$': '<rootDir>/plugins/lollipop/$1',
     '^@jbrowse/plugin-menus$': '<rootDir>/plugins/menus/src/index.ts',
@@ -62,12 +85,17 @@ module.exports = {
     '^@jbrowse/plugin-rdf/(.*)$': '<rootDir>/plugins/rdf/$1',
     '^@jbrowse/plugin-sequence$': '<rootDir>/plugins/sequence/src/index.ts',
     '^@jbrowse/plugin-sequence/(.*)$': '<rootDir>/plugins/sequence/$1',
-    '^@jbrowse/plugin-spreadsheet-view$': '<rootDir>/plugins/spreadsheet-view/src/index.ts',
-    '^@jbrowse/plugin-spreadsheet-view/(.*)$': '<rootDir>/plugins/spreadsheet-view/$1',
-    '^@jbrowse/plugin-sv-inspector$': '<rootDir>/plugins/sv-inspector/src/index.ts',
+    '^@jbrowse/plugin-spreadsheet-view$':
+      '<rootDir>/plugins/spreadsheet-view/src/index.ts',
+    '^@jbrowse/plugin-spreadsheet-view/(.*)$':
+      '<rootDir>/plugins/spreadsheet-view/$1',
+    '^@jbrowse/plugin-sv-inspector$':
+      '<rootDir>/plugins/sv-inspector/src/index.ts',
     '^@jbrowse/plugin-sv-inspector/(.*)$': '<rootDir>/plugins/sv-inspector/$1',
-    '^@jbrowse/plugin-text-indexing$': '<rootDir>/plugins/text-indexing/src/index.ts',
-    '^@jbrowse/plugin-text-indexing/(.*)$': '<rootDir>/plugins/text-indexing/$1',
+    '^@jbrowse/plugin-text-indexing$':
+      '<rootDir>/plugins/text-indexing/src/index.ts',
+    '^@jbrowse/plugin-text-indexing/(.*)$':
+      '<rootDir>/plugins/text-indexing/$1',
     '^@jbrowse/plugin-trix$': '<rootDir>/plugins/trix/src/index.ts',
     '^@jbrowse/plugin-trix/(.*)$': '<rootDir>/plugins/trix/$1',
     '^@jbrowse/plugin-variants$': '<rootDir>/plugins/variants/src/index.ts',

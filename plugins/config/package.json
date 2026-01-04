@@ -37,13 +37,13 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1",
     "pluralize": "^8.0.0",
-    "rxjs": "^7.0.0"
+    "rxjs": "^7.8.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

@@ -1,4 +1,3 @@
-import { makeStyles } from '../util/tss-react'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
@@ -10,6 +9,8 @@ import {
   ListItemText,
   MenuItem,
 } from '@mui/material'
+
+import { makeStyles } from '../util/tss-react'
 
 const useStyles = makeStyles()({
   menuItemEndDecoration: {

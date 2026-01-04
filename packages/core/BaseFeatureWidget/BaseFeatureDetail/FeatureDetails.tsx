@@ -1,4 +1,3 @@
-import { ErrorBoundary } from '../../ui/ErrorBoundary'
 import { Divider, Typography } from '@mui/material'
 
 import { generateTitle } from './util'
@@ -7,6 +6,7 @@ import Attributes from './Attributes'
 import BaseCard from './BaseCard'
 import CoreDetails from './CoreDetails'
 import { ErrorMessage } from '../../ui'
+import { ErrorBoundary } from '../../ui/ErrorBoundary'
 import { getEnv, getSession } from '../../util'
 
 import type { SimpleFeatureSerialized } from '../../util'

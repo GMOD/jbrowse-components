@@ -1,7 +1,6 @@
-import SimpleFeature from '../../../util/simpleFeature'
-
 import { fetchSequence } from './fetchSequence'
 import { stringifyGBK } from './genbank'
+import SimpleFeature from '../../../util/simpleFeature'
 
 import type { AbstractSessionModel } from '../../../util'
 

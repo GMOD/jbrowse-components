@@ -36,13 +36,13 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@flatten-js/interval-tree": "^2.0.0",
-    "@gmod/tabix": "^3.2.1",
+    "@flatten-js/interval-tree": "^2.0.3",
+    "@gmod/tabix": "^3.2.2",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
     "gff-nostream": "^3.0.2",
-    "mobx": "^6.0.0",
-    "rxjs": "^7.0.0"
+    "mobx": "^6.15.0",
+    "rxjs": "^7.8.2"
   },
   "publishConfig": {
     "access": "public"

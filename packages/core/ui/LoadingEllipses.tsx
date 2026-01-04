@@ -1,5 +1,6 @@
-import { cx, keyframes, makeStyles } from '../util/tss-react'
 import { Typography } from '@mui/material'
+
+import { cx, keyframes, makeStyles } from '../util/tss-react'
 
 import type { TypographyProps } from '@mui/material'
 

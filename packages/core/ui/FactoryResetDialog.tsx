@@ -1,10 +1,11 @@
-import Dialog from './Dialog'
 import {
   Button,
   DialogActions,
   DialogContent,
   DialogContentText,
 } from '@mui/material'
+
+import Dialog from './Dialog'
 
 export default function FactoryResetDialog({
   onClose,

@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import crypto from 'crypto'
-import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -18,6 +17,7 @@ import type {
   Token,
 } from '@node-oauth/oauth2-server'
 import type { Request } from 'express'
+import type http from 'http'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const defaultDataPath = path.resolve(__dirname, '../test_data/volvox')
@@ -72,7 +72,6 @@ function createOAuthModel(redirectPort: number): OAuthModel {
       return dbToken as RefreshToken
     },
     async revokeToken(token) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!token) {
         return false
       }

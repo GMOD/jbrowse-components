@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import CascadingMenu from './CascadingMenu'
 import { IconButton } from '@mui/material'
+
+import CascadingMenu from './CascadingMenu'
 
 import type { MenuItemsGetter } from './CascadingMenu'
 

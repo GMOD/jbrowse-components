@@ -1,7 +1,6 @@
-import { makeStyles } from '../../util/tss-react'
-
 import BasicValue from './BasicValue'
 import FieldName from './FieldName'
+import { makeStyles } from '../../util/tss-react'
 
 const useStyles = makeStyles()({
   field: {

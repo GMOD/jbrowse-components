@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { makeStyles } from '../../util/tss-react'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
@@ -8,6 +7,7 @@ import FieldName from './FieldName'
 import { SanitizedHTML } from '../../ui'
 import DataGridFlexContainer from '../../ui/DataGridFlexContainer'
 import { getStr, measureGridWidth } from '../../util'
+import { makeStyles } from '../../util/tss-react'
 
 import type { GridColDef } from '@mui/x-data-grid'
 

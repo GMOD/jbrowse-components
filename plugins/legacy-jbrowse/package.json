@@ -38,11 +38,11 @@
   "dependencies": {
     "@gmod/nclist": "^3.0.4",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
-    "generic-filehandle2": "^2.0.17",
-    "mobx": "^6.0.0",
-    "rxjs": "^7.0.0",
-    "set-value": "^4.0.1"
+    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "generic-filehandle2": "^2.0.18",
+    "mobx": "^6.15.0",
+    "rxjs": "^7.8.2",
+    "set-value": "^4.1.0"
   },
   "publishConfig": {
     "access": "public"

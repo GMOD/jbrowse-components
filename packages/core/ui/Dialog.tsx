@@ -1,7 +1,5 @@
 import { isValidElement } from 'react'
 
-import { ErrorBoundary } from './ErrorBoundary'
-import { makeStyles } from '../util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import {
   Dialog as MUIDialog,
@@ -15,8 +13,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { ErrorBoundary } from './ErrorBoundary'
 import ErrorMessage from './ErrorMessage'
 import SanitizedHTML from './SanitizedHTML'
+import { makeStyles } from '../util/tss-react'
 
 import type { DialogProps } from '@mui/material'
 

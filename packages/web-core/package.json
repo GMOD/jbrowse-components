@@ -43,11 +43,11 @@
   "dependencies": {
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/product-core": "workspace:^",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
-    "mobx": "^6.0.0"
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "mobx": "^6.15.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

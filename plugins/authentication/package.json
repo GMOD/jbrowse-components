@@ -37,11 +37,11 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
-    "@mui/material": "^7.0.0",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "@mui/material": "^7.3.6",
     "crypto-js": "^4.2.0",
-    "generic-filehandle2": "^2.0.17",
-    "mobx": "^6.0.0"
+    "generic-filehandle2": "^2.0.18",
+    "mobx": "^6.15.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

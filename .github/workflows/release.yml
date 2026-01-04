@@ -17,19 +17,22 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-          cache: 'yarn'
+          cache: 'pnpm'
       - name: Set release version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Build jbrowse-web
         run: |
           echo $RELEASE_VERSION
           cd products/jbrowse-web/
-          NODE_OPTIONS='--max-old-space-size=6500' yarn build
+          NODE_OPTIONS='--max-old-space-size=6500' pnpm build
           cd build
           zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
       - name: Create draft release with jbrowse-web artifact
@@ -50,8 +53,10 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
+      - name: Install pnpm
+        run: npm install -g pnpm@10
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Setup java
         uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
@@ -87,7 +92,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chown --recursive root:root /github/home
-          yarn build-electron:win --publish always
+          pnpm build-electron:win --publish always
         working-directory: products/jbrowse-desktop
 
   buildmac:
@@ -99,15 +104,18 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-          cache: 'yarn'
+          cache: 'pnpm'
       - name: Install build dependencies
         run: |
           brew install pkg-config cairo pango libpng jpeg giflib librsvg
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Build Mac app
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -116,7 +124,7 @@ jobs:
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn build-electron:mac --publish always
+          pnpm build-electron:mac --publish always
         working-directory: products/jbrowse-desktop
   buildlinux:
     needs: createrelease
@@ -127,21 +135,24 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-          cache: 'yarn'
+          cache: 'pnpm'
       - name: Install build dependencies
         run: |
           sudo apt update
           sudo apt install -y python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Build Linux app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn build-electron:linux --publish always
+          pnpm build-electron:linux --publish always
         working-directory: products/jbrowse-desktop
 
   buildjbrowseweb:
@@ -151,17 +162,20 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-          cache: 'yarn'
+          cache: 'pnpm'
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Build jbrowse-web
         run: |
           echo $RELEASE_VERSION
           cd products/jbrowse-web/
-          NODE_OPTIONS='--max-old-space-size=6500' yarn build
+          NODE_OPTIONS='--max-old-space-size=6500' pnpm build
           cd ../../
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1

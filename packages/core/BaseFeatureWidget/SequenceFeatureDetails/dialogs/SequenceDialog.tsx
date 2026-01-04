@@ -1,17 +1,17 @@
 import { Suspense, useRef, useState } from 'react'
 
-import { Dialog, ErrorMessage, LoadingEllipses } from '../../../ui'
-import { makeStyles } from '../../../util/tss-react'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import SequenceFeatureMenu from './SequenceFeatureMenu'
 import SequenceTypeSelector from './SequenceTypeSelector'
+import { Dialog, ErrorMessage, LoadingEllipses } from '../../../ui'
 import {
   SimpleFeature,
   type SimpleFeatureSerialized,
   getSession,
 } from '../../../util'
+import { makeStyles } from '../../../util/tss-react'
 import { useFeatureSequence } from '../../../util/useFeatureSequence'
 import SequencePanel from '../SequencePanel'
 

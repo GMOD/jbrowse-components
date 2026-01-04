@@ -37,13 +37,14 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@mui/x-charts-vendor": "^8.22.0",
-    "hic-straw": "^2.0.3",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "rxjs": "^7.0.0"
+    "@mui/x-charts-vendor": "^8.23.0",
+    "hic-straw": "^2.1.4",
+    "librpc-web-mod": "^2.1.1",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1",
+    "rxjs": "^7.8.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

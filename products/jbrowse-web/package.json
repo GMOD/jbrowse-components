@@ -18,10 +18,10 @@
     "test:browser:update": "node --experimental-strip-types browser-tests/runner.ts --update-snapshots"
   },
   "dependencies": {
-    "@fontsource/roboto": "^5.0.2",
+    "@fontsource/roboto": "^5.2.9",
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
@@ -53,19 +53,19 @@
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
     "@jbrowse/web-core": "workspace:^",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
-    "base64-js": "^1.3.0",
-    "copy-to-clipboard": "^3.3.1",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "base64-js": "^1.5.1",
+    "copy-to-clipboard": "^3.3.3",
     "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
-    "file-saver-es": "^2.0.0",
-    "idb": "^8.0.0",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
+    "file-saver-es": "^2.0.5",
+    "idb": "^8.0.3",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1",
     "pako-esm2": "^2.0.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "browserslist": {
     "production": [

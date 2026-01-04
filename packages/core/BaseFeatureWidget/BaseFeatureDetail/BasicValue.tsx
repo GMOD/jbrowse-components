@@ -1,10 +1,10 @@
 import { isValidElement } from 'react'
 
-import { makeStyles } from '../../util/tss-react'
 import { Link } from '@mui/material'
 
 import { SanitizedHTML } from '../../ui'
 import { isObject } from '../../util'
+import { makeStyles } from '../../util/tss-react'
 
 const useStyles = makeStyles()(theme => ({
   fieldValue: {

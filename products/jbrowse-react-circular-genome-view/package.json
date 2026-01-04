@@ -35,12 +35,12 @@
     "storybook:build": "storybook build"
   },
   "dependencies": {
-    "@emotion/cache": "^11.7.1",
-    "@emotion/react": "^11.9.0",
-    "@emotion/styled": "^11.8.1",
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/embedded-core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-authentication": "workspace:^",
     "@jbrowse/plugin-circular-view": "workspace:^",
     "@jbrowse/plugin-config": "workspace:^",
@@ -49,10 +49,10 @@
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
-    "mobx": "^6.6.0",
-    "mobx-react": "^9.0.0"
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

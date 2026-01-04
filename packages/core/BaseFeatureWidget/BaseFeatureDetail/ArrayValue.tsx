@@ -1,9 +1,8 @@
-import { makeStyles } from '../../util/tss-react'
-
 import Attributes from './Attributes'
 import BasicValue from './BasicValue'
 import FieldName from './FieldName'
 import { isObject } from '../../util'
+import { makeStyles } from '../../util/tss-react'
 
 const useStyles = makeStyles()(theme => ({
   field: {

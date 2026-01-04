@@ -43,7 +43,7 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "ixixx": "^3.0.2",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.7.0",
     "sanitize-filename": "^1.6.3"
   },
   "peerDependencies": {

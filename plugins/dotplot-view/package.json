@@ -37,15 +37,15 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-alignments": "workspace:^",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
-    "@mui/x-data-grid": "^8.22.1",
-    "@types/file-saver-es": "^2.0.1",
-    "file-saver-es": "^2.0.0",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0"
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "@mui/x-data-grid": "^8.23.0",
+    "@types/file-saver-es": "^2.0.3",
+    "file-saver-es": "^2.0.5",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
