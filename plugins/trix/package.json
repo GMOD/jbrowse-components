@@ -25,12 +25,12 @@
   "scripts": {
     "build": "npm-run-all build:*",
     "test": "cd ../..; jest --passWithNoTests plugins/trix",
-    "prepublishOnly": "yarn test",
-    "prepack": "yarn build && yarn useDist",
-    "postpack": "yarn useSrc",
+    "prepublishOnly": "pnpm test",
+    "prepack": "pnpm build && pnpm useDist",
+    "postpack": "pnpm useSrc",
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "yarn clean",
+    "prebuild": "pnpm clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@gmod/trix": "^3.0.2",
-    "@jbrowse/core": "^3.7.0"
+    "@jbrowse/core": "workspace:^"
   },
   "publishConfig": {
     "access": "public"

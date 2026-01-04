@@ -17,17 +17,17 @@
   ],
   "scripts": {
     "clean": "rm -rf dist esm *.tsbuildinfo",
-    "prebuild": "yarn clean",
+    "prebuild": "pnpm clean",
     "build": "npm-run-all build:*",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
-    "preversion": "yarn build"
+    "preversion": "pnpm build"
   },
   "dependencies": {
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
-    "@jbrowse/plugin-linear-genome-view": "^3.7.0",
-    "@jbrowse/react-linear-genome-view2": "^3.7.0",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/react-linear-genome-view2": "workspace:^",
     "canvas": "^3.0.0",
     "jsdom": "27.0.0",
     "node-fetch": "^2.6.7",

@@ -8,7 +8,7 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "yarn useDist && NODE_OPTIONS='--max-old-space-size=7000' node --experimental-strip-types scripts/build.ts && yarn useSrc",
+    "build": "pnpm useDist && NODE_OPTIONS='--max-old-space-size=7000' node --experimental-strip-types scripts/build.ts && pnpm useSrc",
     "changelog": "lerna-changelog --silent",
     "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
     "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
@@ -22,9 +22,9 @@
     "test": "jest",
     "configdocs": "rm -rf website/docs/config && mkdir website/docs/config && node --experimental-strip-types docs/generateConfigDocs.ts",
     "statedocs": "rm -rf website/docs/models && mkdir website/docs/models && node --experimental-strip-types docs/generateStateModelDocs.ts",
-    "autogen": "yarn statedocs && yarn configdocs && yarn format",
-    "releasenotes": "yarn prettier --prose-wrap never website/blog/$(ls -Art website/blog/ | tail -n 1)|sed -e '/## Downloads/,+7d'|tail -n +7",
-    "copynotes": "yarn --silent releasenotes | xclip -selection clipboard"
+    "autogen": "pnpm statedocs && pnpm configdocs && pnpm format",
+    "releasenotes": "pnpm prettier --prose-wrap never website/blog/$(ls -Art website/blog/ | tail -n 1)|sed -e '/## Downloads/,+7d'|tail -n +7",
+    "copynotes": "pnpm --silent releasenotes | xclip -selection clipboard"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
@@ -103,7 +103,6 @@
     "eslint-plugin-unicorn": "^62.0.0",
     "express": "^5.1.0",
     "express-basic-auth": "^1.2.1",
-    "find-yarn-workspace-root": "^2.0.0",
     "globals": "^16.0.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^30.2.0",

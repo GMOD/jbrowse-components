@@ -3,7 +3,6 @@ import path from 'path'
 
 import spawn from 'cross-spawn'
 import { DepGraph } from 'dependency-graph'
-import workspaceRoot from 'find-yarn-workspace-root'
 
 const DEPENDENCY_TYPES = [
   'devDependencies',
@@ -12,7 +11,7 @@ const DEPENDENCY_TYPES = [
   'peerDependencies',
 ]
 const subDirs = ['cgv-vite', 'lgv-vite', 'app-vite']
-const root = workspaceRoot()!
+const root = path.resolve(import.meta.dirname, '..')
 
 function main() {
   const packages = getPackages()
@@ -23,8 +22,8 @@ function main() {
       scopes.push('--scope', pkg)
     }
     const { signal, status } = spawn.sync(
-      'yarn',
-      ['lerna', 'exec', 'yarn', 'pack', ...scopes],
+      'pnpm',
+      ['lerna', 'exec', 'pnpm', 'pack', ...scopes],
       { stdio: 'inherit' },
     )
     if (signal || (status !== null && status > 0)) {
@@ -48,8 +47,8 @@ function main() {
       fs.unlinkSync(path.join(location, tarball))
       location = path.join(location, 'dist')
       const { signal, status } = spawn.sync(
-        'yarn',
-        ['pack', '--ignore-scripts'],
+        'pnpm',
+        ['pack'],
         { stdio: 'inherit', cwd: location },
       )
       if (signal || (status !== null && status > 0)) {
@@ -75,13 +74,21 @@ function main() {
 }
 
 function getPackages(): Record<string, { location: string }> {
-  const workspacesInfoJson = spawn.sync(
-    'yarn',
-    ['--json', 'workspaces', 'info'],
-    { encoding: 'utf8' },
-  ).stdout
-  const workspacesInfo = JSON.parse(workspacesInfoJson)
-  return JSON.parse(workspacesInfo.data)
+  const packages: Record<string, { location: string }> = {}
+  const workspaceDirs = ['packages', 'products', 'plugins']
+  for (const dir of workspaceDirs) {
+    const fullDir = path.join(root, dir)
+    if (fs.existsSync(fullDir)) {
+      for (const subdir of fs.readdirSync(fullDir)) {
+        const pkgJsonPath = path.join(fullDir, subdir, 'package.json')
+        if (fs.existsSync(pkgJsonPath)) {
+          const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+          packages[pkgJson.name] = { location: path.join(dir, subdir) }
+        }
+      }
+    }
+  }
+  return packages
 }
 
 function getDependencyGraph(packages: Record<string, { location: string }>) {

@@ -23,10 +23,10 @@
     "test": "cd ../..; jest --passWithNoTests packages/core",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
-    "coverage": "yarn test --coverage",
+    "coverage": "pnpm test --coverage",
     "clean": "rimraf dist tsconfig.build.tsbuildinfo",
-    "prebuild": "yarn clean",
-    "prepack": "yarn build",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build",
     "build": "tsc -p tsconfig.build.json && cp package.json README.md ../../LICENSE dist/"
   },
   "dependencies": {

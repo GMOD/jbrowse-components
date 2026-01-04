@@ -31,20 +31,20 @@
   "scripts": {
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
-    "build": "yarn build:esm && yarn build:commonjs",
+    "build": "pnpm build:esm && pnpm build:commonjs",
     "test": "cd ../..; jest --passWithNoTests packages/sv-core",
     "clean": "rimraf dist esm *.tsbuildinfo",
-    "prebuild": "yarn clean",
-    "prepack": "yarn build && yarn useDist",
-    "postpack": "yarn useSrc",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build && pnpm useDist",
+    "postpack": "pnpm useSrc",
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
     "@gmod/vcf": "^6.1.0",
-    "@jbrowse/core": "^3.7.0",
+    "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.4.7",
-    "@jbrowse/plugin-linear-genome-view": "^3.7.0",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/material": "^7.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^9.0.0"
