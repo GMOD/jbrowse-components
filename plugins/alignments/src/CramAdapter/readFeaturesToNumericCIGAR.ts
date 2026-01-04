@@ -33,7 +33,7 @@ export function readFeaturesToNumericCIGAR(
   readFeatures: ReadFeatures,
   alignmentStart: number,
   readLen: number,
-): Uint32Array {
+): ArrayLike<number> {
   const cigarParts: number[] = []
   let op = 77 // 'M'
   let oplen = 0
@@ -145,5 +145,5 @@ export function readFeaturesToNumericCIGAR(
     cigarParts.push((oplen << 4) | opIndex)
   }
 
-  return new Uint32Array(cigarParts)
+  return cigarParts
 }
