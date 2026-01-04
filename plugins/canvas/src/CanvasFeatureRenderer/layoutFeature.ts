@@ -1,30 +1,13 @@
-import { builtinGlyphs, findGlyph } from './glyphs'
+import { builtinGlyphs, findGlyph, findPluggableGlyph } from './glyphs'
 import { applyLabelDimensions } from './labelUtils'
 
 import type { RenderConfigContext } from './renderConfig'
 import type { FeatureLayout, LayoutArgs } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 import type { Feature } from '@jbrowse/core/util'
 
 // Re-export for backwards compatibility
 export { applyLabelDimensions } from './labelUtils'
-
-/**
- * Find a matching pluggable glyph from the plugin manager.
- * Pluggable glyphs take priority over builtin glyphs.
- */
-function findPluggableGlyph(
-  feature: Feature,
-  pluginManager?: PluginManager,
-): GlyphType | undefined {
-  if (!pluginManager) {
-    return undefined
-  }
-  const glyphTypes = pluginManager.getGlyphTypes()
-  const sortedGlyphs = [...glyphTypes].sort((a, b) => b.priority - a.priority)
-  return sortedGlyphs.find(glyph => glyph.match?.(feature))
-}
 
 /**
  * Layout a feature using the polymorphic glyph system.

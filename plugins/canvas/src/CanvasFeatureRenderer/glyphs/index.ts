@@ -8,6 +8,8 @@ import { subfeaturesGlyph } from './subfeatures'
 
 import type { RenderConfigContext } from '../renderConfig'
 import type { Glyph } from '../types'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 import type { Feature } from '@jbrowse/core/util'
 
 // Glyphs in priority order (first match wins)
@@ -34,6 +36,22 @@ export function findGlyph(
   const match = glyphs.find(g => g.match(feature, configContext))
   // boxGlyph is the fallback and matches everything
   return match ?? boxGlyph
+}
+
+/**
+ * Find a matching pluggable glyph from the plugin manager.
+ * Pluggable glyphs take priority over builtin glyphs.
+ */
+export function findPluggableGlyph(
+  feature: Feature,
+  pluginManager?: PluginManager,
+): GlyphType | undefined {
+  if (!pluginManager) {
+    return undefined
+  }
+  const glyphTypes = pluginManager.getGlyphTypes()
+  const sortedGlyphs = [...glyphTypes].sort((a, b) => b.priority - a.priority)
+  return sortedGlyphs.find(glyph => glyph.match?.(feature))
 }
 
 export { boxGlyph } from './box'

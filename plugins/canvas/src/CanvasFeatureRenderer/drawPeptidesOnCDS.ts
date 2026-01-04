@@ -44,15 +44,17 @@ export function drawPeptidesOnCDS(args: DrawPeptidesArgs) {
 
   const yCenter = top + height / 2
 
+  const pxPerBp = 1 / bpPerPx
   for (const aa of aggregatedAminoAcids) {
     let x: number
     if (strand * flipper === -1) {
-      const startX = rightPos - (1 / bpPerPx) * aa.startIndex
-      const endX = rightPos - (1 / bpPerPx) * (aa.endIndex + 1)
+      const startX = rightPos - pxPerBp * aa.startIndex
+      const endX = rightPos - pxPerBp * (aa.endIndex + 1)
       x = (startX + endX) / 2
     } else {
-      const centerIndex = Math.floor((aa.startIndex + aa.endIndex) / 2)
-      x = left + (1 / bpPerPx) * centerIndex + 1 / bpPerPx / 2
+      const startX = left + pxPerBp * aa.startIndex
+      const endX = left + pxPerBp * (aa.endIndex + 1)
+      x = (startX + endX) / 2
     }
 
     if (x < 0 || x > canvasWidth) {

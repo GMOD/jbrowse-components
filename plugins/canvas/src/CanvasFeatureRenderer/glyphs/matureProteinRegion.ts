@@ -1,6 +1,6 @@
 import { readCachedConfig } from '../renderConfig'
 import { isOffScreen } from '../util'
-import { layoutChild } from './glyphUtils'
+import { drawStrandArrowAtPosition, layoutChild } from './glyphUtils'
 
 import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
 import type { Feature } from '@jbrowse/core/util'
@@ -159,36 +159,17 @@ function drawMatureProteinBox(
   ctx.lineWidth = 1
   ctx.strokeRect(left, boxTop, width, boxHeight)
 
-  // Draw strand arrow
   const strand = feature.get('strand') as number
   if (strand) {
-    const size = 5
-    const reverseFlip = reversed ? -1 : 1
-    const offset = 7 * strand * reverseFlip
-    const y = boxTop + boxHeight / 2
-
-    const p =
-      strand * reverseFlip === -1
-        ? left
-        : strand * reverseFlip === 1
-          ? left + width
-          : null
-
-    if (p !== null) {
-      ctx.strokeStyle = arrowColor
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(p, y)
-      ctx.lineTo(p + offset, y)
-      ctx.stroke()
-
-      ctx.fillStyle = arrowColor
-      ctx.beginPath()
-      ctx.moveTo(p + offset / 2, y - size / 2)
-      ctx.lineTo(p + offset / 2, y + size / 2)
-      ctx.lineTo(p + offset, y)
-      ctx.closePath()
-      ctx.fill()
-    }
+    const centerY = boxTop + boxHeight / 2
+    drawStrandArrowAtPosition(
+      ctx,
+      left,
+      centerY,
+      width,
+      strand,
+      reversed,
+      arrowColor,
+    )
   }
 }

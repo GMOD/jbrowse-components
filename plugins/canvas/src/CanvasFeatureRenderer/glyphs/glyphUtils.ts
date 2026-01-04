@@ -86,6 +86,48 @@ export function drawConnectingLine(
 }
 
 /**
+ * Draw a strand direction arrow at a specific position.
+ * This is the core arrow drawing logic shared by multiple glyphs.
+ */
+export function drawStrandArrowAtPosition(
+  ctx: CanvasRenderingContext2D,
+  left: number,
+  centerY: number,
+  width: number,
+  strand: number,
+  reversed: boolean,
+  color: string,
+) {
+  const arrowSize = 5
+  const reverseFlip = reversed ? -1 : 1
+  const arrowOffset = 7 * strand * reverseFlip
+
+  const arrowX =
+    strand * reverseFlip === -1
+      ? left
+      : strand * reverseFlip === 1
+        ? left + width
+        : null
+
+  if (arrowX !== null) {
+    ctx.strokeStyle = color
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(arrowX, centerY)
+    ctx.lineTo(arrowX + arrowOffset, centerY)
+    ctx.stroke()
+
+    ctx.fillStyle = color
+    ctx.beginPath()
+    ctx.moveTo(arrowX + arrowOffset / 2, centerY - arrowSize / 2)
+    ctx.lineTo(arrowX + arrowOffset / 2, centerY + arrowSize / 2)
+    ctx.lineTo(arrowX + arrowOffset, centerY)
+    ctx.closePath()
+    ctx.fill()
+  }
+}
+
+/**
  * Draw a strand direction arrow at the end of a feature.
  */
 export function drawStrandArrow(
@@ -110,35 +152,6 @@ export function drawStrandArrow(
     return
   }
 
-  const arrowSize = 5
-  const reverseFlip = reversed ? -1 : 1
-  const arrowOffset = 7 * strand * reverseFlip
   const centerY = layout.y + layout.height / 2
-
-  // Determine arrow position based on effective strand direction
-  const arrowX =
-    strand * reverseFlip === -1
-      ? left
-      : strand * reverseFlip === 1
-        ? left + width
-        : null
-
-  if (arrowX !== null) {
-    // Draw arrow stem
-    ctx.strokeStyle = color
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(arrowX, centerY)
-    ctx.lineTo(arrowX + arrowOffset, centerY)
-    ctx.stroke()
-
-    // Draw arrow head
-    ctx.fillStyle = color
-    ctx.beginPath()
-    ctx.moveTo(arrowX + arrowOffset / 2, centerY - arrowSize / 2)
-    ctx.lineTo(arrowX + arrowOffset / 2, centerY + arrowSize / 2)
-    ctx.lineTo(arrowX + arrowOffset, centerY)
-    ctx.closePath()
-    ctx.fill()
-  }
+  drawStrandArrowAtPosition(ctx, left, centerY, width, strand, reversed, color)
 }

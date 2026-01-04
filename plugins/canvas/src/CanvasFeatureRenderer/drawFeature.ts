@@ -1,28 +1,12 @@
-import { boxGlyph, builtinGlyphs } from './glyphs'
+import { boxGlyph, builtinGlyphs, findPluggableGlyph } from './glyphs'
 
 import type { DrawContext, FeatureLayout, Glyph } from './types'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 
 // Auto-generate glyph map from builtin glyphs
 const glyphMap: Record<string, Glyph> = Object.fromEntries(
   builtinGlyphs.map(g => [g.type, g]),
 )
-
-/**
- * Find a matching pluggable glyph from the plugin manager.
- */
-function findPluggableGlyph(
-  layout: FeatureLayout,
-  pluginManager?: PluginManager,
-): GlyphType | undefined {
-  if (!pluginManager) {
-    return undefined
-  }
-  const glyphTypes = pluginManager.getGlyphTypes()
-  const sortedGlyphs = [...glyphTypes].sort((a, b) => b.priority - a.priority)
-  return sortedGlyphs.find(glyph => glyph.match?.(layout.feature))
-}
 
 /**
  * Draw a feature using the polymorphic glyph system.
@@ -41,7 +25,7 @@ export function drawFeature(
   pluginManager?: PluginManager,
 ): void {
   // Check for pluggable glyph first
-  const pluggableGlyph = findPluggableGlyph(layout, pluginManager)
+  const pluggableGlyph = findPluggableGlyph(layout.feature, pluginManager)
 
   if (pluggableGlyph) {
     // Use pluggable glyph's draw (legacy interface)

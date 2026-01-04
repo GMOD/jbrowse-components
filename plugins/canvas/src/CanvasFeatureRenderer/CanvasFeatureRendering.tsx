@@ -165,7 +165,11 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
     <div
       ref={ref}
       data-testid="canvas-feature-overlay"
-      style={{ position: 'relative', width: canvasWidth, height }}
+      style={{
+        position: 'relative',
+        width: canvasWidth,
+        height,
+      }}
       onMouseLeave={() => {
         displayModel.setFeatureIdUnderMouse(undefined)
         displayModel.setSubfeatureIdUnderMouse(undefined)

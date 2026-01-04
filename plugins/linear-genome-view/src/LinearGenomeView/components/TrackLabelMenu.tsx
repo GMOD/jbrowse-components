@@ -9,6 +9,7 @@ import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrow
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import LowPriorityIcon from '@mui/icons-material/LowPriority'
 import PushPinIcon from '@mui/icons-material/PushPin'
 import { observer } from 'mobx-react'
 
@@ -47,6 +48,7 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
     return [
       {
         label: 'Track order',
+        icon: LowPriorityIcon,
         type: 'subMenu' as const,
         priority: 1000,
         subMenu: [
