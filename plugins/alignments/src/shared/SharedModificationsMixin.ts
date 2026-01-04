@@ -54,6 +54,13 @@ export function SharedModificationsMixin() {
        * #action
        */
       setSimplexModifications(simplex: string[]) {
+        const currentSet = self.simplexModifications
+        if (
+          simplex.length === currentSet.size &&
+          simplex.every(s => currentSet.has(s))
+        ) {
+          return
+        }
         self.simplexModifications = new Set(simplex)
       },
       /**
