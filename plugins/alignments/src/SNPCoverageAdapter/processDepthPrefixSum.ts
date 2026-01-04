@@ -12,20 +12,20 @@ export interface CoverageDepthSoA {
   regionStart: number
   regionSize: number
   /** Coverage depth at each position */
-  depth: Int32Array
+  depth: number[]
   /** Forward strand (+1) read count at each position */
-  strandPlus: Int32Array
+  strandPlus: number[]
   /** Reverse strand (-1) read count at each position */
-  strandMinus: Int32Array
+  strandMinus: number[]
 }
 
 // Reusable buffers - avoids allocation on every call
 // Size for up to 1MB regions (should cover most use cases)
 const MAX_REGION_SIZE = 1_000_000
 
-const depthChanges = new Int32Array(MAX_REGION_SIZE + 1)
-const strandPlusChanges = new Int32Array(MAX_REGION_SIZE + 1)
-const strandMinusChanges = new Int32Array(MAX_REGION_SIZE + 1)
+const depthChanges: number[] = new Array(MAX_REGION_SIZE + 1).fill(0)
+const strandPlusChanges: number[] = new Array(MAX_REGION_SIZE + 1).fill(0)
+const strandMinusChanges: number[] = new Array(MAX_REGION_SIZE + 1).fill(0)
 
 /**
  * Process feature depth using prefix sums algorithm.
@@ -50,10 +50,12 @@ export function processDepthPrefixSum(
     )
   }
 
-  // Clear only the portion we need (faster than creating new arrays)
-  depthChanges.fill(0, 0, regionSize + 1)
-  strandPlusChanges.fill(0, 0, regionSize + 1)
-  strandMinusChanges.fill(0, 0, regionSize + 1)
+  // Clear only the portion we need
+  for (let i = 0; i <= regionSize; i++) {
+    depthChanges[i] = 0
+    strandPlusChanges[i] = 0
+    strandMinusChanges[i] = 0
+  }
 
   // Pass 1: Record depth changes at boundaries - O(features)
   for (const feature of features) {
@@ -81,9 +83,9 @@ export function processDepthPrefixSum(
   }
 
   // Pass 2: Compute prefix sums - O(regionSize)
-  const depth = new Int32Array(regionSize)
-  const strandPlus = new Int32Array(regionSize)
-  const strandMinus = new Int32Array(regionSize)
+  const depth: number[] = new Array(regionSize)
+  const strandPlus: number[] = new Array(regionSize)
+  const strandMinus: number[] = new Array(regionSize)
 
   let d = 0
   let sp = 0

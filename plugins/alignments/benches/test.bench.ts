@@ -59,7 +59,7 @@ describe('generateCoverageBinsPrefixSum', () => {
         opts: {},
       })
     },
-    { warmupIterations: 3, iterations: 15 },
+    { warmupIterations: 10, iterations: 100 },
   )
 
   bench(
@@ -71,6 +71,6 @@ describe('generateCoverageBinsPrefixSum', () => {
         opts: {},
       })
     },
-    { warmupIterations: 3, iterations: 15 },
+    { warmupIterations: 10, iterations: 100 },
   )
 })
