@@ -327,19 +327,15 @@ function drawNoncovEvents(
 
 function drawSecondPassModifications(
   passCtx: SecondPassContext,
-  visibleModifications: Record<string, { base: string; type: string; color?: string }>,
+  visibleModifications: Record<
+    string,
+    { base: string; type: string; color?: string }
+  >,
   isolatedModification: string | undefined,
   simplexSet: Set<string>,
 ): SecondPassStats {
-  const {
-    ctx,
-    coverageFeatures,
-    region,
-    bpPerPx,
-    toY,
-    toHeight,
-    lastCheck,
-  } = passCtx
+  const { ctx, coverageFeatures, region, bpPerPx, toY, toHeight, lastCheck } =
+    passCtx
 
   let snpDrawn = 0
   let snpSkipped = 0
@@ -365,10 +361,7 @@ function drawSecondPassModifications(
     for (const key in nonmods) {
       const modKey = key.slice(7)
       const mod = visibleModifications[modKey]
-      if (
-        !mod ||
-        (isolatedModification && mod.type !== isolatedModification)
-      ) {
+      if (!mod || (isolatedModification && mod.type !== isolatedModification)) {
         continue
       }
 
@@ -398,10 +391,7 @@ function drawSecondPassModifications(
     for (const key in mods) {
       const modKey = key.slice(4)
       const mod = visibleModifications[modKey]
-      if (
-        !mod ||
-        (isolatedModification && mod.type !== isolatedModification)
-      ) {
+      if (!mod || (isolatedModification && mod.type !== isolatedModification)) {
         continue
       }
 
@@ -443,7 +433,9 @@ function drawSecondPassModifications(
   return { snpDrawn, snpSkipped }
 }
 
-function drawSecondPassMethylation(passCtx: SecondPassContext): SecondPassStats {
+function drawSecondPassMethylation(
+  passCtx: SecondPassContext,
+): SecondPassStats {
   const {
     ctx,
     coverageFeatures,
@@ -483,17 +475,7 @@ function drawSecondPassMethylation(passCtx: SecondPassContext): SecondPassStats 
         depth,
         0,
       )
-      drawStackedBars(
-        ctx,
-        nonmods,
-        colorMap,
-        drawX,
-        bottom,
-        w,
-        h,
-        depth,
-        curr,
-      )
+      drawStackedBars(ctx, nonmods, colorMap, drawX, bottom, w, h, depth, curr)
       lastDrawnX = drawX
     }
 

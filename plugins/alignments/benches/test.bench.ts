@@ -80,15 +80,31 @@ describe('generateCoverageBinsPrefixSum', () => {
 function createSNPCoverageAdapter1() {
   const bamAdapter = new BamAdapter(
     configSchema.create({
-      bamLocation: { localPath: BAM_FILE.bam, locationType: 'LocalPathLocation' },
-      index: { location: { localPath: BAM_FILE.bai, locationType: 'LocalPathLocation' } },
+      bamLocation: {
+        localPath: BAM_FILE.bam,
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: BAM_FILE.bai,
+          locationType: 'LocalPathLocation',
+        },
+      },
     }),
   )
   const config = snpConfigSchema1.create({
     subadapter: {
       type: 'BamAdapter',
-      bamLocation: { localPath: BAM_FILE.bam, locationType: 'LocalPathLocation' },
-      index: { location: { localPath: BAM_FILE.bai, locationType: 'LocalPathLocation' } },
+      bamLocation: {
+        localPath: BAM_FILE.bam,
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: BAM_FILE.bai,
+          locationType: 'LocalPathLocation',
+        },
+      },
     },
   })
   const adapter = new SNPCoverageAdapter1(config)
@@ -100,15 +116,31 @@ function createSNPCoverageAdapter1() {
 function createSNPCoverageAdapter2() {
   const bamAdapter = new BamAdapter(
     configSchema.create({
-      bamLocation: { localPath: BAM_FILE.bam, locationType: 'LocalPathLocation' },
-      index: { location: { localPath: BAM_FILE.bai, locationType: 'LocalPathLocation' } },
+      bamLocation: {
+        localPath: BAM_FILE.bam,
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: BAM_FILE.bai,
+          locationType: 'LocalPathLocation',
+        },
+      },
     }),
   )
   const config = snpConfigSchema2.create({
     subadapter: {
       type: 'BamAdapter',
-      bamLocation: { localPath: BAM_FILE.bam, locationType: 'LocalPathLocation' },
-      index: { location: { localPath: BAM_FILE.bai, locationType: 'LocalPathLocation' } },
+      bamLocation: {
+        localPath: BAM_FILE.bam,
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: BAM_FILE.bai,
+          locationType: 'LocalPathLocation',
+        },
+      },
     },
   })
   const adapter = new SNPCoverageAdapter2(config)
@@ -128,7 +160,9 @@ describe('SNPCoverageAdapter.getFeatures', () => {
       // @ts-ignore
       snpAdapter1.cache.clear()
       await firstValueFrom(
-        snpAdapter1.getFeatures({ ...region, assemblyName: 'test' }).pipe(toArray()),
+        snpAdapter1
+          .getFeatures({ ...region, assemblyName: 'test' })
+          .pipe(toArray()),
       )
     },
     { warmupIterations: 5, iterations: 50 },
@@ -141,7 +175,9 @@ describe('SNPCoverageAdapter.getFeatures', () => {
       // @ts-ignore
       snpAdapter2.cache.clear()
       await firstValueFrom(
-        snpAdapter2.getFeatures({ ...region, assemblyName: 'test' }).pipe(toArray()),
+        snpAdapter2
+          .getFeatures({ ...region, assemblyName: 'test' })
+          .pipe(toArray()),
       )
     },
     { warmupIterations: 5, iterations: 50 },

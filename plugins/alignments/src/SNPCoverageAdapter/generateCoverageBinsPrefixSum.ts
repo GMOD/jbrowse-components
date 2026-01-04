@@ -253,7 +253,8 @@ export async function generateCoverageBinsPrefixSum({
         lengthMin: Infinity,
         lengthMax: -Infinity,
       },
-      delskips: delDepth > 0 ? { deletion: createDeletionEntry(delDepth) } : undefined,
+      delskips:
+        delDepth > 0 ? { deletion: createDeletionEntry(delDepth) } : undefined,
     }
   }
 
@@ -268,7 +269,18 @@ export async function generateCoverageBinsPrefixSum({
       bin = {
         depth: 0,
         readsCounted: 0,
-        ref: { entryDepth: 0, '-1': 0, '0': 0, '1': 0, probabilityTotal: 0, probabilityCount: 0, lengthTotal: 0, lengthCount: 0, lengthMin: Infinity, lengthMax: -Infinity },
+        ref: {
+          entryDepth: 0,
+          '-1': 0,
+          '0': 0,
+          '1': 0,
+          probabilityTotal: 0,
+          probabilityCount: 0,
+          lengthTotal: 0,
+          lengthCount: 0,
+          lengthMin: Infinity,
+          lengthMax: -Infinity,
+        },
       }
       bins[pos] = bin
     }
@@ -277,7 +289,18 @@ export async function generateCoverageBinsPrefixSum({
     const snps = (bin.snps ??= {})
     let snpEntry = snps[base]
     if (!snpEntry) {
-      snpEntry = { entryDepth: 0, '-1': 0, '0': 0, '1': 0, probabilityTotal: 0, probabilityCount: 0, lengthTotal: 0, lengthCount: 0, lengthMin: Infinity, lengthMax: -Infinity }
+      snpEntry = {
+        entryDepth: 0,
+        '-1': 0,
+        '0': 0,
+        '1': 0,
+        probabilityTotal: 0,
+        probabilityCount: 0,
+        lengthTotal: 0,
+        lengthCount: 0,
+        lengthMin: Infinity,
+        lengthMax: -Infinity,
+      }
       snps[base] = snpEntry
     }
     snpEntry.entryDepth++
@@ -300,7 +323,18 @@ export async function generateCoverageBinsPrefixSum({
       bin = {
         depth: 0,
         readsCounted: 0,
-        ref: { entryDepth: 0, '-1': 0, '0': 0, '1': 0, probabilityTotal: 0, probabilityCount: 0, lengthTotal: 0, lengthCount: 0, lengthMin: Infinity, lengthMax: -Infinity },
+        ref: {
+          entryDepth: 0,
+          '-1': 0,
+          '0': 0,
+          '1': 0,
+          probabilityTotal: 0,
+          probabilityCount: 0,
+          lengthTotal: 0,
+          lengthCount: 0,
+          lengthMin: Infinity,
+          lengthMax: -Infinity,
+        },
       }
       bins[pos] = bin
     }
@@ -310,7 +344,18 @@ export async function generateCoverageBinsPrefixSum({
     const noncov = (bin.noncov ??= {})
     let noncovEntry = noncov[type]
     if (!noncovEntry) {
-      noncovEntry = { entryDepth: 0, '-1': 0, '0': 0, '1': 0, probabilityTotal: 0, probabilityCount: 0, lengthTotal: 0, lengthCount: 0, lengthMin: Infinity, lengthMax: -Infinity }
+      noncovEntry = {
+        entryDepth: 0,
+        '-1': 0,
+        '0': 0,
+        '1': 0,
+        probabilityTotal: 0,
+        probabilityCount: 0,
+        lengthTotal: 0,
+        lengthCount: 0,
+        lengthMin: Infinity,
+        lengthMax: -Infinity,
+      }
       noncov[type] = noncovEntry
     }
     noncovEntry.entryDepth++

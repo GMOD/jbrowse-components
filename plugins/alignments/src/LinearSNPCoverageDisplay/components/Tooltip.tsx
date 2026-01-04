@@ -3,7 +3,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip, YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
-import FlatbushTooltipContents from './FlatbushTooltipContents'
 import TooltipContents from './TooltipContents'
 
 import type { ClickMapItem } from '../../SNPCoverageRenderer/types'
@@ -45,6 +44,11 @@ const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
   model: {
     featureUnderMouse?: Feature
     mouseoverExtraInformation?: string
+    visibleModifications: Map<
+      string,
+      { color: string; base: string; strand: string }
+    >
+    simplexModifications?: Set<string>
   }
   height: number
   offsetMouseCoord: Coord
@@ -64,9 +68,10 @@ const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
       <>
         <BaseTooltip clientPoint={{ x, y }}>
           {itemData ? (
-            <FlatbushTooltipContents
+            <TooltipContents
               item={itemData.item}
               refName={itemData.refName}
+              model={model}
             />
           ) : (
             <div style={{ whiteSpace: 'pre-wrap' }}>
