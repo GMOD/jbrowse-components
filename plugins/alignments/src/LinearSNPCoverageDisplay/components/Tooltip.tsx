@@ -3,9 +3,28 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip, YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
+import FlatbushTooltipContents from './FlatbushTooltipContents'
 import TooltipContents from './TooltipContents'
 
+import type { ClickMapItem } from '../../SNPCoverageRenderer/types'
 import type { Feature } from '@jbrowse/core/util'
+
+interface ParsedItemData {
+  item: ClickMapItem
+  refName?: string
+}
+
+function parseItemData(data: string): ParsedItemData | undefined {
+  try {
+    const parsed = JSON.parse(data) as ParsedItemData
+    if (parsed && parsed.item && typeof parsed.item.type === 'string') {
+      return parsed
+    }
+  } catch {
+    // Not valid JSON, return undefined
+  }
+  return undefined
+}
 
 const useStyles = makeStyles()(theme => ({
   hoverVertical: {
@@ -40,12 +59,20 @@ const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
   if (mouseoverExtraInformation && !feat) {
     const x = clientMouseCoord[0] + 5
     const y = clientMouseCoord[1]
+    const itemData = parseItemData(mouseoverExtraInformation)
     return (
       <>
         <BaseTooltip clientPoint={{ x, y }}>
-          <div style={{ whiteSpace: 'pre-wrap' }}>
-            {mouseoverExtraInformation}
-          </div>
+          {itemData ? (
+            <FlatbushTooltipContents
+              item={itemData.item}
+              refName={itemData.refName}
+            />
+          ) : (
+            <div style={{ whiteSpace: 'pre-wrap' }}>
+              {mouseoverExtraInformation}
+            </div>
+          )}
         </BaseTooltip>
         <div
           className={classes.hoverVertical}

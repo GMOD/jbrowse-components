@@ -6,41 +6,22 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
-  toLocale,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import {
-  clickMapItemToFeatureData,
-  formatInterbaseStats,
-  formatModificationStats,
-  formatSNPStats,
-  getInterbaseTypeLabel,
-} from '../types'
+import { clickMapItemToFeatureData } from '../types'
 
 import type { ClickMapItem } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-function getItemLabel(item: ClickMapItem | undefined, refName?: string) {
+function getItemDataJson(item: ClickMapItem | undefined, refName?: string) {
   if (!item) {
     return undefined
   }
-  let label: string
-  if (item.type === 'snp') {
-    label = formatSNPStats(item)
-  } else if (item.type === 'modification') {
-    label = formatModificationStats(item)
-  } else {
-    const { type, count, total, avgLength, minLength, maxLength, topSequence } =
-      item
-    label = `${getInterbaseTypeLabel(type)}: ${formatInterbaseStats(count, total, type, { avgLength, minLength, maxLength, topSequence })}`
-  }
-  const pos = item.start + 1
-  const location = refName ? `${refName}:${toLocale(pos)}` : `${pos}`
-  return `${label}\nPosition: ${location}`
+  return JSON.stringify({ item, refName })
 }
 
 const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
@@ -122,11 +103,11 @@ const SNPCoverageRendering = observer(function SNPCoverageRendering(props: {
       data-testid="snpcoverage-rendering-test"
       onMouseMove={e => {
         const item = getInterbaseItemUnderMouse(e.clientX, e.clientY)
-        const label = getItemLabel(item, region.refName)
+        const itemData = getItemDataJson(item, region.refName)
         setIsOverIndicator(!!item)
-        if (label) {
+        if (itemData) {
           displayModel?.setFeatureIdUnderMouse(undefined)
-          displayModel?.setMouseoverExtraInformation(label)
+          displayModel?.setMouseoverExtraInformation(itemData)
         } else {
           displayModel?.setFeatureIdUnderMouse(
             getFeatureUnderMouse(e.clientX)?.id(),

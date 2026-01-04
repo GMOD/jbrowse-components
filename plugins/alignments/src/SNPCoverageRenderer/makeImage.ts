@@ -415,23 +415,20 @@ function drawSNPCoverage(
       const h = toHeight(score0)
       const bottom = toY(score0) + h
 
-      // Process both nonmods and mods in a single combined loop
-      const modEntries: { key: string; isUnmodified: boolean }[] = []
-      for (const k in nonmods) {
-        modEntries.push({ key: k, isUnmodified: true })
-      }
-      for (const k in mods) {
-        modEntries.push({ key: k, isUnmodified: false })
-      }
-
-      for (const { key, isUnmodified } of modEntries) {
-        const modKey = key.replace(/^(nonmod_|mod_)/, '')
+      // Process nonmods and mods inline without intermediate array
+      const processModEntry = (
+        key: string,
+        isUnmodified: boolean,
+        source: typeof mods,
+      ) => {
+        // Extract mod key: strip 'nonmod_' (7 chars) or 'mod_' (4 chars) prefix
+        const modKey = isUnmodified ? key.slice(7) : key.slice(4)
         const mod = visibleModifications[modKey]
         if (
           !mod ||
           (isolatedModification && mod.type !== isolatedModification)
         ) {
-          continue
+          return
         }
 
         const { modifiable, detectable } = calculateModificationCounts({
@@ -443,7 +440,6 @@ function drawSNPCoverage(
           score0,
         })
 
-        const source = isUnmodified ? nonmods : mods
         const { entryDepth, avgProbability = 0 } = source[key]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
         const barHeight = modFraction * h
@@ -457,6 +453,13 @@ function drawSNPCoverage(
           lastDrawnX = drawX
         }
         curr += barHeight
+      }
+
+      for (const key in nonmods) {
+        processModEntry(key, true, nonmods)
+      }
+      for (const key in mods) {
+        processModEntry(key, false, mods)
       }
     } else if (drawingMethylation) {
       if (!skipDraw) {
@@ -532,42 +535,39 @@ function drawSNPCoverage(
       }
     }
 
-    const interbaseEvents = Object.keys(snpinfo.noncov)
-    if (interbaseEvents.length > 0) {
-      let totalCount = 0
-      let max = 0
-      let maxBase = ''
-      for (const base of interbaseEvents) {
-        const { entryDepth } = snpinfo.noncov[base]!
-        totalCount += entryDepth
-        if (entryDepth > max) {
-          max = entryDepth
-          maxBase = base
-        }
+    // Process noncov (interbase events) in a single pass
+    let totalCount = 0
+    let max = 0
+    let maxBase = ''
+    let totalHeight = 0
+    const showCounts = showInterbaseCounts && !skipDraw
+    const r = 0.6
+    const x = leftPx - r + extraHorizontallyFlippedOffset
+    for (const base in snpinfo.noncov) {
+      const { entryDepth } = snpinfo.noncov[base]!
+      totalCount += entryDepth
+      if (entryDepth > max) {
+        max = entryDepth
+        maxBase = base
       }
+      if (showCounts) {
+        const barHeight = toHeight2(entryDepth)
+        ctx.fillStyle = colorMap[base]!
+        ctx.fillRect(
+          x,
+          INTERBASE_INDICATOR_HEIGHT + totalHeight,
+          r * 2,
+          barHeight,
+        )
+        totalHeight += barHeight
+      }
+    }
 
+    if (totalCount > 0) {
       const fstart = feature.get('start')
       const maxEntry = snpinfo.noncov[maxBase]
 
-      if (showInterbaseCounts && !skipDraw) {
-        const r = 0.6
-        const x = leftPx - r + extraHorizontallyFlippedOffset
-        let currHeight = 0
-        let totalHeight = 0
-        for (const base of interbaseEvents) {
-          const { entryDepth } = snpinfo.noncov[base]!
-          const barHeight = toHeight2(entryDepth)
-          ctx.fillStyle = colorMap[base]!
-          ctx.fillRect(
-            x,
-            INTERBASE_INDICATOR_HEIGHT + currHeight,
-            r * 2,
-            barHeight,
-          )
-          currHeight += barHeight
-          totalHeight += barHeight
-        }
-
+      if (showCounts) {
         // Add to clickmap when zoomed in or when significant
         const isMajorityInterbase =
           score0 > 0 && totalCount > score0 * indicatorThreshold
