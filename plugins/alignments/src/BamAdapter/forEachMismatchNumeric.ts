@@ -198,6 +198,9 @@ export function forEachMismatchNumeric(
           } else if (mdMatchRemaining > 0) {
             mdMatchRemaining--
           }
+        } else if (ref) {
+          // No MD tag - get reference base from ref string
+          altbaseCode = ref.charCodeAt(roffset + j)
         }
 
         callback(
