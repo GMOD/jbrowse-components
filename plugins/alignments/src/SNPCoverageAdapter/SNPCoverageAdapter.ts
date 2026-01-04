@@ -53,28 +53,6 @@ function makeCacheKey(region: Region, opts: SNPCoverageOptions) {
   return `${makeRegionFilterKey(region, opts)}|${colorByKey}`
 }
 
-// function estimateBinsByteSize(bins: CoverageBinsSoA) {
-//   const { starts, ends, scores, snpinfo, skipmap } = bins
-//   // TypedArrays: 4 bytes per element each
-//   const typedArrayBytes =
-//     starts.byteLength + ends.byteLength + scores.byteLength
-//   // Rough estimate for snpinfo objects (varies based on content)
-//   const snpinfoBytes = snpinfo.length * 100 // ~100 bytes per bin estimate
-//   // Rough estimate for skipmap
-//   const skipmapBytes = Object.keys(skipmap).length * 50
-//   return typedArrayBytes + snpinfoBytes + skipmapBytes
-// }
-
-// function formatBytes(bytes: number) {
-//   if (bytes < 1024) {
-//     return `${bytes}B`
-//   }
-//   if (bytes < 1024 * 1024) {
-//     return `${(bytes / 1024).toFixed(1)}KB`
-//   }
-//   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
-// }
-
 function computeStatsFromBins(
   bins: CoverageBinsSoA,
   regionStart: number,
@@ -122,14 +100,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   })
 
   private lastBpPerPx?: number
-
-  // private estimateCacheBytes() {
-  //   let total = 0
-  //   for (const bins of this.cache.values()) {
-  //     total += estimateBinsByteSize(bins)
-  //   }
-  //   return total
-  // }
 
   /**
    * Override to propagate sequenceAdapterConfig to the subadapter

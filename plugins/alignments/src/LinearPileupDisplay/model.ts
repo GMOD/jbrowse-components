@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-
+import { trace } from 'mobx'
 import {
   ConfigurationReference,
   getConf,
@@ -263,6 +263,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           const { sortReady } = self
           const result = superRenderProps()
+          trace()
           return {
             ...result,
             notReady: result.notReady || !sortReady,

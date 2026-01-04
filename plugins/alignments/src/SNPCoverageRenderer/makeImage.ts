@@ -391,6 +391,14 @@ function drawSNPCoverage(
   const isolatedModification = colorBy.modifications?.isolatedModification
   const simplexSet = new Set(simplexModifications)
 
+  // Counters for second pass optimization stats
+  let snpDrawn = 0
+  let snpSkipped = 0
+
+  // Track X coordinates and depth where we've already drawn to avoid redundant draws
+  let lastDrawnX = Number.NEGATIVE_INFINITY
+  let lastDrawnDepth = -1
+
   // Second pass: draw the SNP data
   for (let i = 0, l = coverageFeatures.length; i < l; i++) {
     checkStopToken2(lastCheck)
@@ -399,6 +407,10 @@ function drawSNPCoverage(
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin
     const w = Math.max(rightPx - leftPx, 1)
     const score0 = feature.get('score')
+    const drawX = Math.round(leftPx)
+
+    // Skip drawing at same X coordinate as previous draw
+    const skipDraw = drawX === lastDrawnX
 
     if (drawingModifications) {
       let curr = 0
@@ -435,43 +447,47 @@ function drawSNPCoverage(
         const source = isUnmodified ? nonmods : mods
         const { entryDepth, avgProbability = 0 } = source[key]!
         const modFraction = (modifiable / score0) * (entryDepth / detectable)
-        const color = isUnmodified ? 'blue' : mod.color || 'black'
-
-        ctx.fillStyle = alphaColor(color, avgProbability)
-        ctx.fillRect(
-          Math.round(leftPx),
-          bottom - (curr + modFraction * h),
-          w,
-          modFraction * h,
-        )
-        curr += modFraction * h
+        const barHeight = modFraction * h
+        if (skipDraw) {
+          snpSkipped++
+        } else {
+          const color = isUnmodified ? 'blue' : mod.color || 'black'
+          ctx.fillStyle = alphaColor(color, avgProbability)
+          ctx.fillRect(drawX, bottom - (curr + barHeight), w, barHeight)
+          snpDrawn++
+          lastDrawnX = drawX
+        }
+        curr += barHeight
       }
     } else if (drawingMethylation) {
-      const { depth, nonmods, mods } = snpinfo
-      const h = toHeight(score0)
-      const bottom = toY(score0) + h
-      const curr = drawStackedBars(
-        ctx,
-        mods,
-        colorMap,
-        Math.round(leftPx),
-        bottom,
-        w,
-        h,
-        depth,
-        0,
-      )
-      drawStackedBars(
-        ctx,
-        nonmods,
-        colorMap,
-        Math.round(leftPx),
-        bottom,
-        w,
-        h,
-        depth,
-        curr,
-      )
+      if (!skipDraw) {
+        const { depth, nonmods, mods } = snpinfo
+        const h = toHeight(score0)
+        const bottom = toY(score0) + h
+        const curr = drawStackedBars(
+          ctx,
+          mods,
+          colorMap,
+          drawX,
+          bottom,
+          w,
+          h,
+          depth,
+          0,
+        )
+        drawStackedBars(
+          ctx,
+          nonmods,
+          colorMap,
+          drawX,
+          bottom,
+          w,
+          h,
+          depth,
+          curr,
+        )
+        lastDrawnX = drawX
+      }
     } else {
       const { depth, snps, refbase } = snpinfo
       const h = toHeight(score0)
@@ -482,17 +498,23 @@ function drawSNPCoverage(
         const { entryDepth } = entry
         const y1 = bottom - ((entryDepth + curr) / depth) * h
         const barHeight = (entryDepth / depth) * h
-        ctx.fillStyle = colorMap[base] || 'black'
-        ctx.fillRect(Math.round(leftPx), y1, w, barHeight)
+        const isSignificant = entryDepth / score0 >= SNP_CLICKMAP_THRESHOLD
 
-        // Add to clickMap if significant
-        if (entryDepth / score0 >= SNP_CLICKMAP_THRESHOLD) {
-          coords.push(
-            Math.round(leftPx),
-            y1,
-            Math.round(leftPx) + w,
-            y1 + barHeight,
-          )
+        // Always draw significant SNPs (>4%), skip others at same X or same depth
+        const sameDepthAtSameX = skipDraw && entryDepth === lastDrawnDepth
+        if ((skipDraw && !isSignificant) || sameDepthAtSameX) {
+          snpSkipped++
+        } else {
+          ctx.fillStyle = colorMap[base] || 'black'
+          ctx.fillRect(drawX, y1, w, barHeight)
+          snpDrawn++
+          lastDrawnX = drawX
+          lastDrawnDepth = entryDepth
+        }
+
+        // Add to clickMap if significant (independent of drawing)
+        if (isSignificant) {
+          coords.push(drawX, y1, drawX + w, y1 + barHeight)
           items.push({
             type: 'snp',
             base,
@@ -528,7 +550,7 @@ function drawSNPCoverage(
       const fstart = feature.get('start')
       const maxEntry = snpinfo.noncov[maxBase]
 
-      if (showInterbaseCounts) {
+      if (showInterbaseCounts && !skipDraw) {
         const r = 0.6
         const x = leftPx - r + extraHorizontallyFlippedOffset
         let currHeight = 0
@@ -564,7 +586,7 @@ function drawSNPCoverage(
         }
       }
 
-      if (showInterbaseIndicators) {
+      if (showInterbaseIndicators && !skipDraw) {
         const indicatorComparatorScore = Math.max(score0, prevTotal)
         if (
           totalCount > indicatorComparatorScore * indicatorThreshold &&
@@ -607,6 +629,14 @@ function drawSNPCoverage(
 
   if (displayCrossHatches) {
     drawCrossHatches(ctx, ticks, width, toY)
+  }
+
+  // Log optimization stats (SNP same-pixel skipping)
+  const totalSnp = snpDrawn + snpSkipped
+  if (totalSnp > 0) {
+    console.log(
+      `[SNPCoverage] fillRect stats: snp/mod features=${snpDrawn}/${totalSnp} drawn (${Math.round((snpSkipped / totalSnp) * 100)}% same-pixel skipped)`,
+    )
   }
 
   return { reducedFeatures, coords, items }

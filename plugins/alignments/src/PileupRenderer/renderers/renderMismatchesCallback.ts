@@ -105,6 +105,15 @@ export function renderMismatchesCallback({
     cliplen: number
   }[] = []
 
+  // Counters for optimization stats
+  let mismatchDrawn = 0
+  let mismatchSkipped = 0
+  let deletionDrawn = 0
+  let deletionSkipped = 0
+
+  // Track last drawn X to avoid redundant draws at same pixel
+  let lastMismatchX = Number.NEGATIVE_INFINITY
+
   // Check if feature has forEachMismatch method (BAM/CRAM adapters)
   const featureWithIterator = feature as unknown as FeatureWithMismatchIterator
   const mismatchHandler = (
@@ -168,9 +177,14 @@ export function renderMismatchesCallback({
             useAlpha && qualVal ? applyQualAlpha(baseColor, qualVal) : baseColor
           const l = Math.round(leftPx)
           const w = widthPx
-          if (l + w > 0 && l < canvasWidth) {
+          // Skip drawing at same X coordinate as previous mismatch
+          if (l === lastMismatchX) {
+            mismatchSkipped++
+          } else if (l + w > 0 && l < canvasWidth) {
             ctx.fillStyle = c
             ctx.fillRect(l, topPx, w, heightPx)
+            mismatchDrawn++
+            lastMismatchX = l
           }
         }
 
@@ -194,9 +208,13 @@ export function renderMismatchesCallback({
         (length < 10 && hideSmallIndels) || (length >= 10 && hideLargeIndels)
       if (!shouldHide) {
         const w = Math.abs(leftPx - rightPx)
-        if (leftPx + w > 0 && leftPx < canvasWidth) {
+        // Skip drawing sub-pixel width deletions (< 0.3px)
+        if (w >= 0.3 && leftPx + w > 0 && leftPx < canvasWidth) {
           ctx.fillStyle = colorMap.deletion!
           ctx.fillRect(leftPx, topPx, w, heightPx)
+          deletionDrawn++
+        } else if (w < 0.3) {
+          deletionSkipped++
         }
         if (bpPerPx < 3) {
           items.push({
@@ -385,5 +403,12 @@ export function renderMismatchesCallback({
   return {
     coords,
     items,
+    // Return optimization stats for aggregation at higher level
+    stats: {
+      mismatchDrawn,
+      mismatchSkipped,
+      deletionDrawn,
+      deletionSkipped,
+    },
   }
 }
