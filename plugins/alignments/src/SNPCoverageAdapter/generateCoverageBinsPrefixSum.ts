@@ -31,9 +31,9 @@ import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 // Structure-of-arrays result format for efficient rendering
 export interface CoverageBinsSoA {
-  starts: number[]
-  ends: number[]
-  scores: number[]
+  starts: Int32Array
+  ends: Int32Array
+  scores: Int32Array
   snpinfo: BaseCoverageBin[]
   skipmap: SkipMap
 }
@@ -45,9 +45,9 @@ function binsArrayToSoA(
   regionStart: number,
   skipmap: SkipMap,
 ): CoverageBinsSoA {
-  const starts: number[] = new Array(binCount)
-  const ends: number[] = new Array(binCount)
-  const scores: number[] = new Array(binCount)
+  const starts = new Int32Array(binCount)
+  const ends = new Int32Array(binCount)
+  const scores = new Int32Array(binCount)
   const snpinfo: BaseCoverageBin[] = new Array(binCount)
 
   // Already in sorted order since we iterate sequentially
@@ -69,7 +69,7 @@ function binsArrayToSoA(
 
 // Reusable change arrays for deletion prefix sums
 const MAX_REGION_SIZE = 1_000_000
-const deletionChanges: number[] = new Array(MAX_REGION_SIZE + 1).fill(0)
+const deletionChanges = new Int32Array(MAX_REGION_SIZE + 1)
 
 interface SparseSnpEntry {
   base: string
@@ -177,9 +177,7 @@ export async function generateCoverageBinsPrefixSum({
   // Step 2: Process mismatches with prefix sums for deletions
   checkStopToken(stopToken)
   // Clear deletion changes buffer
-  for (let i = 0; i <= regionSize; i++) {
-    deletionChanges[i] = 0
-  }
+  deletionChanges.fill(0, 0, regionSize + 1)
 
   const snpEvents: { pos: number; entry: SparseSnpEntry }[] = []
   const noncovEvents: { pos: number; entry: SparseNoncovEntry }[] = []
@@ -190,7 +188,7 @@ export async function generateCoverageBinsPrefixSum({
   }
 
   // Compute deletion depth prefix sums
-  const deletionDepth: number[] = new Array(regionSize)
+  const deletionDepth = new Int32Array(regionSize)
   let dd = 0
   for (let i = 0; i < regionSize; i++) {
     dd += deletionChanges[i]!
