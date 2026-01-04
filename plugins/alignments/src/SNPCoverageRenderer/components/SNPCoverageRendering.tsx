@@ -28,7 +28,7 @@ function getFeatureRefName(features: Map<string, Feature>) {
   for (const feature of features.values()) {
     const refName = feature.get('refName')
     if (refName) {
-      return refName as string
+      return refName
     }
   }
   return undefined

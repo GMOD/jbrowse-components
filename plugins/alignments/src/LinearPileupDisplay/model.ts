@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+
 import {
   ConfigurationReference,
   getConf,

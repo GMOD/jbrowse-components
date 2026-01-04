@@ -1,25 +1,27 @@
-import { bench, describe } from 'vitest'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-import { fileURLToPath } from 'url'
-import { dirname, resolve } from 'path'
+import { bench, describe } from 'vitest'
 
 import BamAdapter from '../dist_branch1/BamAdapter/BamAdapter.js'
 import configSchema from '../dist_branch1/BamAdapter/configSchema.js'
-import { generateCoverageBinsPrefixSum as generateCoverageBinsPrefixSum1 } from '../dist_branch1/SNPCoverageAdapter/generateCoverageBinsPrefixSum.js'
-import { generateCoverageBinsPrefixSum as generateCoverageBinsPrefixSum2 } from '../dist_branch2/SNPCoverageAdapter/generateCoverageBinsPrefixSum.js'
 import SNPCoverageAdapter1 from '../dist_branch1/SNPCoverageAdapter/SNPCoverageAdapter.js'
-import SNPCoverageAdapter2 from '../dist_branch2/SNPCoverageAdapter/SNPCoverageAdapter.js'
 import snpConfigSchema1 from '../dist_branch1/SNPCoverageAdapter/configSchema.js'
+import { generateCoverageBinsPrefixSum as generateCoverageBinsPrefixSum1 } from '../dist_branch1/SNPCoverageAdapter/generateCoverageBinsPrefixSum.js'
+import SNPCoverageAdapter2 from '../dist_branch2/SNPCoverageAdapter/SNPCoverageAdapter.js'
 import snpConfigSchema2 from '../dist_branch2/SNPCoverageAdapter/configSchema.js'
+import { generateCoverageBinsPrefixSum as generateCoverageBinsPrefixSum2 } from '../dist_branch2/SNPCoverageAdapter/generateCoverageBinsPrefixSum.js'
+
 import type { FeatureWithMismatchIterator } from '../shared/types'
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const __dirname = path.dirname(__filename)
 
 const BAM_FILE = {
-  bam: resolve(__dirname, 'pacbio_hg002.bam'),
-  bai: resolve(__dirname, 'pacbio_hg002.bam.bai'),
+  bam: path.resolve(__dirname, 'pacbio_hg002.bam'),
+  bai: path.resolve(__dirname, 'pacbio_hg002.bam.bai'),
 }
 
 async function loadFeatures(
@@ -48,7 +50,6 @@ const features = (await loadFeatures(
   region,
   BAM_FILE,
 )) as FeatureWithMismatchIterator[]
-console.log(`Loaded ${features.length} features`)
 
 describe('generateCoverageBinsPrefixSum', () => {
   bench(

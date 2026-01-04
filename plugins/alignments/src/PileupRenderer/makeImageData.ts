@@ -104,12 +104,6 @@ function renderFeatures({
   const items = [] as FlatbushItem[]
   const lastCheck = createStopTokenChecker(stopToken)
 
-  // Aggregate stats for mismatch rendering optimization
-  let totalMismatchDrawn = 0
-  let totalMismatchSkipped = 0
-  let totalDeletionDrawn = 0
-  let totalDeletionSkipped = 0
-
   for (const feat of layoutRecords) {
     const alignmentRet = renderAlignment({
       ctx,
@@ -153,11 +147,6 @@ function renderFeatures({
     for (let i = 0, l = ret.items.length; i < l; i++) {
       items.push(ret.items[i]!)
     }
-    // Aggregate mismatch rendering stats
-    totalMismatchDrawn += ret.stats.mismatchDrawn
-    totalMismatchSkipped += ret.stats.mismatchSkipped
-    totalDeletionDrawn += ret.stats.deletionDrawn
-    totalDeletionSkipped += ret.stats.deletionSkipped
     if (showSoftClip) {
       renderSoftClipping({
         ctx,
@@ -170,16 +159,6 @@ function renderFeatures({
       })
     }
     checkStopToken2(lastCheck)
-  }
-
-  // Log aggregate mismatch rendering stats
-  const totalMismatch = totalMismatchDrawn + totalMismatchSkipped
-  const totalDeletion = totalDeletionDrawn + totalDeletionSkipped
-  if (totalMismatch > 0 || totalDeletion > 0) {
-    console.log(
-      `[PileupMismatch] fillRect stats: mismatch=${totalMismatchDrawn}/${totalMismatch} (${totalMismatch > 0 ? Math.round((totalMismatchSkipped / totalMismatch) * 100) : 0}% skipped), ` +
-        `deletion=${totalDeletionDrawn}/${totalDeletion} (${totalDeletion > 0 ? Math.round((totalDeletionSkipped / totalDeletion) * 100) : 0}% skipped)`,
-    )
   }
 
   const flatbush = new Flatbush(Math.max(items.length, 1))

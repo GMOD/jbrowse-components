@@ -1,8 +1,9 @@
 import { forwardRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import useMeasure from '../util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
+
+import useMeasure from '../util/useMeasure'
 
 import type { TypographyProps } from '@mui/material'
 

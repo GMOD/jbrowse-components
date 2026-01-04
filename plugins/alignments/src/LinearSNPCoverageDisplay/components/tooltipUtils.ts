@@ -1,10 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-export const useTooltipStyles = makeStyles()(() => ({
-  td: {
-    whiteSpace: 'nowrap',
-  },
-}))
+export const useTooltipStyles = makeStyles()(() => ({}))
 
 export function pct(n: number, total = 1) {
   return `${((n / (total || 1)) * 100).toFixed(1)}%`

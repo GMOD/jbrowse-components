@@ -2,9 +2,9 @@ import { forwardRef } from 'react'
 
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
 
-import { getModificationName } from '../../shared/modificationData'
-import { getInterbaseTypeLabel } from '../../SNPCoverageRenderer/types'
 import { formatStrandCounts, pct, useTooltipStyles } from './tooltipUtils'
+import { getInterbaseTypeLabel } from '../../SNPCoverageRenderer/types'
+import { getModificationName } from '../../shared/modificationData'
 
 import type { ClickMapItem } from '../../SNPCoverageRenderer/types'
 import type { BaseCoverageBin } from '../../shared/types'

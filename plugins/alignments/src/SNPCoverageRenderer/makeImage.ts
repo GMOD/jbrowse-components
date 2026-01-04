@@ -740,31 +740,23 @@ function drawSNPCoverage(
   }
 
   // Second pass: draw colored data based on colorBy mode
-  let stats: SecondPassStats
   if (colorBy.type === 'modifications') {
     const isolatedModification = colorBy.modifications?.isolatedModification
     const simplexSet = new Set(simplexModifications)
-    stats = drawSecondPassModifications(
+    drawSecondPassModifications(
       passCtx,
       visibleModifications,
       isolatedModification,
       simplexSet,
     )
   } else if (colorBy.type === 'methylation') {
-    stats = drawSecondPassMethylation(passCtx)
+    drawSecondPassMethylation(passCtx)
   } else {
-    stats = drawSecondPassSNPs(passCtx)
+    drawSecondPassSNPs(passCtx)
   }
 
   if (displayCrossHatches) {
     drawCrossHatches(ctx, ticks, width, toY)
-  }
-
-  const totalSnp = stats.snpDrawn + stats.snpSkipped
-  if (totalSnp > 0) {
-    console.log(
-      `[SNPCoverage] fillRect stats: snp/mod features=${stats.snpDrawn}/${totalSnp} drawn (${Math.round((stats.snpSkipped / totalSnp) * 100)}% same-pixel skipped)`,
-    )
   }
 
   return { reducedFeatures, coords, items }

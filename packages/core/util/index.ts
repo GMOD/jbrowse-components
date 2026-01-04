@@ -2,7 +2,6 @@ import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 import { unzip } from '@gmod/bgzf-filehandle'
-import useMeasure from './useMeasure'
 import {
   getEnv as getEnvMST,
   getParent,
@@ -25,6 +24,7 @@ import {
   isUriLocation,
   isViewModel,
 } from './types'
+import useMeasure from './useMeasure'
 
 import type { ParsedLocString } from './locString'
 import type {

@@ -13,16 +13,8 @@ interface ParsedItemData {
   refName?: string
 }
 
-function parseItemData(data: string): ParsedItemData | undefined {
-  try {
-    const parsed = JSON.parse(data) as ParsedItemData
-    if (parsed && parsed.item && typeof parsed.item.type === 'string') {
-      return parsed
-    }
-  } catch {
-    // Not valid JSON, return undefined
-  }
-  return undefined
+function parseItemData(data: string): ParsedItemData {
+  return JSON.parse(data) as ParsedItemData
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -63,21 +55,11 @@ const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
   if (mouseoverExtraInformation && !feat) {
     const x = clientMouseCoord[0] + 5
     const y = clientMouseCoord[1]
-    const itemData = parseItemData(mouseoverExtraInformation)
+    const { item, refName } = parseItemData(mouseoverExtraInformation)
     return (
       <>
         <BaseTooltip clientPoint={{ x, y }}>
-          {itemData ? (
-            <TooltipContents
-              item={itemData.item}
-              refName={itemData.refName}
-              model={model}
-            />
-          ) : (
-            <div style={{ whiteSpace: 'pre-wrap' }}>
-              {mouseoverExtraInformation}
-            </div>
-          )}
+          <TooltipContents item={item} refName={refName} model={model} />
         </BaseTooltip>
         <div
           className={classes.hoverVertical}

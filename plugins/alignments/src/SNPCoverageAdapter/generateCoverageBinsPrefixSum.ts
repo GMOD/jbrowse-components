@@ -3,12 +3,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { processDepthPrefixSum } from './processDepthPrefixSum'
 import { processModifications } from './processModifications'
 import { processReferenceCpGs } from './processReferenceCpGs'
-import {
-  createEmptyBin,
-  createPreBinEntry,
-  isInterbase,
-  mismatchLen,
-} from './util'
+import { isInterbase, mismatchLen } from './util'
 import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
 import {
   DELSKIP_MASK,
@@ -19,7 +14,6 @@ import {
 
 import type { Opts } from './util'
 import type {
-  BaseCoverageBin,
   FeatureWithMismatchIterator,
   Mismatch,
   PreBaseCoverageBin,
@@ -382,10 +376,10 @@ export async function generateCoverageBinsPrefixSum({
     if (modBin) {
       const bin = bins[i]
       if (bin) {
-        if (modBin.mods && Object.keys(modBin.mods).length > 0) {
+        if (Object.keys(modBin.mods).length > 0) {
           bin.mods = Object.assign(bin.mods ?? {}, modBin.mods)
         }
-        if (modBin.nonmods && Object.keys(modBin.nonmods).length > 0) {
+        if (Object.keys(modBin.nonmods).length > 0) {
           bin.nonmods = Object.assign(bin.nonmods ?? {}, modBin.nonmods)
         }
         if (modBin.refbase !== undefined) {
