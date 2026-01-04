@@ -46,11 +46,10 @@ function main() {
       }
       fs.unlinkSync(path.join(location, tarball))
       location = path.join(location, 'dist')
-      const { signal, status } = spawn.sync(
-        'pnpm',
-        ['pack'],
-        { stdio: 'inherit', cwd: location },
-      )
+      const { signal, status } = spawn.sync('pnpm', ['pack'], {
+        stdio: 'inherit',
+        cwd: location,
+      })
       if (signal || (status !== null && status > 0)) {
         process.exit(status || 1)
       }

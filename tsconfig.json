@@ -39,17 +39,27 @@
       "@jbrowse/plugin-authentication/*": ["plugins/authentication/*"],
       "@jbrowse/plugin-bed": ["plugins/bed/src/index.ts"],
       "@jbrowse/plugin-bed/*": ["plugins/bed/*"],
-      "@jbrowse/plugin-breakpoint-split-view": ["plugins/breakpoint-split-view/src/index.ts"],
-      "@jbrowse/plugin-breakpoint-split-view/*": ["plugins/breakpoint-split-view/*"],
+      "@jbrowse/plugin-breakpoint-split-view": [
+        "plugins/breakpoint-split-view/src/index.ts"
+      ],
+      "@jbrowse/plugin-breakpoint-split-view/*": [
+        "plugins/breakpoint-split-view/*"
+      ],
       "@jbrowse/plugin-canvas": ["plugins/canvas/src/index.ts"],
       "@jbrowse/plugin-canvas/*": ["plugins/canvas/*"],
       "@jbrowse/plugin-circular-view": ["plugins/circular-view/src/index.ts"],
       "@jbrowse/plugin-circular-view/*": ["plugins/circular-view/*"],
-      "@jbrowse/plugin-comparative-adapters": ["plugins/comparative-adapters/src/index.ts"],
-      "@jbrowse/plugin-comparative-adapters/*": ["plugins/comparative-adapters/*"],
+      "@jbrowse/plugin-comparative-adapters": [
+        "plugins/comparative-adapters/src/index.ts"
+      ],
+      "@jbrowse/plugin-comparative-adapters/*": [
+        "plugins/comparative-adapters/*"
+      ],
       "@jbrowse/plugin-config": ["plugins/config/src/index.ts"],
       "@jbrowse/plugin-config/*": ["plugins/config/*"],
-      "@jbrowse/plugin-data-management": ["plugins/data-management/src/index.ts"],
+      "@jbrowse/plugin-data-management": [
+        "plugins/data-management/src/index.ts"
+      ],
       "@jbrowse/plugin-data-management/*": ["plugins/data-management/*"],
       "@jbrowse/plugin-dotplot-view": ["plugins/dotplot-view/src/index.ts"],
       "@jbrowse/plugin-dotplot-view/*": ["plugins/dotplot-view/*"],
@@ -63,13 +73,21 @@
       "@jbrowse/plugin-gtf/*": ["plugins/gtf/*"],
       "@jbrowse/plugin-hic": ["plugins/hic/src/index.ts"],
       "@jbrowse/plugin-hic/*": ["plugins/hic/*"],
-      "@jbrowse/plugin-jobs-management": ["plugins/jobs-management/src/index.ts"],
+      "@jbrowse/plugin-jobs-management": [
+        "plugins/jobs-management/src/index.ts"
+      ],
       "@jbrowse/plugin-jobs-management/*": ["plugins/jobs-management/*"],
       "@jbrowse/plugin-legacy-jbrowse": ["plugins/legacy-jbrowse/src/index.ts"],
       "@jbrowse/plugin-legacy-jbrowse/*": ["plugins/legacy-jbrowse/*"],
-      "@jbrowse/plugin-linear-comparative-view": ["plugins/linear-comparative-view/src/index.ts"],
-      "@jbrowse/plugin-linear-comparative-view/*": ["plugins/linear-comparative-view/*"],
-      "@jbrowse/plugin-linear-genome-view": ["plugins/linear-genome-view/src/index.ts"],
+      "@jbrowse/plugin-linear-comparative-view": [
+        "plugins/linear-comparative-view/src/index.ts"
+      ],
+      "@jbrowse/plugin-linear-comparative-view/*": [
+        "plugins/linear-comparative-view/*"
+      ],
+      "@jbrowse/plugin-linear-genome-view": [
+        "plugins/linear-genome-view/src/index.ts"
+      ],
       "@jbrowse/plugin-linear-genome-view/*": ["plugins/linear-genome-view/*"],
       "@jbrowse/plugin-lollipop": ["plugins/lollipop/src/index.ts"],
       "@jbrowse/plugin-lollipop/*": ["plugins/lollipop/*"],
@@ -79,7 +97,9 @@
       "@jbrowse/plugin-rdf/*": ["plugins/rdf/*"],
       "@jbrowse/plugin-sequence": ["plugins/sequence/src/index.ts"],
       "@jbrowse/plugin-sequence/*": ["plugins/sequence/*"],
-      "@jbrowse/plugin-spreadsheet-view": ["plugins/spreadsheet-view/src/index.ts"],
+      "@jbrowse/plugin-spreadsheet-view": [
+        "plugins/spreadsheet-view/src/index.ts"
+      ],
       "@jbrowse/plugin-spreadsheet-view/*": ["plugins/spreadsheet-view/*"],
       "@jbrowse/plugin-sv-inspector": ["plugins/sv-inspector/src/index.ts"],
       "@jbrowse/plugin-sv-inspector/*": ["plugins/sv-inspector/*"],
