@@ -122,21 +122,6 @@ export function createBaseTrackModel(
       /**
        * #getter
        */
-      get adapterType() {
-        const { adapterConfig } = self
-        if (!adapterConfig) {
-          throw new Error(`no adapter configuration provided for ${self.type}`)
-        }
-        const adapterType = pm.getAdapterType(adapterConfig.type)
-        if (!adapterType) {
-          throw new Error(`unknown adapter type ${adapterConfig.type}`)
-        }
-        return adapterType
-      },
-
-      /**
-       * #getter
-       */
       get viewMenuActions(): MenuItem[] {
         return self.displays.flatMap(d => d.viewMenuActions)
       },
@@ -151,6 +136,22 @@ export function createBaseTrackModel(
           isSessionModelWithConfigEditing(session) &&
           (adminMode || sessionTracks?.find(t => t.trackId === this.trackId))
         )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get adapterType() {
+        const { adapterConfig } = self
+        if (!adapterConfig) {
+          throw new Error(`no adapter configuration provided for ${self.type}`)
+        }
+        const adapterType = pm.getAdapterType(adapterConfig.type)
+        if (!adapterType) {
+          throw new Error(`unknown adapter type ${adapterConfig.type}`)
+        }
+        return adapterType
       },
     }))
     .actions(self => ({

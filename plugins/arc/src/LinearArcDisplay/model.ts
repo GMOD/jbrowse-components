@@ -67,9 +67,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const config = configBlob as Omit<typeof configBlob, symbol>
         return {
           ...config,
-          // Use instance property if set, otherwise use configBlob value
-          // This avoids redundant getConf call from displayModeSetting
-          displayMode: self.displayMode ?? config.displayMode,
+          displayMode: self.displayModeSetting,
         }
       },
     }))
