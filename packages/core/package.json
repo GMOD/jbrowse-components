@@ -18,7 +18,9 @@
     "directory": "packages/core"
   },
   "author": "JBrowse Team",
-  "main": "index.js",
+  "exports": {
+    "./*": "./*"
+  },
   "scripts": {
     "test": "cd ../..; jest --passWithNoTests packages/core",
     "storybook": "storybook dev --port 6006",
