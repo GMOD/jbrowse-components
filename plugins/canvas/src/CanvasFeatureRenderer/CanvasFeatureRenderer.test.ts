@@ -20,6 +20,7 @@ interface LayoutSerializableData {
   totalLayoutWidth?: number
   actualTopPx?: number
   featureWidth?: number
+  leftPadding?: number
 }
 
 const pluginManager = new PluginManager([])

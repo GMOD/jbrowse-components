@@ -234,6 +234,7 @@ function addChildrenRecursive({
               totalLayoutWidth: child.totalLayoutWidth,
               actualTopPx: topPx,
               featureWidth: child.width,
+              leftPadding: child.leftPadding,
             })
           : { refName: childFeature.get('refName') },
       )

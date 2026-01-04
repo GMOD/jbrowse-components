@@ -82,6 +82,7 @@ export function layoutFeatures({
         totalFeatureHeight: featureLayout.height,
         totalLayoutWidth,
         featureWidth: featureLayout.width,
+        leftPadding: featureLayout.leftPadding,
       },
     )
 

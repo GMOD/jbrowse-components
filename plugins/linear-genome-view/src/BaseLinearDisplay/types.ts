@@ -33,6 +33,7 @@ export interface LayoutFeatureMetadata {
   totalLayoutWidth?: number
   featureWidth?: number
   actualTopPx?: number
+  leftPadding?: number
 }
 
 /**
@@ -45,6 +46,7 @@ export function createSubfeatureLabelMetadata(args: {
   totalLayoutWidth: number
   featureWidth: number
   actualTopPx: number
+  leftPadding?: number
 }): LayoutFeatureMetadata {
   return {
     refName: args.refName,
@@ -53,6 +55,7 @@ export function createSubfeatureLabelMetadata(args: {
     totalLayoutWidth: args.totalLayoutWidth,
     featureWidth: args.featureWidth,
     actualTopPx: args.actualTopPx,
+    leftPadding: args.leftPadding,
   }
 }
 

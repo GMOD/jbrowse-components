@@ -154,6 +154,7 @@ export function deduplicateFeatureLabels(
       actualTopPx,
       featureWidth,
       totalLayoutWidth,
+      leftPadding,
     } = feature
     const effectiveTopPx = actualTopPx ?? topPx
 
@@ -180,13 +181,16 @@ export function deduplicateFeatureLabels(
       continue
     }
 
-    const { leftPx, rightPx } = positions
+    const adjustedLeftPx = adjustLabelPositionForPadding(
+      positions.leftPx,
+      leftPadding,
+    )
 
     const existing = featureLabels.get(key)
-    if (!existing || leftPx < existing.leftPx) {
+    if (!existing || adjustedLeftPx < existing.leftPx) {
       featureLabels.set(key, {
-        leftPx,
-        rightPx,
+        leftPx: adjustedLeftPx,
+        rightPx: positions.rightPx,
         topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
@@ -197,6 +201,18 @@ export function deduplicateFeatureLabels(
   }
 
   return featureLabels
+}
+
+/**
+ * Adjust label left position to account for strand arrow padding.
+ * For reverse strand features, the arrow extends to the left of the body,
+ * so the label should start at the body position (leftPx + leftPadding).
+ */
+export function adjustLabelPositionForPadding(
+  leftPx: number,
+  leftPadding?: number,
+): number {
+  return leftPx + (leftPadding ?? 0)
 }
 
 /**
