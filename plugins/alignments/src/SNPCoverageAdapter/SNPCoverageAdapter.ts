@@ -11,9 +11,12 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { fetchSequence } from '../util'
-import { generateCoverageBinsPrefixSum } from './generateCoverageBinsPrefixSum'
+import {
+  finalizeLazyBin,
+  generateCoverageBinsPrefixSum,
+} from './generateCoverageBinsPrefixSum'
 
-import type { CoverageBinsSoA } from './generateCoverageBinsPrefixSum'
+import type { CoverageBinsResult } from './generateCoverageBinsPrefixSum'
 import type {
   ColorBy,
   FeatureWithMismatchIterator,
@@ -54,26 +57,29 @@ function makeCacheKey(region: Region, opts: SNPCoverageOptions) {
 }
 
 function computeStatsFromBins(
-  bins: CoverageBinsSoA,
-  regionStart: number,
-  regionEnd: number,
+  result: CoverageBinsResult,
+  targetStart: number,
+  targetEnd: number,
 ) {
-  const { starts, scores } = bins
+  const { bins, regionStart } = result
   let scoreMin = Number.MAX_VALUE
   let scoreMax = Number.MIN_VALUE
   let scoreSum = 0
   let scoreSumSquares = 0
   let featureCount = 0
 
-  for (let i = 0, l = starts.length; i < l; i++) {
-    const pos = starts[i]!
-    if (pos >= regionStart && pos < regionEnd) {
-      const score = scores[i]!
-      scoreMin = Math.min(scoreMin, score)
-      scoreMax = Math.max(scoreMax, score)
-      scoreSum += score
-      scoreSumSquares += score * score
-      featureCount++
+  for (let i = 0, l = bins.length; i < l; i++) {
+    const bin = bins[i]
+    if (bin) {
+      const pos = regionStart + i
+      if (pos >= targetStart && pos < targetEnd) {
+        const score = bin.depth
+        scoreMin = Math.min(scoreMin, score)
+        scoreMax = Math.max(scoreMax, score)
+        scoreSum += score
+        scoreSumSquares += score * score
+        featureCount++
+      }
     }
   }
 
@@ -94,7 +100,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   // Cache for coverage results (keyed by region+filterBy+colorBy)
   // Stats estimation uses empty colorBy key, full rendering includes colorBy
-  private cache = new QuickLRU<string, CoverageBinsSoA>({
+  private cache = new QuickLRU<string, CoverageBinsResult>({
     maxSize: 50,
     maxAge: 5 * 60 * 1000, // 5 minute TTL
   })
@@ -156,24 +162,49 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { starts, ends, scores, snpinfo, skipmap } =
-        await this.getCoverageBins(region, opts)
+      const { bins, regionStart, skipmap } = await this.getCoverageBins(
+        region,
+        opts,
+      )
 
-      // Emit coverage features
-      for (const [i, start_] of starts.entries()) {
-        const start = start_
-        observer.next(
-          new SimpleFeature({
-            id: `${this.id}-${start}`,
-            data: {
-              score: scores[i],
-              snpinfo: snpinfo[i],
-              start,
-              end: ends[i],
-              refName: region.refName,
+      const { refName } = region
+      const adapterId = this.id
+
+      // Emit coverage features using lightweight inline feature objects
+      for (let i = 0, l = bins.length; i < l; i++) {
+        const bin = bins[i]
+        if (bin) {
+          const start = regionStart + i
+          const snpinfo = finalizeLazyBin(bin)
+          const score = bin.depth
+          observer.next({
+            get: (field: string): any => {
+              switch (field) {
+                case 'start':
+                  return start
+                case 'end':
+                  return start + 1
+                case 'score':
+                  return score
+                case 'snpinfo':
+                  return snpinfo
+                case 'refName':
+                  return refName
+                default:
+                  return undefined
+              }
             },
-          }),
-        )
+            id: () => `${adapterId}-${start}`,
+            toJSON: () => ({
+              uniqueId: `${adapterId}-${start}`,
+              start,
+              end: start + 1,
+              score,
+              snpinfo,
+              refName,
+            }),
+          })
+        }
       }
 
       // Emit skip features for arc rendering
@@ -183,7 +214,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             id: key,
             data: {
               type: 'skip',
-              refName: region.refName,
+              refName,
               start: skip.start,
               end: skip.end,
               strand: skip.strand,
@@ -201,7 +232,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   private async getCoverageBins(
     region: Region,
     opts: SNPCoverageOptions = {},
-  ): Promise<CoverageBinsSoA> {
+  ): Promise<CoverageBinsResult> {
     const { bpPerPx, statsEstimationMode } = opts
 
     // Clear cache when bpPerPx changes (zoom level changed)

@@ -29,42 +29,34 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
-// Structure-of-arrays result format for efficient rendering
-export interface CoverageBinsSoA {
-  starts: Int32Array
-  ends: Int32Array
-  scores: Int32Array
-  snpinfo: BaseCoverageBin[]
+// Type with lazy sub-objects (undefined until needed)
+export interface LazyBin {
+  refbase?: string
+  depth: number
+  readsCounted: number
+  ref: PreBinEntry
+  snps?: Record<string, PreBinEntry>
+  mods?: Record<string, PreBinEntry>
+  nonmods?: Record<string, PreBinEntry>
+  delskips?: Record<string, PreBinEntry>
+  noncov?: Record<string, PreBinEntry>
+}
+
+// Result format - sparse bins array with regionStart for computing positions
+export interface CoverageBinsResult {
+  bins: (LazyBin | undefined)[]
+  regionStart: number
   skipmap: SkipMap
 }
 
-// Convert bins array to structure-of-arrays format
-function binsArrayToSoA(
-  bins: (PreBaseCoverageBin | undefined)[],
-  binCount: number,
-  regionStart: number,
-  skipmap: SkipMap,
-): CoverageBinsSoA {
-  const starts = new Int32Array(binCount)
-  const ends = new Int32Array(binCount)
-  const scores = new Int32Array(binCount)
-  const snpinfo: BaseCoverageBin[] = new Array(binCount)
-
-  // Already in sorted order since we iterate sequentially
-  let idx = 0
-  for (let pos = 0, l = bins.length; pos < l; pos++) {
-    const bin = bins[pos]
-    if (bin) {
-      const start = regionStart + pos
-      starts[idx] = start
-      ends[idx] = start + 1
-      scores[idx] = bin.depth
-      snpinfo[idx] = bin
-      idx++
-    }
-  }
-
-  return { starts, ends, scores, snpinfo, skipmap }
+// Finalize a lazy bin before returning to renderer
+export function finalizeLazyBin(bin: LazyBin): PreBaseCoverageBin {
+  bin.snps ??= {}
+  bin.mods ??= {}
+  bin.nonmods ??= {}
+  bin.delskips ??= {}
+  bin.noncov ??= {}
+  return bin as PreBaseCoverageBin
 }
 
 // Reusable change arrays for deletion prefix sums
@@ -126,7 +118,7 @@ export async function generateCoverageBinsPrefixSum({
   region: Region
   opts: Opts
   fetchSequence?: (arg: Region) => Promise<string | undefined>
-}): Promise<CoverageBinsSoA> {
+}): Promise<CoverageBinsResult> {
   const { stopToken, colorBy, statsEstimationMode } = opts
   const regionStart = region.start
   const regionEnd = region.end
@@ -141,14 +133,12 @@ export async function generateCoverageBinsPrefixSum({
   // example, for an overview of the data or when calculating statistics. Just
   // return depth-only bins for fast coverage estimation
   if (statsEstimationMode) {
-    const bins: (PreBaseCoverageBin | undefined)[] = []
-    let binCount = 0
+    const bins: (LazyBin | undefined)[] = []
     for (let i = 0; i < regionSize; i++) {
       const depth = depthSoA.depth[i]!
       if (depth === 0) {
         continue
       }
-      binCount++
       bins[i] = {
         depth,
         readsCounted: depth,
@@ -164,14 +154,9 @@ export async function generateCoverageBinsPrefixSum({
           lengthMin: Infinity,
           lengthMax: -Infinity,
         },
-        snps: {},
-        mods: {},
-        nonmods: {},
-        delskips: {},
-        noncov: {},
       }
     }
-    return binsArrayToSoA(bins, binCount, regionStart, {})
+    return { bins, regionStart, skipmap: {} }
   }
 
   // Step 2: Process mismatches with prefix sums for deletions
@@ -241,8 +226,7 @@ export async function generateCoverageBinsPrefixSum({
 
   // Step 4: Build final bins array - only create objects for positions with data
   checkStopToken(stopToken)
-  const bins: (PreBaseCoverageBin | undefined)[] = []
-  let binCount = 0
+  const bins: (LazyBin | undefined)[] = []
 
   // First pass: create bins only where we have depth > 0 or other data
   for (let i = 0; i < regionSize; i++) {
@@ -254,7 +238,6 @@ export async function generateCoverageBinsPrefixSum({
       continue
     }
 
-    binCount++
     bins[i] = {
       depth: depth - delDepth,
       readsCounted: depth,
@@ -270,11 +253,7 @@ export async function generateCoverageBinsPrefixSum({
         lengthMin: Infinity,
         lengthMax: -Infinity,
       },
-      snps: {},
-      mods: {},
-      nonmods: {},
-      delskips: delDepth > 0 ? { deletion: createDeletionEntry(delDepth) } : {},
-      noncov: {},
+      delskips: delDepth > 0 ? { deletion: createDeletionEntry(delDepth) } : undefined,
     }
   }
 
@@ -289,44 +268,17 @@ export async function generateCoverageBinsPrefixSum({
       bin = {
         depth: 0,
         readsCounted: 0,
-        snps: {},
-        ref: {
-          entryDepth: 0,
-          '-1': 0,
-          '0': 0,
-          '1': 0,
-          probabilityTotal: 0,
-          probabilityCount: 0,
-          lengthTotal: 0,
-          lengthCount: 0,
-          lengthMin: Infinity,
-          lengthMax: -Infinity,
-        },
-        mods: {},
-        nonmods: {},
-        delskips: {},
-        noncov: {},
+        ref: { entryDepth: 0, '-1': 0, '0': 0, '1': 0, probabilityTotal: 0, probabilityCount: 0, lengthTotal: 0, lengthCount: 0, lengthMin: Infinity, lengthMax: -Infinity },
       }
       bins[pos] = bin
-      binCount++
     }
     const base = entry.base
     const strand = entry.strand
-    let snpEntry = bin.snps[base]
+    const snps = (bin.snps ??= {})
+    let snpEntry = snps[base]
     if (!snpEntry) {
-      snpEntry = {
-        entryDepth: 0,
-        '-1': 0,
-        '0': 0,
-        '1': 0,
-        probabilityTotal: 0,
-        probabilityCount: 0,
-        lengthTotal: 0,
-        lengthCount: 0,
-        lengthMin: Infinity,
-        lengthMax: -Infinity,
-      }
-      bin.snps[base] = snpEntry
+      snpEntry = { entryDepth: 0, '-1': 0, '0': 0, '1': 0, probabilityTotal: 0, probabilityCount: 0, lengthTotal: 0, lengthCount: 0, lengthMin: Infinity, lengthMax: -Infinity }
+      snps[base] = snpEntry
     }
     snpEntry.entryDepth++
     snpEntry[strand]++
@@ -348,45 +300,18 @@ export async function generateCoverageBinsPrefixSum({
       bin = {
         depth: 0,
         readsCounted: 0,
-        snps: {},
-        ref: {
-          entryDepth: 0,
-          '-1': 0,
-          '0': 0,
-          '1': 0,
-          probabilityTotal: 0,
-          probabilityCount: 0,
-          lengthTotal: 0,
-          lengthCount: 0,
-          lengthMin: Infinity,
-          lengthMax: -Infinity,
-        },
-        mods: {},
-        nonmods: {},
-        delskips: {},
-        noncov: {},
+        ref: { entryDepth: 0, '-1': 0, '0': 0, '1': 0, probabilityTotal: 0, probabilityCount: 0, lengthTotal: 0, lengthCount: 0, lengthMin: Infinity, lengthMax: -Infinity },
       }
       bins[pos] = bin
-      binCount++
     }
     const strand = entry.strand
     const type = entry.type
     const length = entry.length
-    let noncovEntry = bin.noncov[type]
+    const noncov = (bin.noncov ??= {})
+    let noncovEntry = noncov[type]
     if (!noncovEntry) {
-      noncovEntry = {
-        entryDepth: 0,
-        '-1': 0,
-        '0': 0,
-        '1': 0,
-        probabilityTotal: 0,
-        probabilityCount: 0,
-        lengthTotal: 0,
-        lengthCount: 0,
-        lengthMin: Infinity,
-        lengthMax: -Infinity,
-      }
-      bin.noncov[type] = noncovEntry
+      noncovEntry = { entryDepth: 0, '-1': 0, '0': 0, '1': 0, probabilityTotal: 0, probabilityCount: 0, lengthTotal: 0, lengthCount: 0, lengthMin: Infinity, lengthMax: -Infinity }
+      noncov[type] = noncovEntry
     }
     noncovEntry.entryDepth++
     noncovEntry[strand]++
@@ -412,8 +337,12 @@ export async function generateCoverageBinsPrefixSum({
     if (modBin) {
       const bin = bins[i]
       if (bin) {
-        Object.assign(bin.mods, modBin.mods)
-        Object.assign(bin.nonmods, modBin.nonmods)
+        if (modBin.mods && Object.keys(modBin.mods).length > 0) {
+          bin.mods = Object.assign(bin.mods ?? {}, modBin.mods)
+        }
+        if (modBin.nonmods && Object.keys(modBin.nonmods).length > 0) {
+          bin.nonmods = Object.assign(bin.nonmods ?? {}, modBin.nonmods)
+        }
         if (modBin.refbase !== undefined) {
           bin.refbase = modBin.refbase
         }
@@ -425,19 +354,25 @@ export async function generateCoverageBinsPrefixSum({
   for (let i = 0, l = bins.length; i < l; i++) {
     const bin = bins[i]
     if (bin) {
-      for (const key in bin.mods) {
-        finalizeBinEntry(bin.mods[key]!)
+      if (bin.mods) {
+        for (const key in bin.mods) {
+          finalizeBinEntry(bin.mods[key]!)
+        }
       }
-      for (const key in bin.nonmods) {
-        finalizeBinEntry(bin.nonmods[key]!)
+      if (bin.nonmods) {
+        for (const key in bin.nonmods) {
+          finalizeBinEntry(bin.nonmods[key]!)
+        }
       }
-      for (const key in bin.noncov) {
-        finalizeBinEntry(bin.noncov[key]!)
+      if (bin.noncov) {
+        for (const key in bin.noncov) {
+          finalizeBinEntry(bin.noncov[key]!)
+        }
       }
     }
   }
 
-  return binsArrayToSoA(bins, binCount, regionStart, skipmap)
+  return { bins, regionStart, skipmap }
 }
 
 function createDeletionEntry(depth: number): PreBinEntry {
