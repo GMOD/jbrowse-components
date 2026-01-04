@@ -10,6 +10,32 @@ import type { Theme } from '@mui/material'
 const MAX_LABEL_LENGTH = 50
 const UTR_REGEX = /(\bUTR|_UTR|untranslated[_\s]region)\b/i
 
+/**
+ * Get the effective strand direction accounting for region reversal.
+ * Returns -1 (visual left), 1 (visual right), or 0 (no strand).
+ */
+export function getEffectiveStrand(strand: number, reversed: boolean): number {
+  return strand * (reversed ? -1 : 1)
+}
+
+/**
+ * Calculate x position for an index within a feature, accounting for strand direction.
+ * For reverse strand (effectiveStrand === -1), positions go from right to left.
+ * For forward strand (effectiveStrand === 1), positions go from left to right.
+ */
+export function getStrandAwareX(
+  left: number,
+  width: number,
+  index: number,
+  pxPerBp: number,
+  effectiveStrand: number,
+): number {
+  if (effectiveStrand === -1) {
+    return left + width - pxPerBp * index
+  }
+  return left + pxPerBp * index
+}
+
 export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
 }

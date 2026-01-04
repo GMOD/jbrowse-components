@@ -26,7 +26,12 @@ export function aggregateAminos(
 
   for (let i = 0; i < len; i++) {
     const pos = strand === -1 ? featureEnd - i : featureStart + i
-    const elt = g2p[pos]!
+    const elt = g2p[pos]
+    // Skip positions without mapping (incomplete sequence data)
+    if (elt === undefined) {
+      console.warn(`No g2p mapping for position ${pos}`)
+      continue
+    }
     const aminoAcid = protein[elt] ?? '&'
 
     if (currentElt === undefined) {

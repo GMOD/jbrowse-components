@@ -1,7 +1,8 @@
+import { drawChevrons } from '../drawChevrons'
 import { readCachedConfig } from '../renderConfig'
-import { isOffScreen } from '../util'
+import { getStrokeColor, isOffScreen } from '../util'
 
-import type { DrawContext, FeatureLayout, LayoutArgs } from '../types'
+import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
 import type { Feature } from '@jbrowse/core/util'
 
 export const STRAND_ARROW_WIDTH = 8
@@ -154,4 +155,61 @@ export function drawStrandArrow(
 
   const centerY = layout.y + layout.height / 2
   drawStrandArrowAtPosition(ctx, left, centerY, width, strand, reversed, color)
+}
+
+/**
+ * Draw a segmented feature (ProcessedTranscript or Segments glyph).
+ * Draws connecting line, chevrons, children, and strand arrow.
+ */
+export function drawSegmentedFeature(
+  ctx: CanvasRenderingContext2D,
+  layout: FeatureLayout,
+  dc: DrawContext,
+  boxGlyph: Glyph,
+  cdsGlyph: Glyph,
+) {
+  const { feature, children } = layout
+  const { region, configContext, theme, canvasWidth } = dc
+  const { config, displayDirectionalChevrons } = configContext
+  const reversed = region.reversed ?? false
+
+  const left = layout.x
+  const width = layout.width
+  const top = layout.y
+  const height = layout.height
+
+  if (isOffScreen(left, width, canvasWidth)) {
+    return
+  }
+
+  const strokeColor = getStrokeColor({
+    feature,
+    config,
+    configContext,
+    theme,
+  })
+
+  // Draw connecting line
+  drawConnectingLine(ctx, left, top, width, height, strokeColor)
+
+  // Draw chevrons if enabled
+  if (displayDirectionalChevrons) {
+    const strand = feature.get('strand') as number
+    if (strand) {
+      const effectiveStrand = reversed ? -strand : strand
+      drawChevrons(ctx, left, top + height / 2, width, effectiveStrand, strokeColor)
+    }
+  }
+
+  // Draw children (exons, CDS, UTRs)
+  for (const childLayout of children) {
+    if (childLayout.glyphType === 'CDS') {
+      cdsGlyph.draw(ctx, childLayout, dc)
+    } else {
+      boxGlyph.draw(ctx, childLayout, dc)
+    }
+  }
+
+  // Draw strand arrow
+  drawStrandArrow(ctx, layout, dc, strokeColor)
 }

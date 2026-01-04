@@ -1,3 +1,5 @@
+import { getEffectiveStrand, getStrandAwareX } from './util'
+
 import type { AggregatedAminoAcid } from './prepareAminoAcidData'
 
 interface DrawPeptidesArgs {
@@ -35,8 +37,8 @@ export function drawPeptidesOnCDS(args: DrawPeptidesArgs) {
     return
   }
 
-  const flipper = reversed ? -1 : 1
-  const rightPos = left + width
+  const effectiveStrand = getEffectiveStrand(strand, reversed)
+  const pxPerBp = 1 / bpPerPx
   const fontSize = height
   ctx.font = `${fontSize}px sans-serif`
   ctx.textAlign = 'center'
@@ -44,18 +46,10 @@ export function drawPeptidesOnCDS(args: DrawPeptidesArgs) {
 
   const yCenter = top + height / 2
 
-  const pxPerBp = 1 / bpPerPx
   for (const aa of aggregatedAminoAcids) {
-    let x: number
-    if (strand * flipper === -1) {
-      const startX = rightPos - pxPerBp * aa.startIndex
-      const endX = rightPos - pxPerBp * (aa.endIndex + 1)
-      x = (startX + endX) / 2
-    } else {
-      const startX = left + pxPerBp * aa.startIndex
-      const endX = left + pxPerBp * (aa.endIndex + 1)
-      x = (startX + endX) / 2
-    }
+    const startX = getStrandAwareX(left, width, aa.startIndex, pxPerBp, effectiveStrand)
+    const endX = getStrandAwareX(left, width, aa.endIndex + 1, pxPerBp, effectiveStrand)
+    const x = (startX + endX) / 2
 
     if (x < 0 || x > canvasWidth) {
       continue

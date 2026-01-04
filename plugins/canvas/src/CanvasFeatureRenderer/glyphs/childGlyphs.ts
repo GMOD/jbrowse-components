@@ -1,5 +1,6 @@
 import { boxGlyph } from './box'
 import { cdsGlyph } from './cds'
+import { findGlyph } from './index'
 import { matureProteinRegionGlyph } from './matureProteinRegion'
 import { processedTranscriptGlyph } from './processed'
 import { repeatRegionGlyph } from './repeatRegion'
@@ -25,5 +26,5 @@ export function findChildGlyph(
   feature: Feature,
   configContext: RenderConfigContext,
 ): Glyph {
-  return childGlyphs.find(g => g.match(feature, configContext)) ?? boxGlyph
+  return findGlyph(feature, configContext, childGlyphs)
 }

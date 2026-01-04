@@ -54,10 +54,5 @@ export function findPluggableGlyph(
   return sortedGlyphs.find(glyph => glyph.match?.(feature))
 }
 
+// Only export boxGlyph for use as fallback in drawFeature.ts
 export { boxGlyph } from './box'
-export { cdsGlyph } from './cds'
-export { matureProteinRegionGlyph } from './matureProteinRegion'
-export { processedTranscriptGlyph } from './processed'
-export { repeatRegionGlyph } from './repeatRegion'
-export { segmentsGlyph } from './segments'
-export { subfeaturesGlyph } from './subfeatures'

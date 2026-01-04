@@ -1,11 +1,8 @@
-import { drawChevrons } from '../drawChevrons'
 import { readCachedConfig } from '../renderConfig'
-import { getStrokeColor, isOffScreen } from '../util'
 import { boxGlyph } from './box'
 import { cdsGlyph } from './cds'
 import {
-  drawConnectingLine,
-  drawStrandArrow,
+  drawSegmentedFeature,
   getStrandArrowPadding,
   layoutChild,
 } from './glyphUtils'
@@ -83,56 +80,6 @@ export const segmentsGlyph: Glyph = {
   },
 
   draw(ctx: CanvasRenderingContext2D, layout: FeatureLayout, dc: DrawContext) {
-    const { feature, children } = layout
-    const { region, configContext, theme, canvasWidth } = dc
-    const { config, displayDirectionalChevrons } = configContext
-    const reversed = region.reversed ?? false
-
-    const left = layout.x
-    const width = layout.width
-    const top = layout.y
-    const height = layout.height
-
-    if (isOffScreen(left, width, canvasWidth)) {
-      return
-    }
-
-    const strokeColor = getStrokeColor({
-      feature,
-      config,
-      configContext,
-      theme,
-    })
-
-    // Draw connecting line
-    drawConnectingLine(ctx, left, top, width, height, strokeColor)
-
-    // Draw chevrons if enabled
-    if (displayDirectionalChevrons) {
-      const strand = feature.get('strand') as number
-      if (strand) {
-        const effectiveStrand = reversed ? -strand : strand
-        drawChevrons(
-          ctx,
-          left,
-          top + height / 2,
-          width,
-          effectiveStrand,
-          strokeColor,
-        )
-      }
-    }
-
-    // Draw children
-    for (const childLayout of children) {
-      if (childLayout.glyphType === 'CDS') {
-        cdsGlyph.draw(ctx, childLayout, dc)
-      } else {
-        boxGlyph.draw(ctx, childLayout, dc)
-      }
-    }
-
-    // Draw strand arrow
-    drawStrandArrow(ctx, layout, dc, strokeColor)
+    drawSegmentedFeature(ctx, layout, dc, boxGlyph, cdsGlyph)
   },
 }

@@ -89,10 +89,14 @@ export const subfeaturesGlyph: Glyph = {
     const widthPx = (featureBp.end - featureBp.start) / bpPerPx
 
     // Get and sort subfeatures (coding first)
+    // Pre-compute CDS status to avoid O(N² log N) complexity during sort
     let subfeatures = [...(feature.get('subfeatures') || [])] as Feature[]
+    const codingStatus = new Map(
+      subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
+    )
     subfeatures.sort((a, b) => {
-      const aHasCDS = hasCodingSubfeature(a)
-      const bHasCDS = hasCodingSubfeature(b)
+      const aHasCDS = codingStatus.get(a.id())
+      const bHasCDS = codingStatus.get(b.id())
       if (aHasCDS && !bHasCDS) {
         return -1
       }
