@@ -8,15 +8,6 @@ import TooltipContents from './TooltipContents'
 import type { ClickMapItem } from '../../SNPCoverageRenderer/types'
 import type { Feature } from '@jbrowse/core/util'
 
-interface ParsedItemData {
-  item: ClickMapItem
-  refName?: string
-}
-
-function parseItemData(data: string): ParsedItemData {
-  return JSON.parse(data) as ParsedItemData
-}
-
 const useStyles = makeStyles()(theme => ({
   hoverVertical: {
     background: theme.palette.text.primary,
@@ -30,8 +21,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type Coord = [number, number]
-
 const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
   model: {
     featureUnderMouse?: Feature
@@ -43,8 +32,8 @@ const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
     simplexModifications?: Set<string>
   }
   height: number
-  offsetMouseCoord: Coord
-  clientMouseCoord: Coord
+  offsetMouseCoord: [number, number]
+  clientMouseCoord: [number, number]
   clientRect?: DOMRect
 }) {
   const { model, height, clientMouseCoord, offsetMouseCoord } = props
@@ -55,7 +44,10 @@ const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
   if (mouseoverExtraInformation && !feat) {
     const x = clientMouseCoord[0] + 5
     const y = clientMouseCoord[1]
-    const { item, refName } = parseItemData(mouseoverExtraInformation)
+    const { item, refName } = JSON.parse(mouseoverExtraInformation) as {
+      item: ClickMapItem
+      refName?: string
+    }
     return (
       <>
         <BaseTooltip clientPoint={{ x, y }}>

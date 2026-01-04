@@ -1,14 +1,30 @@
 import { forwardRef } from 'react'
 
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-import { formatStrandCounts, pct, useTooltipStyles } from './tooltipUtils'
 import { getInterbaseTypeLabel } from '../../SNPCoverageRenderer/types'
 import { getModificationName } from '../../shared/modificationData'
 
 import type { ClickMapItem } from '../../SNPCoverageRenderer/types'
 import type { BaseCoverageBin } from '../../shared/types'
 import type { Feature } from '@jbrowse/core/util'
+
+const useStyles = makeStyles()(() => ({
+  td: {
+    whiteSpace: 'nowrap',
+  },
+}))
+
+function pct(n: number, total = 1) {
+  return `${((n / (total || 1)) * 100).toFixed(1)}%`
+}
+
+function formatStrandCounts(entry: { '1'?: number; '-1'?: number }) {
+  const neg = entry['-1'] ? `${entry['-1']}(-)` : ''
+  const pos = entry['1'] ? `${entry['1']}(+)` : ''
+  return neg + pos || '-'
+}
 
 interface Model {
   visibleModifications: Map<
@@ -62,31 +78,12 @@ function shouldShowPercentage(base: string): boolean {
 }
 
 function getModificationLabel(base: string, model: Model): string {
-  const isNonmod = base.startsWith('nonmod_')
-  if (isNonmod) {
-    const genomicBase = base.replace('nonmod_', '')
-    return `Unmodified ${genomicBase}`
+  if (base.startsWith('nonmod_')) {
+    return `Unmodified ${base.replace('nonmod_', '')}`
   }
   const modType = getModificationType(base)
   const mod = model.visibleModifications.get(modType)
-  if (mod) {
-    return getModificationName(modType)
-  }
-  return base.toUpperCase()
-}
-
-function getDuplexModificationLabel(base: string, model: Model): string {
-  const isNonmod = base.startsWith('nonmod_')
-  if (isNonmod) {
-    const genomicBase = base.replace('nonmod_', '')
-    return `Unmodified ${genomicBase}`
-  }
-  const modType = getModificationType(base)
-  const mod = model.visibleModifications.get(modType)
-  if (!mod) {
-    return base.toUpperCase()
-  }
-  return getModificationName(modType)
+  return mod ? getModificationName(modType) : base.toUpperCase()
 }
 
 function ColorSquare({ base, model }: { base: string; model: Model }) {
@@ -168,7 +165,7 @@ function DuplexModificationRow({
       <td>
         <ColorSquare model={model} base={base} />
       </td>
-      <td>{getDuplexModificationLabel(base, model)}</td>
+      <td>{getModificationLabel(base, model)}</td>
       <td className={tdClass}>{score.entryDepth}</td>
       <td>
         {shouldShowPercentage(base)
@@ -374,7 +371,8 @@ function BinTooltip({
   tdClass: string
   reactRef: React.Ref<HTMLDivElement>
 }) {
-  const { refbase: referenceBase, readsCounted, ref: reference, ...info } = bin
+  const { refbase, readsCounted, ref, snps, mods, nonmods, delskips, noncov } =
+    bin
 
   return (
     <div ref={reactRef}>
@@ -384,12 +382,12 @@ function BinTooltip({
         <tbody>
           <TotalRow readsCounted={readsCounted} />
           <RefRow
-            referenceBase={referenceBase}
-            reference={reference}
+            referenceBase={refbase}
+            reference={ref}
             readsCounted={readsCounted}
           />
           <ModificationRows
-            info={info}
+            info={{ snps, mods, nonmods, delskips, noncov }}
             readsCounted={readsCounted}
             model={model}
             tdClass={tdClass}
@@ -590,7 +588,7 @@ function InterbaseTooltip({
 const TooltipContents = forwardRef<HTMLDivElement, Props>(
   function TooltipContents2(props, reactRef) {
     const { feature, item, refName, model } = props
-    const { classes } = useTooltipStyles()
+    const { classes } = useStyles()
 
     // Handle ClickMapItem (from flatbush)
     if (item) {

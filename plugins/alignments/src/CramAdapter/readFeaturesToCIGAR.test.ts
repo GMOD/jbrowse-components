@@ -5,7 +5,7 @@ const NUMERIC_CIGAR_CODES = [
   77, 73, 68, 78, 83, 72, 80, 61, 88, 63, 63, 63, 63, 63, 63, 63,
 ]
 
-function numericCigarToString(numeric: Uint32Array): string {
+function numericCigarToString(numeric: ArrayLike<number>): string {
   let result = ''
   for (let i = 0, l = numeric.length; i < l; i++) {
     const packed = numeric[i]!
