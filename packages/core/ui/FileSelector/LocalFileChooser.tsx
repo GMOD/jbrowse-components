@@ -1,4 +1,4 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '../../util/tss-react'
 import { Box, Button, FormControl, Typography } from '@mui/material'
 
 import { isElectron } from '../../util'

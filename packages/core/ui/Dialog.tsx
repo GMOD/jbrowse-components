@@ -1,7 +1,7 @@
 import { isValidElement } from 'react'
 
-import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { ErrorBoundary } from './ErrorBoundary'
+import { makeStyles } from '../util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import {
   Dialog as MUIDialog,

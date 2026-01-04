@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '../util/tss-react'
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 

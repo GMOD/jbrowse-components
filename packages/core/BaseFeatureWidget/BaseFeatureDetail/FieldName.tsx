@@ -1,4 +1,4 @@
-import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, makeStyles } from '../../util/tss-react'
 import { Tooltip } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({

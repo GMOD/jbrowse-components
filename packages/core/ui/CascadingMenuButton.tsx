@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 
-import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
+import CascadingMenu from './CascadingMenu'
 import { IconButton } from '@mui/material'
 
-import type { MenuItemsGetter } from '@jbrowse/core/ui/CascadingMenu'
+import type { MenuItemsGetter } from './CascadingMenu'
 
 function CascadingMenuButton({
   children,

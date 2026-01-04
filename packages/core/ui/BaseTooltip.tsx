@@ -4,7 +4,7 @@ import {
   useFloating,
   useInteractions,
 } from '@floating-ui/react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '../util/tss-react'
 import { Portal, alpha, useTheme } from '@mui/material'
 
 function round(value: number) {

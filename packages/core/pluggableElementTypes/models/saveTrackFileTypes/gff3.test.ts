@@ -1,8 +1,8 @@
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import SimpleFeature from '../../../util/simpleFeature'
 
 import { stringifyGFF3 } from './gff3'
 
-import type { Feature } from '@jbrowse/core/util/simpleFeature'
+import type { Feature } from '../../../util/simpleFeature'
 
 // Helper function to create a feature, ensuring a unique ID is set
 // for the SimpleFeature instance while using data.id for GFF3 attributes.

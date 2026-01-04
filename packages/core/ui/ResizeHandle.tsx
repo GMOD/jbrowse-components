@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, makeStyles } from '../util/tss-react'
 
 const useStyles = makeStyles()({
   horizontalHandle: {

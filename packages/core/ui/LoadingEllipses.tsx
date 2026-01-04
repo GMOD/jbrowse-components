@@ -1,4 +1,4 @@
-import { cx, keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, keyframes, makeStyles } from '../util/tss-react'
 import { Typography } from '@mui/material'
 
 import type { TypographyProps } from '@mui/material'

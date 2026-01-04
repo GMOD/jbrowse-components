@@ -5,11 +5,11 @@
  * The generated output may not fully conform to the GenBank specification and should
  * be validated before use in production workflows.
  */
-import { max, min } from '@jbrowse/core/util'
+import { max, min } from '../../../util'
 
 import { fetchSequence } from './fetchSequence'
 
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature } from '../../../util'
 
 const coreFields = new Set([
   'uniqueId',

@@ -1,9 +1,9 @@
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import SimpleFeature from '../../../util/simpleFeature'
 
 import { fetchSequence } from './fetchSequence'
 import { stringifyGBK } from './genbank'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '../../../util'
 
 // Mock the fetchSequence function from its new module
 jest.mock('./fetchSequence', () => {

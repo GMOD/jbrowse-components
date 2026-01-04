@@ -1,4 +1,4 @@
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import CascadingMenuButton from '../CascadingMenuButton'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 const menuItems = [

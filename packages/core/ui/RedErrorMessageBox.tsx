@@ -1,4 +1,4 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '../util/tss-react'
 
 const useStyles = makeStyles()(theme => ({
   bg: {

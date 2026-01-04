@@ -1,6 +1,6 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf } from '../../../configuration'
 
-import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Region } from '../../../util'
 
 export async function fetchSequence({
   session,

@@ -7,7 +7,7 @@ import type { NotificationLevel, SnackAction } from '../util/types'
 
 // lazies
 const ErrorMessageStackTraceDialog = lazy(
-  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
+  () => import('./ErrorMessageStackTraceDialog'),
 )
 
 export interface SnackbarMessage {

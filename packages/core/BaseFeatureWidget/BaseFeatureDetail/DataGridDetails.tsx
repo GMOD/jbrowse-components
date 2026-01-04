@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '../../util/tss-react'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 

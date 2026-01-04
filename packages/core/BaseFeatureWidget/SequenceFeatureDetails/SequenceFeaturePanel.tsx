@@ -1,6 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '../../util/tss-react'
 import Help from '@mui/icons-material/Help'
 import { Button, FormControl, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'

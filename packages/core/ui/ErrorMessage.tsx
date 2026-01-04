@@ -1,6 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '../util/tss-react'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'

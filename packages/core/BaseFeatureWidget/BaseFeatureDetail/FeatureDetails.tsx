@@ -1,4 +1,4 @@
-import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { ErrorBoundary } from '../../ui/ErrorBoundary'
 import { Divider, Typography } from '@mui/material'
 
 import { generateTitle } from './util'

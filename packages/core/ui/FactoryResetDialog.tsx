@@ -1,4 +1,4 @@
-import Dialog from '@jbrowse/core/ui/Dialog'
+import Dialog from './Dialog'
 import {
   Button,
   DialogActions,

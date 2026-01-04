@@ -1,4 +1,4 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '../util/tss-react'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'

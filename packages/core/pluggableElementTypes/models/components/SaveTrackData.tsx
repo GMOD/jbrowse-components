@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getConf } from '../../../configuration'
+import { Dialog, ErrorMessage } from '../../../ui'
+import { getContainingView, getEnv, getSession } from '../../../util'
+import { makeStyles } from '../../../util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
@@ -28,8 +28,8 @@ import { observer } from 'mobx-react'
 import { getRpcSessionId } from '../../../util/tracks'
 
 import type { FileTypeExporter } from '../saveTrackFileTypes/types'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { AnyConfigurationModel } from '../../../configuration'
+import type { Feature, Region } from '../../../util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()({

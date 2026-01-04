@@ -1,4 +1,4 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '../util/tss-react'
 import { Typography, alpha } from '@mui/material'
 
 import ExternalLink from './ExternalLink'
