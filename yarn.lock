@@ -10174,10 +10174,10 @@ libnpmpublish@11.1.2:
     sigstore "^4.0.0"
     ssri "^12.0.0"
 
-librpc-web-mod@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/librpc-web-mod/-/librpc-web-mod-2.1.0.tgz#91bf2bfa631313f470225f8b3b142712090bd14d"
-  integrity sha512-Ce21wd/uLiJMYPZn50iXz9CAqqiLxLdz98dwJgQmOV+RBP+LSx46Pfgc3kk/+h9PUU1Iu5Hr7UB+cPRDt1yCSA==
+librpc-web-mod@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/librpc-web-mod/-/librpc-web-mod-2.1.1.tgz#1595023d667a414f64414ffc91d7ef114e28a739"
+  integrity sha512-ybKVK3wkEGj+wGd7P0A6LVCtge7seeTXPjSxhI3kaOkm5NPb/vFGGNO4Iu1G0ht69cCfVRlNjwvwpwUShi9G3g==
 
 lines-and-columns@2.0.3:
   version "2.0.3"
