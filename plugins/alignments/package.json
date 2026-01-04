@@ -61,5 +61,8 @@
   },
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
-  "module": ""
+  "module": "",
+  "devDependencies": {
+    "vitest": "^4.0.16"
+  }
 }
