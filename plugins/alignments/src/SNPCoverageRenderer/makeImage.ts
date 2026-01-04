@@ -44,10 +44,6 @@ const complementBase = {
 const fudgeFactor = 0.6
 const SNP_CLICKMAP_THRESHOLD = 0.04
 
-// Note: We iterate object keys directly rather than sorting for performance.
-// Modern JS guarantees insertion order for string keys, so as long as the
-// adapter creates bins consistently, the visual stacking order will be stable.
-const iterateKeys = (obj: object) => Object.keys(obj)
 
 function createInterbaseItem(
   maxBase: string,
@@ -86,7 +82,7 @@ function drawStackedBars(
   startCurr: number,
 ) {
   let curr = startCurr
-  for (const base of iterateKeys(entries)) {
+  for (const base in entries) {
     const { entryDepth } = entries[base]!
     ctx.fillStyle = colorMap[base] || 'black'
     ctx.fillRect(
@@ -420,10 +416,13 @@ function drawSNPCoverage(
       const bottom = toY(score0) + h
 
       // Process both nonmods and mods in a single combined loop
-      const modEntries: { key: string; isUnmodified: boolean }[] = [
-        ...iterateKeys(nonmods).map(k => ({ key: k, isUnmodified: true })),
-        ...iterateKeys(mods).map(k => ({ key: k, isUnmodified: false })),
-      ]
+      const modEntries: { key: string; isUnmodified: boolean }[] = []
+      for (const k in nonmods) {
+        modEntries.push({ key: k, isUnmodified: true })
+      }
+      for (const k in mods) {
+        modEntries.push({ key: k, isUnmodified: false })
+      }
 
       for (const { key, isUnmodified } of modEntries) {
         const modKey = key.replace(/^(nonmod_|mod_)/, '')
@@ -493,7 +492,7 @@ function drawSNPCoverage(
       const h = toHeight(score0)
       const bottom = toY(score0) + h
       let curr = 0
-      for (const base of iterateKeys(snps)) {
+      for (const base in snps) {
         const entry = snps[base]!
         const { entryDepth } = entry
         const y1 = bottom - ((entryDepth + curr) / depth) * h
