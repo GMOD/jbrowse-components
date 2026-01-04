@@ -7,7 +7,7 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import configSchema from './configSchema'
 import { STRAND_ARROW_WIDTH, getStrandArrowPadding } from './glyphs/glyphUtils'
-import { layoutFeatures } from './layoutFeatures'
+import { layoutFeatures } from './layout/layoutFeatures'
 import { makeImageData } from './makeImageData'
 import { createRenderConfigContext } from './renderConfig'
 
@@ -247,16 +247,12 @@ describe('CanvasFeatureRenderer', () => {
       doLayout(args, features)
 
       // Forward strand: stores actual feature coordinates
-      const forwardMeta = args.layout.getSerializableDataByID(
-        'forward1',
-      ) as LayoutSerializableData
+      const forwardMeta = args.layout.getSerializableDataByID('forward1')!
       expect(forwardMeta.featureStartBp).toBe(100)
       expect(forwardMeta.featureEndBp).toBe(200)
 
       // Reverse strand: also stores actual feature coordinates (not layout coords)
-      const reverseMeta = args.layout.getSerializableDataByID(
-        'reverse1',
-      ) as LayoutSerializableData
+      const reverseMeta = args.layout.getSerializableDataByID('reverse1')!
       expect(reverseMeta.featureStartBp).toBe(300)
       expect(reverseMeta.featureEndBp).toBe(400)
     })

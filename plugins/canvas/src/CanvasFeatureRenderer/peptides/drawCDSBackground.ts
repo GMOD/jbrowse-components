@@ -1,7 +1,7 @@
 import { colord } from '@jbrowse/core/util/colord'
 import { darken, lighten } from '@mui/material'
 
-import { getEffectiveStrand, getStrandAwareX } from './util'
+import { getEffectiveStrand, getStrandAwareX } from '../util'
 
 import type { AggregatedAminoAcid } from './prepareAminoAcidData'
 
@@ -47,8 +47,20 @@ export function drawCDSBackground(args: DrawCDSBackgroundArgs) {
     const aa = aggregatedAminoAcids[i]!
     const bgColor = i % 2 === 1 ? color2 : color1
 
-    const startX = getStrandAwareX(left, width, aa.startIndex, pxPerBp, effectiveStrand)
-    const endX = getStrandAwareX(left, width, aa.endIndex + 1, pxPerBp, effectiveStrand)
+    const startX = getStrandAwareX(
+      left,
+      width,
+      aa.startIndex,
+      pxPerBp,
+      effectiveStrand,
+    )
+    const endX = getStrandAwareX(
+      left,
+      width,
+      aa.endIndex + 1,
+      pxPerBp,
+      effectiveStrand,
+    )
     const rectLeft = Math.min(startX, endX)
     const rectWidth = Math.abs(startX - endX)
 

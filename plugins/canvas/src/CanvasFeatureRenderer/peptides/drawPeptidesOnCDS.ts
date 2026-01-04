@@ -1,4 +1,4 @@
-import { getEffectiveStrand, getStrandAwareX } from './util'
+import { getEffectiveStrand, getStrandAwareX } from '../util'
 
 import type { AggregatedAminoAcid } from './prepareAminoAcidData'
 
@@ -47,8 +47,20 @@ export function drawPeptidesOnCDS(args: DrawPeptidesArgs) {
   const yCenter = top + height / 2
 
   for (const aa of aggregatedAminoAcids) {
-    const startX = getStrandAwareX(left, width, aa.startIndex, pxPerBp, effectiveStrand)
-    const endX = getStrandAwareX(left, width, aa.endIndex + 1, pxPerBp, effectiveStrand)
+    const startX = getStrandAwareX(
+      left,
+      width,
+      aa.startIndex,
+      pxPerBp,
+      effectiveStrand,
+    )
+    const endX = getStrandAwareX(
+      left,
+      width,
+      aa.endIndex + 1,
+      pxPerBp,
+      effectiveStrand,
+    )
     const x = (startX + endX) / 2
 
     if (x < 0 || x > canvasWidth) {

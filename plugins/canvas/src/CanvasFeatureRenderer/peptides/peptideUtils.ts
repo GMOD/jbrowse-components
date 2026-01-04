@@ -7,9 +7,9 @@ import {
 import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { shouldRenderPeptideBackground } from './zoomThresholds'
+import { shouldRenderPeptideBackground } from '../zoomThresholds'
 
-import type { PeptideData, SequenceData } from './types'
+import type { PeptideData, SequenceData } from '../types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

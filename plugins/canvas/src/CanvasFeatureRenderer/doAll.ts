@@ -1,8 +1,8 @@
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
-import { layoutFeatures } from './layoutFeatures'
+import { layoutFeatures } from './layout/layoutFeatures'
 import { makeImageData } from './makeImageData'
-import { fetchPeptideData } from './peptideUtils'
+import { fetchPeptideData } from './peptides/peptideUtils'
 import { createRenderConfigContext } from './renderConfig'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

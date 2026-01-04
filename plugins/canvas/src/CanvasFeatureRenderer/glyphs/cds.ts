@@ -1,6 +1,6 @@
-import { drawCDSBackground } from '../drawCDSBackground'
-import { drawPeptidesOnCDS } from '../drawPeptidesOnCDS'
-import { prepareAminoAcidData } from '../prepareAminoAcidData'
+import { drawCDSBackground } from '../peptides/drawCDSBackground'
+import { drawPeptidesOnCDS } from '../peptides/drawPeptidesOnCDS'
+import { prepareAminoAcidData } from '../peptides/prepareAminoAcidData'
 import { readCachedConfig } from '../renderConfig'
 import { getBoxColor, isOffScreen } from '../util'
 import {

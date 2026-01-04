@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import { drawFeature } from './drawFeature'
-import { buildChildrenIndex, convertToCanvasCoords } from './layoutUtils'
+import { buildChildrenIndex, convertToCanvasCoords } from './layout/layoutUtils'
 
 import type { RenderConfigContext } from './renderConfig'
 import type {

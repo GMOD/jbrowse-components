@@ -7,7 +7,7 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import { matureProteinRegionGlyph } from './matureProteinRegion'
 import configSchema from '../configSchema'
-import { layoutFeatures } from '../layoutFeatures'
+import { layoutFeatures } from '../layout/layoutFeatures'
 import { makeImageData } from '../makeImageData'
 import { createRenderConfigContext } from '../renderConfig'
 

@@ -1,10 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { createFeatureFloatingLabels } from './floatingLabels'
+import { createFeatureFloatingLabels } from '../floatingLabels'
 import { layoutFeature } from './layoutFeature'
 
-import type { RenderConfigContext } from './renderConfig'
-import type { LayoutRecord } from './types'
+import type { RenderConfigContext } from '../renderConfig'
+import type { LayoutRecord } from '../types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'

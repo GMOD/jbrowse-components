@@ -197,7 +197,14 @@ export function drawSegmentedFeature(
     const strand = feature.get('strand') as number
     if (strand) {
       const effectiveStrand = reversed ? -strand : strand
-      drawChevrons(ctx, left, top + height / 2, width, effectiveStrand, strokeColor)
+      drawChevrons(
+        ctx,
+        left,
+        top + height / 2,
+        width,
+        effectiveStrand,
+        strokeColor,
+      )
     }
   }
 
