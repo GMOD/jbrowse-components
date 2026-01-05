@@ -19,6 +19,7 @@ setup()
 beforeEach(() => {
   doBeforeEach()
   // this is a false positive
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   ;(saveAs as unknown as jest.Mock).mockClear()
 })
 
@@ -79,12 +80,12 @@ test.each([
 
     await waitFor(() => {
       // this is a false positive
-
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(saveAs).toHaveBeenCalled()
     }, delay)
 
     // this is a false positive
-
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const call = (saveAs as unknown as jest.Mock).mock.calls[0]
     const blob = call[0] as Blob
     const filename = call[1] as string

@@ -171,7 +171,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGLinearSyntenyView')
         const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
-
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
 
         saveAs(

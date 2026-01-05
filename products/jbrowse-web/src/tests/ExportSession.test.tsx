@@ -42,9 +42,11 @@ test('export session with alignments and gff tracks', async () => {
   await user.click(await findByText('Export session'))
 
   await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(saveAs).toHaveBeenCalled()
   }, delay)
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const mock = saveAs as jest.Mock
   const blob = mock.mock.calls[0][0]
   const filename = mock.mock.calls[0][1]

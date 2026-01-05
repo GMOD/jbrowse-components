@@ -264,6 +264,7 @@ test('Downloads a BED file correctly', async () => {
   fireEvent.click(await findByText(/Download/, ...opts))
 
   await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(saveAs).toHaveBeenCalled()
   }, delay)
 
@@ -271,6 +272,7 @@ test('Downloads a BED file correctly', async () => {
     type: 'text/x-bed;charset=utf-8',
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volvox.bed')
 }, 60000)
 
@@ -299,6 +301,7 @@ test('Downloads a TSV file correctly', async () => {
   fireEvent.click(await findByText(/Download/))
 
   await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(saveAs).toHaveBeenCalled()
   }, delay)
 
@@ -306,5 +309,6 @@ test('Downloads a TSV file correctly', async () => {
     type: 'text/tab-separated-values;charset=utf-8',
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.tsv')
 }, 60000)

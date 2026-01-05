@@ -62,12 +62,7 @@ const model: MyModel = {
     }
     return dbToken as RefreshToken
   },
-  async revokeToken(token) {
-    /* Delete the token from the database */
-
-    if (!token) {
-      return false
-    }
+  async revokeToken(_token) {
     return true
   },
   async generateAuthorizationCode(_client, _user, _scope) {

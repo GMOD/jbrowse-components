@@ -135,5 +135,11 @@
     "webpack-dev-server": "^5.2.2",
     "webpack-manifest-plugin": "^6.0.1"
   },
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "canvas"
+    ],
+    "minimumReleaseAge": 1440
+  }
 }

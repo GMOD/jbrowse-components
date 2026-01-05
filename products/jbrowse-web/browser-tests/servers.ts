@@ -71,10 +71,7 @@ function createOAuthModel(redirectPort: number): OAuthModel {
       }
       return dbToken as RefreshToken
     },
-    async revokeToken(token) {
-      if (!token) {
-        return false
-      }
+    async revokeToken(_token) {
       return true
     },
     async generateAuthorizationCode(_client, _user, _scope) {

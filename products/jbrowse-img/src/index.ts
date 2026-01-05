@@ -28,7 +28,7 @@ console.warn = (...p: unknown[]) => {
 // note: yargs is actually unused except for printing help we do custom command
 // line parsing, see parseArgv.ts
 //
-// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions,@typescript-eslint/no-floating-promises
 yargs
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
   .option('config', {

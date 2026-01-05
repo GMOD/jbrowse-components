@@ -1,4 +1,4 @@
-const jestFetchMock = require('jest-fetch-mock')
+import jestFetchMock from 'jest-fetch-mock'
 
 function handleDataUri(urlStr) {
   if (urlStr.startsWith('data:')) {

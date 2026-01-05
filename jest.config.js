@@ -1,6 +1,6 @@
 // NOTE: this jest config should be used by projects in packages/*, products/*,
 // and plugins/* dirs
-module.exports = {
+export default {
   roots: ['.', 'packages/', 'products/', 'plugins/'],
   moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
   moduleNameMapper: {
@@ -104,8 +104,8 @@ module.exports = {
     '^@jbrowse/plugin-wiggle/(.*)$': '<rootDir>/plugins/wiggle/$1',
   },
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.js',
-    '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
+    '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.cjs',
+    '^.+\\.css$': '<rootDir>/config/jest/cssTransform.cjs',
   },
   transformIgnorePatterns: [
     String.raw`[/\\]node_modules[/\\].+\.(js|jsx)$`,
