@@ -59,6 +59,16 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
+      - name: Check @jbrowse/core exports are up-to-date
+        run: |
+          node packages/core/scripts/generateExports.mjs
+          if ! git diff --quiet packages/core/package.json; then
+            echo "Error: @jbrowse/core exports are out of date!"
+            echo "Run 'node packages/core/scripts/generateExports.mjs' and commit the changes."
+            git diff packages/core/package.json
+            exit 1
+          fi
+
       # Deploy jbrowse-web first
       - name: Validate branch/tag name for S3 path safety
         env:

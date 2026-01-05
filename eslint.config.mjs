@@ -112,6 +112,7 @@ export default defineConfig(
         },
       ],
 
+      'node/file-extension-in-import': ['error', 'always'],
       'prefer-template': 'error',
       'one-var': ['error', 'never'],
       'react-refresh/only-export-components': 'error',
@@ -170,7 +171,7 @@ export default defineConfig(
       'unicorn/no-array-sort': 'off',
 
       'import/no-unresolved': 'off',
-      'import/extensions': ['error', 'ignorePackages'],
+      // 'import/extensions': ['error', 'ignorePackages'],
       'import/order': [
         'error',
         {
