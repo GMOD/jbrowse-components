@@ -170,6 +170,7 @@ export default defineConfig(
       'unicorn/no-array-sort': 'off',
 
       'import/no-unresolved': 'off',
+      'import/extensions': ['error', 'ignorePackages'],
       'import/order': [
         'error',
         {

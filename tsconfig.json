@@ -23,7 +23,7 @@
     "rewriteRelativeImportExtensions": true,
     "baseUrl": ".",
     "paths": {
-      "@jbrowse/core/*": ["packages/core/*"],
+      "@jbrowse/core/*": ["packages/core/src/*"],
       "@jbrowse/product-core/*": ["packages/product-core/*"],
       "@jbrowse/app-core/*": ["packages/app-core/*"],
       "@jbrowse/web-core/*": ["packages/web-core/*"],
