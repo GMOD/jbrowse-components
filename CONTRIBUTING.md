@@ -255,11 +255,9 @@ plugins in this monorepo by default points to the un-built code (e.g.
 `src/index.ts`). JBrowse Web then takes care of building the plugins itself (see
 `products/jbrowse-web/rescripts/yarnWorkspacesRescript.js`).
 
-When you want to use a built plugin, you can run `pnpm useDist` in the plugin's
-`package.json`, and then run `pnpm useSrc` to restore it when you're done. As an
-example, the root-level `pnpm build` that builds all the packages does this to
-build all the plugins and then build JBrowse Web and JBrowse Desktop using the
-built plugins.
+When publishing to NPM, pnpm's `publishConfig` feature automatically overrides
+the `main` and `module` fields to point to the built output (e.g. `dist/index.js`).
+This means no manual switching between source and dist is needed.
 
 ## Preparing sample data sets
 

@@ -8,11 +8,9 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "pnpm useDist && NODE_OPTIONS='--max-old-space-size=7000' node --experimental-strip-types scripts/build.ts && pnpm useSrc",
+    "build": "NODE_OPTIONS='--max-old-space-size=7000' node --experimental-strip-types scripts/build.ts",
     "changelog": "lerna-changelog --silent",
-    "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
-    "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
-    "lerna-publish": "lerna publish",
+    "publish-packages": "pnpm publish -r",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
     "check-format": "prettier --check .",

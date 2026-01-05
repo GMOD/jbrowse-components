@@ -18,12 +18,8 @@
     "directory": "packages/text-indexing"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "distModule": "esm/index.js",
-  "srcMain": "src/index.ts",
-  "srcModule": "src/index.ts",
   "main": "src/index.ts",
-  "module": "",
+  "module": "src/index.ts",
   "files": [
     "dist",
     "esm"
@@ -35,10 +31,7 @@
     "test": "cd ../..; jest --passWithNoTests packages/text-indexing",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
-    "prepack": "pnpm build && pnpm useDist",
-    "postpack": "pnpm useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
@@ -51,6 +44,9 @@
     "react-dom": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "dist/index.js",
+    "module": "esm/index.js",
+    "types": "dist/index.d.ts"
   }
 }

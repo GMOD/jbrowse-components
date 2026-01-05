@@ -15,11 +15,7 @@
     "directory": "products/jbrowse-react-linear-genome-view"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "srcMain": "src/index.ts",
-  "distModule": "esm/index.js",
-  "srcModule": "src/index.ts",
-  "module": "",
+  "module": "src/index.ts",
   "main": "src/index.ts",
   "files": [
     "dist",
@@ -36,10 +32,7 @@
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
     "prebuild": "pnpm clean",
-    "prepack": "pnpm build && pnpm useDist",
-    "postpack": "pnpm useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.4",
@@ -75,6 +68,9 @@
     "react": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "dist/index.js",
+    "module": "esm/index.js",
+    "types": "dist/index.d.ts"
   }
 }

@@ -15,8 +15,6 @@
     "directory": "plugins/gff3"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "srcMain": "src/index.ts",
   "main": "src/index.ts",
   "files": [
     "dist",
@@ -26,10 +24,7 @@
     "build": "npm-run-all build:*",
     "test": "cd ../..; jest --passWithNoTests plugins/gff3 --passWithNoTests",
     "prepublishOnly": "pnpm test",
-    "prepack": "pnpm build && pnpm useDist",
-    "postpack": "pnpm useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js",
+    "prepack": "pnpm build",
     "prebuild": "pnpm clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
@@ -45,9 +40,10 @@
     "rxjs": "^7.8.2"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "dist/index.js",
+    "module": "esm/index.js",
+    "types": "dist/index.d.ts"
   },
-  "distModule": "esm/index.js",
-  "srcModule": "src/index.ts",
-  "module": ""
+  "module": "src/index.ts"
 }

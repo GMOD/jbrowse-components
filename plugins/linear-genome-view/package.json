@@ -15,10 +15,6 @@
     "directory": "plugins/linear-genome-view"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "distModule": "esm/index.js",
-  "srcMain": "src/index.ts",
-  "srcModule": "src/index.ts",
   "main": "src/index.ts",
   "files": [
     "dist",
@@ -32,10 +28,7 @@
     "clean": "rimraf dist esm *.tsbuildinfo",
     "test": "cd ../..; jest --passWithNoTests plugins/linear-genome-view",
     "prepublishOnly": "pnpm test",
-    "prepack": "pnpm build && pnpm useDist",
-    "postpack": "pnpm useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
@@ -54,7 +47,10 @@
     "react-dom": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "dist/index.js",
+    "module": "esm/index.js",
+    "types": "dist/index.d.ts"
   },
-  "module": ""
+  "module": "src/index.ts"
 }

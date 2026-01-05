@@ -17,17 +17,18 @@ function main() {
   const packages = getPackages()
   const graph = getDependencyGraph(packages)
   for (const level of getLevels(graph)) {
-    const scopes = [] as string[]
     for (const pkg of level) {
-      scopes.push('--scope', pkg)
-    }
-    const { signal, status } = spawn.sync(
-      'pnpm',
-      ['lerna', 'exec', 'pnpm', 'pack', ...scopes],
-      { stdio: 'inherit' },
-    )
-    if (signal || (status !== null && status > 0)) {
-      process.exit(status || 1)
+      const location = packages[pkg]?.location
+      if (!location) {
+        continue
+      }
+      const { signal, status } = spawn.sync('pnpm', ['pack'], {
+        stdio: 'inherit',
+        cwd: path.join(root, location),
+      })
+      if (signal || (status !== null && status > 0)) {
+        process.exit(status || 1)
+      }
     }
   }
   for (const dir of subDirs) {
