@@ -136,8 +136,8 @@ below the image on the website
 
 ## Monorepo code organization
 
-JBrowse 2 code is organized as a monorepo using [lerna](https://lerna.js.org/)
-and [pnpm workspaces](https://pnpm.io/workspaces). Using a monorepo means that
+JBrowse 2 code is organized as a monorepo using
+[pnpm workspaces](https://pnpm.io/workspaces). Using a monorepo means that
 instead of separate GitHub repositories for each piece of JBrowse, they are all
 in a single place and can share code easily. In the top level of the repository
 there are two directories, `packages/` and `products/` that each contain

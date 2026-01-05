@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 
-## Usage scripts/release.sh githubAuthToken <prerelease/patch/minor/major>
-# The first argument is a personal access token for the GitHub API with `public_repo`
-# scope. You can generate a token at https://github.com/settings/tokens
-# The second optional argument is a flag for the publishing command for version
-# bump. If not provided, it will default to "patch".
+## Usage scripts/release.sh <prerelease/patch/minor/major>
+# The argument is a flag for the version bump level.
+# If not provided, it will default to "patch".
 
 ## Precautionary bash tags
 set -e
 set -o pipefail
 
-[[ -n "$1" ]] || { echo "No GITHUB_AUTH token provided" && exit 1; }
-GITHUB_AUTH=$1
-[[ -n "$2" ]] && SEMVER_LEVEL="$2" || SEMVER_LEVEL="patch"
+[[ -n "$1" ]] && SEMVER_LEVEL="$1" || SEMVER_LEVEL="patch"
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 [[ "$BRANCH" != "main" ]] && { echo "Current branch is not main, please switch to main branch" && exit 1; }
@@ -29,8 +25,8 @@ pnpm lint
 # make sure the tests are passing
 pnpm test
 
-# Get the version before release from lerna.json
-PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
+# Get the version before release from a package.json
+PREVIOUS_VERSION=$(node --print "require('./plugins/alignments/package.json').version")
 # Use semver to get the new version from the semver level
 VERSION=$(pnpm exec semver --increment "$SEMVER_LEVEL" "$PREVIOUS_VERSION")
 RELEASE_TAG=v$VERSION
@@ -43,29 +39,40 @@ BLOGPOST_DRAFT=website/release_announcement_drafts/$RELEASE_TAG.md
 RELEASE_TAG=$RELEASE_TAG node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentVersion = process.env.RELEASE_TAG; JSON.stringify(config,0,2)" >tmp.json
 mv tmp.json website/docusaurus.config.json
 
-# Generates a changelog with a section added listing the packages that were
-# included in this release
-CHANGELOG=$(GITHUB_AUTH="$GITHUB_AUTH" pnpm changelog --silent --next-version "$VERSION")
-# Add the changelog to the top of CHANGELOG.md
-echo "$CHANGELOG" >tmp.md
-echo "" >>tmp.md
-cat CHANGELOG.md >>tmp.md
-mv tmp.md CHANGELOG.md
-
 # Blog post text
 NOTES=$(cat "$BLOGPOST_DRAFT")
 DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
 DATE=$(date +"%Y-%m-%d")
-## Blogpost run after lerna version, to get the accurate tags
 BLOGPOST_FILENAME=website/blog/${DATE}-${RELEASE_TAG}-release.md
-RELEASE_TAG=$RELEASE_TAG DATE=$DATETIME NOTES=$NOTES CHANGELOG=$CHANGELOG perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"
+RELEASE_TAG=$RELEASE_TAG DATE=$DATETIME NOTES=$NOTES perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"
+
+# Bump versions in all packages
+node --eval "
+const fs = require('fs');
+const path = require('path');
+const version = '$VERSION';
+const workspaces = ['packages', 'products', 'plugins'];
+for (const ws of workspaces) {
+  const wsPath = path.join('.', ws);
+  if (!fs.existsSync(wsPath)) continue;
+  for (const dir of fs.readdirSync(wsPath)) {
+    const pkgPath = path.join(wsPath, dir, 'package.json');
+    if (!fs.existsSync(pkgPath)) continue;
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    pkg.version = version;
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+  }
+}
+console.log('Updated all packages to version ' + version);
+"
 
 pnpm format
 git add .
 git commit --message "Prepare for $RELEASE_TAG release"
 
-# Run lerna version first, publish after changelog and blog post have been created
-pnpm lerna publish --force-publish "*" "$SEMVER_LEVEL" --message "[update docs] %s"
+# Publish all packages
+pnpm publish -r --access public --no-git-checks
 
-# Push bump version from embedded package.json lifecycles, might be good if this was part of lerna but is separate for now
-git push
+# Create git tag and push
+git tag -a "$RELEASE_TAG" -m "$RELEASE_TAG"
+git push && git push --tags
