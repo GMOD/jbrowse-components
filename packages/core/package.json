@@ -18,15 +18,23 @@
     "directory": "packages/core"
   },
   "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "files": [
+    "dist",
+    "esm"
+  ],
   "scripts": {
     "test": "cd ../..; jest --passWithNoTests packages/core",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
     "coverage": "pnpm test --coverage",
-    "clean": "rimraf dist tsconfig.build.tsbuildinfo",
+    "clean": "rimraf dist esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build",
-    "build": "tsc -p tsconfig.build.json && cp package.json README.md ../../LICENSE dist/"
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
+    "build": "pnpm build:esm && pnpm build:commonjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -65,6 +73,20 @@
     "react-dom": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./esm/index.js",
+        "require": "./dist/index.js"
+      },
+      "./*": {
+        "types": "./dist/*.d.ts",
+        "import": "./esm/*.js",
+        "require": "./dist/*.js"
+      }
+    }
   }
 }

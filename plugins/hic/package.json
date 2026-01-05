@@ -47,7 +47,13 @@
   "publishConfig": {
     "access": "public",
     "main": "dist/index.js",
-    "module": "esm/index.js",
-    "types": "dist/index.d.ts"
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./esm/index.js",
+        "require": "./dist/index.js"
+      }
+    }
   }
 }
