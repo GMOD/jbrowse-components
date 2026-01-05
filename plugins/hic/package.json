@@ -33,6 +33,7 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
+    "generic-filehandle2": "^2.0.18",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/x-charts-vendor": "^8.23.0",
     "hic-straw": "^2.1.4",

@@ -1160,6 +1160,9 @@ importers:
       '@mui/x-charts-vendor':
         specifier: ^8.23.0
         version: 8.23.0
+      generic-filehandle2:
+        specifier: ^2.0.18
+        version: 2.0.18
       hic-straw:
         specifier: ^2.1.4
         version: 2.1.4
@@ -2279,9 +2282,18 @@ importers:
       '@mui/material':
         specifier: ^7.3.6
         version: 7.3.6(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@node-oauth/oauth2-server':
+        specifier: ^5.2.1
+        version: 5.2.1
+      '@types/file-saver-es':
+        specifier: ^2.0.3
+        version: 2.0.3
       base64-js:
         specifier: ^1.5.1
         version: 1.5.1
+      body-parser:
+        specifier: ^2.2.1
+        version: 2.2.1
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
@@ -2294,6 +2306,9 @@ importers:
       file-saver-es:
         specifier: ^2.0.5
         version: 2.0.5
+      generic-filehandle2:
+        specifier: ^2.0.18
+        version: 2.0.18
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -2306,6 +2321,9 @@ importers:
       pako-esm2:
         specifier: ^2.0.2
         version: 2.0.2
+      pixelmatch:
+        specifier: ^7.1.0
+        version: 7.1.0
       react:
         specifier: ^19.2.3
         version: 19.2.3
@@ -7873,6 +7891,10 @@ packages:
     resolution: {integrity: sha512-o8mkY4E/+LNUf6LzX96ht6k6CEDi65k9G2rjMtBe9Oo+VPKSvl+0GKHuH/AlG+GA5LPG/i5hrekkxUc3s2HU+Q==}
     hasBin: true
 
+  pixelmatch@7.1.0:
+    resolution: {integrity: sha512-1wrVzJ2STrpmONHKBy228LM1b84msXDUoAzVEl0R8Mz4Ce6EPr+IVtxm8+yvrqLYMHswREkjYFaMxnyGnaY3Ng==}
+    hasBin: true
+
   pkg-dir@4.2.0:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
@@ -7892,6 +7914,10 @@ packages:
   pngjs@6.0.0:
     resolution: {integrity: sha512-TRzzuFRRmEoSW/p1KVAmiOgPco2Irlah+bGFCeNfJXxxYGwSw7YwAOAcd7X28K/m5bjBWKsC29KyoMfHbypayg==}
     engines: {node: '>=12.13.0'}
+
+  pngjs@7.0.0:
+    resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
+    engines: {node: '>=14.19.0'}
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -15933,6 +15959,10 @@ snapshots:
     dependencies:
       pngjs: 6.0.0
 
+  pixelmatch@7.1.0:
+    dependencies:
+      pngjs: 7.0.0
+
   pkg-dir@4.2.0:
     dependencies:
       find-up: 4.1.0
@@ -15948,6 +15978,8 @@ snapshots:
   pngjs@3.4.0: {}
 
   pngjs@6.0.0: {}
+
+  pngjs@7.0.0: {}
 
   possible-typed-array-names@1.1.0: {}
 
