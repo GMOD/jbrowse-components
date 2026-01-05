@@ -281,10 +281,6 @@
       "import": "./src/ui/ResizeHandle.tsx",
       "require": "./src/ui/ResizeHandle.tsx"
     },
-    "./ui/ReturnToImportFormDialog": {
-      "import": "./src/ui/ReturnToImportFormDialog.tsx",
-      "require": "./src/ui/ReturnToImportFormDialog.tsx"
-    },
     "./ui/SanitizedHTML": {
       "import": "./src/ui/SanitizedHTML.tsx",
       "require": "./src/ui/SanitizedHTML.tsx"
@@ -456,6 +452,10 @@
     "./util/useMeasure": {
       "import": "./src/util/useMeasure.ts",
       "require": "./src/util/useMeasure.ts"
+    },
+    "./ui/ReturnToImportFormDialog": {
+      "import": "./src/ui/ReturnToImportFormDialog.tsx",
+      "require": "./src/ui/ReturnToImportFormDialog.tsx"
     }
   },
   "files": [
@@ -846,11 +846,6 @@
         "import": "./esm/ui/ResizeHandle.js",
         "require": "./dist/ui/ResizeHandle.js"
       },
-      "./ui/ReturnToImportFormDialog": {
-        "types": "./dist/ui/ReturnToImportFormDialog.d.ts",
-        "import": "./esm/ui/ReturnToImportFormDialog.js",
-        "require": "./dist/ui/ReturnToImportFormDialog.js"
-      },
       "./ui/SanitizedHTML": {
         "types": "./dist/ui/SanitizedHTML.d.ts",
         "import": "./esm/ui/SanitizedHTML.js",
@@ -1065,6 +1060,11 @@
         "types": "./dist/util/useMeasure.d.ts",
         "import": "./esm/util/useMeasure.js",
         "require": "./dist/util/useMeasure.js"
+      },
+      "./ui/ReturnToImportFormDialog": {
+        "types": "./dist/ui/ReturnToImportFormDialog.d.ts",
+        "import": "./esm/ui/ReturnToImportFormDialog.js",
+        "require": "./dist/ui/ReturnToImportFormDialog.js"
       }
     }
   },

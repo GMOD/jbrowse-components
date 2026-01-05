@@ -1,32 +1,39 @@
+import { execSync } from 'child_process'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const packageRoot = join(__dirname, '..')
+const repoRoot = join(packageRoot, '../..')
 const srcDir = join(packageRoot, 'src')
 
-// Read and parse list.ts to extract the array
-const listContent = readFileSync(join(srcDir, 'ReExports/list.ts'), 'utf8')
-const arrayMatch = /export default \[([\s\S]*?)\]/.exec(listContent)
-if (!arrayMatch) {
-  throw new Error('Could not parse list.ts')
+// Scan the codebase for all @jbrowse/core imports
+function findAllImports() {
+  try {
+    // Find static imports: from '@jbrowse/core/...'
+    const staticImports = execSync(
+      `grep -roh "from '@jbrowse/core[^']*'" packages plugins products --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | sed "s/from '//;s/'$//" | sort -u`,
+      { cwd: repoRoot, encoding: 'utf8' }
+    ).trim().split('\n').filter(Boolean)
+
+    // Find dynamic imports: import('@jbrowse/core/...')
+    const dynamicImports = execSync(
+      `grep -roh "import('@jbrowse/core[^']*')" packages plugins products --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | sed "s/import('//;s/')$//" | sort -u`,
+      { cwd: repoRoot, encoding: 'utf8' }
+    ).trim().split('\n').filter(Boolean)
+
+    const allImports = [...new Set([...staticImports, ...dynamicImports])]
+    return allImports.filter(i => i.startsWith('@jbrowse/core'))
+  } catch (e) {
+    console.error('Error scanning for imports:', e.message)
+    return []
+  }
 }
-
-// Extract strings from the array
-const entries = arrayMatch[1]
-  .split('\n')
-  .map(line => (/'([^']+)'/.exec(line))?.[1])
-  .filter(Boolean)
-
-// Filter for @jbrowse/core entries and convert to export paths
-const coreEntries = entries
-  .filter(e => e.startsWith('@jbrowse/core/'))
-  .map(e => e.replace('@jbrowse/core/', './'))
 
 // Check if a path is a directory with index file or a file
 function getSourcePath(entry) {
-  const relativePath = entry.slice(2) // remove leading ./
+  const relativePath = entry.replace('@jbrowse/core/', '')
   const dirPath = join(srcDir, relativePath)
 
   // Check if it's a directory with index.ts or index.tsx
@@ -55,7 +62,7 @@ function getSourcePath(entry) {
 }
 
 function getOutputPath(entry) {
-  const relativePath = entry.slice(2) // remove leading ./
+  const relativePath = entry.replace('@jbrowse/core/', '')
   const dirPath = join(srcDir, relativePath)
 
   // Check if it's a directory with index file
@@ -68,6 +75,10 @@ function getOutputPath(entry) {
   // Default: assume it's a file
   return `/${relativePath}.js`
 }
+
+// Find all imports
+const imports = findAllImports()
+console.log(`Found ${imports.length} unique @jbrowse/core import paths`)
 
 // Generate dev exports (pointing to src)
 const devExports = {
@@ -86,16 +97,17 @@ const publishExports = {
   },
 }
 
-for (const entry of coreEntries) {
+for (const entry of imports) {
+  const exportPath = entry.replace('@jbrowse/core', '.')
   const srcPath = getSourcePath(entry)
   const outPath = getOutputPath(entry)
 
-  devExports[entry] = {
+  devExports[exportPath] = {
     import: `./src${srcPath}`,
     require: `./src${srcPath}`,
   }
 
-  publishExports[entry] = {
+  publishExports[exportPath] = {
     types: `./dist${outPath.replace('.js', '.d.ts')}`,
     import: `./esm${outPath}`,
     require: `./dist${outPath}`,
