@@ -18,7 +18,20 @@
     "directory": "packages/core"
   },
   "author": "JBrowse Team",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.ts",
+      "require": "./src/index.ts"
+    },
+    "./*": {
+      "types": "./src/*.d.ts",
+      "import": "./src/*.ts",
+      "require": "./src/*.ts"
+    }
+  },
   "files": [
     "dist",
     "esm"
