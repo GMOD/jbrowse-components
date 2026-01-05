@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ## Usage: scripts/release.sh <patch|minor|major>
-# Bumps version, generates changelog from changesets, creates blog post, and publishes.
+# Bumps version, generates changelog, creates blog post, and publishes.
 
 set -e
 set -o pipefail
@@ -38,12 +38,20 @@ echo "Releasing $RELEASE_TAG (from $PREVIOUS_VERSION)"
 RELEASE_TAG=$RELEASE_TAG node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentVersion = process.env.RELEASE_TAG; JSON.stringify(config,0,2)" >tmp.json
 mv tmp.json website/docusaurus.config.json
 
+# Generate changelog from GitHub PRs
+echo "Generating changelog..."
+CHANGELOG=$(scripts/generate-changelog.sh)
+echo "$CHANGELOG" > tmp_changelog.md
+echo "" >> tmp_changelog.md
+cat CHANGELOG.md >> tmp_changelog.md
+mv tmp_changelog.md CHANGELOG.md
+
 # Generate blog post
 NOTES=$(cat "$BLOGPOST_DRAFT")
 DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
 DATE=$(date +"%Y-%m-%d")
 BLOGPOST_FILENAME=website/blog/${DATE}-${RELEASE_TAG}-release.md
-RELEASE_TAG=$RELEASE_TAG DATE=$DATETIME NOTES=$NOTES perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"
+RELEASE_TAG=$RELEASE_TAG DATE=$DATETIME NOTES=$NOTES CHANGELOG=$CHANGELOG perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"
 
 # Bump versions in all packages
 node --eval "
@@ -63,14 +71,6 @@ for (const ws of ['packages', 'products', 'plugins']) {
   }
 }
 "
-
-# If there are changeset files, consume them to generate changelog
-if ls .changeset/*.md 1>/dev/null 2>&1; then
-  echo "Processing changesets..."
-  # Note: changeset version would normally bump versions, but we already did that
-  # So we just need to consume the changesets and update CHANGELOG
-  pnpm changeset version || true
-fi
 
 # Commit, tag, publish
 pnpm format
