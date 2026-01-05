@@ -3,7 +3,7 @@ import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRe
 import { expandRegion } from '@jbrowse/core/pluggableElementTypes/renderers/util'
 import { updateStatus } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { rpcResult } from 'librpc-web-mod'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { PileupLayoutSession } from './PileupLayoutSession'
 

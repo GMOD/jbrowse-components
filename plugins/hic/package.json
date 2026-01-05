@@ -41,7 +41,6 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@mui/x-charts-vendor": "^8.23.0",
     "hic-straw": "^2.1.4",
-    "librpc-web-mod": "^2.1.1",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",
     "rxjs": "^7.8.2"

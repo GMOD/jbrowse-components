@@ -1,7 +1,7 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { rpcResult } from 'librpc-web-mod'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import type { RenderArgsDeserialized } from './types'
 

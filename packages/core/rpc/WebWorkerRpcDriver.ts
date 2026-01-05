@@ -1,4 +1,4 @@
-import { RpcClient, deserializeError } from 'librpc-web-mod'
+import { RpcClient, deserializeError } from '../util/librpc'
 
 import BaseRpcDriver from './BaseRpcDriver'
 import { nanoid } from '../util/nanoid'

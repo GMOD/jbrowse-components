@@ -13,7 +13,7 @@ import {
   getOrigin,
   getScale,
 } from '@jbrowse/plugin-wiggle'
-import { rpcResult } from 'librpc-web-mod'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { alphaColor } from '../shared/util'
 

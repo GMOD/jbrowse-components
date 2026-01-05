@@ -1,4 +1,4 @@
-import type { RpcResult } from 'librpc-web-mod'
+import type { RpcResult } from './librpc'
 
 /**
  * Type guard to check if a value is an RpcResult from librpc-web-mod.

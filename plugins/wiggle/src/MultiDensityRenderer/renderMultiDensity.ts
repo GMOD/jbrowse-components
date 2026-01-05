@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
-import { rpcResult } from 'librpc-web-mod'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { drawDensity } from '../drawDensity'
 import { serializeWiggleFeature } from '../util'

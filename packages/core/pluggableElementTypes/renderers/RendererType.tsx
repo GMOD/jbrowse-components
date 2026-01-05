@@ -5,7 +5,7 @@ import PluggableElementBase from '../PluggableElementBase'
 import type PluginManager from '../../PluginManager'
 import type { AnyConfigurationSchemaType } from '../../configuration'
 import type { AnyReactComponentType } from '../../util'
-import type { RpcResult } from 'librpc-web-mod'
+import type { RpcResult } from '../../util/librpc'
 
 export type RenderProps = Record<string, unknown>
 

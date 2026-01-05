@@ -1,6 +1,6 @@
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { rpcResult } from 'librpc-web-mod'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { drawXY } from '../drawXY'
 import { getColorCallback, serializeWiggleFeature } from '../util'
