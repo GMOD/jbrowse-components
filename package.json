@@ -111,7 +111,6 @@
     "mini-css-extract-plugin": "^2.9.4",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",
-    "npm-run-all": "^4.1.5",
     "open": "^11.0.0",
     "prettier": "^3.7.4",
     "puppeteer": "^24.34.0",

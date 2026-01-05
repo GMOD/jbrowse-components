@@ -256,8 +256,9 @@ plugins in this monorepo by default points to the un-built code (e.g.
 `products/jbrowse-web/rescripts/yarnWorkspacesRescript.js`).
 
 When publishing to NPM, pnpm's `publishConfig` feature automatically overrides
-the `main` and `module` fields to point to the built output (e.g. `dist/index.js`).
-This means no manual switching between source and dist is needed.
+the `main` and `module` fields to point to the built output (e.g.
+`dist/index.js`). This means no manual switching between source and dist is
+needed.
 
 ## Preparing sample data sets
 

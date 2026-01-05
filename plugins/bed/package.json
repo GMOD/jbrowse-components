@@ -21,7 +21,7 @@
     "esm"
   ],
   "scripts": {
-    "build": "npm-run-all build:*",
+    "build": "pnpm run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/bed",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",

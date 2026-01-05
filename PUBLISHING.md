@@ -2,10 +2,12 @@
 
 ## Prerequisites
 
-- Stable internet connection (AWS machine recommended to avoid npm publish failures)
+- Stable internet connection (AWS machine recommended to avoid npm publish
+  failures)
 - npm login: `pnpm login`
 - GitHub CLI: `gh` (for changelog generation)
-- For Mac builds: check https://developer.apple.com/account for updated signing terms
+- For Mac builds: check https://developer.apple.com/account for updated signing
+  terms
 
 ## Preview Changelog
 
@@ -22,7 +24,8 @@ This uses `gh` CLI to list PRs merged since the last release.
 ### 1. Create release announcement
 
 Create `website/release_announcement_drafts/v<version>.md` with release notes.
-Include screenshots/videos with absolute URLs. See https://jbrowse.org/jb2/blog for examples.
+Include screenshots/videos with absolute URLs. See https://jbrowse.org/jb2/blog
+for examples.
 
 ### 2. Run release script
 
@@ -31,6 +34,7 @@ scripts/release.sh <patch|minor|major>
 ```
 
 This will:
+
 - Run lint and tests
 - Bump versions in all packages
 - Generate changelog from merged PRs (via GitHub API)

@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "prebuild": "pnpm clean",
-    "build": "npm-run-all build:*",
+    "build": "pnpm run /^build:/",
     "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
     "prepack": "pnpm build",
     "build:esm": "tsc -p tsconfig.build.esm.json",

@@ -18,7 +18,7 @@
   "scripts": {
     "clean": "rm -rf dist esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
-    "build": "npm-run-all build:*",
+    "build": "pnpm run /^build:/",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "preversion": "pnpm build"
