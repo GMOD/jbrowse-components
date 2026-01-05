@@ -14,14 +14,20 @@ function findAllImports() {
     // Find static imports: from '@jbrowse/core/...'
     const staticImports = execSync(
       `grep -roh "from '@jbrowse/core[^']*'" packages plugins products --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | sed "s/from '//;s/'$//" | sort -u`,
-      { cwd: repoRoot, encoding: 'utf8' }
-    ).trim().split('\n').filter(Boolean)
+      { cwd: repoRoot, encoding: 'utf8' },
+    )
+      .trim()
+      .split('\n')
+      .filter(Boolean)
 
     // Find dynamic imports: import('@jbrowse/core/...')
     const dynamicImports = execSync(
       `grep -roh "import('@jbrowse/core[^']*')" packages plugins products --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | sed "s/import('//;s/')$//" | sort -u`,
-      { cwd: repoRoot, encoding: 'utf8' }
-    ).trim().split('\n').filter(Boolean)
+      { cwd: repoRoot, encoding: 'utf8' },
+    )
+      .trim()
+      .split('\n')
+      .filter(Boolean)
 
     const allImports = [...new Set([...staticImports, ...dynamicImports])]
     return allImports.filter(i => i.startsWith('@jbrowse/core'))
@@ -67,7 +73,10 @@ function getOutputPath(entry) {
 
   // Check if it's a directory with index file
   if (existsSync(dirPath)) {
-    if (existsSync(join(dirPath, 'index.ts')) || existsSync(join(dirPath, 'index.tsx'))) {
+    if (
+      existsSync(join(dirPath, 'index.ts')) ||
+      existsSync(join(dirPath, 'index.tsx'))
+    ) {
       return `/${relativePath}/index.js`
     }
   }
@@ -131,4 +140,6 @@ packageJson.publishConfig.exports = publishExports
 writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 
 console.log(`Generated ${Object.keys(devExports).length} dev export entries`)
-console.log(`Generated ${Object.keys(publishExports).length} publish export entries`)
+console.log(
+  `Generated ${Object.keys(publishExports).length} publish export entries`,
+)

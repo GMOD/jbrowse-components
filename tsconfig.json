@@ -24,11 +24,14 @@
     "baseUrl": ".",
     "paths": {
       "@jbrowse/core/*": ["packages/core/src/*"],
+      "@jbrowse/web/*": ["products/jbrowse-web/*"],
+      "@jbrowse/app-core": ["packages/app-core/src/index.ts"],
       "@jbrowse/plugin-alignments": ["plugins/alignments/src/index.ts"],
       "@jbrowse/plugin-hic": ["plugins/hic/src/index.ts"],
-      "@jbrowse/plugin-linear-genome-view": ["plugins/linear-genome-view/src/index.ts"],
-      "@jbrowse/plugin-variants": ["plugins/variants/src/index.ts"],
-      "@jbrowse/web/*": ["products/jbrowse-web/*"]
+      "@jbrowse/plugin-linear-genome-view": [
+        "plugins/linear-genome-view/src/index.ts"
+      ],
+      "@jbrowse/plugin-variants": ["plugins/variants/src/index.ts"]
     }
   },
   "exclude": [

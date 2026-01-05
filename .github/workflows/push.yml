@@ -202,20 +202,21 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-          cache: 'yarn'
-          cache-dependency-path: 'website/yarn.lock'
+          cache: 'pnpm'
 
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@3e063b974f0d209807684aa23e534b3dde517fd9 # v1.11.2
-        with:
-          working-directory: website
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+        working-directory: website
       - name: Build website
         run: |
           cd website/
-          yarn build
+          pnpm build
           mkdir testing
           mv build testing/jb2
       - name: Check website links

@@ -196,12 +196,24 @@ export interface Widget {
   id: string
 }
 
+/** Minimal map interface compatible with both native Map and MST IMSTMap */
+export interface WidgetMap<K, V> {
+  size: number
+  has(key: K): boolean
+  get(key: K): V | undefined
+  keys(): IterableIterator<K>
+  values(): IterableIterator<V>
+  entries(): IterableIterator<[K, V]>
+  forEach(callbackfn: (value: V, key: K) => void): void
+  [Symbol.iterator](): IterableIterator<[K, V]>
+}
+
 /** abstract interface for a session that manages widgets */
 export interface SessionWithWidgets extends AbstractSessionModel {
   minimized: boolean
   visibleWidget?: Widget
-  widgets: Map<string | number, Widget>
-  activeWidgets: Map<string | number, Widget>
+  widgets: WidgetMap<string, Widget>
+  activeWidgets: WidgetMap<string, Widget>
   hideAllWidgets: () => void
   addWidget(
     typeName: string,
