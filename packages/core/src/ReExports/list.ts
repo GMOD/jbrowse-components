@@ -321,6 +321,7 @@ export default [
   '@jbrowse/core/ui/Logo',
   '@jbrowse/core/ui/Menu',
   '@jbrowse/core/ui/ResizeHandle',
+  '@jbrowse/core/ui/ReturnToImportFormDialog',
   '@jbrowse/core/ui/SanitizedHTML',
   '@jbrowse/core/ui/Snackbar',
   '@jbrowse/core/ui/SnackbarModel',
