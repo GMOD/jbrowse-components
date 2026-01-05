@@ -19,7 +19,6 @@
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
-  "module": "src/index.ts",
   "files": [
     "dist",
     "esm"
@@ -57,5 +56,6 @@
         "require": "./dist/index.js"
       }
     }
-  }
+  },
+  "sideEffects": false
 }

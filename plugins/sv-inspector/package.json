@@ -45,7 +45,6 @@
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
-  "module": "src/index.ts",
   "publishConfig": {
     "access": "public",
     "main": "dist/index.js",
@@ -57,5 +56,6 @@
         "require": "./dist/index.js"
       }
     }
-  }
+  },
+  "sideEffects": false
 }

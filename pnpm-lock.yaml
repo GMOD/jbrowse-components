@@ -380,6 +380,12 @@ importers:
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.7)(react@19.2.3)
+      '@emotion/serialize':
+        specifier: ^1.3.3
+        version: 1.3.3
+      '@emotion/utils':
+        specifier: ^1.4.2
+        version: 1.4.2
       '@floating-ui/react':
         specifier: ^0.27.16
         version: 0.27.16(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -641,6 +647,9 @@ importers:
       '@mui/material':
         specifier: ^7.3.6
         version: 7.3.6(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@mui/x-charts-vendor':
+        specifier: ^8.23.0
+        version: 8.23.0
       canvas2svg:
         specifier: ^1.0.16
         version: 1.0.16

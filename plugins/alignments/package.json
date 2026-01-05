@@ -40,6 +40,7 @@
     "@jbrowse/sv-core": "workspace:^",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
+    "@mui/x-charts-vendor": "^8.23.0",
     "canvas2svg": "^1.0.16",
     "copy-to-clipboard": "^3.3.3",
     "fast-deep-equal": "^3.1.3",
@@ -63,5 +64,5 @@
       }
     }
   },
-  "module": "src/index.ts"
+  "sideEffects": false
 }

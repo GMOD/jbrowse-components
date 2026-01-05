@@ -55,5 +55,5 @@
       }
     }
   },
-  "module": "src/index.ts"
+  "sideEffects": false
 }

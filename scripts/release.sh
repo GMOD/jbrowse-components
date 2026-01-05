@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ## Usage: scripts/release.sh <patch|minor|major>
-# Bumps version, creates blog post, and publishes packages to npm.
+# Bumps version, generates changelog from changesets, creates blog post, and publishes.
 
 set -e
 set -o pipefail
@@ -63,6 +63,14 @@ for (const ws of ['packages', 'products', 'plugins']) {
   }
 }
 "
+
+# If there are changeset files, consume them to generate changelog
+if ls .changeset/*.md 1>/dev/null 2>&1; then
+  echo "Processing changesets..."
+  # Note: changeset version would normally bump versions, but we already did that
+  # So we just need to consume the changesets and update CHANGELOG
+  pnpm changeset version || true
+fi
 
 # Commit, tag, publish
 pnpm format
