@@ -10,6 +10,8 @@ import JobsListWidgetF from './JobsListWidget'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 
+export type { JobsListModel } from './JobsListWidget/model'
+
 export default class JobsManagementPlugin extends Plugin {
   name = 'JobsManagementPlugin'
 

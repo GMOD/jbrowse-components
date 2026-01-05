@@ -16,6 +16,8 @@ import SyntenyTrackF from './SyntenyTrack'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+export type { LinearSyntenyViewModel } from './LinearSyntenyView/model'
+
 export default class LinearComparativeViewPlugin extends Plugin {
   name = 'LinearComparativeViewPlugin'
 

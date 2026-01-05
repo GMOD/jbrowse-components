@@ -1,4 +1,4 @@
-import DialogQueue from '@jbrowse/app-core/src/ui/App/DialogQueue'
+import { DialogQueue } from '@jbrowse/app-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getParent, getRoot, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/src/rootModel'

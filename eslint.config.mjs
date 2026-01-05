@@ -112,7 +112,6 @@ export default defineConfig(
         },
       ],
 
-      'node/file-extension-in-import': ['error', 'always'],
       'prefer-template': 'error',
       'one-var': ['error', 'never'],
       'react-refresh/only-export-components': 'error',
