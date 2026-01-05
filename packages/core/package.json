@@ -49,6 +49,8 @@
     "@leeoniya/ufuzzy": "^1.0.19",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
+    "@mui/system": "^7.3.6",
+    "@mui/types": "^7.4.9",
     "@mui/x-data-grid": "^8.23.0",
     "canvas-sequencer-ts": "^3.1.3",
     "canvas2svg": "^1.0.16",
