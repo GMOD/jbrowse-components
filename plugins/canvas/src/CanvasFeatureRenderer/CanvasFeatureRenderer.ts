@@ -1,6 +1,6 @@
 import { BoxRendererType } from '@jbrowse/core/pluggableElementTypes'
-import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
 import { doAll } from './doAll'
 

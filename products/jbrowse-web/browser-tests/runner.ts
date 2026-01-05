@@ -9,10 +9,7 @@ import { PNG } from 'pngjs'
 import { type Browser, type Page, launch } from 'puppeteer'
 import handler from 'serve-handler'
 
-import {
-  startBasicAuthServer,
-  startOAuthServer,
-} from '../../../auth_test_utils/servers.ts'
+import { startBasicAuthServer, startOAuthServer } from './servers.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

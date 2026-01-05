@@ -58,6 +58,7 @@
     "@node-oauth/oauth2-server": "^5.2.1",
     "@types/file-saver-es": "^2.0.3",
     "base64-js": "^1.5.1",
+    "@types/body-parser": "^1.19.5",
     "body-parser": "^2.2.1",
     "copy-to-clipboard": "^3.3.3",
     "crypto-js": "^4.2.0",

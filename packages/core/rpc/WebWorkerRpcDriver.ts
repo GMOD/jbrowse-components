@@ -1,6 +1,5 @@
-import { RpcClient, deserializeError } from '../util/librpc'
-
 import BaseRpcDriver from './BaseRpcDriver'
+import { RpcClient, deserializeError } from '../util/librpc'
 import { nanoid } from '../util/nanoid'
 
 import type { RpcDriverConstructorArgs } from './BaseRpcDriver'

@@ -1,8 +1,8 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import type { MultiRegionContactRecord } from '../HicAdapter/HicAdapter'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

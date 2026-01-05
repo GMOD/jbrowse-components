@@ -78,6 +78,7 @@
     "@types/set-value": "^4.0.3",
     "@types/string-template": "^1.0.7",
     "@types/tmp": "^0.2.6",
+    "generic-filehandle2": "^2.0.18",
     "babel-loader": "^10.0.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "browserslist": "^4.28.1",

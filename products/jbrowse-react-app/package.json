@@ -74,6 +74,7 @@
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
     "base64-js": "^1.5.1",
+    "@types/file-saver-es": "^2.0.3",
     "file-saver-es": "^2.0.5",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",

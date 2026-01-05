@@ -3,9 +3,9 @@ import {
   renderToAbstractCanvas,
   updateStatus,
 } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
-import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { drawXY } from '../drawXY'
 import { serializeWiggleFeature } from '../util'

@@ -2,8 +2,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { expandRegion } from '@jbrowse/core/pluggableElementTypes/renderers/util'
 import { updateStatus } from '@jbrowse/core/util'
-import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
 import { PileupLayoutSession } from './PileupLayoutSession'
 

@@ -1,6 +1,6 @@
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
-import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
 import { drawDensity } from '../drawDensity'
 import { serializeWiggleFeature } from '../util'

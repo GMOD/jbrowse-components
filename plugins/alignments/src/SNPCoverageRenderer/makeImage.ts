@@ -7,13 +7,13 @@ import {
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import {
   YSCALEBAR_LABEL_OFFSET,
   getOrigin,
   getScale,
 } from '@jbrowse/plugin-wiggle'
-import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { alphaColor } from '../shared/util'
 

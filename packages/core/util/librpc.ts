@@ -1,8 +1,8 @@
 export {
-  rpcResult,
   RpcClient,
   RpcServer,
-  serializeError,
   deserializeError,
+  rpcResult,
+  serializeError,
 } from 'librpc-web-mod'
 export type { RpcResult } from 'librpc-web-mod'
