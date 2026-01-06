@@ -31,6 +31,25 @@ function getQueryColor(queryName: string) {
   return category10[hash % category10.length]!
 }
 
+// SyRI-style colors (based on schneebergerlab/plotsr)
+const syriColors = {
+  SYN: '#808080', // grey for syntenic matches
+  INV: '#FFA500', // orange for inversions
+  TRANS: '#228B22', // forest green for translocations
+  DUP: '#00BBFF', // cyan-blue for duplications
+}
+
+// Strand colors for export
+const strandColors = {
+  pos: 'blue',
+  neg: 'red',
+}
+
+type SyriType = keyof typeof syriColors
+
+// Export colors for legend component
+export { syriColors, strandColors }
+
 export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   adapterConfig: AnyConfigurationModel
   height: number
@@ -105,6 +124,7 @@ export async function drawDotplot(
   let posColorWithAlpha: string | undefined
   let negColorWithAlpha: string | undefined
   let defaultColorWithAlpha: string | undefined
+  let syriColorsWithAlpha: Record<SyriType, string> | undefined
 
   // Cache for query colors with alpha applied
   const queryColorCache = new Map<string, string>()
@@ -121,6 +141,14 @@ export async function drawDotplot(
     // Pre-compute strand colors once instead of per-feature
     posColorWithAlpha = applyAlpha(posColor, alpha)
     negColorWithAlpha = applyAlpha(negColor, alpha)
+  } else if (colorBy === 'syri') {
+    // Pre-compute syri colors
+    syriColorsWithAlpha = {
+      SYN: applyAlpha(syriColors.SYN, alpha),
+      INV: applyAlpha(syriColors.INV, alpha),
+      TRANS: applyAlpha(syriColors.TRANS, alpha),
+      DUP: applyAlpha(syriColors.DUP, alpha),
+    }
   } else if (colorBy === 'default' && !isCallback) {
     // Pre-compute default color once instead of per-feature
     const c = color === '#f0f' ? t.palette.text.primary : color
@@ -155,6 +183,10 @@ export async function drawDotplot(
     if (colorBy === 'strand') {
       // Use pre-computed colors (avoids applyAlpha call per feature)
       colorWithAlpha = strand === -1 ? negColorWithAlpha! : posColorWithAlpha!
+    } else if (colorBy === 'syri') {
+      // Read syriType from feature (pre-computed by adapter)
+      const syriType = (feature.get('syriType') as SyriType) || 'SYN'
+      colorWithAlpha = syriColorsWithAlpha![syriType]
     } else if (colorBy === 'query') {
       // Color by query sequence name
       const queryName = refName

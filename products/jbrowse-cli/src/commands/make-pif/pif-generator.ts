@@ -7,24 +7,48 @@ import {
   getReadline,
   getStdReadline,
 } from './file-utils.ts'
+import { computeSyriTypesMap, parsePAFLineForSyri } from './syri-utils.ts'
 
 import type { WritableStream } from './file-utils.ts'
+import type { PAFRecord } from './syri-utils.ts'
 
 export async function createPIF(
   filename: string | undefined,
   stream: WritableStream,
 ): Promise<void> {
+  // First pass: read all records to compute syri types
+  console.error('Computing SyRI classifications...')
   const rl1 = filename ? getReadline(filename) : getStdReadline()
+  const records: PAFRecord[] = []
+  const lines: string[] = []
+
+  let index = 0
+  for await (const line of rl1) {
+    lines.push(line)
+    records.push(parsePAFLineForSyri(line, index))
+    index++
+  }
+  rl1.close()
+
+  // Compute syri types from full dataset
+  const syriTypes = computeSyriTypesMap(records)
+  console.error(`Computed SyRI types for ${records.length} records`)
+
+  // Second pass: write output with syri types
   const writeWithBackpressure = createWriteWithBackpressure(stream)
 
-  // Process the file line by line with backpressure handling
   try {
-    for await (const line of rl1) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]!
+      const syriType = syriTypes.get(i) || 'SYN'
       const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
 
-      // Write the first line and handle backpressure
+      // Add syriType as a PAF optional field
+      const syriField = `sy:Z:${syriType}`
+
+      // Write the first line (target-oriented) and handle backpressure
       await writeWithBackpressure(
-        `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`,
+        `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest, syriField].join('\t')}\n`,
       )
 
       const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
@@ -38,16 +62,14 @@ export async function createPIF(
         }`
       }
 
-      // Write the second line and handle backpressure
+      // Write the second line (query-oriented) and handle backpressure
       await writeWithBackpressure(
-        `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`,
+        `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest, syriField].join('\t')}\n`,
       )
     }
   } catch (error) {
     console.error('Error processing PAF file:', error)
     throw error
-  } finally {
-    rl1.close()
   }
 }
 

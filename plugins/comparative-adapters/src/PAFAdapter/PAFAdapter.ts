@@ -8,7 +8,7 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { flipCigar, parsePAFLine, swapIndelCigar } from '../util.ts'
-import { getWeightedMeans } from './util.ts'
+import { addSyriTypes, getWeightedMeans } from './util.ts'
 
 import type { PAFRecord } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -50,7 +50,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       },
       opts?.statusCallback,
     )
-    return getWeightedMeans(lines)
+    // Compute weighted means and syri types from full dataset
+    return addSyriTypes(getWeightedMeans(lines))
   }
 
   async hasDataForRefName() {
@@ -161,6 +162,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               identity: numMatches / blockLen,
               numMatches,
               blockLen,
+              syriType: extra.syriType,
               mate: {
                 start: mateStart,
                 end: mateEnd,

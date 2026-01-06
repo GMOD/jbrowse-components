@@ -3,7 +3,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 import PAFAdapter from '../PAFAdapter/PAFAdapter.ts'
-import { getWeightedMeans } from '../PAFAdapter/util.ts'
+import { addSyriTypes, getWeightedMeans } from '../PAFAdapter/util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -21,7 +21,7 @@ export default class MashMapAdapter extends PAFAdapter {
       },
       opts?.statusCallback,
     )
-    return getWeightedMeans(lines)
+    return addSyriTypes(getWeightedMeans(lines))
   }
 }
 

@@ -31,8 +31,22 @@ const DotplotGrid = observer(function DotplotGrid({
   const w = Math.min(htop - hbottom, viewWidth)
   const h = Math.min(viewHeight - vbottom - ry, viewHeight)
 
-  let lastx = Number.POSITIVE_INFINITY
-  let lasty = Number.POSITIVE_INFINITY
+  // Filter blocks to avoid rendering duplicate lines at the same pixel position
+  const hlines = hblocks.filter((region, idx) => {
+    const x = Math.floor(region.offsetPx - hview.offsetPx)
+    const prevX =
+      idx > 0 ? Math.floor(hblocks[idx - 1]!.offsetPx - hview.offsetPx) : null
+    return x !== prevX
+  })
+  const vlines = vblocks.filter((region, idx) => {
+    const y = Math.floor(viewHeight - (region.offsetPx - vview.offsetPx))
+    const prevY =
+      idx > 0
+        ? Math.floor(viewHeight - (vblocks[idx - 1]!.offsetPx - vview.offsetPx))
+        : null
+    return y !== prevY
+  })
+
   return (
     <>
       <rect
@@ -43,39 +57,31 @@ const DotplotGrid = observer(function DotplotGrid({
         {...getFillProps(theme.palette.background.default)}
       />
       <g>
-        {hblocks.map(region => {
+        {hlines.map(region => {
           const x = region.offsetPx - hview.offsetPx
-          const render = Math.floor(x) !== Math.floor(lastx)
-          if (render) {
-            lastx = x
-          }
-          return render ? (
+          return (
             <line
-              key={JSON.stringify(region)}
+              key={region.key}
               x1={x}
               y1={0}
               x2={x}
               y2={viewHeight}
               {...getStrokeProps(stroke)}
             />
-          ) : null
+          )
         })}
-        {vblocks.map(region => {
+        {vlines.map(region => {
           const y = viewHeight - (region.offsetPx - vview.offsetPx)
-          const render = Math.floor(y) !== Math.floor(lasty)
-          if (render) {
-            lasty = y
-          }
-          return render ? (
+          return (
             <line
-              key={JSON.stringify(region)}
+              key={region.key}
               x1={0}
               y1={y}
               x2={viewWidth}
               y2={y}
               {...getStrokeProps(stroke)}
             />
-          ) : null
+          )
         })}
         <line
           x1={htop}
