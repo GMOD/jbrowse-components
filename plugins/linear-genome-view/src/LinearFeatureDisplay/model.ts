@@ -115,24 +115,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #getter
-       * Map from canonical refName to sequence adapter refName (for FASTA/2bit lookup)
-       */
-      get canonicalToSeqAdapterRefNames() {
-        const { assemblyManager } = getSession(self)
-        const track = getParent<{ configuration: AnyConfigurationModel }>(
-          self,
-          2,
-        )
-        const assemblyNames = readConfObject(
-          track.configuration,
-          'assemblyNames',
-        ) as string[]
-        const assembly = assemblyManager.get(assemblyNames[0]!)
-        return assembly?.canonicalToSeqAdapterRefNames
-      },
-
-      /**
-       * #getter
        */
       get showLabels() {
         return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
@@ -251,7 +233,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               filters: self.activeFilters,
             }),
             sequenceAdapter: self.sequenceAdapter,
-            canonicalToSeqAdapterRefNames: self.canonicalToSeqAdapterRefNames,
           }
         },
 

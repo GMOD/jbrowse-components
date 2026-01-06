@@ -15,20 +15,17 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-/**
- * Fetch sequence from a reference genome using the sequence adapter
- */
-export async function fetchSequence(
+type RegionWithSeqAdapter = Region & { seqAdapterRefName?: string }
+
+async function fetchSequence(
   pluginManager: PluginManager,
   renderProps: RenderArgsDeserialized,
-  region: Region,
-): Promise<string | undefined> {
-  const { sessionId, sequenceAdapter, canonicalToSeqAdapterRefNames } =
-    renderProps as any
-  // Translate canonical refName to sequence adapter refName if mapping exists
-  const seqAdapterRefName =
-    canonicalToSeqAdapterRefNames?.[region.refName] ?? region.refName
-
+  region: RegionWithSeqAdapter,
+) {
+  const { sessionId, sequenceAdapter } = renderProps as {
+    sessionId: string
+    sequenceAdapter?: Record<string, unknown>
+  }
   if (!sequenceAdapter) {
     return undefined
   }
@@ -43,9 +40,8 @@ export async function fetchSequence(
       (dataAdapter as BaseFeatureDataAdapter)
         .getFeatures({
           ...region,
-          refName: seqAdapterRefName,
+          refName: region.seqAdapterRefName ?? region.refName,
           start: Math.max(0, region.start),
-          end: region.end,
         })
         .pipe(toArray()),
     )
@@ -70,28 +66,18 @@ function isTranscriptType(
   return transcriptTypes.includes(type)
 }
 
-/**
- * Check if a feature has CDS subfeatures
- */
-export function hasCDSSubfeatures(feature: Feature): boolean {
+function hasCDSSubfeatures(feature: Feature) {
   const subfeatures = feature.get('subfeatures')
   return subfeatures?.some((sub: Feature) => sub.get('type') === 'CDS') ?? false
 }
 
-/**
- * Find all transcript features with CDS subfeatures
- * Handles both direct transcript features and transcripts nested in genes
- */
-export function findTranscriptsWithCDS(
-  features: Map<string, Feature>,
-): Feature[] {
+function findTranscriptsWithCDS(features: Map<string, Feature>): Feature[] {
   const transcripts: Feature[] = []
 
   for (const feature of features.values()) {
     const type = feature.get('type')
     const subfeatures = feature.get('subfeatures')
 
-    // Check if this is a gene with transcript children
     if (type === 'gene' && subfeatures?.length) {
       for (const subfeature of subfeatures) {
         const subType = subfeature.get('type')
@@ -99,9 +85,7 @@ export function findTranscriptsWithCDS(
           transcripts.push(subfeature)
         }
       }
-    }
-    // Check if this is a direct transcript with CDS
-    else if (isTranscriptType(type) && hasCDSSubfeatures(feature)) {
+    } else if (isTranscriptType(type) && hasCDSSubfeatures(feature)) {
       transcripts.push(feature)
     }
   }
@@ -109,12 +93,7 @@ export function findTranscriptsWithCDS(
   return transcripts
 }
 
-/**
- * Process feature subfeatures to extract CDS regions
- */
-export function extractCDSRegions(
-  feature: Feature,
-): { start: number; end: number }[] {
+function extractCDSRegions(feature: Feature): { start: number; end: number }[] {
   const subfeatures = feature.get('subfeatures') || []
   const featureStart = feature.get('start')
 
@@ -127,22 +106,17 @@ export function extractCDSRegions(
     }))
 }
 
-/**
- * Fetch sequence and convert to peptides for a single transcript
- */
-export async function fetchTranscriptPeptides(
+async function fetchTranscriptPeptides(
   pluginManager: PluginManager,
   renderProps: RenderArgsDeserialized,
   transcript: Feature,
 ): Promise<PeptideData | undefined> {
   try {
-    const baseRegion = renderProps.regions[0]!
-    const refName = baseRegion.originalRefName || baseRegion.refName
+    const baseRegion = renderProps.regions[0] as RegionWithSeqAdapter
     const region = {
       ...baseRegion,
       start: transcript.get('start'),
       end: transcript.get('end'),
-      refName,
     }
 
     let seq = await fetchSequence(pluginManager, renderProps, region)
@@ -156,12 +130,9 @@ export async function fetchTranscriptPeptides(
       return undefined
     }
 
-    // For reverse strand features, reverse complement the sequence
-    // and reverse the CDS regions
     if (strand === -1) {
       seq = revcom(seq)
       const seqLen = seq.length
-      // Reverse the CDS array and flip coordinates
       cds = cds
         .map(region => ({
           start: seqLen - region.end,
@@ -172,7 +143,6 @@ export async function fetchTranscriptPeptides(
 
     const sequenceData: SequenceData = { seq, cds }
 
-    // Convert to peptides
     try {
       const protein = convertCodingSequenceToPeptides({
         cds,
@@ -186,7 +156,6 @@ export async function fetchTranscriptPeptides(
         `[fetchTranscriptPeptides] Failed to convert sequence to peptides for ${transcript.id()}:`,
         error,
       )
-      // Still return the sequence data even if peptide conversion failed
       return { sequenceData }
     }
   } catch (error) {
@@ -198,27 +167,21 @@ export async function fetchTranscriptPeptides(
   }
 }
 
-/**
- * Fetch peptide data for all features that need it
- */
 export async function fetchPeptideData(
   pluginManager: PluginManager,
   renderProps: RenderArgsDeserialized,
   features: Map<string, Feature>,
 ): Promise<Map<string, PeptideData>> {
-  const { colorByCDS, bpPerPx } = renderProps as any
+  const { colorByCDS, bpPerPx } = renderProps as {
+    colorByCDS?: boolean
+    bpPerPx: number
+  }
   const peptideDataMap = new Map<string, PeptideData>()
-
-  // Only fetch if colorByCDS is enabled and zoomed in enough
   if (!colorByCDS || !shouldRenderPeptideBackground(bpPerPx)) {
     return peptideDataMap
   }
 
-  // Find all transcripts with CDS subfeatures
-  const transcriptsToFetch = findTranscriptsWithCDS(features)
-
-  // Fetch sequences and convert to peptides for all transcripts
-  for (const transcript of transcriptsToFetch) {
+  for (const transcript of findTranscriptsWithCDS(features)) {
     const peptideData = await fetchTranscriptPeptides(
       pluginManager,
       renderProps,
