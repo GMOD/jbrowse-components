@@ -24,7 +24,7 @@ import {
   getAltColorForDosage,
 } from './constants.ts'
 import { getSources } from './getSources.ts'
-import { cluster, hierarchy } from '../d3-hierarchy2/index.js'
+import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 
 import type {
   ClusterHierarchyNode,

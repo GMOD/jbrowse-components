@@ -5,7 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MenuItem, Popover, Select, TextField } from '@mui/material'
 
 import * as paletteColors from './colors.ts'
-import { RgbaStringColorPicker } from './react-colorful.js'
+import { RgbaStringColorPicker } from './react-colorful.ts'
 import { useDebounce, useLocalStorage } from '../util/index.ts'
 
 // note: we are using a vendored copy of react-colorful because the default

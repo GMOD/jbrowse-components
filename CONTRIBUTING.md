@@ -36,6 +36,14 @@ sudo apt install -y python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev l
 
 ```
 
+After installing dependencies, if you still see errors about missing
+`canvas.node`, you may need to rebuild the native module and reinstall:
+
+```
+pnpm rebuild canvas
+pnpm install
+```
+
 ## Windows git clone instructions
 
 Our repository uses symlinks, so you need to use a specialized git clone

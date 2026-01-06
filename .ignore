@@ -1,6 +1,6 @@
 *.ix
 test_data/many_contigs/large.chrom.sizes
-packages/core/src/ui/react-colorful.js
+packages/core/src/ui/react-colorful.ts
 plugins/legacy-jbrowse/test_data
 plugins/data-management/src/UCSCTrackHubConnection/ucscAssemblies.ts
 products/jbrowse-web/src/tests/Loader.test.tsx
