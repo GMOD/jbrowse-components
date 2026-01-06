@@ -1918,8 +1918,6 @@ importers:
         specifier: ^18.0.0
         version: 18.0.0
 
-  products/jbrowse-predefined-sessions: {}
-
   products/jbrowse-react-app:
     dependencies:
       '@emotion/cache':
