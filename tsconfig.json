@@ -3,7 +3,6 @@
     "target": "esnext",
     "verbatimModuleSyntax": true,
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
     "outDir": "dist",
     "skipLibCheck": true,
     "esModuleInterop": true,
