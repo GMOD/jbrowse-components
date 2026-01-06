@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^2.0.3",
-    "@gmod/bbi": "^8.1.0",
+    "@gmod/bbi": "^8.1.1",
     "@gmod/bed": "^2.1.7",
     "@gmod/tabix": "^3.2.2",
     "@jbrowse/core": "workspace:^",
