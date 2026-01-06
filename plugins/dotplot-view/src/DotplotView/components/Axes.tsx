@@ -93,10 +93,10 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             </text>
           )
         })}
-      {ticks.map(([tick, x]) =>
+      {ticks.map(([tick, x], idx) =>
         x > 0 && x < width ? (
           <line
-            key={`line-${tick.refName}-${tick.base}`}
+            key={`line-${tick.refName}-${tick.base}-${idx}`}
             x1={x}
             x2={x}
             y1={0}
@@ -108,13 +108,13 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
       )}
       {ticks
         .filter(t => t[0].type === 'major')
-        .map(([tick, x]) =>
+        .map(([tick, x], idx) =>
           x > 10 && x < width ? (
             <text
               x={x - 7}
               y={0}
               transform={`rotate(${htextRotation},${x},0)`}
-              key={`text-${tick.refName}-${tick.base}`}
+              key={`text-${tick.refName}-${tick.base}-${idx}`}
               fontSize={11}
               dominantBaseline="middle"
               textAnchor="end"
@@ -201,10 +201,10 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
             </text>
           )
         })}
-      {ticks.map(([tick, y]) =>
+      {ticks.map(([tick, y], idx) =>
         y > 0 && y < viewHeight ? (
           <line
-            key={`line-${tick.refName}-${tick.base}`}
+            key={`line-${tick.refName}-${tick.base}-${idx}`}
             y1={viewHeight - y}
             y2={viewHeight - y}
             x1={borderX}
@@ -216,12 +216,12 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
       )}
       {ticks
         .filter(t => t[0].type === 'major')
-        .map(([tick, y]) =>
+        .map(([tick, y], idx) =>
           y > 10 && y < viewHeight ? (
             <text
               y={viewHeight - y - 3}
               x={borderX - 7}
-              key={`text-${tick.refName}-${tick.base}`}
+              key={`text-${tick.refName}-${tick.base}-${idx}`}
               textAnchor="end"
               dominantBaseline="hanging"
               fontSize={11}
