@@ -7,7 +7,7 @@ const proxy = createProxy()
 // via the `http_proxy` / `https_proxy` / `no_proxy` / etc. env vars
 // https://github.com/unjs/node-fetch-native?tab=readme-ov-file#proxy-support
 export default function fetchWithProxy(
-  url: RequestInfo,
+  url: string | URL,
   options: RequestInit = {},
 ) {
   return fetch(url, { ...options, ...proxy })

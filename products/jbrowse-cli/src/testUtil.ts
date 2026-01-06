@@ -189,7 +189,7 @@ export function mockFetch(
     typeof import('./fetchWithProxy.ts').default
   >
 
-  fetchWithProxy.mockImplementation(async (url: RequestInfo) => {
+  fetchWithProxy.mockImplementation(async (url: string | URL) => {
     const urlStr = url.toString()
     const response =
       typeof mockOrHandler === 'function'

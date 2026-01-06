@@ -66,12 +66,9 @@ export async function createIndexingStream({
     throw new Error(`Failed to fetch ${inLocation}: no response body`)
   }
 
-  const decompressor = new DecompressionStream('gzip') as ReadableWritablePair<
-    Uint8Array,
-    Uint8Array
-  >
   const inputStream = /.b?gz$/.exec(inLocation)
-    ? stream.pipeThrough(decompressor)
+    ? // @ts-expect-error DecompressionStream types don't match pipeThrough exactly
+      stream.pipeThrough(new DecompressionStream('gzip'))
     : stream
 
   const rl = readLines(inputStream.getReader(), progressBar)

@@ -31,9 +31,8 @@
     "prebuild": "pnpm clean",
     "build": "tsc && webpack",
     "clean": "rimraf dist bundle",
-    "prepack": "pnpm clean  && pnpm docs",
-    "predocs": "pnpm build",
-    "docs": "./generate_readme.sh > README.md"
+    "prepack": "pnpm clean && pnpm build && pnpm generate-readme",
+    "generate-readme": "./generate_readme.sh > README.md"
   },
   "dependencies": {
     "cli-progress": "^3.12.0",

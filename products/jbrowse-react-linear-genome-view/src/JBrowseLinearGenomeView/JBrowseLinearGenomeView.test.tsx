@@ -2,10 +2,7 @@ import { render, waitFor } from '@testing-library/react'
 
 import { createViewState } from '../index.ts'
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView.tsx'
-jest.mock(
-  '@jbrowse/react-linear-genome-view2/src/makeWorkerInstance',
-  () => () => {},
-)
+jest.mock('../makeWorkerInstance', () => () => {})
 
 const timeout = 30000
 
