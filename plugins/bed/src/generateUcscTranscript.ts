@@ -39,6 +39,16 @@ function calculatePhasesFromCds(
   return phaseMap
 }
 
+/**
+ * Convert UCSC exonFrames (reading frame 0,1,2) to GFF phase (bases to skip 0,1,2)
+ * Frame 0 → phase 0 (first base at codon position 0, skip 0)
+ * Frame 1 → phase 2 (first base at codon position 1, skip 2 to next codon)
+ * Frame 2 → phase 1 (first base at codon position 2, skip 1 to next codon)
+ */
+function frameToPhase(frame: number) {
+  return (3 - frame) % 3
+}
+
 export function generateUcscTranscript(data: TranscriptFeat) {
   const { strand = 0, uniqueId, ...rest } = data
   const {
@@ -55,6 +65,11 @@ export function generateUcscTranscript(data: TranscriptFeat) {
     blockCount: _7,
     ...rest2
   } = rest
+
+  // exonFrames from bigGenePred - the @gmod/bed parser returns it in genomic order
+  const exonFrames = (rest2.exonFrames ?? rest2._exonFrames) as
+    | number[]
+    | undefined
 
   const feats = oldSubfeatures
     .filter(child => child.type === 'block')
@@ -75,21 +90,25 @@ export function generateUcscTranscript(data: TranscriptFeat) {
     }
   }
 
-  // Calculate phases from CDS regions
-  const cdsRegions: { start: number; end: number }[] = []
-  for (const block of feats) {
-    const { start, end } = block
-    if (thickStart < end && thickEnd > start) {
-      cdsRegions.push({
-        start: Math.max(start, thickStart),
-        end: Math.min(end, thickEnd),
-      })
+  // If exonFrames not available, calculate phases from CDS regions
+  let calculatedPhases: Map<number, number> | undefined
+  if (!exonFrames) {
+    const cdsRegions: { start: number; end: number }[] = []
+    for (const block of feats) {
+      const { start, end } = block
+      if (thickStart < end && thickEnd > start) {
+        cdsRegions.push({
+          start: Math.max(start, thickStart),
+          end: Math.min(end, thickEnd),
+        })
+      }
     }
+    calculatedPhases = calculatePhasesFromCds(cdsRegions, strand)
   }
-  const calculatedPhases = calculatePhasesFromCds(cdsRegions, strand)
 
   const subfeatures: MinimalFeature[] = []
-  for (const block of feats) {
+  for (const [i, feat] of feats.entries()) {
+    const block = feat
     const { start, end } = block
 
     if (thickStart >= end) {
@@ -106,7 +125,17 @@ export function generateUcscTranscript(data: TranscriptFeat) {
 
       const cdsStart = Math.max(start, thickStart)
       const cdsEnd = Math.min(end, thickEnd)
-      const phase = calculatedPhases.get(cdsStart) ?? 0
+
+      // Get phase from exonFrames (with conversion) or calculated phases
+      let phase = 0
+      if (exonFrames) {
+        const frame = exonFrames[i]
+        if (frame !== undefined && frame >= 0) {
+          phase = frameToPhase(frame)
+        }
+      } else if (calculatedPhases) {
+        phase = calculatedPhases.get(cdsStart) ?? 0
+      }
 
       subfeatures.push({
         type: 'CDS',

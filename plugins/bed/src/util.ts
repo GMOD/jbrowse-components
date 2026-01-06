@@ -17,10 +17,10 @@ function defaultParser(fields: string[], splitLine: string[]) {
   const obj = {} as Record<string, string>
   let hasBlockCount = false
 
-  for (let i = 0; i < splitLine.length; i++) {
+  for (const [i, element] of splitLine.entries()) {
     const field = fields[i]
     if (field) {
-      obj[field] = splitLine[i]!
+      obj[field] = element!
       if (field === 'blockCount') {
         hasBlockCount = true
       }
