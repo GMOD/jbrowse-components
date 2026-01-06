@@ -493,7 +493,7 @@ export function createJBrowseTheme(
 // augments them to have light and dark variants but not for anything else, so
 // we augment them here
 function augmentThemeColors(theme: ThemeOptions = {}) {
-  const augmentedPalette: Record<string, PaletteColor> = {}
+  const augmentedPalette: Record<string, PaletteColor> = Object.create(null)
   for (const entry of [
     'primary',
     'secondary',

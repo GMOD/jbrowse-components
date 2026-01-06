@@ -64,7 +64,7 @@ test('fails if user selects a directory that does not exist', async () => {
 xtest('upgrades a directory', async () => {
   await runInTmpDir(async ctx => {
     mockFetch(url => {
-      if (url.includes('api.github.com')) {
+      if (new URL(url).host === 'api.github.com') {
         return { json: releaseArray }
       }
       return {
@@ -84,7 +84,7 @@ xtest('upgrades a directory', async () => {
 test('upgrades a directory with a specific version', async () => {
   await runInTmpDir(async ctx => {
     mockFetch(url => {
-      if (url.includes('api.github.com')) {
+      if (new URL(url).host === 'api.github.com') {
         return { json: releaseArray[1] }
       }
       return {

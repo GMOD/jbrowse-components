@@ -17,6 +17,9 @@ export function isSource(arg: any): arg is Source {
 type Obj = Record<string, any>
 export function deepUpdate(a: Obj, b: Obj): Obj {
   for (const prop of Object.keys(b)) {
+    if (prop === '__proto__' || prop === 'constructor' || prop === 'prototype') {
+      continue
+    }
     if (
       prop in a &&
       typeof b[prop] === 'object' &&
@@ -130,6 +133,9 @@ function mixin(
 ): Obj {
   const empty = {}
   for (const name in source) {
+    if (name === '__proto__' || name === 'constructor' || name === 'prototype') {
+      continue
+    }
     // the (!(name in empty) || empty[name] !== s) condition avoids copying
     // properties in "source" inherited from Object.prototype.	 For example,
     // if dest has a custom toString() method, don't overwrite it with the
