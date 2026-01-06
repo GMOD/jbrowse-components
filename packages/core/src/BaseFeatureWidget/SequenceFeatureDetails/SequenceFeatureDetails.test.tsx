@@ -4,8 +4,8 @@ import { render } from '@testing-library/react'
 
 import SequencePanel from './SequencePanel.tsx'
 import { SequenceFeatureDetailsF } from './model.ts'
-import DLGAP3 from './test_data/DLGAP3.js'
-import NCDN from './test_data/NCDN.js'
+import DLGAP3 from './test_data/DLGAP3.ts'
+import NCDN from './test_data/NCDN.ts'
 
 const f = {
   start: 1200,

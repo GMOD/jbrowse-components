@@ -23,7 +23,7 @@ import { autorun } from 'mobx'
 
 import jbrowseWebFactory from '../jbrowseModel.ts'
 import { filterSessionInPlace } from '../util.ts'
-import { version } from '../version.js'
+import { version } from '../version.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'

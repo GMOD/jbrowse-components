@@ -9,7 +9,7 @@ import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import corePlugins from '../corePlugins.ts'
 import createConfigModel from './createConfigModel.ts'
 import createSessionModel from './createSessionModel.ts'
-import { version } from '../version.js'
+import { version } from '../version.ts'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { UriLocation } from '@jbrowse/core/util'
