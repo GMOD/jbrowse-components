@@ -51,7 +51,7 @@ describe('generateUcscTranscript', () => {
 
     expect(result.type).toBe('mRNA')
     expect(result.strand).toBe(1)
-    // Without exonFrames, phases are calculated from cumulative CDS widths
+    // Phases are calculated from cumulative CDS widths
     // CDS1: 1100-1200 (100bp), phase=0, cumulative=100
     // CDS2: 1400-1700 (300bp), phase=(3-100%3)%3=2, cumulative=400
     // CDS3: 1800-1900 (100bp), phase=(3-400%3)%3=2
@@ -86,7 +86,7 @@ describe('generateUcscTranscript', () => {
 
     expect(result.strand).toBe(-1)
     // For negative strand, 5' is at high coords, 3' is at low coords
-    // Without exonFrames, phases calculated in transcriptional order (high to low for minus)
+    // Phases calculated in transcriptional order (high to low for minus)
     // CDS3: 1800-1900 (100bp), phase=0, cumulative=100
     // CDS2: 1400-1700 (300bp), phase=(3-100%3)%3=2, cumulative=400
     // CDS1: 1100-1200 (100bp), phase=(3-400%3)%3=2
@@ -127,121 +127,9 @@ describe('generateUcscTranscript', () => {
     ])
   })
 
-  it('uses exonFrames for phase on positive strand', () => {
-    const result = generateUcscTranscript({
-      uniqueId: 'test4',
-      start: 1000,
-      end: 2000,
-      refName: 'chr1',
-      type: 'mRNA',
-      strand: 1,
-      thickStart: 1000,
-      thickEnd: 2000,
-      blockCount: 3,
-      blockSizes: [100, 100, 100],
-      chromStarts: [0, 400, 800],
-      exonFrames: [0, 2, 1],
-      subfeatures: [
-        { type: 'block', start: 1000, end: 1100, refName: 'chr1' },
-        { type: 'block', start: 1400, end: 1500, refName: 'chr1' },
-        { type: 'block', start: 1800, end: 1900, refName: 'chr1' },
-      ],
-    })
-
-    expect(result.subfeatures).toEqual([
-      { type: 'CDS', phase: 0, start: 1000, end: 1100, refName: 'chr1' },
-      { type: 'CDS', phase: 2, start: 1400, end: 1500, refName: 'chr1' },
-      { type: 'CDS', phase: 1, start: 1800, end: 1900, refName: 'chr1' },
-    ])
-  })
-
-  it('reverses exonFrames for negative strand', () => {
-    // exonFrames is in transcriptional order (5' to 3')
-    // For minus strand, 5' is at high coords, so exonFrames[0] is for rightmost block
-    // Blocks sorted by genomic position need reversed exonFrames
-    const result = generateUcscTranscript({
-      uniqueId: 'test5',
-      start: 1000,
-      end: 2000,
-      refName: 'chr1',
-      type: 'mRNA',
-      strand: -1,
-      thickStart: 1000,
-      thickEnd: 2000,
-      blockCount: 3,
-      blockSizes: [100, 100, 100],
-      chromStarts: [0, 400, 800],
-      exonFrames: [0, 2, 1], // transcriptional order: 5'(high) to 3'(low)
-      subfeatures: [
-        { type: 'block', start: 1000, end: 1100, refName: 'chr1' },
-        { type: 'block', start: 1400, end: 1500, refName: 'chr1' },
-        { type: 'block', start: 1800, end: 1900, refName: 'chr1' },
-      ],
-    })
-
-    // After reversing: [1, 2, 0] in genomic order
-    expect(result.subfeatures).toEqual([
-      { type: 'CDS', phase: 1, start: 1000, end: 1100, refName: 'chr1' },
-      { type: 'CDS', phase: 2, start: 1400, end: 1500, refName: 'chr1' },
-      { type: 'CDS', phase: 0, start: 1800, end: 1900, refName: 'chr1' },
-    ])
-  })
-
-  it('handles _exonFrames (underscore prefix from BigBed)', () => {
-    const result = generateUcscTranscript({
-      uniqueId: 'test6',
-      start: 1000,
-      end: 1500,
-      refName: 'chr1',
-      type: 'mRNA',
-      strand: 1,
-      thickStart: 1000,
-      thickEnd: 1500,
-      blockCount: 2,
-      blockSizes: [200, 200],
-      chromStarts: [0, 300],
-      _exonFrames: [0, 1],
-      subfeatures: [
-        { type: 'block', start: 1000, end: 1200, refName: 'chr1' },
-        { type: 'block', start: 1300, end: 1500, refName: 'chr1' },
-      ],
-    })
-
-    expect(result.subfeatures).toEqual([
-      { type: 'CDS', phase: 0, start: 1000, end: 1200, refName: 'chr1' },
-      { type: 'CDS', phase: 1, start: 1300, end: 1500, refName: 'chr1' },
-    ])
-  })
-
-  it('defaults phase to 0 when exonFrames is -1 (UTR in exonFrames)', () => {
-    const result = generateUcscTranscript({
-      uniqueId: 'test7',
-      start: 1000,
-      end: 2000,
-      refName: 'chr1',
-      type: 'mRNA',
-      strand: 1,
-      thickStart: 1100,
-      thickEnd: 1900,
-      blockCount: 3,
-      blockSizes: [200, 300, 200],
-      chromStarts: [0, 400, 800],
-      exonFrames: [-1, 0, -1], // -1 for UTR-containing blocks
-      subfeatures: [
-        { type: 'block', start: 1000, end: 1200, refName: 'chr1' },
-        { type: 'block', start: 1400, end: 1700, refName: 'chr1' },
-        { type: 'block', start: 1800, end: 2000, refName: 'chr1' },
-      ],
-    })
-
-    // CDS parts should have phase 0 (default when exonFrames is -1)
-    const cdsSubfeatures = result.subfeatures.filter(f => f.type === 'CDS')
-    expect(cdsSubfeatures.every(f => f.phase === 0)).toBe(true)
-  })
-
   it('handles block entirely within UTR regions', () => {
     const result = generateUcscTranscript({
-      uniqueId: 'test8',
+      uniqueId: 'test4',
       start: 1000,
       end: 3000,
       refName: 'chr1',
@@ -272,7 +160,7 @@ describe('generateUcscTranscript', () => {
 
   it('excludes internal BED fields from output', () => {
     const result = generateUcscTranscript({
-      uniqueId: 'test9',
+      uniqueId: 'test5',
       start: 1000,
       end: 1500,
       refName: 'chr1',
@@ -302,12 +190,12 @@ describe('generateUcscTranscript', () => {
 
     // But other fields should be preserved
     expect(result.name).toBe('gene1')
-    expect(result.uniqueId).toBe('test9')
+    expect(result.uniqueId).toBe('test5')
   })
 
   it('sorts blocks by start position', () => {
     const result = generateUcscTranscript({
-      uniqueId: 'test10',
+      uniqueId: 'test6',
       start: 1000,
       end: 2000,
       refName: 'chr1',
@@ -332,7 +220,7 @@ describe('generateUcscTranscript', () => {
     expect(result.subfeatures[2]!.start).toBe(1800)
   })
 
-  describe('calculated phase (when exonFrames missing)', () => {
+  describe('calculated phase', () => {
     it('calculates phase from cumulative CDS widths for positive strand', () => {
       // 3 CDS of varying sizes to test phase calculation
       const result = generateUcscTranscript({
@@ -426,37 +314,6 @@ describe('generateUcscTranscript', () => {
         { type: 'CDS', phase: 1, start: 200, end: 300, refName: 'chr1' },
         { type: 'CDS', phase: 0, start: 400, end: 450, refName: 'chr1' },
         { type: 'three_prime_UTR', start: 450, end: 500, refName: 'chr1' },
-      ])
-    })
-
-    it('prefers exonFrames over calculated phase when available', () => {
-      const result = generateUcscTranscript({
-        uniqueId: 'calc4',
-        start: 0,
-        end: 300,
-        refName: 'chr1',
-        type: 'mRNA',
-        strand: 1,
-        thickStart: 0,
-        thickEnd: 300,
-        blockCount: 3,
-        blockSizes: [100, 100, 100],
-        chromStarts: [0, 100, 200],
-        exonFrames: [0, 1, 2], // explicit phases override calculation
-        subfeatures: [
-          { type: 'block', start: 0, end: 100, refName: 'chr1' },
-          { type: 'block', start: 100, end: 200, refName: 'chr1' },
-          { type: 'block', start: 200, end: 300, refName: 'chr1' },
-        ],
-      })
-
-      // Should use exonFrames values, not calculated
-      // Calculated would be: 0, (3-100%3)%3=2, (3-200%3)%3=1
-      // But exonFrames says: 0, 1, 2
-      expect(result.subfeatures).toEqual([
-        { type: 'CDS', phase: 0, start: 0, end: 100, refName: 'chr1' },
-        { type: 'CDS', phase: 1, start: 100, end: 200, refName: 'chr1' },
-        { type: 'CDS', phase: 2, start: 200, end: 300, refName: 'chr1' },
       ])
     })
   })

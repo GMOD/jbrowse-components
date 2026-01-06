@@ -23,9 +23,13 @@ export async function fetchSequence(
   renderProps: RenderArgsDeserialized,
   region: Region,
 ): Promise<string | undefined> {
-  const { sessionId, sequenceAdapter } = renderProps
+  const { sessionId, sequenceAdapter, canonicalToSeqAdapterRefNames } =
+    renderProps as any
+  // Translate canonical refName to sequence adapter refName if mapping exists
+  const seqAdapterRefName =
+    canonicalToSeqAdapterRefNames?.[region.refName] ?? region.refName
+
   if (!sequenceAdapter) {
-    console.warn('[fetchSequence] No sequenceAdapter provided')
     return undefined
   }
   try {
@@ -39,13 +43,13 @@ export async function fetchSequence(
       (dataAdapter as BaseFeatureDataAdapter)
         .getFeatures({
           ...region,
+          refName: seqAdapterRefName,
           start: Math.max(0, region.start),
           end: region.end,
         })
         .pipe(toArray()),
     )
-    const seq = feats[0]?.get('seq') as string | undefined
-    return seq
+    return feats[0]?.get('seq') as string | undefined
   } catch (error) {
     console.warn('[fetchSequence] Failed to fetch sequence:', error)
     return undefined

@@ -56,14 +56,6 @@ export function generateUcscTranscript(data: TranscriptFeat) {
     ...rest2
   } = rest
 
-  // exonFrames from bigGenePred is in transcriptional order (5' to 3')
-  // For minus strand, we need to reverse since blocks are sorted by genomic position
-  const rawExonFrames = (rest2.exonFrames ?? rest2._exonFrames) as
-    | number[]
-    | undefined
-  const exonFrames =
-    rawExonFrames && strand === -1 ? [...rawExonFrames].reverse() : rawExonFrames
-
   const feats = oldSubfeatures
     .filter(child => child.type === 'block')
     .sort((a, b) => a.start - b.start)
@@ -83,25 +75,21 @@ export function generateUcscTranscript(data: TranscriptFeat) {
     }
   }
 
-  // If exonFrames not available, calculate phases from CDS regions
-  let calculatedPhases: Map<number, number> | undefined
-  if (!exonFrames) {
-    const cdsRegions: { start: number; end: number }[] = []
-    for (const block of feats) {
-      const { start, end } = block
-      if (thickStart < end && thickEnd > start) {
-        cdsRegions.push({
-          start: Math.max(start, thickStart),
-          end: Math.min(end, thickEnd),
-        })
-      }
+  // Calculate phases from CDS regions
+  const cdsRegions: { start: number; end: number }[] = []
+  for (const block of feats) {
+    const { start, end } = block
+    if (thickStart < end && thickEnd > start) {
+      cdsRegions.push({
+        start: Math.max(start, thickStart),
+        end: Math.min(end, thickEnd),
+      })
     }
-    calculatedPhases = calculatePhasesFromCds(cdsRegions, strand)
   }
+  const calculatedPhases = calculatePhasesFromCds(cdsRegions, strand)
 
   const subfeatures: MinimalFeature[] = []
-  for (let i = 0; i < feats.length; i++) {
-    const block = feats[i]!
+  for (const block of feats) {
     const { start, end } = block
 
     if (thickStart >= end) {
@@ -118,15 +106,7 @@ export function generateUcscTranscript(data: TranscriptFeat) {
 
       const cdsStart = Math.max(start, thickStart)
       const cdsEnd = Math.min(end, thickEnd)
-
-      // Get phase from exonFrames or calculated phases
-      let phase = 0
-      if (exonFrames) {
-        const frame = exonFrames[i]
-        phase = frame !== undefined && frame >= 0 ? frame : 0
-      } else if (calculatedPhases) {
-        phase = calculatedPhases.get(cdsStart) ?? 0
-      }
+      const phase = calculatedPhases.get(cdsStart) ?? 0
 
       subfeatures.push({
         type: 'CDS',
