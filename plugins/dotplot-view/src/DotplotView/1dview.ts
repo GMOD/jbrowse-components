@@ -48,16 +48,30 @@ const Dotplot1DView = Base1DView.extend(self => {
        * #getter
        */
       get maxOffset() {
+        const contentPx = self.displayedRegionsTotalPx
+        const viewWidth = self.width
+        // When content is smaller than view (zoomed out), center it
+        if (contentPx <= viewWidth) {
+          return (contentPx - viewWidth) / 2
+        }
+        // Otherwise allow scrolling with small padding
         const leftPadding = 10
-        return self.displayedRegionsTotalPx - leftPadding
+        return contentPx - leftPadding
       },
 
       /**
        * #getter
        */
       get minOffset() {
+        const contentPx = self.displayedRegionsTotalPx
+        const viewWidth = self.width
+        // When content is smaller than view (zoomed out), center it
+        if (contentPx <= viewWidth) {
+          return (contentPx - viewWidth) / 2
+        }
+        // Otherwise allow scrolling with small padding
         const rightPadding = 30
-        return -self.width + rightPadding
+        return -viewWidth + rightPadding
       },
     },
     actions: {

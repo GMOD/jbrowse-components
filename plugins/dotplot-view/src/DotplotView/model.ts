@@ -432,6 +432,13 @@ export default function stateModelFactory(pm: PluginManager) {
       zoomOut() {
         self.hview.zoomOut()
         self.vview.zoomOut()
+        // Center when zoomed out to show all content
+        if (self.hview.bpPerPx >= self.hview.maxBpPerPx * 0.99) {
+          self.hview.center()
+        }
+        if (self.vview.bpPerPx >= self.vview.maxBpPerPx * 0.99) {
+          self.vview.center()
+        }
       },
       /**
        * #action
