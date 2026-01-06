@@ -29,6 +29,54 @@ interface FeatPos {
 
 type LSV = LinearSyntenyViewModel
 
+/**
+ * Computes a mapping from query chromosomes to target chromosomes based on
+ * alignment coverage. For each query chromosome, finds the target chromosome
+ * that has the most aligned bases. This is used by syri color mode to
+ * distinguish translocations (alignments to non-primary target chromosomes)
+ * from syntenic alignments.
+ */
+function computeChromosomeMapping(features: Feature[]): Map<string, string> {
+  // Track alignment coverage: queryChrom -> targetChrom -> totalBases
+  const coverageMap = new Map<string, Map<string, number>>()
+
+  for (const f of features) {
+    const queryChrom = f.get('refName')
+    const mate = f.get('mate')
+    const targetChrom = mate?.refName
+    if (!queryChrom || !targetChrom) {
+      continue
+    }
+
+    const alignmentLength = Math.abs(f.get('end') - f.get('start'))
+
+    if (!coverageMap.has(queryChrom)) {
+      coverageMap.set(queryChrom, new Map())
+    }
+    const targetMap = coverageMap.get(queryChrom)!
+    const currentCoverage = targetMap.get(targetChrom) || 0
+    targetMap.set(targetChrom, currentCoverage + alignmentLength)
+  }
+
+  // For each query chromosome, find the target with highest coverage
+  const mapping = new Map<string, string>()
+  for (const [queryChrom, targetMap] of coverageMap) {
+    let bestTarget = ''
+    let bestCoverage = 0
+    for (const [targetChrom, coverage] of targetMap) {
+      if (coverage > bestCoverage) {
+        bestCoverage = coverage
+        bestTarget = targetChrom
+      }
+    }
+    if (bestTarget) {
+      mapping.set(queryChrom, bestTarget)
+    }
+  }
+
+  return mapping
+}
+
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   addDisposer(
     self,
@@ -172,6 +220,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
 
         self.setFeatPositions(map)
+
+        // Compute chromosome mapping for syri color mode
+        const chromosomeMapping = computeChromosomeMapping(feats)
+        self.setChromosomeMapping(chromosomeMapping)
       },
       { fireImmediately: true },
     ),

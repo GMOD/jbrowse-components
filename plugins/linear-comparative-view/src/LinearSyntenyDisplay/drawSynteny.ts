@@ -81,19 +81,36 @@ function normalizeChromosomeName(name: string): string {
 }
 
 // Classify a synteny feature as SYN, INV, TRANS, or DUP based on syri conventions
+// Uses coverage-based chromosome mapping when available, falls back to name comparison
 function classifySyriType(
   queryRefName: string,
   mateRefName: string | undefined,
   strand: number,
+  chromosomeMapping?: Map<string, string> | null,
 ): SyriType {
-  // Compare normalized refNames to detect translocations
-  const normalizedQuery = normalizeChromosomeName(queryRefName)
-  const normalizedMate = normalizeChromosomeName(mateRefName || '')
+  // Determine if this is a translocation
+  let isTranslocation = false
 
-  if (normalizedQuery !== normalizedMate) {
+  if (chromosomeMapping && chromosomeMapping.size > 0) {
+    // Use coverage-based mapping: a translocation is when the alignment
+    // goes to a chromosome other than the primary target for this query
+    const expectedTarget = chromosomeMapping.get(queryRefName)
+    if (expectedTarget && mateRefName && expectedTarget !== mateRefName) {
+      isTranslocation = true
+    }
+  } else {
+    // Fallback to name comparison when no mapping available
+    const normalizedQuery = normalizeChromosomeName(queryRefName)
+    const normalizedMate = normalizeChromosomeName(mateRefName || '')
+    if (normalizedQuery !== normalizedMate) {
+      isTranslocation = true
+    }
+  }
+
+  if (isTranslocation) {
     return 'TRANS'
   }
-  // Same chromosome - check strand for inversion
+  // Same/matching chromosome - check strand for inversion
   if (strand === -1) {
     return 'INV'
   }
@@ -156,6 +173,7 @@ function createColorResolver(
   colorBy: string,
   alpha: number,
   queryColorCache: Map<string, string>,
+  chromosomeMapping?: Map<string, string> | null,
 ): ColorResolver {
   // Pre-calculate colors with alpha for the active mode only
   const cigarColorsWithAlpha = {
@@ -203,7 +221,12 @@ function createColorResolver(
     }
     return {
       getMatchColor: (strand, refName, mateRefName) => {
-        const syriType = classifySyriType(refName, mateRefName, strand)
+        const syriType = classifySyriType(
+          refName,
+          mateRefName,
+          strand,
+          chromosomeMapping,
+        )
         return syriColorsWithAlpha[syriType]
       },
       getCigarColor: op => cigarColorsWithAlpha[op],
@@ -342,8 +365,15 @@ export function drawRef(
     drawLocationMarkers: drawLocationMarkersEnabled,
     width,
   } = view
-  const { level, height, featPositions, alpha, minAlignmentLength, colorBy } =
-    model
+  const {
+    level,
+    height,
+    featPositions,
+    alpha,
+    minAlignmentLength,
+    colorBy,
+    chromosomeMapping,
+  } = model
   const bpPerPxs = view.views.map(v => v.bpPerPx)
   const offsets = view.views.map(v => v.offsetPx)
   const offsetL0 = offsets[level]!
@@ -374,7 +404,12 @@ export function drawRef(
 
   // Create color resolver (handles all colorBy modes - improvement #8)
   const queryColorCache = new Map<string, string>()
-  const colors = createColorResolver(colorBy, alpha, queryColorCache)
+  const colors = createColorResolver(
+    colorBy,
+    alpha,
+    queryColorCache,
+    chromosomeMapping,
+  )
   const useCustomColor = colorBy !== 'default'
 
   // Group thin features by color for batched drawing
