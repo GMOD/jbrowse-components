@@ -12,19 +12,6 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "baseUrl": ".",
-    "composite": true,
-    "declarationMap": true
-  },
-  "references": [
-    {
-      "path": "../../packages/core/tsconfig.build.esm.json"
-    },
-    {
-      "path": "../data-management/tsconfig.build.esm.json"
-    },
-    {
-      "path": "../linear-genome-view/tsconfig.build.esm.json"
-    }
-  ]
+    "baseUrl": "."
+  }
 }

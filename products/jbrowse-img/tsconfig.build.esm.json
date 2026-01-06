@@ -3,16 +3,6 @@
   "compilerOptions": {
     "outDir": "esm",
     "paths": {},
-    "baseUrl": ".",
-    "composite": true,
-    "declarationMap": true
-  },
-  "references": [
-    {
-      "path": "../../plugins/linear-genome-view/tsconfig.build.esm.json"
-    },
-    {
-      "path": "../jbrowse-react-linear-genome-view/tsconfig.build.esm.json"
-    }
-  ]
+    "baseUrl": "."
+  }
 }

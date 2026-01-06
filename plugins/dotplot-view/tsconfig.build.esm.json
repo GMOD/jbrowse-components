@@ -12,16 +12,6 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "baseUrl": ".",
-    "composite": true,
-    "declarationMap": true
-  },
-  "references": [
-    {
-      "path": "../../packages/core/tsconfig.build.esm.json"
-    },
-    {
-      "path": "../alignments/tsconfig.build.esm.json"
-    }
-  ]
+    "baseUrl": "."
+  }
 }

@@ -9,7 +9,7 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "tsc -b tsconfig.build.json",
+    "build": "pnpm -r build",
     "changelog": "scripts/generate-changelog.sh",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
