@@ -9,7 +9,7 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "NODE_OPTIONS='--max-old-space-size=7000' node --experimental-strip-types scripts/build.ts",
+    "build": "pnpm -r build |cat",
     "changelog": "scripts/generate-changelog.sh",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",

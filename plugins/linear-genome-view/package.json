@@ -17,15 +17,13 @@
   "author": "JBrowse Team",
   "main": "src/index.ts",
   "files": [
-    "dist",
     "esm"
   ],
   "scripts": {
     "prebuild": "pnpm clean",
     "build": "pnpm run /^build:/",
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
-    "clean": "rimraf dist esm *.tsbuildinfo",
+    "clean": "rimraf esm *.tsbuildinfo",
     "test": "cd ../..; jest --passWithNoTests plugins/linear-genome-view",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build"
@@ -48,13 +46,12 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
     "exports": {
       ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./esm/index.js",
-        "require": "./dist/index.js"
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
       }
     }
   },
