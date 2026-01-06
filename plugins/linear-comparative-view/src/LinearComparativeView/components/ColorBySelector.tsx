@@ -61,6 +61,16 @@ const ColorBySelector = observer(function ColorBySelector({
           helpText:
             'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
         },
+        {
+          label: 'SyRI',
+          type: 'radio',
+          checked: colorBy === 'syri',
+          onClick: () => {
+            setColorBy('syri')
+          },
+          helpText:
+            'Color alignments by structural variation type using the SyRI color scheme: grey for syntenic matches (same chromosome, forward strand), orange for inversions (same chromosome, reverse strand), and green for translocations (different chromosomes).',
+        },
       ]}
     >
       <PaletteIcon />

@@ -56,6 +56,15 @@ const strandCigarColors = {
   '=': '#f003',
 }
 
+// SyRI-style colors (based on schneebergerlab/plotsr)
+// SYN (syntenic): grey, INV (inversion): orange, TRANS (translocation): green, DUP (duplication): blue
+const syriColors = {
+  SYN: '#808080', // grey for matches
+  INV: '#FFA500', // orange for inversions
+  TRANS: '#228B22', // forest green for translocations
+  DUP: '#00BBFF', // cyan-blue for duplications
+}
+
 // Color scheme configuration
 const colorSchemes = {
   default: {
@@ -69,9 +78,36 @@ const colorSchemes = {
   query: {
     cigarColors: defaultCigarColors,
   },
+  syri: {
+    cigarColors: defaultCigarColors,
+    syriColors,
+  },
 }
 
 type ColorScheme = keyof typeof colorSchemes
+
+// Classify a synteny feature as SYN, INV, TRANS, or DUP based on syri conventions
+// SYN: same chromosome, forward strand
+// INV: same chromosome, reverse strand
+// TRANS: different chromosomes
+// DUP: currently not detected (would need overlap analysis)
+function classifySyriType(
+  queryRefName: string,
+  mateRefName: string,
+  strand: number,
+): keyof typeof syriColors {
+  // Compare refNames to detect translocations
+  // Note: This is a simplification - true translocation detection would need
+  // to account for chromosome naming differences between assemblies
+  if (queryRefName !== mateRefName) {
+    return 'TRANS'
+  }
+  // Same chromosome - check strand for inversion
+  if (strand === -1) {
+    return 'INV'
+  }
+  return 'SYN'
+}
 
 function applyAlpha(color: string, alpha: number) {
   // Skip colord processing if alpha is 1 (optimization)
@@ -263,6 +299,17 @@ export function drawRef(
   const posColorWithAlpha = applyAlpha(posColor, alpha)
   const negColorWithAlpha = applyAlpha(negColor, alpha)
 
+  // Precalculate syri colors with alpha
+  const useSyriColor = colorBy === 'syri'
+  const syriColorsWithAlpha = useSyriColor
+    ? {
+        SYN: applyAlpha(syriColors.SYN, alpha),
+        INV: applyAlpha(syriColors.INV, alpha),
+        TRANS: applyAlpha(syriColors.TRANS, alpha),
+        DUP: applyAlpha(syriColors.DUP, alpha),
+      }
+    : null
+
   // Cache for query colors with alpha applied
   const queryColorCache = new Map<string, string>()
 
@@ -286,6 +333,7 @@ export function drawRef(
   // Cache colorBy checks outside loop for performance
   const useStrandColorThin = colorBy === 'strand'
   const useQueryColorThin = colorBy === 'query'
+  const useSyriColorThin = colorBy === 'syri'
 
   mainCanvas.fillStyle = colorMapWithAlpha.M
   mainCanvas.strokeStyle = colorMapWithAlpha.M
@@ -328,6 +376,12 @@ export function drawRef(
         colorKey = strand === -1 ? 'neg' : 'pos'
       } else if (useQueryColorThin) {
         colorKey = f.get('refName')
+      } else if (useSyriColorThin) {
+        const strand = f.get('strand')
+        const queryRefName = f.get('refName')
+        const mate = f.get('mate')
+        const mateRefName = mate?.refName
+        colorKey = `syri_${classifySyriType(queryRefName, mateRefName, strand)}`
       }
 
       if (!thinLinesByColor.has(colorKey)) {
@@ -344,6 +398,9 @@ export function drawRef(
       mainCanvas.strokeStyle = posColorWithAlpha
     } else if (colorKey === 'neg') {
       mainCanvas.strokeStyle = negColorWithAlpha
+    } else if (colorKey.startsWith('syri_')) {
+      const syriType = colorKey.slice(5) as keyof typeof syriColors
+      mainCanvas.strokeStyle = syriColorsWithAlpha![syriType]
     } else if (colorKey !== 'default') {
       mainCanvas.strokeStyle = getQueryColorWithAlpha(colorKey)
     } else {
@@ -382,6 +439,8 @@ export function drawRef(
     // Cache feature properties at loop start
     const strand = f.get('strand')
     const refName = f.get('refName')
+    const mate = useSyriColor ? f.get('mate') : null
+    const mateRefName = mate?.refName
 
     // Filter by total alignment length for this query sequence
     if (minAlignmentLength > 0) {
@@ -481,6 +540,9 @@ export function drawRef(
                   strand === -1 ? negColorWithAlpha : posColorWithAlpha
               } else if (useQueryColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
+              } else if (useSyriColor && !isInsertionOrDeletion) {
+                const syriType = classifySyriType(refName, mateRefName, strand)
+                mainCanvas.fillStyle = syriColorsWithAlpha![syriType]
               } else {
                 mainCanvas.fillStyle = colorMapWithAlpha[letter]
               }
@@ -536,13 +598,16 @@ export function drawRef(
             strand === -1 ? negColorWithAlpha : posColorWithAlpha
         } else if (useQueryColor) {
           mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
+        } else if (useSyriColor) {
+          const syriType = classifySyriType(refName, mateRefName, strand)
+          mainCanvas.fillStyle = syriColorsWithAlpha![syriType]
         }
 
         draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         mainCanvas.fill()
 
         // Reset to default color if needed
-        if (useStrandColor || useQueryColor) {
+        if (useStrandColor || useQueryColor || useSyriColor) {
           mainCanvas.fillStyle = colorMapWithAlpha.M
         }
       }
