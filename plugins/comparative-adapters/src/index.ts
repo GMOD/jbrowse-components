@@ -11,6 +11,7 @@ import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
+import SyRIAdapterF from './SyRIAdapter/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -26,6 +27,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     MCScanSimpleAnchorsAdapterF(pluginManager)
     MashMapAdapterF(pluginManager)
     BlastTabularAdapter(pluginManager)
+    SyRIAdapterF(pluginManager)
     ComparativeAddTrackComponentF(pluginManager)
     MCScanAddTrackComponentF(pluginManager)
     GuessAdapterF(pluginManager)

@@ -7,6 +7,7 @@ export const syntenyTypes = [
   'MCScanAnchorsAdapter',
   'MCScanSimpleAnchorsAdapter',
   'PairwiseIndexedPAFAdapter',
+  'SyRIAdapter',
 ]
 
 export const pairwiseTypes = [
@@ -16,6 +17,7 @@ export const pairwiseTypes = [
   'MashMapAdapter',
   'BlastTabularAdapter',
   'PairwiseIndexedPAFAdapter',
+  'SyRIAdapter',
 ]
 
 export const mcscanTypes = [
