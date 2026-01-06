@@ -325,6 +325,12 @@ export function renderBlockData(
     const trackInstanceId = parentTrack.id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
+    // Get seq adapter refName for sequence fetching (e.g., for peptide rendering)
+    const assembly = assemblyManager.get(self.region.assemblyName)
+    const seqAdapterRefName = assembly?.getSeqAdapterRefName(
+      self.region.refName,
+    )
+
     return {
       rendererType,
       rpcManager,
@@ -339,7 +345,12 @@ export function renderBlockData(
           }
         },
         assemblyName: self.region.assemblyName,
-        regions: [self.region],
+        regions: [
+          {
+            ...(self.region as Omit<Region, symbol>),
+            seqAdapterRefName,
+          },
+        ],
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
