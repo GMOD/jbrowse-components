@@ -77,16 +77,13 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
       {dblocks
         .filter(region => !hide.has(region.key))
         .map(region => {
-          const x = region.offsetPx
-          const y = 0
-          const xoff = Math.floor(x - hview.offsetPx)
-
+          const xoff = Math.floor(region.offsetPx - hview.offsetPx)
           return (
             <text
-              transform={`rotate(${htextRotation},${xoff},${y})`}
-              key={JSON.stringify(region)}
+              transform={`rotate(${htextRotation},${xoff},0)`}
+              key={region.key}
               x={xoff}
-              y={y + 1}
+              y={1}
               fontSize={11}
               dominantBaseline="hanging"
               textAnchor="end"
@@ -99,13 +96,13 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
       {ticks.map(([tick, x]) =>
         x > 0 && x < width ? (
           <line
-            key={`line-${JSON.stringify(tick)}`}
+            key={`line-${tick.refName}-${tick.base}`}
             x1={x}
             x2={x}
             y1={0}
             y2={tick.type === 'major' ? 6 : 4}
             strokeWidth={1}
-            {...getFillProps(theme.palette.text.primary)}
+            {...getStrokeProps(theme.palette.text.primary)}
           />
         ) : null,
       )}
@@ -117,7 +114,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               x={x - 7}
               y={0}
               transform={`rotate(${htextRotation},${x},0)`}
-              key={`text-${JSON.stringify(tick)}`}
+              key={`text-${tick.refName}-${tick.base}`}
               fontSize={11}
               dominantBaseline="middle"
               textAnchor="end"
@@ -189,15 +186,12 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
       {dblocks
         .filter(region => !hide.has(region.key))
         .map(region => {
-          const y = region.offsetPx
-          const x = borderX
-          const yoff = Math.floor(viewHeight - y + offsetPx)
-
+          const yoff = Math.floor(viewHeight - region.offsetPx + offsetPx)
           return (
             <text
-              transform={`rotate(${vtextRotation},${x},${y})`}
-              key={JSON.stringify(region)}
-              x={x}
+              transform={`rotate(${vtextRotation},${borderX},${region.offsetPx})`}
+              key={region.key}
+              x={borderX}
               y={yoff}
               fontSize={11}
               textAnchor="end"
@@ -208,15 +202,15 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
           )
         })}
       {ticks.map(([tick, y]) =>
-        y > 0 ? (
+        y > 0 && y < viewHeight ? (
           <line
-            key={`line-${JSON.stringify(tick)}`}
+            key={`line-${tick.refName}-${tick.base}`}
             y1={viewHeight - y}
             y2={viewHeight - y}
             x1={borderX}
             x2={borderX - (tick.type === 'major' ? 6 : 4)}
             strokeWidth={1}
-            {...getStrokeProps(theme.palette.grey[400])}
+            {...getStrokeProps(theme.palette.text.primary)}
           />
         ) : null,
       )}
@@ -227,7 +221,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
             <text
               y={viewHeight - y - 3}
               x={borderX - 7}
-              key={`text-${JSON.stringify(tick)}`}
+              key={`text-${tick.refName}-${tick.base}`}
               textAnchor="end"
               dominantBaseline="hanging"
               fontSize={11}

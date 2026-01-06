@@ -2,17 +2,17 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { syriColors, strandColors } from '../../LinearSyntenyDisplay/drawSynteny.ts'
+import { syriColors, strandColors } from '../../DotplotRenderer/drawDotplot.ts'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory.tsx'
+import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   legend: {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(0.5),
-    marginLeft: theme.spacing(1),
+    marginLeft: theme.spacing(0.5),
     padding: theme.spacing(0.25, 0.5),
     borderRadius: theme.shape.borderRadius,
     backgroundColor: theme.palette.action.hover,
@@ -55,12 +55,12 @@ const strandLegend: LegendItem[] = [
 const ColorLegend = observer(function ColorLegend({
   model,
 }: {
-  model: LinearComparativeViewModel
+  model: DotplotViewModel
 }) {
   const { classes } = useStyles()
 
-  const firstDisplay = model.levels[0]?.tracks[0]?.displays[0] as
-    | LinearSyntenyDisplayModel
+  const firstDisplay = model.tracks[0]?.displays[0] as
+    | DotplotDisplayModel
     | undefined
 
   const colorBy = firstDisplay?.colorBy ?? 'default'

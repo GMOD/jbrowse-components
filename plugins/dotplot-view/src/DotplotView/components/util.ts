@@ -26,14 +26,25 @@ export function getBlockLabelKeysToHide(
     const blen = b.end - b.start
     return blen - alen
   })
-  const positions = Array.from({ length: Math.round(length) })
+  const occupiedPositions = new Set<number>()
   for (const { key, offsetPx } of sortedBlocks) {
     const y = Math.round(length - offsetPx + viewOffsetPx)
-    const labelBounds = [Math.max(y - 12, 0), y]
-    if (y === 0 || positions.slice(...labelBounds).some(Boolean)) {
+    const labelStart = Math.max(y - 12, 0)
+    let hasOverlap = y === 0
+    if (!hasOverlap) {
+      for (let i = labelStart; i < y; i++) {
+        if (occupiedPositions.has(i)) {
+          hasOverlap = true
+          break
+        }
+      }
+    }
+    if (hasOverlap) {
       blockLabelKeysToHide.add(key)
     } else {
-      positions.fill(true, ...labelBounds)
+      for (let i = labelStart; i < y; i++) {
+        occupiedPositions.add(i)
+      }
     }
   }
   return blockLabelKeysToHide

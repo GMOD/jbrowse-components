@@ -1,3 +1,7 @@
+import { computeSyriTypes } from '../syriUtils.ts'
+
+import type { SyriType } from '../syriUtils.ts'
+
 export interface PAFRecord {
   qname: string
   qstart: number
@@ -12,6 +16,7 @@ export interface PAFRecord {
     mappingQual?: number
     numMatches?: number
     meanScore?: number
+    syriType?: SyriType
   }
 }
 // based on "weighted mean" method from https://github.com/tpoorten/dotPlotly
@@ -89,4 +94,16 @@ export function getWeightedMeans(ret: PAFRecord[]) {
   }
 
   return ret
+}
+
+/**
+ * Add SyRI-style classification to all records.
+ * Computes syriType (SYN, INV, TRANS, DUP) based on the full dataset.
+ */
+export function addSyriTypes(records: PAFRecord[]) {
+  const syriTypes = computeSyriTypes(records)
+  for (let i = 0; i < records.length; i++) {
+    records[i]!.extra.syriType = syriTypes[i]
+  }
+  return records
 }

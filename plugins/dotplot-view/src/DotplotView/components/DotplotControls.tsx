@@ -11,6 +11,7 @@ import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
+import ColorLegend from './ColorLegend.tsx'
 import { CursorMouse, CursorMove } from './CursorIcon.tsx'
 import MinLengthSlider from './MinLengthSlider.tsx'
 import OpacitySlider from './OpacitySlider.tsx'
@@ -198,6 +199,7 @@ const DotplotControls = observer(function DotplotControls({
         <MoreVert />
       </CascadingMenuButton>
       <ColorBySelector model={model} />
+      <ColorLegend model={model} />
 
       {hasDisplays && showDynamicControls ? (
         <>

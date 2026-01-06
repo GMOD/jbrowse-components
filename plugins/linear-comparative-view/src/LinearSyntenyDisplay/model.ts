@@ -112,14 +112,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * minimum alignment length to display (in bp)
        */
       minAlignmentLength: 0,
-
-      /**
-       * #volatile
-       * Maps query chromosome names to their best-matching target chromosome
-       * based on alignment coverage. Used by syri color mode to detect
-       * translocations (alignments to non-matching chromosomes).
-       */
-      chromosomeMapping: null as Map<string, string> | null,
     }))
     .actions(self => ({
       /**
@@ -187,13 +179,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setColorBy(value: string) {
         self.colorBy = value
-      },
-      /**
-       * #action
-       * Sets the chromosome mapping based on alignment coverage analysis
-       */
-      setChromosomeMapping(mapping: Map<string, string> | null) {
-        self.chromosomeMapping = mapping
       },
     }))
 

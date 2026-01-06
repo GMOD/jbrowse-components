@@ -141,6 +141,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 identity: numMatches / blockLen,
                 numMatches,
                 blockLen,
+                syriType: extra.sy, // Pre-computed by make-pif
                 mate: {
                   start: mateStart,
                   end: mateEnd,
