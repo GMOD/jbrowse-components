@@ -44,6 +44,7 @@ export default defineConfig(
       'packages/__mocks__',
 
       // Excluded directories
+      'webpack',
       'website',
       'docs',
       'benchmarks',
