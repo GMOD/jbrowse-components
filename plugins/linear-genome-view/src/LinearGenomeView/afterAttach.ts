@@ -4,7 +4,7 @@ import {
   parseLocString,
 } from '@jbrowse/core/util'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import type { LinearGenomeViewModel } from './model.ts'
 
@@ -16,7 +16,7 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
   addDisposer(
     self,
     autorun(
-      function initAutorun() {
+      async function initAutorun() {
         const { init, initialized } = self
         if (!initialized) {
           return
@@ -25,13 +25,29 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
           const session = getSession(self)
           const { assemblyManager } = session
 
-          if (init.loc) {
-            self.navToLocString(init.loc, init.assembly).catch((e: unknown) => {
-              console.error(init, e)
-              session.notifyError(`${e}`, e)
+          // Workaround: activate tracklist first so the drawer opens before we
+          // navigate. This ensures volatileWidth accounts for the drawer width.
+          // Without this, the navigation calculates the region based on full
+          // width, then the drawer opens and obscures part of the region.
+          if (init.tracklist) {
+            self.activateTrackSelector()
+            const currentWidth = self.volatileWidth
+            await when(() => self.volatileWidth !== currentWidth, {
+              timeout: 500,
+            }).catch(() => {
+              // Timeout is ok - width may not change if drawer was already open
             })
-          } else {
-            self.showAllRegionsInAssembly(init.assembly)
+          }
+
+          try {
+            if (init.loc) {
+              await self.navToLocString(init.loc, init.assembly)
+            } else {
+              self.showAllRegionsInAssembly(init.assembly)
+            }
+          } catch (e) {
+            console.error(init, e)
+            session.notifyError(`${e}`, e)
           }
 
           if (init.tracks) {
@@ -55,10 +71,6 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
                 ),
               )
             }
-          }
-
-          if (init.tracklist) {
-            self.activateTrackSelector()
           }
 
           if (init.nav !== undefined) {
