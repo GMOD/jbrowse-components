@@ -11,8 +11,8 @@ import {
   isUcscTranscript,
 } from './generateUcscTranscript'
 
-import type BED from '@gmod/bed'
 import type { MinimalFeature } from './types'
+import type BED from '@gmod/bed'
 
 function defaultParser(fields: string[], splitLine: string[]) {
   const obj = {} as Record<string, string>
@@ -218,7 +218,7 @@ export function featureData2({
     } = rest
     return generateRepeatMaskerFeature({
       ...rest2,
-      description: description as string,
+      description,
       uniqueId,
       score,
       start,
