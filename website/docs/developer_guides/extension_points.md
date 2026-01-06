@@ -476,6 +476,123 @@ Allows rendering a custom component as a child of the LinearGenomeView's
 "TracksContainer". Used to render highlights for example with a div of height
 100% over the TracksContainer
 
+### DotplotView-ImportFormSyntenyOptions
+
+type: synchronous
+
+- `args` - `DotplotImportFormSyntenyOption[]` - an array of custom radio options
+  to add to the dotplot import form's synteny track selector
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  model: DotplotViewModel // instance of the dotplot view model
+  assembly1: string // name of the y-axis assembly
+  assembly2: string // name of the x-axis assembly
+}
+```
+
+Allows plugins to add custom radio options to the DotplotView import form. When
+a user selects a custom radio option, the plugin's React component is rendered.
+
+Each option in the array should have the following structure:
+
+```typescript
+interface DotplotImportFormSyntenyOption {
+  value: string // unique identifier for the radio option
+  label: string // display text for the radio option
+  ReactComponent: React.FC<{
+    model: DotplotViewModel
+    assembly1: string
+    assembly2: string
+  }>
+}
+```
+
+Example: adding a custom synteny option that fetches data from a server
+
+```typescript
+import type { DotplotImportFormSyntenyOption } from '@jbrowse/plugin-dotplot-view'
+
+pluginManager.addToExtensionPoint(
+  'DotplotView-ImportFormSyntenyOptions',
+  (
+    options: DotplotImportFormSyntenyOption[],
+    { model, assembly1, assembly2 },
+  ) => {
+    return [
+      ...options,
+      {
+        value: 'my-server-synteny',
+        label: 'Load from my server',
+        ReactComponent: MySyntenyServerComponent,
+      },
+    ]
+  },
+)
+```
+
+### LinearSyntenyView-ImportFormSyntenyOptions
+
+type: synchronous
+
+- `args` - `LinearSyntenyImportFormSyntenyOption[]` - an array of custom radio
+  options to add to the linear synteny view import form's synteny track selector
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  model: LinearSyntenyViewModel // instance of the linear synteny view model
+  assembly1: string // name of the top assembly
+  assembly2: string // name of the bottom assembly
+  selectedRow: number // which row is currently selected (0-indexed)
+}
+```
+
+Allows plugins to add custom radio options to the LinearSyntenyView import form.
+When a user selects a custom radio option, the plugin's React component is
+rendered. This is similar to `DotplotView-ImportFormSyntenyOptions` but includes
+an additional `selectedRow` prop since the linear synteny view can have multiple
+rows.
+
+Each option in the array should have the following structure:
+
+```typescript
+interface LinearSyntenyImportFormSyntenyOption {
+  value: string // unique identifier for the radio option
+  label: string // display text for the radio option
+  ReactComponent: React.FC<{
+    model: LinearSyntenyViewModel
+    assembly1: string
+    assembly2: string
+    selectedRow: number
+  }>
+}
+```
+
+Example: adding a custom synteny option
+
+```typescript
+import type { LinearSyntenyImportFormSyntenyOption } from '@jbrowse/plugin-linear-comparative-view'
+
+pluginManager.addToExtensionPoint(
+  'LinearSyntenyView-ImportFormSyntenyOptions',
+  (
+    options: LinearSyntenyImportFormSyntenyOption[],
+    { model, assembly1, assembly2, selectedRow },
+  ) => {
+    return [
+      ...options,
+      {
+        value: 'my-server-synteny',
+        label: 'Load from my server',
+        ReactComponent: MySyntenyServerComponent,
+      },
+    ]
+  },
+)
+```
+
 ### Extension point footnote
 
 Users that want to add further extension points can do so, by simply calling
