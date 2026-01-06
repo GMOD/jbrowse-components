@@ -1,8 +1,4 @@
-// NOTE: this jest config should be used by projects in packages/*, products/*,
-// and plugins/* dirs
 export default {
-  roots: ['.'],
-  moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
@@ -14,18 +10,12 @@ export default {
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.cjs',
   },
   transformIgnorePatterns: [
-    String.raw`[/\\]node_modules[/\\].+\.(js|jsx)$`,
-    String.raw`^.+\.module\.(css|sass|scss)$`,
-  ],
-  testMatch: [
-    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/**/*.(spec|test).{js,jsx,ts,tsx}',
+    '/node_modules/.+\\.(js|jsx)$',
+    '\\.module\\.(css|sass|scss)$',
   ],
   testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/'],
   collectCoverageFrom: [
-    'packages/*/src/**/*.{js,jsx,ts,tsx}',
-    'products/*/src/**/*.{js,jsx,ts,tsx}',
-    'plugins/*/src/**/*.{js,jsx,ts,tsx}',
+    '{packages,products,plugins}/*/src/**/*.{js,jsx,ts,tsx}',
   ],
   coveragePathIgnorePatterns: [
     '!*.d.ts',

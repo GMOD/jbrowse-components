@@ -29,6 +29,7 @@ export default defineConfig(
       '**/storybook-static/**',
       'products/jbrowse-desktop/linux-sandbox-fix.cjs',
       'docs/*',
+      'jest.config.js',
       'website/*',
       'plugins/variants/src/d3-hierarchy2',
       'packages/core/src/util/nanoid.js',
