@@ -633,7 +633,10 @@ export default function stateModelFactory(pm: PluginManager) {
                 type: trackConf.type,
                 configuration: getSnapshot(trackConf),
                 displays: [
-                  { type: displayConf.type, configuration: getSnapshot(displayConf) },
+                  {
+                    type: displayConf.type,
+                    configuration: getSnapshot(displayConf),
+                  },
                 ],
               }
             })
