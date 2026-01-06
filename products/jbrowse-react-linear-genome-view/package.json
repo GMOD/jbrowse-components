@@ -15,8 +15,10 @@
     "directory": "products/jbrowse-react-linear-genome-view"
   },
   "author": "JBrowse Team",
-  "module": "src/index.ts",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "files": [
     "dist",
     "esm",
@@ -70,7 +72,14 @@
   "publishConfig": {
     "access": "public",
     "main": "dist/index.js",
-    "module": "esm/index.js",
-    "types": "dist/index.d.ts"
-  }
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./esm/index.js",
+        "require": "./dist/index.js"
+      }
+    }
+  },
+  "sideEffects": false
 }

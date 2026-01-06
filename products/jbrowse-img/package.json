@@ -2,11 +2,18 @@
   "name": "@jbrowse/img",
   "version": "3.7.0",
   "main": "dist/index.js",
-  "module": "esm/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "author": "JBrowse Team",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=14"
+    "node": ">=20"
   },
   "bin": {
     "jb2export": "./dist/bin.js"
@@ -15,6 +22,7 @@
     "dist",
     "esm"
   ],
+  "sideEffects": false,
   "scripts": {
     "clean": "rm -rf dist esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
