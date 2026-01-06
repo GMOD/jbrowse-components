@@ -1,11 +1,11 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter'
+import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 
-import type { BaseOptions } from './types'
-import type { NoAssemblyRegion } from '../../util'
-import type { RegionsAdapter } from '../BaseAdapter'
+import type { BaseOptions } from './types.ts'
+import type { NoAssemblyRegion } from '../../util/index.ts'
+import type { RegionsAdapter } from '../BaseAdapter/index.ts'
 
 export abstract class BaseSequenceAdapter
   extends BaseFeatureDataAdapter

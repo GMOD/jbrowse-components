@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react'
 
-import { cdsColor, updownstreamColor, utrColor } from '../consts'
-import { splitString } from '../util'
-import SequenceDisplay from './SequenceDisplay'
+import { cdsColor, updownstreamColor, utrColor } from '../consts.ts'
+import { splitString } from '../util.ts'
+import SequenceDisplay from './SequenceDisplay.tsx'
 
-import type { SimpleFeatureSerialized } from '../../../util'
-import type { Feat } from '../../util'
-import type { SequenceFeatureDetailsModel } from '../model'
+import type { SimpleFeatureSerialized } from '../../../util/index.ts'
+import type { Feat } from '../../util.tsx'
+import type { SequenceFeatureDetailsModel } from '../model.ts'
 
 const CDNASequence = observer(function CDNASequence({
   utr,

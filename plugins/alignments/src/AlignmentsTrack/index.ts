@@ -1,8 +1,8 @@
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-import configSchemaF from './configSchemaF'
-import { stringifySAM } from '../saveTrackFormats/sam'
+import configSchemaF from './configSchemaF.ts'
+import { stringifySAM } from '../saveTrackFormats/sam.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

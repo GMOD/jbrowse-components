@@ -1,5 +1,5 @@
-import { fetchChains } from './fetchChains'
-import { createAutorun } from './util'
+import { fetchChains } from './fetchChains.ts'
+import { createAutorun } from './util.ts'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 

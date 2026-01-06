@@ -1,8 +1,8 @@
-import { drawChevrons } from '../drawChevrons'
-import { readCachedConfig } from '../renderConfig'
-import { getStrokeColor, isOffScreen } from '../util'
+import { drawChevrons } from '../drawChevrons.ts'
+import { readCachedConfig } from '../renderConfig.ts'
+import { getStrokeColor, isOffScreen } from '../util.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
+import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export const STRAND_ARROW_WIDTH = 8

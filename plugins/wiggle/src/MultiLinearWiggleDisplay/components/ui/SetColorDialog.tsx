@@ -5,9 +5,9 @@ import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 
-import SetColorDialogBulkEditPanel from './SetColorDialogBulkEditPanel'
-import SetColorDialogHelpfulTips from './SetColorDialogHelpfulTips'
-import SetColorDialogRowPalettizer from './SetColorDialogRowPalettizer'
+import SetColorDialogBulkEditPanel from './SetColorDialogBulkEditPanel.tsx'
+import SetColorDialogHelpfulTips from './SetColorDialogHelpfulTips.tsx'
+import SetColorDialogRowPalettizer from './SetColorDialogRowPalettizer.tsx'
 
 const useStyles = makeStyles()({
   content: {

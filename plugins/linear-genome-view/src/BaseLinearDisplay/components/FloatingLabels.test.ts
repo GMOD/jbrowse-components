@@ -2,7 +2,7 @@ import {
   calculateFloatingLabelPosition,
   clampToViewport,
   getViewportLeftEdge,
-} from './util'
+} from './util.ts'
 
 describe('FloatingLabels utilities', () => {
   describe('getViewportLeftEdge', () => {

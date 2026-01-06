@@ -2,11 +2,11 @@ import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay'
-import Header from './Header'
-import Rubberband from './Rubberband'
+import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay.tsx'
+import Header from './Header.tsx'
+import Rubberband from './Rubberband.tsx'
 
-import type { BreakpointViewModel } from '../model'
+import type { BreakpointViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   viewDivider: {

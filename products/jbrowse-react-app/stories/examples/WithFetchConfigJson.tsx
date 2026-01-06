@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
-import { addRelativeUris } from './util'
-import { JBrowseApp, createViewState } from '../../src'
+import { addRelativeUris } from './util.ts'
+import { JBrowseApp, createViewState } from '../../src/index.ts'
 
 type ViewState = ReturnType<typeof createViewState>
 

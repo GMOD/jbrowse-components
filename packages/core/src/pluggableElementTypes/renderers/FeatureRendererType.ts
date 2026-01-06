@@ -1,12 +1,12 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import ServerSideRendererType from './ServerSideRendererType'
-import { normalizeRegion } from './util'
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import { iterMap } from '../../util'
-import SimpleFeature from '../../util/simpleFeature'
+import ServerSideRendererType from './ServerSideRendererType.tsx'
+import { normalizeRegion } from './util.ts'
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter/index.ts'
+import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
+import { iterMap } from '../../util/index.ts'
+import SimpleFeature from '../../util/simpleFeature.ts'
 
 import type {
   RenderArgs as ServerSideRenderArgs,
@@ -16,10 +16,13 @@ import type {
   RenderReturn,
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
-} from './ServerSideRendererType'
-import type { AnyConfigurationModel } from '../../configuration'
-import type { Feature, SimpleFeatureSerialized } from '../../util/simpleFeature'
-import type { AugmentedRegion as Region } from '../../util/types'
+} from './ServerSideRendererType.tsx'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type {
+  Feature,
+  SimpleFeatureSerialized,
+} from '../../util/simpleFeature.ts'
+import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel?: {

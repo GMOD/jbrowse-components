@@ -1,4 +1,4 @@
-import SimpleFeature from './simpleFeature'
+import SimpleFeature from './simpleFeature.ts'
 
 test('can create a simple feature', () => {
   const f = new SimpleFeature({

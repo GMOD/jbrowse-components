@@ -1,13 +1,13 @@
 import deepEqual from 'fast-deep-equal'
 
-import { readConfObject } from '../../configuration'
-import GranularRectLayout from '../../util/layouts/GranularRectLayout'
-import MultiLayout from '../../util/layouts/MultiLayout'
+import { readConfObject } from '../../configuration/index.ts'
+import GranularRectLayout from '../../util/layouts/GranularRectLayout.ts'
+import MultiLayout from '../../util/layouts/MultiLayout.ts'
 
-import type { AnyConfigurationModel } from '../../configuration'
-import type { Region } from '../../util'
-import type SerializableFilterChain from './util/serializableFilterChain'
-import type { BaseLayout } from '../../util/layouts'
+import type SerializableFilterChain from './util/serializableFilterChain.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type { Region } from '../../util/index.ts'
+import type { BaseLayout } from '../../util/layouts/index.ts'
 
 export interface LayoutSessionProps {
   regions: Region[]

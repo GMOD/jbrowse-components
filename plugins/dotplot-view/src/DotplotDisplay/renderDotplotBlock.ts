@@ -7,7 +7,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import type { DotplotViewModel } from '../DotplotView/model'
+import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export function renderBlockData(self: IAnyStateTreeNode) {

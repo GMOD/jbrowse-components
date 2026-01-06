@@ -21,7 +21,7 @@ export default function SessionManagerF(pluginManager: PluginManager) {
       heading: 'Recent sessions',
       configSchema,
       stateModel,
-      ReactComponent: lazy(() => import('./components/SessionManager')),
+      ReactComponent: lazy(() => import('./components/SessionManager.tsx')),
     })
   })
 }

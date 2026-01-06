@@ -5,9 +5,9 @@ import {
   readJsonFile,
   resolveConfigPath,
   writeJsonFile,
-} from '../utils'
+} from '../utils.ts'
 
-import type { Config } from '../base'
+import type { Config } from '../base.ts'
 
 export async function run(args?: string[]) {
   const options = {

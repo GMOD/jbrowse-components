@@ -3,11 +3,11 @@ import { lazy } from 'react'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
-import type { NotificationLevel, SnackAction } from '../util/types'
+import type { NotificationLevel, SnackAction } from '../util/types/index.ts'
 
 // lazies
 const ErrorMessageStackTraceDialog = lazy(
-  () => import('./ErrorMessageStackTraceDialog'),
+  () => import('./ErrorMessageStackTraceDialog.tsx'),
 )
 
 export interface SnackbarMessage {

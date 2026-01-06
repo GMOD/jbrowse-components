@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 
-import type { LayoutEntry } from '../Layout'
+import type { LayoutEntry } from '../Layout.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 

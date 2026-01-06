@@ -2,10 +2,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
-import { sortConfs } from './sortUtils'
-import { matches } from './util'
+import { sortConfs } from './sortUtils.ts'
+import { matches } from './util.ts'
 
-import type { MinimalModel, TreeNode } from './types'
+import type { MinimalModel, TreeNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 

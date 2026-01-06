@@ -1,7 +1,7 @@
 import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import { makeTicks } from '../util'
+import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '..'
 

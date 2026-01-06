@@ -1,6 +1,6 @@
-import { parseLocString, parseLocStringOneBased } from './locString'
+import { parseLocString, parseLocStringOneBased } from './locString.ts'
 
-import type { ParsedLocString } from './locString'
+import type { ParsedLocString } from './locString.ts'
 
 describe('parseLocString', () => {
   const cases: [string, ParsedLocString][] = [

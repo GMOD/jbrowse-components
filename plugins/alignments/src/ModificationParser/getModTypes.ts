@@ -1,4 +1,4 @@
-import { modificationRegex } from './consts'
+import { modificationRegex } from './consts.ts'
 
 export function getModTypes(mm: string) {
   const result = []

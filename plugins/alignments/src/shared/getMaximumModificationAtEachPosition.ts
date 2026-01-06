@@ -1,7 +1,7 @@
-import { getNextRefPos } from '../MismatchParser'
-import { getModPositions } from '../ModificationParser/getModPositions'
-import { getModProbabilities } from '../ModificationParser/getModProbabilities'
-import { getTagAlt } from '../util'
+import { getNextRefPos } from '../MismatchParser/index.ts'
+import { getModPositions } from '../ModificationParser/getModPositions.ts'
+import { getModProbabilities } from '../ModificationParser/getModProbabilities.ts'
+import { getTagAlt } from '../util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

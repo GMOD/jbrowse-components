@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 
 import { fireEvent } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts, setup } from './util'
+import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

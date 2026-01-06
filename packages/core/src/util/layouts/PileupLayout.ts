@@ -2,14 +2,14 @@ import {
   findInsertionPoint,
   insertInterval,
   isRangeClear,
-} from './intervalUtils'
+} from './intervalUtils.ts'
 
 import type {
   BaseLayout,
   RectTuple,
   Rectangle,
   SerializedLayout,
-} from './BaseLayout'
+} from './BaseLayout.ts'
 
 /**
  * Specialized layout for pileup displays where all features have uniform height.

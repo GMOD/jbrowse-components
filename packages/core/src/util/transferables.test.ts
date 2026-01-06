@@ -1,4 +1,4 @@
-import { collectTransferables, isDetachedBuffer } from './transferables'
+import { collectTransferables, isDetachedBuffer } from './transferables.ts'
 
 describe('transferables', () => {
   describe('isDetachedBuffer', () => {

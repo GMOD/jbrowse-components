@@ -1,15 +1,15 @@
-import { drawCDSBackground } from '../peptides/drawCDSBackground'
-import { drawPeptidesOnCDS } from '../peptides/drawPeptidesOnCDS'
-import { prepareAminoAcidData } from '../peptides/prepareAminoAcidData'
-import { readCachedConfig } from '../renderConfig'
-import { getBoxColor, isOffScreen } from '../util'
+import { drawCDSBackground } from '../peptides/drawCDSBackground.ts'
+import { drawPeptidesOnCDS } from '../peptides/drawPeptidesOnCDS.ts'
+import { prepareAminoAcidData } from '../peptides/prepareAminoAcidData.ts'
+import { readCachedConfig } from '../renderConfig.ts'
+import { getBoxColor, isOffScreen } from '../util.ts'
 import {
   shouldRenderPeptideBackground,
   shouldRenderPeptideText,
-} from '../zoomThresholds'
-import { boxGlyph } from './box'
+} from '../zoomThresholds.ts'
+import { boxGlyph } from './box.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
+import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 
 export const cdsGlyph: Glyph = {
   type: 'CDS',

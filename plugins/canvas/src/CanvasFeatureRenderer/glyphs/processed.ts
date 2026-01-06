@@ -1,14 +1,14 @@
-import { getSubparts } from '../filterSubparts'
-import { readCachedConfig } from '../renderConfig'
-import { boxGlyph } from './box'
-import { cdsGlyph } from './cds'
+import { getSubparts } from '../filterSubparts.ts'
+import { readCachedConfig } from '../renderConfig.ts'
+import { boxGlyph } from './box.ts'
+import { cdsGlyph } from './cds.ts'
 import {
   drawSegmentedFeature,
   getStrandArrowPadding,
   layoutChild,
-} from './glyphUtils'
+} from './glyphUtils.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
+import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export const processedTranscriptGlyph: Glyph = {

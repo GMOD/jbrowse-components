@@ -1,8 +1,8 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { ElementId, Region } from '../../util/types/mst'
+import { ElementId, Region } from '../../util/types/mst.ts'
 
-import type { MenuItem } from '../../ui'
+import type { MenuItem } from '../../ui/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**

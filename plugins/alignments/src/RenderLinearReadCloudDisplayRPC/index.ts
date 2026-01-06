@@ -1,4 +1,4 @@
-import RenderLinearReadCloudDisplay from './RenderLinearReadCloudDisplay'
+import RenderLinearReadCloudDisplay from './RenderLinearReadCloudDisplay.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

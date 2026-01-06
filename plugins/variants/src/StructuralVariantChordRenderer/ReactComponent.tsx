@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 
 import { observer } from 'mobx-react'
 
-import Chord from './Chord'
+import Chord from './Chord.tsx'
 
-import type { AnyRegion, Block } from './types'
+import type { AnyRegion, Block } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 

@@ -1,4 +1,4 @@
-import { getModPositions } from './getModPositions'
+import { getModPositions } from './getModPositions.ts'
 
 test('getModPositions', () => {
   const positions = getModPositions(

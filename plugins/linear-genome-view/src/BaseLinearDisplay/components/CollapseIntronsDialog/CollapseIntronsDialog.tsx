@@ -10,10 +10,10 @@ import {
   TextField,
 } from '@mui/material'
 
-import TranscriptTable from './TranscriptTable'
-import { collapseIntrons } from './util'
+import TranscriptTable from './TranscriptTable.tsx'
+import { collapseIntrons } from './util.ts'
 
-import type { LinearGenomeViewModel } from '../../../LinearGenomeView'
+import type { LinearGenomeViewModel } from '../../../LinearGenomeView/index.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 

@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './IndexedFastaAdapter'
-import configSchema from './configSchema'
+import Adapter from './IndexedFastaAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('adapter can fetch sequence from volvox.fa', async () => {
   const adapter = new Adapter(

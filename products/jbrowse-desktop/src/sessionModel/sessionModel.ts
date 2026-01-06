@@ -16,10 +16,10 @@ import {
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
 
-import { DesktopSessionFactory } from './DesktopSession'
-import { DesktopSessionTrackMenuMixin } from './TrackMenu'
+import { DesktopSessionFactory } from './DesktopSession.ts'
+import { DesktopSessionTrackMenuMixin } from './TrackMenu.ts'
 
-import type { DesktopRootModel } from '../rootModel/rootModel'
+import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'

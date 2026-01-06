@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '../../configuration'
+import { ConfigurationSchema } from '../../configuration/index.ts'
 
 /**
  * #config BaseInternetAccount

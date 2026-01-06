@@ -6,12 +6,14 @@ import LaunchIcon from '@mui/icons-material/Launch'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import DrawerControls from './DrawerControls'
-import DrawerWidgetSelector from './DrawerWidgetSelector'
+import DrawerControls from './DrawerControls.tsx'
+import DrawerWidgetSelector from './DrawerWidgetSelector.tsx'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
-const DrawerHeaderHelpButton = lazy(() => import('./DrawerHeaderHelpButton'))
+const DrawerHeaderHelpButton = lazy(
+  () => import('./DrawerHeaderHelpButton.tsx'),
+)
 
 const useStyles = makeStyles()(theme => ({
   spacer: {

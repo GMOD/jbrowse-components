@@ -7,20 +7,20 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { getConf } from '../configuration'
-import { adapterConfigCacheKey } from '../data_adapters/util'
-import { when } from '../util'
-import QuickLRU from '../util/QuickLRU'
+import { getConf } from '../configuration/index.ts'
+import { adapterConfigCacheKey } from '../data_adapters/util.ts'
+import QuickLRU from '../util/QuickLRU/index.ts'
+import { when } from '../util/index.ts'
 
-import type PluginManager from '../PluginManager'
-import type { AnyConfigurationModel } from '../configuration'
+import type PluginManager from '../PluginManager.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   BaseOptions,
   BaseRefNameAliasAdapter,
   RegionsAdapter,
-} from '../data_adapters/BaseAdapter'
-import type RpcManager from '../rpc/RpcManager'
-import type { Feature, Region } from '../util'
+} from '../data_adapters/BaseAdapter/index.ts'
+import type RpcManager from '../rpc/RpcManager.ts'
+import type { Feature, Region } from '../util/index.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>

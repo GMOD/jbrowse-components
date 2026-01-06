@@ -1,8 +1,8 @@
-import { cigarToMismatches } from './cigarToMismatches'
-import { getMismatches, parseCigar } from './index'
-import { mdToMismatches } from './mdToMismatches'
+import { cigarToMismatches } from './cigarToMismatches.ts'
+import { getMismatches, parseCigar } from './index.ts'
+import { mdToMismatches } from './mdToMismatches.ts'
 
-import type { Mismatch } from '../shared/types'
+import type { Mismatch } from '../shared/types.ts'
 
 const seq =
   'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTT'

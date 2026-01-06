@@ -1,4 +1,4 @@
-import { linkify } from './linkify'
+import { linkify } from './linkify.ts'
 
 test('converts http URL to anchor tag', () => {
   expect(linkify('Visit http://example.com today')).toBe(

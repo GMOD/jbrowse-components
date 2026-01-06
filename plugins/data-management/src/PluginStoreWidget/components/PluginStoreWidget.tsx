@@ -18,14 +18,14 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import InstalledPluginsList from './InstalledPluginsList'
-import PluginCard from './PluginCard'
-import { useFetchPlugins } from './util'
+import InstalledPluginsList from './InstalledPluginsList.tsx'
+import PluginCard from './PluginCard.tsx'
+import { useFetchPlugins } from './util.ts'
 
-import type { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model.ts'
 
 // lazies
-const AddCustomPluginDialog = lazy(() => import('./AddCustomPluginDialog'))
+const AddCustomPluginDialog = lazy(() => import('./AddCustomPluginDialog.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   expandIcon: {

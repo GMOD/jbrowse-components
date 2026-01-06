@@ -13,10 +13,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { ErrorBoundary } from './ErrorBoundary'
-import ErrorMessage from './ErrorMessage'
-import SanitizedHTML from './SanitizedHTML'
-import { makeStyles } from '../util/tss-react'
+import { ErrorBoundary } from './ErrorBoundary.tsx'
+import ErrorMessage from './ErrorMessage.tsx'
+import SanitizedHTML from './SanitizedHTML.tsx'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { DialogProps } from '@mui/material'
 

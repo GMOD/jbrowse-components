@@ -1,6 +1,6 @@
 import { DialogContent } from '@mui/material'
 
-import Dialog from './Dialog'
+import Dialog from './Dialog.tsx'
 
 export default function CascadingMenuHelpDialog({
   onClose,

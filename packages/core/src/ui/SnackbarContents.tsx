@@ -10,7 +10,7 @@ import {
   Snackbar as MUISnackbar,
 } from '@mui/material'
 
-import type { SnackbarMessage } from './SnackbarModel'
+import type { SnackbarMessage } from './SnackbarModel.tsx'
 
 export default function SnackbarContents({
   onClose,

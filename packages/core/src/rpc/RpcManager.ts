@@ -1,11 +1,11 @@
-import { readConfObject } from '../configuration'
-import MainThreadRpcDriver from './MainThreadRpcDriver'
-import WebWorkerRpcDriver from './WebWorkerRpcDriver'
-import rpcConfigSchema from './configSchema'
+import MainThreadRpcDriver from './MainThreadRpcDriver.ts'
+import WebWorkerRpcDriver from './WebWorkerRpcDriver.ts'
+import rpcConfigSchema from './configSchema.ts'
+import { readConfObject } from '../configuration/index.ts'
 
-import type BaseRpcDriver from './BaseRpcDriver'
-import type PluginManager from '../PluginManager'
-import type { AnyConfigurationModel } from '../configuration'
+import type BaseRpcDriver from './BaseRpcDriver.ts'
+import type PluginManager from '../PluginManager.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 
 type DriverClass = BaseRpcDriver
 

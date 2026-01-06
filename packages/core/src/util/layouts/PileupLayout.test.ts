@@ -1,4 +1,4 @@
-import PileupLayout from './PileupLayout'
+import PileupLayout from './PileupLayout.ts'
 
 test('lays out non-overlapping features on same row', () => {
   const l = new PileupLayout({ featureHeight: 10, spacing: 0 })

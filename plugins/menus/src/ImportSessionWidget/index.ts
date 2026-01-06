@@ -21,7 +21,9 @@ export default function ImportSessionWidgetF(pluginManager: PluginManager) {
       heading: 'Import session',
       configSchema,
       stateModel,
-      ReactComponent: lazy(() => import('./components/ImportSessionWidget')),
+      ReactComponent: lazy(
+        () => import('./components/ImportSessionWidget.tsx'),
+      ),
     })
   })
 }

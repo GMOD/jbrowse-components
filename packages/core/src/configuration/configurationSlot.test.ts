@@ -1,5 +1,5 @@
-import PluginManager from '../PluginManager'
-import ConfigSlot from './configurationSlot'
+import PluginManager from '../PluginManager.ts'
+import ConfigSlot from './configurationSlot.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()

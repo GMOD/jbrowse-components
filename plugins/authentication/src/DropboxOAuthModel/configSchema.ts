@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import OAuthConfigSchema from '../OAuthModel/configSchema'
+import OAuthConfigSchema from '../OAuthModel/configSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './VcfAdapter'
-import configSchema from './configSchema'
+import Adapter from './VcfAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('adapter can fetch variants from volvox.vcf', async () => {
   const adapter = new Adapter(

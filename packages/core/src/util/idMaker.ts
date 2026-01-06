@@ -1,4 +1,4 @@
-import { hashCode } from './'
+import { hashCode } from './index.ts'
 
 // generates a short "id fingerprint" from the config passed to the base
 // feature adapter by recursively enumerating props, but if config is too big

@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react'
 
-import { readConfObject } from '../configuration'
-import { LogoFull } from './Logo'
+import { LogoFull } from './Logo.tsx'
+import { readConfObject } from '../configuration/index.ts'
 
-import type { AnyConfigurationModel } from '../configuration'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 
 const Logo = observer(function Logo({
   session,

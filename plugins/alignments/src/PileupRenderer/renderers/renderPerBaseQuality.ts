@@ -6,9 +6,9 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from './cigarUtil'
+} from './cigarUtil.ts'
 
-import type { LayoutFeature } from '../util'
+import type { LayoutFeature } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
 
 // Pre-cached HSL color strings for quality scores 0-255

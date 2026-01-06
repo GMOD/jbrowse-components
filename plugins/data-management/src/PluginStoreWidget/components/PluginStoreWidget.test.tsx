@@ -6,9 +6,9 @@ import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import PluginStoreWidget from './PluginStoreWidget'
+import PluginStoreWidget from './PluginStoreWidget.tsx'
 
-import type { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 

@@ -3,11 +3,11 @@ import { assembleLocString } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import Controls from './Controls'
-import ImportForm from './ImportForm'
-import Ruler from './Ruler'
+import Controls from './Controls.tsx'
+import ImportForm from './ImportForm.tsx'
+import Ruler from './Ruler.tsx'
 
-import type { CircularViewModel } from '../model'
+import type { CircularViewModel } from '../model.ts'
 
 const dragHandleHeight = 3
 

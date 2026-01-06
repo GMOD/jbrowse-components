@@ -1,5 +1,5 @@
-import type { MinimalModel } from './types'
-import type { Source } from '../../util'
+import type { MinimalModel } from './types.ts'
+import type { Source } from '../../util.ts'
 import type { getFillProps } from '@jbrowse/core/util'
 
 const LegendItemText = function ({

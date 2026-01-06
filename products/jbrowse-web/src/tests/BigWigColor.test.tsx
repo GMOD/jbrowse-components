@@ -7,7 +7,7 @@ import {
   hts,
   pv,
   setup,
-} from './util'
+} from './util.tsx'
 
 setup()
 

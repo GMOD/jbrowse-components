@@ -5,7 +5,7 @@ import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit'
 import TabIcon from '@mui/icons-material/Tab'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
 
-import { useDockview } from './DockviewContext'
+import { useDockview } from './DockviewContext.tsx'
 
 import type { IDockviewHeaderActionsProps } from 'dockview-react'
 

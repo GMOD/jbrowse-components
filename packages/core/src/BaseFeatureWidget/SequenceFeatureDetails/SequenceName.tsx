@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react'
 
-import { toLocale } from '../../util'
+import { toLocale } from '../../util/index.ts'
 
-import type { SequenceFeatureDetailsModel } from './model'
-import type { SimpleFeatureSerialized } from '../../util'
+import type { SequenceFeatureDetailsModel } from './model.ts'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
 
 function getStrand(strand: number) {
   if (strand === -1) {

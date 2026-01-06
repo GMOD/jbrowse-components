@@ -2,7 +2,7 @@ import { measureGridWidth } from '@jbrowse/core/util'
 import { Checkbox } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import type { FrequencyTable, VariantSampleGridRow } from './types'
+import type { FrequencyTable, VariantSampleGridRow } from './types.ts'
 
 function toP(n: number) {
   return n.toPrecision(3)

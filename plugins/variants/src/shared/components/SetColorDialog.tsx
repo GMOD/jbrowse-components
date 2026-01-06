@@ -1,7 +1,7 @@
-import SharedSetColorDialog from './BaseSetColorDialog'
-import SourcesGrid from './SourcesGrid'
+import SharedSetColorDialog from './BaseSetColorDialog.tsx'
+import SourcesGrid from './SourcesGrid.tsx'
 
-import type { Source } from '../types'
+import type { Source } from '../types.ts'
 
 interface ReducedModel {
   sources?: Source[]

@@ -3,11 +3,11 @@ import { forwardRef } from 'react'
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-import { getInterbaseTypeLabel } from '../../SNPCoverageRenderer/types'
-import { getModificationName } from '../../shared/modificationData'
+import { getInterbaseTypeLabel } from '../../SNPCoverageRenderer/types.ts'
+import { getModificationName } from '../../shared/modificationData.ts'
 
-import type { ClickMapItem } from '../../SNPCoverageRenderer/types'
-import type { BaseCoverageBin } from '../../shared/types'
+import type { ClickMapItem } from '../../SNPCoverageRenderer/types.ts'
+import type { BaseCoverageBin } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(() => ({

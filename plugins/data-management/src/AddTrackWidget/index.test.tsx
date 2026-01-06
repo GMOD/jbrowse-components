@@ -6,7 +6,7 @@ import Alignments from '@jbrowse/plugin-alignments'
 import Hic from '@jbrowse/plugin-hic'
 import Variants from '@jbrowse/plugin-variants'
 
-import stateModelFactory from './model'
+import stateModelFactory from './model.ts'
 
 function standardInitializer() {
   const pluginManager = new PluginManager([

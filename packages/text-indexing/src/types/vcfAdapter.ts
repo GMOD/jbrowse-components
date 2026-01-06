@@ -1,8 +1,8 @@
 import readline from 'readline'
 import { createGunzip } from 'zlib'
 
-import { decodeURIComponentNoThrow } from '../util'
-import { getLocalOrRemoteStream } from './common'
+import { decodeURIComponentNoThrow } from '../util.ts'
+import { getLocalOrRemoteStream } from './common.ts'
 
 export async function* indexVcf({
   config,

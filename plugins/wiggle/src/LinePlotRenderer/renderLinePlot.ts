@@ -2,10 +2,10 @@ import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
-import { drawLine } from '../drawLine'
-import { getColorCallback, serializeWiggleFeature } from '../util'
+import { drawLine } from '../drawLine.ts'
+import { getColorCallback, serializeWiggleFeature } from '../util.ts'
 
-import type { RenderArgsDeserialized } from '../types'
+import type { RenderArgsDeserialized } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderLinePlot(

@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react'
 
-import FeatureDetails from './FeatureDetails'
-import { isEmpty } from './util'
-import { ErrorMessage } from '../../ui'
-import { replaceUndefinedWithNull } from '../util'
+import FeatureDetails from './FeatureDetails.tsx'
+import { isEmpty } from './util.ts'
+import { ErrorMessage } from '../../ui/index.ts'
+import { replaceUndefinedWithNull } from '../util.tsx'
 
-import type { BaseInputProps } from './types'
+import type { BaseInputProps } from './types.ts'
 
 const BaseFeatureDetail = observer(function BaseFeatureDetail({
   model,
@@ -34,7 +34,7 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
 
 export default BaseFeatureDetail
 
-export { default as BaseCard } from './BaseCard'
-export { default as BaseAttributes } from './BaseAttributes'
-export { default as BaseCoreDetails } from './BaseCoreDetails'
-export { default as FeatureDetails } from './FeatureDetails'
+export { default as BaseCard } from './BaseCard.tsx'
+export { default as BaseAttributes } from './BaseAttributes.tsx'
+export { default as BaseCoreDetails } from './BaseCoreDetails.tsx'
+export { default as FeatureDetails } from './FeatureDetails.tsx'

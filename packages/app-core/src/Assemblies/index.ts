@@ -1,2 +1,2 @@
-export * from './SessionAssembliesMixin'
-export * from './TemporaryAssembliesMixin'
+export * from './SessionAssembliesMixin.ts'
+export * from './TemporaryAssembliesMixin.ts'

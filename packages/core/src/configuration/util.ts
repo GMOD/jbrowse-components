@@ -29,14 +29,14 @@ import {
   getSubType,
   getUnionSubTypes,
   resolveLateType,
-} from '../util/mst-reflection'
+} from '../util/mst-reflection.ts'
 
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
-} from './types'
+} from './types.ts'
 
 /**
  * given a configuration model (an instance of a ConfigurationSchema),

@@ -1,7 +1,7 @@
 import { clamp, measureText } from '@jbrowse/core/util'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { BaseLinearDisplayModel } from '../model'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
+import type { BaseLinearDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 export interface RenderProps {

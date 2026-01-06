@@ -9,14 +9,14 @@ import type {
   NoAssemblyRegion as MUNoAssemblyRegion,
   Region as MUIRegion,
   UriLocation as MUUriLocation,
-} from './mst'
-import type TextSearchManager from '../../TextSearch/TextSearchManager'
-import type assemblyManager from '../../assemblyManager'
-import type { AnyConfigurationModel } from '../../configuration'
-import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
-import type RpcManager from '../../rpc/RpcManager'
-import type { MenuItem } from '../../ui'
-import type { Feature } from '../simpleFeature'
+} from './mst.ts'
+import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
+import type assemblyManager from '../../assemblyManager/index.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
+import type RpcManager from '../../rpc/RpcManager.ts'
+import type { MenuItem } from '../../ui/index.ts'
+import type { Feature } from '../simpleFeature.ts'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
@@ -26,7 +26,7 @@ import type {
 } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
-export * from './util'
+export * from './util.ts'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer extends IStateTreeNode<
@@ -546,4 +546,4 @@ export type PreFileLocation =
   | PreLocalPathLocation
   | PreBlobLocation
 
-export { default as TextSearchManager } from '../../TextSearch/TextSearchManager'
+export { default as TextSearchManager } from '../../TextSearch/TextSearchManager.ts'

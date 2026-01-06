@@ -1,4 +1,4 @@
-import { parseCigar } from './index'
+import { parseCigar } from './index.ts'
 
 test('handles empty string', () => {
   expect(parseCigar('')).toEqual([])

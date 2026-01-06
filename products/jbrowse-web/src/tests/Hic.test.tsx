@@ -1,6 +1,12 @@
 import { fireEvent } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  hts,
+  setup,
+} from './util.tsx'
 import hicConfig from '../../../../extra_test_data/hic_integration_test.json'
 
 beforeEach(() => {

@@ -2,7 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import type { MultiRenderArgsDeserialized } from './types'
+import type { MultiRenderArgsDeserialized } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderReturn } from '@jbrowse/core/pluggableElementTypes/renderers/RendererType'

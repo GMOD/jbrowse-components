@@ -1,4 +1,4 @@
-import { getProgressDisplayStr } from './index'
+import { getProgressDisplayStr } from './index.ts'
 
 export type StatusCallback = (arg: string) => void
 export type LineCallback = (

@@ -5,7 +5,7 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { saveAs } from 'file-saver-es'
 
-import { createView, doBeforeEach, hts, setup } from './util'
+import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
 jest.mock('file-saver-es', () => {
   return {

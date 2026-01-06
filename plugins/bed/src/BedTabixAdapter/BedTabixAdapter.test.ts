@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BedTabixAdapter from './BedTabixAdapter'
-import MyConfigSchema from './configSchema'
+import BedTabixAdapter from './BedTabixAdapter.ts'
+import MyConfigSchema from './configSchema.ts'
 
 function makeAdapter(f: string, extra?: Record<string, unknown>) {
   return new BedTabixAdapter(

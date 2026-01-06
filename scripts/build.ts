@@ -20,6 +20,7 @@ function main() {
     for (const pkg of level) {
       const location = packages[pkg]?.location
       if (!location) {
+        console.warn(`Warning: Package "${pkg}" not found in workspace`)
         continue
       }
       const { signal, status } = spawn.sync('pnpm', ['pack'], {

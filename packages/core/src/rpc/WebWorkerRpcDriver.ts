@@ -1,9 +1,9 @@
-import BaseRpcDriver from './BaseRpcDriver'
-import { RpcClient, deserializeError } from '../util/librpc'
-import { nanoid } from '../util/nanoid'
+import BaseRpcDriver from './BaseRpcDriver.ts'
+import { RpcClient, deserializeError } from '../util/librpc.ts'
+import { nanoid } from '../util/nanoid.js'
 
-import type { RpcDriverConstructorArgs } from './BaseRpcDriver'
-import type { PluginDefinition } from '../PluginLoader'
+import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
+import type { PluginDefinition } from '../PluginLoader.ts'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker

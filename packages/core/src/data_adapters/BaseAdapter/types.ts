@@ -1,4 +1,4 @@
-import type { StopToken } from '../../util/stopToken'
+import type { StopToken } from '../../util/stopToken.ts'
 
 export interface BaseOptions {
   stopToken?: StopToken

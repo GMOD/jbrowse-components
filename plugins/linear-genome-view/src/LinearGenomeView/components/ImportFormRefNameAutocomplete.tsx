@@ -1,8 +1,8 @@
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import RefNameAutocomplete from './RefNameAutocomplete'
-import { fetchResults } from './util'
+import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
+import { fetchResults } from './util.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'

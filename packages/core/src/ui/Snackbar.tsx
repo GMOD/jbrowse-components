@@ -2,10 +2,10 @@ import { Suspense, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
-import type { AbstractSessionModel } from '../util'
-import type { SnackbarMessage } from './SnackbarModel'
+import type { SnackbarMessage } from './SnackbarModel.tsx'
+import type { AbstractSessionModel } from '../util/index.ts'
 
-const SnackbarContents = lazy(() => import('./SnackbarContents'))
+const SnackbarContents = lazy(() => import('./SnackbarContents.tsx'))
 
 interface SnackbarSession extends AbstractSessionModel {
   snackbarMessages: SnackbarMessage[]

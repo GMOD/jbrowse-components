@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react'
 
-import type { LegendBarModel } from './types'
+import type { LegendBarModel } from './types.ts'
 
 const SvgTree = observer(function SvgTree({
   model,

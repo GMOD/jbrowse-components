@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { isBaseSession } from './BaseSession'
+import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { DialogComponentType } from '@jbrowse/core/util'

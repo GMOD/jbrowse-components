@@ -5,21 +5,21 @@ import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Fe
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import AltFormatter from './AltFormatter'
-import Formatter from './Formatter'
-import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid'
-import { variantFieldDescriptions } from './variantFieldDescriptions'
+import AltFormatter from './AltFormatter.tsx'
+import Formatter from './Formatter.tsx'
+import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
+import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
-import type { VariantFeatureWidgetModel } from './stateModelFactory'
-import type { Descriptions, ReducedFeature } from './types'
+import type { VariantFeatureWidgetModel } from './stateModelFactory.ts'
+import type { Descriptions, ReducedFeature } from './types.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
 const LaunchBreakendPanel = lazy(
-  () => import('./LaunchBreakendPanel/LaunchBreakendPanel'),
+  () => import('./LaunchBreakendPanel/LaunchBreakendPanel.tsx'),
 )
 const VariantConsequenceDataGrid = lazy(
-  () => import('./VariantConsequence/VariantConsequenceDataGrid'),
+  () => import('./VariantConsequence/VariantConsequenceDataGrid.tsx'),
 )
 
 function AnnotationPanel({

@@ -1,4 +1,4 @@
-import { detectSimplexModifications } from './detectSimplexModifications'
+import { detectSimplexModifications } from './detectSimplexModifications.ts'
 
 describe('detectSimplexModifications', () => {
   it('should identify simplex modification (C+m without G-m)', () => {

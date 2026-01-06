@@ -16,7 +16,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   paper: {

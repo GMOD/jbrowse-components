@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { expandRegion } from '@jbrowse/core/pluggableElementTypes/renderers/util'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
@@ -21,7 +21,9 @@ export default function DivSequenceRendererF(pluginManager: PluginManager) {
     () =>
       new DivSequenceRenderer({
         name: 'DivSequenceRenderer',
-        ReactComponent: lazy(() => import('./components/DivSequenceRendering')),
+        ReactComponent: lazy(
+          () => import('./components/DivSequenceRendering.tsx'),
+        ),
         configSchema,
         pluginManager,
       }),

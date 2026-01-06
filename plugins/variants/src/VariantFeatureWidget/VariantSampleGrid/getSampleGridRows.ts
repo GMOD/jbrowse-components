@@ -1,8 +1,8 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
-import { getMinimalDesc, makeSimpleAltString } from '../../VcfFeature/util'
+import { getMinimalDesc, makeSimpleAltString } from '../../VcfFeature/util.ts'
 
-import type { Filters, InfoFields, VariantSampleGridRow } from './types'
+import type { Filters, InfoFields, VariantSampleGridRow } from './types.ts'
 
 function gtToAlleleCounts(gt: string) {
   const alleleCounts = {} as Record<string, number>

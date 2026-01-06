@@ -2,7 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import type { RenderArgsDeserialized } from '../types'
+import type { RenderArgsDeserialized } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -23,6 +23,6 @@ export async function makeImageData(
       .getFeatures(region, renderProps)
       .pipe(toArray()),
   )
-  const { renderLinePlot } = await import('./renderLinePlot')
+  const { renderLinePlot } = await import('./renderLinePlot.ts')
   return renderLinePlot(renderProps, features)
 }

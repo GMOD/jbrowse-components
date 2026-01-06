@@ -8,16 +8,16 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin'
-import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
+import { LinearReadArcsDisplaySettingsMixin } from '../shared/LinearReadArcsDisplaySettingsMixin.ts'
+import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin.ts'
 import {
   calculateSvgLegendWidth,
   getReadDisplayLegendItems,
-} from '../shared/legendUtils'
+} from '../shared/legendUtils.ts'
 import {
   getColorSchemeMenuItem,
   getFilterByMenuItem,
-} from '../shared/menuItems'
+} from '../shared/menuItems.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -232,7 +232,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         async renderSvg(
           opts: ExportSvgDisplayOptions,
         ): Promise<React.ReactNode> {
-          const { renderSvg } = await import('./renderSvg')
+          const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearReadArcsDisplayModel, opts)
         },
       }
@@ -242,7 +242,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttachRPC } = await import('./afterAttachRPC')
+            const { doAfterAttachRPC } = await import('./afterAttachRPC.tsx')
             doAfterAttachRPC(self)
           } catch (e) {
             console.error(e)

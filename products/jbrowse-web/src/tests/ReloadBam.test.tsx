@@ -6,7 +6,7 @@ import {
   pv,
   setup,
   testFileReload,
-} from './util'
+} from './util.tsx'
 
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),

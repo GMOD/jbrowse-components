@@ -21,9 +21,9 @@ import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
 import { autorun } from 'mobx'
 
-import jbrowseWebFactory from '../jbrowseModel'
-import { filterSessionInPlace } from '../util'
-import { version } from '../version'
+import jbrowseWebFactory from '../jbrowseModel.ts'
+import { filterSessionInPlace } from '../util.ts'
+import { version } from '../version.js'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'

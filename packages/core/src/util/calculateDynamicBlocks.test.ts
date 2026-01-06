@@ -1,4 +1,4 @@
-import calculateVisibleRegions from './calculateDynamicBlocks'
+import calculateVisibleRegions from './calculateDynamicBlocks.ts'
 
 const ctgA = { assemblyName: 'test', refName: 'ctgA', start: 0, end: 50000 }
 

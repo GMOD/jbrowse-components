@@ -1,9 +1,9 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import { Dotplot1DView } from './DotplotView/model'
+import { Dotplot1DView } from './DotplotView/model.ts'
 
-import type { Dotplot1DViewModel } from './DotplotView/model'
+import type { Dotplot1DViewModel } from './DotplotView/model.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 // Copied types from linear-comparative-view to avoid cross-package imports

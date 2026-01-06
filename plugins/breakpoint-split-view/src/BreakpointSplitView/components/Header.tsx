@@ -7,9 +7,9 @@ import SearchIcon from '@mui/icons-material/Search'
 import { FormGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import HeaderSearchBoxes from './HeaderSearchBoxes'
+import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 
-import type { BreakpointViewModel } from '../model'
+import type { BreakpointViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   inline: {

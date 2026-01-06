@@ -4,9 +4,9 @@ import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { makeSimpleAltString } from '../../VcfFeature/util'
+import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 
-import type { MultiVariantBaseModel } from '../../shared/MultiVariantBaseModel'
+import type { MultiVariantBaseModel } from '../../shared/MultiVariantBaseModel.ts'
 
 interface FeatureData {
   alt: string[]

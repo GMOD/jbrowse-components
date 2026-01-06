@@ -5,10 +5,10 @@ import { getBpDisplayStr } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import { minElt } from './util'
-import { makeSimpleAltString } from '../../VcfFeature/util'
+import { minElt } from './util.ts'
+import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 
-import type { Source } from '../../shared/types'
+import type { Source } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 

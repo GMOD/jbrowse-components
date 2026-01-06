@@ -2,14 +2,14 @@ import HistoryIcon from '@mui/icons-material/History'
 import { Badge, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import DropdownTrackSelector from './DropdownTrackSelector'
+import DropdownTrackSelector from './DropdownTrackSelector.tsx'
 import {
   badgeAnchorOrigin,
   getDropdownMenuItems,
   useSmallBadgeStyles,
-} from './trackListStyles'
+} from './trackListStyles.ts'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 const RecentlyUsedTracks = observer(function RecentlyUsedTracks({
   model,

@@ -4,9 +4,9 @@ import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import RubberbandSpan from './RubberbandSpan'
-import VerticalGuide from './VerticalGuide'
-import { useRangeSelect } from './useRangeSelect'
+import RubberbandSpan from './RubberbandSpan.tsx'
+import VerticalGuide from './VerticalGuide.tsx'
+import { useRangeSelect } from './useRangeSelect.ts'
 
 import type { LinearGenomeViewModel } from '..'
 

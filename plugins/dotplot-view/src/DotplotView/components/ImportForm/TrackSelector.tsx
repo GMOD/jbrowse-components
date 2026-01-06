@@ -9,10 +9,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack'
-import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector'
+import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack.tsx'
+import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector.tsx'
 
-import type { DotplotViewModel } from '../../model'
+import type { DotplotViewModel } from '../../model.ts'
 
 const TrackSelector = observer(function TrackSelector({
   assembly1,

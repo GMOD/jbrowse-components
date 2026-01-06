@@ -1,4 +1,4 @@
-import { parseArgv } from './parseArgv'
+import { parseArgv } from './parseArgv.ts'
 
 test('parse', () => {
   const args =

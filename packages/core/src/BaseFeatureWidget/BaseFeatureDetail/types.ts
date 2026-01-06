@@ -1,4 +1,4 @@
-import type { BaseCardProps } from '../types'
+import type { BaseCardProps } from '../types.tsx'
 
 export interface BaseInputProps extends BaseCardProps {
   omit?: string[]

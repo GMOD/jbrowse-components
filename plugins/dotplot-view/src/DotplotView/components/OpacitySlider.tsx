@@ -2,10 +2,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import SliderTooltip from './SliderTooltip'
+import SliderTooltip from './SliderTooltip.tsx'
 
-import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory'
-import type { DotplotViewModel } from '../model'
+import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory.tsx'
+import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   container: {

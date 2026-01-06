@@ -8,10 +8,10 @@ import {
   drawCigarClickMap,
   drawMouseoverClickMap,
   drawRef,
-} from './drawSynteny'
+} from './drawSynteny.ts'
 
-import type { LinearSyntenyDisplayModel } from './model'
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+import type { LinearSyntenyDisplayModel } from './model.ts'
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 interface Pos {

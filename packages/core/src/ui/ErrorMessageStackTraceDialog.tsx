@@ -11,8 +11,8 @@ import {
 } from '@mui/material'
 import { SourceMapConsumer } from 'source-map-js'
 
-import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents'
-import LoadingEllipses from './LoadingEllipses'
+import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
+import LoadingEllipses from './LoadingEllipses.tsx'
 
 async function myfetchtext(uri: string) {
   const res = await fetch(uri)

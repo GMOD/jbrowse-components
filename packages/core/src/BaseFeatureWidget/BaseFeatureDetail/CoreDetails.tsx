@@ -1,9 +1,9 @@
-import Position from './Position'
-import SimpleField from './SimpleField'
-import { toLocale } from '../../util'
+import Position from './Position.tsx'
+import SimpleField from './SimpleField.tsx'
+import { toLocale } from '../../util/index.ts'
 
-import type { SimpleFeatureSerialized } from '../../util'
-import type { BaseProps } from '../types'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { BaseProps } from '../types.tsx'
 
 export default function CoreDetails(props: BaseProps) {
   const { feature } = props

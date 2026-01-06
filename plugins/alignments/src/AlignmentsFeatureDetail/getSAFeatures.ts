@@ -1,6 +1,10 @@
 import { getSession } from '@jbrowse/core/util'
 
-import { featurizeSA, getClip, getLengthSansClipping } from '../MismatchParser'
+import {
+  featurizeSA,
+  getClip,
+  getLengthSansClipping,
+} from '../MismatchParser/index.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

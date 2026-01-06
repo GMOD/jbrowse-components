@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import configSchemaFactory from './configSchema'
-import modelFactory from './model'
+import configSchemaFactory from './configSchema.ts'
+import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -22,7 +22,7 @@ export default function MultiLinearVariantDisplayF(
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(
-        () => import('./components/VariantDisplayComponent'),
+        () => import('./components/VariantDisplayComponent.tsx'),
       ),
     })
   })

@@ -1,4 +1,4 @@
-import type { SpreadsheetViewModel } from '../SpreadsheetView'
+import type { SpreadsheetViewModel } from '../SpreadsheetView/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

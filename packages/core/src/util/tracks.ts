@@ -1,10 +1,10 @@
 import { getParent, isRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import { getEnv, getSession, objectHash } from './index'
-import { readConfObject } from '../configuration'
+import { getEnv, getSession, objectHash } from './index.ts'
+import { readConfObject } from '../configuration/index.ts'
 
-import type { FileLocation, PreFileLocation } from './types'
-import type { AnyConfigurationModel } from '../configuration'
+import type { FileLocation, PreFileLocation } from './types/index.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   IAnyStateTreeNode,
   IAnyType,

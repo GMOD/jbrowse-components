@@ -6,9 +6,9 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { fillRectCtx, getOrigin, getScale } from './util'
+import { fillRectCtx, getOrigin, getScale } from './util.ts'
 
-import type { ScaleOpts } from './util'
+import type { ScaleOpts } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { Colord } from '@jbrowse/core/util/colord'

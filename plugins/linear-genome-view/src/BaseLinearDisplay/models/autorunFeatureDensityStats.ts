@@ -1,8 +1,8 @@
 import { getContainingView, isAbortException } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { BaseLinearDisplayModel } from '../model'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
+import type { BaseLinearDisplayModel } from '../model.ts'
 
 // stats estimation autorun calls getFeatureDensityStats against the data
 // adapter which by default uses featureDensity, but can also respond with a

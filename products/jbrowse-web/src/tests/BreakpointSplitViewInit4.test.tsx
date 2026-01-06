@@ -3,8 +3,8 @@ import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer'
-import { getPluginManager, setup } from './util'
+import { handleRequest } from './generateReadBuffer.ts'
+import { getPluginManager, setup } from './util.tsx'
 import configSnapshot from '../../test_data/breakpoint/config.json'
 
 setup()

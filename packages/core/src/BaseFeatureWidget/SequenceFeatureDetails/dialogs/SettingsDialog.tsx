@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { SequenceFeatureDetailsModel } from '../model'
+import type { SequenceFeatureDetailsModel } from '../model.ts'
 import type { TextFieldProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({

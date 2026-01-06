@@ -1,14 +1,14 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
-import { bpToPx, moveTo, pxToBp } from './Base1DUtils'
-import calculateDynamicBlocks from './calculateDynamicBlocks'
-import calculateStaticBlocks from './calculateStaticBlocks'
-import { clamp, sum } from './index'
-import { ElementId } from './types/mst'
+import { bpToPx, moveTo, pxToBp } from './Base1DUtils.ts'
+import calculateDynamicBlocks from './calculateDynamicBlocks.ts'
+import calculateStaticBlocks from './calculateStaticBlocks.ts'
+import { clamp, sum } from './index.ts'
+import { ElementId } from './types/mst.ts'
 
-import type { BpOffset } from './Base1DUtils'
-import type { Feature } from './simpleFeature'
-import type { Region as IRegion } from './types'
+import type { BpOffset } from './Base1DUtils.ts'
+import type { Feature } from './simpleFeature.ts'
+import type { Region as IRegion } from './types/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**

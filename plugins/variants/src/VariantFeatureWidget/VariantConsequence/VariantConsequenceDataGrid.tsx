@@ -1,6 +1,6 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
-import VariantConsequenceDataGridWrapper from './VariantConsequenceDataGridWrapper'
+import VariantConsequenceDataGridWrapper from './VariantConsequenceDataGridWrapper.tsx'
 
 export default function VariantConsequenceDataGrid({
   data,

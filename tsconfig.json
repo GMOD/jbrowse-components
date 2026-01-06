@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "esnext",
+    "verbatimModuleSyntax": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "outDir": "dist",

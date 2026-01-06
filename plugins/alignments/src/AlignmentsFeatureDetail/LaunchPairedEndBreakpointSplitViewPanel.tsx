@@ -4,11 +4,11 @@ import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
-import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 const BreakpointSplitViewChoiceDialog = lazy(
-  () => import('./BreakpointSplitViewChoiceDialog'),
+  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
 )
 
 export default function LaunchPairedEndBreakpointSplitViewPanel({

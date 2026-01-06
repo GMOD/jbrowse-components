@@ -22,12 +22,12 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observable } from 'mobx'
 
-import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { getPileupLegendItems } from '../shared/legendUtils'
-import { getMismatchDisplayMenuItem } from '../shared/menuItems'
-import { isDefaultFilterFlags } from '../shared/util'
+import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb.tsx'
+import { getPileupLegendItems } from '../shared/legendUtils.ts'
+import { getMismatchDisplayMenuItem } from '../shared/menuItems.ts'
+import { isDefaultFilterFlags } from '../shared/util.ts'
 
-import type { ColorBy, FilterBy } from '../shared/types'
+import type { ColorBy, FilterBy } from '../shared/types.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -40,14 +40,14 @@ import type {
 import type { Theme } from '@mui/material'
 // lazies
 const FilterByTagDialog = lazy(
-  () => import('../shared/components/FilterByTagDialog'),
+  () => import('../shared/components/FilterByTagDialog.tsx'),
 )
-const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog'))
+const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog.tsx'))
 const SetFeatureHeightDialog = lazy(
-  () => import('../shared/components/SetFeatureHeightDialog'),
+  () => import('../shared/components/SetFeatureHeightDialog.tsx'),
 )
 const SetMaxHeightDialog = lazy(
-  () => import('../shared/components/SetMaxHeightDialog'),
+  () => import('../shared/components/SetMaxHeightDialog.tsx'),
 )
 
 // using a map because it preserves order

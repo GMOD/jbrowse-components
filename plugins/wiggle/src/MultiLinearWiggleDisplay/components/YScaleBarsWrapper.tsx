@@ -1,7 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import type { WiggleDisplayModel } from '../model'
+import type { WiggleDisplayModel } from '../model.ts'
 
 const YScaleBarsWrapper = observer(function YScaleBarsWrapper({
   children,

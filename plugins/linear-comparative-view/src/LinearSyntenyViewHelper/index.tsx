@@ -1,6 +1,6 @@
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
-import { linearSyntenyViewHelperModelFactory } from './stateModelFactory'
+import { linearSyntenyViewHelperModelFactory } from './stateModelFactory.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

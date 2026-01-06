@@ -2,9 +2,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import corePlugins from '../corePlugins'
-import rootModelFactory from './rootModel'
-import sessionModelFactory from '../sessionModel'
+import corePlugins from '../corePlugins.ts'
+import rootModelFactory from './rootModel.ts'
+import sessionModelFactory from '../sessionModel/index.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

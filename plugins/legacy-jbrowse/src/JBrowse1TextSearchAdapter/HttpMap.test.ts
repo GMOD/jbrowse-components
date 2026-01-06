@@ -1,6 +1,6 @@
 import path from 'path'
 
-import HttpMap from './HttpMap'
+import HttpMap from './HttpMap.ts'
 import first from '../../test_data/names/0.json'
 import last from '../../test_data/names/f.json'
 import meta from '../../test_data/names/meta.json'

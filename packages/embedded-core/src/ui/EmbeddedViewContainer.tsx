@@ -5,7 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, ScopedCssBaseline, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ViewTitle from './ViewTitle'
+import ViewTitle from './ViewTitle.tsx'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 

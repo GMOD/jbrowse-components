@@ -1,7 +1,7 @@
-import { useLocalStorage } from '../../util'
-import { isAppRootModel } from '../../util/types'
+import { useLocalStorage } from '../../util/index.ts'
+import { isAppRootModel } from '../../util/types/index.ts'
 
-import type { AbstractRootModel } from '../../util/types'
+import type { AbstractRootModel } from '../../util/types/index.ts'
 
 const NUM_SHOWN = 2
 

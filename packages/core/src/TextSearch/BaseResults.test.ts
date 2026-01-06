@@ -1,4 +1,4 @@
-import BaseResult, { RefSequenceResult } from './BaseResults'
+import BaseResult, { RefSequenceResult } from './BaseResults.ts'
 
 test('create BaseResult', () => {
   const baseResult = new BaseResult({

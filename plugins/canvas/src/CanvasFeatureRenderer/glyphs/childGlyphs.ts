@@ -1,13 +1,13 @@
-import { boxGlyph } from './box'
-import { cdsGlyph } from './cds'
-import { findGlyph } from './index'
-import { matureProteinRegionGlyph } from './matureProteinRegion'
-import { processedTranscriptGlyph } from './processed'
-import { repeatRegionGlyph } from './repeatRegion'
-import { segmentsGlyph } from './segments'
+import { boxGlyph } from './box.ts'
+import { cdsGlyph } from './cds.ts'
+import { findGlyph } from './index.ts'
+import { matureProteinRegionGlyph } from './matureProteinRegion.ts'
+import { processedTranscriptGlyph } from './processed.ts'
+import { repeatRegionGlyph } from './repeatRegion.ts'
+import { segmentsGlyph } from './segments.ts'
 
-import type { RenderConfigContext } from '../renderConfig'
-import type { Glyph } from '../types'
+import type { RenderConfigContext } from '../renderConfig.ts'
+import type { Glyph } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Glyphs that can be used as children of container glyphs (like genes).

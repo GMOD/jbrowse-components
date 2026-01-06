@@ -1,8 +1,8 @@
-import { adapterConfigCacheKey } from './util'
+import { adapterConfigCacheKey } from './util.ts'
 
-import type PluginManager from '../PluginManager'
-import type { AnyConfigurationSchemaType } from '../configuration'
-import type { AnyDataAdapter } from './BaseAdapter'
+import type PluginManager from '../PluginManager.ts'
+import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
+import type { AnyDataAdapter } from './BaseAdapter/index.ts'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>

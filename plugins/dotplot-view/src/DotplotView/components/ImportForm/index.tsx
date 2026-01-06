@@ -14,9 +14,9 @@ import {
 import { toJS, transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import TrackSelector from './TrackSelector'
+import TrackSelector from './TrackSelector.tsx'
 
-import type { DotplotViewModel } from '../../model'
+import type { DotplotViewModel } from '../../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {

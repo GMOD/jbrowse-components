@@ -7,7 +7,7 @@ jest.mock('@jbrowse/core/util/nanoid', () => ({
   nanoid: () => `test-id-${mockCounter++}`,
 }))
 
-import { createView, doBeforeEach, hts, setup } from './util'
+import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })

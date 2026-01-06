@@ -1,8 +1,8 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
-import { configSchema } from './configSchema'
-import { modelFactory } from './model'
+import { configSchema } from './configSchema.ts'
+import { modelFactory } from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

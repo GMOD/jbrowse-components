@@ -9,13 +9,13 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 
-import ConfigSlot from './configurationSlot'
-import { isConfigurationSchemaType } from './util'
-import { getContainingTrack, getSession } from '../util'
-import { ElementId } from '../util/types/mst'
+import ConfigSlot from './configurationSlot.ts'
+import { isConfigurationSchemaType } from './util.ts'
+import { getContainingTrack, getSession } from '../util/index.ts'
+import { ElementId } from '../util/types/mst.ts'
 
-import type { ConfigSlotDefinition } from './configurationSlot'
-import type { AnyConfigurationSchemaType } from './types'
+import type { ConfigSlotDefinition } from './configurationSlot.ts'
+import type { AnyConfigurationSchemaType } from './types.ts'
 import type { IAnyType, SnapshotOut } from '@jbrowse/mobx-state-tree'
 
 export type {
@@ -23,7 +23,7 @@ export type {
   AnyConfigurationSchemaType,
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
-} from './types'
+} from './types.ts'
 
 function isEmptyObject(thing: unknown) {
   return (

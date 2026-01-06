@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '../../configuration'
+import { ConfigurationSchema } from '../../configuration/index.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

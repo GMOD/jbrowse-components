@@ -7,10 +7,10 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
-import { drawLine } from '../drawLine'
-import { serializeWiggleFeature } from '../util'
+import { drawLine } from '../drawLine.ts'
+import { serializeWiggleFeature } from '../util.ts'
 
-import type { MultiRenderArgsDeserialized } from '../types'
+import type { MultiRenderArgsDeserialized } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiLine(

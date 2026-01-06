@@ -12,9 +12,9 @@ import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseStringSync } from 'gtf-nostream'
 
-import { featureData } from '../util'
+import { featureData } from '../util.ts'
 
-import type { FeatureLoc } from '../util'
+import type { FeatureLoc } from '../util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'

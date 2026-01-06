@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 import { render } from '@testing-library/react'
 
-import Sanitize from './SanitizedHTML'
+import Sanitize from './SanitizedHTML.tsx'
 
 test('test basic escaping with bold', () => {
   const { getByText } = render(<Sanitize html="<b>Test</b" />)

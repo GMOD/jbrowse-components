@@ -2,9 +2,9 @@ import { StrictMode, Suspense, lazy } from 'react'
 
 import { createRoot } from 'react-dom/client'
 
-import Loading from './components/Loading'
+import Loading from './components/Loading.tsx'
 
-const Main = lazy(() => import('./components/Loader'))
+const Main = lazy(() => import('./components/Loader.tsx'))
 
 const initialTimeStamp = Date.now()
 

@@ -1,4 +1,4 @@
-import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util'
+import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util.tsx'
 import volvoxConfig from '../../test_data/volvox/config.json'
 
 // @ts-expect-error

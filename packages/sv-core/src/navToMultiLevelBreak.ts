@@ -5,9 +5,9 @@ import {
   makeTitle,
   splitRegionAtPosition,
   stripIds,
-} from './util'
+} from './util.ts'
 
-import type { BreakpointSplitView, Track } from './types'
+import type { BreakpointSplitView, Track } from './types.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

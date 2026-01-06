@@ -1,4 +1,4 @@
-import { useInnerDims } from './util'
+import { useInnerDims } from './util.ts'
 
 export default function DataGridWrapper({
   children,

@@ -1,15 +1,15 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '../../util'
-import SimpleFeature from '../../util/simpleFeature'
+import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
+import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
+import { renameRegionsIfNeeded } from '../../util/index.ts'
+import SimpleFeature from '../../util/simpleFeature.ts'
 
-import type { RenderArgs } from './util'
-import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
-import type { Region } from '../../util'
-import type { SimpleFeatureSerialized } from '../../util/simpleFeature'
+import type { RenderArgs } from './util.ts'
+import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
+import type { Region } from '../../util/index.ts'
+import type { SimpleFeatureSerialized } from '../../util/simpleFeature.ts'
 
 export default class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'

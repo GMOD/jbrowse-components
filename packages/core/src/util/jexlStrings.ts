@@ -1,4 +1,4 @@
-import createJexlInstance from './jexl'
+import createJexlInstance from './jexl.ts'
 
 const compilationCache: Record<string, any> = {}
 

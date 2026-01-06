@@ -1,16 +1,16 @@
 import { colord } from '@jbrowse/core/util/colord'
 
-import { getNextRefPos } from '../../MismatchParser'
-import { getModPositions } from '../../ModificationParser/getModPositions'
-import { getModProbabilities } from '../../ModificationParser/getModProbabilities'
-import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition'
-import { getModificationName } from '../../shared/modificationData'
-import { alphaColor, buildMismatchMap } from '../../shared/util'
-import { getTagAlt } from '../../util'
+import { getNextRefPos } from '../../MismatchParser/index.ts'
+import { getModPositions } from '../../ModificationParser/getModPositions.ts'
+import { getModProbabilities } from '../../ModificationParser/getModProbabilities.ts'
+import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
+import { getModificationName } from '../../shared/modificationData.ts'
+import { alphaColor, buildMismatchMap } from '../../shared/util.ts'
+import { getTagAlt } from '../../util.ts'
 
-import type { ColorBy, ModificationTypeWithColor } from '../../shared/types'
-import type { FlatbushItem } from '../types'
-import type { LayoutFeature } from '../util'
+import type { ColorBy, ModificationTypeWithColor } from '../../shared/types.ts'
+import type { FlatbushItem } from '../types.ts'
+import type { LayoutFeature } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
 
 export interface RenderModificationsArgs {

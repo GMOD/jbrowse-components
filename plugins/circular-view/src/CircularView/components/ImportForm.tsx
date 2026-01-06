@@ -6,7 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Container, Grid } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { CircularViewModel } from '../model'
+import type { CircularViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {

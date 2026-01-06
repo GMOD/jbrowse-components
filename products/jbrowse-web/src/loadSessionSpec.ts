@@ -1,4 +1,4 @@
-import type { ViewSpec } from './types'
+import type { ViewSpec } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an

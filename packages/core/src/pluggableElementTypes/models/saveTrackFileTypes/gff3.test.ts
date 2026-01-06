@@ -1,7 +1,7 @@
-import { stringifyGFF3 } from './gff3'
-import SimpleFeature from '../../../util/simpleFeature'
+import { stringifyGFF3 } from './gff3.ts'
+import SimpleFeature from '../../../util/simpleFeature.ts'
 
-import type { Feature } from '../../../util/simpleFeature'
+import type { Feature } from '../../../util/simpleFeature.ts'
 
 // Helper function to create a feature, ensuring a unique ID is set
 // for the SimpleFeature instance while using data.id for GFF3 attributes.

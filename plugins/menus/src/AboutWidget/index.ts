@@ -21,7 +21,7 @@ export default function AboutWidgetF(pluginManager: PluginManager) {
       heading: 'About',
       configSchema,
       stateModel,
-      ReactComponent: lazy(() => import('./components/AboutWidget')),
+      ReactComponent: lazy(() => import('./components/AboutWidget.tsx')),
     })
   })
 }

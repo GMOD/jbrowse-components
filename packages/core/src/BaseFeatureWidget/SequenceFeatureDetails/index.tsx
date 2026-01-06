@@ -1,1 +1,1 @@
-export { default } from './SequenceFeaturePanel'
+export { default } from './SequenceFeaturePanel.tsx'

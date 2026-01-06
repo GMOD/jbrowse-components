@@ -1,4 +1,4 @@
-import { coarseStripHTML } from './coarseStripHTML'
+import { coarseStripHTML } from './coarseStripHTML.ts'
 
 test('removes simple HTML tags', () => {
   expect(coarseStripHTML('<p>Hello World</p>')).toBe('Hello World')

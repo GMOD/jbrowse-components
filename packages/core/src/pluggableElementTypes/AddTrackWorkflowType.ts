@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import PluggableElementBase from './PluggableElementBase'
+import PluggableElementBase from './PluggableElementBase.ts'
 
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 

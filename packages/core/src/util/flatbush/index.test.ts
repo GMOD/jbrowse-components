@@ -1,4 +1,4 @@
-import Flatbush from './index'
+import Flatbush from './index.ts'
 
 describe('Flatbush', () => {
   describe('from', () => {

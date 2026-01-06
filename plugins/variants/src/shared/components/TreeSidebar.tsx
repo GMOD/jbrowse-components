@@ -7,7 +7,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import type { ClusterHierarchyNode, TreeSidebarModel } from './types'
+import type { ClusterHierarchyNode, TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({

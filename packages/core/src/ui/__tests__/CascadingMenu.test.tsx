@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import CascadingMenuButton from '../CascadingMenuButton'
+import CascadingMenuButton from '../CascadingMenuButton.tsx'
 
 const menuItems = [
   { label: 'Item 1', onClick: () => {} },

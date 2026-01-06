@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import dompurify from 'dompurify'
 import escapeHTML from 'escape-html'
 
-import { linkify } from '../util'
+import { linkify } from '../util/index.ts'
 
 // source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
 // with some random uncommon ones removed. note: we just use this to run the content

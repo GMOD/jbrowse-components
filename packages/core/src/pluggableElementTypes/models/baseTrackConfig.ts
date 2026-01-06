@@ -1,8 +1,8 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { ConfigurationSchema } from '../../configuration'
+import { ConfigurationSchema } from '../../configuration/index.ts'
 
-import type PluginManager from '../../PluginManager'
+import type PluginManager from '../../PluginManager.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface BasicTrack {

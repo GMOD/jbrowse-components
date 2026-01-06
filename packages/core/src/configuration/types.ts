@@ -1,8 +1,8 @@
 import type {
   ConfigurationSchemaOptions,
   ConfigurationSchemaType,
-} from './configurationSchema'
-import type ConfigSlot from './configurationSlot'
+} from './configurationSchema.ts'
+import type ConfigSlot from './configurationSlot.ts'
 import type {
   IStateTreeNode,
   Instance,

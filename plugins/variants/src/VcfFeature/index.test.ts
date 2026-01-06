@@ -1,7 +1,7 @@
 import VcfParser from '@gmod/vcf'
 
-import VcfFeature from './index'
-import { getSOAndDescFromAltDefs } from './util'
+import VcfFeature from './index.ts'
+import { getSOAndDescFromAltDefs } from './util.ts'
 
 const defaultHeader =
   '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE'

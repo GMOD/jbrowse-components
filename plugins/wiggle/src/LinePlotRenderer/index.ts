@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
-import LinePlotRenderer from './LinePlotRenderer'
-import configSchema from './configSchema'
+import LinePlotRenderer from './LinePlotRenderer.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -10,7 +10,7 @@ export default function LinePlotRendererF(pluginManager: PluginManager) {
     () =>
       new LinePlotRenderer({
         name: 'LinePlotRenderer',
-        ReactComponent: lazy(() => import('../WiggleRendering')),
+        ReactComponent: lazy(() => import('../WiggleRendering.tsx')),
         configSchema,
         pluginManager,
       }),

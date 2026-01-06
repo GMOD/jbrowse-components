@@ -1,8 +1,8 @@
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-import { createReferenceSeqTrackConfig } from './configSchema'
-import { stringifyFASTA } from '../saveTrackFormats/fasta'
+import { createReferenceSeqTrackConfig } from './configSchema.ts'
+import { stringifyFASTA } from '../saveTrackFormats/fasta.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

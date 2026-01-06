@@ -9,12 +9,12 @@ import {
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground'
-import { getTrackNameMaxLen, getTrackOffsets } from './util'
-import Overlay from '../components/Overlay'
+import SVGBackground from './SVGBackground.tsx'
+import { getTrackNameMaxLen, getTrackOffsets } from './util.ts'
+import Overlay from '../components/Overlay.tsx'
 
-import type { BreakpointViewModel } from '../model'
-import type { ExportSvgOptions } from '../types'
+import type { BreakpointViewModel } from '../model.ts'
+import type { ExportSvgOptions } from '../types.ts'
 
 type BSV = BreakpointViewModel
 

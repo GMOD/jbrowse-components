@@ -9,10 +9,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import CurrentJobCard from './CurrentJobCard'
-import JobCard from './JobCard'
+import CurrentJobCard from './CurrentJobCard.tsx'
+import JobCard from './JobCard.tsx'
 
-import type { JobsListModel, NewJob } from '../model'
+import type { JobsListModel, NewJob } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   root: {

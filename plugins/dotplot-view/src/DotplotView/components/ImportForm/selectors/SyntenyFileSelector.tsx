@@ -2,9 +2,9 @@ import { FileSelector } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import SwapAssemblies from './SwapAssemblies'
+import SwapAssemblies from './SwapAssemblies.tsx'
 
-import type { SelectorProps } from './SelectorTypes'
+import type { SelectorProps } from './SelectorTypes.ts'
 
 const useStyles = makeStyles()({
   container: {

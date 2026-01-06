@@ -2,9 +2,9 @@ import { getEnv } from '@jbrowse/core/util'
 import { ListSubheader, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { categorizeAdapters } from './util'
+import { categorizeAdapters } from './util.ts'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 
 const TrackAdapterSelector = observer(function ({
   model,

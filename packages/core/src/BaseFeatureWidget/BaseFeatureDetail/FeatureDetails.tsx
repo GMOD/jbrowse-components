@@ -1,16 +1,16 @@
 import { Divider, Typography } from '@mui/material'
 
-import { generateTitle } from './util'
-import SequenceFeatureDetails from '../SequenceFeatureDetails'
-import Attributes from './Attributes'
-import BaseCard from './BaseCard'
-import CoreDetails from './CoreDetails'
-import { ErrorMessage } from '../../ui'
-import { ErrorBoundary } from '../../ui/ErrorBoundary'
-import { getEnv, getSession } from '../../util'
+import Attributes from './Attributes.tsx'
+import BaseCard from './BaseCard.tsx'
+import CoreDetails from './CoreDetails.tsx'
+import { generateTitle } from './util.ts'
+import { ErrorBoundary } from '../../ui/ErrorBoundary.tsx'
+import { ErrorMessage } from '../../ui/index.ts'
+import { getEnv, getSession } from '../../util/index.ts'
+import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
 
-import type { SimpleFeatureSerialized } from '../../util'
-import type { Descriptors } from '../types'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { Descriptors } from '../types.tsx'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // coreDetails are omitted in some circumstances

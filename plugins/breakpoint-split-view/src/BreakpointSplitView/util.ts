@@ -4,7 +4,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { clamp, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import type { LayoutRecord } from './types'
+import type { LayoutRecord } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

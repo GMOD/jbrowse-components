@@ -4,11 +4,11 @@ import {
   ensureTrixDir,
   prepareIndexDriverFlags,
   sanitizeNameForPath,
-} from './config-utils'
-import { indexDriver, prepareFileTrackConfigs } from './indexing-utils'
-import { validateFileInput } from './validators'
+} from './config-utils.ts'
+import { indexDriver, prepareFileTrackConfigs } from './indexing-utils.ts'
+import { validateFileInput } from './validators.ts'
 
-import type { TextIndexFlags } from './index'
+import type { TextIndexFlags } from './index.ts'
 
 export async function indexFileList(flags: TextIndexFlags): Promise<void> {
   const { out, target, fileId, file, attributes, quiet, exclude, prefixSize } =

@@ -1,6 +1,6 @@
-import getValue from './get-value'
+import getValue from './get-value.ts'
 
-import type { Source, Track } from './types'
+import type { Source, Track } from './types.ts'
 
 export function isTrack(arg: any): arg is Track {
   return arg?.label && typeof arg.label === 'string'

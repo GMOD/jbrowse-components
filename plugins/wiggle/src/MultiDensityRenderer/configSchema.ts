@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import baseWiggleRendererConfigSchema from '../configSchema'
+import baseWiggleRendererConfigSchema from '../configSchema.ts'
 
 /**
  * #config MultiDensityRenderer

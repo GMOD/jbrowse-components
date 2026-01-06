@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchema from './configSchema'
-import stateModelFactory from './model'
+import configSchema from './configSchema.ts'
+import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -17,7 +17,7 @@ export default function HierarchicalTrackSelectorWidgetF(
       configSchema,
       stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazy(
-        () => import('./components/HierarchicalTrackSelector'),
+        () => import('./components/HierarchicalTrackSelector.tsx'),
       ),
     })
   })
@@ -26,5 +26,5 @@ export default function HierarchicalTrackSelectorWidgetF(
 export {
   type HierarchicalTrackSelectorModel,
   default as stateModelFactory,
-} from './model'
-export { default as configSchema } from './configSchema'
+} from './model.ts'
+export { default as configSchema } from './configSchema.ts'

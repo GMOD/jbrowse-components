@@ -2,8 +2,8 @@ import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Image, createCanvas } from 'canvas'
 
-import configSchema from './configSchema'
-import { drawDensity } from '../drawDensity'
+import configSchema from './configSchema.ts'
+import { drawDensity } from '../drawDensity.ts'
 
 // @ts-expect-error
 global.nodeImage = Image

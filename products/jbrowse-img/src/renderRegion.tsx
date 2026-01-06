@@ -4,9 +4,9 @@ import path from 'path'
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 
-import { booleanize } from './util'
+import { booleanize } from './util.ts'
 
-import type { Entry } from './parseArgv'
+import type { Entry } from './parseArgv.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface Opts {

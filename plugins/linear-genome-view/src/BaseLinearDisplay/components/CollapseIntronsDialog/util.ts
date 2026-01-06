@@ -2,7 +2,7 @@ import { getSession, mergeIntervals } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
-import type { LinearGenomeViewModel } from '../../../LinearGenomeView'
+import type { LinearGenomeViewModel } from '../../../LinearGenomeView/index.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 

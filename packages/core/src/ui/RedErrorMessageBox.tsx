@@ -1,4 +1,4 @@
-import { makeStyles } from '../util/tss-react'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 const useStyles = makeStyles()(theme => ({
   bg: {

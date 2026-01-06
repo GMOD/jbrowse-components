@@ -1,9 +1,9 @@
-import type { ServerSideRendererType } from '../../pluggableElementTypes'
+import type { ServerSideRendererType } from '../../pluggableElementTypes/index.ts'
 import type {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
-} from '../../pluggableElementTypes/renderers/ServerSideRendererType'
-import type { Region } from '../../util'
+} from '../../pluggableElementTypes/renderers/ServerSideRendererType.tsx'
+import type { Region } from '../../util/index.ts'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   adapterConfig: Record<string, unknown>
@@ -33,4 +33,4 @@ export function validateRendererType<T>(
 export {
   type RenderResults,
   type ResultsSerialized,
-} from '../../pluggableElementTypes/renderers/ServerSideRendererType'
+} from '../../pluggableElementTypes/renderers/ServerSideRendererType.tsx'

@@ -15,14 +15,14 @@ import {
   Typography,
 } from '@mui/material'
 
-import Checkbox2 from '../Checkbox2'
-import RecentSessionsCards from './RecentSessionsCards'
-import RecentSessionsList from './RecentSessionsDataGrid'
-import DeleteSessionDialog from '../dialogs/DeleteSessionDialog'
-import RenameSessionDialog from '../dialogs/RenameSessionDialog'
-import { loadPluginManager } from '../util'
+import Checkbox2 from '../Checkbox2.tsx'
+import RecentSessionsCards from './RecentSessionsCards.tsx'
+import RecentSessionsList from './RecentSessionsDataGrid.tsx'
+import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
+import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
+import { loadPluginManager } from '../util.tsx'
 
-import type { RecentSessionData } from '../types'
+import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ToggleButtonProps } from '@mui/material'
 

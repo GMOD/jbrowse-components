@@ -5,7 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { readConf } from './util'
+import { readConf } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

@@ -8,13 +8,13 @@ import {
 import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { SyntenyFeatureDetailModel } from './types'
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+import type { SyntenyFeatureDetailModel } from './types.ts'
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
 const LaunchSyntenyViewDialog = lazy(
-  () => import('../LGVSyntenyDisplay/components/LaunchSyntenyViewDialog'),
+  () => import('../LGVSyntenyDisplay/components/LaunchSyntenyViewDialog.tsx'),
 )
 
 const LinkToSyntenyView = observer(function LinkToSyntenyView({

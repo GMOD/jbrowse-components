@@ -1,12 +1,12 @@
 import { lazy } from 'react'
 
-import { pairwiseTypes } from '../syntenyTypes'
+import { pairwiseTypes } from '../syntenyTypes.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // lazies
 const ComparativeAddTrackComponent = lazy(
-  () => import('./ComparativeAddTrackComponent'),
+  () => import('./ComparativeAddTrackComponent.tsx'),
 )
 
 export default function ComparativeAddTrackComponentF(

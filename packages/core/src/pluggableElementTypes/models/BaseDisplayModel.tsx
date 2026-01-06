@@ -2,12 +2,16 @@ import type React from 'react'
 
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
-import { getConf } from '../../configuration'
-import { getContainingTrack, getContainingView, getEnv } from '../../util'
-import { getParentRenderProps } from '../../util/tracks'
-import { ElementId } from '../../util/types/mst'
+import { getConf } from '../../configuration/index.ts'
+import {
+  getContainingTrack,
+  getContainingView,
+  getEnv,
+} from '../../util/index.ts'
+import { getParentRenderProps } from '../../util/tracks.ts'
+import { ElementId } from '../../util/types/mst.ts'
 
-import type { MenuItem } from '../../ui'
+import type { MenuItem } from '../../ui/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**

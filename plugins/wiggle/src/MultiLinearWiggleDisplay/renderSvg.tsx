@@ -1,10 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-import { isReadyOrHasError } from '../svgExportUtil'
-import YScaleBars from './components/YScaleBars'
+import { isReadyOrHasError } from '../svgExportUtil.ts'
+import YScaleBars from './components/YScaleBars.tsx'
 
-import type { WiggleDisplayModel } from './model'
+import type { WiggleDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,

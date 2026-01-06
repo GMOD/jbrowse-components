@@ -12,8 +12,8 @@ import {
   setupConfigFile,
   setupRoutes,
   startServer,
-} from './utils'
-import { debug, printHelp } from '../../utils'
+} from './utils.ts'
+import { debug, printHelp } from '../../utils.ts'
 
 import type { Request, Response } from 'express'
 

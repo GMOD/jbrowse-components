@@ -1,2 +1,2 @@
-export * from './App'
-export { default as DialogQueue } from './DialogQueue'
+export * from './App.tsx'
+export { default as DialogQueue } from './DialogQueue.tsx'

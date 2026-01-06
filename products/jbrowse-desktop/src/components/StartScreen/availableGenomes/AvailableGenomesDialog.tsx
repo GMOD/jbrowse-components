@@ -1,9 +1,9 @@
 import { Dialog } from '@jbrowse/core/ui'
 import { DialogContent } from '@mui/material'
 
-import GenomesDataTable from './GenomesDataTable'
+import GenomesDataTable from './GenomesDataTable.tsx'
 
-import type { Fav, LaunchCallback } from '../types'
+import type { Fav, LaunchCallback } from '../types.ts'
 
 export default function AllGenomesDialog({
   favorites,

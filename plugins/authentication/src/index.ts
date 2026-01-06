@@ -4,23 +4,23 @@ import InternetAccountType from '@jbrowse/core/pluggableElementTypes/InternetAcc
 import {
   configSchema as DropboxOAuthConfigSchema,
   modelFactory as DropboxOAuthInternetAccountModelFactory,
-} from './DropboxOAuthModel'
+} from './DropboxOAuthModel/index.ts'
 import {
   configSchema as ExternalTokenConfigSchema,
   modelFactory as ExternalTokenInternetAccountModelFactory,
-} from './ExternalTokenModel'
+} from './ExternalTokenModel/index.ts'
 import {
   configSchema as GoogleDriveOAuthConfigSchema,
   modelFactory as GoogleDriveOAuthInternetAccountModelFactory,
-} from './GoogleDriveOAuthModel'
+} from './GoogleDriveOAuthModel/index.ts'
 import {
   configSchema as HTTPBasicConfigSchema,
   modelFactory as HTTPBasicInternetAccountModelFactory,
-} from './HTTPBasicModel'
+} from './HTTPBasicModel/index.ts'
 import {
   configSchema as OAuthConfigSchema,
   modelFactory as OAuthInternetAccountModelFactory,
-} from './OAuthModel'
+} from './OAuthModel/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -88,23 +88,23 @@ export default class AuthenticationPlugin extends Plugin {
 export {
   configSchema as OAuthConfigSchema,
   modelFactory as OAuthInternetAccountModelFactory,
-} from './OAuthModel'
+} from './OAuthModel/index.ts'
 export {
   configSchema as ExternalTokenConfigSchema,
   modelFactory as ExternalTokenInternetAccountModelFactory,
-} from './ExternalTokenModel'
+} from './ExternalTokenModel/index.ts'
 
 export {
   configSchema as HTTPBasicConfigSchema,
   modelFactory as HTTPBasicInternetAccountModelFactory,
-} from './HTTPBasicModel'
+} from './HTTPBasicModel/index.ts'
 
 export {
   configSchema as DropboxOAuthConfigSchema,
   modelFactory as DropboxOAuthInternetAccountModelFactory,
-} from './DropboxOAuthModel'
+} from './DropboxOAuthModel/index.ts'
 
 export {
   configSchema as GoogleDriveOAuthConfigSchema,
   modelFactory as GoogleDriveOAuthInternetAccountModelFactory,
-} from './GoogleDriveOAuthModel'
+} from './GoogleDriveOAuthModel/index.ts'

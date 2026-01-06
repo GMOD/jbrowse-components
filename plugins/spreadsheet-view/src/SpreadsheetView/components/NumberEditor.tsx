@@ -4,7 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { ImportWizardModel } from '../ImportWizard'
+import type { ImportWizardModel } from '../ImportWizard.ts'
 
 const useStyles = makeStyles()({
   textField: {

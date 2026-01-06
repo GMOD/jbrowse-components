@@ -1,6 +1,6 @@
-import { stitch } from '../BaseFeatureWidget/util'
+import { stitch } from '../BaseFeatureWidget/util.tsx'
 
-import type { Feat } from '../BaseFeatureWidget/util'
+import type { Feat } from '../BaseFeatureWidget/util.tsx'
 
 export function convertCodingSequenceToPeptides({
   cds,

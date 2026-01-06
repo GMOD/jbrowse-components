@@ -2,7 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { gatherOverlaps, getSession, sum } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
-import type { ReducedFeature } from '../util'
+import type { ReducedFeature } from '../util.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 

@@ -1,6 +1,6 @@
 import { genomeToTranscriptSeqMapping } from 'g2p_mapper'
 
-import { aggregateAminos } from './aggregateAminoAcids'
+import { aggregateAminos } from './aggregateAminoAcids.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

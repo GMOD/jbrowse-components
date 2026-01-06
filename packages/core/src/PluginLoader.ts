@@ -1,10 +1,10 @@
 import domLoadScript from 'load-script'
 
-import Plugin from './Plugin'
-import ReExports from './ReExports'
-import { isElectron } from './util'
+import Plugin from './Plugin.ts'
+import ReExports from './ReExports/index.ts'
+import { isElectron } from './util/index.ts'
 
-import type { PluginConstructor } from './Plugin'
+import type { PluginConstructor } from './Plugin.ts'
 
 export interface UMDLocPluginDefinition {
   umdLoc: {

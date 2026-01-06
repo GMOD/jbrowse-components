@@ -1,7 +1,7 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { render, waitFor } from '@testing-library/react'
 
-import Scalebar from './Scalebar'
+import Scalebar from './Scalebar.tsx'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 

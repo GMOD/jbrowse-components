@@ -16,7 +16,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model.ts'
 import type { JBrowsePlugin } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()({

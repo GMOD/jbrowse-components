@@ -15,11 +15,11 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Checkbox2 from './Checkbox2'
-import { navToMultiLevelBreak } from './navToMultiLevelBreak'
-import { navToSingleLevelBreak } from './navToSingleLevelBreak'
+import Checkbox2 from './Checkbox2.tsx'
+import { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'
+import { navToSingleLevelBreak } from './navToSingleLevelBreak.ts'
 
-import type { Track } from './types'
+import type { Track } from './types.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

@@ -1,6 +1,6 @@
 import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 
-import type { PAFRecord } from './PAFAdapter/util'
+import type { PAFRecord } from './PAFAdapter/util.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GenericFilehandle } from 'generic-filehandle2'
 

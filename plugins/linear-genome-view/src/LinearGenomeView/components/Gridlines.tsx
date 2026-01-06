@@ -5,8 +5,8 @@ import {
   ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
-} from '../../BaseLinearDisplay/components/Block'
-import { makeTicks } from '../util'
+} from '../../BaseLinearDisplay/components/Block.tsx'
+import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'

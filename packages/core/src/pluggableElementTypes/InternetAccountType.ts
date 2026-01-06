@@ -1,6 +1,6 @@
-import PluggableElementBase from './PluggableElementBase'
+import PluggableElementBase from './PluggableElementBase.ts'
 
-import type { AnyConfigurationSchemaType } from '../configuration/types'
+import type { AnyConfigurationSchemaType } from '../configuration/types.ts'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 export default class InternetAccountType extends PluggableElementBase {

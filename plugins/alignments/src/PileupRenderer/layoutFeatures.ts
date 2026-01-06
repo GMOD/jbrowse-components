@@ -1,9 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { layoutFeature } from './layoutFeature'
-import { sortFeature } from './sortUtil'
+import { layoutFeature } from './layoutFeature.ts'
+import { sortFeature } from './sortUtil.ts'
 
-import type { LayoutFeature, PreProcessedRenderArgs } from './types'
+import type { LayoutFeature, PreProcessedRenderArgs } from './types.ts'
 
 // layout determines the height of the canvas that we use to render
 export function layoutFeats(props: PreProcessedRenderArgs) {

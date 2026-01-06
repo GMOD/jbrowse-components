@@ -1,6 +1,6 @@
-import { assembleLocString } from '../../util'
+import { assembleLocString } from '../../util/index.ts'
 
-import type { BaseProps } from '../types'
+import type { BaseProps } from '../types.tsx'
 
 export default function Position(props: BaseProps) {
   const { feature } = props

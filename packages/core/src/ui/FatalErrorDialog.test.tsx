@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
-import FatalErrorDialog from './FatalErrorDialog'
+import FatalErrorDialog from './FatalErrorDialog.tsx'
 
 afterEach(cleanup)
 

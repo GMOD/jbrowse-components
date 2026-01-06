@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import ChordRendererType from '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -14,7 +14,7 @@ export default function StructuralVariantChordRendererF(
       new ChordRendererType({
         name: 'StructuralVariantChordRenderer',
         displayName: 'SV chord renderer',
-        ReactComponent: lazy(() => import('./ReactComponent')),
+        ReactComponent: lazy(() => import('./ReactComponent.tsx')),
         configSchema,
         pluginManager,
       }),

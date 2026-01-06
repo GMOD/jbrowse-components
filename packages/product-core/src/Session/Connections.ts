@@ -1,10 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { isBaseSession } from './BaseSession'
+import { isBaseSession } from './BaseSession.ts'
 
-import type { SessionWithReferenceManagementType } from './ReferenceManagement'
-import type { BaseRootModelType } from '../RootModel/BaseRootModel'
+import type { SessionWithReferenceManagementType } from './ReferenceManagement.ts'
+import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'

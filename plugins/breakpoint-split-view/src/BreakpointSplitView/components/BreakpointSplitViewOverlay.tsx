@@ -3,9 +3,9 @@ import { useRef } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import Overlay from './Overlay'
+import Overlay from './Overlay.tsx'
 
-import type { BreakpointViewModel } from '../model'
+import type { BreakpointViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   overlay: {

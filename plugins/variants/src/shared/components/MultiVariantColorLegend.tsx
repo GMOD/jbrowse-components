@@ -4,9 +4,9 @@ import { getFillProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import RectBg from './RectBg'
+import RectBg from './RectBg.tsx'
 
-import type { Source } from '../types'
+import type { Source } from '../types.ts'
 
 const LegendItem = function ({
   source,

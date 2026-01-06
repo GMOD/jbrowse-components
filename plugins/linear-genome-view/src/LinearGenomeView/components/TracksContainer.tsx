@@ -5,20 +5,20 @@ import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import Gridlines from './Gridlines'
-import Rubberband from './Rubberband'
-import Scalebar from './Scalebar'
-import VerticalGuide from './VerticalGuide'
-import { SCALE_BAR_HEIGHT } from '../consts'
-import { useRangeSelect } from './useRangeSelect'
-import { useSideScroll } from './useSideScroll'
-import { useWheelScroll } from './useWheelScroll'
+import Gridlines from './Gridlines.tsx'
+import Rubberband from './Rubberband.tsx'
+import Scalebar from './Scalebar.tsx'
+import VerticalGuide from './VerticalGuide.tsx'
+import { SCALE_BAR_HEIGHT } from '../consts.ts'
+import { useRangeSelect } from './useRangeSelect.ts'
+import { useSideScroll } from './useSideScroll.ts'
+import { useWheelScroll } from './useWheelScroll.ts'
 
 import type { LinearGenomeViewModel } from '..'
 
-const CenterLine = lazy(() => import('./CenterLine'))
-const Highlight = lazy(() => import('./Highlight'))
-const RubberbandSpan = lazy(() => import('./RubberbandSpan'))
+const CenterLine = lazy(() => import('./CenterLine.tsx'))
+const Highlight = lazy(() => import('./Highlight.tsx'))
+const RubberbandSpan = lazy(() => import('./RubberbandSpan.tsx'))
 
 const useStyles = makeStyles()({
   // Main container for all tracks

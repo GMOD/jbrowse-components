@@ -1,7 +1,7 @@
-import PluggableElementBase from './PluggableElementBase'
+import PluggableElementBase from './PluggableElementBase.ts'
 
-import type { AnyConfigurationSchemaType } from '../configuration'
-import type { AnyReactComponentType } from '../util'
+import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
+import type { AnyReactComponentType } from '../util/index.ts'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 export default class ConnectionType extends PluggableElementBase {

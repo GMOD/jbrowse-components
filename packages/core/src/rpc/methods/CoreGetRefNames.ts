@@ -1,6 +1,6 @@
-import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
-import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter/index.ts'
+import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
+import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
 export default class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'

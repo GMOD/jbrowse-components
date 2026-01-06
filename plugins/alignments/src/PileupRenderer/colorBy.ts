@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { fillColor } from '../shared/color'
-import { orientationTypes } from '../util'
+import { fillColor } from '../shared/color.ts'
+import { orientationTypes } from '../util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'

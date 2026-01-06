@@ -31,7 +31,7 @@ import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
 
-import { WebSessionConnectionsMixin } from '../SessionConnections'
+import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
 import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
@@ -49,7 +49,7 @@ import type { AssemblyManager } from '@jbrowse/core/util/types'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
-const AboutDialog = lazy(() => import('./AboutDialog'))
+const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 
 interface Display {
   displayId: string

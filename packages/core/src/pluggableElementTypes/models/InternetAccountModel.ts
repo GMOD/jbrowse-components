@@ -2,12 +2,15 @@ import type React from 'react'
 
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { BaseInternetAccountConfig } from './baseInternetAccountConfig'
-import { ConfigurationReference, getConf } from '../../configuration'
-import { RemoteFileWithRangeCache } from '../../util/io'
-import { ElementId } from '../../util/types/mst'
+import { BaseInternetAccountConfig } from './baseInternetAccountConfig.ts'
+import { ConfigurationReference, getConf } from '../../configuration/index.ts'
+import { RemoteFileWithRangeCache } from '../../util/io/index.ts'
+import { ElementId } from '../../util/types/mst.ts'
 
-import type { AnyReactComponentType, UriLocation } from '../../util/types'
+import type {
+  AnyReactComponentType,
+  UriLocation,
+} from '../../util/types/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const inWebWorker = typeof sessionStorage === 'undefined'

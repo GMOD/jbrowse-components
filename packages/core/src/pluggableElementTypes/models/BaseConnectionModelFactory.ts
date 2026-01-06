@@ -1,10 +1,10 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
-import configSchema from './baseConnectionConfig'
-import { ConfigurationReference } from '../../configuration'
+import configSchema from './baseConnectionConfig.ts'
+import { ConfigurationReference } from '../../configuration/index.ts'
 
-import type PluginManager from '../../PluginManager'
-import type { AnyConfigurationModel } from '../../configuration'
+import type PluginManager from '../../PluginManager.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
 
 type TrackConf = AnyConfigurationModel | Record<string, unknown>
 

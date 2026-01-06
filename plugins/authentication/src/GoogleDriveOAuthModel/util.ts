@@ -1,4 +1,4 @@
-import { getResponseError } from '../util'
+import { getResponseError } from '../util.ts'
 
 interface GoogleDriveError {
   error: {

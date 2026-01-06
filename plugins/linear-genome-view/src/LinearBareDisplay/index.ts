@@ -1,8 +1,8 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
-import { configSchemaFactory } from './configSchema'
-import { stateModelFactory } from './model'
-import { BaseLinearDisplayComponent } from '../BaseLinearDisplay/'
+import { configSchemaFactory } from './configSchema.ts'
+import { stateModelFactory } from './model.ts'
+import { BaseLinearDisplayComponent } from '../BaseLinearDisplay//index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -21,5 +21,5 @@ export default function LinearBareDisplayF(pluginManager: PluginManager) {
   })
 }
 
-export { configSchemaFactory } from './configSchema'
-export { stateModelFactory } from './model'
+export { configSchemaFactory } from './configSchema.ts'
+export { stateModelFactory } from './model.ts'

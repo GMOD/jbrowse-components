@@ -1,4 +1,4 @@
-import type { TreeNode } from '../types'
+import type { TreeNode } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {

@@ -1,6 +1,6 @@
-import { getConf } from '../configuration'
+import { getConf } from '../configuration/index.ts'
 
-import type { AbstractSessionModel } from './types'
+import type { AbstractSessionModel } from './types/index.ts'
 
 export async function fetchSeq({
   start,

@@ -11,9 +11,9 @@ import {
   MenuItem,
 } from '@mui/material'
 
-import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton'
-import HoverMenu from './HoverMenu'
-import { MenuItemEndDecoration } from './MenuItems'
+import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton.tsx'
+import HoverMenu from './HoverMenu.tsx'
+import { MenuItemEndDecoration } from './MenuItems.tsx'
 
 import type {
   CheckboxMenuItem,
@@ -21,10 +21,10 @@ import type {
   MenuItemsGetter,
   NormalMenuItem,
   RadioMenuItem,
-} from './MenuTypes'
+} from './MenuTypes.ts'
 import type { SvgIconProps } from '@mui/material'
 
-export type { MenuItemsGetter } from './MenuTypes'
+export type { MenuItemsGetter } from './MenuTypes.ts'
 type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
 
 function CascadingSubmenu({

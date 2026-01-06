@@ -1,8 +1,8 @@
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
-import type { LinearSyntenyDisplayModel } from '../model'
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
+import type { LinearSyntenyDisplayModel } from '../model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 interface ClickCoord {

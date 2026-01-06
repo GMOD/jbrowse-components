@@ -4,12 +4,12 @@ import RefreshIcon from '@mui/icons-material/Refresh'
 import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'
 
-import RedErrorMessageBox from './RedErrorMessageBox'
-import { makeStyles } from '../util/tss-react'
+import RedErrorMessageBox from './RedErrorMessageBox.tsx'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 // lazies
 const ErrorMessageStackTraceDialog = lazy(
-  () => import('./ErrorMessageStackTraceDialog'),
+  () => import('./ErrorMessageStackTraceDialog.tsx'),
 )
 
 const useStyles = makeStyles()(theme => ({

@@ -1,6 +1,6 @@
-import { boxGlyph, builtinGlyphs, findPluggableGlyph } from './glyphs'
+import { boxGlyph, builtinGlyphs, findPluggableGlyph } from './glyphs/index.ts'
 
-import type { DrawContext, FeatureLayout, Glyph } from './types'
+import type { DrawContext, FeatureLayout, Glyph } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // Auto-generate glyph map from builtin glyphs

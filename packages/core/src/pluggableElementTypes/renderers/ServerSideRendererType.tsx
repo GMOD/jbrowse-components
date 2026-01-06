@@ -1,15 +1,15 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import RendererType from './RendererType'
-import SerializableFilterChain from './util/serializableFilterChain'
-import { getSerializedSvg, updateStatus } from '../../util'
-import { isRpcResult } from '../../util/rpc'
-import { checkStopToken } from '../../util/stopToken'
+import RendererType from './RendererType.tsx'
+import SerializableFilterChain from './util/serializableFilterChain.ts'
+import { getSerializedSvg, updateStatus } from '../../util/index.ts'
+import { isRpcResult } from '../../util/rpc.ts'
+import { checkStopToken } from '../../util/stopToken.ts'
 
-import type { RenderProps, RenderResults } from './RendererType'
-import type { AnyConfigurationModel } from '../../configuration'
-import type { SerializedFilterChain } from './util/serializableFilterChain'
-import type RpcManager from '../../rpc/RpcManager'
+import type { RenderProps, RenderResults } from './RendererType.tsx'
+import type { SerializedFilterChain } from './util/serializableFilterChain.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type RpcManager from '../../rpc/RpcManager.ts'
 import type { SnapshotIn, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
@@ -258,4 +258,4 @@ export default class ServerSideRenderer extends RendererType {
   }
 }
 
-export { type RenderResults, type RenderReturn } from './RendererType'
+export { type RenderResults, type RenderReturn } from './RendererType.tsx'

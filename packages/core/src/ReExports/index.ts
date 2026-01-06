@@ -1,1 +1,1 @@
-export { default } from './modules'
+export { default } from './modules.ts'

@@ -1,6 +1,6 @@
 import { Presets, SingleBar } from 'cli-progress'
 
-import { getLocalOrRemoteStream } from '../util'
+import { getLocalOrRemoteStream } from '../util.ts'
 
 async function* readLines(
   reader: ReadableStreamDefaultReader<Uint8Array>,

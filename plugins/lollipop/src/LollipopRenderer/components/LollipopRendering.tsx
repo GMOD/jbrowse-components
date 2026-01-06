@@ -5,9 +5,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { bpToPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { FloatingLayout } from '../Layout'
-import Lollipop from './Lollipop'
-import Stick from './Stick'
+import { FloatingLayout } from '../Layout.ts'
+import Lollipop from './Lollipop.tsx'
+import Stick from './Stick.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'

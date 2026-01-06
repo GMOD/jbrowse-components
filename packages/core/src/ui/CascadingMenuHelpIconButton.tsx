@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import HelpOutline from '@mui/icons-material/HelpOutline'
 import { IconButton } from '@mui/material'
 
-import CascadingMenuHelpDialog from './CascadingMenuHelpDialog'
+import CascadingMenuHelpDialog from './CascadingMenuHelpDialog.tsx'
 
 export default function CascadingMenuHelpIconButton({
   helpText,

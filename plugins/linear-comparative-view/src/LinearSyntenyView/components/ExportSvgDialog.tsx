@@ -13,9 +13,9 @@ import {
   Typography,
 } from '@mui/material'
 
-import TextField2 from './TextField2'
+import TextField2 from './TextField2.tsx'
 
-import type { ExportSvgOptions } from '../types'
+import type { ExportSvgOptions } from '../types.ts'
 
 function LoadingMessage() {
   return (

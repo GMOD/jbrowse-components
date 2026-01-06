@@ -9,12 +9,12 @@ import {
   CIGAR_S,
   CIGAR_X,
   getCigarOps,
-} from './cigarUtil'
-import { getCharWidthHeight } from '../../shared/util'
+} from './cigarUtil.ts'
+import { getCharWidthHeight } from '../../shared/util.ts'
 
-import type { Mismatch } from '../../shared/types'
-import type { ProcessedRenderArgs } from '../types'
-import type { LayoutFeature } from '../util'
+import type { Mismatch } from '../../shared/types.ts'
+import type { ProcessedRenderArgs } from '../types.ts'
+import type { LayoutFeature } from '../util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Theme } from '@mui/material'
 

@@ -6,7 +6,7 @@ import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DataGrid } from '@mui/x-data-grid'
 
-import type { Source } from '../types'
+import type { Source } from '../types.ts'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({

@@ -1,4 +1,4 @@
-import { isWebWorker } from './isWebWorker'
+import { isWebWorker } from './isWebWorker.ts'
 
 /**
  * source https://github.com/panstromek/zebra-rs/blob/82d616225930b3ad423a2c6d883c79b94ee08ba6/webzebra/src/stopToken.ts#L34C1-L57C16

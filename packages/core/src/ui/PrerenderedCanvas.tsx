@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { drawImageOntoCanvasContext } from '../util/offscreenCanvasPonyfill'
+import { drawImageOntoCanvasContext } from '../util/offscreenCanvasPonyfill.tsx'
 
 function PrerenderedCanvas(props: {
   width: number

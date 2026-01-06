@@ -2,7 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import type { ModificationType } from './types'
+import type { ModificationType } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 

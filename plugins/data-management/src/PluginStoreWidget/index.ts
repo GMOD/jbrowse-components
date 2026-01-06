@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 
-import stateModelFactory from './model'
+import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -16,7 +16,7 @@ export default function PluginStoreWidgetF(pluginManager: PluginManager) {
       heading: 'Plugin store',
       configSchema,
       stateModel: stateModelFactory(pluginManager),
-      ReactComponent: lazy(() => import('./components/PluginStoreWidget')),
+      ReactComponent: lazy(() => import('./components/PluginStoreWidget.tsx')),
     })
   })
 }

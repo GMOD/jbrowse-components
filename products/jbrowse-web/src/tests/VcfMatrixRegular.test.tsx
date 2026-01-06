@@ -1,5 +1,5 @@
-import { testMultiVariantDisplay } from './testMultiVariantDisplay'
-import { doBeforeEach, setup } from './util'
+import { testMultiVariantDisplay } from './testMultiVariantDisplay.tsx'
+import { doBeforeEach, setup } from './util.tsx'
 
 setup()
 

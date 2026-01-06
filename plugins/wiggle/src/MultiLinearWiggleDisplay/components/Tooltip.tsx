@@ -3,11 +3,11 @@ import { forwardRef } from 'react'
 import { toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import Tooltip from '../../Tooltip'
-import { toP } from '../../util'
+import Tooltip from '../../Tooltip.tsx'
+import { toP } from '../../util.ts'
 
-import type { TooltipContentsComponent } from '../../Tooltip'
-import type { Source } from '../../util'
+import type { TooltipContentsComponent } from '../../Tooltip.tsx'
+import type { Source } from '../../util.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 interface Props {

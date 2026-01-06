@@ -1,12 +1,12 @@
 import { parseArgs } from 'util'
 
-import { printHelp } from '../utils'
-import { waitForProcessClose } from './process-utils'
-import { BED_CONFIG, spawnSortProcess } from './shared/sort-utils'
+import { printHelp } from '../utils.ts'
+import { waitForProcessClose } from './process-utils.ts'
+import { BED_CONFIG, spawnSortProcess } from './shared/sort-utils.ts'
 import {
   validateFileArgument,
   validateRequiredCommands,
-} from './shared/validators'
+} from './shared/validators.ts'
 
 export async function run(args?: string[]) {
   const options = {

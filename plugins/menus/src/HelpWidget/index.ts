@@ -21,7 +21,7 @@ export default function HelpWidgetF(pluginManager: PluginManager) {
       heading: 'Help',
       configSchema,
       stateModel,
-      ReactComponent: lazy(() => import('./components/HelpWidget')),
+      ReactComponent: lazy(() => import('./components/HelpWidget.tsx')),
     })
   })
 }

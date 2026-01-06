@@ -6,10 +6,10 @@ import { colord } from '@jbrowse/core/util/colord'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
-import { type Warning, clampWithWarnX, clampWithWarnY } from './clamp'
+import { type Warning, clampWithWarnX, clampWithWarnY } from './clamp.ts'
 
-import type { RenderArgsDeserialized } from './DotplotRenderer'
-import type { Dotplot1DViewModel } from '../DotplotView/model'
+import type { RenderArgsDeserialized } from './DotplotRenderer.ts'
+import type { Dotplot1DViewModel } from '../DotplotView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const { parseCigar } = MismatchParser

@@ -7,9 +7,9 @@ import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import { observer } from 'mobx-react'
 
-import ViewButtons from './ViewButtons'
-import ViewContainerTitle from './ViewContainerTitle'
-import ViewMenu from './ViewMenu'
+import ViewButtons from './ViewButtons.tsx'
+import ViewContainerTitle from './ViewContainerTitle.tsx'
+import ViewMenu from './ViewMenu.tsx'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 

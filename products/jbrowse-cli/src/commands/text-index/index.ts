@@ -1,7 +1,7 @@
-export { aggregateIndex } from './aggregate'
-export { perTrackIndex } from './per-track'
-export { indexFileList } from './file-list'
-export { run } from './command'
+export { aggregateIndex } from './aggregate.ts'
+export { perTrackIndex } from './per-track.ts'
+export { indexFileList } from './file-list.ts'
+export { run } from './command.ts'
 
 /**
  * Type-safe flags interface for text-index command

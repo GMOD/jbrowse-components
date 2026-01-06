@@ -1,9 +1,9 @@
-import type { BaseAdapter } from './BaseAdapter'
-import type { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter'
-import type { BaseRefNameAliasAdapter } from './BaseRefNameAliasAdapter'
-import type { BaseSequenceAdapter } from './BaseSequenceAdapter'
-import type { BaseTextSearchAdapter } from './BaseTextSearchAdapter'
-import type { RegionsAdapter } from './RegionsAdapter'
+import type { BaseAdapter } from './BaseAdapter.ts'
+import type { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
+import type { BaseRefNameAliasAdapter } from './BaseRefNameAliasAdapter.ts'
+import type { BaseSequenceAdapter } from './BaseSequenceAdapter.ts'
+import type { BaseTextSearchAdapter } from './BaseTextSearchAdapter.ts'
+import type { RegionsAdapter } from './RegionsAdapter.ts'
 
 export type AnyDataAdapter =
   | BaseAdapter

@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import StringArrayEditor from './StringArrayEditor'
+import StringArrayEditor from './StringArrayEditor.tsx'
 
 const useStyles = makeStyles()(theme => ({
   card: {

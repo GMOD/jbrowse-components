@@ -1,5 +1,5 @@
-import type PluginManager from './PluginManager'
-import type { AnyConfigurationSchemaType } from './configuration'
+import type PluginManager from './PluginManager.ts'
+import type { AnyConfigurationSchemaType } from './configuration/index.ts'
 
 /**
  * base class for a JBrowse plugin

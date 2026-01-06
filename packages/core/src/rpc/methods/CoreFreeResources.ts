@@ -1,5 +1,5 @@
-import { freeAdapterResources } from '../../data_adapters/dataAdapterCache'
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
+import { freeAdapterResources } from '../../data_adapters/dataAdapterCache.ts'
+import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
 /**
  * free up any resources (e.g. cached adapter objects)

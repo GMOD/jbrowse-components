@@ -4,8 +4,8 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // core
-import { HEADER_OVERVIEW_HEIGHT } from '../consts'
-import { chooseGridPitch } from '../util'
+import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
+import { chooseGridPitch } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'

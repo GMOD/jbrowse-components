@@ -3,9 +3,9 @@ import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import { Button, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import CascadingMenuButton from './CascadingMenuButton'
+import CascadingMenuButton from './CascadingMenuButton.tsx'
 
-import type { MenuItem } from './Menu'
+import type { MenuItem } from './Menu.tsx'
 import type { ButtonProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({

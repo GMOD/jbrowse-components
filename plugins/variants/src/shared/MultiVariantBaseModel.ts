@@ -16,18 +16,21 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
 
-import { cluster, hierarchy } from '../d3-hierarchy2'
 import {
   NO_CALL_COLOR,
   OTHER_ALT_COLOR,
   REFERENCE_COLOR,
   UNPHASED_COLOR,
   getAltColorForDosage,
-} from './constants'
-import { getSources } from './getSources'
+} from './constants.ts'
+import { getSources } from './getSources.ts'
+import { cluster, hierarchy } from '../d3-hierarchy2/index.js'
 
-import type { ClusterHierarchyNode, HoveredTreeNode } from './components/types'
-import type { SampleInfo, Source } from './types'
+import type {
+  ClusterHierarchyNode,
+  HoveredTreeNode,
+} from './components/types.ts'
+import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -35,13 +38,15 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
-const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
-const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog'))
-const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
+const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog.tsx'))
+const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 const ClusterDialog = lazy(
-  () => import('./components/MultiVariantClusterDialog/ClusterDialog'),
+  () => import('./components/MultiVariantClusterDialog/ClusterDialog.tsx'),
 )
-const SetRowHeightDialog = lazy(() => import('./components/SetRowHeightDialog'))
+const SetRowHeightDialog = lazy(
+  () => import('./components/SetRowHeightDialog.tsx'),
+)
 
 /**
  * #stateModel MultiVariantBaseModel
@@ -736,7 +741,7 @@ export default function MultiVariantBaseModelF(
         ;(async () => {
           try {
             const { setupMultiVariantAutoruns } =
-              await import('./setupMultiVariantAutoruns')
+              await import('./setupMultiVariantAutoruns.ts')
             setupMultiVariantAutoruns(self)
           } catch (e) {
             if (isAlive(self)) {

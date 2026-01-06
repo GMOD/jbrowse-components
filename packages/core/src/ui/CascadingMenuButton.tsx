@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 
 import { IconButton } from '@mui/material'
 
-import CascadingMenu from './CascadingMenu'
+import CascadingMenu from './CascadingMenu.tsx'
 
-import type { MenuItemsGetter } from './CascadingMenu'
+import type { MenuItemsGetter } from './CascadingMenu.tsx'
 
 function CascadingMenuButton({
   children,

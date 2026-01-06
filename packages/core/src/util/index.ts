@@ -14,19 +14,23 @@ import {
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
-import { coarseStripHTML } from './coarseStripHTML'
-import { colord } from './colord'
-import { parseLocString } from './locString'
-import { checkStopToken } from './stopToken'
+import { coarseStripHTML } from './coarseStripHTML.ts'
+import { colord } from './colord.ts'
+import { parseLocString } from './locString.ts'
+import { checkStopToken } from './stopToken.ts'
 import {
   isDisplayModel,
   isSessionModel,
   isTrackModel,
   isUriLocation,
   isViewModel,
-} from './types'
+} from './types/index.ts'
 
-import type { ParsedLocString } from './locString'
+import type { ParsedLocString } from './locString.ts'
+import type PluginManager from '../PluginManager.ts'
+import type { BaseBlock } from './blockTypes.ts'
+import type { Feature } from './simpleFeature.ts'
+import type { StopToken } from './stopToken.ts'
 import type {
   AbstractDisplayModel,
   AbstractSessionModel,
@@ -35,13 +39,9 @@ import type {
   AssemblyManager,
   Region,
   TypeTestedByPredicate,
-} from './types'
-import type PluginManager from '../PluginManager'
-import type { BaseBlock } from './blockTypes'
-import type { Feature } from './simpleFeature'
-import type { StopToken } from './stopToken'
-import type { Region as MUIRegion } from './types/mst'
-import type { BaseOptions } from '../data_adapters/BaseAdapter'
+} from './types/index.ts'
+import type { Region as MUIRegion } from './types/mst.ts'
+import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
@@ -49,15 +49,15 @@ import type {
 } from '@jbrowse/mobx-state-tree'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
-export * from './types'
-export * from './when'
-export * from './range'
-export * from './dedupe'
-export * from './coarseStripHTML'
+export * from './types/index.ts'
+export * from './when.ts'
+export * from './range.ts'
+export * from './dedupe.ts'
+export * from './coarseStripHTML.ts'
 
-export * from './offscreenCanvasPonyfill'
-export * from './offscreenCanvasUtils'
-export * from './rpc'
+export * from './offscreenCanvasPonyfill.tsx'
+export * from './offscreenCanvasUtils.tsx'
+export * from './rpc.ts'
 
 // WeakMap caches for containing model lookups to avoid repeated tree traversal
 const containingDisplayCache = new WeakMap<
@@ -1429,12 +1429,12 @@ export {
   type SimpleFeatureSerializedNoId,
   default as SimpleFeature,
   isFeature,
-} from './simpleFeature'
+} from './simpleFeature.ts'
 
-export { blobToDataURL } from './blobToDataURL'
-export { makeAbortableReaction } from './makeAbortableReaction'
-export * from './aborting'
-export * from './linkify'
-export * from './locString'
-export * from './stopToken'
-export * from './tracks'
+export { blobToDataURL } from './blobToDataURL.ts'
+export { makeAbortableReaction } from './makeAbortableReaction.ts'
+export * from './aborting.ts'
+export * from './linkify.ts'
+export * from './locString.ts'
+export * from './stopToken.ts'
+export * from './tracks.ts'

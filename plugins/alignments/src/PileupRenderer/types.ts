@@ -2,7 +2,7 @@ import type {
   ColorBy,
   ModificationTypeWithColor,
   SortedBy,
-} from '../shared/types'
+} from '../shared/types.ts'
 import type { RenderArgsDeserialized as BoxRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'

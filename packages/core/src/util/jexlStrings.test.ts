@@ -1,5 +1,5 @@
-import { stringToJexlExpression } from './jexlStrings'
-import SimpleFeature from './simpleFeature'
+import { stringToJexlExpression } from './jexlStrings.ts'
+import SimpleFeature from './simpleFeature.ts'
 
 describe('function string parsing', () => {
   it('can detect a jexl expression', () => {

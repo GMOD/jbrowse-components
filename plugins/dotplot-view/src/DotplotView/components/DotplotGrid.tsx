@@ -2,7 +2,7 @@ import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 
 const DotplotGrid = observer(function DotplotGrid({
   model,

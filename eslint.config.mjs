@@ -206,6 +206,7 @@ export default defineConfig(
         },
       ],
 
+      'import/extensions': ['error', 'ignorePackages'],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
@@ -245,6 +246,7 @@ export default defineConfig(
       'scripts/**/*',
       'products/jbrowse-img/**/*',
       'products/jbrowse-web/scripts/*',
+      'products/jbrowse-cli/**/*',
       'products/jbrowse-desktop/sign.cjs',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',

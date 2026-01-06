@@ -1,7 +1,7 @@
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import TrackLabel from './TrackLabel'
+import TrackLabel from './TrackLabel.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'

@@ -1,7 +1,7 @@
-import SourcesGrid from './SourcesGrid'
-import SharedSetColorDialog from './ui/SetColorDialog'
+import SourcesGrid from './SourcesGrid.tsx'
+import SharedSetColorDialog from './ui/SetColorDialog.tsx'
 
-import type { Source } from '../../util'
+import type { Source } from '../../util.ts'
 
 export default function SetColorDialog({
   model,

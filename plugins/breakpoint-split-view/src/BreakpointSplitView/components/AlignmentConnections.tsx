@@ -10,21 +10,21 @@ import {
   getLongReadOrientationColorOrDefault,
   getPairedOrientationColor,
   isAbnormalOrientation,
-} from './getOrientationColor'
-import { LEFT, RIGHT, getTestId, getYOffset } from './overlayUtils'
+} from './getOrientationColor.tsx'
+import { LEFT, RIGHT, getTestId, getYOffset } from './overlayUtils.tsx'
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
   hasPairedReads,
-} from './util'
+} from './util.ts'
 import {
   getPxFromCoordinate,
   heightFromSpecificLevel,
   useNextFrame,
   yPos,
-} from '../util'
+} from '../util.ts'
 
-import type { OverlayProps } from './overlayUtils'
+import type { OverlayProps } from './overlayUtils.tsx'
 
 const AlignmentConnections = observer(function AlignmentConnections({
   model,

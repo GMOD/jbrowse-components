@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BigBedAdapter from './BigBedAdapter'
-import configSchema from './configSchema'
+import BigBedAdapter from './BigBedAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('adapter can fetch features from volvox.bb', async () => {
   const adapter = new BigBedAdapter(

@@ -6,7 +6,7 @@ import {
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { LinearGenomeViewModel } from './model'
+import type { LinearGenomeViewModel } from './model.ts'
 
 /**
  * Autorun that handles the init state - navigating to initial location,

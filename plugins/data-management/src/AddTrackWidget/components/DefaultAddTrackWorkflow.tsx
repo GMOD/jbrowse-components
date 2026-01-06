@@ -12,11 +12,11 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ConfirmTrack from './ConfirmTrack'
-import TrackSourceSelect from './TrackSourceSelect'
-import { doSubmit } from './doSubmit'
+import ConfirmTrack from './ConfirmTrack.tsx'
+import TrackSourceSelect from './TrackSourceSelect.tsx'
+import { doSubmit } from './doSubmit.ts'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   root: {

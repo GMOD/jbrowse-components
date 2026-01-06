@@ -16,7 +16,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import { differenceInDays, formatDistanceToNow } from 'date-fns'
 import { observer } from 'mobx-react'
 
-import type { SessionModel } from './util'
+import type { SessionModel } from './util.ts'
 
 const useStyles = makeStyles()(theme => ({
   mb: {

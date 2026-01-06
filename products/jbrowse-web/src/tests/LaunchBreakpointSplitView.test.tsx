@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer'
-import { App } from './loaderUtil'
+import { handleRequest } from './generateReadBuffer.ts'
+import { App } from './loaderUtil.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

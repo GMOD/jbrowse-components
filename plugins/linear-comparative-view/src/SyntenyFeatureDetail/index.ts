@@ -33,7 +33,7 @@ export default function SyntenyFeatureWidgetF(pluginManager: PluginManager) {
         heading: 'Synteny feature details',
         configSchema,
         stateModel: stateModelF(pluginManager),
-        ReactComponent: lazy(() => import('./SyntenyFeatureDetail')),
+        ReactComponent: lazy(() => import('./SyntenyFeatureDetail.tsx')),
       }),
   )
 }

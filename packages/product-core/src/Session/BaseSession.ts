@@ -1,7 +1,7 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
-import type { BaseRootModelType } from '../RootModel/BaseRootModel'
+import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

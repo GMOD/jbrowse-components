@@ -10,11 +10,11 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable'
-import SampleFilters from './VariantSampleFilters'
-import { getSampleGridRows } from './getSampleGridRows'
+import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable.tsx'
+import SampleFilters from './VariantSampleFilters.tsx'
+import { getSampleGridRows } from './getSampleGridRows.ts'
 
-import type { Filters, InfoFields, VariantFieldDescriptions } from './types'
+import type { Filters, InfoFields, VariantFieldDescriptions } from './types.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
 

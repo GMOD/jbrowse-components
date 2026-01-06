@@ -1,9 +1,9 @@
 import { getContainingView } from '@jbrowse/core/util'
 
-import { drawMatchSimple } from './components/util'
+import { drawMatchSimple } from './components/util.ts'
 
-import type { LinearSyntenyDisplayModel } from './model'
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+import type { LinearSyntenyDisplayModel } from './model.ts'
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
 const oobLimit = 1600
 

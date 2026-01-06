@@ -1,7 +1,7 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { REFERENCE_COLOR, UNPHASED_COLOR, f2 } from './constants'
+import { REFERENCE_COLOR, UNPHASED_COLOR, f2 } from './constants.ts'
 
 function colorify(n: number) {
   return `hsl(${n % 255}, 50%, 50%)`

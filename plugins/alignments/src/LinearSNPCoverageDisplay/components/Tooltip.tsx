@@ -3,9 +3,9 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip, YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
-import TooltipContents from './TooltipContents'
+import TooltipContents from './TooltipContents.tsx'
 
-import type { ClickMapItem } from '../../SNPCoverageRenderer/types'
+import type { ClickMapItem } from '../../SNPCoverageRenderer/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({

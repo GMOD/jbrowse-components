@@ -1,7 +1,7 @@
-import Highlight from './Highlight'
-import OverviewHighlight from './OverviewHighlight'
+import Highlight from './Highlight.tsx'
+import OverviewHighlight from './OverviewHighlight.tsx'
 
-import type { IExtendedLGV } from '../../model'
+import type { IExtendedLGV } from '../../model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 

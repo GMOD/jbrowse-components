@@ -16,23 +16,23 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature'
-import { calculateCloudTicks } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCloud'
-import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin'
-import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin'
-import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin'
-import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
+import { chainToSimpleFeature } from '../LinearReadArcsDisplay/chainToSimpleFeature.ts'
+import { calculateCloudTicks } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCloud.ts'
+import { LinearReadDisplayBaseMixin } from '../shared/LinearReadDisplayBaseMixin.ts'
+import { LinearReadDisplayWithLayoutMixin } from '../shared/LinearReadDisplayWithLayoutMixin.ts'
+import { LinearReadDisplayWithPairFiltersMixin } from '../shared/LinearReadDisplayWithPairFiltersMixin.ts'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin.ts'
 import {
   calculateSvgLegendWidth,
   getReadDisplayLegendItems,
-} from '../shared/legendUtils'
+} from '../shared/legendUtils.ts'
 import {
   getColorSchemeMenuItem,
   getEditFiltersMenuItem,
   getMismatchDisplayMenuItem,
-} from '../shared/menuItems'
+} from '../shared/menuItems.ts'
 
-import type { ReducedFeature } from '../shared/types'
+import type { ReducedFeature } from '../shared/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -41,7 +41,7 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 const SetFeatureHeightDialog = lazy(
-  () => import('./components/SetFeatureHeightDialog'),
+  () => import('./components/SetFeatureHeightDialog.tsx'),
 )
 
 /**
@@ -506,7 +506,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         async renderSvg(
           opts: ExportSvgDisplayOptions,
         ): Promise<React.ReactNode> {
-          const { renderSvg } = await import('./renderSvg')
+          const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearReadCloudDisplayModel, opts)
         },
       }
@@ -516,7 +516,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttachRPC } = await import('./afterAttachRPC')
+            const { doAfterAttachRPC } = await import('./afterAttachRPC.tsx')
             doAfterAttachRPC(self)
           } catch (e) {
             console.error(e)

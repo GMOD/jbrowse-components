@@ -4,13 +4,13 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import Settings from '@mui/icons-material/Settings'
 import { observer } from 'mobx-react'
 
-import CascadingMenuButton from '../../../ui/CascadingMenuButton'
+import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
 
-import type { MenuItem } from '../../../ui'
-import type { SequenceFeatureDetailsModel } from '../model'
+import type { MenuItem } from '../../../ui/index.ts'
+import type { SequenceFeatureDetailsModel } from '../model.ts'
 
 // lazies
-const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog'))
+const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog.tsx'))
 
 interface Props {
   model: SequenceFeatureDetailsModel

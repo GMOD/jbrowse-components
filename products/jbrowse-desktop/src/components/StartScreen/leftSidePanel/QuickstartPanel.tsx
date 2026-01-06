@@ -13,9 +13,9 @@ import MoreIcon from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
 import useSWR from 'swr'
 
-import { useInnerDims } from '../availableGenomes/util'
-import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog'
-import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog'
+import { useInnerDims } from '../availableGenomes/util.ts'
+import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
+import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog.tsx'
 
 const { ipcRenderer } = window.require('electron')
 

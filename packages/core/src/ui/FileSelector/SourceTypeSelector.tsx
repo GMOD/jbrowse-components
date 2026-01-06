@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from '@mui/material'
 
-import type { BaseInternetAccountModel } from '../../pluggableElementTypes'
+import type { BaseInternetAccountModel } from '../../pluggableElementTypes/index.ts'
 import type { ToggleButtonProps } from '@mui/material'
 
 function shorten(str: string, len: number) {

@@ -1,11 +1,11 @@
 import type React from 'react'
 
-import PluggableElementBase from '../PluggableElementBase'
+import PluggableElementBase from '../PluggableElementBase.ts'
 
-import type PluginManager from '../../PluginManager'
-import type { AnyConfigurationSchemaType } from '../../configuration'
-import type { AnyReactComponentType } from '../../util'
-import type { RpcResult } from '../../util/librpc'
+import type PluginManager from '../../PluginManager.ts'
+import type { AnyConfigurationSchemaType } from '../../configuration/index.ts'
+import type { AnyReactComponentType } from '../../util/index.ts'
+import type { RpcResult } from '../../util/librpc.ts'
 
 export type RenderProps = Record<string, unknown>
 

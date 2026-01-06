@@ -1,4 +1,4 @@
-import type { BreakpointViewModel } from '../BreakpointSplitView/model'
+import type { BreakpointViewModel } from '../BreakpointSplitView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

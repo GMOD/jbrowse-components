@@ -1,5 +1,5 @@
-import MultiWiggleAdapter from './MultiWiggleAdapter'
-import configSchema from './configSchema'
+import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
+import configSchema from './configSchema.ts'
 
 describe('MultiWiggleAdapter.getSources', () => {
   let adapter: MultiWiggleAdapter

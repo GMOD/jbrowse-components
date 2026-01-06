@@ -1,7 +1,7 @@
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
-import { addRelativeUris, getVolvoxConfig } from './util'
-import { JBrowseLinearGenomeView, createViewState } from '../../src'
+import { addRelativeUris, getVolvoxConfig } from './util.ts'
+import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 export const WithAggregateTextSearching = () => {
   const { assembly } = getVolvoxConfig()

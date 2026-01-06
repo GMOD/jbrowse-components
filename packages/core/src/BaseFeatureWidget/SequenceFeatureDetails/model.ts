@@ -6,9 +6,9 @@ import {
   localStorageGetItem,
   localStorageGetNumber,
   localStorageSetItem,
-} from '../../util'
+} from '../../util/index.ts'
 
-import type { SimpleFeatureSerialized } from '../../util'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function localStorageSetNumber(key: string, value: number) {

@@ -1,6 +1,6 @@
-import { fillColor } from './color'
+import { fillColor } from './color.ts'
 
-import type { ColorBy, ModificationTypeWithColor } from './types'
+import type { ColorBy, ModificationTypeWithColor } from './types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
 

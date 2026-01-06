@@ -3,7 +3,7 @@ import {
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
-} from './samFlags'
+} from './samFlags.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

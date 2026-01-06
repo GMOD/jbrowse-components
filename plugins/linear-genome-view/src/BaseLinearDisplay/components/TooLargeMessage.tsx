@@ -2,7 +2,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import BlockMsg from '../components/BlockMsg'
+import BlockMsg from '../components/BlockMsg.tsx'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 

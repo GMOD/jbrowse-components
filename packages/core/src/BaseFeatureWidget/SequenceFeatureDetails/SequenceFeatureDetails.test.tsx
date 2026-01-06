@@ -2,10 +2,10 @@ import fs from 'fs'
 
 import { render } from '@testing-library/react'
 
-import SequencePanel from './SequencePanel'
-import { SequenceFeatureDetailsF } from './model'
-import DLGAP3 from './test_data/DLGAP3'
-import NCDN from './test_data/NCDN'
+import SequencePanel from './SequencePanel.tsx'
+import { SequenceFeatureDetailsF } from './model.ts'
+import DLGAP3 from './test_data/DLGAP3.js'
+import NCDN from './test_data/NCDN.js'
 
 const f = {
   start: 1200,

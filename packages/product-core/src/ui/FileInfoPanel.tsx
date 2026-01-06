@@ -4,7 +4,7 @@ import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attrib
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 
-import { readConf } from './util'
+import { readConf } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

@@ -15,14 +15,14 @@ import {
   getScale,
 } from '@jbrowse/plugin-wiggle'
 
-import { alphaColor } from '../shared/util'
+import { alphaColor } from '../shared/util.ts'
 
 import type {
   ClickMapItem,
   InterbaseIndicatorItem,
   RenderArgsDeserializedWithFeatures,
-} from './types'
-import type { BaseCoverageBin } from '../shared/types'
+} from './types.ts'
+import type { BaseCoverageBin } from '../shared/types.ts'
 import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
 
 // width/height of the triangle above e.g. insertion indicators

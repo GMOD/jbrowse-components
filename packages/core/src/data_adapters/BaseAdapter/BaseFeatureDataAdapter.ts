@@ -1,17 +1,17 @@
 import { type Observable, firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { BaseAdapter } from './BaseAdapter'
+import { BaseAdapter } from './BaseAdapter.ts'
 import {
   aggregateQuantitativeStats,
   calculateFeatureDensityStats,
-} from './stats'
-import { ObservableCreate } from '../../util/rxjs'
-import { blankStats, scoresToStats } from '../../util/stats'
+} from './stats.ts'
+import { ObservableCreate } from '../../util/rxjs.ts'
+import { blankStats, scoresToStats } from '../../util/stats.ts'
 
-import type { BaseOptions } from './BaseOptions'
-import type { Feature } from '../../util/simpleFeature'
-import type { AugmentedRegion as Region } from '../../util/types'
+import type { BaseOptions } from './BaseOptions.ts'
+import type { Feature } from '../../util/simpleFeature.ts'
+import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 
 /**
  * Base class for feature adapters to extend. Defines some methods that

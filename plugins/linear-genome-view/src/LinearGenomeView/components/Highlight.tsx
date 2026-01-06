@@ -10,7 +10,7 @@ import LinkIcon from '@mui/icons-material/Link'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '../model.ts'
 import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel

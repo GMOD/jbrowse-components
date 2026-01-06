@@ -1,8 +1,8 @@
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-import configSchemaF from './configSchema'
-import { stringifyBedGraph } from '../saveTrackFormats/bedGraph'
+import configSchemaF from './configSchema.ts'
+import { stringifyBedGraph } from '../saveTrackFormats/bedGraph.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

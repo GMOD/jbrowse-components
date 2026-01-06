@@ -1,8 +1,8 @@
-import { fetchSequence } from './fetchSequence'
-import { stringifyGBK } from './genbank'
-import SimpleFeature from '../../../util/simpleFeature'
+import { fetchSequence } from './fetchSequence.ts'
+import { stringifyGBK } from './genbank.ts'
+import SimpleFeature from '../../../util/simpleFeature.ts'
 
-import type { AbstractSessionModel } from '../../../util'
+import type { AbstractSessionModel } from '../../../util/index.ts'
 
 // Mock the fetchSequence function from its new module
 jest.mock('./fetchSequence', () => {

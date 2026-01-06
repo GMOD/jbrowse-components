@@ -1,4 +1,4 @@
-import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
+import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 
 // CIGAR operation index to char code mapping (from @gmod/bam)
 const NUMERIC_CIGAR_CODES = [

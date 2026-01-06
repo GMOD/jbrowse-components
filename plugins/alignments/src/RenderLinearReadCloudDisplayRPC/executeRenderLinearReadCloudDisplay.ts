@@ -16,18 +16,18 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { calculateCloudYOffsetsUtil } from './drawFeatsCloud'
+import { calculateCloudYOffsetsUtil } from './drawFeatsCloud.ts'
 import {
   computeChainBounds,
   drawFeatsCore,
   filterChains,
   sortComputedChains,
-} from './drawFeatsCommon'
-import { calculateStackYOffsetsUtil } from './drawFeatsStack'
-import { getInsertSizeStats } from '../shared/insertSizeStats'
+} from './drawFeatsCommon.ts'
+import { calculateStackYOffsetsUtil } from './drawFeatsStack.ts'
+import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 
-import type { RenderLinearReadCloudDisplayArgs } from './RenderLinearReadCloudDisplay'
-import type { ComputedChain } from './drawFeatsCommon'
+import type { RenderLinearReadCloudDisplayArgs } from './RenderLinearReadCloudDisplay.ts'
+import type { ComputedChain } from './drawFeatsCommon.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 

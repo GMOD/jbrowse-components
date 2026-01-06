@@ -1,6 +1,6 @@
-import DotplotGridWrapper from './DotplotGridWrapper'
+import DotplotGridWrapper from './DotplotGridWrapper.tsx'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 
 type Coord = [number, number] | undefined
 

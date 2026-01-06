@@ -10,9 +10,9 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 
-import { MAX_COLOR_RANGE, getId } from '../drawSynteny'
+import { MAX_COLOR_RANGE, getId } from '../drawSynteny.ts'
 
-import type { LinearSyntenyDisplayModel } from '../model'
+import type { LinearSyntenyDisplayModel } from '../model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 interface Pos {

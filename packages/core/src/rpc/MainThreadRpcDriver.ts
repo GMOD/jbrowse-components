@@ -1,7 +1,7 @@
-import BaseRpcDriver from './BaseRpcDriver'
+import BaseRpcDriver from './BaseRpcDriver.ts'
 
-import type { RpcDriverConstructorArgs } from './BaseRpcDriver'
-import type PluginManager from '../PluginManager'
+import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
+import type PluginManager from '../PluginManager.ts'
 
 class DummyHandle {
   destroy(): void {}

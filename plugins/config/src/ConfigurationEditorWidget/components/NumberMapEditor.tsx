@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import NumberEditor from './NumberEditor'
+import NumberEditor from './NumberEditor.tsx'
 
 const useStyles = makeStyles()(theme => ({
   card: {

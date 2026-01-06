@@ -1,5 +1,5 @@
-import PluginManager from '../PluginManager'
-import RpcMethodType from './RpcMethodType'
+import PluginManager from '../PluginManager.ts'
+import RpcMethodType from './RpcMethodType.ts'
 
 const pluginManager = new PluginManager()
 

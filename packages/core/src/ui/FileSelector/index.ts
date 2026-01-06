@@ -1,1 +1,1 @@
-export { default } from './FileSelector'
+export { default } from './FileSelector.tsx'

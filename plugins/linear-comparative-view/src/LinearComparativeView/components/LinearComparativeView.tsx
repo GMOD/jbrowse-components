@@ -1,11 +1,11 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import Header from './Header'
-import LinearComparativeRenderArea from './LinearComparativeRenderArea'
-import Rubberband from './Rubberband'
+import Header from './Header.tsx'
+import LinearComparativeRenderArea from './LinearComparativeRenderArea.tsx'
+import Rubberband from './Rubberband.tsx'
 
-import type { LinearComparativeViewModel } from '../model'
+import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   // this helps keep the vertical guide inside the parent view container,

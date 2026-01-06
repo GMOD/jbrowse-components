@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react'
 
-import WiggleRendering from './WiggleRendering'
+import WiggleRendering from './WiggleRendering.tsx'
 
 // these tests do very little, let's try to expand them at some point
 test('one', async () => {

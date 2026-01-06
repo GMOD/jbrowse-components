@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Gff3TabixAdapter from './Gff3TabixAdapter'
-import configSchema from './configSchema'
+import Gff3TabixAdapter from './Gff3TabixAdapter.ts'
+import configSchema from './configSchema.ts'
 
 describe('adapter can fetch features from volvox.gff3', () => {
   let adapter: Gff3TabixAdapter

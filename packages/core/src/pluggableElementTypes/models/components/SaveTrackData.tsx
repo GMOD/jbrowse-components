@@ -21,15 +21,15 @@ import copy from 'copy-to-clipboard'
 import { saveAs } from 'file-saver-es'
 import { observer } from 'mobx-react'
 
-import { getConf } from '../../../configuration'
-import { Dialog, ErrorMessage } from '../../../ui'
-import { getContainingView, getEnv, getSession } from '../../../util'
-import { getRpcSessionId } from '../../../util/tracks'
-import { makeStyles } from '../../../util/tss-react'
+import { getConf } from '../../../configuration/index.ts'
+import { Dialog, ErrorMessage } from '../../../ui/index.ts'
+import { getContainingView, getEnv, getSession } from '../../../util/index.ts'
+import { getRpcSessionId } from '../../../util/tracks.ts'
+import { makeStyles } from '../../../util/tss-react/index.ts'
 
-import type { AnyConfigurationModel } from '../../../configuration'
-import type { Feature, Region } from '../../../util'
-import type { FileTypeExporter } from '../saveTrackFileTypes/types'
+import type { AnyConfigurationModel } from '../../../configuration/index.ts'
+import type { Feature, Region } from '../../../util/index.ts'
+import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()({

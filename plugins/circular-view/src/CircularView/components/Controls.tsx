@@ -15,9 +15,9 @@ import ZoomOutIcon from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ExportSvgDialog from './ExportSvgDialog'
+import ExportSvgDialog from './ExportSvgDialog.tsx'
 
-import type { CircularViewModel } from '../model'
+import type { CircularViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   controls: {

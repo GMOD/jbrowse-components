@@ -8,8 +8,8 @@ import {
   DialogTitle,
 } from '@mui/material'
 
-import ErrorMessage from './ErrorMessage'
-import FactoryResetDialog from './FactoryResetDialog'
+import ErrorMessage from './ErrorMessage.tsx'
+import FactoryResetDialog from './FactoryResetDialog.tsx'
 
 const ResetComponent = ({
   onFactoryReset,

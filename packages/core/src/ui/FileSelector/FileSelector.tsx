@@ -3,13 +3,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { Box, FormGroup, FormHelperText, InputLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import LocationInput from './LocationInput'
-import SourceTypeSelector from './SourceTypeSelector'
-import useInternetAccounts from './useInternetAccounts'
-import { notEmpty } from '../../util'
-import { isUriLocation } from '../../util/types'
+import LocationInput from './LocationInput.tsx'
+import SourceTypeSelector from './SourceTypeSelector.tsx'
+import useInternetAccounts from './useInternetAccounts.ts'
+import { notEmpty } from '../../util/index.ts'
+import { isUriLocation } from '../../util/types/index.ts'
 
-import type { AbstractRootModel, FileLocation } from '../../util/types'
+import type { AbstractRootModel, FileLocation } from '../../util/types/index.ts'
 
 function getInitialToggleValue(location?: FileLocation) {
   if (

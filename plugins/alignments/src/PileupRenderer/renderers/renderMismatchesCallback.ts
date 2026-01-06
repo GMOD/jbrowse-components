@@ -9,12 +9,15 @@ import {
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-} from '../../shared/forEachMismatchTypes'
-import { measureTextSmallNumber } from '../util'
+} from '../../shared/forEachMismatchTypes.ts'
+import { measureTextSmallNumber } from '../util.ts'
 
-import type { FeatureWithMismatchIterator, Mismatch } from '../../shared/types'
-import type { FlatbushItem } from '../types'
-import type { LayoutFeature } from '../util'
+import type {
+  FeatureWithMismatchIterator,
+  Mismatch,
+} from '../../shared/types.ts'
+import type { FlatbushItem } from '../types.ts'
+import type { LayoutFeature } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
 
 const alphaColorCache = new Map<string, string>()

@@ -9,7 +9,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 const EditGCContentParamsDialog = lazy(
-  () => import('./components/EditGCContentParams'),
+  () => import('./components/EditGCContentParams.tsx'),
 )
 
 /**

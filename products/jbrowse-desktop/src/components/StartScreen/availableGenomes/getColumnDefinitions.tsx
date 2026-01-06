@@ -8,10 +8,10 @@ import { Link, Tooltip } from '@mui/material'
 // eslint-disable-next-line import/named -- pnpm re-exports; eslint-import-resolver-typescript would fix
 import { createColumnHelper } from '@tanstack/react-table'
 
-import HighlightedText from './HighlightedText'
-import StarIcon from '../StarIcon'
+import HighlightedText from './HighlightedText.tsx'
+import StarIcon from '../StarIcon.tsx'
 
-import type { LaunchCallback } from '../types'
+import type { LaunchCallback } from '../types.ts'
 
 interface Entry {
   suppressed: boolean

@@ -4,11 +4,11 @@ import { useMemo } from 'react'
 
 import { __unsafe_useEmotionCache } from '@emotion/react'
 
-import { createUseCssAndCx } from './cssAndCx'
-import { mergeClasses } from './mergeClasses'
-import { getDependencyArrayRef } from './tools/getDependencyArrayRef'
+import { createUseCssAndCx } from './cssAndCx.ts'
+import { mergeClasses } from './mergeClasses.ts'
+import { getDependencyArrayRef } from './tools/getDependencyArrayRef.ts'
 
-import type { CSSObject } from './types'
+import type { CSSObject } from './types.ts'
 import type { EmotionCache } from '@emotion/cache'
 
 const useContextualCache = __unsafe_useEmotionCache as () => EmotionCache

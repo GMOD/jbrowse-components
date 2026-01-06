@@ -5,8 +5,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import ReactComponent from './AlignmentsFeatureDetail'
-import { stateModelFactory } from './stateModelFactory'
+import ReactComponent from './AlignmentsFeatureDetail.tsx'
+import { stateModelFactory } from './stateModelFactory.ts'
 
 test('open up a widget', () => {
   const pluginManager = new PluginManager([])

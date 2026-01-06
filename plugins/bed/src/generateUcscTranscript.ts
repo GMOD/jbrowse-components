@@ -1,4 +1,4 @@
-import type { MinimalFeature, TranscriptFeat } from './types'
+import type { MinimalFeature, TranscriptFeat } from './types.ts'
 
 export function isUcscTranscript({
   thickStart,

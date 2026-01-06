@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 
-import { removeAttr } from './util'
+import { removeAttr } from './util.ts'
 
 const useStyles = makeStyles()({
   button: {

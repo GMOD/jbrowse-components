@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import fetch from '../fetchWithProxy'
+import fetch from '../fetchWithProxy.ts'
 
-import type { LocalPathLocation, Track, UriLocation } from '../base'
+import type { LocalPathLocation, Track, UriLocation } from '../base.ts'
 
 export async function createRemoteStream(urlIn: string) {
   const res = await fetch(urlIn)

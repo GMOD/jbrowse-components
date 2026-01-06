@@ -2,10 +2,10 @@ import { forwardRef } from 'react'
 
 import { observer } from 'mobx-react'
 
-import SequenceContents from './SequenceContents'
-import SequenceName from './SequenceName'
+import SequenceContents from './SequenceContents.tsx'
+import SequenceName from './SequenceName.tsx'
 
-import type { SequencePanelProps } from './types'
+import type { SequencePanelProps } from './types.ts'
 
 function WordWrap({ children }: { children: React.ReactNode }) {
   return (

@@ -1,8 +1,8 @@
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '../../util'
+import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
+import { renameRegionsIfNeeded } from '../../util/index.ts'
 
-import type { RenderArgs, RenderArgsSerialized } from './util'
-import type { BoxRendererType } from '../../pluggableElementTypes'
+import type { RenderArgs, RenderArgsSerialized } from './util.ts'
+import type { BoxRendererType } from '../../pluggableElementTypes/index.ts'
 
 /**
  * fetches feature details from the layout cache (uses WeakRef)

@@ -1,7 +1,7 @@
-import BaseCard from './BaseCard'
-import CoreDetails from './CoreDetails'
+import BaseCard from './BaseCard.tsx'
+import CoreDetails from './CoreDetails.tsx'
 
-import type { BaseProps } from '../types'
+import type { BaseProps } from '../types.tsx'
 
 export default function BaseCoreDetails(props: BaseProps) {
   const { title = 'Primary data' } = props

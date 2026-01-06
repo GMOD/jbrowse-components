@@ -16,10 +16,10 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { drawFeatsRPC } from './drawFeatsRPC'
-import { getInsertSizeStats } from '../shared/insertSizeStats'
+import { drawFeatsRPC } from './drawFeatsRPC.ts'
+import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 
-import type { RenderLinearReadArcsDisplayArgs } from './RenderLinearReadArcsDisplay'
+import type { RenderLinearReadArcsDisplayArgs } from './RenderLinearReadArcsDisplay.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 

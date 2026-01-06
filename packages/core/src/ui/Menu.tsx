@@ -1,3 +1,3 @@
-export type { MenuItem } from './MenuTypes'
+export type { MenuItem } from './MenuTypes.ts'
 
-export { default } from './CascadingMenu'
+export { default } from './CascadingMenu.tsx'

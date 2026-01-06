@@ -1,8 +1,8 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import { getScoreMatrix } from './getScoreMatrix'
+import { getScoreMatrix } from './getScoreMatrix.ts'
 
-import type { GetScoreMatrixArgs } from './types'
+import type { GetScoreMatrixArgs } from './types.ts'
 
 export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiWiggleGetScoreMatrix'

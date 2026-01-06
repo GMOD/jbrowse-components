@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
+import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -38,7 +38,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #action
          */
         async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg')
+          const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts, superRenderSvg)
         },
       }

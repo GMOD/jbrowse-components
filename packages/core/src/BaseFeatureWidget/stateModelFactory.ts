@@ -1,15 +1,15 @@
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { getConf } from '../configuration'
-import { getSession } from '../util'
-import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model'
-import { formatSubfeatures } from './util'
-import { ElementId } from '../util/types/mst'
+import { getConf } from '../configuration/index.ts'
+import { getSession } from '../util/index.ts'
+import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model.ts'
+import { formatSubfeatures } from './util.tsx'
+import { ElementId } from '../util/types/mst.ts'
 
-import type PluginManager from '../PluginManager'
-import type { SimpleFeatureSerialized } from '../util'
-import type { MaybeSerializedFeat } from './types'
+import type PluginManager from '../PluginManager.ts'
+import type { MaybeSerializedFeat } from './types.tsx'
+import type { SimpleFeatureSerialized } from '../util/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**

@@ -1,11 +1,11 @@
-import ArrayValue from './ArrayValue'
-import DataGridDetails from './DataGridDetails'
-import SimpleField from './SimpleField'
-import UriAttribute from './UriField'
-import { accessNested, generateMaxWidth } from './util'
-import { isObject, isUriLocation } from '../../util'
+import ArrayValue from './ArrayValue.tsx'
+import DataGridDetails from './DataGridDetails.tsx'
+import SimpleField from './SimpleField.tsx'
+import UriAttribute from './UriField.tsx'
+import { accessNested, generateMaxWidth } from './util.ts'
+import { isObject, isUriLocation } from '../../util/index.ts'
 
-import type { Descriptors } from '../types'
+import type { Descriptors } from '../types.tsx'
 
 const MAX_FIELD_NAME_WIDTH = 170
 

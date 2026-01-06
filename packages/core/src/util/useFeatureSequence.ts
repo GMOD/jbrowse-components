@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { fetchSeq } from './fetchSeq'
+import { fetchSeq } from './fetchSeq.ts'
 
 import type { AbstractSessionModel, Feature } from '.'
 

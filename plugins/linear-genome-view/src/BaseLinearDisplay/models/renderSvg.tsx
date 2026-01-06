@@ -6,14 +6,14 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 
-import { calculateLabelPositions } from './calculateLabelPositions'
-import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-import { getId } from './util'
-import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox'
+import { calculateLabelPositions } from './calculateLabelPositions.ts'
+import BlockState, { renderBlockData } from './serverSideRenderedBlock.ts'
+import { getId } from './util.ts'
+import { ErrorBox } from '../../LinearGenomeView/SVGErrorBox.tsx'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { BaseLinearDisplayModel } from '../model'
-import type { ExportSvgDisplayOptions } from '../types'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
+import type { BaseLinearDisplayModel } from '../model.ts'
+import type { ExportSvgDisplayOptions } from '../types.ts'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,

@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { isURL } from '../../types/common'
+import { isURL } from '../../types/common.ts'
 
-import type { Config } from '../../base'
+import type { Config } from '../../base.ts'
 
 export function validateLoadOption(load?: string): void {
   if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {

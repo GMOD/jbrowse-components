@@ -1,7 +1,7 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { fireEvent, render } from '@testing-library/react'
 
-import AddTrackWidget from './AddTrackWidget'
+import AddTrackWidget from './AddTrackWidget.tsx'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 function getSession() {

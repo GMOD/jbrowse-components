@@ -1,7 +1,7 @@
 import { HtsgetFile } from '@gmod/bam'
 
-import BamAdapter from '../BamAdapter/BamAdapter'
-import BamSlightlyLazyFeature from '../BamAdapter/BamSlightlyLazyFeature'
+import BamAdapter from '../BamAdapter/BamAdapter.ts'
+import BamSlightlyLazyFeature from '../BamAdapter/BamSlightlyLazyFeature.ts'
 
 import type { BamFile } from '@gmod/bam'
 

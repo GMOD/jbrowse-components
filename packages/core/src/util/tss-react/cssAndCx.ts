@@ -3,10 +3,10 @@ import { useMemo } from 'react'
 import { serializeStyles } from '@emotion/serialize'
 import { getRegisteredStyles, insertStyles } from '@emotion/utils'
 
-import { classnames } from './tools/classnames'
-import { matchCSSObject } from './types'
+import { classnames } from './tools/classnames.ts'
+import { matchCSSObject } from './types.ts'
 
-import type { CSSObject, Css, Cx } from './types'
+import type { CSSObject, Css, Cx } from './types.ts'
 import type { EmotionCache } from '@emotion/cache'
 import type { RegisteredCache } from '@emotion/serialize'
 

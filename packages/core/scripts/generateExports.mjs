@@ -90,11 +90,9 @@ const imports = findAllImports()
 console.log(`Found ${imports.length} unique @jbrowse/core import paths`)
 
 // Generate dev exports (pointing to src)
+// Using simple string format since import/require point to same .ts file
 const devExports = {
-  '.': {
-    import: './src/index.ts',
-    require: './src/index.ts',
-  },
+  '.': './src/index.ts',
 }
 
 // Generate publish exports (pointing to esm/dist)
@@ -111,10 +109,7 @@ for (const entry of imports) {
   const srcPath = getSourcePath(entry)
   const outPath = getOutputPath(entry)
 
-  devExports[exportPath] = {
-    import: `./src${srcPath}`,
-    require: `./src${srcPath}`,
-  }
+  devExports[exportPath] = `./src${srcPath}`
 
   publishExports[exportPath] = {
     types: `./dist${outPath.replace('.js', '.d.ts')}`,

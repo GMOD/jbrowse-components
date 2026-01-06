@@ -1,7 +1,7 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { modelFactory as LinearFeatureDisplayModelFactory } from '../LinearFeatureDisplay'
+import { modelFactory as LinearFeatureDisplayModelFactory } from '../LinearFeatureDisplay/index.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem, SubMenuItem } from '@jbrowse/core/ui'

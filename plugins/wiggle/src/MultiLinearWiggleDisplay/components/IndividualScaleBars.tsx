@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react'
 
-import ColorLegend from './ColorLegend'
-import ScoreLegend from './ScoreLegend'
-import YScaleBar from '../../shared/YScaleBar'
+import ColorLegend from './ColorLegend.tsx'
+import ScoreLegend from './ScoreLegend.tsx'
+import YScaleBar from '../../shared/YScaleBar.tsx'
 
-import type { WiggleDisplayModel } from '../model'
+import type { WiggleDisplayModel } from '../model.ts'
 
 const IndividualScaleBars = observer(function IndividualScaleBars({
   model,

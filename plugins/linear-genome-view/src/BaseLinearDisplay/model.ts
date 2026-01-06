@@ -23,22 +23,22 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
 
-import { calculateSvgLegendWidth } from '.'
-import { deduplicateFeatureLabels } from './components/util'
-import FeatureDensityMixin from './models/FeatureDensityMixin'
-import TrackHeightMixin from './models/TrackHeightMixin'
-import configSchema from './models/configSchema'
-import BlockState from './models/serverSideRenderedBlock'
+import { deduplicateFeatureLabels } from './components/util.ts'
+import { calculateSvgLegendWidth } from './index.ts'
+import FeatureDensityMixin from './models/FeatureDensityMixin.tsx'
+import TrackHeightMixin from './models/TrackHeightMixin.tsx'
+import configSchema from './models/configSchema.ts'
+import BlockState from './models/serverSideRenderedBlock.ts'
 import {
   fetchFeatureByIdRpc,
   findSubfeatureById,
   getTranscripts,
   hasExonsOrCDS,
-} from './util'
+} from './util.ts'
 
-import type { LinearGenomeViewModel } from '../LinearGenomeView'
-import type { LegendItem } from './components/FloatingLegend'
-import type { ExportSvgDisplayOptions, LayoutRecord } from './types'
+import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
+import type { LegendItem } from './components/FloatingLegend.tsx'
+import type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -46,9 +46,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { Theme } from '@mui/material'
 
 // lazies
-const Tooltip = lazy(() => import('./components/Tooltip'))
+const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
 const CollapseIntronsDialog = lazy(
-  () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog'),
+  () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
 
 type LGV = LinearGenomeViewModel
@@ -643,7 +643,7 @@ function stateModelFactory() {
        * #method
        */
       async renderSvg(opts: ExportSvgDisplayOptions) {
-        const { renderBaseLinearDisplaySvg } = await import('./renderSvg')
+        const { renderBaseLinearDisplaySvg } = await import('./renderSvg.tsx')
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
       afterAttach() {
@@ -715,4 +715,4 @@ export const BaseLinearDisplay = stateModelFactory()
 export type BaseLinearDisplayStateModel = typeof BaseLinearDisplay
 export type BaseLinearDisplayModel = Instance<BaseLinearDisplayStateModel>
 
-export { type LegendItem } from './components/FloatingLegend'
+export { type LegendItem } from './components/FloatingLegend.tsx'

@@ -3,19 +3,19 @@ import { Suspense, useRef, useState } from 'react'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import SequenceFeatureMenu from './SequenceFeatureMenu'
-import SequenceTypeSelector from './SequenceTypeSelector'
-import { Dialog, ErrorMessage, LoadingEllipses } from '../../../ui'
+import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
+import SequenceTypeSelector from './SequenceTypeSelector.tsx'
+import { Dialog, ErrorMessage, LoadingEllipses } from '../../../ui/index.ts'
 import {
   SimpleFeature,
   type SimpleFeatureSerialized,
   getSession,
-} from '../../../util'
-import { makeStyles } from '../../../util/tss-react'
-import { useFeatureSequence } from '../../../util/useFeatureSequence'
-import SequencePanel from '../SequencePanel'
+} from '../../../util/index.ts'
+import { makeStyles } from '../../../util/tss-react/index.ts'
+import { useFeatureSequence } from '../../../util/useFeatureSequence.ts'
+import SequencePanel from '../SequencePanel.tsx'
 
-import type { BaseFeatureWidgetModel } from '../../stateModelFactory'
+import type { BaseFeatureWidgetModel } from '../../stateModelFactory.ts'
 
 const useStyles = makeStyles()({
   dialogContent: {

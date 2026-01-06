@@ -1,8 +1,8 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { ConfigurationSchema } from '../configuration'
-import MainThreadRpcDriverConfigSchema from './mainThreadRpcConfig'
-import WebWorkerRpcDriverConfigSchema from './webWorkerRpcConfig'
+import MainThreadRpcDriverConfigSchema from './mainThreadRpcConfig.ts'
+import WebWorkerRpcDriverConfigSchema from './webWorkerRpcConfig.ts'
+import { ConfigurationSchema } from '../configuration/index.ts'
 
 /**
  * #config RpcOptions

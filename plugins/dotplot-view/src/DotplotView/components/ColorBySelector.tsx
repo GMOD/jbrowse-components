@@ -2,8 +2,8 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
-import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory'
-import type { DotplotViewModel } from '../model'
+import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory.tsx'
+import type { DotplotViewModel } from '../model.ts'
 
 const ColorBySelector = observer(function ColorBySelector({
   model,

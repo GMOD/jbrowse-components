@@ -4,16 +4,18 @@ import Help from '@mui/icons-material/Help'
 import { Button, FormControl, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { LoadingEllipses } from '../../ui'
-import { getSession } from '../../util'
-import { makeStyles } from '../../util/tss-react'
+import { LoadingEllipses } from '../../ui/index.ts'
+import { getSession } from '../../util/index.ts'
+import { makeStyles } from '../../util/tss-react/index.ts'
 
-import type { SimpleFeatureSerialized } from '../../util'
-import type { BaseFeatureWidgetModel } from '../stateModelFactory'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
 
 // lazies
-const SequenceFeatureDetails = lazy(() => import('./SequenceFeatureDetails'))
-const HelpDialog = lazy(() => import('./dialogs/HelpDialog'))
+const SequenceFeatureDetails = lazy(
+  () => import('./SequenceFeatureDetails.tsx'),
+)
+const HelpDialog = lazy(() => import('./dialogs/HelpDialog.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   formControl: {

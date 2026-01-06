@@ -1,11 +1,11 @@
-import Flatbush from '../flatbush'
+import Flatbush from '../flatbush/index.ts'
 
 import type {
   BaseLayout,
   RectTuple,
   Rectangle,
   SerializedLayout,
-} from './BaseLayout'
+} from './BaseLayout.ts'
 
 export interface Layout {
   minX: number

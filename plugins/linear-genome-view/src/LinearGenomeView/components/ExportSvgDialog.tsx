@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 
-import type { ExportSvgOptions } from '../types'
+import type { ExportSvgOptions } from '../types.ts'
 import type { TextFieldProps } from '@mui/material'
 
 function LoadingMessage() {

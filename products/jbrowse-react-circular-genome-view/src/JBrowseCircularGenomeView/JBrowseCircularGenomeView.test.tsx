@@ -2,8 +2,8 @@ import { Suspense } from 'react'
 
 import { render } from '@testing-library/react'
 
-import { createViewState } from '..'
-import JBrowseCircularGenomeView from './JBrowseCircularGenomeView'
+import { createViewState } from '../index.ts'
+import JBrowseCircularGenomeView from './JBrowseCircularGenomeView.tsx'
 
 const assembly = {
   name: 'volvox',

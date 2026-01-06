@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -15,7 +15,7 @@ export default function BlastTabularAdapterF(pluginManager: PluginManager) {
           category: 'Synteny adapters',
         },
         getAdapterClass: () =>
-          import('./BlastTabularAdapter').then(r => r.default),
+          import('./BlastTabularAdapter.ts').then(r => r.default),
       }),
   )
 }

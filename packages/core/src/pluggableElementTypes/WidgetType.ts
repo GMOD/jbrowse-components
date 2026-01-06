@@ -1,9 +1,9 @@
 import type { ComponentType, LazyExoticComponent } from 'react'
 import type React from 'react'
 
-import PluggableElementBase from './PluggableElementBase'
+import PluggableElementBase from './PluggableElementBase.ts'
 
-import type { AnyConfigurationSchemaType } from '../configuration'
+import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
 import type { IAnyModelType, IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 type WidgetComponentType = LazyExoticComponent<React.FC<any>> | React.FC<any>

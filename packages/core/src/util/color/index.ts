@@ -6,7 +6,7 @@ import {
   lighten,
 } from '@mui/material/styles'
 
-import { namedColorToHex } from './cssColorsLevel4'
+import { namedColorToHex } from './cssColorsLevel4.ts'
 
 /**
  * Algorithmically pick a contrasting text color that will
@@ -75,7 +75,7 @@ export function makeContrasting(
   return convertedForeground
 }
 
-export { isNamedColor, namedColorToHex } from './cssColorsLevel4'
+export { isNamedColor, namedColorToHex } from './cssColorsLevel4.ts'
 
 /**
  * Generate a consistent random color for a given string.

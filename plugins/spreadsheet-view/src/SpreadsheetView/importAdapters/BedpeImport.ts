@@ -1,6 +1,6 @@
 import { isNumber } from '@mui/x-data-grid/internals'
 
-import { bufferToLines, parseStrand } from './util'
+import { bufferToLines, parseStrand } from './util.ts'
 
 export function parseBedPEBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)

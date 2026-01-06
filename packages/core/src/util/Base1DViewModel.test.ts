@@ -1,4 +1,4 @@
-import Base1DView from './Base1DViewModel'
+import Base1DView from './Base1DViewModel.ts'
 
 test('create Base1DView and set displayedRegions', () => {
   const model = Base1DView.create({

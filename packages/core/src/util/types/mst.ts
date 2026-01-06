@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { nanoid } from '../nanoid'
+import { nanoid } from '../nanoid.js'
 
 export const ElementId = types.optional(types.identifier, () => nanoid())
 

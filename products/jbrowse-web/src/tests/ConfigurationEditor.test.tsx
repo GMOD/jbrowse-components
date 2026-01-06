@@ -2,7 +2,13 @@ import '@testing-library/jest-dom'
 import { waitFor } from '@testing-library/dom'
 import userEvent from '@testing-library/user-event'
 
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  hts,
+  setup,
+} from './util.tsx'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 const delay = { timeout: 30000 }

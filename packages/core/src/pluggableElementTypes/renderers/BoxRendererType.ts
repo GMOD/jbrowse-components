@@ -1,9 +1,9 @@
-import FeatureRendererType from './FeatureRendererType'
-import { LayoutSession } from './LayoutSession'
-import { expandRegion } from './util'
-import { readConfObject } from '../../configuration'
-import { getLayoutId } from '../../util'
-import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
+import FeatureRendererType from './FeatureRendererType.ts'
+import { LayoutSession } from './LayoutSession.ts'
+import { expandRegion } from './util.ts'
+import { readConfObject } from '../../configuration/index.ts'
+import { getLayoutId } from '../../util/index.ts'
+import PrecomputedLayout from '../../util/layouts/PrecomputedLayout.ts'
 
 import type {
   RenderArgs as FeatureRenderArgs,
@@ -12,15 +12,15 @@ import type {
   RenderResults as FeatureRenderResults,
   ResultsDeserialized as FeatureResultsDeserialized,
   ResultsSerialized as FeatureResultsSerialized,
-} from './FeatureRendererType'
-import type { LayoutSessionLike, LayoutSessionProps } from './LayoutSession'
-import type { RenderReturn } from './RendererType'
-import type RpcManager from '../../rpc/RpcManager'
-import type { Feature, Region } from '../../util'
+} from './FeatureRendererType.ts'
+import type { LayoutSessionLike, LayoutSessionProps } from './LayoutSession.ts'
+import type { RenderReturn } from './RendererType.tsx'
+import type RpcManager from '../../rpc/RpcManager.ts'
+import type { Feature, Region } from '../../util/index.ts'
 import type {
   BaseLayout,
   SerializedLayout,
-} from '../../util/layouts/BaseLayout'
+} from '../../util/layouts/BaseLayout.ts'
 export interface RenderArgs extends FeatureRenderArgs {
   bpPerPx: number
   trackInstanceId: string

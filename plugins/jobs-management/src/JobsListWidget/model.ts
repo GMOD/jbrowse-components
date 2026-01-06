@@ -1,7 +1,7 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { Job } from './jobModel'
+import { Job } from './jobModel.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'

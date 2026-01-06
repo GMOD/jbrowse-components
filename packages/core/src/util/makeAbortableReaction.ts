@@ -1,10 +1,10 @@
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
-import { isAbortException } from './aborting'
-import { createStopToken, stopStopToken } from './stopToken'
+import { isAbortException } from './aborting.ts'
+import { createStopToken, stopStopToken } from './stopToken.ts'
 
-import type { StopToken } from './stopToken'
+import type { StopToken } from './stopToken.ts'
 import type { IReactionOptions, IReactionPublic } from 'mobx'
 
 /**

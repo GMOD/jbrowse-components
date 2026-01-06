@@ -10,7 +10,7 @@ import {
   exportAndVerifySvg,
   mockConsoleWarn,
   setup,
-} from './util'
+} from './util.tsx'
 import volvoxConfig from '../../test_data/volvox/config.json'
 
 // @ts-expect-error

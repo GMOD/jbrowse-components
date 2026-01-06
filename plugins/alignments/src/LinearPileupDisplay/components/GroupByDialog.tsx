@@ -18,8 +18,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getUniqueTags } from '../../shared/getUniqueTags'
-import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util'
+import { getUniqueTags } from '../../shared/getUniqueTags.ts'
+import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'

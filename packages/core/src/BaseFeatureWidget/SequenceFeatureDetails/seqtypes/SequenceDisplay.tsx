@@ -2,7 +2,7 @@ import { Fragment } from 'react'
 
 import { observer } from 'mobx-react'
 
-import type { SequenceFeatureDetailsModel } from '../model'
+import type { SequenceFeatureDetailsModel } from '../model.ts'
 
 const SequenceDisplay = observer(function SequenceDisplay({
   chunks,

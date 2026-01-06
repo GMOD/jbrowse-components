@@ -2,7 +2,7 @@ import { getEnv } from '@jbrowse/core/util'
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 
 const TrackTypeSelector = observer(function TrackTypeSelector({
   model,

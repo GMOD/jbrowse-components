@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react'
 
-import { genomeColor, updownstreamColor } from '../consts'
-import { splitString } from '../util'
-import SequenceDisplay from './SequenceDisplay'
+import { genomeColor, updownstreamColor } from '../consts.ts'
+import { splitString } from '../util.ts'
+import SequenceDisplay from './SequenceDisplay.tsx'
 
-import type { SimpleFeatureSerialized } from '../../../util'
-import type { SequenceFeatureDetailsModel } from '../model'
+import type { SimpleFeatureSerialized } from '../../../util/index.ts'
+import type { SequenceFeatureDetailsModel } from '../model.ts'
 
 const GenomicSequence = observer(function GenomicSequence({
   sequence,

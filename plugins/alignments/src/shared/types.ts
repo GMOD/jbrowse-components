@@ -1,4 +1,4 @@
-import type { MismatchCallback } from './forEachMismatchTypes'
+import type { MismatchCallback } from './forEachMismatchTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export type SkipMap = Record<

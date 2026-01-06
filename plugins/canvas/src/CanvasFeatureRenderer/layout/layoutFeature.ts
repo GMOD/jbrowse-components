@@ -1,13 +1,17 @@
-import { builtinGlyphs, findGlyph, findPluggableGlyph } from '../glyphs'
-import { applyLabelDimensions } from '../labelUtils'
+import {
+  builtinGlyphs,
+  findGlyph,
+  findPluggableGlyph,
+} from '../glyphs/index.ts'
+import { applyLabelDimensions } from '../labelUtils.ts'
 
-import type { RenderConfigContext } from '../renderConfig'
-import type { FeatureLayout, LayoutArgs } from '../types'
+import type { RenderConfigContext } from '../renderConfig.ts'
+import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
 // Re-export for backwards compatibility
-export { applyLabelDimensions } from '../labelUtils'
+export { applyLabelDimensions } from '../labelUtils.ts'
 
 /**
  * Layout a feature using the polymorphic glyph system.

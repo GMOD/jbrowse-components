@@ -1,16 +1,16 @@
-import { createTrixAdapter } from './adapter-utils'
+import { createTrixAdapter } from './adapter-utils.ts'
 import {
   getTrackConfigs,
   loadConfigForIndexing,
   parseCommaSeparatedString,
   prepareIndexDriverFlags,
   writeConf,
-} from './config-utils'
-import { indexDriver } from './indexing-utils'
-import { validateAssembliesForPerTrack } from './validators'
-import { resolveConfigPath } from '../../utils'
+} from './config-utils.ts'
+import { indexDriver } from './indexing-utils.ts'
+import { validateAssembliesForPerTrack } from './validators.ts'
+import { resolveConfigPath } from '../../utils.ts'
 
-import type { TextIndexFlags } from './index'
+import type { TextIndexFlags } from './index.ts'
 
 export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
   const {

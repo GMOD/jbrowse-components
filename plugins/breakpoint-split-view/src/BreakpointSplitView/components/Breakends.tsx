@@ -11,11 +11,11 @@ import {
   getCanonicalRefs,
   getTestId,
   getYOffset,
-} from './overlayUtils'
-import { findMatchingAlt, getMatchedBreakendFeatures } from './util'
-import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
+} from './overlayUtils.tsx'
+import { findMatchingAlt, getMatchedBreakendFeatures } from './util.ts'
+import { getPxFromCoordinate, useNextFrame, yPos } from '../util.ts'
 
-import type { OverlayProps } from './overlayUtils'
+import type { OverlayProps } from './overlayUtils.tsx'
 
 const Breakends = observer(function Breakends({
   model,

@@ -4,7 +4,7 @@ import { CanvasSequence } from 'canvas-sequencer-ts'
 import isNode from 'detect-node'
 
 // Re-export transferable utilities for convenience
-export { collectTransferables, isDetachedBuffer } from './transferables'
+export { collectTransferables, isDetachedBuffer } from './transferables.ts'
 
 export function isImageBitmap(value: unknown): value is ImageBitmap {
   return typeof ImageBitmap !== 'undefined' && value instanceof ImageBitmap

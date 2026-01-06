@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 
-import { JBrowse, getPluginManager } from './util'
+import { JBrowse, getPluginManager } from './util.tsx'
 import emptyConfig from '../../test_data/empty.json'
 
 test('catches no assemblies with empty config', async () => {

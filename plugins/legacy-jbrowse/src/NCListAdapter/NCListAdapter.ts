@@ -4,7 +4,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { RemoteFile } from 'generic-filehandle2'
 
-import NCListFeature from './NCListFeature'
+import NCListFeature from './NCListFeature.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

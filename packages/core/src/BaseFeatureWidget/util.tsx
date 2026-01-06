@@ -1,5 +1,5 @@
-import type { SimpleFeatureSerialized } from '../util'
-import type { SerializedFeat } from './types'
+import type { SerializedFeat } from './types.tsx'
+import type { SimpleFeatureSerialized } from '../util/index.ts'
 
 export interface Feat {
   start: number

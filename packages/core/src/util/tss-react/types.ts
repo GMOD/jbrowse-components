@@ -1,4 +1,4 @@
-import type { CxArg } from './tools/classnames'
+import type { CxArg } from './tools/classnames.ts'
 // Use @emotion/react (direct dep) instead of @emotion/serialize (transitive)
 import type { CSSObject as CSSObject_base, Interpolation } from '@emotion/react'
 
@@ -28,4 +28,4 @@ export function matchCSSObject(
   )
 }
 
-export type { CxArg } from './tools/classnames'
+export type { CxArg } from './tools/classnames.ts'

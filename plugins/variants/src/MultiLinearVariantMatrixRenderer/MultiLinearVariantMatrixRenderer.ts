@@ -3,7 +3,7 @@ import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
-import type { RenderArgsDeserialized } from './types'
+import type { RenderArgsDeserialized } from './types.ts'
 
 export default class LinearVariantMatrixRenderer extends FeatureRendererType {
   supportsSVG = true
@@ -14,7 +14,7 @@ export default class LinearVariantMatrixRenderer extends FeatureRendererType {
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
-    const { makeImageData } = await import('./makeImageData')
+    const { makeImageData } = await import('./makeImageData.ts')
     const { mafs, ...rest } = await renderToAbstractCanvas(
       width,
       height,

@@ -1,4 +1,4 @@
-import type { DotplotViewModel } from './DotplotView/model'
+import type { DotplotViewModel } from './DotplotView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

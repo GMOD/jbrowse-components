@@ -5,12 +5,12 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import FloatingLegend from './FloatingLegend'
-import LinearBlocks from './LinearBlocks'
-import MenuPage from './MenuPage'
+import FloatingLegend from './FloatingLegend.tsx'
+import LinearBlocks from './LinearBlocks.tsx'
+import MenuPage from './MenuPage.tsx'
 
-import type { Coord } from './types'
-import type { BaseLinearDisplayModel } from '../model'
+import type { Coord } from './types.ts'
+import type { BaseLinearDisplayModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   display: {
@@ -105,5 +105,5 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
 
 export default BaseLinearDisplay
 
-export { default as Tooltip } from './Tooltip'
-export { default as BlockMsg } from './BlockMsg'
+export { default as Tooltip } from './Tooltip.tsx'
+export { default as BlockMsg } from './BlockMsg.tsx'

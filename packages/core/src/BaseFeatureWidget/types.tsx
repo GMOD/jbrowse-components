@@ -1,7 +1,7 @@
 import type React from 'react'
 
-import type { BaseFeatureWidgetModel } from './stateModelFactory'
-import type { SimpleFeatureSerialized } from '../util/simpleFeature'
+import type { BaseFeatureWidgetModel } from './stateModelFactory.ts'
+import type { SimpleFeatureSerialized } from '../util/simpleFeature.ts'
 
 // recursive to allow tagging nested data attributes
 export interface Descriptors {

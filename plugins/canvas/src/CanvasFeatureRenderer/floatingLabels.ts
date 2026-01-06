@@ -1,9 +1,9 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { readCachedConfig } from './renderConfig'
-import { truncateLabel } from './util'
+import { readCachedConfig } from './renderConfig.ts'
+import { truncateLabel } from './util.ts'
 
-import type { RenderConfigContext } from './renderConfig'
+import type { RenderConfigContext } from './renderConfig.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { FloatingLabelData } from '@jbrowse/plugin-linear-genome-view'

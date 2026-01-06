@@ -2,7 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { groupBy } from '@jbrowse/core/util'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import type { GetScoreMatrixArgs } from './types'
+import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 

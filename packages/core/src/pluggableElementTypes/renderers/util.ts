@@ -1,4 +1,4 @@
-import type { Region } from '../../util'
+import type { Region } from '../../util/index.ts'
 
 export function normalizeRegion(region: Region): Region {
   return {

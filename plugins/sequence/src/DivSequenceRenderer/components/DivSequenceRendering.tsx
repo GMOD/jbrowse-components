@@ -7,8 +7,8 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import Sequence from './Sequence'
-import Translation from './Translation'
+import Sequence from './Sequence.tsx'
+import Translation from './Translation.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Frame, Region } from '@jbrowse/core/util'

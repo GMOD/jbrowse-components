@@ -1,15 +1,15 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import { assembleLocStringFast } from '.'
 import {
   BlockSet,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-} from './blockTypes'
+} from './blockTypes.ts'
+import { assembleLocStringFast } from './index.ts'
 
-import type { Region } from './types'
-import type { Region as RegionModel } from './types/mst'
+import type { Region } from './types/index.ts'
+import type { Region as RegionModel } from './types/mst.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface Base1DViewModel {

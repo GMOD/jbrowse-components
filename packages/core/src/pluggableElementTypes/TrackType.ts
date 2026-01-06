@@ -1,7 +1,7 @@
-import PluggableElementBase from './PluggableElementBase'
+import PluggableElementBase from './PluggableElementBase.ts'
 
-import type { AnyConfigurationSchemaType } from '../configuration'
-import type DisplayType from './DisplayType'
+import type DisplayType from './DisplayType.ts'
+import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 export default class TrackType extends PluggableElementBase {

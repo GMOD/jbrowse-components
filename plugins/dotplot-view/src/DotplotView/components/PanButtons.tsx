@@ -8,7 +8,7 @@ import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   dpad: {

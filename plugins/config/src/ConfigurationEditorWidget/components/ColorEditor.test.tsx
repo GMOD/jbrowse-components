@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react'
 
-import { ColorSlot } from './ColorEditor'
+import { ColorSlot } from './ColorEditor.tsx'
 
 test('can change value via the text field', () => {
   const myfn = jest.fn()

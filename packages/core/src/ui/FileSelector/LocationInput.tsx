@@ -1,8 +1,8 @@
-import LocalFileChooser from './LocalFileChooser'
-import UrlChooser from './UrlChooser'
+import LocalFileChooser from './LocalFileChooser.tsx'
+import UrlChooser from './UrlChooser.tsx'
 
-import type { BaseInternetAccountModel } from '../../pluggableElementTypes'
-import type { FileLocation } from '../../util/types'
+import type { BaseInternetAccountModel } from '../../pluggableElementTypes/index.ts'
+import type { FileLocation } from '../../util/types/index.ts'
 
 export default function LocationInput({
   toggleButtonValue,

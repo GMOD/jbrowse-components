@@ -1,16 +1,19 @@
 import path from 'path'
 
-import { readJsonFile } from '../utils'
-import { guessFileNames, guessTrackType } from './add-track-utils/adapter-utils'
-import { loadFile } from './add-track-utils/file-operations'
-import { buildTrackConfig } from './add-track-utils/track-config'
-import { validateTrackId } from './add-track-utils/validators'
+import { readJsonFile } from '../utils.ts'
+import {
+  guessFileNames,
+  guessTrackType,
+} from './add-track-utils/adapter-utils.ts'
+import { loadFile } from './add-track-utils/file-operations.ts'
+import { buildTrackConfig } from './add-track-utils/track-config.ts'
+import { validateTrackId } from './add-track-utils/validators.ts'
 import {
   findAndUpdateOrAdd,
   saveConfigAndReport as saveConfigAndReportBase,
-} from './shared/config-operations'
+} from './shared/config-operations.ts'
 
-import type { Config } from '../base'
+import type { Config } from '../base.ts'
 
 export async function loadTrackConfig(
   targetConfigPath: string,

@@ -5,12 +5,18 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { fireEvent } from '@testing-library/react'
 
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
-import corePlugins from '../corePlugins'
-import TestPlugin from './TestPlugin'
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
-import JBrowseRootModelFactory from '../rootModel/rootModel'
-import sessionModelFactory from '../sessionModel'
-import * as sessionSharing from '../sessionSharing'
+import corePlugins from '../corePlugins.ts'
+import TestPlugin from './TestPlugin.ts'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  hts,
+  setup,
+} from './util.tsx'
+import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
+import sessionModelFactory from '../sessionModel/index.ts'
+import * as sessionSharing from '../sessionSharing.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

@@ -17,7 +17,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 const LaunchSyntenyViewDialog = lazy(
-  () => import('./components/LaunchSyntenyViewDialog'),
+  () => import('./components/LaunchSyntenyViewDialog.tsx'),
 )
 
 /**

@@ -1,13 +1,13 @@
-import { revcom } from '../../util'
+import { revcom } from '../../util/index.ts'
 import {
   calculateUTRs2,
   calculateUTRs,
   filterSuccessiveElementsWithSameStartAndEndCoord,
   revlist,
-} from '../util'
+} from '../util.tsx'
 
-import type { SimpleFeatureSerialized } from '../../util'
-import type { ErrorState, SeqState } from '../util'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { ErrorState, SeqState } from '../util.tsx'
 
 /**
  * Handles sequence orientation for reverse strand features

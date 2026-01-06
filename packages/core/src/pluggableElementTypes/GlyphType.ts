@@ -1,7 +1,7 @@
-import PluggableElementBase from './PluggableElementBase'
+import PluggableElementBase from './PluggableElementBase.ts'
 
-import type { AnyConfigurationModel } from '../configuration'
-import type { Feature, Region } from '../util'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type { Feature, Region } from '../util/index.ts'
 import type { Theme } from '@mui/material'
 
 export interface GlyphRenderContext {

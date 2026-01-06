@@ -9,7 +9,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { SampleInfo, Source } from './types'
+import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'

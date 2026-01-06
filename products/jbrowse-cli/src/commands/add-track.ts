@@ -1,12 +1,12 @@
 import path from 'path'
 import { parseArgs } from 'util'
 
-import { printHelp, resolveConfigPath } from '../utils'
-import { guessAdapter } from './add-track-utils/adapter-utils'
+import { printHelp, resolveConfigPath } from '../utils.ts'
+import { guessAdapter } from './add-track-utils/adapter-utils.ts'
 import {
   addSyntenyAssemblyNames,
   mapLocationForFiles,
-} from './add-track-utils/track-config'
+} from './add-track-utils/track-config.ts'
 import {
   createTargetDirectory,
   validateAdapterType,
@@ -14,7 +14,7 @@ import {
   validateLoadAndLocation,
   validateLoadOption,
   validateTrackArg,
-} from './add-track-utils/validators'
+} from './add-track-utils/validators.ts'
 import {
   addTrackToConfig,
   buildTrackParams,
@@ -22,9 +22,9 @@ import {
   loadTrackConfig,
   processTrackFiles,
   saveTrackConfigAndReport,
-} from './track-utils'
+} from './track-utils.ts'
 
-import type { Config } from '../base'
+import type { Config } from '../base.ts'
 
 export async function run(args?: string[]) {
   const options = {

@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react'
 
-import AlignmentConnections from './AlignmentConnections'
-import Breakends from './Breakends'
-import PairedFeatures from './PairedFeatures'
-import Translocations from './Translocations'
+import AlignmentConnections from './AlignmentConnections.tsx'
+import Breakends from './Breakends.tsx'
+import PairedFeatures from './PairedFeatures.tsx'
+import Translocations from './Translocations.tsx'
 
-import type { BreakpointViewModel } from '../model'
+import type { BreakpointViewModel } from '../model.ts'
 
 // Routes to the appropriate overlay component based on track type:
 //

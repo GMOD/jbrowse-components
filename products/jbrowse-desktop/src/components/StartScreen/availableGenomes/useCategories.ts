@@ -1,6 +1,6 @@
 import useSWR from 'swr'
 
-import { fetchjson } from '../util'
+import { fetchjson } from '../util.tsx'
 
 export default function useCategories() {
   const { data, error, isLoading } = useSWR('categories', () =>

@@ -1,7 +1,7 @@
 import { JBrowseModelF } from '@jbrowse/app-core'
 import { getSnapshot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
 
-import { removeAttr } from './util'
+import { removeAttr } from './util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

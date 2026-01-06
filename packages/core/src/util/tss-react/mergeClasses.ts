@@ -1,4 +1,4 @@
-import type { Cx } from './types'
+import type { Cx } from './types.ts'
 
 export function mergeClasses<T extends string, U extends string>(
   classesFromUseStyles: Record<T, string>,

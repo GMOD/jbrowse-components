@@ -13,8 +13,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete'
-import { handleSelectedRegion, navToOption } from '../../searchUtils'
+import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete.tsx'
+import { handleSelectedRegion, navToOption } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'

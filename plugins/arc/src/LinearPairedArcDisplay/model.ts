@@ -115,7 +115,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('./afterAttach')
+            const { doAfterAttach } = await import('./afterAttach.tsx')
             doAfterAttach(self)
           } catch (e) {
             console.error(e)
@@ -129,7 +129,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       async renderSvg(opts: {
         rasterizeLayers?: boolean
       }): Promise<React.ReactNode> {
-        const { renderArcSvg } = await import('./renderSvg')
+        const { renderArcSvg } = await import('./renderSvg.tsx')
         // @ts-expect-error
         return renderArcSvg(self, opts)
       },

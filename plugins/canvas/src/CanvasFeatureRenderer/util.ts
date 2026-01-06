@@ -1,8 +1,8 @@
 import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
-import { readCachedConfig } from './renderConfig'
+import { readCachedConfig } from './renderConfig.ts'
 
-import type { RenderConfigContext } from './renderConfig'
+import type { RenderConfigContext } from './renderConfig.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'

@@ -1,7 +1,7 @@
 import { clamp } from '@jbrowse/core/util'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { FloatingLabelData, LayoutRecord } from '../types'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
+import type { FloatingLabelData, LayoutRecord } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 interface PixelPositions {

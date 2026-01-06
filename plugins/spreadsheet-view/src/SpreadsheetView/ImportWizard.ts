@@ -12,12 +12,14 @@ const IMPORT_SIZE_LIMIT = 100_000_000
 
 const fileTypes = ['VCF', 'BED', 'BEDPE', 'STAR-Fusion']
 const fileTypeParsers = {
-  VCF: () => import('./importAdapters/VcfImport').then(r => r.parseVcfBuffer),
-  BED: () => import('./importAdapters/BedImport').then(r => r.parseBedBuffer),
+  VCF: () =>
+    import('./importAdapters/VcfImport.ts').then(r => r.parseVcfBuffer),
+  BED: () =>
+    import('./importAdapters/BedImport.ts').then(r => r.parseBedBuffer),
   BEDPE: () =>
-    import('./importAdapters/BedpeImport').then(r => r.parseBedPEBuffer),
+    import('./importAdapters/BedpeImport.ts').then(r => r.parseBedPEBuffer),
   'STAR-Fusion': () =>
-    import('./importAdapters/STARFusionImport').then(
+    import('./importAdapters/STARFusionImport.ts').then(
       r => r.parseSTARFusionBuffer,
     ),
 }

@@ -1,15 +1,15 @@
 import {
   generateBedMethylFeature,
   isBedMethylFeature,
-} from './generateBedMethylFeature'
+} from './generateBedMethylFeature.ts'
 import {
   generateRepeatMaskerFeature,
   isRepeatMaskerDescriptionField,
-} from './generateRepeatMaskerFeature'
+} from './generateRepeatMaskerFeature.ts'
 import {
   generateUcscTranscript,
   isUcscTranscript,
-} from './generateUcscTranscript'
+} from './generateUcscTranscript.ts'
 
 import type BED from '@gmod/bed'
 

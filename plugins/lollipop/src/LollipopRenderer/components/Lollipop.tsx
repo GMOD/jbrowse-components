@@ -1,9 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 
-import ScoreText from './ScoreText'
+import ScoreText from './ScoreText.tsx'
 
-import type { LayoutEntry } from '../Layout'
+import type { LayoutEntry } from '../Layout.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 

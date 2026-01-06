@@ -1,5 +1,5 @@
-import { testOpenTrack } from './testOpenTrack'
-import { doBeforeEach, setup } from './util'
+import { testOpenTrack } from './testOpenTrack.tsx'
+import { doBeforeEach, setup } from './util.tsx'
 
 setup()
 

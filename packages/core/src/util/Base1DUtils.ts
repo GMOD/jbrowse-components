@@ -1,4 +1,4 @@
-import type { Region, ViewSnap } from './index'
+import type { Region, ViewSnap } from './index.ts'
 
 export interface BpOffset {
   refName?: string

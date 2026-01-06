@@ -1,6 +1,11 @@
 import { LocalFile } from 'generic-filehandle2'
 
-import { doBeforeEach, generateReadBuffer, setup, testFileReload } from './util'
+import {
+  doBeforeEach,
+  generateReadBuffer,
+  setup,
+  testFileReload,
+} from './util.tsx'
 
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),

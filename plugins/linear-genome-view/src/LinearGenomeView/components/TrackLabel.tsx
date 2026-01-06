@@ -8,8 +8,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import TrackLabelDragHandle from './TrackLabelDragHandle'
-import TrackLabelMenu from './TrackLabelMenu'
+import TrackLabelDragHandle from './TrackLabelDragHandle.tsx'
+import TrackLabelMenu from './TrackLabelMenu.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'

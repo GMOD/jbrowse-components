@@ -1,4 +1,4 @@
-import calculateBlocks from './calculateStaticBlocks'
+import calculateBlocks from './calculateStaticBlocks.ts'
 
 describe('block calculation', () => {
   it('can calculate some blocks 1', () => {

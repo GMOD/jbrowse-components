@@ -1,7 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import type { LegendBarModel } from './types'
+import type { LegendBarModel } from './types.ts'
 
 const MultiVariantLegendBarWrapper = observer(
   function MultiVariantLegendBarWrapper({

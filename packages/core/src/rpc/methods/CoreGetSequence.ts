@@ -1,10 +1,10 @@
-import { getAdapter } from '../../data_adapters/dataAdapterCache'
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '../../util'
+import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
+import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
+import { renameRegionsIfNeeded } from '../../util/index.ts'
 
-import type { RenderArgs } from './util'
-import type { BaseSequenceAdapter } from '../../data_adapters/BaseAdapter'
-import type { Region } from '../../util'
+import type { RenderArgs } from './util.ts'
+import type { BaseSequenceAdapter } from '../../data_adapters/BaseAdapter/index.ts'
+import type { Region } from '../../util/index.ts'
 
 export default class CoreGetSequence extends RpcMethodType {
   name = 'CoreGetSequence'

@@ -1,5 +1,5 @@
-import { isObject, max, measureText } from '../../util'
-import { ellipses } from '../util'
+import { isObject, max, measureText } from '../../util/index.ts'
+import { ellipses } from '../util.tsx'
 
 export function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0

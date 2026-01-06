@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import type PluginManager from '../../PluginManager'
+import type PluginManager from '../../PluginManager.ts'
 
 /**
  * Obtain the return type of a constructor function type.

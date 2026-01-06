@@ -1,7 +1,7 @@
 export {
   ConfigurationReference,
   ConfigurationSchema,
-} from './configurationSchema'
+} from './configurationSchema.ts'
 
 export type {
   AnyConfiguration,
@@ -9,6 +9,6 @@ export type {
   AnyConfigurationSchemaType,
   AnyConfigurationSlot,
   AnyConfigurationSlotType,
-} from './types'
+} from './types.ts'
 
-export * from './util'
+export * from './util.ts'

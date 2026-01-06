@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react'
 
-import BlockError from './BlockError'
-import BlockMessage from './BlockMessage'
-import LinearSyntenyRendering from './LinearSyntenyRendering'
-import LoadingMessage from './LoadingMessage'
+import BlockError from './BlockError.tsx'
+import BlockMessage from './BlockMessage.tsx'
+import LinearSyntenyRendering from './LinearSyntenyRendering.tsx'
+import LoadingMessage from './LoadingMessage.tsx'
 
-import type { LinearSyntenyDisplayModel } from '../model'
+import type { LinearSyntenyDisplayModel } from '../model.ts'
 
 const ServerSideRenderedBlockContent = observer(
   function ServerSideRenderedBlockContent({

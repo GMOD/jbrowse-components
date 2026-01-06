@@ -1,7 +1,7 @@
-import PluggableElementBase from './PluggableElementBase'
+import PluggableElementBase from './PluggableElementBase.ts'
 
-import type { AnyConfigurationSchemaType } from '../configuration'
-import type { AnyAdapter } from '../data_adapters/BaseAdapter'
+import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
+import type { AnyAdapter } from '../data_adapters/BaseAdapter/index.ts'
 
 export default class TextSearchAdapterType extends PluggableElementBase {
   getAdapterClass: () => Promise<AnyAdapter>

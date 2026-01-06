@@ -3,7 +3,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { Button, alpha } from '@mui/material'
 
-import { SPACING } from '../consts'
+import { SPACING } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '..'
 

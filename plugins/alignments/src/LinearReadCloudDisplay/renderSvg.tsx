@@ -12,10 +12,10 @@ import {
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { SVGLegend } from '@jbrowse/plugin-linear-genome-view'
 
-import { calculateCloudTicks } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCloud'
-import CloudYScaleBar from './components/CloudYScaleBar'
+import { calculateCloudTicks } from '../RenderLinearReadCloudDisplayRPC/drawFeatsCloud.ts'
+import CloudYScaleBar from './components/CloudYScaleBar.tsx'
 
-import type { LinearReadCloudDisplayModel } from './model'
+import type { LinearReadCloudDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,

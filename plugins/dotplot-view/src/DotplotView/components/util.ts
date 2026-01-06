@@ -1,6 +1,6 @@
 import { toLocale } from '@jbrowse/core/util'
 
-import type { Dotplot1DViewModel } from '../model'
+import type { Dotplot1DViewModel } from '../model.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 export function locstr(

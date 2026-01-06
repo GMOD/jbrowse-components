@@ -1,13 +1,13 @@
-import { validateRendererType } from './util'
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
-import { renameRegionsIfNeeded } from '../../util'
+import { validateRendererType } from './util.ts'
+import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
+import { renameRegionsIfNeeded } from '../../util/index.ts'
 
 import type {
   RenderArgs,
   RenderArgsSerialized,
   RenderResults,
   ResultsSerialized,
-} from './util'
+} from './util.ts'
 
 export default class CoreRender extends RpcMethodType {
   name = 'CoreRender'

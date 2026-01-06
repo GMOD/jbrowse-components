@@ -1,9 +1,9 @@
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isUriLocation } from '../../util/types'
+import { isUriLocation } from '../../util/types/index.ts'
 
-import type { FileLocation } from '../../util/types'
+import type { FileLocation } from '../../util/types/index.ts'
 
 const UrlChooser = observer(function UrlChooser({
   location,

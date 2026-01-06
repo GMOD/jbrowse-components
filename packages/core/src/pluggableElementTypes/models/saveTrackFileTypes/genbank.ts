@@ -5,10 +5,10 @@
  * The generated output may not fully conform to the GenBank specification and should
  * be validated before use in production workflows.
  */
-import { fetchSequence } from './fetchSequence'
-import { max, min } from '../../../util'
+import { fetchSequence } from './fetchSequence.ts'
+import { max, min } from '../../../util/index.ts'
 
-import type { AbstractSessionModel, Feature } from '../../../util'
+import type { AbstractSessionModel, Feature } from '../../../util/index.ts'
 
 const coreFields = new Set([
   'uniqueId',

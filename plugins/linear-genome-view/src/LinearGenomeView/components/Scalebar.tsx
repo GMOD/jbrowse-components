@@ -5,9 +5,9 @@ import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Gridlines from './Gridlines'
-import ScalebarCoordinateLabels from './ScalebarCoordinateLabels'
-import ScalebarRefNameLabels from './ScalebarRefNameLabels'
+import Gridlines from './Gridlines.tsx'
+import ScalebarCoordinateLabels from './ScalebarCoordinateLabels.tsx'
+import ScalebarRefNameLabels from './ScalebarRefNameLabels.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 

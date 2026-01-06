@@ -13,7 +13,7 @@ import {
   readConfAlt,
   runCommand,
   runInTmpDir,
-} from '../../testUtil'
+} from '../../testUtil.ts'
 
 jest.mock('../../fetchWithProxy')
 

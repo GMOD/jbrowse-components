@@ -8,10 +8,10 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { layoutFeats } from './layoutFeatures'
-import { renderAlignment } from './renderers/renderAlignment'
-import { renderMismatchesCallback } from './renderers/renderMismatchesCallback'
-import { renderSoftClipping } from './renderers/renderSoftClipping'
+import { layoutFeats } from './layoutFeatures.ts'
+import { renderAlignment } from './renderers/renderAlignment.ts'
+import { renderMismatchesCallback } from './renderers/renderMismatchesCallback.ts'
+import { renderSoftClipping } from './renderers/renderSoftClipping.ts'
 import {
   getCharWidthHeight,
   getColorBaseMap,
@@ -19,14 +19,14 @@ import {
   setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
-} from '../shared/util'
+} from '../shared/util.ts'
 
 import type {
   FlatbushItem,
   LayoutFeature,
   PreProcessedRenderArgs,
   ProcessedRenderArgs,
-} from './types'
+} from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 

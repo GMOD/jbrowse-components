@@ -4,15 +4,15 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { type IAnyStateTreeNode, getParent } from '@jbrowse/mobx-state-tree'
 
-import stateModelFactory from './model'
+import stateModelFactory from './model.ts'
 
-import type { SvInspectorViewModel } from './model'
+import type { SvInspectorViewModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 
 const BreakpointSplitViewChoiceDialog = lazy(
-  () => import('./BreakpointSplitViewChoiceDialog'),
+  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
 )
 
 function defaultOnChordClick(feature: Feature, chordTrack: IAnyStateTreeNode) {
@@ -48,7 +48,7 @@ export default function SvInspectorViewF(pluginManager: PluginManager) {
       name: 'SvInspectorView',
       displayName: 'SV inspector',
       stateModel,
-      ReactComponent: lazy(() => import('./components/SvInspectorView')),
+      ReactComponent: lazy(() => import('./components/SvInspectorView.tsx')),
     })
   })
 }

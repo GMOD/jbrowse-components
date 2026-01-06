@@ -1,4 +1,4 @@
-import { parseLineByLine } from './parseLineByLine'
+import { parseLineByLine } from './parseLineByLine.ts'
 
 describe('parseLineByLine', () => {
   it('should call callback for each line', () => {

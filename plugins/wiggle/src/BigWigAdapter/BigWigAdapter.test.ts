@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BigWigAdapter from './BigWigAdapter'
-import configSchema from './configSchema'
+import BigWigAdapter from './BigWigAdapter.ts'
+import configSchema from './configSchema.ts'
 
 describe('adapter can fetch features from volvox.bw', () => {
   let adapter: BigWigAdapter

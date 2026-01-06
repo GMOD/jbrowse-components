@@ -8,8 +8,8 @@ import ViewColumnIcon from '@mui/icons-material/ViewColumn'
 import ViewModuleIcon from '@mui/icons-material/ViewModule'
 import { IconButton, Tooltip } from '@mui/material'
 
-import { useDockview } from './DockviewContext'
-import { rearrangePanelsWithDirection } from './dockviewUtils'
+import { useDockview } from './DockviewContext.tsx'
+import { rearrangePanelsWithDirection } from './dockviewUtils.ts'
 
 import type { IDockviewHeaderActionsProps } from 'dockview-react'
 

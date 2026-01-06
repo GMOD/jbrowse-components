@@ -1,9 +1,9 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 
-import { locstr } from './util'
+import { locstr } from './util.ts'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 
 type Coord = [number, number] | undefined
 

@@ -1,15 +1,15 @@
 import { observer } from 'mobx-react'
 
-import { defaultCodonTable, generateCodonTable } from '../../util'
-import CDNASequence from './seqtypes/CDNASequence'
-import CDSSequence from './seqtypes/CDSSequence'
-import GenomicSequence from './seqtypes/GenomicSequence'
-import ProteinSequence from './seqtypes/ProteinSequence'
-import { useSequenceData } from './useSequenceData'
+import CDNASequence from './seqtypes/CDNASequence.tsx'
+import CDSSequence from './seqtypes/CDSSequence.tsx'
+import GenomicSequence from './seqtypes/GenomicSequence.tsx'
+import ProteinSequence from './seqtypes/ProteinSequence.tsx'
+import { useSequenceData } from './useSequenceData.ts'
+import { defaultCodonTable, generateCodonTable } from '../../util/index.ts'
 
-import type { SequenceFeatureDetailsModel } from './model'
-import type { SimpleFeatureSerialized } from '../../util'
-import type { SeqState } from '../util'
+import type { SequenceFeatureDetailsModel } from './model.ts'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { SeqState } from '../util.tsx'
 
 /**
  * Renders the appropriate sequence component based on the selected mode

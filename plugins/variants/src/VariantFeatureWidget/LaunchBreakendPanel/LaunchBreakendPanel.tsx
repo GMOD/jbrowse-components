@@ -5,11 +5,11 @@ import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
 import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
-import type { VariantFeatureWidgetModel } from '../stateModelFactory'
+import type { VariantFeatureWidgetModel } from '../stateModelFactory.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 const BreakpointSplitViewChoiceDialog = lazy(
-  () => import('./BreakpointSplitViewChoiceDialog'),
+  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
 )
 
 function LocStringList({

@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
-import SNPCoverageRenderer from './SNPCoverageRenderer'
-import configSchema from './configSchema'
+import SNPCoverageRenderer from './SNPCoverageRenderer.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -10,7 +10,9 @@ export default function register(pluginManager: PluginManager) {
     () =>
       new SNPCoverageRenderer({
         name: 'SNPCoverageRenderer',
-        ReactComponent: lazy(() => import('./components/SNPCoverageRendering')),
+        ReactComponent: lazy(
+          () => import('./components/SNPCoverageRendering.tsx'),
+        ),
         configSchema,
         pluginManager,
       }),

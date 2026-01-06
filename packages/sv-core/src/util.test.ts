@@ -1,4 +1,4 @@
-import { getBreakendCoveringRegions, splitRegionAtPosition } from './util'
+import { getBreakendCoveringRegions, splitRegionAtPosition } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 

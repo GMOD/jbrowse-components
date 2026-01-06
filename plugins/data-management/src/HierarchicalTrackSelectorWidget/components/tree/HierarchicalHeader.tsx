@@ -1,13 +1,13 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import ClearableSearchField from '../ClearableSearchField'
-import ShoppingCart from '../ShoppingCart'
-import FavoriteTracks from './FavoriteTracks'
-import HamburgerMenu from './HamburgerMenu'
-import RecentlyUsedTracks from './RecentlyUsedTracks'
+import ClearableSearchField from '../ClearableSearchField.tsx'
+import ShoppingCart from '../ShoppingCart.tsx'
+import FavoriteTracks from './FavoriteTracks.tsx'
+import HamburgerMenu from './HamburgerMenu.tsx'
+import RecentlyUsedTracks from './RecentlyUsedTracks.tsx'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   searchBox: {

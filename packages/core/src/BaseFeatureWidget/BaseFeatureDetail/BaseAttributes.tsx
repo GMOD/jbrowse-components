@@ -1,7 +1,7 @@
-import Attributes from './Attributes'
-import BaseCard from './BaseCard'
+import Attributes from './Attributes.tsx'
+import BaseCard from './BaseCard.tsx'
 
-import type { BaseCardProps, BaseProps } from '../types'
+import type { BaseCardProps, BaseProps } from '../types.tsx'
 
 export interface BaseInputProps extends BaseCardProps {
   omit?: string[]

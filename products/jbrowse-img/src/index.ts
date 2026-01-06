@@ -2,12 +2,12 @@ import fs from 'fs'
 
 import yargs from 'yargs'
 
-import { parseArgv, standardizeArgv } from './parseArgv'
-import { renderRegion } from './renderRegion'
-import setupEnv from './setupEnv'
-import { convert } from './util'
+import { parseArgv, standardizeArgv } from './parseArgv.ts'
+import { renderRegion } from './renderRegion.tsx'
+import setupEnv from './setupEnv.ts'
+import { convert } from './util.ts'
 
-import type { Opts } from './renderRegion'
+import type { Opts } from './renderRegion.tsx'
 
 setupEnv()
 

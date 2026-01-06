@@ -1,11 +1,11 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import ColorLegend from './ColorLegend'
-import { getOffset } from './util'
-import YScaleBar from '../../shared/YScaleBar'
+import ColorLegend from './ColorLegend.tsx'
+import { getOffset } from './util.ts'
+import YScaleBar from '../../shared/YScaleBar.tsx'
 
-import type { WiggleDisplayModel } from '../model'
+import type { WiggleDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const FullHeightScaleBar = observer(function FullHeightScaleBar({

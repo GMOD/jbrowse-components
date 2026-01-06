@@ -1,4 +1,4 @@
-import { formatFastaLines, formatSeqFasta } from './formatFastaStrings'
+import { formatFastaLines, formatSeqFasta } from './formatFastaStrings.ts'
 
 const small = 'cattgttgcg'
 const medium =

@@ -11,15 +11,15 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getAdapter } from './getAdapter'
+import { getAdapter } from './getAdapter.ts'
 import {
   AnchorsFileSelector,
   PifGzSelector,
   SyntenyFileSelector,
-} from './selectors'
-import { basename, extName, getName, stripGz } from './util'
+} from './selectors/index.ts'
+import { basename, extName, getName, stripGz } from './util.ts'
 
-import type { DotplotViewModel } from '../../model'
+import type { DotplotViewModel } from '../../model.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const ImportSyntenyOpenCustomTrack = observer(

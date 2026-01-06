@@ -25,12 +25,12 @@ import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 
-import { DesktopSessionManagementMixin, getSaveSession } from './Sessions'
+import { DesktopSessionManagementMixin, getSaveSession } from './Sessions.ts'
 import packageJSON from '../../package.json'
-import OpenSequenceDialog from '../components/OpenSequenceDialog'
-import jobsModelFactory from '../indexJobsModel'
-import JBrowseDesktop from '../jbrowseModel'
-import makeWorkerInstance from '../makeWorkerInstance'
+import OpenSequenceDialog from '../components/OpenSequenceDialog.tsx'
+import jobsModelFactory from '../indexJobsModel.ts'
+import JBrowseDesktop from '../jbrowseModel.ts'
+import makeWorkerInstance from '../makeWorkerInstance.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -41,7 +41,9 @@ import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionWithDialogs } from '@jbrowse/product-core'
 
 // lazies
-const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
+const PreferencesDialog = lazy(
+  () => import('../components/PreferencesDialog.tsx'),
+)
 
 const { ipcRenderer } = window.require('electron')
 

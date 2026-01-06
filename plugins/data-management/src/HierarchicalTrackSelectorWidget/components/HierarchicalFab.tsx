@@ -11,7 +11,7 @@ import AddIcon from '@mui/icons-material/Add'
 import { Fab, Menu, MenuItem } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { HierarchicalTrackSelectorModel } from '../model'
+import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   fab: {

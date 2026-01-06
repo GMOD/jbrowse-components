@@ -2,8 +2,8 @@ import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { createRoot } from 'react-dom/client'
 import '@fontsource/roboto'
 
-import Loader from './components/Loader'
-import PlatformSpecificErrorDialog from './components/PlatformSpecificErrorDialog'
+import Loader from './components/Loader.tsx'
+import PlatformSpecificErrorDialog from './components/PlatformSpecificErrorDialog.tsx'
 
 if (window.name.startsWith('JBrowseAuthWindow')) {
   window.opener?.postMessage({

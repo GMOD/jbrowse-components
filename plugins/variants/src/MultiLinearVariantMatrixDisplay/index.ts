@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import configSchemaF from './configSchema'
-import stateModelFactory from './model'
+import configSchemaF from './configSchema.ts'
+import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -23,7 +23,7 @@ export default function LinearVariantMatrixDisplayF(
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(
-        () => import('./components/VariantDisplayComponent'),
+        () => import('./components/VariantDisplayComponent.tsx'),
       ),
     })
   })

@@ -1,7 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import ViewContainer from './ViewContainer'
+import ViewContainer from './ViewContainer.tsx'
 
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type {

@@ -5,12 +5,12 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 
-import JobsListWidgetF from './JobsListWidget'
+import JobsListWidgetF from './JobsListWidget/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 
-export type { JobsListModel } from './JobsListWidget/model'
+export type { JobsListModel } from './JobsListWidget/model.ts'
 
 export default class JobsManagementPlugin extends Plugin {
   name = 'JobsManagementPlugin'

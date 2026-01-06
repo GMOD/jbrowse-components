@@ -1,13 +1,13 @@
-import { readCachedConfig } from '../renderConfig'
-import { isOffScreen } from '../util'
+import { readCachedConfig } from '../renderConfig.ts'
+import { isOffScreen } from '../util.ts'
 import {
   drawConnectingLine,
   drawStrandArrow,
   getStrandArrowPadding,
   layoutChild,
-} from './glyphUtils'
+} from './glyphUtils.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
+import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 
 const REPEAT_COLOR_MAP: Record<string, string> = {
   CACTA_TIR_transposon: '#e6194b',

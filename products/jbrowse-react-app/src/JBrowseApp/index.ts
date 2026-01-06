@@ -1,1 +1,1 @@
-export { default } from './JBrowseApp'
+export { default } from './JBrowseApp.tsx'

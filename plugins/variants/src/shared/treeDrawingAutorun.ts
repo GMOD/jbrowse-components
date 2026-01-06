@@ -2,8 +2,11 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { ClusterHierarchyNode, HoveredTreeNode } from './components/types'
-import type { Source } from './types'
+import type {
+  ClusterHierarchyNode,
+  HoveredTreeNode,
+} from './components/types.ts'
+import type { Source } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface TreeDrawingModel {

@@ -1,10 +1,10 @@
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import { readConfObject } from '../configuration'
-import { clamp } from '../util'
+import { readConfObject } from '../configuration/index.ts'
+import { clamp } from '../util/index.ts'
 
-import type PluginManager from '../PluginManager'
-import type { AnyConfigurationModel } from '../configuration'
+import type PluginManager from '../PluginManager.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 
 export interface WorkerHandle {
   status?: string

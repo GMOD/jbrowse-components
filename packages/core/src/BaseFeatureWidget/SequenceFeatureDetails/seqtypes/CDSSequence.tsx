@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react'
 
-import { stitch } from '../../util'
-import { cdsColor } from '../consts'
-import { splitString } from '../util'
-import SequenceDisplay from './SequenceDisplay'
+import { stitch } from '../../util.tsx'
+import { cdsColor } from '../consts.ts'
+import { splitString } from '../util.ts'
+import SequenceDisplay from './SequenceDisplay.tsx'
 
-import type { Feat } from '../../util'
-import type { SequenceFeatureDetailsModel } from '../model'
+import type { Feat } from '../../util.tsx'
+import type { SequenceFeatureDetailsModel } from '../model.ts'
 
 const CDSSequence = observer(function CDSSequence({
   cds,

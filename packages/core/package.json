@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/core",
   "version": "3.7.0",
+  "type": "module",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -21,442 +22,115 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "import": "./src/index.ts",
-      "require": "./src/index.ts"
-    },
-    "./BaseFeatureWidget": {
-      "import": "./src/BaseFeatureWidget/index.ts",
-      "require": "./src/BaseFeatureWidget/index.ts"
-    },
-    "./BaseFeatureWidget/BaseFeatureDetail": {
-      "import": "./src/BaseFeatureWidget/BaseFeatureDetail/index.tsx",
-      "require": "./src/BaseFeatureWidget/BaseFeatureDetail/index.tsx"
-    },
-    "./BaseFeatureWidget/BaseFeatureDetail/Attributes": {
-      "import": "./src/BaseFeatureWidget/BaseFeatureDetail/Attributes.tsx",
-      "require": "./src/BaseFeatureWidget/BaseFeatureDetail/Attributes.tsx"
-    },
-    "./BaseFeatureWidget/BaseFeatureDetail/BaseCard": {
-      "import": "./src/BaseFeatureWidget/BaseFeatureDetail/BaseCard.tsx",
-      "require": "./src/BaseFeatureWidget/BaseFeatureDetail/BaseCard.tsx"
-    },
-    "./BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": {
-      "import": "./src/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.tsx",
-      "require": "./src/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.tsx"
-    },
-    "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": {
-      "import": "./src/BaseFeatureWidget/BaseFeatureDetail/SimpleField.tsx",
-      "require": "./src/BaseFeatureWidget/BaseFeatureDetail/SimpleField.tsx"
-    },
-    "./Plugin": {
-      "import": "./src/Plugin.ts",
-      "require": "./src/Plugin.ts"
-    },
-    "./PluginLoader": {
-      "import": "./src/PluginLoader.ts",
-      "require": "./src/PluginLoader.ts"
-    },
-    "./PluginManager": {
-      "import": "./src/PluginManager.ts",
-      "require": "./src/PluginManager.ts"
-    },
-    "./TextSearch/BaseResults": {
-      "import": "./src/TextSearch/BaseResults.ts",
-      "require": "./src/TextSearch/BaseResults.ts"
-    },
-    "./TextSearch/TextSearchManager": {
-      "import": "./src/TextSearch/TextSearchManager.ts",
-      "require": "./src/TextSearch/TextSearchManager.ts"
-    },
-    "./assemblyManager": {
-      "import": "./src/assemblyManager/index.ts",
-      "require": "./src/assemblyManager/index.ts"
-    },
-    "./assemblyManager/assembly": {
-      "import": "./src/assemblyManager/assembly.ts",
-      "require": "./src/assemblyManager/assembly.ts"
-    },
-    "./assemblyManager/assemblyConfigSchema": {
-      "import": "./src/assemblyManager/assemblyConfigSchema.ts",
-      "require": "./src/assemblyManager/assemblyConfigSchema.ts"
-    },
-    "./configuration": {
-      "import": "./src/configuration/index.ts",
-      "require": "./src/configuration/index.ts"
-    },
-    "./data_adapters/BaseAdapter": {
-      "import": "./src/data_adapters/BaseAdapter/index.ts",
-      "require": "./src/data_adapters/BaseAdapter/index.ts"
-    },
-    "./data_adapters/BaseAdapter/BaseOptions": {
-      "import": "./src/data_adapters/BaseAdapter/BaseOptions.ts",
-      "require": "./src/data_adapters/BaseAdapter/BaseOptions.ts"
-    },
-    "./data_adapters/BaseAdapter/stats": {
-      "import": "./src/data_adapters/BaseAdapter/stats.ts",
-      "require": "./src/data_adapters/BaseAdapter/stats.ts"
-    },
-    "./data_adapters/dataAdapterCache": {
-      "import": "./src/data_adapters/dataAdapterCache.ts",
-      "require": "./src/data_adapters/dataAdapterCache.ts"
-    },
-    "./pluggableElementTypes": {
-      "import": "./src/pluggableElementTypes/index.ts",
-      "require": "./src/pluggableElementTypes/index.ts"
-    },
-    "./pluggableElementTypes/AdapterType": {
-      "import": "./src/pluggableElementTypes/AdapterType.ts",
-      "require": "./src/pluggableElementTypes/AdapterType.ts"
-    },
-    "./pluggableElementTypes/ConnectionType": {
-      "import": "./src/pluggableElementTypes/ConnectionType.ts",
-      "require": "./src/pluggableElementTypes/ConnectionType.ts"
-    },
-    "./pluggableElementTypes/DisplayType": {
-      "import": "./src/pluggableElementTypes/DisplayType.ts",
-      "require": "./src/pluggableElementTypes/DisplayType.ts"
-    },
-    "./pluggableElementTypes/GlyphType": {
-      "import": "./src/pluggableElementTypes/GlyphType.ts",
-      "require": "./src/pluggableElementTypes/GlyphType.ts"
-    },
-    "./pluggableElementTypes/InternetAccountType": {
-      "import": "./src/pluggableElementTypes/InternetAccountType.ts",
-      "require": "./src/pluggableElementTypes/InternetAccountType.ts"
-    },
-    "./pluggableElementTypes/RpcMethodType": {
-      "import": "./src/pluggableElementTypes/RpcMethodType.ts",
-      "require": "./src/pluggableElementTypes/RpcMethodType.ts"
-    },
-    "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": {
-      "import": "./src/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.ts",
-      "require": "./src/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.ts"
-    },
-    "./pluggableElementTypes/TextSearchAdapterType": {
-      "import": "./src/pluggableElementTypes/TextSearchAdapterType.ts",
-      "require": "./src/pluggableElementTypes/TextSearchAdapterType.ts"
-    },
-    "./pluggableElementTypes/TrackType": {
-      "import": "./src/pluggableElementTypes/TrackType.ts",
-      "require": "./src/pluggableElementTypes/TrackType.ts"
-    },
-    "./pluggableElementTypes/ViewType": {
-      "import": "./src/pluggableElementTypes/ViewType.ts",
-      "require": "./src/pluggableElementTypes/ViewType.ts"
-    },
-    "./pluggableElementTypes/WidgetType": {
-      "import": "./src/pluggableElementTypes/WidgetType.ts",
-      "require": "./src/pluggableElementTypes/WidgetType.ts"
-    },
-    "./pluggableElementTypes/models": {
-      "import": "./src/pluggableElementTypes/models/index.ts",
-      "require": "./src/pluggableElementTypes/models/index.ts"
-    },
-    "./pluggableElementTypes/models/BaseViewModel": {
-      "import": "./src/pluggableElementTypes/models/BaseViewModel.ts",
-      "require": "./src/pluggableElementTypes/models/BaseViewModel.ts"
-    },
-    "./pluggableElementTypes/models/baseConnectionConfig": {
-      "import": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
-      "require": "./src/pluggableElementTypes/models/baseConnectionConfig.ts"
-    },
-    "./pluggableElementTypes/renderers/BoxRendererType": {
-      "import": "./src/pluggableElementTypes/renderers/BoxRendererType.ts",
-      "require": "./src/pluggableElementTypes/renderers/BoxRendererType.ts"
-    },
-    "./pluggableElementTypes/renderers/CircularChordRendererType": {
-      "import": "./src/pluggableElementTypes/renderers/CircularChordRendererType.tsx",
-      "require": "./src/pluggableElementTypes/renderers/CircularChordRendererType.tsx"
-    },
-    "./pluggableElementTypes/renderers/FeatureRendererType": {
-      "import": "./src/pluggableElementTypes/renderers/FeatureRendererType.ts",
-      "require": "./src/pluggableElementTypes/renderers/FeatureRendererType.ts"
-    },
-    "./pluggableElementTypes/renderers/LayoutSession": {
-      "import": "./src/pluggableElementTypes/renderers/LayoutSession.ts",
-      "require": "./src/pluggableElementTypes/renderers/LayoutSession.ts"
-    },
-    "./pluggableElementTypes/renderers/RendererType": {
-      "import": "./src/pluggableElementTypes/renderers/RendererType.tsx",
-      "require": "./src/pluggableElementTypes/renderers/RendererType.tsx"
-    },
-    "./pluggableElementTypes/renderers/ServerSideRendererType": {
-      "import": "./src/pluggableElementTypes/renderers/ServerSideRendererType.tsx",
-      "require": "./src/pluggableElementTypes/renderers/ServerSideRendererType.tsx"
-    },
-    "./pluggableElementTypes/renderers/util": {
-      "import": "./src/pluggableElementTypes/renderers/util.ts",
-      "require": "./src/pluggableElementTypes/renderers/util.ts"
-    },
-    "./pluggableElementTypes/renderers/util/serializableFilterChain": {
-      "import": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
-      "require": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts"
-    },
-    "./rpc/RpcManager": {
-      "import": "./src/rpc/RpcManager.ts",
-      "require": "./src/rpc/RpcManager.ts"
-    },
-    "./rpc/coreRpcMethods": {
-      "import": "./src/rpc/coreRpcMethods.ts",
-      "require": "./src/rpc/coreRpcMethods.ts"
-    },
-    "./rpc/methods/util": {
-      "import": "./src/rpc/methods/util.ts",
-      "require": "./src/rpc/methods/util.ts"
-    },
-    "./ui": {
-      "import": "./src/ui/index.ts",
-      "require": "./src/ui/index.ts"
-    },
-    "./ui/AppLogo": {
-      "import": "./src/ui/AppLogo.tsx",
-      "require": "./src/ui/AppLogo.tsx"
-    },
-    "./ui/BaseTooltip": {
-      "import": "./src/ui/BaseTooltip.tsx",
-      "require": "./src/ui/BaseTooltip.tsx"
-    },
-    "./ui/CascadingMenuButton": {
-      "import": "./src/ui/CascadingMenuButton.tsx",
-      "require": "./src/ui/CascadingMenuButton.tsx"
-    },
-    "./ui/ColorPicker": {
-      "import": "./src/ui/ColorPicker.tsx",
-      "require": "./src/ui/ColorPicker.tsx"
-    },
-    "./ui/ConfirmDialog": {
-      "import": "./src/ui/ConfirmDialog.tsx",
-      "require": "./src/ui/ConfirmDialog.tsx"
-    },
-    "./ui/DataGridFlexContainer": {
-      "import": "./src/ui/DataGridFlexContainer.tsx",
-      "require": "./src/ui/DataGridFlexContainer.tsx"
-    },
-    "./ui/Dialog": {
-      "import": "./src/ui/Dialog.tsx",
-      "require": "./src/ui/Dialog.tsx"
-    },
-    "./ui/DraggableDialog": {
-      "import": "./src/ui/DraggableDialog.tsx",
-      "require": "./src/ui/DraggableDialog.tsx"
-    },
-    "./ui/DropDownMenu": {
-      "import": "./src/ui/DropDownMenu.tsx",
-      "require": "./src/ui/DropDownMenu.tsx"
-    },
-    "./ui/EditableTypography": {
-      "import": "./src/ui/EditableTypography.tsx",
-      "require": "./src/ui/EditableTypography.tsx"
-    },
-    "./ui/ErrorBoundary": {
-      "import": "./src/ui/ErrorBoundary.tsx",
-      "require": "./src/ui/ErrorBoundary.tsx"
-    },
-    "./ui/ErrorMessage": {
-      "import": "./src/ui/ErrorMessage.tsx",
-      "require": "./src/ui/ErrorMessage.tsx"
-    },
-    "./ui/ErrorMessageStackTraceDialog": {
-      "import": "./src/ui/ErrorMessageStackTraceDialog.tsx",
-      "require": "./src/ui/ErrorMessageStackTraceDialog.tsx"
-    },
-    "./ui/Icons": {
-      "import": "./src/ui/Icons.tsx",
-      "require": "./src/ui/Icons.tsx"
-    },
-    "./ui/LoadingEllipses": {
-      "import": "./src/ui/LoadingEllipses.tsx",
-      "require": "./src/ui/LoadingEllipses.tsx"
-    },
-    "./ui/Logo": {
-      "import": "./src/ui/Logo.tsx",
-      "require": "./src/ui/Logo.tsx"
-    },
-    "./ui/Menu": {
-      "import": "./src/ui/Menu.tsx",
-      "require": "./src/ui/Menu.tsx"
-    },
-    "./ui/ResizeHandle": {
-      "import": "./src/ui/ResizeHandle.tsx",
-      "require": "./src/ui/ResizeHandle.tsx"
-    },
-    "./ui/SanitizedHTML": {
-      "import": "./src/ui/SanitizedHTML.tsx",
-      "require": "./src/ui/SanitizedHTML.tsx"
-    },
-    "./ui/Snackbar": {
-      "import": "./src/ui/Snackbar.tsx",
-      "require": "./src/ui/Snackbar.tsx"
-    },
-    "./ui/SnackbarModel": {
-      "import": "./src/ui/SnackbarModel.tsx",
-      "require": "./src/ui/SnackbarModel.tsx"
-    },
-    "./ui/colors": {
-      "import": "./src/ui/colors.ts",
-      "require": "./src/ui/colors.ts"
-    },
-    "./ui/theme": {
-      "import": "./src/ui/theme.ts",
-      "require": "./src/ui/theme.ts"
-    },
-    "./util": {
-      "import": "./src/util/index.ts",
-      "require": "./src/util/index.ts"
-    },
-    "./util/Base1DUtils": {
-      "import": "./src/util/Base1DUtils.ts",
-      "require": "./src/util/Base1DUtils.ts"
-    },
-    "./util/Base1DViewModel": {
-      "import": "./src/util/Base1DViewModel.ts",
-      "require": "./src/util/Base1DViewModel.ts"
-    },
-    "./util/QuickLRU": {
-      "import": "./src/util/QuickLRU/index.ts",
-      "require": "./src/util/QuickLRU/index.ts"
-    },
-    "./util/TimeTraveller": {
-      "import": "./src/util/TimeTraveller.ts",
-      "require": "./src/util/TimeTraveller.ts"
-    },
-    "./util/aborting": {
-      "import": "./src/util/aborting.ts",
-      "require": "./src/util/aborting.ts"
-    },
-    "./util/analytics": {
-      "import": "./src/util/analytics.ts",
-      "require": "./src/util/analytics.ts"
-    },
-    "./util/blockTypes": {
-      "import": "./src/util/blockTypes.ts",
-      "require": "./src/util/blockTypes.ts"
-    },
-    "./util/calculateDynamicBlocks": {
-      "import": "./src/util/calculateDynamicBlocks.ts",
-      "require": "./src/util/calculateDynamicBlocks.ts"
-    },
-    "./util/calculateStaticBlocks": {
-      "import": "./src/util/calculateStaticBlocks.ts",
-      "require": "./src/util/calculateStaticBlocks.ts"
-    },
-    "./util/color": {
-      "import": "./src/util/color/index.ts",
-      "require": "./src/util/color/index.ts"
-    },
-    "./util/colord": {
-      "import": "./src/util/colord.ts",
-      "require": "./src/util/colord.ts"
-    },
-    "./util/compositeMap": {
-      "import": "./src/util/compositeMap.ts",
-      "require": "./src/util/compositeMap.ts"
-    },
-    "./util/convertCodingSequenceToPeptides": {
-      "import": "./src/util/convertCodingSequenceToPeptides.ts",
-      "require": "./src/util/convertCodingSequenceToPeptides.ts"
-    },
-    "./util/flatbush": {
-      "import": "./src/util/flatbush/index.ts",
-      "require": "./src/util/flatbush/index.ts"
-    },
-    "./util/formatFastaStrings": {
-      "import": "./src/util/formatFastaStrings.ts",
-      "require": "./src/util/formatFastaStrings.ts"
-    },
-    "./util/io": {
-      "import": "./src/util/io/index.ts",
-      "require": "./src/util/io/index.ts"
-    },
-    "./util/io/RemoteFileWithRangeCache": {
-      "import": "./src/util/io/RemoteFileWithRangeCache.ts",
-      "require": "./src/util/io/RemoteFileWithRangeCache.ts"
-    },
-    "./util/jexlStrings": {
-      "import": "./src/util/jexlStrings.ts",
-      "require": "./src/util/jexlStrings.ts"
-    },
-    "./util/layouts": {
-      "import": "./src/util/layouts/index.ts",
-      "require": "./src/util/layouts/index.ts"
-    },
-    "./util/layouts/BaseLayout": {
-      "import": "./src/util/layouts/BaseLayout.ts",
-      "require": "./src/util/layouts/BaseLayout.ts"
-    },
-    "./util/layouts/GranularRectLayout": {
-      "import": "./src/util/layouts/GranularRectLayout.ts",
-      "require": "./src/util/layouts/GranularRectLayout.ts"
-    },
-    "./util/librpc": {
-      "import": "./src/util/librpc.ts",
-      "require": "./src/util/librpc.ts"
-    },
-    "./util/mst-reflection": {
-      "import": "./src/util/mst-reflection.ts",
-      "require": "./src/util/mst-reflection.ts"
-    },
-    "./util/nanoid": {
-      "import": "./src/util/nanoid.js",
-      "require": "./src/util/nanoid.js"
-    },
-    "./util/offscreenCanvasPonyfill": {
-      "import": "./src/util/offscreenCanvasPonyfill.tsx",
-      "require": "./src/util/offscreenCanvasPonyfill.tsx"
-    },
-    "./util/offscreenCanvasUtils": {
-      "import": "./src/util/offscreenCanvasUtils.tsx",
-      "require": "./src/util/offscreenCanvasUtils.tsx"
-    },
-    "./util/parseLineByLine": {
-      "import": "./src/util/parseLineByLine.ts",
-      "require": "./src/util/parseLineByLine.ts"
-    },
-    "./util/range": {
-      "import": "./src/util/range.ts",
-      "require": "./src/util/range.ts"
-    },
-    "./util/rxjs": {
-      "import": "./src/util/rxjs.ts",
-      "require": "./src/util/rxjs.ts"
-    },
-    "./util/simpleFeature": {
-      "import": "./src/util/simpleFeature.ts",
-      "require": "./src/util/simpleFeature.ts"
-    },
-    "./util/stats": {
-      "import": "./src/util/stats.ts",
-      "require": "./src/util/stats.ts"
-    },
-    "./util/stopToken": {
-      "import": "./src/util/stopToken.ts",
-      "require": "./src/util/stopToken.ts"
-    },
-    "./util/tracks": {
-      "import": "./src/util/tracks.ts",
-      "require": "./src/util/tracks.ts"
-    },
-    "./util/tss-react": {
-      "import": "./src/util/tss-react/index.ts",
-      "require": "./src/util/tss-react/index.ts"
-    },
-    "./util/types": {
-      "import": "./src/util/types/index.ts",
-      "require": "./src/util/types/index.ts"
-    },
-    "./util/types/mst": {
-      "import": "./src/util/types/mst.ts",
-      "require": "./src/util/types/mst.ts"
-    },
-    "./util/useMeasure": {
-      "import": "./src/util/useMeasure.ts",
-      "require": "./src/util/useMeasure.ts"
-    },
-    "./ui/ReturnToImportFormDialog": {
-      "import": "./src/ui/ReturnToImportFormDialog.tsx",
-      "require": "./src/ui/ReturnToImportFormDialog.tsx"
-    }
+    ".": "./src/index.ts",
+    "./BaseFeatureWidget": "./src/BaseFeatureWidget/index.ts",
+    "./BaseFeatureWidget/BaseFeatureDetail": "./src/BaseFeatureWidget/BaseFeatureDetail/index.tsx",
+    "./BaseFeatureWidget/BaseFeatureDetail/Attributes": "./src/BaseFeatureWidget/BaseFeatureDetail/Attributes.tsx",
+    "./BaseFeatureWidget/BaseFeatureDetail/BaseCard": "./src/BaseFeatureWidget/BaseFeatureDetail/BaseCard.tsx",
+    "./BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": "./src/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.tsx",
+    "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": "./src/BaseFeatureWidget/BaseFeatureDetail/SimpleField.tsx",
+    "./Plugin": "./src/Plugin.ts",
+    "./PluginLoader": "./src/PluginLoader.ts",
+    "./PluginManager": "./src/PluginManager.ts",
+    "./TextSearch/BaseResults": "./src/TextSearch/BaseResults.ts",
+    "./TextSearch/TextSearchManager": "./src/TextSearch/TextSearchManager.ts",
+    "./assemblyManager": "./src/assemblyManager/index.ts",
+    "./assemblyManager/assembly": "./src/assemblyManager/assembly.ts",
+    "./assemblyManager/assemblyConfigSchema": "./src/assemblyManager/assemblyConfigSchema.ts",
+    "./configuration": "./src/configuration/index.ts",
+    "./data_adapters/BaseAdapter": "./src/data_adapters/BaseAdapter/index.ts",
+    "./data_adapters/BaseAdapter/BaseOptions": "./src/data_adapters/BaseAdapter/BaseOptions.ts",
+    "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
+    "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
+    "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
+    "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
+    "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
+    "./pluggableElementTypes/DisplayType": "./src/pluggableElementTypes/DisplayType.ts",
+    "./pluggableElementTypes/GlyphType": "./src/pluggableElementTypes/GlyphType.ts",
+    "./pluggableElementTypes/InternetAccountType": "./src/pluggableElementTypes/InternetAccountType.ts",
+    "./pluggableElementTypes/RpcMethodType": "./src/pluggableElementTypes/RpcMethodType.ts",
+    "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": "./src/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.ts",
+    "./pluggableElementTypes/TextSearchAdapterType": "./src/pluggableElementTypes/TextSearchAdapterType.ts",
+    "./pluggableElementTypes/TrackType": "./src/pluggableElementTypes/TrackType.ts",
+    "./pluggableElementTypes/ViewType": "./src/pluggableElementTypes/ViewType.ts",
+    "./pluggableElementTypes/WidgetType": "./src/pluggableElementTypes/WidgetType.ts",
+    "./pluggableElementTypes/models": "./src/pluggableElementTypes/models/index.ts",
+    "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
+    "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
+    "./pluggableElementTypes/renderers/BoxRendererType": "./src/pluggableElementTypes/renderers/BoxRendererType.ts",
+    "./pluggableElementTypes/renderers/CircularChordRendererType": "./src/pluggableElementTypes/renderers/CircularChordRendererType.tsx",
+    "./pluggableElementTypes/renderers/FeatureRendererType": "./src/pluggableElementTypes/renderers/FeatureRendererType.ts",
+    "./pluggableElementTypes/renderers/LayoutSession": "./src/pluggableElementTypes/renderers/LayoutSession.ts",
+    "./pluggableElementTypes/renderers/RendererType": "./src/pluggableElementTypes/renderers/RendererType.tsx",
+    "./pluggableElementTypes/renderers/ServerSideRendererType": "./src/pluggableElementTypes/renderers/ServerSideRendererType.tsx",
+    "./pluggableElementTypes/renderers/util": "./src/pluggableElementTypes/renderers/util.ts",
+    "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
+    "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
+    "./rpc/coreRpcMethods": "./src/rpc/coreRpcMethods.ts",
+    "./rpc/methods/util": "./src/rpc/methods/util.ts",
+    "./ui": "./src/ui/index.ts",
+    "./ui/AppLogo": "./src/ui/AppLogo.tsx",
+    "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
+    "./ui/CascadingMenuButton": "./src/ui/CascadingMenuButton.tsx",
+    "./ui/ColorPicker": "./src/ui/ColorPicker.tsx",
+    "./ui/ConfirmDialog": "./src/ui/ConfirmDialog.tsx",
+    "./ui/DataGridFlexContainer": "./src/ui/DataGridFlexContainer.tsx",
+    "./ui/Dialog": "./src/ui/Dialog.tsx",
+    "./ui/DraggableDialog": "./src/ui/DraggableDialog.tsx",
+    "./ui/DropDownMenu": "./src/ui/DropDownMenu.tsx",
+    "./ui/EditableTypography": "./src/ui/EditableTypography.tsx",
+    "./ui/ErrorBoundary": "./src/ui/ErrorBoundary.tsx",
+    "./ui/ErrorMessage": "./src/ui/ErrorMessage.tsx",
+    "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
+    "./ui/Icons": "./src/ui/Icons.tsx",
+    "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
+    "./ui/Logo": "./src/ui/Logo.tsx",
+    "./ui/Menu": "./src/ui/Menu.tsx",
+    "./ui/ResizeHandle": "./src/ui/ResizeHandle.tsx",
+    "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
+    "./ui/Snackbar": "./src/ui/Snackbar.tsx",
+    "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
+    "./ui/colors": "./src/ui/colors.ts",
+    "./ui/theme": "./src/ui/theme.ts",
+    "./util": "./src/util/index.ts",
+    "./util/Base1DUtils": "./src/util/Base1DUtils.ts",
+    "./util/Base1DViewModel": "./src/util/Base1DViewModel.ts",
+    "./util/QuickLRU": "./src/util/QuickLRU/index.ts",
+    "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
+    "./util/aborting": "./src/util/aborting.ts",
+    "./util/analytics": "./src/util/analytics.ts",
+    "./util/blockTypes": "./src/util/blockTypes.ts",
+    "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
+    "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
+    "./util/color": "./src/util/color/index.ts",
+    "./util/colord": "./src/util/colord.ts",
+    "./util/compositeMap": "./src/util/compositeMap.ts",
+    "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
+    "./util/flatbush": "./src/util/flatbush/index.ts",
+    "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
+    "./util/io": "./src/util/io/index.ts",
+    "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
+    "./util/jexlStrings": "./src/util/jexlStrings.ts",
+    "./util/layouts": "./src/util/layouts/index.ts",
+    "./util/layouts/BaseLayout": "./src/util/layouts/BaseLayout.ts",
+    "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
+    "./util/librpc": "./src/util/librpc.ts",
+    "./util/mst-reflection": "./src/util/mst-reflection.ts",
+    "./util/nanoid": "./src/util/nanoid.js",
+    "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.tsx",
+    "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
+    "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
+    "./util/range": "./src/util/range.ts",
+    "./util/rxjs": "./src/util/rxjs.ts",
+    "./util/simpleFeature": "./src/util/simpleFeature.ts",
+    "./util/stats": "./src/util/stats.ts",
+    "./util/stopToken": "./src/util/stopToken.ts",
+    "./util/tracks": "./src/util/tracks.ts",
+    "./util/tss-react": "./src/util/tss-react/index.ts",
+    "./util/types": "./src/util/types/index.ts",
+    "./util/types/mst": "./src/util/types/mst.ts",
+    "./util/useMeasure": "./src/util/useMeasure.ts",
+    "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx"
   },
   "files": [
     "dist",

@@ -4,7 +4,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
-import type { MultiRegionContactRecord } from '../HicAdapter/HicAdapter'
+import type { MultiRegionContactRecord } from '../HicAdapter/HicAdapter.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RenderArgsDeserialized as ServerSideRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
@@ -52,7 +52,7 @@ export default class HicRenderer extends ServerSideRendererType {
     const features = await this.getFeatures(renderProps)
     const yScalar = height / Math.max(height, hyp)
 
-    const { makeImageData } = await import('./makeImageData')
+    const { makeImageData } = await import('./makeImageData.ts')
 
     const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       makeImageData(ctx, {

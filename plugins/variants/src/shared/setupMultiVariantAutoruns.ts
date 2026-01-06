@@ -1,8 +1,8 @@
-import { getMultiVariantFeaturesAutorun } from './getMultiVariantFeaturesAutorun'
-import { getMultiVariantSourcesAutorun } from './getMultiVariantSourcesAutorun'
-import { setupTreeDrawingAutorun } from './treeDrawingAutorun'
+import { getMultiVariantFeaturesAutorun } from './getMultiVariantFeaturesAutorun.ts'
+import { getMultiVariantSourcesAutorun } from './getMultiVariantSourcesAutorun.ts'
+import { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
 
-import type { MultiVariantBaseModel } from './MultiVariantBaseModel'
+import type { MultiVariantBaseModel } from './MultiVariantBaseModel.ts'
 
 /**
  * Sets up the autoruns for multi-variant displays.

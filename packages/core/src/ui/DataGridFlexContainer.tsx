@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 
-import { makeStyles } from '../util/tss-react'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 const useStyles = makeStyles()({
   flexContainer: {

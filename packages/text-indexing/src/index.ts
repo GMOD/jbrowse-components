@@ -1,6 +1,6 @@
-export * from './util'
-export * from './types/common'
+export * from './util.ts'
+export * from './types/common.ts'
 
-export { indexTracks } from './TextIndexing'
-export { indexGff3 } from './types/gff3Adapter'
-export { indexVcf } from './types/vcfAdapter'
+export { indexTracks } from './TextIndexing.ts'
+export { indexGff3 } from './types/gff3Adapter.ts'
+export { indexVcf } from './types/vcfAdapter.ts'

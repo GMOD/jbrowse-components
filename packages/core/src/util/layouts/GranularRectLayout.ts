@@ -3,7 +3,7 @@ import type {
   RectTuple,
   Rectangle,
   SerializedLayout,
-} from './BaseLayout'
+} from './BaseLayout.ts'
 
 /**
  * See https://github.com/cmdcolin/track_layout_benchmark for information on

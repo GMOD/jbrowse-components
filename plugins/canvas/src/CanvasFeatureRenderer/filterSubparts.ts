@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 
-import { isUTR } from './util'
+import { isUTR } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

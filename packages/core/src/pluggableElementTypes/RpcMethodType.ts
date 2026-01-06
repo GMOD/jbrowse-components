@@ -1,16 +1,16 @@
-import PluggableElementBase from './PluggableElementBase'
-import mapObject from '../util/map-obj'
-import { isRpcResult } from '../util/rpc'
-import { getBlobMap, setBlobMap } from '../util/tracks'
+import PluggableElementBase from './PluggableElementBase.ts'
+import mapObject from '../util/map-obj/index.js'
+import { isRpcResult } from '../util/rpc.ts'
+import { getBlobMap, setBlobMap } from '../util/tracks.ts'
 import {
   RetryError,
   isAppRootModel,
   isAuthNeededException,
   isUriLocation,
-} from '../util/types'
+} from '../util/types/index.ts'
 
-import type PluginManager from '../PluginManager'
-import type { UriLocation } from '../util/types'
+import type PluginManager from '../PluginManager.ts'
+import type { UriLocation } from '../util/types/index.ts'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 

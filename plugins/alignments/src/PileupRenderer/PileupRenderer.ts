@@ -5,10 +5,10 @@ import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
-import { PileupLayoutSession } from './PileupLayoutSession'
+import { PileupLayoutSession } from './PileupLayoutSession.ts'
 
-import type { PileupLayoutSessionProps } from './PileupLayoutSession'
-import type { RenderArgsDeserialized } from './types'
+import type { PileupLayoutSessionProps } from './PileupLayoutSession.ts'
+import type { RenderArgsDeserialized } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
 
 export default class PileupRenderer extends BoxRendererType {
@@ -29,7 +29,7 @@ export default class PileupRenderer extends BoxRendererType {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
 
-    const { makeImageData } = await import('./makeImageData')
+    const { makeImageData } = await import('./makeImageData.ts')
     const { result, height, featureNames } = await updateStatus(
       'Rendering alignments',
       statusCallback,

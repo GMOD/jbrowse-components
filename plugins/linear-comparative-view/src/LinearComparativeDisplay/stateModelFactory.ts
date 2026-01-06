@@ -13,7 +13,7 @@ import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
-import type { LinearComparativeViewModel } from '../LinearComparativeView/model'
+import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'

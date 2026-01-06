@@ -12,8 +12,12 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
-import type { CircularViewModel } from '../model'
-import type { Slice, SliceElidedRegion, SliceNonElidedRegion } from '../slices'
+import type { CircularViewModel } from '../model.ts'
+import type {
+  Slice,
+  SliceElidedRegion,
+  SliceNonElidedRegion,
+} from '../slices.ts'
 
 const useStyles = makeStyles()({
   rulerLabel: {

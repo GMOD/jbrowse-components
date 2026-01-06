@@ -1,12 +1,15 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import { ConfigurationSchema, readConfObject } from '../../configuration'
-import idMaker from '../../util/idMaker'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '../../configuration/index.ts'
+import idMaker from '../../util/idMaker.ts'
 
-import type PluginManager from '../../PluginManager'
-import type { AnyConfigurationModel } from '../../configuration'
-import type { AugmentedRegion as Region } from '../../util/types'
-import type { getSubAdapterType } from '../dataAdapterCache'
+import type PluginManager from '../../PluginManager.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type { AugmentedRegion as Region } from '../../util/types/index.ts'
+import type { getSubAdapterType } from '../dataAdapterCache.ts'
 
 const EmptyConfig = ConfigurationSchema('empty', {})
 

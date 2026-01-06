@@ -1,6 +1,6 @@
 import { Jexl } from '@jbrowse/jexl'
 
-import type { Feature } from './simpleFeature'
+import type { Feature } from './simpleFeature.ts'
 
 export default function JexlF(/* config?: any*/) {
   const j = new Jexl()

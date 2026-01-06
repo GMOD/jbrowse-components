@@ -1,4 +1,4 @@
-import SerializableFilterChain from './serializableFilterChain'
+import SerializableFilterChain from './serializableFilterChain.ts'
 
 test('one', () => {
   const c = new SerializableFilterChain({

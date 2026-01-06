@@ -1,4 +1,4 @@
-import type { RenderConfigContext } from './renderConfig'
+import type { RenderConfigContext } from './renderConfig.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'

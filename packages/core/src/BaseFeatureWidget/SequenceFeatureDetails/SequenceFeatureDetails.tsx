@@ -3,18 +3,18 @@ import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { ErrorMessage, LoadingEllipses } from '../../ui'
-import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu'
-import SequenceTypeSelector from './dialogs/SequenceTypeSelector'
-import { SimpleFeature, getSession } from '../../util'
-import { useFeatureSequence } from '../../util/useFeatureSequence'
+import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
+import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
+import { ErrorMessage, LoadingEllipses } from '../../ui/index.ts'
+import { SimpleFeature, getSession } from '../../util/index.ts'
+import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
 
-import type { SimpleFeatureSerialized } from '../../util'
-import type { BaseFeatureWidgetModel } from '../stateModelFactory'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
 
 // lazies
-const SequencePanel = lazy(() => import('./SequencePanel'))
-const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog'))
+const SequencePanel = lazy(() => import('./SequencePanel.tsx'))
+const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog.tsx'))
 
 // set the key on this component to feature.id to clear state after new feature
 // is selected

@@ -5,10 +5,10 @@ import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ShareButton from './ShareButton'
-import { readQueryParams, setQueryParams } from '../useQueryParam'
+import ShareButton from './ShareButton.tsx'
+import { readQueryParams, setQueryParams } from '../useQueryParam.ts'
 
-import type { WebSessionModel } from '../sessionModel'
+import type { WebSessionModel } from '../sessionModel/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const JBrowse = observer(function JBrowse({

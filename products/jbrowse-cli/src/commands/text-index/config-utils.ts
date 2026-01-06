@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { supported } from '../../types/common'
+import { supported } from '../../types/common.ts'
 
-import type { Config, Track } from '../../base'
+import type { Config, Track } from '../../base.ts'
 
 /**
  * Parses a comma-separated string into an array of trimmed, non-empty strings

@@ -1,4 +1,4 @@
-import type { LinearGenomeViewModel } from '../LinearGenomeView'
+import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

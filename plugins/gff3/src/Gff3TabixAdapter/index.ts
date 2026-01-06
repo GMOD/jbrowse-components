@@ -1,6 +1,6 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -12,7 +12,7 @@ export default function Gff3TabixAdapterF(pluginManager: PluginManager) {
         displayName: 'GFF3 tabix adapter',
         configSchema,
         getAdapterClass: () =>
-          import('./Gff3TabixAdapter').then(r => r.default),
+          import('./Gff3TabixAdapter.ts').then(r => r.default),
       }),
   )
 }

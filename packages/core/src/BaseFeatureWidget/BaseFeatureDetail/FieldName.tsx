@@ -1,6 +1,6 @@
 import { Tooltip } from '@mui/material'
 
-import { cx, makeStyles } from '../../util/tss-react'
+import { cx, makeStyles } from '../../util/tss-react/index.ts'
 
 const useStyles = makeStyles()(theme => ({
   fieldDescription: {

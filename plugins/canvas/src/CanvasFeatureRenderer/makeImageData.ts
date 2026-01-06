@@ -7,17 +7,20 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { drawFeature } from './drawFeature'
-import { buildChildrenIndex, convertToCanvasCoords } from './layout/layoutUtils'
+import { drawFeature } from './drawFeature.ts'
+import {
+  buildChildrenIndex,
+  convertToCanvasCoords,
+} from './layout/layoutUtils.ts'
 
-import type { RenderConfigContext } from './renderConfig'
+import type { RenderConfigContext } from './renderConfig.ts'
 import type {
   DrawContext,
   FlatbushItem,
   LayoutRecord,
   RenderArgs,
   SubfeatureInfo,
-} from './types'
+} from './types.ts'
 
 function buildFlatbush(coords: number[], count: number) {
   const fb = new Flatbush(Math.max(count, 1))

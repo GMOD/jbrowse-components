@@ -1,9 +1,9 @@
 import { FileSelector } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import SwapAssemblies from './SwapAssemblies'
+import SwapAssemblies from './SwapAssemblies.tsx'
 
-import type { SelectorProps } from './SelectorTypes'
+import type { SelectorProps } from './SelectorTypes.ts'
 
 /**
  * Component for selecting PIF.GZ format files and their indexes

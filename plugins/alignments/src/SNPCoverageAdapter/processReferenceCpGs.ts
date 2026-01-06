@@ -1,12 +1,12 @@
-import { parseCigar2 } from '../MismatchParser'
-import { createEmptyBin, incWithProbabilities } from './util'
-import { getMethBins } from '../ModificationParser/getMethBins'
-import { DELETION_TYPE } from '../shared/forEachMismatchTypes'
+import { createEmptyBin, incWithProbabilities } from './util.ts'
+import { parseCigar2 } from '../MismatchParser/index.ts'
+import { getMethBins } from '../ModificationParser/getMethBins.ts'
+import { DELETION_TYPE } from '../shared/forEachMismatchTypes.ts'
 
 import type {
   FeatureWithMismatchIterator,
   PreBaseCoverageBin,
-} from '../shared/types'
+} from '../shared/types.ts'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 function processCpG(

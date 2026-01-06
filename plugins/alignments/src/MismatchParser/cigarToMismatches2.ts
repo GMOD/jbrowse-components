@@ -7,9 +7,9 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../PileupRenderer/renderers/cigarUtil'
+} from '../PileupRenderer/renderers/cigarUtil.ts'
 
-import type { Mismatch } from '../shared/types'
+import type { Mismatch } from '../shared/types.ts'
 
 // Handles packed NUMERIC_CIGAR format from @gmod/bam
 // Format: Uint32Array where each value is (length << 4) | opIndex

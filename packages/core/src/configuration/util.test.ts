@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { ConfigurationSchema } from './configurationSchema'
-import { getTypeNamesFromExplicitlyTypedUnion } from './util'
+import { ConfigurationSchema } from './configurationSchema.ts'
+import { getTypeNamesFromExplicitlyTypedUnion } from './util.ts'
 
 describe('getTypeNamesFromExplicitlyTypedUnion', () => {
   test('regular config schemas', () => {

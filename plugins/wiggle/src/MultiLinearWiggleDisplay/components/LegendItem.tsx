@@ -1,7 +1,7 @@
-import RectBg from './RectBg'
+import RectBg from './RectBg.tsx'
 
-import type { MinimalModel } from './types'
-import type { Source } from '../../util'
+import type { MinimalModel } from './types.ts'
+import type { Source } from '../../util.ts'
 
 const LegendItem = function ({
   source,

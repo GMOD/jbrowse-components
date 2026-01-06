@@ -4,10 +4,10 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { calculateFloatingLabelPosition } from './util'
+import { calculateFloatingLabelPosition } from './util.ts'
 
-import type { FeatureTrackModel } from '../../LinearBasicDisplay/model'
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { FeatureTrackModel } from '../../LinearBasicDisplay/model.ts'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 
 const useStyles = makeStyles()({
   // Full-size overlay container for floating labels

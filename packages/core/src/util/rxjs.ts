@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 
-import type { StopToken } from './stopToken'
+import type { StopToken } from './stopToken.ts'
 import type { Observer } from 'rxjs'
 
 /**

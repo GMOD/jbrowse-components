@@ -1,7 +1,7 @@
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Dialog from './Dialog'
+import Dialog from './Dialog.tsx'
 
 import type { DialogProps } from '@mui/material'
 

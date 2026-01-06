@@ -3,7 +3,7 @@ import { forwardRef, useState } from 'react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
 
-import { makeStyles } from '../util/tss-react'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { TypographyProps } from '@mui/material'
 

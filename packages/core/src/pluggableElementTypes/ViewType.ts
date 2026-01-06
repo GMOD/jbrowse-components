@@ -1,8 +1,8 @@
 import type React from 'react'
 
-import PluggableElementBase from './PluggableElementBase'
+import PluggableElementBase from './PluggableElementBase.ts'
 
-import type DisplayType from './DisplayType'
+import type DisplayType from './DisplayType.ts'
 import type { IAnyModelType, IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 type BasicView = React.ComponentType<{

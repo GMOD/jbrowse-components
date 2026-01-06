@@ -6,9 +6,9 @@ import {
   Typography,
 } from '@mui/material'
 
-import { makeStyles } from '../../util/tss-react'
+import { makeStyles } from '../../util/tss-react/index.ts'
 
-import type { BaseCardProps } from '../types'
+import type { BaseCardProps } from '../types.tsx'
 
 const useStyles = makeStyles()(theme => ({
   expansionPanelDetails: {

@@ -3,24 +3,24 @@ import { lazy } from 'react'
 import { types } from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
 
-import { ConfigurationReference, getConf } from '../../configuration'
-import { adapterConfigCacheKey } from '../../data_adapters/util'
-import { getContainingView, getEnv, getSession } from '../../util'
-import { stringifyBED } from './saveTrackFileTypes/bed'
-import { stringifyGBK } from './saveTrackFileTypes/genbank'
-import { stringifyGFF3 } from './saveTrackFileTypes/gff3'
-import { isSessionModelWithConfigEditing } from '../../util/types'
-import { ElementId } from '../../util/types/mst'
+import { stringifyBED } from './saveTrackFileTypes/bed.ts'
+import { stringifyGBK } from './saveTrackFileTypes/genbank.ts'
+import { stringifyGFF3 } from './saveTrackFileTypes/gff3.ts'
+import { ConfigurationReference, getConf } from '../../configuration/index.ts'
+import { adapterConfigCacheKey } from '../../data_adapters/util.ts'
+import { getContainingView, getEnv, getSession } from '../../util/index.ts'
+import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
+import { ElementId } from '../../util/types/mst.ts'
 
-import type PluginManager from '../../PluginManager'
+import type PluginManager from '../../PluginManager.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
-} from '../../configuration'
-import type { MenuItem } from '../../ui'
+} from '../../configuration/index.ts'
+import type { MenuItem } from '../../ui/index.ts'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
-const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
+const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData.tsx'))
 
 interface DisplayConf {
   displayId: string

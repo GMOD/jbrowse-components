@@ -1,8 +1,8 @@
 import { clusterData, toNewick } from '@gmod/hclust'
 
-import { getGenotypeMatrix } from './getGenotypeMatrix'
+import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
 
-import type { Source } from '../shared/types'
+import type { Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, StopToken } from '@jbrowse/core/util'

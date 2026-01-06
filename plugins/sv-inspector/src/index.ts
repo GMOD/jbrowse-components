@@ -2,8 +2,8 @@ import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util/types'
 import TableChartIcon from '@mui/icons-material/TableChart'
 
-import LaunchSvInspectorViewF from './LaunchSvInspectorView'
-import SvInspectorViewF from './SvInspectorView'
+import LaunchSvInspectorViewF from './LaunchSvInspectorView/index.ts'
+import SvInspectorViewF from './SvInspectorView/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'

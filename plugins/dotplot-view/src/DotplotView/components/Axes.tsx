@@ -9,9 +9,9 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getBlockLabelKeysToHide } from './util'
+import { getBlockLabelKeysToHide } from './util.ts'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(() => ({
   vtext: {

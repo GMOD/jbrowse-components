@@ -1,8 +1,8 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { getEnv } from '../util'
-import { stringToJexlExpression } from '../util/jexlStrings'
-import { FileLocation } from '../util/types/mst'
+import { getEnv } from '../util/index.ts'
+import { stringToJexlExpression } from '../util/jexlStrings.ts'
+import { FileLocation } from '../util/types/mst.ts'
 
 import type { IAnyComplexType, IAnyModelType } from '@jbrowse/mobx-state-tree'
 

@@ -3,7 +3,7 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import FromConfigAdapter from '../FromConfigAdapter/FromConfigAdapter'
+import FromConfigAdapter from '../FromConfigAdapter/FromConfigAdapter.ts'
 
 import type { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'

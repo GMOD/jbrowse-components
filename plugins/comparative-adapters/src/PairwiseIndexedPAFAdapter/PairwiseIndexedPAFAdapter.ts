@@ -4,8 +4,8 @@ import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import SyntenyFeature from '../SyntenyFeature'
-import { parsePAFLine } from '../util'
+import SyntenyFeature from '../SyntenyFeature/index.ts'
+import { parsePAFLine } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

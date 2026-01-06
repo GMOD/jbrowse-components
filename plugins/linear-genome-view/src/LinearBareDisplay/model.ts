@@ -2,7 +2,7 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { BaseLinearDisplay } from '../BaseLinearDisplay'
+import { BaseLinearDisplay } from '../BaseLinearDisplay/index.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 

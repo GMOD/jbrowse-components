@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { reduce } from 'rxjs/operators'
 
-import type { Feature } from './simpleFeature'
-import type { NoAssemblyRegion } from './types'
+import type { Feature } from './simpleFeature.ts'
+import type { NoAssemblyRegion } from './types/index.ts'
 import type { Observable } from 'rxjs'
 
 export interface UnrectifiedQuantitativeStats {

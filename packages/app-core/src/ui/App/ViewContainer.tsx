@@ -5,8 +5,8 @@ import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ViewHeader from './ViewHeader'
-import ViewWrapper from './ViewWrapper'
+import ViewHeader from './ViewHeader.tsx'
+import ViewWrapper from './ViewWrapper.tsx'
 
 import type {
   AbstractViewModel,

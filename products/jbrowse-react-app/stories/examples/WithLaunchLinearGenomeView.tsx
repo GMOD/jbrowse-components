@@ -4,7 +4,7 @@ import { getEnv } from '@jbrowse/core/util'
 
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
-import { JBrowseApp, createViewState } from '../../src'
+import { JBrowseApp, createViewState } from '../../src/index.ts'
 
 type ViewModel = ReturnType<typeof createViewState>
 

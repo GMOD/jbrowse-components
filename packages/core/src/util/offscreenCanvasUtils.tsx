@@ -2,7 +2,7 @@
 
 import { isValidElement } from 'react'
 
-export { renderToAbstractCanvas } from './renderToAbstractCanvas'
+export { renderToAbstractCanvas } from './renderToAbstractCanvas.ts'
 
 export function ReactRendering({
   rendering,
@@ -19,7 +19,7 @@ export function ReactRendering({
   )
 }
 
-export { getSerializedSvg } from './offscreenCanvasGetSerializingSvg'
+export { getSerializedSvg } from './offscreenCanvasGetSerializingSvg.ts'
 
 /**
  * Converts a rendering result with canvasRecordedData to one with html.
@@ -31,7 +31,7 @@ export async function renderingToSvg<
 >(rendering: T, width: number, height: number): Promise<T> {
   if (rendering.canvasRecordedData && !rendering.html) {
     const { getSerializedSvg } =
-      await import('./offscreenCanvasGetSerializingSvg')
+      await import('./offscreenCanvasGetSerializingSvg.ts')
     const html = await getSerializedSvg({
       width,
       height,

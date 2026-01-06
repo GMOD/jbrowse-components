@@ -6,9 +6,9 @@ import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 
-import TrackSelectorTrackMenu from './TrackSelectorTrackMenu'
+import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 

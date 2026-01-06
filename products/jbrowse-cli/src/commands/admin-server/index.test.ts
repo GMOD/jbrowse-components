@@ -5,8 +5,8 @@
 import fs from 'fs'
 import path from 'path'
 
-import fetch from '../../fetchWithProxy'
-import { dataDir, readConf, runCommand, runInTmpDir } from '../../testUtil'
+import fetch from '../../fetchWithProxy.ts'
+import { dataDir, readConf, runCommand, runInTmpDir } from '../../testUtil.ts'
 
 const { copyFile, rename, chmod } = fs.promises
 

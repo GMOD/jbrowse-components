@@ -9,7 +9,7 @@ import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { drawCanvasImageData } from '@jbrowse/plugin-linear-genome-view'
 import { untracked } from 'mobx'
 
-import { createAutorun } from '../util'
+import { createAutorun } from '../util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'

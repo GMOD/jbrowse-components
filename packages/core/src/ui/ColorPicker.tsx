@@ -4,9 +4,9 @@ import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MenuItem, Popover, Select, TextField } from '@mui/material'
 
-import * as paletteColors from './colors'
-import { useDebounce, useLocalStorage } from '../util'
-import { RgbaStringColorPicker } from './react-colorful'
+import * as paletteColors from './colors.ts'
+import { RgbaStringColorPicker } from './react-colorful.js'
+import { useDebounce, useLocalStorage } from '../util/index.ts'
 
 // note: we are using a vendored copy of react-colorful because the default
 // uses pure-ESM which is difficult to make pass with jest e.g.

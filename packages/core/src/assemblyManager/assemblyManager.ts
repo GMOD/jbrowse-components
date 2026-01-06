@@ -1,15 +1,15 @@
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
-import { readConfObject } from '../configuration'
-import { when } from '../util'
-import assemblyFactory from './assembly'
+import assemblyFactory from './assembly.ts'
+import { readConfObject } from '../configuration/index.ts'
+import { when } from '../util/index.ts'
 
-import type { AnyConfigurationModel } from '../configuration'
-import type { Assembly } from './assembly'
-import type PluginManager from '../PluginManager'
-import type RpcManager from '../rpc/RpcManager'
-import type { StopToken } from '../util/stopToken'
+import type { Assembly } from './assembly.ts'
+import type PluginManager from '../PluginManager.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type RpcManager from '../rpc/RpcManager.ts'
+import type { StopToken } from '../util/stopToken.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>

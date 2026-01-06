@@ -4,21 +4,21 @@ import {
   CLIP_RECT_HEIGHT,
   chainIsPairedEnd,
   collectNonSupplementary,
-} from './drawChainsUtil'
-import { drawLongReadChains } from './drawLongReadChains'
-import { drawPairChains } from './drawPairChains'
-import { PairType, getPairedType } from '../shared/color'
-import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
-import { shouldRenderChevrons } from '../shared/util'
+} from './drawChainsUtil.ts'
+import { drawLongReadChains } from './drawLongReadChains.ts'
+import { drawPairChains } from './drawPairChains.ts'
+import { PairType, getPairedType } from '../shared/color.ts'
+import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags.ts'
+import { shouldRenderChevrons } from '../shared/util.ts'
 
-import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model'
-import type { FlatbushItem } from '../PileupRenderer/types'
-import type { FlatbushEntry } from '../shared/flatbushType'
+import type { LinearReadCloudDisplayModel } from '../LinearReadCloudDisplay/model.ts'
+import type { FlatbushItem } from '../PileupRenderer/types.ts'
+import type { FlatbushEntry } from '../shared/flatbushType.ts'
 import type {
   ChainData,
   ColorBy,
   ModificationTypeWithColor,
-} from '../shared/types'
+} from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'

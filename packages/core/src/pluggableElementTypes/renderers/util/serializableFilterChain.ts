@@ -1,4 +1,4 @@
-import { stringToJexlExpression } from '../../../util/jexlStrings'
+import { stringToJexlExpression } from '../../../util/jexlStrings.ts'
 
 type FilterExpression = (...args: Record<string, any>[] | any[]) => boolean
 

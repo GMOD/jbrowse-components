@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { ColorBy } from '../types'
+import type { ColorBy } from '../types.ts'
 
 const SetModificationThresholdDialog = observer(
   function SetModificationThresholdDialog(props: {

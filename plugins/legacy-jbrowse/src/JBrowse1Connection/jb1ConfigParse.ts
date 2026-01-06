@@ -2,10 +2,10 @@
 import { objectHash } from '@jbrowse/core/util'
 import setValue from 'set-value'
 
-import getValue from './get-value'
-import { isSource, isTrack } from './util'
+import getValue from './get-value.ts'
+import { isSource, isTrack } from './util.ts'
 
-import type { Config, Names, Source, Store, Track } from './types'
+import type { Config, Names, Source, Store, Track } from './types.ts'
 
 export function parseJB1Json(config: Config | string, url: string): Config {
   if (typeof config === 'string') {

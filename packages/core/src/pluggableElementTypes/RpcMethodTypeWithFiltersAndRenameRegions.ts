@@ -1,6 +1,6 @@
-import RpcMethodType from './RpcMethodType'
-import { renameRegionsIfNeeded } from '../util'
-import SerializableFilterChain from './renderers/util/serializableFilterChain'
+import RpcMethodType from './RpcMethodType.ts'
+import { renameRegionsIfNeeded } from '../util/index.ts'
+import SerializableFilterChain from './renderers/util/serializableFilterChain.ts'
 
 import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 

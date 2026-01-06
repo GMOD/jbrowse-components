@@ -3,7 +3,7 @@ import { startTransition } from 'react'
 import { DataGrid, useGridApiRef } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import type { SpreadsheetModel } from '../SpreadsheetModel'
+import type { SpreadsheetModel } from '../SpreadsheetModel.tsx'
 
 const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
   model,

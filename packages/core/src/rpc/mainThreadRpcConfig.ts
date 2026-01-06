@@ -1,5 +1,5 @@
-import { ConfigurationSchema } from '../configuration'
-import BaseRpcDriverConfigSchema from './baseRpcConfig'
+import BaseRpcDriverConfigSchema from './baseRpcConfig.ts'
+import { ConfigurationSchema } from '../configuration/index.ts'
 
 /**
  * #config MainThreadRpcDriver

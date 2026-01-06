@@ -4,13 +4,15 @@ import { getSession } from '@jbrowse/core/util'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import PaletteIcon from '@mui/icons-material/Palette'
 
-import { modificationData } from './modificationData'
+import { modificationData } from './modificationData.ts'
 
-import type { ColorBy } from './types'
+import type { ColorBy } from './types.ts'
 
-const FilterByTagDialog = lazy(() => import('./components/FilterByTagDialog'))
+const FilterByTagDialog = lazy(
+  () => import('./components/FilterByTagDialog.tsx'),
+)
 const SetModificationThresholdDialog = lazy(
-  () => import('./components/SetModificationThresholdDialog'),
+  () => import('./components/SetModificationThresholdDialog.tsx'),
 )
 
 interface LinearReadDisplayModel {

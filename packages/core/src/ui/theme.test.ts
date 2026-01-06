@@ -1,4 +1,4 @@
-import { createJBrowseTheme } from './theme'
+import { createJBrowseTheme } from './theme.ts'
 
 test('can create a default theme', () => {
   const theme = createJBrowseTheme()

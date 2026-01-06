@@ -1,10 +1,10 @@
 import { max, sum } from '@jbrowse/core/util'
 
-import { createEmptyBin, incWithProbabilities } from './util'
-import { parseCigar2 } from '../MismatchParser'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition'
+import { createEmptyBin, incWithProbabilities } from './util.ts'
+import { parseCigar2 } from '../MismatchParser/index.ts'
+import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 
-import type { ColorBy, PreBaseCoverageBin } from '../shared/types'
+import type { ColorBy, PreBaseCoverageBin } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 

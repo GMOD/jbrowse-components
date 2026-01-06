@@ -6,7 +6,7 @@ import {
   exportAndVerifySvg,
   hts,
   setup,
-} from './util'
+} from './util.tsx'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })

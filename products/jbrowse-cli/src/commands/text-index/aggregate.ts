@@ -1,4 +1,4 @@
-import { createTrixAdapter } from './adapter-utils'
+import { createTrixAdapter } from './adapter-utils.ts'
 import {
   getAssemblyNames,
   getTrackConfigs,
@@ -6,11 +6,11 @@ import {
   parseCommaSeparatedString,
   prepareIndexDriverFlags,
   writeConf,
-} from './config-utils'
-import { indexDriver } from './indexing-utils'
-import { resolveConfigPath } from '../../utils'
+} from './config-utils.ts'
+import { indexDriver } from './indexing-utils.ts'
+import { resolveConfigPath } from '../../utils.ts'
 
-import type { TextIndexFlags } from './index'
+import type { TextIndexFlags } from './index.ts'
 
 export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
   const {

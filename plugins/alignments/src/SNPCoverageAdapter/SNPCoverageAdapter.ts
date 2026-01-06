@@ -10,18 +10,18 @@ import { rectifyStats } from '@jbrowse/core/util/stats'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { fetchSequence } from '../util'
+import { fetchSequence } from '../util.ts'
 import {
   finalizeLazyBin,
   generateCoverageBinsPrefixSum,
-} from './generateCoverageBinsPrefixSum'
+} from './generateCoverageBinsPrefixSum.ts'
 
-import type { CoverageBinsResult } from './generateCoverageBinsPrefixSum'
+import type { CoverageBinsResult } from './generateCoverageBinsPrefixSum.ts'
 import type {
   ColorBy,
   FeatureWithMismatchIterator,
   FilterBy,
-} from '../shared/types'
+} from '../shared/types.ts'
 import type {
   BaseOptions,
   BaseSequenceAdapter,

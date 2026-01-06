@@ -1,8 +1,8 @@
-import { readCachedConfig } from '../renderConfig'
-import { isOffScreen } from '../util'
-import { drawStrandArrowAtPosition, layoutChild } from './glyphUtils'
+import { readCachedConfig } from '../renderConfig.ts'
+import { isOffScreen } from '../util.ts'
+import { drawStrandArrowAtPosition, layoutChild } from './glyphUtils.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
+import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const MATURE_PROTEIN_COLORS = [

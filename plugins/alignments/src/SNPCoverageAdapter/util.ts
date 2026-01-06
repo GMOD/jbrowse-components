@@ -1,11 +1,11 @@
-import { INTERBASE_MASK } from '../shared/forEachMismatchTypes'
+import { INTERBASE_MASK } from '../shared/forEachMismatchTypes.ts'
 
 import type {
   ColorBy,
   PreBaseCoverageBin,
   PreBaseCoverageBinSubtypes,
   PreBinEntry,
-} from '../shared/types'
+} from '../shared/types.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface Opts {

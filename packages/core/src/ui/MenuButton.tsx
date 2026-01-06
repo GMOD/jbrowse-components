@@ -1,1 +1,1 @@
-export { default } from './CascadingMenuButton'
+export { default } from './CascadingMenuButton.tsx'

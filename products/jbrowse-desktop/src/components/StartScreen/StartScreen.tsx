@@ -1,9 +1,9 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, Typography } from '@mui/material'
 
-import Logo from './Logo'
-import LeftSidePanel from './leftSidePanel/LeftSidePanel'
-import RecentSessionPanel from './recentSessions/RecentSessionsPanel'
+import Logo from './Logo.tsx'
+import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
+import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

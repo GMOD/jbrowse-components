@@ -1,4 +1,4 @@
-import { intersection2 } from './range'
+import { intersection2 } from './range.ts'
 
 describe('insersection2', () => {
   const testCases = [
