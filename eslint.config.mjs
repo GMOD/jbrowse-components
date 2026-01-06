@@ -23,6 +23,8 @@ export default defineConfig(
       // Config and tooling
       'config/jest',
       'jest.config.js',
+      'babel.config.cjs',
+      'eslint.config.mjs',
       'products/**/webpack.config.js',
       '**/.storybook',
       '**/output-version.js',
@@ -31,17 +33,31 @@ export default defineConfig(
       // Vendored/external code
       'packages/core/src/util/map-obj',
       'packages/core/src/util/nanoid.js',
+      'packages/core/src/ReExports/material-ui-colors.js',
       'plugins/variants/src/d3-hierarchy2',
 
       // Scripts
       'scripts/analyze_cpuprof.ts',
+      'scripts/getSuggestions.js',
       'packages/core/scripts/generateExports.mjs',
+      'plugins/data-management/scripts',
       'products/jbrowse-desktop/scripts',
       'products/jbrowse-desktop/linux-sandbox-fix.cjs',
+      'products/jbrowse-desktop/linux-sandbox-fix.js',
+      'products/jbrowse-desktop/sign.js',
+      'products/jbrowse-web/scripts',
+      'products/jbrowse-img/src/bin.js',
+
+      // Worker polyfills (plain JS files)
+      '**/workerPolyfill.js',
+
+      // AWS Lambda functions
+      'products/jbrowse-aws-lambda-functions',
 
       // Test fixtures and mocks
       '**/test_data',
       'packages/__mocks__',
+      'integration.test.js',
 
       // Excluded directories
       'webpack',
