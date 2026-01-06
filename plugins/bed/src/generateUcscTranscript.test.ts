@@ -1,7 +1,7 @@
 import {
   generateUcscTranscript,
   isUcscTranscript,
-} from './generateUcscTranscript'
+} from './generateUcscTranscript.ts'
 
 describe('isUcscTranscript', () => {
   it('returns true when thickStart, blockCount, and non-zero strand are present', () => {
