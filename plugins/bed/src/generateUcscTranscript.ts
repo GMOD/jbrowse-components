@@ -49,8 +49,33 @@ function frameToPhase(frame: number) {
   return (3 - frame) % 3
 }
 
-export function generateUcscTranscript(data: TranscriptFeat) {
-  const { strand = 0, uniqueId, ...rest } = data
+interface UcscTranscriptInput {
+  uniqueId: string
+  strand?: number
+  thickStart: number
+  thickEnd: number
+  refName: string
+  start: number
+  end: number
+  subfeatures: MinimalFeature[]
+  [key: string]: unknown
+}
+
+interface UcscTranscriptOutput {
+  uniqueId: string
+  strand: number
+  type: string
+  refName: string
+  start: number
+  end: number
+  subfeatures: MinimalFeature[]
+  [key: string]: unknown
+}
+
+export function generateUcscTranscript(
+  data: UcscTranscriptInput,
+): UcscTranscriptOutput {
+  const { strand = 0, uniqueId, start, end, ...rest } = data
   const {
     subfeatures: oldSubfeatures,
     thickStart,
@@ -86,6 +111,8 @@ export function generateUcscTranscript(data: TranscriptFeat) {
       strand,
       type: 'transcript',
       refName,
+      start,
+      end,
       subfeatures: feats.map(e => ({ ...e, type: 'exon' })),
     }
   }
@@ -157,6 +184,8 @@ export function generateUcscTranscript(data: TranscriptFeat) {
     strand,
     type: 'mRNA',
     refName,
+    start,
+    end,
     subfeatures,
   }
 }

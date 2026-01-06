@@ -12,6 +12,7 @@ import {
 } from './generateUcscTranscript'
 
 import type BED from '@gmod/bed'
+import type { MinimalFeature } from './types'
 
 function defaultParser(fields: string[], splitLine: string[]) {
   const obj = {} as Record<string, string>
@@ -136,6 +137,18 @@ function parseStrand(strand: unknown) {
   return 0
 }
 
+interface FeatureData {
+  uniqueId: string
+  refName: string
+  start: number
+  end: number
+  strand?: number | string
+  score?: number
+  type?: string
+  subfeatures?: MinimalFeature[]
+  [key: string]: unknown
+}
+
 export function featureData2({
   splitLine,
   refName,
@@ -154,7 +167,7 @@ export function featureData2({
   uniqueId: string
   scoreColumn: string
   names?: string[]
-}) {
+}): FeatureData {
   const data = names
     ? defaultParser(names, splitLine)
     : parser.parseLine(splitLine, { uniqueId })
@@ -200,10 +213,12 @@ export function featureData2({
       blockCount: _7,
       thickStart: _8,
       thickEnd: _9,
+      description,
       ...rest2
     } = rest
     return generateRepeatMaskerFeature({
       ...rest2,
+      description: description as string,
       uniqueId,
       score,
       start,
@@ -231,6 +246,8 @@ export function featureData2({
       refName,
       uniqueId,
       subfeatures,
+      thickStart: rest.thickStart as number,
+      thickEnd: rest.thickEnd as number,
     })
   }
 
