@@ -631,9 +631,9 @@ export default function stateModelFactory(pm: PluginManager) {
               const trackConf = getParent<AnyConfigurationModel>(displayConf, 2)
               return {
                 type: trackConf.type,
-                configuration: trackConf,
+                configuration: getSnapshot(trackConf),
                 displays: [
-                  { type: displayConf.type, configuration: displayConf },
+                  { type: displayConf.type, configuration: getSnapshot(displayConf) },
                 ],
               }
             })
