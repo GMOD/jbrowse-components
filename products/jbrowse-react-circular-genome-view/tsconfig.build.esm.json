@@ -1,7 +1,45 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "outDir": "esm"
+    "outDir": "esm",
+    "paths": {},
+    "baseUrl": ".",
+    "composite": true,
+    "declarationMap": true
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../packages/embedded-core/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../plugins/authentication/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../plugins/circular-view/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../plugins/config/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../plugins/data-management/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../plugins/sequence/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../plugins/variants/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../plugins/wiggle/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../packages/product-core/tsconfig.build.esm.json"
+    }
+  ]
 }

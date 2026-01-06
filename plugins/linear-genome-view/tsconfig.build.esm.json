@@ -1,1 +1,27 @@
-../tsconfig.build.esm.json
+{
+  "extends": "../../tsconfig",
+  "exclude": [
+    "src/**/*.test.ts*",
+    "src/**/*.test.js*"
+  ],
+  "include": [
+    "src/**/*.ts*",
+    "src/**/*.js*"
+  ],
+  "compilerOptions": {
+    "outDir": "esm",
+    "rootDir": "src",
+    "paths": {},
+    "baseUrl": ".",
+    "composite": true,
+    "declarationMap": true
+  },
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../../packages/product-core/tsconfig.build.esm.json"
+    }
+  ]
+}
