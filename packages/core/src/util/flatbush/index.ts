@@ -2,7 +2,7 @@
 //
 // changes to the code include:
 // non-recursive sort implementation
-import FlatQueue from '../flatqueue/index.js'
+import FlatQueue from '../flatqueue/index.ts'
 
 type TypedArrayConstructor =
   | Int8ArrayConstructor
