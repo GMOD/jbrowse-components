@@ -67,7 +67,7 @@ export async function createIndexingStream({
   }
 
   const inputStream = /.b?gz$/.exec(inLocation)
-    ? // @ts-expect-error DecompressionStream types don't match pipeThrough exactly
+    ? // @ts-ignore root tsconfig includes DOM lib which has incompatible stream types
       stream.pipeThrough(new DecompressionStream('gzip'))
     : stream
 
