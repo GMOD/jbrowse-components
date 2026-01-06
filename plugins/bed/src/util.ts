@@ -14,20 +14,21 @@ import {
 import type BED from '@gmod/bed'
 
 function defaultParser(fields: string[], splitLine: string[]) {
+  const obj = {} as Record<string, string>
   let hasBlockCount = false
-  const r = [] as [string, string][]
 
-  // eslint-disable-next-line unicorn/no-for-loop
   for (let i = 0; i < splitLine.length; i++) {
-    if (fields[i] === 'blockCount') {
-      hasBlockCount = true
+    const field = fields[i]
+    if (field) {
+      obj[field] = splitLine[i]!
+      if (field === 'blockCount') {
+        hasBlockCount = true
+      }
     }
-    r.push([fields[i]!, splitLine[i]!] as const)
   }
+
   // heuristically try to determine whether to follow 'slow path' as there can
   // be many features in e.g. GWAS type data
-  const obj = Object.fromEntries(r)
-  // slow path
   if (hasBlockCount) {
     const {
       blockStarts,
@@ -50,10 +51,7 @@ function defaultParser(fields: string[], splitLine: string[]) {
     } as Record<string, unknown>
   }
 
-  // fast path
-  else {
-    return obj
-  }
+  return obj
 }
 
 export function makeBlocks({
@@ -74,16 +72,15 @@ export function makeBlocks({
   blockStarts?: number[]
 }) {
   const subfeatures = []
-  const starts = chromStarts || blockStarts || []
+  const starts = chromStarts ?? blockStarts ?? []
   for (let b = 0; b < blockCount; b++) {
-    const bmin = (starts[b] || 0) + start
+    const bmin = (starts[b] ?? 0) + start
     const bsize = blockSizes?.[b]
     if (bsize && bsize > 0) {
-      const bmax = bmin + bsize
       subfeatures.push({
         uniqueId: `${uniqueId}-${b}`,
         start: bmin,
-        end: bmax,
+        end: bmin + bsize,
         refName,
         type: 'block',
       })
@@ -129,6 +126,16 @@ export function featureData({
   })
 }
 
+function parseStrand(strand: unknown) {
+  if (strand === '-' || strand === -1) {
+    return -1
+  }
+  if (strand === '+' || strand === 1) {
+    return 1
+  }
+  return 0
+}
+
 export function featureData2({
   splitLine,
   refName,
@@ -161,8 +168,7 @@ export function featureData2({
   } = data
 
   const score = scoreColumn ? +data[scoreColumn] : score2 ? +score2 : undefined
-  const strand =
-    typeof strand2 === 'string' ? (strand2 === '-' ? -1 : 1) : strand2
+  const strand = parseStrand(strand2)
 
   const subfeatures = rest.blockCount
     ? makeBlocks({
@@ -184,23 +190,21 @@ export function featureData2({
       start,
       end,
     })
-  } else if (isRepeatMaskerDescriptionField(rest.description)) {
+  }
+
+  if (isRepeatMaskerDescriptionField(rest.description)) {
     const {
-      chromStarts,
-      blockSizes,
-      blockStarts,
-      type,
-      blockCount,
-      thickStart,
-      thickEnd,
-      description,
+      chromStarts: _4,
+      blockSizes: _5,
+      blockStarts: _6,
+      blockCount: _7,
+      thickStart: _8,
+      thickEnd: _9,
       ...rest2
     } = rest
     return generateRepeatMaskerFeature({
       ...rest2,
       uniqueId,
-      description,
-      type,
       score,
       start,
       end,
@@ -208,7 +212,9 @@ export function featureData2({
       refName,
       subfeatures,
     })
-  } else if (
+  }
+
+  if (
     subfeatures &&
     isUcscTranscript({
       strand,
@@ -216,24 +222,8 @@ export function featureData2({
       thickStart: rest.thickStart,
     })
   ) {
-    const {
-      chromStarts,
-      blockSizes,
-      type,
-      blockCount,
-      thickStart,
-      thickEnd,
-      description,
-    } = rest
     return generateUcscTranscript({
       ...rest,
-      description,
-      chromStarts,
-      thickStart,
-      thickEnd,
-      blockSizes,
-      blockCount,
-      type,
       score,
       start,
       end,
@@ -242,24 +232,26 @@ export function featureData2({
       uniqueId,
       subfeatures,
     })
-  } else {
-    return {
-      ...rest,
-      uniqueId,
-      score,
-      start,
-      end,
-      strand,
-      refName,
-      subfeatures,
-    }
+  }
+
+  return {
+    ...rest,
+    uniqueId,
+    score,
+    start,
+    end,
+    strand,
+    refName,
+    subfeatures,
   }
 }
 
 export function arrayify(f?: string | number[]) {
-  return f !== undefined
-    ? typeof f === 'string'
-      ? f.split(',').map(f => +f)
-      : f
-    : undefined
+  if (f === undefined) {
+    return undefined
+  }
+  if (typeof f === 'string') {
+    return f.split(',').map(s => +s)
+  }
+  return f
 }
