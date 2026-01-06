@@ -115,12 +115,14 @@ test('LinearGenomeView initializes with tracklist and nav options', async () => 
   await waitFor(
     () => {
       expect(view.initialized).toBe(true)
+      // Wait for init to be cleared - autorun is async so we need to wait for
+      // all init operations to complete
+      expect(view.init).toBeUndefined()
     },
     { timeout: 30000 },
   )
 
   expect(view.hideHeader).toBe(true)
-  expect(view.init).toBeUndefined()
 }, 40000)
 
 test('LinearGenomeView showImportForm is false when init is set', async () => {
