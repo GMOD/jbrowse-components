@@ -5,7 +5,5 @@
     "paths": {},
     "baseUrl": "."
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

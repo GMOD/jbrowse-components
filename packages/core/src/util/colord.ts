@@ -1,7 +1,8 @@
-import { colord as colordOriginal, extend, Colord as ColordBase } from 'colord'
-import type { AnyColor } from 'colord'
+import { colord as colordOriginal, extend } from 'colord'
 import mix from 'colord/plugins/mix'
 import names from 'colord/plugins/names'
+
+import type { AnyColor, Colord as ColordBase } from 'colord'
 
 // Extend Colord interface with mix plugin methods
 export interface Colord extends ColordBase {
