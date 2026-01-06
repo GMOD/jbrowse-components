@@ -69,7 +69,7 @@ const ColorBySelector = observer(function ColorBySelector({
             setColorBy('syri')
           },
           helpText:
-            'Color alignments by structural variation type using the SyRI color scheme: grey for syntenic matches (same chromosome, forward strand), orange for inversions (same chromosome, reverse strand), and green for translocations (different chromosomes).',
+            'Color alignments by structural variation type (SyRI scheme): grey for syntenic matches, orange for inversions, green for translocations (different chromosomes), blue for duplications (overlapping query regions).',
         },
       ]}
     >

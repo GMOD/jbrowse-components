@@ -86,8 +86,14 @@ function classifySyriType(
   queryRefName: string,
   mateRefName: string | undefined,
   strand: number,
+  isDuplicate: boolean,
   chromosomeMapping?: Map<string, string> | null,
 ): SyriType {
+  // Check for duplication first (takes priority)
+  if (isDuplicate) {
+    return 'DUP'
+  }
+
   // Determine if this is a translocation
   let isTranslocation = false
 
@@ -116,6 +122,48 @@ function classifySyriType(
   }
   return 'SYN'
 }
+
+// Detect duplications: query regions that align to multiple target locations
+// Returns a Set of feature IDs that are duplicates
+function detectDuplicates(
+  features: { f: { get: (key: string) => unknown; id: () => string } }[],
+): Set<string> {
+  const binSize = 10000 // 10kb bins for overlap detection
+  const queryBins = new Map<string, string[]>() // bin -> feature IDs in that bin
+
+  // First pass: assign features to bins
+  for (const { f } of features) {
+    const featureId = f.id()
+    const queryChrom = f.get('refName') as string
+    const queryStart = f.get('start') as number
+    const queryEnd = f.get('end') as number
+    const startBin = Math.floor(queryStart / binSize)
+    const endBin = Math.floor(queryEnd / binSize)
+
+    for (let bin = startBin; bin <= endBin; bin++) {
+      const key = `${queryChrom}:${bin}`
+      if (!queryBins.has(key)) {
+        queryBins.set(key, [])
+      }
+      queryBins.get(key)!.push(featureId)
+    }
+  }
+
+  // Second pass: mark features in bins with multiple features as duplicates
+  const duplicateIds = new Set<string>()
+  for (const featureIds of queryBins.values()) {
+    if (featureIds.length > 1) {
+      for (const id of featureIds) {
+        duplicateIds.add(id)
+      }
+    }
+  }
+
+  return duplicateIds
+}
+
+// Export colors for use in legend component
+export { syriColors, strandColors }
 
 function applyAlpha(color: string, alpha: number) {
   if (alpha === 1) {
@@ -164,6 +212,7 @@ interface ColorResolver {
     strand: number,
     refName: string,
     mateRefName: string | undefined,
+    featureId?: string,
   ) => string
   getCigarColor: (op: CigarOp) => string
   defaultColor: string
@@ -174,6 +223,7 @@ function createColorResolver(
   alpha: number,
   queryColorCache: Map<string, string>,
   chromosomeMapping?: Map<string, string> | null,
+  duplicateIds?: Set<string>,
 ): ColorResolver {
   // Pre-calculate colors with alpha for the active mode only
   const cigarColorsWithAlpha = {
@@ -220,11 +270,13 @@ function createColorResolver(
       DUP: applyAlpha(syriColors.DUP, alpha),
     }
     return {
-      getMatchColor: (strand, refName, mateRefName) => {
+      getMatchColor: (strand, refName, mateRefName, featureId) => {
+        const isDuplicate = featureId ? duplicateIds?.has(featureId) ?? false : false
         const syriType = classifySyriType(
           refName,
           mateRefName,
           strand,
+          isDuplicate,
           chromosomeMapping,
         )
         return syriColorsWithAlpha[syriType]
@@ -402,13 +454,19 @@ export function drawRef(
     })
   }
 
-  // Create color resolver (handles all colorBy modes - improvement #8)
+  // Compute duplicates for syri mode
+  const duplicateIds = colorBy === 'syri'
+    ? detectDuplicates(filteredPositions)
+    : undefined
+
+  // Create color resolver (handles all colorBy modes)
   const queryColorCache = new Map<string, string>()
   const colors = createColorResolver(
     colorBy,
     alpha,
     queryColorCache,
     chromosomeMapping,
+    duplicateIds,
   )
   const useCustomColor = colorBy !== 'default'
 
@@ -436,7 +494,8 @@ export function drawRef(
       const strand = f.get('strand')
       const refName = f.get('refName')
       const mate = f.get('mate')
-      const colorKey = colors.getMatchColor(strand, refName, mate?.refName)
+      const featureId = f.id()
+      const colorKey = colors.getMatchColor(strand, refName, mate?.refName, featureId)
 
       if (!thinLinesByColor.has(colorKey)) {
         thinLinesByColor.set(colorKey, [])
@@ -470,6 +529,7 @@ export function drawRef(
     const refName = f.get('refName')
     const mate = f.get('mate')
     const mateRefName = mate?.refName
+    const featureId = f.id()
 
     const x11 = p11.offsetPx - offsetL0
     const x12 = p12.offsetPx - offsetL0
@@ -550,6 +610,7 @@ export function drawRef(
             strand,
             refName,
             mateRefName,
+            featureId,
           )
         } else {
           mainCanvas.fillStyle = colors.getCigarColor(letter as CigarOp)
@@ -581,7 +642,7 @@ export function drawRef(
     } else {
       // No CIGAR - draw simple shape
       if (useCustomColor) {
-        mainCanvas.fillStyle = colors.getMatchColor(strand, refName, mateRefName)
+        mainCanvas.fillStyle = colors.getMatchColor(strand, refName, mateRefName, featureId)
       }
       draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
       mainCanvas.fill()
