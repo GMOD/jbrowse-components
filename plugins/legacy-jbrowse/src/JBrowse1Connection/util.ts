@@ -17,7 +17,11 @@ export function isSource(arg: any): arg is Source {
 type Obj = Record<string, any>
 export function deepUpdate(a: Obj, b: Obj): Obj {
   for (const prop of Object.keys(b)) {
-    if (prop === '__proto__' || prop === 'constructor' || prop === 'prototype') {
+    if (
+      prop === '__proto__' ||
+      prop === 'constructor' ||
+      prop === 'prototype'
+    ) {
       continue
     }
     if (
@@ -133,7 +137,11 @@ function mixin(
 ): Obj {
   const empty = {}
   for (const name in source) {
-    if (name === '__proto__' || name === 'constructor' || name === 'prototype') {
+    if (
+      name === '__proto__' ||
+      name === 'constructor' ||
+      name === 'prototype'
+    ) {
       continue
     }
     // the (!(name in empty) || empty[name] !== s) condition avoids copying

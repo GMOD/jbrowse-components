@@ -1,4 +1,3 @@
-
 ## 3.7.0 (2025-11-07)
 
 #### :rocket: Enhancement
@@ -88,7 +87,6 @@
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 2.38s.
 
-
 ## 3.6.5 (2025-09-11)
 
 #### :rocket: Enhancement
@@ -130,7 +128,6 @@
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.40s.
 
-
 ## 3.6.4 (2025-07-21)
 
 #### :rocket: Enhancement
@@ -171,15 +168,11 @@
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.54s.
 
-
 Done in 0.81s.
-
 
 Done in 0.54s.
 
-
 Done in 0.53s.
-
 
 ## 3.6.0 (2025-07-10)
 
@@ -244,7 +237,6 @@ Done in 0.53s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
 - Will Haese-Hill ([@haessar](https://github.com/haessar)) Done in 1.34s.
-
 
 ## 3.5.1 (2025-06-05)
 
@@ -314,7 +306,6 @@ Done in 0.53s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.94s.
 
-
 ## 3.5.0 (2025-05-27)
 
 #### :rocket: Enhancement
@@ -362,7 +353,6 @@ Done in 0.53s.
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.78s.
-
 
 ## 3.4.0 (2025-05-13)
 
@@ -461,7 +451,6 @@ Done in 0.53s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.68s.
 
-
 ## 3.3.0 (2025-04-18)
 
 #### :rocket: Enhancement
@@ -530,7 +519,6 @@ Done in 0.53s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.41s.
 
-
 ## 3.2.0 (2025-03-22)
 
 #### :rocket: Enhancement
@@ -578,7 +566,6 @@ Done in 0.53s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.00s.
 
-
 ## 3.1.0 (2025-03-14)
 
 #### :rocket: Enhancement
@@ -623,7 +610,6 @@ Done in 0.53s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.07s.
 
-
 ## 3.0.5 (2025-03-04)
 
 #### :bug: Bug Fix
@@ -634,7 +620,6 @@ Done in 0.53s.
 #### Committers: 1
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.24s.
-
 
 ## 3.0.4 (2025-03-01)
 
@@ -691,9 +676,7 @@ Done in 0.53s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.14s.
 
-
 Done in 0.44s.
-
 
 ## 3.0.2 (2025-02-13)
 
@@ -761,9 +744,7 @@ Done in 0.44s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.91s.
 
-
 Done in 0.69s.
-
 
 ## 3.0.0 (2025-01-29)
 
@@ -894,7 +875,6 @@ Done in 0.69s.
 - Kim Rutherford ([@kimrutherford](https://github.com/kimrutherford)) Done in
   2.19s.
 
-
 ## 2.18.0 (2024-12-10)
 
 #### :rocket: Enhancement
@@ -968,7 +948,6 @@ Done in 0.69s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.52s.
 
-
 ## 2.17.0 (2024-11-18)
 
 #### :rocket: Enhancement
@@ -1016,7 +995,6 @@ Done in 0.69s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.81s.
 
-
 ## 2.16.1 (2024-11-03)
 
 #### :rocket: Enhancement
@@ -1057,7 +1035,6 @@ Done in 0.69s.
 #### Committers: 1
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.20s.
-
 
 ## 2.16.0 (2024-10-23)
 
@@ -1115,7 +1092,6 @@ Done in 0.69s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.02s.
 
-
 ## 2.15.4 (2024-09-20)
 
 #### :bug: Bug Fix
@@ -1131,9 +1107,7 @@ Done in 0.69s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.22s.
 
-
 Done in 0.57s.
-
 
 ## 2.15.2 (2024-09-18)
 
@@ -1158,7 +1132,6 @@ Done in 0.57s.
 #### Committers: 1
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.30s.
-
 
 ## 2.15.1 (2024-09-12)
 
@@ -1200,9 +1173,7 @@ Done in 0.57s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.16s.
 
-
 Done in 1.26s.
-
 
 ## 2.14.0 (2024-08-28)
 
@@ -1267,7 +1238,6 @@ Done in 1.26s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.30s.
 
-
 ## 2.13.1 (2024-07-31)
 
 #### :rocket: Enhancement
@@ -1286,7 +1256,6 @@ Done in 1.26s.
 #### Committers: 1
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.30s.
-
 
 ## 2.13.0 (2024-07-25)
 
@@ -1342,7 +1311,6 @@ Done in 1.26s.
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
 - [@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande) Done in 1.66s.
 
-
 ## 2.12.3 (2024-06-27)
 
 #### :rocket: Enhancement
@@ -1370,12 +1338,9 @@ Done in 1.26s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.30s.
 
-
 Done in 0.74s.
 
-
 Done in 0.81s.
-
 
 ## 2.12.0 (2024-06-20)
 
@@ -1463,7 +1428,6 @@ Done in 0.81s.
 - Caroline Bridge ([@carolinebridge](https://github.com/carolinebridge))
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.71s.
 
-
 ## 2.11.2 (2024-06-03)
 
 #### :rocket: Enhancement
@@ -1509,7 +1473,6 @@ Done in 0.81s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.23s.
 
-
 ## 2.11.1 (2024-05-11)
 
 #### :rocket: Enhancement
@@ -1551,7 +1514,6 @@ Done in 0.81s.
 #### Committers: 1
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.13s.
-
 
 ## 2.11.0 (2024-04-16)
 
@@ -1631,7 +1593,6 @@ Done in 0.81s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.85s.
 
-
 ## 2.10.3 (2024-03-06)
 
 #### :rocket: Enhancement
@@ -1679,7 +1640,6 @@ Done in 0.81s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
 - Quentin Agren ([@kwentine](https://github.com/kwentine))
 - [@Maarten-vd-Sande](https://github.com/Maarten-vd-Sande) Done in 1.56s.
-
 
 ## 2.10.2 (2024-02-19)
 
@@ -1735,7 +1695,6 @@ Done in 0.81s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.42s.
 
-
 ## 2.10.1 (2024-01-09)
 
 #### :rocket: Enhancement
@@ -1772,7 +1731,6 @@ Done in 0.81s.
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
 - Drew T. Doering ([@dtdoering](https://github.com/dtdoering)) Done in 3.10s.
-
 
 ## 2.10.0 (2023-12-15)
 
@@ -1846,7 +1804,6 @@ Done in 0.81s.
   ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 2.06s.
 
-
 ## 2.9.0 (2023-11-30)
 
 #### :rocket: Enhancement
@@ -1903,7 +1860,6 @@ Done in 0.81s.
   ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.41s.
 
-
 ## 2.8.0 (2023-11-09)
 
 #### :rocket: Enhancement
@@ -1954,7 +1910,6 @@ Done in 0.81s.
   ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 2.23s.
 
-
 ## 2.7.2 (2023-10-27)
 
 #### :rocket: Enhancement
@@ -2002,7 +1957,6 @@ Done in 0.81s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.56s.
 
-
 ## 2.7.1 (2023-10-18)
 
 #### :rocket: Enhancement
@@ -2037,7 +1991,6 @@ Done in 0.81s.
 #### Committers: 1
 
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin)) Done in 1.65s.
-
 
 ## 2.7.0 (2023-10-04)
 
@@ -2186,7 +2139,6 @@ Done in 0.81s.
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
 - Scott Cain ([@scottcain](https://github.com/scottcain)) Done in 2.80s.
 
-
 #### :rocket: Enhancement
 
 - Other
@@ -2238,7 +2190,6 @@ Done in 0.81s.
   ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
 - Robert Buels ([@rbuels](https://github.com/rbuels)) Done in 1.50s.
-
 
 #### :rocket: Enhancement
 
@@ -2298,7 +2249,6 @@ Done in 0.81s.
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
 - Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens)) Done
   in 1.55s.
-
 
 #### :rocket: Enhancement
 
