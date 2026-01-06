@@ -1,4 +1,4 @@
-import type { Mismatch } from '../shared/types'
+import type { Mismatch } from '../shared/types.ts'
 
 export function cigarToMismatches(
   ops: string[],

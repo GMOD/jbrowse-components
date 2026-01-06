@@ -9,8 +9,8 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { drawCanvasImageData } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, untracked } from 'mobx'
 
-import type { LinearHicDisplayModel } from './model'
-import type { HicFlatbushItem } from '../HicRenderer/types'
+import type { LinearHicDisplayModel } from './model.ts'
+import type { HicFlatbushItem } from '../HicRenderer/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

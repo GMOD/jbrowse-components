@@ -1,10 +1,10 @@
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
 import volvoxConfig from '../../public/test_data/volvox/config.json'
-import { JBrowseApp, createViewState } from '../../src'
+import { JBrowseApp, createViewState } from '../../src/index.ts'
 // replace with this in your code:
 // import makeWorkerInstance from '@jbrowse/react-app2/esm/makeWorkerInstance'
-import makeWorkerInstance from '../../src/makeWorkerInstance'
+import makeWorkerInstance from '../../src/makeWorkerInstance.ts'
 
 export const WithWebWorker = () => {
   const state = createViewState({

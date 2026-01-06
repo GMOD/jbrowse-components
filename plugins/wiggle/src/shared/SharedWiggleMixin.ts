@@ -10,14 +10,14 @@ import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 
-import { getNiceDomain } from '../util'
+import { getNiceDomain } from '../util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // lazies
-const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog'))
+const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 
 /**
  * #stateModel SharedWiggleMixin

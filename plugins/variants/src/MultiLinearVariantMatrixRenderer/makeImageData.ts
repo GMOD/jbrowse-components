@@ -4,13 +4,16 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { f2 } from '../shared/constants'
-import { drawColorAlleleCount, getAlleleColor } from '../shared/drawAlleleCount'
-import { drawPhased } from '../shared/drawPhased'
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
+import { f2 } from '../shared/constants.ts'
+import {
+  drawColorAlleleCount,
+  getAlleleColor,
+} from '../shared/drawAlleleCount.ts'
+import { drawPhased } from '../shared/drawPhased.ts'
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
-import type { RenderArgsDeserialized } from './types'
-import type { Source } from '../shared/types'
+import type { RenderArgsDeserialized } from './types.ts'
+import type { Source } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 type SampleGenotype = Record<string, string[]>

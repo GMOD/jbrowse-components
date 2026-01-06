@@ -5,7 +5,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import type { AnyRegion, Block } from './types'
+import type { AnyRegion, Block } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 

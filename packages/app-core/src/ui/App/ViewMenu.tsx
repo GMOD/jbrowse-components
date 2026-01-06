@@ -12,8 +12,8 @@ import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { useDockview } from './DockviewContext'
-import { renameIds } from './copyView'
+import { useDockview } from './DockviewContext.tsx'
+import { renameIds } from './copyView.ts'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

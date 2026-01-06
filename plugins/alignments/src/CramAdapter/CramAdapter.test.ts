@@ -3,9 +3,9 @@ import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './CramAdapter'
-import { SequenceAdapter } from './CramTestAdapters'
-import configSchema from './configSchema'
+import Adapter from './CramAdapter.ts'
+import { SequenceAdapter } from './CramTestAdapters.ts'
+import configSchema from './configSchema.ts'
 
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 

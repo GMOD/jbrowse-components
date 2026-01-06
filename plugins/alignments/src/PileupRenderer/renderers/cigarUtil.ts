@@ -1,4 +1,4 @@
-import { parseCigar2 } from '../../MismatchParser'
+import { parseCigar2 } from '../../MismatchParser/index.ts'
 
 // CIGAR operation indices (from BAM spec) - used in packed Uint32Array format
 export const CIGAR_M = 0

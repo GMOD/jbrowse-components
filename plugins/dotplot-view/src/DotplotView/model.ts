@@ -32,10 +32,10 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun, observable } from 'mobx'
 
-import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
-import { getBlockLabelKeysToHide, makeTicks } from './components/util'
+import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
+import { getBlockLabelKeysToHide, makeTicks } from './components/util.ts'
 
-import type { DotplotViewInit, ImportFormSyntenyTrack } from './types'
+import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
@@ -43,7 +43,7 @@ import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
-const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
 )
@@ -672,7 +672,8 @@ export default function stateModelFactory(pm: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        const { renderToSvg } = await import('./svgcomponents/SVGDotplotView')
+        const { renderToSvg } =
+          await import('./svgcomponents/SVGDotplotView.tsx')
         const html = await renderToSvg(self as DotplotViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
@@ -895,4 +896,4 @@ export default function stateModelFactory(pm: PluginManager) {
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
 export type DotplotViewModel = Instance<DotplotViewStateModel>
 
-export { Dotplot1DView, type Dotplot1DViewModel } from './1dview'
+export { Dotplot1DView, type Dotplot1DViewModel } from './1dview.ts'

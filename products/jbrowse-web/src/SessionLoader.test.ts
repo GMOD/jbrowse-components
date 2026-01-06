@@ -1,6 +1,6 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import SessionLoader from './SessionLoader'
+import SessionLoader from './SessionLoader.ts'
 
 // Mock dependencies
 jest.mock('@jbrowse/core/util/io', () => ({

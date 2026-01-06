@@ -1,7 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import CanvasFeatureRendererF from './CanvasFeatureRenderer'
-import registerGlyphs from './glyphs'
+import CanvasFeatureRendererF from './CanvasFeatureRenderer/index.ts'
+import registerGlyphs from './glyphs/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -9,21 +9,21 @@ import ShuffleIcon from '@mui/icons-material/Shuffle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable, when } from 'mobx'
 
-import { Curves } from './components/Icons'
-import baseModel from '../LinearComparativeView/model'
+import { Curves } from './components/Icons.tsx'
+import baseModel from '../LinearComparativeView/model.ts'
 
 import type {
   ExportSvgOptions,
   ImportFormSyntenyTrack,
   LinearSyntenyViewInit,
-} from './types'
+} from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
-const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const DiagonalizationProgressDialog = lazy(
-  () => import('./components/DiagonalizationProgressDialog'),
+  () => import('./components/DiagonalizationProgressDialog.tsx'),
 )
 
 /**
@@ -169,7 +169,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       async exportSvg(opts: ExportSvgOptions) {
         const { renderToSvg } =
-          await import('./svgcomponents/SVGLinearSyntenyView')
+          await import('./svgcomponents/SVGLinearSyntenyView.tsx')
         const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')

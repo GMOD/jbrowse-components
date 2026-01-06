@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "esnext",
+    "verbatimModuleSyntax": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "outDir": "dist",
@@ -20,7 +21,19 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true
+    "rewriteRelativeImportExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@jbrowse/core/*": ["packages/core/src/*"],
+      "@jbrowse/web/*": ["products/jbrowse-web/*"],
+      "@jbrowse/app-core": ["packages/app-core/src/index.ts"],
+      "@jbrowse/plugin-alignments": ["plugins/alignments/src/index.ts"],
+      "@jbrowse/plugin-hic": ["plugins/hic/src/index.ts"],
+      "@jbrowse/plugin-linear-genome-view": [
+        "plugins/linear-genome-view/src/index.ts"
+      ],
+      "@jbrowse/plugin-variants": ["plugins/variants/src/index.ts"]
+    }
   },
   "exclude": [
     "**/build/",

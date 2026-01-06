@@ -9,13 +9,13 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
-import { stateModelFactory } from '.'
-import { BaseLinearDisplayComponent } from '..'
-import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
+import { stateModelFactory } from './index.ts'
+import { BaseLinearDisplayComponent } from '../index.ts'
 import hg38Regions from './hg38DisplayedRegions.json'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
+import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay/index.ts'
 
-import type { LinearGenomeViewModel } from '.'
+import type { LinearGenomeViewModel } from './index.ts'
 
 type LGV = LinearGenomeViewModel
 

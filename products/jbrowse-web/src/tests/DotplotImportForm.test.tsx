@@ -1,6 +1,6 @@
 import { fireEvent, within } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
+import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
 setup()
 
 jest.mock('../makeWorkerInstance', () => () => {})

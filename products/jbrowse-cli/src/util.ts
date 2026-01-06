@@ -3,7 +3,7 @@ import { stat } from 'fs/promises'
 import path from 'path'
 import { Readable } from 'stream'
 
-import { createRemoteStream, isURL } from './types/common'
+import { createRemoteStream, isURL } from './types/common.ts'
 
 export async function getLocalOrRemoteStream(uri: string, out: string) {
   if (isURL(uri)) {

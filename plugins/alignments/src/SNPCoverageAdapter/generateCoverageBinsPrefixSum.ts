@@ -1,25 +1,25 @@
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import { processDepthPrefixSum } from './processDepthPrefixSum'
-import { processModifications } from './processModifications'
-import { processReferenceCpGs } from './processReferenceCpGs'
-import { isInterbase, mismatchLen } from './util'
-import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
+import { processDepthPrefixSum } from './processDepthPrefixSum.ts'
+import { processModifications } from './processModifications.ts'
+import { processReferenceCpGs } from './processReferenceCpGs.ts'
+import { isInterbase, mismatchLen } from './util.ts'
+import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil.ts'
 import {
   DELSKIP_MASK,
   MISMATCH_MAP,
   MISMATCH_REV_MAP,
   SKIP_TYPE,
-} from '../shared/forEachMismatchTypes'
+} from '../shared/forEachMismatchTypes.ts'
 
-import type { Opts } from './util'
+import type { Opts } from './util.ts'
 import type {
   FeatureWithMismatchIterator,
   Mismatch,
   PreBaseCoverageBin,
   PreBinEntry,
   SkipMap,
-} from '../shared/types'
+} from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 

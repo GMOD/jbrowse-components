@@ -2,10 +2,10 @@ import { Suspense, isValidElement, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
-import BlockMsg from './BlockMsg'
-import LoadingOverlay from './LoadingOverlay'
+import BlockMsg from './BlockMsg.tsx'
+import LoadingOverlay from './LoadingOverlay.tsx'
 
-const BlockErrorMessage = lazy(() => import('./BlockErrorMessage'))
+const BlockErrorMessage = lazy(() => import('./BlockErrorMessage.tsx'))
 
 const ServerSideRenderedBlockContent = observer(
   function ServerSideRenderedBlockContent({

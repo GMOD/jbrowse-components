@@ -1,7 +1,7 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
+import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -228,7 +228,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('./afterAttach')
+            const { doAfterAttach } = await import('./afterAttach.ts')
             doAfterAttach(self)
           } catch (e) {
             console.error(e)

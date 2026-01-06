@@ -6,11 +6,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Container } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea'
-import LeftPanel from './LeftPanel'
-import { doSubmit } from './doSubmit'
+import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelectorArea.tsx'
+import LeftPanel from './LeftPanel.tsx'
+import { doSubmit } from './doSubmit.tsx'
 
-import type { LinearSyntenyViewModel } from '../../model'
+import type { LinearSyntenyViewModel } from '../../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {

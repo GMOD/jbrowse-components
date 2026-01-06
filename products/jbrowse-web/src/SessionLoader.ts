@@ -5,10 +5,15 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
 
-import { readSessionFromDynamo } from './sessionSharing'
-import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
+import { readSessionFromDynamo } from './sessionSharing.ts'
+import {
+  addRelativeUris,
+  checkPlugins,
+  fromUrlSafeB64,
+  readConf,
+} from './util.ts'
 
-import type { SessionDB, SessionTriagedInfo } from './types'
+import type { SessionDB, SessionTriagedInfo } from './types.ts'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

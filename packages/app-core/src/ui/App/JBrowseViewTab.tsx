@@ -4,10 +4,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { InputBase, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import JBrowseTabMenu from './JBrowseTabMenu'
-import { isSessionWithDockviewLayout } from '../../DockviewLayout'
+import JBrowseTabMenu from './JBrowseTabMenu.tsx'
+import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 
-import type { DockviewSessionType } from './types'
+import type { DockviewSessionType } from './types.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { IDockviewPanelHeaderProps } from 'dockview-react'
 

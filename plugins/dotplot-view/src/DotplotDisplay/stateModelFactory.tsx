@@ -8,10 +8,13 @@ import {
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
-import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
+import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent.tsx'
+import { renderBlockData, renderBlockEffect } from './renderDotplotBlock.ts'
 
-import type { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
+import type {
+  DotplotViewModel,
+  ExportSvgOptions,
+} from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'

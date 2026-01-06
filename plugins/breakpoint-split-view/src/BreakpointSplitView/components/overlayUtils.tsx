@@ -1,4 +1,4 @@
-import type { BreakpointViewModel } from '../model'
+import type { BreakpointViewModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { getSession } from '@jbrowse/core/util'
 

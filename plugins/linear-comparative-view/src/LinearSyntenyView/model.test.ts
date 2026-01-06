@@ -1,4 +1,4 @@
-import type { LinearSyntenyViewInit } from './types'
+import type { LinearSyntenyViewInit } from './types.ts'
 
 describe('LinearSyntenyViewInit type', () => {
   test('init type accepts views with assembly', () => {

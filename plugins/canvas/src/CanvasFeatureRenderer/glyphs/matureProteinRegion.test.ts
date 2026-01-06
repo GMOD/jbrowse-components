@@ -5,13 +5,13 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Image, createCanvas } from 'canvas'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { matureProteinRegionGlyph } from './matureProteinRegion'
-import configSchema from '../configSchema'
-import { layoutFeatures } from '../layout/layoutFeatures'
-import { makeImageData } from '../makeImageData'
-import { createRenderConfigContext } from '../renderConfig'
+import { matureProteinRegionGlyph } from './matureProteinRegion.ts'
+import configSchema from '../configSchema.ts'
+import { layoutFeatures } from '../layout/layoutFeatures.ts'
+import { makeImageData } from '../makeImageData.ts'
+import { createRenderConfigContext } from '../renderConfig.ts'
 
-import type { FloatingLabelData } from '../floatingLabels'
+import type { FloatingLabelData } from '../floatingLabels.ts'
 
 interface LayoutSerializableData {
   refName?: string

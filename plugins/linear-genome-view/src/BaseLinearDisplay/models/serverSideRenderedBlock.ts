@@ -15,7 +15,7 @@ import {
 import { isRetryException } from '@jbrowse/core/util/types'
 import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
-import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
+import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent.tsx'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'

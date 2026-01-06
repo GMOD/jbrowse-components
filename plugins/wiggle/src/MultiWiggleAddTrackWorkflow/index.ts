@@ -10,7 +10,7 @@ export default function MultiWiggleAddTrackWorkflowF(pm: PluginManager) {
     () =>
       new AddTrackWorkflowType({
         name: 'Multi-wiggle track',
-        ReactComponent: lazy(() => import('./AddTrackWorkflow')),
+        ReactComponent: lazy(() => import('./AddTrackWorkflow.tsx')),
         stateModel: types.model({}),
       }),
   )

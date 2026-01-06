@@ -5,7 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
-import type { LinearComparativeViewModel } from '../model'
+import type { LinearComparativeViewModel } from '../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

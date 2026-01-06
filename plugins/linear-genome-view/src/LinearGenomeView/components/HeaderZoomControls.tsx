@@ -13,7 +13,9 @@ import type { LinearGenomeViewModel } from '..'
 import type { SliderValueLabelProps } from '@mui/material'
 
 // lazies
-const RegionWidthEditorDialog = lazy(() => import('./RegionWidthEditorDialog'))
+const RegionWidthEditorDialog = lazy(
+  () => import('./RegionWidthEditorDialog.tsx'),
+)
 
 const useStyles = makeStyles()(theme => ({
   container: {

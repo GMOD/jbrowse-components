@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import configSchemaFactory from './configSchema'
-import modelFactory from './model'
+import configSchemaFactory from './configSchema.ts'
+import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -18,11 +18,13 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
       stateModel,
       trackType: 'QuantitativeTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() => import('./components/WiggleDisplayComponent')),
+      ReactComponent: lazy(
+        () => import('./components/WiggleDisplayComponent.tsx'),
+      ),
     })
   })
 }
 
-export { default as Tooltip } from './components/Tooltip'
-export { default as ReactComponent } from './components/WiggleDisplayComponent'
-export { default as modelFactory } from './model'
+export { default as Tooltip } from './components/Tooltip.tsx'
+export { default as ReactComponent } from './components/WiggleDisplayComponent.tsx'
+export { default as modelFactory } from './model.ts'

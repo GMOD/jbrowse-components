@@ -6,13 +6,13 @@ import {
   readInlineOrFileJson,
   readJsonFile,
   resolveConfigPath,
-} from '../utils'
+} from '../utils.ts'
 import {
   findAndUpdateOrAdd,
   saveConfigAndReport,
-} from './shared/config-operations'
+} from './shared/config-operations.ts'
 
-import type { Config, Track } from '../base'
+import type { Config, Track } from '../base.ts'
 
 export async function run(args?: string[]) {
   const options = {

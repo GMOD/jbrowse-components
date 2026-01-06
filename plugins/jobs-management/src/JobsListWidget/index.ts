@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 
-import { stateModelFactory } from './model'
+import { stateModelFactory } from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 export const configSchema = ConfigurationSchema('JobsListWidget', {})
@@ -15,7 +15,7 @@ export default function JobsListWidgetF(pluginManager: PluginManager) {
       heading: 'Jobs list',
       configSchema,
       stateModel: stateModelFactory(pluginManager),
-      ReactComponent: lazy(() => import('./components/JobsListWidget')),
+      ReactComponent: lazy(() => import('./components/JobsListWidget.tsx')),
     })
   })
 }

@@ -4,7 +4,7 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { SimpleFeature, assembleLocStringFast } from '@jbrowse/core/util'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 
-import { locationLinkClick } from '../util'
+import { locationLinkClick } from '../util.ts'
 
 import type {
   AbstractSessionModel,
@@ -12,7 +12,7 @@ import type {
 } from '@jbrowse/core/util'
 
 const BreakpointSplitViewChoiceDialog = lazy(
-  () => import('./BreakpointSplitViewChoiceDialog'),
+  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
 )
 
 export default function FeatureMenu({

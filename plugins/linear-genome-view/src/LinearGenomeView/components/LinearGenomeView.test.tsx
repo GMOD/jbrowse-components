@@ -3,9 +3,9 @@ import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 
-import LinearGenomeView from './LinearGenomeView'
+import LinearGenomeView from './LinearGenomeView.tsx'
 
-import type { LinearGenomeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '../model.ts'
 
 // mock
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})

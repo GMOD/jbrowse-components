@@ -9,9 +9,9 @@ import {
   TableRow,
 } from '@mui/material'
 
-import { collapseIntrons, getExonsAndCDS } from './util'
+import { collapseIntrons, getExonsAndCDS } from './util.ts'
 
-import type { LinearGenomeViewModel } from '../../../LinearGenomeView'
+import type { LinearGenomeViewModel } from '../../../LinearGenomeView/index.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 

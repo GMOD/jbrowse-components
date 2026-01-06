@@ -4,17 +4,17 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   buildFlatbushIndex,
   buildMismatchFlatbushIndex,
-} from '../RenderLinearReadCloudDisplayRPC/drawFeatsCommon'
+} from '../RenderLinearReadCloudDisplayRPC/drawFeatsCommon.ts'
 import {
   createRPCRenderFunction,
   setupCanvasRenderingAutorun,
-} from '../shared/createRPCRenderingSetup'
-import { setupModificationsAutorun } from '../shared/setupModificationsAutorun'
-import { createAutorun } from '../util'
+} from '../shared/createRPCRenderingSetup.ts'
+import { setupModificationsAutorun } from '../shared/setupModificationsAutorun.ts'
+import { createAutorun } from '../util.ts'
 
-import type { LinearReadCloudDisplayModel } from './model'
-import type { FlatbushItem } from '../PileupRenderer/types'
-import type { FlatbushEntry } from '../shared/flatbushType'
+import type { LinearReadCloudDisplayModel } from './model.ts'
+import type { FlatbushItem } from '../PileupRenderer/types.ts'
+import type { FlatbushEntry } from '../shared/flatbushType.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

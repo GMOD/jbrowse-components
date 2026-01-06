@@ -1,8 +1,8 @@
-import { CIGAR_N, CIGAR_REF_CONSUMING_MASK } from './cigarUtil'
-import { CHEVRON_WIDTH } from '../../shared/util'
+import { CIGAR_N, CIGAR_REF_CONSUMING_MASK } from './cigarUtil.ts'
+import { CHEVRON_WIDTH } from '../../shared/util.ts'
 
-import type { ProcessedRenderArgs } from '../types'
-import type { LayoutFeature } from '../util'
+import type { ProcessedRenderArgs } from '../types.ts'
+import type { LayoutFeature } from '../util.ts'
 
 // Helper to draw forward strand chevron
 function drawForwardChevron(

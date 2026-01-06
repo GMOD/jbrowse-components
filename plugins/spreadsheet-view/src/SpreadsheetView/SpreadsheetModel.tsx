@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import LocationCell from './components/LocationCell'
+import LocationCell from './components/LocationCell.tsx'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'

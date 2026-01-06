@@ -8,7 +8,7 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import type { RenderArgsDeserialized } from './types'
+import type { RenderArgsDeserialized } from './types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -55,7 +55,7 @@ export default class SNPCoverageRenderer extends FeatureRendererType {
     )
     const features = new Map(feats.map(f => [f.id(), f] as const))
 
-    const { renderSNPCoverageToCanvas } = await import('./makeImage')
+    const { renderSNPCoverageToCanvas } = await import('./makeImage.ts')
     return renderSNPCoverageToCanvas({ ...renderProps, features })
   }
 }

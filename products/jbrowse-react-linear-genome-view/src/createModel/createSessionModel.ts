@@ -20,7 +20,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
-const AboutDialog = lazy(() => import('./AboutDialog'))
+const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel

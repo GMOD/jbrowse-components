@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 
-import type { MouseState } from '../components/types'
+import type { MouseState } from '../components/types.ts'
 
 /**
  * Hook for RAF-throttled mouse tracking within a container.

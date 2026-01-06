@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
 
-import { getVolvoxConfig } from './util'
-import { JBrowseLinearGenomeView, createViewState } from '../../src'
+import { getVolvoxConfig } from './util.ts'
+import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 const options = [
   { name: 'EDEN', location: 'ctgA:1-5,000', assemblyName: 'volvox' },

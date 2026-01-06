@@ -4,13 +4,13 @@ import {
   renderToAbstractCanvas,
   updateStatus,
 } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { rpcResult } from 'librpc-web-mod'
 
-import { drawXY } from '../drawXY'
-import { serializeWiggleFeature } from '../util'
+import { drawXY } from '../drawXY.ts'
+import { serializeWiggleFeature } from '../util.ts'
 
-import type { MultiRenderArgsDeserialized } from '../types'
+import type { MultiRenderArgsDeserialized } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiRowXYPlot(

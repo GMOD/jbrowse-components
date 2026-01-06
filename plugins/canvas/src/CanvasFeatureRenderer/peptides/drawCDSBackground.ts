@@ -1,9 +1,9 @@
 import { colord } from '@jbrowse/core/util/colord'
 import { darken, lighten } from '@mui/material'
 
-import { getEffectiveStrand, getStrandAwareX } from '../util'
+import { getEffectiveStrand, getStrandAwareX } from '../util.ts'
 
-import type { AggregatedAminoAcid } from './prepareAminoAcidData'
+import type { AggregatedAminoAcid } from './prepareAminoAcidData.ts'
 
 interface DrawCDSBackgroundArgs {
   ctx: CanvasRenderingContext2D

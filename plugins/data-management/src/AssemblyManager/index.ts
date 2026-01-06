@@ -1,1 +1,1 @@
-export { default } from './AssemblyManager'
+export { default } from './AssemblyManager.tsx'

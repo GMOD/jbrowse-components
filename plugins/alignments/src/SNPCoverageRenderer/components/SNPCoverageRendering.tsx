@@ -10,9 +10,9 @@ import {
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import { clickMapItemToFeatureData } from '../types'
+import { clickMapItemToFeatureData } from '../types.ts'
 
-import type { ClickMapItem } from '../types'
+import type { ClickMapItem } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'

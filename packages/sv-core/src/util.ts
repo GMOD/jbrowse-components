@@ -1,6 +1,6 @@
 import { parseBreakend } from '@gmod/vcf'
 
-import type { Track } from './types'
+import type { Track } from './types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 

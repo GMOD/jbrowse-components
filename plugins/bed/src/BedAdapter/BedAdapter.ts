@@ -6,7 +6,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { featureData } from '../util'
+import { featureData } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'

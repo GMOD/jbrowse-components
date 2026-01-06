@@ -5,7 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { dataDir, readConf, runCommand, runInTmpDir } from '../testUtil'
+import { dataDir, readConf, runCommand, runInTmpDir } from '../testUtil.ts'
 
 const { copyFile, rename } = fs.promises
 

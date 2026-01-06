@@ -24,10 +24,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { readSessionFromDynamo } from '../../sessionSharing'
-import { fromUrlSafeB64 } from '../../utils'
+import { readSessionFromDynamo } from '../../sessionSharing.ts'
+import { fromUrlSafeB64 } from '../../utils.ts'
 
-import type { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({

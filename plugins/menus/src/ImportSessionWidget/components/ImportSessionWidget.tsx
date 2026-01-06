@@ -7,7 +7,7 @@ import { Button, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
 
-import ImportError from './ImportError'
+import ImportError from './ImportError.tsx'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 

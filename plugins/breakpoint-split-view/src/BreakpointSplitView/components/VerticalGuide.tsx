@@ -3,7 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { BreakpointViewModel } from '../model'
+import type { BreakpointViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   guide: {

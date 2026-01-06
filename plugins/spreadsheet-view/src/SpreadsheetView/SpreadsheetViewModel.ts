@@ -4,10 +4,10 @@ import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
-import ImportWizard from './ImportWizard'
-import Spreadsheet from './SpreadsheetModel'
+import ImportWizard from './ImportWizard.ts'
+import Spreadsheet from './SpreadsheetModel.tsx'
 
-import type { SpreadsheetModel } from './SpreadsheetModel'
+import type { SpreadsheetModel } from './SpreadsheetModel.tsx'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

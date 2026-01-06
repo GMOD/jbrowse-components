@@ -2,8 +2,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
-import ConfigSchema from '../configSchema'
-import Rendering from './LollipopRendering'
+import ConfigSchema from '../configSchema.ts'
+import Rendering from './LollipopRendering.tsx'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()

@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, doBeforeEach, hts, setup } from './util'
+import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

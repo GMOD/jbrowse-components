@@ -5,8 +5,8 @@ import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import VcfFeature from '../VcfFeature'
-import { parseVcfBuffer } from './vcfParser'
+import { parseVcfBuffer } from './vcfParser.ts'
+import VcfFeature from '../VcfFeature/index.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'

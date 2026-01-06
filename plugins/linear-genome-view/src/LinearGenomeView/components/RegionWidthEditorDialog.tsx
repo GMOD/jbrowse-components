@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '../model.ts'
 
 function format(n: number) {
   return toLocale(Math.floor(n))

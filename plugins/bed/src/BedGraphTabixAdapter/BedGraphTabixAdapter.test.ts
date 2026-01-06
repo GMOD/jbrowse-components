@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BedGraphTabixAdapter from './BedGraphTabixAdapter'
-import configSchema from './configSchema'
+import BedGraphTabixAdapter from './BedGraphTabixAdapter.ts'
+import configSchema from './configSchema.ts'
 
 function makeAdapter() {
   return new BedGraphTabixAdapter(

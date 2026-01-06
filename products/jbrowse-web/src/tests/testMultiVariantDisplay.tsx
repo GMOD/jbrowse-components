@@ -1,6 +1,6 @@
 import { fireEvent } from '@testing-library/react'
 
-import { createView, expectCanvasMatch, hts } from './util'
+import { createView, expectCanvasMatch, hts } from './util.tsx'
 
 export async function testMultiVariantDisplay({
   displayType,

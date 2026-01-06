@@ -2,10 +2,14 @@ import { category10 } from '@jbrowse/core/ui/colors'
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { draw, drawLocationMarkers, drawMatchSimple } from './components/util'
+import {
+  draw,
+  drawLocationMarkers,
+  drawMatchSimple,
+} from './components/util.ts'
 
-import type { LinearSyntenyDisplayModel } from './model'
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+import type { LinearSyntenyDisplayModel } from './model.ts'
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 

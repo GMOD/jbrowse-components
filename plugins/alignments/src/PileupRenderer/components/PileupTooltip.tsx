@@ -1,9 +1,9 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 
-import { getFlatbushItemLabel } from '../types'
+import { getFlatbushItemLabel } from '../types.ts'
 
-import type { FlatbushItem } from '../types'
+import type { FlatbushItem } from '../types.ts'
 
 export default function PileupTooltip({
   item,

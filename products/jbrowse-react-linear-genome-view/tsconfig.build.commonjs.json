@@ -1,9 +1,9 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "module": "commonjs",
     "outDir": "dist",
-    "target": "es2018"
+    "module": "commonjs",
+    "verbatimModuleSyntax": false
   },
   "exclude": ["src/makeWorkerInstance.ts"]
 }

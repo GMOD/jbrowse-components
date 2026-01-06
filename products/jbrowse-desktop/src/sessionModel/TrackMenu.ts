@@ -13,7 +13,7 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
 
-import type { DesktopRootModel } from '../rootModel/rootModel'
+import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -23,7 +23,7 @@ import type {
   SessionWithTracks,
 } from '@jbrowse/product-core'
 
-const AboutDialog = lazy(() => import('./AboutDialog'))
+const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 
 /**
  * #stateModel DesktopSessionTrackMenuMixin

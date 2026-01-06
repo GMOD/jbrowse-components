@@ -8,13 +8,13 @@ import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
-import { getUniqueModifications } from '../shared/getUniqueModifications'
-import { getSNPCoverageLegendItems } from '../shared/legendUtils'
-import { isDefaultFilterFlags } from '../shared/util'
-import { createAutorun } from '../util'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin.ts'
+import { getUniqueModifications } from '../shared/getUniqueModifications.ts'
+import { getSNPCoverageLegendItems } from '../shared/legendUtils.ts'
+import { isDefaultFilterFlags } from '../shared/util.ts'
+import { createAutorun } from '../util.ts'
 
-import type { ColorBy, FilterBy } from '../shared/types'
+import type { ColorBy, FilterBy } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
@@ -30,9 +30,9 @@ import type {
 import type { Theme } from '@mui/material'
 
 // lazies
-const Tooltip = lazy(() => import('./components/Tooltip'))
+const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
 const FilterArcsByScoreDialog = lazy(
-  () => import('./components/FilterArcsByScoreDialog'),
+  () => import('./components/FilterArcsByScoreDialog.tsx'),
 )
 
 // using a map because it preserves order
@@ -351,7 +351,7 @@ function stateModelFactory(
          */
         async renderSvg(opts: ExportSvgDisplayOptions) {
           const { renderSNPCoverageSvg } =
-            await import('./components/renderSvg')
+            await import('./components/renderSvg.tsx')
           return renderSNPCoverageSvg(self, opts, superRenderSvg)
         },
 

@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -14,7 +14,7 @@ export default function DeltaAdapterF(pluginManager: PluginManager) {
         adapterMetadata: {
           category: 'Synteny adapters',
         },
-        getAdapterClass: () => import('./DeltaAdapter').then(r => r.default),
+        getAdapterClass: () => import('./DeltaAdapter.ts').then(r => r.default),
       }),
   )
 }

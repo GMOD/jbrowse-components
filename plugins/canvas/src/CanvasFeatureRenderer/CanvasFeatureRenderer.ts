@@ -1,8 +1,8 @@
 import { BoxRendererType } from '@jbrowse/core/pluggableElementTypes'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { rpcResult } from 'librpc-web-mod'
 
-import { doAll } from './doAll'
+import { doAll } from './doAll.ts'
 
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 

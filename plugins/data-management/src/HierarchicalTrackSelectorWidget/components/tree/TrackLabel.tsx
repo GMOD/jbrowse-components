@@ -7,11 +7,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isUnsupported } from '../util'
-import TrackSelectorTrackMenu from './TrackSelectorTrackMenu'
+import { isUnsupported } from '../util.ts'
+import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
-import type { TreeTrackNode } from '../../types'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { TreeTrackNode } from '../../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({

@@ -1,7 +1,7 @@
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { parseJB1Conf, parseJB1Json, regularizeConf } from './jb1ConfigParse'
-import { deepUpdate, fillTemplate } from './util'
+import { parseJB1Conf, parseJB1Json, regularizeConf } from './jb1ConfigParse.ts'
+import { deepUpdate, fillTemplate } from './util.ts'
 
 import type {
   Config,
@@ -10,7 +10,7 @@ import type {
   LocalPathLocation,
   Track,
   UriLocation,
-} from './types'
+} from './types.ts'
 
 function isUriLocation(location: JBLocation): location is UriLocation {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

@@ -1,6 +1,6 @@
 import { PileupLayout } from '@jbrowse/core/util/layouts'
 
-import type { ComputedChain } from './drawFeatsCommon'
+import type { ComputedChain } from './drawFeatsCommon.ts'
 
 /**
  * Calculate Y-offsets using PileupLayout for stack mode

@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import { IconButton, InputAdornment } from '@mui/material'
 
 // lazy
-const HelpDialog = lazy(() => import('./HelpDialog'))
+const HelpDialog = lazy(() => import('./HelpDialog.tsx'))
 
 function HelpAdornment() {
   const [isHelpDialogDisplayed, setHelpDialogDisplayed] = useState(false)

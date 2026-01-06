@@ -2,12 +2,12 @@ import { useState } from 'react'
 
 import { observer } from 'mobx-react'
 
-import AutoSizer from './AutoSizer'
-import HierarchicalFab from './HierarchicalFab'
-import HierarchicalHeader from './tree/HierarchicalHeader'
-import HierarchicalTree from './tree/HierarchicalTree'
+import AutoSizer from './AutoSizer.tsx'
+import HierarchicalFab from './HierarchicalFab.tsx'
+import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
+import HierarchicalTree from './tree/HierarchicalTree.tsx'
 
-import type { HierarchicalTrackSelectorModel } from '../model'
+import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
 // Don't use autosizer in jest and instead hardcode a height, otherwise fails
 // jest tests

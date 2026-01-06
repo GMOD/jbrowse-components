@@ -1,7 +1,7 @@
 import type React from 'react'
 import { useCallback, useEffect, useState } from 'react'
 
-import { getRelativeX } from './util'
+import { getRelativeX } from './util.ts'
 
 import type { LinearGenomeViewModel } from '..'
 

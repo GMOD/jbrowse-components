@@ -8,7 +8,7 @@ import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { GridBookmarkModel, IExtendedLGV } from '../../model'
+import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = IExtendedLGV

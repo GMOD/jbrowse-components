@@ -3,10 +3,10 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   createRPCRenderFunction,
   setupCanvasRenderingAutorun,
-} from '../shared/createRPCRenderingSetup'
-import { createAutorun } from '../util'
+} from '../shared/createRPCRenderingSetup.ts'
+import { createAutorun } from '../util.ts'
 
-import type { LinearReadArcsDisplayModel } from './model'
+import type { LinearReadArcsDisplayModel } from './model.ts'
 
 export function doAfterAttachRPC(self: LinearReadArcsDisplayModel) {
   const performRender = createRPCRenderFunction({

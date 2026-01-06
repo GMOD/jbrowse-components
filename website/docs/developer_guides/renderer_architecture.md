@@ -116,7 +116,7 @@ For renderers that draw to canvas and return `ImageBitmap` (e.g.,
 `PileupRenderer`, `WiggleBaseRenderer`):
 
 ```typescript
-import { rpcResult } from 'librpc-web-mod'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
 class MyCanvasRenderer extends FeatureRendererType {
@@ -160,7 +160,7 @@ The `rpcResult()` function from `librpc-web-mod` wraps return values with
 explicit transferables:
 
 ```typescript
-import { rpcResult } from 'librpc-web-mod'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 
 // Without rpcResult - ImageBitmap would be copied (slow)
 return { imageData: bitmap, width, height }
@@ -274,7 +274,7 @@ class MyRenderer extends FeatureRendererType {
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import { isImageBitmap } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { rpcResult } from 'librpc-web-mod'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 
 class MyCanvasRenderer extends FeatureRendererType {
   async render(renderProps) {

@@ -1,6 +1,6 @@
-import { cigarToMismatches } from './cigarToMismatches'
-import { cigarToMismatches2 } from './cigarToMismatches2'
-import { parseCigar2, parseCigar } from './index'
+import { cigarToMismatches } from './cigarToMismatches.ts'
+import { cigarToMismatches2 } from './cigarToMismatches2.ts'
+import { parseCigar2, parseCigar } from './index.ts'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -10,7 +10,7 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../PileupRenderer/renderers/cigarUtil'
+} from '../PileupRenderer/renderers/cigarUtil.ts'
 
 const ml = (currLen: number, opIndex: number) => (currLen << 4) | opIndex
 const parseCigar3 = (args: string) => [...parseCigar2(args)]

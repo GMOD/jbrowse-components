@@ -1,8 +1,8 @@
 export {
   type AggregatedAminoAcid,
   aggregateAminos,
-} from './aggregateAminoAcids'
-export { drawCDSBackground } from './drawCDSBackground'
-export { drawPeptidesOnCDS } from './drawPeptidesOnCDS'
-export { fetchPeptideData } from './peptideUtils'
-export { prepareAminoAcidData } from './prepareAminoAcidData'
+} from './aggregateAminoAcids.ts'
+export { drawCDSBackground } from './drawCDSBackground.ts'
+export { drawPeptidesOnCDS } from './drawPeptidesOnCDS.ts'
+export { fetchPeptideData } from './peptideUtils.ts'
+export { prepareAminoAcidData } from './prepareAminoAcidData.ts'

@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type axisPropsFromTickScale from './axisPropsFromTickScale'
+import type axisPropsFromTickScale from './axisPropsFromTickScale.ts'
 
 type Ticks = ReturnType<typeof axisPropsFromTickScale>
 

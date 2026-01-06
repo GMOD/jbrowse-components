@@ -152,7 +152,7 @@ export function readConf({ configuration }: Root, attr: string, def: string) {
   return configuration?.[attr] || def
 }
 
-export { checkPlugins, fetchPlugins } from './checkPlugins'
+export { checkPlugins, fetchPlugins } from './checkPlugins.ts'
 
 export function removeAttr(obj: Record<string, unknown>, attr: string) {
   for (const prop in obj) {

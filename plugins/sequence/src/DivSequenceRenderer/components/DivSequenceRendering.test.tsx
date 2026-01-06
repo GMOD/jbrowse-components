@@ -3,8 +3,8 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import DivSequenceRendering from './DivSequenceRendering'
-import DivRenderingConfigSchema from '../configSchema'
+import DivSequenceRendering from './DivSequenceRendering.tsx'
+import DivRenderingConfigSchema from '../configSchema.ts'
 
 function Base({ children }: { children: React.ReactNode }) {
   return <ThemeProvider theme={createJBrowseTheme()}>{children}</ThemeProvider>

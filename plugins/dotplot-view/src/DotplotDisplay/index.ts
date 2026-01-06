@@ -4,7 +4,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { stateModelFactory } from './stateModelFactory'
+import { stateModelFactory } from './stateModelFactory.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -18,7 +18,7 @@ export default function DotplotDisplayF(pm: PluginManager) {
       stateModel: stateModelFactory(configSchema),
       trackType: 'SyntenyTrack',
       viewType: 'DotplotView',
-      ReactComponent: lazy(() => import('./components/DotplotDisplay')),
+      ReactComponent: lazy(() => import('./components/DotplotDisplay.tsx')),
     })
   })
 }

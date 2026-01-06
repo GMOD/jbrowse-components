@@ -1,12 +1,12 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createSubfeatureLabelMetadata } from '@jbrowse/plugin-linear-genome-view'
 
-import { createTranscriptFloatingLabel } from '../floatingLabels'
-import { builtinGlyphs } from '../glyphs'
+import { createTranscriptFloatingLabel } from '../floatingLabels.ts'
+import { builtinGlyphs } from '../glyphs/index.ts'
 
-import type { FloatingLabelData } from '../floatingLabels'
-import type { RenderConfigContext } from '../renderConfig'
-import type { FeatureLayout, SubfeatureInfo } from '../types'
+import type { FloatingLabelData } from '../floatingLabels.ts'
+import type { RenderConfigContext } from '../renderConfig.ts'
+import type { FeatureLayout, SubfeatureInfo } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'

@@ -1,6 +1,6 @@
 import { revcom } from '@jbrowse/core/util'
 
-import { modificationRegex } from './consts'
+import { modificationRegex } from './consts.ts'
 
 /**
  * Parse MM tag to extract modification positions on the read sequence.

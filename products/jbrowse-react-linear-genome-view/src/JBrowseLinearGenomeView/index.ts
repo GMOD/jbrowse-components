@@ -1,1 +1,1 @@
-export { default } from './JBrowseLinearGenomeView'
+export { default } from './JBrowseLinearGenomeView.tsx'

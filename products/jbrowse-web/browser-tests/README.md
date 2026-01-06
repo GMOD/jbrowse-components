@@ -9,7 +9,7 @@ Build jbrowse-web first:
 
 ```bash
 cd products/jbrowse-web
-yarn build
+pnpm build
 ```
 
 ## Running Tests
@@ -18,13 +18,13 @@ From `products/jbrowse-web`:
 
 ```bash
 # Run tests in headless mode
-yarn test:browser
+pnpm test:browser
 
 # Run tests with visible browser
-yarn test:browser:headed
+pnpm test:browser:headed
 
 # Update canvas snapshots
-yarn test:browser:update
+pnpm test:browser:update
 ```
 
 Or run directly:
@@ -93,3 +93,24 @@ const testSuites: TestSuite[] = [
 - `waitForLoadingToComplete(page, timeout)` - Wait for loading overlays to
   disappear
 - `capturePageSnapshot(page, name)` - Capture and compare full page screenshot
+
+## Auth Test Servers
+
+This directory also contains test servers for HTTP Basic and OAuth
+authentication testing.
+
+### Running Auth Servers
+
+```bash
+# Start OAuth server (port 3030)
+node --experimental-strip-types browser-tests/OAuthServer/app.ts
+
+# Start HTTP Basic Auth server (port 3040)
+node --experimental-strip-types browser-tests/HTTPBasicAuthServer/app.ts
+```
+
+### Testing Authentication
+
+1. Start the OAuth and/or BasicAuth servers in separate terminals
+2. Start jbrowse-web dev server
+3. Visit http://localhost:3000/?config=test_data/volvox/config_auth.json

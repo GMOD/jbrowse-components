@@ -2,7 +2,7 @@ import Dialog from '@jbrowse/core/ui/Dialog'
 import { getEnv } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
-import AboutContents from './AboutDialogContents'
+import AboutContents from './AboutDialogContents.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

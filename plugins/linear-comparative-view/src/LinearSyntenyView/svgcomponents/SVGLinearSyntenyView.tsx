@@ -14,13 +14,13 @@ import { totalHeight } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground'
-import SVGLinearGenomeView from './SVGLinearGenomeView'
-import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
+import SVGBackground from './SVGBackground.tsx'
+import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
+import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny.ts'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
-import type { LinearSyntenyViewModel } from '../model'
-import type { ExportSvgOptions } from '../types'
+import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
+import type { ExportSvgOptions } from '../types.ts'
 
 interface TrackEntry {
   displays: unknown[]

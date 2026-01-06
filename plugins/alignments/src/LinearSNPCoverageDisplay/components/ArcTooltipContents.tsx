@@ -1,8 +1,8 @@
 import { toLocale } from '@jbrowse/core/util'
 
-import { getStrandLabel } from './arcUtils'
+import { getStrandLabel } from './arcUtils.ts'
 
-import type { ArcData } from './arcUtils'
+import type { ArcData } from './arcUtils.ts'
 
 export default function ArcTooltipContents({ arc }: { arc: ArcData }) {
   return (

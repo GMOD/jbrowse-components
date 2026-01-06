@@ -11,18 +11,18 @@ import ColorLensIcon from '@mui/icons-material/ColorLens'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
-import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { SharedModificationsMixin } from '../shared/SharedModificationsMixin'
-import { getModificationsSubMenu } from '../shared/menuItems'
+import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin.ts'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin.ts'
+import { getModificationsSubMenu } from '../shared/menuItems.ts'
 
-import type { SortedBy } from '../shared/types'
+import type { SortedBy } from '../shared/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
-const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
-const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
+const SortByTagDialog = lazy(() => import('./components/SortByTagDialog.tsx'))
+const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
 
 type LGV = LinearGenomeViewModel
 
@@ -390,7 +390,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('./doAfterAttach')
+            const { doAfterAttach } = await import('./doAfterAttach.ts')
             doAfterAttach(self)
           } catch (e) {
             getSession(self).notifyError(`${e}`, e)

@@ -21,9 +21,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import TrackSelector from './TrackSelector'
+import TrackSelector from './TrackSelector.tsx'
 
-import type { ImportWizardModel } from '../ImportWizard'
+import type { ImportWizardModel } from '../ImportWizard.ts'
 import type { AbstractRootModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({

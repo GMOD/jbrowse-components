@@ -1,9 +1,9 @@
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 
-import { layoutFeatures } from './layout/layoutFeatures'
-import { makeImageData } from './makeImageData'
-import { fetchPeptideData } from './peptides/peptideUtils'
-import { createRenderConfigContext } from './renderConfig'
+import { layoutFeatures } from './layout/layoutFeatures.ts'
+import { makeImageData } from './makeImageData.ts'
+import { fetchPeptideData } from './peptides/peptideUtils.ts'
+import { createRenderConfigContext } from './renderConfig.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

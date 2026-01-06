@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { GridBookmarkModel } from '../model'
+import type { GridBookmarkModel } from '../model.ts'
 
 const AssemblySelector = observer(function AssemblySelector({
   model,

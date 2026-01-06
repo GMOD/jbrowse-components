@@ -1,4 +1,4 @@
-import { checkPluginsAgainstStore, fetchPlugins } from './checkPlugins'
+import { checkPluginsAgainstStore, fetchPlugins } from './checkPlugins.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 

@@ -7,7 +7,7 @@ import {
   hts,
   mockConsole,
   setup,
-} from './util'
+} from './util.tsx'
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })

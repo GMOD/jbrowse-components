@@ -9,7 +9,7 @@ import {
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import VcfFeature from '../VcfFeature'
+import VcfFeature from '../VcfFeature/index.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'

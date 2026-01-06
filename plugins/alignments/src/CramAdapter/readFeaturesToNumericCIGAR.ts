@@ -9,7 +9,7 @@ import {
   CODE_X,
   CODE_b,
   CODE_i,
-} from './const'
+} from './const.ts'
 
 import type { CramRecord } from '@gmod/cram'
 

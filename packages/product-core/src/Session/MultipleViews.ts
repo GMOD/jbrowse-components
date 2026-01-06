@@ -5,8 +5,8 @@ import {
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { BaseSessionModel, isBaseSession } from './BaseSession'
-import { DrawerWidgetSessionMixin } from './DrawerWidgets'
+import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
+import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'

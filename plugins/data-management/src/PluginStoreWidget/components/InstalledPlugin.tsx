@@ -8,13 +8,13 @@ import LockIcon from '@mui/icons-material/Lock'
 import { IconButton, ListItem, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isSessionPlugin } from './util'
+import { isSessionPlugin } from './util.ts'
 
-import type { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model.ts'
 import type { BasePlugin } from '@jbrowse/core/util/types'
 
 // lazies
-const DeletePluginDialog = lazy(() => import('./DeletePluginDialog'))
+const DeletePluginDialog = lazy(() => import('./DeletePluginDialog.tsx'))
 
 const useStyles = makeStyles()(() => ({
   iconMargin: {

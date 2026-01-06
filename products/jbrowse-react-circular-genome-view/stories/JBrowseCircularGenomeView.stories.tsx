@@ -1,4 +1,4 @@
-export { Human, ShowTrack, Volvox } from './examples'
+export { Human, ShowTrack, Volvox } from './examples/index.ts'
 
 const JBrowseCircularGenomeViewStories = {
   title: 'Circular Genome View',

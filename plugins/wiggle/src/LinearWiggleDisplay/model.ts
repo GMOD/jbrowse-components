@@ -7,9 +7,9 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import SharedWiggleMixin from '../shared/SharedWiggleMixin'
-import axisPropsFromTickScale from '../shared/axisPropsFromTickScale'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
+import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
+import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -21,8 +21,8 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
-const Tooltip = lazy(() => import('./components/Tooltip'))
-const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
+const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -340,7 +340,7 @@ function stateModelFactory(
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             const { getQuantitativeStatsAutorun } =
-              await import('../getQuantitativeStatsAutorun')
+              await import('../getQuantitativeStatsAutorun.ts')
             getQuantitativeStatsAutorun(self)
           })()
         },
@@ -348,7 +348,7 @@ function stateModelFactory(
          * #action
          */
         async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg')
+          const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts, superRenderSvg)
         },
       }

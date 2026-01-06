@@ -9,7 +9,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import type { HicFlatbushItem } from '../HicRenderer/types'
+import type { HicFlatbushItem } from '../HicRenderer/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -352,7 +352,7 @@ export default function stateModelFactory(
         async renderSvg(
           opts: ExportSvgDisplayOptions,
         ): Promise<React.ReactNode> {
-          const { renderSvg } = await import('./renderSvg')
+          const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearHicDisplayModel, opts)
         },
       }
@@ -362,7 +362,7 @@ export default function stateModelFactory(
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('./afterAttach')
+            const { doAfterAttach } = await import('./afterAttach.ts')
             doAfterAttach(self)
           } catch (e) {
             console.error(e)

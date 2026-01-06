@@ -5,7 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { GridBookmarkModel, IExtendedLGV } from '../../model'
+import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 

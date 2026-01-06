@@ -1,16 +1,16 @@
-import type { MultiRenderArgsDeserialized } from '../types'
+import type { MultiRenderArgsDeserialized } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export async function makeImageData(
   renderProps: MultiRenderArgsDeserialized,
   pluginManager: PluginManager,
 ) {
-  const { renderMultiWiggle } = await import('../multiRendererHelper')
+  const { renderMultiWiggle } = await import('../multiRendererHelper.ts')
   return renderMultiWiggle(
     pluginManager,
     renderProps,
     async (props, features) => {
-      const { renderMultiDensity } = await import('./renderMultiDensity')
+      const { renderMultiDensity } = await import('./renderMultiDensity.ts')
       return renderMultiDensity(props, features)
     },
   )

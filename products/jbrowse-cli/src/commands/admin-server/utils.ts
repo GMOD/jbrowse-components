@@ -2,8 +2,8 @@ import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
-import { debug, resolveConfigPath, writeJsonFile } from '../../utils'
-import { createDefaultConfig } from '../add-assembly/utils'
+import { debug, resolveConfigPath, writeJsonFile } from '../../utils.ts'
+import { createDefaultConfig } from '../add-assembly/utils.ts'
 
 import type { Express, Request, Response } from 'express'
 

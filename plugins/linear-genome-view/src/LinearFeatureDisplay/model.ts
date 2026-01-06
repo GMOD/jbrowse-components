@@ -11,7 +11,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { BaseLinearDisplay } from '../BaseLinearDisplay'
+import { BaseLinearDisplay } from '../BaseLinearDisplay/index.ts'
 
 import type {
   AnyConfigurationModel,
@@ -21,8 +21,10 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
-const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
+const SetMaxHeightDialog = lazy(
+  () => import('./components/SetMaxHeightDialog.tsx'),
+)
+const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 
 /**
  * #stateModel LinearFeatureDisplay

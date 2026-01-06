@@ -1,10 +1,10 @@
 import { colord } from '@jbrowse/core/util/colord'
 
-import { getMethBins } from '../../ModificationParser/getMethBins'
-import { buildMismatchMap } from '../../shared/util'
+import { getMethBins } from '../../ModificationParser/getMethBins.ts'
+import { buildMismatchMap } from '../../shared/util.ts'
 
-import type { FlatbushItem, ProcessedRenderArgs } from '../types'
-import type { LayoutFeature } from '../util'
+import type { FlatbushItem, ProcessedRenderArgs } from '../types.ts'
+import type { LayoutFeature } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
 
 // Pre-compute colord objects for methylation colors

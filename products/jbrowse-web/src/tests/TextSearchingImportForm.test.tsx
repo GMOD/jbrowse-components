@@ -1,6 +1,6 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
-import { doBeforeEach, doSetupForImportForm, setup } from './util'
+import { doBeforeEach, doSetupForImportForm, setup } from './util.tsx'
 
 setup()
 

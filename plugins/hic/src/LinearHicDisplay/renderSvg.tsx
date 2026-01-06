@@ -10,9 +10,9 @@ import {
   renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 
-import HicSVGColorLegend from './components/HicSVGColorLegend'
+import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
 
-import type { LinearHicDisplayModel } from './model'
+import type { LinearHicDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,

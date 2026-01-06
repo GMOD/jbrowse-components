@@ -40,11 +40,11 @@ import { openDB } from 'idb'
 import { autorun } from 'mobx'
 
 import packageJSON from '../../package.json'
-import jbrowseWebFactory from '../jbrowseModel'
-import makeWorkerInstance from '../makeWorkerInstance'
-import { filterSessionInPlace } from '../util'
+import jbrowseWebFactory from '../jbrowseModel.ts'
+import makeWorkerInstance from '../makeWorkerInstance.ts'
+import { filterSessionInPlace } from '../util.ts'
 
-import type { SessionDB, SessionMetadata } from '../types'
+import type { SessionDB, SessionMetadata } from '../types.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -61,8 +61,12 @@ import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
 import type { IDBPDatabase } from 'idb'
 
 // lazies
-const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
-const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
+const SetDefaultSession = lazy(
+  () => import('../components/SetDefaultSession.tsx'),
+)
+const PreferencesDialog = lazy(
+  () => import('../components/PreferencesDialog.tsx'),
+)
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
 type SessionModelFactory = (args: {

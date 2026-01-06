@@ -1,9 +1,9 @@
-import { cigarToMismatches } from './cigarToMismatches'
-import { cigarToMismatches2 } from './cigarToMismatches2'
-import { mdToMismatches } from './mdToMismatches'
-import { mdToMismatches2 } from './mdToMismatches2'
+import { cigarToMismatches } from './cigarToMismatches.ts'
+import { cigarToMismatches2 } from './cigarToMismatches2.ts'
+import { mdToMismatches } from './mdToMismatches.ts'
+import { mdToMismatches2 } from './mdToMismatches2.ts'
 
-import type { Mismatch } from '../shared/types'
+import type { Mismatch } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const startClip = new RegExp(/(\d+)[SH]$/)
@@ -226,5 +226,5 @@ export function featurizeSA(
   )
 }
 
-export { getNextRefPos } from './getNextRefPos'
-export { cigarToMismatches2 } from './cigarToMismatches2'
+export { getNextRefPos } from './getNextRefPos.ts'
+export { cigarToMismatches2 } from './cigarToMismatches2.ts'

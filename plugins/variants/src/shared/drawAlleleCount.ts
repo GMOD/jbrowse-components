@@ -6,7 +6,7 @@ import {
   NO_CALL_COLOR,
   REFERENCE_COLOR,
   f2,
-} from './constants'
+} from './constants.ts'
 
 export function getAlleleColor(
   genotype: string,

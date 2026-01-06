@@ -1,6 +1,6 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -11,7 +11,7 @@ export default function GtfAdapterF(pluginManager: PluginManager) {
         name: 'GtfAdapter',
         displayName: 'GTF adapter',
         configSchema,
-        getAdapterClass: () => import('./GtfAdapter').then(r => r.default),
+        getAdapterClass: () => import('./GtfAdapter.ts').then(r => r.default),
       }),
   )
 }

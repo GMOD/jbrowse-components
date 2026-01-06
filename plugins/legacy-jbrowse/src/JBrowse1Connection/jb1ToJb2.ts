@@ -9,7 +9,7 @@ import {
   guessTrackType,
 } from '@jbrowse/core/util/tracks'
 
-import type { RefSeq, RefSeqs, Track } from './types'
+import type { RefSeq, RefSeqs, Track } from './types.ts'
 
 interface Jb2Track {
   trackId: string

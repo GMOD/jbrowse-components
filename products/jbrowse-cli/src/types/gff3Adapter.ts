@@ -1,7 +1,7 @@
-import { decodeURIComponentNoThrow } from '../util'
-import { createIndexingStream, parseAttributes } from './streamUtils'
+import { decodeURIComponentNoThrow } from '../util.ts'
+import { createIndexingStream, parseAttributes } from './streamUtils.ts'
 
-import type { Track } from '../base'
+import type { Track } from '../base.ts'
 
 export async function* indexGff3({
   config,

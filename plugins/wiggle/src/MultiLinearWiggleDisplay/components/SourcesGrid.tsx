@@ -11,9 +11,9 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import { Button } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import { moveDown, moveUp } from './util'
+import { moveDown, moveUp } from './util.ts'
 
-import type { Source } from '../../util'
+import type { Source } from '../../util.ts'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({

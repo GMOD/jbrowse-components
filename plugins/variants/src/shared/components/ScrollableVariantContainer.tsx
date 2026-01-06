@@ -1,10 +1,10 @@
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import LegendBar from './MultiVariantLegendBar'
-import TreeSidebar from './TreeSidebar'
+import LegendBar from './MultiVariantLegendBar.tsx'
+import TreeSidebar from './TreeSidebar.tsx'
 
-import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
+import type { MultiVariantBaseModel } from '../MultiVariantBaseModel.ts'
 
 interface ScrollableVariantContainerProps {
   model: MultiVariantBaseModel

@@ -16,7 +16,7 @@ import { observer } from 'mobx-react'
 
 // icon
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   facet: {

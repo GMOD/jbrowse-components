@@ -3,16 +3,16 @@ import { parseArgs } from 'util'
 
 import parseJSON from 'json-parse-better-errors'
 
-import fetch from '../fetchWithProxy'
+import fetch from '../fetchWithProxy.ts'
 import {
   debug,
   printHelp,
   readJsonFile,
   resolveConfigPath,
   writeJsonFile,
-} from '../utils'
+} from '../utils.ts'
 
-import type { Config } from '../base'
+import type { Config } from '../base.ts'
 
 async function resolveURL(location: string, check = true) {
   let locationUrl: URL | undefined

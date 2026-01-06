@@ -18,8 +18,8 @@ import {
 import { observer } from 'mobx-react'
 import { singular } from 'pluralize'
 
-import SlotEditor from './SlotEditor'
-import TypeSelector from './TypeSelector'
+import SlotEditor from './SlotEditor.tsx'
+import TypeSelector from './TypeSelector.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

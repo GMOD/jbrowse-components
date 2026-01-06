@@ -5,11 +5,11 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import BlockErrorMessage from './BlockErrorMessage'
-import FloatingLegend from './FloatingLegend'
+import BlockErrorMessage from './BlockErrorMessage.tsx'
+import FloatingLegend from './FloatingLegend.tsx'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
-import type { LegendItem } from '../model'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
+import type { LegendItem } from '../model.ts'
 
 /**
  * Interface for models that can be rendered with NonBlockCanvasDisplayComponent.

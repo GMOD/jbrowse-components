@@ -1,8 +1,8 @@
-import { readCachedConfig } from '../renderConfig'
-import { getBoxColor, getStrokeColor, isOffScreen, isUTR } from '../util'
-import { drawStrandArrow, getStrandArrowPadding } from './glyphUtils'
+import { readCachedConfig } from '../renderConfig.ts'
+import { getBoxColor, getStrokeColor, isOffScreen, isUTR } from '../util.ts'
+import { drawStrandArrow, getStrandArrowPadding } from './glyphUtils.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
+import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 
 const UTR_HEIGHT_FRACTION = 0.65
 

@@ -18,8 +18,8 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
-import type { LinearGenomeViewModel } from './model'
-import type { BpOffset } from './types'
+import type { LinearGenomeViewModel } from './model.ts'
+import type { BpOffset } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // lazies
@@ -27,10 +27,12 @@ const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
 )
 const SequenceSearchDialog = lazy(
-  () => import('./components/SequenceSearchDialog'),
+  () => import('./components/SequenceSearchDialog.tsx'),
 )
-const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
-const GetSequenceDialog = lazy(() => import('./components/GetSequenceDialog'))
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
+const GetSequenceDialog = lazy(
+  () => import('./components/GetSequenceDialog.tsx'),
+)
 
 function toLocaleRounded(n: number) {
   return toLocale(Math.round(n))

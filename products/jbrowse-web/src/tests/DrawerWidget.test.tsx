@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 
 import { fireEvent, getByRole } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts } from './util'
+import { createView, doBeforeEach, hts } from './util.tsx'
 
 const delay = { timeout: 15000 }
 

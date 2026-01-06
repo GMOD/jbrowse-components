@@ -2,9 +2,9 @@ import { ExternalLink } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
 
-import TrackAdapterSelector from './TrackAdapterSelector'
+import TrackAdapterSelector from './TrackAdapterSelector.tsx'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 const useStyles = makeStyles()(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),

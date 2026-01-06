@@ -6,7 +6,9 @@ import { observer } from 'mobx-react'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
-const DrawerHeaderHelpDialog = lazy(() => import('./DrawerHeaderHelpDialog'))
+const DrawerHeaderHelpDialog = lazy(
+  () => import('./DrawerHeaderHelpDialog.tsx'),
+)
 
 const DrawerHeaderHelpButton = observer(function DrawerHeaderHelpButton({
   session,

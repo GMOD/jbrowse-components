@@ -1,6 +1,14 @@
-import { CODE_D, CODE_H, CODE_I, CODE_N, CODE_S, CODE_X, CODE_i } from './const'
-import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR'
-import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil'
+import {
+  CODE_D,
+  CODE_H,
+  CODE_I,
+  CODE_N,
+  CODE_S,
+  CODE_X,
+  CODE_i,
+} from './const.ts'
+import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
+import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil.ts'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
@@ -8,12 +16,12 @@ import {
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-} from '../shared/forEachMismatchTypes'
-import { cacheGetter, convertTagsToPlainArrays } from '../shared/util'
+} from '../shared/forEachMismatchTypes.ts'
+import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
 
-import type CramAdapter from './CramAdapter'
-import type { MismatchCallback } from '../shared/forEachMismatchTypes'
-import type { Mismatch } from '../shared/types'
+import type CramAdapter from './CramAdapter.ts'
+import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
+import type { Mismatch } from '../shared/types.ts'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 

@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/core",
   "version": "3.7.0",
+  "type": "module",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -18,48 +19,172 @@
     "directory": "packages/core"
   },
   "author": "JBrowse Team",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./BaseFeatureWidget": "./src/BaseFeatureWidget/index.ts",
+    "./BaseFeatureWidget/BaseFeatureDetail": "./src/BaseFeatureWidget/BaseFeatureDetail/index.tsx",
+    "./BaseFeatureWidget/BaseFeatureDetail/Attributes": "./src/BaseFeatureWidget/BaseFeatureDetail/Attributes.tsx",
+    "./BaseFeatureWidget/BaseFeatureDetail/BaseCard": "./src/BaseFeatureWidget/BaseFeatureDetail/BaseCard.tsx",
+    "./BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": "./src/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.tsx",
+    "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": "./src/BaseFeatureWidget/BaseFeatureDetail/SimpleField.tsx",
+    "./Plugin": "./src/Plugin.ts",
+    "./PluginLoader": "./src/PluginLoader.ts",
+    "./PluginManager": "./src/PluginManager.ts",
+    "./TextSearch/BaseResults": "./src/TextSearch/BaseResults.ts",
+    "./TextSearch/TextSearchManager": "./src/TextSearch/TextSearchManager.ts",
+    "./assemblyManager": "./src/assemblyManager/index.ts",
+    "./assemblyManager/assembly": "./src/assemblyManager/assembly.ts",
+    "./assemblyManager/assemblyConfigSchema": "./src/assemblyManager/assemblyConfigSchema.ts",
+    "./configuration": "./src/configuration/index.ts",
+    "./data_adapters/BaseAdapter": "./src/data_adapters/BaseAdapter/index.ts",
+    "./data_adapters/BaseAdapter/BaseOptions": "./src/data_adapters/BaseAdapter/BaseOptions.ts",
+    "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
+    "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
+    "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
+    "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
+    "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
+    "./pluggableElementTypes/DisplayType": "./src/pluggableElementTypes/DisplayType.ts",
+    "./pluggableElementTypes/GlyphType": "./src/pluggableElementTypes/GlyphType.ts",
+    "./pluggableElementTypes/InternetAccountType": "./src/pluggableElementTypes/InternetAccountType.ts",
+    "./pluggableElementTypes/RpcMethodType": "./src/pluggableElementTypes/RpcMethodType.ts",
+    "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": "./src/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.ts",
+    "./pluggableElementTypes/TextSearchAdapterType": "./src/pluggableElementTypes/TextSearchAdapterType.ts",
+    "./pluggableElementTypes/TrackType": "./src/pluggableElementTypes/TrackType.ts",
+    "./pluggableElementTypes/ViewType": "./src/pluggableElementTypes/ViewType.ts",
+    "./pluggableElementTypes/WidgetType": "./src/pluggableElementTypes/WidgetType.ts",
+    "./pluggableElementTypes/models": "./src/pluggableElementTypes/models/index.ts",
+    "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
+    "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
+    "./pluggableElementTypes/renderers/BoxRendererType": "./src/pluggableElementTypes/renderers/BoxRendererType.ts",
+    "./pluggableElementTypes/renderers/CircularChordRendererType": "./src/pluggableElementTypes/renderers/CircularChordRendererType.tsx",
+    "./pluggableElementTypes/renderers/FeatureRendererType": "./src/pluggableElementTypes/renderers/FeatureRendererType.ts",
+    "./pluggableElementTypes/renderers/LayoutSession": "./src/pluggableElementTypes/renderers/LayoutSession.ts",
+    "./pluggableElementTypes/renderers/RendererType": "./src/pluggableElementTypes/renderers/RendererType.tsx",
+    "./pluggableElementTypes/renderers/ServerSideRendererType": "./src/pluggableElementTypes/renderers/ServerSideRendererType.tsx",
+    "./pluggableElementTypes/renderers/util": "./src/pluggableElementTypes/renderers/util.ts",
+    "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
+    "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
+    "./rpc/coreRpcMethods": "./src/rpc/coreRpcMethods.ts",
+    "./rpc/methods/util": "./src/rpc/methods/util.ts",
+    "./ui": "./src/ui/index.ts",
+    "./ui/AppLogo": "./src/ui/AppLogo.tsx",
+    "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
+    "./ui/CascadingMenuButton": "./src/ui/CascadingMenuButton.tsx",
+    "./ui/ColorPicker": "./src/ui/ColorPicker.tsx",
+    "./ui/ConfirmDialog": "./src/ui/ConfirmDialog.tsx",
+    "./ui/DataGridFlexContainer": "./src/ui/DataGridFlexContainer.tsx",
+    "./ui/Dialog": "./src/ui/Dialog.tsx",
+    "./ui/DraggableDialog": "./src/ui/DraggableDialog.tsx",
+    "./ui/DropDownMenu": "./src/ui/DropDownMenu.tsx",
+    "./ui/EditableTypography": "./src/ui/EditableTypography.tsx",
+    "./ui/ErrorBoundary": "./src/ui/ErrorBoundary.tsx",
+    "./ui/ErrorMessage": "./src/ui/ErrorMessage.tsx",
+    "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
+    "./ui/Icons": "./src/ui/Icons.tsx",
+    "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
+    "./ui/Logo": "./src/ui/Logo.tsx",
+    "./ui/Menu": "./src/ui/Menu.tsx",
+    "./ui/ResizeHandle": "./src/ui/ResizeHandle.tsx",
+    "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
+    "./ui/Snackbar": "./src/ui/Snackbar.tsx",
+    "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
+    "./ui/colors": "./src/ui/colors.ts",
+    "./ui/theme": "./src/ui/theme.ts",
+    "./util": "./src/util/index.ts",
+    "./util/Base1DUtils": "./src/util/Base1DUtils.ts",
+    "./util/Base1DViewModel": "./src/util/Base1DViewModel.ts",
+    "./util/QuickLRU": "./src/util/QuickLRU/index.ts",
+    "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
+    "./util/aborting": "./src/util/aborting.ts",
+    "./util/analytics": "./src/util/analytics.ts",
+    "./util/blockTypes": "./src/util/blockTypes.ts",
+    "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
+    "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
+    "./util/color": "./src/util/color/index.ts",
+    "./util/colord": "./src/util/colord.ts",
+    "./util/compositeMap": "./src/util/compositeMap.ts",
+    "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
+    "./util/flatbush": "./src/util/flatbush/index.ts",
+    "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
+    "./util/io": "./src/util/io/index.ts",
+    "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
+    "./util/jexlStrings": "./src/util/jexlStrings.ts",
+    "./util/layouts": "./src/util/layouts/index.ts",
+    "./util/layouts/BaseLayout": "./src/util/layouts/BaseLayout.ts",
+    "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
+    "./util/librpc": "./src/util/librpc.ts",
+    "./util/mst-reflection": "./src/util/mst-reflection.ts",
+    "./util/nanoid": "./src/util/nanoid.js",
+    "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.tsx",
+    "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
+    "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
+    "./util/range": "./src/util/range.ts",
+    "./util/rxjs": "./src/util/rxjs.ts",
+    "./util/simpleFeature": "./src/util/simpleFeature.ts",
+    "./util/stats": "./src/util/stats.ts",
+    "./util/stopToken": "./src/util/stopToken.ts",
+    "./util/tracks": "./src/util/tracks.ts",
+    "./util/tss-react": "./src/util/tss-react/index.ts",
+    "./util/types": "./src/util/types/index.ts",
+    "./util/types/mst": "./src/util/types/mst.ts",
+    "./util/useMeasure": "./src/util/useMeasure.ts",
+    "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx"
+  },
+  "files": [
+    "dist",
+    "esm"
+  ],
   "scripts": {
     "test": "cd ../..; jest --passWithNoTests packages/core",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
-    "coverage": "yarn test --coverage",
-    "clean": "rimraf dist tsconfig.build.tsbuildinfo",
-    "prebuild": "yarn clean",
-    "prepack": "yarn build",
-    "build": "tsc -p tsconfig.build.json && cp package.json README.md ../../LICENSE dist/"
+    "coverage": "pnpm test --coverage",
+    "clean": "rimraf dist esm *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build",
+    "generate:exports": "node scripts/generateExports.mjs",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
+    "build": "pnpm build:esm && pnpm build:commonjs"
   },
   "dependencies": {
-    "@emotion/react": "^11.9.0",
-    "@floating-ui/react": "^0.27.0",
-    "@gmod/abortable-promise-cache": "^3.0.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/serialize": "^1.3.3",
+    "@emotion/utils": "^1.4.2",
+    "@floating-ui/react": "^0.27.16",
+    "@gmod/abortable-promise-cache": "^3.0.4",
     "@gmod/bgzf-filehandle": "^6.0.9",
     "@gmod/http-range-fetcher": "^5.0.6",
     "@jbrowse/jexl": "^3.0.1",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/quick-lru": "^7.3.5",
-    "@leeoniya/ufuzzy": "^1.0.18",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
-    "@mui/x-data-grid": "^8.22.1",
+    "@leeoniya/ufuzzy": "^1.0.19",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "@mui/system": "^7.3.6",
+    "@mui/types": "^7.4.9",
+    "@mui/x-data-grid": "^8.23.0",
     "canvas-sequencer-ts": "^3.1.3",
     "canvas2svg": "^1.0.16",
     "colord": "^2.9.3",
-    "copy-to-clipboard": "^3.3.1",
-    "deepmerge": "^4.2.2",
+    "copy-to-clipboard": "^3.3.3",
+    "deepmerge": "^4.3.1",
     "detect-node": "^2.1.0",
     "dompurify": "^3.3.1",
     "escape-html": "^1.0.3",
     "fast-deep-equal": "^3.1.3",
-    "file-saver-es": "^2.0.0",
-    "generic-filehandle2": "^2.0.17",
+    "@types/file-saver-es": "^2.0.3",
+    "file-saver-es": "^2.0.5",
+    "generic-filehandle2": "^2.0.18",
     "librpc-web-mod": "^2.1.1",
     "load-script": "^2.0.0",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "react-draggable": "^4.4.5",
-    "rxjs": "^7.0.0",
-    "source-map-js": "^1.0.2"
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1",
+    "react-draggable": "^4.5.0",
+    "rxjs": "^7.8.2",
+    "source-map-js": "^1.2.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -67,6 +192,555 @@
   },
   "publishConfig": {
     "access": "public",
-    "directory": "dist"
-  }
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./esm/index.js",
+        "require": "./dist/index.js"
+      },
+      "./BaseFeatureWidget": {
+        "types": "./dist/BaseFeatureWidget/index.d.ts",
+        "import": "./esm/BaseFeatureWidget/index.js",
+        "require": "./dist/BaseFeatureWidget/index.js"
+      },
+      "./BaseFeatureWidget/BaseFeatureDetail": {
+        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/index.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/index.js",
+        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/index.js"
+      },
+      "./BaseFeatureWidget/BaseFeatureDetail/Attributes": {
+        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/Attributes.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/Attributes.js",
+        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/Attributes.js"
+      },
+      "./BaseFeatureWidget/BaseFeatureDetail/BaseCard": {
+        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/BaseCard.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/BaseCard.js",
+        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/BaseCard.js"
+      },
+      "./BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": {
+        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.js",
+        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.js"
+      },
+      "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": {
+        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/SimpleField.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/SimpleField.js",
+        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/SimpleField.js"
+      },
+      "./Plugin": {
+        "types": "./dist/Plugin.d.ts",
+        "import": "./esm/Plugin.js",
+        "require": "./dist/Plugin.js"
+      },
+      "./PluginLoader": {
+        "types": "./dist/PluginLoader.d.ts",
+        "import": "./esm/PluginLoader.js",
+        "require": "./dist/PluginLoader.js"
+      },
+      "./PluginManager": {
+        "types": "./dist/PluginManager.d.ts",
+        "import": "./esm/PluginManager.js",
+        "require": "./dist/PluginManager.js"
+      },
+      "./TextSearch/BaseResults": {
+        "types": "./dist/TextSearch/BaseResults.d.ts",
+        "import": "./esm/TextSearch/BaseResults.js",
+        "require": "./dist/TextSearch/BaseResults.js"
+      },
+      "./TextSearch/TextSearchManager": {
+        "types": "./dist/TextSearch/TextSearchManager.d.ts",
+        "import": "./esm/TextSearch/TextSearchManager.js",
+        "require": "./dist/TextSearch/TextSearchManager.js"
+      },
+      "./assemblyManager": {
+        "types": "./dist/assemblyManager/index.d.ts",
+        "import": "./esm/assemblyManager/index.js",
+        "require": "./dist/assemblyManager/index.js"
+      },
+      "./assemblyManager/assembly": {
+        "types": "./dist/assemblyManager/assembly.d.ts",
+        "import": "./esm/assemblyManager/assembly.js",
+        "require": "./dist/assemblyManager/assembly.js"
+      },
+      "./assemblyManager/assemblyConfigSchema": {
+        "types": "./dist/assemblyManager/assemblyConfigSchema.d.ts",
+        "import": "./esm/assemblyManager/assemblyConfigSchema.js",
+        "require": "./dist/assemblyManager/assemblyConfigSchema.js"
+      },
+      "./configuration": {
+        "types": "./dist/configuration/index.d.ts",
+        "import": "./esm/configuration/index.js",
+        "require": "./dist/configuration/index.js"
+      },
+      "./data_adapters/BaseAdapter": {
+        "types": "./dist/data_adapters/BaseAdapter/index.d.ts",
+        "import": "./esm/data_adapters/BaseAdapter/index.js",
+        "require": "./dist/data_adapters/BaseAdapter/index.js"
+      },
+      "./data_adapters/BaseAdapter/BaseOptions": {
+        "types": "./dist/data_adapters/BaseAdapter/BaseOptions.d.ts",
+        "import": "./esm/data_adapters/BaseAdapter/BaseOptions.js",
+        "require": "./dist/data_adapters/BaseAdapter/BaseOptions.js"
+      },
+      "./data_adapters/BaseAdapter/stats": {
+        "types": "./dist/data_adapters/BaseAdapter/stats.d.ts",
+        "import": "./esm/data_adapters/BaseAdapter/stats.js",
+        "require": "./dist/data_adapters/BaseAdapter/stats.js"
+      },
+      "./data_adapters/dataAdapterCache": {
+        "types": "./dist/data_adapters/dataAdapterCache.d.ts",
+        "import": "./esm/data_adapters/dataAdapterCache.js",
+        "require": "./dist/data_adapters/dataAdapterCache.js"
+      },
+      "./pluggableElementTypes": {
+        "types": "./dist/pluggableElementTypes/index.d.ts",
+        "import": "./esm/pluggableElementTypes/index.js",
+        "require": "./dist/pluggableElementTypes/index.js"
+      },
+      "./pluggableElementTypes/AdapterType": {
+        "types": "./dist/pluggableElementTypes/AdapterType.d.ts",
+        "import": "./esm/pluggableElementTypes/AdapterType.js",
+        "require": "./dist/pluggableElementTypes/AdapterType.js"
+      },
+      "./pluggableElementTypes/ConnectionType": {
+        "types": "./dist/pluggableElementTypes/ConnectionType.d.ts",
+        "import": "./esm/pluggableElementTypes/ConnectionType.js",
+        "require": "./dist/pluggableElementTypes/ConnectionType.js"
+      },
+      "./pluggableElementTypes/DisplayType": {
+        "types": "./dist/pluggableElementTypes/DisplayType.d.ts",
+        "import": "./esm/pluggableElementTypes/DisplayType.js",
+        "require": "./dist/pluggableElementTypes/DisplayType.js"
+      },
+      "./pluggableElementTypes/GlyphType": {
+        "types": "./dist/pluggableElementTypes/GlyphType.d.ts",
+        "import": "./esm/pluggableElementTypes/GlyphType.js",
+        "require": "./dist/pluggableElementTypes/GlyphType.js"
+      },
+      "./pluggableElementTypes/InternetAccountType": {
+        "types": "./dist/pluggableElementTypes/InternetAccountType.d.ts",
+        "import": "./esm/pluggableElementTypes/InternetAccountType.js",
+        "require": "./dist/pluggableElementTypes/InternetAccountType.js"
+      },
+      "./pluggableElementTypes/RpcMethodType": {
+        "types": "./dist/pluggableElementTypes/RpcMethodType.d.ts",
+        "import": "./esm/pluggableElementTypes/RpcMethodType.js",
+        "require": "./dist/pluggableElementTypes/RpcMethodType.js"
+      },
+      "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": {
+        "types": "./dist/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.d.ts",
+        "import": "./esm/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.js",
+        "require": "./dist/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.js"
+      },
+      "./pluggableElementTypes/TextSearchAdapterType": {
+        "types": "./dist/pluggableElementTypes/TextSearchAdapterType.d.ts",
+        "import": "./esm/pluggableElementTypes/TextSearchAdapterType.js",
+        "require": "./dist/pluggableElementTypes/TextSearchAdapterType.js"
+      },
+      "./pluggableElementTypes/TrackType": {
+        "types": "./dist/pluggableElementTypes/TrackType.d.ts",
+        "import": "./esm/pluggableElementTypes/TrackType.js",
+        "require": "./dist/pluggableElementTypes/TrackType.js"
+      },
+      "./pluggableElementTypes/ViewType": {
+        "types": "./dist/pluggableElementTypes/ViewType.d.ts",
+        "import": "./esm/pluggableElementTypes/ViewType.js",
+        "require": "./dist/pluggableElementTypes/ViewType.js"
+      },
+      "./pluggableElementTypes/WidgetType": {
+        "types": "./dist/pluggableElementTypes/WidgetType.d.ts",
+        "import": "./esm/pluggableElementTypes/WidgetType.js",
+        "require": "./dist/pluggableElementTypes/WidgetType.js"
+      },
+      "./pluggableElementTypes/models": {
+        "types": "./dist/pluggableElementTypes/models/index.d.ts",
+        "import": "./esm/pluggableElementTypes/models/index.js",
+        "require": "./dist/pluggableElementTypes/models/index.js"
+      },
+      "./pluggableElementTypes/models/BaseViewModel": {
+        "types": "./dist/pluggableElementTypes/models/BaseViewModel.d.ts",
+        "import": "./esm/pluggableElementTypes/models/BaseViewModel.js",
+        "require": "./dist/pluggableElementTypes/models/BaseViewModel.js"
+      },
+      "./pluggableElementTypes/models/baseConnectionConfig": {
+        "types": "./dist/pluggableElementTypes/models/baseConnectionConfig.d.ts",
+        "import": "./esm/pluggableElementTypes/models/baseConnectionConfig.js",
+        "require": "./dist/pluggableElementTypes/models/baseConnectionConfig.js"
+      },
+      "./pluggableElementTypes/renderers/BoxRendererType": {
+        "types": "./dist/pluggableElementTypes/renderers/BoxRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/BoxRendererType.js",
+        "require": "./dist/pluggableElementTypes/renderers/BoxRendererType.js"
+      },
+      "./pluggableElementTypes/renderers/CircularChordRendererType": {
+        "types": "./dist/pluggableElementTypes/renderers/CircularChordRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.js",
+        "require": "./dist/pluggableElementTypes/renderers/CircularChordRendererType.js"
+      },
+      "./pluggableElementTypes/renderers/FeatureRendererType": {
+        "types": "./dist/pluggableElementTypes/renderers/FeatureRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/FeatureRendererType.js",
+        "require": "./dist/pluggableElementTypes/renderers/FeatureRendererType.js"
+      },
+      "./pluggableElementTypes/renderers/LayoutSession": {
+        "types": "./dist/pluggableElementTypes/renderers/LayoutSession.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/LayoutSession.js",
+        "require": "./dist/pluggableElementTypes/renderers/LayoutSession.js"
+      },
+      "./pluggableElementTypes/renderers/RendererType": {
+        "types": "./dist/pluggableElementTypes/renderers/RendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/RendererType.js",
+        "require": "./dist/pluggableElementTypes/renderers/RendererType.js"
+      },
+      "./pluggableElementTypes/renderers/ServerSideRendererType": {
+        "types": "./dist/pluggableElementTypes/renderers/ServerSideRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.js",
+        "require": "./dist/pluggableElementTypes/renderers/ServerSideRendererType.js"
+      },
+      "./pluggableElementTypes/renderers/util": {
+        "types": "./dist/pluggableElementTypes/renderers/util.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/util.js",
+        "require": "./dist/pluggableElementTypes/renderers/util.js"
+      },
+      "./pluggableElementTypes/renderers/util/serializableFilterChain": {
+        "types": "./dist/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.js",
+        "require": "./dist/pluggableElementTypes/renderers/util/serializableFilterChain.js"
+      },
+      "./rpc/RpcManager": {
+        "types": "./dist/rpc/RpcManager.d.ts",
+        "import": "./esm/rpc/RpcManager.js",
+        "require": "./dist/rpc/RpcManager.js"
+      },
+      "./rpc/coreRpcMethods": {
+        "types": "./dist/rpc/coreRpcMethods.d.ts",
+        "import": "./esm/rpc/coreRpcMethods.js",
+        "require": "./dist/rpc/coreRpcMethods.js"
+      },
+      "./rpc/methods/util": {
+        "types": "./dist/rpc/methods/util.d.ts",
+        "import": "./esm/rpc/methods/util.js",
+        "require": "./dist/rpc/methods/util.js"
+      },
+      "./ui": {
+        "types": "./dist/ui/index.d.ts",
+        "import": "./esm/ui/index.js",
+        "require": "./dist/ui/index.js"
+      },
+      "./ui/AppLogo": {
+        "types": "./dist/ui/AppLogo.d.ts",
+        "import": "./esm/ui/AppLogo.js",
+        "require": "./dist/ui/AppLogo.js"
+      },
+      "./ui/BaseTooltip": {
+        "types": "./dist/ui/BaseTooltip.d.ts",
+        "import": "./esm/ui/BaseTooltip.js",
+        "require": "./dist/ui/BaseTooltip.js"
+      },
+      "./ui/CascadingMenuButton": {
+        "types": "./dist/ui/CascadingMenuButton.d.ts",
+        "import": "./esm/ui/CascadingMenuButton.js",
+        "require": "./dist/ui/CascadingMenuButton.js"
+      },
+      "./ui/ColorPicker": {
+        "types": "./dist/ui/ColorPicker.d.ts",
+        "import": "./esm/ui/ColorPicker.js",
+        "require": "./dist/ui/ColorPicker.js"
+      },
+      "./ui/ConfirmDialog": {
+        "types": "./dist/ui/ConfirmDialog.d.ts",
+        "import": "./esm/ui/ConfirmDialog.js",
+        "require": "./dist/ui/ConfirmDialog.js"
+      },
+      "./ui/DataGridFlexContainer": {
+        "types": "./dist/ui/DataGridFlexContainer.d.ts",
+        "import": "./esm/ui/DataGridFlexContainer.js",
+        "require": "./dist/ui/DataGridFlexContainer.js"
+      },
+      "./ui/Dialog": {
+        "types": "./dist/ui/Dialog.d.ts",
+        "import": "./esm/ui/Dialog.js",
+        "require": "./dist/ui/Dialog.js"
+      },
+      "./ui/DraggableDialog": {
+        "types": "./dist/ui/DraggableDialog.d.ts",
+        "import": "./esm/ui/DraggableDialog.js",
+        "require": "./dist/ui/DraggableDialog.js"
+      },
+      "./ui/DropDownMenu": {
+        "types": "./dist/ui/DropDownMenu.d.ts",
+        "import": "./esm/ui/DropDownMenu.js",
+        "require": "./dist/ui/DropDownMenu.js"
+      },
+      "./ui/EditableTypography": {
+        "types": "./dist/ui/EditableTypography.d.ts",
+        "import": "./esm/ui/EditableTypography.js",
+        "require": "./dist/ui/EditableTypography.js"
+      },
+      "./ui/ErrorBoundary": {
+        "types": "./dist/ui/ErrorBoundary.d.ts",
+        "import": "./esm/ui/ErrorBoundary.js",
+        "require": "./dist/ui/ErrorBoundary.js"
+      },
+      "./ui/ErrorMessage": {
+        "types": "./dist/ui/ErrorMessage.d.ts",
+        "import": "./esm/ui/ErrorMessage.js",
+        "require": "./dist/ui/ErrorMessage.js"
+      },
+      "./ui/ErrorMessageStackTraceDialog": {
+        "types": "./dist/ui/ErrorMessageStackTraceDialog.d.ts",
+        "import": "./esm/ui/ErrorMessageStackTraceDialog.js",
+        "require": "./dist/ui/ErrorMessageStackTraceDialog.js"
+      },
+      "./ui/Icons": {
+        "types": "./dist/ui/Icons.d.ts",
+        "import": "./esm/ui/Icons.js",
+        "require": "./dist/ui/Icons.js"
+      },
+      "./ui/LoadingEllipses": {
+        "types": "./dist/ui/LoadingEllipses.d.ts",
+        "import": "./esm/ui/LoadingEllipses.js",
+        "require": "./dist/ui/LoadingEllipses.js"
+      },
+      "./ui/Logo": {
+        "types": "./dist/ui/Logo.d.ts",
+        "import": "./esm/ui/Logo.js",
+        "require": "./dist/ui/Logo.js"
+      },
+      "./ui/Menu": {
+        "types": "./dist/ui/Menu.d.ts",
+        "import": "./esm/ui/Menu.js",
+        "require": "./dist/ui/Menu.js"
+      },
+      "./ui/ResizeHandle": {
+        "types": "./dist/ui/ResizeHandle.d.ts",
+        "import": "./esm/ui/ResizeHandle.js",
+        "require": "./dist/ui/ResizeHandle.js"
+      },
+      "./ui/SanitizedHTML": {
+        "types": "./dist/ui/SanitizedHTML.d.ts",
+        "import": "./esm/ui/SanitizedHTML.js",
+        "require": "./dist/ui/SanitizedHTML.js"
+      },
+      "./ui/Snackbar": {
+        "types": "./dist/ui/Snackbar.d.ts",
+        "import": "./esm/ui/Snackbar.js",
+        "require": "./dist/ui/Snackbar.js"
+      },
+      "./ui/SnackbarModel": {
+        "types": "./dist/ui/SnackbarModel.d.ts",
+        "import": "./esm/ui/SnackbarModel.js",
+        "require": "./dist/ui/SnackbarModel.js"
+      },
+      "./ui/colors": {
+        "types": "./dist/ui/colors.d.ts",
+        "import": "./esm/ui/colors.js",
+        "require": "./dist/ui/colors.js"
+      },
+      "./ui/theme": {
+        "types": "./dist/ui/theme.d.ts",
+        "import": "./esm/ui/theme.js",
+        "require": "./dist/ui/theme.js"
+      },
+      "./util": {
+        "types": "./dist/util/index.d.ts",
+        "import": "./esm/util/index.js",
+        "require": "./dist/util/index.js"
+      },
+      "./util/Base1DUtils": {
+        "types": "./dist/util/Base1DUtils.d.ts",
+        "import": "./esm/util/Base1DUtils.js",
+        "require": "./dist/util/Base1DUtils.js"
+      },
+      "./util/Base1DViewModel": {
+        "types": "./dist/util/Base1DViewModel.d.ts",
+        "import": "./esm/util/Base1DViewModel.js",
+        "require": "./dist/util/Base1DViewModel.js"
+      },
+      "./util/QuickLRU": {
+        "types": "./dist/util/QuickLRU/index.d.ts",
+        "import": "./esm/util/QuickLRU/index.js",
+        "require": "./dist/util/QuickLRU/index.js"
+      },
+      "./util/TimeTraveller": {
+        "types": "./dist/util/TimeTraveller.d.ts",
+        "import": "./esm/util/TimeTraveller.js",
+        "require": "./dist/util/TimeTraveller.js"
+      },
+      "./util/aborting": {
+        "types": "./dist/util/aborting.d.ts",
+        "import": "./esm/util/aborting.js",
+        "require": "./dist/util/aborting.js"
+      },
+      "./util/analytics": {
+        "types": "./dist/util/analytics.d.ts",
+        "import": "./esm/util/analytics.js",
+        "require": "./dist/util/analytics.js"
+      },
+      "./util/blockTypes": {
+        "types": "./dist/util/blockTypes.d.ts",
+        "import": "./esm/util/blockTypes.js",
+        "require": "./dist/util/blockTypes.js"
+      },
+      "./util/calculateDynamicBlocks": {
+        "types": "./dist/util/calculateDynamicBlocks.d.ts",
+        "import": "./esm/util/calculateDynamicBlocks.js",
+        "require": "./dist/util/calculateDynamicBlocks.js"
+      },
+      "./util/calculateStaticBlocks": {
+        "types": "./dist/util/calculateStaticBlocks.d.ts",
+        "import": "./esm/util/calculateStaticBlocks.js",
+        "require": "./dist/util/calculateStaticBlocks.js"
+      },
+      "./util/color": {
+        "types": "./dist/util/color/index.d.ts",
+        "import": "./esm/util/color/index.js",
+        "require": "./dist/util/color/index.js"
+      },
+      "./util/colord": {
+        "types": "./dist/util/colord.d.ts",
+        "import": "./esm/util/colord.js",
+        "require": "./dist/util/colord.js"
+      },
+      "./util/compositeMap": {
+        "types": "./dist/util/compositeMap.d.ts",
+        "import": "./esm/util/compositeMap.js",
+        "require": "./dist/util/compositeMap.js"
+      },
+      "./util/convertCodingSequenceToPeptides": {
+        "types": "./dist/util/convertCodingSequenceToPeptides.d.ts",
+        "import": "./esm/util/convertCodingSequenceToPeptides.js",
+        "require": "./dist/util/convertCodingSequenceToPeptides.js"
+      },
+      "./util/flatbush": {
+        "types": "./dist/util/flatbush/index.d.ts",
+        "import": "./esm/util/flatbush/index.js",
+        "require": "./dist/util/flatbush/index.js"
+      },
+      "./util/formatFastaStrings": {
+        "types": "./dist/util/formatFastaStrings.d.ts",
+        "import": "./esm/util/formatFastaStrings.js",
+        "require": "./dist/util/formatFastaStrings.js"
+      },
+      "./util/io": {
+        "types": "./dist/util/io/index.d.ts",
+        "import": "./esm/util/io/index.js",
+        "require": "./dist/util/io/index.js"
+      },
+      "./util/io/RemoteFileWithRangeCache": {
+        "types": "./dist/util/io/RemoteFileWithRangeCache.d.ts",
+        "import": "./esm/util/io/RemoteFileWithRangeCache.js",
+        "require": "./dist/util/io/RemoteFileWithRangeCache.js"
+      },
+      "./util/jexlStrings": {
+        "types": "./dist/util/jexlStrings.d.ts",
+        "import": "./esm/util/jexlStrings.js",
+        "require": "./dist/util/jexlStrings.js"
+      },
+      "./util/layouts": {
+        "types": "./dist/util/layouts/index.d.ts",
+        "import": "./esm/util/layouts/index.js",
+        "require": "./dist/util/layouts/index.js"
+      },
+      "./util/layouts/BaseLayout": {
+        "types": "./dist/util/layouts/BaseLayout.d.ts",
+        "import": "./esm/util/layouts/BaseLayout.js",
+        "require": "./dist/util/layouts/BaseLayout.js"
+      },
+      "./util/layouts/GranularRectLayout": {
+        "types": "./dist/util/layouts/GranularRectLayout.d.ts",
+        "import": "./esm/util/layouts/GranularRectLayout.js",
+        "require": "./dist/util/layouts/GranularRectLayout.js"
+      },
+      "./util/librpc": {
+        "types": "./dist/util/librpc.d.ts",
+        "import": "./esm/util/librpc.js",
+        "require": "./dist/util/librpc.js"
+      },
+      "./util/mst-reflection": {
+        "types": "./dist/util/mst-reflection.d.ts",
+        "import": "./esm/util/mst-reflection.js",
+        "require": "./dist/util/mst-reflection.js"
+      },
+      "./util/nanoid": {
+        "types": "./dist/util/nanoid.d.ts",
+        "import": "./esm/util/nanoid.js",
+        "require": "./dist/util/nanoid.js"
+      },
+      "./util/offscreenCanvasPonyfill": {
+        "types": "./dist/util/offscreenCanvasPonyfill.d.ts",
+        "import": "./esm/util/offscreenCanvasPonyfill.js",
+        "require": "./dist/util/offscreenCanvasPonyfill.js"
+      },
+      "./util/offscreenCanvasUtils": {
+        "types": "./dist/util/offscreenCanvasUtils.d.ts",
+        "import": "./esm/util/offscreenCanvasUtils.js",
+        "require": "./dist/util/offscreenCanvasUtils.js"
+      },
+      "./util/parseLineByLine": {
+        "types": "./dist/util/parseLineByLine.d.ts",
+        "import": "./esm/util/parseLineByLine.js",
+        "require": "./dist/util/parseLineByLine.js"
+      },
+      "./util/range": {
+        "types": "./dist/util/range.d.ts",
+        "import": "./esm/util/range.js",
+        "require": "./dist/util/range.js"
+      },
+      "./util/rxjs": {
+        "types": "./dist/util/rxjs.d.ts",
+        "import": "./esm/util/rxjs.js",
+        "require": "./dist/util/rxjs.js"
+      },
+      "./util/simpleFeature": {
+        "types": "./dist/util/simpleFeature.d.ts",
+        "import": "./esm/util/simpleFeature.js",
+        "require": "./dist/util/simpleFeature.js"
+      },
+      "./util/stats": {
+        "types": "./dist/util/stats.d.ts",
+        "import": "./esm/util/stats.js",
+        "require": "./dist/util/stats.js"
+      },
+      "./util/stopToken": {
+        "types": "./dist/util/stopToken.d.ts",
+        "import": "./esm/util/stopToken.js",
+        "require": "./dist/util/stopToken.js"
+      },
+      "./util/tracks": {
+        "types": "./dist/util/tracks.d.ts",
+        "import": "./esm/util/tracks.js",
+        "require": "./dist/util/tracks.js"
+      },
+      "./util/tss-react": {
+        "types": "./dist/util/tss-react/index.d.ts",
+        "import": "./esm/util/tss-react/index.js",
+        "require": "./dist/util/tss-react/index.js"
+      },
+      "./util/types": {
+        "types": "./dist/util/types/index.d.ts",
+        "import": "./esm/util/types/index.js",
+        "require": "./dist/util/types/index.js"
+      },
+      "./util/types/mst": {
+        "types": "./dist/util/types/mst.d.ts",
+        "import": "./esm/util/types/mst.js",
+        "require": "./dist/util/types/mst.js"
+      },
+      "./util/useMeasure": {
+        "types": "./dist/util/useMeasure.d.ts",
+        "import": "./esm/util/useMeasure.js",
+        "require": "./dist/util/useMeasure.js"
+      },
+      "./ui/ReturnToImportFormDialog": {
+        "types": "./dist/ui/ReturnToImportFormDialog.d.ts",
+        "import": "./esm/ui/ReturnToImportFormDialog.js",
+        "require": "./dist/ui/ReturnToImportFormDialog.js"
+      }
+    }
+  },
+  "sideEffects": false
 }

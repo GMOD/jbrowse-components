@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './BgzipFastaAdapter'
-import configSchema from './configSchema'
+import Adapter from './BgzipFastaAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('can use a indexed fasta with gzi', async () => {
   const adapter = new Adapter(

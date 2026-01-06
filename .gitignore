@@ -22,3 +22,4 @@ lerna-debug.log
 .aider*
 *.cpuprofile
 test_data/soa4
+*.tgz

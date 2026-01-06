@@ -1,9 +1,9 @@
 import { Grid } from '@mui/material'
 
-import SessionCard from './RecentSessionCard'
-import { loadPluginManager } from '../util'
+import SessionCard from './RecentSessionCard.tsx'
+import { loadPluginManager } from '../util.tsx'
 
-import type { RecentSessionData } from '../types'
+import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function RecentSessionsCards({

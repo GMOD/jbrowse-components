@@ -1,6 +1,6 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 
-import { featureToArcData } from './arcUtils'
+import { featureToArcData } from './arcUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type {

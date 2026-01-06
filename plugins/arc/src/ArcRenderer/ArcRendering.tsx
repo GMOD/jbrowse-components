@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-const ArcTooltip = lazy(() => import('../ArcTooltip'))
+const ArcTooltip = lazy(() => import('../ArcTooltip.tsx'))
 
 function polarToCartesian(
   centerX: number,

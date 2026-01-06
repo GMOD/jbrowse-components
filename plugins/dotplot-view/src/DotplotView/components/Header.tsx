@@ -3,11 +3,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import DotplotControls from './DotplotControls'
-import DotplotWarnings from './DotplotWarnings'
-import PanButtons from './PanButtons'
+import DotplotControls from './DotplotControls.tsx'
+import DotplotWarnings from './DotplotWarnings.tsx'
+import PanButtons from './PanButtons.tsx'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   bp: {

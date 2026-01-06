@@ -1,6 +1,6 @@
 import { Presets, SingleBar } from 'cli-progress'
 
-import { getLocalOrRemoteStream } from '../util'
+import { getLocalOrRemoteStream } from '../util.ts'
 
 async function* readLines(
   reader: ReadableStreamDefaultReader<Uint8Array>,
@@ -66,12 +66,9 @@ export async function createIndexingStream({
     throw new Error(`Failed to fetch ${inLocation}: no response body`)
   }
 
-  const decompressor = new DecompressionStream('gzip') as ReadableWritablePair<
-    Uint8Array,
-    Uint8Array
-  >
   const inputStream = /.b?gz$/.exec(inLocation)
-    ? stream.pipeThrough(decompressor)
+    ? // @ts-ignore root tsconfig includes DOM lib which has incompatible stream types
+      stream.pipeThrough(new DecompressionStream('gzip'))
     : stream
 
   const rl = readLines(inputStream.getReader(), progressBar)

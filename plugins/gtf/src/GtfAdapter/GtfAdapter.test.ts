@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import GtfAdapter from './GtfAdapter'
-import configSchema from './configSchema'
+import GtfAdapter from './GtfAdapter.ts'
+import configSchema from './configSchema.ts'
 
 describe('adapter can fetch features from volvox.sorted.gtf', () => {
   let adapter: GtfAdapter

@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { FilterBy } from '../types'
+import type { FilterBy } from '../types.ts'
 
 const useStyles = makeStyles()(theme => ({
   paper: {

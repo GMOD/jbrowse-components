@@ -1,4 +1,4 @@
-import type { LinearSyntenyViewModel } from './LinearSyntenyView/model'
+import type { LinearSyntenyViewModel } from './LinearSyntenyView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

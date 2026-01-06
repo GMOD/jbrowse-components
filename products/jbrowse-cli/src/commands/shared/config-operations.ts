@@ -1,6 +1,6 @@
-import { debug, writeJsonFile } from '../../utils'
+import { debug, writeJsonFile } from '../../utils.ts'
 
-import type { Config } from '../../base'
+import type { Config } from '../../base.ts'
 
 /**
  * Generic function to find and update or add an item to a config array

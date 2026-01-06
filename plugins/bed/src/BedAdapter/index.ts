@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -11,7 +11,7 @@ export default function BedAdapterF(pluginManager: PluginManager) {
         name: 'BedAdapter',
         displayName: 'BED adapter',
         configSchema,
-        getAdapterClass: () => import('./BedAdapter').then(r => r.default),
+        getAdapterClass: () => import('./BedAdapter.ts').then(r => r.default),
       }),
   )
 }

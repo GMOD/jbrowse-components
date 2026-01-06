@@ -1,4 +1,4 @@
-import { toUrlSafeB64 } from './util'
+import { toUrlSafeB64 } from './util.ts'
 
 // from https://stackoverflow.com/questions/1349404/
 function generateUID(length: number) {

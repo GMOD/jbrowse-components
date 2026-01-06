@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import SyntenyFeature from '../SyntenyFeature'
+import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'

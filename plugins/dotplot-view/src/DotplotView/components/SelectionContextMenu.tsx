@@ -1,6 +1,6 @@
 import { Menu } from '@jbrowse/core/ui'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 
 type Coord = [number, number] | undefined
 

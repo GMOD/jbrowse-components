@@ -1,10 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import { getUniqueModifications } from './getUniqueModifications'
-import { createAutorun } from '../util'
+import { getUniqueModifications } from './getUniqueModifications.ts'
+import { createAutorun } from '../util.ts'
 
-import type { ModificationType } from './types'
+import type { ModificationType } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

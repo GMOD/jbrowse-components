@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { cast, getParent, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { toJS } from 'mobx'
 
-import { JBrowseConfigF } from '../JBrowseConfig'
+import { JBrowseConfigF } from '../JBrowseConfig/index.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'

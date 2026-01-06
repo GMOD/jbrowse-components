@@ -2,8 +2,8 @@ import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 import { configure } from 'mobx'
 
-import { handleRequest } from './generateReadBuffer'
-import { getPluginManager, setup } from './util'
+import { handleRequest } from './generateReadBuffer.ts'
+import { getPluginManager, setup } from './util.tsx'
 
 setup()
 

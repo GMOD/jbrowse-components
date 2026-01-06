@@ -3,12 +3,12 @@ import { lazy } from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import LinearComparativeViewComponent from '../../LinearComparativeView/components/LinearComparativeView'
+import LinearComparativeViewComponent from '../../LinearComparativeView/components/LinearComparativeView.tsx'
 
-import type { LinearSyntenyViewModel } from '../model'
+import type { LinearSyntenyViewModel } from '../model.ts'
 
 const LinearSyntenyImportForm = lazy(
-  () => import('./ImportForm/LinearSyntenyImportForm'),
+  () => import('./ImportForm/LinearSyntenyImportForm.tsx'),
 )
 
 const LinearSyntenyView = observer(function LinearSyntenyView({

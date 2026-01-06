@@ -5,13 +5,13 @@ import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import deepmerge from 'deepmerge'
 
-import FavoriteGenomesPanel from './FavoriteGenomesPanel'
-import OpenSequencePanel from './OpenSequencePanel'
-import QuickstartPanel from './QuickstartPanel'
-import defaultFavs from '../defaultFavs'
-import { addRelativeUris, fetchjson, loadPluginManager } from '../util'
+import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
+import OpenSequencePanel from './OpenSequencePanel.tsx'
+import QuickstartPanel from './QuickstartPanel.tsx'
+import defaultFavs from '../defaultFavs.ts'
+import { addRelativeUris, fetchjson, loadPluginManager } from '../util.tsx'
 
-import type { Fav, JBrowseConfig } from '../types'
+import type { Fav, JBrowseConfig } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const { ipcRenderer } = window.require('electron')

@@ -3,11 +3,11 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import autorunFeatureDensityStats from './autorunFeatureDensityStats'
-import { getDisplayStr, getFeatureDensityStatsPre } from './util'
-import TooLargeMessage from '../components/TooLargeMessage'
+import autorunFeatureDensityStats from './autorunFeatureDensityStats.ts'
+import { getDisplayStr, getFeatureDensityStatsPre } from './util.ts'
+import TooLargeMessage from '../components/TooLargeMessage.tsx'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView'
+import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util/types'
 

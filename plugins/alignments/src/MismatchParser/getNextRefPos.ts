@@ -9,7 +9,7 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../PileupRenderer/renderers/cigarUtil'
+} from '../PileupRenderer/renderers/cigarUtil.ts'
 
 // Handles both packed Uint32Array and unpacked number[] formats
 export function getNextRefPos(

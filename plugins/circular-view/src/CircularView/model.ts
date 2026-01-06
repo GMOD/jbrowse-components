@@ -19,10 +19,10 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
-import { calculateStaticSlices, sliceIsVisible } from './slices'
-import { viewportVisibleSection } from './viewportVisibleRegion'
+import { calculateStaticSlices, sliceIsVisible } from './slices.ts'
+import { viewportVisibleSection } from './viewportVisibleRegion.ts'
 
-import type { SliceRegion } from './slices'
+import type { SliceRegion } from './slices.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -30,7 +30,7 @@ import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
-const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
 export interface CircularViewInit {
   assembly: string
@@ -628,7 +628,8 @@ function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        const { renderToSvg } = await import('./svgcomponents/SVGCircularView')
+        const { renderToSvg } =
+          await import('./svgcomponents/SVGCircularView.tsx')
         const html = await renderToSvg(self as CircularViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')

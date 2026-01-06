@@ -1,13 +1,13 @@
-import { boxGlyph } from './box'
-import { cdsGlyph } from './cds'
-import { matureProteinRegionGlyph } from './matureProteinRegion'
-import { processedTranscriptGlyph } from './processed'
-import { repeatRegionGlyph } from './repeatRegion'
-import { segmentsGlyph } from './segments'
-import { subfeaturesGlyph } from './subfeatures'
+import { boxGlyph } from './box.ts'
+import { cdsGlyph } from './cds.ts'
+import { matureProteinRegionGlyph } from './matureProteinRegion.ts'
+import { processedTranscriptGlyph } from './processed.ts'
+import { repeatRegionGlyph } from './repeatRegion.ts'
+import { segmentsGlyph } from './segments.ts'
+import { subfeaturesGlyph } from './subfeatures.ts'
 
-import type { RenderConfigContext } from '../renderConfig'
-import type { Glyph } from '../types'
+import type { RenderConfigContext } from '../renderConfig.ts'
+import type { Glyph } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type GlyphType from '@jbrowse/core/pluggableElementTypes/GlyphType'
 import type { Feature } from '@jbrowse/core/util'
@@ -55,4 +55,4 @@ export function findPluggableGlyph(
 }
 
 // Only export boxGlyph for use as fallback in drawFeature.ts
-export { boxGlyph } from './box'
+export { boxGlyph } from './box.ts'

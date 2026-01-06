@@ -1,7 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { splitRegionAtPosition } from '@jbrowse/sv-core'
 
-import type { ReducedFeature } from './getSAFeatures'
+import type { ReducedFeature } from './getSAFeatures.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getBreakpointSplitView({

@@ -1,8 +1,8 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import { getGenotypeMatrix } from './getGenotypeMatrix'
+import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
 
-import type { GetGenotypeMatrixArgs } from './types'
+import type { GetGenotypeMatrixArgs } from './types.ts'
 
 export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiVariantGetGenotypeMatrix'

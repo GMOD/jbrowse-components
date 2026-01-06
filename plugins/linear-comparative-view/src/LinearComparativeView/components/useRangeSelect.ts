@@ -3,9 +3,9 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { transaction } from 'mobx'
 
-import { getRelativeX } from './util'
+import { getRelativeX } from './util.ts'
 
-import type { LinearComparativeViewModel } from '../model'
+import type { LinearComparativeViewModel } from '../model.ts'
 
 interface AnchorPosition {
   offsetX: number

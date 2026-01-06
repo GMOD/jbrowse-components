@@ -4,7 +4,6 @@
   "include": ["src/**/*.ts*", "src/**/*.js*"],
   "compilerOptions": {
     "outDir": "esm",
-    "rootDir": "src",
-    "target": "es2018"
+    "rootDir": "src"
   }
 }

@@ -12,7 +12,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { ReducedModel } from './types'
+import type { ReducedModel } from './types.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

@@ -19,12 +19,7 @@
     "directory": "packages/product-core"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "distModule": "esm/index.js",
-  "srcMain": "src/index.ts",
-  "srcModule": "src/index.ts",
   "main": "src/index.ts",
-  "module": "",
   "files": [
     "dist",
     "esm"
@@ -32,29 +27,35 @@
   "scripts": {
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
-    "build": "yarn build:esm && yarn build:commonjs",
+    "build": "pnpm build:esm && pnpm build:commonjs",
     "test": "cd ../..; jest --passWithNoTests packages/product-core",
     "clean": "rimraf dist esm *.tsbuildinfo",
-    "prebuild": "yarn clean",
-    "prepack": "yarn build && yarn useDist",
-    "postpack": "yarn useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build"
   },
   "dependencies": {
-    "@jbrowse/core": "^3.7.0",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
-    "@mui/material": "^7.0.0",
-    "copy-to-clipboard": "^3.3.1",
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "@mui/material": "^7.3.6",
+    "copy-to-clipboard": "^3.3.3",
     "librpc-web-mod": "^2.1.1",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0"
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./esm/index.js",
+        "require": "./dist/index.js"
+      }
+    }
   }
 }

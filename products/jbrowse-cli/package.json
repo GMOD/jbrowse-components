@@ -28,23 +28,22 @@
     "node": ">=18.3.0"
   },
   "scripts": {
-    "prebuild": "yarn clean",
+    "prebuild": "pnpm clean",
     "build": "tsc && webpack",
     "clean": "rimraf dist bundle",
-    "prepack": "yarn clean  && yarn docs",
-    "predocs": "yarn build",
-    "docs": "./generate_readme.sh > README.md"
+    "prepack": "pnpm clean && pnpm build && pnpm generate-readme",
+    "generate-readme": "./generate_readme.sh > README.md"
   },
   "dependencies": {
-    "cli-progress": "^3.9.0",
+    "cli-progress": "^3.12.0",
     "command-exists": "^1.2.9",
     "cors": "^2.8.5",
-    "decompress": "^4.0.0",
-    "express": "^5.1.0",
+    "decompress": "^4.2.1",
+    "express": "^5.2.1",
     "ixixx": "^3.0.2",
     "json-parse-better-errors": "^1.0.2",
-    "node-fetch-native": "^1.6.4",
-    "tmp": "^0.2.1"
+    "node-fetch-native": "^1.6.7",
+    "tmp": "^0.2.5"
   },
   "publishConfig": {
     "access": "public"

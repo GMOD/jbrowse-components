@@ -1,6 +1,6 @@
 import { ReactRendering } from '@jbrowse/core/util'
 
-import { renderReactionData, renderReactionEffect } from './renderReaction'
+import { renderReactionData, renderReactionEffect } from './renderReaction.ts'
 
 import type { ExportSvgOptions } from '@jbrowse/plugin-circular-view'
 import type { ThemeOptions } from '@mui/material'

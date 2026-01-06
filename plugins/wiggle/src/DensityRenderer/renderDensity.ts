@@ -1,11 +1,11 @@
 import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { rpcResult } from 'librpc-web-mod'
 
-import { drawDensity } from '../drawDensity'
-import { serializeWiggleFeature } from '../util'
+import { drawDensity } from '../drawDensity.ts'
+import { serializeWiggleFeature } from '../util.ts'
 
-import type { RenderArgsDeserialized } from '../types'
+import type { RenderArgsDeserialized } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderDensity(

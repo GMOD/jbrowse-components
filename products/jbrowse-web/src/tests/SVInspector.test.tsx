@@ -7,7 +7,7 @@ import {
   mockConsoleWarn,
   openViewWithFileInput,
   setup,
-} from './util'
+} from './util.tsx'
 
 setup()
 

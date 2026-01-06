@@ -1,4 +1,4 @@
-import { createViewNoWait, doBeforeEach, mockConsole } from './util'
+import { createViewNoWait, doBeforeEach, mockConsole } from './util.tsx'
 import chromeSizesConfig from '../../test_data/404_chrom_sizes/config.json'
 import wrongAssemblyTest from '../../test_data/wrong_assembly.json'
 

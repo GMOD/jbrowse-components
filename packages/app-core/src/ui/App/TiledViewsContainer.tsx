@@ -3,23 +3,24 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
+// eslint-disable-next-line import/named -- pnpm re-exports; eslint-import-resolver-typescript would fix
 import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { DockviewContext } from './DockviewContext'
-import DockviewLeftHeaderActions from './DockviewLeftHeaderActions'
-import DockviewRightHeaderActions from './DockviewRightHeaderActions'
-import JBrowseViewPanel from './JBrowseViewPanel'
-import JBrowseViewTab from './JBrowseViewTab'
+import { DockviewContext } from './DockviewContext.tsx'
+import DockviewLeftHeaderActions from './DockviewLeftHeaderActions.tsx'
+import DockviewRightHeaderActions from './DockviewRightHeaderActions.tsx'
+import JBrowseViewPanel from './JBrowseViewPanel.tsx'
+import JBrowseViewTab from './JBrowseViewTab.tsx'
 import {
   cleanLayoutForStorage,
   createPanelConfig,
   updatePanelParams,
-} from './dockviewUtils'
-import { isSessionWithDockviewLayout } from '../../DockviewLayout'
+} from './dockviewUtils.ts'
+import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 
-import type { DockviewSessionType } from './types'
+import type { DockviewSessionType } from './types.ts'
 import type {
   DockviewApi,
   DockviewGroupPanel,

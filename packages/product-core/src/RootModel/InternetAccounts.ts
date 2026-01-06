@@ -1,7 +1,7 @@
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { BaseRootModel } from './BaseRootModel'
+import type { BaseRootModel } from './BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { UriLocation } from '@jbrowse/core/util'

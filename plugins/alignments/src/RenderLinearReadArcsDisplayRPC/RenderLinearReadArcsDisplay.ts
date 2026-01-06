@@ -1,9 +1,9 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import configSchema from '../LinearReadArcsDisplay/configSchema'
+import configSchema from '../LinearReadArcsDisplay/configSchema.ts'
 
-import type { ColorBy } from '../shared/types'
+import type { ColorBy } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ThemeOptions } from '@mui/material'
@@ -84,7 +84,7 @@ export default class RenderLinearReadArcsDisplay extends RpcMethodType {
   async execute(args: Record<string, unknown>, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { executeRenderLinearReadArcsDisplay } =
-      await import('./executeRenderLinearReadArcsDisplay')
+      await import('./executeRenderLinearReadArcsDisplay.ts')
     return executeRenderLinearReadArcsDisplay({
       pluginManager: this.pluginManager,
       args: deserializedArgs,

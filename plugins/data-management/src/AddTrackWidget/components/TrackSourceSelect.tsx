@@ -4,7 +4,7 @@ import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 import type { AbstractRootModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({

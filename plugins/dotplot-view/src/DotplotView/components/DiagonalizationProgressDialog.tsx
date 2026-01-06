@@ -13,7 +13,7 @@ import {
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 

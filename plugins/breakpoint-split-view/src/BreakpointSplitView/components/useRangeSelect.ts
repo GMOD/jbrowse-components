@@ -3,9 +3,9 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { transaction } from 'mobx'
 
-import { getRelativeX } from './rubberbandUtil'
+import { getRelativeX } from './rubberbandUtil.ts'
 
-import type { BreakpointViewModel } from '../model'
+import type { BreakpointViewModel } from '../model.ts'
 
 interface AnchorPosition {
   offsetX: number

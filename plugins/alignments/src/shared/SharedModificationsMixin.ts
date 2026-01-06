@@ -1,9 +1,9 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
-import { getColorForModification } from '../util'
+import { getColorForModification } from '../util.ts'
 
-import type { ModificationType, ModificationTypeWithColor } from './types'
+import type { ModificationType, ModificationTypeWithColor } from './types.ts'
 
 /**
  * Shared mixin for modification-related state and actions.

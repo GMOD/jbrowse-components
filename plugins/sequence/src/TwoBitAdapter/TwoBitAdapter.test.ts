@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './TwoBitAdapter'
-import configSchema from './configSchema'
+import Adapter from './TwoBitAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('adapter can fetch features from volvox.2bit', async () => {
   const adapter = new Adapter(

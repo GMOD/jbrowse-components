@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react'
 
-import Arcs from './Arcs'
-import BaseDisplayComponent from './BaseDisplayComponent'
+import Arcs from './Arcs.tsx'
+import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 
-import type { LinearArcDisplayModel } from '../model'
+import type { LinearArcDisplayModel } from '../model.ts'
 
 const LinearArcReactComponent = observer(function LinearArcReactComponent({
   model,

@@ -1,7 +1,7 @@
 import { cleanup } from '@testing-library/react'
 
-import { testLinkedReadsDisplay } from './testLinkedReadsDisplay'
-import { doBeforeEach, setup } from './util'
+import { testLinkedReadsDisplay } from './testLinkedReadsDisplay.tsx'
+import { doBeforeEach, setup } from './util.tsx'
 
 setup()
 

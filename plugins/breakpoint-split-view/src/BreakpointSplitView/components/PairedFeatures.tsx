@@ -11,11 +11,11 @@ import {
   getCanonicalRefs,
   getTestId,
   getYOffset,
-} from './overlayUtils'
-import { getMatchedPairedFeatures } from './util'
-import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
+} from './overlayUtils.tsx'
+import { getMatchedPairedFeatures } from './util.ts'
+import { getPxFromCoordinate, useNextFrame, yPos } from '../util.ts'
 
-import type { OverlayProps } from './overlayUtils'
+import type { OverlayProps } from './overlayUtils.tsx'
 
 const PairedFeatures = observer(function PairedFeatures({
   model,

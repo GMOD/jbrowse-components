@@ -1,4 +1,4 @@
-import { parseVcfBuffer } from './vcfParser'
+import { parseVcfBuffer } from './vcfParser.ts'
 
 describe('parseVcfBuffer', () => {
   it('should parse VCF content with header and variants', () => {

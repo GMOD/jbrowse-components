@@ -6,10 +6,10 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import { setupModificationsAutorun } from '../shared/setupModificationsAutorun'
-import { createAutorun } from '../util'
+import { setupModificationsAutorun } from '../shared/setupModificationsAutorun.ts'
+import { createAutorun } from '../util.ts'
 
-import type { ModificationType, SortedBy } from '../shared/types'
+import type { ModificationType, SortedBy } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

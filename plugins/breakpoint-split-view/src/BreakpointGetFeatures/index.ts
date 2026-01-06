@@ -1,4 +1,4 @@
-import BreakpointGetFeatures from './BreakpointGetFeatures'
+import BreakpointGetFeatures from './BreakpointGetFeatures.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

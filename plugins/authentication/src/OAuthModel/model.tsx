@@ -8,10 +8,10 @@ import {
   generateChallenge,
   processError,
   processTokenResponse,
-} from './util'
-import { getResponseError } from '../util'
+} from './util.ts'
+import { getResponseError } from '../util.ts'
 
-import type { OAuthInternetAccountConfigModel } from './configSchema'
+import type { OAuthInternetAccountConfigModel } from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

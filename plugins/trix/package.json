@@ -15,22 +15,17 @@
     "directory": "plugins/trix"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "srcMain": "src/index.ts",
   "main": "src/index.ts",
   "files": [
     "dist",
     "esm"
   ],
   "scripts": {
-    "build": "npm-run-all build:*",
+    "build": "pnpm run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/trix",
-    "prepublishOnly": "yarn test",
-    "prepack": "yarn build && yarn useDist",
-    "postpack": "yarn useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "yarn clean",
+    "prepublishOnly": "pnpm test",
+    "prepack": "pnpm build",
+    "prebuild": "pnpm clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
@@ -39,13 +34,20 @@
     "react": ">=18.0.0"
   },
   "dependencies": {
-    "@gmod/trix": "^3.0.2",
-    "@jbrowse/core": "^3.7.0"
+    "@gmod/trix": "^3.0.4",
+    "@jbrowse/core": "workspace:^"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./esm/index.js",
+        "require": "./dist/index.js"
+      }
+    }
   },
-  "distModule": "esm/index.js",
-  "srcModule": "src/index.ts",
-  "module": ""
+  "sideEffects": false
 }

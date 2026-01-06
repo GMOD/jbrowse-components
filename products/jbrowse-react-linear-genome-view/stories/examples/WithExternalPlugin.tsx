@@ -6,7 +6,7 @@ import {
   JBrowseLinearGenomeView,
   createViewState,
   loadPlugins,
-} from '../../src'
+} from '../../src/index.ts'
 
 const hg19Assembly = {
   name: 'hg19',

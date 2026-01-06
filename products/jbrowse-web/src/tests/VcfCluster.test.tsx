@@ -7,7 +7,7 @@ import {
   exportAndVerifySvg,
   hts,
   setup,
-} from './util'
+} from './util.tsx'
 
 setup()
 

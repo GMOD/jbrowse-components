@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 
-import { createAutorun } from '../util'
+import { createAutorun } from '../util.ts'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

@@ -1,4 +1,4 @@
-import { flipCigar } from './util'
+import { flipCigar } from './util.ts'
 
 test('flip cigar', () => {
   expect(flipCigar(['3', 'M', '5', 'D', '5', 'M', '5', 'I', '6', 'M'])).toEqual(

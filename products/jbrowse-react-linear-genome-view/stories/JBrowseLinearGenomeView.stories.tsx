@@ -24,6 +24,6 @@ export {
   WithShowTrack,
   WithTwoLinearGenomeViews,
   WithWebWorker,
-} from './examples'
+} from './examples/index.ts'
 
 export default { title: 'Source code for examples' }

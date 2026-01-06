@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, doBeforeEach, hts, setup } from './util'
+import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
 setup()
 

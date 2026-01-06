@@ -1,7 +1,7 @@
 import path from 'path'
 
-import { testAlignmentModificationsDisplay } from './testAlignmentModificationsDisplay'
-import { doBeforeEach, setup } from './util'
+import { testAlignmentModificationsDisplay } from './testAlignmentModificationsDisplay.tsx'
+import { doBeforeEach, setup } from './util.tsx'
 import config from '../../test_data/methylation_test/config.json'
 
 setup()

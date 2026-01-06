@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import configSchemaFactory from './configSchema'
-import modelFactory from './model'
+import configSchemaFactory from './configSchema.ts'
+import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -20,7 +20,7 @@ export default function register(pluginManager: PluginManager) {
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(
-        () => import('./components/SNPCoverageDisplayComponent'),
+        () => import('./components/SNPCoverageDisplayComponent.tsx'),
       ),
     })
   })

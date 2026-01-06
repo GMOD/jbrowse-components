@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 
 import useSWR from 'swr'
 
-import { fetchjson } from '../util'
+import { fetchjson } from '../util.tsx'
 
-import type { Fav } from '../types'
+import type { Fav } from '../types.ts'
 
 interface Entry {
   jbrowseConfig: string

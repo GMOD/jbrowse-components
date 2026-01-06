@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -15,7 +15,7 @@ export default function ChromSizesAdapterF(pluginManager: PluginManager) {
           hiddenFromGUI: true,
         },
         getAdapterClass: () =>
-          import('./ChromSizesAdapter').then(r => r.default),
+          import('./ChromSizesAdapter.ts').then(r => r.default),
       }),
   )
 }

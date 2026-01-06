@@ -1,10 +1,10 @@
-import { sanitizeNameForPath } from './config-utils'
+import { sanitizeNameForPath } from './config-utils.ts'
 
 import type {
   LocalPathLocation,
   TrixTextSearchAdapter,
   UriLocation,
-} from '../../base'
+} from '../../base.ts'
 
 export function getLoc(elt: UriLocation | LocalPathLocation): string {
   return elt.locationType === 'LocalPathLocation' ? elt.localPath : elt.uri

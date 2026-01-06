@@ -6,14 +6,14 @@ import {
   renameRegionsIfNeeded,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { rpcResult } from 'librpc-web-mod'
 import { firstValueFrom } from 'rxjs'
 import { filter, toArray } from 'rxjs/operators'
 
-import { Dotplot1DView } from '../DotplotView/model'
+import { Dotplot1DView } from '../DotplotView/model.ts'
 
-import type { Dotplot1DViewModel } from '../DotplotView/model'
+import type { Dotplot1DViewModel } from '../DotplotView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type {
@@ -191,7 +191,7 @@ export default class DotplotRenderer extends ServerSideRenderer {
     })
     target.setFeatures(feats)
 
-    const { drawDotplot } = await import('./drawDotplot')
+    const { drawDotplot } = await import('./drawDotplot.ts')
     const ret = await renderToAbstractCanvas(width, height, renderProps, ctx =>
       drawDotplot(ctx, { ...renderProps, views }),
     )

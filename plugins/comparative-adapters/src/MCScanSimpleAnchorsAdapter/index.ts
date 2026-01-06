@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -17,7 +17,7 @@ export default function MCScanSimpleAnchorsAdapterF(
           category: 'Synteny adapters',
         },
         getAdapterClass: () =>
-          import('./MCScanSimpleAnchorsAdapter').then(r => r.default),
+          import('./MCScanSimpleAnchorsAdapter.ts').then(r => r.default),
       }),
   )
 }

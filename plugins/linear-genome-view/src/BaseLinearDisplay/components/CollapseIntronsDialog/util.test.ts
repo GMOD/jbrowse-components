@@ -1,4 +1,4 @@
-import { calculateInitialViewState, getExonsAndCDS } from './util'
+import { calculateInitialViewState, getExonsAndCDS } from './util.ts'
 
 describe('CollapseIntrons utilities', () => {
   describe('getExonsAndCDS', () => {

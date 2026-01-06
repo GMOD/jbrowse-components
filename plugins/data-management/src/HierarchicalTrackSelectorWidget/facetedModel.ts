@@ -8,9 +8,9 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
 
-import { getRowStr } from './components/faceted/util'
-import { findNonSparseKeys, getRootKeys } from './facetedUtil'
-import { matches } from './util'
+import { getRowStr } from './components/faceted/util.ts'
+import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
+import { matches } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'

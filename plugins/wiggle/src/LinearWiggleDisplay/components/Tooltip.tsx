@@ -3,10 +3,10 @@ import { forwardRef } from 'react'
 import { toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import Tooltip from '../../Tooltip'
-import { toP } from '../../util'
+import Tooltip from '../../Tooltip.tsx'
+import { toP } from '../../util.ts'
 
-import type { TooltipContentsComponent } from '../../Tooltip'
+import type { TooltipContentsComponent } from '../../Tooltip.tsx'
 import type { Feature } from '@jbrowse/core/util'
 
 const en = toLocale
@@ -69,4 +69,4 @@ const WiggleTooltip = observer(function WiggleTooltip(props: {
 })
 export default WiggleTooltip
 
-export { default as Tooltip } from '../../Tooltip'
+export { default as Tooltip } from '../../Tooltip.tsx'

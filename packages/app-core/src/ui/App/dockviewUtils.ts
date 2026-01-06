@@ -1,4 +1,4 @@
-import type { DockviewSessionType } from './types'
+import type { DockviewSessionType } from './types.ts'
 import type { DockviewApi } from 'dockview-react'
 
 export function createPanelConfig(

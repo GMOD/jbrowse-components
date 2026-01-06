@@ -2,7 +2,7 @@ import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { HEADER_BAR_HEIGHT } from '../consts'
+import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'

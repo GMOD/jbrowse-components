@@ -1,8 +1,8 @@
-import './workerPolyfill'
+import './workerPolyfill.js'
 import { initializeWorker } from '@jbrowse/product-core'
 import { enableStaticRendering } from 'mobx-react'
 
-import corePlugins from './corePlugins'
+import corePlugins from './corePlugins.ts'
 
 // static rendering is used for "SSR" style rendering which is done on the
 // worker

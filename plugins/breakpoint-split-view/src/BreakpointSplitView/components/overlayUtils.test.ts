@@ -2,7 +2,7 @@ import {
   buildBreakpointPath,
   buildSimplePath,
   strandToSign,
-} from './overlayUtils'
+} from './overlayUtils.tsx'
 
 describe('strandToSign', () => {
   test('returns 1 for positive strand', () => {

@@ -12,12 +12,12 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { observer } from 'mobx-react'
 
-import { flatbushItemToFeatureData } from '../types'
-import PileupTooltip from './PileupTooltip'
-import { makeRect } from './util'
+import { flatbushItemToFeatureData } from '../types.ts'
+import PileupTooltip from './PileupTooltip.tsx'
+import { makeRect } from './util.ts'
 
-import type { ColorBy, FilterBy, SortedBy } from '../../shared/types'
-import type { FlatbushItem } from '../types'
+import type { ColorBy, FilterBy, SortedBy } from '../../shared/types.ts'
+import type { FlatbushItem } from '../types.ts'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 

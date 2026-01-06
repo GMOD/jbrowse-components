@@ -3,12 +3,12 @@ import { lazy } from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import LinearGenomeViewContainer from './LinearGenomeViewContainer'
+import LinearGenomeViewContainer from './LinearGenomeViewContainer.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 
 // lazies
-const ImportForm = lazy(() => import('./ImportForm'))
+const ImportForm = lazy(() => import('./ImportForm.tsx'))
 
 const LinearGenomeView = observer(function LinearGenomeView({
   model,

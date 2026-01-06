@@ -15,46 +15,48 @@
     "directory": "plugins/breakpoint-split-view"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "srcMain": "src/index.ts",
   "main": "src/index.ts",
   "files": [
     "dist",
     "esm"
   ],
   "scripts": {
-    "build": "npm-run-all build:*",
+    "build": "pnpm run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/breakpoint-split-view",
-    "prepublishOnly": "yarn test",
-    "prepack": "yarn build && yarn useDist",
-    "postpack": "yarn useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "yarn clean",
+    "prepublishOnly": "pnpm test",
+    "prepack": "pnpm build",
+    "prebuild": "pnpm clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
     "@gmod/vcf": "^6.1.0",
-    "@jbrowse/core": "^3.7.0",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
-    "@jbrowse/plugin-linear-genome-view": "^3.7.0",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
-    "@types/file-saver-es": "^2.0.1",
-    "file-saver-es": "^2.0.0",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0"
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "@types/file-saver-es": "^2.0.3",
+    "file-saver-es": "^2.0.5",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1"
   },
   "peerDependencies": {
     "react": ">=16.8.4",
     "react-dom": ">=16.8.4"
   },
-  "distModule": "esm/index.js",
-  "srcModule": "src/index.ts",
-  "module": "",
   "publishConfig": {
-    "access": "public"
-  }
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./esm/index.js",
+        "require": "./dist/index.js"
+      }
+    }
+  },
+  "sideEffects": false
 }

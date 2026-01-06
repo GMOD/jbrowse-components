@@ -9,7 +9,7 @@ import {
   getPluginManager,
   mockConsoleWarn,
   setup,
-} from './util'
+} from './util.tsx'
 import masterConfig from '../../test_data/volvox/connection_test.json'
 
 setup()

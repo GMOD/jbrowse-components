@@ -4,16 +4,16 @@ import { Readable } from 'stream'
 import { Presets, SingleBar } from 'cli-progress'
 import { ixIxxStream } from 'ixixx'
 
-import { getAdapterLocation, getLoc } from './adapter-utils'
+import { getAdapterLocation, getLoc } from './adapter-utils.ts'
 import {
   generateMeta,
   guessAdapterFromFileName,
   supported,
-} from '../../types/common'
-import { indexGff3 } from '../../types/gff3Adapter'
-import { indexVcf } from '../../types/vcfAdapter'
+} from '../../types/common.ts'
+import { indexGff3 } from '../../types/gff3Adapter.ts'
+import { indexVcf } from '../../types/vcfAdapter.ts'
 
-import type { Track } from '../../base'
+import type { Track } from '../../base.ts'
 
 export async function runIxIxx({
   readStream,

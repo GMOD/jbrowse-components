@@ -22,8 +22,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { ReducedModel } from './types'
-import type { Source } from '../../../util'
+import type { ReducedModel } from './types.ts'
+import type { Source } from '../../../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({

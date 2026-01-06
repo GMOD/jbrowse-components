@@ -12,7 +12,7 @@ import {
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { SVGLegend } from '@jbrowse/plugin-linear-genome-view'
 
-import type { LinearReadArcsDisplayModel } from './model'
+import type { LinearReadArcsDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,

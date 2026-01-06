@@ -1,4 +1,4 @@
-import type { Source } from '../../../util'
+import type { Source } from '../../../util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export interface ReducedModel {

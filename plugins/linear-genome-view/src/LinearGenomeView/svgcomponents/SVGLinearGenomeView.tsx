@@ -11,15 +11,15 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import { isReadyOrHasError } from '../svgExportUtil'
-import SVGBackground from './SVGBackground'
-import SVGGridlines from './SVGGridlines'
-import SVGHeader from './SVGHeader'
-import SVGTracks from './SVGTracks'
-import { totalHeight } from './util'
+import { isReadyOrHasError } from '../svgExportUtil.ts'
+import SVGBackground from './SVGBackground.tsx'
+import SVGGridlines from './SVGGridlines.tsx'
+import SVGHeader from './SVGHeader.tsx'
+import SVGTracks from './SVGTracks.tsx'
+import { totalHeight } from './util.ts'
 
 import type { LinearGenomeViewModel } from '..'
-import type { ExportSvgOptions } from '../types'
+import type { ExportSvgOptions } from '../types.ts'
 
 type LGV = LinearGenomeViewModel
 
@@ -121,6 +121,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   )
 }
 
-export { default as SVGGridlines } from './SVGGridlines'
-export { default as SVGRuler } from './SVGRuler'
-export { default as SVGTracks } from './SVGTracks'
+export { default as SVGGridlines } from './SVGGridlines.tsx'
+export { default as SVGRuler } from './SVGRuler.tsx'
+export { default as SVGTracks } from './SVGTracks.tsx'

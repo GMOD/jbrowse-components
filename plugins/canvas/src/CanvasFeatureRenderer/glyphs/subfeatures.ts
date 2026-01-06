@@ -1,9 +1,9 @@
-import { applyLabelDimensions } from '../labelUtils'
-import { readCachedConfig } from '../renderConfig'
-import { boxGlyph } from './box'
-import { findChildGlyph } from './childGlyphs'
+import { applyLabelDimensions } from '../labelUtils.ts'
+import { readCachedConfig } from '../renderConfig.ts'
+import { boxGlyph } from './box.ts'
+import { findChildGlyph } from './childGlyphs.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types'
+import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const TRANSCRIPT_PADDING = 2

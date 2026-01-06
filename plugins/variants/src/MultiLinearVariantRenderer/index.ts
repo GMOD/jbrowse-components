@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
-import MultiVariantRenderer from './MultiVariantRenderer'
-import configSchema from './configSchema'
+import MultiVariantRenderer from './MultiVariantRenderer.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -10,7 +10,7 @@ export default function MultiVariantRendererF(pluginManager: PluginManager) {
     return new MultiVariantRenderer({
       name: 'MultiVariantRenderer',
       ReactComponent: lazy(
-        () => import('./components/MultiLinearVariantRendering'),
+        () => import('./components/MultiLinearVariantRendering.tsx'),
       ),
       configSchema,
       pluginManager,

@@ -10,10 +10,10 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import ArcTooltipContents from './ArcTooltipContents'
-import { featureToArcData, getArcSelectedColor } from './arcUtils'
+import ArcTooltipContents from './ArcTooltipContents.tsx'
+import { featureToArcData, getArcSelectedColor } from './arcUtils.ts'
 
-import type { ArcData } from './arcUtils'
+import type { ArcData } from './arcUtils.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

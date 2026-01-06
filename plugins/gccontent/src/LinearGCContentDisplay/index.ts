@@ -2,10 +2,10 @@ import { lazy } from 'react'
 
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchemaFactory1 from './config1'
-import configSchemaFactory2 from './config2'
-import stateModelF1 from './stateModel1'
-import stateModelF2 from './stateModel2'
+import configSchemaFactory1 from './config1.ts'
+import configSchemaFactory2 from './config2.ts'
+import stateModelF1 from './stateModel1.ts'
+import stateModelF2 from './stateModel2.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

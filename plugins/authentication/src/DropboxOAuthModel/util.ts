@@ -1,4 +1,4 @@
-import { getResponseError } from '../util'
+import { getResponseError } from '../util.ts'
 
 interface DropboxError {
   error_summary: string

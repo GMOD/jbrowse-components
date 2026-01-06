@@ -1,7 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 
-import type { LinearGenomeViewModel } from './model'
+import type { LinearGenomeViewModel } from './model.ts'
 
 /**
  * Sets up keyboard shortcuts for the LinearGenomeView

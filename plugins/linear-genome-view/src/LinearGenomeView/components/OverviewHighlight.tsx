@@ -3,7 +3,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '../model.ts'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 

@@ -5,8 +5,8 @@ import type {
   DotplotRenderArgs,
   RenderArgsSerialized,
   ResultsSerialized,
-} from '../DotplotRenderer/DotplotRenderer'
-import type DotplotRenderer from '../DotplotRenderer/DotplotRenderer'
+} from '../DotplotRenderer/DotplotRenderer.ts'
+import type DotplotRenderer from '../DotplotRenderer/DotplotRenderer.ts'
 import type { RenderResults } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 
 interface RenderArgs extends DotplotRenderArgs {

@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { CloudTicks } from '../../RenderLinearReadCloudDisplayRPC/drawFeatsCloud'
+import type { CloudTicks } from '../../RenderLinearReadCloudDisplayRPC/drawFeatsCloud.ts'
 
 function formatTickValue(value: number): string {
   if (value >= 1000000) {

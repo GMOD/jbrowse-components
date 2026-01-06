@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { FlatbushEntry } from './flatbushType'
-import type { FlatbushItem } from '../PileupRenderer/types'
+import type { FlatbushEntry } from './flatbushType.ts'
+import type { FlatbushItem } from '../PileupRenderer/types.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 
 /**

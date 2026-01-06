@@ -5,12 +5,12 @@ import {
   getOutputFilename,
   spawnSortProcess,
   waitForProcessClose,
-} from './pif-generator'
-import { printHelp } from '../../utils'
+} from './pif-generator.ts'
+import { printHelp } from '../../utils.ts'
 import {
   validateFileArgument,
   validateRequiredCommands,
-} from '../shared/validators'
+} from '../shared/validators.ts'
 
 export async function run(args?: string[]) {
   const options = {

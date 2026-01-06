@@ -2,12 +2,12 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { detectSimplexModifications } from '../../ModificationParser/detectSimplexModifications'
-import { getModTypes } from '../../ModificationParser/getModTypes'
-import { getTagAlt } from '../../util'
-import PileupBaseRPC from '../base'
+import { detectSimplexModifications } from '../../ModificationParser/detectSimplexModifications.ts'
+import { getModTypes } from '../../ModificationParser/getModTypes.ts'
+import { getTagAlt } from '../../util.ts'
+import PileupBaseRPC from '../base.ts'
 
-import type { ModificationType } from '../../shared/types'
+import type { ModificationType } from '../../shared/types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 

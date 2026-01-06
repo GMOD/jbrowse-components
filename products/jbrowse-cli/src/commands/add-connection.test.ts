@@ -5,7 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { mockFetch, readConf, runCommand, runInTmpDir } from '../testUtil'
+import { mockFetch, readConf, runCommand, runInTmpDir } from '../testUtil.ts'
 
 jest.mock('../fetchWithProxy')
 

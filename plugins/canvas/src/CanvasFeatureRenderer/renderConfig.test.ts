@@ -1,6 +1,6 @@
-import { readCachedConfig } from './renderConfig'
+import { readCachedConfig } from './renderConfig.ts'
 
-import type { CachedConfig } from './renderConfig'
+import type { CachedConfig } from './renderConfig.ts'
 
 describe('CachedConfig', () => {
   describe('readCachedConfig', () => {

@@ -3,10 +3,10 @@ import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
-import HierarchicalTrackSelector from './HierarchicalTrackSelector'
+import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
 import conf from '../../../../../test_data/test_order/config.json'
 
-import type { HierarchicalTrackSelectorModel } from '../model'
+import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
 // test data
 

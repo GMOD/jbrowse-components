@@ -1,8 +1,8 @@
 import { getTickDisplayStr, measureText, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import { makeTicks } from '../util'
-import SVGRegionSeparators from './SVGRegionSeparators'
+import { makeTicks } from '../util.ts'
+import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 

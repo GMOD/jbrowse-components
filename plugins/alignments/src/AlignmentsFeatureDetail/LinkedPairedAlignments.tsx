@@ -1,9 +1,9 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { getEnv, getSession } from '@jbrowse/core/util'
 
-import LaunchPairedEndBreakpointSplitViewPanel from './LaunchPairedEndBreakpointSplitViewPanel'
+import LaunchPairedEndBreakpointSplitViewPanel from './LaunchPairedEndBreakpointSplitViewPanel.tsx'
 
-import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default function SuppAlignments(props: {

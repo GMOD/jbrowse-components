@@ -1,7 +1,7 @@
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { toJS } from 'mobx'
 
-import type { LinearSyntenyViewModel } from '../../model'
+import type { LinearSyntenyViewModel } from '../../model.ts'
 
 export async function doSubmit({
   selectedAssemblyNames,

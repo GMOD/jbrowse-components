@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react'
 
-import FullHeightScaleBar from './FullHeightScaleBar'
-import IndividualScaleBars from './IndividualScaleBars'
-import YScaleBarsWrapper from './YScaleBarsWrapper'
+import FullHeightScaleBar from './FullHeightScaleBar.tsx'
+import IndividualScaleBars from './IndividualScaleBars.tsx'
+import YScaleBarsWrapper from './YScaleBarsWrapper.tsx'
 
-import type { WiggleDisplayModel } from '../model'
+import type { WiggleDisplayModel } from '../model.ts'
 
 const YScaleBars = observer(function YScaleBars(props: {
   model: WiggleDisplayModel

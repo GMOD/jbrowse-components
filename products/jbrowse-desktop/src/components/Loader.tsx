@@ -6,10 +6,10 @@ import { localStorageGetItem } from '@jbrowse/core/util'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import JBrowse from './JBrowse'
-import { useQueryParam } from '../useQueryParam'
-import StartScreen from './StartScreen/StartScreen'
-import { loadPluginManager } from './StartScreen/util'
+import JBrowse from './JBrowse.tsx'
+import { useQueryParam } from '../useQueryParam.ts'
+import StartScreen from './StartScreen/StartScreen.tsx'
+import { loadPluginManager } from './StartScreen/util.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

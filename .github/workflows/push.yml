@@ -48,13 +48,26 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-          cache: 'yarn'
+          cache: 'pnpm'
 
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@3e063b974f0d209807684aa23e534b3dde517fd9 # v1.11.2
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Check @jbrowse/core exports are up-to-date
+        run: |
+          node packages/core/scripts/generateExports.mjs
+          if ! git diff --quiet packages/core/package.json; then
+            echo "Error: @jbrowse/core exports are out of date!"
+            echo "Run 'node packages/core/scripts/generateExports.mjs' and commit the changes."
+            git diff packages/core/package.json
+            exit 1
+          fi
 
       # Deploy jbrowse-web first
       - name: Validate branch/tag name for S3 path safety
@@ -77,7 +90,7 @@ jobs:
       - name: Build and deploy jbrowse-web
         run: |
           cd products/jbrowse-web/
-          NODE_OPTIONS='--max-old-space-size=6500' yarn build
+          NODE_OPTIONS='--max-old-space-size=6500' pnpm build
           cd build && zip -r "jbrowse-web-${{ github.ref_name }}.zip" . && cd -
           cp build/test_data/config.json build/config.json
           aws s3 sync --delete --exclude="*.map" build s3://jbrowse.org/code/jb2/${{ github.ref_name }}
@@ -85,19 +98,19 @@ jobs:
 
       # Lint, typecheck, test
       - name: Check code formatting
-        run: yarn prettier --check .
+        run: pnpm prettier --check .
       - name: Spellcheck
         uses: crate-ci/typos@5c19779cb52ea50e151f5a10333ccd269227b5ae # v1.41.0
       - name: Lint code
-        run: yarn lint
+        run: pnpm lint
       - name: Typecheck code
-        run: yarn typecheck
+        run: pnpm typecheck
       - name: Run tests
-        run: yarn test-ci
+        run: pnpm test-ci
       - name: Build codebase
-        run: yarn build
+        run: pnpm build
       - name: Test build
-        run: BUILT_TESTS=1 yarn built-test-ci
+        run: BUILT_TESTS=1 pnpm built-test-ci
       - name: Run browser tests with Puppeteer
         id: browser-tests
         run: node --experimental-strip-types browser-tests/runner.ts
@@ -140,7 +153,7 @@ jobs:
 
       # Deploy storybooks
       - name: Build LGV storybook
-        run: yarn storybook:build
+        run: pnpm storybook:build
         working-directory: products/jbrowse-react-linear-genome-view
 
       - name: Deploy LGV storybook
@@ -151,7 +164,7 @@ jobs:
         working-directory: products/jbrowse-react-linear-genome-view
 
       - name: Build React App storybook
-        run: yarn storybook:build
+        run: pnpm storybook:build
         working-directory: products/jbrowse-react-app
 
       - name: Deploy React App storybook
@@ -162,7 +175,7 @@ jobs:
         working-directory: products/jbrowse-react-app
 
       - name: Build CGV storybook
-        run: yarn storybook:build
+        run: pnpm storybook:build
         working-directory: products/jbrowse-react-circular-genome-view
 
       - name: Deploy CGV storybook
@@ -189,20 +202,21 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-          cache: 'yarn'
-          cache-dependency-path: 'website/yarn.lock'
+          cache: 'pnpm'
 
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@3e063b974f0d209807684aa23e534b3dde517fd9 # v1.11.2
-        with:
-          working-directory: website
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+        working-directory: website
       - name: Build website
         run: |
           cd website/
-          yarn build
+          pnpm build
           mkdir testing
           mv build testing/jb2
       - name: Check website links
@@ -238,5 +252,5 @@ jobs:
         run: |
           for dir in component_tests/lgv-vite component_tests/cgv-vite component_tests/app-vite; do
             echo "Testing $dir"
-            cd $dir && yarn install && yarn e2e && cd -
+            cd $dir && pnpm install && pnpm e2e && cd -
           done

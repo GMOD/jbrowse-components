@@ -1,4 +1,4 @@
-export { default as JBrowseApp } from './JBrowseApp'
-export { default as createModel } from './createModel'
-export { default as createViewState } from './createViewState'
-export { default as loadPlugins } from './loadPlugins'
+export { default as JBrowseApp } from './JBrowseApp/index.ts'
+export { default as createModel } from './createModel.ts'
+export { default as createViewState } from './createViewState.ts'
+export { default as loadPlugins } from './loadPlugins.ts'

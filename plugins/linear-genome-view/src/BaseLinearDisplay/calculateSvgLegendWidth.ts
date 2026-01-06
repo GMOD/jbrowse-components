@@ -1,6 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
-import type { LegendItem } from './components/FloatingLegend'
+import type { LegendItem } from './components/FloatingLegend.tsx'
 
 const LEGEND_FONT_SIZE = 10
 const LEGEND_BOX_SIZE = 12

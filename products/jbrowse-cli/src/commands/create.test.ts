@@ -5,7 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { mockFetch, runCommand, runInTmpDir } from '../testUtil'
+import { mockFetch, runCommand, runInTmpDir } from '../testUtil.ts'
 
 jest.mock('../fetchWithProxy')
 
@@ -73,7 +73,7 @@ test('fails if the fetch does not return the right file', async () => {
 test('download and unzips to new directory', async () => {
   await runInTmpDir(async ctx => {
     mockFetch(url => {
-      if (url.includes('api.github.com')) {
+      if (new URL(url).host === 'api.github.com') {
         return { json: releaseArray }
       }
       return {
@@ -109,7 +109,7 @@ test('downloads from a url', async () => {
 test('overwrites and succeeds in download in a non-empty directory with tag', async () => {
   await runInTmpDir(async ctx => {
     mockFetch(url => {
-      if (url.includes('api.github.com')) {
+      if (new URL(url).host === 'api.github.com') {
         return { json: releaseArray[0] }
       }
       return {
@@ -141,7 +141,7 @@ test('fails to download a version that does not exist', async () => {
 test('fails because this directory is already set up', async () => {
   await runInTmpDir(async () => {
     mockFetch(url => {
-      if (url.includes('api.github.com')) {
+      if (new URL(url).host === 'api.github.com') {
         return { json: releaseArray }
       }
       return {

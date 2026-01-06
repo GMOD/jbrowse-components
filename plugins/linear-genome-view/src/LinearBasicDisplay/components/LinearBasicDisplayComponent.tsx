@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react'
 
-import { BaseLinearDisplayComponent } from '../../BaseLinearDisplay'
-import FloatingLabels from '../../BaseLinearDisplay/components/FloatingLabels'
+import FloatingLabels from '../../BaseLinearDisplay/components/FloatingLabels.tsx'
+import { BaseLinearDisplayComponent } from '../../BaseLinearDisplay/index.ts'
 
-import type { FeatureTrackModel } from '../model'
+import type { FeatureTrackModel } from '../model.ts'
 
 const LinearBasicDisplayComponent = observer(
   function LinearBasicDisplayComponent(props: { model: FeatureTrackModel }) {

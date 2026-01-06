@@ -2,11 +2,11 @@ import { useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
-import Crosshair from '../../shared/components/MultiVariantCrosshairs'
-import ScrollableVariantContainer from '../../shared/components/ScrollableVariantContainer'
-import { useMouseTracking } from '../../shared/hooks/useMouseTracking'
+import Crosshair from '../../shared/components/MultiVariantCrosshairs.tsx'
+import ScrollableVariantContainer from '../../shared/components/ScrollableVariantContainer.tsx'
+import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
-import type { MultiLinearVariantDisplayModel } from '../model'
+import type { MultiLinearVariantDisplayModel } from '../model.ts'
 
 const MultiLinearVariantDisplayComponent = observer(
   function MultiLinearVariantDisplayComponent(props: {

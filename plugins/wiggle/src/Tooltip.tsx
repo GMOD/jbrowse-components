@@ -4,7 +4,7 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { YSCALEBAR_LABEL_OFFSET } from './util'
+import { YSCALEBAR_LABEL_OFFSET } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

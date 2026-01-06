@@ -2,9 +2,9 @@ import path from 'path'
 
 import parseJSON from 'json-parse-better-errors'
 
-import { isURL } from '../../types/common'
+import { isURL } from '../../types/common.ts'
 
-import type { Config, Track } from '../../base'
+import type { Config, Track } from '../../base.ts'
 
 const SYNTENY_ADAPTERS = new Set([
   'PAFAdapter',

@@ -1,9 +1,9 @@
 import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import RectBg from './RectBg'
+import RectBg from './RectBg.tsx'
 
-import type { WiggleDisplayModel } from '../model'
+import type { WiggleDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

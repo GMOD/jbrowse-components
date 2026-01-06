@@ -6,10 +6,10 @@ import {
 } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
-import type { GetSimplifiedFeaturesArgs } from './types'
-import type { SampleInfo } from '../shared/types'
+import type { GetSimplifiedFeaturesArgs } from './types.ts'
+import type { SampleInfo } from '../shared/types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersAndRenameRegions {

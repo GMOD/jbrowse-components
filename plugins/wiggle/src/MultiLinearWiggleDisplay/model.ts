@@ -13,11 +13,11 @@ import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
-import SharedWiggleMixin from '../shared/SharedWiggleMixin'
-import axisPropsFromTickScale from '../shared/axisPropsFromTickScale'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
+import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
+import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
-import type { Source } from '../util'
+import type { Source } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
@@ -32,10 +32,10 @@ const randomColor = () =>
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
 
 // lazies
-const Tooltip = lazy(() => import('./components/Tooltip'))
-const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
+const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
-  () => import('./components/WiggleClusterDialog/WiggleClusterDialog'),
+  () => import('./components/WiggleClusterDialog/WiggleClusterDialog.tsx'),
 )
 
 // using a map because it preserves order
@@ -578,8 +578,8 @@ export function stateModelFactory(
                 { getMultiWiggleSourcesAutorun },
                 { getQuantitativeStatsAutorun },
               ] = await Promise.all([
-                import('../getMultiWiggleSourcesAutorun'),
-                import('../getQuantitativeStatsAutorun'),
+                import('../getMultiWiggleSourcesAutorun.ts'),
+                import('../getQuantitativeStatsAutorun.ts'),
               ])
               getQuantitativeStatsAutorun(self)
               getMultiWiggleSourcesAutorun(self)
@@ -596,7 +596,7 @@ export function stateModelFactory(
          * #action
          */
         async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg')
+          const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts, superRenderSvg)
         },
       }

@@ -1,12 +1,12 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
-import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil'
-import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback'
-import { renderModifications } from '../PileupRenderer/renderers/renderModifications'
-import { strokeRectCtx } from '../shared/canvasUtils'
-import { drawChevron } from '../shared/chevron'
-import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags'
+import { getCigarOps } from '../PileupRenderer/renderers/cigarUtil.ts'
+import { renderMismatchesCallback } from '../PileupRenderer/renderers/renderMismatchesCallback.ts'
+import { renderModifications } from '../PileupRenderer/renderers/renderModifications.ts'
+import { strokeRectCtx } from '../shared/canvasUtils.ts'
+import { drawChevron } from '../shared/chevron.ts'
+import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '../shared/samFlags.ts'
 import {
   CHEVRON_WIDTH,
   getCharWidthHeight,
@@ -15,10 +15,10 @@ import {
   setAlignmentFont,
   shouldDrawIndels,
   shouldDrawSNPsMuted,
-} from '../shared/util'
+} from '../shared/util.ts'
 
-import type { FlatbushItem, LayoutFeature } from '../PileupRenderer/types'
-import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
+import type { FlatbushItem, LayoutFeature } from '../PileupRenderer/types.ts'
+import type { ColorBy, ModificationTypeWithColor } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'

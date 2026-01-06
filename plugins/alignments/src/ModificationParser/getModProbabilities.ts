@@ -1,4 +1,4 @@
-import { getTagAlt } from '../util'
+import { getTagAlt } from '../util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

@@ -7,7 +7,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearSyntenyViewModel } from '../../model'
+import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const ImportSyntenyTrackSelector = observer(

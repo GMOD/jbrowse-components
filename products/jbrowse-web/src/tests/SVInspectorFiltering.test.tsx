@@ -14,9 +14,9 @@
 import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, mockConsoleWarn, setup } from './util'
+import { createView, doBeforeEach, mockConsoleWarn, setup } from './util.tsx'
 
-import type { SvInspectorViewModel } from '../../../../plugins/sv-inspector/src/SvInspectorView/model'
+import type { SvInspectorViewModel } from '../../../../plugins/sv-inspector/src/SvInspectorView/model.ts'
 
 setup()
 

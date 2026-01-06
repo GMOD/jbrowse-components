@@ -1,4 +1,4 @@
-import type { SampleInfo, Source } from './types'
+import type { SampleInfo, Source } from './types.ts'
 
 export function getSources({
   sources,

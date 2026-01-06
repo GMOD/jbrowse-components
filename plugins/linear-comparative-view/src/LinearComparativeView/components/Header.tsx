@@ -8,12 +8,12 @@ import SearchIcon from '@mui/icons-material/Search'
 import { FormGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ColorBySelector from './ColorBySelector'
-import HeaderSearchBoxes from './HeaderSearchBoxes'
-import MinLengthSlider from './MinLengthSlider'
-import OpacitySlider from './OpacitySlider'
+import ColorBySelector from './ColorBySelector.tsx'
+import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
+import MinLengthSlider from './MinLengthSlider.tsx'
+import OpacitySlider from './OpacitySlider.tsx'
 
-import type { LinearComparativeViewModel } from '../model'
+import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   inline: {

@@ -10,8 +10,8 @@ import { isSessionWithConnections } from '@jbrowse/product-core'
 import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ConfigureConnection from './ConfigureConnection'
-import ConnectionTypeSelect from './ConnectionTypeSelect'
+import ConfigureConnection from './ConfigureConnection.tsx'
+import ConnectionTypeSelect from './ConnectionTypeSelect.tsx'
 
 import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 

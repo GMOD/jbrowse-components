@@ -4,10 +4,10 @@ import { Dialog } from '@jbrowse/core/ui'
 import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ClusterDialogAuto from './ClusterDialogAuto'
-import ClusterDialogManual from './ClusterDialogManual'
+import ClusterDialogAuto from './ClusterDialogAuto.tsx'
+import ClusterDialogManual from './ClusterDialogManual.tsx'
 
-import type { ReducedModel } from './types'
+import type { ReducedModel } from './types.ts'
 
 function Header({
   activeMode,

@@ -11,7 +11,7 @@ import { Button, TextField } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   textbox: {

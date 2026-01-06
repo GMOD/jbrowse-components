@@ -1,9 +1,9 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import configSchema from '../LinearReadCloudDisplay/configSchema'
+import configSchema from '../LinearReadCloudDisplay/configSchema.ts'
 
-import type { ColorBy, ModificationTypeWithColor } from '../shared/types'
+import type { ColorBy, ModificationTypeWithColor } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ThemeOptions } from '@mui/material'
@@ -93,7 +93,7 @@ export default class RenderLinearReadCloudDisplay extends RpcMethodType {
   async execute(args: Record<string, unknown>, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { executeRenderLinearReadCloudDisplay } =
-      await import('./executeRenderLinearReadCloudDisplay')
+      await import('./executeRenderLinearReadCloudDisplay.ts')
     return executeRenderLinearReadCloudDisplay({
       pluginManager: this.pluginManager,
       args: deserializedArgs,

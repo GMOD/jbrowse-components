@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react'
 
-import SetColorDialog from './SetColorDialog'
+import SetColorDialog from './SetColorDialog.tsx'
 
-import type { Source } from '../../util'
+import type { Source } from '../../util.ts'
 describe('SetColorDialog', () => {
   const mockSetLayout = jest.fn()
   const mockClearLayout = jest.fn()

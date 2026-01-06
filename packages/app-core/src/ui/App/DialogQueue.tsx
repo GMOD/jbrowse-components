@@ -2,12 +2,12 @@ import { Suspense } from 'react'
 
 import { observer } from 'mobx-react'
 
-import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const DialogQueue = observer(function DialogQueue({
   session,
 }: {
-  session: SessionWithDrawerWidgets
+  session: AbstractSessionModel
 }) {
   const { DialogComponent, DialogProps } = session
   return DialogComponent ? (

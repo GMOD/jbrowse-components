@@ -11,12 +11,12 @@ import { saveAs } from 'file-saver-es'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { generateReadBuffer } from './generateReadBuffer'
+import { generateReadBuffer } from './generateReadBuffer.ts'
 import configSnapshot from '../../test_data/volvox/config.json'
-import corePlugins from '../corePlugins'
-import JBrowseRootModelFactory from '../rootModel/rootModel'
-import sessionModelFactory from '../sessionModel'
-import JBrowse from './TestingJBrowse'
+import corePlugins from '../corePlugins.ts'
+import JBrowse from './TestingJBrowse.tsx'
+import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
+import sessionModelFactory from '../sessionModel/index.ts'
 
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -317,6 +317,6 @@ export async function openViewWithFileInput({
   return result
 }
 
-export { default as JBrowse } from './TestingJBrowse'
+export { default as JBrowse } from './TestingJBrowse.tsx'
 
-export { generateReadBuffer } from './generateReadBuffer'
+export { generateReadBuffer } from './generateReadBuffer.ts'

@@ -1,7 +1,8 @@
+import { MessageChannel as MessageChannelOriginal } from 'worker_threads'
+
 if (typeof window !== 'undefined') {
   // message channel 'polyfill' that avoids open handles from making jest fail
   // https://github.com/facebook/react/issues/26608#issuecomment-1734172596
-  const MessageChannelOriginal = require('worker_threads').MessageChannel
   global.MessageChannel = class {
     constructor() {
       const channel = new MessageChannelOriginal()

@@ -1,4 +1,4 @@
-import { createTranscriptFloatingLabel } from './floatingLabels'
+import { createTranscriptFloatingLabel } from './floatingLabels.ts'
 
 describe('floatingLabels', () => {
   describe('createTranscriptFloatingLabel', () => {

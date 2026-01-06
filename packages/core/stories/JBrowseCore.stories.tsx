@@ -4,6 +4,6 @@ export {
   GeneCollapsedIntronCoords,
   GeneCollapsedIntronNoCoords,
   GeneCoordsGenomic,
-} from './examples'
+} from './examples/index.ts'
 
 export default { title: 'Source code for examples' }

@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, open } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 
-import { main as nativeMain } from './index'
+import { main as nativeMain } from './index.ts'
 
 // increase test timeout for all tests
 // jest.setTimeout(20000)
@@ -183,13 +183,13 @@ export function mockFetch(
         url: string,
       ) => MockFetchResponse | Promise<MockFetchResponse> | undefined),
 ) {
-  const fetchWithProxy = require('./fetchWithProxy')
+  const fetchWithProxy = require('./fetchWithProxy.ts')
     .default as jest.MockedFunction<
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-    typeof import('./fetchWithProxy').default
+    typeof import('./fetchWithProxy.ts').default
   >
 
-  fetchWithProxy.mockImplementation(async (url: RequestInfo) => {
+  fetchWithProxy.mockImplementation(async (url: string | URL) => {
     const urlStr = url.toString()
     const response =
       typeof mockOrHandler === 'function'

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 
 import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 
-import ImportCustomTrack from './ImportSyntenyOpenCustomTrack'
-import ImportSyntenyTrackSelector from './ImportSyntenyPreConfigured'
+import ImportCustomTrack from './ImportSyntenyOpenCustomTrack.tsx'
+import ImportSyntenyTrackSelector from './ImportSyntenyPreConfigured.tsx'
 
-import type { LinearSyntenyViewModel } from '../../model'
+import type { LinearSyntenyViewModel } from '../../model.ts'
 
 export default function ImportSyntenyTrackSelectorArea({
   model,

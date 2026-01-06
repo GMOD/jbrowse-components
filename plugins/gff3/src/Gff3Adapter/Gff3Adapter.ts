@@ -6,7 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { parseStringSyncJBrowse } from 'gff-nostream'
 
-import { parseGffBuffer } from './gffParser'
+import { parseGffBuffer } from './gffParser.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'

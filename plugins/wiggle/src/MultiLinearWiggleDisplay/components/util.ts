@@ -5,7 +5,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 
-import type { WiggleDisplayModel } from '../model'
+import type { WiggleDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { GridRowId } from '@mui/x-data-grid'
 

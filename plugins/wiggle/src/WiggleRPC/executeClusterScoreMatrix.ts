@@ -1,8 +1,8 @@
 import { clusterData } from '@gmod/hclust'
 
-import { getScoreMatrix } from './getScoreMatrix'
+import { getScoreMatrix } from './getScoreMatrix.ts'
 
-import type { GetScoreMatrixArgs } from './types'
+import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export async function executeClusterScoreMatrix({

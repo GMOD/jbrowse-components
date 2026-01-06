@@ -1,12 +1,12 @@
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { observer } from 'mobx-react'
 
-import ConfigWarningDialog from './ConfigWarningDialog'
-import SessionWarningDialog from './SessionWarningDialog'
-import factoryReset from '../factoryReset'
+import ConfigWarningDialog from './ConfigWarningDialog.tsx'
+import SessionWarningDialog from './SessionWarningDialog.tsx'
+import factoryReset from '../factoryReset.ts'
 
-import type { SessionLoaderModel } from '../SessionLoader'
-import type { SessionTriagedInfo } from '../types'
+import type { SessionLoaderModel } from '../SessionLoader.ts'
+import type { SessionTriagedInfo } from '../types.ts'
 
 const SessionTriaged = observer(function SessionTriaged({
   sessionTriaged,

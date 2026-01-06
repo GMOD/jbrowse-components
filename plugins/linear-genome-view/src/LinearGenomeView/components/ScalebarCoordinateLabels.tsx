@@ -2,7 +2,7 @@ import { getTickDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { makeTicks } from '../util'
+import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'

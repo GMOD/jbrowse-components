@@ -5,9 +5,9 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { WIGGLE_CLIP_HEIGHT, WIGGLE_FUDGE_FACTOR, getScale } from './util'
+import { WIGGLE_CLIP_HEIGHT, WIGGLE_FUDGE_FACTOR, getScale } from './util.ts'
 
-import type { ScaleOpts } from './util'
+import type { ScaleOpts } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   Feature,

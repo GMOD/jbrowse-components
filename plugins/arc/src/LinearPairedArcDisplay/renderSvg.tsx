@@ -1,8 +1,8 @@
 import { getContainingView, when } from '@jbrowse/core/util'
 
-import Arcs from './components/Arcs'
+import Arcs from './components/Arcs.tsx'
 
-import type { LinearArcDisplayModel } from './model'
+import type { LinearArcDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export async function renderArcSvg(

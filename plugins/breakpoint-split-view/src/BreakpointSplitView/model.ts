@@ -13,16 +13,16 @@ import LinkIcon from '@mui/icons-material/Link'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
-import { calc, getBlockFeatures, intersect } from './util'
+import { calc, getBlockFeatures, intersect } from './util.ts'
 
-import type { BreakpointSplitViewInit, ExportSvgOptions } from './types'
+import type { BreakpointSplitViewInit, ExportSvgOptions } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
-const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
 /**
  * #stateModel BreakpointSplitView
@@ -117,7 +117,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
         const { renderToSvg } =
-          await import('./svgcomponents/SVGBreakpointSplitView')
+          await import('./svgcomponents/SVGBreakpointSplitView.tsx')
         const html = await renderToSvg(self as BreakpointViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')

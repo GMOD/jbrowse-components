@@ -1,9 +1,9 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { rpcResult } from 'librpc-web-mod'
 
-import type { MultiRenderArgsDeserialized } from './types'
+import type { MultiRenderArgsDeserialized } from './types.ts'
 
 export default class MultiVariantRenderer extends FeatureRendererType {
   supportsSVG = true
@@ -15,7 +15,7 @@ export default class MultiVariantRenderer extends FeatureRendererType {
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
-    const { makeImageData } = await import('./makeImageData')
+    const { makeImageData } = await import('./makeImageData.ts')
 
     const ret = await renderToAbstractCanvas(
       width,

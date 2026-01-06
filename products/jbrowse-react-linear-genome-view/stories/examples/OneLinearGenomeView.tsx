@@ -2,8 +2,8 @@
 
 // in your code:
 // import {createViewState, JBrowseLinearGenomeView} from '@jbrowse/react-linear-genome-view2'
-import { getVolvoxConfig } from './util'
-import { JBrowseLinearGenomeView, createViewState } from '../../src'
+import { getVolvoxConfig } from './util.ts'
+import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 export const OneLinearGenomeView = () => {
   const { assembly, tracks } = getVolvoxConfig()

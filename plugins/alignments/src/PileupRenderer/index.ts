@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
-import PileupRenderer from './PileupRenderer'
-import configSchema from './configSchema'
+import PileupRenderer from './PileupRenderer.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -10,7 +10,7 @@ export default function register(pluginManager: PluginManager) {
     return new PileupRenderer({
       name: 'PileupRenderer',
       displayName: 'Pileup renderer',
-      ReactComponent: lazy(() => import('./components/PileupRendering')),
+      ReactComponent: lazy(() => import('./components/PileupRendering.tsx')),
       configSchema,
       pluginManager,
     })

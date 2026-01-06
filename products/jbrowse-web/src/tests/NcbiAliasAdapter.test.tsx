@@ -1,4 +1,4 @@
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
+import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
 import config from '../../test_data/cfam2/config.json'
 
 setup()

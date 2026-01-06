@@ -1,4 +1,4 @@
-import { getModTypes } from './getModTypes'
+import { getModTypes } from './getModTypes.ts'
 
 test('getModTypes', () => {
   expect(getModTypes('C+m,')).toMatchSnapshot()

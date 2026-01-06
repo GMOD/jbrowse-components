@@ -1,10 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition'
-import { makeSidebarSvg } from '../shared/makeSidebarSvg'
+import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import { makeSidebarSvg } from '../shared/makeSidebarSvg.tsx'
 
-import type { MultiLinearVariantMatrixDisplayModel } from './model'
+import type { MultiLinearVariantMatrixDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,

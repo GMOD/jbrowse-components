@@ -1,9 +1,9 @@
 import { FileSelector } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import SwapAssemblies from './SwapAssemblies'
+import SwapAssemblies from './SwapAssemblies.tsx'
 
-import type { SelectorProps } from './SelectorTypes'
+import type { SelectorProps } from './SelectorTypes.ts'
 
 const PifGzSelector = observer(function PifGzSelector({
   assembly1,

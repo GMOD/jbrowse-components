@@ -1,11 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { measureText } from '@jbrowse/core/util'
 
-import { readCachedConfig } from './renderConfig'
-import { truncateLabel } from './util'
+import { readCachedConfig } from './renderConfig.ts'
+import { truncateLabel } from './util.ts'
 
-import type { RenderConfigContext } from './renderConfig'
-import type { FeatureLayout } from './types'
+import type { RenderConfigContext } from './renderConfig.ts'
+import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**

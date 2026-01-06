@@ -1,7 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
 
-import configSchema from './TrixTextSearchAdapter/configSchema'
+import configSchema from './TrixTextSearchAdapter/configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -16,7 +16,7 @@ export default class TrixPlugin extends Plugin {
         configSchema,
         description: 'Trix text search adapter',
         getAdapterClass: () =>
-          import('./TrixTextSearchAdapter/TrixTextSearchAdapter').then(
+          import('./TrixTextSearchAdapter/TrixTextSearchAdapter.ts').then(
             d => d.default,
           ),
       })

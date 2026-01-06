@@ -2,11 +2,11 @@ import { getSession, stripAlpha } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { useTheme } from '@mui/material'
 
-import SVGRuler from './SVGRuler'
-import SVGScalebar from './SVGScalebar'
-import Cytobands from '../components/Cytobands'
-import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon'
-import { HEADER_OVERVIEW_HEIGHT } from '../consts'
+import SVGRuler from './SVGRuler.tsx'
+import SVGScalebar from './SVGScalebar.tsx'
+import Cytobands from '../components/Cytobands.tsx'
+import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
+import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '..'
 

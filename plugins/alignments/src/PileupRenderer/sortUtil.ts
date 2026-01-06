@@ -1,6 +1,6 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
-import type { Mismatch, SortedBy } from '../shared/types'
+import type { Mismatch, SortedBy } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export function sortFeature(

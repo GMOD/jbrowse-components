@@ -15,7 +15,7 @@ import {
 import IconButton from '@mui/material/IconButton'
 import { observer } from 'mobx-react'
 
-import type { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   dialogContent: {

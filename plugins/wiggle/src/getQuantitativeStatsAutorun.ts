@@ -3,7 +3,7 @@ import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { getQuantitativeStats } from './getQuantitativeStats'
+import { getQuantitativeStats } from './getQuantitativeStats.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'

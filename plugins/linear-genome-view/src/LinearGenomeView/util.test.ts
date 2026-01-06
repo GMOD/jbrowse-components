@@ -1,4 +1,4 @@
-import { makeTicks } from './util'
+import { makeTicks } from './util.ts'
 
 describe('tick calculation', () => {
   test('one', () => {

@@ -12,18 +12,18 @@ import {
   getStrandColorKey,
   renderFeatureMismatchesAndModifications,
   renderFeatureShape,
-} from './drawChainsUtil'
-import { lineToCtx } from '../shared/canvasUtils'
-import { fillColor, getSingletonColor, strokeColor } from '../shared/color'
-import { getPrimaryStrandFromFlags } from '../shared/primaryStrand'
+} from './drawChainsUtil.ts'
+import { lineToCtx } from '../shared/canvasUtils.ts'
+import { fillColor, getSingletonColor, strokeColor } from '../shared/color.ts'
+import { getPrimaryStrandFromFlags } from '../shared/primaryStrand.ts'
 
-import type { MismatchData } from './drawChainsUtil'
-import type { ComputedChain } from './drawFeatsCommon'
+import type { MismatchData } from './drawChainsUtil.ts'
+import type { ComputedChain } from './drawFeatsCommon.ts'
 import type {
   ChainData,
   ColorBy,
   ModificationTypeWithColor,
-} from '../shared/types'
+} from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'

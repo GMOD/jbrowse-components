@@ -15,22 +15,17 @@
     "directory": "plugins/alignments"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "srcMain": "src/index.ts",
   "main": "src/index.ts",
   "files": [
     "dist",
     "esm"
   ],
   "scripts": {
-    "build": "npm-run-all build:*",
+    "build": "pnpm run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/alignments",
-    "prepublishOnly": "yarn test",
-    "prepack": "yarn build && yarn useDist",
-    "postpack": "yarn useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "yarn clean",
+    "prepublishOnly": "pnpm test",
+    "prepack": "pnpm build",
+    "prebuild": "pnpm clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
@@ -38,28 +33,36 @@
   "dependencies": {
     "@gmod/bam": "^7.1.15",
     "@gmod/cram": "^7.0.3",
-    "@jbrowse/core": "^3.7.0",
-    "@jbrowse/mobx-state-tree": "^5.4.7",
-    "@jbrowse/plugin-linear-genome-view": "^3.7.0",
-    "@jbrowse/plugin-wiggle": "^3.7.0",
-    "@jbrowse/sv-core": "^3.7.0",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/plugin-wiggle": "workspace:^",
+    "@jbrowse/sv-core": "workspace:^",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "@mui/x-charts-vendor": "^8.23.0",
     "canvas2svg": "^1.0.16",
-    "copy-to-clipboard": "^3.3.1",
+    "copy-to-clipboard": "^3.3.3",
     "fast-deep-equal": "^3.1.3",
-    "generic-filehandle2": "^2.0.17",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "rxjs": "^7.0.0"
+    "generic-filehandle2": "^2.0.18",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1",
+    "rxjs": "^7.8.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./esm/index.js",
+        "require": "./dist/index.js"
+      }
+    }
   },
-  "distModule": "esm/index.js",
-  "srcModule": "src/index.ts",
-  "module": ""
+  "sideEffects": false
 }

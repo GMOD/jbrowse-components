@@ -2,8 +2,8 @@ import { lazy } from 'react'
 
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import configSchemaF from './configSchema'
-import stateModelF from './model'
+import configSchemaF from './configSchema.ts'
+import stateModelF from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -24,7 +24,7 @@ export default function register(pluginManager: PluginManager) {
         lowerPanel: true,
       },
       ReactComponent: lazy(
-        () => import('./components/LinearReadCloudReactComponent'),
+        () => import('./components/LinearReadCloudReactComponent.tsx'),
       ),
     })
   })

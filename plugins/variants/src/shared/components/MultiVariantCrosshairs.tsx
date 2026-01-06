@@ -4,9 +4,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import MultiVariantTooltip from './MultiVariantTooltip'
+import MultiVariantTooltip from './MultiVariantTooltip.tsx'
 
-import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
+import type { MultiVariantBaseModel } from '../MultiVariantBaseModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({

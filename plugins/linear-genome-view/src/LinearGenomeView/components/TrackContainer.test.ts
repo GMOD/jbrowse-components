@@ -1,4 +1,4 @@
-import { shouldSwapTracks } from './util'
+import { shouldSwapTracks } from './util.ts'
 
 describe('shouldSwapTracks', () => {
   it('allows first swap when lastSwapY is undefined', () => {

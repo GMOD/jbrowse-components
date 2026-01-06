@@ -1,8 +1,8 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import Gff3AdapterF from './Gff3Adapter'
-import Gff3TabixAdapterF from './Gff3TabixAdapter'
-import GuessGff3F from './GuessGff3'
+import Gff3AdapterF from './Gff3Adapter/index.ts'
+import Gff3TabixAdapterF from './Gff3TabixAdapter/index.ts'
+import GuessGff3F from './GuessGff3/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

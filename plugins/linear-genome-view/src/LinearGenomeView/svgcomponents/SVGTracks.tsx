@@ -1,8 +1,8 @@
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
-import SVGRegionSeparators from './SVGRegionSeparators'
-import SVGTrackLabel from './SVGTrackLabel'
+import SVGRegionSeparators from './SVGRegionSeparators.tsx'
+import SVGTrackLabel from './SVGTrackLabel.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

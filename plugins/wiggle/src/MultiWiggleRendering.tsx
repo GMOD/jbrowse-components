@@ -4,7 +4,7 @@ import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import type { Source } from './util'
+import type { Source } from './util.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 

@@ -3,14 +3,14 @@ import { Suspense, lazy } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import ViewContainer from './ViewContainer'
-import { isSessionWithDockviewLayout } from '../../DockviewLayout'
+import ViewContainer from './ViewContainer.tsx'
+import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 
-import type { DockviewSessionType } from './types'
+import type { DockviewSessionType } from './types.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { IDockviewPanelProps } from 'dockview-react'
 
-const ViewLauncher = lazy(() => import('./ViewLauncher'))
+const ViewLauncher = lazy(() => import('./ViewLauncher.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   container: {

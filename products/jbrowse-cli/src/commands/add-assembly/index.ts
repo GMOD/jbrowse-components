@@ -7,8 +7,8 @@ import {
   loadOrCreateConfig,
   resolveTargetPath,
   saveConfigAndReport,
-} from './utils'
-import { debug, printHelp } from '../../utils'
+} from './utils.ts'
+import { debug, printHelp } from '../../utils.ts'
 
 export async function run(args?: string[]) {
   const options = {

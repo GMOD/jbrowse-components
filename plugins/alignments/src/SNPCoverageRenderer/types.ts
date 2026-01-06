@@ -4,7 +4,7 @@ import type {
   BaseCoverageBin,
   ColorBy,
   ModificationTypeWithColor,
-} from '../shared/types'
+} from '../shared/types.ts'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import type { Feature } from '@jbrowse/core/util'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'

@@ -6,7 +6,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
 
-import type { Fav, LaunchCallback } from '../types'
+import type { Fav, LaunchCallback } from '../types.ts'
 
 const useStyles = makeStyles()(theme => ({
   panel: {

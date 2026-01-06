@@ -1,4 +1,4 @@
-import DialogQueue from '@jbrowse/app-core/src/ui/App/DialogQueue'
+import { DialogQueue } from '@jbrowse/app-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getParent, getRoot, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
@@ -6,9 +6,9 @@ import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import PluginStoreWidget from './PluginStoreWidget'
+import PluginStoreWidget from './PluginStoreWidget.tsx'
 
-import type { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
@@ -49,7 +49,6 @@ test('renders with the available plugins', async () => {
   const { model, session } = setup()
   const { container, findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-expect-error */}
       <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
@@ -62,7 +61,6 @@ test('Installs a session plugin', async () => {
   const { user, session, model, reloadPluginManagerMock } = setup()
   const { findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-expect-error */}
       <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
@@ -78,7 +76,6 @@ test('plugin store admin - adds a custom plugin correctly', async () => {
   const { user, session, model, reloadPluginManagerMock } = setup({}, true)
   const { findByText, findByLabelText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-expect-error */}
       <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
@@ -105,7 +102,6 @@ test('plugin store admin - removes a custom plugin correctly', async () => {
   session.jbrowse.addPlugin(plugins.plugins[0])
   const { findByText, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      {/* @ts-expect-error */}
       <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,

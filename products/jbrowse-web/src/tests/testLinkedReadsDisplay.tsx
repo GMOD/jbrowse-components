@@ -1,7 +1,7 @@
 import { waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { createView, expectCanvasMatch, hts } from './util'
+import { createView, expectCanvasMatch, hts } from './util.tsx'
 
 async function waitForPileupDraw(view: any, timeout = 60000) {
   await waitFor(

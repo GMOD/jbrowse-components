@@ -7,7 +7,7 @@ import { getEnv } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { ViewModel } from '../createModel/createModel'
+import type { ViewModel } from '../createModel/createModel.ts'
 
 const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   viewState,

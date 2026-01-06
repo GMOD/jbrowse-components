@@ -1,7 +1,7 @@
-import { builtinGlyphs, findGlyph } from './glyphs'
-import { isUTR, truncateLabel } from './util'
+import { builtinGlyphs, findGlyph } from './glyphs/index.ts'
+import { isUTR, truncateLabel } from './util.ts'
 
-import type { RenderConfigContext } from './renderConfig'
+import type { RenderConfigContext } from './renderConfig.ts'
 
 // Mock feature factory
 function createMockFeature(opts: {

@@ -1,9 +1,9 @@
 import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
-import SashimiArcs from './SashimiArcs'
+import SashimiArcs from './SashimiArcs.tsx'
 
-import type { SNPCoverageDisplayModel } from '../model'
+import type { SNPCoverageDisplayModel } from '../model.ts'
 
 const SNPCoverageDisplayComponent = observer(
   function SNPCoverageDisplayComponent(props: {

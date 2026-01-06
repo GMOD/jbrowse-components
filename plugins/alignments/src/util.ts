@@ -3,7 +3,7 @@ import { autorun } from 'mobx'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { modificationData } from './shared/modificationData'
+import { modificationData } from './shared/modificationData.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AugmentedRegion, Feature } from '@jbrowse/core/util'
@@ -142,4 +142,4 @@ export function getColorForModification(str: string) {
   return modificationData[str]?.color || randomColor(str)
 }
 
-export { modificationData } from './shared/modificationData'
+export { modificationData } from './shared/modificationData.ts'

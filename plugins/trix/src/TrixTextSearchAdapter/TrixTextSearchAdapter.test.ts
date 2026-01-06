@@ -2,8 +2,8 @@ import path from 'path'
 
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
-import Adapter from './TrixTextSearchAdapter'
-import configSchema from './configSchema'
+import Adapter from './TrixTextSearchAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('adapter can fetch output files', async () => {
   const args = {

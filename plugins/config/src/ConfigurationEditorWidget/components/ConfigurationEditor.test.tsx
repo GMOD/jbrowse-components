@@ -6,7 +6,7 @@ import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-ge
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import ConfigurationEditor from './ConfigurationEditor'
+import ConfigurationEditor from './ConfigurationEditor.tsx'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()

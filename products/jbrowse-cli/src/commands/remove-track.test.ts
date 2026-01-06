@@ -5,7 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { readConf, runCommand, runInTmpDir } from '../testUtil'
+import { readConf, runCommand, runInTmpDir } from '../testUtil.ts'
 
 const twoPath = path.join(__dirname, '..', '..', 'test', 'data', 'simple.2bit')
 

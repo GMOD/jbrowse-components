@@ -2,11 +2,11 @@ import { Suspense, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
-import SpreadsheetViewActual from './SpreadsheetViewActual'
+import SpreadsheetViewActual from './SpreadsheetViewActual.tsx'
 
-import type { SpreadsheetViewModel } from '../SpreadsheetViewModel'
+import type { SpreadsheetViewModel } from '../SpreadsheetViewModel.ts'
 
-const ImportWizard = lazy(() => import('./ImportWizard'))
+const ImportWizard = lazy(() => import('./ImportWizard.tsx'))
 
 const SpreadsheetContainer = observer(function SpreadsheetContainer({
   model,

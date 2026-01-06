@@ -1,5 +1,5 @@
-import type { LayoutFeature } from './types'
-import type { Mismatch } from '../shared/types'
+import type { LayoutFeature } from './types.ts'
+import type { Mismatch } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 

@@ -1,10 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import { getUniqueTags } from '../shared/getUniqueTags'
-import { createAutorun } from '../util'
+import { getUniqueTags } from '../shared/getUniqueTags.ts'
+import { createAutorun } from '../util.ts'
 
-import type { ColorBy } from '../shared/types'
+import type { ColorBy } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

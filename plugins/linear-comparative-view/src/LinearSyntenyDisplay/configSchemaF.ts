@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import baseConfigFactory from '../LinearComparativeDisplay/configSchemaF'
+import baseConfigFactory from '../LinearComparativeDisplay/configSchemaF.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

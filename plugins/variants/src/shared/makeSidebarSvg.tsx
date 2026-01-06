@@ -1,9 +1,9 @@
 import { getContainingView } from '@jbrowse/core/util'
 
-import SvgTree from './components/SvgTree'
-import LegendBar from '../shared/components/MultiVariantLegendBar'
+import SvgTree from './components/SvgTree.tsx'
+import LegendBar from '../shared/components/MultiVariantLegendBar.tsx'
 
-import type { LegendBarModel } from './components/types'
+import type { LegendBarModel } from './components/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface Model extends LegendBarModel {

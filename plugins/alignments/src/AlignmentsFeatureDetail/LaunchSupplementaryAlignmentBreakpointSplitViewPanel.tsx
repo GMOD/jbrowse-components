@@ -5,14 +5,14 @@ import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
-import { getSAFeatures } from './getSAFeatures'
+import { getSAFeatures } from './getSAFeatures.ts'
 
-import type { ReducedFeature } from './getSAFeatures'
-import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { ReducedFeature } from './getSAFeatures.ts'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 const BreakpointSplitViewChoiceDialog = lazy(
-  () => import('./BreakpointSplitViewChoiceDialog'),
+  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
 )
 
 export default function LaunchBreakpointSplitViewPanel({

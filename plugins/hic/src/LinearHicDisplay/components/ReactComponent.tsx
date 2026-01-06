@@ -5,11 +5,11 @@ import { getContainingView, reducePrecision } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import BaseDisplayComponent from './BaseDisplayComponent'
-import HicColorLegend from '../../HicRenderer/components/HicColorLegend'
+import BaseDisplayComponent from './BaseDisplayComponent.tsx'
+import HicColorLegend from '../../HicRenderer/components/HicColorLegend.tsx'
 
-import type { HicFlatbushItem } from '../../HicRenderer/types'
-import type { LinearHicDisplayModel } from '../model'
+import type { HicFlatbushItem } from '../../HicRenderer/types.ts'
+import type { LinearHicDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

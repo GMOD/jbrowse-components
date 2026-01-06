@@ -3,15 +3,15 @@ import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 
-import HeadingComponent from './components/HeadingComponent'
-import stateModelFactory from './model'
+import HeadingComponent from './components/HeadingComponent.tsx'
+import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const configSchema = ConfigurationSchema('ConfigurationEditorWidget', {})
 
 const LazyConfigurationEditorComponent = lazy(
-  () => import('./components/ConfigurationEditor'),
+  () => import('./components/ConfigurationEditor.tsx'),
 )
 
 export default function registerConfigurationEditorWidget(

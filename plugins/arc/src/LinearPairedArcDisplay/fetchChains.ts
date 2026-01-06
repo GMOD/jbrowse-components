@@ -1,7 +1,7 @@
 import { dedupe, getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import type { LinearArcDisplayModel } from './model'
+import type { LinearArcDisplayModel } from './model.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

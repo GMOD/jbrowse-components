@@ -1,4 +1,4 @@
-import type { ExportSvgOptions } from '../LinearGenomeView/types'
+import type { ExportSvgOptions } from '../LinearGenomeView/types.ts'
 import type { ThemeOptions } from '@mui/material'
 
 export interface Layout {

@@ -1,7 +1,7 @@
 import { isUriLocation, notEmpty, objectHash } from '@jbrowse/core/util'
 import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
 
-import { makeLoc2, makeLoc, makeLocAlt, resolve } from './util'
+import { makeLoc2, makeLoc, makeLocAlt, resolve } from './util.ts'
 
 import type { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
 import type { FileLocation } from '@jbrowse/core/util'

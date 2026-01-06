@@ -7,11 +7,11 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { ixIxxStream } from 'ixixx'
 
 // misc
-import { generateMeta } from './types/common'
-import { indexGff3 } from './types/gff3Adapter'
-import { indexVcf } from './types/vcfAdapter'
+import { generateMeta } from './types/common.ts'
+import { indexGff3 } from './types/gff3Adapter.ts'
+import { indexVcf } from './types/vcfAdapter.ts'
 
-import type { Track, indexType } from './util'
+import type { Track, indexType } from './util.ts'
 
 export async function indexTracks(args: {
   tracks: Track[]

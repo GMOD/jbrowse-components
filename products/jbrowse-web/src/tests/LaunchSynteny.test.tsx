@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer'
-import { App } from './loaderUtil'
-import { expectCanvasMatch, setup } from './util'
+import { handleRequest } from './generateReadBuffer.ts'
+import { App } from './loaderUtil.tsx'
+import { expectCanvasMatch, setup } from './util.tsx'
 setup()
 
 const getFile = (url: string) =>

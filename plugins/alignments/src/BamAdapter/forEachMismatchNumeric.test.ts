@@ -1,4 +1,4 @@
-import { forEachMismatchNumeric } from './forEachMismatchNumeric'
+import { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
@@ -6,9 +6,9 @@ import {
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-} from '../shared/forEachMismatchTypes'
+} from '../shared/forEachMismatchTypes.ts'
 
-import type { MismatchCallback } from '../shared/forEachMismatchTypes'
+import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
 
 // Helper to encode a sequence string into BAM's packed 4-bit format
 function encodeSeq(seq: string): Uint8Array {

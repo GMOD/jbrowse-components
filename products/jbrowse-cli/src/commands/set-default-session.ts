@@ -8,9 +8,9 @@ import {
   readJsonFile,
   resolveConfigPath,
   writeJsonFile,
-} from '../utils'
+} from '../utils.ts'
 
-import type { Config } from '../base'
+import type { Config } from '../base.ts'
 
 const description = 'Set a default session with views and tracks'
 

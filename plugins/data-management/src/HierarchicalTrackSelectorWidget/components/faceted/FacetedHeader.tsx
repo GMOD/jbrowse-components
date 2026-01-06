@@ -4,10 +4,10 @@ import { Menu } from '@jbrowse/core/ui'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Grid, IconButton } from '@mui/material'
 
-import ClearableSearchField from '../ClearableSearchField'
-import ShoppingCart from '../ShoppingCart'
+import ClearableSearchField from '../ClearableSearchField.tsx'
+import ShoppingCart from '../ShoppingCart.tsx'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 export default function FacetedHeader({
   model,

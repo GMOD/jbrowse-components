@@ -5,10 +5,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Box, Slider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import SliderTooltip from './SliderTooltip'
+import SliderTooltip from './SliderTooltip.tsx'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model'
-import type { LinearComparativeViewModel } from '../model'
+import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
+import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   container: {

@@ -1,6 +1,6 @@
 import { sum } from '@jbrowse/core/util'
 
-import type { ReducedFeature } from './types'
+import type { ReducedFeature } from './types.ts'
 
 export function getInsertSizeStats(filtered: number[]) {
   const len = filtered.length

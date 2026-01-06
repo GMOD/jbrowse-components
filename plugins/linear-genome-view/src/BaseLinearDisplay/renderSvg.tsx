@@ -7,15 +7,17 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 
-import SVGLegend from './SVGLegend'
-import BlockState, { renderBlockData } from './models/serverSideRenderedBlock'
-import { getId } from './models/util'
-import { ErrorBox } from '../LinearGenomeView/SVGErrorBox'
-import { calculateLabelPositions } from './models/calculateLabelPositions'
+import SVGLegend from './SVGLegend.tsx'
+import BlockState, {
+  renderBlockData,
+} from './models/serverSideRenderedBlock.ts'
+import { getId } from './models/util.ts'
+import { ErrorBox } from '../LinearGenomeView/SVGErrorBox.tsx'
+import { calculateLabelPositions } from './models/calculateLabelPositions.ts'
 
-import type { LinearGenomeViewModel } from '../LinearGenomeView'
-import type { BaseLinearDisplayModel } from './model'
-import type { ExportSvgDisplayOptions } from './types'
+import type { BaseLinearDisplayModel } from './model.ts'
+import type { ExportSvgDisplayOptions } from './types.ts'
+import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,

@@ -8,7 +8,7 @@ import {
   CIGAR_X,
   SEQRET,
   SEQRET_NUMERIC_DECODER,
-} from '../PileupRenderer/renderers/cigarUtil'
+} from '../PileupRenderer/renderers/cigarUtil.ts'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
@@ -16,9 +16,9 @@ import {
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-} from '../shared/forEachMismatchTypes'
+} from '../shared/forEachMismatchTypes.ts'
 
-import type { MismatchCallback } from '../shared/forEachMismatchTypes'
+import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
 
 /**
  * Core mismatch iteration logic for BAM records.

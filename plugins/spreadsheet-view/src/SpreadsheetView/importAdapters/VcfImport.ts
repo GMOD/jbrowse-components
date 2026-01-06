@@ -1,8 +1,8 @@
 import VCF from '@gmod/vcf'
 import { VcfFeature } from '@jbrowse/plugin-variants'
 
-import { isNumber } from './isNumber'
-import { bufferToLines } from './util'
+import { isNumber } from './isNumber.ts'
+import { bufferToLines } from './util.ts'
 
 export function parseVcfBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)

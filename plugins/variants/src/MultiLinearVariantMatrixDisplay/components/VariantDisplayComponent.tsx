@@ -2,12 +2,12 @@ import { useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
-import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition'
-import Crosshair from '../../shared/components/MultiVariantCrosshairs'
-import ScrollableVariantContainer from '../../shared/components/ScrollableVariantContainer'
-import { useMouseTracking } from '../../shared/hooks/useMouseTracking'
+import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
+import Crosshair from '../../shared/components/MultiVariantCrosshairs.tsx'
+import ScrollableVariantContainer from '../../shared/components/ScrollableVariantContainer.tsx'
+import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
-import type { MultiLinearVariantMatrixDisplayModel } from '../model'
+import type { MultiLinearVariantMatrixDisplayModel } from '../model.ts'
 
 const MultiLinearVariantMatrixDisplayComponent = observer(
   function MultiLinearVariantMatrixDisplayComponent(props: {

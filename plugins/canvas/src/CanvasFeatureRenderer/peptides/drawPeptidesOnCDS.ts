@@ -1,6 +1,6 @@
-import { getEffectiveStrand, getStrandAwareX } from '../util'
+import { getEffectiveStrand, getStrandAwareX } from '../util.ts'
 
-import type { AggregatedAminoAcid } from './prepareAminoAcidData'
+import type { AggregatedAminoAcid } from './prepareAminoAcidData.ts'
 
 interface DrawPeptidesArgs {
   ctx: CanvasRenderingContext2D

@@ -3,7 +3,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { featurizeSA, getTag } from '../MismatchParser'
+import { featurizeSA, getTag } from '../MismatchParser/index.ts'
 import {
   type CoreFeat,
   drawVerticalLine,
@@ -16,16 +16,16 @@ import {
   jitter,
   toCoreFeat,
   toCoreFeatBasic,
-} from '../shared/arcUtils'
+} from '../shared/arcUtils.ts'
 import {
   getPairedInsertSizeAndOrientationColor,
   getPairedInsertSizeColor,
   getPairedOrientationColor,
-} from '../shared/color'
-import { SAM_FLAG_MATE_UNMAPPED } from '../shared/samFlags'
-import { hasPairedReads } from '../shared/util'
+} from '../shared/color.ts'
+import { SAM_FLAG_MATE_UNMAPPED } from '../shared/samFlags.ts'
+import { hasPairedReads } from '../shared/util.ts'
 
-import type { ChainData, ChainStats, ColorBy } from '../shared/types'
+import type { ChainData, ChainStats, ColorBy } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Arc rendering thresholds

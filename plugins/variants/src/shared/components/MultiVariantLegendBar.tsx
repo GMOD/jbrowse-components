@@ -3,10 +3,10 @@ import { useMemo } from 'react'
 import { measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import ColorLegend from './MultiVariantColorLegend'
-import MultiVariantLegendBarWrapper from './MultiVariantLegendBarWrapper'
+import ColorLegend from './MultiVariantColorLegend.tsx'
+import MultiVariantLegendBarWrapper from './MultiVariantLegendBarWrapper.tsx'
 
-import type { LegendBarModel } from './types'
+import type { LegendBarModel } from './types.ts'
 
 const MultiVariantLegendBar = observer(function MultiVariantLegendBar(props: {
   model: LegendBarModel

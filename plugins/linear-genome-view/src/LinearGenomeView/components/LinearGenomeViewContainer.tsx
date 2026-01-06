@@ -6,13 +6,13 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
-import TrackContainer from './TrackContainer'
-import TracksContainer from './TracksContainer'
+import TrackContainer from './TrackContainer.tsx'
+import TracksContainer from './TracksContainer.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 
 // lazies
-const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))
+const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   header: {

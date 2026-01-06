@@ -2,11 +2,11 @@ import { Suspense, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
-import LoadingBar from './LoadingBar'
+import LoadingBar from './LoadingBar.tsx'
 
-import type { LinearArcDisplayModel } from '../model'
+import type { LinearArcDisplayModel } from '../model.ts'
 
-const ErrorMessage = lazy(() => import('./ErrorMessage'))
+const ErrorMessage = lazy(() => import('./ErrorMessage.tsx'))
 
 const BaseDisplayComponent = observer(function BaseDisplayComponent({
   model,

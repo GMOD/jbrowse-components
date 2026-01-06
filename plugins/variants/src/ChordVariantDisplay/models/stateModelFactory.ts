@@ -14,7 +14,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
-import { renderReactionData, renderReactionEffect } from './renderReaction'
+import { renderReactionData, renderReactionEffect } from './renderReaction.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
@@ -301,7 +301,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
        * #method
        */
       async renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
-        const { renderSvg } = await import('./renderSvg')
+        const { renderSvg } = await import('./renderSvg.tsx')
         return renderSvg(self, opts)
       },
     }))

@@ -1,4 +1,4 @@
-import { parseGffBuffer } from './gffParser'
+import { parseGffBuffer } from './gffParser.ts'
 
 describe('parseGffBuffer', () => {
   it('should parse GFF3 content with header and features', () => {

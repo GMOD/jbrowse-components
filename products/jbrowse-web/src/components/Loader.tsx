@@ -14,18 +14,20 @@ import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
 
-import JBrowse from './JBrowse'
-import Loading from './Loading'
-import SessionLoader from '../SessionLoader'
-import { createPluginManager } from '../createPluginManager'
-import factoryReset from '../factoryReset'
-import { deleteQueryParams, readQueryParams } from '../useQueryParam'
+import JBrowse from './JBrowse.tsx'
+import Loading from './Loading.tsx'
+import SessionLoader from '../SessionLoader.ts'
+import { createPluginManager } from '../createPluginManager.ts'
+import factoryReset from '../factoryReset.ts'
+import { deleteQueryParams, readQueryParams } from '../useQueryParam.ts'
 
-import type { SessionLoaderModel } from '../SessionLoader'
+import type { SessionLoaderModel } from '../SessionLoader.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const SessionTriaged = lazy(() => import('./SessionTriaged'))
-const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
+const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
+const StartScreenErrorMessage = lazy(
+  () => import('./StartScreenErrorMessage.tsx'),
+)
 
 const paramsToDelete = [
   'loc',

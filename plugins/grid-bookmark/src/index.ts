@@ -9,9 +9,9 @@ import BookmarksIcon from '@mui/icons-material/Bookmarks'
 import HighlightIcon from '@mui/icons-material/Highlight'
 import LabelIcon from '@mui/icons-material/Label'
 
-import GridBookmarkWidgetF from './GridBookmarkWidget'
+import GridBookmarkWidgetF from './GridBookmarkWidget/index.ts'
 
-import type { GridBookmarkModel } from './GridBookmarkWidget/model'
+import type { GridBookmarkModel } from './GridBookmarkWidget/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   PluggableElementType,

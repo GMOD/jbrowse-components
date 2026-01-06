@@ -13,10 +13,10 @@ import {
   scaleSequentialLog,
 } from '@mui/x-charts-vendor/d3-scale'
 
-import interpolateViridis from './viridis'
+import interpolateViridis from './viridis.ts'
 
-import type { RenderArgsDeserializedWithFeatures } from './HicRenderer'
-import type { HicFlatbushItem } from './types'
+import type { RenderArgsDeserializedWithFeatures } from './HicRenderer.tsx'
+import type { HicFlatbushItem } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'

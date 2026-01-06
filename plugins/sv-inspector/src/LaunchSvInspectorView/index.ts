@@ -1,4 +1,4 @@
-import type { SvInspectorViewModel } from '../SvInspectorView/model'
+import type { SvInspectorViewModel } from '../SvInspectorView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

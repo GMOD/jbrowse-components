@@ -1,4 +1,4 @@
-import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util'
+import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util.tsx'
 import breakpointConfig from '../../test_data/breakpoint/config.json'
 
 // @ts-expect-error

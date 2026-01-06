@@ -2,12 +2,12 @@ import fs from 'fs'
 
 import yargs from 'yargs'
 
-import { parseArgv, standardizeArgv } from './parseArgv'
-import { renderRegion } from './renderRegion'
-import setupEnv from './setupEnv'
-import { convert } from './util'
+import { parseArgv, standardizeArgv } from './parseArgv.ts'
+import { renderRegion } from './renderRegion.tsx'
+import setupEnv from './setupEnv.ts'
+import { convert } from './util.ts'
 
-import type { Opts } from './renderRegion'
+import type { Opts } from './renderRegion.tsx'
 
 setupEnv()
 
@@ -28,7 +28,7 @@ console.warn = (...p: unknown[]) => {
 // note: yargs is actually unused except for printing help we do custom command
 // line parsing, see parseArgv.ts
 //
-// eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/no-unused-expressions
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions,@typescript-eslint/no-floating-promises
 yargs
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
   .option('config', {

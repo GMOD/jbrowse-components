@@ -6,12 +6,15 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { fireEvent, render } from '@testing-library/react'
 
 // locals
-import JBrowse from './JBrowse'
-import { ipcMain, ipcRenderer } from '../../../../packages/__mocks__/electron'
+import JBrowse from './JBrowse.tsx'
+import {
+  ipcMain,
+  ipcRenderer,
+} from '../../../../packages/__mocks__/electron.ts'
 import configSnapshot from '../../test_data/volvox/config.json'
-import corePlugins from '../corePlugins'
-import JBrowseRootModelFactory from '../rootModel/rootModel'
-import sessionModelFactory from '../sessionModel/sessionModel'
+import corePlugins from '../corePlugins.ts'
+import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
+import sessionModelFactory from '../sessionModel/sessionModel.ts'
 
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 

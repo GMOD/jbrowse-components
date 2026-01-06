@@ -14,9 +14,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { downloadBookmarkFile } from '../../utils'
+import { downloadBookmarkFile } from '../../utils.ts'
 
-import type { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model.ts'
 
 const useStyles = makeStyles()({
   flexItem: {

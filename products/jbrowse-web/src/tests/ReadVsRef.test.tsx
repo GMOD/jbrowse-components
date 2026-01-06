@@ -1,6 +1,12 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 

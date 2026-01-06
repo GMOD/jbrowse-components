@@ -1,7 +1,7 @@
 import { MenuItem, Paper, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { useSlotEditorStyles } from './useSlotEditorStyles'
+import { useSlotEditorStyles } from './useSlotEditorStyles.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

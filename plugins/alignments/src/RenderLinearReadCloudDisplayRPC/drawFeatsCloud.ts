@@ -1,6 +1,6 @@
 import { scaleLog } from '@mui/x-charts-vendor/d3-scale'
 
-import type { ComputedChain } from './drawFeatsCommon'
+import type { ComputedChain } from './drawFeatsCommon.ts'
 
 // Padding at top/bottom of cloud display
 export const CLOUD_HEIGHT_PADDING = 20

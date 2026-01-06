@@ -9,7 +9,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { isBaseSession } from './BaseSession'
+import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

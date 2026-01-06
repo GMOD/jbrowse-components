@@ -1,4 +1,4 @@
-import type { Track } from '../../base'
+import type { Track } from '../../base.ts'
 
 export function validateTrackConfigs(tracks: Track[]): void {
   if (!tracks.length) {

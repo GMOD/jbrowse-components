@@ -3,12 +3,12 @@ import { useRef } from 'react'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import Crosshair from './MultiVariantCrosshairs'
-import LegendBar from './MultiVariantLegendBar'
-import TreeSidebar from './TreeSidebar'
-import { useMouseTracking } from '../hooks/useMouseTracking'
+import Crosshair from './MultiVariantCrosshairs.tsx'
+import LegendBar from './MultiVariantLegendBar.tsx'
+import TreeSidebar from './TreeSidebar.tsx'
+import { useMouseTracking } from '../hooks/useMouseTracking.ts'
 
-import type { MultiVariantBaseModel } from '../MultiVariantBaseModel'
+import type { MultiVariantBaseModel } from '../MultiVariantBaseModel.ts'
 
 const MultiVariantBaseDisplayComponent = observer(
   function MultiVariantBaseDisplayComponent(props: {

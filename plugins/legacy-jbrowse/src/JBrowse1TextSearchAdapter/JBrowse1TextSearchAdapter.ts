@@ -2,7 +2,7 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-import HttpMap from './HttpMap'
+import HttpMap from './HttpMap.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

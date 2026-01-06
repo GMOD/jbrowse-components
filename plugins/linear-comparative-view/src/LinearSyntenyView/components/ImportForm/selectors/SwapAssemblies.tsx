@@ -5,7 +5,7 @@ import HelpIcon from '@mui/icons-material/Help'
 import { Button, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { helpStrings } from './SelectorTypes'
+import { helpStrings } from './SelectorTypes.ts'
 
 export interface SwapAssembliesProps {
   assembly1?: string

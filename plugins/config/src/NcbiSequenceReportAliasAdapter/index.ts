@@ -1,6 +1,6 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -12,7 +12,7 @@ export default function NcbiSequenceReportAliasAdapterF(
       name: 'NcbiSequenceReportAliasAdapter',
       configSchema,
       getAdapterClass: () =>
-        import('./NcbiSequenceReportAliasAdapter').then(r => r.default),
+        import('./NcbiSequenceReportAliasAdapter.ts').then(r => r.default),
       adapterMetadata: {
         hiddenFromGUI: true,
       },

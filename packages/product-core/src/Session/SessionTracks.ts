@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { isBaseSession } from './BaseSession'
-import { TracksManagerSessionMixin } from './Tracks'
+import { isBaseSession } from './BaseSession.ts'
+import { TracksManagerSessionMixin } from './Tracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {

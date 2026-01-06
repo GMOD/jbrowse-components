@@ -11,12 +11,12 @@ import {
   getTestId,
   getYOffset,
   strandToSign,
-} from './overlayUtils'
-import { getMatchedTranslocationFeatures } from './util'
-import { getPxFromCoordinate, useNextFrame, yPos } from '../util'
+} from './overlayUtils.tsx'
+import { getMatchedTranslocationFeatures } from './util.ts'
+import { getPxFromCoordinate, useNextFrame, yPos } from '../util.ts'
 
-import type { OverlayProps } from './overlayUtils'
-import type { LayoutRecord } from '../types'
+import type { OverlayProps } from './overlayUtils.tsx'
+import type { LayoutRecord } from '../types.ts'
 
 const Translocations = observer(function Translocations({
   model,

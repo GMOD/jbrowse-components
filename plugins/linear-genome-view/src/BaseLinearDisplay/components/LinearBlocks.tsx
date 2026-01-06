@@ -1,9 +1,9 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import RenderedBlocks from './RenderedBlocks'
+import RenderedBlocks from './RenderedBlocks.tsx'
 
-import type { BaseLinearDisplayModel } from '../model'
+import type { BaseLinearDisplayModel } from '../model.ts'
 
 // Warning: these styles are sensitive to causing 1px gaps between blocks.
 // Using display:flex with fractional widths and style.left positioning works.

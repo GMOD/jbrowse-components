@@ -8,7 +8,7 @@ import {
   hts,
   pc,
   setup,
-} from './util'
+} from './util.tsx'
 
 setup()
 

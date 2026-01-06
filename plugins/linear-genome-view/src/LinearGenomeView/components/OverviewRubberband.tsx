@@ -4,9 +4,9 @@ import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import OverviewRubberbandHoverTooltip from './OverviewRubberbandHoverTooltip'
-import RubberbandSpan from './RubberbandSpan'
-import { getRelativeX } from './util'
+import OverviewRubberbandHoverTooltip from './OverviewRubberbandHoverTooltip.tsx'
+import RubberbandSpan from './RubberbandSpan.tsx'
+import { getRelativeX } from './util.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'

@@ -1,9 +1,9 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { set1 } from '@jbrowse/core/ui/colors'
 
-import ArcRendererF from './ArcRenderer'
-import LinearArcDisplayF from './LinearArcDisplay'
-import LinearPairedArcDisplayF from './LinearPairedArcDisplay'
+import ArcRendererF from './ArcRenderer/index.ts'
+import LinearArcDisplayF from './LinearArcDisplay/index.ts'
+import LinearPairedArcDisplayF from './LinearPairedArcDisplay/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'

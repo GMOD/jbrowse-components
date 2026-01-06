@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-import { makeFeatures } from '../FromConfigAdapter/FromConfigAdapter'
+import { makeFeatures } from '../FromConfigAdapter/FromConfigAdapter.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

@@ -8,8 +8,8 @@
 import fs from 'fs'
 import path from 'path'
 
-import { renderRegion } from './renderRegion'
-import setupEnv from './setupEnv'
+import { renderRegion } from './renderRegion.tsx'
+import setupEnv from './setupEnv.ts'
 
 setupEnv()
 

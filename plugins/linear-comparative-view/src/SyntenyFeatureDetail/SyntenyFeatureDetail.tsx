@@ -3,10 +3,10 @@ import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Fe
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Formatter from './Formatter'
-import LinkToSyntenyView from './LinkToSyntenyView'
+import Formatter from './Formatter.tsx'
+import LinkToSyntenyView from './LinkToSyntenyView.tsx'
 
-import type { SyntenyFeatureDetailModel } from './types'
+import type { SyntenyFeatureDetailModel } from './types.ts'
 
 const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail(props: {
   model: SyntenyFeatureDetailModel

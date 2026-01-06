@@ -7,7 +7,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
 
 // lazies
-const ConfirmDialog = lazy(() => import('./ConfirmDialog'))
+const ConfirmDialog = lazy(() => import('./ConfirmDialog.tsx'))
 
 function makeTrack({
   model,

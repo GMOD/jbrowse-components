@@ -9,10 +9,10 @@ import {
   hts,
   mockConsoleWarn,
   setup,
-} from './util'
+} from './util.tsx'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view/src/LinearSyntenyView/model'
+import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
 import type { SessionWithConnections } from '@jbrowse/product-core'
 
 setup()

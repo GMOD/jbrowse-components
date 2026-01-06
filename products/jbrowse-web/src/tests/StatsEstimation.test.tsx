@@ -1,6 +1,12 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, hts, setup } from './util'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -24,7 +30,13 @@ test('test stats estimation pileup, zoom in to see', async () => {
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
-  // wait for canvas to be done rendering to avoid flaky layout differences
+  // wait for 2 canvases to avoid flaky layout differences from variable block count
+  await waitFor(() => {
+    const canvases = document.querySelectorAll(
+      '[data-testid^="prerendered_canvas"][data-testid$="_done"]',
+    )
+    expect(canvases.length).toBe(2)
+  }, delay)
   expectCanvasMatch(
     (await findAllByTestId(/prerendered_canvas_.*_done/, ...o))[0]!,
   )

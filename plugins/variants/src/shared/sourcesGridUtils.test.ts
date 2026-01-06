@@ -1,4 +1,4 @@
-import { moveDown, moveUp } from './sourcesGridUtils'
+import { moveDown, moveUp } from './sourcesGridUtils.ts'
 
 test('moves elements up once', () => {
   let elts = [{ name: 'k1' }, { name: 'k2' }, { name: 'k3' }, { name: 'k4' }]

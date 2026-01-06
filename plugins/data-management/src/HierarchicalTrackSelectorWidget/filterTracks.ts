@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession, notEmpty } from '@jbrowse/core/util'
 
-import { hasAllOverlap, hasAnyOverlap } from './util'
+import { hasAllOverlap, hasAnyOverlap } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 

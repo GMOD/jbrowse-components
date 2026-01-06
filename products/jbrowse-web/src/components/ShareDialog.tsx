@@ -19,12 +19,12 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { shareSessionToDynamo } from '../sessionSharing'
-import { setQueryParams } from '../useQueryParam'
-import { toUrlSafeB64 } from '../util'
-import ShareDialogLinkField from './ShareDialogLinkField'
+import { shareSessionToDynamo } from '../sessionSharing.ts'
+import { setQueryParams } from '../useQueryParam.ts'
+import { toUrlSafeB64 } from '../util.ts'
+import ShareDialogLinkField from './ShareDialogLinkField.tsx'
 
-const SettingsDialog = lazy(() => import('./ShareSettingsDialog'))
+const SettingsDialog = lazy(() => import('./ShareSettingsDialog.tsx'))
 
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
 

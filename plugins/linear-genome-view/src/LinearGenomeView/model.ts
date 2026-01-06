@@ -32,29 +32,29 @@ import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import { when } from 'mobx'
 
-import { handleSelectedRegion } from '../searchUtils'
-import { doAfterAttach } from './afterAttach'
-import Header from './components/Header'
-import MiniControls from './components/MiniControls'
+import { handleSelectedRegion } from '../searchUtils.ts'
+import { doAfterAttach } from './afterAttach.ts'
+import Header from './components/Header.tsx'
+import MiniControls from './components/MiniControls.tsx'
 import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
   INTER_REGION_PADDING_WIDTH,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
-} from './consts'
-import { setupKeyboardHandler } from './keyboardHandler'
+} from './consts.ts'
+import { setupKeyboardHandler } from './keyboardHandler.ts'
 import {
   buildMenuItems,
   buildRubberBandMenuItems,
   buildRubberbandClickMenuItems,
   rewriteOnClicks,
-} from './menuItems'
+} from './menuItems.tsx'
 import {
   calculateVisibleLocStrings,
   generateLocations,
   parseLocStrings,
-} from './util'
+} from './util.ts'
 
 import type {
   BpOffset,
@@ -62,7 +62,7 @@ import type {
   HighlightType,
   InitState,
   NavLocation,
-} from './types'
+} from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -74,7 +74,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const SearchResultsDialog = lazy(
-  () => import('./components/SearchResultsDialog'),
+  () => import('./components/SearchResultsDialog.tsx'),
 )
 
 /**
@@ -1077,7 +1077,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
         const { renderToSvg } =
-          await import('./svgcomponents/SVGLinearGenomeView')
+          await import('./svgcomponents/SVGLinearGenomeView.tsx')
         const html = await renderToSvg(self as LinearGenomeViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
@@ -1707,9 +1707,9 @@ export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 export {
   default as LinearGenomeView,
   default as ReactComponent,
-} from './components/LinearGenomeView'
+} from './components/LinearGenomeView.tsx'
 
-export { default as RefNameAutocomplete } from './components/RefNameAutocomplete'
-export { default as SearchBox } from './components/SearchBox'
+export { default as RefNameAutocomplete } from './components/RefNameAutocomplete/index.tsx'
+export { default as SearchBox } from './components/SearchBox.tsx'
 
-export { renderToSvg } from './svgcomponents/SVGLinearGenomeView'
+export { renderToSvg } from './svgcomponents/SVGLinearGenomeView.tsx'

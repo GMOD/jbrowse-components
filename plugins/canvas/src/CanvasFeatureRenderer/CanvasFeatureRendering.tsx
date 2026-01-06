@@ -5,7 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
-import type { FlatbushItem, SubfeatureInfo } from './types'
+import type { FlatbushItem, SubfeatureInfo } from './types.ts'
 import type { Region } from '@jbrowse/core/util/types'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 

@@ -1,6 +1,6 @@
 import { fireEvent } from '@testing-library/react'
 
-import { createView, expectCanvasMatch, hts, pv } from './util'
+import { createView, expectCanvasMatch, hts, pv } from './util.tsx'
 
 export async function testOpenTrack({
   bpPerPx,

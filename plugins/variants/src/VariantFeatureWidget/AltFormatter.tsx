@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { getMinimalDesc } from '../VcfFeature/util'
+import { getMinimalDesc } from '../VcfFeature/util.ts'
 
 export default function AltFormatter({
   value,

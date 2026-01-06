@@ -10,15 +10,15 @@ import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ColorBySelector from './ColorBySelector'
-import { CursorMouse, CursorMove } from './CursorIcon'
-import MinLengthSlider from './MinLengthSlider'
-import OpacitySlider from './OpacitySlider'
+import ColorBySelector from './ColorBySelector.tsx'
+import { CursorMouse, CursorMove } from './CursorIcon.tsx'
+import MinLengthSlider from './MinLengthSlider.tsx'
+import OpacitySlider from './OpacitySlider.tsx'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 
 const DiagonalizationProgressDialog = lazy(
-  () => import('./DiagonalizationProgressDialog'),
+  () => import('./DiagonalizationProgressDialog.tsx'),
 )
 
 const DotplotControls = observer(function DotplotControls({

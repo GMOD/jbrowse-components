@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { NonBlockCanvasDisplayMixin } from '@jbrowse/plugin-linear-genome-view'
 
-import type { ChainData, ColorBy, FilterBy } from './types'
+import type { ChainData, ColorBy, FilterBy } from './types.ts'
 
 /**
  * Base mixin for all LinearRead displays (Cloud, Stack, Arcs)

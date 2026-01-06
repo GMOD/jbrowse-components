@@ -1,9 +1,9 @@
 import { gatherOverlaps, getSession, when } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { getBreakendCoveringRegions, makeTitle, stripIds } from './util'
+import { getBreakendCoveringRegions, makeTitle, stripIds } from './util.ts'
 
-import type { BreakpointSplitView } from './types'
+import type { BreakpointSplitView } from './types.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

@@ -4,8 +4,8 @@ import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
-import { LinearAlignmentsDisplayMixin } from './alignmentsModel'
-import { getLowerPanelDisplays } from './util'
+import { LinearAlignmentsDisplayMixin } from './alignmentsModel.tsx'
+import { getLowerPanelDisplays } from './util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -314,7 +314,7 @@ function stateModelFactory(
        * #action
        */
       async renderSvg(opts: ExportSvgDisplayOptions) {
-        const { renderSvg } = await import('./renderSvg')
+        const { renderSvg } = await import('./renderSvg.tsx')
         return renderSvg(self, opts)
       },
     }))

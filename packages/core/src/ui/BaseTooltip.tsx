@@ -1,0 +1,88 @@
+import {
+  offset,
+  useClientPoint,
+  useFloating,
+  useInteractions,
+} from '@floating-ui/react'
+import { Portal, alpha, useTheme } from '@mui/material'
+
+import { makeStyles } from '../util/tss-react/index.ts'
+
+function round(value: number) {
+  return Math.round(value * 1e5) / 1e5
+}
+
+const useStyles = makeStyles()(theme => ({
+  // these styles come from
+  // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
+  tooltip: {
+    position: 'absolute',
+    pointerEvents: 'none',
+    backgroundColor: alpha(theme.palette.grey[700], 0.9),
+    borderRadius: theme.shape.borderRadius,
+    color: theme.palette.common.white,
+    fontFamily: theme.typography.fontFamily,
+    padding: '4px 8px',
+    fontSize: theme.typography.fontSize,
+    lineHeight: `${round(14 / 10)}em`,
+    maxWidth: 300,
+    wordWrap: 'break-word',
+  },
+}))
+
+export default function BaseTooltip({
+  clientPoint: clientPointCoords,
+  children,
+  placement = 'right',
+}: {
+  placement?:
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'right'
+    | 'right-start'
+    | 'right-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'left'
+    | 'left-start'
+    | 'left-end'
+  clientPoint?: { x: number; y: number }
+  children: React.ReactNode
+}) {
+  const theme = useTheme()
+  const popperTheme = theme.components?.MuiPopper
+  const { classes } = useStyles()
+  const { refs, floatingStyles, context } = useFloating({
+    placement,
+    strategy: 'fixed',
+    middleware: [offset(5)],
+  })
+
+  const clientPoint = useClientPoint(context, clientPointCoords)
+  const { getFloatingProps } = useInteractions([clientPoint])
+  return (
+    <Portal container={popperTheme?.defaultProps?.container}>
+      <div
+        className={classes.tooltip}
+        // eslint-disable-next-line react-hooks/refs
+        ref={refs.setFloating}
+        style={{
+          ...floatingStyles,
+          zIndex: 100000,
+          // workaround for tooltips flashing at top left corner of screen
+          // when first appearing
+          visibility:
+            floatingStyles.transform === 'translate(0px, 0px)'
+              ? 'hidden'
+              : undefined,
+          pointerEvents: 'none',
+        }}
+        {...getFloatingProps()}
+      >
+        {children}
+      </div>
+    </Portal>
+  )
+}

@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 
 import { observer } from 'mobx-react'
 
-import TreeItem from './TreeItem'
+import TreeItem from './TreeItem.tsx'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 const HierarchicalTree = observer(function HierarchicalTree({
   height,

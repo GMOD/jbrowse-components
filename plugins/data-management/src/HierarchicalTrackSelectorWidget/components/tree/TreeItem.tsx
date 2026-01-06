@@ -2,12 +2,12 @@ import { memo, useMemo } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-import TrackCategory from './TrackCategory'
-import TrackLabel from './TrackLabel'
-import { getItemHeight } from '../../model'
+import TrackCategory from './TrackCategory.tsx'
+import TrackLabel from './TrackLabel.tsx'
+import { getItemHeight } from '../../model.ts'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
-import type { TreeNode } from '../../types'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { TreeNode } from '../../types.ts'
 
 const levelWidth = 10
 

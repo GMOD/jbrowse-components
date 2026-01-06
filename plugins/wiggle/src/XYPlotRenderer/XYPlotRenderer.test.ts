@@ -1,8 +1,8 @@
 import { SimpleFeature, renderToAbstractCanvas } from '@jbrowse/core/util'
 import { Image, createCanvas } from 'canvas'
 
-import configSchema from './configSchema'
-import { drawXY } from '../drawXY'
+import configSchema from './configSchema.ts'
+import { drawXY } from '../drawXY.ts'
 
 // @ts-expect-error
 global.nodeImage = Image

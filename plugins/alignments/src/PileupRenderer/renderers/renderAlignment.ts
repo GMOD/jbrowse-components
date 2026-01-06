@@ -1,13 +1,13 @@
-import { getCigarOps } from './cigarUtil'
-import { getAlignmentShapeColor } from './getAlignmentShapeColor'
-import { renderAlignmentShape } from './renderAlignmentShape'
-import { renderMethylation } from './renderMethylation'
-import { renderModifications } from './renderModifications'
-import { renderPerBaseLettering } from './renderPerBaseLettering'
-import { renderPerBaseQuality } from './renderPerBaseQuality'
+import { getCigarOps } from './cigarUtil.ts'
+import { getAlignmentShapeColor } from './getAlignmentShapeColor.ts'
+import { renderAlignmentShape } from './renderAlignmentShape.ts'
+import { renderMethylation } from './renderMethylation.ts'
+import { renderModifications } from './renderModifications.ts'
+import { renderPerBaseLettering } from './renderPerBaseLettering.ts'
+import { renderPerBaseQuality } from './renderPerBaseQuality.ts'
 
-import type { FlatbushItem, ProcessedRenderArgs } from '../types'
-import type { LayoutFeature } from '../util'
+import type { FlatbushItem, ProcessedRenderArgs } from '../types.ts'
+import type { LayoutFeature } from '../util.ts'
 
 function collectResults(
   ret: { coords: number[]; items: FlatbushItem[] },

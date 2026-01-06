@@ -13,17 +13,17 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { NonBlockCanvasDisplayComponent as BaseDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import CloudYScaleBar from './CloudYScaleBar'
+import CloudYScaleBar from './CloudYScaleBar.tsx'
 import {
   type FlatbushItem,
   flatbushItemToFeatureData,
   getFlatbushItemLabel,
-} from '../../PileupRenderer/types'
-import { PairType, getPairedType } from '../../shared/color'
-import { orientationTypes } from '../../util'
+} from '../../PileupRenderer/types.ts'
+import { PairType, getPairedType } from '../../shared/color.ts'
+import { orientationTypes } from '../../util.ts'
 
-import type { ReducedFeature } from '../../shared/types'
-import type { LinearReadCloudDisplayModel } from '../model'
+import type { ReducedFeature } from '../../shared/types.ts'
+import type { LinearReadCloudDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

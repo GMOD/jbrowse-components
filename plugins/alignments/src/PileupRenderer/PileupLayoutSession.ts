@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { MultiLayout, PileupLayout } from '@jbrowse/core/util/layouts'
 import deepEqual from 'fast-deep-equal'
 
-import type { FilterBy, SortedBy } from '../shared/types'
+import type { FilterBy, SortedBy } from '../shared/types.ts'
 import type {
   LayoutSessionLike,
   LayoutSessionProps,

@@ -12,10 +12,10 @@ import {
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { diagonalizeRegions } from '../util/diagonalize'
+import { diagonalizeRegions } from '../util/diagonalize.ts'
 
-import type { LinearSyntenyViewModel } from '../model'
-import type { AlignmentData } from '../util/diagonalize'
+import type { LinearSyntenyViewModel } from '../model.ts'
+import type { AlignmentData } from '../util/diagonalize.ts'
 
 const DiagonalizationProgressDialog = observer(
   function DiagonalizationProgressDialog({

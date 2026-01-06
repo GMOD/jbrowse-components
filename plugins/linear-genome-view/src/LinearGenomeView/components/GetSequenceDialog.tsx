@@ -18,9 +18,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { fetchSequence } from './fetchSequence'
+import { fetchSequence } from './fetchSequence.ts'
 
-import type { BpOffset } from '../types'
+import type { BpOffset } from '../types.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({

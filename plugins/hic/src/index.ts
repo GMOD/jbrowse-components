@@ -1,11 +1,11 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { colord } from '@jbrowse/core/util/colord'
 
-import GuessAdapterF from './GuessAdapter'
-import HicAdapterF from './HicAdapter'
-import HicRendererF from './HicRenderer'
-import HicTrackF from './HicTrack'
-import LinearHicDisplayF from './LinearHicDisplay'
+import GuessAdapterF from './GuessAdapter/index.ts'
+import HicAdapterF from './HicAdapter/index.ts'
+import HicRendererF from './HicRenderer/index.ts'
+import HicTrackF from './HicTrack/index.ts'
+import LinearHicDisplayF from './LinearHicDisplay/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Colord } from '@jbrowse/core/util/colord'

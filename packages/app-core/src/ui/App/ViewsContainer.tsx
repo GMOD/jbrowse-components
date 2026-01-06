@@ -9,9 +9,9 @@ import type {
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
 
-const ClassicViewsContainer = lazy(() => import('./ClassicViewsContainer'))
-const TiledViewsContainer = lazy(() => import('./TiledViewsContainer'))
-const ViewLauncher = lazy(() => import('./ViewLauncher'))
+const ClassicViewsContainer = lazy(() => import('./ClassicViewsContainer.tsx'))
+const TiledViewsContainer = lazy(() => import('./TiledViewsContainer.tsx'))
+const ViewLauncher = lazy(() => import('./ViewLauncher.tsx'))
 
 const useStyles = makeStyles()({
   viewsContainer: {

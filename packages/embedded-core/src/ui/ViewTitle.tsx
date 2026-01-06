@@ -6,11 +6,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { IconButton, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ViewMenu from './ViewMenu'
+import ViewMenu from './ViewMenu.tsx'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
-const VersionAboutDialog = lazy(() => import('./VersionAboutDialog'))
+const VersionAboutDialog = lazy(() => import('./VersionAboutDialog.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   icon: {

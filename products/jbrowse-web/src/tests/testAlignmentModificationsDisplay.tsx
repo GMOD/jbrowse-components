@@ -1,6 +1,6 @@
 import { within } from '@testing-library/react'
 
-import { createView, expectCanvasMatch } from './util'
+import { createView, expectCanvasMatch } from './util.tsx'
 
 export async function testAlignmentModificationsDisplay({
   config,

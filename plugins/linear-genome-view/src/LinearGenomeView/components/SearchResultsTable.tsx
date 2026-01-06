@@ -16,9 +16,9 @@ import {
   TableRow,
 } from '@mui/material'
 
-import { navToOption } from '../../searchUtils'
+import { navToOption } from '../../searchUtils.ts'
 
-import type { LinearGenomeViewModel } from '../..'
+import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 export default function SearchResultsTable({
