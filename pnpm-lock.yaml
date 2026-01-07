@@ -2370,6 +2370,9 @@ importers:
       pixelmatch:
         specifier: ^7.1.0
         version: 7.1.0
+      pngjs:
+        specifier: ^7.0.0
+        version: 7.0.0
       react:
         specifier: ^19.2.3
         version: 19.2.3
