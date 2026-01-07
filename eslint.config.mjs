@@ -84,6 +84,7 @@ export default defineConfig(
       react: {
         version: 'detect',
       },
+      'import/ignore': ['dockview-react', '@tanstack/react-table'],
     },
   },
   {

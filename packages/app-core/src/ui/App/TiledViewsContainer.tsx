@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
-// eslint-disable-next-line import/named -- pnpm re-exports; eslint-import-resolver-typescript would fix
 import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'

@@ -5,7 +5,6 @@ import Check from '@mui/icons-material/Check'
 import Close from '@mui/icons-material/Close'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { Link, Tooltip } from '@mui/material'
-// eslint-disable-next-line import/named -- pnpm re-exports; eslint-import-resolver-typescript would fix
 import { createColumnHelper } from '@tanstack/react-table'
 
 import HighlightedText from './HighlightedText.tsx'
