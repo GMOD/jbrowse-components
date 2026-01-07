@@ -17,7 +17,6 @@
   "author": "JBrowse Team",
   "main": "src/index.ts",
   "files": [
-    "dist",
     "esm"
   ],
   "scripts": {
@@ -27,12 +26,11 @@
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
-    "clean": "rimraf dist esm *.tsbuildinfo"
+    "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^2.0.3",
-    "@gmod/bbi": "^8.1.0",
+    "@gmod/bbi": "^8.1.1",
     "@gmod/bed": "^2.1.7",
     "@gmod/tabix": "^3.2.2",
     "@jbrowse/core": "workspace:^",
@@ -42,13 +40,12 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
     "exports": {
       ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./esm/index.js",
-        "require": "./dist/index.js"
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
       }
     }
   },

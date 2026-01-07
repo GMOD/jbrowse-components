@@ -2,12 +2,16 @@ import { createTheme } from '@mui/material'
 import { blue, green, grey, orange, red } from '@mui/material/colors'
 import deepmerge from 'deepmerge'
 
-import type { Theme, ThemeOptions } from '@mui/material'
 import type {
-  PaletteAugmentColorOptions,
   PaletteColor,
   PaletteColorOptions,
-} from '@mui/material/styles/createPalette'
+  Theme,
+  ThemeOptions,
+} from '@mui/material/styles'
+
+interface PaletteAugmentColorOptions {
+  color: PaletteColorOptions
+}
 
 type MaybePaletteColor = PaletteColor | undefined
 type Frames = [
@@ -19,7 +23,7 @@ type Frames = [
   MaybePaletteColor,
   MaybePaletteColor,
 ]
-declare module '@mui/material/styles/createPalette' {
+declare module '@mui/material/styles' {
   interface Palette {
     tertiary: PaletteColor
     quaternary: PaletteColor

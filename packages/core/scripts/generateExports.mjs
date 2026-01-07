@@ -95,12 +95,11 @@ const devExports = {
   '.': './src/index.ts',
 }
 
-// Generate publish exports (pointing to esm/dist)
+// Generate publish exports (pointing to esm)
 const publishExports = {
   '.': {
-    types: './dist/index.d.ts',
+    types: './esm/index.d.ts',
     import: './esm/index.js',
-    require: './dist/index.js',
   },
 }
 
@@ -112,9 +111,8 @@ for (const entry of imports) {
   devExports[exportPath] = `./src${srcPath}`
 
   publishExports[exportPath] = {
-    types: `./dist${outPath.replace('.js', '.d.ts')}`,
+    types: `./esm${outPath.replace('.js', '.d.ts')}`,
     import: `./esm${outPath}`,
-    require: `./dist${outPath}`,
   }
 }
 

@@ -20,7 +20,6 @@
     ".": "./src/index.ts"
   },
   "files": [
-    "dist",
     "esm",
     "docs"
   ],
@@ -28,9 +27,8 @@
     "build": "pnpm run /^build:/",
     "prepublishOnly": "node output-version.js > src/version.ts && git add -A src && git commit -m '[skip ci] Bump version.ts'",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
     "build:webpack": "webpack",
-    "clean": "rimraf dist esm *.tsbuildinfo",
+    "clean": "rimraf esm *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
     "prebuild": "pnpm clean",
@@ -71,13 +69,12 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
     "exports": {
       ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./esm/index.js",
-        "require": "./dist/index.js"
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
       }
     }
   },

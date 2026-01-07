@@ -29,7 +29,7 @@ console.warn = (...p: unknown[]) => {
 // line parsing, see parseArgv.ts
 //
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions,@typescript-eslint/no-floating-promises
-yargs
+yargs()
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
   .option('config', {
     description: 'Path to config file',

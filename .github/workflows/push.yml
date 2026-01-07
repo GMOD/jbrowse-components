@@ -107,8 +107,8 @@ jobs:
         run: pnpm typecheck
       - name: Run tests
         run: pnpm test-ci
-      - name: Build codebase
-        run: pnpm build
+      - name: Pack artifacts for component tests
+        run: node --experimental-strip-types scripts/pack.ts
       - name: Test build
         run: BUILT_TESTS=1 pnpm built-test-ci
       - name: Run browser tests with Puppeteer
@@ -252,5 +252,5 @@ jobs:
         run: |
           for dir in component_tests/lgv-vite component_tests/cgv-vite component_tests/app-vite; do
             echo "Testing $dir"
-            cd $dir && pnpm install && pnpm e2e && cd -
+            (cd $dir && yarn install && yarn e2e)
           done

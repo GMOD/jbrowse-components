@@ -30,7 +30,7 @@
   "scripts": {
     "prebuild": "pnpm clean",
     "build": "tsc && webpack",
-    "clean": "rimraf dist bundle",
+    "clean": "rimraf bundle",
     "prepack": "pnpm clean && pnpm build && pnpm generate-readme",
     "generate-readme": "./generate_readme.sh > README.md"
   },

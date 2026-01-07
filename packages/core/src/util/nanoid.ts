@@ -7,9 +7,14 @@
 export const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
 
-export const random = bytes => crypto.getRandomValues(new Uint8Array(bytes))
+export const random = (bytes: number) =>
+  crypto.getRandomValues(new Uint8Array(bytes))
 
-export const customRandom = (alphabet, defaultSize, getRandom) => {
+export const customRandom = (
+  alphabet: string,
+  defaultSize: number,
+  getRandom: (bytes: number) => Uint8Array,
+) => {
   // First, a bitmask is necessary to generate the ID. The bitmask makes bytes
   // values closer to the alphabet size. The bitmask calculates the closest
   // `2^31 - 1` number, which exceeds the alphabet size.
@@ -35,13 +40,14 @@ export const customRandom = (alphabet, defaultSize, getRandom) => {
 
   return (size = defaultSize) => {
     let id = ''
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       const bytes = getRandom(step)
       // A compact alternative for `for (var i = 0; i < step; i++)`.
       let j = step
       while (j--) {
         // Adding `|| ''` refuses a random byte that exceeds the alphabet size.
-        id += alphabet[bytes[j] & mask] || ''
+        id += alphabet[bytes[j]! & mask] || ''
         if (id.length === size) {
           return id
         }
@@ -50,7 +56,7 @@ export const customRandom = (alphabet, defaultSize, getRandom) => {
   }
 }
 
-export const customAlphabet = (alphabet, size = 21) =>
+export const customAlphabet = (alphabet: string, size = 21) =>
   customRandom(alphabet, size, random)
 
 export const nanoid = (size = 21) =>

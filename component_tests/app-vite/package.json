@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "pree2e": "pnpm build",
+    "pree2e": "yarn build",
     "e2e": "start-test 'serve --listen 5000 dist/' 5000 'cypress run --headless --browser chrome'"
   },
   "dependencies": {

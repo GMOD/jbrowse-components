@@ -13,7 +13,7 @@
     "declaration": true,
     "module": "esnext",
     "removeComments": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
     "isolatedModules": true,

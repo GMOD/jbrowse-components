@@ -1,5 +1,5 @@
 import PluggableElementBase from './PluggableElementBase.ts'
-import mapObject from '../util/map-obj/index.js'
+import mapObject from '../util/map-obj/index.ts'
 import { isRpcResult } from '../util/rpc.ts'
 import { getBlobMap, setBlobMap } from '../util/tracks.ts'
 import {

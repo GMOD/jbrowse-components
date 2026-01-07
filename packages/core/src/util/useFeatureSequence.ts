@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { fetchSeq } from './fetchSeq.ts'
 
-import type { AbstractSessionModel, Feature } from '.'
+import type { AbstractSessionModel, Feature } from './index.ts'
 
 const BPLIMIT = 20_000_000
 

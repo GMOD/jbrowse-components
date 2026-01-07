@@ -116,7 +116,7 @@
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
     "./util/librpc": "./src/util/librpc.ts",
     "./util/mst-reflection": "./src/util/mst-reflection.ts",
-    "./util/nanoid": "./src/util/nanoid.js",
+    "./util/nanoid": "./src/util/nanoid.ts",
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.tsx",
     "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
@@ -133,7 +133,6 @@
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx"
   },
   "files": [
-    "dist",
     "esm"
   ],
   "scripts": {
@@ -141,13 +140,12 @@
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
     "coverage": "pnpm test --coverage",
-    "clean": "rimraf dist esm *.tsbuildinfo",
+    "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build",
     "generate:exports": "node scripts/generateExports.mjs",
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "build:commonjs": "tsc -p tsconfig.build.commonjs.json",
-    "build": "pnpm build:esm && pnpm build:commonjs"
+    "build": "pnpm build:esm"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -192,553 +190,444 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
     "exports": {
       ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./esm/index.js",
-        "require": "./dist/index.js"
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
       },
       "./BaseFeatureWidget": {
-        "types": "./dist/BaseFeatureWidget/index.d.ts",
-        "import": "./esm/BaseFeatureWidget/index.js",
-        "require": "./dist/BaseFeatureWidget/index.js"
+        "types": "./esm/BaseFeatureWidget/index.d.ts",
+        "import": "./esm/BaseFeatureWidget/index.js"
       },
       "./BaseFeatureWidget/BaseFeatureDetail": {
-        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/index.d.ts",
-        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/index.js",
-        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/index.js"
+        "types": "./esm/BaseFeatureWidget/BaseFeatureDetail/index.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/index.js"
       },
       "./BaseFeatureWidget/BaseFeatureDetail/Attributes": {
-        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/Attributes.d.ts",
-        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/Attributes.js",
-        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/Attributes.js"
+        "types": "./esm/BaseFeatureWidget/BaseFeatureDetail/Attributes.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/Attributes.js"
       },
       "./BaseFeatureWidget/BaseFeatureDetail/BaseCard": {
-        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/BaseCard.d.ts",
-        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/BaseCard.js",
-        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/BaseCard.js"
+        "types": "./esm/BaseFeatureWidget/BaseFeatureDetail/BaseCard.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/BaseCard.js"
       },
       "./BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": {
-        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.d.ts",
-        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.js",
-        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.js"
+        "types": "./esm/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.js"
       },
       "./BaseFeatureWidget/BaseFeatureDetail/SimpleField": {
-        "types": "./dist/BaseFeatureWidget/BaseFeatureDetail/SimpleField.d.ts",
-        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/SimpleField.js",
-        "require": "./dist/BaseFeatureWidget/BaseFeatureDetail/SimpleField.js"
+        "types": "./esm/BaseFeatureWidget/BaseFeatureDetail/SimpleField.d.ts",
+        "import": "./esm/BaseFeatureWidget/BaseFeatureDetail/SimpleField.js"
       },
       "./Plugin": {
-        "types": "./dist/Plugin.d.ts",
-        "import": "./esm/Plugin.js",
-        "require": "./dist/Plugin.js"
+        "types": "./esm/Plugin.d.ts",
+        "import": "./esm/Plugin.js"
       },
       "./PluginLoader": {
-        "types": "./dist/PluginLoader.d.ts",
-        "import": "./esm/PluginLoader.js",
-        "require": "./dist/PluginLoader.js"
+        "types": "./esm/PluginLoader.d.ts",
+        "import": "./esm/PluginLoader.js"
       },
       "./PluginManager": {
-        "types": "./dist/PluginManager.d.ts",
-        "import": "./esm/PluginManager.js",
-        "require": "./dist/PluginManager.js"
+        "types": "./esm/PluginManager.d.ts",
+        "import": "./esm/PluginManager.js"
       },
       "./TextSearch/BaseResults": {
-        "types": "./dist/TextSearch/BaseResults.d.ts",
-        "import": "./esm/TextSearch/BaseResults.js",
-        "require": "./dist/TextSearch/BaseResults.js"
+        "types": "./esm/TextSearch/BaseResults.d.ts",
+        "import": "./esm/TextSearch/BaseResults.js"
       },
       "./TextSearch/TextSearchManager": {
-        "types": "./dist/TextSearch/TextSearchManager.d.ts",
-        "import": "./esm/TextSearch/TextSearchManager.js",
-        "require": "./dist/TextSearch/TextSearchManager.js"
+        "types": "./esm/TextSearch/TextSearchManager.d.ts",
+        "import": "./esm/TextSearch/TextSearchManager.js"
       },
       "./assemblyManager": {
-        "types": "./dist/assemblyManager/index.d.ts",
-        "import": "./esm/assemblyManager/index.js",
-        "require": "./dist/assemblyManager/index.js"
+        "types": "./esm/assemblyManager/index.d.ts",
+        "import": "./esm/assemblyManager/index.js"
       },
       "./assemblyManager/assembly": {
-        "types": "./dist/assemblyManager/assembly.d.ts",
-        "import": "./esm/assemblyManager/assembly.js",
-        "require": "./dist/assemblyManager/assembly.js"
+        "types": "./esm/assemblyManager/assembly.d.ts",
+        "import": "./esm/assemblyManager/assembly.js"
       },
       "./assemblyManager/assemblyConfigSchema": {
-        "types": "./dist/assemblyManager/assemblyConfigSchema.d.ts",
-        "import": "./esm/assemblyManager/assemblyConfigSchema.js",
-        "require": "./dist/assemblyManager/assemblyConfigSchema.js"
+        "types": "./esm/assemblyManager/assemblyConfigSchema.d.ts",
+        "import": "./esm/assemblyManager/assemblyConfigSchema.js"
       },
       "./configuration": {
-        "types": "./dist/configuration/index.d.ts",
-        "import": "./esm/configuration/index.js",
-        "require": "./dist/configuration/index.js"
+        "types": "./esm/configuration/index.d.ts",
+        "import": "./esm/configuration/index.js"
       },
       "./data_adapters/BaseAdapter": {
-        "types": "./dist/data_adapters/BaseAdapter/index.d.ts",
-        "import": "./esm/data_adapters/BaseAdapter/index.js",
-        "require": "./dist/data_adapters/BaseAdapter/index.js"
+        "types": "./esm/data_adapters/BaseAdapter/index.d.ts",
+        "import": "./esm/data_adapters/BaseAdapter/index.js"
       },
       "./data_adapters/BaseAdapter/BaseOptions": {
-        "types": "./dist/data_adapters/BaseAdapter/BaseOptions.d.ts",
-        "import": "./esm/data_adapters/BaseAdapter/BaseOptions.js",
-        "require": "./dist/data_adapters/BaseAdapter/BaseOptions.js"
+        "types": "./esm/data_adapters/BaseAdapter/BaseOptions.d.ts",
+        "import": "./esm/data_adapters/BaseAdapter/BaseOptions.js"
       },
       "./data_adapters/BaseAdapter/stats": {
-        "types": "./dist/data_adapters/BaseAdapter/stats.d.ts",
-        "import": "./esm/data_adapters/BaseAdapter/stats.js",
-        "require": "./dist/data_adapters/BaseAdapter/stats.js"
+        "types": "./esm/data_adapters/BaseAdapter/stats.d.ts",
+        "import": "./esm/data_adapters/BaseAdapter/stats.js"
       },
       "./data_adapters/dataAdapterCache": {
-        "types": "./dist/data_adapters/dataAdapterCache.d.ts",
-        "import": "./esm/data_adapters/dataAdapterCache.js",
-        "require": "./dist/data_adapters/dataAdapterCache.js"
+        "types": "./esm/data_adapters/dataAdapterCache.d.ts",
+        "import": "./esm/data_adapters/dataAdapterCache.js"
       },
       "./pluggableElementTypes": {
-        "types": "./dist/pluggableElementTypes/index.d.ts",
-        "import": "./esm/pluggableElementTypes/index.js",
-        "require": "./dist/pluggableElementTypes/index.js"
+        "types": "./esm/pluggableElementTypes/index.d.ts",
+        "import": "./esm/pluggableElementTypes/index.js"
       },
       "./pluggableElementTypes/AdapterType": {
-        "types": "./dist/pluggableElementTypes/AdapterType.d.ts",
-        "import": "./esm/pluggableElementTypes/AdapterType.js",
-        "require": "./dist/pluggableElementTypes/AdapterType.js"
+        "types": "./esm/pluggableElementTypes/AdapterType.d.ts",
+        "import": "./esm/pluggableElementTypes/AdapterType.js"
       },
       "./pluggableElementTypes/ConnectionType": {
-        "types": "./dist/pluggableElementTypes/ConnectionType.d.ts",
-        "import": "./esm/pluggableElementTypes/ConnectionType.js",
-        "require": "./dist/pluggableElementTypes/ConnectionType.js"
+        "types": "./esm/pluggableElementTypes/ConnectionType.d.ts",
+        "import": "./esm/pluggableElementTypes/ConnectionType.js"
       },
       "./pluggableElementTypes/DisplayType": {
-        "types": "./dist/pluggableElementTypes/DisplayType.d.ts",
-        "import": "./esm/pluggableElementTypes/DisplayType.js",
-        "require": "./dist/pluggableElementTypes/DisplayType.js"
+        "types": "./esm/pluggableElementTypes/DisplayType.d.ts",
+        "import": "./esm/pluggableElementTypes/DisplayType.js"
       },
       "./pluggableElementTypes/GlyphType": {
-        "types": "./dist/pluggableElementTypes/GlyphType.d.ts",
-        "import": "./esm/pluggableElementTypes/GlyphType.js",
-        "require": "./dist/pluggableElementTypes/GlyphType.js"
+        "types": "./esm/pluggableElementTypes/GlyphType.d.ts",
+        "import": "./esm/pluggableElementTypes/GlyphType.js"
       },
       "./pluggableElementTypes/InternetAccountType": {
-        "types": "./dist/pluggableElementTypes/InternetAccountType.d.ts",
-        "import": "./esm/pluggableElementTypes/InternetAccountType.js",
-        "require": "./dist/pluggableElementTypes/InternetAccountType.js"
+        "types": "./esm/pluggableElementTypes/InternetAccountType.d.ts",
+        "import": "./esm/pluggableElementTypes/InternetAccountType.js"
       },
       "./pluggableElementTypes/RpcMethodType": {
-        "types": "./dist/pluggableElementTypes/RpcMethodType.d.ts",
-        "import": "./esm/pluggableElementTypes/RpcMethodType.js",
-        "require": "./dist/pluggableElementTypes/RpcMethodType.js"
+        "types": "./esm/pluggableElementTypes/RpcMethodType.d.ts",
+        "import": "./esm/pluggableElementTypes/RpcMethodType.js"
       },
       "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": {
-        "types": "./dist/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.d.ts",
-        "import": "./esm/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.js",
-        "require": "./dist/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.js"
+        "types": "./esm/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.d.ts",
+        "import": "./esm/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.js"
       },
       "./pluggableElementTypes/TextSearchAdapterType": {
-        "types": "./dist/pluggableElementTypes/TextSearchAdapterType.d.ts",
-        "import": "./esm/pluggableElementTypes/TextSearchAdapterType.js",
-        "require": "./dist/pluggableElementTypes/TextSearchAdapterType.js"
+        "types": "./esm/pluggableElementTypes/TextSearchAdapterType.d.ts",
+        "import": "./esm/pluggableElementTypes/TextSearchAdapterType.js"
       },
       "./pluggableElementTypes/TrackType": {
-        "types": "./dist/pluggableElementTypes/TrackType.d.ts",
-        "import": "./esm/pluggableElementTypes/TrackType.js",
-        "require": "./dist/pluggableElementTypes/TrackType.js"
+        "types": "./esm/pluggableElementTypes/TrackType.d.ts",
+        "import": "./esm/pluggableElementTypes/TrackType.js"
       },
       "./pluggableElementTypes/ViewType": {
-        "types": "./dist/pluggableElementTypes/ViewType.d.ts",
-        "import": "./esm/pluggableElementTypes/ViewType.js",
-        "require": "./dist/pluggableElementTypes/ViewType.js"
+        "types": "./esm/pluggableElementTypes/ViewType.d.ts",
+        "import": "./esm/pluggableElementTypes/ViewType.js"
       },
       "./pluggableElementTypes/WidgetType": {
-        "types": "./dist/pluggableElementTypes/WidgetType.d.ts",
-        "import": "./esm/pluggableElementTypes/WidgetType.js",
-        "require": "./dist/pluggableElementTypes/WidgetType.js"
+        "types": "./esm/pluggableElementTypes/WidgetType.d.ts",
+        "import": "./esm/pluggableElementTypes/WidgetType.js"
       },
       "./pluggableElementTypes/models": {
-        "types": "./dist/pluggableElementTypes/models/index.d.ts",
-        "import": "./esm/pluggableElementTypes/models/index.js",
-        "require": "./dist/pluggableElementTypes/models/index.js"
+        "types": "./esm/pluggableElementTypes/models/index.d.ts",
+        "import": "./esm/pluggableElementTypes/models/index.js"
       },
       "./pluggableElementTypes/models/BaseViewModel": {
-        "types": "./dist/pluggableElementTypes/models/BaseViewModel.d.ts",
-        "import": "./esm/pluggableElementTypes/models/BaseViewModel.js",
-        "require": "./dist/pluggableElementTypes/models/BaseViewModel.js"
+        "types": "./esm/pluggableElementTypes/models/BaseViewModel.d.ts",
+        "import": "./esm/pluggableElementTypes/models/BaseViewModel.js"
       },
       "./pluggableElementTypes/models/baseConnectionConfig": {
-        "types": "./dist/pluggableElementTypes/models/baseConnectionConfig.d.ts",
-        "import": "./esm/pluggableElementTypes/models/baseConnectionConfig.js",
-        "require": "./dist/pluggableElementTypes/models/baseConnectionConfig.js"
+        "types": "./esm/pluggableElementTypes/models/baseConnectionConfig.d.ts",
+        "import": "./esm/pluggableElementTypes/models/baseConnectionConfig.js"
       },
       "./pluggableElementTypes/renderers/BoxRendererType": {
-        "types": "./dist/pluggableElementTypes/renderers/BoxRendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/BoxRendererType.js",
-        "require": "./dist/pluggableElementTypes/renderers/BoxRendererType.js"
+        "types": "./esm/pluggableElementTypes/renderers/BoxRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/BoxRendererType.js"
       },
       "./pluggableElementTypes/renderers/CircularChordRendererType": {
-        "types": "./dist/pluggableElementTypes/renderers/CircularChordRendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.js",
-        "require": "./dist/pluggableElementTypes/renderers/CircularChordRendererType.js"
+        "types": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.js"
       },
       "./pluggableElementTypes/renderers/FeatureRendererType": {
-        "types": "./dist/pluggableElementTypes/renderers/FeatureRendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/FeatureRendererType.js",
-        "require": "./dist/pluggableElementTypes/renderers/FeatureRendererType.js"
+        "types": "./esm/pluggableElementTypes/renderers/FeatureRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/FeatureRendererType.js"
       },
       "./pluggableElementTypes/renderers/LayoutSession": {
-        "types": "./dist/pluggableElementTypes/renderers/LayoutSession.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/LayoutSession.js",
-        "require": "./dist/pluggableElementTypes/renderers/LayoutSession.js"
+        "types": "./esm/pluggableElementTypes/renderers/LayoutSession.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/LayoutSession.js"
       },
       "./pluggableElementTypes/renderers/RendererType": {
-        "types": "./dist/pluggableElementTypes/renderers/RendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/RendererType.js",
-        "require": "./dist/pluggableElementTypes/renderers/RendererType.js"
+        "types": "./esm/pluggableElementTypes/renderers/RendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/RendererType.js"
       },
       "./pluggableElementTypes/renderers/ServerSideRendererType": {
-        "types": "./dist/pluggableElementTypes/renderers/ServerSideRendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.js",
-        "require": "./dist/pluggableElementTypes/renderers/ServerSideRendererType.js"
+        "types": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.js"
       },
       "./pluggableElementTypes/renderers/util": {
-        "types": "./dist/pluggableElementTypes/renderers/util.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/util.js",
-        "require": "./dist/pluggableElementTypes/renderers/util.js"
+        "types": "./esm/pluggableElementTypes/renderers/util.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/util.js"
       },
       "./pluggableElementTypes/renderers/util/serializableFilterChain": {
-        "types": "./dist/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.js",
-        "require": "./dist/pluggableElementTypes/renderers/util/serializableFilterChain.js"
+        "types": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts",
+        "import": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.js"
       },
       "./rpc/RpcManager": {
-        "types": "./dist/rpc/RpcManager.d.ts",
-        "import": "./esm/rpc/RpcManager.js",
-        "require": "./dist/rpc/RpcManager.js"
+        "types": "./esm/rpc/RpcManager.d.ts",
+        "import": "./esm/rpc/RpcManager.js"
       },
       "./rpc/coreRpcMethods": {
-        "types": "./dist/rpc/coreRpcMethods.d.ts",
-        "import": "./esm/rpc/coreRpcMethods.js",
-        "require": "./dist/rpc/coreRpcMethods.js"
+        "types": "./esm/rpc/coreRpcMethods.d.ts",
+        "import": "./esm/rpc/coreRpcMethods.js"
       },
       "./rpc/methods/util": {
-        "types": "./dist/rpc/methods/util.d.ts",
-        "import": "./esm/rpc/methods/util.js",
-        "require": "./dist/rpc/methods/util.js"
+        "types": "./esm/rpc/methods/util.d.ts",
+        "import": "./esm/rpc/methods/util.js"
       },
       "./ui": {
-        "types": "./dist/ui/index.d.ts",
-        "import": "./esm/ui/index.js",
-        "require": "./dist/ui/index.js"
+        "types": "./esm/ui/index.d.ts",
+        "import": "./esm/ui/index.js"
       },
       "./ui/AppLogo": {
-        "types": "./dist/ui/AppLogo.d.ts",
-        "import": "./esm/ui/AppLogo.js",
-        "require": "./dist/ui/AppLogo.js"
+        "types": "./esm/ui/AppLogo.d.ts",
+        "import": "./esm/ui/AppLogo.js"
       },
       "./ui/BaseTooltip": {
-        "types": "./dist/ui/BaseTooltip.d.ts",
-        "import": "./esm/ui/BaseTooltip.js",
-        "require": "./dist/ui/BaseTooltip.js"
+        "types": "./esm/ui/BaseTooltip.d.ts",
+        "import": "./esm/ui/BaseTooltip.js"
       },
       "./ui/CascadingMenuButton": {
-        "types": "./dist/ui/CascadingMenuButton.d.ts",
-        "import": "./esm/ui/CascadingMenuButton.js",
-        "require": "./dist/ui/CascadingMenuButton.js"
+        "types": "./esm/ui/CascadingMenuButton.d.ts",
+        "import": "./esm/ui/CascadingMenuButton.js"
       },
       "./ui/ColorPicker": {
-        "types": "./dist/ui/ColorPicker.d.ts",
-        "import": "./esm/ui/ColorPicker.js",
-        "require": "./dist/ui/ColorPicker.js"
+        "types": "./esm/ui/ColorPicker.d.ts",
+        "import": "./esm/ui/ColorPicker.js"
       },
       "./ui/ConfirmDialog": {
-        "types": "./dist/ui/ConfirmDialog.d.ts",
-        "import": "./esm/ui/ConfirmDialog.js",
-        "require": "./dist/ui/ConfirmDialog.js"
+        "types": "./esm/ui/ConfirmDialog.d.ts",
+        "import": "./esm/ui/ConfirmDialog.js"
       },
       "./ui/DataGridFlexContainer": {
-        "types": "./dist/ui/DataGridFlexContainer.d.ts",
-        "import": "./esm/ui/DataGridFlexContainer.js",
-        "require": "./dist/ui/DataGridFlexContainer.js"
+        "types": "./esm/ui/DataGridFlexContainer.d.ts",
+        "import": "./esm/ui/DataGridFlexContainer.js"
       },
       "./ui/Dialog": {
-        "types": "./dist/ui/Dialog.d.ts",
-        "import": "./esm/ui/Dialog.js",
-        "require": "./dist/ui/Dialog.js"
+        "types": "./esm/ui/Dialog.d.ts",
+        "import": "./esm/ui/Dialog.js"
       },
       "./ui/DraggableDialog": {
-        "types": "./dist/ui/DraggableDialog.d.ts",
-        "import": "./esm/ui/DraggableDialog.js",
-        "require": "./dist/ui/DraggableDialog.js"
+        "types": "./esm/ui/DraggableDialog.d.ts",
+        "import": "./esm/ui/DraggableDialog.js"
       },
       "./ui/DropDownMenu": {
-        "types": "./dist/ui/DropDownMenu.d.ts",
-        "import": "./esm/ui/DropDownMenu.js",
-        "require": "./dist/ui/DropDownMenu.js"
+        "types": "./esm/ui/DropDownMenu.d.ts",
+        "import": "./esm/ui/DropDownMenu.js"
       },
       "./ui/EditableTypography": {
-        "types": "./dist/ui/EditableTypography.d.ts",
-        "import": "./esm/ui/EditableTypography.js",
-        "require": "./dist/ui/EditableTypography.js"
+        "types": "./esm/ui/EditableTypography.d.ts",
+        "import": "./esm/ui/EditableTypography.js"
       },
       "./ui/ErrorBoundary": {
-        "types": "./dist/ui/ErrorBoundary.d.ts",
-        "import": "./esm/ui/ErrorBoundary.js",
-        "require": "./dist/ui/ErrorBoundary.js"
+        "types": "./esm/ui/ErrorBoundary.d.ts",
+        "import": "./esm/ui/ErrorBoundary.js"
       },
       "./ui/ErrorMessage": {
-        "types": "./dist/ui/ErrorMessage.d.ts",
-        "import": "./esm/ui/ErrorMessage.js",
-        "require": "./dist/ui/ErrorMessage.js"
+        "types": "./esm/ui/ErrorMessage.d.ts",
+        "import": "./esm/ui/ErrorMessage.js"
       },
       "./ui/ErrorMessageStackTraceDialog": {
-        "types": "./dist/ui/ErrorMessageStackTraceDialog.d.ts",
-        "import": "./esm/ui/ErrorMessageStackTraceDialog.js",
-        "require": "./dist/ui/ErrorMessageStackTraceDialog.js"
+        "types": "./esm/ui/ErrorMessageStackTraceDialog.d.ts",
+        "import": "./esm/ui/ErrorMessageStackTraceDialog.js"
       },
       "./ui/Icons": {
-        "types": "./dist/ui/Icons.d.ts",
-        "import": "./esm/ui/Icons.js",
-        "require": "./dist/ui/Icons.js"
+        "types": "./esm/ui/Icons.d.ts",
+        "import": "./esm/ui/Icons.js"
       },
       "./ui/LoadingEllipses": {
-        "types": "./dist/ui/LoadingEllipses.d.ts",
-        "import": "./esm/ui/LoadingEllipses.js",
-        "require": "./dist/ui/LoadingEllipses.js"
+        "types": "./esm/ui/LoadingEllipses.d.ts",
+        "import": "./esm/ui/LoadingEllipses.js"
       },
       "./ui/Logo": {
-        "types": "./dist/ui/Logo.d.ts",
-        "import": "./esm/ui/Logo.js",
-        "require": "./dist/ui/Logo.js"
+        "types": "./esm/ui/Logo.d.ts",
+        "import": "./esm/ui/Logo.js"
       },
       "./ui/Menu": {
-        "types": "./dist/ui/Menu.d.ts",
-        "import": "./esm/ui/Menu.js",
-        "require": "./dist/ui/Menu.js"
+        "types": "./esm/ui/Menu.d.ts",
+        "import": "./esm/ui/Menu.js"
       },
       "./ui/ResizeHandle": {
-        "types": "./dist/ui/ResizeHandle.d.ts",
-        "import": "./esm/ui/ResizeHandle.js",
-        "require": "./dist/ui/ResizeHandle.js"
+        "types": "./esm/ui/ResizeHandle.d.ts",
+        "import": "./esm/ui/ResizeHandle.js"
       },
       "./ui/SanitizedHTML": {
-        "types": "./dist/ui/SanitizedHTML.d.ts",
-        "import": "./esm/ui/SanitizedHTML.js",
-        "require": "./dist/ui/SanitizedHTML.js"
+        "types": "./esm/ui/SanitizedHTML.d.ts",
+        "import": "./esm/ui/SanitizedHTML.js"
       },
       "./ui/Snackbar": {
-        "types": "./dist/ui/Snackbar.d.ts",
-        "import": "./esm/ui/Snackbar.js",
-        "require": "./dist/ui/Snackbar.js"
+        "types": "./esm/ui/Snackbar.d.ts",
+        "import": "./esm/ui/Snackbar.js"
       },
       "./ui/SnackbarModel": {
-        "types": "./dist/ui/SnackbarModel.d.ts",
-        "import": "./esm/ui/SnackbarModel.js",
-        "require": "./dist/ui/SnackbarModel.js"
+        "types": "./esm/ui/SnackbarModel.d.ts",
+        "import": "./esm/ui/SnackbarModel.js"
       },
       "./ui/colors": {
-        "types": "./dist/ui/colors.d.ts",
-        "import": "./esm/ui/colors.js",
-        "require": "./dist/ui/colors.js"
+        "types": "./esm/ui/colors.d.ts",
+        "import": "./esm/ui/colors.js"
       },
       "./ui/theme": {
-        "types": "./dist/ui/theme.d.ts",
-        "import": "./esm/ui/theme.js",
-        "require": "./dist/ui/theme.js"
+        "types": "./esm/ui/theme.d.ts",
+        "import": "./esm/ui/theme.js"
       },
       "./util": {
-        "types": "./dist/util/index.d.ts",
-        "import": "./esm/util/index.js",
-        "require": "./dist/util/index.js"
+        "types": "./esm/util/index.d.ts",
+        "import": "./esm/util/index.js"
       },
       "./util/Base1DUtils": {
-        "types": "./dist/util/Base1DUtils.d.ts",
-        "import": "./esm/util/Base1DUtils.js",
-        "require": "./dist/util/Base1DUtils.js"
+        "types": "./esm/util/Base1DUtils.d.ts",
+        "import": "./esm/util/Base1DUtils.js"
       },
       "./util/Base1DViewModel": {
-        "types": "./dist/util/Base1DViewModel.d.ts",
-        "import": "./esm/util/Base1DViewModel.js",
-        "require": "./dist/util/Base1DViewModel.js"
+        "types": "./esm/util/Base1DViewModel.d.ts",
+        "import": "./esm/util/Base1DViewModel.js"
       },
       "./util/QuickLRU": {
-        "types": "./dist/util/QuickLRU/index.d.ts",
-        "import": "./esm/util/QuickLRU/index.js",
-        "require": "./dist/util/QuickLRU/index.js"
+        "types": "./esm/util/QuickLRU/index.d.ts",
+        "import": "./esm/util/QuickLRU/index.js"
       },
       "./util/TimeTraveller": {
-        "types": "./dist/util/TimeTraveller.d.ts",
-        "import": "./esm/util/TimeTraveller.js",
-        "require": "./dist/util/TimeTraveller.js"
+        "types": "./esm/util/TimeTraveller.d.ts",
+        "import": "./esm/util/TimeTraveller.js"
       },
       "./util/aborting": {
-        "types": "./dist/util/aborting.d.ts",
-        "import": "./esm/util/aborting.js",
-        "require": "./dist/util/aborting.js"
+        "types": "./esm/util/aborting.d.ts",
+        "import": "./esm/util/aborting.js"
       },
       "./util/analytics": {
-        "types": "./dist/util/analytics.d.ts",
-        "import": "./esm/util/analytics.js",
-        "require": "./dist/util/analytics.js"
+        "types": "./esm/util/analytics.d.ts",
+        "import": "./esm/util/analytics.js"
       },
       "./util/blockTypes": {
-        "types": "./dist/util/blockTypes.d.ts",
-        "import": "./esm/util/blockTypes.js",
-        "require": "./dist/util/blockTypes.js"
+        "types": "./esm/util/blockTypes.d.ts",
+        "import": "./esm/util/blockTypes.js"
       },
       "./util/calculateDynamicBlocks": {
-        "types": "./dist/util/calculateDynamicBlocks.d.ts",
-        "import": "./esm/util/calculateDynamicBlocks.js",
-        "require": "./dist/util/calculateDynamicBlocks.js"
+        "types": "./esm/util/calculateDynamicBlocks.d.ts",
+        "import": "./esm/util/calculateDynamicBlocks.js"
       },
       "./util/calculateStaticBlocks": {
-        "types": "./dist/util/calculateStaticBlocks.d.ts",
-        "import": "./esm/util/calculateStaticBlocks.js",
-        "require": "./dist/util/calculateStaticBlocks.js"
+        "types": "./esm/util/calculateStaticBlocks.d.ts",
+        "import": "./esm/util/calculateStaticBlocks.js"
       },
       "./util/color": {
-        "types": "./dist/util/color/index.d.ts",
-        "import": "./esm/util/color/index.js",
-        "require": "./dist/util/color/index.js"
+        "types": "./esm/util/color/index.d.ts",
+        "import": "./esm/util/color/index.js"
       },
       "./util/colord": {
-        "types": "./dist/util/colord.d.ts",
-        "import": "./esm/util/colord.js",
-        "require": "./dist/util/colord.js"
+        "types": "./esm/util/colord.d.ts",
+        "import": "./esm/util/colord.js"
       },
       "./util/compositeMap": {
-        "types": "./dist/util/compositeMap.d.ts",
-        "import": "./esm/util/compositeMap.js",
-        "require": "./dist/util/compositeMap.js"
+        "types": "./esm/util/compositeMap.d.ts",
+        "import": "./esm/util/compositeMap.js"
       },
       "./util/convertCodingSequenceToPeptides": {
-        "types": "./dist/util/convertCodingSequenceToPeptides.d.ts",
-        "import": "./esm/util/convertCodingSequenceToPeptides.js",
-        "require": "./dist/util/convertCodingSequenceToPeptides.js"
+        "types": "./esm/util/convertCodingSequenceToPeptides.d.ts",
+        "import": "./esm/util/convertCodingSequenceToPeptides.js"
       },
       "./util/flatbush": {
-        "types": "./dist/util/flatbush/index.d.ts",
-        "import": "./esm/util/flatbush/index.js",
-        "require": "./dist/util/flatbush/index.js"
+        "types": "./esm/util/flatbush/index.d.ts",
+        "import": "./esm/util/flatbush/index.js"
       },
       "./util/formatFastaStrings": {
-        "types": "./dist/util/formatFastaStrings.d.ts",
-        "import": "./esm/util/formatFastaStrings.js",
-        "require": "./dist/util/formatFastaStrings.js"
+        "types": "./esm/util/formatFastaStrings.d.ts",
+        "import": "./esm/util/formatFastaStrings.js"
       },
       "./util/io": {
-        "types": "./dist/util/io/index.d.ts",
-        "import": "./esm/util/io/index.js",
-        "require": "./dist/util/io/index.js"
+        "types": "./esm/util/io/index.d.ts",
+        "import": "./esm/util/io/index.js"
       },
       "./util/io/RemoteFileWithRangeCache": {
-        "types": "./dist/util/io/RemoteFileWithRangeCache.d.ts",
-        "import": "./esm/util/io/RemoteFileWithRangeCache.js",
-        "require": "./dist/util/io/RemoteFileWithRangeCache.js"
+        "types": "./esm/util/io/RemoteFileWithRangeCache.d.ts",
+        "import": "./esm/util/io/RemoteFileWithRangeCache.js"
       },
       "./util/jexlStrings": {
-        "types": "./dist/util/jexlStrings.d.ts",
-        "import": "./esm/util/jexlStrings.js",
-        "require": "./dist/util/jexlStrings.js"
+        "types": "./esm/util/jexlStrings.d.ts",
+        "import": "./esm/util/jexlStrings.js"
       },
       "./util/layouts": {
-        "types": "./dist/util/layouts/index.d.ts",
-        "import": "./esm/util/layouts/index.js",
-        "require": "./dist/util/layouts/index.js"
+        "types": "./esm/util/layouts/index.d.ts",
+        "import": "./esm/util/layouts/index.js"
       },
       "./util/layouts/BaseLayout": {
-        "types": "./dist/util/layouts/BaseLayout.d.ts",
-        "import": "./esm/util/layouts/BaseLayout.js",
-        "require": "./dist/util/layouts/BaseLayout.js"
+        "types": "./esm/util/layouts/BaseLayout.d.ts",
+        "import": "./esm/util/layouts/BaseLayout.js"
       },
       "./util/layouts/GranularRectLayout": {
-        "types": "./dist/util/layouts/GranularRectLayout.d.ts",
-        "import": "./esm/util/layouts/GranularRectLayout.js",
-        "require": "./dist/util/layouts/GranularRectLayout.js"
+        "types": "./esm/util/layouts/GranularRectLayout.d.ts",
+        "import": "./esm/util/layouts/GranularRectLayout.js"
       },
       "./util/librpc": {
-        "types": "./dist/util/librpc.d.ts",
-        "import": "./esm/util/librpc.js",
-        "require": "./dist/util/librpc.js"
+        "types": "./esm/util/librpc.d.ts",
+        "import": "./esm/util/librpc.js"
       },
       "./util/mst-reflection": {
-        "types": "./dist/util/mst-reflection.d.ts",
-        "import": "./esm/util/mst-reflection.js",
-        "require": "./dist/util/mst-reflection.js"
+        "types": "./esm/util/mst-reflection.d.ts",
+        "import": "./esm/util/mst-reflection.js"
       },
       "./util/nanoid": {
-        "types": "./dist/util/nanoid.d.ts",
-        "import": "./esm/util/nanoid.js",
-        "require": "./dist/util/nanoid.js"
+        "types": "./esm/util/nanoid.d.ts",
+        "import": "./esm/util/nanoid.js"
       },
       "./util/offscreenCanvasPonyfill": {
-        "types": "./dist/util/offscreenCanvasPonyfill.d.ts",
-        "import": "./esm/util/offscreenCanvasPonyfill.js",
-        "require": "./dist/util/offscreenCanvasPonyfill.js"
+        "types": "./esm/util/offscreenCanvasPonyfill.d.ts",
+        "import": "./esm/util/offscreenCanvasPonyfill.js"
       },
       "./util/offscreenCanvasUtils": {
-        "types": "./dist/util/offscreenCanvasUtils.d.ts",
-        "import": "./esm/util/offscreenCanvasUtils.js",
-        "require": "./dist/util/offscreenCanvasUtils.js"
+        "types": "./esm/util/offscreenCanvasUtils.d.ts",
+        "import": "./esm/util/offscreenCanvasUtils.js"
       },
       "./util/parseLineByLine": {
-        "types": "./dist/util/parseLineByLine.d.ts",
-        "import": "./esm/util/parseLineByLine.js",
-        "require": "./dist/util/parseLineByLine.js"
+        "types": "./esm/util/parseLineByLine.d.ts",
+        "import": "./esm/util/parseLineByLine.js"
       },
       "./util/range": {
-        "types": "./dist/util/range.d.ts",
-        "import": "./esm/util/range.js",
-        "require": "./dist/util/range.js"
+        "types": "./esm/util/range.d.ts",
+        "import": "./esm/util/range.js"
       },
       "./util/rxjs": {
-        "types": "./dist/util/rxjs.d.ts",
-        "import": "./esm/util/rxjs.js",
-        "require": "./dist/util/rxjs.js"
+        "types": "./esm/util/rxjs.d.ts",
+        "import": "./esm/util/rxjs.js"
       },
       "./util/simpleFeature": {
-        "types": "./dist/util/simpleFeature.d.ts",
-        "import": "./esm/util/simpleFeature.js",
-        "require": "./dist/util/simpleFeature.js"
+        "types": "./esm/util/simpleFeature.d.ts",
+        "import": "./esm/util/simpleFeature.js"
       },
       "./util/stats": {
-        "types": "./dist/util/stats.d.ts",
-        "import": "./esm/util/stats.js",
-        "require": "./dist/util/stats.js"
+        "types": "./esm/util/stats.d.ts",
+        "import": "./esm/util/stats.js"
       },
       "./util/stopToken": {
-        "types": "./dist/util/stopToken.d.ts",
-        "import": "./esm/util/stopToken.js",
-        "require": "./dist/util/stopToken.js"
+        "types": "./esm/util/stopToken.d.ts",
+        "import": "./esm/util/stopToken.js"
       },
       "./util/tracks": {
-        "types": "./dist/util/tracks.d.ts",
-        "import": "./esm/util/tracks.js",
-        "require": "./dist/util/tracks.js"
+        "types": "./esm/util/tracks.d.ts",
+        "import": "./esm/util/tracks.js"
       },
       "./util/tss-react": {
-        "types": "./dist/util/tss-react/index.d.ts",
-        "import": "./esm/util/tss-react/index.js",
-        "require": "./dist/util/tss-react/index.js"
+        "types": "./esm/util/tss-react/index.d.ts",
+        "import": "./esm/util/tss-react/index.js"
       },
       "./util/types": {
-        "types": "./dist/util/types/index.d.ts",
-        "import": "./esm/util/types/index.js",
-        "require": "./dist/util/types/index.js"
+        "types": "./esm/util/types/index.d.ts",
+        "import": "./esm/util/types/index.js"
       },
       "./util/types/mst": {
-        "types": "./dist/util/types/mst.d.ts",
-        "import": "./esm/util/types/mst.js",
-        "require": "./dist/util/types/mst.js"
+        "types": "./esm/util/types/mst.d.ts",
+        "import": "./esm/util/types/mst.js"
       },
       "./util/useMeasure": {
-        "types": "./dist/util/useMeasure.d.ts",
-        "import": "./esm/util/useMeasure.js",
-        "require": "./dist/util/useMeasure.js"
+        "types": "./esm/util/useMeasure.d.ts",
+        "import": "./esm/util/useMeasure.js"
       },
       "./ui/ReturnToImportFormDialog": {
-        "types": "./dist/ui/ReturnToImportFormDialog.d.ts",
-        "import": "./esm/ui/ReturnToImportFormDialog.js",
-        "require": "./dist/ui/ReturnToImportFormDialog.js"
+        "types": "./esm/ui/ReturnToImportFormDialog.d.ts",
+        "import": "./esm/ui/ReturnToImportFormDialog.js"
       }
     }
   },
