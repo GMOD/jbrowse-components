@@ -1,6 +1,6 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
 import { RpcClient, deserializeError } from '../util/librpc.ts'
-import { nanoid } from '../util/nanoid.js'
+import { nanoid } from '../util/nanoid.ts'
 
 import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
 import type { PluginDefinition } from '../PluginLoader.ts'

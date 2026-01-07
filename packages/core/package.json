@@ -116,7 +116,7 @@
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
     "./util/librpc": "./src/util/librpc.ts",
     "./util/mst-reflection": "./src/util/mst-reflection.ts",
-    "./util/nanoid": "./src/util/nanoid.js",
+    "./util/nanoid": "./src/util/nanoid.ts",
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.tsx",
     "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
