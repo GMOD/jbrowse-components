@@ -83,6 +83,7 @@ export default [
   '@material-ui/core/List',
   '@material-ui/core/ListItem',
   '@material-ui/core/ListItemAvatar',
+  '@material-ui/core/ListItemButton',
   '@material-ui/core/ListItemSecondaryAction',
   '@material-ui/core/ListItemIcon',
   '@material-ui/core/ListSubheader',

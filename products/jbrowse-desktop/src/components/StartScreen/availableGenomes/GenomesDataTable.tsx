@@ -8,11 +8,8 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import { Button, IconButton } from '@mui/material'
 import {
   flexRender,
-  // eslint-disable-next-line import/named
   getCoreRowModel,
-  // eslint-disable-next-line import/named
   getPaginationRowModel,
-  // eslint-disable-next-line import/named
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
