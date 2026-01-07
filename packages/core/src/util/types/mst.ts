@@ -1,9 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { nanoid } from '../nanoid.ts'
-
-export const ElementId = types.optional(types.identifier, () => nanoid())
-
 export const NoAssemblyRegion = types
   .model('NoAssemblyRegion', {
     refName: types.string,
@@ -96,3 +92,5 @@ export const FileLocation = types.snapshotProcessor(
     },
   },
 )
+
+export { ElementId } from './ElementId.ts'
