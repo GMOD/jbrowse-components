@@ -195,6 +195,7 @@ export default [
   '@mui/material/List',
   '@mui/material/ListItem',
   '@mui/material/ListItemAvatar',
+  '@mui/material/ListItemButton',
   '@mui/material/ListItemSecondaryAction',
   '@mui/material/ListItemIcon',
   '@mui/material/ListSubheader',

@@ -57,6 +57,7 @@ export const Entries = {
   List: lazy(() => import('@mui/material/List')),
   ListItem: lazy(() => import('@mui/material/ListItem')),
   ListItemAvatar: lazy(() => import('@mui/material/ListItemAvatar')),
+  ListItemButton: lazy(() => import('@mui/material/ListItemButton')),
   ListItemSecondaryAction: lazy(
     () => import('@mui/material/ListItemSecondaryAction'),
   ),
