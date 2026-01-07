@@ -33,17 +33,28 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * Base assemblies from jbrowse config. Child sessions can override
+       * to include additional assemblies (e.g. sessionAssemblies).
+       */
+      get assemblies(): { sequence: { trackId: string } }[] {
+        return self.jbrowse.assemblies
+      },
+
+      /**
+       * #getter
        */
       get tracksById(): Record<string, AnyConfigurationModel> {
+        const temporaryAssemblies =
+          'temporaryAssemblies' in self
+            ? (self.temporaryAssemblies as { sequence: { trackId: string } }[])
+            : []
+
         return Object.fromEntries([
           ...this.tracks.map(t => [t.trackId, t]),
           // Include assembly sequence tracks so they can be resolved by trackId
-          ...self.jbrowse.assemblies.map(
-            (a: { sequence: { trackId: string } }) => [
-              a.sequence.trackId,
-              a.sequence,
-            ],
-          ),
+          ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+          // Include temporary assembly sequence tracks
+          ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
         ])
       },
     }))
