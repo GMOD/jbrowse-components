@@ -19,10 +19,10 @@ const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false'
 
 function getWorkspaces(fromDir) {
   const cwd = fromDir || process.cwd()
-  const workspacesStr = execSync('yarn -s workspaces info', { cwd }).toString()
-  return Object.values(JSON.parse(workspacesStr)).map(e =>
-    path.resolve(path.join('..', '..', e.location)),
-  )
+  const workspacesStr = execSync('pnpm recursive list --json --depth=-1', {
+    cwd,
+  }).toString()
+  return Object.values(JSON.parse(workspacesStr)).map(e => e.path)
 }
 
 const cssRegex = /\.css$/
