@@ -8,7 +8,7 @@ import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { DockviewContext } from './DockviewContext.tsx'
+import { DockviewContext, getPendingMoveAction } from './DockviewContext.tsx'
 import DockviewLeftHeaderActions from './DockviewLeftHeaderActions.tsx'
 import DockviewRightHeaderActions from './DockviewRightHeaderActions.tsx'
 import JBrowseViewPanel from './JBrowseViewPanel.tsx'
@@ -266,6 +266,25 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
     return dispose
   }, [session, api])
+
+  // Execute pending move action when api becomes defined. This handles the case
+  // where user clicks "Move to new tab" before workspaces is enabled - the
+  // action is stored as pending, then executed here once TiledViewsContainer
+  // mounts and the dockview api is ready.
+  useEffect(() => {
+    if (!api) {
+      return
+    }
+    const pendingAction = getPendingMoveAction()
+    if (pendingAction) {
+      const { type, viewId } = pendingAction
+      if (type === 'newTab') {
+        moveViewToNewTab(viewId)
+      } else {
+        moveViewToSplitRight(viewId)
+      }
+    }
+  }, [api, moveViewToNewTab, moveViewToSplitRight])
 
   // React to layout changes from undo/redo
   useEffect(() => {

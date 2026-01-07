@@ -9,7 +9,6 @@ import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp
 import MenuIcon from '@mui/icons-material/Menu'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
-import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { useDockview } from './DockviewContext.tsx'
@@ -67,24 +66,16 @@ const ViewMenu = observer(function ViewMenu({
               label: 'Move to new tab',
               icon: OpenInNewIcon,
               onClick: () => {
-                transaction(() => {
-                  session.setUseWorkspaces(true)
-                })
-                transaction(() => {
-                  moveViewToNewTab(model.id)
-                })
+                moveViewToNewTab(model.id)
+                session.setUseWorkspaces(true)
               },
             },
             {
               label: 'Move to split view (right side of screen)',
               icon: VerticalSplitIcon,
               onClick: () => {
-                transaction(() => {
-                  session.setUseWorkspaces(true)
-                })
-                transaction(() => {
-                  moveViewToSplitRight(model.id)
-                })
+                moveViewToSplitRight(model.id)
+                session.setUseWorkspaces(true)
               },
             },
             ...(session.views.length > 2
