@@ -3,6 +3,7 @@ export {
   DisableAddTrack,
   ExternalNavigateLocstring,
   ExternalNavigateObject,
+  WithInit,
   HumanExomeExample,
   NextstrainExample,
   OneLinearGenomeView,
