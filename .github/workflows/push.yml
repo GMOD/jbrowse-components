@@ -157,7 +157,7 @@ jobs:
         working-directory: products/jbrowse-react-linear-genome-view
 
       - name: Deploy LGV storybook
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         run: |
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${{ github.ref_name }}
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${{ github.ref_name }}/*"
@@ -168,7 +168,7 @@ jobs:
         working-directory: products/jbrowse-react-app
 
       - name: Deploy React App storybook
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         run: |
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${{ github.ref_name }}
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${{ github.ref_name }}/*"
@@ -179,7 +179,7 @@ jobs:
         working-directory: products/jbrowse-react-circular-genome-view
 
       - name: Deploy CGV storybook
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         run: |
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${{ github.ref_name }}
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${{ github.ref_name }}/*"
