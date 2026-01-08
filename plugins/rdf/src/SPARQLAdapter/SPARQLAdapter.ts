@@ -212,7 +212,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
               break
             }
             if (subfeature.subfeatures) {
-              subfeatures.push(...subfeature.subfeatures)
+              for (const sf of subfeature.subfeatures) {
+                subfeatures.push(sf)
+              }
             }
           }
           if (!found) {

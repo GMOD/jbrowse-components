@@ -51,7 +51,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       addTrackConfs(trackConfs: TrackConf[]) {
-        self.tracks.push(...trackConfs)
+        for (const trackConf of trackConfs) {
+          self.tracks.push(trackConf)
+        }
       },
       /**
        * #action
