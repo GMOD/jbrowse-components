@@ -4,13 +4,14 @@ import { NonBlockCanvasDisplayMixin } from '@jbrowse/plugin-linear-genome-view'
 import type { ChainData, ColorBy, FilterBy } from './types.ts'
 
 /**
+ * #stateModel LinearReadDisplayBaseMixin
  * Base mixin for all LinearRead displays (Cloud, Stack, Arcs)
- * Contains common volatile state, views, and actions shared across all three display types.
- * Composes with NonBlockCanvasDisplayMixin for the shared non-block canvas display state.
+ * Contains common volatile state, views, and actions shared across all three
+ * display types. Composes with NonBlockCanvasDisplayMixin for the shared
+ * non-block canvas display state.
  *
- * Note: colorBy, filterBy views and reload action must be defined in the display
- * model since they need access to `configuration` (for getConf) and `error`
- * (from BaseDisplay) which are not available in this mixin's type context.
+ * extends
+ * - [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
  */
 export function LinearReadDisplayBaseMixin() {
   return types.compose(
