@@ -2166,6 +2166,29 @@
     },
     {
       "type": "SyntenyTrack",
+      "trackId": "volvox_del.pif",
+      "name": "volvox_del.pif",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "volvox_del.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox_del.pif.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["volvox_del", "volvox"]
+      },
+      "assemblyNames": ["volvox_del", "volvox"]
+    },
+
+    {
+      "type": "SyntenyTrack",
       "trackId": "volvox_ins.pif",
       "name": "volvox_ins.pif",
       "category": ["Synteny"],

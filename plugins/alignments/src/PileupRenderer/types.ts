@@ -15,7 +15,7 @@ export interface LayoutFeature {
 
 export type FlatbushItem =
   | { type: 'mismatch'; base: string; start: number }
-  | { type: 'insertion'; sequence: string; start: number }
+  | { type: 'insertion'; length: number; sequence?: string; start: number }
   | { type: 'deletion'; length: number; start: number }
   | { type: 'softclip'; length: number; start: number }
   | { type: 'hardclip'; length: number; start: number }
@@ -33,9 +33,12 @@ const LARGE_INSERTION_THRESHOLD = 10
 export function getFlatbushItemLabel(item: FlatbushItem): string {
   switch (item.type) {
     case 'insertion':
-      return item.sequence.length > LARGE_INSERTION_THRESHOLD
-        ? `${item.sequence.length}bp insertion (click to see)`
-        : `Insertion: ${item.sequence}`
+      // If we have the actual sequence and it's small enough, show it
+      if (item.sequence && item.sequence.length <= LARGE_INSERTION_THRESHOLD) {
+        return `Insertion: ${item.sequence}`
+      }
+      // Otherwise just show the length
+      return `Insertion: ${item.length}bp`
     case 'deletion':
       return `Deletion: ${item.length}bp`
     case 'softclip':
@@ -68,8 +71,8 @@ export function flatbushItemToFeatureData(
         ...base,
         start: item.start,
         end: item.start + 1,
-        sequence: item.sequence,
-        insertionLength: item.sequence.length,
+        ...(item.sequence ? { sequence: item.sequence } : {}),
+        insertionLength: item.length,
       }
     case 'deletion':
       return {

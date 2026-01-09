@@ -216,16 +216,15 @@ export function renderMismatchesCallback({
           ctx.fillStyle = colorMap.deletion!
           ctx.fillRect(leftPx, topPx, w, heightPx)
           deletionDrawn++
-        } else if (w < 0.3) {
-          deletionSkipped++
-        }
-        if (bpPerPx < 3) {
+          // Add deletion items for mouseover tooltip when visible
           items.push({
             type: 'deletion',
             length,
             start: mismatchStart,
           })
           coords.push(leftPx, topPx, rightPx, bottomPx)
+        } else if (w < 0.3) {
+          deletionSkipped++
         }
         const txt = String(length)
         const rwidth = measureTextSmallNumber(length, 10)
@@ -321,7 +320,8 @@ export function renderMismatchesCallback({
           if (bpPerPx < 3) {
             items.push({
               type: 'insertion',
-              sequence: base || 'unknown',
+              length: len,
+              ...(base ? { sequence: base } : {}),
               start: mstart,
             })
             coords.push(leftPx - 2, topPx, leftPx + insW + 2, bottomPx)
@@ -330,7 +330,8 @@ export function renderMismatchesCallback({
       } else if (!hideLargeIndels) {
         items.push({
           type: 'insertion',
-          sequence: base || 'unknown',
+          length: len,
+          ...(base ? { sequence: base } : {}),
           start: mstart,
         })
         const txt = `${len}`

@@ -84,10 +84,21 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
+      // assemblyNames = [queryAssembly, targetAssembly]
       const assemblyNames = this.getAssemblyNames()
       const index = assemblyNames.indexOf(assemblyName)
+
+      // flip=true when viewing from query assembly perspective
+      // flip=false when viewing from target assembly perspective
       const flip = index === 0
+
+      // PIF format indexes lines by perspective:
+      // - 'q' prefix lines are indexed by query coordinates
+      // - 't' prefix lines are indexed by target coordinates
       const letter = flip ? 'q' : 't'
+
+      // The "other" assembly is the mate
+      const mateAssemblyName = assemblyNames[flip ? 1 : 0]
 
       await updateStatus('Downloading features', statusCallback, () =>
         this.pif.getLines(letter + query.refName, query.start, query.end, {
@@ -96,34 +107,24 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             const { extra, strand } = r
             const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
 
-            // Strip 'q'/'t' prefix from first column only (tname has no prefix)
-            const qname = r.qname.slice(1)
-            const tname = r.tname
-
-            let start: number
-            let end: number
-            let refName: string
-            let mateName: string
-            let mateStart: number
-            let mateEnd: number
-
-            if (flip) {
-              start = r.qstart
-              end = r.qend
-              refName = qname
-              mateName = tname
-              mateStart = r.tstart
-              mateEnd = r.tend
-            } else {
-              start = r.tstart
-              end = r.tend
-              refName = tname
-              mateName = qname
-              mateStart = r.qstart
-              mateEnd = r.qend
-            }
+            // PIF format pre-orients each line from its perspective:
+            // - When querying 'q' lines: columns 2-3 have query coords (the "main" feature)
+            // - When querying 't' lines: columns 2-3 have target coords (the "main" feature)
+            // The first column has the indexed refName (with q/t prefix to strip)
+            // The 6th column (tname) has the mate's refName (no prefix)
+            //
+            // This means r.qstart/qend always represent the "main" feature coords
+            // for whichever perspective we're viewing from, and r.tstart/tend
+            // represent the mate coords
+            const start = r.qstart
+            const end = r.qend
+            const refName = r.qname.slice(1) // Strip 'q'/'t' prefix
+            const mateName = r.tname
+            const mateStart = r.tstart
+            const mateEnd = r.tend
 
             // PIF format already has pre-computed CIGARs for each perspective
+            // (q-lines have D↔I swapped relative to t-lines)
             const CIGAR = extra.cg
 
             observer.next(
@@ -145,7 +146,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                   start: mateStart,
                   end: mateEnd,
                   refName: mateName,
-                  assemblyName: assemblyNames[+flip],
+                  assemblyName: mateAssemblyName,
                 },
               }),
             )
