@@ -4,14 +4,15 @@
 
 This tutorial was written for the JBrowse workshop at PAG 33. As this workshop
 was aimed at attendees with a wide range of experience with JBrowse, it contains
-both introductions to standard JBrowse functionality as well as some deep dives
+both introductions to general JBrowse functionality as well as some deep dives
 into more specialized features. We hope everyone can find something of interest
 in this tutorial.
 
 This tutorial is aimed at users of JBrowse who already have access to a JBrowse
 instance, whether from the JBrowse 2 genome hubs, JBrowse pages on other
 websites, or JBrowse desktop. For information on setting up a JBrowse instance,
-please see our separate tutorial on that topic at PAG 33.
+please see our
+[separate tutorial on that topic at PAG 33](https://gmod.org/wiki/JBrowse2_Tutorial_PAG_2026).
 
 If you are following this tutorial after PAG 33, please note that the UI of
 current versions of JBrowse may differ slightly from those shown in the
@@ -24,11 +25,11 @@ genome of interest. For this tutorial, we'll use the mm10 mouse genome. Please
 use this link: https://jbrowse.org/code/jb2/main/?config=/ucsc/mm10/config.json.
 
 Note that usually we'd access this from the JBrowse 2 genome hubs page at
-[https://genomes.jbrowse.org/](https://genomes.jbrowse.org/), using the mm10
-mouse genome under the "Main genome browsers" section and click the JBrowse
-link. However, we're going to be there are a couple of unreleased features that
-make this tutorial run a bit more smoothly, so the link above uses our latest
-unreleased version.
+[https://genomes.jbrowse.org/](https://genomes.jbrowse.org/), using the JBrowse
+link on the mm10 mouse genome under the "Main genome browsers" section. However,
+we're going to be there are a couple of unreleased features that make this
+tutorial run a bit more smoothly, so the link above uses our latest unreleased
+version.
 
 Here is what you should see when that page loads.
 
@@ -153,7 +154,7 @@ exon from above.
 | chr13:92,215,450..92,215,650 | [Link][msh3_variant_session] |
 
 The SNP of interest is the one furthest to the right in the exon, labeled
-"`C->A`". Click on the SNP and explore the information about it on the details
+"C->A". Click on the SNP and explore the information about it on the details
 widget that pops up.
 
 One thing to note is the sample table, which shows that the sample labeled
@@ -164,7 +165,9 @@ another variant track display to see it at a glance. From the track menu (the
 three vertical dots next to the track label), select "Display types" and then
 "Multi-sample variant display (regular)". In this mode, every row is a sample,
 and each SNP is marked on the samples for which they exist. Zoom out and scroll
-around to get familiar with how this display shows the data.![][image4]
+around to get familiar with how this display shows the data.
+
+![multi-sample variant display](img/multi_sample_variant_display.png)
 
 When zoomed out further, you can see large-scale patterns in the data, and the
 track menu contains a lot of options for organizing and coloring the data to
@@ -207,7 +210,8 @@ you can discover.
 Now that you’ve had a chance to familiarize yourself with the track a bit, let’s
 explore what some parts of it mean. You may have noticed an arrow on one end of
 each box. That is the strand of the read. More information about what different
-things in the track mean by opening the track menu and selecting “Show legend.”
+things in the track mean is available by opening the track menu and selecting
+“Show legend.”
 
 You also might notice that there are more reads than fit in the visible area in
 the track right now. You can scroll to see them, and you can also increase the
@@ -224,9 +228,9 @@ that track.
 
 Now that you’re more familiar with using the alignments tracks, let’s explore
 some more locations that illustrate more features of these tracks. All these
-examples are in this same gene, to illustrate how commonly you’ll see features
-like these. Before doing this, though, go back to the “Normal” feature height so
-we can more easily see the track features.
+examples are in this same gene, so you can zoom out and get an idea of where we
+are at any time. Before proceeding, though, go back to the “Normal” feature
+height so we can more easily see the track features.
 
 Let’s look at a deletion next.
 
@@ -260,9 +264,9 @@ Now we’ll look at an insertion.
 | :--------------------------- | :------------------------ |
 | chr13:92,252,835..92,252,865 | [Link][insertion_session] |
 
-Insertions show up as a purple box that is 1bp long with the length of the
-insertion inside it. Below is that insertion with the soft clipping turned back
-off and the sorting cleared.
+Insertions show up as a purple box that is between bases with the length of the
+insertion printed inside it. Shown below is this insertion with the soft
+clipping turned back off and the sorting cleared.
 
 ![reads with insertion](img/insertion.png)
 
@@ -310,7 +314,7 @@ file, so they cannot be viewed.
 
 We’re now going to try a different type of display. In the track menu, select
 “Display types -> Read arc display” and also “Show legend.” Now navigate to this
-location
+location.
 
 | Location                     | Session                  |
 | :--------------------------- | :----------------------- |
@@ -339,7 +343,7 @@ a line, allowing you to see how many of these types of reads there are.
 
 Up until now we’ve been looking at Illumina short-read DNA sequencing data. To
 illustrate a few more features of the alignments tracks, let’s look at some
-PacBio short-read RNA sequencing data.
+PacBio long-read RNA sequencing data.
 
 We’ll add a new track called “PacBio RNA-seq Brain,” and the URL is
 https://ftp.ebi.ac.uk/pub/databases/havana/ngs_havana/CLS/updated_master_table/mouse/pacBioSII-Cshl-CapTrap_Mv2_0+_Brain01Rep1.bam.
@@ -348,15 +352,16 @@ https://ftp.ebi.ac.uk/pub/databases/havana/ngs_havana/CLS/updated_master_table/m
 but is again optional.)
 
 You can close all the other tracks except this one and the “NCBI RefSeq - RefSeq
-All” track. Then navigate to the Cnpy2 gene
+All” track. Then navigate to the Cnpy2 gene. In addition to the usual options
+below, you can also get there by entering "Cnpy2" in the location box.
 
 | Location                       | Session                 |
 | :----------------------------- | :---------------------- |
 | chr10:128,321,870..128,327,770 | [Link][rna_seq_session] |
 
 In RNA-seq reads like these, a single read can be split across many locations,
-and they are connected by lines. As you can see, the areas where the reads align
-match the exons in the Cnpy2 gene.
+and the locations are connected by lines. As you can see, the areas where the
+reads align match the exons in the Cnpy2 gene.
 
 ![RNA-seq for the Cnpy2 gene](img/rna_seq_gene.png)
 
@@ -371,21 +376,15 @@ the color for the base “A.” These are the poly(A) tails of the mRNA.
 
 [msh3_variant_session]:
   https://jbrowse.org/code/jb2/main/?config=/ucsc/mm10/config.json&assembly=mm10&loc=chr13:92215450..92215650&tracklist=true&tracks=mm10-ncbiRefSeq,mgp_snps_and_indels-sessionTrack&sessionTracks=%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22mgp_snps_and_indels-sessionTrack%22%2C%22name%22%3A%22MGP%20SNPs%20and%20indels%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz.tbi%22%7D%7D%7D%7D%5D
-
 [deletion_session]:
   https://jbrowse.org/code/jb2/main/?config=/ucsc/mm10/config.json&assembly=mm10&loc=chr13:92250820..92250850&tracklist=true&tracks=mm10-ncbiRefSeq,mgp_snps_and_indels-sessionTrack,mgp_rf/j_illumina_reads-sessionTrack&sessionTracks=%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22mgp_snps_and_indels-sessionTrack%22%2C%22name%22%3A%22MGP%20SNPs%20and%20indels%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz.tbi%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22mgp_rf%2Fj_illumina_reads-sessionTrack%22%2C%22name%22%3A%22MGP%20RF%2FJ%20Illumina%20reads%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22CramAdapter%22%2C%22cramLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram%22%7D%2C%22craiLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram.crai%22%7D%7D%7D%5D
-
 [insertion_session]:
   https://jbrowse.org/code/jb2/main/?config=/ucsc/mm10/config.json&assembly=mm10&loc=chr13:92252835..92252865&tracklist=true&tracks=mm10-ncbiRefSeq,mgp_snps_and_indels-sessionTrack,mgp_rf/j_illumina_reads-sessionTrack&sessionTracks=%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22mgp_snps_and_indels-sessionTrack%22%2C%22name%22%3A%22MGP%20SNPs%20and%20indels%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz.tbi%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22mgp_rf%2Fj_illumina_reads-sessionTrack%22%2C%22name%22%3A%22MGP%20RF%2FJ%20Illumina%20reads%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22CramAdapter%22%2C%22cramLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram%22%7D%2C%22craiLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram.crai%22%7D%7D%7D%5D
-
 [deletion_2_session]:
   https://jbrowse.org/code/jb2/main/?config=/ucsc/mm10/config.json&assembly=mm10&loc=chr13:92241060..92241660&tracklist=true&tracks=mm10-ncbiRefSeq,mgp_snps_and_indels-sessionTrack,mgp_rf/j_illumina_reads-sessionTrack&sessionTracks=%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22mgp_snps_and_indels-sessionTrack%22%2C%22name%22%3A%22MGP%20SNPs%20and%20indels%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz.tbi%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22mgp_rf%2Fj_illumina_reads-sessionTrack%22%2C%22name%22%3A%22MGP%20RF%2FJ%20Illumina%20reads%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22CramAdapter%22%2C%22cramLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram%22%7D%2C%22craiLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram.crai%22%7D%7D%7D%5D
-
 [deletion_2_zoom_session]:
   https://jbrowse.org/code/jb2/main/?config=/ucsc/mm10/config.json&assembly=mm10&loc=chr13:92241345..92241405&tracklist=true&tracks=mm10-ncbiRefSeq,mgp_snps_and_indels-sessionTrack,mgp_rf/j_illumina_reads-sessionTrack&sessionTracks=%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22mgp_snps_and_indels-sessionTrack%22%2C%22name%22%3A%22MGP%20SNPs%20and%20indels%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz.tbi%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22mgp_rf%2Fj_illumina_reads-sessionTrack%22%2C%22name%22%3A%22MGP%20RF%2FJ%20Illumina%20reads%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22CramAdapter%22%2C%22cramLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram%22%7D%2C%22craiLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram.crai%22%7D%7D%7D%5D
-
 [read_arc_session]:
   https://jbrowse.org/code/jb2/main/?config=/ucsc/mm10/config.json&assembly=mm10&loc=chr13:92267260..92273760&tracklist=true&tracks=mm10-ncbiRefSeq,mgp_snps_and_indels-sessionTrack,mgp_rf/j_illumina_reads-sessionTrack&sessionTracks=%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22mgp_snps_and_indels-sessionTrack%22%2C%22name%22%3A%22MGP%20SNPs%20and%20indels%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1807-SNPs_Indels%2Fmgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz.tbi%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22mgp_rf%2Fj_illumina_reads-sessionTrack%22%2C%22name%22%3A%22MGP%20RF%2FJ%20Illumina%20reads%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22CramAdapter%22%2C%22cramLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram%22%7D%2C%22craiLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fmousegenomes%2FREL-1905-CRAMs%2FRF_J.cram.crai%22%7D%7D%7D%5D
-
 [rna_seq_session]:
   https://jbrowse.org/code/jb2/main/?config=/ucsc/mm10/config.json&assembly=mm10&loc=chr10:128321870..128327770&tracklist=true&tracks=mm10-ncbiRefSeq,pacbio_rna-seq_brain-sessionTrack&sessionTracks=%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22pacbio_rna-seq_brain-sessionTrack%22%2C%22name%22%3A%22PacBio%20RNA-seq%20Brain%22%2C%22assemblyNames%22%3A%5B%22mm10%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BamAdapter%22%2C%22bamLocation%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fhavana%2Fngs_havana%2FCLS%2Fupdated_master_table%2Fmouse%2FpacBioSII-Cshl-CapTrap_Mv2_0%2B_Brain01Rep1.bam%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22locationType%22%3A%22UriLocation%22%2C%22uri%22%3A%22https%3A%2F%2Fftp.ebi.ac.uk%2Fpub%2Fdatabases%2Fhavana%2Fngs_havana%2FCLS%2Fupdated_master_table%2Fmouse%2FpacBioSII-Cshl-CapTrap_Mv2_0%2B_Brain01Rep1.bam.bai%22%7D%7D%7D%7D
