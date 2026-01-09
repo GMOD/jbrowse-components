@@ -264,7 +264,8 @@ function drawNoncovEvents(
 
   // allow significant interbase signals to be drawn even when skipDraw is true
   // (similar to SNP drawing logic)
-  const isSignificant = score0 > 0 && totalCount > score0 * INTERBASE_DRAW_THRESHOLD
+  const isSignificant =
+    score0 > 0 && totalCount > score0 * INTERBASE_DRAW_THRESHOLD
   const showCounts = showInterbaseCounts && (!skipDraw || isSignificant)
 
   if (showCounts) {
