@@ -556,9 +556,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get error(): unknown {
-        return (
-          self.volatileError || this.assemblyErrors || this.assembliesNotFound
-        )
+        if (self.volatileError) {
+          return self.volatileError
+        }
+        if (this.assemblyErrors) {
+          return this.assemblyErrors
+        }
+        if (this.assembliesNotFound) {
+          return this.assembliesNotFound
+        }
+        // Check init assembly for errors (displayedRegions may be empty during init)
+        if (self.init) {
+          const { assemblyManager } = getSession(self)
+          const asm = assemblyManager.get(self.init.assembly)
+          if (asm?.error) {
+            return asm.error
+          }
+          if (!asm) {
+            return `Assembly ${self.init.assembly} not found`
+          }
+        }
+        return undefined
       },
 
       /**

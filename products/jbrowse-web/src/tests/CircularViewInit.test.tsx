@@ -109,3 +109,60 @@ test('CircularView showImportForm is true when no init', () => {
   expect(view.showImportForm).toBe(true)
   expect(view.hasSomethingToShow).toBe(false)
 }, 40000)
+
+test('CircularView init with 404 TwoBitAdapter shows error', async () => {
+  const config404 = {
+    assemblies: [
+      {
+        name: 'nonexistent',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'nonexistent_refseq',
+          adapter: {
+            type: 'TwoBitAdapter',
+            twoBitLocation: {
+              uri: 'nonexistent.2bit',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      },
+    ],
+    configuration: {
+      rpc: {
+        defaultDriver: 'MainThreadRpcDriver',
+      },
+    },
+  }
+
+  // Mock fetch to return 404 for the nonexistent file
+  jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+    if (`${url}`.includes('nonexistent.2bit')) {
+      return new Response('Not Found', { status: 404 })
+    }
+    if (`${url}`.includes('jb2=true')) {
+      return new Response('{}')
+    }
+    return handleRequest(() => getFile(`${url}`), args)
+  })
+
+  const { rootModel } = getPluginManager(config404)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+
+  const view = session.addView('CircularView', {
+    init: {
+      assembly: 'nonexistent',
+    },
+  })
+  view.setWidth(800)
+
+  await waitFor(
+    () => {
+      expect(view.error).toBeTruthy()
+    },
+    { timeout: 30000 },
+  )
+
+  expect(`${view.error}`).toMatch(/404|not found|failed/i)
+}, 40000)
