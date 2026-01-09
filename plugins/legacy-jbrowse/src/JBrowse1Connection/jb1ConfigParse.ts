@@ -241,10 +241,14 @@ export function regularizeConf(conf: Config, url: string): Config {
     // conf, if needed
     const addBase: (Track | Store | Names)[] = []
     if (conf.tracks) {
-      addBase.push(...conf.tracks)
+      for (const track of conf.tracks) {
+        addBase.push(track)
+      }
     }
     if (conf.stores) {
-      addBase.push(...Object.values(conf.stores))
+      for (const store of Object.values(conf.stores)) {
+        addBase.push(store)
+      }
     }
     if (conf.names) {
       addBase.push(conf.names)

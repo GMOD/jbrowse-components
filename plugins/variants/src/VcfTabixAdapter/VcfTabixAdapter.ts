@@ -107,7 +107,9 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
         }),
       )
 
-      exportLines.push(...regionLines)
+      for (const line of regionLines) {
+        exportLines.push(line)
+      }
     }
 
     return exportLines.join('\n')

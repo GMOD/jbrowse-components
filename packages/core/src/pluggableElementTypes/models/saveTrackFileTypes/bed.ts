@@ -5,7 +5,7 @@ export function stringifyBED({ features }: { features: Feature[] }) {
   return features
     .map(feature =>
       fields
-        .map(field => feature.get(field))
+        .map(field => feature.get(field) ?? '.')
         .join('\t')
         .trim(),
     )

@@ -92,6 +92,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   const { visibleRegions, coarseVisibleLocStrings: regionStr } = view
 
   useEffect(() => {
+    let cancelled = false
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -125,27 +126,49 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             },
           )) as string | undefined
 
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (cancelled) {
+            return
+          }
           setUsedAdapterExport(true)
           setStr(exportResult ?? '')
         } else {
           const features = await fetchFeatures(model, regions)
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (cancelled) {
+            return
+          }
           const result = await options[type]!.callback({
             features,
             session,
             assemblyName: regions[0]!.assemblyName,
           })
 
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (cancelled) {
+            return
+          }
           setUsedAdapterExport(false)
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           setStr(result ?? '')
         }
       } catch (e) {
-        setError(e)
-        console.error(e)
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (!cancelled) {
+          setError(e)
+          console.error(e)
+        }
       } finally {
-        setLoading(false)
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     })()
+
+    return () => {
+      cancelled = true
+    }
   }, [type, visibleRegions, options, model])
 
   return (
