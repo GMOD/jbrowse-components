@@ -13,6 +13,7 @@ import { observer } from 'mobx-react'
 
 import { useDockview } from './DockviewContext.tsx'
 import { renameIds } from './copyView.ts'
+import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -20,6 +21,18 @@ import type {
   IconButtonProps as IconButtonPropsType,
   SvgIconProps,
 } from '@mui/material'
+
+function getPanelViewCount(session: unknown, viewId: string) {
+  if (!isSessionWithDockviewLayout(session)) {
+    return 0
+  }
+  for (const viewIds of session.panelViewAssignments.values()) {
+    if (viewIds.includes(viewId)) {
+      return viewIds.length
+    }
+  }
+  return 0
+}
 
 const ViewMenu = observer(function ViewMenu({
   model,
@@ -39,6 +52,11 @@ const ViewMenu = observer(function ViewMenu({
   }
 
   const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
+  const usePanel = session.useWorkspaces && isSessionWithDockviewLayout(session)
+  const viewCount = usePanel
+    ? getPanelViewCount(session, model.id)
+    : session.views.length
+
   return (
     <CascadingMenuButton
       data-testid="view_menu_icon"
@@ -78,42 +96,58 @@ const ViewMenu = observer(function ViewMenu({
                 session.setUseWorkspaces(true)
               },
             },
-            ...(session.views.length > 2
+            ...(viewCount > 2
               ? [
                   {
                     label: 'Move view to top',
                     icon: KeyboardDoubleArrowUpIcon,
                     onClick: () => {
-                      session.moveViewToTop(model.id)
+                      if (usePanel) {
+                        session.moveViewToTopInPanel(model.id)
+                      } else {
+                        session.moveViewToTop(model.id)
+                      }
                     },
                   },
                 ]
               : []),
-            ...(session.views.length > 1
+            ...(viewCount > 1
               ? [
                   {
                     label: 'Move view up',
                     icon: KeyboardArrowUpIcon,
                     onClick: () => {
-                      session.moveViewUp(model.id)
+                      if (usePanel) {
+                        session.moveViewUpInPanel(model.id)
+                      } else {
+                        session.moveViewUp(model.id)
+                      }
                     },
                   },
                   {
                     label: 'Move view down',
                     icon: KeyboardArrowDownIcon,
                     onClick: () => {
-                      session.moveViewDown(model.id)
+                      if (usePanel) {
+                        session.moveViewDownInPanel(model.id)
+                      } else {
+                        session.moveViewDown(model.id)
+                      }
                     },
                   },
                 ]
               : []),
-            ...(session.views.length > 2
+            ...(viewCount > 2
               ? [
                   {
                     label: 'Move view to bottom',
                     icon: KeyboardDoubleArrowDownIcon,
                     onClick: () => {
-                      session.moveViewToBottom(model.id)
+                      if (usePanel) {
+                        session.moveViewToBottomInPanel(model.id)
+                      } else {
+                        session.moveViewToBottom(model.id)
+                      }
                     },
                   },
                 ]
