@@ -95,6 +95,68 @@ export function DockviewLayoutMixin() {
       removePanel(panelId: string) {
         self.panelViewAssignments.delete(panelId)
       },
+
+      /**
+       * #action
+       * Move a view up within its panel's view stack
+       */
+      moveViewUpInPanel(viewId: string) {
+        for (const viewIds of self.panelViewAssignments.values()) {
+          const idx = viewIds.indexOf(viewId)
+          if (idx > 0) {
+            const temp = viewIds[idx - 1]!
+            viewIds[idx - 1] = viewIds[idx]!
+            viewIds[idx] = temp
+            break
+          }
+        }
+      },
+
+      /**
+       * #action
+       * Move a view down within its panel's view stack
+       */
+      moveViewDownInPanel(viewId: string) {
+        for (const viewIds of self.panelViewAssignments.values()) {
+          const idx = viewIds.indexOf(viewId)
+          if (idx !== -1 && idx < viewIds.length - 1) {
+            const temp = viewIds[idx + 1]!
+            viewIds[idx + 1] = viewIds[idx]!
+            viewIds[idx] = temp
+            break
+          }
+        }
+      },
+
+      /**
+       * #action
+       * Move a view to the top of its panel's view stack
+       */
+      moveViewToTopInPanel(viewId: string) {
+        for (const viewIds of self.panelViewAssignments.values()) {
+          const idx = viewIds.indexOf(viewId)
+          if (idx > 0) {
+            viewIds.splice(idx, 1)
+            viewIds.unshift(viewId)
+            break
+          }
+        }
+      },
+
+      /**
+       * #action
+       * Move a view to the bottom of its panel's view stack
+       */
+      moveViewToBottomInPanel(viewId: string) {
+        for (const viewIds of self.panelViewAssignments.values()) {
+          const idx = viewIds.indexOf(viewId)
+          if (idx !== -1 && idx < viewIds.length - 1) {
+            viewIds.splice(idx, 1)
+            viewIds.push(viewId)
+            break
+          }
+        }
+      },
     }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

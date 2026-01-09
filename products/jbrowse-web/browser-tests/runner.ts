@@ -247,6 +247,168 @@ interface TestSuite {
 
 const testSuites: TestSuite[] = [
   {
+    name: 'Workspaces',
+    tests: [
+      {
+        name: 'move to new tab enables workspaces',
+        fn: async page => {
+          await navigateToApp(page)
+          // Open view menu
+          const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
+          await viewMenu?.click()
+          await delay(300)
+          // Click View options
+          const viewOptions = await findByText(page, 'View options', 10000)
+          await viewOptions?.click()
+          await delay(300)
+          // Click Move to new tab
+          const moveToTab = await findByText(page, 'Move to new tab', 10000)
+          await moveToTab?.click()
+          // Wait for workspaces to be enabled (dockview tabs should appear)
+          await delay(1000)
+          // Verify dockview is present
+          await page.waitForSelector(
+            '.dockview-theme-light, .dockview-theme-dark',
+            { timeout: 10000 },
+          )
+        },
+      },
+      {
+        name: 'move to split right enables workspaces',
+        fn: async page => {
+          await navigateToApp(page)
+          // Open view menu
+          const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
+          await viewMenu?.click()
+          await delay(300)
+          // Click View options
+          const viewOptions = await findByText(page, 'View options', 10000)
+          await viewOptions?.click()
+          await delay(300)
+          // Click Move to split view
+          const moveToSplit = await findByText(
+            page,
+            'Move to split view',
+            10000,
+          )
+          await moveToSplit?.click()
+          // Wait for workspaces to be enabled
+          await delay(1000)
+          // Verify dockview is present
+          await page.waitForSelector(
+            '.dockview-theme-light, .dockview-theme-dark',
+            { timeout: 10000 },
+          )
+        },
+      },
+      {
+        name: 'copy view creates second view',
+        fn: async page => {
+          await navigateToApp(page)
+          // Open view menu
+          const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
+          await viewMenu?.click()
+          await delay(300)
+          // Click View options
+          const viewOptions = await findByText(page, 'View options', 10000)
+          await viewOptions?.click()
+          await delay(300)
+          // Click Copy view
+          const copyView = await findByText(page, 'Copy view', 10000)
+          await copyView?.click()
+          await delay(1000)
+          // Should now have 2 view menus
+          const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
+          if (viewMenus.length !== 2) {
+            throw new Error(`Expected 2 views, got ${viewMenus.length}`)
+          }
+        },
+      },
+      {
+        name: 'multiple views in workspace - move up and down',
+        fn: async page => {
+          await navigateToApp(page)
+          // First copy the view to get 2 views
+          let viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
+          await viewMenu?.click()
+          await delay(300)
+          let viewOptions = await findByText(page, 'View options', 10000)
+          await viewOptions?.click()
+          await delay(300)
+          const copyView = await findByText(page, 'Copy view', 10000)
+          await copyView?.click()
+          await delay(1000)
+
+          // Enable workspaces by moving to new tab
+          const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
+          await viewMenus[0]?.click()
+          await delay(300)
+          viewOptions = await findByText(page, 'View options', 10000)
+          await viewOptions?.click()
+          await delay(300)
+          const moveToTab = await findByText(page, 'Move to new tab', 10000)
+          await moveToTab?.click()
+          await delay(1000)
+
+          // Wait for dockview
+          await page.waitForSelector(
+            '.dockview-theme-light, .dockview-theme-dark',
+            { timeout: 10000 },
+          )
+
+          // Copy view again to have multiple views in one panel
+          viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
+          await viewMenu?.click()
+          await delay(300)
+          viewOptions = await findByText(page, 'View options', 10000)
+          await viewOptions?.click()
+          await delay(300)
+          const copyView2 = await findByText(page, 'Copy view', 10000)
+          await copyView2?.click()
+          await delay(1000)
+
+          // Get the order of view containers before moving
+          const getViewOrder = () =>
+            page.evaluate(() => {
+              const containers = document.querySelectorAll(
+                '[data-testid^="view-container-"]',
+              )
+              return [...containers].map(c => c.dataset.testid)
+            })
+
+          const orderBefore = await getViewOrder()
+          if (orderBefore.length < 2) {
+            throw new Error(
+              `Expected at least 2 view containers, got ${orderBefore.length}`,
+            )
+          }
+
+          // Now try to move first view down
+          const viewMenusAfter = await page.$$('[data-testid="view_menu_icon"]')
+          await viewMenusAfter[0]?.click()
+          await delay(300)
+          viewOptions = await findByText(page, 'View options', 10000)
+          await viewOptions?.click()
+          await delay(300)
+          const moveDown = await findByText(page, 'Move view down', 10000)
+          await moveDown?.click()
+          await delay(500)
+
+          // Verify the order actually changed
+          const orderAfter = await getViewOrder()
+          if (
+            orderBefore[0] === orderAfter[0] &&
+            orderBefore[1] === orderAfter[1]
+          ) {
+            throw new Error(
+              `View order did not change after move down. Before: ${orderBefore.join(', ')}. After: ${orderAfter.join(', ')}`,
+            )
+          }
+        },
+      },
+    ],
+  },
+  {
     name: 'BasicLinearGenomeView',
     tests: [
       {

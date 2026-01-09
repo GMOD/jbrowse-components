@@ -65,7 +65,12 @@ const ViewContainer = observer(function ViewContainer({
   )
 
   return (
-    <Paper ref={ref} elevation={12} className={viewContainerClassName}>
+    <Paper
+      ref={ref}
+      elevation={12}
+      className={viewContainerClassName}
+      data-testid={`view-container-${view.id}`}
+    >
       <ViewHeader
         view={view}
         onClose={() => {
