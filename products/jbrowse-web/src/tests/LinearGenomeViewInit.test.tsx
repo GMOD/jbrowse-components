@@ -152,3 +152,61 @@ test('LinearGenomeView without init shows import form', () => {
   expect(view.displayedRegions.length).toBe(0)
   expect(view.init).toBeUndefined()
 }, 40000)
+
+test('LinearGenomeView init with 404 TwoBitAdapter shows error', async () => {
+  const config404 = {
+    assemblies: [
+      {
+        name: 'nonexistent',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'nonexistent_refseq',
+          adapter: {
+            type: 'TwoBitAdapter',
+            twoBitLocation: {
+              uri: 'nonexistent.2bit',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      },
+    ],
+    configuration: {
+      rpc: {
+        defaultDriver: 'MainThreadRpcDriver',
+      },
+    },
+  }
+
+  // Mock fetch to return 404 for the nonexistent file
+  jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+    if (`${url}`.includes('nonexistent.2bit')) {
+      return new Response('Not Found', { status: 404 })
+    }
+    if (`${url}`.includes('jb2=true')) {
+      return new Response('{}')
+    }
+    return handleRequest(() => getFile(`${url}`), args)
+  })
+
+  const { rootModel } = getPluginManager(config404)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+
+  const view = session.addView('LinearGenomeView', {
+    init: {
+      loc: 'chr1:1..1000',
+      assembly: 'nonexistent',
+    },
+  })
+  view.setWidth(800)
+
+  await waitFor(
+    () => {
+      expect(view.error).toBeTruthy()
+    },
+    { timeout: 30000 },
+  )
+
+  expect(`${view.error}`).toMatch(/404|not found|failed/i)
+}, 40000)

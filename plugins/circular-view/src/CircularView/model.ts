@@ -156,7 +156,7 @@ function stateModelFactory(pluginManager: PluginManager) {
     )
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
-      error: undefined as unknown,
+      volatileError: undefined as unknown,
     }))
     .views(self => ({
       /**
@@ -366,6 +366,41 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get assemblyErrors() {
+        const { assemblyManager } = getSession(self)
+        return this.assemblyNames
+          .map(a => assemblyManager.get(a)?.error)
+          .filter(f => !!f)
+          .join(', ')
+      },
+
+      /**
+       * #getter
+       */
+      get error(): unknown {
+        if (self.volatileError) {
+          return self.volatileError
+        }
+        if (this.assemblyErrors) {
+          return this.assemblyErrors
+        }
+        // Check init assembly for errors (displayedRegions may be empty during init)
+        if (self.init) {
+          const { assemblyManager } = getSession(self)
+          const asm = assemblyManager.get(self.init.assembly)
+          if (asm?.error) {
+            return asm.error
+          }
+          if (!asm) {
+            return `Assembly ${self.init.assembly} not found`
+          }
+        }
+        return undefined
+      },
+
+      /**
+       * #getter
+       */
       get loadingMessage() {
         return this.showLoading ? 'Loading' : undefined
       },
@@ -382,7 +417,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
-        return !this.initialized && !self.error && this.hasSomethingToShow
+        return !this.initialized && !this.error && this.hasSomethingToShow
       },
 
       /**
@@ -405,7 +440,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get showImportForm() {
         return (
-          (!this.hasSomethingToShow && !self.disableImportForm) || !!self.error
+          (!this.hasSomethingToShow && !self.disableImportForm) || !!this.error
         )
       },
     }))
@@ -561,7 +596,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setError(error: unknown) {
-        self.error = error
+        self.volatileError = error
       },
 
       /**
