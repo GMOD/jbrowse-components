@@ -33,6 +33,10 @@ const INTERBASE_INDICATOR_HEIGHT = 4.5
 // 'statistical significance' is low
 const MINIMUM_INTERBASE_INDICATOR_READ_DEPTH = 7
 
+// threshold for drawing interbase counts when zoomed out (to avoid skipping
+// significant signals due to pixel collision optimization)
+const INTERBASE_DRAW_THRESHOLD = 0.1
+
 const complementBase = {
   C: 'G',
   G: 'C',
@@ -246,7 +250,6 @@ function drawNoncovEvents(
   let maxDepth = 0
   let maxBase = ''
   let totalHeight = 0
-  const showCounts = showInterbaseCounts && !skipDraw
   const r = 0.6
   const x = leftPx - r + extraHorizontallyFlippedOffset
 
@@ -257,7 +260,16 @@ function drawNoncovEvents(
       maxDepth = entryDepth
       maxBase = base
     }
-    if (showCounts) {
+  }
+
+  // allow significant interbase signals to be drawn even when skipDraw is true
+  // (similar to SNP drawing logic)
+  const isSignificant = score0 > 0 && totalCount > score0 * INTERBASE_DRAW_THRESHOLD
+  const showCounts = showInterbaseCounts && (!skipDraw || isSignificant)
+
+  if (showCounts) {
+    for (const base in snpinfo.noncov) {
+      const { entryDepth } = snpinfo.noncov[base]!
       const barHeight = toHeight2(entryDepth)
       ctx.fillStyle = colorMap[base]!
       ctx.fillRect(
@@ -274,10 +286,8 @@ function drawNoncovEvents(
     const maxEntry = snpinfo.noncov[maxBase]
 
     if (showCounts) {
-      const isMajorityInterbase =
-        score0 > 0 && totalCount > score0 * indicatorThreshold
-      if (bpPerPx < 50 || isMajorityInterbase) {
-        const clickWidth = Math.max(r * 2, 4)
+      if (bpPerPx < 50 || isSignificant) {
+        const clickWidth = Math.max(r * 2, 2)
         coords.push(
           x,
           INTERBASE_INDICATOR_HEIGHT,
@@ -290,7 +300,7 @@ function drawNoncovEvents(
       }
     }
 
-    if (showInterbaseIndicators && !skipDraw) {
+    if (showInterbaseIndicators && (!skipDraw || isSignificant)) {
       const indicatorComparatorScore = Math.max(score0, prevTotal)
       if (
         totalCount > indicatorComparatorScore * indicatorThreshold &&
@@ -304,7 +314,7 @@ function drawNoncovEvents(
         ctx.lineTo(l, INTERBASE_INDICATOR_HEIGHT)
         ctx.fill()
 
-        const hitboxPadding = 3
+        const hitboxPadding = 1
         coords.push(
           l - INTERBASE_INDICATOR_WIDTH / 2 - hitboxPadding,
           0,
