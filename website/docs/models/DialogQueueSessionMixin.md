@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type
-any
+DialogComponentType
 ```
 
 #### getter: DialogProps
@@ -49,5 +49,5 @@ removeActiveDialog: () => void
 
 ```js
 // type signature
-queueDialog: (cb: (doneCallback: () => void) => [any, unknown]) => void
+queueDialog: (cb: (doneCallback: () => void) => [DialogComponentType, unknown]) => void
 ```

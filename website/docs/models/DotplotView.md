@@ -30,7 +30,7 @@ extends
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+any
 // code
 id: ElementId
 ```
@@ -50,7 +50,7 @@ type: types.literal('DotplotView')
 // type signature
 number
 // code
-height: 600
+height: defaultHeight
 ```
 
 #### property: borderSize
@@ -59,7 +59,7 @@ height: 600
 // type signature
 number
 // code
-borderSize: 20
+borderSize: defaultBorderSize
 ```
 
 #### property: tickSize
@@ -68,7 +68,7 @@ borderSize: 20
 // type signature
 number
 // code
-tickSize: 5
+tickSize: defaultTickSize
 ```
 
 #### property: vtextRotation
@@ -86,7 +86,7 @@ vtextRotation: 0
 // type signature
 number
 // code
-htextRotation: -90
+htextRotation: defaultHtextRotation
 ```
 
 #### property: fontSize
@@ -95,7 +95,7 @@ htextRotation: -90
 // type signature
 number
 // code
-fontSize: 15
+fontSize: defaultFontSize
 ```
 
 #### property: trackSelectorType
@@ -129,7 +129,7 @@ drawCigar: true
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; interRegionPaddingWidth: IOptionalIType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ......
+IOptionalIType<any, [undefined]>
 // code
 hview: types.optional(DotplotHView, {})
 ```
@@ -138,7 +138,7 @@ hview: types.optional(DotplotHView, {})
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; interRegionPaddingWidth: IOptionalIType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ......
+IOptionalIType<any, [undefined]>
 // code
 vview: types.optional(DotplotVView, {})
 ```
@@ -147,7 +147,7 @@ vview: types.optional(DotplotVView, {})
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IArrayType<any>
 // code
 tracks: types.array(pm.pluggableMstType('track', 'stateModel'))
 ```
@@ -159,7 +159,7 @@ dotplots where this track would not really apply elsewhere
 
 ```js
 // type signature
-IArrayType<IAnyModelType>
+IArrayType<any>
 // code
 viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
 ```
@@ -269,7 +269,7 @@ number
 
 ```js
 // type
-({ id: string; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>>; bpPerPx: number; offsetPx: number; interRegionPaddingWidth: number; minimumBlockWidth: number; } & ... 11 more ... & IStateTreeNode<...>)[]
+any[]
 ```
 
 #### getter: error
@@ -292,7 +292,7 @@ renderProps: () => any
 
 ```js
 // type signature
-menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } | { label: string; onClick: () => Widget; icon: (props: SvgIconProps) => Element; })[]
+menuItems: () => { label: string; onClick: () => any; icon: any; }[]
 ```
 
 ### DotplotView - Actions
@@ -415,7 +415,7 @@ zoomIn: () => void
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
+activateTrackSelector: () => any
 ```
 
 #### action: showTrack
@@ -429,7 +429,7 @@ showTrack: (trackId: string, initialSnapshot?: {}) => any
 
 ```js
 // type signature
-hideTrack: (trackId: string) => 0 | 1
+hideTrack: (trackId: string) => any
 ```
 
 #### action: toggleTrack
@@ -450,14 +450,14 @@ setAssemblyNames: (target: string, query: string) => void
 
 ```js
 // type signature
-setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; interRegionPaddingWidth: IOptionalIType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void
+setViews: (arr: any[]) => void
 ```
 
 #### action: getCoords
 
 ```js
 // type signature
-getCoords: (mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }[]
+getCoords: (mousedown: Coord, mouseup: Coord) => any[]
 ```
 
 #### action: zoomInToMouseCoords

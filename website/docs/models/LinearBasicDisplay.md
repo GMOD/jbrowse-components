@@ -20,12 +20,12 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-used by `FeatureTrack`, has simple settings like "show/hide feature labels",
-etc.
+Used by `FeatureTrack`, has simple settings like "show/hide feature labels",
+plus gene glyph display options.
 
 extends
 
-- [BaseLinearDisplay](../baselineardisplay)
+- [LinearFeatureDisplay](../linearfeaturedisplay)
 
 ### LinearBasicDisplay - Properties
 
@@ -38,40 +38,13 @@ ISimpleType<"LinearBasicDisplay">
 type: types.literal('LinearBasicDisplay')
 ```
 
-#### property: trackShowLabels
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-trackShowLabels: types.maybe(types.boolean)
-```
-
-#### property: trackShowDescriptions
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-trackShowDescriptions: types.maybe(types.boolean)
-```
-
-#### property: trackDisplayMode
+#### property: trackGeneGlyphMode
 
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
 // code
-trackDisplayMode: types.maybe(types.string)
-```
-
-#### property: trackMaxHeight
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-trackMaxHeight: types.maybe(types.number)
+trackGeneGlyphMode: types.maybe(types.string)
 ```
 
 #### property: trackSubfeatureLabels
@@ -81,15 +54,6 @@ trackMaxHeight: types.maybe(types.number)
 IMaybe<ISimpleType<string>>
 // code
 trackSubfeatureLabels: types.maybe(types.string)
-```
-
-#### property: trackGeneGlyphMode
-
-```js
-// type signature
-IMaybe<ISimpleType<string>>
-// code
-trackGeneGlyphMode: types.maybe(types.string)
 ```
 
 #### property: trackDisplayDirectionalChevrons
@@ -105,65 +69,14 @@ trackDisplayDirectionalChevrons: types.maybe(types.boolean)
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: jexlFilters
-
-```js
-// type signature
-IMaybe<IArrayType<ISimpleType<string>>>
-// code
-jexlFilters: types.maybe(types.array(types.string))
-```
-
 ### LinearBasicDisplay - Getters
 
-#### getter: activeFilters
-
-```js
-// type
-any
-```
-
-#### getter: rendererTypeName
-
-```js
-// type
-any
-```
-
-#### getter: sequenceAdapter
-
-```js
-// type
-any
-```
-
-#### getter: showLabels
-
-```js
-// type
-any
-```
-
-#### getter: showDescriptions
-
-```js
-// type
-any
-```
-
-#### getter: maxHeight
-
-```js
-// type
-any
-```
-
-#### getter: displayMode
+#### getter: geneGlyphMode
 
 ```js
 // type
@@ -171,13 +84,6 @@ any
 ```
 
 #### getter: subfeatureLabels
-
-```js
-// type
-any
-```
-
-#### getter: geneGlyphMode
 
 ```js
 // type
@@ -195,34 +101,18 @@ any
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
-```
-
-#### getter: featureUnderMouse
-
-Override featureUnderMouse to return the volatile feature which is fetched
-asynchronously via CoreGetFeatureDetails
-
-```js
-// type
-Feature
+{
+  showLabels: any
+  showDescriptions: any
+  subfeatureLabels: any
+  displayMode: any
+  maxHeight: any
+  geneGlyphMode: any
+  displayDirectionalChevrons: any
+}
 ```
 
 ### LinearBasicDisplay - Methods
-
-#### method: renderProps
-
-```js
-// type signature
-renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; filters: SerializableFilterChain; sequenceAdapter: any; }
-```
-
-#### method: renderingProps
-
-```js
-// type signature
-renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { ...; } & { ...; } & IStateTreeNode<...>; }
-```
 
 #### method: trackMenuItems
 
@@ -233,32 +123,11 @@ trackMenuItems: () => MenuItem[]
 
 ### LinearBasicDisplay - Actions
 
-#### action: setJexlFilters
+#### action: setGeneGlyphMode
 
 ```js
 // type signature
-setJexlFilters: (f?: string[]) => void
-```
-
-#### action: setFeatureUnderMouse
-
-```js
-// type signature
-setFeatureUnderMouse: (feat?: Feature) => void
-```
-
-#### action: toggleShowLabels
-
-```js
-// type signature
-toggleShowLabels: () => void
-```
-
-#### action: toggleShowDescriptions
-
-```js
-// type signature
-toggleShowDescriptions: () => void
+setGeneGlyphMode: (val: string) => void
 ```
 
 #### action: setSubfeatureLabels
@@ -266,27 +135,6 @@ toggleShowDescriptions: () => void
 ```js
 // type signature
 setSubfeatureLabels: (val: string) => void
-```
-
-#### action: setDisplayMode
-
-```js
-// type signature
-setDisplayMode: (val: string) => void
-```
-
-#### action: setMaxHeight
-
-```js
-// type signature
-setMaxHeight: (val?: number) => void
-```
-
-#### action: setGeneGlyphMode
-
-```js
-// type signature
-setGeneGlyphMode: (val: string) => void
 ```
 
 #### action: toggleDisplayDirectionalChevrons

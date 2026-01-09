@@ -14,12 +14,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/src/sessionModel/index.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/sessionModel/index.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JBrowseWebSessionModel.md)
 
 ## Docs
 
-composed of
-
-- [BaseWebSession](../basewebsession)
+extends [BaseWebSession](../basewebsession)

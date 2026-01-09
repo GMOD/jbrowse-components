@@ -41,6 +41,15 @@ any
 any
 ```
 
+#### getter: showLegend
+
+Returns true if PileupDisplay has legend shown
+
+```js
+// type
+any
+```
+
 #### getter: pileupConf
 
 ```js
@@ -77,6 +86,16 @@ any
 ```
 
 ### LinearAlignmentsDisplay - Methods
+
+#### method: svgLegendWidth
+
+Returns the width needed for the SVG legend from subdisplays. Used by SVG export
+to add extra width for the legend area.
+
+```js
+// type signature
+svgLegendWidth: (theme?: unknown) => number
+```
 
 #### method: getFeatureByID
 
@@ -122,11 +141,20 @@ setScrollTop: (scrollTop: number) => void
 setSNPCoverageHeight: (n: number) => void
 ```
 
+#### action: setShowLegend
+
+Toggle legend visibility on the PileupDisplay sub-display
+
+```js
+// type signature
+setShowLegend: (s: boolean) => void
+```
+
 #### action: setSNPCoverageDisplay
 
 ```js
 // type signature
-setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+setSNPCoverageDisplay: (configuration: AnyConfigurationModel) => void
 ```
 
 #### action: setFeatureDensityStatsLimit
@@ -140,7 +168,7 @@ setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
 
 ```js
 // type signature
-setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+setPileupDisplay: (configuration: AnyConfigurationModel) => void
 ```
 
 #### action: setHeight

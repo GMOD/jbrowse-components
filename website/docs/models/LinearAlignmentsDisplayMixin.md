@@ -43,7 +43,7 @@ refers to LinearSNPCoverageDisplay sub-display model
 
 ```js
 // type signature
-IMaybe<IAnyModelType>
+IMaybe<any>
 // code
 SNPCoverageDisplay: types.maybe(
       pluginManager.getDisplayType('LinearSNPCoverageDisplay')!.stateModel,
@@ -72,7 +72,7 @@ type: types.literal('LinearAlignmentsDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```

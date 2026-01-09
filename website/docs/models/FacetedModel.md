@@ -81,14 +81,14 @@ panelWidth: types.optional(types.number, () =>
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+AnyConfigurationModel[]
 ```
 
 #### getter: rows
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: AnyConfigurationModel; readonly name: any; readonly category: string; readonly adapter: string; readonly description: string; readonly metadata: Record<string, unknown>; }[]
 ```
 
 #### getter: filteredNonMetadataKeys
@@ -123,7 +123,7 @@ any[]
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: AnyConfigurationModel; readonly name: any; readonly category: string; readonly adapter: string; readonly description: string; readonly metadata: Record<string, unknown>; }[]
 ```
 
 ### FacetedModel - Actions

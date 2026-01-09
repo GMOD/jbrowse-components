@@ -35,7 +35,7 @@ type: types.literal('DotplotDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -82,7 +82,7 @@ renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions; }) => Promise<Eleme
 
 ```js
 // type signature
-setLoading: (stopToken?: string) => void
+setLoading: (stopToken?: StopToken) => void
 ```
 
 #### action: setMessage

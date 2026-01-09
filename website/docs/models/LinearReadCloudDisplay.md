@@ -41,7 +41,7 @@ type: types.literal('LinearReadCloudDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -77,9 +77,65 @@ IMaybe<ISimpleType<number>>
 trackMaxHeight: types.maybe(types.number)
 ```
 
+#### property: hideSmallIndelsSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideSmallIndelsSetting: types.maybe(types.boolean)
+```
+
+#### property: hideMismatchesSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideMismatchesSetting: types.maybe(types.boolean)
+```
+
+#### property: hideLargeIndelsSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideLargeIndelsSetting: types.maybe(types.boolean)
+```
+
+#### property: showLegend
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+showLegend: types.maybe(types.boolean)
+```
+
+#### property: showYScalebar
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showYScalebar: types.optional(types.boolean, true)
+```
+
+#### property: showOutline
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showOutline: types.optional(types.boolean, true)
+```
+
 ### LinearReadCloudDisplay - Getters
 
 #### getter: colorBy
+
+Get the color settings (from override or configuration)
 
 ```js
 // type
@@ -87,6 +143,8 @@ any
 ```
 
 #### getter: filterBy
+
+Get the filter settings (from override or configuration)
 
 ```js
 // type
@@ -100,13 +158,86 @@ any
 any
 ```
 
+#### getter: hideSmallIndels
+
+```js
+// type
+any
+```
+
+#### getter: hideMismatches
+
+```js
+// type
+any
+```
+
+#### getter: hideLargeIndels
+
+```js
+// type
+any
+```
+
+#### getter: modificationThreshold
+
+```js
+// type
+any
+```
+
+#### getter: cloudDomain
+
+Domain for cloud mode scale: [1, maxDistance] Uses 1 as lower bound since it's a
+log scale
+
+```js
+// type
+;[number, number]
+```
+
+#### getter: cloudTicks
+
+Calculate ticks for the y-axis scalebar in cloud mode
+
+```js
+// type
+CloudTicks
+```
+
 ### LinearReadCloudDisplay - Methods
+
+#### method: legendItems
+
+Returns legend items based on current colorBy setting
+
+```js
+// type signature
+legendItems: () => LegendItem[]
+```
+
+#### method: svgLegendWidth
+
+Returns the width needed for the SVG legend if showLegend is enabled. Used by
+SVG export to add extra width for the legend area.
+
+```js
+// type signature
+svgLegendWidth: () => number
+```
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
+```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => any[]
 ```
 
 #### method: renderSvg
@@ -119,6 +250,8 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ### LinearReadCloudDisplay - Actions
 
 #### action: reload
+
+Reload the display (clears error state)
 
 ```js
 // type signature
@@ -152,6 +285,30 @@ Set the current layout height
 setLayoutHeight: (n: number) => void
 ```
 
+#### action: setCloudMaxDistance
+
+Set the max distance for cloud mode scale Only updates if value differs by more
+than EPSILON to avoid infinite re-renders
+
+```js
+// type signature
+setCloudMaxDistance: (maxDistance: number) => void
+```
+
+#### action: setShowYScalebar
+
+```js
+// type signature
+setShowYScalebar: (show: boolean) => void
+```
+
+#### action: setShowOutline
+
+```js
+// type signature
+setShowOutline: (show: boolean) => void
+```
+
 #### action: selectFeature
 
 ```js
@@ -166,15 +323,6 @@ selectFeature: (chain: ReducedFeature[]) => void
 setDrawCloud: (b: boolean) => void
 ```
 
-#### action: setRenderingImageData
-
-Set the rendering imageData from RPC
-
-```js
-// type signature
-setRenderingImageData: (imageData: ImageBitmap) => void
-```
-
 #### action: setSelectedFeatureId
 
 Set the ID of the selected feature for persistent highlighting
@@ -184,11 +332,30 @@ Set the ID of the selected feature for persistent highlighting
 setSelectedFeatureId: (id: string) => void
 ```
 
-#### action: setRenderingStopToken
-
-Set the rendering stop token
+#### action: setHideSmallIndels
 
 ```js
 // type signature
-setRenderingStopToken: (token: string) => void
+setHideSmallIndels: (arg: boolean) => void
+```
+
+#### action: setHideMismatches
+
+```js
+// type signature
+setHideMismatches: (arg: boolean) => void
+```
+
+#### action: setHideLargeIndels
+
+```js
+// type signature
+setHideLargeIndels: (arg: boolean) => void
+```
+
+#### action: setShowLegend
+
+```js
+// type signature
+setShowLegend: (s: boolean) => void
 ```

@@ -149,18 +149,9 @@ constraints: types.optional(
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-#### property: statsRegion
-
-```js
-// type signature
-IMaybe<ISimpleType<string>>
-// code
-statsRegion: types.maybe(types.string)
 ```
 
 ### SharedWiggleMixin - Getters
@@ -213,14 +204,14 @@ number
 
 ```js
 // type
-string[]
+any
 ```
 
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+any
 ```
 
 #### getter: autoscaleType
@@ -255,7 +246,7 @@ string
 
 ```js
 // type
-{ domain: number[]; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }; autoscaleType: string; scaleType: string; inverted: boolean; }
+{ domain: number[]; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; statsRegion?: string; }; autoscaleType: string; scaleType: string; inverted: boolean; }
 ```
 
 #### getter: canHaveFill
@@ -276,14 +267,14 @@ boolean
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: hasGlobalStats
 
 ```js
 // type
-boolean
+any
 ```
 
 ### SharedWiggleMixin - Methods
@@ -329,14 +320,7 @@ setNegColor: (color?: string) => void
 
 ```js
 // type signature
-setStatsLoading: (arg?: string) => void
-```
-
-#### action: setStatsRegion
-
-```js
-// type signature
-setStatsRegion: (statsRegion: string) => void
+setStatsLoading: (arg?: StopToken) => void
 ```
 
 #### action: selectFeature

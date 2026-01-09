@@ -61,6 +61,7 @@ source: {
 resolutionMultiplier: {
       type: 'number',
       defaultValue: 1,
-      description: 'Initial resolution multiplier',
+      description:
+        'Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution',
     }
 ```

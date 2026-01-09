@@ -35,7 +35,7 @@ extends
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+any
 // code
 id: ElementId
 ```
@@ -71,7 +71,7 @@ onlyDisplayRelevantRegionsInCircularView: false
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 6 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
+IOptionalIType<IModelType<ModelProperties & { type: ISimpleType<"SpreadsheetView">; offsetPx: IType<number, number, number>; height: IOptionalIType<ISimpleType<number>, [...]>; ... 4 more ...; init: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
@@ -85,7 +85,7 @@ spreadsheetView: types.optional(SpreadsheetModel, () =>
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, { ...; }>, [...]>
+IOptionalIType<IModelType<ModelProperties & { type: ISimpleType<"CircularView">; offsetRadians: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 16 more ...; init: IType<...>; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
 // code
 circularView: types.optional(CircularModel, () =>
           CircularModel.create({

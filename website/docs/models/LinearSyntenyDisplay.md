@@ -39,7 +39,7 @@ type: types.literal('LinearSyntenyDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -91,7 +91,7 @@ boolean
 
 ```js
 // type
-{ [k: string]: FeatPos; }
+any
 ```
 
 ### LinearSyntenyDisplay - Actions

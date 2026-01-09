@@ -45,7 +45,7 @@ menus: () => Menu[]
 
 ```js
 // type signature
-setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
+setSession: (sessionSnapshot?: ModelCreationType<ExtractCFromProps<{ id: any; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
 ```
 
 #### action: setPluginsUpdated

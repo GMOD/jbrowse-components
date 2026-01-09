@@ -118,3 +118,39 @@ Remove a panel and all its view assignments
 // type signature
 removePanel: (panelId: string) => void
 ```
+
+#### action: moveViewUpInPanel
+
+Move a view up within its panel's view stack
+
+```js
+// type signature
+moveViewUpInPanel: (viewId: string) => void
+```
+
+#### action: moveViewDownInPanel
+
+Move a view down within its panel's view stack
+
+```js
+// type signature
+moveViewDownInPanel: (viewId: string) => void
+```
+
+#### action: moveViewToTopInPanel
+
+Move a view to the top of its panel's view stack
+
+```js
+// type signature
+moveViewToTopInPanel: (viewId: string) => void
+```
+
+#### action: moveViewToBottomInPanel
+
+Move a view to the bottom of its panel's view stack
+
+```js
+// type signature
+moveViewToBottomInPanel: (viewId: string) => void
+```

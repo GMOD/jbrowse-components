@@ -50,7 +50,7 @@ drawerWidth: types.optional(
 
 ```js
 // type signature
-IMapType<IAnyType>
+IMapType<any>
 // code
 widgets: types.map(widgetStateModelType)
 ```
@@ -59,7 +59,7 @@ widgets: types.map(widgetStateModelType)
 
 ```js
 // type signature
-IMapType<IMaybe<IReferenceType<IAnyType>>>
+IMapType<IMaybe<IReferenceType<any>>>
 // code
 activeWidgets: types.map(types.safeReference(widgetStateModelType))
 ```
@@ -161,5 +161,5 @@ task to be configuring it
 
 ```js
 // type signature
-editConfiguration: (configuration: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) | { ...; }) => void
+editConfiguration: (configuration: any) => void
 ```

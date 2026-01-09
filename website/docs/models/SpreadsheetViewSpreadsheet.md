@@ -75,14 +75,14 @@ visibleColumns: types.frozen<Record<string, boolean>>()
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: dataGridColumns
 
 ```js
 // type
-({ field: string; width: number; type: "number"; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[]
+({ field: string; width: any; type: "number"; } | { field: string; width: any; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[]
 ```
 
 ### SpreadsheetViewSpreadsheet - Actions

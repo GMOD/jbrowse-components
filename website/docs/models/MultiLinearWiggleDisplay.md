@@ -59,14 +59,14 @@ showSidebar: true
 
 ```js
 // type
-Feature
+any
 ```
 
 #### getter: TooltipComponent
 
 ```js
 // type
-React.ComponentType<any>
+AnyReactComponentType
 ```
 
 #### getter: rendererTypeName
@@ -91,6 +91,13 @@ boolean
 ```
 
 #### getter: isMultiRow
+
+```js
+// type
+boolean
+```
+
+#### getter: canHaveFill
 
 ```js
 // type
@@ -196,14 +203,21 @@ boolean
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: hasGlobalStats
 
 ```js
 // type
-boolean
+any
+```
+
+#### getter: fillSetting
+
+```js
+// type
+;0 | 1 | 2
 ```
 
 ### MultiLinearWiggleDisplay - Methods
@@ -226,14 +240,14 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: "MultiLinearWiggleDisplay"; rpcDriverName: string; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<...>> & IStateTreeNode<...>; ... 16 more ...; showSidebar: boolean; } & ... 36 more ... & IStateTreeNode<...>; onMo...
+renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
 ```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => any[]
 ```
 
 ### MultiLinearWiggleDisplay - Actions
@@ -249,7 +263,7 @@ setShowSidebar: (arg: boolean) => void
 
 ```js
 // type signature
-setSourcesLoading: (str: string) => void
+setSourcesLoading: (str: StopToken) => void
 ```
 
 #### action: setLayout

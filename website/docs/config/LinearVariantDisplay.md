@@ -18,11 +18,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-mostly empty, this display type is very much like a `FeatureTrack` with a
-`LinearBasicDisplay` except it has a custom feature details widget
+Extends LinearFeatureDisplay (not LinearBasicDisplay) since variants don't need
+gene glyph display options.
 
 ### LinearVariantDisplay - Derives from
 
 ```js
-baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
+baseConfiguration: linearFeatureDisplayConfigSchemaFactory(pluginManager)
 ```

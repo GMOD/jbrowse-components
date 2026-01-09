@@ -43,7 +43,7 @@ similar to offsetPx in linear genome view
 // type signature
 number
 // code
-offsetRadians: -Math.PI / 2
+offsetRadians: defaultOffsetRadians
 ```
 
 #### property: bpPerPx
@@ -52,14 +52,14 @@ offsetRadians: -Math.PI / 2
 // type signature
 number
 // code
-bpPerPx: 200
+bpPerPx: defaultBpPerPx
 ```
 
 #### property: tracks
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IArrayType<any>
 // code
 tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
@@ -135,7 +135,7 @@ scrollY: 0
 // type signature
 number
 // code
-minimumRadiusPx: 25
+minimumRadiusPx: defaultMinimumRadiusPx
 ```
 
 #### property: spacingPx
@@ -144,7 +144,7 @@ minimumRadiusPx: 25
 // type signature
 number
 // code
-spacingPx: 10
+spacingPx: defaultSpacingPx
 ```
 
 #### property: paddingPx
@@ -153,7 +153,7 @@ spacingPx: 10
 // type signature
 number
 // code
-paddingPx: 80
+paddingPx: defaultPaddingPx
 ```
 
 #### property: lockedPaddingPx
@@ -162,7 +162,7 @@ paddingPx: 80
 // type signature
 number
 // code
-lockedPaddingPx: 100
+lockedPaddingPx: defaultLockedPaddingPx
 ```
 
 #### property: minVisibleWidth
@@ -171,7 +171,7 @@ lockedPaddingPx: 100
 // type signature
 number
 // code
-minVisibleWidth: 6
+minVisibleWidth: defaultMinVisibleWidth
 ```
 
 #### property: minimumBlockWidth
@@ -180,7 +180,7 @@ minVisibleWidth: 6
 // type signature
 number
 // code
-minimumBlockWidth: 20
+minimumBlockWidth: defaultMinimumBlockWidth
 ```
 
 #### property: trackSelectorType
@@ -282,7 +282,7 @@ number
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: atMaxBpPerPx
@@ -349,6 +349,20 @@ string[]
 ```js
 // type
 any
+```
+
+#### getter: assemblyErrors
+
+```js
+// type
+any
+```
+
+#### getter: error
+
+```js
+// type
+unknown
 ```
 
 #### getter: loadingMessage
@@ -515,7 +529,7 @@ setDisplayedRegions: (regions: Region[]) => void
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
+activateTrackSelector: () => any
 ```
 
 #### action: toggleTrack
@@ -550,7 +564,7 @@ showTrack: (trackId: string, initialSnapshot?: {}) => void
 
 ```js
 // type signature
-addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => void
+addTrackConf: (configuration: AnyConfigurationModel, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack

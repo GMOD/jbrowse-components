@@ -48,7 +48,7 @@ layout: types.optional(types.frozen<Source[]>(), [])
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -265,7 +265,7 @@ adapterProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 6 more ... | { ...; })[]
+trackMenuItems: () => any[]
 ```
 
 #### method: getPortableSettings
@@ -280,6 +280,15 @@ getPortableSettings: () => { minorAlleleFrequencyFilter: number; showSidebarLabe
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: legendItems
+
+Returns legend items for rendering colors based on current mode
+
+```js
+// type signature
+legendItems: () => LegendItem[]
 ```
 
 ### MultiVariantBaseModel - Actions
@@ -309,7 +318,7 @@ setHoveredGenotype: (arg?: { genotype: string; name: string; }) => void
 
 ```js
 // type signature
-setHoveredTreeNode: (node: any) => void
+setHoveredTreeNode: (node?: HoveredTreeNode) => void
 ```
 
 #### action: setTreeCanvasRef
@@ -365,14 +374,14 @@ setClusterTree: (tree?: string) => void
 
 ```js
 // type signature
-setSourcesLoading: (str: string) => void
+setSourcesLoading: (token: StopToken) => void
 ```
 
 #### action: setSimplifiedFeaturesLoading
 
 ```js
 // type signature
-setSimplifiedFeaturesLoading: (str: string) => void
+setSimplifiedFeaturesLoading: (token: StopToken) => void
 ```
 
 #### action: setSources

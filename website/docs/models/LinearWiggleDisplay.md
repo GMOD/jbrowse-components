@@ -50,7 +50,7 @@ invertedSetting: types.maybe(types.boolean)
 
 ```js
 // type
-React.ComponentType<any>
+AnyReactComponentType
 ```
 
 #### getter: rendererTypeName
@@ -126,7 +126,7 @@ Base track menu items shared by all wiggle displays (Score submenu)
 
 ```js
 // type signature
-wiggleBaseTrackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+wiggleBaseTrackMenuItems: () => any[]
 ```
 
 #### method: wiggleOnlyTrackMenuItems

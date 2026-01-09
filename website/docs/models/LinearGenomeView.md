@@ -30,7 +30,7 @@ extends
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+any
 // code
 id: ElementId
 ```
@@ -89,7 +89,7 @@ array of currently displayed tracks state models instances
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IArrayType<any>
 // code
 tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
@@ -310,7 +310,7 @@ sticky positioning
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: stickyViewHeaders
@@ -415,7 +415,7 @@ number
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: trackHeightsWithResizeHandles
@@ -436,7 +436,7 @@ any
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: maxBpPerPx
@@ -481,6 +481,13 @@ number
 number
 ```
 
+#### getter: trackMap
+
+```js
+// type
+Map<any, any>
+```
+
 #### getter: trackTypeActions
 
 ```js
@@ -516,7 +523,7 @@ is calculated manually with this method
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: staticBlocks
@@ -529,7 +536,7 @@ block
 
 ```js
 // type
-BlockSet
+any
 ```
 
 #### getter: dynamicBlocks
@@ -540,7 +547,7 @@ go offscreen while dynamic blocks represent exactly what is on screen
 
 ```js
 // type
-BlockSet
+any
 ```
 
 #### getter: roundedDynamicBlocks
@@ -574,7 +581,7 @@ string
 
 ```js
 // type
-string
+any
 ```
 
 #### getter: centerLineInfo
@@ -618,7 +625,7 @@ renderProps: () => any
 
 ```js
 // type signature
-searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }
+searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<any> & IStateTreeNode<IArrayType<any>>; }
 ```
 
 #### method: getTrack
@@ -637,15 +644,6 @@ does nothing currently
 rankSearchResults: (results: BaseResult[]) => BaseResult[]
 ```
 
-#### method: rewriteOnClicks
-
-modifies view menu action onClick to apply to all tracks of same type
-
-```js
-// type signature
-rewriteOnClicks: (trackType: string, viewMenuActions: MenuItem[]) => void
-```
-
 #### method: getSelectedRegions
 
 Helper method for the fetchSequence. Retrieves the corresponding regions that
@@ -653,7 +651,7 @@ were selected by the rubberband
 
 ```js
 // type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { assemblyName: string; refName: string; start: number; end: number; }[]
+getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => any
 ```
 
 #### method: exportSvg
@@ -685,7 +683,7 @@ rubberBandMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => { index: number; offsetPx: number; }
+bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => any
 ```
 
 #### method: centerAt
@@ -702,7 +700,14 @@ centerAt: (coord: number, refName: string, regionNumber?: number) => void
 
 ```js
 // type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }
+pxToBp: (px: number) => any
+```
+
+#### method: rubberbandClickMenuItems
+
+```js
+// type signature
+rubberbandClickMenuItems: (clickOffset: BpOffset) => MenuItem[]
 ```
 
 ### LinearGenomeView - Actions
@@ -795,14 +800,14 @@ removeHighlight: (highlight: HighlightType) => void
 
 ```js
 // type signature
-scrollTo: (offsetPx: number) => number
+scrollTo: (offsetPx: number) => any
 ```
 
 #### action: zoomTo
 
 ```js
 // type signature
-zoomTo: (bpPerPx: number, offset?: number, centerAtOffset?: boolean) => number
+zoomTo: (bpPerPx: number, offset?: number, centerAtOffset?: boolean) => any
 ```
 
 #### action: setOffsets
@@ -848,7 +853,7 @@ showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) 
 
 ```js
 // type signature
-hideTrack: (trackId: string) => 0 | 1
+hideTrack: (trackId: string) => any
 ```
 
 #### action: moveTrackDown
@@ -918,7 +923,7 @@ setDisplayedRegions: (regions: Region[]) => void
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
+activateTrackSelector: () => any
 ```
 
 #### action: horizontalScroll
@@ -1038,7 +1043,7 @@ is returned. Will pop up a search dialog if multiple results are returned
 
 ```js
 // type signature
-navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promise<...>
+navToSearchString: ({ input, assembly, }: { input: string; assembly: Assembly; }) => Promise<void>
 ```
 
 #### action: navToLocation

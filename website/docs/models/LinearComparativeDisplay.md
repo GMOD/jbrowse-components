@@ -39,7 +39,7 @@ type: types.literal('LinearComparativeDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -60,14 +60,13 @@ number
 number
 ```
 
-#### getter: renderProps
+### LinearComparativeDisplay - Methods
+
+#### method: renderProps
 
 ```js
-// type
-;() => {
-  rpcDriverName: string
-  highResolutionScaling: number
-}
+// type signature
+renderProps: () => any
 ```
 
 ### LinearComparativeDisplay - Actions

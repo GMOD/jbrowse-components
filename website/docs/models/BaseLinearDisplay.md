@@ -37,7 +37,7 @@ updated via autorun
 
 ```js
 // type signature
-IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Region>; reloadFlag: IType<number, number, number>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IMapType<IModelType<{ key: ISimpleType<string>; region: IType<Region, Region, Region>; reloadFlag: IType<number, number, number>; isLeftEndOfDisplayedRegion: IType<boolean, boolean, boolean>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 blockState: types.map(BlockState)
 ```
@@ -46,9 +46,27 @@ blockState: types.map(BlockState)
 
 ```js
 // type signature
-ConfigurationSchemaType<{ maxFeatureScreenDensity: { type: string; description: string; defaultValue: number; }; fetchSizeLimit: { type: string; defaultValue: number; description: string; }; height: { type: string; defaultValue: number; description: string; }; mouseover: { ...; }; jexlFilters: { ...; }; }, Configura...
+any
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+#### property: showLegend
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+showLegend: types.maybe(types.boolean)
+```
+
+#### property: showTooltips
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+showTooltips: types.maybe(types.boolean)
 ```
 
 ### BaseLinearDisplay - Getters
@@ -91,7 +109,7 @@ number
 
 ```js
 // type
-React.ComponentType<any>
+AnyReactComponentType
 ```
 
 #### getter: selectedFeatureId
@@ -101,7 +119,28 @@ feature
 
 ```js
 // type
-string
+any
+```
+
+#### getter: featureWidgetType
+
+Override in subclasses to use a different feature widget
+
+```js
+// type
+{
+  type: string
+  id: string
+}
+```
+
+#### getter: showTooltipsEnabled
+
+whether to show tooltips on mouseover, defaults to true
+
+```js
+// type
+boolean
 ```
 
 #### getter: features
@@ -111,7 +150,7 @@ data for that feature
 
 ```js
 // type
-CompositeMap<unknown, unknown>
+any
 ```
 
 #### getter: featureUnderMouse
@@ -125,7 +164,7 @@ any
 
 ```js
 // type
-CompositeMap<string, LayoutRecord>
+any
 ```
 
 #### getter: getFeatureOverlapping
@@ -149,7 +188,45 @@ CompositeMap<string, LayoutRecord>
 (id: string) => LayoutRecord
 ```
 
+#### getter: floatingLabelData
+
+Deduplicated floating label data, computed and cached by MobX
+
+```js
+// type
+Map<string, FeatureLabelData>
+```
+
 ### BaseLinearDisplay - Methods
+
+#### method: legendItems
+
+Override in subclasses to provide legend items for the display
+
+```js
+// type signature
+legendItems: (_theme?: Theme) => LegendItem[]
+```
+
+#### method: svgLegendWidth
+
+Returns the width needed for the SVG legend if showLegend is enabled. Used by
+SVG export to add extra width for the legend area.
+
+```js
+// type signature
+svgLegendWidth: (theme?: Theme) => number
+```
+
+#### method: getFeatureById
+
+Finds a feature by ID, checking both top-level features and subfeatures if
+parentFeatureId is provided
+
+```js
+// type signature
+getFeatureById: (featureId: string, parentFeatureId?: string) => any
+```
 
 #### method: trackMenuItems
 
@@ -172,7 +249,7 @@ sent to the worker. includes displayModel and callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRe...
+renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
 ```
 
 #### method: renderProps
@@ -235,6 +312,13 @@ clearFeatureSelection: () => void
 setFeatureIdUnderMouse: (feature?: string) => void
 ```
 
+#### action: setSubfeatureIdUnderMouse
+
+```js
+// type signature
+setSubfeatureIdUnderMouse: (subfeatureId?: string) => void
+```
+
 #### action: setContextMenuFeature
 
 ```js
@@ -249,9 +333,43 @@ setContextMenuFeature: (feature?: Feature) => void
 setMouseoverExtraInformation: (extra?: string) => void
 ```
 
+#### action: setShowLegend
+
+```js
+// type signature
+setShowLegend: (s: boolean) => void
+```
+
+#### action: setShowTooltips
+
+```js
+// type signature
+setShowTooltips: (arg: boolean) => void
+```
+
 #### action: reload
 
 ```js
 // type signature
 reload: () => Promise<void>
+```
+
+#### action: selectFeatureById
+
+Select a feature by ID, looking up in features map and subfeatures. Falls back
+to RPC if not found locally (e.g., for canvas renderer).
+
+```js
+// type signature
+selectFeatureById: (featureId: string, parentFeatureId?: string, topLevelFeatureId?: string) => Promise<void>
+```
+
+#### action: setContextMenuFeatureById
+
+Set context menu feature by ID, looking up in features map and subfeatures.
+Falls back to RPC if not found locally (e.g., for canvas renderer).
+
+```js
+// type signature
+setContextMenuFeatureById: (featureId: string, parentFeatureId?: string, topLevelFeatureId?: string) => Promise<void>
 ```

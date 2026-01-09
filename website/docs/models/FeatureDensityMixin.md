@@ -46,7 +46,7 @@ userByteSizeLimit: types.maybe(types.number)
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: currentFeatureScreenDensity
@@ -74,7 +74,7 @@ boolean
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: regionTooLarge

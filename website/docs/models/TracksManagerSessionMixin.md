@@ -31,14 +31,29 @@ composed of
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+AnyConfigurationModel[]
+```
+
+#### getter: assemblies
+
+Base assemblies from jbrowse config. Child sessions can override to include
+additional assemblies (e.g. sessionAssemblies).
+
+```js
+// type
+{
+  sequence: {
+    trackId: string
+  }
+}
+;[]
 ```
 
 #### getter: tracksById
 
 ```js
 // type
-Record<string, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
+Record<string, AnyConfigurationModel>
 ```
 
 ### TracksManagerSessionMixin - Actions
@@ -54,5 +69,5 @@ addTrackConf: (trackConf: AnyConfiguration) => any
 
 ```js
 // type signature
-deleteTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+deleteTrackConf: (trackConf: AnyConfigurationModel) => any
 ```

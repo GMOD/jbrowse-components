@@ -125,7 +125,7 @@ any
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+any
 ```
 
 #### getter: showArcsSetting
@@ -179,7 +179,7 @@ boolean
 
 ```js
 // type
-LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; mouseoverExtraInformation?: string; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element>
+LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; mouseoverExtraInformation?: string; visibleModifications: Map<string, { color: string; base: string; strand: string; }>; simplexModifications?: Set<string>; }; height: number; offsetMouseCoord: [...]; clientMouseCoord: [...]; clientRect?: DOMRect; }...
 ```
 
 #### getter: adapterConfig
@@ -211,7 +211,7 @@ boolean
 
 ```js
 // type
-SerializableFilterChain
+any
 ```
 
 ### LinearSNPCoverageDisplay - Methods
@@ -234,7 +234,16 @@ renderProps: () => any
 
 ```js
 // type signature
-renderingProps: () => { onIndicatorClick(_: unknown, item: { type: "insertion" | "softclip" | "hardclip"; base: string; count: number; total: number; avgLength?: number; minLength?: number; maxLength?: number; topSequence?: string; }): void; displayModel: { ...; } & ... 3 more ... & IStateTreeNode<...>; }
+renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
+```
+
+#### method: renderSvg
+
+Custom renderSvg that includes sashimi arcs
+
+```js
+// type signature
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<Element>
 ```
 
 #### method: contextMenuItems
@@ -248,7 +257,16 @@ contextMenuItems: () => any[]
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => any[]
+```
+
+#### method: legendItems
+
+Returns legend items for SNP coverage display
+
+```js
+// type signature
+legendItems: (theme: Theme) => LegendItem[]
 ```
 
 ### LinearSNPCoverageDisplay - Actions
@@ -257,7 +275,7 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+setConfig: (configuration: AnyConfigurationModel) => void
 ```
 
 #### action: setFilterBy

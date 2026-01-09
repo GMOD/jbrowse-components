@@ -35,7 +35,7 @@ type: types.literal('GoogleDriveOAuthInternetAccount')
 
 ```js
 // type signature
-ConfigurationSchemaType<{ authEndpoint: { description: string; type: string; defaultValue: string; }; scopes: { description: string; type: string; defaultValue: string; }; domains: { description: string; type: string; defaultValue: string[]; }; responseType: { ...; }; }, ConfigurationSchemaOptions<...>>
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```

@@ -31,9 +31,11 @@ composed of
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IArrayType<any>
 // code
-views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
+views: types.array(
+          pluginManager.pluggableMstType('view', 'stateModel'),
+        )
 ```
 
 #### property: stickyViewHeaders
@@ -43,8 +45,8 @@ views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 stickyViewHeaders: types.optional(types.boolean, () =>
-        localStorageGetBoolean('stickyViewHeaders', true),
-      )
+          localStorageGetBoolean('stickyViewHeaders', true),
+        )
 ```
 
 #### property: useWorkspaces
@@ -56,8 +58,8 @@ enables the dockview-based tabbed/tiled workspace layout
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 useWorkspaces: types.optional(types.boolean, () =>
-        localStorageGetBoolean('useWorkspaces', false),
-      )
+          localStorageGetBoolean('useWorkspaces', false),
+        )
 ```
 
 ### MultipleViewsSessionMixin - Actions

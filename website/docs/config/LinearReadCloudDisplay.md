@@ -39,6 +39,33 @@ featureHeight: {
       }
 ```
 
+#### slot: hideSmallIndels
+
+```js
+hideSmallIndels: {
+        type: 'boolean',
+        defaultValue: false,
+      }
+```
+
+#### slot: hideMismatches
+
+```js
+hideMismatches: {
+        type: 'boolean',
+        defaultValue: false,
+      }
+```
+
+#### slot: hideLargeIndels
+
+```js
+hideLargeIndels: {
+        type: 'boolean',
+        defaultValue: false,
+      }
+```
+
 #### slot: colorBy
 
 ```js

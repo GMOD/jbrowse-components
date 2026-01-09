@@ -93,7 +93,7 @@ showHeader: false
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
+IArrayType<IModelType<ModelProperties & { id: any; type: IType<string, string, string>; offsetPx: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 13 more ...; init: IType<...>; }, { ...; } & ... 13 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -142,7 +142,7 @@ view's track if only a single row is used
 
 ```js
 // type
-(IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>) | { configuration: { trackId: string; }; }[]
+(IMSTArray<any> & IStateTreeNode<IArrayType<any>>) | { configuration: { trackId: string; }; }[]
 ```
 
 ### BreakpointSplitView - Methods
@@ -190,14 +190,14 @@ Get a composite map of featureId-\>feature map for a track across multiple views
 
 ```js
 // type signature
-getTrackFeatures: (trackConfigId: string) => Map<string, Feature>
+getTrackFeatures: (trackConfigId: string) => Map<any, Feature>
 ```
 
 #### method: getMatchedFeaturesInLayout
 
 ```js
 // type signature
-getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: any; clipPos: number; }[][]
+getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: any; clipLengthAtStartOfRead: any; }[][]
 ```
 
 #### method: menuItems
@@ -205,6 +205,13 @@ getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { 
 ```js
 // type signature
 menuItems: () => ({ label: string; subMenu: MenuItem[]; } | { label: string; onClick: () => void; type?: undefined; checked?: undefined; icon?: undefined; } | { label: string; type: string; checked: boolean; onClick: () => void; icon?: undefined; } | { ...; } | { ...; })[]
+```
+
+#### method: rubberBandMenuItems
+
+```js
+// type signature
+rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```
 
 ### BreakpointSplitView - Actions

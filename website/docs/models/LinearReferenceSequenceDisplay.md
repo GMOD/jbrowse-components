@@ -37,7 +37,7 @@ type: types.literal('LinearReferenceSequenceDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```

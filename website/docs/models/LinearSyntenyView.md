@@ -128,14 +128,14 @@ overwhelming
 
 ```js
 // type signature
-headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
+headerMenuItems: () => any[]
 ```
 
 #### method: menuItems
 
 ```js
 // type signature
-menuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+menuItems: () => any[]
 ```
 
 ### LinearSyntenyView - Actions

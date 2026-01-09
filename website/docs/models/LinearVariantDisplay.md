@@ -20,9 +20,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-similar to basic display, but provides custom widget on feature click extends
+Similar to feature display, but provides custom widget on feature click. Does
+not include gene glyph options since variants are not genes. extends
 
-- [LinearBasicDisplay](../linearbasicdisplay)
+- [LinearFeatureDisplay](../linearfeaturedisplay)
 
 ### LinearVariantDisplay - Properties
 
@@ -39,16 +40,19 @@ type: types.literal('LinearVariantDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
-### LinearVariantDisplay - Actions
+### LinearVariantDisplay - Getters
 
-#### action: selectFeature
+#### getter: featureWidgetType
 
 ```js
-// type signature
-selectFeature: (feature: Feature) => Promise<void>
+// type
+{
+  type: string
+  id: string
+}
 ```

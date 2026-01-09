@@ -39,7 +39,7 @@ type: types.literal('LinearPileupDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -84,7 +84,7 @@ any
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+any
 ```
 
 #### getter: mismatchAlphaSetting
@@ -117,11 +117,18 @@ adapterRenderProps: () => any
 renderProps: () => any
 ```
 
+#### method: showSubMenuItems
+
+```js
+// type signature
+showSubMenuItems: () => ({ label: string; type: "subMenu"; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: string; checked: any; onClick: () => void; })[]
+```
+
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; readonly icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; readonly disabled: boolean; readonly subMenu: readonly [......[]]; }, { ...; }, { ...; }, { ...; }, { ...; }]
+trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; readonly icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; readonly disabled: boolean; readonly subMenu: readonly [......[]]; }, { ...; }, { ...; }]
 ```
 
 ### LinearPileupDisplay - Actions
@@ -166,6 +173,15 @@ toggleMismatchAlpha: () => void
 ```js
 // type signature
 setSortedBy: (type: string, tag?: string) => void
+```
+
+#### action: setSortedByAtPosition
+
+Sort by a specific position (used for sorting at mismatch positions)
+
+```js
+// type signature
+setSortedByAtPosition: (type: string, pos: number, refName: string) => void
 ```
 
 #### action: setFeatureHeight

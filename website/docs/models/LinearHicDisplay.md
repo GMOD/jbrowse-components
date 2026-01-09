@@ -25,6 +25,7 @@ Non-block-based Hi-C display that renders to a single canvas extends
 - [BaseDisplay](../basedisplay)
 - [TrackHeightMixin](../trackheightmixin)
 - [FeatureDensityMixin](../featuredensitymixin)
+- [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
 
 ### LinearHicDisplay - Properties
 
@@ -41,7 +42,7 @@ type: types.literal('LinearHicDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -91,14 +92,16 @@ string
 mode: 'triangular'
 ```
 
-### LinearHicDisplay - Getters
-
-#### getter: drawn
+#### property: showLegend
 
 ```js
-// type
-boolean
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+showLegend: types.maybe(types.boolean)
 ```
+
+### LinearHicDisplay - Getters
 
 #### getter: rendererTypeName
 
@@ -113,52 +116,42 @@ string
 
 ```js
 // type signature
-renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; displayHeight: number; }
+renderProps: () => any
+```
+
+#### method: legendItems
+
+Returns legend items for the Hi-C color scale
+
+```js
+// type signature
+legendItems: () => LegendItem[]
+```
+
+#### method: svgLegendWidth
+
+Returns the width needed for the SVG legend if showLegend is enabled.
+
+```js
+// type signature
+svgLegendWidth: () => number
 ```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => any[]
+```
+
+#### method: renderSvg
+
+```js
+// type signature
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearHicDisplay - Actions
-
-#### action: setLastDrawnOffsetPx
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
-
-#### action: setRef
-
-```js
-// type signature
-setRef: (ref: HTMLCanvasElement) => void
-```
-
-#### action: setRenderingImageData
-
-```js
-// type signature
-setRenderingImageData: (imageData: ImageBitmap) => void
-```
-
-#### action: setRenderingStopToken
-
-```js
-// type signature
-setRenderingStopToken: (token: string) => void
-```
 
 #### action: setFlatbushData
 
@@ -214,4 +207,11 @@ setAvailableNormalizations: (f: string[]) => void
 ```js
 // type signature
 setMode: (arg: string) => void
+```
+
+#### action: setShowLegend
+
+```js
+// type signature
+setShowLegend: (arg: boolean) => void
 ```

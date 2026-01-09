@@ -39,7 +39,7 @@ type: types.literal('LinearBareDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -50,7 +50,7 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+Omit<any, symbol>
 ```
 
 #### getter: rendererTypeName
