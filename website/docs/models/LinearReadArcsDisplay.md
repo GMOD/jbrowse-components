@@ -26,8 +26,6 @@ connect multiple regions extends
 - [BaseDisplay](../basedisplay)
 - [TrackHeightMixin](../trackheightmixin)
 - [FeatureDensityMixin](../featuredensitymixin)
-- [LinearReadDisplayBaseMixin](../linearreaddisplaybasemixin)
-- [LinearReadArcsDisplaySettingsMixin](../linearreadarcdisplaysettingsmixin)
 
 ### LinearReadArcsDisplay - Properties
 

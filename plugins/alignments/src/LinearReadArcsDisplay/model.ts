@@ -34,8 +34,6 @@ import type {
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
  * - [FeatureDensityMixin](../featuredensitymixin)
- * - [LinearReadDisplayBaseMixin](../linearreaddisplaybasemixin)
- * - [LinearReadArcsDisplaySettingsMixin](../linearreadarcdisplaysettingsmixin)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types

@@ -2,6 +2,8 @@ import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 /**
+ * #stateModel LinearReadArcsDisplaySettingsMixin
+ *
  * Mixin for LinearReadArcsDisplay-specific settings
  * Contains arc rendering options like line width, jitter, and connection toggles
  */
