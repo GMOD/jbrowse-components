@@ -373,7 +373,7 @@ const testSuites: TestSuite[] = [
               const containers = document.querySelectorAll(
                 '[data-testid^="view-container-"]',
               )
-              return [...containers].map(c => c.dataset.testid)
+              return [...containers].map(c => (c as HTMLElement).dataset.testid)
             })
 
           const orderBefore = await getViewOrder()
