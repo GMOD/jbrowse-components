@@ -90,6 +90,7 @@
     "css-loader": "^7.1.2",
     "dependency-graph": "^1.0.0",
     "detect-port-alt": "^1.1.6",
+    "dotenv": "^17.2.3",
     "electron": "39.2.7",
     "electron-builder": "^25.1.8",
     "electron-mock-ipc": "^0.3.14",
