@@ -36,6 +36,26 @@ const normalInsertItem: LegendItem = {
   label: 'Normal',
 }
 
+const orientationLegendItems: LegendItem[] = [
+  ...orientationItems,
+  unmappedMateItem,
+  supplementaryItem,
+]
+
+const insertSizeLegendItems: LegendItem[] = [
+  normalInsertItem,
+  ...insertSizeItems,
+  unmappedMateItem,
+  supplementaryItem,
+]
+
+const insertSizeAndOrientationLegendItems: LegendItem[] = [
+  ...orientationItems,
+  ...insertSizeItems,
+  unmappedMateItem,
+  supplementaryItem,
+]
+
 function getBaseItems(theme: Theme): LegendItem[] {
   const { bases, insertion, deletion, hardclip, softclip } = theme.palette
   return [
@@ -72,16 +92,11 @@ export function getPileupLegendItems(
       supplementaryItem,
     ]
   } else if (colorType === 'insertSize') {
-    return [normalInsertItem, ...insertSizeItems, unmappedMateItem, supplementaryItem]
+    return insertSizeLegendItems
   } else if (colorType === 'pairOrientation') {
-    return [...orientationItems, unmappedMateItem, supplementaryItem]
+    return orientationLegendItems
   } else if (colorType === 'insertSizeAndPairOrientation') {
-    return [
-      ...orientationItems,
-      ...insertSizeItems,
-      unmappedMateItem,
-      supplementaryItem,
-    ]
+    return insertSizeAndOrientationLegendItems
   } else {
     return getBaseItems(theme)
   }
@@ -130,18 +145,13 @@ export function getReadDisplayLegendItems(
     return items
   }
   if (colorType === 'insertSizeAndOrientation') {
-    return [
-      ...orientationItems,
-      ...insertSizeItems,
-      unmappedMateItem,
-      supplementaryItem,
-    ]
+    return insertSizeAndOrientationLegendItems
   }
   if (colorType === 'insertSize') {
-    return [normalInsertItem, ...insertSizeItems, unmappedMateItem, supplementaryItem]
+    return insertSizeLegendItems
   }
   if (colorType === 'orientation') {
-    return [...orientationItems, unmappedMateItem, supplementaryItem]
+    return orientationLegendItems
   }
 
   return [supplementaryItem]
