@@ -41,6 +41,32 @@ export function forEachMismatchNumeric(
   ref: string | undefined,
   callback: MismatchCallback,
 ) {
+  // Fast path for reads with no sequence (e.g. secondary alignments with SEQ='*')
+  if (seqLength === 0) {
+    let roffset = 0
+    for (let i = 0, l = cigar.length; i < l; i++) {
+      const packed = cigar[i]!
+      const len = packed >> 4
+      const op = packed & 0xf
+      if ((1 << op) & CIGAR_M_EQ_MASK) {
+        roffset += len
+      } else if (op === CIGAR_I) {
+        callback(INSERTION_TYPE, roffset, 0, '*', -1, 0, len)
+      } else if (op === CIGAR_D) {
+        callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
+        roffset += len
+      } else if (op === CIGAR_N) {
+        callback(SKIP_TYPE, roffset, len, 'N', -1, 0, 0)
+        roffset += len
+      } else if (op === CIGAR_S) {
+        callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
+      } else if (op === CIGAR_H) {
+        callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
+      }
+    }
+    return
+  }
+
   const mdLength = md?.length ?? 0
   const hasQual = !!qual
   const hasMD = md && mdLength > 0
@@ -69,7 +95,7 @@ export function forEachMismatchNumeric(
 
     if ((1 << op) & CIGAR_M_EQ_MASK) {
       if (hasMD) {
-        let remaining = Math.min(len, seqLength - soffset)
+        let remaining = len
         let localOffset = 0
 
         while (remaining > 0) {
@@ -116,9 +142,7 @@ export function forEachMismatchNumeric(
           }
         }
       } else if (ref) {
-        // No MD tag - compare against reference sequence
-        const safeEnd = soffset + len <= seqLength ? len : seqLength - soffset
-        for (let j = 0; j < safeEnd; j++) {
+        for (let j = 0; j < len; j++) {
           const seqIdx = soffset + j
           const sb = numericSeq[seqIdx >> 1]!
           const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
@@ -142,14 +166,13 @@ export function forEachMismatchNumeric(
       roffset += len
     } else if (op === CIGAR_I) {
       // Optimized insertion base extraction - avoid string concat for common cases
-      const safeLen = Math.min(len, seqLength - soffset)
       let insertedBases: string
-      if (safeLen === 1) {
+      if (len === 1) {
         // Single base insertion - most common case
         const sb = numericSeq[soffset >> 1]!
         const nibble = (sb >> ((1 - (soffset & 1)) << 2)) & 0xf
         insertedBases = SEQRET[nibble]!
-      } else if (safeLen === 2) {
+      } else if (len === 2) {
         // Two base insertion - second most common
         const seqIdx0 = soffset
         const sb0 = numericSeq[seqIdx0 >> 1]!
@@ -159,9 +182,8 @@ export function forEachMismatchNumeric(
         const nibble1 = (sb1 >> ((1 - (seqIdx1 & 1)) << 2)) & 0xf
         insertedBases = SEQRET[nibble0]! + SEQRET[nibble1]!
       } else {
-        // Longer insertions - use array join (avoids intermediate string allocations)
-        const bases = new Array<string>(safeLen)
-        for (let j = 0; j < safeLen; j++) {
+        const bases = new Array<string>(len)
+        for (let j = 0; j < len; j++) {
           const seqIdx = soffset + j
           const sb = numericSeq[seqIdx >> 1]!
           const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
