@@ -73,6 +73,7 @@ Use "jbrowse <command> --help" for more information about a command.
 
 ```
 
+
 ## jbrowse create
 
 ```
@@ -106,6 +107,7 @@ $ jbrowse create /path/to/new/installation --tag v1.0.0
 $ jbrowse create --listVersions
 ```
 
+
 ## jbrowse add-assembly
 
 ```
@@ -115,17 +117,17 @@ Usage: jbrowse add-assembly <sequence> [options]
 
 Options:
   -t, --type                    type of sequence, by default inferred from sequence file
-
+                             
                              indexedFasta   An index FASTA (e.g. .fa or .fasta) file;
                                             can optionally specify --faiLocation
-
+                             
                              bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file;
                                             can optionally specify --faiLocation and/or --gziLocation
-
+                             
                              twoBit         A twoBit (e.g. .2bit) file
-
+                             
                              chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
-
+                             
                              custom         Either a JSON file location or inline JSON that defines a custom
                                             sequence adapter; must provide --name if using inline JSON
   -n, --name                    Name of the assembly; if not specified, will be guessed using the sequence file name
@@ -174,6 +176,7 @@ $ jbrowse add-assembly https://example.com/data/sample.2bit
 $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
+
 ## jbrowse add-track
 
 ```
@@ -221,6 +224,7 @@ $ jbrowse add-track https://mywebsite.com/my.bam
 $ jbrowse add-track /url/relative/path.bam --load inPlace
 ```
 
+
 ## jbrowse text-index
 
 ```
@@ -231,6 +235,7 @@ Usage: jbrowse text-index [options]
 Options:
   -h, --help                    Show CLI help
      , --tracks                  Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks
+     , --excludeTracks           Specific tracks to exclude from indexing, formatted as comma separated trackIds
      , --target                  Path to config file in JB2 installation directory to read from.
      , --out                     Synonym for target
      , --attributes              Comma separated list of attributes to index
@@ -250,6 +255,9 @@ $ jbrowse text-index
 # indexes specific trackIds that it can find in the current directory's config.json
 $ jbrowse text-index --tracks=track1,track2,track3
 
+# indexes all tracks except specific trackIds
+$ jbrowse text-index --exclude-tracks=track1,track2,track3
+
 # indexes all tracks in a directory's config.json or in a specific config file
 $ jbrowse text-index --out /path/to/jb2/
 
@@ -259,6 +267,7 @@ $ jbrowse text-index -a hg19 --force
 # create index for some files for use in @jbrowse/react-linear-genome-view2 or similar
 $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
+
 
 ## jbrowse admin-server
 
@@ -276,6 +285,7 @@ Options:
 $ jbrowse admin-server
 $ jbrowse admin-server -p 8888
 ```
+
 
 ## jbrowse upgrade
 
@@ -313,6 +323,7 @@ $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 $ jbrowse upgrade --nightly
 ```
 
+
 ## jbrowse make-pif
 
 ```
@@ -329,6 +340,7 @@ $ jbrowse make-pif input.paf # creates input.pif.gz in same directory
 
 $ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also
 ```
+
 
 ## jbrowse sort-gff
 
@@ -348,6 +360,7 @@ $ tabix sorted.gff.gz
 $ cat input.gff | jbrowse sort-gff | bgzip > sorted.gff.gz
 ```
 
+
 ## jbrowse sort-bed
 
 ```
@@ -364,6 +377,7 @@ $ tabix sorted.bed.gz
 
 # OR pipe data via stdin: cat file.bed | jbrowse sort-bed | bgzip > sorted.bed.gz
 ```
+
 
 ## jbrowse add-connection
 
@@ -393,6 +407,7 @@ $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config
 $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json
 ```
 
+
 ## jbrowse add-track-json
 
 ```
@@ -410,6 +425,7 @@ $ jbrowse add-track-json track.json
 $ jbrowse add-track-json track.json --update
 ```
 
+
 ## jbrowse remove-track
 
 ```
@@ -424,6 +440,7 @@ Options:
 
 $ jbrowse remove-track trackId
 ```
+
 
 ## jbrowse set-default-session
 
@@ -450,3 +467,5 @@ $ jbrowse set-default-session --target /path/to/jb2/installation/config.json --s
 # print current default session
 $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
+
+
