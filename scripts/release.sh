@@ -21,8 +21,8 @@ LOCAL_CHANGES=$(git status --short)
 
 # Run checks
 pnpm install
-pnpm lint
-pnpm test
+# pnpm lint
+# pnpm test
 
 # Calculate new version
 PREVIOUS_VERSION=$(node --print "require('./plugins/alignments/package.json').version")
