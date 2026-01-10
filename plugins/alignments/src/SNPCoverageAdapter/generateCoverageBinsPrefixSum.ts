@@ -7,6 +7,7 @@ import { isInterbase, mismatchLen } from './util.ts'
 import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil.ts'
 import {
   DELSKIP_MASK,
+  INSERTION_TYPE,
   MISMATCH_MAP,
   MISMATCH_REV_MAP,
   SKIP_TYPE,
@@ -500,6 +501,19 @@ function mismatchHandler(
       }
       skipmap![hash].score++
     }
+  } else if (type === INSERTION_TYPE) {
+    const epos = mstart - regionStart
+    if (epos >= 0 && epos < regionSize) {
+      noncovEvents!.push({
+        pos: epos,
+        entry: {
+          strand: fstrand,
+          type: 'insertion',
+          length: interbaseLen!,
+          sequence: base,
+        },
+      })
+    }
   } else if (isInterbase(type)) {
     const epos = mstart - regionStart
     if (epos >= 0 && epos < regionSize) {
@@ -507,9 +521,8 @@ function mismatchHandler(
         pos: epos,
         entry: {
           strand: fstrand,
-          type: MISMATCH_MAP[type]! as 'insertion' | 'hardclip' | 'softclip',
+          type: MISMATCH_MAP[type]! as 'hardclip' | 'softclip',
           length: interbaseLen!,
-          sequence: base,
         },
       })
     }

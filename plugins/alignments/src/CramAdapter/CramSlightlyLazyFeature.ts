@@ -225,6 +225,7 @@ export default class CramSlightlyLazyFeature implements Feature {
 
     const featStart = this.start
     const qual = this.qualRaw
+    const hasQual = !!qual
     const len = readFeatures.length
 
     let refPos = 0
@@ -234,7 +235,6 @@ export default class CramSlightlyLazyFeature implements Feature {
 
     for (let i = 0; i < len; i++) {
       const rf = readFeatures[i]!
-      const { refPos: p, code, pos, data, sub, ref } = rf
       const sublen = refPos - lastPos
       lastPos = refPos
 
@@ -252,43 +252,34 @@ export default class CramSlightlyLazyFeature implements Feature {
         insertedBases = ''
         insertedBasesLen = 0
       }
-      refPos = p - 1 - featStart
+      refPos = rf.refPos - 1 - featStart
 
-      const codeChar = code.charCodeAt(0)
+      const codeChar = rf.code.charCodeAt(0)
 
       if (codeChar === CODE_X) {
-        // substitution/mismatch
-        // Convert ref base to uppercase char code using bitwise AND
-        // (clears bit 5, converting lowercase a-z to uppercase A-Z)
-        const refCharCode = ref ? ref.charCodeAt(0) & ~0x20 : 0
+        const refCharCode = rf.ref ? rf.ref.charCodeAt(0) & ~0x20 : 0
         callback(
           MISMATCH_TYPE,
           refPos,
           1,
-          sub!,
-          qual?.[pos - 1] ?? -1,
+          rf.sub!,
+          hasQual ? qual[rf.pos - 1]! : -1,
           refCharCode,
           0,
         )
       } else if (codeChar === CODE_I) {
-        // insertion
-        callback(INSERTION_TYPE, refPos, 0, data, -1, 0, data.length)
+        callback(INSERTION_TYPE, refPos, 0, rf.data, -1, 0, rf.data.length)
       } else if (codeChar === CODE_N) {
-        // reference skip
-        callback(SKIP_TYPE, refPos, data, 'N', -1, 0, 0)
+        callback(SKIP_TYPE, refPos, rf.data, 'N', -1, 0, 0)
       } else if (codeChar === CODE_S) {
-        // soft clip
-        const dataLen = data.length
+        const dataLen = rf.data.length
         callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
       } else if (codeChar === CODE_H) {
-        // hard clip
-        callback(HARDCLIP_TYPE, refPos, 1, `H${data}`, -1, 0, data)
+        callback(HARDCLIP_TYPE, refPos, 1, `H${rf.data}`, -1, 0, rf.data)
       } else if (codeChar === CODE_D) {
-        // deletion
-        callback(DELETION_TYPE, refPos, data, '*', -1, 0, 0)
+        callback(DELETION_TYPE, refPos, rf.data, '*', -1, 0, 0)
       } else if (codeChar === CODE_i) {
-        // single-base insertion - accumulate
-        insertedBases += data
+        insertedBases += rf.data
         insertedBasesLen++
       }
     }

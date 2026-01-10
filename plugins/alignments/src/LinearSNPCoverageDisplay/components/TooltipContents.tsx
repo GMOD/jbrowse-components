@@ -100,7 +100,7 @@ function TableHeader() {
       <tr>
         <th />
         <th>Base</th>
-        <th>Count</th>
+        <th># of Reads</th>
         <th>% of Reads</th>
         <th>Strands</th>
         <th>Avg Prob</th>
@@ -572,7 +572,7 @@ function InterbaseTooltip({
           {topSequence ? (
             <tr>
               <td colSpan={4}>
-                Sequence:{' '}
+                Most common sequence:{' '}
                 {topSequence.length > 20
                   ? `${topSequence.slice(0, 20)}...`
                   : topSequence}
