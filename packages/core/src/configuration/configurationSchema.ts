@@ -291,8 +291,8 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     get(id, parent) {
       const session = getSession(parent)
 
-      // Try session.tracksById first (works for frozen tracks)
-      let ret = session.tracksById[id]
+      // Try session.getTracksById first (works for frozen tracks)
+      let ret = session.getTracksById()[id]
       if (!ret) {
         // Fall back to resolveIdentifier for view-specific tracks (e.g. viewTrackConfigs)
         // that are MST models but not in session.tracks

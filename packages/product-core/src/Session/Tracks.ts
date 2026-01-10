@@ -41,12 +41,20 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       },
 
       /**
-       * #getter
+       * #method
+       * Method to get tracks by ID. Includes tracks from connections if present.
        */
-      get tracksById(): Record<string, AnyConfigurationModel> {
+      getTracksById(): Record<string, AnyConfigurationModel> {
         const temporaryAssemblies =
           'temporaryAssemblies' in self
             ? (self.temporaryAssemblies as { sequence: { trackId: string } }[])
+            : []
+
+        const connectionInstances =
+          'connectionInstances' in self
+            ? (self.connectionInstances as {
+                tracks: AnyConfigurationModel[]
+              }[])
             : []
 
         return Object.fromEntries([
@@ -55,6 +63,10 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
           ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
           // Include temporary assembly sequence tracks
           ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
+          // Include connection tracks
+          ...connectionInstances.flatMap(c =>
+            c.tracks.map(t => [t.trackId, t]),
+          ),
         ])
       },
     }))

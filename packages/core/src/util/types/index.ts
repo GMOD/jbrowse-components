@@ -83,7 +83,7 @@ export type DialogComponentType =
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
-  tracksById: Record<string, AnyConfigurationModel>
+  getTracksById: () => Record<string, AnyConfigurationModel>
   jbrowse: IAnyStateTreeNode
   drawerPosition?: string
   configuration: AnyConfigurationModel

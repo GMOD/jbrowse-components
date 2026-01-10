@@ -323,7 +323,7 @@ export function showTrackGeneric(
     return found
   }
 
-  const conf = session.tracksById[trackId]
+  const conf = session.getTracksById()[trackId]
   if (!conf) {
     throw new Error(`Could not resolve identifier "${trackId}"`)
   }
