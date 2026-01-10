@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/desktop",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "type": "module",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "license": "Apache-2.0",
