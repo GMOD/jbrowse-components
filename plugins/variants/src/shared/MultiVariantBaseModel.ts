@@ -312,6 +312,10 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setPhasedMode(arg: string) {
+        if (self.renderingMode !== arg) {
+          self.layout = []
+          self.clusterTree = undefined
+        }
         self.renderingMode = arg
       },
       /**
