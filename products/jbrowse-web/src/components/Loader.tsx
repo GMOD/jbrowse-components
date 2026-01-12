@@ -1,15 +1,14 @@
 /**
  * The pluginManager/rootModel can be destroyed and recreated without a full
  * page reload. Plugin install passes the session explicitly via the
- * reloadPluginManager callback. HMR uses a different mechanism: the useEffect
- * cleanup saves the current session to the loader before destroying, so
- * createPluginManager can restore it.
+ * reloadPluginManager callback. Session is continuously auto-saved to
+ * sessionStorage by rootModel, so HMR can recover from there.
  */
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { destroy, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { destroy } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
@@ -161,13 +160,6 @@ const Renderer = observer(function Renderer({
     }
     return () => {
       if (pluginManager.current?.rootModel && !isJest) {
-        const rootModel = pluginManager.current.rootModel
-        const session = rootModel.session
-        if (session) {
-          // Save session before destroying so it can be restored (see file
-          // header comment for details on when this is needed)
-          loader.setSessionSnapshot(getSnapshot(session))
-        }
         destroy(pluginManager.current.rootModel)
       }
     }
