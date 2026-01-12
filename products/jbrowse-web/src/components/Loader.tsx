@@ -1,15 +1,25 @@
 /**
  * The pluginManager/rootModel can be destroyed and recreated without a full
- * page reload. Plugin install passes the session explicitly via the
- * reloadPluginManager callback. HMR uses a different mechanism: the useEffect
- * cleanup saves the current session to the loader before destroying, so
- * createPluginManager can restore it.
+ * page reload. This implementation uses an imperative approach where
+ * reloadPluginManager directly manages the transition: it destroys the old
+ * rootModel, creates a new loader, waits for it to be ready, then creates the
+ * new pluginManager. This linear flow is easier to reason about than reactive
+ * state changes triggering effects.
  */
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { destroy, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { when } from 'mobx'
 import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
@@ -28,6 +38,8 @@ const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
 const StartScreenErrorMessage = lazy(
   () => import('./StartScreenErrorMessage.tsx'),
 )
+
+const isJest = typeof jest !== 'undefined'
 
 const paramsToDelete = [
   'loc',
@@ -48,7 +60,7 @@ export function Loader({
 }) {
   const [initialTimestamp] = useState(() => initialTimestampProp ?? Date.now())
 
-  const [loader] = useState(() => {
+  const queryParamsRef = useRef(() => {
     const {
       config,
       session,
@@ -76,8 +88,7 @@ export function Loader({
       'nav',
       'hubURL',
     ])
-
-    return SessionLoader.create({
+    return {
       configPath: config,
       sessionQuery: session,
       password,
@@ -90,88 +101,128 @@ export function Loader({
       highlight,
       nav: JSON.parse(nav || 'true'),
       hubURL: hubURL?.split(','),
-      initialTimestamp,
-    })
+    }
   })
+
+  const [loader] = useState(() =>
+    SessionLoader.create({
+      ...queryParamsRef.current(),
+      initialTimestamp,
+    }),
+  )
 
   useEffect(() => {
     deleteQueryParams([...paramsToDelete])
   }, [])
 
-  return <Renderer loader={loader} />
+  return (
+    <Renderer loader={loader} queryParamsRef={queryParamsRef} />
+  )
 }
 
 const Renderer = observer(function Renderer({
-  loader: firstLoader,
+  loader: initialLoader,
+  queryParamsRef,
 }: {
   loader: SessionLoaderModel
+  queryParamsRef: React.RefObject<() => {
+    configPath: string | undefined
+    sessionQuery: string | undefined
+    password: string | undefined
+    adminKey: string | undefined
+    loc: string | undefined
+    assembly: string | undefined
+    tracks: string | undefined
+    sessionTracks: string | undefined
+    tracklist: boolean
+    highlight: string | undefined
+    nav: boolean
+    hubURL: string[] | undefined
+  }>
 }) {
-  // Store loader in state so reloadPluginManager can replace it
-  const [loader, setLoader] = useState(firstLoader)
-  const pluginManager = useRef<PluginManager | undefined>(undefined)
-  const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
+  const loaderRef = useRef(initialLoader)
+  const pluginManagerRef = useRef<PluginManager | undefined>(undefined)
+  const [, forceUpdate] = useReducer(x => x + 1, 0)
+  const [error, setError] = useState<unknown>()
 
-  // Called by rootModel when plugins are installed/removed. Creates a new
-  // loader with the updated config and current session, triggering a full
-  // pluginManager recreation.
+  // Called by rootModel when plugins are installed/removed. Imperatively
+  // handles the entire transition: destroy old, create new loader, wait for
+  // ready, create new pluginManager.
   const reloadPluginManager = useCallback(
-    (
+    async (
       configSnapshot: Record<string, unknown>,
       sessionSnapshot: Record<string, unknown>,
     ) => {
-      const newLoader = SessionLoader.create({
-        configPath: loader.configPath,
-        sessionQuery: loader.sessionQuery,
-        password: loader.password,
-        adminKey: loader.adminKey,
-        loc: loader.loc,
-        assembly: loader.assembly,
-        tracks: loader.tracks,
-        sessionTracks: loader.sessionTracks,
-        tracklist: loader.tracklist,
-        highlight: loader.highlight,
-        nav: loader.nav,
-        hubURL: loader.hubURL,
-        initialTimestamp: Date.now(),
-        configSnapshot,
-        sessionSnapshot,
-      })
-      setLoader(newLoader)
-      setPluginManagerCreated(false)
-    },
-    [loader],
-  )
-  const { configError, ready, sessionTriaged } = loader
-  const [error, setError] = useState<unknown>()
-
-  useEffect(() => {
-    // Skip destroy in Jest since it interferes with test cleanup
-    const isJest = typeof jest !== 'undefined'
-    if (ready) {
       try {
-        if (pluginManager.current?.rootModel && !isJest) {
-          destroy(pluginManager.current.rootModel)
+        // 1. Destroy the old rootModel immediately (no need to save session -
+        //    it's passed to us)
+        if (pluginManagerRef.current?.rootModel && !isJest) {
+          destroy(pluginManagerRef.current.rootModel)
         }
-        pluginManager.current = createPluginManager(loader, reloadPluginManager)
-        setPluginManagerCreated(true)
+        pluginManagerRef.current = undefined
+        forceUpdate()
+
+        // 2. Create new loader with the snapshots
+        const newLoader = SessionLoader.create({
+          ...queryParamsRef.current(),
+          initialTimestamp: Date.now(),
+          configSnapshot,
+          sessionSnapshot,
+        })
+        loaderRef.current = newLoader
+        forceUpdate()
+
+        // 3. Wait for the loader to be ready
+        await when(() => newLoader.ready || !!newLoader.error)
+
+        if (newLoader.error) {
+          setError(newLoader.error)
+          return
+        }
+
+        // 4. Create the new pluginManager
+        pluginManagerRef.current = createPluginManager(
+          newLoader,
+          reloadPluginManager,
+        )
+        forceUpdate()
+      } catch (e) {
+        console.error(e)
+        setError(e)
+      }
+    },
+    [queryParamsRef],
+  )
+
+  const loader = loaderRef.current
+  const { configError, ready, sessionTriaged } = loader
+
+  // Initial setup: wait for loader to be ready and create pluginManager
+  useEffect(() => {
+    if (ready && !pluginManagerRef.current) {
+      try {
+        pluginManagerRef.current = createPluginManager(loader, reloadPluginManager)
+        forceUpdate()
       } catch (e) {
         console.error(e)
         setError(e)
       }
     }
+  }, [ready, loader, reloadPluginManager])
+
+  // Cleanup on unmount (for HMR)
+  useEffect(() => {
     return () => {
-      if (pluginManager.current?.rootModel && !isJest) {
-        const rootModel = pluginManager.current.rootModel
+      if (pluginManagerRef.current?.rootModel && !isJest) {
+        const rootModel = pluginManagerRef.current.rootModel
         const session = rootModel.session
         if (session) {
-          // Save session before destroying so it can be restored (see file
-          // header comment for details on when this is needed)
-          loader.setSessionSnapshot(getSnapshot(session))
+          loaderRef.current.setSessionSnapshot(getSnapshot(session))
         }
-        destroy(pluginManager.current.rootModel)
+        destroy(pluginManagerRef.current.rootModel)
       }
     }
-  }, [ready, loader, reloadPluginManager])
+  }, [])
 
   const err = configError || error
   if (err) {
@@ -182,8 +233,8 @@ const Renderer = observer(function Renderer({
     )
   } else if (sessionTriaged) {
     return <SessionTriaged loader={loader} sessionTriaged={sessionTriaged} />
-  } else if (pluginManagerCreated && pluginManager.current) {
-    return <JBrowse pluginManager={pluginManager.current} />
+  } else if (pluginManagerRef.current) {
+    return <JBrowse pluginManager={pluginManagerRef.current} />
   } else {
     return <Loading />
   }
