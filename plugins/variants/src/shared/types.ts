@@ -5,11 +5,9 @@ export interface Source {
   baseUri?: string
   name: string
   baseName?: string
-  label?: string
   color?: string
   group?: string
   HP?: number
-  id?: string
   [key: string]: unknown
 }
 

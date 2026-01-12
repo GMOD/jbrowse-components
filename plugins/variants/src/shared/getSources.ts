@@ -1,5 +1,14 @@
 import type { SampleInfo, Source } from './types.ts'
 
+function makeHaplotypeSources(source: Source, ploidy: number): Source[] {
+  const results: Source[] = []
+  for (let i = 0; i < ploidy; i++) {
+    const name = `${source.name} HP${i}`
+    results.push({ ...source, name, baseName: source.name, HP: i })
+  }
+  return results
+}
+
 export function expandSourcesToHaplotypes({
   sources,
   sampleInfo,
@@ -7,20 +16,10 @@ export function expandSourcesToHaplotypes({
   sources: Source[]
   sampleInfo: Record<string, SampleInfo>
 }) {
-  const result: Source[] = []
-  for (const source of sources) {
-    const info = sampleInfo[source.name]
-    const ploidy = info?.maxPloidy ?? 2
-    for (let i = 0; i < ploidy; i++) {
-      result.push({
-        ...source,
-        name: `${source.name} HP${i}`,
-        baseName: source.name,
-        HP: i,
-      })
-    }
-  }
-  return result
+  return sources.flatMap(source => {
+    const ploidy = sampleInfo[source.name]?.maxPloidy ?? 2
+    return makeHaplotypeSources(source, ploidy)
+  })
 }
 
 export function getSources({
@@ -34,55 +33,31 @@ export function getSources({
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
 }) {
-  const rows: Source[] = []
   const sourceMap = Object.fromEntries(sources.map(s => [s.name, s]))
 
-  for (const row of layout) {
-    const isHaplotypeEntry = row.HP !== undefined
+  return layout.flatMap(row => {
     const sampleName = row.baseName ?? row.name
     const baseSource = sourceMap[sampleName]
 
     if (!baseSource) {
-      continue
+      return []
     }
 
+    const merged = { ...baseSource, ...row }
+
     if (renderingMode === 'phased') {
-      if (isHaplotypeEntry) {
-        // already a haplotype entry (from haplotype clustering) - use as-is
-        rows.push({
-          ...baseSource,
-          ...row,
-          baseName: sampleName,
-          label: row.name,
-          id: row.name,
-        })
-      } else {
-        // expand sample to haplotypes
-        const info = sampleInfo?.[row.name]
-        if (info?.isPhased) {
-          const ploidy = info.maxPloidy
-          for (let i = 0; i < ploidy; i++) {
-            const id = `${row.name} HP${i}`
-            rows.push({
-              ...baseSource,
-              ...row,
-              baseName: row.name,
-              label: id,
-              HP: i,
-              id: id,
-            })
-          }
-        }
+      if (row.HP !== undefined) {
+        // already a haplotype entry (from haplotype clustering)
+        return [{ ...merged, baseName: sampleName }]
       }
-    } else {
-      // non-phased mode
-      rows.push({
-        ...baseSource,
-        ...row,
-        label: row.name,
-        id: row.name,
-      })
+      // expand sample to haplotypes
+      const ploidy = sampleInfo?.[row.name]?.maxPloidy
+      if (ploidy) {
+        return makeHaplotypeSources(merged, ploidy)
+      }
+      return []
     }
-  }
-  return rows
+    // non-phased mode
+    return [merged]
+  })
 }
