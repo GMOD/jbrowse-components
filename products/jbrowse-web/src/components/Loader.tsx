@@ -1,9 +1,9 @@
 /**
  * The pluginManager/rootModel can be destroyed and recreated without a full
- * page reload. Plugin install passes the session explicitly via the
- * reloadPluginManager callback. HMR uses a different mechanism: the useEffect
- * cleanup saves the current session to the loader before destroying, so
- * createPluginManager can restore it.
+ * page reload. Plugin install triggers a key-based remount by incrementing
+ * reloadKey, which causes React to unmount and remount Renderer with fresh
+ * state. The config and session snapshots are stored in refs to survive the
+ * remount. HMR saves the current session to the loader in useEffect cleanup.
  */
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
@@ -48,7 +48,7 @@ export function Loader({
 }) {
   const [initialTimestamp] = useState(() => initialTimestampProp ?? Date.now())
 
-  const [loader] = useState(() => {
+  const queryParams = useRef(() => {
     const {
       config,
       session,
@@ -76,8 +76,7 @@ export function Loader({
       'nav',
       'hubURL',
     ])
-
-    return SessionLoader.create({
+    return {
       configPath: config,
       sessionQuery: session,
       password,
@@ -90,62 +89,88 @@ export function Loader({
       highlight,
       nav: JSON.parse(nav || 'true'),
       hubURL: hubURL?.split(','),
-      initialTimestamp,
-    })
+    }
   })
 
-  useEffect(() => {
-    deleteQueryParams([...paramsToDelete])
-  }, [])
+  // Refs to store snapshots for reload - survive across Renderer remounts
+  const configSnapshotRef = useRef<Record<string, unknown>>()
+  const sessionSnapshotRef = useRef<Record<string, unknown>>()
+  const [reloadKey, setReloadKey] = useState(0)
 
-  return <Renderer loader={loader} />
-}
-
-const Renderer = observer(function Renderer({
-  loader: firstLoader,
-}: {
-  loader: SessionLoaderModel
-}) {
-  // Store loader in state so reloadPluginManager can replace it
-  const [loader, setLoader] = useState(firstLoader)
-  const pluginManager = useRef<PluginManager | undefined>(undefined)
-  const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
-
-  // Called by rootModel when plugins are installed/removed. Creates a new
-  // loader with the updated config and current session, triggering a full
-  // pluginManager recreation.
+  // Called by rootModel when plugins are installed/removed. Stores snapshots
+  // and increments key to trigger Renderer remount with fresh loader.
   const reloadPluginManager = useCallback(
     (
       configSnapshot: Record<string, unknown>,
       sessionSnapshot: Record<string, unknown>,
     ) => {
-      const newLoader = SessionLoader.create({
-        configPath: loader.configPath,
-        sessionQuery: loader.sessionQuery,
-        password: loader.password,
-        adminKey: loader.adminKey,
-        loc: loader.loc,
-        assembly: loader.assembly,
-        tracks: loader.tracks,
-        sessionTracks: loader.sessionTracks,
-        tracklist: loader.tracklist,
-        highlight: loader.highlight,
-        nav: loader.nav,
-        hubURL: loader.hubURL,
-        initialTimestamp: Date.now(),
-        configSnapshot,
-        sessionSnapshot,
-      })
-      setLoader(newLoader)
-      setPluginManagerCreated(false)
+      configSnapshotRef.current = configSnapshot
+      sessionSnapshotRef.current = sessionSnapshot
+      setReloadKey(k => k + 1)
     },
-    [loader],
+    [],
   )
+
+  useEffect(() => {
+    deleteQueryParams([...paramsToDelete])
+  }, [])
+
+  return (
+    <Renderer
+      key={reloadKey}
+      queryParams={queryParams.current()}
+      initialTimestamp={initialTimestamp}
+      configSnapshot={configSnapshotRef.current}
+      sessionSnapshot={sessionSnapshotRef.current}
+      reloadPluginManager={reloadPluginManager}
+    />
+  )
+}
+
+const Renderer = observer(function Renderer({
+  queryParams,
+  initialTimestamp,
+  configSnapshot,
+  sessionSnapshot,
+  reloadPluginManager,
+}: {
+  queryParams: {
+    configPath: string | undefined
+    sessionQuery: string | undefined
+    password: string | undefined
+    adminKey: string | undefined
+    loc: string | undefined
+    assembly: string | undefined
+    tracks: string | undefined
+    sessionTracks: string | undefined
+    tracklist: boolean
+    highlight: string | undefined
+    nav: boolean
+    hubURL: string[] | undefined
+  }
+  initialTimestamp: number
+  configSnapshot: Record<string, unknown> | undefined
+  sessionSnapshot: Record<string, unknown> | undefined
+  reloadPluginManager: (
+    configSnapshot: Record<string, unknown>,
+    sessionSnapshot: Record<string, unknown>,
+  ) => void
+}) {
+  const [loader] = useState(() =>
+    SessionLoader.create({
+      ...queryParams,
+      initialTimestamp,
+      configSnapshot,
+      sessionSnapshot,
+    }),
+  )
+
+  const pluginManager = useRef<PluginManager | undefined>(undefined)
+  const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
   const { configError, ready, sessionTriaged } = loader
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    // Skip destroy in Jest since it interferes with test cleanup
     const isJest = typeof jest !== 'undefined'
     if (ready) {
       try {
@@ -164,8 +189,6 @@ const Renderer = observer(function Renderer({
         const rootModel = pluginManager.current.rootModel
         const session = rootModel.session
         if (session) {
-          // Save session before destroying so it can be restored (see file
-          // header comment for details on when this is needed)
           loader.setSessionSnapshot(getSnapshot(session))
         }
         destroy(pluginManager.current.rootModel)
