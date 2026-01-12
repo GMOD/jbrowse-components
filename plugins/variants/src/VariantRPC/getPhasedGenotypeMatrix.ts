@@ -14,9 +14,7 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-const SPLITTER = /[/|]/
-
-export async function getHaplotypeMatrix({
+export async function getPhasedGenotypeMatrix({
   pluginManager,
   args,
 }: {

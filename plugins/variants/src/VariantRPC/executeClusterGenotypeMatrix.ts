@@ -1,7 +1,7 @@
 import { clusterData, toNewick } from '@gmod/hclust'
 
 import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
-import { getHaplotypeMatrix } from './getHaplotypeMatrix.ts'
+import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
 
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -31,7 +31,7 @@ export async function executeClusterGenotypeMatrix({
   const { renderingMode, sampleInfo } = args
   const matrix =
     renderingMode === 'phased' && sampleInfo
-      ? await getHaplotypeMatrix({
+      ? await getPhasedGenotypeMatrix({
           pluginManager,
           args: { ...args, sampleInfo },
         })

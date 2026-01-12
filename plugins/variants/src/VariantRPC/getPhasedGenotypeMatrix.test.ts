@@ -1,7 +1,7 @@
 // Note: These tests would require mocking the adapter infrastructure.
 // Below are test cases that describe expected behavior.
 
-describe('getHaplotypeMatrix', () => {
+describe('getPhasedGenotypeMatrix', () => {
   // Test case descriptions for expected behavior:
 
   test.todo('creates row for each haplotype based on maxPloidy')
@@ -35,7 +35,7 @@ describe('getHaplotypeMatrix', () => {
 })
 
 // Example of what a full integration test might look like:
-// describe('getHaplotypeMatrix integration', () => {
+// describe('getPhasedGenotypeMatrix integration', () => {
 //   test('builds correct matrix from VCF features', async () => {
 //     const mockFeature = {
 //       get: (key: string) => {
@@ -48,7 +48,7 @@ describe('getHaplotypeMatrix', () => {
 //       }
 //     }
 //     // ... setup mock adapter that returns mockFeature
-//     // ... call getHaplotypeMatrix
+//     // ... call getPhasedGenotypeMatrix
 //     // ... assert matrix values
 //   })
 // })
