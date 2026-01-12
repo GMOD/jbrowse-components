@@ -75,8 +75,10 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
 
     for (let j = startRow; j < endRow; j++) {
       const y = j * h - scrollTop
-      const { name, HP } = sources[j]!
-      const genotype = samp[name]
+      const source = sources[j]!
+      const { name, HP, baseName } = source
+      const sampleName = baseName ?? name
+      const genotype = samp[sampleName]
       if (genotype) {
         const isPhased = genotype.includes('|')
         if (isPhased) {

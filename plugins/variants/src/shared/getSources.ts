@@ -15,6 +15,7 @@ export function expandSourcesToHaplotypes({
       result.push({
         ...source,
         name: `${source.name} HP${i}`,
+        baseName: source.name,
         HP: i,
       })
     }
@@ -36,13 +37,10 @@ export function getSources({
   const rows: Source[] = []
   const sourceMap = Object.fromEntries(sources.map(s => [s.name, s]))
 
-  // helper to get base sample name (strips " HP<n>" suffix if present)
-  const getBaseName = (name: string) => name.replace(/ HP\d+$/, '')
-
   for (const row of layout) {
     const isHaplotypeEntry = row.HP !== undefined
-    const baseName = getBaseName(row.name)
-    const baseSource = sourceMap[baseName]
+    const sampleName = row.baseName ?? row.name
+    const baseSource = sourceMap[sampleName]
 
     if (!baseSource) {
       continue
@@ -54,6 +52,7 @@ export function getSources({
         rows.push({
           ...baseSource,
           ...row,
+          baseName: sampleName,
           label: row.name,
           id: row.name,
         })
@@ -67,6 +66,7 @@ export function getSources({
             rows.push({
               ...baseSource,
               ...row,
+              baseName: row.name,
               label: id,
               HP: i,
               id: id,

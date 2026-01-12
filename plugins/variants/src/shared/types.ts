@@ -4,6 +4,7 @@ import type { Feature } from '@jbrowse/core/util'
 export interface Source {
   baseUri?: string
   name: string
+  baseName?: string
   label?: string
   color?: string
   group?: string
