@@ -266,6 +266,26 @@ const SessionLoader = types
     setSessionSnapshot(snap: Record<string, unknown>) {
       self.sessionSnapshot = snap
     },
+    /**
+     * #action
+     * Reset the loader for plugin reload. This allows reusing the same loader
+     * instance instead of creating a new one, avoiding closure issues.
+     */
+    resetForPluginReload(
+      configSnapshot: Record<string, unknown>,
+      sessionSnapshot: Record<string, unknown>,
+    ) {
+      self.configSnapshot = configSnapshot
+      self.sessionSnapshot = sessionSnapshot
+      self.runtimePlugins = undefined
+      self.sessionPlugins = undefined
+      self.sessionError = undefined
+      self.configError = undefined
+      self.blankSession = false
+      self.sessionTriaged = undefined
+      self.sessionSpec = undefined
+      self.hubSpec = undefined
+    },
   }))
   .actions(self => ({
     /**
