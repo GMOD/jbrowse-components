@@ -65,8 +65,10 @@ function drawPhasedMode(drawCtx: DrawContext, mafs: Maf[]) {
       const samp = feature.get('samples') as Record<string, SampleGenotype>
       for (let j = startRow; j < endRow; j++) {
         const y = j * h - scrollTop
-        const { name, HP } = sources[j]!
-        const s = samp[name]
+        const source = sources[j]!
+        const { name, HP, baseName } = source
+        const sampleName = baseName ?? name
+        const s = samp[sampleName]
         if (s) {
           const genotype = s.GT?.[0]
           if (genotype) {
@@ -94,8 +96,10 @@ function drawPhasedMode(drawCtx: DrawContext, mafs: Maf[]) {
       }
       for (let j = startRow; j < endRow; j++) {
         const y = j * h - scrollTop
-        const { name, HP } = sources[j]!
-        const genotype = samp[name]
+        const source = sources[j]!
+        const { name, HP, baseName } = source
+        const sampleName = baseName ?? name
+        const genotype = samp[sampleName]
         if (genotype) {
           arr2.push(genotype)
           const isPhased = genotype.includes('|')
@@ -148,8 +152,9 @@ function drawAlleleCountMode(drawCtx: DrawContext, mafs: Maf[]) {
       const samp = feature.get('samples') as Record<string, SampleGenotype>
       for (let j = startRow; j < endRow; j++) {
         const y = j * h - scrollTop
-        const { name } = sources[j]!
-        const s = samp[name]
+        const source = sources[j]!
+        const sampleName = source.baseName ?? source.name
+        const s = samp[sampleName]
         if (s) {
           const genotype = s.GT?.[0]
           if (genotype) {
@@ -176,8 +181,9 @@ function drawAlleleCountMode(drawCtx: DrawContext, mafs: Maf[]) {
       }
       for (let j = startRow; j < endRow; j++) {
         const y = j * h - scrollTop
-        const { name } = sources[j]!
-        const genotype = samp[name]
+        const source = sources[j]!
+        const sampleName = source.baseName ?? source.name
+        const genotype = samp[sampleName]
         if (genotype) {
           arr2.push(genotype)
           const c = getAlleleColor(

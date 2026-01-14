@@ -41,17 +41,18 @@ const LegendItemText = function ({
   rowHeight: number
   textFillProps: ReturnType<typeof getFillProps>
 }) {
-  const { color, name, label } = source
+  const { color, name } = source
   const svgFontSize = Math.min(rowHeight, 12)
   const colorBoxWidth = 15
   return (
     <text
-      y={idx * rowHeight + svgFontSize}
+      y={(idx + 0.5) * rowHeight}
       x={color ? colorBoxWidth + 2 : 0}
       fontSize={svgFontSize}
+      dominantBaseline="central"
       {...textFillProps}
     >
-      {label || name}
+      {name}
     </text>
   )
 }
@@ -95,7 +96,7 @@ const MultiVariantColorLegend = observer(function MultiVariantColorLegend({
       {/* Render all background rectangles first */}
       {sources.map((source, idx) => (
         <LegendItem
-          key={`${source.label}-${idx}`}
+          key={`${source.name}-${idx}`}
           source={source}
           idx={idx}
           rowHeight={rowHeight}
@@ -105,7 +106,7 @@ const MultiVariantColorLegend = observer(function MultiVariantColorLegend({
       {canDisplayLabels
         ? sources.map((source, idx) => (
             <LegendItemText
-              key={`${source.label}-text-${idx}`}
+              key={`${source.name}-text-${idx}`}
               source={source}
               idx={idx}
               rowHeight={rowHeight}

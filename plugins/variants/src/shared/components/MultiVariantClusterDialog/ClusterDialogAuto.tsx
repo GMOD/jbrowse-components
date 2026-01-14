@@ -12,6 +12,8 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { expandSourcesToHaplotypes } from '../../getSources.ts'
+
 import type { ReducedModel } from './types.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -31,16 +33,24 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
   const [stopToken, setStopToken] = useState<StopToken>()
   const { rpcManager } = getSession(model)
   const {
-    sourcesWithoutLayout,
+    sourcesVolatile,
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
     adapterConfig,
+    renderingMode,
+    sampleInfo,
   } = model
+  const isHaplotypeClustering = renderingMode === 'phased'
 
   return (
     <>
       <DialogContent>
         {children}
+        {isHaplotypeClustering ? (
+          <div style={{ marginTop: 8, fontStyle: 'italic' }}>
+            Note: Clustering by individual haplotypes (phased mode)
+          </div>
+        ) : null}
         <div>
           {loading ? (
             <div style={{ padding: 50 }}>
@@ -60,7 +70,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
       <DialogActions>
         <Button
           variant="contained"
-          disabled={loading || !model.sourcesWithoutLayout}
+          disabled={loading || !sourcesVolatile}
           onClick={async () => {
             try {
               setError(undefined)
@@ -70,7 +80,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
               if (!view.initialized) {
                 return
               }
-              if (sourcesWithoutLayout) {
+              if (sourcesVolatile) {
                 const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
@@ -79,22 +89,35 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                   'MultiVariantClusterGenotypeMatrix',
                   {
                     regions: view.dynamicBlocks.contentBlocks,
-                    sources: sourcesWithoutLayout,
+                    sources: sourcesVolatile,
                     minorAlleleFrequencyFilter,
                     lengthCutoffFilter,
                     sessionId,
                     adapterConfig,
                     stopToken,
+                    renderingMode,
+                    sampleInfo,
                     statusCallback: (arg: string) => {
                       setProgress(arg)
                     },
                   },
                 )) as { order: number[]; tree: string }
 
-                model.setLayout(
-                  ret.order.map(idx => sourcesWithoutLayout[idx]!),
-                  false,
-                )
+                if (isHaplotypeClustering && sampleInfo) {
+                  const expandedSources = expandSourcesToHaplotypes({
+                    sources: sourcesVolatile,
+                    sampleInfo,
+                  })
+                  model.setLayout(
+                    ret.order.map(idx => expandedSources[idx]!),
+                    false,
+                  )
+                } else {
+                  model.setLayout(
+                    ret.order.map(idx => sourcesVolatile[idx]!),
+                    false,
+                  )
+                }
                 model.setClusterTree(ret.tree)
               }
               handleClose()

@@ -312,6 +312,10 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setPhasedMode(arg: string) {
+        if (self.renderingMode !== arg) {
+          self.layout = []
+          self.clusterTree = undefined
+        }
         self.renderingMode = arg
       },
       /**
@@ -374,12 +378,10 @@ export default function MultiVariantBaseModelF(
        * #getter
        */
       get sources() {
-        const sourcesWithLayout = self.layout.length
-          ? self.layout
-          : self.sourcesVolatile
-        return sourcesWithLayout
+        return self.sourcesVolatile
           ? getSources({
-              sources: sourcesWithLayout,
+              sources: self.sourcesVolatile,
+              layout: self.layout.length ? self.layout : undefined,
               renderingMode: self.renderingMode,
               sampleInfo: self.sampleInfo,
             })

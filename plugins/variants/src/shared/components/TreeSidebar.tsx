@@ -4,6 +4,7 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { alpha } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -21,6 +22,12 @@ const useStyles = makeStyles()(theme => ({
     '&:hover': {
       background: theme.palette.divider,
     },
+  },
+  treeBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    background: alpha(theme.palette.background.paper, 0.8),
   },
 }))
 
@@ -150,6 +157,14 @@ const TreeSidebar = observer(function TreeSidebar({
           zIndex: 100,
         }}
       >
+        {/* Tree area background */}
+        <div
+          className={classes.treeBackground}
+          style={{
+            width: treeAreaWidth,
+            height,
+          }}
+        />
         {/* Tree structure canvas - draws lines via treeDrawingAutorun */}
         <canvas
           ref={treeCanvasRef}

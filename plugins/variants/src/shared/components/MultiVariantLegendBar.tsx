@@ -24,7 +24,7 @@ const MultiVariantLegendBar = observer(function MultiVariantLegendBar(props: {
     let maxWidth = 0
     for (const s of sources) {
       const width = canDisplayLabels
-        ? measureText(s.label, svgFontSize) + 10
+        ? measureText(s.name, svgFontSize) + 10
         : 20
       if (width > maxWidth) {
         maxWidth = width
