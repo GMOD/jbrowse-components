@@ -303,58 +303,101 @@ const testSuites: TestSuite[] = [
               `New Linear genome view was not added. Views before: ${viewCountBefore}, after: ${viewCountAfter}`,
             )
           }
+
+          await waitForLoadingToComplete(page)
+          await snapshot(page, 'workspaces-add-view')
         },
       },
       {
         name: 'move to new tab enables workspaces',
         fn: async page => {
           await navigateToApp(page)
-          // Open view menu
+
+          // First copy the view to have 2 views
           const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
           await viewMenu?.click()
           await delay(300)
-          // Click View options
-          const viewOptions = await findByText(page, 'View options', 10000)
+          let viewOptions = await findByText(page, 'View options', 10000)
           await viewOptions?.click()
           await delay(300)
-          // Click Move to new tab
+          const copyView = await findByText(page, 'Copy view', 10000)
+          await copyView?.click()
+          await delay(1000)
+
+          // Now click Move to new tab on first view - this enables workspaces
+          const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
+          await viewMenus[0]?.click()
+          await delay(300)
+          viewOptions = await findByText(page, 'View options', 10000)
+          await viewOptions?.click()
+          await delay(300)
           const moveToTab = await findByText(page, 'Move to new tab', 10000)
           await moveToTab?.click()
-          // Wait for workspaces to be enabled (dockview tabs should appear)
-          await delay(1000)
-          // Verify dockview is present
+
+          // Wait for workspaces to be enabled (dockview should appear)
           await page.waitForSelector(
             '.dockview-theme-light, .dockview-theme-dark',
             { timeout: 10000 },
           )
+
+          // Give dockview extra time to fully render the new tab
+          await delay(3000)
+
+          await waitForLoadingToComplete(page)
+          await snapshot(page, 'workspaces-new-tab')
         },
       },
       {
         name: 'move to split right enables workspaces',
         fn: async page => {
           await navigateToApp(page)
-          // Open view menu
+
+          // First copy the view to have 2 views
           const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
           await viewMenu?.click()
           await delay(300)
-          // Click View options
-          const viewOptions = await findByText(page, 'View options', 10000)
+          let viewOptions = await findByText(page, 'View options', 10000)
           await viewOptions?.click()
           await delay(300)
-          // Click Move to split view
+          const copyView = await findByText(page, 'Copy view', 10000)
+          await copyView?.click()
+          await delay(1000)
+
+          // Verify we have 2 views before proceeding
+          const viewMenusBefore = await page.$$(
+            '[data-testid="view_menu_icon"]',
+          )
+          if (viewMenusBefore.length !== 2) {
+            throw new Error(
+              `Expected 2 views after copy, got ${viewMenusBefore.length}`,
+            )
+          }
+
+          // Now click Move to split view on first view - this enables workspaces
+          const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
+          await viewMenus[0]?.click()
+          await delay(300)
+          viewOptions = await findByText(page, 'View options', 10000)
+          await viewOptions?.click()
+          await delay(300)
           const moveToSplit = await findByText(
             page,
             'Move to split view',
             10000,
           )
           await moveToSplit?.click()
-          // Wait for workspaces to be enabled
-          await delay(1000)
-          // Verify dockview is present
+
+          // Wait for workspaces to be enabled (dockview should appear)
           await page.waitForSelector(
             '.dockview-theme-light, .dockview-theme-dark',
             { timeout: 10000 },
           )
+
+          // Give dockview time to fully render the split layout
+          await delay(3000)
+
+          await waitForLoadingToComplete(page)
+          await snapshot(page, 'workspaces-split-view')
         },
       },
       {
@@ -762,8 +805,9 @@ async function main() {
 
     const page = await browser.newPage()
     page.on('console', msg => {
-      if (msg.type() === 'error' && !msg.text().includes('favicon')) {
-        console.error('  Browser:', msg.text())
+      const text = msg.text()
+      if (msg.type() === 'error' && !text.includes('favicon')) {
+        console.error('  Browser:', text)
       }
     })
 

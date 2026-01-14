@@ -104,10 +104,12 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Create new panel and assign the view to it
       const panelId = `panel-${nanoid()}`
       const group = api.activeGroup
-      api.addPanel({
+      const newPanel = api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
         position: group ? { referenceGroup: group } : undefined,
       })
+      // Explicitly update params to ensure they're set
+      newPanel.update({ params: { panelId, session } })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
     },
@@ -125,12 +127,14 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Create new panel to the right of the current group
       const panelId = `panel-${nanoid()}`
       const group = api.activeGroup
-      api.addPanel({
+      const newPanel = api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
         position: group
           ? { referenceGroup: group, direction: 'right' }
           : undefined,
       })
+      // Explicitly update params to ensure they're set (dockview may not pass them immediately)
+      newPanel.update({ params: { panelId, session } })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
     },
@@ -271,18 +275,31 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   // action is stored as pending, then executed here once TiledViewsContainer
   // mounts and the dockview api is ready.
   useEffect(() => {
-    if (!api) {
-      return
-    }
-    const pendingAction = getPendingMoveAction()
-    if (pendingAction) {
-      const { type, viewId } = pendingAction
-      if (type === 'newTab') {
-        moveViewToNewTab(viewId)
-      } else {
-        moveViewToSplitRight(viewId)
+    if (api) {
+      const pendingAction = getPendingMoveAction()
+      if (pendingAction) {
+        const { type, viewId } = pendingAction
+        // Defer execution to allow dockview to fully initialize and React to
+        // complete its render cycle. A small delay ensures the initial panel
+        // setup is complete before we try to create a split.
+        let cancelled = false
+        const timeoutId = setTimeout(() => {
+          if (cancelled) {
+            return
+          }
+          if (type === 'newTab') {
+            moveViewToNewTab(viewId)
+          } else {
+            moveViewToSplitRight(viewId)
+          }
+        }, 100)
+        return () => {
+          cancelled = true
+          clearTimeout(timeoutId)
+        }
       }
     }
+    return () => {}
   }, [api, moveViewToNewTab, moveViewToSplitRight])
 
   // React to layout changes from undo/redo

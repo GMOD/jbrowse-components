@@ -32,7 +32,6 @@ import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
 
-
 import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
