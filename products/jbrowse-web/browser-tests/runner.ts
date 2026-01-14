@@ -250,6 +250,62 @@ const testSuites: TestSuite[] = [
     name: 'Workspaces',
     tests: [
       {
+        name: 'can add Linear genome view from menu with workspaces enabled',
+        fn: async page => {
+          await navigateToApp(page)
+
+          // Enable workspaces via Tools menu
+          const toolsMenu = await findByText(page, 'Tools', 10000)
+          await toolsMenu?.click()
+          await delay(300)
+          const useWorkspacesCheckbox = await findByText(
+            page,
+            'Use workspaces',
+            10000,
+          )
+          await useWorkspacesCheckbox?.click()
+          await delay(500)
+
+          // Count views before adding
+          const searchInputsBefore = await page.$$(
+            'input[placeholder="Search for location"]',
+          )
+          const viewCountBefore = searchInputsBefore.length
+
+          // Click Add menu and then Linear genome view
+          const addMenu = await findByText(page, 'Add', 10000)
+          await addMenu?.click()
+          await delay(300)
+          const linearGenomeViewOption = await findByText(
+            page,
+            'Linear genome view',
+            10000,
+          )
+          await linearGenomeViewOption?.click()
+
+          // Wait for new view to appear by polling for increased view count
+          const timeout = 10000
+          const start = Date.now()
+          let viewCountAfter = viewCountBefore
+          while (Date.now() - start < timeout) {
+            const searchInputsAfter = await page.$$(
+              'input[placeholder="Search for location"]',
+            )
+            viewCountAfter = searchInputsAfter.length
+            if (viewCountAfter > viewCountBefore) {
+              break
+            }
+            await delay(200)
+          }
+
+          if (viewCountAfter <= viewCountBefore) {
+            throw new Error(
+              `New Linear genome view was not added. Views before: ${viewCountBefore}, after: ${viewCountAfter}`,
+            )
+          }
+        },
+      },
+      {
         name: 'move to new tab enables workspaces',
         fn: async page => {
           await navigateToApp(page)
