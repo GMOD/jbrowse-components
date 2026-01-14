@@ -13,8 +13,8 @@ import {
   DrawerWidgetSessionMixin,
   MultipleViewsSessionMixin,
   ReferenceManagementSessionMixin,
-  SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
+  TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
 
 import { DesktopSessionFactory } from './DesktopSession.ts'
@@ -35,7 +35,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * - DrawerWidgetSessionMixin
  * - DialogQueueSessionMixin
  * - ThemeManagerSessionMixin
- * - SessionTracksManagerSessionMixin
+ * - TracksManagerSessionMixin
  * - MultipleViewsSessionMixin
  * - DesktopSessionMixin
  * - SessionAssembliesMixin
@@ -62,7 +62,7 @@ export default function sessionModelFactory({
         DrawerWidgetSessionMixin(pluginManager),
         DialogQueueSessionMixin(pluginManager),
         ThemeManagerSessionMixin(pluginManager),
-        SessionTracksManagerSessionMixin(pluginManager),
+        TracksManagerSessionMixin(pluginManager),
         MultipleViewsSessionMixin(pluginManager),
         DesktopSessionFactory(pluginManager),
       ),
