@@ -344,6 +344,7 @@ const testSuites: TestSuite[] = [
           await delay(3000)
 
           await waitForLoadingToComplete(page)
+          await delay(3000)
           await snapshot(page, 'workspaces-new-tab')
         },
       },

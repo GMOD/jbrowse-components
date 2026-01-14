@@ -104,10 +104,12 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Create new panel and assign the view to it
       const panelId = `panel-${nanoid()}`
       const group = api.activeGroup
-      api.addPanel({
+      const newPanel = api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
         position: group ? { referenceGroup: group } : undefined,
       })
+      // Ensure params are set - dockview may not pass them on initial render
+      newPanel.update({ params: { panelId, session } })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
     },
@@ -125,12 +127,14 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Create new panel to the right of the current group
       const panelId = `panel-${nanoid()}`
       const group = api.activeGroup
-      api.addPanel({
+      const newPanel = api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
         position: group
           ? { referenceGroup: group, direction: 'right' }
           : undefined,
       })
+      // Ensure params are set - dockview may not pass them on initial render
+      newPanel.update({ params: { panelId, session } })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
     },
