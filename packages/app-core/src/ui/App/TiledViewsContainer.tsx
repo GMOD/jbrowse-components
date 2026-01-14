@@ -270,18 +270,27 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   // where user clicks "Move to new tab" before workspaces is enabled - the
   // action is stored as pending, then executed here once TiledViewsContainer
   // mounts and the dockview api is ready.
+  // IMPORTANT: The setTimeout delay is required to allow dockview to fully
+  // initialize before we modify its layout. Without this delay, the split/tab
+  // creation fails on slower environments like CI.
   useEffect(() => {
     if (!api) {
       return
     }
     const pendingAction = getPendingMoveAction()
-    if (pendingAction) {
-      const { type, viewId } = pendingAction
+    if (!pendingAction) {
+      return
+    }
+    const { type, viewId } = pendingAction
+    const timeoutId = setTimeout(() => {
       if (type === 'newTab') {
         moveViewToNewTab(viewId)
       } else {
         moveViewToSplitRight(viewId)
       }
+    }, 100)
+    return () => {
+      clearTimeout(timeoutId)
     }
   }, [api, moveViewToNewTab, moveViewToSplitRight])
 
