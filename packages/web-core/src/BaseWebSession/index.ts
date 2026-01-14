@@ -4,7 +4,6 @@ import {
   AppFocusMixin,
   DockviewLayoutMixin,
   SessionAssembliesMixin,
-  SessionConnectionsMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
@@ -31,6 +30,8 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
+
+import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
 import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
@@ -92,7 +93,7 @@ export function BaseWebSession({
         SessionTracksManagerSessionMixin(pluginManager),
         SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
         TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
-        SessionConnectionsMixin(pluginManager),
+        WebSessionConnectionsMixin(pluginManager),
         DockviewLayoutMixin(),
         AppFocusMixin(),
         SnackbarModel(),
