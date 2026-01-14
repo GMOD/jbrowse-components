@@ -11,7 +11,6 @@
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
     "start": "NODE_ENV=development node scripts/start.js",
-    "webdriver-test": "pnpm wdio",
     "electron": "electron . --no-sandbox",
     "electron-ts": "tsc -p tsconfig.electron.json",
     "preelectron": "pnpm electron-ts",
