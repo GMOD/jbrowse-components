@@ -3,8 +3,8 @@ id: sessionassembliesmixin
 title: SessionAssembliesMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: any[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: any[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaType<...>; displayNa...
+IArrayType<BaseAssemblyConfigSchema>
 // code
 sessionAssemblies: types.array(assemblyConfigSchemasType)
 ```
@@ -37,7 +37,7 @@ sessionAssemblies: types.array(assemblyConfigSchemasType)
 
 ```js
 // type signature
-addSessionAssembly: (conf: AnyConfiguration) => { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<...> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+addSessionAssembly: (conf: AnyConfiguration) => BaseAssemblyConfigSchema
 ```
 
 #### action: addAssembly

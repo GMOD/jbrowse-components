@@ -1,14 +1,14 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FormGroup } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import HeaderPanControls from './HeaderPanControls'
-import HeaderRegionWidth from './HeaderRegionWidth'
-import HeaderTrackSelectorButton from './HeaderTrackSelectorButton'
-import HeaderZoomControls from './HeaderZoomControls'
-import OverviewScalebar from './OverviewScalebar'
-import SearchBox from './SearchBox'
-import { HEADER_BAR_HEIGHT } from '../consts'
+import HeaderPanControls from './HeaderPanControls.tsx'
+import HeaderRegionWidth from './HeaderRegionWidth.tsx'
+import HeaderTrackSelectorButton from './HeaderTrackSelectorButton.tsx'
+import HeaderZoomControls from './HeaderZoomControls.tsx'
+import OverviewScalebar from './OverviewScalebar.tsx'
+import SearchBox from './SearchBox.tsx'
+import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -43,7 +43,7 @@ const Controls = function ({ model }: { model: LinearGenomeViewModel }) {
   )
 }
 
-const LinearGenomeViewHeader = observer(function ({
+const LinearGenomeViewHeader = observer(function LinearGenomeViewHeader({
   model,
 }: {
   model: LinearGenomeViewModel

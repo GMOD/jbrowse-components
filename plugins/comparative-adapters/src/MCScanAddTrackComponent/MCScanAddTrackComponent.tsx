@@ -7,7 +7,9 @@ import { observer } from 'mobx-react'
 
 import type { FileLocation } from '@jbrowse/core/util'
 
-const MCScanAddTrackComponent = observer(function ({ model }: any) {
+const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
+  model,
+}: any) {
   const session = getSession(model)
   const [r0, setR0] = useState(session.assemblies[0]?.name)
   const [r1, setR1] = useState(session.assemblies[0]?.name)

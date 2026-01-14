@@ -2,17 +2,17 @@ import { Suspense, lazy, useEffect, useRef } from 'react'
 
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import TrackContainer from './TrackContainer'
-import TracksContainer from './TracksContainer'
+import TrackContainer from './TrackContainer.tsx'
+import TracksContainer from './TracksContainer.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 
 // lazies
-const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton'))
+const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   header: {
@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const LinearGenomeViewContainer = observer(function ({
+const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   model,
 }: {
   model: LinearGenomeViewModel

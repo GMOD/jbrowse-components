@@ -9,15 +9,15 @@ import {
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearPairedArcDisplay
@@ -115,7 +115,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('./afterAttach')
+            const { doAfterAttach } = await import('./afterAttach.tsx')
             doAfterAttach(self)
           } catch (e) {
             console.error(e)
@@ -129,7 +129,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       async renderSvg(opts: {
         rasterizeLayers?: boolean
       }): Promise<React.ReactNode> {
-        const { renderArcSvg } = await import('./renderSvg')
+        const { renderArcSvg } = await import('./renderSvg.tsx')
         // @ts-expect-error
         return renderArcSvg(self, opts)
       },

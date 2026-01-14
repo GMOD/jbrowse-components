@@ -2,9 +2,9 @@ import path from 'path'
 
 import parseJSON from 'json-parse-better-errors'
 
-import { isUrl } from './validators'
+import { isURL } from '../../types/common.ts'
 
-import type { Config, Track } from '../../base'
+import type { Config, Track } from '../../base.ts'
 
 const SYNTENY_ADAPTERS = new Set([
   'PAFAdapter',
@@ -21,7 +21,7 @@ export function mapLocationForFiles(
   load?: string,
   subDir?: string,
 ): string {
-  return !p || isUrl(p) || load === 'inPlace'
+  return !p || isURL(p) || load === 'inPlace'
     ? p
     : path.join(subDir || '', path.basename(p))
 }
@@ -37,7 +37,6 @@ export function buildTrackConfig({
   config,
   adapter,
   configContents,
-  skipCheck,
 }: {
   location: string
   trackType?: string
@@ -49,7 +48,6 @@ export function buildTrackConfig({
   config?: string
   adapter: any
   configContents: Config
-  skipCheck?: boolean
 }): Track {
   const configObj = config ? parseJSON(config) : {}
 
@@ -68,20 +66,6 @@ export function buildTrackConfig({
     assemblyNames: finalAssemblyNames.split(',').map(a => a.trim()),
     description,
     ...configObj,
-  }
-
-  // Special handling for AlignmentsTrack
-  if (trackType === 'AlignmentsTrack') {
-    const assembly = configContents.assemblies?.find(
-      asm => asm.name === finalAssemblyNames,
-    )
-    if (assembly) {
-      // @ts-expect-error
-      trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
-    } else if (!skipCheck) {
-      console.error(`Error: Failed to find assemblyName ${finalAssemblyNames}`)
-      process.exit(1)
-    }
   }
 
   return trackConfig

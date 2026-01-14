@@ -1,14 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
+import { linearFeatureDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config LinearVariantDisplay
  *
- * mostly empty, this display type is very much like a `FeatureTrack` with a
- * `LinearBasicDisplay` except it has a custom feature details widget
+ * Extends LinearFeatureDisplay (not LinearBasicDisplay) since variants
+ * don't need gene glyph display options.
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -20,7 +20,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration: linearFeatureDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

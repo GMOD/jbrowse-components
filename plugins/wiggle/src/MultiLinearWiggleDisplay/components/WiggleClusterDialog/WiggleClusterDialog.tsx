@@ -4,10 +4,10 @@ import { Dialog } from '@jbrowse/core/ui'
 import { FormControlLabel, Radio, RadioGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import WiggleClusterDialogAuto from './WiggleClusterDialogAuto'
-import WiggleClusterDialogManual from './WiggleClusterDialogManual'
+import WiggleClusterDialogAuto from './WiggleClusterDialogAuto.tsx'
+import WiggleClusterDialogManual from './WiggleClusterDialogManual.tsx'
 
-import type { ReducedModel } from './types'
+import type { ReducedModel } from './types.ts'
 
 function Header({
   activeMode,
@@ -51,7 +51,7 @@ function Header({
   )
 }
 
-const WiggleClusterDialog = observer(function ({
+const WiggleClusterDialog = observer(function WiggleClusterDialog({
   model,
   handleClose,
 }: {

@@ -1,10 +1,12 @@
 import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay'
+import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay.tsx'
+import Header from './Header.tsx'
+import Rubberband from './Rubberband.tsx'
 
-import type { BreakpointViewModel } from '../model'
+import type { BreakpointViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   viewDivider: {
@@ -20,9 +22,21 @@ const useStyles = makeStyles()(theme => ({
   rel: {
     position: 'relative',
   },
+  rubberbandContainer: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  rubberbandDiv: {
+    width: '100%',
+    background: theme.palette.action.disabledBackground,
+    height: 15,
+    '&:hover': {
+      background: theme.palette.action.selected,
+    },
+  },
 }))
 
-const BreakpointSplitViewLevels = observer(function ({
+const BreakpointSplitViewLevels = observer(function BreakpointSplitViewLevels({
   model,
 }: {
   model: BreakpointViewModel
@@ -51,14 +65,19 @@ const BreakpointSplitViewLevels = observer(function ({
   )
 })
 
-const BreakpointSplitView = observer(function ({
+const BreakpointSplitView = observer(function BreakpointSplitView({
   model,
 }: {
   model: BreakpointViewModel
 }) {
   const { classes } = useStyles()
   return (
-    <div>
+    <div className={classes.rubberbandContainer}>
+      {model.showHeader ? <Header model={model} /> : null}
+      <Rubberband
+        model={model}
+        ControlComponent={<div className={classes.rubberbandDiv} />}
+      />
       <div className={classes.container}>
         <BreakpointSplitViewLevels model={model} />
         <BreakpointSplitViewOverlay model={model} />

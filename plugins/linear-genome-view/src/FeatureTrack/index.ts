@@ -3,7 +3,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchemaF from './configSchema'
+import configSchemaF from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

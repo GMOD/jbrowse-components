@@ -7,9 +7,9 @@ import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrow
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import { Button } from '@mui/material'
 
-import { moveDown, moveUp } from '../sourcesGridUtils'
+import { moveDown, moveUp } from '../sourcesGridUtils.ts'
 
-import type { Source } from '../types'
+import type { Source } from '../types.ts'
 import type { GridRowId } from '@mui/x-data-grid'
 
 export default function SourcesGridHeader({

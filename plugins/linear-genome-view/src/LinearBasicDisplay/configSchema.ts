@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { baseLinearDisplayConfigSchema } from '../BaseLinearDisplay'
+import { baseLinearDisplayConfigSchema } from '../BaseLinearDisplay/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

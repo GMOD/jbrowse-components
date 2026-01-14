@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import divSequenceRendererConfigSchema from '../DivSequenceRenderer/configSchema'
+import divSequenceRendererConfigSchema from '../DivSequenceRenderer/configSchema.ts'
 
 /**
  * #config LinearReferenceSequenceDisplay

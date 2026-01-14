@@ -3,8 +3,8 @@ id: spreadsheetimportwizard
 title: SpreadsheetImportWizard
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -64,7 +64,7 @@ used specifically for UriLocation's
 
 ```js
 // type signature
-IType<FileLocation, FileLocation, FileLocation>
+IType<any, any, any>
 // code
 cachedFileLocation: types.frozen<FileLocation | undefined>()
 ```
@@ -98,14 +98,14 @@ any
 
 ```js
 // type signature
-isValidRefName: (refName: string, assemblyName?: string) => boolean
+isValidRefName: (refName: string, assemblyName?: string) => any
 ```
 
 #### method: tracksForAssembly
 
 ```js
 // type signature
-tracksForAssembly: (selectedAssembly: string) => { track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; label: string; assemblyNames: any; type: string; loc: FileLocation; }[]
+tracksForAssembly: (selectedAssembly: string) => any[]
 ```
 
 ### SpreadsheetImportWizard - Actions

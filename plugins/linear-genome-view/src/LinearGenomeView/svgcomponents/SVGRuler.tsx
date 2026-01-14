@@ -1,8 +1,8 @@
-import { getTickDisplayStr, stripAlpha } from '@jbrowse/core/util'
+import { getTickDisplayStr, measureText, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import { makeTicks } from '../util'
-import SVGRegionSeparators from './SVGRegionSeparators'
+import { makeTicks } from '../util.ts'
+import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -16,6 +16,7 @@ function Ruler({
   major = true,
   minor = true,
   hideText = false,
+  widthPx,
 }: {
   start: number
   end: number
@@ -24,6 +25,7 @@ function Ruler({
   major?: boolean
   minor?: boolean
   hideText?: boolean
+  widthPx: number
 }) {
   const ticks = makeTicks(start, end, bpPerPx, major, minor)
   const theme = useTheme()
@@ -47,6 +49,15 @@ function Ruler({
       {!hideText
         ? ticks
             .filter(tick => tick.type === 'major')
+            .filter(tick => {
+              const x =
+                (reversed ? end - tick.base : tick.base - start) / bpPerPx
+              const labelText = getTickDisplayStr(tick.base + 1, bpPerPx)
+              const labelWidth = measureText(labelText, 11) + 4
+              const leftEdge = x - 3
+              const rightEdge = leftEdge + labelWidth
+              return leftEdge >= 0 && rightEdge <= widthPx
+            })
             .map(tick => {
               const x =
                 (reversed ? end - tick.base : tick.base - start) / bpPerPx
@@ -108,6 +119,7 @@ export default function SVGRuler({
                     end={end}
                     bpPerPx={bpPerPx}
                     reversed={reversed}
+                    widthPx={widthPx}
                   />
                 </g>
               </g>

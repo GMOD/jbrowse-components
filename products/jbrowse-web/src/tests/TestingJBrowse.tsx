@@ -1,12 +1,5 @@
-import { QueryParamProvider } from 'use-query-params'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
-
-import JBrowseWithoutQueryParamProvider from '../components/JBrowse'
+import JBrowse from '../components/JBrowse.tsx'
 
 export default function TestingJBrowse(props: any) {
-  return (
-    <QueryParamProvider adapter={WindowHistoryAdapter}>
-      <JBrowseWithoutQueryParamProvider {...props} />
-    </QueryParamProvider>
-  )
+  return <JBrowse {...props} />
 }

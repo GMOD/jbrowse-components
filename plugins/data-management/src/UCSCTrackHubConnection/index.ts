@@ -1,7 +1,7 @@
 import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchema from './configSchema'
-import stateModelFactory from './model'
+import configSchema from './configSchema.ts'
+import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

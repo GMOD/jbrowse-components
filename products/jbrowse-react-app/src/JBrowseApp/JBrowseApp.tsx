@@ -2,13 +2,13 @@ import { Suspense, lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import type { ViewModel } from '../createModel'
+import type { ViewModel } from '../createModel.ts'
 
-const App = lazy(() => import('./AppReExport'))
+const App = lazy(() => import('./AppReExport.tsx'))
 
 const useStyles = makeStyles()({
   // avoid parent styles getting into this div
@@ -18,7 +18,11 @@ const useStyles = makeStyles()({
   },
 })
 
-const JBrowseApp = observer(function ({ viewState }: { viewState: ViewModel }) {
+const JBrowseApp = observer(function JBrowseApp({
+  viewState,
+}: {
+  viewState: ViewModel
+}) {
   const { classes } = useStyles()
   const session = viewState.session
   const theme = createJBrowseTheme(getConf(viewState.jbrowse, 'theme'))

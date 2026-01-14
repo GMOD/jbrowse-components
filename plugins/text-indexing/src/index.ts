@@ -1,6 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import { TextIndexRpcMethod } from './TextIndexRpcMethod/TextIndexRpcMethod'
+import { TextIndexRpcMethod } from './TextIndexRpcMethod/TextIndexRpcMethod.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import SyntenyFeature from '../SyntenyFeature'
+import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -334,6 +334,9 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
           ;[mateStart, mateEnd] = [mateEnd, mateStart]
           mateStrand = -1
         }
+        // Convert from BLAST 1-based to JBrowse 0-based coordinates
+        start -= 1
+        mateStart -= 1
         if (
           refName === queryRefName &&
           doesIntersect2(queryStart, queryEnd, start, end)

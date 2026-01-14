@@ -1,6 +1,6 @@
 import path from 'path'
 
-import HttpMap from './HttpMap'
+import HttpMap from './HttpMap.ts'
 import first from '../../test_data/names/0.json'
 import last from '../../test_data/names/f.json'
 import meta from '../../test_data/names/meta.json'
@@ -46,8 +46,8 @@ test('get bucket contents', async () => {
   const hashMap = new HttpMap({ url: rootTemplate })
 
   await hashMap.getBucket('apple')
-  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/0.json`)
+  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/0.json`, undefined)
 
   await hashMap.getBucket('apple3')
-  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/f.json`)
+  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/f.json`, undefined)
 })

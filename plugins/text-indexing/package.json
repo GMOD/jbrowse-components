@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-text-indexing",
-  "version": "3.6.5",
+  "version": "4.0.3",
   "description": "JBrowse 2 text indexing rpc method",
   "keywords": [
     "jbrowse",
@@ -15,40 +15,36 @@
     "directory": "plugins/text-indexing"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "srcMain": "src/index.ts",
   "main": "src/index.ts",
   "files": [
-    "dist",
     "esm"
   ],
   "scripts": {
-    "build": "npm-run-all build:*",
+    "build": "pnpm run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/text-indexing",
-    "prepublishOnly": "yarn test",
-    "prepack": "yarn build && yarn useDist",
-    "postpack": "yarn useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "npm run clean",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
-    "clean": "rimraf dist esm *.tsbuildinfo"
+    "prepublishOnly": "pnpm test",
+    "prepack": "pnpm build",
+    "prebuild": "pnpm clean",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/core": "^3.6.5",
-    "@jbrowse/text-indexing": "^3.6.5",
-    "mobx": "^6.0.0",
-    "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.0.0"
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/text-indexing": "workspace:^"
   },
   "peerDependencies": {
     "react": ">=18.0.0"
   },
-  "distModule": "esm/index.js",
-  "srcModule": "src/index.ts",
-  "module": "",
   "publishConfig": {
-    "access": "public"
-  }
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
 }

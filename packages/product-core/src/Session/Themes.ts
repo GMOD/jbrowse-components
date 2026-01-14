@@ -1,13 +1,13 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
 
-import type { BaseSession } from './BaseSession'
+import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
 
 type ThemeMap = Record<string, ThemeOptions>
 
@@ -57,9 +57,12 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem('themeName', self.themeName)
-          }),
+          autorun(
+            function themeNameAutorun() {
+              localStorageSetItem('themeName', self.themeName)
+            },
+            { name: 'ThemeName' },
+          ),
         )
       },
     }))

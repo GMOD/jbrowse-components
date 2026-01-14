@@ -3,8 +3,8 @@ id: appcorejbrowsemodel
 title: AppCoreJBrowseModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -51,7 +51,7 @@ RpcManager
 
 ```js
 // type signature
-addAssemblyConf: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => { ...; } & ... 2 more ... & IStateTreeNode<...>
+addAssemblyConf: (conf: AnyConfigurationModel) => any
 ```
 
 #### action: removeAssemblyConf
@@ -65,28 +65,38 @@ removeAssemblyConf: (assemblyName: string) => void
 
 ```js
 // type signature
-addTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+addTrackConf: (trackConf: { trackId: string; type: string; }) => any
 ```
 
 #### action: addConnectionConf
 
 ```js
 // type signature
-addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+addConnectionConf: (connectionConf: AnyConfigurationModel) => any
 ```
 
 #### action: deleteConnectionConf
 
 ```js
 // type signature
-deleteConnectionConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
+deleteConnectionConf: (configuration: AnyConfigurationModel) => any
 ```
 
 #### action: deleteTrackConf
 
 ```js
 // type signature
-deleteTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
+deleteTrackConf: (trackConf: any) => void
+```
+
+#### action: updateTrackConf
+
+Updates an existing track configuration. Used to sync editable configs back to
+the frozen tracks array.
+
+```js
+// type signature
+updateTrackConf: (trackConf: { [key: string]: unknown; trackId: string; }) => void
 ```
 
 #### action: addPlugin
@@ -107,19 +117,19 @@ removePlugin: (pluginDefinition: PluginDefinition) => void
 
 ```js
 // type signature
-setDefaultSessionConf: (sessionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+setDefaultSessionConf: (sessionConf: AnyConfigurationModel) => void
 ```
 
 #### action: addInternetAccountConf
 
 ```js
 // type signature
-addInternetAccountConf: (internetAccountConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+addInternetAccountConf: (internetAccountConf: AnyConfigurationModel) => any
 ```
 
 #### action: deleteInternetAccountConf
 
 ```js
 // type signature
-deleteInternetAccountConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
+deleteInternetAccountConf: (configuration: AnyConfigurationModel) => any
 ```

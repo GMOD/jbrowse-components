@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './BamAdapter'
-import configSchema from './configSchema'
+import Adapter from './BamAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('adapter can fetch features from volvox.bam', async () => {
   const adapter = new Adapter(

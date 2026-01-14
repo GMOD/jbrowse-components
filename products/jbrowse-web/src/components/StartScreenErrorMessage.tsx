@@ -1,6 +1,6 @@
 import { ErrorMessage } from '@jbrowse/core/ui'
 
-import NoConfigMessage from './NoConfigMessage'
+import NoConfigMessage from './NoConfigMessage.tsx'
 
 export default function StartScreenErrorMessage({ error }: { error: unknown }) {
   return /HTTP 404 fetching config.json/.exec(`${error}`) ? (

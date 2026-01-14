@@ -1,4 +1,4 @@
-import type { Mismatch } from '../shared/types'
+import type { Mismatch } from '../shared/types.ts'
 
 export function cigarToMismatches(
   ops: string[],
@@ -18,9 +18,8 @@ export function cigarToMismatches(
       if (hasRefAndSeq) {
         for (let j = 0; j < len; j++) {
           if (
-            // @ts-ignore in the full yarn build of the repo, this says that
-            // object is possibly undefined for some reason, ignored
-            seq[soffset + j].toUpperCase() !== ref[roffset + j].toUpperCase()
+            (seq.charCodeAt(soffset + j) | 0x20) !==
+            (ref.charCodeAt(roffset + j) | 0x20)
           ) {
             mismatches.push({
               start: roffset + j,
@@ -38,7 +37,8 @@ export function cigarToMismatches(
       mismatches.push({
         start: roffset,
         type: 'insertion',
-        base: `${len}`,
+        insertlen: len,
+        insertedBases: seq?.slice(soffset, soffset + len),
         length: 0,
       })
       soffset += len
@@ -46,14 +46,12 @@ export function cigarToMismatches(
       mismatches.push({
         start: roffset,
         type: 'deletion',
-        base: '*',
         length: len,
       })
     } else if (op === 'N') {
       mismatches.push({
         start: roffset,
         type: 'skip',
-        base: 'N',
         length: len,
       })
     } else if (op === 'X') {
@@ -74,7 +72,6 @@ export function cigarToMismatches(
       mismatches.push({
         start: roffset,
         type: 'hardclip',
-        base: `H${len}`,
         cliplen: len,
         length: 1,
       })
@@ -82,7 +79,6 @@ export function cigarToMismatches(
       mismatches.push({
         start: roffset,
         type: 'softclip',
-        base: `S${len}`,
         cliplen: len,
         length: 1,
       })

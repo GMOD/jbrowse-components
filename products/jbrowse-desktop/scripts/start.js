@@ -1,8 +1,28 @@
-// Do this as the first thing so that any code reading it knows the right env.
-process.env.BABEL_ENV = 'development'
+import path from 'path'
+
+import webpack from 'webpack'
+
+import configFactory from '../../../webpack/config/webpack.config.js'
+import startServer from '../../../webpack/scripts/start.js'
+
 process.env.NODE_ENV = 'development'
 
-const configTransform = require('./config')
-const configFactory = require('../../../webpack/config/webpack.config')
-const startServer = require('../../../webpack/scripts/start')
-startServer(configTransform(configFactory('development')))
+const config = configFactory()
+config.plugins.push(
+  new webpack.DefinePlugin({
+    'process.env.ENABLE_TYPE_CHECK': '"true"',
+  }),
+)
+config.target = 'electron-renderer'
+config.resolve.aliasFields = []
+config.resolve.mainFields = ['module', 'main']
+config.resolve.alias = {
+  ...config.resolve.alias,
+  'generic-filehandle2': path.resolve(
+    import.meta.dirname,
+    '../../../node_modules/generic-filehandle2/dist/index.js',
+  ),
+}
+config.output.publicPath = 'auto'
+
+startServer(config)

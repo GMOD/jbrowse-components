@@ -1,15 +1,14 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import { isBaseSession } from './BaseSession'
+import { isBaseSession } from './BaseSession.ts'
 
-import type { SessionWithReferenceManagementType } from './ReferenceManagement'
-import type { BaseRootModelType } from '../RootModel/BaseRootModel'
+import type { SessionWithReferenceManagementType } from './ReferenceManagement.ts'
+import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseConnectionModel } from '@jbrowse/core/pluggableElementTypes/models/BaseConnectionModelFactory'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel ConnectionManagementSessionMixin
@@ -21,10 +20,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
        * #property
        */
       connectionInstances: types.array(
-        pluginManager.pluggableMstType(
-          'connection',
-          'stateModel',
-        ) as BaseConnectionModel,
+        pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
     })
     .views(self => ({
@@ -56,8 +52,6 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         const length = self.connectionInstances.push({
           ...initialSnapshot,
           name,
-          // @ts-expect-error unsure why ts doesn't like `type` here, but is
-          // needed
           type,
           configuration,
         })
@@ -127,6 +121,20 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         self.connectionInstances.clear()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // mst types wrong, nullish needed
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { connectionInstances, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(connectionInstances?.length ? { connectionInstances } : {}),
+      } as typeof snap
+    })
 }
 
 /** Session mixin MST type for a session that has connections */

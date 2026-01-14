@@ -1,5 +1,5 @@
 {
-  "name": "lgv-vite",
+  "name": "app-vite",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -44,7 +44,7 @@
     "@jbrowse/plugin-rdf": "file:./packed/jbrowse-plugin-rdf.tgz",
     "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",
     "@jbrowse/plugin-spreadsheet-view": "file:./packed/jbrowse-plugin-spreadsheet-view.tgz",
-    "@jbrowse/plugin-svg": "file:./packed/jbrowse-plugin-svg.tgz",
+    "@jbrowse/plugin-canvas": "file:./packed/jbrowse-plugin-canvas.tgz",
     "@jbrowse/plugin-sv-inspector": "file:./packed/jbrowse-plugin-sv-inspector.tgz",
     "@jbrowse/plugin-text-indexing": "file:./packed/jbrowse-plugin-text-indexing.tgz",
     "@jbrowse/plugin-trix": "file:./packed/jbrowse-plugin-trix.tgz",
@@ -69,7 +69,7 @@
     "eslint-plugin-react-refresh": "^0.4.12",
     "globals": "^15.9.0",
     "serve": "^14.2.0",
-    "typescript": "^5.5.3",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.7.0",
     "vite": "^6.2.4"
   }

@@ -1,7 +1,8 @@
-require('dotenv').config()
-const { notarize } = require('@electron/notarize')
+import 'dotenv/config'
 
-exports.default = async function notarizing(context) {
+import { notarize } from '@electron/notarize'
+
+export default async function notarizing(context) {
   const { electronPlatformName, appOutDir } = context
   if (!process.env.GITHUB_ACTIONS || electronPlatformName !== 'darwin') {
     return

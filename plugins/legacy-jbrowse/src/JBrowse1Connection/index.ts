@@ -1,7 +1,7 @@
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 
-import configSchema from './configSchema'
-import modelFactory from './model'
+import configSchema from './configSchema.ts'
+import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

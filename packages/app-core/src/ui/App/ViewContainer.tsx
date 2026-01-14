@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
 import { useWidthSetter } from '@jbrowse/core/util'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import ViewHeader from './ViewHeader'
-import ViewWrapper from './ViewWrapper'
+import ViewHeader from './ViewHeader.tsx'
+import ViewWrapper from './ViewWrapper.tsx'
 
 import type {
   AbstractViewModel,
@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewContainer = observer(function ({
+const ViewContainer = observer(function ViewContainer({
   view,
   session,
 }: {
@@ -38,7 +38,7 @@ const ViewContainer = observer(function ({
 }) {
   const theme = useTheme()
   const ref = useWidthSetter(view, theme.spacing(1))
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
 
   useEffect(() => {
     function handleSelectView(e: Event) {
@@ -65,7 +65,12 @@ const ViewContainer = observer(function ({
   )
 
   return (
-    <Paper ref={ref} elevation={12} className={viewContainerClassName}>
+    <Paper
+      ref={ref}
+      elevation={12}
+      className={viewContainerClassName}
+      data-testid={`view-container-${view.id}`}
+    >
       <ViewHeader
         view={view}
         onClose={() => {

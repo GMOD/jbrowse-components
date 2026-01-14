@@ -8,6 +8,7 @@ import {
   isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Checkbox,
   FormControl,
@@ -16,16 +17,15 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import StatusMessage from './AddTrackStatusMessage'
-import UnknownAdapterPrompt from './AddTrackUnknownAdapterPrompt'
-import TextIndexingConfig from './TextIndexingConfig'
-import TrackAdapterSelector from './TrackAdapterSelector'
-import TrackTypeSelector from './TrackTypeSelector'
-import Unsupported from './Unsupported'
+import StatusMessage from './AddTrackStatusMessage.tsx'
+import UnknownAdapterPrompt from './AddTrackUnknownAdapterPrompt.tsx'
+import TextIndexingConfig from './TextIndexingConfig.tsx'
+import TrackAdapterSelector from './TrackAdapterSelector.tsx'
+import TrackTypeSelector from './TrackTypeSelector.tsx'
+import Unsupported from './Unsupported.tsx'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   spacing: {

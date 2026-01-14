@@ -1,20 +1,20 @@
 import { lazy } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import DeleteIcon from '@mui/icons-material/Delete'
 import LockIcon from '@mui/icons-material/Lock'
 import { IconButton, ListItem, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import { isSessionPlugin } from './util'
+import { isSessionPlugin } from './util.ts'
 
-import type { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model.ts'
 import type { BasePlugin } from '@jbrowse/core/util/types'
 
 // lazies
-const DeletePluginDialog = lazy(() => import('./DeletePluginDialog'))
+const DeletePluginDialog = lazy(() => import('./DeletePluginDialog.tsx'))
 
 const useStyles = makeStyles()(() => ({
   iconMargin: {
@@ -38,7 +38,7 @@ function LockedPluginIconButton() {
   )
 }
 
-const UninstallPluginIconButton = observer(function ({
+const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
   plugin,
   model,
 }: {
@@ -81,7 +81,7 @@ const UninstallPluginIconButton = observer(function ({
   )
 })
 
-const InstalledPlugin = observer(function ({
+const InstalledPlugin = observer(function InstalledPlugin({
   plugin,
   model,
 }: {

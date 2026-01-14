@@ -1,38 +1,37 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import BigWigAdapterF from './BigWigAdapter'
-import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension'
-import DensityRendererF from './DensityRenderer'
-import GuessAdapterF from './GuessAdapter'
-import LinePlotRendererF from './LinePlotRenderer'
+import BigWigAdapterF from './BigWigAdapter/index.ts'
+import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
+import DensityRendererF from './DensityRenderer/index.ts'
+import GuessAdapterF from './GuessAdapter/index.ts'
+import LinePlotRendererF from './LinePlotRenderer/index.ts'
 import LinearWiggleDisplayF, {
   ReactComponent as LinearWiggleDisplayReactComponent,
   modelFactory as linearWiggleDisplayModelFactory,
-} from './LinearWiggleDisplay'
-import MultiDensityRendererF from './MultiDensityRenderer'
-import MultiLineRendererF from './MultiLineRenderer'
-import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay'
-import MultiQuantitativeTrackF from './MultiQuantitativeTrack'
-import MultiRowLineRendererF from './MultiRowLineRenderer'
-import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer'
-import MultiWiggleAdapterF from './MultiWiggleAdapter'
-import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'
-import MultiXYPlotRendererF from './MultiXYPlotRenderer'
-import QuantitativeTrackF from './QuantitativeTrack'
-import WiggleBaseRenderer from './WiggleBaseRenderer'
+} from './LinearWiggleDisplay/index.ts'
+import MultiDensityRendererF from './MultiDensityRenderer/index.ts'
+import MultiLineRendererF from './MultiLineRenderer/index.ts'
+import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay/index.ts'
+import MultiQuantitativeTrackF from './MultiQuantitativeTrack/index.ts'
+import MultiRowLineRendererF from './MultiRowLineRenderer/index.ts'
+import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer/index.ts'
+import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
+import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow/index.ts'
+import MultiXYPlotRendererF from './MultiXYPlotRenderer/index.ts'
+import QuantitativeTrackF from './QuantitativeTrack/index.ts'
 import {
   MultiWiggleClusterScoreMatrix,
   MultiWiggleGetScoreMatrix,
   MultiWiggleGetSources,
   WiggleGetGlobalQuantitativeStats,
   WiggleGetMultiRegionQuantitativeStats,
-} from './WiggleRPC/rpcMethods'
+} from './WiggleRPC/rpcMethods.ts'
 import XYPlotRendererF, {
   ReactComponent as XYPlotRendererReactComponent,
   XYPlotRenderer,
   configSchema as xyPlotRendererConfigSchema,
-} from './XYPlotRenderer'
-import * as utils from './util'
+} from './XYPlotRenderer/index.ts'
+import * as utils from './util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -69,21 +68,24 @@ export default class WigglePlugin extends Plugin {
     LinearWiggleDisplayReactComponent,
     XYPlotRendererReactComponent,
     XYPlotRenderer,
-    WiggleBaseRenderer,
     linearWiggleDisplayModelFactory,
     xyPlotRendererConfigSchema,
     utils,
   }
 }
 
-export * from './util'
+export * from './util.ts'
 
-export { default as WiggleRendering } from './WiggleRendering'
+export { default as WiggleRendering } from './WiggleRendering.tsx'
 export {
   ReactComponent as LinearWiggleDisplayReactComponent,
   Tooltip,
   modelFactory as linearWiggleDisplayModelFactory,
-} from './LinearWiggleDisplay'
-export type { TooltipContentsComponent } from './Tooltip'
+} from './LinearWiggleDisplay/index.ts'
+export type { TooltipContentsComponent } from './Tooltip.tsx'
 
-export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'
+export type {
+  MultiRenderArgsDeserialized,
+  RenderArgsDeserialized,
+  RenderArgsDeserializedWithFeatures,
+} from './types.ts'

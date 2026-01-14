@@ -9,9 +9,9 @@ import BookmarksIcon from '@mui/icons-material/Bookmarks'
 import HighlightIcon from '@mui/icons-material/Highlight'
 import LabelIcon from '@mui/icons-material/Label'
 
-import GridBookmarkWidgetF from './GridBookmarkWidget'
+import GridBookmarkWidgetF from './GridBookmarkWidget/index.ts'
 
-import type { GridBookmarkModel } from './GridBookmarkWidget/model'
+import type { GridBookmarkModel } from './GridBookmarkWidget/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   PluggableElementType,
@@ -124,7 +124,6 @@ export default class GridBookmarkPlugin extends Plugin {
                 menuItems() {
                   return [
                     ...superMenuItems(),
-                    { type: 'divider' },
                     {
                       label: 'Bookmarks',
                       icon: BookmarksIcon,
@@ -220,6 +219,26 @@ export default class GridBookmarkPlugin extends Plugin {
                   document.removeEventListener('keydown', keydownListener)
                 },
               }
+            })
+            .postProcessSnapshot(snap => {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              if (!snap) {
+                return snap
+              }
+              const {
+                bookmarkHighlightsVisible,
+                bookmarkLabelsVisible,
+                ...rest
+              } = snap as unknown as Record<string, unknown>
+              return {
+                ...rest,
+                ...(bookmarkHighlightsVisible === false
+                  ? { bookmarkHighlightsVisible }
+                  : {}),
+                ...(bookmarkLabelsVisible === false
+                  ? { bookmarkLabelsVisible }
+                  : {}),
+              } as typeof snap
             })
 
           ;(pluggableElement as ViewType).stateModel = newStateModel

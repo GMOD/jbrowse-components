@@ -55,7 +55,7 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
     strand: number
     extra: Record<string, unknown>
   }[]
-  const regex = new RegExp(/^>(\S+)\s+(\S+)\s+(\d+)\s+(\d+)/)
+  const regex = /^>(\S+)\s+(\S+)\s+(\d+)\s+(\d+)/
 
   parseLineByLine(
     buffer,

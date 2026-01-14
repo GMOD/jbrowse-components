@@ -3,21 +3,21 @@ import { useEffect, useState } from 'react'
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
+import { getPropertyMembers } from '@jbrowse/mobx-state-tree'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getPropertyMembers } from 'mobx-state-tree'
 
-import BooleanEditor from './BooleanEditor'
-import CallbackEditor from './CallbackEditor'
-import ColorEditor from './ColorEditor'
-import ConfigurationTextField from './ConfigurationTextField'
-import JsonEditor from './JsonEditor'
-import NumberEditor from './NumberEditor'
-import NumberMapEditor from './NumberMapEditor'
-import StringArrayEditor from './StringArrayEditor'
-import StringArrayMapEditor from './StringArrayMapEditor'
-import { useSlotEditorStyles } from './useSlotEditorStyles'
+import BooleanEditor from './BooleanEditor.tsx'
+import CallbackEditor from './CallbackEditor.tsx'
+import ColorEditor from './ColorEditor.tsx'
+import ConfigurationTextField from './ConfigurationTextField.tsx'
+import JsonEditor from './JsonEditor.tsx'
+import NumberEditor from './NumberEditor.tsx'
+import NumberMapEditor from './NumberMapEditor.tsx'
+import StringArrayEditor from './StringArrayEditor.tsx'
+import StringArrayMapEditor from './StringArrayMapEditor.tsx'
+import { useSlotEditorStyles } from './useSlotEditorStyles.ts'
 
 import type {
   AnyConfigurationSlot,
@@ -25,9 +25,9 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
 import type { ILiteralType } from '@jbrowse/core/util/mst-reflection'
-import type { IAnyType } from 'mobx-state-tree'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
-const StringEditor = observer(function ({
+const StringEditor = observer(function StringEditor({
   slot,
 }: {
   slot: {
@@ -49,7 +49,7 @@ const StringEditor = observer(function ({
   )
 })
 
-const TextEditor = observer(function ({
+const TextEditor = observer(function TextEditor({
   slot,
 }: {
   slot: {
@@ -79,7 +79,7 @@ const SvgCheckbox = () => (
   </SvgIcon>
 )
 
-const IntegerEditor = observer(function ({
+const IntegerEditor = observer(function IntegerEditor({
   slot,
 }: {
   slot: {
@@ -109,7 +109,7 @@ const IntegerEditor = observer(function ({
   )
 })
 
-const StringEnumEditor = observer(function ({
+const StringEnumEditor = observer(function StringEnumEditor({
   slot,
   slotSchema,
 }: {
@@ -140,7 +140,7 @@ const StringEnumEditor = observer(function ({
   )
 })
 
-const FileSelectorWrapper = observer(function ({
+const FileSelectorWrapper = observer(function FileSelectorWrapper({
   slot,
 }: {
   slot: {
@@ -158,8 +158,7 @@ const FileSelectorWrapper = observer(function ({
       }}
       name={slot.name}
       description={slot.description}
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      rootModel={getEnv(slot).pluginManager?.rootModel}
+      rootModel={getEnv(slot).pluginManager.rootModel}
     />
   )
 })
@@ -180,7 +179,7 @@ const valueComponents = {
   configRelationships: JsonEditor,
 }
 
-const SlotEditor = observer(function ({
+const SlotEditor = observer(function SlotEditor({
   slot,
   slotSchema,
 }: {

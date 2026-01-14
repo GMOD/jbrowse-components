@@ -1,8 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 import { render } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 
-import AboutWidget from './AboutWidget'
+import AboutWidget from './AboutWidget.tsx'
 
 describe('<AboutWidget />', () => {
   it('renders', () => {

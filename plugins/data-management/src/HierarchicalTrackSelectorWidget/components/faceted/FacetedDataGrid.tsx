@@ -1,15 +1,17 @@
-import { useState } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 
-import { getEnv, measureGridWidth } from '@jbrowse/core/util'
+import { getEnv } from '@jbrowse/core/util'
+import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import { DataGrid } from '@mui/x-data-grid'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
-import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import { computeInitialWidths } from './computeInitialWidths.ts'
+
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
-const FacetedDataGrid = observer(function ({
+const FacetedDataGrid = observer(function FacetedDataGrid({
   model,
   columns,
   shownTrackIds,
@@ -32,46 +34,37 @@ const FacetedDataGrid = observer(function ({
     visible,
   } = faceted
 
-  const [widths, setWidths] = useState<Record<string, number>>({
-    name:
-      measureGridWidth(
-        rows.map(r => r.name),
-        {
-          maxWidth: 500,
-          stripHTML: true,
-        },
-      ) + 15,
-    ...Object.fromEntries(
-      filteredNonMetadataKeys
-        .filter(f => visible[f])
-        .map(e => [
-          e,
-          measureGridWidth(
-            rows.map(r => r[e as keyof typeof r] as string),
-            {
-              maxWidth: 400,
-              stripHTML: true,
-            },
-          ),
-        ]),
+  const [, startTransition] = useTransition()
+  const [widths, setWidths] = useState(() =>
+    computeInitialWidths(
+      rows,
+      filteredNonMetadataKeys,
+      filteredMetadataKeys,
+      visible,
     ),
-    ...Object.fromEntries(
-      filteredMetadataKeys
-        .filter(f => visible[`metadata.${f}`])
-        .map(e => {
-          return [
-            `metadata.${e}`,
-            measureGridWidth(
-              rows.map(r => r.metadata[e]),
-              {
-                maxWidth: 400,
-                stripHTML: true,
-              },
-            ),
-          ]
-        }),
-    ),
-  })
+  )
+
+  const rowSelectionModel = useMemo(
+    () => ({
+      type: 'include' as const,
+      ids: new Set(
+        useShoppingCart ? selection.map(s => s.trackId) : [...shownTrackIds],
+      ),
+    }),
+    [useShoppingCart, selection, shownTrackIds],
+  )
+
+  const columnsWithWidths = useMemo(
+    () =>
+      columns.map(
+        r =>
+          ({
+            ...r,
+            width: widths[r.field as keyof typeof widths],
+          }) satisfies GridColDef<(typeof rows)[0]>,
+      ),
+    [columns, widths],
+  )
 
   return (
     <DataGrid
@@ -84,52 +77,41 @@ const FacetedDataGrid = observer(function ({
       columnVisibilityModel={visible}
       showToolbar={showOptions}
       onColumnWidthChange={arg => {
-        setWidths({
-          ...widths,
+        setWidths(prev => ({
+          ...prev,
           [arg.colDef.field]: arg.width,
-        })
+        }))
       }}
       onColumnVisibilityModelChange={n => {
         model.faceted.setVisible(n)
       }}
       onRowSelectionModelChange={userSelectedIds => {
-        if (!useShoppingCart) {
-          const a1 = shownTrackIds
-          const a2 = userSelectedIds.ids
-          // synchronize the user selection with the view
-          // see share https://stackoverflow.com/a/33034768/2129219
-          transaction(() => {
-            ;[...a1].filter(x => !a2.has(x)).map(t => view.hideTrack(t))
-            ;[...a2]
-              .filter(x => !a1.has(x))
-              .map(t => {
-                view.showTrack(t)
-                model.addToRecentlyUsed(t)
-              })
-          })
-        } else {
-          const root = getRoot(model)
-          const schema = pluginManager.pluggableConfigSchemaType('track')
-          model.setSelection(
-            [...userSelectedIds.ids].map(id =>
-              resolveIdentifier(schema, root, id),
-            ),
-          )
-        }
+        startTransition(() => {
+          if (!useShoppingCart) {
+            const a1 = shownTrackIds
+            const a2 = userSelectedIds.ids
+            transaction(() => {
+              ;[...a1].filter(x => !a2.has(x)).map(t => view.hideTrack(t))
+              ;[...a2]
+                .filter(x => !a1.has(x))
+                .map(t => {
+                  view.showTrack(t)
+                  model.addToRecentlyUsed(t)
+                })
+            })
+          } else {
+            const root = getRoot(model)
+            const schema = pluginManager.pluggableConfigSchemaType('track')
+            model.setSelection(
+              [...userSelectedIds.ids].map(id =>
+                resolveIdentifier(schema, root, id),
+              ),
+            )
+          }
+        })
       }}
-      rowSelectionModel={{
-        type: 'include',
-        ids: new Set(
-          useShoppingCart ? selection.map(s => s.trackId) : [...shownTrackIds],
-        ),
-      }}
-      columns={columns.map(
-        r =>
-          ({
-            ...r,
-            width: widths[r.field],
-          }) satisfies GridColDef<(typeof rows)[0]>,
-      )}
+      rowSelectionModel={rowSelectionModel}
+      columns={columnsWithWidths}
     />
   )
 })

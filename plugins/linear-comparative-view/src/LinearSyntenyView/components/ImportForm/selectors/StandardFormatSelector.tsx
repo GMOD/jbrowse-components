@@ -3,15 +3,15 @@ import HelpIcon from '@mui/icons-material/Help'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { helpStrings } from './SelectorTypes'
-import SwapAssemblies from './SwapAssemblies'
+import { helpStrings } from './SelectorTypes.ts'
+import SwapAssemblies from './SwapAssemblies.tsx'
 
-import type { SelectorProps } from './SelectorTypes'
+import type { SelectorProps } from './SelectorTypes.ts'
 
 /**
  * Component for selecting PAF, OUT, DELTA, or CHAIN format files
  */
-const StandardFormatSelector = observer(function ({
+const StandardFormatSelector = observer(function StandardFormatSelector({
   assembly1,
   assembly2,
   swap,

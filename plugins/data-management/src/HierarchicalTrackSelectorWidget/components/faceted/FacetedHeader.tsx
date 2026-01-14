@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
-import ClearIcon from '@mui/icons-material/Clear'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Grid, IconButton, InputAdornment, TextField } from '@mui/material'
+import { Grid, IconButton } from '@mui/material'
 
-import ShoppingCart from '../ShoppingCart'
+import ClearableSearchField from '../ClearableSearchField.tsx'
+import ShoppingCart from '../ShoppingCart.tsx'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 export default function FacetedHeader({
   model,
@@ -15,32 +15,18 @@ export default function FacetedHeader({
   model: HierarchicalTrackSelectorModel
 }) {
   const { faceted } = model
+  const { filterText, showOptions, showFilters, showSparse, useShoppingCart } =
+    faceted
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-  const { showOptions, showFilters, showSparse, useShoppingCart } = faceted
 
   return (
     <>
       <Grid container spacing={4} alignItems="center">
-        <TextField
+        <ClearableSearchField
           label="Search..."
-          value={faceted.filterText}
-          onChange={event => {
-            faceted.setFilterText(event.target.value)
-          }}
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => {
-                      faceted.setFilterText('')
-                    }}
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
+          value={filterText}
+          onChange={value => {
+            faceted.setFilterText(value)
           }}
         />
         <IconButton

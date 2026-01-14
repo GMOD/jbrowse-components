@@ -1,18 +1,19 @@
-import fs from 'fs'
 import path from 'path'
 
-import { debug, readJsonFile, writeJsonFile } from '../utils'
-import { guessFileNames, guessTrackType } from './add-track-utils/adapter-utils'
-import { loadFile } from './add-track-utils/file-operations'
-import { buildTrackConfig } from './add-track-utils/track-config'
-import { validateTrackId } from './add-track-utils/validators'
+import { readJsonFile } from '../utils.ts'
+import {
+  guessFileNames,
+  guessTrackType,
+} from './add-track-utils/adapter-utils.ts'
+import { loadFile } from './add-track-utils/file-operations.ts'
+import { buildTrackConfig } from './add-track-utils/track-config.ts'
+import { validateTrackId } from './add-track-utils/validators.ts'
+import {
+  findAndUpdateOrAdd,
+  saveConfigAndReport as saveConfigAndReportBase,
+} from './shared/config-operations.ts'
 
-import type { Config } from '../base'
-
-export function resolveTrackConfigPath(output: string): string {
-  const isDir = fs.lstatSync(output).isDirectory()
-  return isDir ? `${output}/config.json` : output
-}
+import type { Config } from '../base.ts'
 
 export async function loadTrackConfig(
   targetConfigPath: string,
@@ -69,17 +70,20 @@ export function addTrackToConfig({
   force: boolean | undefined
   overwrite: boolean | undefined
 }): { updatedConfig: Config; wasOverwritten: boolean } {
-  const idx = validateTrackId(configContents, trackId, force, overwrite)
-  const updatedConfig = { ...configContents }
+  validateTrackId(configContents, trackId, force, overwrite)
 
-  if (idx !== -1) {
-    debug(`Found existing trackId ${trackId} in configuration`)
-    debug(`Overwriting track ${trackId} in configuration`)
-    updatedConfig.tracks![idx] = trackConfig
-    return { updatedConfig, wasOverwritten: true }
-  } else {
-    updatedConfig.tracks!.push(trackConfig)
-    return { updatedConfig, wasOverwritten: false }
+  const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
+    items: configContents.tracks || [],
+    newItem: trackConfig,
+    idField: 'trackId',
+    getId: item => item.trackId,
+    allowOverwrite: force || overwrite || false,
+    itemType: 'track',
+  })
+
+  return {
+    updatedConfig: { ...configContents, tracks: updatedItems },
+    wasOverwritten,
   }
 }
 
@@ -96,14 +100,14 @@ export async function saveTrackConfigAndReport({
   trackId: string
   wasOverwritten: boolean
 }): Promise<void> {
-  debug(`Writing configuration to file ${targetConfigPath}`)
-  await writeJsonFile(targetConfigPath, config)
-
-  console.log(
-    `${wasOverwritten ? 'Overwrote' : 'Added'} track with name "${name}" and trackId "${trackId}" ${
-      wasOverwritten ? 'in' : 'to'
-    } ${targetConfigPath}`,
-  )
+  await saveConfigAndReportBase({
+    config,
+    target: targetConfigPath,
+    itemType: 'track',
+    itemName: name,
+    itemId: trackId,
+    wasOverwritten,
+  })
 }
 
 export function buildTrackParams({
@@ -138,14 +142,12 @@ export function createTrackConfiguration({
   flags,
   adapter,
   configContents,
-  skipCheck,
 }: {
   location: string
   trackParams: ReturnType<typeof buildTrackParams>
   flags: any
   adapter: any
   configContents: Config
-  skipCheck: boolean | undefined
 }) {
   return buildTrackConfig({
     location,
@@ -158,6 +160,5 @@ export function createTrackConfiguration({
     config: flags.config,
     adapter,
     configContents,
-    skipCheck,
   })
 }

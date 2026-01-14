@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import fetch from '../fetchWithProxy'
+import fetch from '../fetchWithProxy.ts'
 
-import type { LocalPathLocation, Track, UriLocation } from '../base'
+import type { LocalPathLocation, Track, UriLocation } from '../base.ts'
 
 export async function createRemoteStream(urlIn: string) {
   const res = await fetch(urlIn)
@@ -101,13 +101,15 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
+const SUPPORTED_ADAPTERS = new Set([
+  'Gff3TabixAdapter',
+  'VcfTabixAdapter',
+  'Gff3Adapter',
+  'VcfAdapter',
+])
+
 export function supported(type = '') {
-  return [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
-    'Gff3Adapter',
-    'VcfAdapter',
-  ].includes(type)
+  return SUPPORTED_ADAPTERS.has(type)
 }
 
 export async function generateMeta({

@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
-import configSchema from '../MultiLinearVariantMatrixRenderer/configSchema'
+import configSchema from '../MultiLinearVariantMatrixRenderer/configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -6,8 +6,11 @@
     "strict": true,
     "lib": ["es2021"],
     "target": "es2021",
+    "moduleResolution": "node",
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   },
   "include": ["src"],
   "exclude": ["**/*.test.ts", "**/testUtil.ts", "dist"]

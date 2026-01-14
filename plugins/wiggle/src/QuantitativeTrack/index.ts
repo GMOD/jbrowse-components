@@ -1,7 +1,8 @@
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
-import configSchemaF from './configSchema'
+import configSchemaF from './configSchema.ts'
+import { stringifyBedGraph } from '../saveTrackFormats/bedGraph.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -16,7 +17,17 @@ export default function QuantitativeTrackF(pluginManager: PluginManager) {
         pluginManager,
         'QuantitativeTrack',
         configSchema,
-      ),
+      ).views(() => ({
+        saveTrackFileFormatOptions() {
+          return {
+            bedGraph: {
+              name: 'BedGraph',
+              extension: 'bedgraph',
+              callback: stringifyBedGraph,
+            },
+          }
+        },
+      })),
     })
   })
 }

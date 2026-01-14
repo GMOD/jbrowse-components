@@ -5,14 +5,14 @@ import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import Drawer from './Drawer'
-import DrawerHeader from './DrawerHeader'
+import Drawer from './Drawer.tsx'
+import DrawerHeader from './DrawerHeader.tsx'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
-const ModalWidget = lazy(() => import('./ModalWidget'))
+const ModalWidget = lazy(() => import('./ModalWidget.tsx'))
 
-const DrawerWidget = observer(function ({
+const DrawerWidget = observer(function DrawerWidget({
   session,
 }: {
   session: SessionWithFocusedViewAndDrawerWidgets

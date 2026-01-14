@@ -1,9 +1,9 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`no features 1`] = `
 <div>
   <svg
-    height="20"
+    height="0"
     style="position: relative;"
     width="100"
   />
@@ -13,7 +13,7 @@ exports[`no features 1`] = `
 exports[`one feature 1`] = `
 <div>
   <svg
-    height="27.573305919324014"
+    height="16.286652959662007"
     style="position: relative;"
     width="333.3333333333333"
   >
@@ -23,7 +23,7 @@ exports[`one feature 1`] = `
       x1="0.7"
       x2="0.7"
       y1="0"
-      y2="27.573305919324014"
+      y2="16.286652959662007"
     />
     <g
       data-testid="one"
@@ -31,7 +31,7 @@ exports[`one feature 1`] = `
       <title />
       <circle
         cx="0.7"
-        cy="21.92997943949301"
+        cy="10.643326479831003"
         r="5.643326479831003"
         style="fill: green;"
       />

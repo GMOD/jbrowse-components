@@ -4,13 +4,13 @@ import {
   measureGridWidth,
   toLocale,
 } from '@jbrowse/core/util'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import LocationCell from './components/LocationCell'
+import LocationCell from './components/LocationCell.tsx'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { GridColDef } from '@mui/x-data-grid'
-import type { Instance } from 'mobx-state-tree'
 
 export interface Row {
   // optional feature per-row
@@ -112,7 +112,7 @@ export default function stateModelFactory() {
                     'N/A'
                   )
                 },
-              } satisfies GridColDef<(typeof rows)[0]>,
+              } satisfies GridColDef,
               {
                 field: 'Length',
                 type: 'number',
@@ -130,7 +130,7 @@ export default function stateModelFactory() {
                   return feature ? feature.end - feature.start : undefined
                 },
                 valueFormatter: arg => toLocale(arg),
-              } satisfies GridColDef<(typeof rows)[0]>,
+              } satisfies GridColDef,
 
               ...self.columns.map(
                 f =>
@@ -146,7 +146,7 @@ export default function stateModelFactory() {
                       typeof rows[0][f.name] === 'number'
                         ? 'number'
                         : undefined,
-                  }) satisfies GridColDef<(typeof rows)[0]>,
+                  }) satisfies GridColDef,
               ),
             ]
           : undefined

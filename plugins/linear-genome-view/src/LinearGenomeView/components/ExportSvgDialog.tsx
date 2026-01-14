@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 
-import type { ExportSvgOptions } from '../types'
+import type { ExportSvgOptions } from '../types.ts'
 import type { TextFieldProps } from '@mui/material'
 
 function LoadingMessage() {
@@ -48,6 +48,7 @@ export default function ExportSvgDialog({
   const session = getSession(model)
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
+  const [showGridlines, setShowGridlines] = useSvgLocal('gridlines', false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
   const [filename, setFilename] = useSvgLocal('file', 'jbrowse.svg')
@@ -107,6 +108,18 @@ export default function ExportSvgDialog({
           </TextField2>
         ) : null}
 
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={showGridlines}
+              onChange={() => {
+                setShowGridlines(val => !val)
+              }}
+            />
+          }
+          label="Show gridlines"
+        />
+
         {offscreenCanvas ? (
           <FormControlLabel
             control={
@@ -149,6 +162,7 @@ export default function ExportSvgDialog({
                 filename,
                 trackLabels,
                 themeName,
+                showGridlines,
               })
               handleClose()
             } catch (e) {

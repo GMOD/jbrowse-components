@@ -3,10 +3,10 @@ import { useState } from 'react'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import { getStr, measureGridWidth } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DataGrid } from '@mui/x-data-grid'
-import { makeStyles } from 'tss-react/mui'
 
-import type { Source } from '../types'
+import type { Source } from '../types.ts'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
@@ -33,11 +33,10 @@ export default function SourcesDataGrid({
 }) {
   const { classes } = useStyles()
   const {
-    id: _id,
     name: _name,
-    label: _label,
     color: _color,
     baseUri: _baseUri,
+    baseName: _baseName,
     HP: _HP,
     ...rest
   } = rows[0]!
@@ -51,6 +50,7 @@ export default function SourcesDataGrid({
       <DataGrid
         checkboxSelection
         disableRowSelectionOnClick
+        getRowId={row => row.name}
         onRowSelectionModelChange={arg => {
           setSelected([...arg.ids])
         }}
@@ -78,9 +78,9 @@ export default function SourcesDataGrid({
             },
           },
           {
-            field: 'label',
+            field: 'name',
             headerName: 'Name',
-            width: measureGridWidth(rows.map(r => r.label)),
+            width: measureGridWidth(rows.map(r => r.name)),
           },
           ...Object.keys(rest).map(
             val =>

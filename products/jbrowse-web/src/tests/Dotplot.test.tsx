@@ -2,7 +2,7 @@ import path from 'path'
 
 import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
 import dotplotSession from './dotplot_inverted_test.json'
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util'
+import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
 import config from '../../test_data/config_dotplot.json'
 
 const delay = { timeout: 50000 }

@@ -1,13 +1,13 @@
 import type React from 'react'
 import { forwardRef } from 'react'
 
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import Gridlines from './Gridlines'
-import ScalebarCoordinateLabels from './ScalebarCoordinateLabels'
-import ScalebarRefNameLabels from './ScalebarRefNameLabels'
+import Gridlines from './Gridlines.tsx'
+import ScalebarCoordinateLabels from './ScalebarCoordinateLabels.tsx'
+import ScalebarRefNameLabels from './ScalebarRefNameLabels.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -21,6 +21,8 @@ const useStyles = makeStyles()({
   zoomContainer: {
     position: 'relative',
   },
+  // Scalebar positioned using CSS calc() with --offset-px variable
+  // Uses translateX for smooth positioning (subpixel gaps less visible here)
   scalebar: {
     position: 'absolute',
     display: 'flex',
@@ -39,19 +41,21 @@ const Scalebar = observer(
     { model, style, className, ...other },
     ref,
   ) {
-    const { classes, cx } = useStyles()
-    const { staticBlocks, offsetPx, scaleFactor } = model
-    const offsetLeft = staticBlocks.offsetPx - offsetPx
+    const { classes } = useStyles()
+    const { scaleFactor, staticBlocks, offsetPx } = model
+
     return (
       <Paper
         data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
         className={cx(classes.container, className)}
         variant="outlined"
         ref={ref}
-        style={style}
+        style={
+          { ...style, '--offset-px': `${offsetPx}px` } as React.CSSProperties
+        }
         {...other}
       >
-        {/* offset 1px since for left track border */}
+        {/* offset 1px for left track border */}
         <Gridlines model={model} offset={1} />
         <div
           className={classes.zoomContainer}
@@ -62,9 +66,8 @@ const Scalebar = observer(
           <div
             className={classes.scalebar}
             style={{
-              left: offsetLeft - 1,
+              transform: `translateX(calc(${staticBlocks.offsetPx}px - var(--offset-px) - 1px))`,
               width: staticBlocks.totalWidthPx,
-              ...style,
             }}
           >
             <ScalebarCoordinateLabels model={model} />

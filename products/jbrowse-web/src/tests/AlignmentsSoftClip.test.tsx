@@ -8,7 +8,7 @@ import {
   hts,
   pc,
   setup,
-} from './util'
+} from './util.tsx'
 
 setup()
 
@@ -28,6 +28,8 @@ test('opens the track menu and enables soft clipping', async () => {
     await screen.findByTestId(hts('volvox-long-reads-sv-bam'), ...opts),
   )
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+  await user.click(await screen.findByText('Pileup settings'))
+  await user.click(await screen.findByText('Show...'))
   await user.click(await screen.findByText('Show soft clipping'))
   const f0 = within(await screen.findByTestId('Blockset-pileup'))
   // slightly higher threshold for fonts

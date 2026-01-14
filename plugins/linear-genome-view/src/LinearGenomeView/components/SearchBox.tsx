@@ -1,15 +1,15 @@
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import RefNameAutocomplete from './RefNameAutocomplete'
-import EndAdornment from './RefNameAutocomplete/EndAdornment'
-import { fetchResults } from './util'
-import { handleSelectedRegion, navToOption } from '../../searchUtils'
-import { SPACING, WIDGET_HEIGHT } from '../consts'
+import EndAdornment from './RefNameAutocomplete/EndAdornment.tsx'
+import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
+import { fetchResults } from './util.ts'
+import { handleSelectedRegion, navToOption } from '../../searchUtils.ts'
+import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
-import type { LinearGenomeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '../model.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 const useStyles = makeStyles()({
@@ -46,7 +46,7 @@ async function onSelect({
   }
 }
 
-const SearchBox = observer(function ({
+const SearchBox = observer(function SearchBox({
   model,
   showHelp = true,
 }: {

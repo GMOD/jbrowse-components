@@ -1,9 +1,9 @@
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import type { LinearGenomeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '../model.ts'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
@@ -13,6 +13,7 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
+    left: 0,
     background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
     borderLeft: `1px solid ${theme.palette.highlight.main}`,
     borderRight: `1px solid ${theme.palette.highlight.main}`,
@@ -59,8 +60,8 @@ const OverviewHighlight = observer(function OverviewHighlight({
         key={`${left}_${width}_${idx}`}
         className={classes.highlight}
         style={{
-          width: width,
-          left: left,
+          width,
+          transform: `translateX(${left}px)`,
         }}
       />
     ))

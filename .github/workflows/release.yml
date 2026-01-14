@@ -4,64 +4,63 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+
 jobs:
   createrelease:
     name: Create release tag and JBrowse web release artifacts
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # v1.1.4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          # This allows us to manually edit the release body text before publishing
-          draft: true
-          prerelease: false
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
-      - name: Use Node.js 22
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-      - name: Set env
+          cache: 'pnpm'
+      - name: Set release version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: Install deps
-        run: yarn
-      - name: Build project
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build jbrowse-web
         run: |
           echo $RELEASE_VERSION
           cd products/jbrowse-web/
-          NODE_OPTIONS='--max-old-space-size=6500' yarn build
+          NODE_OPTIONS='--max-old-space-size=6500' pnpm build
           cd build
           zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
-      - name: Upload jbrowse-web build
-        id: upload-release-asset
-        uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5 # v1.0.2
+      - name: Create draft release with jbrowse-web artifact
+        run: |
+          gh release create ${{ github.ref_name }} \
+            ./products/jbrowse-web/build/jbrowse-web-${RELEASE_VERSION}.zip \
+            --draft \
+            --title "Release ${{ github.ref_name }}"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./products/jbrowse-web/build/jbrowse-web-${{env.RELEASE_VERSION}}.zip
-          asset_name: jbrowse-web-${{env.RELEASE_VERSION}}.zip
-          asset_content_type: application/zip
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   buildwindows:
     needs: createrelease
     name: Build Windows desktop app
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     container:
       image: docker://node:22-bullseye
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
+      - name: Install pnpm
+        run: npm install -g pnpm@10
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Setup java
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
           # eclipse 'temurin' openjdk https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Selecting-a-Java-distribution
           distribution: 'temurin'
@@ -95,28 +94,33 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chown --recursive root:root /github/home
-          yarn build-electron:win --publish always
+          pnpm build-electron:win --publish always
         working-directory: products/jbrowse-desktop
 
   buildmac:
     needs: createrelease
     name: Build Mac desktop app
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
-      - name: Use Node.js 22
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-      - name: Install build deps
+          cache: 'pnpm'
+      - name: Install build dependencies
         run: |
           brew install pkg-config cairo pango libpng jpeg giflib librsvg
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
-      - name: Build app
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Mac app
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
@@ -124,54 +128,63 @@ jobs:
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn build-electron:mac --publish always
+          pnpm build-electron:mac --publish always
         working-directory: products/jbrowse-desktop
   buildlinux:
     needs: createrelease
     name: Build Linux desktop app
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
-      - name: Use Node.js 22
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
-      - name: Install build deps
+          cache: 'pnpm'
+      - name: Install build dependencies
         run: |
           sudo apt update
           sudo apt install -y python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-      - name: Build app
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Linux app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn build-electron:linux --publish always
+          pnpm build-electron:linux --publish always
         working-directory: products/jbrowse-desktop
 
   buildjbrowseweb:
     name: Deploy jbrowse-web and storybooks to latest folder on tag
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: '22'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@3714964fb879ebbbc108e167f0f3a0c81ec075c9 # v1.10.10
-      - name: Build project
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build jbrowse-web
         run: |
           echo $RELEASE_VERSION
           cd products/jbrowse-web/
-          NODE_OPTIONS='--max-old-space-size=6500' yarn build
+          NODE_OPTIONS='--max-old-space-size=6500' pnpm build
           cd ../../
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838 # v5.0.0
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

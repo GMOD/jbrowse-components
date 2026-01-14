@@ -5,8 +5,8 @@ import { CacheProvider } from '@emotion/react'
 import r2wc from '@r2wc/react-to-web-component'
 import { createPortal } from 'react-dom'
 
-import { getVolvoxConfig } from './util'
-import { JBrowseLinearGenomeView, createViewState } from '../../src'
+import { getVolvoxConfig } from './util.ts'
+import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 import type { EmotionCache } from '@emotion/cache'
 

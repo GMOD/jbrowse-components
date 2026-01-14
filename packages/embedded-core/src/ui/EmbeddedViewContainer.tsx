@@ -1,11 +1,11 @@
 import { Suspense } from 'react'
 
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, ScopedCssBaseline, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import ViewTitle from './ViewTitle'
+import ViewTitle from './ViewTitle.tsx'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewContainer = observer(function ({
+const ViewContainer = observer(function ViewContainer({
   view,
   children,
 }: {
@@ -48,7 +48,7 @@ const ViewContainer = observer(function ({
   )
 })
 
-const ViewContainerWrapper = observer(function ({
+const ViewContainerWrapper = observer(function ViewContainerWrapper({
   view,
   children,
 }: {

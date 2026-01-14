@@ -8,12 +8,12 @@ import {
 } from '@jbrowse/core/util/analytics'
 import deepmerge from 'deepmerge'
 
-import corePlugins from '../../corePlugins'
-import JBrowseRootModelFactory from '../../rootModel/rootModel'
-import sessionModelFactory from '../../sessionModel/sessionModel'
-import { fetchCJS } from '../../util'
+import corePlugins from '../../corePlugins.ts'
+import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
+import sessionModelFactory from '../../sessionModel/sessionModel.ts'
+import { fetchCJS } from '../../util.tsx'
 
-import type { JBrowseConfig } from './types'
+import type { JBrowseConfig } from './types.ts'
 
 const { ipcRenderer } = window.require('electron')
 

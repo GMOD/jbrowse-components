@@ -1,23 +1,23 @@
 import { FileSelector } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import SwapAssemblies from './SwapAssemblies'
+import SwapAssemblies from './SwapAssemblies.tsx'
 
-import type { SelectorProps } from './SelectorTypes'
+import type { SelectorProps } from './SelectorTypes.ts'
 
 /**
  * Component for selecting ANCHORS format files and their related BED files
  */
-const AnchorsSelector = observer(function ({
+const AnchorsSelector = observer(function AnchorsSelector({
   assembly1,
   assembly2,
   swap,
   setSwap,
   fileLocation,
   setFileLocation,
-  bed1Location = undefined,
+  bed1Location,
   setBed1Location = () => {},
-  bed2Location = undefined,
+  bed2Location,
   setBed2Location = () => {},
   radioOption,
 }: SelectorProps) {

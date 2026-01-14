@@ -8,7 +8,7 @@ import {
   hts,
   pv,
   setup,
-} from './util'
+} from './util.tsx'
 import config from '../../test_data/volvox/config_auth.json'
 
 setup()

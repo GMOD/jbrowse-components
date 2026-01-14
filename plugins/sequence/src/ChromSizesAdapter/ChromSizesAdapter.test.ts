@@ -1,5 +1,5 @@
-import Adapter from './ChromSizesAdapter'
-import configSchema from './configSchema'
+import Adapter from './ChromSizesAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
   const adapter = new Adapter(

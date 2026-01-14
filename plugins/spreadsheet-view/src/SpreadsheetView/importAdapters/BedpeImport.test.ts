@@ -1,4 +1,4 @@
-import { parseBedPEBuffer } from './BedpeImport'
+import { parseBedPEBuffer } from './BedpeImport.ts'
 
 function stringToUint8Array(str: string): Uint8Array {
   return new TextEncoder().encode(str)

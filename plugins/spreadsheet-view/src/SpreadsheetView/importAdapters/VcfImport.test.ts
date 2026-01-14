@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { parseVcfBuffer } from './VcfImport'
+import { parseVcfBuffer } from './VcfImport.ts'
 
 test('vcf file import', () => {
   const filepath = path.join(

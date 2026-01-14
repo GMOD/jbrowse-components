@@ -3,8 +3,8 @@ id: sharedlinearpileupdisplaymixin
 title: SharedLinearPileupDisplayMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -30,7 +30,7 @@ extends
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -107,6 +107,24 @@ IMaybe<ISimpleType<boolean>>
 hideSmallIndelsSetting: types.maybe(types.boolean)
 ```
 
+#### property: hideMismatchesSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideMismatchesSetting: types.maybe(types.boolean)
+```
+
+#### property: hideLargeIndelsSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideLargeIndelsSetting: types.maybe(types.boolean)
+```
+
 ### SharedLinearPileupDisplayMixin - Getters
 
 #### getter: colorBy
@@ -137,11 +155,25 @@ boolean
 boolean
 ```
 
+#### getter: hideMismatches
+
+```js
+// type
+boolean
+```
+
+#### getter: hideLargeIndels
+
+```js
+// type
+boolean
+```
+
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+any
 ```
 
 #### getter: maxHeight
@@ -162,7 +194,7 @@ any
 
 ```js
 // type
-Feature
+any
 ```
 
 #### getter: renderReady
@@ -176,7 +208,7 @@ Feature
 
 ```js
 // type
-SerializableFilterChain
+any
 ```
 
 #### getter: rendererTypeName
@@ -201,7 +233,23 @@ uses copy-to-clipboard and generates notification
 
 ```js
 // type signature
-copyFeatureToClipboard: (feature: Feature) => void
+copyFeatureToClipboard: (feature: Feature) => Promise<void>
+```
+
+#### method: legendItems
+
+Returns legend items based on current colorBy setting
+
+```js
+// type signature
+legendItems: (theme: Theme) => LegendItem[]
+```
+
+#### method: showSubMenuItems
+
+```js
+// type signature
+showSubMenuItems: () => ({ label: string; type: "subMenu"; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: string; checked: boolean; onClick: () => void; })[]
 ```
 
 #### method: contextMenuItems
@@ -211,11 +259,18 @@ copyFeatureToClipboard: (feature: Feature) => void
 contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
-#### method: renderPropsPre
+#### method: adapterRenderProps
 
 ```js
 // type signature
-renderPropsPre: () => any
+adapterRenderProps: () => any
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onClick(): void; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { ...; } & ... 17 more ... & IStateTreeNode<...>; onMouseMove(_: unknown, featureId?: string): void; onMouseLeave(_: unknown): void; onContextMenu...
 ```
 
 #### method: colorSchemeSubMenuItems
@@ -229,7 +284,7 @@ colorSchemeSubMenuItems: () => { label: string; onClick: () => void; }[]
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
+trackMenuItems: () => any[]
 ```
 
 ### SharedLinearPileupDisplayMixin - Actions
@@ -294,7 +349,7 @@ selectFeature: (feature: Feature) => void
 
 ```js
 // type signature
-setConfig: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+setConfig: (conf: AnyConfigurationModel) => void
 ```
 
 #### action: setFilterBy
@@ -316,4 +371,18 @@ setJexlFilters: (filters: string[]) => void
 ```js
 // type signature
 setHideSmallIndels: (arg: boolean) => void
+```
+
+#### action: setHideMismatches
+
+```js
+// type signature
+setHideMismatches: (arg: boolean) => void
+```
+
+#### action: setHideLargeIndels
+
+```js
+// type signature
+setHideLargeIndels: (arg: boolean) => void
 ```

@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 
 import { observer } from 'mobx-react'
 
-import ConfigurationTextField from './ConfigurationTextField'
+import ConfigurationTextField from './ConfigurationTextField.tsx'
 
-const NumberEditor = observer(function ({
+const NumberEditor = observer(function NumberEditor({
   slot,
 }: {
   slot: {

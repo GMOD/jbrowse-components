@@ -1,16 +1,15 @@
 import { forwardRef } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import TrackLabelDragHandle from './TrackLabelDragHandle'
-import TrackLabelMenu from './TrackLabelMenu'
+import TrackLabelDragHandle from './TrackLabelDragHandle.tsx'
+import TrackLabelMenu from './TrackLabelMenu.tsx'
 
 import type { LinearGenomeViewModel } from '..'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -25,7 +24,10 @@ const useStyles = makeStyles()(theme => ({
     },
   },
   trackName: {
+    margin: '0 auto',
+    width: '90%',
     fontSize: '0.8rem',
+    pointerEvents: 'none',
   },
   iconButton: {
     padding: theme.spacing(1),
@@ -44,13 +46,12 @@ const TrackLabel = observer(
     { track, className },
     ref,
   ) {
-    const { classes, cx } = useStyles()
+    const { classes } = useStyles()
     const view = getContainingView(track) as LGV
     const session = getSession(track)
-    const trackConf = track.configuration
     const { minimized } = track
-    const trackId = getConf(track, 'trackId')
-    const trackName = getTrackName(trackConf, session)
+    const trackId = track.trackId
+    const trackName = getTrackName(track.configuration, session)
 
     return (
       <Paper
@@ -74,10 +75,6 @@ const TrackLabel = observer(
           variant="body1"
           component="span"
           className={classes.trackName}
-          onMouseDown={event => {
-            // avoid becoming a click-and-drag action on the lgv
-            event.stopPropagation()
-          }}
         >
           <SanitizedHTML
             html={[trackName, minimized ? '(minimized)' : '']

@@ -10,39 +10,45 @@ import {
   SimpleFeature,
   getContainingTrack,
   getContainingView,
-  getEnv,
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import copy from 'copy-to-clipboard'
-import { autorun, observable } from 'mobx'
-import { addDisposer, cast, isAlive, types } from 'mobx-state-tree'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import { observable } from 'mobx'
 
-import { createAutorun } from '../util'
-import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { getUniqueTags } from '../shared/getUniqueTags'
+import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb.tsx'
+import { getPileupLegendItems } from '../shared/legendUtils.ts'
+import { getMismatchDisplayMenuItem } from '../shared/menuItems.ts'
+import { isDefaultFilterFlags } from '../shared/util.ts'
 
-import type { ColorBy, FilterBy } from '../shared/types'
+import type { ColorBy, FilterBy } from '../shared/types.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
+import type { Theme } from '@mui/material'
 // lazies
 const FilterByTagDialog = lazy(
-  () => import('../shared/components/FilterByTagDialog'),
+  () => import('../shared/components/FilterByTagDialog.tsx'),
 )
-const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog'))
+const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog.tsx'))
 const SetFeatureHeightDialog = lazy(
-  () => import('./components/SetFeatureHeightDialog'),
+  () => import('../shared/components/SetFeatureHeightDialog.tsx'),
 )
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
+const SetMaxHeightDialog = lazy(
+  () => import('../shared/components/SetMaxHeightDialog.tsx'),
+)
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -101,6 +107,14 @@ export function SharedLinearPileupDisplayMixin(
          * #property
          */
         hideSmallIndelsSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        hideMismatchesSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        hideLargeIndelsSetting: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -138,7 +152,9 @@ export function SharedLinearPileupDisplayMixin(
        */
       get autorunReady() {
         const view = getContainingView(self) as LGV
-        return view.initialized && self.statsReadyAndRegionNotTooLarge
+        return (
+          view.initialized && self.featureDensityStatsReadyAndRegionNotTooLarge
+        )
       },
 
       /**
@@ -146,6 +162,18 @@ export function SharedLinearPileupDisplayMixin(
        */
       get hideSmallIndels() {
         return self.hideSmallIndelsSetting
+      },
+      /**
+       * #getter
+       */
+      get hideMismatches() {
+        return self.hideMismatchesSetting
+      },
+      /**
+       * #getter
+       */
+      get hideLargeIndels() {
+        return self.hideLargeIndelsSetting
       },
     }))
     .actions(self => ({
@@ -274,6 +302,19 @@ export function SharedLinearPileupDisplayMixin(
       setHideSmallIndels(arg: boolean) {
         self.hideSmallIndelsSetting = arg
       },
+
+      /**
+       * #action
+       */
+      setHideMismatches(arg: boolean) {
+        self.hideMismatchesSetting = arg
+      },
+      /**
+       * #action
+       */
+      setHideLargeIndels(arg: boolean) {
+        self.hideLargeIndelsSetting = arg
+      },
     }))
 
     .views(self => ({
@@ -281,9 +322,10 @@ export function SharedLinearPileupDisplayMixin(
        * #method
        * uses copy-to-clipboard and generates notification
        */
-      copyFeatureToClipboard(feature: Feature) {
+      async copyFeatureToClipboard(feature: Feature) {
         const { uniqueId, ...rest } = feature.toJSON()
         const session = getSession(self)
+        const { default: copy } = await import('copy-to-clipboard')
         copy(JSON.stringify(rest, null, 4))
         session.notify('Copied to clipboard', 'success')
       },
@@ -295,20 +337,21 @@ export function SharedLinearPileupDisplayMixin(
           featureHeight: height,
           noSpacing,
           hideSmallIndels,
+          hideMismatches,
+          hideLargeIndels,
           trackMaxHeight: maxHeight,
           rendererTypeName,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-        return self.rendererType.configSchema.create(
-          {
-            ...configBlob,
-            ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
-            ...(height !== undefined ? { height } : {}),
-            ...(noSpacing !== undefined ? { noSpacing } : {}),
-            ...(maxHeight !== undefined ? { maxHeight } : {}),
-          },
-          getEnv(self),
-        )
+        return {
+          ...configBlob,
+          ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
+          ...(hideMismatches !== undefined ? { hideMismatches } : {}),
+          ...(hideLargeIndels !== undefined ? { hideLargeIndels } : {}),
+          ...(height !== undefined ? { height } : {}),
+          ...(noSpacing !== undefined ? { noSpacing } : {}),
+          ...(maxHeight !== undefined ? { maxHeight } : {}),
+        }
       },
     }))
     .views(self => ({
@@ -343,11 +386,45 @@ export function SharedLinearPileupDisplayMixin(
       get filters() {
         return new SerializableFilterChain({ filters: self.jexlFilters })
       },
+
+      /**
+       * #method
+       * Returns legend items based on current colorBy setting
+       */
+      legendItems(theme: Theme): LegendItem[] {
+        return getPileupLegendItems(self.colorBy, theme)
+      },
+
+      /**
+       * #method
+       */
+      showSubMenuItems() {
+        return [
+          {
+            label: 'Show tooltips',
+            type: 'checkbox',
+            checked: self.showTooltipsEnabled,
+            onClick: () => {
+              self.setShowTooltips(!self.showTooltipsEnabled)
+            },
+          },
+          {
+            label: 'Show legend',
+            type: 'checkbox',
+            checked: self.showLegend,
+            onClick: () => {
+              self.setShowLegend(!self.showLegend)
+            },
+          },
+          getMismatchDisplayMenuItem(self),
+        ]
+      },
     }))
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
+        renderingProps: superRenderingProps,
       } = self
 
       return {
@@ -382,6 +459,7 @@ export function SharedLinearPileupDisplayMixin(
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: () => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     self.copyFeatureToClipboard(feat)
                   },
                 },
@@ -398,19 +476,25 @@ export function SharedLinearPileupDisplayMixin(
         /**
          * #method
          */
-        renderPropsPre() {
-          const { colorTagMap, colorBy, filterBy, rpcDriverName } = self
+        adapterRenderProps() {
+          const { colorTagMap, colorBy, filterBy } = self
           const superProps = superRenderProps()
           return {
             ...superProps,
             notReady: superProps.notReady || !self.renderReady(),
-            rpcDriverName,
-            displayModel: self,
             colorBy,
             filterBy,
             filters: self.filters,
             colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
             config: self.rendererConfig,
+          }
+        },
+        /**
+         * #method
+         */
+        renderingProps() {
+          return {
+            ...superRenderingProps(),
             async onFeatureClick(_: unknown, featureId?: string) {
               const session = getSession(self)
               const { rpcManager } = session
@@ -426,8 +510,9 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
+                      trackInstanceId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
@@ -460,8 +545,9 @@ export function SharedLinearPileupDisplayMixin(
                     {
                       featureId: f,
                       sessionId,
-                      layoutId: getContainingTrack(self).id,
+                      trackInstanceId: getContainingTrack(self).id,
                       rendererType: 'PileupRenderer',
+                      rpcDriverName: self.effectiveRpcDriverName,
                     },
                   )) as { feature: SimpleFeatureSerialized | undefined }
 
@@ -553,10 +639,12 @@ export function SharedLinearPileupDisplayMixin(
             ...superTrackMenuItems(),
             {
               label: 'Set feature height...',
-              priority: 1,
+              priority: 0,
               subMenu: [
                 {
                   label: 'Normal',
+                  type: 'radio',
+                  checked: self.featureHeight === 7 && self.noSpacing === false,
                   onClick: () => {
                     self.setFeatureHeight(7)
                     self.setNoSpacing(false)
@@ -564,13 +652,24 @@ export function SharedLinearPileupDisplayMixin(
                 },
                 {
                   label: 'Compact',
+                  type: 'radio',
+                  checked: self.featureHeight === 2 && self.noSpacing === true,
                   onClick: () => {
                     self.setFeatureHeight(2)
                     self.setNoSpacing(true)
                   },
                 },
                 {
-                  label: 'Manually set height',
+                  label: 'Super-compact',
+                  type: 'radio',
+                  checked: self.featureHeight === 1 && self.noSpacing === true,
+                  onClick: () => {
+                    self.setFeatureHeight(1)
+                    self.setNoSpacing(true)
+                  },
+                },
+                {
+                  label: 'Custom',
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SetFeatureHeightDialog,
@@ -584,16 +683,14 @@ export function SharedLinearPileupDisplayMixin(
               ],
             },
             {
-              label: 'Hide small indels (<10bp)',
+              label: 'Show...',
+              icon: VisibilityIcon,
               priority: -1,
-              type: 'checkbox',
-              checked: self.hideSmallIndels,
-              onClick: () => {
-                self.setHideSmallIndels(!self.hideSmallIndels)
-              },
+              type: 'subMenu',
+              subMenu: self.showSubMenuItems(),
             },
             {
-              label: 'Set max height...',
+              label: 'Set max track height...',
               priority: -1,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
@@ -624,82 +721,17 @@ export function SharedLinearPileupDisplayMixin(
     })
     .views(self => ({
       renderProps() {
-        return self.renderPropsPre()
+        return self.adapterRenderProps()
       },
     }))
     .actions(self => ({
       afterAttach() {
-        createAutorun(
-          self,
-          async () => {
-            const view = getContainingView(self) as LGV
-            if (!self.autorunReady) {
-              return
-            }
-
-            const { colorBy, tagsReady } = self
-            const { staticBlocks } = view
-            if (colorBy?.tag && !tagsReady) {
-              const vals = await getUniqueTags({
-                self,
-                tag: colorBy.tag,
-                blocks: staticBlocks,
-              })
-              if (isAlive(self)) {
-                self.updateColorTagMap(vals)
-                self.setTagsReady(true)
-              }
-            } else {
-              self.setTagsReady(true)
-            }
-          },
-          { delay: 1000 },
-        )
-
-        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
-        // asynchronously. this is needed due to how we do not serialize all
-        // features from the BAM/CRAM over the rpc
-        addDisposer(
-          self,
-          autorun(async () => {
-            const session = getSession(self)
-            try {
-              const featureId = self.featureIdUnderMouse
-              if (self.featureUnderMouse?.id() !== featureId) {
-                if (!featureId) {
-                  self.setFeatureUnderMouse(undefined)
-                } else {
-                  const sessionId = getRpcSessionId(self)
-                  const { feature } = (await session.rpcManager.call(
-                    sessionId,
-                    'CoreGetFeatureDetails',
-                    {
-                      featureId,
-                      sessionId,
-                      layoutId: getContainingTrack(self).id,
-                      rendererType: 'PileupRenderer',
-                    },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
-
-                  // check featureIdUnderMouse is still the same as the
-                  // feature.id that was returned e.g. that the user hasn't
-                  // moused over to a new position during the async operation
-                  // above
-                  if (
-                    isAlive(self) &&
-                    feature &&
-                    self.featureIdUnderMouse === feature.uniqueId
-                  ) {
-                    self.setFeatureUnderMouse(new SimpleFeature(feature))
-                  }
-                }
-              }
-            } catch (e) {
-              console.error(e)
-              session.notifyError(`${e}`, e)
-            }
-          }),
-        )
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          const { sharedDoAfterAttach } =
+            await import('./sharedDoAfterAttach.ts')
+          sharedDoAfterAttach(self)
+        })()
       },
     }))
     .preProcessSnapshot(snap => {
@@ -715,5 +747,39 @@ export function SharedLinearPileupDisplayMixin(
         }
       }
       return snap
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        trackMaxHeight,
+        colorBySetting,
+        filterBySetting,
+        jexlFilters,
+        hideSmallIndelsSetting,
+        hideMismatchesSetting,
+        hideLargeIndelsSetting,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
+        ...(colorBySetting !== undefined ? { colorBySetting } : {}),
+        ...(!isDefaultFilterFlags(filterBySetting) ? { filterBySetting } : {}),
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(jexlFilters?.length ? { jexlFilters } : {}),
+        ...(hideSmallIndelsSetting !== undefined
+          ? { hideSmallIndelsSetting }
+          : {}),
+        ...(hideMismatchesSetting !== undefined
+          ? { hideMismatchesSetting }
+          : {}),
+        ...(hideLargeIndelsSetting !== undefined
+          ? { hideLargeIndelsSetting }
+          : {}),
+      } as typeof snap
     })
 }

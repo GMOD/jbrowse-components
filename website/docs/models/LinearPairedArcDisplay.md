@@ -3,8 +3,8 @@ id: linearpairedarcdisplay
 title: LinearPairedArcDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -44,7 +44,7 @@ type: types.literal('LinearPairedArcDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```

@@ -3,8 +3,8 @@ id: basetrackmodel
 title: BaseTrackModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseTrackModel.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseTrackModel.md)
 
@@ -82,6 +82,13 @@ displays: types.array(pm.pluggableMstType('display', 'stateModel'))
 
 ### BaseTrackModel - Getters
 
+#### getter: trackId
+
+```js
+// type
+string
+```
+
 #### getter: rpcSessionId
 
 determines which webworker to send the track to, currently based on trackId
@@ -112,13 +119,6 @@ any
 any
 ```
 
-#### getter: adapterType
-
-```js
-// type
-AdapterType
-```
-
 #### getter: viewMenuActions
 
 ```js
@@ -133,13 +133,20 @@ MenuItem[]
 boolean | ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)
 ```
 
+#### getter: adapterType
+
+```js
+// type
+AdapterType
+```
+
 ### BaseTrackModel - Methods
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => MenuItem[]
 ```
 
 ### BaseTrackModel - Actions
@@ -176,5 +183,5 @@ hideDisplay: (displayId: string) => number
 
 ```js
 // type signature
-replaceDisplay: (oldId: string, newId: string, initialSnapshot?: {}) => void
+replaceDisplay: (oldDisplayId: string, newDisplayId: string, initialSnapshot?: {}) => void
 ```

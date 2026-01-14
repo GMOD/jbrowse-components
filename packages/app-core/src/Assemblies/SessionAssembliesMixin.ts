@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
@@ -68,5 +68,16 @@ export function SessionAssembliesMixin(
           }
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { sessionAssemblies, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(sessionAssemblies.length ? { sessionAssemblies } : {}),
+      } as typeof snap
     })
 }

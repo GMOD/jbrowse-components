@@ -178,7 +178,7 @@ export function parseLocStrings(
     // start, end if start and end are integer inputs
     const [refName, start, end] = inputs
     if (
-      /Unknown reference sequence/.exec(`${e}`) &&
+      /Unknown feature or sequence/.exec(`${e}`) &&
       Number.isInteger(+start!) &&
       Number.isInteger(+end!)
     ) {
@@ -199,15 +199,16 @@ export function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
     const isSingleAssemblyName = contentBlocks.every(
       b => b.assemblyName === contentBlocks[0]!.assemblyName,
     )
-    const locs = contentBlocks.map(block =>
-      assembleLocString({
-        // eslint-disable-next-line @typescript-eslint/no-misused-spread
-        ...block,
-        start: Math.round(block.start),
-        end: Math.round(block.end),
-        assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
-      }),
-    )
-    return locs.join(' ')
+    return contentBlocks
+      .map(block =>
+        assembleLocString({
+          refName: block.refName,
+          start: Math.round(block.start),
+          end: Math.round(block.end),
+          assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+          reversed: block.reversed,
+        }),
+      )
+      .join(' ')
   }
 }

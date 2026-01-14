@@ -2,6 +2,8 @@ import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   Checkbox,
@@ -13,8 +15,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -22,7 +22,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const SequenceSearchDialog = observer(function ({
+const SequenceSearchDialog = observer(function SequenceSearchDialog({
   model,
   handleClose,
 }: {

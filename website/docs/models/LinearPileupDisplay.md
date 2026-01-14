@@ -3,8 +3,8 @@ id: linearpileupdisplay
 title: LinearPileupDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -39,7 +39,7 @@ type: types.literal('LinearPileupDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -73,18 +73,18 @@ sortedBy: types.frozen<SortedBy | undefined>()
 
 ### LinearPileupDisplay - Getters
 
-#### getter: visibleModificationTypes
+#### getter: modificationThreshold
 
 ```js
 // type
-any[]
+any
 ```
 
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+any
 ```
 
 #### getter: mismatchAlphaSetting
@@ -103,11 +103,11 @@ any
 renderReady: () => boolean
 ```
 
-#### method: renderPropsPre
+#### method: adapterRenderProps
 
 ```js
 // type signature
-renderPropsPre: () => any
+adapterRenderProps: () => any
 ```
 
 #### method: renderProps
@@ -117,11 +117,18 @@ renderPropsPre: () => any
 renderProps: () => any
 ```
 
+#### method: showSubMenuItems
+
+```js
+// type signature
+showSubMenuItems: () => ({ label: string; type: "subMenu"; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: string; checked: any; onClick: () => void; })[]
+```
+
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; readonly icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; readonly disabled: boolean; readonly subMenu: readonly [......[]]; }, { ...; }, { ...; }, { ...; }, { ...; }]
+trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; readonly icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; readonly disabled: boolean; readonly subMenu: readonly [......[]]; }, { ...; }, { ...; }]
 ```
 
 ### LinearPileupDisplay - Actions
@@ -131,20 +138,6 @@ trackMenuItems: () => readonly [...MenuItem[], { readonly label: "Sort by..."; r
 ```js
 // type signature
 setCurrSortBpPerPx: (n: number) => void
-```
-
-#### action: updateVisibleModifications
-
-```js
-// type signature
-updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
-```
-
-#### action: setModificationsReady
-
-```js
-// type signature
-setModificationsReady: (flag: boolean) => void
 ```
 
 #### action: setSortReady
@@ -180,6 +173,15 @@ toggleMismatchAlpha: () => void
 ```js
 // type signature
 setSortedBy: (type: string, tag?: string) => void
+```
+
+#### action: setSortedByAtPosition
+
+Sort by a specific position (used for sorting at mismatch positions)
+
+```js
+// type signature
+setSortedByAtPosition: (type: string, pos: number, refName: string) => void
 ```
 
 #### action: setFeatureHeight

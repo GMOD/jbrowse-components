@@ -1,11 +1,23 @@
 import { useEffect, useState } from 'react'
 
+import { getEnv } from '@jbrowse/core/util'
 import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 
-import ImportCustomTrack from './ImportSyntenyOpenCustomTrack'
-import ImportSyntenyTrackSelector from './ImportSyntenyPreConfigured'
+import ImportCustomTrack from './ImportSyntenyOpenCustomTrack.tsx'
+import ImportSyntenyTrackSelector from './ImportSyntenyPreConfigured.tsx'
 
-import type { LinearSyntenyViewModel } from '../../model'
+import type { LinearSyntenyViewModel } from '../../model.ts'
+
+export interface LinearSyntenyImportFormSyntenyOption {
+  value: string
+  label: string
+  ReactComponent: React.FC<{
+    model: LinearSyntenyViewModel
+    assembly1: string
+    assembly2: string
+    selectedRow: number
+  }>
+}
 
 export default function ImportSyntenyTrackSelectorArea({
   model,
@@ -18,10 +30,19 @@ export default function ImportSyntenyTrackSelectorArea({
   assembly2: string
   selectedRow: number
 }) {
+  const { pluginManager } = getEnv(model)
   const [choice, setChoice] = useState('tracklist')
 
+  const customOptions = pluginManager.evaluateExtensionPoint(
+    'LinearSyntenyView-ImportFormSyntenyOptions',
+    [] as LinearSyntenyImportFormSyntenyOption[],
+    { model, assembly1, assembly2, selectedRow },
+  ) as LinearSyntenyImportFormSyntenyOption[]
+
+  const selectedCustomOption = customOptions.find(opt => opt.value === choice)
+
   useEffect(() => {
-    if (choice === 'none') {
+    if (choice === 'none' || choice === 'custom') {
       model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
     }
   }, [choice, model, selectedRow])
@@ -47,6 +68,14 @@ export default function ImportSyntenyTrackSelectorArea({
             control={<Radio />}
             label="New track"
           />
+          {customOptions.map(opt => (
+            <FormControlLabel
+              key={opt.value}
+              value={opt.value}
+              control={<Radio />}
+              label={opt.label}
+            />
+          ))}
         </RadioGroup>
       </FormControl>
       {choice === 'custom' ? (
@@ -63,6 +92,14 @@ export default function ImportSyntenyTrackSelectorArea({
           selectedRow={selectedRow}
           assembly1={assembly1}
           assembly2={assembly2}
+        />
+      ) : null}
+      {selectedCustomOption ? (
+        <selectedCustomOption.ReactComponent
+          model={model}
+          assembly1={assembly1}
+          assembly2={assembly2}
+          selectedRow={selectedRow}
         />
       ) : null}
     </div>

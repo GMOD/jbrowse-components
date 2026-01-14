@@ -1,4 +1,4 @@
-import { calculateStaticSlices } from './slices'
+import { calculateStaticSlices } from './slices.ts'
 
 test('one slice', () => {
   const view = {

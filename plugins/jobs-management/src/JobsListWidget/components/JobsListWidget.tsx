@@ -1,3 +1,4 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
@@ -7,12 +8,11 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import CurrentJobCard from './CurrentJobCard'
-import JobCard from './JobCard'
+import CurrentJobCard from './CurrentJobCard.tsx'
+import JobCard from './JobCard.tsx'
 
-import type { JobsListModel, NewJob } from '../model'
+import type { JobsListModel, NewJob } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -23,7 +23,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const JobsListWidget = observer(function ({ model }: { model: JobsListModel }) {
+const JobsListWidget = observer(function JobsListWidget({
+  model,
+}: {
+  model: JobsListModel
+}) {
   const { classes } = useStyles()
   const { jobs, finished, queued, aborted } = model
   return (

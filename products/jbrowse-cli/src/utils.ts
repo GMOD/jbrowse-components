@@ -3,7 +3,7 @@ import path from 'path'
 
 import parseJSON from 'json-parse-better-errors'
 
-import fetch from './fetchWithProxy'
+import fetch from './fetchWithProxy.ts'
 
 interface GithubRelease {
   tag_name: string
@@ -20,6 +20,12 @@ export function debug(message: string) {
   if (process.env.DEBUG) {
     console.log(`DEBUG: ${message}`)
   }
+}
+
+export async function resolveConfigPath(target?: string, out?: string) {
+  const output = target || out || '.'
+  const stat = await fsPromises.lstat(output)
+  return stat.isDirectory() ? `${output}/config.json` : output
 }
 
 export async function readFile(location: string) {
@@ -49,7 +55,6 @@ export async function resolveFileLocation(
   }
   if (locationUrl) {
     if (check) {
-      // @ts-expect-error
       const response = await fetch(locationUrl, { method: 'HEAD' })
       if (!response.ok) {
         throw new Error(`${locationUrl} result ${response.statusText}`)

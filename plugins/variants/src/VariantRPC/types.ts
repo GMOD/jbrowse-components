@@ -1,39 +1,25 @@
-import type { Source } from '../shared/types'
+import type { Source } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StopToken } from '@jbrowse/core/util'
 
-export interface GetGenotypeMatrixArgs {
+interface BaseVariantRpcArgs {
+  adapterConfig: AnyConfigurationModel
+  stopToken?: StopToken
+  sessionId: string
+  headers?: Record<string, string>
+  regions: Region[]
+  bpPerPx: number
+  minorAlleleFrequencyFilter: number
+  lengthCutoffFilter: number
+}
+
+export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sources: Source[]
-  minorAlleleFrequencyFilter: number
-  adapterConfig: AnyConfigurationModel
-  stopToken?: string
-  sessionId: string
-  headers?: Record<string, string>
-  regions: Region[]
-  bpPerPx: number
-  lengthCutoffFilter: number
 }
 
-export interface GetSimplifiedFeaturesArgs {
-  adapterConfig: AnyConfigurationModel
-  stopToken?: string
-  sessionId: string
-  headers?: Record<string, string>
-  regions: Region[]
-  bpPerPx: number
-  minorAlleleFrequencyFilter: number
-  lengthCutoffFilter: number
-}
+export type GetSimplifiedFeaturesArgs = BaseVariantRpcArgs
 
-export interface ClusterGenotypeMatrixArgs {
-  adapterConfig: AnyConfigurationModel
-  stopToken?: string
+export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
   statusCallback: (arg: string) => void
-  sessionId: string
-  headers?: Record<string, string>
-  regions: Region[]
-  bpPerPx: number
   sources: Source[]
-  minorAlleleFrequencyFilter: number
-  lengthCutoffFilter: number
 }

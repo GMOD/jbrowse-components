@@ -12,24 +12,24 @@ import {
 import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // lazies
-const FacetedDialog = lazy(() => import('../faceted/FacetedDialog'))
+const FacetedDialog = lazy(() => import('../faceted/FacetedDialog.tsx'))
 
 // lazy components
 const CloseConnectionDialog = lazy(
-  () => import('../dialogs/CloseConnectionDialog'),
+  () => import('../dialogs/CloseConnectionDialog.tsx'),
 )
 const DeleteConnectionDialog = lazy(
-  () => import('../dialogs/DeleteConnectionDialog'),
+  () => import('../dialogs/DeleteConnectionDialog.tsx'),
 )
 const ManageConnectionsDialog = lazy(
-  () => import('../dialogs/ManageConnectionsDialog'),
+  () => import('../dialogs/ManageConnectionsDialog.tsx'),
 )
 const ToggleConnectionsDialog = lazy(
-  () => import('../dialogs/ToggleConnectionsDialog'),
+  () => import('../dialogs/ToggleConnectionsDialog.tsx'),
 )
 
 interface ModalArgs {
@@ -44,7 +44,7 @@ interface DialogDetails {
   connectionConf: AnyConfigurationModel
 }
 
-const HamburgerMenu = observer(function ({
+const HamburgerMenu = observer(function HamburgerMenu({
   model,
 }: {
   model: HierarchicalTrackSelectorModel

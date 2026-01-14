@@ -1,8 +1,26 @@
-// Do this as the first thing so that any code reading it knows the right env.
-process.env.BABEL_ENV = 'production'
-process.env.NODE_ENV = 'production'
+import path from 'path'
 
-const configTranscript = require('./config')
-const configFactory = require('../../../webpack/config/webpack.config')
-const build = require('../../../webpack/scripts/build')
-build(configTranscript(configFactory('production')))
+import webpack from 'webpack'
+
+import configFactory from '../../../webpack/config/webpack.config.js'
+import build from '../../../webpack/scripts/build.js'
+
+const config = configFactory()
+config.plugins.push(
+  new webpack.DefinePlugin({
+    'process.env.ENABLE_TYPE_CHECK': '"true"',
+  }),
+)
+config.target = 'electron-renderer'
+config.resolve.aliasFields = []
+config.resolve.mainFields = ['module', 'main']
+config.resolve.alias = {
+  ...config.resolve.alias,
+  'generic-filehandle2': path.resolve(
+    import.meta.dirname,
+    '../../../node_modules/generic-filehandle2/dist/index.js',
+  ),
+}
+config.output.publicPath = 'auto'
+
+build(config)

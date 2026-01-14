@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { parseSTARFusionBuffer } from './STARFusionImport'
+import { parseSTARFusionBuffer } from './STARFusionImport.ts'
 
 test('starfusion import', () => {
   const filepath = path.join(

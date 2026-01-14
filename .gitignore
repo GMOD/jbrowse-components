@@ -20,4 +20,6 @@ lerna-debug.log
 .yarnrc
 *.tsbuildinfo
 .aider*
-
+*.cpuprofile
+test_data/soa4
+*.tgz

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { useLocalStorage } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ListIcon from '@mui/icons-material/List'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
@@ -13,16 +14,15 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
-import Checkbox2 from '../Checkbox2'
-import RecentSessionsCards from './RecentSessionsCards'
-import RecentSessionsList from './RecentSessionsDataGrid'
-import DeleteSessionDialog from '../dialogs/DeleteSessionDialog'
-import RenameSessionDialog from '../dialogs/RenameSessionDialog'
-import { loadPluginManager } from '../util'
+import Checkbox2 from '../Checkbox2.tsx'
+import RecentSessionsCards from './RecentSessionsCards.tsx'
+import RecentSessionsList from './RecentSessionsDataGrid.tsx'
+import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
+import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
+import { loadPluginManager } from '../util.tsx'
 
-import type { RecentSessionData } from '../types'
+import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ToggleButtonProps } from '@mui/material'
 
@@ -245,6 +245,7 @@ export default function RecentSessionPanel({
               setFavorites([...favorites, sessionPath])
             }
           }}
+          addToQuickstartList={entry => addToQuickstartList([entry])}
         />
       ) : null}
     </div>

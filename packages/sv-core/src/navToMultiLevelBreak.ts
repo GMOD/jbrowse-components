@@ -1,8 +1,13 @@
 import { when } from '@jbrowse/core/util'
 
-import { getBreakendCoveringRegions, makeTitle, stripIds } from './util'
+import {
+  getBreakendCoveringRegions,
+  makeTitle,
+  splitRegionAtPosition,
+  stripIds,
+} from './util.ts'
 
-import type { BreakpointSplitView, Track } from './types'
+import type { BreakpointSplitView, Track } from './types.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -13,6 +18,7 @@ export async function navToMultiLevelBreak({
   session,
   mirror,
   tracks: viewTracks = [],
+  windowSize = 0,
 }: {
   stableViewId?: string
   feature: Feature
@@ -63,38 +69,21 @@ export async function navToMultiLevelBreak({
     throw new Error("can't find regions")
   }
   await Promise.all([
-    view.views[0]!.navToLocations([
-      {
-        refName,
-        start: r1.start,
-        end: pos,
-        assemblyName,
-      },
-      {
-        refName,
-        start: pos + 1,
-        end: r1.end,
-        assemblyName,
-      },
-    ]),
-    view.views[1]!.navToLocations([
-      {
-        refName: mateRefName,
-        start: r2.start,
-        end: matePos,
-        assemblyName,
-      },
-      {
-        refName: mateRefName,
-        start: matePos + 1,
-        end: r2.end,
-        assemblyName,
-      },
-    ]),
+    view.views[0]!.navToLocations(splitRegionAtPosition(r1, pos, assemblyName)),
+    view.views[1]!.navToLocations(
+      splitRegionAtPosition(r2, matePos, assemblyName),
+    ),
   ])
   await when(() => view.views[1]!.initialized && view.views[0]!.initialized)
-  view.views[1]!.zoomTo(10)
-  view.views[0]!.zoomTo(10)
-  view.views[1]!.centerAt(matePos, mateRefName)
-  view.views[0]!.centerAt(pos, refName)
+
+  // Calculate bpPerPx based on windowSize to show the specified window around each breakpoint
+  // If windowSize is 0, default to bpPerPx of 10
+  const lgv0 = view.views[0]!
+  const lgv1 = view.views[1]!
+  const bpPerPx = windowSize > 0 ? (windowSize * 2) / lgv0.width : 10
+
+  lgv0.zoomTo(bpPerPx)
+  lgv1.zoomTo(bpPerPx)
+  lgv0.centerAt(pos, refName)
+  lgv1.centerAt(matePos, mateRefName)
 }

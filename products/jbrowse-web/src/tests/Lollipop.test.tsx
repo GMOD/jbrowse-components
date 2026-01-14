@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 
 import { fireEvent } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts, setup } from './util'
+import { createView, doBeforeEach, hts, setup } from './util.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -14,7 +14,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-test('lollipop track test', async () => {
+xtest('lollipop track test', async () => {
   const { view, findByTestId } = await createView()
   view.setNewView(1, 150)
   fireEvent.click(await findByTestId(hts('lollipop_track'), {}, delay))

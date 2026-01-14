@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
@@ -11,9 +12,8 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import type { FilterBy } from '../types'
+import type { FilterBy } from '../types.ts'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -75,7 +75,7 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
   )
 }
 
-const FilterByTagDialog = observer(function (props: {
+const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   model: {
     filterBy: FilterBy
     setFilterBy: (arg: FilterBy) => void

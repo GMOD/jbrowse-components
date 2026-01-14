@@ -1,14 +1,14 @@
 import { useCallback, useMemo } from 'react'
 
 import { CascadingMenuButton } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { Link } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
-import StarIcon from '../StarIcon'
-import { loadPluginManager } from '../util'
+import StarIcon from '../StarIcon.tsx'
+import { loadPluginManager } from '../util.tsx'
 
-import type { RecentSessionData } from '../types'
+import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()({
@@ -29,6 +29,7 @@ function SessionNameCell({
   setError,
   toggleFavorite,
   setSessionToRename,
+  addToQuickstartList,
 }: {
   value: string
   row: any
@@ -37,6 +38,7 @@ function SessionNameCell({
   setError: (e: unknown) => void
   toggleFavorite: (sessionPath: string) => void
   setSessionToRename: (arg: RecentSessionData) => void
+  addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
   const { classes } = useStyles()
   const handleLaunch = useCallback(async () => {
@@ -57,6 +59,13 @@ function SessionNameCell({
     setSessionToRename(rest)
   }, [row, setSessionToRename])
 
+  const handleAddToQuickstartList = useCallback(async () => {
+    if (addToQuickstartList) {
+      const { lastModified, ...rest } = row
+      await addToQuickstartList(rest)
+    }
+  }, [row, addToQuickstartList])
+
   const handleLinkClick = useCallback(
     async (event: React.MouseEvent) => {
       event.preventDefault()
@@ -75,12 +84,27 @@ function SessionNameCell({
         label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
         onClick: handleToggleFavorite,
       },
+      ...(addToQuickstartList
+        ? [
+            {
+              label: 'Add to quickstart list',
+              onClick: handleAddToQuickstartList,
+            },
+          ]
+        : []),
       {
         label: 'Rename',
         onClick: handleRename,
       },
     ],
-    [isFavorite, handleLaunch, handleToggleFavorite, handleRename],
+    [
+      isFavorite,
+      handleLaunch,
+      handleToggleFavorite,
+      handleRename,
+      addToQuickstartList,
+      handleAddToQuickstartList,
+    ],
   )
 
   return (

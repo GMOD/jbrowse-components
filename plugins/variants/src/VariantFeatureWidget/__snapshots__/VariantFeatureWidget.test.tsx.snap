@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`renders with just the required model elements 1`] = `
 <div>
@@ -16,7 +16,7 @@ exports[`renders with just the required model elements 1`] = `
       >
         <button
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
           tabindex="0"
           type="button"
         >
@@ -34,7 +34,7 @@ exports[`renders with just the required model elements 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1qtxdat-MuiSvgIcon-root-icon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
               data-testid="ExpandMoreIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -61,7 +61,7 @@ exports[`renders with just the required model elements 1`] = `
               role="region"
             >
               <div
-                class="MuiAccordionDetails-root css-1eji0yd-MuiAccordionDetails-root-expansionPanelDetails"
+                class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
               >
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
@@ -69,29 +69,29 @@ exports[`renders with just the required model elements 1`] = `
                   Core details
                 </p>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                   >
                     Position
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     ctgA:177 
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                   >
                     Name
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <span>
                       rs123
@@ -99,15 +99,15 @@ exports[`renders with just the required model elements 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                   >
                     Length
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <span>
                       1
@@ -123,17 +123,17 @@ exports[`renders with just the required model elements 1`] = `
                   Attributes
                 </p>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
                     aria-label="reference base(s): Each base must be one of A,C,G,T,N (case insensitive)."
-                    class="css-167enf1-fieldDescription-fieldName"
+                    class="css-1yswd44 css-c392m0"
                     data-mui-internal-clone-element="true"
                   >
                     REF
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       A
@@ -141,33 +141,33 @@ exports[`renders with just the required model elements 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
                     aria-label="alternate base(s): Comma-separated list of alternate non-reference alleles"
-                    class="css-167enf1-fieldDescription-fieldName"
+                    class="css-1yswd44 css-c392m0"
                     data-mui-internal-clone-element="true"
                   >
                     ALT
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     &lt;TRA&gt;
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
                     aria-label="quality: Phred-scaled quality score for the assertion made in ALT"
-                    class="css-167enf1-fieldDescription-fieldName"
+                    class="css-1yswd44 css-c392m0"
                     data-mui-internal-clone-element="true"
                   >
                     QUAL
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       10.4
@@ -175,16 +175,16 @@ exports[`renders with just the required model elements 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-1m8nxnb-field"
+                  class="css-2imjyh"
                 >
                   <div
-                    class="css-ify9vk-fieldName"
+                    class="css-c392m0"
                     style="width: 62px;"
                   >
                     INFO.MQ
                   </div>
                   <div
-                    class="css-xb19vs-fieldValue"
+                    class="css-1rdet1e"
                   >
                     <div>
                       5
@@ -192,13 +192,13 @@ exports[`renders with just the required model elements 1`] = `
                   </div>
                 </div>
                 <div
-                  class="css-57ilie-container"
+                  class="css-1ebprri"
                 >
                   <div
-                    class="MuiFormControl-root MuiFormControl-marginDense css-h2948o-MuiFormControl-root-formControl"
+                    class="MuiFormControl-root MuiFormControl-marginDense css-1uvyb5m-MuiFormControl-root"
                   >
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -206,7 +206,7 @@ exports[`renders with just the required model elements 1`] = `
                     </button>
                   </div>
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                     tabindex="0"
                     type="button"
                   >

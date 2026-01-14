@@ -1,9 +1,6 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { clusterData } from '@jbrowse/core/util/cluster'
 
-import { getScoreMatrix } from './getScoreMatrix'
-
-import type { GetScoreMatrixArgs } from './types'
+import type { GetScoreMatrixArgs } from './types.ts'
 
 export class MultiWiggleClusterScoreMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiWiggleClusterScoreMatrix'
@@ -13,16 +10,11 @@ export class MultiWiggleClusterScoreMatrix extends RpcMethodTypeWithFiltersAndRe
       args,
       rpcDriverClassName,
     )
-    const matrix = await getScoreMatrix({
+    const { executeClusterScoreMatrix } =
+      await import('./executeClusterScoreMatrix.ts')
+    return executeClusterScoreMatrix({
       pluginManager: this.pluginManager,
       args: deserializedArgs,
-    })
-    return clusterData({
-      data: Object.values(matrix),
-      stopToken: deserializedArgs.stopToken,
-      onProgress: a => {
-        deserializedArgs.statusCallback?.(a)
-      },
     })
   }
 }

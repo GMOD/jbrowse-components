@@ -4,20 +4,24 @@ import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Fe
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Flags from './Flags'
-import Formatter from './Formatter'
-import PairLink from './PairLink'
-import { tags } from './tagInfo'
-import { getTag } from './util'
+import Flags from './Flags.tsx'
+import Formatter from './Formatter.tsx'
+import PairLink from './PairLink.tsx'
+import { tags } from './tagInfo.ts'
+import { getTag } from './util.ts'
 
-import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies
-const SupplementaryAlignments = lazy(() => import('./SupplementaryAlignments'))
-const LinkedPairedAlignments = lazy(() => import('./LinkedPairedAlignments'))
+const SupplementaryAlignments = lazy(
+  () => import('./SupplementaryAlignments.tsx'),
+)
+const LinkedPairedAlignments = lazy(
+  () => import('./LinkedPairedAlignments.tsx'),
+)
 
-const FeatDefined = observer(function (props: {
+const FeatDefined = observer(function FeatDefined(props: {
   feat: SimpleFeatureSerialized
   model: AlignmentFeatureWidgetModel
 }) {
@@ -55,20 +59,22 @@ const FeatDefined = observer(function (props: {
   )
 })
 
-const AlignmentsFeatureDetails = observer(function (props: {
-  model: AlignmentFeatureWidgetModel
-}) {
-  const { model } = props
-  const { featureData } = model
-  const feat = structuredClone(featureData)
-  return feat ? (
-    <FeatDefined feat={feat} {...props} />
-  ) : (
-    <div>
-      No feature loaded, may not be available after page refresh because it was
-      too large for localStorage
-    </div>
-  )
-})
+const AlignmentsFeatureDetails = observer(
+  function AlignmentsFeatureDetails(props: {
+    model: AlignmentFeatureWidgetModel
+  }) {
+    const { model } = props
+    const { featureData } = model
+    const feat = structuredClone(featureData)
+    return feat ? (
+      <FeatDefined feat={feat} {...props} />
+    ) : (
+      <div>
+        No feature loaded, may not be available after page refresh because it
+        was too large for localStorage
+      </div>
+    )
+  },
+)
 
 export default AlignmentsFeatureDetails

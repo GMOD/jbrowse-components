@@ -1,11 +1,11 @@
 import { FileSelector } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import SwapAssemblies from './SwapAssemblies'
+import SwapAssemblies from './SwapAssemblies.tsx'
 
-import type { SelectorProps } from './SelectorTypes'
+import type { SelectorProps } from './SelectorTypes.ts'
 
-const AnchorsFileSelector = observer(function ({
+const AnchorsFileSelector = observer(function AnchorsFileSelector({
   assembly1,
   assembly2,
   swap,

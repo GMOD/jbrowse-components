@@ -1,9 +1,9 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { Button, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
-import { SPACING } from '../consts'
+import { SPACING } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '..'
 

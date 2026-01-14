@@ -1,7 +1,7 @@
 import { Card, CardContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { NewJob } from '../model'
+import type { NewJob } from '../model.ts'
 
 const JobCard = observer(function JobCard({ job }: { job: NewJob }) {
   return (

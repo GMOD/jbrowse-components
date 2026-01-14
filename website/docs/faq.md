@@ -325,10 +325,10 @@ so they will not display soft-clipping.
 
 The soft-clipping indicators on these reads will appear black.
 
-### Do you have any tips for learning React and mobx-state-tree
+### Do you have any tips for learning React and @jbrowse/mobx-state-tree
 
-Here is a short guide to React and mobx-state-tree that could help get you
-oriented:
+Here is a short guide to React and @jbrowse/mobx-state-tree that could help get
+you oriented:
 
 https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 
@@ -337,7 +337,7 @@ https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 We build on a lot of great open source technology, some main ones include:
 
 - React
-- mobx-state-tree
+- @jbrowse/mobx-state-tree
 - web-workers
 - Typescript
 - Electron (for desktop specifically)
@@ -492,8 +492,7 @@ query param logic themselves, as this component makes no attempt to access URL
 query params.
 
 Note 2: You can copy and paste your URL bar and put it in another tab on your
-own computer, and JBrowse will restore the session using BroadcastChannel
-(supported on Firefox and Chrome).
+own computer, and JBrowse will restore the session using IndexedDB
 
 ### How does the session sharing work with shortened URLs work in JBrowse Web
 

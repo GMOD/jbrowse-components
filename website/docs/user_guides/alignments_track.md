@@ -34,8 +34,8 @@ either be removed from the alignment (hard clipping) or can be included, and not
 shown by default (soft clipping).
 
 JBrowse 2 also contains an option to "show the soft clipping" that has occurred.
-This can be valuable to show the stopToken around a region that contains
-structural variation or difficult mappability.
+This can be valuable to show the signal around a region that contains structural
+variation or difficult mappability.
 
 <Figure caption="The soft clipping option is a toggle in the 'Pileup settings' menu." src="/img/alignments_soft_clipped_menu.png" />
 <Figure caption="Shows what turning on soft-clipping enables for a simulated long-read dataset. There is a simulated structural variant, a deletion, at this position, so the read has bases that map to the other side of the deletion being revealed by this." src="/img/alignments_soft_clipped.png" />
@@ -107,7 +107,7 @@ These pair orientations can be used to reveal complex patterns of structural
 variation.
 
 See
-[IGV's Interpreting Color by Pair Orientation guide](https://software.broadinstitute.org/software/igv/interpreting_pair_orientations)
+[IGV's Interpreting Color by Pair Orientation guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/#pair-orientation)
 for further details on interpreting these pair orientations.
 
 <Figure caption="This shows an inverted duplication, the tandem duplication can produce green arrows which have reads pointing in opposite directions e.g. <-- and -->, while blue arrows which can indicate an inversion point in the same direction e.g. --> and -->." src="/img/inverted_duplication.png" />
@@ -175,7 +175,7 @@ they are not relevant to your interest.
 
 <Figure caption="The arc display showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
 
-### Using the "Read cloud display"
+### Using the "Linked reads display"
 
 Similar to the "Arc display" we also offer what we call the "Read cloud"
 display. It is similar in some ways to the "Arc display" but renders paired-end

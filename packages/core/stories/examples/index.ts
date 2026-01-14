@@ -1,1 +1,1 @@
-export * from './WithSequencePanel'
+export * from './WithSequencePanel.tsx'

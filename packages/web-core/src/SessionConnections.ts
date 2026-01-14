@@ -1,5 +1,5 @@
+import { types } from '@jbrowse/mobx-state-tree'
 import { ConnectionManagementSessionMixin } from '@jbrowse/product-core'
-import { types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -72,5 +72,16 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
           }
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { sessionConnections, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(sessionConnections.length ? { sessionConnections } : {}),
+      } as typeof snap
     })
 }

@@ -8,6 +8,7 @@ import {
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable, DNA } from '@jbrowse/core/ui/Icons'
+import { types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -20,27 +21,29 @@ import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import RedoIcon from '@mui/icons-material/Redo'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
 import SettingsIcon from '@mui/icons-material/Settings'
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
-import { types } from 'mobx-state-tree'
 
-import { DesktopSessionManagementMixin, getSaveSession } from './Sessions'
+import { DesktopSessionManagementMixin, getSaveSession } from './Sessions.ts'
 import packageJSON from '../../package.json'
-import OpenSequenceDialog from '../components/OpenSequenceDialog'
-import jobsModelFactory from '../indexJobsModel'
-import JBrowseDesktop from '../jbrowseModel'
-import makeWorkerInstance from '../makeWorkerInstance'
+import OpenSequenceDialog from '../components/OpenSequenceDialog.tsx'
+import jobsModelFactory from '../indexJobsModel.ts'
+import JBrowseDesktop from '../jbrowseModel.ts'
+import makeWorkerInstance from '../makeWorkerInstance.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionWithDialogs } from '@jbrowse/product-core'
-import type { IAnyType, Instance } from 'mobx-state-tree'
 
 // lazies
-const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
+const PreferencesDialog = lazy(
+  () => import('../components/PreferencesDialog.tsx'),
+)
 
 const { ipcRenderer } = window.require('electron')
 
@@ -328,6 +331,17 @@ export default function rootModelFactory({
                         },
                       ],
                     )
+                  },
+                },
+                {
+                  label: 'Use workspaces',
+                  icon: SpaceDashboardIcon,
+                  type: 'checkbox',
+                  checked: self.session?.useWorkspaces ?? false,
+                  helpText:
+                    'Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.',
+                  onClick: () => {
+                    self.session?.setUseWorkspaces(!self.session.useWorkspaces)
                   },
                 },
               ],

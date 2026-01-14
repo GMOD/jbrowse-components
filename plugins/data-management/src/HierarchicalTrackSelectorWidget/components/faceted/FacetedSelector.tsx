@@ -1,15 +1,15 @@
 import { ResizeHandle } from '@jbrowse/core/ui'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import FacetFilters from './FacetFilters'
-import FacetedDataGrid from './FacetedDataGrid'
-import FacetedHeader from './FacetedHeader'
-import TrackLabelMenu from '../tree/TrackLabelMenu'
+import FacetFilters from './FacetFilters.tsx'
+import FacetedDataGrid from './FacetedDataGrid.tsx'
+import FacetedHeader from './FacetedHeader.tsx'
+import TrackSelectorTrackMenu from '../tree/TrackSelectorTrackMenu.tsx'
 
-import type { FacetedRow } from '../../facetedModel'
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { FacetedRow } from '../../facetedModel.ts'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { GridColDef } from '@mui/x-data-grid'
 
@@ -61,7 +61,7 @@ const FacetedSelector = observer(function FacetedSelector({
         return (
           <div className={classes.cell}>
             <SanitizedHTML html={value as string} />
-            <TrackLabelMenu id={id} conf={conf} trackId={id} model={model} />
+            <TrackSelectorTrackMenu id={id} conf={conf} model={model} />
           </div>
         )
       },

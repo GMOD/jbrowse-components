@@ -1,37 +1,38 @@
 import { useEffect } from 'react'
 
 import { App } from '@jbrowse/app-core'
+import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
-import { onSnapshot } from 'mobx-state-tree'
-import { StringParam, useQueryParam } from 'use-query-params'
 
-import ShareButton from './ShareButton'
+import ShareButton from './ShareButton.tsx'
+import { readQueryParams, setQueryParams } from '../useQueryParam.ts'
 
-import type { WebSessionModel } from '../sessionModel'
+import type { WebSessionModel } from '../sessionModel/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const JBrowse = observer(function ({
+const JBrowse = observer(function JBrowse({
   pluginManager,
 }: {
   pluginManager: PluginManager
 }) {
-  const [adminKey] = useQueryParam('adminKey', StringParam)
-  const [adminServer] = useQueryParam('adminServer', StringParam)
-  const [configPath] = useQueryParam('config', StringParam)
-  const [, setSessionId] = useQueryParam('session', StringParam)
+  const {
+    adminKey,
+    adminServer,
+    config: configPath,
+  } = readQueryParams(['adminKey', 'adminServer', 'config'])
   const { rootModel } = pluginManager
   const { error, jbrowse, session: s } = rootModel!
   const session = s as WebSessionModel
   const { id, theme } = session
 
   useEffect(() => {
-    setSessionId(`local-${id}`, 'replaceIn')
+    setQueryParams({ session: `local-${id}` })
     // @ts-expect-error
     window.JBrowseRootModel = rootModel
     // @ts-expect-error
     window.JBrowseSession = session
-  }, [id, rootModel, session, setSessionId])
+  }, [id, rootModel, session])
 
   useEffect(() => {
     return adminKey

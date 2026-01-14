@@ -82,6 +82,26 @@ hideSmallIndels: {
     }
 ```
 
+#### slot: hideMismatches
+
+```js
+hideMismatches: {
+      type: 'boolean',
+      description: 'Hides SNP mismatches',
+      defaultValue: false,
+    }
+```
+
+#### slot: hideLargeIndels
+
+```js
+hideLargeIndels: {
+      type: 'boolean',
+      description: 'Hides large indels (>=10bp)',
+      defaultValue: false,
+    }
+```
+
 #### slot: maxHeight
 
 ```js

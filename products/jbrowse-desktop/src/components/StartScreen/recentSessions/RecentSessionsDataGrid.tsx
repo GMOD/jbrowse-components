@@ -1,17 +1,17 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { measureGridWidth } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { formatDistanceToNow } from 'date-fns'
-import { makeStyles } from 'tss-react/mui'
 
-import DateSinceLastUsed from './DateSinceLastUsed'
-import SessionNameCell from './SessionNameCell'
-import { useInnerDims } from '../availableGenomes/util'
+import DateSinceLastUsed from './DateSinceLastUsed.tsx'
+import SessionNameCell from './SessionNameCell.tsx'
+import { useInnerDims } from '../availableGenomes/util.ts'
 
-import type { RecentSessionData } from '../types'
+import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()({
@@ -30,6 +30,7 @@ function RecentSessionsList({
   setPluginManager,
   favorites,
   toggleFavorite,
+  addToQuickstartList,
 }: {
   setError: (e: unknown) => void
   setSessionToRename: (arg: RecentSessionData) => void
@@ -38,13 +39,14 @@ function RecentSessionsList({
   sessions: RecentSessionData[]
   favorites: string[]
   toggleFavorite: (sessionPath: string) => void
+  addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
   const { classes } = useStyles()
   const { height: innerHeight } = useInnerDims()
+  const [now] = useState(() => Date.now())
 
   // Memoize expensive calculations
   const rows = useMemo(() => {
-    const now = Date.now()
     const oneDayLength = 24 * 60 * 60 * 1000
 
     return sessions.map(session => {
@@ -64,7 +66,7 @@ function RecentSessionsList({
         path: session.path,
       }
     })
-  }, [sessions])
+  }, [sessions, now])
 
   const widths = useMemo(() => {
     const arr = ['name', 'path', 'lastModified']
@@ -109,6 +111,7 @@ function RecentSessionsList({
             setError={setError}
             toggleFavorite={toggleFavorite}
             setSessionToRename={setSessionToRename}
+            addToQuickstartList={addToQuickstartList}
           />
         ),
       },
@@ -138,6 +141,7 @@ function RecentSessionsList({
       setError,
       toggleFavorite,
       setSessionToRename,
+      addToQuickstartList,
     ],
   )
 

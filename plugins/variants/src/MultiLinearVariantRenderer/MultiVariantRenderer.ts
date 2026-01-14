@@ -1,19 +1,21 @@
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
-import type { MultiRenderArgsDeserialized } from './types'
-import type { Feature } from '@jbrowse/core/util'
+import type { MultiRenderArgsDeserialized } from './types.ts'
 
-export default class MultiVariantBaseRenderer extends FeatureRendererType {
+export default class MultiVariantRenderer extends FeatureRendererType {
   supportsSVG = true
 
   async render(renderProps: MultiRenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { height, referenceDrawingMode, regions, bpPerPx } = renderProps
+    const { height, referenceDrawingMode, regions, bpPerPx, scrollTop } =
+      renderProps
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
 
-    const { makeImageData } = await import('./makeImageData')
+    const { makeImageData } = await import('./makeImageData.ts')
 
     const ret = await renderToAbstractCanvas(
       width,
@@ -31,21 +33,13 @@ export default class MultiVariantBaseRenderer extends FeatureRendererType {
       },
     )
 
-    const results = await super.render({
-      ...renderProps,
+    const serialized = {
       ...ret,
-      features,
       height,
       width,
-    })
-
-    return {
-      ...results,
-      ...ret,
-      features: new Map<string, Feature>(),
-      height,
-      width,
-      containsNoTransferables: true,
+      origScrollTop: scrollTop,
     }
+
+    return rpcResult(serialized, collectTransferables(ret))
   }
 }

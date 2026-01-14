@@ -3,8 +3,8 @@ id: jbrowsereactcirculargenomeviewsessionmodel
 title: JBrowseReactCircularGenomeViewSessionModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -36,7 +36,7 @@ composed of
 
 ```js
 // type signature
-IAnyModelType
+any
 // code
 view: pluginManager.getViewType('CircularView')!.stateModel
 ```
@@ -101,7 +101,7 @@ renderProps: () => {
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: any) => { label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; }[]
+getTrackActionMenuItems: (config: any, extraTrackActions?: MenuItem[]) => MenuItem[]
 ```
 
 ### JBrowseReactCircularGenomeViewSessionModel - Actions

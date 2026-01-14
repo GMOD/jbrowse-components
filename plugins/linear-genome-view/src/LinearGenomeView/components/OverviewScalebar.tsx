@@ -3,17 +3,17 @@ import { useMemo } from 'react'
 // core
 import { getEnv, getSession } from '@jbrowse/core/util'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import Cytobands from './Cytobands'
-import OverviewHighlight from './OverviewHighlight'
-import OverviewRubberband from './OverviewRubberband'
-import OverviewScalebarPolygon from './OverviewScalebarPolygon'
-import OverviewScalebarTickLabels from './OverviewScalebarTickLabels'
-import { getCytobands } from './util'
-import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts'
+import Cytobands from './Cytobands.tsx'
+import OverviewHighlight from './OverviewHighlight.tsx'
+import OverviewRubberband from './OverviewRubberband.tsx'
+import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
+import OverviewScalebarTickLabels from './OverviewScalebarTickLabels.tsx'
+import { getCytobands } from './util.ts'
+import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
@@ -24,6 +24,7 @@ const wholeSeqSpacer = 2
 const useStyles = makeStyles()(theme => ({
   scalebar: {
     height: HEADER_OVERVIEW_HEIGHT,
+    contain: 'layout style',
   },
   scalebarBorder: {
     border: '1px solid',
@@ -32,6 +33,7 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.background.default,
     position: 'absolute',
     top: 0,
+    left: 0,
     height: HEADER_OVERVIEW_HEIGHT,
     overflow: 'hidden',
   },
@@ -46,6 +48,7 @@ const useStyles = makeStyles()(theme => ({
 
   scalebarRefName: {
     position: 'absolute',
+    left: 0,
     fontWeight: 'bold',
     pointerEvents: 'none',
     zIndex: 100,
@@ -56,6 +59,7 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     zIndex: 100,
     border: '1px solid',
+    left: 0,
   },
   overview: {
     height: HEADER_BAR_HEIGHT,
@@ -70,7 +74,7 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-const OverviewBox = observer(function ({
+const OverviewBox = observer(function OverviewBox({
   scale,
   model,
   block,
@@ -81,7 +85,7 @@ const OverviewBox = observer(function ({
   block: ContentBlock
   overview: Base1DViewModel
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const theme = useTheme()
   const { cytobandOffset, showCytobands } = model
   const { reversed, refName, assemblyName } = block
@@ -97,7 +101,7 @@ const OverviewBox = observer(function ({
       {/* name of sequence */}
       <Typography
         style={{
-          left: block.offsetPx + 3,
+          transform: `translateX(${block.offsetPx + 3}px)`,
           color: canDisplayCytobands
             ? theme.palette.text.primary
             : refNameColor,
@@ -117,7 +121,7 @@ const OverviewBox = observer(function ({
           !canDisplayCytobands ? classes.scalebarBorder : undefined,
         )}
         style={{
-          left: block.offsetPx + cytobandOffset,
+          transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
           width: block.widthPx,
           borderColor: refNameColor,
         }}
@@ -139,7 +143,56 @@ const OverviewBox = observer(function ({
   )
 })
 
-const Scalebar = observer(function ({
+const VisibleRegionBox = observer(function VisibleRegionBox({
+  model,
+  overview,
+  className,
+}: {
+  model: LGV
+  overview: Base1DViewModel
+  className: string
+}) {
+  const theme = useTheme()
+  const scalebarColor = theme.palette.tertiary.light
+
+  const { dynamicBlocks, showCytobands, cytobandOffset } = model
+  const visibleRegions = dynamicBlocks.contentBlocks
+
+  if (!visibleRegions.length) {
+    return null
+  }
+
+  const first = visibleRegions.at(0)!
+  const last = visibleRegions.at(-1)!
+  const firstOverviewPx =
+    overview.bpToPx({
+      refName: first.refName,
+      coord: first.reversed ? first.end : first.start,
+    }) || 0
+  const lastOverviewPx =
+    overview.bpToPx({
+      refName: last.refName,
+      coord: last.reversed ? last.start : last.end,
+    }) || 0
+
+  const color = showCytobands ? '#f00' : scalebarColor
+  const transparency = showCytobands ? 0.1 : 0.3
+  const left = firstOverviewPx + cytobandOffset
+
+  return (
+    <div
+      className={className}
+      style={{
+        width: lastOverviewPx - firstOverviewPx,
+        transform: `translateX(${left}px)`,
+        background: alpha(color, transparency),
+        borderColor: color,
+      }}
+    />
+  )
+})
+
+const Scalebar = observer(function Scalebar({
   model,
   scale,
   overview,
@@ -149,36 +202,8 @@ const Scalebar = observer(function ({
   scale: number
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
-  const { dynamicBlocks, showCytobands, cytobandOffset } = model
   const { pluginManager } = getEnv(model)
-  const visibleRegions = dynamicBlocks.contentBlocks
   const overviewVisibleRegions = overview.dynamicBlocks
-  const scalebarColor = theme.palette.tertiary.light
-  // catches possible null from at's below
-  if (!visibleRegions.length) {
-    return null
-  }
-
-  const first = visibleRegions.at(0)!
-  const last = visibleRegions.at(-1)!
-
-  const firstOverviewPx =
-    overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...first,
-      coord: first.reversed ? first.end : first.start,
-    }) || 0
-
-  const lastOverviewPx =
-    overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...last,
-      coord: last.reversed ? last.start : last.end,
-    }) || 0
-
-  const color = showCytobands ? '#f00' : scalebarColor
-  const transparency = showCytobands ? 0.1 : 0.3
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-OverviewScalebarComponent',
@@ -188,14 +213,10 @@ const Scalebar = observer(function ({
 
   return (
     <div className={classes.scalebar}>
-      <div
+      <VisibleRegionBox
+        model={model}
+        overview={overview}
         className={classes.scalebarVisibleRegion}
-        style={{
-          width: lastOverviewPx - firstOverviewPx,
-          left: firstOverviewPx + cytobandOffset,
-          background: alpha(color, transparency),
-          borderColor: color,
-        }}
       />
       {/* this is the entire scale bar */}
       {overviewVisibleRegions.map((block, idx) => {
@@ -205,7 +226,7 @@ const Scalebar = observer(function ({
             className={classes.scalebarContig}
             style={{
               width: block.widthPx,
-              left: block.offsetPx,
+              transform: `translateX(${block.offsetPx}px)`,
               backgroundColor: '#999',
               backgroundImage:
                 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
@@ -227,7 +248,7 @@ const Scalebar = observer(function ({
   )
 })
 
-const OverviewScalebar = observer(function ({
+const OverviewScalebar = observer(function OverviewScalebar({
   model,
   children,
 }: {

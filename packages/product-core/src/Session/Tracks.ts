@@ -1,14 +1,14 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import { BaseSessionModel, isBaseSession } from './BaseSession'
-import { ReferenceManagementSessionMixin } from './ReferenceManagement'
+import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
+import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel TracksManagerSessionMixin
@@ -29,6 +29,45 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        */
       get tracks(): AnyConfigurationModel[] {
         return self.jbrowse.tracks
+      },
+
+      /**
+       * #getter
+       * Base assemblies from jbrowse config. Child sessions can override
+       * to include additional assemblies (e.g. sessionAssemblies).
+       */
+      get assemblies(): { sequence: { trackId: string } }[] {
+        return self.jbrowse.assemblies
+      },
+
+      /**
+       * #method
+       * Method to get tracks by ID. Includes tracks from connections if present.
+       */
+      getTracksById(): Record<string, AnyConfigurationModel> {
+        const temporaryAssemblies =
+          'temporaryAssemblies' in self
+            ? (self.temporaryAssemblies as { sequence: { trackId: string } }[])
+            : []
+
+        const connectionInstances =
+          'connectionInstances' in self
+            ? (self.connectionInstances as {
+                tracks: AnyConfigurationModel[]
+              }[])
+            : []
+
+        return Object.fromEntries([
+          ...this.tracks.map(t => [t.trackId, t]),
+          // Include assembly sequence tracks so they can be resolved by trackId
+          ...this.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+          // Include temporary assembly sequence tracks
+          ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
+          // Include connection tracks
+          ...connectionInstances.flatMap(c =>
+            c.tracks.map(t => [t.trackId, t]),
+          ),
+        ])
       },
     }))
     .actions(self => ({

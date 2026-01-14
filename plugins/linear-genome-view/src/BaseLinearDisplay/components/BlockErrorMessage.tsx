@@ -5,9 +5,9 @@ import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import BlockMsg from './BlockMsg'
+import BlockMsg from './BlockMsg.tsx'
 
-const BlockErrorMessage = observer(function ({
+const BlockErrorMessage = observer(function BlockErrorMessage({
   model,
 }: {
   model: {

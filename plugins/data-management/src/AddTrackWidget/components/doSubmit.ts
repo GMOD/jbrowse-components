@@ -5,9 +5,9 @@ import {
   isSessionWithAddTracks,
   isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
-import { getRoot } from 'mobx-state-tree'
+import { getRoot } from '@jbrowse/mobx-state-tree'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 
 function doTextIndexTrack({
   trackId,

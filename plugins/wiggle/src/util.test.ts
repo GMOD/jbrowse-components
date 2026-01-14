@@ -1,4 +1,4 @@
-import { getNiceDomain, getScale } from './util'
+import { getNiceDomain, getScale } from './util.ts'
 
 test('linear scale', () => {
   const scaleType = 'linear'

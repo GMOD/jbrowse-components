@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const StringArrayEditor = observer(function ({
+const StringArrayEditor = observer(function StringArrayEditor({
   slot,
 }: {
   slot: {

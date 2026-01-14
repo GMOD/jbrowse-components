@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 
-import stateModel from './model'
+import stateModel from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -16,7 +16,9 @@ export default function AddConnectionWidgetF(pluginManager: PluginManager) {
       heading: 'Add a connection',
       configSchema,
       stateModel,
-      ReactComponent: lazy(() => import('./components/AddConnectionWidget')),
+      ReactComponent: lazy(
+        () => import('./components/AddConnectionWidget.tsx'),
+      ),
     })
   })
 }

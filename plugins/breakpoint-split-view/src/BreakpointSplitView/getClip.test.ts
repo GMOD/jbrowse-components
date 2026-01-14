@@ -1,4 +1,4 @@
-import { getClip } from './getClip'
+import { getClip } from './getClip.ts'
 
 test('test clip', () => {
   expect(getClip('5S5M', 1)).toBe(5)

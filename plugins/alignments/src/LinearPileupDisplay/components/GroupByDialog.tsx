@@ -7,6 +7,7 @@ import {
   getSession,
   useDebounce,
 } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   DialogActions,
@@ -16,16 +17,15 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 
-import { getUniqueTags } from '../../shared/getUniqueTags'
-import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util'
+import { getUniqueTags } from '../../shared/getUniqueTags.ts'
+import { defaultFilterFlags, negFlags, posFlags } from '../../shared/util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
-const GroupByTagDialog = observer(function (props: {
+const GroupByTagDialog = observer(function GroupByTagDialog(props: {
   model: {
     adapterConfig: AnyConfigurationModel
     configuration: AnyConfigurationModel
@@ -111,7 +111,7 @@ const GroupByTagDialog = observer(function (props: {
             {error ? (
               <ErrorMessage error={error} />
             ) : loading ? (
-              <LoadingEllipses title="Loading unique tags" />
+              <LoadingEllipses message="Loading unique tags" />
             ) : tagSet ? (
               <div>
                 <div>Found unique {tag} values:</div>

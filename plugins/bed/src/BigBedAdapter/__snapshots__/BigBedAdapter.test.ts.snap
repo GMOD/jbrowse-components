@@ -1,9 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`adapter can fetch features from volvox.bb 1`] = `
 [
   {
-    "description": undefined,
     "end": 9000,
     "geneBioType": "-",
     "geneId": "EDEN",
@@ -80,7 +79,6 @@ exports[`adapter can fetch features from volvox.bb 1`] = `
     "uniqueId": "test-bb-358912",
   },
   {
-    "description": undefined,
     "end": 9000,
     "geneBioType": "-",
     "geneId": "EDEN",
@@ -147,7 +145,6 @@ exports[`adapter can fetch features from volvox.bb 1`] = `
     "uniqueId": "test-bb-359006",
   },
   {
-    "description": undefined,
     "end": 9000,
     "geneBioType": "-",
     "geneId": "EDEN",
@@ -191,7 +188,7 @@ exports[`adapter can fetch features from volvox.bb 1`] = `
       {
         "end": 5500,
         "parentId": "test-bb-359091",
-        "phase": 0,
+        "phase": 1,
         "refName": "ctgA",
         "start": 4999,
         "strand": 1,
@@ -201,7 +198,7 @@ exports[`adapter can fetch features from volvox.bb 1`] = `
       {
         "end": 7600,
         "parentId": "test-bb-359091",
-        "phase": 0,
+        "phase": 1,
         "refName": "ctgA",
         "start": 6999,
         "strand": 1,
@@ -223,7 +220,6 @@ exports[`adapter can fetch features from volvox.bb 1`] = `
     "uniqueId": "test-bb-359091",
   },
   {
-    "description": undefined,
     "end": 23000,
     "geneBioType": "-",
     "geneId": "rna-Apple3",

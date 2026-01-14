@@ -2,27 +2,31 @@ import { Suspense, lazy, useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import Gridlines from './Gridlines'
-import Rubberband from './Rubberband'
-import Scalebar from './Scalebar'
-import VerticalGuide from './VerticalGuide'
-import { SCALE_BAR_HEIGHT } from '../consts'
-import { useRangeSelect } from './useRangeSelect'
-import { useSideScroll } from './useSideScroll'
-import { useWheelScroll } from './useWheelScroll'
+import Gridlines from './Gridlines.tsx'
+import Rubberband from './Rubberband.tsx'
+import Scalebar from './Scalebar.tsx'
+import VerticalGuide from './VerticalGuide.tsx'
+import { SCALE_BAR_HEIGHT } from '../consts.ts'
+import { useRangeSelect } from './useRangeSelect.ts'
+import { useSideScroll } from './useSideScroll.ts'
+import { useWheelScroll } from './useWheelScroll.ts'
 
 import type { LinearGenomeViewModel } from '..'
 
-const CenterLine = lazy(() => import('./CenterLine'))
-const Highlight = lazy(() => import('./Highlight'))
-const RubberbandSpan = lazy(() => import('./RubberbandSpan'))
+const CenterLine = lazy(() => import('./CenterLine.tsx'))
+const Highlight = lazy(() => import('./Highlight.tsx'))
+const RubberbandSpan = lazy(() => import('./RubberbandSpan.tsx'))
 
 const useStyles = makeStyles()({
+  // Main container for all tracks
+  // Sets --offset-px CSS variable so children can use calc() for positioning
+  // instead of each observing offsetPx and recalculating in JS
   tracksContainer: {
     position: 'relative',
+    contain: 'layout style',
   },
 })
 
@@ -51,6 +55,8 @@ const TracksContainer = observer(function TracksContainer({
     left,
     anchorPosition,
     open,
+    isClick,
+    clickBpOffset,
     handleMenuItemClick,
     handleClose,
     mouseMove,
@@ -69,6 +75,7 @@ const TracksContainer = observer(function TracksContainer({
       ref={ref}
       data-testid="tracksContainer"
       className={classes.tracksContainer}
+      style={{ '--offset-px': `${model.offsetPx}px` } as React.CSSProperties}
       onMouseDown={event => {
         mouseDown1(event)
         mouseDown2(event)
@@ -105,7 +112,11 @@ const TracksContainer = observer(function TracksContainer({
           onMenuItemClick={handleMenuItemClick}
           open={open}
           onClose={handleClose}
-          menuItems={model.rubberBandMenuItems()}
+          menuItems={
+            isClick && clickBpOffset
+              ? model.rubberbandClickMenuItems(clickBpOffset)
+              : model.rubberBandMenuItems()
+          }
         />
       ) : null}
 

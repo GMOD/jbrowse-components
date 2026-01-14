@@ -8,18 +8,18 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { makeFeaturePair, makeSummary } from './util'
+import { makeFeaturePair, makeSummary } from './util.ts'
 
-import type { LinearArcDisplayModel } from '../model'
+import type { LinearArcDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const ArcTooltip = lazy(() => import('../../ArcTooltip'))
+const ArcTooltip = lazy(() => import('../../ArcTooltip.tsx'))
 
 type LGV = LinearGenomeViewModel
 
-const Arc = observer(function ({
+const Arc = observer(function Arc({
   model,
   feature,
   alt,
@@ -124,7 +124,7 @@ const Arc = observer(function ({
   return null
 })
 
-const Wrapper = observer(function ({
+const Wrapper = observer(function Wrapper({
   model,
   exportSVG,
   children,
@@ -145,7 +145,7 @@ const Wrapper = observer(function ({
   )
 })
 
-const Arcs = observer(function ({
+const Arcs = observer(function Arcs({
   model,
   exportSVG,
 }: {

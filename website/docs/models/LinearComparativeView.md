@@ -3,8 +3,8 @@ id: linearcomparativeview
 title: LinearComparativeView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -30,7 +30,7 @@ extends
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+any
 // code
 id: ElementId
 ```
@@ -80,13 +80,22 @@ false
 interactiveOverlay: false
 ```
 
+#### property: showDynamicControls
+
+```js
+// type signature
+true
+// code
+showDynamicControls: true
+```
+
 #### property: levels
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: IType<string, string, string>; tracks: IArrayType<IAnyType>; height: IType<...>; level: ISimpleType<...>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<any>
 // code
-levels: types.array(LinearSyntenyViewHelper)
+levels: types.array(LinearSyntenyViewHelper!)
 ```
 
 #### property: views
@@ -95,7 +104,7 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
+IArrayType<IModelType<ModelProperties & { id: any; type: IType<string, string, string>; offsetPx: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 13 more ...; init: IType<...>; }, { ...; } & ... 13 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -110,7 +119,7 @@ dotplots where this track would not really apply elsewhere
 
 ```js
 // type signature
-IArrayType<IAnyModelType>
+IArrayType<any>
 // code
 viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
@@ -138,6 +147,22 @@ any[][]
 ```js
 // type
 any[]
+```
+
+#### getter: loadingMessage
+
+```js
+// type
+string
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+boolean
 ```
 
 ### LinearComparativeView - Methods
@@ -175,25 +200,32 @@ rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 setWidth: (newWidth: number) => void
 ```
 
+#### action: setIsLoading
+
+```js
+// type signature
+setIsLoading: (arg: boolean) => void
+```
+
 #### action: setViews
 
 ```js
 // type signature
-setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }>>[]) => void
+setViews: (views: ModelCreationType<ExtractCFromProps<ModelProperties & { id: any; type: IType<string, string, string>; offsetPx: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 13 more ...; init: IType<...>; }>>[]) => void
 ```
 
 #### action: removeView
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [...]>>; ... 12 more ...; init: InitState & IStateTreeNode<...>; } & ... 18 more ... & IStateTreeNode<...>) =>...
+removeView: (view: { [x: string]: any; id: any; type: string; offsetPx: number; bpPerPx: number; displayedRegions: Region[] & IStateTreeNode<IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>>; ... 12 more ...; init: InitState & IStateTreeNode<...>; } & ... 16 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: setLevelHeight
 
 ```js
 // type signature
-setLevelHeight: (newHeight: number, level?: number) => number
+setLevelHeight: (newHeight: number, level?: number) => any
 ```
 
 #### action: setLinkViews
@@ -203,11 +235,18 @@ setLevelHeight: (newHeight: number, level?: number) => number
 setLinkViews: (arg: boolean) => void
 ```
 
+#### action: setShowDynamicControls
+
+```js
+// type signature
+setShowDynamicControls: (arg: boolean) => void
+```
+
 #### action: activateTrackSelector
 
 ```js
 // type signature
-activateTrackSelector: (level: number) => Widget
+activateTrackSelector: (level: number) => any
 ```
 
 #### action: toggleTrack

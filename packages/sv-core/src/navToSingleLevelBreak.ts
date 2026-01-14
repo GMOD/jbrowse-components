@@ -1,9 +1,9 @@
 import { gatherOverlaps, getSession, when } from '@jbrowse/core/util'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { getBreakendCoveringRegions, makeTitle, stripIds } from './util'
+import { getBreakendCoveringRegions, makeTitle, stripIds } from './util.ts'
 
-import type { BreakpointSplitView } from './types'
+import type { BreakpointSplitView } from './types.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -43,7 +43,7 @@ export function singleLevelFocusedSnapshotFromBreakendFeature({
           displayedRegions: gatherOverlaps([
             {
               ...topRegion,
-              end: coverage.pos + windowSize,
+              end: coverage.pos + 1 + windowSize,
               assemblyName,
             },
             {
@@ -152,26 +152,33 @@ export async function navToSingleLevelBreak({
   const lgv = view.views[0]!
   await when(() => lgv.initialized)
 
-  const l0 = lgv.bpToPx({
-    coord: Math.max(0, startPos - windowSize),
-    refName,
-  })
-  const r0 = lgv.bpToPx({
-    coord: endPos + windowSize,
-    refName: mateRefName,
-  })
-  if (l0 && r0) {
-    lgv.moveTo(
-      {
-        ...l0,
-        offset: l0.offsetPx,
-      },
-      {
-        ...r0,
-        offset: r0.offsetPx,
-      },
-    )
+  if (focusOnBreakends) {
+    // zoom to show the breakpoints with windowSize padding, centered between them
+    lgv.zoomTo(10)
+
+    // find midpoint between the two breakpoints in the displayed regions
+    const l0 = lgv.bpToPx({ coord: startPos, refName })
+    const r0 = lgv.bpToPx({ coord: endPos, refName: mateRefName })
+    if (l0 && r0) {
+      const midPx = (l0.offsetPx + r0.offsetPx) / 2
+      lgv.scrollTo(Math.round(midPx - lgv.width / 2))
+    } else {
+      getSession(lgv).notify('Unable to navigate to breakpoint')
+    }
   } else {
-    getSession(lgv).notify('Unable to navigate to breakpoint')
+    // for encompassing view, fit the whole range
+    const l0 = lgv.bpToPx({
+      coord: Math.max(0, startPos - windowSize),
+      refName,
+    })
+    const r0 = lgv.bpToPx({
+      coord: endPos + windowSize,
+      refName: mateRefName,
+    })
+    if (l0 && r0) {
+      lgv.moveTo({ ...l0, offset: l0.offsetPx }, { ...r0, offset: r0.offsetPx })
+    } else {
+      getSession(lgv).notify('Unable to navigate to breakpoint')
+    }
   }
 }

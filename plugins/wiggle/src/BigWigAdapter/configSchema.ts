@@ -21,6 +21,7 @@ const BigWigAdapter = ConfigurationSchema(
 
     /**
      * #slot
+     * added as feature.get('source') on all features
      */
     source: {
       type: 'string',
@@ -34,7 +35,8 @@ const BigWigAdapter = ConfigurationSchema(
     resolutionMultiplier: {
       type: 'number',
       defaultValue: 1,
-      description: 'Initial resolution multiplier',
+      description:
+        'Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution',
     },
   },
   {

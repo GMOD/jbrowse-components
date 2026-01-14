@@ -1,21 +1,21 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react'
-
-import { LoadingEllipses, Menu, ResizeHandle } from '@jbrowse/core/ui'
-import { transaction } from 'mobx'
+import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import { HorizontalAxis, VerticalAxis } from './Axes'
-import Grid from './Grid'
-import Header from './Header'
-import ImportForm from './ImportForm'
+import { HorizontalAxis, VerticalAxis } from './Axes.tsx'
+import DotplotTooltips from './DotplotTooltips.tsx'
+import Header from './Header.tsx'
+import ImportForm from './ImportForm/index.tsx'
+import MouseInteractionLayer from './MouseInteractionLayer.tsx'
+import SelectionContextMenu from './SelectionContextMenu.tsx'
+import { useCtrlKeyTracking } from './hooks/useCtrlKeyTracking.ts'
+import { useCursorMode } from './hooks/useCursorMode.ts'
+import { useMouseCoordinates } from './hooks/useMouseCoordinates.ts'
+import { useMouseMoveHandler } from './hooks/useMouseMoveHandler.ts'
+import { useMouseUpHandler } from './hooks/useMouseUpHandler.ts'
+import { useWheelHandler } from './hooks/useWheelHandler.ts'
 
-import type { DotplotViewModel } from '../model'
-
-const TooltipWhereClicked = lazy(() => import('./DotplotTooltipClick'))
-const TooltipWhereMouseovered = lazy(() => import('./DotplotTooltipMouseover'))
-
-const blank = { left: 0, top: 0, width: 0, height: 0 }
+import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   spacer: {
@@ -61,19 +61,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type Coord = [number, number] | undefined
-interface Rect {
-  left: number
-  top: number
-}
-
-// produces offsetX/offsetY coordinates from a clientX and an element's
-// getBoundingClientRect
-function getOffset(coord: Coord, rect: Rect) {
-  return coord && ([coord[0] - rect.left, coord[1] - rect.top] as Coord)
-}
-
-const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
+const RenderedComponent = observer(function RenderedComponent({
+  model,
+}: {
+  model: DotplotViewModel
+}) {
   const { classes } = useStyles()
   return (
     <div className={classes.overlay}>
@@ -91,140 +83,66 @@ const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
   )
 })
 
-const DotplotViewInternal = observer(function ({
+const DotplotViewInternal = observer(function DotplotViewInternal({
   model,
 }: {
   model: DotplotViewModel
 }) {
   const { classes } = useStyles()
-  const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
-  const [mousedownClient, setMouseDownClient] = useState<Coord>()
-  const [mouseOvered, setMouseOvered] = useState(false)
-  const [mouseupClient, setMouseUpClient] = useState<Coord>()
-  const ref = useRef<HTMLDivElement>(null)
-  const root = useRef<HTMLDivElement>(null)
-  const distanceX = useRef(0)
-  const distanceY = useRef(0)
-  const scheduled = useRef(false)
-  const [ctrlKeyWasUsed, setCtrlKeyWasUsed] = useState(false)
-  const [ctrlKeyDown, setCtrlKeyDown] = useState(false)
-  const svg = ref.current?.getBoundingClientRect() || blank
-  const rootRect = ref.current?.getBoundingClientRect() || blank
-  const mousedown = getOffset(mousedownClient, svg)
-  const mousecurr = getOffset(mousecurrClient, svg)
-  const mouseup = getOffset(mouseupClient, svg)
-  const mouserect = mouseup || mousecurr
-  const mouserectClient = mouseupClient || mousecurrClient
-  const xdistance = mousedown && mouserect ? mouserect[0] - mousedown[0] : 0
-  const ydistance = mousedown && mouserect ? mouserect[1] - mousedown[1] : 0
   const { hview, vview, wheelMode, cursorMode } = model
 
-  const validPan =
-    (cursorMode === 'move' && !ctrlKeyWasUsed) ||
-    (cursorMode === 'crosshair' && ctrlKeyWasUsed)
+  // Mouse coordinate tracking
+  const {
+    mousecurrClient,
+    mousedownClient,
+    mouseupClient,
+    mouseOvered,
+    setMouseCurrClient,
+    setMouseDownClient,
+    setMouseUpClient,
+    setMouseOvered,
+    ref,
+    root,
+    rootRect,
+    mousedown,
+    mousecurr,
+    mouseup,
+    mouserect,
+    mouserectClient,
+    xdistance,
+    ydistance,
+  } = useMouseCoordinates()
 
-  const validSelect =
-    (cursorMode === 'move' && ctrlKeyWasUsed) ||
-    (cursorMode === 'crosshair' && !ctrlKeyWasUsed)
+  // Cursor mode and validation
+  const {
+    ctrlKeyDown,
+    validPan,
+    validSelect,
+    setCtrlKeyWasUsed,
+    setCtrlKeyDown,
+  } = useCursorMode(cursorMode)
 
-  // use non-React wheel handler to properly prevent body scrolling
-  useEffect(() => {
-    function onWheel(event: WheelEvent) {
-      event.preventDefault()
-
-      distanceX.current += event.deltaX
-      distanceY.current -= event.deltaY
-      if (!scheduled.current) {
-        scheduled.current = true
-
-        window.requestAnimationFrame(() => {
-          transaction(() => {
-            if (wheelMode === 'pan') {
-              hview.scroll(distanceX.current / 3)
-              vview.scroll(distanceY.current / 10)
-            } else if (wheelMode === 'zoom') {
-              if (
-                Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&
-                mousecurr
-              ) {
-                const val = distanceY.current < 0 ? 1.1 : 0.9
-                hview.zoomTo(hview.bpPerPx * val, mousecurr[0])
-                vview.zoomTo(
-                  vview.bpPerPx * val,
-                  rootRect.height - mousecurr[1],
-                )
-              }
-            }
-          })
-          scheduled.current = false
-          distanceX.current = 0
-          distanceY.current = 0
-        })
-      }
-    }
-    if (ref.current) {
-      const curr = ref.current
-      curr.addEventListener('wheel', onWheel)
-      return () => {
-        curr.removeEventListener('wheel', onWheel)
-      }
-    }
-    return () => {}
-  }, [hview, vview, wheelMode, mousecurr, rootRect.height])
-
-  useEffect(() => {
-    function globalMouseMove(event: MouseEvent) {
-      setMouseCurrClient([event.clientX, event.clientY])
-
-      if (mousecurrClient && mousedownClient && validPan && !mouseupClient) {
-        hview.scroll(-event.clientX + mousecurrClient[0])
-        vview.scroll(event.clientY - mousecurrClient[1])
-      }
-    }
-
-    window.addEventListener('mousemove', globalMouseMove)
-    return () => {
-      window.removeEventListener('mousemove', globalMouseMove)
-    }
-  }, [validPan, mousecurrClient, mousedownClient, mouseupClient, hview, vview])
-
-  useEffect(() => {
-    function globalCtrlKeyDown(event: KeyboardEvent) {
-      if (event.metaKey || event.ctrlKey) {
-        setCtrlKeyDown(true)
-      }
-    }
-    function globalCtrlKeyUp(event: KeyboardEvent) {
-      if (!event.metaKey && !event.ctrlKey) {
-        setCtrlKeyDown(false)
-      }
-    }
-    window.addEventListener('keydown', globalCtrlKeyDown)
-    window.addEventListener('keyup', globalCtrlKeyUp)
-    return () => {
-      window.removeEventListener('keydown', globalCtrlKeyDown)
-      window.removeEventListener('keyup', globalCtrlKeyUp)
-    }
-  }, [])
-
-  // detect a mouseup after a mousedown was submitted, autoremoves mouseup once
-  // that single mouseup is set
-  useEffect(() => {
-    function globalMouseUp(event: MouseEvent) {
-      if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
-        setMouseUpClient([event.clientX, event.clientY])
-      } else {
-        setMouseDownClient(undefined)
-      }
-    }
-    if (mousedown && !mouseup) {
-      window.addEventListener('mouseup', globalMouseUp, true)
-      return () => {
-        window.removeEventListener('mouseup', globalMouseUp, true)
-      }
-    }
-    return () => {}
-  }, [validSelect, mousedown, mouseup, xdistance, ydistance])
+  // Event handlers
+  useWheelHandler(ref, wheelMode, hview, vview, mousecurr, rootRect.height)
+  useMouseMoveHandler(
+    mousecurrClient,
+    mousedownClient,
+    mouseupClient,
+    validPan,
+    hview,
+    vview,
+    setMouseCurrClient,
+  )
+  useCtrlKeyTracking(setCtrlKeyDown)
+  useMouseUpHandler(
+    mousedown,
+    mouseup,
+    xdistance,
+    ydistance,
+    validSelect,
+    setMouseUpClient,
+    setMouseDownClient,
+  )
 
   return (
     <div>
@@ -253,96 +171,41 @@ const DotplotViewInternal = observer(function ({
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
           <div ref={ref} className={classes.content}>
-            {mouseOvered && validSelect ? (
-              <Suspense fallback={null}>
-                <TooltipWhereMouseovered
-                  model={model}
-                  mouserect={mouserect}
-                  mouserectClient={mouserectClient}
-                  xdistance={xdistance}
-                />
-              </Suspense>
-            ) : null}
-            {validSelect ? (
-              <Suspense fallback={null}>
-                <TooltipWhereClicked
-                  model={model}
-                  mousedown={mousedown}
-                  mousedownClient={mousedownClient}
-                  xdistance={xdistance}
-                  ydistance={ydistance}
-                />
-              </Suspense>
-            ) : null}
-            <div
-              style={{ cursor: ctrlKeyDown ? 'pointer' : cursorMode }}
-              onMouseDown={event => {
-                if (event.button === 0) {
-                  const { clientX, clientY } = event
-                  setMouseDownClient([clientX, clientY])
-                  setMouseCurrClient([clientX, clientY])
-                  setCtrlKeyWasUsed(ctrlKeyDown)
-                }
-              }}
-            >
-              <Grid model={model}>
-                {validSelect && mousedown && mouserect ? (
-                  <rect
-                    fill="rgba(255,0,0,0.3)"
-                    x={Math.min(mouserect[0], mousedown[0])}
-                    y={Math.min(mouserect[1], mousedown[1])}
-                    width={Math.abs(xdistance)}
-                    height={Math.abs(ydistance)}
-                  />
-                ) : null}
-              </Grid>
-            </div>
+            <DotplotTooltips
+              model={model}
+              mouseOvered={mouseOvered}
+              validSelect={validSelect}
+              mouserect={mouserect}
+              mouserectClient={mouserectClient}
+              xdistance={xdistance}
+              mousedown={mousedown}
+              mousedownClient={mousedownClient}
+              ydistance={ydistance}
+            />
+            <MouseInteractionLayer
+              model={model}
+              ctrlKeyDown={ctrlKeyDown}
+              cursorMode={cursorMode}
+              validSelect={validSelect}
+              mousedown={mousedown}
+              mouserect={mouserect}
+              xdistance={xdistance}
+              ydistance={ydistance}
+              setMouseDownClient={setMouseDownClient}
+              setMouseCurrClient={setMouseCurrClient}
+              setCtrlKeyWasUsed={setCtrlKeyWasUsed}
+            />
             <div className={classes.spacer} />
           </div>
           <RenderedComponent model={model} />
-          <Menu
-            open={Boolean(mouseup)}
-            onMenuItemClick={(_, callback) => {
-              callback()
-              setMouseUpClient(undefined)
-              setMouseDownClient(undefined)
-            }}
-            onClose={() => {
-              setMouseUpClient(undefined)
-              setMouseDownClient(undefined)
-            }}
-            anchorReference="anchorPosition"
-            anchorPosition={
-              mouseupClient
-                ? {
-                    top: mouseupClient[1] + 50,
-                    left: mouseupClient[0] + 50,
-                  }
-                : undefined
-            }
-            style={{ zIndex: 800 }}
-            menuItems={[
-              {
-                label: 'Zoom in',
-                onClick: () => {
-                  if (mousedown && mouseup) {
-                    model.zoomInToMouseCoords(mousedown, mouseup)
-                  }
-                  // below line is needed to prevent tooltip from sticking
-                  setMouseOvered(false)
-                },
-              },
-              {
-                label: 'Open linear synteny view',
-                onClick: () => {
-                  if (mousedown && mouseup) {
-                    model.onDotplotView(mousedown, mouseup)
-                  }
-                  // below line is needed to prevent tooltip from sticking
-                  setMouseOvered(false)
-                },
-              },
-            ]}
+          <SelectionContextMenu
+            model={model}
+            mouseup={mouseup}
+            mouseupClient={mouseupClient}
+            mousedown={mousedown}
+            setMouseUpClient={setMouseUpClient}
+            setMouseDownClient={setMouseDownClient}
+            setMouseOvered={setMouseOvered}
           />
         </div>
         <ResizeHandle
@@ -353,18 +216,20 @@ const DotplotViewInternal = observer(function ({
     </div>
   )
 })
-const DotplotView = observer(function ({ model }: { model: DotplotViewModel }) {
-  const { initialized, loading, error } = model
+const DotplotView = observer(function DotplotView({
+  model,
+}: {
+  model: DotplotViewModel
+}) {
+  const { initialized, showLoading, error, loadingMessage } = model
 
-  if ((!initialized && !loading) || error) {
+  if (showLoading) {
+    return <LoadingEllipses variant="h6" message={loadingMessage} />
+  } else if (!initialized || error) {
     return <ImportForm model={model} />
+  } else {
+    return <DotplotViewInternal model={model} />
   }
-
-  if (loading) {
-    return <LoadingEllipses variant="h6" />
-  }
-
-  return <DotplotViewInternal model={model} />
 })
 
 export default DotplotView

@@ -1,19 +1,37 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { forEachWithStopTokenCheck } from '@jbrowse/core/util'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils'
+import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
-import type { GetGenotypeMatrixArgs } from './types'
+import type { Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+const SPLITTER = /[/|]/
 
 export async function getGenotypeMatrix({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: GetGenotypeMatrixArgs
+  args: {
+    adapterConfig: AnyConfigurationModel
+    stopToken?: StopToken
+    sessionId: string
+    headers?: Record<string, string>
+    regions: Region[]
+    sources: Source[]
+    bpPerPx: number
+    minorAlleleFrequencyFilter: number
+    lengthCutoffFilter: number
+  }
 }) {
   const {
     sources,
@@ -24,69 +42,51 @@ export async function getGenotypeMatrix({
     lengthCutoffFilter,
     stopToken,
   } = args
+  const lastCheck = createStopTokenChecker(stopToken)
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const genotypeFactor = new Set<string>()
+  const rows = Object.fromEntries(sources.map(s => [s.name, [] as number[]]))
+  const splitCache = {} as Record<string, string[]>
+
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
-    stopToken,
+    lastCheck,
+    splitCache,
     features: await firstValueFrom(
       dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
     ),
   })
-
-  for (const { alleleCounts } of mafs) {
-    for (const alt of Object.keys(alleleCounts)) {
-      genotypeFactor.add(alt)
-    }
-  }
-
-  const rows = {} as Record<string, number[]>
-  const cacheSplit = {} as Record<string, string[]>
-  forEachWithStopTokenCheck(mafs, stopToken, ({ feature }) => {
+  for (const { feature } of mafs) {
     const genotypes = feature.get('genotypes') as Record<string, string>
     for (const { name } of sources) {
-      if (!rows[name]) {
-        rows[name] = []
-      }
       const val = genotypes[name]!
+      const alleles = splitCache[val] ?? (splitCache[val] = val.split(SPLITTER))
 
-      let alleles: string[]
-      if (cacheSplit[val]) {
-        alleles = cacheSplit[val]
-      } else {
-        alleles = val.split(/[/|]/)
-        cacheSplit[val] = alleles
-      }
-
-      // Calculate '012' status of the allele for a VCF genotype matrix
-      // Similar to vcftools --012 https://vcftools.github.io/man_latest.html
-      // Note: could also consider https://www.rdocumentation.org/packages/fastcluster/versions/1.2.6/topics/hclust.vector for clustering true multi-dimensional allele count vectors
-      let genotypeStatus = 0
       let nonRefCount = 0
       let uncalledCount = 0
-      for (const l of alleles) {
-        if (l === '.') {
+      for (let i = 0, l = alleles.length; i < l; i++) {
+        const allele = alleles[i]!
+        if (allele === '.') {
           uncalledCount++
-        } else if (l !== '0') {
+        } else if (allele !== '0') {
           nonRefCount++
         }
       }
 
-      if (uncalledCount === alleles.length) {
-        genotypeStatus = -1 // All no-call
-      } else if (nonRefCount === 0) {
-        genotypeStatus = 0 // Homozygous reference
-      } else if (nonRefCount === alleles.length) {
-        genotypeStatus = 2 // Homozygous alternate
-      } else {
-        genotypeStatus = 1 // Heterozygous
-      }
+      const genotypeStatus =
+        uncalledCount === alleles.length
+          ? -1
+          : nonRefCount === 0
+            ? 0
+            : nonRefCount === alleles.length
+              ? 2
+              : 1
 
-      rows[name].push(genotypeStatus)
+      rows[name]!.push(genotypeStatus)
     }
-  })
+    checkStopToken2(lastCheck)
+  }
   return rows
 }

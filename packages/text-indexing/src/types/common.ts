@@ -3,7 +3,7 @@ import path from 'path'
 
 import fetch from 'node-fetch'
 
-import type { LocalPathLocation, Track, UriLocation } from '../util'
+import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
 
 // Method for handing off the parsing of a gff3 file URL. Calls the proper
 // parser depending on if it is gzipped or not. Returns a @gmod/gff stream.

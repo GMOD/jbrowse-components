@@ -1,16 +1,16 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
-import Logo from './Logo'
-import LeftSidePanel from './leftSidePanel/LeftSidePanel'
-import RecentSessionPanel from './recentSessions/RecentSessionsPanel'
+import Logo from './Logo.tsx'
+import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
+import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()({
   root: {
-    marginLeft: 75,
-    marginRight: 75,
+    marginLeft: 30,
+    marginRight: 30,
     marginTop: 50,
     display: 'flex',
     gap: 10,
@@ -19,8 +19,8 @@ const useStyles = makeStyles()({
   panel: {
     flex: 1,
     padding: 16,
-    minWidth: 400,
-    maxWidth: 500,
+    minWidth: 450,
+    maxWidth: 600,
   },
 
   recentPanel: {

@@ -9,10 +9,10 @@ import {
   hts,
   mockConsoleWarn,
   setup,
-} from './util'
+} from './util.tsx'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view/src/LinearSyntenyView/model'
+import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
 import type { SessionWithConnections } from '@jbrowse/product-core'
 
 setup()
@@ -43,6 +43,7 @@ test('nav to synteny from right click', async () => {
       expect(v?.initialized).toBe(true)
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,222..34,670')
     }, delay)
+    await new Promise(res => setTimeout(res, 1000))
     expectCanvasMatch(await findByTestId('synteny_canvas', ...opts))
   })
 }, 60000)
@@ -68,6 +69,7 @@ test('nav to synteny from feature details', async () => {
       expect(v?.initialized).toBe(true)
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:1..50,001')
     }, delay)
+    await new Promise(res => setTimeout(res, 1000))
     expectCanvasMatch(await findByTestId('synteny_canvas', ...opts))
   })
 }, 60000)

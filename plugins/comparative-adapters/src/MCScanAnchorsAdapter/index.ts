@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -16,7 +16,7 @@ export default function MCScanAnchorsAdapterF(pluginManager: PluginManager) {
         },
 
         getAdapterClass: () =>
-          import('./MCScanAnchorsAdapter').then(r => r.default),
+          import('./MCScanAnchorsAdapter.ts').then(r => r.default),
       }),
   )
 }

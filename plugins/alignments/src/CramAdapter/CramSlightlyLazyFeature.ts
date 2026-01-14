@@ -1,17 +1,45 @@
-import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
-import { cacheGetter } from '../shared/util'
+import {
+  CODE_D,
+  CODE_H,
+  CODE_I,
+  CODE_N,
+  CODE_S,
+  CODE_X,
+  CODE_i,
+} from './const.ts'
+import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
+import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil.ts'
+import {
+  DELETION_TYPE,
+  HARDCLIP_TYPE,
+  INSERTION_TYPE,
+  MISMATCH_TYPE,
+  SKIP_TYPE,
+  SOFTCLIP_TYPE,
+} from '../shared/forEachMismatchTypes.ts'
+import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
 
-import type CramAdapter from './CramAdapter'
+import type CramAdapter from './CramAdapter.ts'
+import type { MismatchCallback } from '../shared/forEachMismatchTypes.ts'
+import type { Mismatch } from '../shared/types.ts'
 import type { CramRecord } from '@gmod/cram'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
+// Module-level constant for CIGAR code conversion (avoids recreation on each call)
+// Maps packed CIGAR op codes to ASCII: M=77, I=73, D=68, N=78, S=83, H=72, P=80, ==61, X=88
+const NUMERIC_CIGAR_CODES = new Uint8Array([
+  77, 73, 68, 78, 83, 72, 80, 61, 88, 63, 63, 63, 63, 63, 63, 63,
+])
+
 export default class CramSlightlyLazyFeature implements Feature {
+  private record: CramRecord
+  private _store: CramAdapter
   // uses parameter properties to automatically create fields on the class
   // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
-  constructor(
-    private record: CramRecord,
-    private _store: CramAdapter,
-  ) {}
+  constructor(record: CramRecord, _store: CramAdapter) {
+    this.record = record
+    this._store = _store
+  }
 
   get name() {
     return this.record.readName
@@ -80,22 +108,36 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get tags() {
-    const RG = this._store.samHeader.readGroups?.[this.record.readGroupId]
+    const RG = this._store.samHeader?.readGroups[this.record.readGroupId]
     return RG !== undefined ? { ...this.record.tags, RG } : this.record.tags
   }
 
   get seq() {
+    // CRAM stores sequences as strings, not packed like BAM
+    // So we return the string directly without encoding/decoding
     return this.record.getReadBases()
   }
 
-  // generate a CIGAR, based on code from jkbonfield
-  get CIGAR() {
-    return readFeaturesToCIGAR(
+  // generate packed NUMERIC_CIGAR as Uint32Array
+  get NUMERIC_CIGAR() {
+    return readFeaturesToNumericCIGAR(
       this.record.readFeatures,
       this.record.alignmentStart,
       this.record.readLength,
-      this.record._refRegion,
     )
+  }
+
+  // generate a CIGAR string from NUMERIC_CIGAR
+  get CIGAR() {
+    const numeric = this.NUMERIC_CIGAR
+    let result = ''
+    for (let i = 0, l = numeric.length; i < l; i++) {
+      const packed = numeric[i]!
+      const length = packed >> 4
+      const opCode = NUMERIC_CIGAR_CODES[packed & 0xf]!
+      result += length + CHAR_FROM_CODE[opCode]!
+    }
+    return result
   }
 
   id() {
@@ -103,13 +145,18 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get(field: string): any {
-    return field === 'mismatches'
-      ? this.mismatches
-      : field === 'qual'
-        ? this.qual
-        : field === 'CIGAR'
-          ? this.CIGAR
-          : this.fields[field]
+    switch (field) {
+      case 'mismatches':
+        return this.mismatches
+      case 'qual':
+        return this.qual
+      case 'CIGAR':
+        return this.CIGAR
+      case 'NUMERIC_CIGAR':
+        return this.NUMERIC_CIGAR
+      default:
+        return this.fields[field]
+    }
   }
 
   parent() {
@@ -121,23 +168,134 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get mismatches() {
-    return readFeaturesToMismatches(
-      this.record.readFeatures,
-      this.start,
-      this.qualRaw,
+    const mismatches: Mismatch[] = []
+    this.forEachMismatch(
+      (type, start, length, base, qual, altbase, cliplen) => {
+        if (type === MISMATCH_TYPE) {
+          mismatches.push({
+            type: 'mismatch',
+            start,
+            length,
+            base,
+            qual: qual !== undefined && qual >= 0 ? qual : undefined,
+            altbase:
+              altbase !== undefined && altbase > 0
+                ? CHAR_FROM_CODE[altbase]
+                : undefined,
+          })
+        } else if (type === INSERTION_TYPE) {
+          mismatches.push({
+            type: 'insertion',
+            start,
+            length,
+            insertlen: cliplen!,
+            insertedBases: base,
+          })
+        } else if (type === SOFTCLIP_TYPE) {
+          mismatches.push({
+            type: 'softclip',
+            start,
+            length,
+            cliplen: cliplen!,
+          })
+        } else if (type === HARDCLIP_TYPE) {
+          mismatches.push({
+            type: 'hardclip',
+            start,
+            length,
+            cliplen: cliplen!,
+          })
+        } else {
+          mismatches.push({
+            type: type === 2 ? 'deletion' : 'skip',
+            start,
+            length,
+          })
+        }
+      },
     )
-    // this commented code can try to resolve MD tags, xref https://github.com/galaxyproject/tools-iuc/issues/6523#issuecomment-2462927211 but put on hold
-    // return this.tags.MD && this.seq
-    //   ? mismatches.concat(
-    //       mdToMismatches(
-    //         this.tags.MD,
-    //         parseCigar(this.CIGAR),
-    //         mismatches,
-    //         this.seq,
-    //         this.qualRaw,
-    //       ),
-    //     )
-    //   : mismatches
+    return mismatches
+  }
+
+  forEachMismatch(callback: MismatchCallback) {
+    const readFeatures = this.record.readFeatures
+    if (!readFeatures) {
+      return
+    }
+
+    const featStart = this.start
+    const qual = this.qualRaw
+    const hasQual = !!qual
+    const len = readFeatures.length
+
+    let refPos = 0
+    let lastPos = featStart
+    let insertedBases = ''
+    let insertedBasesLen = 0
+
+    for (let i = 0; i < len; i++) {
+      const rf = readFeatures[i]!
+      const sublen = refPos - lastPos
+      lastPos = refPos
+
+      // Flush accumulated single-base insertions
+      if (sublen && insertedBasesLen > 0) {
+        callback(
+          INSERTION_TYPE,
+          refPos,
+          0,
+          insertedBases,
+          -1,
+          0,
+          insertedBasesLen,
+        )
+        insertedBases = ''
+        insertedBasesLen = 0
+      }
+      refPos = rf.refPos - 1 - featStart
+
+      const codeChar = rf.code.charCodeAt(0)
+
+      if (codeChar === CODE_X) {
+        const refCharCode = rf.ref ? rf.ref.charCodeAt(0) & ~0x20 : 0
+        callback(
+          MISMATCH_TYPE,
+          refPos,
+          1,
+          rf.sub!,
+          hasQual ? qual[rf.pos - 1]! : -1,
+          refCharCode,
+          0,
+        )
+      } else if (codeChar === CODE_I) {
+        callback(INSERTION_TYPE, refPos, 0, rf.data, -1, 0, rf.data.length)
+      } else if (codeChar === CODE_N) {
+        callback(SKIP_TYPE, refPos, rf.data, 'N', -1, 0, 0)
+      } else if (codeChar === CODE_S) {
+        const dataLen = rf.data.length
+        callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
+      } else if (codeChar === CODE_H) {
+        callback(HARDCLIP_TYPE, refPos, 1, `H${rf.data}`, -1, 0, rf.data)
+      } else if (codeChar === CODE_D) {
+        callback(DELETION_TYPE, refPos, rf.data, '*', -1, 0, 0)
+      } else if (codeChar === CODE_i) {
+        insertedBases += rf.data
+        insertedBasesLen++
+      }
+    }
+
+    // Flush any remaining accumulated insertions
+    if (insertedBasesLen > 0) {
+      callback(
+        INSERTION_TYPE,
+        refPos,
+        0,
+        insertedBases,
+        -1,
+        0,
+        insertedBasesLen,
+      )
+    }
   }
 
   get fields(): SimpleFeatureSerialized {
@@ -149,7 +307,7 @@ export default class CramSlightlyLazyFeature implements Feature {
       strand: this.strand,
       template_length: this.template_length,
       flags: this.flags,
-      tags: this.tags,
+      tags: convertTagsToPlainArrays(this.tags),
       refName: this.refName,
       seq: this.seq,
       type: 'match',
@@ -174,4 +332,5 @@ export default class CramSlightlyLazyFeature implements Feature {
 
 cacheGetter(CramSlightlyLazyFeature, 'fields')
 cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
+cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_CIGAR')
 cacheGetter(CramSlightlyLazyFeature, 'mismatches')

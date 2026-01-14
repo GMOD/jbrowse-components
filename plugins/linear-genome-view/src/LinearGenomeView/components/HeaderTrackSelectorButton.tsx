@@ -1,7 +1,7 @@
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -13,7 +13,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const HeaderTrackSelectorButton = observer(function ({
+const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
   model,
 }: {
   model: LinearGenomeViewModel

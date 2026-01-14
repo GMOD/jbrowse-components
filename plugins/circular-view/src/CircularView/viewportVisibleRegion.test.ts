@@ -2,7 +2,7 @@ import {
   cartesianToPolar,
   thetaRangesOverlap,
   viewportVisibleSection,
-} from './viewportVisibleRegion'
+} from './viewportVisibleRegion.ts'
 
 describe('viewportVisibleSection', () => {
   // test('circle contained in viewport', () => {

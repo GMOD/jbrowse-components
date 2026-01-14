@@ -3,8 +3,8 @@ id: spreadsheetview
 title: SpreadsheetView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -87,6 +87,17 @@ IMaybe<IModelType<{ rowSet: IType<RowSet, RowSet, RowSet>; columns: IType<{ name
 spreadsheet: types.maybe(Spreadsheet())
 ```
 
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<SpreadsheetViewInit, SpreadsheetViewInit, SpreadsheetViewInit>
+// code
+init: types.frozen<SpreadsheetViewInit | undefined>()
+```
+
 ### SpreadsheetView - Getters
 
 #### getter: assembly
@@ -149,4 +160,11 @@ load a new spreadsheet and set our mode to display it
 ```js
 // type signature
 displaySpreadsheet: (spreadsheet?: { rowSet: RowSet & IStateTreeNode<IType<RowSet, RowSet, RowSet>>; columns: { name: string; }[] & IStateTreeNode<IType<{ name: string; }[], { ...; }[], { ...; }[]>>; assemblyName: string; visibleColumns: Record<...> & IStateTreeNode<...>; } & ... 6 more ... & IStateTreeNode<...>) => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (init?: SpreadsheetViewInit) => void
 ```

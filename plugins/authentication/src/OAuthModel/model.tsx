@@ -1,19 +1,19 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron } from '@jbrowse/core/util'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   fixup,
   generateChallenge,
   processError,
   processTokenResponse,
-} from './util'
-import { getResponseError } from '../util'
+} from './util.ts'
+import { getResponseError } from '../util.ts'
 
-import type { OAuthInternetAccountConfigModel } from './configSchema'
+import type { OAuthInternetAccountConfigModel } from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // ISC Copyright (c) 2020, Andrea Giammarchi, @WebReflection
 // https://github.com/WebReflection/uint8-to-base64

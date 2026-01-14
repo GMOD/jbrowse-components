@@ -11,13 +11,15 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground'
-import SVGHeader from './SVGHeader'
-import SVGTracks from './SVGTracks'
-import { totalHeight } from './util'
+import { isReadyOrHasError } from '../svgExportUtil.ts'
+import SVGBackground from './SVGBackground.tsx'
+import SVGGridlines from './SVGGridlines.tsx'
+import SVGHeader from './SVGHeader.tsx'
+import SVGTracks from './SVGTracks.tsx'
+import { totalHeight } from './util.ts'
 
 import type { LinearGenomeViewModel } from '..'
-import type { ExportSvgOptions } from '../types'
+import type { ExportSvgOptions } from '../types.ts'
 
 type LGV = LinearGenomeViewModel
 
@@ -32,22 +34,37 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     cytobandHeight = 100,
     trackLabels = 'offset',
     themeName = 'default',
+    showGridlines = false,
     Wrapper = ({ children }) => children,
   } = opts
   const session = getSession(model)
   const { allThemes } = session
 
   const theme = allThemes?.()[themeName]
+  const jbrowseTheme = createJBrowseTheme(theme)
   const { width, pinnedTracks, unpinnedTracks, tracks, showCytobands } = model
   const shift = 50
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 10
   const height = totalHeight(tracks, textHeight, trackLabels) + offset + 100
+
+  // Calculate maximum legend width across all displays
+  const legendWidth = max(
+    [...pinnedTracks, ...unpinnedTracks].map(track => {
+      const display = track.displays[0]
+      return display?.svgLegendWidth?.(jbrowseTheme) ?? 0
+    }),
+    0,
+  )
+
   const displayResults = await Promise.all(
     [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
-      await when(() => !display.renderProps().notReady)
-      return { track, result: await display.renderSvg({ ...opts, theme }) }
+      await when(() => isReadyOrHasError(display))
+      return {
+        track,
+        result: await display.renderSvg({ ...opts, theme, legendWidth }),
+      }
     }),
   )
   const trackLabelMaxLen =
@@ -58,7 +75,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       0,
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
-  const w = width + trackLabelOffset
+  const w = width + trackLabelOffset + legendWidth
+  const tracksHeight = totalHeight(tracks, textHeight, trackLabels)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -81,6 +99,11 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 cytobandHeight={cytobandHeight}
               />
             </g>
+            {showGridlines ? (
+              <g transform={`translate(${trackLabelOffset} ${offset})`}>
+                <SVGGridlines model={model} height={tracksHeight} />
+              </g>
+            ) : null}
             <g transform={`translate(0 ${offset})`}>
               <SVGTracks
                 textHeight={textHeight}
@@ -98,5 +121,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   )
 }
 
-export { default as SVGRuler } from './SVGRuler'
-export { default as SVGTracks } from './SVGTracks'
+export { default as SVGGridlines } from './SVGGridlines.tsx'
+export { default as SVGRuler } from './SVGRuler.tsx'
+export { default as SVGTracks } from './SVGTracks.tsx'

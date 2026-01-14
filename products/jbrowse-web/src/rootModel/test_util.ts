@@ -1,10 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import corePlugins from '../corePlugins'
-import RootModel from './rootModel'
-import sessionModelFactory from '../sessionModel'
+import corePlugins from '../corePlugins.ts'
+import RootModel from './rootModel.ts'
+import sessionModelFactory from '../sessionModel/index.ts'
 
-import type { WebSessionModel } from '../sessionModel'
+import type { WebSessionModel } from '../sessionModel/index.ts'
 
 export function createTestSession(args?: {
   adminMode?: boolean

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "3.6.5",
+  "version": "4.0.3",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
@@ -28,23 +28,22 @@
     "node": ">=18.3.0"
   },
   "scripts": {
-    "prebuild": "npm run clean",
-    "build": "tsc --build && webpack",
-    "clean": "rimraf dist bundle",
-    "prepack": "npm run clean  && npm run docs",
-    "predocs": "npm run build",
-    "docs": "./generate_readme.sh > README.md"
+    "prebuild": "pnpm clean",
+    "build": "tsc && webpack",
+    "clean": "rimraf bundle",
+    "prepack": "pnpm clean && pnpm build && pnpm generate-readme",
+    "generate-readme": "./generate_readme.sh > README.md"
   },
   "dependencies": {
-    "cli-progress": "^3.9.0",
+    "cli-progress": "^3.12.0",
     "command-exists": "^1.2.9",
     "cors": "^2.8.5",
-    "decompress": "^4.0.0",
-    "express": "^5.1.0",
-    "ixixx": "^2.0.1",
+    "decompress": "^4.2.1",
+    "express": "^5.2.1",
+    "ixixx": "^3.0.2",
     "json-parse-better-errors": "^1.0.2",
-    "node-fetch-native": "^1.6.4",
-    "tmp": "^0.2.1"
+    "node-fetch-native": "^1.6.7",
+    "tmp": "^0.2.5"
   },
   "publishConfig": {
     "access": "public"

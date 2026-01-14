@@ -231,6 +231,7 @@ Usage: jbrowse text-index [options]
 Options:
   -h, --help                    Show CLI help
      , --tracks                  Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks
+     , --excludeTracks           Specific tracks to exclude from indexing, formatted as comma separated trackIds
      , --target                  Path to config file in JB2 installation directory to read from.
      , --out                     Synonym for target
      , --attributes              Comma separated list of attributes to index
@@ -249,6 +250,9 @@ $ jbrowse text-index
 
 # indexes specific trackIds that it can find in the current directory's config.json
 $ jbrowse text-index --tracks=track1,track2,track3
+
+# indexes all tracks except specific trackIds
+$ jbrowse text-index --exclude-tracks=track1,track2,track3
 
 # indexes all tracks in a directory's config.json or in a specific config file
 $ jbrowse text-index --out /path/to/jb2/

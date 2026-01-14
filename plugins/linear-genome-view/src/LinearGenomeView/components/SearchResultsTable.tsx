@@ -4,6 +4,7 @@ import {
   getSession,
   parseLocString,
 } from '@jbrowse/core/util'
+import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   Paper,
@@ -14,11 +15,10 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 
-import { navToOption } from '../../searchUtils'
+import { navToOption } from '../../searchUtils.ts'
 
-import type { LinearGenomeViewModel } from '../..'
+import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 export default function SearchResultsTable({

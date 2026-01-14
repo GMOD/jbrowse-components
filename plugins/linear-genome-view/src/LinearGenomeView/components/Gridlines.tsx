@@ -1,12 +1,12 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import {
   ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
-} from '../../BaseLinearDisplay/components/Block'
-import { makeTicks } from '../util'
+} from '../../BaseLinearDisplay/components/Block.tsx'
+import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -14,6 +14,7 @@ import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
+  // Outer container that handles zoom scaling via CSS transform
   verticalGuidesZoomContainer: {
     position: 'absolute',
     top: 0,
@@ -21,6 +22,7 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     pointerEvents: 'none',
   },
+  // Inner container positioned using CSS calc() with --offset-px variable
   verticalGuidesContainer: {
     position: 'absolute',
     height: '100%',
@@ -47,22 +49,24 @@ function RenderedBlockLines({
   block: ContentBlock
   bpPerPx: number
 }) {
-  const { classes, cx } = useStyles()
-  const ticks = makeTicks(block.start, block.end, bpPerPx)
+  const { classes } = useStyles()
+  const { start, end, reversed } = block
+  const ticks = makeTicks(start, end, bpPerPx)
+  const majorTickClass = `${classes.tick} ${classes.majorTick}`
+  const minorTickClass = `${classes.tick} ${classes.minorTick}`
+
   return (
     <ContentBlockComponent block={block}>
       {ticks.map(({ type, base }) => {
-        const x =
-          (block.reversed ? block.end - base : base - block.start) / bpPerPx
+        const x = (reversed ? end - base : base - start) / bpPerPx
         return (
           <div
             key={base}
-            className={cx(
-              classes.tick,
+            className={
               type === 'major' || type === 'labeledMajor'
-                ? classes.majorTick
-                : classes.minorTick,
-            )}
+                ? majorTickClass
+                : minorTickClass
+            }
             style={{ left: x }}
           />
         )
@@ -70,7 +74,12 @@ function RenderedBlockLines({
     </ContentBlockComponent>
   )
 }
-const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
+
+const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
+  model,
+}: {
+  model: LGV
+}) {
   const { staticBlocks, bpPerPx } = model
   return (
     <>
@@ -94,7 +103,8 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
     </>
   )
 })
-const Gridlines = observer(function ({
+
+const Gridlines = observer(function Gridlines({
   model,
   offset = 0,
 }: {
@@ -102,21 +112,20 @@ const Gridlines = observer(function ({
   offset?: number
 }) {
   const { classes } = useStyles()
-  // find the block that needs pinning to the left side for context
-  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
+  const { staticBlocks, scaleFactor } = model
   return (
     <div
       className={classes.verticalGuidesZoomContainer}
       style={{
-        transform:
-          model.scaleFactor !== 1 ? `scaleX(${model.scaleFactor})` : undefined,
+        transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
       }}
     >
       <div
         className={classes.verticalGuidesContainer}
         style={{
-          left: offsetLeft - offset,
-          width: model.staticBlocks.totalWidthPx,
+          // Uses --offset-px CSS variable from parent (TracksContainer or Scalebar)
+          left: `calc(${staticBlocks.offsetPx}px - var(--offset-px) - ${offset}px)`,
+          width: staticBlocks.totalWidthPx,
         }}
       >
         <RenderedVerticalGuides model={model} />

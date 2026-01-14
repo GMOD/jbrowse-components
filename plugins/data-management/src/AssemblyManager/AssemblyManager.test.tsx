@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react'
 
-import AssemblyManager from './AssemblyManager'
+import AssemblyManager from './AssemblyManager.tsx'
 
 const assemblies = [
   {

@@ -1,4 +1,4 @@
-import { makeStyles } from 'tss-react/mui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
   skeletonTable: {
@@ -33,14 +33,6 @@ const useStyles = makeStyles()({
       background:
         'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
       animation: '$shimmer 1.5s infinite',
-    },
-  },
-  '@keyframes shimmer': {
-    '0%': {
-      left: '-100%',
-    },
-    '100%': {
-      left: '100%',
     },
   },
 })

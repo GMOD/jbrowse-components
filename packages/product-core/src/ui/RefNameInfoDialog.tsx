@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
-import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogContent } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
+
+import { readConf } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const MAX_REF_NAMES = 10_000
 
@@ -25,29 +24,33 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const RefNameInfoDialog = observer(function ({
+const RefNameInfoDialog = observer(function RefNameInfoDialog({
   config,
+  session,
   onClose,
 }: {
-  config: AnyConfigurationModel
+  config: AnyConfigurationModel | Record<string, unknown>
+  session: AbstractSessionModel
   onClose: () => void
 }) {
   const { classes } = useStyles()
   const [error, setError] = useState<unknown>()
   const [refNames, setRefNames] = useState<Record<string, string[]>>()
   const [copied, setCopied] = useState(false)
-  const { rpcManager } = getSession(config)
+  const { rpcManager } = session
+  const trackId = readConf(config, 'trackId') as string
+  const assemblyNames = readConf(config, 'assemblyNames') as string[]
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const map = await Promise.all(
-          [...new Set(getConfAssemblyNames(config))].map(async assemblyName => {
-            const adapterConfig = readConfObject(config, 'adapter')
+          [...new Set(assemblyNames)].map(async assemblyName => {
+            const adapterConfig = readConf(config, 'adapter')
             return [
               assemblyName,
-              (await rpcManager.call(config.trackId, 'CoreGetRefNames', {
+              (await rpcManager.call(trackId, 'CoreGetRefNames', {
                 adapterConfig,
                 // hack for synteny adapters
                 regions: [
@@ -65,7 +68,7 @@ const RefNameInfoDialog = observer(function ({
         setError(e)
       }
     })()
-  }, [config, rpcManager])
+  }, [config, rpcManager, trackId, assemblyNames])
 
   const names = refNames ? Object.entries(refNames) : []
   const result = names
@@ -97,7 +100,8 @@ const RefNameInfoDialog = observer(function ({
           <>
             <Button
               variant="contained"
-              onClick={() => {
+              onClick={async () => {
+                const { default: copy } = await import('copy-to-clipboard')
                 copy(
                   names
                     .flatMap(([assemblyName, refNames]) => [

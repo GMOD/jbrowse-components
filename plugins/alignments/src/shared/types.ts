@@ -1,3 +1,6 @@
+import type { MismatchCallback } from './forEachMismatchTypes.ts'
+import type { Feature } from '@jbrowse/core/util'
+
 export type SkipMap = Record<
   string,
   {
@@ -16,6 +19,10 @@ export interface BinEntry {
   '0': number
   '1': number
   avgProbability?: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
+  topSequence?: string
 }
 
 type BinType = Record<string, BinEntry>
@@ -42,7 +49,19 @@ export interface PreBinEntry {
   '-1': number
   '0': number
   '1': number
-  probabilities: number[]
+  probabilityTotal: number
+  probabilityCount: number
+  lengthTotal: number
+  lengthCount: number
+  lengthMin: number
+  lengthMax: number
+  sequenceCounts?: Map<string, number>
+  // Computed fields added during finalization
+  avgProbability?: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
+  topSequence?: string
 }
 
 type PreBinType = Record<string, PreBinEntry>
@@ -86,6 +105,7 @@ export interface ColorBy {
   modifications?: {
     twoColor?: boolean
     isolatedModification?: string
+    threshold?: number
   }
 }
 
@@ -107,13 +127,80 @@ export interface SortedBy {
   tag?: string
 }
 
-export interface Mismatch {
-  qual?: number
+interface BaseMismatch {
   start: number
   length: number
-  type: string
+}
+
+export interface SNPMismatch extends BaseMismatch {
+  type: 'mismatch'
   base: string
+  qual?: number
   altbase?: string
-  seq?: string
-  cliplen?: number
+}
+
+export interface InsertionMismatch extends BaseMismatch {
+  type: 'insertion'
+  insertlen: number
+  insertedBases?: string
+}
+
+export interface DeletionMismatch extends BaseMismatch {
+  type: 'deletion'
+}
+
+export interface SkipMismatch extends BaseMismatch {
+  type: 'skip'
+}
+
+export interface ClipMismatch extends BaseMismatch {
+  type: 'softclip' | 'hardclip'
+  cliplen: number
+}
+
+export type Mismatch =
+  | SNPMismatch
+  | InsertionMismatch
+  | DeletionMismatch
+  | SkipMismatch
+  | ClipMismatch
+
+export interface ReducedFeature {
+  name: string
+  strand: number
+  refName: string
+  start: number
+  end: number
+  id: string
+  flags: number
+  tlen: number
+  pair_orientation: string
+  next_ref?: string
+  next_pos?: number
+  clipLengthAtStartOfRead: number
+  SA?: string
+}
+
+export interface ChainStats {
+  max: number
+  min: number
+  upper: number
+  lower: number
+}
+
+export interface ChainData {
+  stats?: ChainStats
+  chains: Feature[][]
+}
+
+export type MismatchType =
+  | 'mismatch'
+  | 'insertion'
+  | 'deletion'
+  | 'skip'
+  | 'softclip'
+  | 'hardclip'
+
+export interface FeatureWithMismatchIterator extends Feature {
+  forEachMismatch(callback: MismatchCallback): void
 }

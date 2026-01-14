@@ -1,129 +1,66 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
+import { expandRegion } from '@jbrowse/core/pluggableElementTypes/renderers/util'
+import { updateStatus } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
+import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
-import { PileupLayoutSession } from './PileupLayoutSession'
-import { fetchSequence } from '../util'
-import { layoutFeats } from './layoutFeatures'
+import { PileupLayoutSession } from './PileupLayoutSession.ts'
 
-import type { PileupLayoutSessionProps } from './PileupLayoutSession'
-import type { RenderArgsDeserialized } from './types'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { PileupLayoutSessionProps } from './PileupLayoutSession.ts'
+import type { RenderArgsDeserialized } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
 
 export default class PileupRenderer extends BoxRendererType {
   supportsSVG = true
 
-  async fetchSequence(renderProps: RenderArgsDeserialized, region: Region) {
-    const { sessionId, adapterConfig } = renderProps
-    const { sequenceAdapter } = adapterConfig
-    if (!sequenceAdapter) {
-      return undefined
-    }
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      sequenceAdapter,
-    )
-    return fetchSequence(
-      {
-        ...region,
-        start: Math.max(0, region.start - 1),
-        end: region.end + 1,
-      },
-      dataAdapter as BaseFeatureDataAdapter,
-    )
-  }
-
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     const { config, showSoftClip } = renderArgs
-    const { start, end } = region
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const bpExpansion = showSoftClip ? Math.round(maxClippingSize) : 0
-
-    return {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-      ...(region as Omit<typeof region, symbol>),
-      start: Math.floor(Math.max(start - bpExpansion, 0)),
-      end: Math.ceil(end + bpExpansion),
-    }
+    return expandRegion(region, bpExpansion)
   }
 
   async render(renderProps: RenderArgsDeserialized) {
-    const features = await this.getFeatures(renderProps)
-    const layout = this.createLayoutInWorker(renderProps)
-    const { statusCallback = () => {}, colorBy, regions, bpPerPx } = renderProps
+    const { statusCallback = () => {}, regions, bpPerPx } = renderProps
     const region = regions[0]!
     const width = (region.end - region.start) / bpPerPx
-    const { layoutRecords, height } = await updateStatus(
-      'Creating layout',
+
+    const features = await this.getFeatures(renderProps)
+    const layout = this.createLayoutInWorker(renderProps)
+
+    const { makeImageData } = await import('./makeImageData.ts')
+    const { result, height, featureNames } = await updateStatus(
+      'Rendering alignments',
       statusCallback,
       () =>
-        layoutFeats({
-          ...renderProps,
-          features,
-          layout,
+        makeImageData({
+          width,
+          renderArgs: {
+            ...renderProps,
+            layout,
+            features,
+          },
+          pluginManager: this.pluginManager,
         }),
     )
 
-    const res = await updateStatus(
-      'Rendering alignments',
-      statusCallback,
-      async () => {
-        const regionSequence =
-          colorBy?.type === 'methylation' && features.size
-            ? await this.fetchSequence(renderProps, region)
-            : undefined
-        const { makeImageData } = await import('./makeImageData')
+    const serializedLayout = this.serializeLayout(layout, renderProps)
 
-        return renderToAbstractCanvas(width, height, renderProps, ctx => {
-          makeImageData({
-            ctx,
-            layoutRecords,
-            canvasWidth: width,
-            renderArgs: {
-              ...renderProps,
-              layout,
-              features,
-              regionSequence,
-            },
-          })
-          return undefined
-        })
+    return rpcResult(
+      {
+        ...result,
+        featureNames,
+        layout: serializedLayout,
+        height,
+        width,
+        maxHeightReached: layout.maxHeightReached,
       },
+      collectTransferables(result),
     )
-
-    const results = await super.render({
-      ...renderProps,
-      ...res,
-      features,
-      layout,
-      height,
-      width,
-    })
-
-    return {
-      ...results,
-      ...res,
-      features: new Map(),
-      layout,
-      height,
-      width,
-      maxHeightReached: layout.maxHeightReached,
-      containsNoTransferables: true,
-    }
   }
 
   createLayoutSession(args: PileupLayoutSessionProps) {
     return new PileupLayoutSession(args)
   }
 }
-
-export type {
-  RenderArgs,
-  RenderArgsSerialized,
-  RenderResults,
-  ResultsDeserialized,
-  ResultsSerialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'

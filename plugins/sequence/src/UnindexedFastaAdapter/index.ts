@@ -1,6 +1,6 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -14,7 +14,7 @@ export default function UnindexedFastaAdapterF(pluginManager: PluginManager) {
         hiddenFromGUI: true,
       },
       getAdapterClass: () =>
-        import('./UnindexedFastaAdapter').then(r => r.default),
+        import('./UnindexedFastaAdapter.ts').then(r => r.default),
     })
   })
 }

@@ -1,10 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition'
-import LegendBar from '../shared/components/MultiVariantLegendBar'
+import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import { makeSidebarSvg } from '../shared/makeSidebarSvg.tsx'
 
-import type { MultiLinearVariantMatrixDisplayModel } from './model'
+import type { MultiLinearVariantMatrixDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -18,13 +18,14 @@ export async function renderSvg(
   await when(() => !!model.regionCannotBeRenderedText)
   const { offsetPx } = getContainingView(model) as LinearGenomeViewModel
   const { lineZoneHeight } = model
+
   return (
     <>
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
         <LinesConnectingMatrixToGenomicPosition exportSVG model={model} />
         <g transform={`translate(0,${lineZoneHeight})`}>
           <g>{await superRenderSvg(opts)}</g>
-          <LegendBar model={model} orientation="left" exportSVG />
+          {await makeSidebarSvg(model)}
         </g>
       </g>
     </>

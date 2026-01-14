@@ -3,8 +3,8 @@ id: svinspectorview
 title: SvInspectorView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -35,7 +35,7 @@ extends
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+any
 // code
 id: ElementId
 ```
@@ -71,7 +71,7 @@ onlyDisplayRelevantRegionsInCircularView: false
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...> | { ...; }>, [...]>
+IOptionalIType<IModelType<ModelProperties & { type: ISimpleType<"SpreadsheetView">; offsetPx: IType<number, number, number>; height: IOptionalIType<ISimpleType<number>, [...]>; ... 4 more ...; init: IType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
@@ -85,7 +85,7 @@ spreadsheetView: types.optional(SpreadsheetModel, () =>
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 7 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+IOptionalIType<IModelType<ModelProperties & { type: ISimpleType<"CircularView">; offsetRadians: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 16 more ...; init: IType<...>; }, { ...; } & ... 5 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
 // code
 circularView: types.optional(CircularModel, () =>
           CircularModel.create({
@@ -95,6 +95,17 @@ circularView: types.optional(CircularModel, () =>
             disableImportForm: true,
           }),
         )
+```
+
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<SvInspectorViewInit, SvInspectorViewInit, SvInspectorViewInit>
+// code
+init: types.frozen<SvInspectorViewInit | undefined>()
 ```
 
 ### SvInspectorView - Getters
@@ -188,6 +199,13 @@ setDisplayedRegions: (regions: Region[]) => void
 ```js
 // type signature
 setOnlyDisplayRelevantRegionsInCircularView: (val: boolean) => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (init?: SvInspectorViewInit) => void
 ```
 
 #### action: resizeHeight

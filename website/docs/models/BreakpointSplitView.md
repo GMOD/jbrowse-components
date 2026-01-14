@@ -3,8 +3,8 @@ id: breakpointsplitview
 title: BreakpointSplitView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -80,11 +80,20 @@ true
 interactiveOverlay: true
 ```
 
+#### property: showHeader
+
+```js
+// type signature
+false
+// code
+showHeader: false
+```
+
 #### property: views
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 15 more ... & { ...; }, ModelCreationType<...>, { ...; }>>
+IArrayType<IModelType<ModelProperties & { id: any; type: IType<string, string, string>; offsetPx: IType<number, number, number>; bpPerPx: IType<number, number, number>; ... 13 more ...; init: IType<...>; }, { ...; } & ... 13 more ... & { ...; }, ModelCreationType<...>, ModelSnapshotType<...>>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')!
@@ -92,7 +101,39 @@ views: types.array(
         )
 ```
 
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<BreakpointSplitViewInit, BreakpointSplitViewInit, BreakpointSplitViewInit>
+// code
+init: types.frozen<BreakpointSplitViewInit | undefined>()
+```
+
 ### BreakpointSplitView - Getters
+
+#### getter: hasSomethingToShow
+
+```js
+// type
+boolean
+```
+
+#### getter: initialized
+
+```js
+// type
+boolean
+```
+
+#### getter: showImportForm
+
+```js
+// type
+boolean
+```
 
 #### getter: matchedTracks
 
@@ -101,7 +142,7 @@ view's track if only a single row is used
 
 ```js
 // type
-(IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>) | { configuration: { trackId: string; }; }[]
+(IMSTArray<any> & IStateTreeNode<IArrayType<any>>) | { configuration: { trackId: string; }; }[]
 ```
 
 ### BreakpointSplitView - Methods
@@ -131,7 +172,7 @@ e.g. they are one sided
 
 ```js
 // type signature
-hasTranslocations: (trackConfigId: string) => any
+hasTranslocations: (trackConfigId: string) => boolean
 ```
 
 #### method: hasPairedFeatures
@@ -140,7 +181,7 @@ Paired features similar to breakends, but simpler, like BEDPE
 
 ```js
 // type signature
-hasPairedFeatures: (trackConfigId: string) => any
+hasPairedFeatures: (trackConfigId: string) => boolean
 ```
 
 #### method: getTrackFeatures
@@ -149,14 +190,14 @@ Get a composite map of featureId-\>feature map for a track across multiple views
 
 ```js
 // type signature
-getTrackFeatures: (trackConfigId: string) => Map<string, Feature>
+getTrackFeatures: (trackConfigId: string) => Map<any, Feature>
 ```
 
 #### method: getMatchedFeaturesInLayout
 
 ```js
 // type signature
-getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: any; clipPos: number; }[][]
+getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: any; clipLengthAtStartOfRead: any; }[][]
 ```
 
 #### method: menuItems
@@ -164,6 +205,13 @@ getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { 
 ```js
 // type signature
 menuItems: () => ({ label: string; subMenu: MenuItem[]; } | { label: string; onClick: () => void; type?: undefined; checked?: undefined; icon?: undefined; } | { label: string; type: string; checked: boolean; onClick: () => void; icon?: undefined; } | { ...; } | { ...; })[]
+```
+
+#### method: rubberBandMenuItems
+
+```js
+// type signature
+rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```
 
 ### BreakpointSplitView - Actions
@@ -196,6 +244,13 @@ setShowIntraviewLinks: (arg: boolean) => void
 setLinkViews: (arg: boolean) => void
 ```
 
+#### action: setShowHeader
+
+```js
+// type signature
+setShowHeader: (arg: boolean) => void
+```
+
 #### action: setMatchedTrackFeatures
 
 ```js
@@ -208,4 +263,18 @@ setMatchedTrackFeatures: (obj: Record<string, Feature[][]>) => void
 ```js
 // type signature
 reverseViewOrder: () => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (init?: BreakpointSplitViewInit) => void
+```
+
+#### action: setViews
+
+```js
+// type signature
+setViews: (viewInits: { loc?: string; assembly: string; tracks?: string[]; }[]) => void
 ```

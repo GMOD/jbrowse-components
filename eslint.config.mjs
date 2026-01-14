@@ -5,6 +5,7 @@ import eslintPluginReact from 'eslint-plugin-react'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
+import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
@@ -12,27 +13,63 @@ import tseslint from 'typescript-eslint'
 export default defineConfig(
   {
     ignores: [
-      'packages/__mocks__/@testing-library/react.tsx',
-      'config/jest/*',
-      '**/build/**/*',
-      '**/dist/**/*',
-      '**/esm/**/*',
-      '**/public/**/*',
-      '**/storybook-static/**',
-      'docs/*',
-      'website/*',
-      'packages/core/util/nanoid.js',
+      // Build outputs
+      '**/build',
+      '**/dist*',
+      '**/esm',
+      '**/public',
+      '**/storybook-static',
+
+      // Config and tooling
+      'config/jest',
+      'jest.config.js',
+      'babel.config.cjs',
+      'eslint.config.mjs',
       'products/**/webpack.config.js',
-      'plugin-development-tools/**',
-      'products/jbrowse-cli/lib/**',
-      'products/jbrowse-cli/bundle/**',
-      'products/jbrowse-desktop/scripts/notarize.js',
-      'auth_test_utils/**/*',
-      'component_tests/**/*',
-      'embedded_demos/**/*',
+      '**/.storybook',
       '**/output-version.js',
-      '**/.storybook/*',
       '**/umd_plugin.js',
+
+      // Vendored/external code
+      'packages/core/src/util/map-obj',
+      'packages/core/src/util/nanoid.js',
+      'packages/core/src/ReExports/material-ui-colors.js',
+      'plugins/variants/src/d3-hierarchy2',
+
+      // Scripts
+      'scripts/analyze_cpuprof.ts',
+      'scripts/getSuggestions.js',
+      'packages/core/scripts/generateExports.mjs',
+      'plugins/data-management/scripts',
+      'products/jbrowse-desktop/scripts',
+      'products/jbrowse-desktop/linux-sandbox-fix.cjs',
+      'products/jbrowse-desktop/linux-sandbox-fix.js',
+      'products/jbrowse-desktop/sign.js',
+      'products/jbrowse-web/scripts',
+      'products/jbrowse-img/src/bin.js',
+
+      // Worker polyfills (plain JS files)
+      '**/workerPolyfill.js',
+
+      // AWS Lambda functions
+      'products/jbrowse-aws-lambda-functions',
+
+      // Test fixtures and mocks
+      '**/test_data',
+      'packages/__mocks__',
+      'integration.test.js',
+
+      // Excluded directories
+      'webpack',
+      'website',
+      'docs',
+      'benchmarks',
+      'auth_test_utils',
+      'component_tests',
+      'embedded_demos',
+      'plugin-development-tools',
+      'products/jbrowse-cli/lib',
+      'products/jbrowse-cli/bundle',
     ],
   },
   {
@@ -47,11 +84,13 @@ export default defineConfig(
       react: {
         version: 'detect',
       },
+      'import/ignore': ['dockview-react', '@tanstack/react-table'],
     },
   },
   {
     plugins: {
       'react-compiler': reactCompiler,
+      'tss-unused-classes': tssUnusedClasses,
     },
     rules: {
       'react-compiler/react-compiler': 'error',
@@ -71,11 +110,9 @@ export default defineConfig(
   },
   eslintPluginUnicorn.configs.recommended,
   {
-    // in main config for TSX/JSX source files
     plugins: {
       'react-refresh': eslintPluginReactRefresh,
     },
-    rules: {},
   },
   {
     rules: {
@@ -87,7 +124,7 @@ export default defineConfig(
           allow: ['error', 'warn'],
         },
       ],
-      'no-underscore-dangle': 'off',
+      'tss-unused-classes/unused-classes': 'warn',
       curly: 'error',
       semi: ['error', 'never'],
       'spaced-comment': [
@@ -106,6 +143,8 @@ export default defineConfig(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
+      'unicorn/prefer-response-static-json': 'off',
+      'unicorn/text-encoding-identifier-case': 'off',
       'unicorn/prefer-global-this': 'off',
       'unicorn/prefer-structured-clone': 'off',
       'unicorn/no-new-array': 'off',
@@ -185,6 +224,7 @@ export default defineConfig(
         },
       ],
 
+      'import/extensions': ['error', 'ignorePackages'],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
@@ -220,15 +260,12 @@ export default defineConfig(
   {
     files: [
       'babel.config.js',
-      'jest.config.js',
       'webpack/**/*',
       'scripts/**/*',
-      'products/jbrowse-cli/**/*',
       'products/jbrowse-img/**/*',
       'products/jbrowse-web/scripts/*',
-      'products/jbrowse-desktop/scripts/*',
-      'products/jbrowse-desktop/sign.js',
-      'products/jbrowse-desktop/linux-sandbox-fix.js',
+      'products/jbrowse-cli/**/*',
+      'products/jbrowse-desktop/sign.cjs',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
     ],
@@ -238,13 +275,13 @@ export default defineConfig(
       },
     },
     rules: {
-      'no-restricted-globals': ['off'],
+      'no-restricted-globals': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
     },
   },
   {
-    files: ['config/jest/*.js', 'integration.test.js'],
+    files: ['integration.test.js'],
     languageOptions: {
       globals: {
         ...globals.node,

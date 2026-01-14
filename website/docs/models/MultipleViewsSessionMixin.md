@@ -3,8 +3,8 @@ id: multipleviewssessionmixin
 title: MultipleViewsSessionMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -31,9 +31,11 @@ composed of
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IArrayType<any>
 // code
-views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
+views: types.array(
+          pluginManager.pluggableMstType('view', 'stateModel'),
+        )
 ```
 
 #### property: stickyViewHeaders
@@ -43,8 +45,21 @@ views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 stickyViewHeaders: types.optional(types.boolean, () =>
-        localStorageGetBoolean('stickyViewHeaders', true),
-      )
+          localStorageGetBoolean('stickyViewHeaders', true),
+        )
+```
+
+#### property: useWorkspaces
+
+enables the dockview-based tabbed/tiled workspace layout
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+useWorkspaces: types.optional(types.boolean, () =>
+          localStorageGetBoolean('useWorkspaces', false),
+        )
 ```
 
 ### MultipleViewsSessionMixin - Actions
@@ -88,7 +103,7 @@ addView: (typeName: string, initialState?: {}) => any
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; minimized: boolean; } & NonEmptyObject & { width: number; } & { menuItems(): MenuItem[]; } & { setDisplayName(name: string): void; setWidth(newWidth: number): void; setMinimized(flag: boolean): void; } & IStateTreeNode<...>) => void
+removeView: (view: IBaseViewModel) => void
 ```
 
 #### action: setStickyViewHeaders
@@ -96,4 +111,11 @@ removeView: (view: { id: string; displayName: string; minimized: boolean; } & No
 ```js
 // type signature
 setStickyViewHeaders: (sticky: boolean) => void
+```
+
+#### action: setUseWorkspaces
+
+```js
+// type signature
+setUseWorkspaces: (useWorkspaces: boolean) => void
 ```

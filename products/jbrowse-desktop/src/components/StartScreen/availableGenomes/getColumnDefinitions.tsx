@@ -7,14 +7,15 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { Link, Tooltip } from '@mui/material'
 import { createColumnHelper } from '@tanstack/react-table'
 
-import HighlightedText from './HighlightedText'
-import StarIcon from '../StarIcon'
+import HighlightedText from './HighlightedText.tsx'
+import StarIcon from '../StarIcon.tsx'
 
-import type { LaunchCallback } from '../types'
+import type { LaunchCallback } from '../types.ts'
 
 interface Entry {
   suppressed: boolean
   jbrowseConfig: string
+  jbrowseMinimalConfig?: string
   accession: string
   commonName: string
   ncbiAssemblyName: string
@@ -91,6 +92,18 @@ export function getColumnDefinitions({
             onClose()
           }
 
+          const handleMinimalLaunch = (event: React.MouseEvent) => {
+            event.preventDefault()
+            if (row.jbrowseMinimalConfig) {
+              launch([
+                {
+                  jbrowseConfig: row.jbrowseMinimalConfig,
+                  shortName: row.id,
+                },
+              ])
+              onClose()
+            }
+          }
           return (
             <div>
               <HighlightedText
@@ -98,10 +111,6 @@ export function getColumnDefinitions({
                 query={searchQuery}
               />{' '}
               (
-              <Link href={websiteUrl} target="_blank">
-                info
-              </Link>
-              ) (
               <Link href="#" onClick={handleLaunch}>
                 launch
               </Link>
@@ -109,9 +118,25 @@ export function getColumnDefinitions({
               <CascadingMenuButton
                 menuItems={[
                   {
+                    label: 'More info',
+                    helpText:
+                      'Launches external web browser (not in-app) with more info about this instance',
+                    onClick: () => {
+                      window.open(websiteUrl, '_blank')
+                    },
+                  },
+                  {
                     label: 'Launch',
                     onClick: handleLaunch,
                   },
+                  ...(row.jbrowseMinimalConfig
+                    ? [
+                        {
+                          label: 'Launch (minimal config)',
+                          onClick: handleMinimalLaunch,
+                        },
+                      ]
+                    : []),
                   {
                     label: isFavorite
                       ? 'Remove from favorites'
@@ -187,6 +212,19 @@ export function getColumnDefinitions({
             onClose()
           }
 
+          const handleMinimalLaunch = (event: React.MouseEvent) => {
+            event.preventDefault()
+            if (row.jbrowseMinimalConfig) {
+              launch([
+                {
+                  jbrowseConfig: row.jbrowseMinimalConfig,
+                  shortName: row.accession,
+                },
+              ])
+              onClose()
+            }
+          }
+
           return (
             <div>
               <HighlightedText
@@ -194,14 +232,20 @@ export function getColumnDefinitions({
                 query={searchQuery}
               />{' '}
               (
-              <Link href={websiteUrl} target="_blank">
-                info
-              </Link>
-              ) (
               <Link href="#" onClick={handleLaunch}>
                 launch
               </Link>
               )
+              {row.jbrowseMinimalConfig && (
+                <>
+                  {' '}
+                  (
+                  <Link href="#" onClick={handleMinimalLaunch}>
+                    minimal
+                  </Link>
+                  )
+                </>
+              )}
               {row.ncbiRefSeqCategory === 'reference genome' ? (
                 <Tooltip title="NCBI designated reference">
                   <Check style={{ color: 'green' }} />
@@ -215,9 +259,23 @@ export function getColumnDefinitions({
               <CascadingMenuButton
                 menuItems={[
                   {
+                    label: 'Info',
+                    onClick: () => {
+                      window.open(websiteUrl, '_blank')
+                    },
+                  },
+                  {
                     label: 'Launch',
                     onClick: handleLaunch,
                   },
+                  ...(row.jbrowseMinimalConfig
+                    ? [
+                        {
+                          label: 'Launch (minimal)',
+                          onClick: handleMinimalLaunch,
+                        },
+                      ]
+                    : []),
                   {
                     label: isFavorite
                       ? 'Remove from favorites'

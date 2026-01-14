@@ -2,22 +2,28 @@ import { lazy } from 'react'
 
 import { Indexing } from '@jbrowse/core/ui/Icons'
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
+import {
+  getParent,
+  getSnapshot,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
-import { getParent, getSnapshot, types } from 'mobx-state-tree'
 
-import type { DesktopRootModel } from '../rootModel/rootModel'
+import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   SessionWithDialogs,
   SessionWithDrawerWidgets,
   SessionWithTracks,
 } from '@jbrowse/product-core'
 
-const AboutDialog = lazy(() => import('./AboutDialog'))
+const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 
 /**
  * #stateModel DesktopSessionTrackMenuMixin
@@ -26,23 +32,16 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
   return types.model({}).views(self => ({
     /**
      * #method
+     * raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
      */
-    getTrackActionMenuItems(trackConfig: BaseTrackConfig) {
+    getTrackActions(trackConfig: BaseTrackConfig): MenuItem[] {
       const session = self as SessionWithDialogs &
         SessionWithTracks &
         SessionWithDrawerWidgets
-      const trackSnapshot = structuredClone(getSnapshot(trackConfig))
+      const trackSnapshot = structuredClone(
+        isStateTreeNode(trackConfig) ? getSnapshot(trackConfig) : trackConfig,
+      )
       return [
-        {
-          label: 'About track',
-          onClick: () => {
-            session.queueDialog(doneCallback => [
-              AboutDialog,
-              { config: trackConfig, handleClose: doneCallback },
-            ])
-          },
-          icon: InfoIcon,
-        },
         {
           label: 'Settings',
           onClick: () => {
@@ -51,25 +50,27 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
           icon: SettingsIcon,
         },
         {
-          label: 'Delete track',
-          onClick: () => {
-            session.deleteTrackConf(trackConfig)
-          },
-          icon: DeleteIcon,
-        },
-        {
           label: 'Copy track',
           onClick: () => {
             const now = Date.now()
             trackSnapshot.trackId += `-${now}`
-            for (const d of trackSnapshot.displays) {
-              d.displayId += `-${now}`
+            if (trackSnapshot.displays) {
+              for (const d of trackSnapshot.displays) {
+                d.displayId += `-${now}`
+              }
             }
             trackSnapshot.name += ' (copy)'
             trackSnapshot.category = undefined
             session.addTrackConf(trackSnapshot)
           },
           icon: CopyIcon,
+        },
+        {
+          label: 'Delete track',
+          onClick: () => {
+            session.deleteTrackConf(trackConfig)
+          },
+          icon: DeleteIcon,
         },
         ...(isSupportedIndexingAdapter(trackSnapshot.adapter?.type)
           ? [
@@ -107,7 +108,66 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
               },
             ]
           : []),
-        { type: 'divider' },
+      ]
+    },
+
+    /**
+     * #method
+     * flattened menu items for use in hierarchical track selector
+     */
+    getTrackListMenuItems(trackConfig: BaseTrackConfig): MenuItem[] {
+      const session = self as SessionWithDialogs &
+        SessionWithTracks &
+        SessionWithDrawerWidgets & {
+          getTrackActions: (c: BaseTrackConfig) => MenuItem[]
+        }
+      return [
+        {
+          label: 'About track',
+          onClick: () => {
+            session.queueDialog(doneCallback => [
+              AboutDialog,
+              { config: trackConfig, session, handleClose: doneCallback },
+            ])
+          },
+          icon: InfoIcon,
+        },
+        ...session.getTrackActions(trackConfig),
+      ]
+    },
+
+    /**
+     * #method
+     */
+    getTrackActionMenuItems(
+      trackConfig: BaseTrackConfig,
+      extraTrackActions?: MenuItem[],
+    ): MenuItem[] {
+      const session = self as SessionWithDialogs &
+        SessionWithTracks &
+        SessionWithDrawerWidgets & {
+          getTrackActions: (c: BaseTrackConfig) => MenuItem[]
+        }
+      return [
+        {
+          label: 'About track',
+          onClick: () => {
+            session.queueDialog(doneCallback => [
+              AboutDialog,
+              { config: trackConfig, session, handleClose: doneCallback },
+            ])
+          },
+          icon: InfoIcon,
+        },
+        {
+          type: 'subMenu' as const,
+          label: 'Track actions',
+          subMenu: [
+            ...session.getTrackActions(trackConfig),
+            ...(extraTrackActions || []),
+          ],
+        },
+        { type: 'divider' as const },
       ]
     },
   }))

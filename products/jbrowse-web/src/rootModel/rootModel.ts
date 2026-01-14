@@ -10,6 +10,14 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable, DNA } from '@jbrowse/core/ui/Icons'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getType,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -23,46 +31,42 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StarIcon from '@mui/icons-material/Star'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 import { formatDistanceToNow } from 'date-fns'
-import { saveAs } from 'file-saver'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  getType,
-  isAlive,
-  types,
-} from 'mobx-state-tree'
 
 import packageJSON from '../../package.json'
-import jbrowseWebFactory from '../jbrowseModel'
-import makeWorkerInstance from '../makeWorkerInstance'
-import { filterSessionInPlace } from '../util'
+import jbrowseWebFactory from '../jbrowseModel.ts'
+import makeWorkerInstance from '../makeWorkerInstance.ts'
+import { filterSessionInPlace } from '../util.ts'
 
-import type { SessionDB, SessionMetadata } from '../types'
+import type { SessionDB, SessionMetadata } from '../types.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AbstractSessionModel,
   SessionWithWidgets,
 } from '@jbrowse/core/util'
-import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
-import type { IDBPDatabase } from 'idb'
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
   SnapshotIn,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
+import type { IDBPDatabase } from 'idb'
 
 // lazies
-const SetDefaultSession = lazy(() => import('../components/SetDefaultSession'))
-const PreferencesDialog = lazy(() => import('../components/PreferencesDialog'))
+const SetDefaultSession = lazy(
+  () => import('../components/SetDefaultSession.tsx'),
+)
+const PreferencesDialog = lazy(
+  () => import('../components/PreferencesDialog.tsx'),
+)
 
 type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
 type SessionModelFactory = (args: {
@@ -94,6 +98,7 @@ export default function RootModel({
 }) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const jbrowseModelType = jbrowseWebFactory({
+    adminMode,
     pluginManager,
     assemblyConfigSchema,
   })
@@ -356,7 +361,7 @@ export default function RootModel({
         const { defaultSession } = self.jbrowse
         this.setSession({
           ...defaultSession,
-          name: `${defaultSession.name} ${new Date().toLocaleString()}`,
+          name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
         })
       },
       /**
@@ -478,7 +483,10 @@ export default function RootModel({
                 {
                   label: 'Export session',
                   icon: GetAppIcon,
-                  onClick: (session: IAnyStateTreeNode) => {
+                  onClick: async (session: IAnyStateTreeNode) => {
+                    // eslint-disable-next-line @typescript-eslint/no-deprecated
+                    const { saveAs } = await import('file-saver-es')
+
                     saveAs(
                       new Blob(
                         [
@@ -491,6 +499,7 @@ export default function RootModel({
                         { type: 'text/plain;charset=utf-8' },
                       ),
                       'session.json',
+                      { autoBom: false },
                     )
                   },
                 },
@@ -714,6 +723,17 @@ export default function RootModel({
                       ],
                     )
                   }
+                },
+              },
+              {
+                label: 'Use workspaces',
+                icon: SpaceDashboardIcon,
+                type: 'checkbox',
+                checked: self.session?.useWorkspaces ?? false,
+                helpText:
+                  'Workspaces allow you to organize views into tabs and tiles. There are a variety of unique features, for instance, you can drag views between tabs or split them side-by-side. Try clicking and dragging the tab header to create a new split',
+                onClick: () => {
+                  self.session?.setUseWorkspaces(!self.session.useWorkspaces)
                 },
               },
             ],

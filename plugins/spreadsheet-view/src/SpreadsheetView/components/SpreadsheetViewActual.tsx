@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import SpreadsheetDataGrid from './SpreadsheetDataGrid'
+import SpreadsheetDataGrid from './SpreadsheetDataGrid.tsx'
 
-import type { SpreadsheetViewModel } from '../SpreadsheetViewModel'
+import type { SpreadsheetViewModel } from '../SpreadsheetViewModel.ts'
 
 const useStyles = makeStyles()(theme => ({
   contentArea: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SpreadsheetViewActual = observer(function ({
+const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
   model,
 }: {
   model: SpreadsheetViewModel

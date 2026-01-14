@@ -4,16 +4,16 @@ import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { cast, getSnapshot, types } from 'mobx-state-tree'
+import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
-import corePlugins from '../corePlugins'
-import createConfigModel from './createConfigModel'
-import createSessionModel from './createSessionModel'
-import { version } from '../version'
+import corePlugins from '../corePlugins.ts'
+import createConfigModel from './createConfigModel.ts'
+import createSessionModel from './createSessionModel.ts'
+import { version } from '../version.ts'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { UriLocation } from '@jbrowse/core/util'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewRootModel

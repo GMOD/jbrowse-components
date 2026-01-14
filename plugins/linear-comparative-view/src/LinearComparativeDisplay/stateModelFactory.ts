@@ -11,12 +11,12 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getParent, getSnapshot, types } from 'mobx-state-tree'
+import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
-import type { LinearComparativeViewModel } from '../LinearComparativeView/model'
+import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LinearComparativeDisplay
@@ -57,30 +57,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       loadingStatus: undefined as string | undefined,
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get level() {
-        return getParent<{ height: number; level: number }>(self, 4).level
-      },
-      /**
-       * #getter
-       */
-      get height() {
-        return getParent<{ height: number; level: number }>(self, 4).height
-      },
-      /**
-       * #getter
-       */
-      renderProps() {
-        return {
-          rpcDriverName: self.rpcDriverName,
-          displayModel: self,
-          highResolutionScaling: 2,
-        }
-      },
-    }))
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        /**
+         * #getter
+         */
+        get level() {
+          return getParent<{ height: number; level: number }>(self, 4).level
+        },
+        /**
+         * #getter
+         */
+        get height() {
+          return getParent<{ height: number; level: number }>(self, 4).height
+        },
+        /**
+         * #method
+         */
+        renderProps() {
+          return {
+            ...superRenderProps(),
+          }
+        },
+      }
+    })
     .actions(self => {
       let stopToken: undefined | string
 
@@ -230,7 +231,7 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   const view = renderProps.view.views[level]!
   return {
     features: dedupe(
-      (await rpcManager.call('getFeats', 'CoreGetFeatures', {
+      (await rpcManager.call(sessionId, 'CoreGetFeatures', {
         regions: view.staticBlocks.contentBlocks,
         sessionId,
         adapterConfig,

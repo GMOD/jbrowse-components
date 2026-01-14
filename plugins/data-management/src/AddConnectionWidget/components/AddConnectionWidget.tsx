@@ -5,13 +5,13 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithConnections } from '@jbrowse/product-core'
 import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import ConfigureConnection from './ConfigureConnection'
-import ConnectionTypeSelect from './ConnectionTypeSelect'
+import ConfigureConnection from './ConfigureConnection.tsx'
+import ConnectionTypeSelect from './ConnectionTypeSelect.tsx'
 
 import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
@@ -33,7 +33,11 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Select a Connection Type', 'Configure Connection']
 
-const AddConnectionWidget = observer(function ({ model }: { model: unknown }) {
+const AddConnectionWidget = observer(function AddConnectionWidget({
+  model,
+}: {
+  model: unknown
+}) {
   const [connectionType, setConnectionType] = useState<ConnectionType>()
   const [connectionId, setConnectionId] = useState<string>()
   const [activeStep, setActiveStep] = useState(0)

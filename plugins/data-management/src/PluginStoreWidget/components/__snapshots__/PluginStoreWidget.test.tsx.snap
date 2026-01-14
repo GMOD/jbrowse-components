@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`renders with the available plugins 1`] = `
 <div>
@@ -9,8 +9,8 @@ exports[`renders with the available plugins 1`] = `
       <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1d1r0im-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="false"
-        for="«r2»"
-        id="«r2»-label"
+        for="_r_2_"
+        id="_r_2_-label"
       >
         Filter plugins
       </label>
@@ -20,7 +20,7 @@ exports[`renders with the available plugins 1`] = `
         <input
           aria-invalid="false"
           class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-          id="«r2»"
+          id="_r_2_"
           type="text"
           value=""
         />
@@ -28,7 +28,7 @@ exports[`renders with the available plugins 1`] = `
           class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -56,7 +56,7 @@ exports[`renders with the available plugins 1`] = `
       >
         <button
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
           tabindex="0"
           type="button"
         >
@@ -74,7 +74,7 @@ exports[`renders with the available plugins 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-34ugrx-MuiSvgIcon-root-expandIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
               data-testid="ExpandMoreIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -101,7 +101,7 @@ exports[`renders with the available plugins 1`] = `
               role="region"
             >
               <div
-                class="css-13k7ai2-m"
+                class="css-1iblawk"
               >
                 <ul
                   class="MuiList-root MuiList-padding css-b7dj7n-MuiList-root"
@@ -111,11 +111,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -136,7 +136,7 @@ exports[`renders with the available plugins 1`] = `
                     <p
                       class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
                     >
-                      SVGPlugin
+                      CanvasPlugin
                     </p>
                   </li>
                   <li
@@ -144,11 +144,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -177,11 +177,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -210,11 +210,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -243,11 +243,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -276,11 +276,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -309,11 +309,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -342,11 +342,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -375,11 +375,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -408,11 +408,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -441,11 +441,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -474,11 +474,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -507,11 +507,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -540,11 +540,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -573,11 +573,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -606,11 +606,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -639,11 +639,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -672,11 +672,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -705,11 +705,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -738,11 +738,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -771,11 +771,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -804,11 +804,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -837,11 +837,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -870,11 +870,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -903,11 +903,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -936,11 +936,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -969,11 +969,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -1002,11 +1002,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -1035,11 +1035,11 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <span
                       aria-label="This plugin was installed by an administrator, you cannot remove it."
-                      class="css-1xdepnh-iconMargin"
+                      class="css-9u48bm"
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-13z539w-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -1079,7 +1079,7 @@ exports[`renders with the available plugins 1`] = `
       >
         <button
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1k8yrap-MuiButtonBase-root-MuiAccordionSummary-root"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
           tabindex="0"
           type="button"
         >
@@ -1097,7 +1097,7 @@ exports[`renders with the available plugins 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-34ugrx-MuiSvgIcon-root-expandIcon"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
               data-testid="ExpandMoreIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1124,7 +1124,7 @@ exports[`renders with the available plugins 1`] = `
               role="region"
             >
               <div
-                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-lw40k8-MuiPaper-root-MuiCard-root-card"
+                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-1y6zuga-MuiPaper-root-MuiCard-root"
               >
                 <div
                   class="MuiCardContent-root css-1lt5qva-MuiCardContent-root"
@@ -1154,11 +1154,11 @@ exports[`renders with the available plugins 1`] = `
                     </a>
                   </h5>
                   <div
-                    class="css-1jqggfz-dataField"
+                    class="css-70qvj9"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q07jlo-MuiSvgIcon-root-mr"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-dw1or6-MuiSvgIcon-root"
                       data-testid="PersonIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -1174,7 +1174,7 @@ exports[`renders with the available plugins 1`] = `
                     </p>
                   </div>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-1w1c51f-MuiTypography-root-bold"
+                    class="MuiTypography-root MuiTypography-body1 css-kw4hn-MuiTypography-root"
                   >
                     Description:
                   </p>
@@ -1188,7 +1188,7 @@ exports[`renders with the available plugins 1`] = `
                   class="MuiCardActions-root MuiCardActions-spacing css-1q4nm6f-MuiCardActions-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-s1wmvu-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary css-cobw0g-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >

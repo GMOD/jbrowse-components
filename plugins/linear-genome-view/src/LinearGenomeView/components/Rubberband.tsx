@@ -1,12 +1,12 @@
 import { useRef } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import RubberbandSpan from './RubberbandSpan'
-import VerticalGuide from './VerticalGuide'
-import { useRangeSelect } from './useRangeSelect'
+import RubberbandSpan from './RubberbandSpan.tsx'
+import VerticalGuide from './VerticalGuide.tsx'
+import { useRangeSelect } from './useRangeSelect.ts'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -21,7 +21,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const Rubberband = observer(function ({
+const Rubberband = observer(function Rubberband({
   model,
   ControlComponent = <div />,
 }: {
@@ -42,6 +42,8 @@ const Rubberband = observer(function ({
     left,
     anchorPosition,
     open,
+    isClick,
+    clickBpOffset,
     handleMenuItemClick,
     handleClose,
     mouseMove,
@@ -74,7 +76,11 @@ const Rubberband = observer(function ({
           onMenuItemClick={handleMenuItemClick}
           open={open}
           onClose={handleClose}
-          menuItems={model.rubberBandMenuItems()}
+          menuItems={
+            isClick && clickBpOffset
+              ? model.rubberbandClickMenuItems(clickBpOffset)
+              : model.rubberBandMenuItems()
+          }
         />
       ) : null}
       <div

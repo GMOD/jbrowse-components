@@ -1,9 +1,13 @@
-import { promises as fsPromises } from 'fs'
 import { parseArgs } from 'util'
 
-import { printHelp, readJsonFile, writeJsonFile } from '../utils'
+import {
+  printHelp,
+  readJsonFile,
+  resolveConfigPath,
+  writeJsonFile,
+} from '../utils.ts'
 
-import type { Config } from '../base'
+import type { Config } from '../base.ts'
 
 export async function run(args?: string[]) {
   const options = {
@@ -44,14 +48,12 @@ export async function run(args?: string[]) {
 
   const trackId = positionals[0]
   if (!trackId) {
-    console.error('Error: Missing required argument: trackId')
-    console.error('Usage: jbrowse remove-track <trackId> [options]')
-    process.exit(1)
+    throw new Error(
+      'Missing required argument: trackId\nUsage: jbrowse remove-track <trackId> [options]',
+    )
   }
 
-  const output = flags.target || flags.out || '.'
-  const isDir = (await fsPromises.lstat(output)).isDirectory()
-  const target = isDir ? `${output}/config.json` : output
+  const target = await resolveConfigPath(flags.target, flags.out)
 
   const config: Config = await readJsonFile(target)
 

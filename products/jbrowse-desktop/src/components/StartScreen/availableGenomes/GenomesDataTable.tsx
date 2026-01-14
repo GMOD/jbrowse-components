@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Button, IconButton } from '@mui/material'
@@ -12,19 +13,18 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { makeStyles } from 'tss-react/mui'
 
-import CategorySelector from './CategorySelector'
-import MoreInfoDialog from './MoreInfoDialog'
-import SearchField from './SearchField'
-import SkeletonLoader from './SkeletonLoader'
-import TablePagination from './TablePagination'
-import { getColumnDefinitions } from './getColumnDefinitions'
-import { useGenomesData } from './useGenomesData'
-import defaultFavs from '../defaultFavs'
-import useCategories from './useCategories'
+import CategorySelector from './CategorySelector.tsx'
+import MoreInfoDialog from './MoreInfoDialog.tsx'
+import SearchField from './SearchField.tsx'
+import SkeletonLoader from './SkeletonLoader.tsx'
+import TablePagination from './TablePagination.tsx'
+import { getColumnDefinitions } from './getColumnDefinitions.tsx'
+import { useGenomesData } from './useGenomesData.ts'
+import defaultFavs from '../defaultFavs.ts'
+import useCategories from './useCategories.ts'
 
-import type { Fav, LaunchCallback } from '../types'
+import type { Fav, LaunchCallback } from '../types.ts'
 
 const useStyles = makeStyles()({
   span: {
@@ -72,6 +72,7 @@ export default function GenomesDataTable({
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
 }) {
+  'use no memo'
   const [selected, setSelected] = useState<string[]>([])
   const [showOnlyFavs, setShowOnlyFavs] = useState(false)
   const [filterOption, setFilterOption] = useState('all')
@@ -111,6 +112,9 @@ export default function GenomesDataTable({
             commonName: row.commonName,
             description: row.description || row.commonName,
             jbrowseConfig: row.jbrowseConfig,
+            ...(row.jbrowseMinimalConfig && {
+              jbrowseMinimalConfig: row.jbrowseMinimalConfig,
+            }),
           },
         ])
       }
@@ -118,15 +122,14 @@ export default function GenomesDataTable({
     [setFavorites, favorites, favs],
   )
 
-  const { data, genArkError, mainGenomesError, genArkData, mainGenomesData } =
-    useGenomesData({
-      searchQuery,
-      filterOption,
-      typeOption,
-      showOnlyFavs,
-      favorites,
-      url,
-    })
+  const { data, error } = useGenomesData({
+    searchQuery,
+    filterOption,
+    typeOption,
+    showOnlyFavs,
+    favorites,
+    url,
+  })
 
   const tableColumns = useMemo(
     () =>
@@ -156,6 +159,7 @@ export default function GenomesDataTable({
     [selected],
   )
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     // @ts-expect-error
     data,
@@ -306,13 +310,11 @@ export default function GenomesDataTable({
         </IconButton>
       </div>
 
-      {genArkError || mainGenomesError ? (
-        <ErrorMessage error={genArkError || mainGenomesError} />
-      ) : null}
+      {error ? <ErrorMessage error={error} /> : null}
 
       {categoriesLoading ? (
         <SkeletonLoader />
-      ) : data.length === 0 && !genArkData && !mainGenomesData ? (
+      ) : data.length === 0 && !url ? (
         <SkeletonLoader />
       ) : (
         <div>

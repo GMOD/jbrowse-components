@@ -3,8 +3,8 @@ id: facetedmodel
 title: FacetedModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -81,14 +81,14 @@ panelWidth: types.optional(types.number, () =>
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+AnyConfigurationModel[]
 ```
 
 #### getter: rows
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: AnyConfigurationModel; readonly name: any; readonly category: string; readonly adapter: string; readonly description: string; readonly metadata: Record<string, unknown>; }[]
 ```
 
 #### getter: filteredNonMetadataKeys
@@ -123,7 +123,7 @@ any[]
 
 ```js
 // type
-{ readonly id: string; readonly conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+{ readonly id: string; readonly conf: AnyConfigurationModel; readonly name: any; readonly category: string; readonly adapter: string; readonly description: string; readonly metadata: Record<string, unknown>; }[]
 ```
 
 ### FacetedModel - Actions

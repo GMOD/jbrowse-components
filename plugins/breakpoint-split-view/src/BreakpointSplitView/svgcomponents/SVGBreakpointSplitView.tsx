@@ -1,6 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
 import {
+  SVGGridlines,
   SVGRuler,
   SVGTracks,
   totalHeight,
@@ -8,12 +9,12 @@ import {
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground'
-import { getTrackNameMaxLen, getTrackOffsets } from './util'
-import Overlay from '../components/Overlay'
+import SVGBackground from './SVGBackground.tsx'
+import { getTrackNameMaxLen, getTrackOffsets } from './util.ts'
+import Overlay from '../components/Overlay.tsx'
 
-import type { BreakpointViewModel } from '../model'
-import type { ExportSvgOptions } from '../types'
+import type { BreakpointViewModel } from '../model.ts'
+import type { ExportSvgOptions } from '../types.ts'
 
 type BSV = BreakpointViewModel
 
@@ -25,6 +26,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
+    showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
   } = opts
@@ -66,6 +68,9 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   )
   const w = width + trackLabelOffset
   const t = createJBrowseTheme(theme)
+  const tracksHeights = views.map(v =>
+    totalHeight(v.tracks, textHeight, trackLabels),
+  )
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -88,6 +93,14 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
 
                 <SVGRuler model={displayResults[0]!.view} fontSize={fontSize} />
               </g>
+              {showGridlines ? (
+                <g transform={`translate(${trackLabelOffset} ${offset})`}>
+                  <SVGGridlines
+                    model={displayResults[0]!.view}
+                    height={tracksHeights[0]!}
+                  />
+                </g>
+              ) : null}
               <g transform={`translate(0 ${offset})`}>
                 <SVGTracks
                   textHeight={textHeight}
@@ -109,6 +122,14 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
                 </text>
                 <SVGRuler model={displayResults[1]!.view} fontSize={fontSize} />
               </g>
+              {showGridlines ? (
+                <g transform={`translate(${trackLabelOffset} ${offset})`}>
+                  <SVGGridlines
+                    model={displayResults[1]!.view}
+                    height={tracksHeights[1]!}
+                  />
+                </g>
+              ) : null}
               <g transform={`translate(0 ${offset})`}>
                 <SVGTracks
                   textHeight={textHeight}

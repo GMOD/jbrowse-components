@@ -3,8 +3,8 @@ id: basesessionmodel
 title: BaseSessionModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -29,7 +29,7 @@ everything will use it.
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+any
 // code
 id: ElementId
 ```
@@ -72,7 +72,7 @@ any
 
 ```js
 // type
-RpcManager
+any
 ```
 
 #### getter: configuration
@@ -93,14 +93,14 @@ boolean
 
 ```js
 // type
-TextSearchManager
+any
 ```
 
 #### getter: assemblies
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+any[]
 ```
 
 ### BaseSessionModel - Actions

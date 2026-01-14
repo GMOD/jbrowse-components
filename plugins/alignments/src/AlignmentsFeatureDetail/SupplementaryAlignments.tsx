@@ -1,10 +1,10 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { getEnv, getSession } from '@jbrowse/core/util'
 
-import LaunchBreakpointSplitViewPanel from './LaunchSupplementaryAlignmentBreakpointSplitViewPanel'
-import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrings'
+import LaunchBreakpointSplitViewPanel from './LaunchSupplementaryAlignmentBreakpointSplitViewPanel.tsx'
+import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrings.tsx'
 
-import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default function SupplementaryAlignments(props: {

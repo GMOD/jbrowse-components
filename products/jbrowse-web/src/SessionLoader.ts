@@ -1,15 +1,21 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
 import { nanoid } from '@jbrowse/core/util/nanoid'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { openDB } from 'idb'
 import { autorun } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
 
-import { readSessionFromDynamo } from './sessionSharing'
-import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
+import { readSessionFromDynamo } from './sessionSharing.ts'
+import {
+  addRelativeUris,
+  checkPlugins,
+  fromUrlSafeB64,
+  readConf,
+} from './util.ts'
 
-import type { SessionTriagedInfo } from './types'
+import type { SessionDB, SessionTriagedInfo } from './types.ts'
 import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SessionLoader = types
   .model({
@@ -112,22 +118,6 @@ const SessionLoader = types
      * #volatile
      */
     configError: undefined as unknown,
-    /**
-     * #volatile
-     */
-    bc1:
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      window.BroadcastChannel
-        ? new window.BroadcastChannel('jb_request_session')
-        : undefined,
-    /**
-     * #volatile
-     */
-    bc2:
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      window.BroadcastChannel
-        ? new window.BroadcastChannel('jb_respond_session')
-        : undefined,
   }))
   .views(self => ({
     /**
@@ -152,7 +142,7 @@ const SessionLoader = types
      * #getter
      */
     get isJb1StyleSession() {
-      return !!self.loc
+      return !!(self.loc || self.assembly)
     },
 
     /**
@@ -201,9 +191,9 @@ const SessionLoader = types
     get isSessionLoaded() {
       return Boolean(
         self.sessionError ||
-          self.sessionSnapshot ||
-          self.blankSession ||
-          self.sessionSpec,
+        self.sessionSnapshot ||
+        self.blankSession ||
+        self.sessionSpec,
       )
     },
     /**
@@ -218,14 +208,16 @@ const SessionLoader = types
     get sessionTracksParsed() {
       return self.sessionTracks ? JSON.parse(self.sessionTracks) : []
     },
+    /**
+     * #getter
+     */
+    get resolvedConfigPath() {
+      // @ts-expect-error
+      const path = window.__jbrowseConfigPath as string | undefined
+      return self.configPath || path || 'config.json'
+    },
   }))
   .actions(self => ({
-    /**
-     * #action
-     */
-    setSessionQuery(session?: any) {
-      self.sessionQuery = session
-    },
     /**
      * #action
      */
@@ -279,9 +271,9 @@ const SessionLoader = types
     /**
      * #action
      */
-    async fetchPlugins(config: { plugins: PluginDefinition[] }) {
+    async fetchPlugins(config: { plugins?: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(config.plugins, {
+        const pluginLoader = new PluginLoader(config.plugins || [], {
           fetchESM: url => import(/* webpackIgnore:true */ url),
         })
         pluginLoader.installGlobalReExports(window)
@@ -337,9 +329,7 @@ const SessionLoader = types
      * #action
      */
     async fetchConfig() {
-      // @ts-expect-error
-      const path = window.__jbrowseConfigPath
-      const { configPath = path || 'config.json' } = self
+      const configPath = self.resolvedConfigPath
       const shouldFetchConfig = configPath !== 'none'
 
       // if ?config=none then we will not load the config, which is useful for
@@ -379,15 +369,17 @@ const SessionLoader = types
       }
     },
     /**
-     * action
+     * #action
+     * Called when configSnapshot already exists (e.g., from HMR or plugin reload)
      */
     async setUpConfig() {
-      // @ts-expect-error
-      const path = window.__jbrowseConfigPath
-      const { configPath = path || 'config.json' } = self
+      const configPath = self.resolvedConfigPath
       const configUri = new URL(configPath, window.location.href)
-      const { configSnapshot } = self
-      const config = JSON.parse(JSON.stringify(configSnapshot))
+      // configSnapshot is guaranteed to exist when this method is called
+      const config = structuredClone(self.configSnapshot) as Record<
+        string,
+        unknown
+      >
       addRelativeUris(config, configUri)
       self.setConfigSnapshot(config)
       await this.fetchPlugins(config)
@@ -395,50 +387,79 @@ const SessionLoader = types
     /**
      * #action
      */
-    async fetchSessionStorageSession() {
+    async fetchSessionFromSessionStorage(query: string) {
       const sessionStr = sessionStorage.getItem('current')
-      const query = self.sessionQuery!.replace('local-', '')
-
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
-          return this.loadSession(sessionSnap)
+          // Assign new ID to avoid conflicts when same session is opened in
+          // multiple tabs (each tab gets its own copy with unique ID)
+          await this.loadDecodedSession(sessionSnap)
+          return true
         }
       }
-
-      if (self.bc1) {
-        self.bc1.postMessage(query)
-        try {
-          const result = await new Promise<Record<string, unknown>>(
-            (resolve, reject) => {
-              if (self.bc2) {
-                self.bc2.onmessage = msg => {
-                  resolve(msg.data)
-                }
-              }
-              setTimeout(() => {
-                reject(new Error('timeout'))
-              }, 1000)
-            },
-          )
-          await this.loadSession({ ...result, id: nanoid() })
-        } catch (e) {
-          // the broadcast channels did not find the session in another tab
-          // clear session param, so just ignore
-        }
-      }
-      throw new Error('Local storage session not found')
+      return false
     },
     /**
      * #action
      */
-    async checkExistingSession(sessionSnapshot: Record<string, unknown>) {
+    async fetchSessionFromIndexedDB(query: string) {
+      try {
+        const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
+          upgrade(db) {
+            db.createObjectStore('metadata')
+            db.createObjectStore('sessions')
+          },
+        })
+        const sessionSnap = await sessionDB.get('sessions', query)
+        if (sessionSnap) {
+          // Assign new ID to avoid conflicts when same session is opened in
+          // multiple tabs (each tab gets its own copy with unique ID)
+          await this.loadDecodedSession(sessionSnap)
+          return true
+        }
+      } catch (e) {
+        console.error(e)
+      }
+      return false
+    },
+    /**
+     * #action
+     * Tries to load a local session from multiple sources in order:
+     * 1. sessionStorage (current session)
+     * 2. IndexedDB (autosaved sessions)
+     */
+    async fetchLocalSession() {
+      const query = self.sessionQuery!.replace('local-', '')
+
+      if (await this.fetchSessionFromSessionStorage(query)) {
+        return
+      }
+      if (await this.fetchSessionFromIndexedDB(query)) {
+        return
+      }
+      throw new Error('Local session not found')
+    },
+    /**
+     * #action
+     * When sessionSnapshot is provided during .create() (e.g., from HMR or
+     * plugin reload), plugins haven't been loaded yet. This loads them.
+     */
+    async loadSessionPluginsIfNeeded(sessionSnapshot: Record<string, unknown>) {
       if (!self.sessionPlugins) {
-        // session snapshot probably provided during .create() but plugins
-        // haven't been loaded yet
         // @ts-expect-error
         await this.loadSession(sessionSnapshot)
       }
+    },
+    /**
+     * #action
+     * Helper to load a decoded session with a fresh ID
+     */
+    async loadDecodedSession(session: Record<string, unknown>) {
+      await this.loadSession({
+        ...session,
+        id: nanoid(),
+      })
     },
     /**
      * #action
@@ -453,35 +474,28 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-      await this.loadSession({
-        ...session,
-        id: nanoid(),
-      })
+      await this.loadDecodedSession(session)
     },
     /**
      * #action
      */
     async decodeEncodedUrlSession() {
+      // sessionQuery is guaranteed to exist when isEncodedSession is true
       const session = JSON.parse(
-        // @ts-expect-error
-        await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
+        await fromUrlSafeB64(self.sessionQuery!.replace('encoded-', '')),
       )
-      await this.loadSession({
-        ...session,
-        id: nanoid(),
-      })
+      await this.loadDecodedSession(session)
     },
     /**
      * #action
      */
     decodeSessionSpec() {
-      if (!self.sessionQuery) {
-        return
-      }
-      self.sessionSpec = JSON.parse(self.sessionQuery.replace('spec-', ''))
+      // sessionQuery is guaranteed to exist when isSpecSession is true
+      self.sessionSpec = JSON.parse(self.sessionQuery!.replace('spec-', ''))
     },
     /**
      * #action
+     * Called when isJb1StyleSession is true (loc or assembly exists)
      */
     decodeJb1StyleSession() {
       const {
@@ -493,22 +507,20 @@ const SessionLoader = types
         highlight,
         sessionTracksParsed: sessionTracks,
       } = self
-      if (loc) {
-        self.sessionSpec = {
-          sessionTracks,
-          views: [
-            {
-              type: 'LinearGenomeView',
-              tracks: tracks?.split(','),
-              sessionTracks,
-              loc,
-              assembly,
-              tracklist,
-              nav,
-              highlight: highlight?.split(' '),
-            },
-          ],
-        }
+      self.sessionSpec = {
+        sessionTracks,
+        views: [
+          {
+            type: 'LinearGenomeView',
+            tracks: tracks?.split(','),
+            sessionTracks,
+            loc,
+            assembly,
+            tracklist,
+            nav,
+            highlight: highlight?.split(' '),
+          },
+        ],
       }
     },
 
@@ -527,12 +539,9 @@ const SessionLoader = types
      * #action
      */
     async decodeJsonUrlSession() {
-      // @ts-expect-error
-      const { session } = JSON.parse(self.sessionQuery.replace(/^json-/, ''))
-      await this.loadSession({
-        ...session,
-        id: nanoid(),
-      })
+      // sessionQuery is guaranteed to exist when isJsonSession is true
+      const { session } = JSON.parse(self.sessionQuery!.replace(/^json-/, ''))
+      await this.loadDecodedSession(session)
     },
     /**
      * #aftercreate
@@ -555,7 +564,6 @@ const SessionLoader = types
                   isJsonSession,
                   isJb1StyleSession,
                   isHubSession,
-                  sessionQuery,
                   sessionSnapshot,
                   configSnapshot,
                 } = self
@@ -563,18 +571,8 @@ const SessionLoader = types
                   return
                 }
 
-                if (self.bc1) {
-                  self.bc1.onmessage = msg => {
-                    const r =
-                      JSON.parse(sessionStorage.getItem('current') || '{}')
-                        .session || {}
-                    if (r.id === msg.data && self.bc2) {
-                      self.bc2.postMessage(r)
-                    }
-                  }
-                }
                 if (sessionSnapshot) {
-                  await this.checkExistingSession(sessionSnapshot)
+                  await this.loadSessionPluginsIfNeeded(sessionSnapshot)
                 } else if (isSharedSession) {
                   await this.fetchSharedSession()
                 } else if (isSpecSession) {
@@ -586,16 +584,18 @@ const SessionLoader = types
                 } else if (isJsonSession) {
                   await this.decodeJsonUrlSession()
                 } else if (isLocalSession) {
-                  await this.fetchSessionStorageSession()
+                  await this.fetchLocalSession()
                 } else if (isHubSession) {
-                  // this is later in the list: prioritiz local session of "hub
-                  // spec" since hub is left in URL even when there may be a
-                  // local session
+                  // this is later in the list: prioritize local session over
+                  // "hub spec" since hub is left in URL even when there may be
+                  // a local session
                   this.decodeHubSpec()
                   self.setBlankSession(true)
-                } else if (sessionQuery) {
+                } else if (self.sessionQuery) {
                   // if there was a sessionQuery and we don't recognize it
-                  throw new Error('unrecognized session format')
+                  throw new Error(
+                    `Unrecognized URL session format: "${self.sessionQuery}"`,
+                  )
                 } else {
                   // placeholder for session loaded, but none found
                   self.setBlankSession(true)

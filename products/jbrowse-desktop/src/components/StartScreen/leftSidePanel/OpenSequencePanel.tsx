@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
-import OpenSequenceDialog from '../../OpenSequenceDialog'
-import AllGenomesDialog from '../availableGenomes/AvailableGenomesDialog'
-import { loadPluginManager } from '../util'
+import OpenSequenceDialog from '../../OpenSequenceDialog.tsx'
+import AllGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
+import { loadPluginManager } from '../util.tsx'
 
-import type { Fav, LaunchCallback } from '../types'
+import type { Fav, LaunchCallback } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const { ipcRenderer } = window.require('electron')

@@ -4,13 +4,13 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import format from 'string-template'
 
-import type MyConfigSchema from './configSchema'
+import type MyConfigSchema from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface SPARQLEntry {
   type: string
@@ -212,7 +212,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
               break
             }
             if (subfeature.subfeatures) {
-              subfeatures.push(...subfeature.subfeatures)
+              for (const sf of subfeature.subfeatures) {
+                subfeatures.push(sf)
+              }
             }
           }
           if (!found) {

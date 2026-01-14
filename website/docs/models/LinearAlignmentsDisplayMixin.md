@@ -3,8 +3,8 @@ id: linearalignmentsdisplaymixin
 title: LinearAlignmentsDisplayMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -43,7 +43,7 @@ refers to LinearSNPCoverageDisplay sub-display model
 
 ```js
 // type signature
-IMaybe<IAnyModelType>
+IMaybe<any>
 // code
 SNPCoverageDisplay: types.maybe(
       pluginManager.getDisplayType('LinearSNPCoverageDisplay')!.stateModel,
@@ -72,7 +72,7 @@ type: types.literal('LinearAlignmentsDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```

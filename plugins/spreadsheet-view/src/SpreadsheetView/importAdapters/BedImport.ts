@@ -1,5 +1,5 @@
-import { isNumber } from './isNumber'
-import { bufferToLines, parseStrand } from './util'
+import { isNumber } from './isNumber.ts'
+import { bufferToLines, parseStrand } from './util.ts'
 
 export function parseBedBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)

@@ -3,8 +3,8 @@ id: assembly
 title: Assembly
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/assemblyManager/assembly.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assembly.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/Assembly.md)
 
@@ -149,9 +149,24 @@ hasName: (name: string) => any
 
 #### method: getCanonicalRefName
 
+Returns the canonical refName for a given alias or refName. Note: The canonical
+name may differ from what's in the FASTA file when refNameAliases with
+override:true are configured. To get the name that matches the FASTA file, use
+getSeqAdapterRefName().
+
 ```js
 // type signature
 getCanonicalRefName: (refName: string) => string
+```
+
+#### method: getCanonicalRefName2
+
+Returns canonical refName, falling back to input if not found. See
+getCanonicalRefName() for details.
+
+```js
+// type signature
+getCanonicalRefName2: (refName: string) => any
 ```
 
 #### method: getRefNameColor
@@ -166,6 +181,16 @@ getRefNameColor: (refName: string) => string
 ```js
 // type signature
 isValidRefName: (refName: string) => boolean
+```
+
+#### method: getSeqAdapterRefName
+
+Given a canonical refName, returns the refName used by the sequence adapter
+(what's in the FASTA file). Falls back to the input if no mapping exists.
+
+```js
+// type signature
+getSeqAdapterRefName: (canonicalRefName: string) => string
 ```
 
 #### method: getAdapterMapEntry
@@ -228,6 +253,13 @@ setRefNameAliases: (aliases: RefNameAliases) => void
 ```js
 // type signature
 setCytobands: (cytobands: Feature[]) => void
+```
+
+#### action: setCanonicalToSeqAdapterRefNames
+
+```js
+// type signature
+setCanonicalToSeqAdapterRefNames: (map: Record<string, string>) => void
 ```
 
 #### action: setLoadingP

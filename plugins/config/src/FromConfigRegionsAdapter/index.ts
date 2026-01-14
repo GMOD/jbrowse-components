@@ -1,6 +1,6 @@
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -13,7 +13,7 @@ export default function FromConfigRegionsAdapterF(
         name: 'FromConfigRegionsAdapter',
         configSchema,
         getAdapterClass: () =>
-          import('./FromConfigRegionsAdapter').then(r => r.default),
+          import('./FromConfigRegionsAdapter.ts').then(r => r.default),
         adapterMetadata: {
           hiddenFromGUI: true,
         },

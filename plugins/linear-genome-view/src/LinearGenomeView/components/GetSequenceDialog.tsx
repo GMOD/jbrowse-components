@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { complement, reverse } from '@jbrowse/core/util'
+import { complement, reverse, toLocale } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
@@ -15,15 +16,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
-import { saveAs } from 'file-saver'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import { fetchSequence } from './fetchSequence'
+import { fetchSequence } from './fetchSequence.ts'
 
-import type { LinearGenomeViewModel } from '..'
-import type { Feature } from '@jbrowse/core/util'
+import type { BpOffset } from '../types.ts'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -32,16 +30,18 @@ const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-  ml: {
-    marginLeft: 10,
-  },
 })
 
-const GetSequenceDialog = observer(function ({
+const GetSequenceDialog = observer(function GetSequenceDialog({
   model,
   handleClose,
 }: {
-  model: LinearGenomeViewModel
+  model: {
+    leftOffset?: BpOffset
+    rightOffset?: BpOffset
+    getSelectedRegions: (left?: BpOffset, right?: BpOffset) => Region[]
+    setOffsets: (left?: BpOffset, right?: BpOffset) => void
+  }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
@@ -88,9 +88,9 @@ const GetSequenceDialog = observer(function ({
           const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
           if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
             throw new Error(
-              `${loc} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                chunkEnd - chunkStart
-              ).toLocaleString()}`,
+              `${loc} returned ${toLocale(chunkSeq.length)} bases, but should have returned ${toLocale(
+                chunkEnd - chunkStart,
+              )}`,
             )
           }
 
@@ -114,11 +114,11 @@ const GetSequenceDialog = observer(function ({
     <Dialog
       maxWidth="xl"
       open
+      title="Reference sequence"
       onClose={() => {
         handleClose()
         model.setOffsets()
       }}
-      title="Reference sequence"
     >
       <DialogContent>
         {error ? (
@@ -127,7 +127,6 @@ const GetSequenceDialog = observer(function ({
           <LoadingEllipses message="Retrieving sequences" />
         ) : null}
         <TextField
-          data-testid="rubberband-sequence"
           variant="outlined"
           multiline
           minRows={5}
@@ -179,7 +178,8 @@ const GetSequenceDialog = observer(function ({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => {
+          onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(sequence)
             setCopied(true)
             setTimeout(() => {
@@ -193,7 +193,9 @@ const GetSequenceDialog = observer(function ({
           {copied ? 'Copied' : 'Copy to clipboard'}
         </Button>
         <Button
-          onClick={() => {
+          onClick={async () => {
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
+            const { saveAs } = await import('file-saver-es')
             saveAs(
               new Blob([sequence || ''], {
                 type: 'text/x-fasta;charset=utf-8',

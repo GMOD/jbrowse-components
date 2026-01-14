@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 
-import { JBrowse, getPluginManager } from './util'
+import { JBrowse, getPluginManager } from './util.tsx'
 
 test('renders when in admin mode', async () => {
   const pluginManager = getPluginManager({}, true)

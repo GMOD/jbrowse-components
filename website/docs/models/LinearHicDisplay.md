@@ -3,8 +3,8 @@ id: linearhicdisplay
 title: LinearHicDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -20,7 +20,12 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-extends `BaseLinearDisplay`
+Non-block-based Hi-C display that renders to a single canvas extends
+
+- [BaseDisplay](../basedisplay)
+- [TrackHeightMixin](../trackheightmixin)
+- [FeatureDensityMixin](../featuredensitymixin)
+- [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
 
 ### LinearHicDisplay - Properties
 
@@ -37,7 +42,7 @@ type: types.literal('LinearHicDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -87,14 +92,16 @@ string
 mode: 'triangular'
 ```
 
-### LinearHicDisplay - Getters
-
-#### getter: blockType
+#### property: showLegend
 
 ```js
-// type
-string
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+showLegend: types.maybe(types.boolean)
 ```
+
+### LinearHicDisplay - Getters
 
 #### getter: rendererTypeName
 
@@ -112,14 +119,53 @@ string
 renderProps: () => any
 ```
 
+#### method: legendItems
+
+Returns legend items for the Hi-C color scale
+
+```js
+// type signature
+legendItems: () => LegendItem[]
+```
+
+#### method: svgLegendWidth
+
+Returns the width needed for the SVG legend if showLegend is enabled.
+
+```js
+// type signature
+svgLegendWidth: () => number
+```
+
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => any[]
+```
+
+#### method: renderSvg
+
+```js
+// type signature
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearHicDisplay - Actions
+
+#### action: setFlatbushData
+
+```js
+// type signature
+setFlatbushData: (flatbush: ArrayBufferLike, items: HicFlatbushItem[], maxScore: number, yScalar: number) => void
+```
+
+#### action: reload
+
+```js
+// type signature
+reload: () => void
+```
 
 #### action: setResolution
 
@@ -161,4 +207,11 @@ setAvailableNormalizations: (f: string[]) => void
 ```js
 // type signature
 setMode: (arg: string) => void
+```
+
+#### action: setShowLegend
+
+```js
+// type signature
+setShowLegend: (arg: boolean) => void
 ```

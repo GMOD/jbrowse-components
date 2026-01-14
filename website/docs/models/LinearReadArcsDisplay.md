@@ -3,8 +3,8 @@ id: linearreadarcsdisplay
 title: LinearReadArcsDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -42,68 +42,25 @@ type: types.literal('LinearReadArcsDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: lineWidth
+#### property: showLegend
 
 ```js
 // type signature
-IMaybe<ISimpleType<number>>
+IMaybe<ISimpleType<boolean>>
 // code
-lineWidth: types.maybe(types.number)
-```
-
-#### property: jitter
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-jitter: types.maybe(types.number)
-```
-
-#### property: colorBySetting
-
-```js
-// type signature
-IType<ColorBy, ColorBy, ColorBy>
-// code
-colorBySetting: types.frozen<ColorBy | undefined>()
-```
-
-#### property: filterBySetting
-
-```js
-// type signature
-IType<FilterBy, FilterBy, FilterBy>
-// code
-filterBySetting: types.frozen<FilterBy | undefined>()
-```
-
-#### property: drawInter
-
-```js
-// type signature
-true
-// code
-drawInter: true
-```
-
-#### property: drawLongRange
-
-```js
-// type signature
-true
-// code
-drawLongRange: true
+showLegend: types.maybe(types.boolean)
 ```
 
 ### LinearReadArcsDisplay - Getters
 
 #### getter: colorBy
+
+Get the color settings (from override or configuration)
 
 ```js
 // type
@@ -112,37 +69,35 @@ any
 
 #### getter: filterBy
 
-```js
-// type
-any
-```
-
-#### getter: drawn
-
-```js
-// type
-boolean
-```
-
-#### getter: lineWidthSetting
+Get the filter settings (from override or configuration)
 
 ```js
 // type
 any
-```
-
-#### getter: jitterVal
-
-```js
-// type
-number
 ```
 
 ### LinearReadArcsDisplay - Methods
 
-#### method: renderProps
+#### method: legendItems
 
-only used to tell system it's ready for export
+Returns legend items based on current colorBy setting
+
+```js
+// type signature
+legendItems: () => LegendItem[]
+```
+
+#### method: svgLegendWidth
+
+Returns the width needed for the SVG legend if showLegend is enabled. Used by
+SVG export to add extra width for the legend area.
+
+```js
+// type signature
+svgLegendWidth: () => number
+```
+
+#### method: renderProps
 
 ```js
 // type signature
@@ -153,106 +108,30 @@ renderProps: () => any
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => any[]
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearReadArcsDisplay - Actions
 
-#### action: setLastDrawnOffsetPx
+#### action: setShowLegend
 
 ```js
 // type signature
-setLastDrawnOffsetPx: (n: number) => void
-```
-
-#### action: setLastDrawnBpPerPx
-
-```js
-// type signature
-setLastDrawnBpPerPx: (n: number) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
+setShowLegend: (s: boolean) => void
 ```
 
 #### action: reload
 
+Reload the display (clears error state)
+
 ```js
 // type signature
 reload: () => void
-```
-
-#### action: setRef
-
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
-
-```js
-// type signature
-setRef: (ref: HTMLCanvasElement) => void
-```
-
-#### action: setColorScheme
-
-```js
-// type signature
-setColorScheme: (colorBy: { type: string; }) => void
-```
-
-#### action: setChainData
-
-```js
-// type signature
-setChainData: (args: ChainData) => void
-```
-
-#### action: setDrawInter
-
-```js
-// type signature
-setDrawInter: (f: boolean) => void
-```
-
-#### action: setDrawLongRange
-
-```js
-// type signature
-setDrawLongRange: (f: boolean) => void
-```
-
-#### action: setFilterBy
-
-```js
-// type signature
-setFilterBy: (filter: FilterBy) => void
-```
-
-#### action: setLineWidth
-
-thin, bold, extrabold, etc
-
-```js
-// type signature
-setLineWidth: (n: number) => void
-```
-
-#### action: setJitter
-
-jitter val, helpful to jitter the x direction so you see better evidence when
-e.g. 100 long reads map to same x position
-
-```js
-// type signature
-setJitter: (n: number) => void
 ```

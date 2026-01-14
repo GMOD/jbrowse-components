@@ -1,1 +1,1 @@
-export { default } from './JBrowseCircularGenomeView'
+export { default } from './JBrowseCircularGenomeView.tsx'

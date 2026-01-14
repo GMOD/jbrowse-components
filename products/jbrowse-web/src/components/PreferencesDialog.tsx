@@ -1,4 +1,5 @@
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Checkbox,
@@ -10,7 +11,6 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { ThemeOptions } from '@mui/material'
 
@@ -20,7 +20,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const PreferencesDialog = observer(function ({
+const PreferencesDialog = observer(function PreferencesDialog({
   handleClose,
   session,
 }: {
@@ -31,6 +31,8 @@ const PreferencesDialog = observer(function ({
     setThemeName: (arg: string) => void
     stickyViewHeaders: boolean
     setStickyViewHeaders(sticky: boolean): void
+    useWorkspaces: boolean
+    setUseWorkspaces(useWorkspaces: boolean): void
   }
 }) {
   const { classes } = useStyles()
@@ -57,6 +59,13 @@ const PreferencesDialog = observer(function ({
             label="Keep view header visible"
             onChange={(_, checked) => {
               session.setStickyViewHeaders(checked)
+            }}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={session.useWorkspaces} />}
+            label="Use workspaces (tabbed/tiled view layout)"
+            onChange={(_, checked) => {
+              session.setUseWorkspaces(checked)
             }}
           />
         </FormGroup>

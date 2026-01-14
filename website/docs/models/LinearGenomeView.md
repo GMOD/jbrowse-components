@@ -3,8 +3,8 @@ id: lineargenomeview
 title: LinearGenomeView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -30,7 +30,7 @@ extends
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+any
 // code
 id: ElementId
 ```
@@ -80,7 +80,7 @@ entire set of chromosomes if your assembly is very fragmented
 // type signature
 IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
 // code
-displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
+displayedRegions: types.optional(types.frozen<Region[]>(), [])
 ```
 
 #### property: tracks
@@ -89,7 +89,7 @@ array of currently displayed tracks state models instances
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IArrayType<any>
 // code
 tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
@@ -218,7 +218,7 @@ colorByCDS: types.optional(types.boolean, () =>
 
 #### property: showTrackOutlines
 
-color by CDS
+show the track outlines
 
 ```js
 // type signature
@@ -310,7 +310,7 @@ sticky positioning
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: stickyViewHeaders
@@ -365,7 +365,39 @@ any
 boolean
 ```
 
-#### getter: scaleBarHeight
+#### getter: loadingMessage
+
+```js
+// type
+string
+```
+
+#### getter: hasSomethingToShow
+
+```js
+// type
+any
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+any
+```
+
+#### getter: showImportForm
+
+Whether to show the import form
+
+```js
+// type
+boolean
+```
+
+#### getter: scalebarHeight
 
 ```js
 // type
@@ -383,7 +415,7 @@ number
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: trackHeightsWithResizeHandles
@@ -404,7 +436,7 @@ any
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: maxBpPerPx
@@ -449,6 +481,13 @@ number
 number
 ```
 
+#### getter: trackMap
+
+```js
+// type
+Map<any, any>
+```
+
 #### getter: trackTypeActions
 
 ```js
@@ -484,7 +523,7 @@ is calculated manually with this method
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: staticBlocks
@@ -497,7 +536,7 @@ block
 
 ```js
 // type
-BlockSet
+any
 ```
 
 #### getter: dynamicBlocks
@@ -508,7 +547,7 @@ go offscreen while dynamic blocks represent exactly what is on screen
 
 ```js
 // type
-BlockSet
+any
 ```
 
 #### getter: roundedDynamicBlocks
@@ -538,6 +577,13 @@ same as visibleLocStrings, but only updated every 300ms
 string
 ```
 
+#### getter: coarseTotalBpDisplayStr
+
+```js
+// type
+any
+```
+
 #### getter: centerLineInfo
 
 ```js
@@ -547,11 +593,11 @@ any
 
 ### LinearGenomeView - Methods
 
-#### method: scaleBarDisplayPrefix
+#### method: scalebarDisplayPrefix
 
 ```js
 // type signature
-scaleBarDisplayPrefix: () => any
+scalebarDisplayPrefix: () => any
 ```
 
 #### method: MiniControlsComponent
@@ -579,7 +625,7 @@ renderProps: () => any
 
 ```js
 // type signature
-searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }
+searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<any> & IStateTreeNode<IArrayType<any>>; }
 ```
 
 #### method: getTrack
@@ -598,15 +644,6 @@ does nothing currently
 rankSearchResults: (results: BaseResult[]) => BaseResult[]
 ```
 
-#### method: rewriteOnClicks
-
-modifies view menu action onClick to apply to all tracks of same type
-
-```js
-// type signature
-rewriteOnClicks: (trackType: string, viewMenuActions: MenuItem[]) => void
-```
-
 #### method: getSelectedRegions
 
 Helper method for the fetchSequence. Retrieves the corresponding regions that
@@ -614,7 +651,7 @@ were selected by the rubberband
 
 ```js
 // type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { start: number; end: number; type: string; regionNumber?: number; reversed?: boolean; refName: string; assemblyName: string; ... 4 more ...; isLeftEndOfDisplayedRegion?: boolean; }[]
+getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => any
 ```
 
 #### method: exportSvg
@@ -646,7 +683,7 @@ rubberBandMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => { index: number; offsetPx: number; }
+bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => any
 ```
 
 #### method: centerAt
@@ -663,7 +700,14 @@ centerAt: (coord: number, refName: string, regionNumber?: number) => void
 
 ```js
 // type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean; }
+pxToBp: (px: number) => any
+```
+
+#### method: rubberbandClickMenuItems
+
+```js
+// type signature
+rubberbandClickMenuItems: (clickOffset: BpOffset) => MenuItem[]
 ```
 
 ### LinearGenomeView - Actions
@@ -756,14 +800,14 @@ removeHighlight: (highlight: HighlightType) => void
 
 ```js
 // type signature
-scrollTo: (offsetPx: number) => number
+scrollTo: (offsetPx: number) => any
 ```
 
 #### action: zoomTo
 
 ```js
 // type signature
-zoomTo: (bpPerPx: number, offset?: number, centerAtOffset?: boolean) => number
+zoomTo: (bpPerPx: number, offset?: number, centerAtOffset?: boolean) => any
 ```
 
 #### action: setOffsets
@@ -809,7 +853,7 @@ showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) 
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => any
 ```
 
 #### action: moveTrackDown
@@ -851,7 +895,7 @@ moveTrack: (movingId: string, targetId: string) => void
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string) => void
 ```
 
 #### action: setTrackLabels
@@ -879,16 +923,7 @@ setDisplayedRegions: (regions: Region[]) => void
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
-```
-
-#### action: afterDisplayedRegionsSet
-
-schedule something to be run after the next time displayedRegions is set
-
-```js
-// type signature
-afterDisplayedRegionsSet: (cb: () => void) => void
+activateTrackSelector: () => any
 ```
 
 #### action: horizontalScroll
@@ -924,6 +959,13 @@ showAllRegionsInAssembly: (assemblyName?: string) => void
 ```js
 // type signature
 setDraggingTrackId: (idx?: string) => void
+```
+
+#### action: setLastTrackDragY
+
+```js
+// type signature
+setLastTrackDragY: (y: number) => void
 ```
 
 #### action: setScaleFactor
@@ -1001,7 +1043,7 @@ is returned. Will pop up a search dialog if multiple results are returned
 
 ```js
 // type signature
-navToSearchString: ({ input, assembly, }: { input: string; assembly: { configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 6 more ... & IStateTreeNode<...>; }) => Promise<...>
+navToSearchString: ({ input, assembly, }: { input: string; assembly: Assembly; }) => Promise<void>
 ```
 
 #### action: navToLocation

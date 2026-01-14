@@ -3,14 +3,14 @@ import { useRef, useState } from 'react'
 import { Menu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import type { LinearGenomeViewModel } from '../model'
+import type { LinearGenomeViewModel } from '../model.ts'
 import type { Region, SessionWithWidgets } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
@@ -19,6 +19,7 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
+    left: 0,
     overflow: 'hidden',
     background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
   },
@@ -30,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Highlight = observer(function ({
+const Highlight = observer(function Highlight({
   model,
   highlight,
 }: {
@@ -90,7 +91,7 @@ const Highlight = observer(function ({
     <div
       className={classes.highlight}
       style={{
-        left: h.left,
+        transform: `translateX(${h.left}px)`,
         width: h.width,
       }}
     >
@@ -108,7 +109,7 @@ const Highlight = observer(function ({
       <Menu
         anchorEl={anchorEl.current}
         onMenuItemClick={(_event, callback) => {
-          callback(session)
+          callback()
           handleClose()
         }}
         open={open}

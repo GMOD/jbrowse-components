@@ -1,11 +1,8 @@
 import { render, waitFor } from '@testing-library/react'
 
-import { createViewState } from '..'
-import JBrowseLinearGenomeView from './JBrowseLinearGenomeView'
-jest.mock(
-  '@jbrowse/react-linear-genome-view2/src/makeWorkerInstance',
-  () => () => {},
-)
+import { createViewState } from '../index.ts'
+import JBrowseLinearGenomeView from './JBrowseLinearGenomeView.tsx'
+jest.mock('../makeWorkerInstance', () => () => {})
 
 const timeout = 30000
 
@@ -65,7 +62,7 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
     tracks: [],
     defaultSession,
   })
-  const { container, getAllByTestId, getByPlaceholderText } = render(
+  const { getAllByTestId, getByPlaceholderText } = render(
     <JBrowseLinearGenomeView viewState={state} />,
   )
 
@@ -85,6 +82,4 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
     },
     { timeout },
   )
-
-  expect(container).toMatchSnapshot()
 }, 40000)

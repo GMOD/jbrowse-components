@@ -9,26 +9,33 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import {
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
-import { transaction } from 'mobx'
-import { cast, getRoot, resolveIdentifier, types } from 'mobx-state-tree'
+import { autorun } from 'mobx'
 
-import { calculateStaticSlices, sliceIsVisible } from './slices'
-import { viewportVisibleSection } from './viewportVisibleRegion'
+import { calculateStaticSlices, sliceIsVisible } from './slices.ts'
+import { viewportVisibleSection } from './viewportVisibleRegion.ts'
 
-import type { SliceRegion } from './slices'
+import type { SliceRegion } from './slices.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Region as IRegion } from '@jbrowse/core/util/types'
-import type { Region } from '@jbrowse/core/util/types/mst'
-import type { Instance, SnapshotOrInstance } from 'mobx-state-tree'
+import type { Region } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
-const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
+export interface CircularViewInit {
+  assembly: string
+  tracks?: string[]
+}
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
@@ -45,6 +52,14 @@ function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
   const minWidth = 100
   const defaultHeight = 400
+  const defaultOffsetRadians = -Math.PI / 2
+  const defaultBpPerPx = 200
+  const defaultMinimumRadiusPx = 25
+  const defaultSpacingPx = 10
+  const defaultPaddingPx = 80
+  const defaultLockedPaddingPx = 100
+  const defaultMinVisibleWidth = 6
+  const defaultMinimumBlockWidth = 20
   return types
     .compose(
       'CircularView',
@@ -58,11 +73,11 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * similar to offsetPx in linear genome view
          */
-        offsetRadians: -Math.PI / 2,
+        offsetRadians: defaultOffsetRadians,
         /**
          * #property
          */
-        bpPerPx: 200,
+        bpPerPx: defaultBpPerPx,
         /**
          * #property
          */
@@ -94,7 +109,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         /*
          * #property
          */
-        displayedRegions: types.optional(types.frozen<IRegion[]>(), []),
+        displayedRegions: types.optional(types.frozen<Region[]>(), []),
         /**
          * #property
          */
@@ -107,36 +122,41 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        minimumRadiusPx: 25,
+        minimumRadiusPx: defaultMinimumRadiusPx,
         /**
          * #property
          */
-        spacingPx: 10,
+        spacingPx: defaultSpacingPx,
         /**
          * #property
          */
-        paddingPx: 80,
+        paddingPx: defaultPaddingPx,
         /**
          * #property
          */
-        lockedPaddingPx: 100,
+        lockedPaddingPx: defaultLockedPaddingPx,
         /**
          * #property
          */
-        minVisibleWidth: 6,
+        minVisibleWidth: defaultMinVisibleWidth,
         /**
          * #property
          */
-        minimumBlockWidth: 20,
+        minimumBlockWidth: defaultMinimumBlockWidth,
         /**
          * #property
          */
         trackSelectorType: 'hierarchical',
+        /**
+         * #property
+         * used for initializing the view from a session snapshot
+         */
+        init: types.frozen<CircularViewInit | undefined>(),
       }),
     )
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
-      error: undefined as unknown,
+      volatileError: undefined as unknown,
     }))
     .views(self => ({
       /**
@@ -329,10 +349,98 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get initialized() {
+        if (self.volatileWidth === undefined) {
+          return false
+        }
         const { assemblyManager } = getSession(self)
+        // if init is set, wait for that assembly to have regions loaded
+        if (self.init) {
+          const asm = assemblyManager.get(self.init.assembly)
+          return !!(asm?.initialized && asm.regions)
+        }
+        return this.assemblyNames.every(
+          a => assemblyManager.get(a)?.initialized,
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get assemblyErrors() {
+        const { assemblyManager } = getSession(self)
+        return this.assemblyNames
+          .map(a => assemblyManager.get(a)?.error)
+          .filter(f => !!f)
+          .join(', ')
+      },
+
+      /**
+       * #getter
+       */
+      get error(): unknown {
+        if (self.volatileError) {
+          return self.volatileError
+        }
+        if (this.assemblyErrors) {
+          return this.assemblyErrors
+        }
+        // Check init assembly for errors (displayedRegions may be empty during init)
+        if (self.init) {
+          const { assemblyManager } = getSession(self)
+          const asm = assemblyManager.get(self.init.assembly)
+          if (asm?.error) {
+            return asm.error
+          }
+          if (!asm) {
+            return `Assembly ${self.init.assembly} not found`
+          }
+        }
+        return undefined
+      },
+
+      /**
+       * #getter
+       */
+      get loadingMessage() {
+        return this.showLoading ? 'Loading' : undefined
+      },
+
+      /**
+       * #getter
+       */
+      get hasSomethingToShow() {
+        return self.displayedRegions.length > 0 || !!self.init
+      },
+
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return !this.initialized && !this.error && this.hasSomethingToShow
+      },
+
+      /**
+       * #getter
+       * Whether the view is fully initialized and ready to display
+       */
+      get showView() {
         return (
-          self.volatileWidth !== undefined &&
-          this.assemblyNames.every(a => assemblyManager.get(a)?.initialized)
+          !!self.displayedRegions.length &&
+          !!this.figureWidth &&
+          !!this.figureHeight &&
+          this.initialized
+        )
+      },
+
+      /**
+       * #getter
+       * Whether to show the import form (when not ready to display and import
+       * form is enabled, or when there's an error)
+       */
+      get showImportForm() {
+        return (
+          (!this.hasSomethingToShow && !self.disableImportForm) || !!this.error
         )
       },
     }))
@@ -447,7 +555,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
+      setDisplayedRegions(regions: Region[]) {
         const previouslyEmpty = self.displayedRegions.length === 0
         self.displayedRegions = cast(regions)
 
@@ -481,45 +589,28 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-          return true
-        }
-        return false
+        toggleTrackGeneric(self, trackId)
       },
 
       /**
        * #action
        */
       setError(error: unknown) {
-        self.error = error
+        self.volatileError = error
+      },
+
+      /**
+       * #action
+       */
+      setInit(init?: CircularViewInit) {
+        self.init = init
       },
 
       /**
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const trackType = pluginManager.getTrackType(conf.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${conf.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)!
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
-        )
-        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          supportedDisplays.has(d.type),
-        )
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
-        })
-        self.tracks.push(track)
+        showTrackGeneric(self, trackId, initialSnapshot)
       },
 
       /**
@@ -554,15 +645,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const tracks = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => {
-          for (const track of tracks) {
-            self.tracks.remove(track)
-          }
-        })
-        return tracks.length
+        hideTrackGeneric(self, trackId)
       },
 
       /**
@@ -580,10 +663,48 @@ function stateModelFactory(pluginManager: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        const { renderToSvg } = await import('./svgcomponents/SVGCircularView')
+        const { renderToSvg } =
+          await import('./svgcomponents/SVGCircularView.tsx')
         const html = await renderToSvg(self as CircularViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            function circularViewInitAutorun() {
+              const { init, initialized } = self
+              if (!initialized) {
+                return
+              }
+              if (init) {
+                const session = getSession(self)
+                const { assemblyManager } = session
+                const regions = assemblyManager.get(init.assembly)?.regions
+
+                if (regions) {
+                  self.setDisplayedRegions(regions)
+                }
+
+                if (init.tracks) {
+                  for (const trackId of init.tracks) {
+                    self.showTrack(trackId)
+                  }
+                }
+
+                self.setInit(undefined)
+              }
+            },
+            { name: 'CircularViewInit' },
+          ),
+        )
       },
     }))
     .views(self => ({
@@ -618,6 +739,61 @@ function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        init,
+        offsetRadians,
+        bpPerPx,
+        hideVerticalResizeHandle,
+        hideTrackSelectorButton,
+        lockedFitToWindow,
+        disableImportForm,
+        height,
+        displayedRegions,
+        scrollX,
+        scrollY,
+        minimumRadiusPx,
+        spacingPx,
+        paddingPx,
+        lockedPaddingPx,
+        minVisibleWidth,
+        minimumBlockWidth,
+        trackSelectorType,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(offsetRadians !== defaultOffsetRadians ? { offsetRadians } : {}),
+        ...(bpPerPx !== defaultBpPerPx ? { bpPerPx } : {}),
+        ...(hideVerticalResizeHandle ? { hideVerticalResizeHandle } : {}),
+        ...(hideTrackSelectorButton ? { hideTrackSelectorButton } : {}),
+        ...(!lockedFitToWindow ? { lockedFitToWindow } : {}),
+        ...(disableImportForm ? { disableImportForm } : {}),
+        ...(height !== defaultHeight ? { height } : {}),
+        ...(displayedRegions.length ? { displayedRegions } : {}),
+        ...(scrollX ? { scrollX } : {}),
+        ...(scrollY ? { scrollY } : {}),
+        ...(minimumRadiusPx !== defaultMinimumRadiusPx
+          ? { minimumRadiusPx }
+          : {}),
+        ...(spacingPx !== defaultSpacingPx ? { spacingPx } : {}),
+        ...(paddingPx !== defaultPaddingPx ? { paddingPx } : {}),
+        ...(lockedPaddingPx !== defaultLockedPaddingPx
+          ? { lockedPaddingPx }
+          : {}),
+        ...(minVisibleWidth !== defaultMinVisibleWidth
+          ? { minVisibleWidth }
+          : {}),
+        ...(minimumBlockWidth !== defaultMinimumBlockWidth
+          ? { minimumBlockWidth }
+          : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+      } as typeof snap
+    })
 }
 
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>

@@ -1,12 +1,12 @@
 import { ExternalLink } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -22,7 +22,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const AboutWidget = observer(function ({
+const AboutWidget = observer(function AboutWidget({
   model,
 }: {
   model: IAnyStateTreeNode

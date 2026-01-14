@@ -7,9 +7,9 @@ import {
   Typography,
 } from '@mui/material'
 
-import SearchResultsTable from './SearchResultsTable'
+import SearchResultsTable from './SearchResultsTable.tsx'
 
-import type { LinearGenomeViewModel } from '../..'
+import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 export default function SearchResultsDialog({

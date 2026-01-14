@@ -1,5 +1,5 @@
 // duplicated from products/jbrowse-web/src/sessionSharing.ts ; could possibly be moved into a higher directory and shared between the two
-import { toUrlSafeB64 } from './utils'
+import { toUrlSafeB64 } from './utils.ts'
 
 // from https://stackoverflow.com/questions/1349404/
 function generateUID(length: number) {

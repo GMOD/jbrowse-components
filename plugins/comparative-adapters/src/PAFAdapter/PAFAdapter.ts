@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -7,11 +6,11 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
-import SyntenyFeature from '../SyntenyFeature'
-import { flipCigar, parsePAFLine, swapIndelCigar } from '../util'
-import { getWeightedMeans } from './util'
+import SyntenyFeature from '../SyntenyFeature/index.ts'
+import { flipCigar, parsePAFLine, swapIndelCigar } from '../util.ts'
+import { getWeightedMeans } from './util.ts'
 
-import type { PAFRecord } from './util'
+import type { PAFRecord } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -51,7 +50,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       },
       opts?.statusCallback,
     )
-    return lines
+    return getWeightedMeans(lines)
   }
 
   async hasDataForRefName() {
@@ -90,14 +89,10 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      let pafRecords = await this.setup(opts)
-      const { config } = opts
+      const pafRecords = await this.setup(opts)
 
       // note: this is not the adapter config, it is responding to a display
       // setting passed in via the opts parameter
-      if (config && readConfObject(config, 'colorBy') === 'meanQueryIdentity') {
-        pafRecords = getWeightedMeans(pafRecords)
-      }
       const assemblyNames = this.getAssemblyNames()
 
       // The index of the assembly name in the query list corresponds to the

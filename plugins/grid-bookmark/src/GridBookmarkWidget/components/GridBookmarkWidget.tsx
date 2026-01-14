@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Delete from '@mui/icons-material/Delete'
 import GetApp from '@mui/icons-material/GetApp'
 import Menu from '@mui/icons-material/Menu'
@@ -11,31 +12,30 @@ import Settings from '@mui/icons-material/Settings'
 import Share from '@mui/icons-material/Share'
 import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import AssemblySelector from './AssemblySelector'
-import BookmarkGrid from './BookmarkGrid'
+import AssemblySelector from './AssemblySelector.tsx'
+import BookmarkGrid from './BookmarkGrid.tsx'
 
-import type { GridBookmarkModel } from '../model'
+import type { GridBookmarkModel } from '../model.ts'
 
 // lazies
 const ExportBookmarksDialog = lazy(
-  () => import('./dialogs/ExportBookmarksDialog'),
+  () => import('./dialogs/ExportBookmarksDialog.tsx'),
 )
 const ImportBookmarksDialog = lazy(
-  () => import('./dialogs/ImportBookmarksDialog'),
+  () => import('./dialogs/ImportBookmarksDialog.tsx'),
 )
 const ShareBookmarksDialog = lazy(
-  () => import('./dialogs/ShareBookmarksDialog'),
+  () => import('./dialogs/ShareBookmarksDialog.tsx'),
 )
 const HighlightSettingsDialog = lazy(
-  () => import('./dialogs/HighlightSettingsDialog'),
+  () => import('./dialogs/HighlightSettingsDialog.tsx'),
 )
 const EditHighlightColorDialog = lazy(
-  () => import('./dialogs/EditHighlightColorDialog'),
+  () => import('./dialogs/EditHighlightColorDialog.tsx'),
 )
 const DeleteBookmarksDialog = lazy(
-  () => import('./dialogs/DeleteBookmarksDialog'),
+  () => import('./dialogs/DeleteBookmarksDialog.tsx'),
 )
 
 const useStyles = makeStyles()({

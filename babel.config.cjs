@@ -1,0 +1,24 @@
+// eslint-disable-next-line no-undef
+module.exports = function babelConfig(api) {
+  api.cache(true)
+  return {
+    plugins: ['babel-plugin-react-compiler'],
+    presets: [
+      [
+        '@babel/preset-react',
+        {
+          runtime: 'automatic',
+        },
+      ],
+      '@babel/preset-env',
+      '@babel/preset-typescript',
+    ],
+    ignore: [
+      './node_modules',
+      './packages/*/node_modules',
+      './products/*/node_modules',
+      './plugins/*/node_modules',
+      './demos/*/node_modules',
+    ],
+  }
+}

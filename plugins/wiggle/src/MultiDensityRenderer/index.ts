@@ -1,6 +1,7 @@
-import configSchema from './configSchema'
-import ReactComponent from '../MultiWiggleRendering'
-import MultiDensityRenderer from './MultiDensityRenderer'
+import { lazy } from 'react'
+
+import MultiDensityRenderer from './MultiDensityRenderer.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -9,7 +10,7 @@ export default function MultiDensityRendererF(pluginManager: PluginManager) {
     () =>
       new MultiDensityRenderer({
         name: 'MultiDensityRenderer',
-        ReactComponent,
+        ReactComponent: lazy(() => import('../MultiWiggleRendering.tsx')),
         configSchema,
         pluginManager,
       }),

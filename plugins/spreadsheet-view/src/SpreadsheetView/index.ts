@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 
-import stateModelFactory from './SpreadsheetViewModel'
+import stateModelFactory from './SpreadsheetViewModel.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -12,7 +12,7 @@ export default function SpreadsheetViewF(pluginManager: PluginManager) {
       name: 'SpreadsheetView',
       displayName: 'Spreadsheet view',
       stateModel: stateModelFactory(),
-      ReactComponent: lazy(() => import('./components/SpreadsheetView')),
+      ReactComponent: lazy(() => import('./components/SpreadsheetView.tsx')),
     })
   })
 }
@@ -20,4 +20,4 @@ export default function SpreadsheetViewF(pluginManager: PluginManager) {
 export type {
   SpreadsheetViewModel,
   SpreadsheetViewStateModel,
-} from './SpreadsheetViewModel'
+} from './SpreadsheetViewModel.ts'

@@ -22,7 +22,7 @@ const RectBg = ({
       y={y}
       width={width}
       height={height}
-      {...getFillProps(color || alpha(theme.palette.background.paper, 0.3))}
+      {...getFillProps(color || alpha(theme.palette.background.paper, 0.8))}
     />
   )
 }

@@ -3,14 +3,14 @@ import { useState } from 'react'
 import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-import AssemblyAddForm from './AssemblyAddForm'
-import AssemblyEditor from './AssemblyEditor'
-import AssemblyTable from './AssemblyTable'
+import AssemblyAddForm from './AssemblyAddForm.tsx'
+import AssemblyEditor from './AssemblyEditor.tsx'
+import AssemblyTable from './AssemblyTable.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-const AssemblyManager = observer(function ({
+const AssemblyManager = observer(function AssemblyManager({
   session,
   onClose,
 }: {

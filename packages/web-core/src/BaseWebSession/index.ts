@@ -2,12 +2,21 @@ import { lazy } from 'react'
 
 import {
   AppFocusMixin,
+  DockviewLayoutMixin,
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import {
+  addDisposer,
+  cast,
+  getParent,
+  getSnapshot,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import {
   DialogQueueSessionMixin,
   DrawerWidgetSessionMixin,
@@ -21,15 +30,8 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  getSnapshot,
-  types,
-} from 'mobx-state-tree'
 
-import { WebSessionConnectionsMixin } from '../SessionConnections'
+import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
 import type { Menu } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
@@ -42,11 +44,12 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type { AssemblyManager, JBrowsePlugin } from '@jbrowse/core/util/types'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { AssemblyManager } from '@jbrowse/core/util/types'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
-const AboutDialog = lazy(() => import('./AboutDialog'))
+const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 
 interface Display {
   displayId: string
@@ -91,6 +94,7 @@ export function BaseWebSession({
         SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
         TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
         WebSessionConnectionsMixin(pluginManager),
+        DockviewLayoutMixin(),
         AppFocusMixin(),
         SnackbarModel(),
       ),
@@ -103,7 +107,9 @@ export function BaseWebSession({
       /**
        * #property
        */
-      sessionPlugins: types.array(types.frozen()),
+      sessionPlugins: types.array(
+        types.frozen<PluginDefinition & { name: string }>(),
+      ),
     })
     .volatile((/* self */) => ({
       /**
@@ -138,7 +144,9 @@ export function BaseWebSession({
        * include temporaryAssemblies. basically the list to be displayed in a
        * AssemblySelector dropdown
        */
-      get assemblies(): Instance<BaseAssemblyConfigSchema[]> {
+      get assemblies(): (Instance<BaseAssemblyConfigSchema> & {
+        sequence: { trackId: string }
+      })[] {
         return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
       },
       /**
@@ -232,7 +240,7 @@ export function BaseWebSession({
       /**
        * #action
        */
-      addSessionPlugin(plugin: JBrowsePlugin) {
+      addSessionPlugin(plugin: PluginDefinition & { name: string }) {
         if (self.sessionPlugins.some(p => p.name === plugin.name)) {
           throw new Error('session plugin cannot be installed twice')
         }
@@ -244,18 +252,23 @@ export function BaseWebSession({
        * #action
        */
       removeSessionPlugin(pluginDefinition: PluginDefinition) {
+        type PluginUrls = Partial<{
+          url: string
+          umdUrl: string
+          cjsUrl: string
+          esmUrl: string
+        }>
+        const def = pluginDefinition as PluginUrls
         self.sessionPlugins = cast(
-          self.sessionPlugins.filter(
-            plugin =>
-              // @ts-expect-error
-              plugin.url !== pluginDefinition.url ||
-              // @ts-expect-error
-              plugin.umdUrl !== pluginDefinition.umdUrl ||
-              // @ts-expect-error
-              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
-              // @ts-expect-error
-              plugin.esmUrl !== pluginDefinition.esmUrl,
-          ),
+          self.sessionPlugins.filter(plugin => {
+            const p = plugin as PluginUrls
+            return (
+              p.url !== def.url ||
+              p.umdUrl !== def.umdUrl ||
+              p.cjsUrl !== def.cjsUrl ||
+              p.esmUrl !== def.esmUrl
+            )
+          }),
         )
         getParent<any>(self).setPluginsUpdated(true)
       },
@@ -339,9 +352,13 @@ export function BaseWebSession({
       /**
        * #action
        */
-      editTrackConfiguration(configuration: AnyConfigurationModel) {
+      editTrackConfiguration(
+        configuration: AnyConfigurationModel | { trackId: string },
+      ) {
         const { adminMode, sessionTracks } = self
-        if (!adminMode && !sessionTracks.includes(configuration)) {
+        const trackId = configuration.trackId
+        const isSessionTrack = sessionTracks.some(t => t.trackId === trackId)
+        if (!adminMode && !isSessionTrack) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         self.editConfiguration(configuration)
@@ -350,32 +367,16 @@ export function BaseWebSession({
     .views(self => ({
       /**
        * #method
+       * raw track actions (Settings, Copy, Delete) without submenu wrapper
        */
-      getTrackActionMenuItems(config: BaseTrackConfig) {
+      getTrackActions(config: BaseTrackConfig): MenuItem[] {
         const { adminMode, sessionTracks } = self
         const canEdit =
           adminMode || sessionTracks.find(t => t.trackId === config.trackId)
-
-        // disable if it is a reference sequence track
         const isRefSeq = config.type === 'ReferenceSequenceTrack'
         return [
           {
-            label: 'About track',
-            priority: 1002,
-            onClick: () => {
-              self.queueDialog(handleClose => [
-                AboutDialog,
-                {
-                  config,
-                  handleClose,
-                },
-              ])
-            },
-            icon: InfoIcon,
-          },
-          {
             label: 'Settings',
-            priority: 1001,
             disabled: !canEdit,
             icon: SettingsIcon,
             onClick: () => {
@@ -383,27 +384,21 @@ export function BaseWebSession({
             },
           },
           {
-            label: 'Delete track',
-            priority: 1000,
-            disabled: !canEdit || isRefSeq,
-            icon: DeleteIcon,
-            onClick: () => {
-              self.deleteTrackConf(config)
-            },
-          },
-          {
             label: 'Copy track',
-            priority: 999,
             disabled: isRefSeq,
             onClick: () => {
-              const snap = structuredClone(getSnapshot(config)) as {
+              const snap = structuredClone(
+                isStateTreeNode(config) ? getSnapshot(config) : config,
+              ) as {
                 [key: string]: unknown
-                displays: Display[]
+                displays?: Display[]
               }
               const now = Date.now()
               snap.trackId += `-${now}`
-              for (const display of snap.displays) {
-                display.displayId += `-${now}`
+              if (snap.displays) {
+                for (const display of snap.displays) {
+                  display.displayId += `-${now}`
+                }
               }
               // the -sessionTrack suffix to trackId is used as metadata for
               // the track selector to store the track in a special category,
@@ -417,7 +412,77 @@ export function BaseWebSession({
             },
             icon: CopyIcon,
           },
-          { type: 'divider' },
+          {
+            label: 'Delete track',
+            disabled: !canEdit || isRefSeq,
+            icon: DeleteIcon,
+            onClick: () => {
+              self.deleteTrackConf(config)
+            },
+          },
+        ]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * flattened menu items for use in hierarchical track selector
+       */
+      getTrackListMenuItems(config: BaseTrackConfig): MenuItem[] {
+        return [
+          {
+            label: 'About track',
+            onClick: () => {
+              self.queueDialog(handleClose => [
+                AboutDialog,
+                {
+                  config,
+                  handleClose,
+                  session: self,
+                },
+              ])
+            },
+            icon: InfoIcon,
+          },
+          ...self.getTrackActions(config),
+        ]
+      },
+
+      /**
+       * #method
+       * @param config - track configuration
+       * @param extraTrackActions - additional items to merge into "Track actions" submenu
+       */
+      getTrackActionMenuItems(
+        config: BaseTrackConfig,
+        extraTrackActions?: MenuItem[],
+      ): MenuItem[] {
+        return [
+          {
+            label: 'About track',
+            priority: 1002,
+            onClick: () => {
+              self.queueDialog(handleClose => [
+                AboutDialog,
+                {
+                  config,
+                  handleClose,
+                  session: self,
+                },
+              ])
+            },
+            icon: InfoIcon,
+          },
+          {
+            type: 'subMenu' as const,
+            label: 'Track actions',
+            priority: 1001,
+            subMenu: [
+              ...self.getTrackActions(config),
+              ...(extraTrackActions || []),
+            ],
+          },
+          { type: 'divider' as const },
         ]
       },
 
@@ -432,10 +497,13 @@ export function BaseWebSession({
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            localStorageSetItem('drawerPosition', self.drawerPosition)
-            localStorageSetItem('themeName', self.themeName)
-          }),
+          autorun(
+            function sessionLocalStorageAutorun() {
+              localStorageSetItem('drawerPosition', self.drawerPosition)
+              localStorageSetItem('themeName', self.themeName)
+            },
+            { name: 'SessionLocalStorage' },
+          ),
         )
       },
     }))
@@ -446,9 +514,11 @@ export function BaseWebSession({
   ) as typeof sessionModel
 
   return types.snapshotProcessor(extendedSessionModel, {
-    // @ts-expect-error
-    preProcessor(snapshot) {
-      // @ts-expect-error
+    preProcessor(
+      snapshot: SnapshotIn<typeof extendedSessionModel> & {
+        connectionInstances?: unknown
+      },
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const { connectionInstances, ...rest } = snapshot || {}
 

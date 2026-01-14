@@ -1,5 +1,5 @@
-import { isNumber } from './isNumber'
-import { bufferToLines, parseStrand } from './util'
+import { isNumber } from './isNumber.ts'
+import { bufferToLines, parseStrand } from './util.ts'
 
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')

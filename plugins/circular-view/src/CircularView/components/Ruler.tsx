@@ -5,14 +5,19 @@ import {
   getStrokeProps,
   polarToCartesian,
   radToDeg,
+  toLocale,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import type { CircularViewModel } from '../model'
-import type { Slice, SliceElidedRegion, SliceNonElidedRegion } from '../slices'
+import type { CircularViewModel } from '../model.ts'
+import type {
+  Slice,
+  SliceElidedRegion,
+  SliceNonElidedRegion,
+} from '../slices.ts'
 
 const useStyles = makeStyles()({
   rulerLabel: {
@@ -51,7 +56,7 @@ function sliceArcPath(
   ].join(' ')
 }
 
-const ElisionRulerArc = observer(function ({
+const ElisionRulerArc = observer(function ElisionRulerArc({
   model,
   slice,
   region,
@@ -70,7 +75,7 @@ const ElisionRulerArc = observer(function ({
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
   // TODO: draw the elision
   const centerRadians = (endRadians + startRadians) / 2
-  const regionCount = `[${region.regions.length.toLocaleString()}]`
+  const regionCount = `[${toLocale(region.regions.length)}]`
   return (
     <>
       <RulerLabel
@@ -103,7 +108,7 @@ const ElisionRulerArc = observer(function ({
   )
 })
 
-const RulerLabel = observer(function ({
+const RulerLabel = observer(function RulerLabel({
   view,
   text,
   maxWidthPx,
@@ -179,7 +184,7 @@ const RulerLabel = observer(function ({
   }
 })
 
-const RegionRulerArc = observer(function ({
+const RegionRulerArc = observer(function RegionRulerArc({
   model,
   slice,
   region,
@@ -227,7 +232,7 @@ const RegionRulerArc = observer(function ({
   )
 })
 
-const Ruler = observer(function ({
+const Ruler = observer(function Ruler({
   model,
   slice,
 }: {

@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import sharedWiggleConfigFactory from '../shared/SharedWiggleConfigSchema'
+import sharedWiggleConfigFactory from '../shared/SharedWiggleConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

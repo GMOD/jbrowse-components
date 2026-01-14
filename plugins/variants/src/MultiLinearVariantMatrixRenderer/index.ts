@@ -1,6 +1,7 @@
-import MultiLinearVariantMatrixRenderer from './MultiLinearVariantMatrixRenderer'
-import ReactComponent from './components/MultiLinearVariantMatrixRendering'
-import configSchema from './configSchema'
+import { lazy } from 'react'
+
+import MultiLinearVariantMatrixRenderer from './MultiLinearVariantMatrixRenderer.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -11,7 +12,9 @@ export default function LinearVariantMatrixRendererF(
     return new MultiLinearVariantMatrixRenderer({
       name: 'LinearVariantMatrixRenderer',
       displayName: 'Linear variant matrix renderer',
-      ReactComponent,
+      ReactComponent: lazy(
+        () => import('./components/MultiLinearVariantMatrixRendering.tsx'),
+      ),
       configSchema,
       pluginManager,
     })

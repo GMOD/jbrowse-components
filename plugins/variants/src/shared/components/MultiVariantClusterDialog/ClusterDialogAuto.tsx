@@ -8,14 +8,17 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
 
-import type { ReducedModel } from './types'
+import { expandSourcesToHaplotypes } from '../../getSources.ts'
+
+import type { ReducedModel } from './types.ts'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const ClusterDialogAuto = observer(function ({
+const ClusterDialogAuto = observer(function ClusterDialogAuto({
   model,
   children,
   handleClose,
@@ -27,12 +30,27 @@ const ClusterDialogAuto = observer(function ({
   const [progress, setProgress] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
-  const [stopToken, setStopToken] = useState('')
+  const [stopToken, setStopToken] = useState<StopToken>()
+  const { rpcManager } = getSession(model)
+  const {
+    sourcesVolatile,
+    minorAlleleFrequencyFilter,
+    lengthCutoffFilter,
+    adapterConfig,
+    renderingMode,
+    sampleInfo,
+  } = model
+  const isHaplotypeClustering = renderingMode === 'phased'
 
   return (
     <>
       <DialogContent>
         {children}
+        {isHaplotypeClustering ? (
+          <div style={{ marginTop: 8, fontStyle: 'italic' }}>
+            Note: Clustering by individual haplotypes (phased mode)
+          </div>
+        ) : null}
         <div>
           {loading ? (
             <div style={{ padding: 50 }}>
@@ -52,7 +70,7 @@ const ClusterDialogAuto = observer(function ({
       <DialogActions>
         <Button
           variant="contained"
-          disabled={loading}
+          disabled={loading || !sourcesVolatile}
           onClick={async () => {
             try {
               setError(undefined)
@@ -62,14 +80,7 @@ const ClusterDialogAuto = observer(function ({
               if (!view.initialized) {
                 return
               }
-              const { rpcManager } = getSession(model)
-              const {
-                sourcesWithoutLayout,
-                minorAlleleFrequencyFilter,
-                lengthCutoffFilter,
-                adapterConfig,
-              } = model
-              if (sourcesWithoutLayout) {
+              if (sourcesVolatile) {
                 const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
@@ -78,27 +89,36 @@ const ClusterDialogAuto = observer(function ({
                   'MultiVariantClusterGenotypeMatrix',
                   {
                     regions: view.dynamicBlocks.contentBlocks,
-                    sources: sourcesWithoutLayout,
+                    sources: sourcesVolatile,
                     minorAlleleFrequencyFilter,
                     lengthCutoffFilter,
                     sessionId,
                     adapterConfig,
                     stopToken,
+                    renderingMode,
+                    sampleInfo,
                     statusCallback: (arg: string) => {
                       setProgress(arg)
                     },
                   },
-                )) as { order: number[] }
+                )) as { order: number[]; tree: string }
 
-                model.setLayout(
-                  ret.order.map(idx => {
-                    const ret = sourcesWithoutLayout[idx]
-                    if (!ret) {
-                      throw new Error(`out of bounds at ${idx}`)
-                    }
-                    return ret
-                  }),
-                )
+                if (isHaplotypeClustering && sampleInfo) {
+                  const expandedSources = expandSourcesToHaplotypes({
+                    sources: sourcesVolatile,
+                    sampleInfo,
+                  })
+                  model.setLayout(
+                    ret.order.map(idx => expandedSources[idx]!),
+                    false,
+                  )
+                } else {
+                  model.setLayout(
+                    ret.order.map(idx => sourcesVolatile[idx]!),
+                    false,
+                  )
+                }
+                model.setClusterTree(ret.tree)
               }
               handleClose()
             } catch (e) {
@@ -109,7 +129,7 @@ const ClusterDialogAuto = observer(function ({
             } finally {
               setLoading(false)
               setProgress('')
-              setStopToken('')
+              setStopToken(undefined)
             }
           }}
         >

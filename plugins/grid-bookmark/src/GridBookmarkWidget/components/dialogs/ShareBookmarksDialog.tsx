@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, isSessionWithShareURL } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import {
   Alert,
@@ -12,14 +14,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui'
 
-import { shareSessionToDynamo } from '../../sessionSharing'
+import { shareSessionToDynamo } from '../../sessionSharing.ts'
 
-import type { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model.ts'
 
 const useStyles = makeStyles()(() => ({
   flexItem: {
@@ -32,7 +31,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const ShareBookmarksDialog = observer(function ({
+const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
   onClose,
   model,
 }: {
@@ -133,6 +132,7 @@ const ShareBookmarksDialog = observer(function ({
           disabled={loading}
           startIcon={<ContentCopyIcon />}
           onClick={async () => {
+            const { default: copy } = await import('copy-to-clipboard')
             copy(url)
             session.notify('Copied to clipboard', 'success')
             onClose()

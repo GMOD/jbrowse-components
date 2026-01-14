@@ -1,4 +1,3 @@
-import { promises as fsPromises } from 'fs'
 import { parseArgs } from 'util'
 
 import {
@@ -6,10 +5,14 @@ import {
   printHelp,
   readInlineOrFileJson,
   readJsonFile,
-  writeJsonFile,
-} from '../utils'
+  resolveConfigPath,
+} from '../utils.ts'
+import {
+  findAndUpdateOrAdd,
+  saveConfigAndReport,
+} from './shared/config-operations.ts'
 
-import type { Config, Track } from '../base'
+import type { Config, Track } from '../base.ts'
 
 export async function run(args?: string[]) {
   const options = {
@@ -59,14 +62,12 @@ export async function run(args?: string[]) {
 
   const track = positionals[0]
   if (!track) {
-    console.error('Error: Missing required argument: track')
-    console.error('Usage: jbrowse add-track-json <track> [options]')
-    process.exit(1)
+    throw new Error(
+      'Missing required argument: track\nUsage: jbrowse add-track-json <track> [options]',
+    )
   }
 
-  const output = flags.target || flags.out || '.'
-  const isDir = (await fsPromises.lstat(output)).isDirectory()
-  const target = isDir ? `${output}/config.json` : output
+  const target = await resolveConfigPath(flags.target, flags.out)
 
   debug(`Sequence location is: ${track}`)
   const { update } = flags
@@ -77,28 +78,24 @@ export async function run(args?: string[]) {
   if (!config.tracks) {
     config.tracks = []
   }
-  const idx = config.tracks.findIndex(
-    ({ trackId }: { trackId: string }) => trackId === trackConfig.trackId,
-  )
-  if (idx !== -1) {
-    const existing = config.tracks[idx]?.name
-    debug(`Found existing track ${existing} in configuration`)
-    if (update) {
-      debug(`Overwriting track ${existing} in configuration`)
-      config.tracks[idx] = trackConfig
-    } else {
-      throw new Error(
-        `Cannot add track ${trackConfig.name}, a track with that trackId already exists: ${existing}`,
-      )
-    }
-  } else {
-    config.tracks.push(trackConfig)
-  }
-  debug(`Writing configuration to file ${target}`)
-  await writeJsonFile(target, config)
-  console.log(
-    `${idx !== -1 ? 'Overwrote' : 'Added'} track "${trackConfig.name}" ${
-      idx !== -1 ? 'in' : 'to'
-    } ${target}`,
-  )
+
+  const { updatedItems, wasOverwritten } = findAndUpdateOrAdd({
+    items: config.tracks,
+    newItem: trackConfig,
+    idField: 'trackId',
+    getId: item => item.trackId,
+    allowOverwrite: update ?? false,
+    itemType: 'track',
+  })
+
+  config.tracks = updatedItems
+
+  await saveConfigAndReport({
+    config,
+    target,
+    itemType: 'track',
+    itemName: trackConfig.name,
+    itemId: trackConfig.trackId,
+    wasOverwritten,
+  })
 }

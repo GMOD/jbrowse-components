@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { coarseStripHTML } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import ClearIcon from '@mui/icons-material/Clear'
 import MinimizeIcon from '@mui/icons-material/Minimize'
@@ -12,11 +13,10 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 // icon
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   facet: {
@@ -64,7 +64,7 @@ function ExpandButton({
   )
 }
 
-const FacetFilter = observer(function ({
+const FacetFilter = observer(function FacetFilter({
   column,
   vals,
   model,

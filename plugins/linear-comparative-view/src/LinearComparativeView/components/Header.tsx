@@ -2,15 +2,18 @@ import { useState } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
 import { FormGroup } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import HeaderSearchBoxes from './HeaderSearchBoxes'
+import ColorBySelector from './ColorBySelector.tsx'
+import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
+import MinLengthSlider from './MinLengthSlider.tsx'
+import OpacitySlider from './OpacitySlider.tsx'
 
-import type { LinearComparativeViewModel } from '../model'
+import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   inline: {
@@ -18,15 +21,19 @@ const useStyles = makeStyles()({
   },
 })
 
-const Header = observer(function ({
+const Header = observer(function Header({
   model,
 }: {
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const { views } = model
+  const { views, levels, showDynamicControls } = model
   const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
   const [sideBySide, setSideBySide] = useState(views.length <= 3)
+
+  // Check if we have any displays to show sliders
+  const hasDisplays = levels[0]?.tracks[0]?.displays[0]
+
   return (
     <FormGroup row>
       <CascadingMenuButton
@@ -55,7 +62,7 @@ const Header = observer(function ({
         <TrackSelectorIcon />
       </CascadingMenuButton>
       <CascadingMenuButton
-        menuItems={[
+        menuItems={() => [
           {
             label: 'Row view menus',
             type: 'subMenu',
@@ -79,7 +86,6 @@ const Header = observer(function ({
               setShowSearchBoxes(!showSearchBoxes)
             },
           },
-
           {
             label: 'Orientation - Side-by-side',
             type: 'radio',
@@ -100,6 +106,14 @@ const Header = observer(function ({
       >
         <SearchIcon />
       </CascadingMenuButton>
+
+      {hasDisplays && showDynamicControls ? (
+        <>
+          <ColorBySelector model={model} />
+          <OpacitySlider model={model} />
+          <MinLengthSlider model={model} />
+        </>
+      ) : null}
 
       {showSearchBoxes ? (
         <span className={sideBySide ? classes.inline : undefined}>

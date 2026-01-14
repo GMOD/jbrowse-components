@@ -1,9 +1,10 @@
+import { toLocale } from '@jbrowse/core/util'
 import { Link, Typography } from '@mui/material'
 
-import { getLengthOnRef } from '../MismatchParser'
-import { navToLoc } from './util'
+import { navToLoc } from './util.ts'
+import { getLengthOnRef } from '../MismatchParser/index.ts'
 
-import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 
 export default function SupplementaryAlignmentsLocStrings({
   tag,
@@ -28,8 +29,8 @@ export default function SupplementaryAlignmentsLocStrings({
             const sp = start - extra
             const ep = end + extra
             const locString = `${saRef}:${Math.max(1, sp)}-${ep}`
-            const displayStart = start.toLocaleString('en-US')
-            const displayEnd = end.toLocaleString('en-US')
+            const displayStart = toLocale(start)
+            const displayEnd = toLocale(end)
             const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand}) [${saLength}bp]`
             return (
               /* biome-ignore lint/suspicious/noArrayIndexKey: */

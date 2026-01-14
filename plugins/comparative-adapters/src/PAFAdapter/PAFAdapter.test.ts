@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './PAFAdapter'
-import MyConfigSchema from './configSchema'
+import Adapter from './PAFAdapter.ts'
+import MyConfigSchema from './configSchema.ts'
 
 test('adapter can fetch features from peach_grape.paf', async () => {
   const adapter = new Adapter(

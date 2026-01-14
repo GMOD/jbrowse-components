@@ -1,2 +1,2 @@
-export { default as configSchema } from './configSchema'
-export { default as modelFactory } from './model'
+export { default as configSchema } from './configSchema.ts'
+export { default as modelFactory } from './model.tsx'

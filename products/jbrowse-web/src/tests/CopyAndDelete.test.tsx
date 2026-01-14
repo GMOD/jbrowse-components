@@ -5,10 +5,11 @@ import {
   JBrowse,
   createView,
   doBeforeEach,
+  expectCanvasMatch,
   getPluginManager,
   mockConsoleWarn,
   setup,
-} from './util'
+} from './util.tsx'
 import masterConfig from '../../test_data/volvox/connection_test.json'
 
 setup()
@@ -24,7 +25,7 @@ const delay = { timeout: 40000 }
 // getConf(track,'trackId') to the TrackContainer but this seems odd, so just
 // silence the warning in test. exact warn is this:
 //
-// "Error: [mobx-state-tree] You are trying
+// "Error: [@jbrowse/mobx-state-tree] You are trying
 // to read or write to an object that is no longer part of a state tree.
 // (Object type: 'LinearVariantDisplay', Path upon death:
 // '/session/views/0/tracks/0/displays/0', Subpath: 'configuration',
@@ -34,7 +35,7 @@ const delay = { timeout: 40000 }
 
 test('copy and delete track in admin mode', () => {
   return mockConsoleWarn(async () => {
-    const { view, findByTestId, queryByText, findAllByTestId, findByText } =
+    const { view, findByTestId, queryByText, findByText, findAllByTestId } =
       await createView(undefined, true)
 
     view.setNewView(0.05, 5000)
@@ -51,8 +52,11 @@ test('copy and delete track in admin mode', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    await findAllByTestId('box-test-vcf-604453', {}, delay)
+    expectCanvasMatch(
+      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
+    )
     fireEvent.click(await findByTestId('track_menu_icon'))
+    fireEvent.click(await findByText('Track actions'))
     fireEvent.click(await findByText('Delete track'))
     await waitFor(() => {
       expect(view.tracks.length).toBe(0)
@@ -70,10 +74,17 @@ test('copy and delete reference sequence track disabled', () => {
     view.setNewView(0.05, 5000)
     const trackConf = getConf(assemblyManager.get('volvox')!, 'sequence')
 
-    // @ts-expect-error
-    const trackMenuItems = session.getTrackActionMenuItems(trackConf)
+    const trackMenuItems = session.getTrackActionMenuItems!(trackConf)
+    const trackActionsSubMenu = trackMenuItems.find(
+      item => 'label' in item && item.label === 'Track actions',
+    )
+    const trackActions =
+      trackActionsSubMenu && 'subMenu' in trackActionsSubMenu
+        ? trackActionsSubMenu.subMenu
+        : []
 
     // copy ref seq track disabled
+    // Note: htsTrackEntryMenu uses getTrackListMenuItems which is a flat list
     fireEvent.click(
       await findByTestId('htsTrackEntryMenu-Tracks,volvox_refseq', {}, delay),
     )
@@ -83,14 +94,26 @@ test('copy and delete reference sequence track disabled', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(0)
     })
-    expect(trackMenuItems[2].disabled).toBe(true)
-    expect(trackMenuItems[3].disabled).toBe(true)
+    const copyTrackItem = trackActions.find(
+      item => 'label' in item && item.label === 'Copy track',
+    )
+    const deleteTrackItem = trackActions.find(
+      item => 'label' in item && item.label === 'Delete track',
+    )
+    expect(
+      copyTrackItem && 'disabled' in copyTrackItem && copyTrackItem.disabled,
+    ).toBe(true)
+    expect(
+      deleteTrackItem &&
+        'disabled' in deleteTrackItem &&
+        deleteTrackItem.disabled,
+    ).toBe(true)
   })
 }, 40000)
 
 test('copy and delete track to session tracks', () => {
   return mockConsoleWarn(async () => {
-    const { view, findByTestId, findAllByTestId, findByText } =
+    const { view, findByTestId, findByText, findAllByTestId } =
       await createView(undefined, false)
 
     view.setNewView(0.05, 5000)
@@ -107,8 +130,11 @@ test('copy and delete track to session tracks', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    await findAllByTestId('box-test-vcf-604453', {}, delay)
+    expectCanvasMatch(
+      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
+    )
     fireEvent.click(await findByTestId('track_menu_icon'))
+    fireEvent.click(await findByText('Track actions'))
     fireEvent.click(await findByText('Delete track'))
     await waitFor(() => {
       expect(view.tracks.length).toBe(0)

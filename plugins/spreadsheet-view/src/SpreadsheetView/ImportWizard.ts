@@ -2,51 +2,55 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getParent, types } from 'mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
-import type { Instance } from 'mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const IMPORT_SIZE_LIMIT = 100_000_000
 
 const fileTypes = ['VCF', 'BED', 'BEDPE', 'STAR-Fusion']
 const fileTypeParsers = {
-  VCF: () => import('./importAdapters/VcfImport').then(r => r.parseVcfBuffer),
-  BED: () => import('./importAdapters/BedImport').then(r => r.parseBedBuffer),
+  VCF: () =>
+    import('./importAdapters/VcfImport.ts').then(r => r.parseVcfBuffer),
+  BED: () =>
+    import('./importAdapters/BedImport.ts').then(r => r.parseBedBuffer),
   BEDPE: () =>
-    import('./importAdapters/BedpeImport').then(r => r.parseBedPEBuffer),
+    import('./importAdapters/BedpeImport.ts').then(r => r.parseBedPEBuffer),
   'STAR-Fusion': () =>
-    import('./importAdapters/STARFusionImport').then(
+    import('./importAdapters/STARFusionImport.ts').then(
       r => r.parseSTARFusionBuffer,
     ),
 }
 
-function getType(adapter: Record<string, unknown>) {
-  if (adapter.vcfLocation || adapter.vcfGzLocation) {
-    return 'VCF'
-  } else if (adapter.bedLocation || adapter.bedGzLocation) {
-    return 'BED'
-  } else if (adapter.bedpeLocation) {
-    return 'BEDPE'
-  } else {
-    return undefined
-  }
+const adapterTypeMap: Record<
+  string,
+  { fileType: string; locationKey: string }
+> = {
+  VcfAdapter: { fileType: 'VCF', locationKey: 'vcfLocation' },
+  VcfTabixAdapter: { fileType: 'VCF', locationKey: 'vcfGzLocation' },
+  BedAdapter: { fileType: 'BED', locationKey: 'bedLocation' },
+  BedTabixAdapter: { fileType: 'BED', locationKey: 'bedGzLocation' },
+  BedpeAdapter: { fileType: 'BEDPE', locationKey: 'bedpeLocation' },
 }
 
-// hardcodes a couple different adapter types
-function getAdapterLoc(adapter: Record<string, FileLocation>) {
-  return (
-    adapter.vcfLocation ||
-    adapter.vcfGzLocation ||
-    adapter.bedLocation ||
-    adapter.bedGzLocation ||
-    adapter.bedpeLocation
-  )
+function getAdapterInfo(adapter: Record<string, unknown>) {
+  const entry = adapterTypeMap[adapter.type as string]
+  if (!entry) {
+    return undefined
+  }
+  const loc =
+    (adapter[entry.locationKey] as FileLocation | undefined) ??
+    (adapter as unknown as FileLocation)
+  return { fileType: entry.fileType, loc }
 }
 
 // regexp used to guess the type of a file or URL from its file extension
-const fileTypesRegexp = new RegExp(`\\.(${fileTypes.join('|')})(\\.gz)?$`, 'i')
+const fileTypesRegexp = new RegExp(
+  String.raw`\.(${fileTypes.join('|')})(\.gz)?$`,
+  'i',
+)
 
 /**
  * #stateModel SpreadsheetImportWizard
@@ -144,33 +148,37 @@ export default function stateModelFactory() {
        */
       tracksForAssembly(selectedAssembly: string) {
         const session = getSession(self)
-        const { tracks = [], sessionTracks = [] } = session
+        const { tracks, sessionTracks = [] } = session
         const allTracks = [
           ...tracks,
           ...sessionTracks,
         ] as AnyConfigurationModel[]
         return allTracks
-          .map(track => {
-            const assemblyNames = readConfObject(track, 'assemblyNames')
+          .flatMap(track => {
+            const assemblyNames = readConfObject(track, 'assemblyNames') ?? []
+            if (!assemblyNames.includes(selectedAssembly)) {
+              return []
+            }
             const adapter = readConfObject(track, 'adapter')
-            const category = readConfObject(track, 'category').join(',')
-            const loc = getAdapterLoc(adapter)
-            return assemblyNames.includes(selectedAssembly) && loc
-              ? {
-                  track,
-                  label: [
-                    category ? `[${category}]` : '',
-                    getTrackName(track, session),
-                  ]
-                    .filter(f => !!f)
-                    .join(' '),
-                  assemblyNames,
-                  type: getType(adapter) || 'UNKNOWN',
-                  loc,
-                }
-              : undefined
+            const info = getAdapterInfo(adapter)
+            if (!info) {
+              return []
+            }
+            const category = readConfObject(track, 'category') ?? []
+            const categoryStr = category.join(',')
+            return {
+              track,
+              label: [
+                categoryStr ? `[${categoryStr}]` : '',
+                getTrackName(track, session),
+              ]
+                .filter(f => !!f)
+                .join(' '),
+              assemblyNames,
+              type: info.fileType,
+              loc: info.loc,
+            }
           })
-          .filter(f => !!f)
           .sort((a, b) => a.label.localeCompare(b.label))
       },
     }))

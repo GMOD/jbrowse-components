@@ -1,8 +1,8 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { type IAnyStateTreeNode, isAlive } from 'mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import type { ModificationType } from './types'
+import type { ModificationType } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 
@@ -18,7 +18,10 @@ export async function getUniqueModifications({
   blocks,
   opts,
 }: {
-  model: IAnyStateTreeNode
+  model: {
+    setStatusMessage: (arg: string) => void
+    effectiveRpcDriverName?: string
+  }
   adapterConfig: AnyConfigurationModel
   blocks: BlockSet
   opts?: ModificationOpts
@@ -32,13 +35,17 @@ export async function getUniqueModifications({
       adapterConfig,
       sessionId,
       regions: blocks.contentBlocks,
+      rpcDriverName: model.effectiveRpcDriverName,
       statusCallback: (arg: string) => {
         if (isAlive(model)) {
-          model.setMessage(arg)
+          model.setStatusMessage(arg)
         }
       },
       ...opts,
     },
   )
-  return values as ModificationType[]
+  return values as {
+    modifications: ModificationType[]
+    simplexModifications: string[]
+  }
 }

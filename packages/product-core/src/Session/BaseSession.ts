@@ -1,11 +1,11 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { getParent, isStateTreeNode, types } from 'mobx-state-tree'
+import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
-import type { BaseRootModelType } from '../RootModel/BaseRootModel'
+import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode, Instance } from 'mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseSessionModel
@@ -121,6 +121,17 @@ export function BaseSessionModel<
         self.hovered = thing
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { margin, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(margin ? { margin } : {}),
+      } as typeof snap
+    })
 }
 
 /** Session mixin MST type for the most basic session */

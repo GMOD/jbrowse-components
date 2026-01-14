@@ -1,11 +1,13 @@
 import { lazy } from 'react'
 
-import { mcscanTypes } from '../syntenyTypes'
+import { mcscanTypes } from '../syntenyTypes.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // lazies
-const MCScanAddTrackComponent = lazy(() => import('./MCScanAddTrackComponent'))
+const MCScanAddTrackComponent = lazy(
+  () => import('./MCScanAddTrackComponent.tsx'),
+)
 
 export default function MCScanAddTrackComponentF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(

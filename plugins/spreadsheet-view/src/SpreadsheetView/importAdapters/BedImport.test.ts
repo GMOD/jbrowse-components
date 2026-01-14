@@ -1,4 +1,4 @@
-import { parseBedBuffer } from './BedImport' // Adjust import path as needed
+import { parseBedBuffer } from './BedImport.ts' // Adjust import path as needed
 
 function stringToUint8Array(str: string): Uint8Array {
   return new TextEncoder().encode(str)

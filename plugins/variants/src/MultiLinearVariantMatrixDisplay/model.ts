@@ -1,11 +1,11 @@
-import { clamp, getSession } from '@jbrowse/core/util'
-import { isAlive, types } from 'mobx-state-tree'
+import { clamp } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel'
+import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 /**
  * #stateModel LinearVariantMatrixDisplay
@@ -24,59 +24,33 @@ export default function stateModelFactory(
          * #property
          */
         type: types.literal('LinearVariantMatrixDisplay'),
-
         /**
          * #property
          */
-        rowHeightSetting: types.optional(types.number, 1),
-        /**
-         * #property
-         */
-        lineZoneHeight: 20,
+        lineZoneHeight: types.optional(types.number, 20),
       }),
     )
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get nrow() {
-        return self.sources?.length || 1
-      },
+    .views(() => ({
       /**
        * #getter
        */
       get blockType() {
         return 'dynamicBlocks'
       },
-      /**
-       * #getter
-       */
-      get totalHeight() {
-        return self.autoHeight
-          ? self.height - self.lineZoneHeight
-          : this.nrow * self.rowHeightSetting
-      },
 
       /**
        * #getter
+       * positions multi-row below the tracklabel even if using overlap
+       * tracklabels
        */
-      get rowHeight() {
-        return self.autoHeight
-          ? self.totalHeight / this.nrow
-          : self.rowHeightSetting
-      },
-
-      /**
-       * #getter
-       */
-      get featuresReady() {
-        return !!self.featuresVolatile
+      get prefersOffset() {
+        return true
       },
     }))
-
     .views(self => ({
       /**
        * #method
+       * Override renderProps to pass the correct height for the matrix renderer
        */
       renderProps() {
         const superProps = self.adapterProps()
@@ -86,15 +60,12 @@ export default function stateModelFactory(
           renderingMode: self.renderingMode,
           minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
           lengthCutoffFilter: self.lengthCutoffFilter,
-          height: self.totalHeight,
+          height: self.autoHeight ? self.totalHeight : self.availableHeight,
+          totalHeight: self.totalHeight,
+          rowHeight: self.rowHeight,
+          scrollTop: self.scrollTop,
           sources: self.sources,
         }
-      },
-      /**
-       * #getter
-       */
-      get canDisplayLabels() {
-        return self.rowHeight > 8 && self.showSidebarLabelsSetting
       },
     }))
     .actions(self => ({
@@ -112,40 +83,22 @@ export default function stateModelFactory(
         /**
          * #action
          */
-        setLineZoneHeight(n: number) {
-          self.lineZoneHeight = clamp(n, 10, 1000)
-          return self.lineZoneHeight
-        },
-        afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const { getMultiVariantSourcesAutorun } = await import(
-                '../getMultiVariantSourcesAutorun'
-              )
-              const { getMultiVariantFeaturesAutorun } = await import(
-                '../getMultiVariantFeaturesAutorun'
-              )
-
-              getMultiVariantSourcesAutorun(self)
-              getMultiVariantFeaturesAutorun(self)
-            } catch (e) {
-              if (isAlive(self)) {
-                console.error(e)
-                getSession(self).notifyError(`${e}`, e)
-              }
-            }
-          })()
-        },
-
-        /**
-         * #action
-         */
         async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg')
+          const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts, superRenderSvg)
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { lineZoneHeight, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(lineZoneHeight !== 20 ? { lineZoneHeight } : {}),
+      } as typeof snap
     })
 }
 

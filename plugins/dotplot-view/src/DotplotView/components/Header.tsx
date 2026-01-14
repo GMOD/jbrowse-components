@@ -1,13 +1,13 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import DotplotControls from './DotplotControls'
-import DotplotWarnings from './DotplotWarnings'
-import PanButtons from './PanButtons'
+import DotplotControls from './DotplotControls.tsx'
+import DotplotWarnings from './DotplotWarnings.tsx'
+import PanButtons from './PanButtons.tsx'
 
-import type { DotplotViewModel } from '../model'
+import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   bp: {
@@ -24,7 +24,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const DotplotHeader = observer(function ({
+const DotplotHeader = observer(function DotplotHeader({
   model,
   selection,
 }: {

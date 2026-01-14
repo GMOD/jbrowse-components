@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   FormControl,
@@ -10,7 +11,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
@@ -30,7 +30,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewLauncher = observer(({ session }: { session: AppSession }) => {
+const ViewLauncher = observer(function ViewLauncher({
+  session,
+}: {
+  session: AppSession
+}) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(session)
   const viewTypes = pluginManager.getViewElements()

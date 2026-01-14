@@ -12,7 +12,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/rpc/configSchema.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/rpc/configSchema.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/RpcOptions.md)
 

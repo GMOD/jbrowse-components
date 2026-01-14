@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config PileupRenderer
@@ -59,6 +59,22 @@ const PileupRenderer = ConfigurationSchema(
       type: 'boolean',
       description:
         'Hides small indels, sometimes occurring in long read sequencing',
+      defaultValue: false,
+    },
+    /**
+     * #slot
+     */
+    hideMismatches: {
+      type: 'boolean',
+      description: 'Hides SNP mismatches',
+      defaultValue: false,
+    },
+    /**
+     * #slot
+     */
+    hideLargeIndels: {
+      type: 'boolean',
+      description: 'Hides large indels (>=10bp)',
       defaultValue: false,
     },
     /**

@@ -1,9 +1,9 @@
 import { assembleLocString, getSession } from '@jbrowse/core/util'
+import { getParent } from '@jbrowse/mobx-state-tree'
 import { Link } from '@mui/material'
-import { getParent } from 'mobx-state-tree'
 
-import { locationLinkClick } from '../util'
-import FeatureMenu from './FeatureMenu'
+import { locationLinkClick } from '../util.ts'
+import FeatureMenu from './FeatureMenu.tsx'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 

@@ -2,7 +2,7 @@ const { createHash } = require('crypto')
 
 const AWS = require('aws-sdk')
 
-const multipart = require('./multipart')
+const multipart = require('./multipart.js')
 
 const { AWS_REGION: region, sessionTable } = process.env
 

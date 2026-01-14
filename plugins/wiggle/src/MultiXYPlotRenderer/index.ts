@@ -1,6 +1,7 @@
-import ReactComponent from '../MultiWiggleRendering'
-import MultiXYPlotRenderer from './MultiXYPlotRenderer'
-import configSchema from './configSchema'
+import { lazy } from 'react'
+
+import MultiXYPlotRenderer from './MultiXYPlotRenderer.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -9,7 +10,7 @@ export default function MultiXYPlotRendererF(pluginManager: PluginManager) {
     () =>
       new MultiXYPlotRenderer({
         name: 'MultiXYPlotRenderer',
-        ReactComponent,
+        ReactComponent: lazy(() => import('../MultiWiggleRendering.tsx')),
         configSchema,
         pluginManager,
       }),

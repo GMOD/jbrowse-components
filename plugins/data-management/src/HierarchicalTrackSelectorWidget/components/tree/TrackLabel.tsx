@@ -1,12 +1,17 @@
+import { memo, useCallback } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
 
-import { isUnsupported } from '../util'
-import TrackLabelMenu from './TrackLabelMenu'
+import { isUnsupported } from '../util.ts'
+import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 
-import type { NodeData } from '../util'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { TreeTrackNode } from '../../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
@@ -31,31 +36,90 @@ export interface InfoArgs {
   conf: AnyConfigurationModel
 }
 
-export default function TrackLabel({ data }: { data: NodeData }) {
+// Memoized checkbox - only re-renders when checked state changes
+const TrackCheckbox = memo(function TrackCheckbox({
+  checked,
+  onChange,
+  id,
+  disabled,
+  className,
+}: {
+  checked: boolean
+  onChange: () => void
+  id: string
+  disabled: boolean
+  className: string
+}) {
+  return (
+    <Checkbox
+      className={className}
+      checked={checked}
+      onChange={onChange}
+      disabled={disabled}
+      slotProps={{
+        input: {
+          // @ts-expect-error
+          'data-testid': `htsTrackEntry-${id}`,
+        },
+      }}
+    />
+  )
+})
+
+// Small observer for selection state
+const TrackLabelText = observer(function TrackLabelText({
+  model,
+  conf,
+  id,
+  name,
+  selectedClass,
+}: {
+  model: HierarchicalTrackSelectorModel
+  conf: AnyConfigurationModel
+  id: string
+  name: string
+  selectedClass: string
+}) {
+  const selected = model.selectionSet.has(conf)
+  return (
+    <div
+      data-testid={`htsTrackLabel-${id}`}
+      className={selected ? selectedClass : undefined}
+    >
+      <SanitizedHTML html={name} />
+    </div>
+  )
+})
+
+// Memoized component - receives checked from parent to avoid observing shownTrackIds
+const TrackLabel = memo(function TrackLabel({
+  model,
+  item,
+  checked,
+}: {
+  model: HierarchicalTrackSelectorModel
+  item: TreeTrackNode
+  checked: boolean
+}) {
   const { classes } = useStyles()
-  const {
-    checked,
-    conf,
-    model,
-    drawerPosition,
-    id,
-    trackId,
-    name,
-    selected,
-    onChange,
-  } = data
+  const { drawerPosition } = getSession(model)
+  const { id, name, conf, trackId } = item
   const description = readConfObject(conf, 'description')
+  const onChange = useCallback(() => {
+    model.view.toggleTrack(trackId)
+  }, [model.view, trackId])
+
   return (
     <>
       <Tooltip
-        title={description + (selected ? ' (in selection)' : '')}
+        title={description}
         placement={drawerPosition === 'left' ? 'right' : 'left'}
       >
         <FormControlLabel
           className={classes.checkboxLabel}
           onClick={event => {
             if (event.ctrlKey || event.metaKey) {
-              if (selected) {
+              if (model.selectionSet.has(conf)) {
                 model.removeFromSelection([conf])
               } else {
                 model.addToSelection([conf])
@@ -64,32 +128,28 @@ export default function TrackLabel({ data }: { data: NodeData }) {
             }
           }}
           control={
-            <Checkbox
-              className={classes.compactCheckbox}
+            <TrackCheckbox
               checked={checked}
-              onChange={() => {
-                onChange(trackId)
-              }}
+              onChange={onChange}
+              id={id}
               disabled={isUnsupported(name)}
-              slotProps={{
-                input: {
-                  // @ts-expect-error
-                  'data-testid': `htsTrackEntry-${id}`,
-                },
-              }}
+              className={classes.compactCheckbox}
             />
           }
           label={
-            <div
-              data-testid={`htsTrackLabel-${id}`}
-              className={selected ? classes.selected : undefined}
-            >
-              <SanitizedHTML html={name} />
-            </div>
+            <TrackLabelText
+              model={model}
+              conf={conf}
+              id={id}
+              name={name}
+              selectedClass={classes.selected}
+            />
           }
         />
       </Tooltip>
-      <TrackLabelMenu model={model} trackId={trackId} id={id} conf={conf} />
+      <TrackSelectorTrackMenu model={model} id={id} conf={conf} />
     </>
   )
-}
+})
+
+export default TrackLabel

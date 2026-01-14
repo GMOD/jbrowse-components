@@ -3,8 +3,8 @@ id: internetaccountsmixin
 title: InternetAccountsMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IArrayType<any>
 // code
 internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
@@ -39,7 +39,7 @@ internetAccounts: types.array(
 
 ```js
 // type signature
-initializeInternetAccount: (internetAccountConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => any
+initializeInternetAccount: (internetAccountConfig: AnyConfigurationModel, initialSnapshot?: {}) => any
 ```
 
 #### action: createEphemeralInternetAccount

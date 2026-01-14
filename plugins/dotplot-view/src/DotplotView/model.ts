@@ -14,39 +14,47 @@ import {
   measureText,
   minmax,
 } from '@jbrowse/core/util'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { saveAs } from 'file-saver'
-import { autorun, observable, transaction } from 'mobx'
 import {
   addDisposer,
   cast,
   getParent,
-  getRoot,
   getSnapshot,
-  resolveIdentifier,
   types,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import { autorun, observable } from 'mobx'
 
-import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
-import { getBlockLabelKeysToHide, makeTicks } from './components/util'
+import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
+import { getBlockLabelKeysToHide, makeTicks } from './components/util.ts'
 
-import type { ImportFormSyntenyTrack } from './types'
+import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // lazies
-const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog'))
+const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
 )
 type Coord = [number, number]
+
+// defaults for postProcessSnapshot filtering
+const defaultHeight = 600
+const defaultBorderSize = 20
+const defaultTickSize = 5
+const defaultHtextRotation = -90
+const defaultFontSize = 15
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -95,15 +103,15 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        height: 600,
+        height: defaultHeight,
         /**
          * #property
          */
-        borderSize: 20,
+        borderSize: defaultBorderSize,
         /**
          * #property
          */
-        tickSize: 5,
+        tickSize: defaultTickSize,
         /**
          * #property
          */
@@ -111,11 +119,11 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        htextRotation: -90,
+        htextRotation: defaultHtextRotation,
         /**
          * #property
          */
-        fontSize: 15,
+        fontSize: defaultFontSize,
         /**
          * #property
          */
@@ -140,9 +148,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        tracks: types.array(
-          pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
-        ),
+        tracks: types.array(pm.pluggableMstType('track', 'stateModel')),
 
         /**
          * #property
@@ -151,6 +157,11 @@ export default function stateModelFactory(pm: PluginManager) {
          * elsewhere
          */
         viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track')),
+        /**
+         * #property
+         * used for initializing the view from a session snapshot
+         */
+        init: types.frozen<DotplotViewInit | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -278,9 +289,36 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #getter
        */
-      get loading() {
-        return self.assemblyNames.length > 0 && !this.initialized
+      get hasSomethingToShow() {
+        return self.assemblyNames.length > 0 || !!self.init
       },
+      /**
+       * #getter
+       * Whether to show a loading indicator instead of the import form or view
+       */
+      get showLoading() {
+        return (
+          this.hasSomethingToShow &&
+          !this.initialized &&
+          !self.volatileError &&
+          !self.assemblyErrors
+        )
+      },
+      /**
+       * #getter
+       * Whether to show the import form
+       */
+      get showImportForm() {
+        return !this.hasSomethingToShow || !!self.volatileError
+      },
+
+      /**
+       * #getter
+       */
+      get loadingMessage() {
+        return this.showLoading ? 'Loading' : undefined
+      },
+
       /**
        * #getter
        */
@@ -384,9 +422,23 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #action
        */
+      setInit(init?: DotplotViewInit) {
+        self.init = init
+      },
+
+      /**
+       * #action
+       */
       zoomOut() {
         self.hview.zoomOut()
         self.vview.zoomOut()
+        // Center when zoomed out to show all content
+        if (self.hview.bpPerPx >= self.hview.maxBpPerPx * 0.99) {
+          self.hview.center()
+        }
+        if (self.vview.bpPerPx >= self.vview.maxBpPerPx * 0.99) {
+          self.vview.center()
+        }
       },
       /**
        * #action
@@ -395,6 +447,8 @@ export default function stateModelFactory(pm: PluginManager) {
         self.hview.zoomIn()
         self.vview.zoomIn()
       },
+    }))
+    .actions(self => ({
       /**
        * #action
        */
@@ -418,60 +472,30 @@ export default function stateModelFactory(pm: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pm.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const trackType = pm.getTrackType(conf.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${conf.type}`)
-        }
-        const viewType = pm.getViewType(self.type)!
-        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
-          viewType.displayTypes.find(type => type.name === d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
-          )
-        }
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: conf.type,
-          configuration: conf,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
-        })
-        self.tracks.push(track)
+        return showTrackGeneric(self, trackId, initialSnapshot)
       },
 
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pm.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const tracks = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => {
-          for (const track of tracks) {
-            self.tracks.remove(track)
-          }
-        })
-        return tracks.length
+        return hideTrackGeneric(self, trackId)
       },
       /**
        * #action
        */
       toggleTrack(trackId: string) {
-        const hiddenCount = this.hideTrack(trackId)
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-          return true
-        }
-        return false
+        toggleTrackGeneric(self, trackId)
       },
       /**
        * #action
        */
       setAssemblyNames(target: string, query: string) {
         self.assemblyNames = cast([target, query])
+        // Clear displayed regions to trigger re-initialization with the new
+        // assemblies. The dotplotRegionsAutorun will re-populate them.
+        self.hview.setDisplayedRegions([])
+        self.vview.setDisplayedRegions([])
       },
       /**
        * #action
@@ -511,12 +535,66 @@ export default function stateModelFactory(pm: PluginManager) {
       },
       /**
        * #action
+       * Calculate borders synchronously for a given zoom level
+       */
+      calculateBorders() {
+        if (self.volatileWidth === undefined) {
+          return { borderX: self.borderX, borderY: self.borderY }
+        }
+        const { vview, hview, viewHeight, viewWidth } = self
+        const padding = 40
+        const vblocks = vview.dynamicBlocks.contentBlocks
+        const hblocks = hview.dynamicBlocks.contentBlocks
+        const hoffset = hview.offsetPx
+        const voffset = vview.offsetPx
+
+        const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
+        const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
+        const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
+        const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
+
+        return {
+          borderX: Math.max(bx + padding, 50),
+          borderY: Math.max(by + padding, 50),
+        }
+      },
+      /**
+       * #action
        */
       showAllRegions() {
+        // First zoom to max to trigger border recalculation
+        self.hview.zoomTo(self.hview.maxBpPerPx)
+        self.vview.zoomTo(self.vview.maxBpPerPx)
+
+        // Calculate what borders should be at this zoom level
+        const { borderX, borderY } = this.calculateBorders()
+
+        // Apply calculated borders
+        self.setBorderX(borderX)
+        self.setBorderY(borderY)
+
+        // Now zoom again with updated borders/dimensions and center
         self.hview.zoomTo(self.hview.maxBpPerPx)
         self.vview.zoomTo(self.vview.maxBpPerPx)
         self.vview.center()
         self.hview.center()
+      },
+      /**
+       * #action
+       */
+      initializeDisplayedRegions() {
+        const { hview, vview, assemblyNames } = self
+        if (hview.displayedRegions.length && vview.displayedRegions.length) {
+          return
+        }
+        const { assemblyManager } = getSession(self)
+        hview.setDisplayedRegions(
+          assemblyManager.get(assemblyNames[0]!)?.regions || [],
+        )
+        vview.setDisplayedRegions(
+          assemblyManager.get(assemblyNames[1]!)?.regions || [],
+        )
+        this.showAllRegions()
       },
       /**
        * #action
@@ -560,9 +638,12 @@ export default function stateModelFactory(pm: PluginManager) {
               const trackConf = getParent<AnyConfigurationModel>(displayConf, 2)
               return {
                 type: trackConf.type,
-                configuration: trackConf,
+                configuration: getSnapshot(trackConf),
                 displays: [
-                  { type: displayConf.type, configuration: displayConf },
+                  {
+                    type: displayConf.type,
+                    configuration: getSnapshot(displayConf),
+                  },
                 ],
               }
             })
@@ -598,10 +679,15 @@ export default function stateModelFactory(pm: PluginManager) {
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {
-        const { renderToSvg } = await import('./svgcomponents/SVGDotplotView')
+        const { renderToSvg } =
+          await import('./svgcomponents/SVGDotplotView.tsx')
         const html = await renderToSvg(self as DotplotViewModel, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const { saveAs } = await import('file-saver-es')
+        saveAs(
+          new Blob([html], { type: 'image/svg+xml' }),
+          opts.filename || 'image.svg',
+        )
       },
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {
@@ -613,75 +699,91 @@ export default function stateModelFactory(pm: PluginManager) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => {
-            const s = (s: unknown) => JSON.stringify(s)
-            const { showPanButtons, wheelMode, cursorMode } = self
-            if (typeof localStorage !== 'undefined') {
-              localStorage.setItem('dotplot-showPanbuttons', s(showPanButtons))
-              localStorage.setItem('dotplot-cursorMode', cursorMode)
-              localStorage.setItem('dotplot-wheelMode', wheelMode)
-            }
-          }),
-        )
-        addDisposer(
-          self,
           autorun(
-            () => {
+            function dotplotInitAutorun() {
+              const { init, volatileWidth } = self
+              if (!volatileWidth || !init) {
+                return
+              }
+
               const session = getSession(self)
 
-              // don't operate if width not set yet
-              if (
-                self.volatileWidth === undefined ||
-                !self.assembliesInitialized
-              ) {
-                return
-              }
+              // Set assembly names from init
+              const assemblyNames = init.views.map(v => v.assembly)
+              self.setAssemblyNames(assemblyNames[0]!, assemblyNames[1]!)
 
-              // also don't operate if displayedRegions already set, this is a
-              // helper autorun to load regions from assembly
-              if (
-                self.hview.displayedRegions.length > 0 &&
-                self.vview.displayedRegions.length > 0
-              ) {
-                return
-              }
-
-              const views = [self.hview, self.vview]
-              transaction(() => {
-                for (const [index, name] of self.assemblyNames.entries()) {
-                  const assembly = session.assemblyManager.get(name)
-                  const view = views[index]!
-                  view.setDisplayedRegions(assembly?.regions || [])
+              // Show tracks
+              if (init.tracks) {
+                for (const trackId of init.tracks) {
+                  try {
+                    self.showTrack(trackId)
+                  } catch (e) {
+                    console.error(e)
+                    session.notifyError(`${e}`, e)
+                  }
                 }
-                self.showAllRegions()
-              })
+              }
+
+              // Clear init state
+              self.setInit(undefined)
             },
-            { delay: 1000 },
+            { name: 'DotplotInit' },
           ),
         )
         addDisposer(
           self,
-          autorun(function borderSetter() {
-            // make sure we have a width on the view before trying to load
-            if (self.volatileWidth === undefined) {
-              return
-            }
-            const { vview, hview, viewHeight, viewWidth } = self
-            const padding = 40
-            const vblocks = vview.dynamicBlocks.contentBlocks
-            const hblocks = hview.dynamicBlocks.contentBlocks
-            const hoffset = hview.offsetPx
-            const voffset = vview.offsetPx
+          autorun(
+            function dotplotLocalStorageAutorun() {
+              const s = (s: unknown) => JSON.stringify(s)
+              const { showPanButtons, wheelMode, cursorMode } = self
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(
+                  'dotplot-showPanbuttons',
+                  s(showPanButtons),
+                )
+                localStorage.setItem('dotplot-cursorMode', cursorMode)
+                localStorage.setItem('dotplot-wheelMode', wheelMode)
+              }
+            },
+            { name: 'DotplotLocalStorage' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function dotplotRegionsAutorun() {
+              // IMPORTANT: Must actually read assemblyNames array (via slice) to
+              // force MobX to track it. Just referencing it without reading won't
+              // make the autorun re-run when assembly names change. This ensures
+              // the autorun fires when setAssemblyNames is called with different
+              // assemblies, which is critical for re-initializing displayed regions
+              void self.assemblyNames.slice()
+              if (
+                self.volatileWidth !== undefined &&
+                self.assembliesInitialized
+              ) {
+                self.initializeDisplayedRegions()
+              }
+            },
+            { delay: 1000, name: 'DotplotRegions' },
+          ),
+        )
+        addDisposer(
+          self,
+          autorun(
+            function dotplotBorderAutorun() {
+              // make sure we have a width on the view before trying to load
+              if (self.volatileWidth === undefined) {
+                return
+              }
 
-            const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
-            const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
-            const by = pxWidthForBlocks(hblocks, vview.bpPerPx, hhide)
-            const bx = pxWidthForBlocks(vblocks, hview.bpPerPx, vhide)
-
-            // these are set via autorun to avoid dependency cycle
-            self.setBorderY(Math.max(by + padding, 50))
-            self.setBorderX(Math.max(bx + padding, 50))
-          }),
+              // Calculate and apply borders
+              const { borderX, borderY } = self.calculateBorders()
+              self.setBorderX(borderX)
+              self.setBorderY(borderY)
+            },
+            { name: 'DotplotBorder' },
+          ),
         )
       },
       /**
@@ -732,7 +834,6 @@ export default function stateModelFactory(pm: PluginManager) {
               ])
             },
           },
-
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
@@ -764,9 +865,42 @@ export default function stateModelFactory(pm: PluginManager) {
         return self.volatileError || self.assemblyErrors
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        init,
+        height,
+        borderSize,
+        tickSize,
+        vtextRotation,
+        htextRotation,
+        fontSize,
+        trackSelectorType,
+        drawCigar,
+        assemblyNames,
+        viewTrackConfigs,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(height !== defaultHeight ? { height } : {}),
+        ...(borderSize !== defaultBorderSize ? { borderSize } : {}),
+        ...(tickSize !== defaultTickSize ? { tickSize } : {}),
+        ...(vtextRotation ? { vtextRotation } : {}),
+        ...(htextRotation !== defaultHtextRotation ? { htextRotation } : {}),
+        ...(fontSize !== defaultFontSize ? { fontSize } : {}),
+        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
+        ...(!drawCigar ? { drawCigar } : {}),
+        ...(assemblyNames.length ? { assemblyNames } : {}),
+        ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
+      } as typeof snap
+    })
 }
 
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
 export type DotplotViewModel = Instance<DotplotViewStateModel>
 
-export { Dotplot1DView, type Dotplot1DViewModel } from './1dview'
+export { Dotplot1DView, type Dotplot1DViewModel } from './1dview.ts'

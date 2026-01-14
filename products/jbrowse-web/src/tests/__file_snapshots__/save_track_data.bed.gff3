@@ -1,0 +1,21 @@
+##gff-version 3
+ctgA	.	mRNA	1050	9000	1000	+	.	Name=EDEN.1;itemRgb=0,0,0
+ctgA	.	five_prime_UTR	1050	1200	.	+	.	
+ctgA	.	CDS	1201	1500	.	+	0	
+ctgA	.	CDS	3000	3902	.	+	0	
+ctgA	.	CDS	5000	5500	.	+	0	
+ctgA	.	CDS	7000	7608	.	+	0	
+ctgA	.	three_prime_UTR	7609	9000	.	+	.	
+ctgA	.	mRNA	1050	9000	1000	+	.	Name=EDEN.2;itemRgb=0,0,0
+ctgA	.	five_prime_UTR	1050	1200	.	+	.	
+ctgA	.	CDS	1201	1500	.	+	0	
+ctgA	.	CDS	5000	5500	.	+	0	
+ctgA	.	CDS	7000	7608	.	+	0	
+ctgA	.	three_prime_UTR	7609	9000	.	+	.	
+ctgA	.	mRNA	1300	9000	1000	+	.	Name=EDEN.3;itemRgb=0,0,0
+ctgA	.	five_prime_UTR	1300	1500	.	+	.	
+ctgA	.	five_prime_UTR	3000	3300	.	+	.	
+ctgA	.	CDS	3301	3902	.	+	0	
+ctgA	.	CDS	5000	5500	.	+	1	
+ctgA	.	CDS	7000	7600	.	+	1	
+ctgA	.	three_prime_UTR	7601	9000	.	+	.	

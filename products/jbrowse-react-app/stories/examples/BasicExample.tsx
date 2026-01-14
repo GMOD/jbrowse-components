@@ -1,6 +1,6 @@
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
-import { JBrowseApp, createViewState } from '../../src'
+import { JBrowseApp, createViewState } from '../../src/index.ts'
 
 export const BasicExample = () => {
   const state = createViewState({

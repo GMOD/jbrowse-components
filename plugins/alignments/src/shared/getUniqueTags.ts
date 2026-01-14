@@ -3,7 +3,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
-import type { IAnyStateTreeNode } from 'mobx-state-tree'
 
 export async function getUniqueTags({
   self,
@@ -11,7 +10,10 @@ export async function getUniqueTags({
   blocks,
   opts,
 }: {
-  self: IAnyStateTreeNode & { adapterConfig: AnyConfigurationModel }
+  self: {
+    adapterConfig: AnyConfigurationModel
+    effectiveRpcDriverName?: string
+  }
   tag: string
   blocks: BlockSet
   opts?: {
@@ -21,7 +23,7 @@ export async function getUniqueTags({
   }
 }) {
   const { rpcManager } = getSession(self)
-  const { adapterConfig } = self
+  const { adapterConfig, effectiveRpcDriverName } = self
   const sessionId = getRpcSessionId(self)
   const values = await rpcManager.call(
     getRpcSessionId(self),
@@ -30,6 +32,7 @@ export async function getUniqueTags({
       adapterConfig,
       tag,
       sessionId,
+      rpcDriverName: effectiveRpcDriverName,
       regions: blocks.contentBlocks,
       ...opts,
     },

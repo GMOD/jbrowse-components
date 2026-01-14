@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './SPARQLAdapter'
-import configSchema from './configSchema'
+import Adapter from './SPARQLAdapter.ts'
+import configSchema from './configSchema.ts'
 import emptyQueryResponse from './test_data/emptyQueryResponse.json'
 import queryResponse from './test_data/queryResponse.json'
 import refNamesResponse from './test_data/refNamesResponse.json'

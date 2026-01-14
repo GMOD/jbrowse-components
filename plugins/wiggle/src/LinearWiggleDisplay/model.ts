@@ -2,27 +2,27 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { types } from 'mobx-state-tree'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
-import SharedWiggleMixin from '../shared/SharedWiggleMixin'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
+import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
+import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 // lazies
-const Tooltip = lazy(() => import('./components/Tooltip'))
-const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
+const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -120,8 +120,7 @@ function stateModelFactory(
           const { filters, resolution, scaleOpts } = self
           return {
             ...superProps,
-            rpcDriverName: self.rpcDriverName,
-            displayModel: self,
+            rpcDriverName: self.effectiveRpcDriverName,
             config: self.rendererConfig,
             displayCrossHatches: self.displayCrossHatchesSetting,
             scaleOpts,
@@ -163,14 +162,20 @@ function stateModelFactory(
        * #method
        */
       renderProps() {
-        const { inverted, ticks, height } = self
+        const { inverted, ticks, height, domain } = self
         const superProps = self.adapterProps()
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const statsRegion = JSON.stringify(view.dynamicBlocks)
         return {
           ...self.adapterProps(),
-          notReady: superProps.notReady || !self.stats,
+          notReady:
+            superProps.notReady ||
+            !domain ||
+            self.stats?.statsRegion !== statsRegion,
           height,
           ticks,
           inverted,
+          offset: YSCALEBAR_LABEL_OFFSET,
         }
       },
 
@@ -192,7 +197,9 @@ function stateModelFactory(
       get quantitativeStatsReady() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return (
-          view.initialized && self.statsReadyAndRegionNotTooLarge && !self.error
+          view.initialized &&
+          self.featureDensityStatsReadyAndRegionNotTooLarge &&
+          !self.error
         )
       },
     }))
@@ -202,8 +209,9 @@ function stateModelFactory(
       return {
         /**
          * #method
+         * Base track menu items shared by all wiggle displays (Score submenu)
          */
-        trackMenuItems() {
+        wiggleBaseTrackMenuItems() {
           return [
             ...superTrackMenuItems(),
             {
@@ -211,6 +219,16 @@ function stateModelFactory(
               icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
             },
+          ]
+        },
+
+        /**
+         * #method
+         * Menu items specific to LinearWiggleDisplay (Color, Inverted, etc.)
+         * Not used by SNPCoverageDisplay
+         */
+        wiggleOnlyTrackMenuItems() {
+          return [
             ...(self.graphType
               ? [
                   {
@@ -289,6 +307,31 @@ function stateModelFactory(
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       */
+      trackMenuItems() {
+        return [
+          ...self.wiggleBaseTrackMenuItems(),
+          {
+            label: 'Show...',
+            icon: VisibilityIcon,
+            subMenu: [
+              {
+                label: 'Show tooltips',
+                type: 'checkbox',
+                checked: self.showTooltipsEnabled,
+                onClick: () => {
+                  self.setShowTooltips(!self.showTooltipsEnabled)
+                },
+              },
+            ],
+          },
+          ...self.wiggleOnlyTrackMenuItems(),
+        ]
+      },
+    }))
     .actions(self => {
       const { renderSvg: superRenderSvg } = self
 
@@ -296,9 +339,8 @@ function stateModelFactory(
         afterAttach() {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
-            const { getQuantitativeStatsAutorun } = await import(
-              '../getQuantitativeStatsAutorun'
-            )
+            const { getQuantitativeStatsAutorun } =
+              await import('../getQuantitativeStatsAutorun.ts')
             getQuantitativeStatsAutorun(self)
           })()
         },
@@ -306,10 +348,21 @@ function stateModelFactory(
          * #action
          */
         async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg')
+          const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts, superRenderSvg)
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { invertedSetting, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(invertedSetting !== undefined ? { invertedSetting } : {}),
+      } as typeof snap
     })
 }
 

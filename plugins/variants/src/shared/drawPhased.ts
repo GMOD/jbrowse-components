@@ -1,22 +1,10 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { f2 } from './constants'
-import { colorify } from './util'
+import { REFERENCE_COLOR, UNPHASED_COLOR, f2 } from './constants.ts'
 
-function getColorPhased(alleles: string[], HP: number, drawReference = true) {
-  const c = +alleles[HP]!
-  return c ? set1[c - 1] || 'black' : drawReference ? '#ccc' : undefined
-}
-
-function getColorPhasedWithPhaseSet(
-  alleles: string[],
-  HP: number,
-  PS: string,
-  drawReference = true,
-) {
-  const c = +alleles[HP]!
-  return c ? colorify(+PS) || 'black' : drawReference ? '#ccc' : undefined
+function colorify(n: number) {
+  return `hsl(${n % 255}, 50%, 50%)`
 }
 
 export function drawPhased(
@@ -31,10 +19,14 @@ export function drawPhased(
   drawReference = true,
   alpha = 1,
 ) {
-  const c =
-    PS !== undefined
-      ? getColorPhasedWithPhaseSet(alleles, HP, PS, drawReference)
-      : getColorPhased(alleles, HP, drawReference)
+  const allele = +alleles[HP]!
+  const c = allele
+    ? PS !== undefined
+      ? colorify(+PS) || UNPHASED_COLOR
+      : set1[allele - 1] || UNPHASED_COLOR
+    : drawReference
+      ? REFERENCE_COLOR
+      : undefined
   if (c) {
     ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
     ctx.fillRect(x - f2, y - f2, w + f2, h + f2)

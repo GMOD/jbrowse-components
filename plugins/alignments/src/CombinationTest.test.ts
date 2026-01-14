@@ -3,11 +3,11 @@ import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BamAdapter from './BamAdapter/BamAdapter'
-import bamConfigSchema from './BamAdapter/configSchema'
-import CramAdapter from './CramAdapter/CramAdapter'
-import { SequenceAdapter } from './CramAdapter/CramTestAdapters'
-import cramConfigSchema from './CramAdapter/configSchema'
+import BamAdapter from './BamAdapter/BamAdapter.ts'
+import bamConfigSchema from './BamAdapter/configSchema.ts'
+import CramAdapter from './CramAdapter/CramAdapter.ts'
+import { SequenceAdapter } from './CramAdapter/CramTestAdapters.ts'
+import cramConfigSchema from './CramAdapter/configSchema.ts'
 
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
@@ -22,6 +22,10 @@ const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
   }
 }
 
+// Mock sequenceAdapter config - the actual config doesn't matter since
+// getVolvoxSequenceSubAdapter ignores it and returns the test adapter
+const sequenceAdapterConfig = { type: 'TestSequenceAdapter' }
+
 async function getFeats(f1: string, f2: string) {
   const cramAdapter = new CramAdapter(
     cramConfigSchema.create({
@@ -31,11 +35,12 @@ async function getFeats(f1: string, f2: string) {
       craiLocation: {
         localPath: require.resolve(`${f1}.crai`),
       },
-      sequenceAdapter: {},
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
   )
+  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
+  cramAdapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
   const bamAdapter = new BamAdapter(
     bamConfigSchema.create({
@@ -48,7 +53,12 @@ async function getFeats(f1: string, f2: string) {
         },
       },
     }),
+    getVolvoxSequenceSubAdapter,
+    pluginManager,
   )
+  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
+  bamAdapter.setSequenceAdapterConfig(sequenceAdapterConfig)
+
   const query = {
     assemblyName: 'volvox',
     refName: 'ctgA',

@@ -1,6 +1,7 @@
-import HicRenderer from './HicRenderer'
-import ReactComponent from './components/HicRendering'
-import configSchema from './configSchema'
+import { lazy } from 'react'
+
+import HicRenderer from './HicRenderer.tsx'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -9,7 +10,7 @@ export default function HicRendererF(pluginManager: PluginManager) {
     () =>
       new HicRenderer({
         name: 'HicRenderer',
-        ReactComponent,
+        ReactComponent: lazy(() => import('./components/HicRendering.tsx')),
         configSchema,
         pluginManager,
       }),

@@ -1,9 +1,9 @@
 import AppLogo from '@jbrowse/core/ui/AppLogo'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
 
 interface Menu {
   label: string
-  menuItems: JBMenuItem[]
+  menuItems: JBMenuItem[] | (() => JBMenuItem[])
 }
 
 type AppSession = SessionWithDrawerWidgets & {
@@ -39,7 +39,7 @@ type AppSession = SessionWithDrawerWidgets & {
   popSnackbarMessage: () => unknown
 }
 
-const AppToolbar = observer(function ({
+const AppToolbar = observer(function AppToolbar({
   session,
   HeaderButtons = <div />,
 }: {
@@ -55,8 +55,22 @@ const AppToolbar = observer(function ({
         <DropDownMenu
           key={menu.label}
           menuTitle={menu.label}
-          menuItems={menu.menuItems}
-          session={session}
+          menuItems={() => {
+            const items =
+              typeof menu.menuItems === 'function'
+                ? menu.menuItems()
+                : menu.menuItems
+            return items.map(arg => ({
+              ...arg,
+              ...('onClick' in arg
+                ? {
+                    onClick: () => {
+                      arg.onClick(session)
+                    },
+                  }
+                : {}),
+            }))
+          }}
         />
       ))}
       <div className={classes.grow} />

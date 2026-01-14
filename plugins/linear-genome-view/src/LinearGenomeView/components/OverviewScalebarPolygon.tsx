@@ -2,13 +2,12 @@ import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// core
-import { HEADER_BAR_HEIGHT } from '../consts'
+import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '..'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
-const OverviewScalebarPolygon = observer(function ({
+const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   model,
   overview,
   useOffset = true,
@@ -18,29 +17,28 @@ const OverviewScalebarPolygon = observer(function ({
   useOffset?: boolean
 }) {
   const theme = useTheme()
+  const polygonColor = theme.palette.tertiary.light
   const multiplier = Number(useOffset)
+
   const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
     model
   const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
-  const polygonColor = theme.palette.tertiary.light
 
-  // catches possible null from at's below
   if (!contentBlocks.length) {
     return null
   }
+
   const first = contentBlocks.at(0)!
   const last = contentBlocks.at(-1)!
   const topLeft =
     (overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...first,
+      refName: first.refName,
       coord: first.reversed ? first.end : first.start,
     }) || 0) +
     cytobandOffset * multiplier
   const topRight =
     (overview.bpToPx({
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...last,
+      refName: last.refName,
       coord: last.reversed ? last.start : last.end,
     }) || 0) +
     cytobandOffset * multiplier

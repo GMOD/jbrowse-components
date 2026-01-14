@@ -1,4 +1,26 @@
-import type { SampleInfo, Source } from './types'
+import type { SampleInfo, Source } from './types.ts'
+
+function makeHaplotypeSources(source: Source, ploidy: number): Source[] {
+  const results: Source[] = []
+  for (let i = 0; i < ploidy; i++) {
+    const name = `${source.name} HP${i}`
+    results.push({ ...source, name, baseName: source.name, HP: i })
+  }
+  return results
+}
+
+export function expandSourcesToHaplotypes({
+  sources,
+  sampleInfo,
+}: {
+  sources: Source[]
+  sampleInfo: Record<string, SampleInfo>
+}) {
+  return sources.flatMap(source => {
+    const ploidy = sampleInfo[source.name]?.maxPloidy ?? 2
+    return makeHaplotypeSources(source, ploidy)
+  })
+}
 
 export function getSources({
   sources,
@@ -11,35 +33,31 @@ export function getSources({
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
 }) {
-  const rows = []
   const sourceMap = Object.fromEntries(sources.map(s => [s.name, s]))
-  for (const row of layout) {
-    // make separate rows for each haplotype in phased mode
+
+  return layout.flatMap(row => {
+    const sampleName = row.baseName ?? row.name
+    const baseSource = sourceMap[sampleName]
+
+    if (!baseSource) {
+      return []
+    }
+
+    const merged = { ...baseSource, ...row }
+
     if (renderingMode === 'phased') {
-      const info = sampleInfo?.[row.name]
-      if (info?.isPhased) {
-        const ploidy = info.maxPloidy
-        for (let i = 0; i < ploidy; i++) {
-          const id = `${row.name} HP${i}`
-          rows.push({
-            ...sourceMap[row.name],
-            ...row,
-            label: id,
-            HP: i,
-            id: id,
-          })
-        }
+      if (row.HP !== undefined) {
+        // already a haplotype entry (from haplotype clustering)
+        return [{ ...merged, baseName: sampleName }]
       }
+      // expand sample to haplotypes
+      const ploidy = sampleInfo?.[row.name]?.maxPloidy
+      if (ploidy) {
+        return makeHaplotypeSources(merged, ploidy)
+      }
+      return []
     }
-    // non-phased mode does not make separate rows
-    else {
-      rows.push({
-        ...sourceMap[row.name],
-        ...row,
-        label: row.name,
-        id: row.name,
-      })
-    }
-  }
-  return rows
+    // non-phased mode
+    return [merged]
+  })
 }

@@ -1,10 +1,10 @@
-import { onPatch } from 'mobx-state-tree'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 
-import createModel from './createModel'
+import createModel from './createModel.ts'
 
-import type { Config } from './types'
+import type { Config } from './types.ts'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { IJsonPatch } from 'mobx-state-tree'
+import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
 
 export default function createViewState(opts: {
   config: Config

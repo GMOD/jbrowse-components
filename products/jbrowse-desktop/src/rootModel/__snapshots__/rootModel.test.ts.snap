@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`adds menus 1`] = `
 [
@@ -145,6 +145,21 @@ exports[`adds menus 1`] = `
         "icon": [Function],
         "label": "Open assembly manager",
         "onClick": [Function],
+      },
+      {
+        "checked": false,
+        "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Use workspaces",
+        "onClick": [Function],
+        "type": "checkbox",
       },
     ],
   },
@@ -297,6 +312,21 @@ exports[`adds menus 2`] = `
         "label": "Open assembly manager",
         "onClick": [Function],
       },
+      {
+        "checked": false,
+        "helpText": "Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.",
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Use workspaces",
+        "onClick": [Function],
+        "type": "checkbox",
+      },
     ],
   },
   {
@@ -370,16 +400,6 @@ exports[`adds track and connection configs to an assembly 1`] = `
 
 exports[`adds track and connection configs to an assembly 2`] = `
 {
-  "displays": [
-    {
-      "displayId": "trackId0-LinearBasicDisplay",
-      "type": "LinearBasicDisplay",
-    },
-    {
-      "displayId": "trackId0-LinearArcDisplay",
-      "type": "LinearArcDisplay",
-    },
-  ],
   "trackId": "trackId0",
   "type": "FeatureTrack",
 }

@@ -1,8 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
-import { types } from 'mobx-state-tree'
 
-import { defaultFilterFlags } from '../shared/util'
+import { defaultFilterFlags } from '../shared/util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

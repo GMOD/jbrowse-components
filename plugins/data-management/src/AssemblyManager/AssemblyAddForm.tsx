@@ -16,7 +16,7 @@ import type {
   FileLocation,
 } from '@jbrowse/core/util/types'
 
-const AdapterSelector = observer(function ({
+const AdapterSelector = observer(function AdapterSelector({
   adapterSelection,
   setAdapterSelection,
   adapterTypes,
@@ -45,32 +45,34 @@ const AdapterSelector = observer(function ({
   )
 })
 
-const UnindexedFastaAdapterInput = observer(function ({
-  fastaLocation,
-  setFastaLocation,
-}: {
-  fastaLocation: FileLocation
-  setFastaLocation: (arg: FileLocation) => void
-}) {
-  return (
-    <>
-      <Alert severity="warning" style={{ margin: 8 }}>
-        Note: use only relatively small files for this type, it is loaded into
-        memory
-      </Alert>
-      <div>
-        <FileSelector
-          inline
-          name="FASTA file"
-          location={fastaLocation}
-          setLocation={setFastaLocation}
-        />
-      </div>
-    </>
-  )
-})
+const UnindexedFastaAdapterInput = observer(
+  function UnindexedFastaAdapterInput({
+    fastaLocation,
+    setFastaLocation,
+  }: {
+    fastaLocation: FileLocation
+    setFastaLocation: (arg: FileLocation) => void
+  }) {
+    return (
+      <>
+        <Alert severity="warning" style={{ margin: 8 }}>
+          Note: a FASTA index will be generated on submit, might take a couple
+          minutes and if the file is remote, it will be downloaded in full
+        </Alert>
+        <div>
+          <FileSelector
+            inline
+            name="FASTA file"
+            location={fastaLocation}
+            setLocation={setFastaLocation}
+          />
+        </div>
+      </>
+    )
+  },
+)
 
-const IndexedFastaAdapterInput = observer(function ({
+const IndexedFastaAdapterInput = observer(function IndexedFastaAdapterInput({
   fastaLocation,
   faiLocation,
   setFaiLocation,
@@ -103,7 +105,7 @@ const IndexedFastaAdapterInput = observer(function ({
   )
 })
 
-const BgzipFastaAdapterInput = observer(function ({
+const BgzipFastaAdapterInput = observer(function BgzipFastaAdapterInput({
   fastaLocation,
   faiLocation,
   gziLocation,
@@ -148,7 +150,7 @@ const BgzipFastaAdapterInput = observer(function ({
   )
 })
 
-const TwoBitAdapterInput = observer(function ({
+const TwoBitAdapterInput = observer(function TwoBitAdapterInput({
   twoBitLocation,
   chromSizesLocation,
   setTwoBitLocation,
@@ -196,7 +198,7 @@ type AdapterType =
   | 'UnindexedFastaAdapter'
   | 'TwoBitAdapter'
 
-const AssemblyAddForm = observer(function ({
+const AssemblyAddForm = observer(function AssemblyAddForm({
   session,
   onClose,
 }: {

@@ -5,29 +5,24 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import ColorLensIcon from '@mui/icons-material/ColorLens'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
-import { observable } from 'mobx'
-import { types } from 'mobx-state-tree'
 
-import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin'
-import { getColorForModification, modificationData } from '../util'
+import { SharedLinearPileupDisplayMixin } from './SharedLinearPileupDisplayMixin.ts'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin.ts'
+import { getModificationsSubMenu } from '../shared/menuItems.ts'
 
-import type {
-  ModificationType,
-  ModificationTypeWithColor,
-  SortedBy,
-} from '../shared/types'
+import type { SortedBy } from '../shared/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 // lazies
-const SortByTagDialog = lazy(() => import('./components/SortByTagDialog'))
-const GroupByDialog = lazy(() => import('./components/GroupByDialog'))
+const SortByTagDialog = lazy(() => import('./components/SortByTagDialog.tsx'))
+const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
 
 type LGV = LinearGenomeViewModel
 
@@ -42,6 +37,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .compose(
       'LinearPileupDisplay',
       SharedLinearPileupDisplayMixin(configSchema),
+      SharedModificationsMixin(),
       types.model({
         /**
          * #property
@@ -75,16 +71,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       currSortBpPerPx: 0,
-      /**
-       * #volatile
-       */
-      visibleModifications: observable.map<string, ModificationTypeWithColor>(
-        {},
-      ),
-      /**
-       * #volatile
-       */
-      modificationsReady: false,
     }))
     .actions(self => ({
       /**
@@ -92,25 +78,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setCurrSortBpPerPx(n: number) {
         self.currSortBpPerPx = n
-      },
-      /**
-       * #action
-       */
-      updateVisibleModifications(uniqueModifications: ModificationType[]) {
-        for (const value of uniqueModifications) {
-          if (!self.visibleModifications.has(value.type)) {
-            self.visibleModifications.set(value.type, {
-              ...value,
-              color: getColorForModification(value.type),
-            })
-          }
-        }
-      },
-      /**
-       * #action
-       */
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
       },
       /**
        * #action
@@ -162,6 +129,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #action
+       * Sort by a specific position (used for sorting at mismatch positions)
+       */
+      setSortedByAtPosition(type: string, pos: number, refName: string) {
+        const view = getContainingView(self) as LGV
+        const assemblyName = view.assemblyNames[0]
+        if (!assemblyName) {
+          return
+        }
+        self.sortReady = false
+        self.sortedBy = {
+          type,
+          pos: pos + 1,
+          refName,
+          assemblyName,
+        }
+      },
+      /**
+       * #action
        * overrides base from SharedLinearPileupDisplay to make sortReady false
        * since changing feature height destroys the sort-induced layout
        */
@@ -189,8 +174,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get visibleModificationTypes() {
-        return [...self.visibleModifications.keys()]
+      get modificationThreshold() {
+        return self.colorBy?.modifications?.threshold ?? 10
       },
       /**
        * #getter
@@ -203,21 +188,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           mismatchAlpha,
           rendererTypeName,
           hideSmallIndels,
+          hideMismatches,
         } = self
         const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
-        return self.rendererType.configSchema.create(
-          {
-            ...configBlob,
-            ...(featureHeight !== undefined ? { height: featureHeight } : {}),
-            ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
-            ...(noSpacing !== undefined ? { noSpacing } : {}),
-            ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
-            ...(trackMaxHeight !== undefined
-              ? { maxHeight: trackMaxHeight }
-              : {}),
-          },
-          getEnv(self),
-        )
+        return {
+          ...configBlob,
+          ...(featureHeight !== undefined ? { height: featureHeight } : {}),
+          ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
+          ...(hideMismatches !== undefined ? { hideMismatches } : {}),
+          ...(noSpacing !== undefined ? { noSpacing } : {}),
+          ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+          ...(trackMaxHeight !== undefined
+            ? { maxHeight: trackMaxHeight }
+            : {}),
+        }
       },
     }))
     .views(self => {
@@ -245,18 +229,24 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
-        renderPropsPre: superRenderPropsPre,
+        adapterRenderProps: superAdapterRenderProps,
         renderProps: superRenderProps,
         colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
+        showSubMenuItems: superShowSubMenuItems,
       } = self
 
       return {
         /**
          * #method
          */
-        renderPropsPre() {
-          const { sortedBy, showSoftClipping, visibleModifications } = self
-          const superProps = superRenderPropsPre()
+        adapterRenderProps() {
+          const {
+            sortedBy,
+            showSoftClipping,
+            visibleModifications,
+            simplexModifications,
+          } = self
+          const superProps = superAdapterRenderProps()
           return {
             ...superProps,
             showSoftClip: showSoftClipping,
@@ -264,6 +254,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             visibleModifications: Object.fromEntries(
               visibleModifications.toJSON(),
             ),
+            simplexModifications: [...simplexModifications],
           }
         },
         /**
@@ -276,6 +267,36 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...result,
             notReady: result.notReady || !sortReady,
           }
+        },
+
+        /**
+         * #method
+         */
+        showSubMenuItems() {
+          return [
+            ...superShowSubMenuItems(),
+            {
+              label: 'Show soft clipping',
+              type: 'checkbox',
+              checked: self.showSoftClipping,
+              onClick: () => {
+                self.toggleSoftClipping()
+                // if toggling from off to on, will break sort for this track
+                // so clear it
+                if (self.showSoftClipping) {
+                  self.clearSelected()
+                }
+              },
+            },
+            {
+              label: 'Show mismatches faded by quality',
+              type: 'checkbox',
+              checked: self.mismatchAlphaSetting,
+              onClick: () => {
+                self.toggleMismatchAlpha()
+              },
+            },
+          ]
         },
 
         /**
@@ -332,67 +353,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 {
                   label: 'Modifications',
                   type: 'subMenu',
-                  subMenu: self.modificationsReady
-                    ? [
-                        {
-                          label: 'All modifications',
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                            })
-                          },
-                        },
-                        ...self.visibleModificationTypes.map(key => ({
-                          label: `Show only ${modificationData[key]?.name || key}`,
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                isolatedModification: key,
-                              },
-                            })
-                          },
-                        })),
-                        { type: 'divider' },
-                        {
-                          label: 'All modifications (<50% prob colored blue)',
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                twoColor: true,
-                              },
-                            })
-                          },
-                        },
-                        ...self.visibleModificationTypes.map(key => ({
-                          label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'modifications',
-                              modifications: {
-                                isolatedModification: key,
-                                twoColor: true,
-                              },
-                            })
-                          },
-                        })),
-                        { type: 'divider' },
-                        {
-                          label: 'All reference CpGs',
-                          onClick: () => {
-                            self.setColorScheme({
-                              type: 'methylation',
-                            })
-                          },
-                        },
-                      ]
-                    : [
-                        {
-                          label: 'Loading modifications...',
-                          onClick: () => {},
-                        },
-                      ],
+                  subMenu: getModificationsSubMenu(self, {
+                    includeMethylation: true,
+                  }),
                 },
                 {
                   label: 'Insert size',
@@ -418,28 +381,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ])
               },
             },
-            {
-              label: 'Show soft clipping',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showSoftClipping,
-              onClick: () => {
-                self.toggleSoftClipping()
-                // if toggling from off to on, will break sort for this track
-                // so clear it
-                if (self.showSoftClipping) {
-                  self.clearSelected()
-                }
-              },
-            },
-            {
-              label: 'Fade mismatches by quality',
-              type: 'checkbox',
-              checked: self.mismatchAlphaSetting,
-              onClick: () => {
-                self.toggleMismatchAlpha()
-              },
-            },
           ] as const
         },
       }
@@ -449,7 +390,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { doAfterAttach } = await import('./doAfterAttach')
+            const { doAfterAttach } = await import('./doAfterAttach.ts')
             doAfterAttach(self)
           } catch (e) {
             getSession(self).notifyError(`${e}`, e)
@@ -458,6 +399,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { showSoftClipping, mismatchAlpha, sortedBy, ...rest } =
+        snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(showSoftClipping ? { showSoftClipping } : {}),
+        ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+        ...(sortedBy !== undefined ? { sortedBy } : {}),
+      } as typeof snap
+    })
 }
 
 export type LinearPileupDisplayStateModel = ReturnType<typeof stateModelFactory>

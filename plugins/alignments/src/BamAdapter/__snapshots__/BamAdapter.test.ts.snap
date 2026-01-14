@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`adapter can fetch features from volvox.bam 1`] = `
 [
@@ -7,7 +7,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5540,
     "flags": 16,
     "name": "ctgA_5060_5540_1:0:0_3:1:0_15a3",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -36,7 +36,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5541,
     "flags": 16,
     "name": "ctgA_4973_5541_1:0:0_1:0:0_1569",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -65,7 +65,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5544,
     "flags": 0,
     "name": "ctgA_5445_5947_3:1:0_2:0:0_2b9",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -94,7 +94,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5553,
     "flags": 0,
     "name": "ctgA_5454_5906_0:1:0_2:0:0_d8a",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -123,7 +123,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5554,
     "flags": 0,
     "name": "ctgA_5455_5964_2:0:0_2:0:0_23e2",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -152,7 +152,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5559,
     "flags": 16,
     "name": "ctgA_5153_5559_3:0:0_1:1:0_11ac",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -181,7 +181,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5560,
     "flags": 0,
     "name": "ctgA_5461_5986_1:1:0_3:0:0_200e",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -210,7 +210,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5568,
     "flags": 0,
     "name": "ctgA_5469_5932_0:0:0_2:0:0_6f8",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -239,7 +239,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5594,
     "flags": 16,
     "name": "ctgA_5079_5594_1:0:0_2:0:0_d64",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -268,7 +268,7 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
     "end": 5596,
     "flags": 0,
     "name": "ctgA_5497_6082_1:0:0_2:0:0_b2",
-    "next_pos": undefined,
+    "next_pos": -1,
     "next_ref": undefined,
     "next_segment_position": undefined,
     "pair_orientation": undefined,
@@ -298,19 +298,18 @@ exports[`adapter can fetch features from volvox.bam 1`] = `
 exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
 [
   {
-    "base": "S2666",
     "cliplen": 2666,
     "length": 1,
     "start": 0,
     "type": "softclip",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 33,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -318,48 +317,48 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 75,
     "type": "deletion",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 90,
     "type": "deletion",
   },
   {
-    "base": "1",
+    "insertedBases": "T",
+    "insertlen": 1,
     "length": 0,
     "start": 108,
     "type": "insertion",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 132,
     "type": "deletion",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 146,
     "type": "deletion",
   },
   {
-    "base": "3",
+    "insertedBases": "AAC",
+    "insertlen": 3,
     "length": 0,
     "start": 177,
     "type": "insertion",
   },
   {
-    "base": "1",
+    "insertedBases": "T",
+    "insertlen": 1,
     "length": 0,
     "start": 209,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -367,6 +366,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -374,6 +374,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -381,12 +382,12 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 230,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -394,6 +395,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -401,12 +403,12 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 247,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -414,12 +416,12 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 254,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -427,18 +429,19 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 263,
     "type": "deletion",
   },
   {
-    "base": "1",
+    "insertedBases": "T",
+    "insertlen": 1,
     "length": 0,
     "start": 284,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -446,6 +449,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -453,12 +457,12 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 293,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -466,6 +470,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -473,6 +478,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -480,6 +486,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -487,6 +494,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -494,6 +502,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -501,6 +510,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -508,12 +518,12 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 329,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -521,30 +531,33 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "1",
+    "insertedBases": "T",
+    "insertlen": 1,
     "length": 0,
     "start": 339,
     "type": "insertion",
   },
   {
-    "base": "1",
+    "insertedBases": "T",
+    "insertlen": 1,
     "length": 0,
     "start": 345,
     "type": "insertion",
   },
   {
-    "base": "2",
+    "insertedBases": "TA",
+    "insertlen": 2,
     "length": 0,
     "start": 352,
     "type": "insertion",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 375,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -552,30 +565,33 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "67",
+    "insertedBases": "CCCTCACCCTCACCCTCACCCTCACCCCCACCCCCACCCCCACCCCCACCCCAACCCCAACCCTAAC",
+    "insertlen": 67,
     "length": 0,
     "start": 403,
     "type": "insertion",
   },
   {
-    "base": "1",
+    "insertedBases": "C",
+    "insertlen": 1,
     "length": 0,
     "start": 427,
     "type": "insertion",
   },
   {
-    "base": "1",
+    "insertedBases": "C",
+    "insertlen": 1,
     "length": 0,
     "start": 433,
     "type": "insertion",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 439,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -583,6 +599,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -590,6 +607,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -597,18 +615,21 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "7",
+    "insertedBases": "GGCGCAG",
+    "insertlen": 7,
     "length": 0,
     "start": 626,
     "type": "insertion",
   },
   {
-    "base": "1",
+    "insertedBases": "G",
+    "insertlen": 1,
     "length": 0,
     "start": 627,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -616,6 +637,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -623,6 +645,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -630,6 +653,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -637,12 +661,12 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 807,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -650,6 +674,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -657,6 +682,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -664,12 +690,14 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "4",
+    "insertedBases": "CGCA",
+    "insertlen": 4,
     "length": 0,
     "start": 818,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -677,18 +705,21 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "4",
+    "insertedBases": "CAGA",
+    "insertlen": 4,
     "length": 0,
     "start": 822,
     "type": "insertion",
   },
   {
-    "base": "8",
+    "insertedBases": "CGCCGCGC",
+    "insertlen": 8,
     "length": 0,
     "start": 828,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -696,6 +727,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -703,12 +735,14 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "47",
+    "insertedBases": "CCAGGGGAGGAGGCGTGGCACAGGCGCAGAGACACATGCTAGCGCGC",
+    "insertlen": 47,
     "length": 0,
     "start": 889,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -716,6 +750,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -723,6 +758,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -730,6 +766,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -737,6 +774,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -744,12 +782,14 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "1",
+    "insertedBases": "G",
+    "insertlen": 1,
     "length": 0,
     "start": 968,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -757,6 +797,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -764,6 +805,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 39,
@@ -771,6 +813,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -778,18 +821,21 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "1",
+    "insertedBases": "G",
+    "insertlen": 1,
     "length": 0,
     "start": 1063,
     "type": "insertion",
   },
   {
-    "base": "2",
+    "insertedBases": "GG",
+    "insertlen": 2,
     "length": 0,
     "start": 1068,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -797,6 +843,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -804,6 +851,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -811,6 +859,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -818,6 +867,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -825,6 +875,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -832,6 +883,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -839,6 +891,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -846,6 +899,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -853,6 +907,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -860,6 +915,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -867,6 +923,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -874,6 +931,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -881,6 +939,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -888,6 +947,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -895,6 +955,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -902,6 +963,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -909,6 +971,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -916,6 +979,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -923,6 +987,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -930,12 +995,12 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 2,
     "start": 3656,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -943,12 +1008,12 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "*",
     "length": 1,
     "start": 3957,
     "type": "deletion",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -956,12 +1021,14 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "5",
+    "insertedBases": "AAGAG",
+    "insertlen": 5,
     "length": 0,
     "start": 4455,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -969,6 +1036,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -976,6 +1044,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -983,6 +1052,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -990,6 +1060,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -997,6 +1068,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -1004,6 +1076,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -1011,6 +1084,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -1018,6 +1092,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -1025,12 +1100,14 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "1",
+    "insertedBases": "C",
+    "insertlen": 1,
     "length": 0,
     "start": 5903,
     "type": "insertion",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -1038,6 +1115,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -1045,6 +1123,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -1052,6 +1131,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -1059,6 +1139,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -1066,6 +1147,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -1073,6 +1155,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -1080,6 +1163,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "T",
     "length": 1,
     "qual": 93,
@@ -1087,6 +1171,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "A",
     "length": 1,
     "qual": 93,
@@ -1094,6 +1179,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "C",
     "length": 1,
     "qual": 93,
@@ -1101,6 +1187,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -1108,6 +1195,7 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
+    "altbase": undefined,
     "base": "G",
     "length": 1,
     "qual": 93,
@@ -1115,7 +1203,6 @@ exports[`test usage of BamSlightlyLazyFeature for extended CIGAR 1`] = `
     "type": "mismatch",
   },
   {
-    "base": "S1",
     "cliplen": 1,
     "length": 1,
     "start": 7531,

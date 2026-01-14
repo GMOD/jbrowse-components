@@ -1,9 +1,9 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import GuessNCListF from './GuessNCList'
-import JBrowse1ConnectionF from './JBrowse1Connection'
-import JBrowse1TextSearchAdapterF from './JBrowse1TextSearchAdapter'
-import NCListAdapterF from './NCListAdapter'
+import GuessNCListF from './GuessNCList/index.ts'
+import JBrowse1ConnectionF from './JBrowse1Connection/index.ts'
+import JBrowse1TextSearchAdapterF from './JBrowse1TextSearchAdapter/index.ts'
+import NCListAdapterF from './NCListAdapter/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

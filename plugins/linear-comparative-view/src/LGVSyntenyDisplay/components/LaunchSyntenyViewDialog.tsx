@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Checkbox,
@@ -9,9 +10,8 @@ import {
   FormControlLabel,
   TextField,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
 
-import { navToSynteny } from './util'
+import { navToSynteny } from './util.ts'
 
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

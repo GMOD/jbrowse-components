@@ -1,13 +1,12 @@
-import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/LayoutSession'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { MultiLayout, PileupLayout } from '@jbrowse/core/util/layouts'
 import deepEqual from 'fast-deep-equal'
 
-import type { FilterBy, SortedBy } from '../shared/types'
+import type { FilterBy, SortedBy } from '../shared/types.ts'
 import type {
-  CachedLayout,
+  LayoutSessionLike,
   LayoutSessionProps,
 } from '@jbrowse/core/pluggableElementTypes/renderers/LayoutSession'
-import type GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
-import type MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 
 export interface PileupLayoutSessionProps extends LayoutSessionProps {
   filterBy: FilterBy
@@ -15,31 +14,47 @@ export interface PileupLayoutSessionProps extends LayoutSessionProps {
   showSoftClip: boolean
 }
 
-type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
+type MyMultiLayout = MultiLayout<PileupLayout<unknown>, unknown>
 
-interface CachedPileupLayout extends CachedLayout {
+interface CachedPileupLayout {
+  layout: MyMultiLayout
   props: PileupLayoutSessionProps
 }
 
-export class PileupLayoutSession extends LayoutSession {
+export class PileupLayoutSession implements LayoutSessionLike {
   props: PileupLayoutSessionProps
 
   cachedLayout: CachedPileupLayout | undefined
 
   constructor(props: PileupLayoutSessionProps) {
-    super(props)
     this.props = props
   }
 
-  update(props: PileupLayoutSessionProps) {
-    super.update(props)
-    this.props = props
+  update(props: LayoutSessionProps) {
+    this.props = props as PileupLayoutSessionProps
     return this
+  }
+
+  makeLayout() {
+    const noSpacing = readConfObject(this.props.config, 'noSpacing')
+    const featureHeight = readConfObject(this.props.config, 'height')
+    const maxHeight = readConfObject(this.props.config, 'maxHeight')
+
+    return new MultiLayout(PileupLayout, {
+      featureHeight,
+      spacing: noSpacing ? 0 : 2,
+      maxHeight,
+    })
   }
 
   cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
     return (
-      super.cachedLayoutIsValid(cachedLayout) &&
+      cachedLayout.props.bpPerPx === this.props.bpPerPx &&
+      deepEqual(
+        readConfObject(this.props.config),
+        readConfObject(cachedLayout.props.config),
+      ) &&
+      deepEqual(this.props.filters, cachedLayout.props.filters) &&
       this.props.showSoftClip === cachedLayout.props.showSoftClip &&
       deepEqual(this.props.sortedBy, cachedLayout.props.sortedBy) &&
       deepEqual(this.props.filterBy, cachedLayout.props.filterBy)

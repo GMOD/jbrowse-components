@@ -1,5 +1,9 @@
-import { BigWig } from '@gmod/bbi'
+import { ArrayFeatureView, BigWig } from '@gmod/bbi'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  aggregateQuantitativeStats,
+  blankStats,
+} from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -12,6 +16,85 @@ import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
+}
+
+function computeStatsFromView(
+  view: ArrayFeatureView,
+  targetStart: number,
+  targetEnd: number,
+) {
+  const len = view.length
+
+  if (len === 0) {
+    return {
+      scoreMin: 0,
+      scoreMax: 0,
+      scoreSum: 0,
+      scoreSumSquares: 0,
+      scoreMean: 0,
+      scoreStdDev: 0,
+      featureCount: 0,
+      basesCovered: targetEnd - targetStart,
+      featureDensity: 0,
+    }
+  }
+
+  let scoreMin = Number.MAX_VALUE
+  let scoreMax = Number.MIN_VALUE
+  let scoreSum = 0
+  let scoreSumSquares = 0
+  let featureCount = 0
+
+  for (let i = 0; i < len; i++) {
+    const featureStart = view.start(i)
+    const featureEnd = view.end(i)
+
+    // Skip features outside target range
+    if (featureEnd <= targetStart || featureStart >= targetEnd) {
+      continue
+    }
+
+    const score = view.score(i)
+    const min = view.minScore(i) ?? score
+    const max = view.maxScore(i) ?? score
+
+    scoreMin = Math.min(scoreMin, min)
+    scoreMax = Math.max(scoreMax, max)
+    scoreSum += score
+    scoreSumSquares += score * score
+    featureCount++
+  }
+
+  if (featureCount === 0) {
+    return {
+      scoreMin: 0,
+      scoreMax: 0,
+      scoreSum: 0,
+      scoreSumSquares: 0,
+      scoreMean: 0,
+      scoreStdDev: 0,
+      featureCount: 0,
+      basesCovered: targetEnd - targetStart,
+      featureDensity: 0,
+    }
+  }
+
+  const scoreMean = scoreSum / featureCount
+  const scoreStdDev = Math.sqrt(
+    scoreSumSquares / featureCount - scoreMean * scoreMean,
+  )
+
+  return {
+    scoreMin,
+    scoreMax,
+    scoreSum,
+    scoreSumSquares,
+    scoreMean,
+    scoreStdDev,
+    featureCount,
+    basesCovered: targetEnd - targetStart,
+    featureDensity: featureCount / (targetEnd - targetStart),
+  }
 }
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter {
@@ -75,39 +158,82 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       stopToken,
       statusCallback = () => {},
     } = opts
+    const source = this.getConf('source')
+    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+
     return ObservableCreate<Feature>(async observer => {
-      const source = this.getConf('source')
-      const resolutionMultiplier = this.getConf('resolutionMultiplier')
       const { bigwig } = await this.setup(opts)
-      const feats = await updateStatus(
+
+      const arrays = await updateStatus(
         'Downloading bigwig data',
         statusCallback,
         () =>
-          bigwig.getFeatures(refName, start, end, {
+          bigwig.getFeaturesAsArrays(refName, start, end, {
             ...opts,
             basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
           }),
       )
 
-      for (const data of feats) {
-        if (source) {
-          // @ts-expect-error
-          data.source = source
-        }
-        const uniqueId = `${source}:${region.refName}:${data.start}-${data.end}`
-        // @ts-expect-error
-        data.refName = refName
-        data.uniqueId = uniqueId
+      const view = new ArrayFeatureView(arrays, source, refName)
+
+      for (let i = 0; i < view.length; i++) {
+        const uniqueId = view.id(i)
+        const idx = i
         observer.next({
-          // @ts-expect-error
-          get: (str: string) => (data as Record<string, unknown>)[str],
+          get: (str: string) => view.get(idx, str) as any,
           id: () => uniqueId,
-          // @ts-expect-error
-          toJSON: () => data,
+          toJSON: () => ({
+            start: view.start(idx),
+            end: view.end(idx),
+            score: view.score(idx),
+            refName,
+            source,
+            uniqueId,
+            summary: view.isSummary,
+            minScore: view.minScore(idx),
+            maxScore: view.maxScore(idx),
+          }),
         })
       }
       observer.complete()
     }, stopToken)
+  }
+
+  private async getArrayFeatureView(
+    region: Region,
+    opts: WiggleOptions = {},
+  ): Promise<ArrayFeatureView> {
+    const { refName, start, end } = region
+    const { bpPerPx = 0, resolution = 1, statusCallback = () => {} } = opts
+    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+    const source = this.getConf('source')
+
+    const { bigwig } = await this.setup(opts)
+
+    const arrays = await updateStatus(
+      'Downloading bigwig data',
+      statusCallback,
+      () =>
+        bigwig.getFeaturesAsArrays(refName, start, end, {
+          ...opts,
+          basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+        }),
+    )
+
+    return new ArrayFeatureView(arrays, source, refName)
+  }
+
+  public async getRegionQuantitativeStats(
+    region: Region,
+    opts?: WiggleOptions,
+  ) {
+    const { start, end } = region
+    const view = await this.getArrayFeatureView(region, {
+      ...opts,
+      bpPerPx: (end - start) / 1000,
+    })
+
+    return computeStatsFromView(view, start, end)
   }
 
   // always render bigwig instead of calculating a feature density for it
@@ -115,5 +241,18 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     return {
       featureDensity: 0,
     }
+  }
+
+  async getMultiRegionQuantitativeStats(
+    regions: Region[] = [],
+    opts: WiggleOptions = {},
+  ) {
+    if (!regions.length) {
+      return blankStats()
+    }
+    const stats = await Promise.all(
+      regions.map(region => this.getRegionQuantitativeStats(region, opts)),
+    )
+    return aggregateQuantitativeStats(stats)
   }
 }

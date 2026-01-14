@@ -3,8 +3,8 @@ id: thememanagersessionmixin
 title: ThemeManagerSessionMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -26,14 +26,14 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type
-string
+any
 ```
 
 #### getter: theme
 
 ```js
 // type
-Theme
+any
 ```
 
 ### ThemeManagerSessionMixin - Methods

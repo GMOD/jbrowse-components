@@ -1,14 +1,11 @@
-// from https://github.com/d3473r/jitsi-meet-electron/commit/11b9348f117a87349917c252cbae203cf92062a
-//
-const fs = require('fs').promises
-const path = require('path')
+import fs from 'fs/promises'
+import path from 'path'
 
-/**
- * Workaround for https://github.com/electron-userland/electron-builder/issues/5371
- *
- * use as "afterPack": "./linux-sandbox-fix.js" in build section of package.json
- */
-async function afterPack({ appOutDir, electronPlatformName, packager }) {
+export default async function afterPack({
+  appOutDir,
+  electronPlatformName,
+  packager,
+}) {
   if (electronPlatformName !== 'linux') {
     return
   }
@@ -21,5 +18,3 @@ async function afterPack({ appOutDir, electronPlatformName, packager }) {
   await fs.writeFile(scriptPath, script)
   await fs.chmod(scriptPath, 0o755)
 }
-
-module.exports = afterPack

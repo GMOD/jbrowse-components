@@ -6,13 +6,13 @@ import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 
-import TrackLabelMenu from './TrackLabelMenu'
+import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
-const DropdownTrackSelector = observer(function ({
+const DropdownTrackSelector = observer(function DropdownTrackSelector({
   model,
   tracks,
   extraMenuItems,
@@ -38,9 +38,8 @@ const DropdownTrackSelector = observer(function ({
           label: (
             <>
               <SanitizedHTML html={getTrackName(t, session)} />{' '}
-              <TrackLabelMenu
+              <TrackSelectorTrackMenu
                 id={t.trackId}
-                trackId={t.trackId}
                 model={model}
                 conf={t}
                 setOpen={setOpen}

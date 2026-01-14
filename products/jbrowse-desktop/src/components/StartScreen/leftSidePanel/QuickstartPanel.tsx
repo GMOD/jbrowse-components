@@ -6,16 +6,16 @@ import {
   LoadingEllipses,
 } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreIcon from '@mui/icons-material/MoreHoriz'
 import { IconButton, Link, Typography } from '@mui/material'
 import useSWR from 'swr'
-import { makeStyles } from 'tss-react/mui'
 
-import { useInnerDims } from '../availableGenomes/util'
-import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog'
-import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog'
+import { useInnerDims } from '../availableGenomes/util.ts'
+import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
+import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog.tsx'
 
 const { ipcRenderer } = window.require('electron')
 

@@ -2,8 +2,8 @@ import { observer } from 'mobx-react'
 
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
-import { getVolvoxConfig } from './util'
-import { JBrowseLinearGenomeView, createViewState } from '../../src'
+import { getVolvoxConfig } from './util.ts'
+import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'
 
 import type { Region } from '@jbrowse/core/util'
 
@@ -13,7 +13,7 @@ function loc(r: Region) {
 
 type ViewState = ReturnType<typeof createViewState>
 
-const VisibleRegions = observer(function ({
+const VisibleRegions = observer(function VisibleRegions({
   viewState,
 }: {
   viewState: ViewState

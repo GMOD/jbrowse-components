@@ -1,11 +1,9 @@
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { createRoot } from 'react-dom/client'
-import { QueryParamProvider } from 'use-query-params'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import '@fontsource/roboto'
 
-import Loader from './components/Loader'
-import PlatformSpecificErrorDialog from './components/PlatformSpecificErrorDialog'
+import Loader from './components/Loader.tsx'
+import PlatformSpecificErrorDialog from './components/PlatformSpecificErrorDialog.tsx'
 
 if (window.name.startsWith('JBrowseAuthWindow')) {
   window.opener?.postMessage({
@@ -19,8 +17,6 @@ const root = createRoot(document.getElementById('root')!)
 
 root.render(
   <ErrorBoundary FallbackComponent={PlatformSpecificErrorDialog}>
-    <QueryParamProvider adapter={WindowHistoryAdapter}>
-      <Loader />
-    </QueryParamProvider>
+    <Loader />
   </ErrorBoundary>,
 )

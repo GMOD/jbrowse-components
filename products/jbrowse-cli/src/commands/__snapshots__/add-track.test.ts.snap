@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`adds bam track from a url 1`] = `
 [
@@ -14,13 +14,6 @@ exports[`adds bam track from a url 1`] = `
           "locationType": "UriLocation",
           "uri": "https://mysite.com/data/simple.bam.bai",
         },
-      },
-      "sequenceAdapter": {
-        "twoBitLocation": {
-          "locationType": "UriLocation",
-          "uri": "test.2bit",
-        },
-        "type": "testSeqAdapter",
       },
       "type": "BamAdapter",
     },
@@ -81,13 +74,6 @@ exports[`adds bam track with bai 1`] = `
           "uri": "simple.bam.bai",
         },
       },
-      "sequenceAdapter": {
-        "twoBitLocation": {
-          "locationType": "UriLocation",
-          "uri": "test.2bit",
-        },
-        "type": "testSeqAdapter",
-      },
       "type": "BamAdapter",
     },
     "assemblyNames": [
@@ -114,13 +100,6 @@ exports[`adds bam track with csi 1`] = `
           "locationType": "UriLocation",
           "uri": "simple.bam.csi",
         },
-      },
-      "sequenceAdapter": {
-        "twoBitLocation": {
-          "locationType": "UriLocation",
-          "uri": "test.2bit",
-        },
-        "type": "testSeqAdapter",
       },
       "type": "BamAdapter",
     },
@@ -149,13 +128,6 @@ exports[`adds bam track with indexFile for bai 1`] = `
           "uri": "simple.bai",
         },
       },
-      "sequenceAdapter": {
-        "twoBitLocation": {
-          "locationType": "UriLocation",
-          "uri": "test.2bit",
-        },
-        "type": "testSeqAdapter",
-      },
       "type": "BamAdapter",
     },
     "assemblyNames": [
@@ -182,13 +154,6 @@ exports[`adds bam track with load inPlace 1`] = `
           "locationType": "UriLocation",
           "uri": "/testing/in/place.bam.bai",
         },
-      },
-      "sequenceAdapter": {
-        "twoBitLocation": {
-          "locationType": "UriLocation",
-          "uri": "test.2bit",
-        },
-        "type": "testSeqAdapter",
       },
       "type": "BamAdapter",
     },
@@ -217,13 +182,6 @@ exports[`adds bam track with subDir 1`] = `
           "uri": "bam/simple.bam.bai",
         },
       },
-      "sequenceAdapter": {
-        "twoBitLocation": {
-          "locationType": "UriLocation",
-          "uri": "test.2bit",
-        },
-        "type": "testSeqAdapter",
-      },
       "type": "BamAdapter",
     },
     "assemblyNames": [
@@ -251,13 +209,6 @@ exports[`adds bam track with subDir and localPath protocol 1`] = `
           "locationType": "LocalPathLocation",
         },
       },
-      "sequenceAdapter": {
-        "twoBitLocation": {
-          "locationType": "UriLocation",
-          "uri": "test.2bit",
-        },
-        "type": "testSeqAdapter",
-      },
       "type": "BamAdapter",
     },
     "assemblyNames": [
@@ -284,13 +235,6 @@ exports[`adds bam+bai track with load inPlace 1`] = `
           "locationType": "UriLocation",
           "uri": "/something/else/random.bai",
         },
-      },
-      "sequenceAdapter": {
-        "twoBitLocation": {
-          "locationType": "UriLocation",
-          "uri": "test.2bit",
-        },
-        "type": "testSeqAdapter",
       },
       "type": "BamAdapter",
     },
@@ -664,7 +608,7 @@ exports[`fails if load flag is not passed in for a localFile 1`] = `
 `;
 
 exports[`fails if no track is specified 1`] = `
-"Missing 1 required arg:
+"Error: Missing 1 required arg:
 track  Track file or URL
 See more help with --help"
 `;

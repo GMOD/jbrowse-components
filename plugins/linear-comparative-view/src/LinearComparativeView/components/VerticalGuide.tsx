@@ -1,9 +1,9 @@
 import { stringify } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import type { LinearComparativeViewModel } from '../model'
+import type { LinearComparativeViewModel } from '../model.ts'
 
 type LCV = LinearComparativeViewModel
 
@@ -18,7 +18,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const VerticalGuide = observer(function ({
+const VerticalGuide = observer(function VerticalGuide({
   model,
   coordX,
 }: {

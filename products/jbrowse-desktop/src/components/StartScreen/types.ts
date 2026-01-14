@@ -19,14 +19,7 @@ export interface JBrowseConfig {
   assemblies: { name: string }[]
   tracks: { trackId: string }[]
   plugins?: PluginDefinition[]
-}
-
-export interface UCSCListGenome {
-  name: string
-  orderKey: number
-  description: string
-  scientificName: string
-  organism: string
+  defaultSession?: Record<string, unknown>
 }
 
 export type LaunchCallback = (
@@ -38,5 +31,6 @@ export interface Fav {
   shortName: string
   description: string
   jbrowseConfig: string
+  jbrowseMinimalConfig?: string
   commonName: string
 }

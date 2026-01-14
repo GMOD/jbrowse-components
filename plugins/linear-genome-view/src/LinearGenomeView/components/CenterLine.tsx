@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -13,6 +13,7 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     zIndex: 4, // above the track but under menu
     position: 'absolute',
+    left: 0,
     border: `1px ${theme.palette.action.active} dashed`,
     borderTop: 'none',
     borderBottom: 'none',
@@ -20,13 +21,14 @@ const useStyles = makeStyles()(theme => ({
   },
   centerLineText: {
     position: 'absolute',
+    left: 0,
     pointerEvents: 'none',
     whiteSpace: 'nowrap',
     fontWeight: 'bold',
   },
 }))
 
-const CenterLine = observer(function ({ model }: { model: LGV }) {
+const CenterLine = observer(function CenterLine({ model }: { model: LGV }) {
   const { bpPerPx, centerLineInfo, trackHeights, tracks, width } = model
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
@@ -39,7 +41,7 @@ const CenterLine = observer(function ({ model }: { model: LGV }) {
       role="presentation"
       ref={ref}
       style={{
-        left: `${startingPosition}px`,
+        transform: `translateX(${startingPosition}px)`,
         width: Math.max(1 / bpPerPx, 1),
       }}
     >
@@ -51,7 +53,7 @@ const CenterLine = observer(function ({ model }: { model: LGV }) {
           className={classes.centerLineText}
           role="presentation"
           style={{
-            left: Math.max(1 / bpPerPx, 1) + 5,
+            transform: `translateX(${Math.max(1 / bpPerPx, 1) + 5}px)`,
             top: trackHeights,
           }}
         >

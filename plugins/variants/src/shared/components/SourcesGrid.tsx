@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
-import SourcesDataGrid from './SourcesDataGrid'
-import SourcesGridHeader from './SourcesGridHeader'
+import SourcesDataGrid from './SourcesDataGrid.tsx'
+import SourcesGridHeader from './SourcesGridHeader.tsx'
 
-import type { Source } from '../types'
+import type { Source } from '../types.ts'
 import type { GridRowId } from '@mui/x-data-grid'
 
 function SourcesGrid({

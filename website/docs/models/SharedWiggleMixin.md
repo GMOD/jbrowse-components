@@ -3,8 +3,8 @@ id: sharedwigglemixin
 title: SharedWiggleMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -149,7 +149,7 @@ constraints: types.optional(
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -204,14 +204,14 @@ number
 
 ```js
 // type
-string[]
+any
 ```
 
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+any
 ```
 
 #### getter: autoscaleType
@@ -246,7 +246,7 @@ string
 
 ```js
 // type
-{ domain: number[]; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }; autoscaleType: string; scaleType: string; inverted: boolean; }
+{ domain: number[]; stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; statsRegion?: string; }; autoscaleType: string; scaleType: string; inverted: boolean; }
 ```
 
 #### getter: canHaveFill
@@ -267,14 +267,14 @@ boolean
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: hasGlobalStats
 
 ```js
 // type
-boolean
+any
 ```
 
 ### SharedWiggleMixin - Methods
@@ -292,7 +292,7 @@ scoreTrackMenuItems: () => ({ label: string; subMenu: { label: string; onClick: 
 
 ```js
 // type signature
-updateQuantitativeStats: (stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }) => void
+updateQuantitativeStats: (stats: { currStatsBpPerPx: number; scoreMin: number; scoreMax: number; }, statsRegion?: string) => void
 ```
 
 #### action: setColor
@@ -320,7 +320,7 @@ setNegColor: (color?: string) => void
 
 ```js
 // type signature
-setStatsLoading: (arg?: string) => void
+setStatsLoading: (arg?: StopToken) => void
 ```
 
 #### action: selectFeature

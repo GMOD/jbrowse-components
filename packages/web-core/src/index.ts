@@ -1,2 +1,2 @@
-export * from './SessionConnections'
-export * from './BaseWebSession'
+export * from './SessionConnections.ts'
+export * from './BaseWebSession/index.ts'

@@ -3,11 +3,13 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import Alignments from '@jbrowse/plugin-alignments'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
-import SVG from '@jbrowse/plugin-svg'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import ConfigurationEditor from './ConfigurationEditor'
+import ConfigurationEditor from './ConfigurationEditor.tsx'
+
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
 
 test('renders with just the required model elements', () => {
   const TestSchema = ConfigurationSchema('TestThing', {
@@ -19,7 +21,10 @@ test('renders with just the required model elements', () => {
 
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <ConfigurationEditor model={{ target: TestSchema.create() }} />,
+      <ConfigurationEditor
+        model={{ target: TestSchema.create(undefined, { pluginManager }) }}
+      />
+      ,
     </ThemeProvider>,
   )
   expect(container).toMatchSnapshot()
@@ -79,21 +84,28 @@ test('renders all the different types of built-in slots', () => {
 
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <ConfigurationEditor model={{ target: TestSchema.create() }} />,
+      <ConfigurationEditor
+        model={{ target: TestSchema.create(undefined, { pluginManager }) }}
+      />
+      ,
     </ThemeProvider>,
   )
   expect(container).toMatchSnapshot()
 })
 
 test('renders with defaults of the PileupTrack schema', () => {
-  const pluginManager = new PluginManager([new Alignments(), new SVG()])
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-  const PileupDisplaySchema =
-    linearBasicDisplayConfigSchemaFactory(pluginManager)
+  const pm = new PluginManager([new Alignments()])
+  pm.createPluggableElements()
+  pm.configure()
+  const PileupDisplaySchema = linearBasicDisplayConfigSchemaFactory(pm)
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <ConfigurationEditor model={{ target: PileupDisplaySchema.create() }} />,
+      <ConfigurationEditor
+        model={{
+          target: PileupDisplaySchema.create(undefined, { pluginManager: pm }),
+        }}
+      />
+      ,
     </ThemeProvider>,
   )
   expect(container).toMatchSnapshot()

@@ -5,10 +5,10 @@ import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground'
-import Ruler from '../components/Ruler'
+import SVGBackground from './SVGBackground.tsx'
+import Ruler from '../components/Ruler.tsx'
 
-import type { CircularViewModel, ExportSvgOptions } from '../model'
+import type { CircularViewModel, ExportSvgOptions } from '../model.ts'
 
 type CGV = CircularViewModel
 

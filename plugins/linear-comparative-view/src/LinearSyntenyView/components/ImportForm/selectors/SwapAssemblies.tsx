@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import HelpIcon from '@mui/icons-material/Help'
 import { Button, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import { helpStrings } from './SelectorTypes'
+import { helpStrings } from './SelectorTypes.ts'
 
 export interface SwapAssembliesProps {
   assembly1?: string
@@ -31,7 +31,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const SwapAssemblies = observer(function ({
+const SwapAssemblies = observer(function SwapAssemblies({
   assembly1,
   assembly2,
   swap,

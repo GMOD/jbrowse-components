@@ -11,9 +11,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model.ts'
 
-const EditHighlightColorDialog = observer(function ({
+const EditHighlightColorDialog = observer(function EditHighlightColorDialog({
   onClose,
   model,
 }: {

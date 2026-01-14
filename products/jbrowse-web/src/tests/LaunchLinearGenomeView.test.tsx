@@ -2,14 +2,14 @@ import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer'
-import { App } from './loaderUtil'
+import { handleRequest } from './generateReadBuffer.ts'
+import { App } from './loaderUtil.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
 const getFile = (url: string) =>
@@ -19,7 +19,7 @@ const getFile = (url: string) =>
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 10000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   return `${url}`.includes('jb2=true')
@@ -37,7 +37,7 @@ test('can use a spec url for lgv', async () => {
     expect((elt as HTMLInputElement).value).toBe('ctgA:6,000..7,000')
   }, delay)
   await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
-}, 40000)
+}, 60000)
 
 test('nonexist', async () => {
   console.error = jest.fn()
@@ -51,4 +51,15 @@ test('nonexist', async () => {
   }, delay)
   await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
   await findByText(/Could not resolve identifiers: nonexist/)
-}, 40000)
+}, 60000)
+
+test('shows whole genome when no loc is specified', async () => {
+  const { findByPlaceholderText } = render(
+    <App search="?config=test_data/volvox/config_main_thread.json&assembly=volvox" />,
+  )
+
+  const elt = await findByPlaceholderText('Search for location', {}, delay)
+  await waitFor(() => {
+    expect((elt as HTMLInputElement).value).toBe('ctgA:1..50,001 ctgB:1..6,079')
+  }, delay)
+}, 60000)

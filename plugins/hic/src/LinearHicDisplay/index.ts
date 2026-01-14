@@ -1,8 +1,9 @@
-import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import { lazy } from 'react'
 
-import configSchemaFactory from './configSchema'
-import stateModelFactory from './model'
+import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+
+import configSchemaFactory from './configSchema.ts'
+import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -16,7 +17,7 @@ export default function LinearHicDisplayF(pluginManager: PluginManager) {
       stateModel: stateModelFactory(configSchema),
       trackType: 'HicTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: lazy(() => import('./components/ReactComponent.tsx')),
     })
   })
 }

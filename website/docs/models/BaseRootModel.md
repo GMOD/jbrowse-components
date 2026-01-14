@@ -3,8 +3,8 @@ id: baserootmodel
 title: BaseRootModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -60,7 +60,7 @@ sessionPath: types.optional(types.string, '')
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 5 more ... & { ...; }, _NotCustomized, _NotCustomized>>; }, { .....
+IOptionalIType<any, [undefined]>
 // code
 assemblyManager: types.optional(
         assemblyManagerFactory(assemblyConfigSchema, pluginManager),

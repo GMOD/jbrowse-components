@@ -1,56 +1,78 @@
-import { makeSimpleAltString } from '../../VcfFeature/util'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 
-import type { Filters, InfoFields, VariantSampleGridRow } from './types'
+import { getMinimalDesc, makeSimpleAltString } from '../../VcfFeature/util.ts'
+
+import type { Filters, InfoFields, VariantSampleGridRow } from './types.ts'
+
+function gtToAlleleCounts(gt: string) {
+  const alleleCounts = {} as Record<string, number>
+  const alleles = gt.split(/[/|]/)
+  for (const allele of alleles) {
+    alleleCounts[allele] = (alleleCounts[allele] || 0) + 1
+  }
+  return Object.entries(alleleCounts)
+    .map(([key, val]) => `${key}:${val}`)
+    .join(';')
+}
+
+function genotypeToAlleleCounts(gt: string, ref: string, alt: string[]) {
+  const alleleCounts = {} as Record<string, number>
+  const alleles = gt.split(/[/|]/)
+  for (const allele of alleles) {
+    if (allele === '.') {
+      alleleCounts['.'] = (alleleCounts['.'] || 0) + 1
+    } else {
+      const resolved =
+        +allele === 0
+          ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
+          : getMinimalDesc(ref, alt[+allele - 1] || '')
+      alleleCounts[resolved] = (alleleCounts[resolved] || 0) + 1
+    }
+  }
+  return Object.entries(alleleCounts)
+    .map(([key, val]) => `${key}:${val}`)
+    .join(';')
+}
 
 export function getSampleGridRows(
   samples: Record<string, InfoFields>,
   REF: string,
   ALT: string[],
   filter: Filters,
+  useCounts?: boolean,
 ): {
   rows: VariantSampleGridRow[]
   error: unknown
 } {
-  const preFilteredRows = Object.entries(samples).map(([key, val]) => {
-    const gt = val.GT?.[0]
-    return [
-      key,
-      {
-        ...val,
-        ...(gt
-          ? {
-              GT: `${gt}`,
-              genotype: makeSimpleAltString(`${gt}`, REF, ALT),
-            }
-          : {}),
-      },
-    ] as const
-  })
-
   let error: unknown
-  let rows = [] as VariantSampleGridRow[]
-  const filters = Object.keys(filter)
+  let rows: VariantSampleGridRow[] = []
+  const filterKeys = Object.keys(filter)
 
-  // catch some error thrown from regex
-  // note: maps all values into a string, if this is not done rows are not
-  // sortable by the data-grid
   try {
-    rows = preFilteredRows
+    rows = Object.entries(samples)
       .map(([key, val]) => {
+        const gt = val.GT?.[0]
+        const gtStr = gt ? `${gt}` : undefined
+        const displayGT = gtStr
+          ? useCounts
+            ? gtToAlleleCounts(gtStr)
+            : gtStr
+          : undefined
+        const displayGenotype = gtStr
+          ? useCounts
+            ? genotypeToAlleleCounts(gtStr, REF, ALT)
+            : makeSimpleAltString(gtStr, REF, ALT)
+          : undefined
         return {
-          ...Object.fromEntries(
-            Object.entries(val).map(([formatField, formatValue]) => [
-              formatField,
-              formatValue,
-            ]),
-          ),
+          ...val,
+          ...(gtStr ? { GT: displayGT, genotype: displayGenotype } : {}),
           sample: key,
           id: key,
         } as VariantSampleGridRow
       })
       .filter(row =>
-        filters.length
-          ? filters.every(key => {
+        filterKeys.length
+          ? filterKeys.every(key => {
               const currFilter = filter[key]
               return currFilter
                 ? new RegExp(currFilter, 'i').exec(row[key]!)

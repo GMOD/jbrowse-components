@@ -2,7 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { gatherOverlaps, getSession, sum } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
-import type { ReducedFeature } from '../util'
+import type { ReducedFeature } from '../util.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 
@@ -13,7 +13,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
   const session = getSession(self)
   try {
     const cigar = feature.get('CIGAR')
-    const clipPos = getClip(cigar, 1)
+    const clipLengthAtStartOfRead = getClip(cigar, 1)
     const flags = feature.get('flags')
     const strand = feature.get('strand')
     const readName = feature.get('name')
@@ -38,13 +38,13 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
           strand: 1,
           mate: {
             refName: readName,
-            start: clipPos,
-            end: clipPos + getLengthSansClipping(cigar),
+            start: clipLengthAtStartOfRead,
+            end: clipLengthAtStartOfRead + getLengthSansClipping(cigar),
           },
         },
         ...SA2,
       ] as ReducedFeature[]
-    ).sort((a, b) => a.clipPos - b.clipPos)
+    ).sort((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
 
     session.addView('DotplotView', {
       type: 'DotplotView',

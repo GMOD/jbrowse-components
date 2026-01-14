@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import LockIcon from '@mui/icons-material/Lock'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
 import MoreVert from '@mui/icons-material/MoreVert'
@@ -13,11 +14,10 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import ZoomOutIcon from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import ExportSvgDialog from './ExportSvgDialog'
+import ExportSvgDialog from './ExportSvgDialog.tsx'
 
-import type { CircularViewModel } from '../model'
+import type { CircularViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   controls: {
@@ -29,7 +29,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Controls = observer(function ({ model }: { model: CircularViewModel }) {
+const Controls = observer(function Controls({
+  model,
+}: {
+  model: CircularViewModel
+}) {
   const { classes } = useStyles()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   return (

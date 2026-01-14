@@ -1,4 +1,4 @@
-import type { SpreadsheetViewModel } from '../SpreadsheetView'
+import type { SpreadsheetViewModel } from '../SpreadsheetView/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -17,20 +17,14 @@ export default function LaunchSpreadsheetViewF(pluginManager: PluginManager) {
       uri: string
       fileType?: string
     }) => {
-      const view = session.addView('SpreadsheetView') as SpreadsheetViewModel
-      const exts = uri.split('.')
-      let ext = exts.pop()?.toUpperCase()
-      if (ext === 'GZ') {
-        ext = exts.pop()?.toUpperCase()
-      }
-
-      view.importWizard.setFileType(fileType || ext || '')
-      view.importWizard.setSelectedAssemblyName(assembly)
-      view.importWizard.setFileSource({
-        uri,
-        locationType: 'UriLocation',
-      })
-      await view.importWizard.import(assembly)
+      // Use the init property to let the model handle initialization
+      session.addView('SpreadsheetView', {
+        init: {
+          assembly,
+          uri,
+          fileType,
+        },
+      }) as SpreadsheetViewModel
     },
   )
 }

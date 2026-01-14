@@ -1,10 +1,10 @@
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import CircularViewOptions from './CircularViewOptions'
+import CircularViewOptions from './CircularViewOptions.tsx'
 
-import type { SvInspectorViewModel } from '../model'
+import type { SvInspectorViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   resizeHandleVert: {
@@ -19,9 +19,6 @@ const useStyles = makeStyles()(theme => ({
     boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
   },
-  viewControls: {
-    margin: 0,
-  },
   viewsContainer: {
     display: 'flex',
   },
@@ -30,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SvInspectorView = observer(function ({
+const SvInspectorView = observer(function SvInspectorView({
   model,
 }: {
   model: SvInspectorViewModel

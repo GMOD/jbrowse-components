@@ -1,7 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import LinearLollipopDisplayF from './LinearLollipopDisplay'
-import LollipopRendererF from './LollipopRenderer'
+import LinearLollipopDisplayF from './LinearLollipopDisplay/index.ts'
+import LollipopRendererF from './LollipopRenderer/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -1,41 +1,48 @@
 {
   "name": "@jbrowse/img",
-  "version": "3.6.5",
+  "version": "4.0.3",
   "main": "dist/index.js",
-  "module": "esm/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "author": "JBrowse Team",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=14"
+    "node": ">=20"
   },
   "bin": {
     "jb2export": "./dist/bin.js"
   },
   "files": [
-    "dist",
     "esm"
   ],
+  "sideEffects": false,
   "scripts": {
-    "clean": "rm -rf dist esm *.tsbuildinfo",
-    "prebuild": "yarn clean",
-    "build": "npm-run-all build:*",
+    "clean": "rm -rf esm *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "build": "pnpm run /^build:/",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:commonjs": "tsc --build tsconfig.build.commonjs.json",
-    "preversion": "npm run build"
+    "preversion": "pnpm build"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
-    "@emotion/cache": "^11.7.1",
-    "@emotion/react": "^11.9.0",
-    "@jbrowse/react-linear-genome-view2": "^3.6.5",
-    "canvas": "^3.0.0",
-    "jsdom": "^26.0.0",
-    "mobx": "^6.6.0",
-    "node-fetch": "^2.6.7",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tmp": "^0.2.1",
-    "yargs": "^17.3.0"
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/react-linear-genome-view2": "workspace:^",
+    "canvas": "^3.2.0",
+    "@types/jsdom": "^21.1.7",
+    "@types/yargs": "^17.0.33",
+    "jsdom": "27.0.0",
+    "node-fetch": "^2.7.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tmp": "^0.2.5",
+    "yargs": "^18.0.0"
   },
   "publishConfig": {
     "access": "public"

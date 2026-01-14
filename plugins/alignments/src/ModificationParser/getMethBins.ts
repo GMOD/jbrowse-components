@@ -1,11 +1,11 @@
-import { getNextRefPos } from '../MismatchParser'
-import { getModPositions } from './getModPositions'
-import { getModProbabilities } from './getModProbabilities'
-import { getTagAlt } from '../util'
+import { getModPositions } from './getModPositions.ts'
+import { getModProbabilities } from './getModProbabilities.ts'
+import { getNextRefPos } from '../MismatchParser/index.ts'
+import { getTagAlt } from '../util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
-export function getMethBins(feature: Feature, cigarOps: string[]) {
+export function getMethBins(feature: Feature, cigarOps: ArrayLike<number>) {
   const fstart = feature.get('start')
   const fend = feature.get('end')
   const fstrand = feature.get('strand') as -1 | 0 | 1

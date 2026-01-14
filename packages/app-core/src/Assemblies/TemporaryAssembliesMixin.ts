@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
@@ -47,5 +47,16 @@ export function TemporaryAssembliesMixin(
           }
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { temporaryAssemblies, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(temporaryAssemblies.length ? { temporaryAssemblies } : {}),
+      } as typeof snap
     })
 }

@@ -3,8 +3,8 @@ id: linearalignmentsdisplay
 title: LinearAlignmentsDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearAlignmentsDisplay.md)
 
@@ -35,6 +35,15 @@ any
 ```
 
 #### getter: featureIdUnderMouse
+
+```js
+// type
+any
+```
+
+#### getter: showLegend
+
+Returns true if PileupDisplay has legend shown
 
 ```js
 // type
@@ -77,6 +86,16 @@ any
 ```
 
 ### LinearAlignmentsDisplay - Methods
+
+#### method: svgLegendWidth
+
+Returns the width needed for the SVG legend from subdisplays. Used by SVG export
+to add extra width for the legend area.
+
+```js
+// type signature
+svgLegendWidth: (theme?: unknown) => number
+```
 
 #### method: getFeatureByID
 
@@ -122,11 +141,20 @@ setScrollTop: (scrollTop: number) => void
 setSNPCoverageHeight: (n: number) => void
 ```
 
+#### action: setShowLegend
+
+Toggle legend visibility on the PileupDisplay sub-display
+
+```js
+// type signature
+setShowLegend: (s: boolean) => void
+```
+
 #### action: setSNPCoverageDisplay
 
 ```js
 // type signature
-setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+setSNPCoverageDisplay: (configuration: AnyConfigurationModel) => void
 ```
 
 #### action: setFeatureDensityStatsLimit
@@ -140,7 +168,7 @@ setFeatureDensityStatsLimit: (stats?: FeatureDensityStats) => void
 
 ```js
 // type signature
-setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+setPileupDisplay: (configuration: AnyConfigurationModel) => void
 ```
 
 #### action: setHeight
@@ -148,13 +176,6 @@ setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { set
 ```js
 // type signature
 setHeight: (n: number) => number
-```
-
-#### action: setFilterBy
-
-```js
-// type signature
-setFilterBy: (filter: FilterBy) => void
 ```
 
 #### action: setLowerPanelType
@@ -175,5 +196,5 @@ resizeHeight: (distance: number) => number
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<Element>
 ```

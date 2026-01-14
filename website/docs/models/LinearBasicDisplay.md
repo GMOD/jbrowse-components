@@ -3,8 +3,8 @@ id: linearbasicdisplay
 title: LinearBasicDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -20,12 +20,12 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Docs
 
-used by `FeatureTrack`, has simple settings like "show/hide feature labels",
-etc.
+Used by `FeatureTrack`, has simple settings like "show/hide feature labels",
+plus gene glyph display options.
 
 extends
 
-- [BaseLinearDisplay](../baselineardisplay)
+- [LinearFeatureDisplay](../linearfeaturedisplay)
 
 ### LinearBasicDisplay - Properties
 
@@ -38,98 +38,59 @@ ISimpleType<"LinearBasicDisplay">
 type: types.literal('LinearBasicDisplay')
 ```
 
-#### property: trackShowLabels
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-trackShowLabels: types.maybe(types.boolean)
-```
-
-#### property: trackShowDescriptions
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-trackShowDescriptions: types.maybe(types.boolean)
-```
-
-#### property: trackDisplayMode
+#### property: trackGeneGlyphMode
 
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
 // code
-trackDisplayMode: types.maybe(types.string)
+trackGeneGlyphMode: types.maybe(types.string)
 ```
 
-#### property: trackMaxHeight
+#### property: trackSubfeatureLabels
 
 ```js
 // type signature
-IMaybe<ISimpleType<number>>
+IMaybe<ISimpleType<string>>
 // code
-trackMaxHeight: types.maybe(types.number)
+trackSubfeatureLabels: types.maybe(types.string)
+```
+
+#### property: trackDisplayDirectionalChevrons
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+trackDisplayDirectionalChevrons: types.maybe(types.boolean)
 ```
 
 #### property: configuration
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: jexlFilters
-
-```js
-// type signature
-IMaybe<IArrayType<ISimpleType<string>>>
-// code
-jexlFilters: types.maybe(types.array(types.string))
-```
-
 ### LinearBasicDisplay - Getters
 
-#### getter: activeFilters
+#### getter: geneGlyphMode
 
 ```js
 // type
 any
 ```
 
-#### getter: rendererTypeName
+#### getter: subfeatureLabels
 
 ```js
 // type
 any
 ```
 
-#### getter: showLabels
-
-```js
-// type
-any
-```
-
-#### getter: showDescriptions
-
-```js
-// type
-any
-```
-
-#### getter: maxHeight
-
-```js
-// type
-any
-```
-
-#### getter: displayMode
+#### getter: displayDirectionalChevrons
 
 ```js
 // type
@@ -140,17 +101,18 @@ any
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+{
+  showLabels: any
+  showDescriptions: any
+  subfeatureLabels: any
+  displayMode: any
+  maxHeight: any
+  geneGlyphMode: any
+  displayDirectionalChevrons: any
+}
 ```
 
 ### LinearBasicDisplay - Methods
-
-#### method: renderProps
-
-```js
-// type signature
-renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>; filters: SerializableFilterChain; }
-```
 
 #### method: trackMenuItems
 
@@ -161,37 +123,23 @@ trackMenuItems: () => MenuItem[]
 
 ### LinearBasicDisplay - Actions
 
-#### action: setJexlFilters
+#### action: setGeneGlyphMode
 
 ```js
 // type signature
-setJexlFilters: (f?: string[]) => void
+setGeneGlyphMode: (val: string) => void
 ```
 
-#### action: toggleShowLabels
+#### action: setSubfeatureLabels
 
 ```js
 // type signature
-toggleShowLabels: () => void
+setSubfeatureLabels: (val: string) => void
 ```
 
-#### action: toggleShowDescriptions
+#### action: toggleDisplayDirectionalChevrons
 
 ```js
 // type signature
-toggleShowDescriptions: () => void
-```
-
-#### action: setDisplayMode
-
-```js
-// type signature
-setDisplayMode: (val: string) => void
-```
-
-#### action: setMaxHeight
-
-```js
-// type signature
-setMaxHeight: (val?: number) => void
+toggleDisplayDirectionalChevrons: () => void
 ```

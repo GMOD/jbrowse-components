@@ -1,21 +1,21 @@
 import { Suspense, lazy } from 'react'
 
 import Snackbar from '@jbrowse/core/ui/Snackbar'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import AppFab from './AppFab'
-import AppToolbar from './AppToolbar'
-import DialogQueue from './DialogQueue'
-import ViewsContainer from './ViewsContainer'
+import AppFab from './AppFab.tsx'
+import AppToolbar from './AppToolbar.tsx'
+import DialogQueue from './DialogQueue.tsx'
+import ViewsContainer from './ViewsContainer.tsx'
 
-import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
+import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 // lazies
-const DrawerWidget = lazy(() => import('./DrawerWidget'))
+const DrawerWidget = lazy(() => import('./DrawerWidget.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -52,7 +52,7 @@ interface Props {
   }
 }
 
-const LazyDrawerWidget = observer(function (props: Props) {
+const LazyDrawerWidget = observer(function LazyDrawerWidget(props: Props) {
   const { session } = props
   return (
     <Suspense fallback={null}>
@@ -61,7 +61,7 @@ const LazyDrawerWidget = observer(function (props: Props) {
   )
 })
 
-const App = observer(function (props: Props) {
+const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
   const { minimized, visibleWidget, drawerWidth, drawerPosition } = session

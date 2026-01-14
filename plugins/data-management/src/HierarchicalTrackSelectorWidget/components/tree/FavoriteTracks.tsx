@@ -1,27 +1,24 @@
 import GradeIcon from '@mui/icons-material/Grade'
 import { Badge, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import DropdownTrackSelector from './DropdownTrackSelector'
+import DropdownTrackSelector from './DropdownTrackSelector.tsx'
+import {
+  badgeAnchorOrigin,
+  getDropdownMenuItems,
+  useSmallBadgeStyles,
+} from './trackListStyles.ts'
 
-import type { HierarchicalTrackSelectorModel } from '../../model'
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
-const useStyles = makeStyles()({
-  smallBadge: {
-    height: 14,
-  },
-  margin: {
-    marginRight: 10,
-  },
-})
-const FavoriteTracks = observer(function ({
+const FavoriteTracks = observer(function FavoriteTracks({
   model,
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
-  const { classes } = useStyles()
-  const { view, favoriteTracks } = model
+  const { classes } = useSmallBadgeStyles()
+  const { view, favoriteTracks, favoritesCounter } = model
+
   return view ? (
     <DropdownTrackSelector
       onClick={() => {
@@ -29,35 +26,22 @@ const FavoriteTracks = observer(function ({
       }}
       tracks={favoriteTracks}
       model={model}
-      extraMenuItems={
-        favoriteTracks.length
-          ? [
-              { type: 'divider' as const },
-              {
-                label: 'Clear favorites',
-                onClick: () => {
-                  model.clearFavorites()
-                },
-              },
-            ]
-          : [
-              {
-                label: 'No favorite tracks yet',
-                onClick: () => {},
-              },
-            ]
-      }
+      extraMenuItems={getDropdownMenuItems({
+        hasTracks: favoriteTracks.length > 0,
+        clearLabel: 'Clear favorites',
+        emptyLabel: 'No favorite tracks yet',
+        onClear: () => {
+          model.clearFavorites()
+        },
+      })}
     >
       <Tooltip title="Favorite tracks">
         <Badge
           classes={{ badge: classes.smallBadge }}
           color="secondary"
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
+          anchorOrigin={badgeAnchorOrigin}
           className={classes.margin}
-          badgeContent={model.favoritesCounter}
+          badgeContent={favoritesCounter}
         >
           <GradeIcon />
         </Badge>

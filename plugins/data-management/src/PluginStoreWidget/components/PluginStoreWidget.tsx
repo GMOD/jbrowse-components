@@ -1,7 +1,9 @@
-import { lazy } from 'react'
+import { lazy, useEffect, useState, useTransition } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import ClearIcon from '@mui/icons-material/Clear'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
@@ -15,17 +17,15 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui'
 
-import InstalledPluginsList from './InstalledPluginsList'
-import PluginCard from './PluginCard'
-import { useFetchPlugins } from './util'
+import InstalledPluginsList from './InstalledPluginsList.tsx'
+import PluginCard from './PluginCard.tsx'
+import { useFetchPlugins } from './util.ts'
 
-import type { PluginStoreModel } from '../model'
+import type { PluginStoreModel } from '../model.ts'
 
 // lazies
-const AddCustomPluginDialog = lazy(() => import('./AddCustomPluginDialog'))
+const AddCustomPluginDialog = lazy(() => import('./AddCustomPluginDialog.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   expandIcon: {
@@ -50,7 +50,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const PluginStoreWidget = observer(function ({
+const PluginStoreWidget = observer(function PluginStoreWidget({
   model,
 }: {
   model: PluginStoreModel
@@ -58,9 +58,18 @@ const PluginStoreWidget = observer(function ({
   const { classes } = useStyles()
   const { plugins, error } = useFetchPlugins()
   const { filterText } = model
+  const [localFilterText, setLocalFilterText] = useState(filterText)
+  const [, startTransition] = useTransition()
   const session = getSession(model)
   const { adminMode } = session
   const { pluginManager } = getEnv(model)
+
+  // Sync local state when model is cleared externally
+  useEffect(() => {
+    if (filterText === '') {
+      setLocalFilterText('')
+    }
+  }, [filterText])
 
   return (
     <div>
@@ -95,9 +104,13 @@ const PluginStoreWidget = observer(function ({
       )}
       <TextField
         label="Filter plugins"
-        value={filterText}
+        value={localFilterText}
         onChange={event => {
-          model.setFilterText(event.target.value)
+          const value = event.target.value
+          setLocalFilterText(value)
+          startTransition(() => {
+            model.setFilterText(value)
+          })
         }}
         fullWidth
         slotProps={{
@@ -106,6 +119,7 @@ const PluginStoreWidget = observer(function ({
               <InputAdornment position="end">
                 <IconButton
                   onClick={() => {
+                    setLocalFilterText('')
                     model.clearFilterText()
                   }}
                 >

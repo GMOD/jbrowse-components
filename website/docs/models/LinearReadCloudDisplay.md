@@ -3,8 +3,8 @@ id: linearreadclouddisplay
 title: LinearReadCloudDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -41,41 +41,101 @@ type: types.literal('LinearReadCloudDisplay')
 
 ```js
 // type signature
-AnyConfigurationSchemaType
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: filterBySetting
+#### property: drawCloud
 
 ```js
 // type signature
-IType<FilterBy, FilterBy, FilterBy>
+false
 // code
-filterBySetting: types.frozen<FilterBy | undefined>()
+drawCloud: false
 ```
 
-#### property: colorBySetting
+#### property: noSpacing
+
+Whether to remove spacing between stacked features
 
 ```js
 // type signature
-IType<ColorBy, ColorBy, ColorBy>
+IMaybe<ISimpleType<boolean>>
 // code
-colorBySetting: types.frozen<ColorBy | undefined>()
+noSpacing: types.maybe(types.boolean)
 ```
 
-#### property: drawSingletons
+#### property: trackMaxHeight
+
+Maximum height for the layout (prevents infinite stacking)
 
 ```js
 // type signature
-true
+IMaybe<ISimpleType<number>>
 // code
-drawSingletons: true
+trackMaxHeight: types.maybe(types.number)
+```
+
+#### property: hideSmallIndelsSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideSmallIndelsSetting: types.maybe(types.boolean)
+```
+
+#### property: hideMismatchesSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideMismatchesSetting: types.maybe(types.boolean)
+```
+
+#### property: hideLargeIndelsSetting
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+hideLargeIndelsSetting: types.maybe(types.boolean)
+```
+
+#### property: showLegend
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+showLegend: types.maybe(types.boolean)
+```
+
+#### property: showYScalebar
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showYScalebar: types.optional(types.boolean, true)
+```
+
+#### property: showOutline
+
+```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showOutline: types.optional(types.boolean, true)
 ```
 
 ### LinearReadCloudDisplay - Getters
 
 #### getter: colorBy
+
+Get the color settings (from override or configuration)
 
 ```js
 // type
@@ -84,84 +144,218 @@ any
 
 #### getter: filterBy
 
+Get the filter settings (from override or configuration)
+
 ```js
 // type
 any
 ```
 
+#### getter: featureHeightSetting
+
+```js
+// type
+any
+```
+
+#### getter: hideSmallIndels
+
+```js
+// type
+any
+```
+
+#### getter: hideMismatches
+
+```js
+// type
+any
+```
+
+#### getter: hideLargeIndels
+
+```js
+// type
+any
+```
+
+#### getter: modificationThreshold
+
+```js
+// type
+any
+```
+
+#### getter: cloudDomain
+
+Domain for cloud mode scale: [1, maxDistance] Uses 1 as lower bound since it's a
+log scale
+
+```js
+// type
+;[number, number]
+```
+
+#### getter: cloudTicks
+
+Calculate ticks for the y-axis scalebar in cloud mode
+
+```js
+// type
+CloudTicks
+```
+
 ### LinearReadCloudDisplay - Methods
+
+#### method: legendItems
+
+Returns legend items based on current colorBy setting
+
+```js
+// type signature
+legendItems: () => LegendItem[]
+```
+
+#### method: svgLegendWidth
+
+Returns the width needed for the SVG legend if showLegend is enabled. Used by
+SVG export to add extra width for the legend area.
+
+```js
+// type signature
+svgLegendWidth: () => number
+```
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
+```
 
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => any[]
 ```
 
 #### method: renderSvg
 
 ```js
 // type signature
-renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<React.ReactNode>
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>
 ```
 
 ### LinearReadCloudDisplay - Actions
 
-#### action: setDrawSingletons
-
-```js
-// type signature
-setDrawSingletons: (f: boolean) => void
-```
-
-#### action: setLastDrawnOffsetPx
-
-```js
-// type signature
-setLastDrawnOffsetPx: (n: number) => void
-```
-
-#### action: setLastDrawnBpPerPx
-
-```js
-// type signature
-setLastDrawnBpPerPx: (n: number) => void
-```
-
-#### action: setLoading
-
-```js
-// type signature
-setLoading: (f: boolean) => void
-```
-
 #### action: reload
+
+Reload the display (clears error state)
 
 ```js
 // type signature
 reload: () => void
 ```
 
-#### action: setRef
+#### action: setNoSpacing
 
-internal, a reference to a HTMLCanvas because we use a autorun to draw the
-canvas
+Set whether to remove spacing between features
 
 ```js
 // type signature
-setRef: (ref: HTMLCanvasElement) => void
+setNoSpacing: (flag?: boolean) => void
 ```
 
-#### action: setChainData
+#### action: setMaxHeight
+
+Set the maximum height for the layout
 
 ```js
 // type signature
-setChainData: (args: ChainData) => void
+setMaxHeight: (n?: number) => void
 ```
 
-#### action: setFilterBy
+#### action: setLayoutHeight
+
+Set the current layout height
 
 ```js
 // type signature
-setFilterBy: (filter: FilterBy) => void
+setLayoutHeight: (n: number) => void
+```
+
+#### action: setCloudMaxDistance
+
+Set the max distance for cloud mode scale Only updates if value differs by more
+than EPSILON to avoid infinite re-renders
+
+```js
+// type signature
+setCloudMaxDistance: (maxDistance: number) => void
+```
+
+#### action: setShowYScalebar
+
+```js
+// type signature
+setShowYScalebar: (show: boolean) => void
+```
+
+#### action: setShowOutline
+
+```js
+// type signature
+setShowOutline: (show: boolean) => void
+```
+
+#### action: selectFeature
+
+```js
+// type signature
+selectFeature: (chain: ReducedFeature[]) => void
+```
+
+#### action: setDrawCloud
+
+```js
+// type signature
+setDrawCloud: (b: boolean) => void
+```
+
+#### action: setSelectedFeatureId
+
+Set the ID of the selected feature for persistent highlighting
+
+```js
+// type signature
+setSelectedFeatureId: (id: string) => void
+```
+
+#### action: setHideSmallIndels
+
+```js
+// type signature
+setHideSmallIndels: (arg: boolean) => void
+```
+
+#### action: setHideMismatches
+
+```js
+// type signature
+setHideMismatches: (arg: boolean) => void
+```
+
+#### action: setHideLargeIndels
+
+```js
+// type signature
+setHideLargeIndels: (arg: boolean) => void
+```
+
+#### action: setShowLegend
+
+```js
+// type signature
+setShowLegend: (s: boolean) => void
 ```

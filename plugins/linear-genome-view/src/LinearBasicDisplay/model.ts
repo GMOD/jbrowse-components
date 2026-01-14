@@ -1,34 +1,32 @@
-import { lazy } from 'react'
-
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getSession } from '@jbrowse/core/util'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import { cast, getEnv, types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import { BaseLinearDisplay } from '../BaseLinearDisplay'
+import { modelFactory as LinearFeatureDisplayModelFactory } from '../LinearFeatureDisplay/index.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui'
-import type { Instance } from 'mobx-state-tree'
+import type { MenuItem, SubMenuItem } from '@jbrowse/core/ui'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
-const SetMaxHeightDialog = lazy(() => import('./components/SetMaxHeightDialog'))
-const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog'))
+function findSubMenu(items: MenuItem[], label: string) {
+  return items.find(
+    (item): item is SubMenuItem => 'label' in item && item.label === label,
+  )
+}
 
 /**
  * #stateModel LinearBasicDisplay
  * #category display
- * used by `FeatureTrack`, has simple settings like "show/hide feature labels",
- * etc.
+ * Used by `FeatureTrack`, has simple settings like "show/hide feature labels",
+ * plus gene glyph display options.
  *
  * extends
- * - [BaseLinearDisplay](../baselineardisplay)
+ * - [LinearFeatureDisplay](../linearfeaturedisplay)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearBasicDisplay',
-      BaseLinearDisplay,
+      LinearFeatureDisplayModelFactory(configSchema),
       types.model({
         /**
          * #property
@@ -37,78 +35,47 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        trackShowLabels: types.maybe(types.boolean),
+        trackGeneGlyphMode: types.maybe(types.string),
         /**
          * #property
          */
-        trackShowDescriptions: types.maybe(types.boolean),
+        trackSubfeatureLabels: types.maybe(types.string),
         /**
          * #property
          */
-        trackDisplayMode: types.maybe(types.string),
-        /**
-         * #property
-         */
-        trackMaxHeight: types.maybe(types.number),
+        trackDisplayDirectionalChevrons: types.maybe(types.boolean),
         /**
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        jexlFilters: types.maybe(types.array(types.string)),
       }),
     )
     .views(self => ({
       /**
        * #getter
        */
-      get activeFilters() {
-        // config jexlFilters are deferred evaluated so they are prepended with
-        // jexl at runtime rather than being stored with jexl in the config
+      get geneGlyphMode() {
         return (
-          self.jexlFilters ??
-          getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
+          self.trackGeneGlyphMode ??
+          getConf(self, ['renderer', 'geneGlyphMode'])
         )
       },
       /**
        * #getter
        */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
-      },
-
-      /**
-       * #getter
-       */
-      get showLabels() {
-        return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
-      },
-
-      /**
-       * #getter
-       */
-      get showDescriptions() {
+      get subfeatureLabels() {
         return (
-          self.trackShowDescriptions ??
-          getConf(self, ['renderer', 'showDescriptions'])
+          self.trackSubfeatureLabels ??
+          getConf(self, ['renderer', 'subfeatureLabels'])
         )
       },
-
       /**
        * #getter
        */
-      get maxHeight() {
-        return self.trackMaxHeight ?? getConf(self, ['renderer', 'maxHeight'])
-      },
-
-      /**
-       * #getter
-       */
-      get displayMode() {
+      get displayDirectionalChevrons() {
         return (
-          self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
+          self.trackDisplayDirectionalChevrons ??
+          getConf(self, ['renderer', 'displayDirectionalChevrons'])
         )
       },
     }))
@@ -119,138 +86,150 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
         const config = configBlob as Omit<typeof configBlob, symbol>
-
-        return self.rendererType.configSchema.create(
-          {
-            ...config,
-            showLabels: self.showLabels,
-            showDescriptions: self.showDescriptions,
-            displayMode: self.displayMode,
-            maxHeight: self.maxHeight,
-          },
-          getEnv(self),
-        )
+        return {
+          ...config,
+          // Use track overrides if set, otherwise use what's already in configBlob
+          // This avoids redundant getConf calls for each property
+          showLabels: self.trackShowLabels ?? config.showLabels,
+          showDescriptions:
+            self.trackShowDescriptions ?? config.showDescriptions,
+          subfeatureLabels:
+            self.trackSubfeatureLabels ?? config.subfeatureLabels,
+          displayMode: self.trackDisplayMode ?? config.displayMode,
+          maxHeight: self.trackMaxHeight ?? config.maxHeight,
+          geneGlyphMode: self.trackGeneGlyphMode ?? config.geneGlyphMode,
+          displayDirectionalChevrons:
+            self.trackDisplayDirectionalChevrons ??
+            config.displayDirectionalChevrons,
+        }
       },
     }))
-
     .actions(self => ({
       /**
        * #action
        */
-      setJexlFilters(f?: string[]) {
-        self.jexlFilters = cast(f)
+      setGeneGlyphMode(val: string) {
+        self.trackGeneGlyphMode = val
       },
       /**
        * #action
        */
-      toggleShowLabels() {
-        self.trackShowLabels = !self.showLabels
+      setSubfeatureLabels(val: string) {
+        self.trackSubfeatureLabels = val
       },
       /**
        * #action
        */
-      toggleShowDescriptions() {
-        self.trackShowDescriptions = !self.showDescriptions
-      },
-      /**
-       * #action
-       */
-      setDisplayMode(val: string) {
-        self.trackDisplayMode = val
-      },
-      /**
-       * #action
-       */
-      setMaxHeight(val?: number) {
-        self.trackMaxHeight = val
+      toggleDisplayDirectionalChevrons() {
+        self.trackDisplayDirectionalChevrons = !self.displayDirectionalChevrons
       },
     }))
     .views(self => {
-      const {
-        trackMenuItems: superTrackMenuItems,
-        renderProps: superRenderProps,
-      } = self
+      const { trackMenuItems: superTrackMenuItems } = self
       return {
         /**
          * #method
          */
-        renderProps() {
-          const superProps = superRenderProps()
-          return {
-            ...(superProps as Omit<typeof superProps, symbol>),
-            config: self.rendererConfig,
-            filters: new SerializableFilterChain({
-              filters: self.activeFilters,
-            }),
-          }
-        },
-
-        /**
-         * #method
-         */
         trackMenuItems(): MenuItem[] {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Show labels',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showLabels,
-              onClick: () => {
-                self.toggleShowLabels()
-              },
-            },
-            {
-              label: 'Show descriptions',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showDescriptions,
-              onClick: () => {
-                self.toggleShowDescriptions()
-              },
-            },
-            {
-              label: 'Display mode',
-              icon: VisibilityIcon,
-              subMenu: [
-                'compact',
-                'reducedRepresentation',
-                'normal',
-                'collapse',
-              ].map(val => ({
-                label: val,
+          const items = superTrackMenuItems()
+          const showMenu = findSubMenu(items, 'Show...')
+          if (showMenu) {
+            showMenu.subMenu = [
+              ...showMenu.subMenu,
+              {
+                label: 'Show chevrons',
+                type: 'checkbox',
+                checked: self.displayDirectionalChevrons,
                 onClick: () => {
-                  self.setDisplayMode(val)
+                  self.toggleDisplayDirectionalChevrons()
                 },
-              })),
-            },
-            {
-              label: 'Set max height',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetMaxHeightDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
               },
-            },
-            {
-              label: 'Edit filters',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  AddFiltersDialog,
-                  {
-                    model: self,
-                    handleClose,
+              {
+                label: 'Subfeature labels',
+                subMenu: ['none', 'below', 'overlay'].map(val => ({
+                  label: val,
+                  type: 'radio' as const,
+                  checked: self.subfeatureLabels === val,
+                  onClick: () => {
+                    self.setSubfeatureLabels(val)
                   },
-                ])
+                })),
               },
-            },
-          ]
+              {
+                label: 'Gene glyph',
+                subMenu: [
+                  {
+                    value: 'all',
+                    label: 'All transcripts',
+                  },
+                  {
+                    value: 'longest',
+                    label: 'Longest transcript',
+                  },
+                  {
+                    value: 'longestCoding',
+                    label: 'Longest coding transcript',
+                  },
+                ].map(({ value, label }) => ({
+                  label,
+                  type: 'radio' as const,
+                  checked: self.geneGlyphMode === value,
+                  onClick: () => {
+                    self.setGeneGlyphMode(value)
+                  },
+                })),
+              },
+            ]
+          }
+          const filtersMenu = findSubMenu(items, 'Filters')
+          if (filtersMenu) {
+            filtersMenu.subMenu = [
+              {
+                label: 'Show only genes',
+                type: 'checkbox',
+                checked: self.activeFilters.includes(
+                  "jexl:get(feature,'type')=='gene'",
+                ),
+                onClick: () => {
+                  const geneFilter = "jexl:get(feature,'type')=='gene'"
+                  const currentFilters = self.activeFilters
+                  if (currentFilters.includes(geneFilter)) {
+                    self.setJexlFilters(
+                      currentFilters.filter((f: string) => f !== geneFilter),
+                    )
+                  } else {
+                    self.setJexlFilters([...currentFilters, geneFilter])
+                  }
+                },
+              },
+              ...filtersMenu.subMenu,
+            ]
+          }
+          return items
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const {
+        trackGeneGlyphMode,
+        trackSubfeatureLabels,
+        trackDisplayDirectionalChevrons,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        ...(trackGeneGlyphMode !== undefined ? { trackGeneGlyphMode } : {}),
+        ...(trackSubfeatureLabels !== undefined
+          ? { trackSubfeatureLabels }
+          : {}),
+        ...(trackDisplayDirectionalChevrons !== undefined
+          ? { trackDisplayDirectionalChevrons }
+          : {}),
+      } as typeof snap
     })
 }
 

@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
@@ -12,14 +13,14 @@ import {
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
 import InfoIcon from '@mui/icons-material/Info'
-import { cast, getParent, types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
-const AboutDialog = lazy(() => import('./AboutDialog'))
+const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel
@@ -137,18 +138,22 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      getTrackActionMenuItems(config: any) {
+      getTrackActionMenuItems(
+        config: any,
+        extraTrackActions?: MenuItem[],
+      ): MenuItem[] {
         return [
           {
             label: 'About track',
             onClick: () => {
               self.queueDialog(doneCallback => [
                 AboutDialog,
-                { config, handleClose: doneCallback },
+                { config, session: self, handleClose: doneCallback },
               ])
             },
             icon: InfoIcon,
           },
+          ...(extraTrackActions || []),
         ]
       },
     }))

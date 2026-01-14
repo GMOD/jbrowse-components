@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import type { Config } from '../../base'
+import { isURL } from '../../types/common.ts'
 
-const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
+import type { Config } from '../../base.ts'
 
 export function validateLoadOption(load?: string): void {
   if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {
@@ -15,19 +15,18 @@ export function validateLoadOption(load?: string): void {
 
 export function validateTrackArg(track?: string): void {
   if (!track) {
-    console.error('Missing 1 required arg:')
-    console.error('track  Track file or URL')
-    console.error('See more help with --help')
-    process.exit(1)
+    throw new Error(
+      'Missing 1 required arg:\ntrack  Track file or URL\nSee more help with --help',
+    )
   }
 }
 
 export function validateLoadAndLocation(location: string, load?: string): void {
-  if (isUrl(location) && load) {
+  if (isURL(location) && load) {
     throw new Error(
       'The --load flag is used for local files only, but a URL was provided',
     )
-  } else if (!isUrl(location) && !load) {
+  } else if (!isURL(location) && !load) {
     throw new Error(
       `The --load flag should be used if a local file is used, example --load
         copy to copy the file into the config directory. Options for load are
@@ -91,5 +90,3 @@ export function createTargetDirectory(
     }
   }
 }
-
-export { isUrl }

@@ -5,19 +5,19 @@ import path from 'path'
 import { parseArgs } from 'util'
 
 // Command imports
-import { run as addAssemblyRun } from './commands/add-assembly'
-import { run as addConnectionRun } from './commands/add-connection'
-import { run as addTrackRun } from './commands/add-track'
-import { run as addTrackJsonRun } from './commands/add-track-json'
-import { run as adminServerRun } from './commands/admin-server'
-import { run as createRun } from './commands/create'
-import { run as makePIFRun } from './commands/make-pif'
-import { run as removeTrackRun } from './commands/remove-track'
-import { run as setDefaultSessionRun } from './commands/set-default-session'
-import { run as sortBedRun } from './commands/sort-bed'
-import { run as sortGffRun } from './commands/sort-gff'
-import { run as textIndexRun } from './commands/text-index'
-import { run as upgradeRun } from './commands/upgrade'
+import { run as addAssemblyRun } from './commands/add-assembly/index.ts'
+import { run as addConnectionRun } from './commands/add-connection.ts'
+import { run as addTrackJsonRun } from './commands/add-track-json.ts'
+import { run as addTrackRun } from './commands/add-track.ts'
+import { run as adminServerRun } from './commands/admin-server/index.ts'
+import { run as createRun } from './commands/create.ts'
+import { run as makePIFRun } from './commands/make-pif/index.ts'
+import { run as removeTrackRun } from './commands/remove-track.ts'
+import { run as setDefaultSessionRun } from './commands/set-default-session.ts'
+import { run as sortBedRun } from './commands/sort-bed.ts'
+import { run as sortGffRun } from './commands/sort-gff.ts'
+import { run as textIndexRun } from './commands/text-index/index.ts'
+import { run as upgradeRun } from './commands/upgrade.ts'
 
 const commands = {
   create: createRun,
@@ -88,7 +88,22 @@ export async function main(args: string[]) {
     const commandArgs = args.slice(1) // Remove the command name from args
     await command(commandArgs)
   } catch (error) {
-    console.error('Error:', error instanceof Error ? error.message : error)
+    const message = error instanceof Error ? error.message : String(error)
+    const code =
+      error instanceof Error ? (error as NodeJS.ErrnoException).code : undefined
+
+    console.error('Error:', message)
+
+    if (code === 'EPIPE' || code === 'ENOSPC' || message.includes('EPIPE')) {
+      console.error(`
+This error may be caused by running out of space in the temporary directory.
+Try setting a custom TMPDIR with more available space:
+
+  mkdir mytmpdir
+  TMPDIR=mytmpdir jbrowse text-index ...
+
+`)
+    }
     process.exit(1)
   }
 }

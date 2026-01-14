@@ -14,12 +14,17 @@ import { totalHeight } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground'
-import SVGLinearGenomeView from './SVGLinearGenomeView'
-import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
+import SVGBackground from './SVGBackground.tsx'
+import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
+import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny.ts'
 
-import type { LinearSyntenyViewModel } from '../model'
-import type { ExportSvgOptions } from '../types'
+import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
+import type { ExportSvgOptions } from '../types.ts'
+
+interface TrackEntry {
+  displays: unknown[]
+}
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -32,6 +37,7 @@ export async function renderToSvg(
     rulerHeight = 30,
     fontSize = 13,
     trackLabels = 'offset',
+    showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
   } = opts
@@ -66,38 +72,38 @@ export async function renderToSvg(
   )
 
   const renderings = await Promise.all(
-    levels.map(
-      async level =>
-        await Promise.all(
-          level.tracks.map(async track => {
-            const d = track.displays[0]
-            await when(() => (d.ready !== undefined ? d.ready : true))
-            const r = await renderToAbstractCanvas(
-              width,
-              level.height,
-              { exportSVG: opts },
-              ctx => {
-                drawRef(d, ctx)
-                return undefined
-              },
-            )
+    levels.map(async level => {
+      const { tracks } = level
+      return Promise.all(
+        tracks.map(async (track: TrackEntry) => {
+          const d = track.displays[0] as LinearSyntenyDisplayModel
+          await when(() => d.ready)
+          const r = await renderToAbstractCanvas(
+            width,
+            level.height,
+            { exportSVG: opts },
+            ctx => {
+              drawRef(d, ctx)
+              return undefined
+            },
+          )
 
-            if ('imageData' in r) {
-              throw new Error('found a canvas in svg export, probably a bug')
-            } else if ('canvasRecordedData' in r) {
-              return {
-                html: await getSerializedSvg({
-                  ...r,
-                  width,
-                  height: level.height,
-                }),
-              }
-            } else {
-              return r
+          if ('imageData' in r) {
+            throw new Error('found a canvas in svg export, probably a bug')
+          } else if ('canvasRecordedData' in r) {
+            return {
+              html: await getSerializedSvg({
+                ...r,
+                width,
+                height: level.height,
+              }),
             }
-          }),
-        ),
-    ),
+          } else {
+            return r
+          }
+        }),
+      )
+    }),
   )
 
   const trackLabelMaxLen =
@@ -112,6 +118,9 @@ export async function renderToSvg(
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
   const theme = createJBrowseTheme(themeVar)
+  const tracksHeights = views.map(v =>
+    totalHeight(v.tracks, textHeight, trackLabels),
+  )
   const RenderList = [
     <SVGLinearGenomeView
       rulerHeight={rulerHeight}
@@ -123,6 +132,8 @@ export async function renderToSvg(
       key={views[0]!.id}
       view={views[0]!}
       fontSize={fontSize}
+      showGridlines={showGridlines}
+      tracksHeight={tracksHeights[0]!}
     />,
   ] as React.ReactNode[]
   let currOffset = heights[0]! + fontSize + rulerHeight
@@ -160,6 +171,8 @@ export async function renderToSvg(
             key={view.id}
             view={view}
             fontSize={fontSize}
+            showGridlines={showGridlines}
+            tracksHeight={tracksHeights[i]!}
           />
         </g>
       </g>,

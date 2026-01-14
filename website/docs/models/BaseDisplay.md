@@ -3,8 +3,8 @@ id: basedisplay
 title: BaseDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -14,7 +14,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseDisplayModel.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseDisplay.md)
 
@@ -55,7 +55,7 @@ rpcDriverName: types.maybe(types.string)
 
 ```js
 // type
-React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; message: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _NotC...
+React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized,...
 ```
 
 #### getter: DisplayBlurb
@@ -73,6 +73,29 @@ any
 ```
 
 #### getter: parentTrack
+
+```js
+// type
+AbstractTrackModel
+```
+
+#### getter: parentDisplay
+
+Returns the parent display if this display is nested within another display
+(e.g., PileupDisplay inside LinearAlignmentsDisplay)
+
+```js
+// type
+any
+```
+
+#### getter: effectiveRpcDriverName
+
+Returns the effective RPC driver name with hierarchical fallback:
+
+1. This display's explicit rpcDriverName
+2. Parent display's effectiveRpcDriverName (for nested displays)
+3. Track config's rpcDriverName
 
 ```js
 // type
@@ -110,11 +133,22 @@ MenuItem[]
 #### method: renderProps
 
 the react props that are passed to the Renderer when data is rendered in this
-display
+display. these are serialized and sent to the worker for server-side rendering
 
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderingProps
+
+props passed to the renderer's React "Rendering" component. these are
+client-side only and never sent to the worker. includes displayModel and
+callbacks
+
+```js
+// type signature
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & { readonly RenderingComponent: React.FC<...>; ... 4 more ...; readonly effectiveRpcDriverName: any; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
@@ -133,11 +167,11 @@ regionCannotBeRendered: () => any
 
 ### BaseDisplay - Actions
 
-#### action: setMessage
+#### action: setStatusMessage
 
 ```js
 // type signature
-setMessage: (arg?: string) => void
+setStatusMessage: (arg?: string) => void
 ```
 
 #### action: setError

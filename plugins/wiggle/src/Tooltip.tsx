@@ -1,16 +1,16 @@
 import { Suspense } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import { YSCALEBAR_LABEL_OFFSET } from './util'
+import { YSCALEBAR_LABEL_OFFSET } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   hoverVertical: {
-    background: '#333',
+    background: theme.palette.text.primary,
     border: 'none',
     width: 1,
     height: '100%',
@@ -19,7 +19,7 @@ const useStyles = makeStyles()({
     position: 'absolute',
     pointerEvents: 'none',
   },
-})
+}))
 
 type Coord = [number, number]
 
@@ -34,23 +34,19 @@ const Tooltip = observer(function Tooltip({
   height,
   clientMouseCoord,
   offsetMouseCoord,
-  clientRect,
   TooltipContents,
-  useClientY,
 }: {
   model: { featureUnderMouse?: Feature }
-  useClientY?: boolean
   height: number
   clientMouseCoord: Coord
   offsetMouseCoord: Coord
-  clientRect?: DOMRect
   TooltipContents: TooltipContentsComponent
 }) {
   const { featureUnderMouse } = model
   const { classes } = useStyles()
 
   const x = clientMouseCoord[0] + 5
-  const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
+  const y = clientMouseCoord[1]
   return featureUnderMouse ? (
     <>
       <Suspense fallback={null}>

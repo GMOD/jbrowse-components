@@ -3,8 +3,8 @@ id: dialogqueuesessionmixin
 title: DialogQueueSessionMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type
-any
+DialogComponentType
 ```
 
 #### getter: DialogProps
@@ -49,5 +49,5 @@ removeActiveDialog: () => void
 
 ```js
 // type signature
-queueDialog: (cb: (doneCallback: () => void) => [any, unknown]) => void
+queueDialog: (cb: (doneCallback: () => void) => [DialogComponentType, unknown]) => void
 ```

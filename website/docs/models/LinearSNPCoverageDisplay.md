@@ -3,8 +3,8 @@ id: linearsnpcoveragedisplay
 title: LinearSNPCoverageDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -62,6 +62,15 @@ IMaybe<ISimpleType<boolean>>
 showArcs: types.maybe(types.boolean)
 ```
 
+#### property: minArcScore
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+minArcScore: types.optional(types.number, 0)
+```
+
 #### property: filterBySetting
 
 ```js
@@ -105,11 +114,18 @@ any
 any
 ```
 
+#### getter: modificationThreshold
+
+```js
+// type
+any
+```
+
 #### getter: rendererConfig
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+any
 ```
 
 #### getter: showArcsSetting
@@ -117,6 +133,18 @@ any
 ```js
 // type
 any
+```
+
+#### getter: skipFeatures
+
+Collect all skip features from rendered blocks for cross-region arc drawing Uses
+a Map to deduplicate features that appear in multiple blocks Only computed when
+showArcsSetting is true for performance Filters out arcs with score below
+minArcScore
+
+```js
+// type
+Feature[]
 ```
 
 #### getter: showInterbaseCountsSetting
@@ -151,7 +179,7 @@ boolean
 
 ```js
 // type
-LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; }; height: number; offsetMouseCoord: Coord; clientMouseCoord: Coord; clientRect?: DOMRect; }) => Element>
+LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; mouseoverExtraInformation?: string; visibleModifications: Map<string, { color: string; base: string; strand: string; }>; simplexModifications?: Set<string>; }; height: number; offsetMouseCoord: [...]; clientMouseCoord: [...]; clientRect?: DOMRect; }...
 ```
 
 #### getter: adapterConfig
@@ -161,6 +189,7 @@ LazyExoticComponent<(props: { model: { featureUnderMouse?: Feature; }; height: n
 {
   type: string
   subadapter: any
+  sequenceAdapter: unknown
 }
 ```
 
@@ -182,7 +211,7 @@ boolean
 
 ```js
 // type
-SerializableFilterChain
+any
 ```
 
 ### LinearSNPCoverageDisplay - Methods
@@ -201,6 +230,22 @@ adapterProps: () => any
 renderProps: () => any
 ```
 
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
+```
+
+#### method: renderSvg
+
+Custom renderSvg that includes sashimi arcs
+
+```js
+// type signature
+renderSvg: (opts: ExportSvgDisplayOptions) => Promise<Element>
+```
+
 #### method: contextMenuItems
 
 ```js
@@ -212,7 +257,16 @@ contextMenuItems: () => any[]
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => any[]
+```
+
+#### method: legendItems
+
+Returns legend items for SNP coverage display
+
+```js
+// type signature
+legendItems: (theme: Theme) => LegendItem[]
 ```
 
 ### LinearSNPCoverageDisplay - Actions
@@ -221,7 +275,7 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+setConfig: (configuration: AnyConfigurationModel) => void
 ```
 
 #### action: setFilterBy
@@ -245,20 +299,6 @@ setColorScheme: (colorBy?: ColorBy) => void
 setJexlFilters: (filters: string[]) => void
 ```
 
-#### action: updateVisibleModifications
-
-```js
-// type signature
-updateVisibleModifications: (uniqueModifications: ModificationType[]) => void
-```
-
-#### action: setModificationsReady
-
-```js
-// type signature
-setModificationsReady: (flag: boolean) => void
-```
-
 #### action: setShowInterbaseIndicators
 
 ```js
@@ -278,4 +318,11 @@ setShowInterbaseCounts: (arg: boolean) => void
 ```js
 // type signature
 setShowArcs: (arg: boolean) => void
+```
+
+#### action: setMinArcScore
+
+```js
+// type signature
+setMinArcScore: (arg: number) => void
 ```

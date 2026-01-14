@@ -1,11 +1,11 @@
 /* eslint no-cond-assign: ["error", "except-parens"] */
 import { objectHash } from '@jbrowse/core/util'
-import getValue from 'get-value'
 import setValue from 'set-value'
 
-import { isSource, isTrack } from './util'
+import getValue from './get-value.ts'
+import { isSource, isTrack } from './util.ts'
 
-import type { Config, Names, Source, Store, Track } from './types'
+import type { Config, Names, Source, Store, Track } from './types.ts'
 
 export function parseJB1Json(config: Config | string, url: string): Config {
   if (typeof config === 'string') {
@@ -81,7 +81,9 @@ function parse(text: string, url: string): Config {
             existing = []
           }
 
+          // @ts-expect-error
           existing.push(parsedValue)
+          // @ts-expect-error
           parsedValue = existing
         }
         if (parsedValue === 'true') {
@@ -239,10 +241,14 @@ export function regularizeConf(conf: Config, url: string): Config {
     // conf, if needed
     const addBase: (Track | Store | Names)[] = []
     if (conf.tracks) {
-      addBase.push(...conf.tracks)
+      for (const track of conf.tracks) {
+        addBase.push(track)
+      }
     }
     if (conf.stores) {
-      addBase.push(...Object.values(conf.stores))
+      for (const store of Object.values(conf.stores)) {
+        addBase.push(store)
+      }
     }
     if (conf.names) {
       addBase.push(conf.names)

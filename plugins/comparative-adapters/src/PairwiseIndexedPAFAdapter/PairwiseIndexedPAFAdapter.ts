@@ -4,8 +4,8 @@ import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import SyntenyFeature from '../SyntenyFeature'
-import { parsePAFLine } from '../util'
+import SyntenyFeature from '../SyntenyFeature/index.ts'
+import { parsePAFLine } from '../util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -84,24 +84,48 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
+      // assemblyNames = [queryAssembly, targetAssembly]
       const assemblyNames = this.getAssemblyNames()
       const index = assemblyNames.indexOf(assemblyName)
+
+      // flip=true when viewing from query assembly perspective
+      // flip=false when viewing from target assembly perspective
       const flip = index === 0
+
+      // PIF format indexes lines by perspective:
+      // - 'q' prefix lines are indexed by query coordinates
+      // - 't' prefix lines are indexed by target coordinates
       const letter = flip ? 'q' : 't'
+
+      // The "other" assembly is the mate
+      const mateAssemblyName = assemblyNames[flip ? 1 : 0]
 
       await updateStatus('Downloading features', statusCallback, () =>
         this.pif.getLines(letter + query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
             const r = parsePAFLine(line)
-            const refName = r.qname.slice(1)
+            const { extra, strand } = r
+            const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
+
+            // PIF format pre-orients each line from its perspective:
+            // - When querying 'q' lines: columns 2-3 have query coords (the "main" feature)
+            // - When querying 't' lines: columns 2-3 have target coords (the "main" feature)
+            // The first column has the indexed refName (with q/t prefix to strip)
+            // The 6th column (tname) has the mate's refName (no prefix)
+            //
+            // This means r.qstart/qend always represent the "main" feature coords
+            // for whichever perspective we're viewing from, and r.tstart/tend
+            // represent the mate coords
             const start = r.qstart
             const end = r.qend
+            const refName = r.qname.slice(1) // Strip 'q'/'t' prefix
             const mateName = r.tname
             const mateStart = r.tstart
             const mateEnd = r.tend
 
-            const { extra, strand } = r
-            const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
+            // PIF format already has pre-computed CIGARs for each perspective
+            // (q-lines have D↔I swapped relative to t-lines)
+            const CIGAR = extra.cg
 
             observer.next(
               new SyntenyFeature({
@@ -113,7 +137,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 refName,
                 strand,
                 ...rest,
-                CIGAR: extra.cg,
+                CIGAR,
                 syntenyId: fileOffset,
                 identity: numMatches / blockLen,
                 numMatches,
@@ -122,7 +146,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                   start: mateStart,
                   end: mateEnd,
                   refName: mateName,
-                  assemblyName: assemblyNames[+flip],
+                  assemblyName: mateAssemblyName,
                 },
               }),
             )

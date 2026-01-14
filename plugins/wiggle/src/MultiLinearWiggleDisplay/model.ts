@@ -9,33 +9,33 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
-import { isAlive, types } from 'mobx-state-tree'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 
-import SharedWiggleMixin from '../shared/SharedWiggleMixin'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util'
+import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
+import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
-import type { Source } from '../util'
+import type { Source } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Instance } from 'mobx-state-tree'
 
 const randomColor = () =>
-  // my understanding is this casts to int
-
   '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
 
 // lazies
-const Tooltip = lazy(() => import('./components/Tooltip'))
-const SetColorDialog = lazy(() => import('./components/SetColorDialog'))
+const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
+const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
-  () => import('./components/WiggleClusterDialog/WiggleClusterDialog'),
+  () => import('./components/WiggleClusterDialog/WiggleClusterDialog.tsx'),
 )
 
 // using a map because it preserves order
@@ -80,7 +80,7 @@ export function stateModelFactory(
       /**
        * #volatile
        */
-      sourcesLoadingStopToken: undefined as string | undefined,
+      sourcesLoadingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
@@ -100,7 +100,7 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setSourcesLoading(str: string) {
+      setSourcesLoading(str: StopToken) {
         if (self.sourcesLoadingStopToken) {
           stopStopToken(self.sourcesLoadingStopToken)
         }
@@ -192,14 +192,6 @@ export function stateModelFactory(
           self.rendererTypeName === 'MultiDensityRenderer'
         )
       },
-      /**
-       * #getter
-       * can be used to give it a "color scale" like a R heatmap, not
-       * implemented like this yet but flag can be used for this
-       */
-      get needsCustomLegend() {
-        return self.rendererTypeName === 'MultiDensityRenderer'
-      },
 
       /**
        * #getter
@@ -210,6 +202,15 @@ export function stateModelFactory(
           self.rendererTypeName === 'MultiRowXYPlotRenderer'
         )
       },
+      /**
+       * #getter
+       * can be used to give it a "color scale" like a R heatmap, not
+       * implemented like this yet but flag can be used for this
+       */
+      get needsCustomLegend() {
+        return self.rendererTypeName === 'MultiDensityRenderer'
+      },
+
       /**
        * #getter
        * the multirowxy and multiline don't need to use colors on the legend
@@ -278,7 +279,9 @@ export function stateModelFactory(
       get quantitativeStatsReady() {
         const view = getContainingView(self) as LinearGenomeViewModel
         return (
-          view.initialized && self.statsReadyAndRegionNotTooLarge && !self.error
+          view.initialized &&
+          self.featureDensityStatsReadyAndRegionNotTooLarge &&
+          !self.error
         )
       },
     }))
@@ -318,11 +321,9 @@ export function stateModelFactory(
           const superProps = superRenderProps()
           return {
             ...superProps,
-            displayModel: self,
             config: self.rendererConfig,
             filters: self.filters,
             resolution: self.resolution,
-            rpcDriverName: self.rpcDriverName,
             sources: self.sources,
           }
         },
@@ -379,11 +380,11 @@ export function stateModelFactory(
     })
     .views(self => ({
       get legendFontSize() {
-        return Math.min(self.rowHeight, 12)
+        return Math.min(self.rowHeight, 8)
       },
 
       get canDisplayLegendLabels() {
-        return self.rowHeight > 11
+        return self.rowHeight > 7
       },
 
       get labelWidth() {
@@ -403,19 +404,20 @@ export function stateModelFactory(
         return {
           ...superProps,
           notReady: superProps.notReady || !self.sources || !self.stats,
-          displayModel: self,
-          rpcDriverName: self.rpcDriverName,
           displayCrossHatches: self.displayCrossHatches,
           height: self.height,
           ticks: self.ticks,
           stats: self.stats,
           scaleOpts: self.scaleOpts,
-          onMouseMove: (_: unknown, f: Feature) => {
-            self.setFeatureUnderMouse(f)
-          },
-          onMouseLeave: () => {
-            self.setFeatureUnderMouse(undefined)
-          },
+          offset: self.isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET,
+        }
+      },
+      /**
+       * #method
+       */
+      renderingProps() {
+        return {
+          displayModel: self,
         }
       },
 
@@ -457,6 +459,20 @@ export function stateModelFactory(
           return [
             ...superTrackMenuItems(),
             {
+              label: 'Show...',
+              icon: VisibilityIcon,
+              subMenu: [
+                {
+                  label: 'Show tooltips',
+                  type: 'checkbox',
+                  checked: self.showTooltipsEnabled,
+                  onClick: () => {
+                    self.setShowTooltips(!self.showTooltipsEnabled)
+                  },
+                },
+              ],
+            },
+            {
               label: 'Score',
               subMenu: self.scoreTrackMenuItems(),
             },
@@ -478,7 +494,6 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-
             ...(hasRenderings
               ? [
                   {
@@ -512,18 +527,22 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-            {
-              label: 'Cluster by score',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  WiggleClusterDialog,
+            ...(self.isMultiRow
+              ? [
                   {
-                    model: self,
-                    handleClose,
+                    label: 'Cluster rows by score',
+                    onClick: () => {
+                      getSession(self).queueDialog(handleClose => [
+                        WiggleClusterDialog,
+                        {
+                          model: self,
+                          handleClose,
+                        },
+                      ])
+                    },
                   },
-                ])
-              },
-            },
+                ]
+              : []),
             {
               label: 'Show sidebar',
               type: 'checkbox',
@@ -559,8 +578,8 @@ export function stateModelFactory(
                 { getMultiWiggleSourcesAutorun },
                 { getQuantitativeStatsAutorun },
               ] = await Promise.all([
-                import('../getMultiWiggleSourcesAutorun'),
-                import('../getQuantitativeStatsAutorun'),
+                import('../getMultiWiggleSourcesAutorun.ts'),
+                import('../getQuantitativeStatsAutorun.ts'),
               ])
               getQuantitativeStatsAutorun(self)
               getMultiWiggleSourcesAutorun(self)
@@ -577,10 +596,24 @@ export function stateModelFactory(
          * #action
          */
         async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg')
+          const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts, superRenderSvg)
         },
       }
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      const { layout, showSidebar, ...rest } = snap as Omit<typeof snap, symbol>
+      return {
+        ...rest,
+        // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(layout?.length ? { layout } : {}),
+        ...(!showSidebar ? { showSidebar } : {}),
+      } as typeof snap
     })
 }
 

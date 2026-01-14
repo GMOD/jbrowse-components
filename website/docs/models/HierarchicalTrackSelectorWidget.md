@@ -3,8 +3,8 @@ id: hierarchicaltrackselectorwidget
 title: HierarchicalTrackSelectorWidget
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+any
 // code
 id: ElementId
 ```
@@ -44,7 +44,7 @@ type: types.literal('HierarchicalTrackSelectorWidget')
 
 ```js
 // type signature
-IMaybe<IReferenceType<IAnyType>>
+IMaybe<IReferenceType<any>>
 // code
 view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
@@ -55,7 +55,7 @@ view: types.safeReference(
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ filterText: IOptionalIType<ISimpleType<string>, [undefined]>; showSparse: IOptionalIType<ISimpleType<boolean>, [undefined]>; showFilters: IOptionalIType<...>; showOptions: IOptionalIType<...>; panelWidth: IOptionalIType<...>; }, { ...; } & ... 4 more ... & { ...; }, _NotCustomized, _NotCu...
+IOptionalIType<IModelType<{ filterText: IOptionalIType<ISimpleType<string>, [undefined]>; showSparse: IOptionalIType<ISimpleType<boolean>, [undefined]>; showFilters: IOptionalIType<...>; showOptions: IOptionalIType<...>; panelWidth: IOptionalIType<...>; }, { ...; } & ... 4 more ... & { ...; }, _NotCustomized, ModelS...
 // code
 faceted: types.optional(facetedStateTreeF(), {})
 ```
@@ -73,7 +73,7 @@ Set<string>
 
 ```js
 // type
-Set<{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
+Set<AnyConfigurationModel>
 ```
 
 #### getter: favoritesSet
@@ -117,7 +117,7 @@ filter out tracks that don't match the current assembly/display types
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+any[]
 ```
 
 #### getter: allTrackConfigurations
@@ -156,14 +156,14 @@ unknown[]
 
 ```js
 // type
-{ group: any; tracks: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]; noCategories: boolean; menuItems: any[]; }[]
+any[]
 ```
 
 #### getter: hierarchy
 
 ```js
 // type
-{ name: string; id: string; isOpenByDefault: boolean; type: "category"; children: { name: any; id: any; type: "category"; isOpenByDefault: boolean; menuItems: any[]; children: TreeNode[]; }[]; }
+{ name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; menuItems: any; nestingLevel: number; children: TreeNode[]; }[]; }
 ```
 
 #### getter: hasAnySubcategories
@@ -179,7 +179,7 @@ boolean
 
 ```js
 // type signature
-isSelected: (track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
+isSelected: (track: AnyConfigurationModel) => boolean
 ```
 
 #### method: isFavorite
@@ -200,7 +200,7 @@ isRecentlyUsed: (trackId: string) => boolean
 
 ```js
 // type signature
-getRefSeqTrackConf: (assemblyName: string) => { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>
+getRefSeqTrackConf: (assemblyName: string) => any
 ```
 
 ### HierarchicalTrackSelectorWidget - Actions
@@ -223,21 +223,21 @@ setSortCategories: (val: boolean) => void
 
 ```js
 // type signature
-setSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+setSelection: (elt: AnyConfigurationModel[]) => void
 ```
 
 #### action: addToSelection
 
 ```js
 // type signature
-addToSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+addToSelection: (elt: AnyConfigurationModel[]) => void
 ```
 
 #### action: removeFromSelection
 
 ```js
 // type signature
-removeFromSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+removeFromSelection: (elt: AnyConfigurationModel[]) => void
 ```
 
 #### action: clearSelection

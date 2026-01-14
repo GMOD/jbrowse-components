@@ -3,14 +3,14 @@ import { parseArgs } from 'util'
 
 import decompress from 'decompress'
 
-import fetch from '../fetchWithProxy'
+import fetch from '../fetchWithProxy.ts'
 import {
   fetchGithubVersions,
   getBranch,
   getLatest,
   getTag,
   printHelp,
-} from '../utils'
+} from '../utils.ts'
 
 const fsPromises = fs.promises
 

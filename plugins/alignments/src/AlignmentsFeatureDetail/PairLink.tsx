@@ -1,8 +1,8 @@
 import { Link } from '@mui/material'
 
-import { navToLoc } from './util'
+import { navToLoc } from './util.ts'
 
-import type { AlignmentFeatureWidgetModel } from './stateModelFactory'
+import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 
 export default function PairLink({
   locString,

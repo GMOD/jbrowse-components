@@ -1,0 +1,56 @@
+{
+  "name": "@jbrowse/plugin-canvas",
+  "version": "4.0.3",
+  "description": "JBrowse 2 plugin for canvas features",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/canvas"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "files": [
+    "esm"
+  ],
+  "scripts": {
+    "build": "pnpm run /^build:/",
+    "test": "cd ../..; jest --passWithNoTests plugins/canvas",
+    "prepublishOnly": "pnpm test",
+    "prepack": "pnpm build",
+    "prebuild": "pnpm clean",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "clean": "rimraf esm *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@mui/material": "^7.3.6",
+    "g2p_mapper": "^2.0.0",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1",
+    "rxjs": "^7.8.2"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
+}

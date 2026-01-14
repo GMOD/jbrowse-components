@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
@@ -14,9 +15,8 @@ import {
   TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const TextIndexingConfig = observer(function ({
+const TextIndexingConfig = observer(function TextIndexingConfig({
   model,
 }: {
   model: AddTrackModel

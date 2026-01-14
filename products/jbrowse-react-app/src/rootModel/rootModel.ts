@@ -4,31 +4,37 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { Cable } from '@jbrowse/core/ui/Icons'
 import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getType,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
 } from '@jbrowse/product-core'
 import AddIcon from '@mui/icons-material/Add'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
-import { saveAs } from 'file-saver'
 import { autorun } from 'mobx'
-import { addDisposer, cast, getSnapshot, getType, types } from 'mobx-state-tree'
 
-import jbrowseWebFactory from '../jbrowseModel'
-import { filterSessionInPlace } from '../util'
-import { version } from '../version'
+import jbrowseWebFactory from '../jbrowseModel.ts'
+import { filterSessionInPlace } from '../util.ts'
+import { version } from '../version.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type { BaseSessionType } from '@jbrowse/product-core'
 import type {
   IAnyStateTreeNode,
   IAnyType,
   Instance,
   SnapshotIn,
-} from 'mobx-state-tree'
+} from '@jbrowse/mobx-state-tree'
+import type { BaseSessionType } from '@jbrowse/product-core'
 
 export interface Menu {
   label: string
@@ -119,12 +125,15 @@ export default function RootModel({
         afterCreate() {
           addDisposer(
             self,
-            autorun(() => {
-              if (self.pluginsUpdated) {
-                // reload app to get a fresh plugin manager
-                window.location.reload()
-              }
-            }),
+            autorun(
+              function pluginsUpdatedAutorun() {
+                if (self.pluginsUpdated) {
+                  // reload app to get a fresh plugin manager
+                  window.location.reload()
+                }
+              },
+              { name: 'PluginsUpdated' },
+            ),
           )
         },
         /**
@@ -213,18 +222,23 @@ export default function RootModel({
                 {
                   label: 'Export session',
                   icon: GetAppIcon,
-                  onClick: (session: IAnyStateTreeNode) => {
-                    const sessionBlob = new Blob(
-                      [
-                        JSON.stringify(
-                          { session: getSnapshot(session) },
-                          null,
-                          2,
-                        ),
-                      ],
-                      { type: 'text/plain;charset=utf-8' },
+                  onClick: async (session: IAnyStateTreeNode) => {
+                    // eslint-disable-next-line @typescript-eslint/no-deprecated
+                    const { saveAs } = await import('file-saver-es')
+
+                    saveAs(
+                      new Blob(
+                        [
+                          JSON.stringify(
+                            { session: getSnapshot(session) },
+                            null,
+                            2,
+                          ),
+                        ],
+                        { type: 'text/plain;charset=utf-8' },
+                      ),
+                      'session.json',
                     )
-                    saveAs(sessionBlob, 'session.json')
                   },
                 },
 
@@ -269,7 +283,19 @@ export default function RootModel({
             },
             {
               label: 'Tools',
-              menuItems: [],
+              menuItems: [
+                {
+                  label: 'Use workspaces',
+                  icon: SpaceDashboardIcon,
+                  type: 'checkbox',
+                  checked: self.session?.useWorkspaces ?? false,
+                  helpText:
+                    'Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.',
+                  onClick: () => {
+                    self.session?.setUseWorkspaces(!self.session.useWorkspaces)
+                  },
+                },
+              ],
             },
           ],
           self.mutableMenuActions,

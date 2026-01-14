@@ -1,13 +1,13 @@
-import { ResizeHandle } from '@jbrowse/core/ui'
+import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import Controls from './Controls'
-import ImportForm from './ImportForm'
-import Ruler from './Ruler'
+import Controls from './Controls.tsx'
+import ImportForm from './ImportForm.tsx'
+import Ruler from './Ruler.tsx'
 
-import type { CircularViewModel } from '../model'
+import type { CircularViewModel } from '../model.ts'
 
 const dragHandleHeight = 3
 
@@ -22,7 +22,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Slices = observer(({ model }: { model: CircularViewModel }) => {
+const Slices = observer(function Slices({
+  model,
+}: {
+  model: CircularViewModel
+}) {
   return (
     <>
       {model.staticSlices.map(slice => (
@@ -48,24 +52,25 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
   )
 })
 
-const CircularView = observer(({ model }: { model: CircularViewModel }) => {
-  const initialized =
-    !!model.displayedRegions.length &&
-    !!model.figureWidth &&
-    !!model.figureHeight &&
-    model.initialized
+const CircularView = observer(function CircularView({
+  model,
+}: {
+  model: CircularViewModel
+}) {
+  const { showLoading, showView, showImportForm, loadingMessage } = model
 
-  const showImportForm = !initialized && !model.disableImportForm
-  const showFigure = initialized && !showImportForm
-
-  return showImportForm || model.error ? (
-    <ImportForm model={model} />
-  ) : showFigure ? (
-    <CircularViewLoaded model={model} />
-  ) : null
+  if (showLoading) {
+    return <LoadingEllipses variant="h6" message={loadingMessage} />
+  } else if (showImportForm) {
+    return <ImportForm model={model} />
+  } else if (showView) {
+    return <CircularViewLoaded model={model} />
+  } else {
+    return null
+  }
 })
 
-const CircularViewLoaded = observer(function ({
+const CircularViewLoaded = observer(function CircularViewLoaded({
   model,
 }: {
   model: CircularViewModel

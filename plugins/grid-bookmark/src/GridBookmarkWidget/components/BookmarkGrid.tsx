@@ -6,14 +6,14 @@ import {
   measureGridWidth,
   measureText,
 } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Link } from '@mui/material'
 import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import { navToBookmark } from '../utils'
+import { navToBookmark } from '../utils.ts'
 
-import type { GridBookmarkModel } from '../model'
+import type { GridBookmarkModel } from '../model.ts'
 
 const useStyles = makeStyles()(() => ({
   cell: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-const BookmarkGrid = observer(function ({
+const BookmarkGrid = observer(function BookmarkGrid({
   model,
 }: {
   model: GridBookmarkModel

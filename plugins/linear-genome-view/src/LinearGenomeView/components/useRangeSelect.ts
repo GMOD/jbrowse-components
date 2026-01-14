@@ -1,7 +1,7 @@
 import type React from 'react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { getRelativeX } from './util'
+import { getRelativeX } from './util.ts'
 
 import type { LinearGenomeViewModel } from '..'
 
@@ -9,6 +9,7 @@ interface AnchorPosition {
   offsetX: number
   clientX: number
   clientY: number
+  isClick?: boolean
 }
 
 export function useRangeSelect(
@@ -24,6 +25,12 @@ export function useRangeSelect(
   const [anchorPosition, setAnchorPosition] = useState<AnchorPosition>()
   const [guideX, setGuideX] = useState<number>()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
+
+  const handleClose = useCallback(() => {
+    setAnchorPosition(undefined)
+    setStartX(undefined)
+    setCurrentX(undefined)
+  }, [])
 
   useEffect(() => {
     function computeOffsets(offsetX: number) {
@@ -49,16 +56,19 @@ export function useRangeSelect(
       if (startX !== undefined && ref.current) {
         const { clientX, clientY } = event
         const offsetX = getRelativeX(event, ref.current)
-        // as stated above, store both clientX/Y and offsetX for different
-        // purposes
+        const isClick = Math.abs(offsetX - startX) <= 3
+        // store both clientX/Y and offsetX for different purposes
         setAnchorPosition({
           offsetX,
           clientX,
           clientY,
+          isClick,
         })
-        const args = computeOffsets(offsetX)
-        if (args) {
-          model.setOffsets(args.leftOffset, args.rightOffset)
+        if (!isClick) {
+          const args = computeOffsets(offsetX)
+          if (args) {
+            model.setOffsets(args.leftOffset, args.rightOffset)
+          }
         }
         setGuideX(undefined)
       }
@@ -72,18 +82,7 @@ export function useRangeSelect(
       }
     }
     return () => {}
-  }, [startX, mouseDragging, model, ref])
-
-  useEffect(() => {
-    if (
-      !mouseDragging &&
-      currentX !== undefined &&
-      startX !== undefined &&
-      Math.abs(currentX - startX) <= 3
-    ) {
-      handleClose()
-    }
-  }, [mouseDragging, currentX, startX])
+  }, [startX, mouseDragging, model, ref, handleClose])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     if (shiftOnly && !event.shiftKey) {
@@ -113,26 +112,29 @@ export function useRangeSelect(
     setGuideX(undefined)
   }
 
-  function handleClose() {
-    setAnchorPosition(undefined)
-    setStartX(undefined)
-    setCurrentX(undefined)
-  }
-
   function handleMenuItemClick(_: unknown, callback: () => void) {
     callback()
     handleClose()
   }
 
   const open = Boolean(anchorPosition)
+  const isClick = anchorPosition?.isClick
+  const clickBpOffset = isClick
+    ? model.pxToBp(anchorPosition.offsetX)
+    : undefined
+
   if (startX === undefined) {
     return {
       open,
+      isClick,
+      clickBpOffset,
       guideX,
       mouseDown,
       mouseMove,
       mouseOut,
+      handleClose,
       handleMenuItemClick,
+      anchorPosition,
     }
   }
   const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
@@ -144,7 +146,9 @@ export function useRangeSelect(
 
   return {
     open,
-    rubberbandOn: true,
+    isClick,
+    clickBpOffset,
+    rubberbandOn: !isClick,
     mouseDown,
     mouseMove,
     mouseOut,

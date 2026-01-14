@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -125,7 +125,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
             throw new Error(`unknown display type ${type}`)
           }
           const display = self.displays.find(
-            (d: any) => d && d.displayId === displayConf.displayId,
+            (d: any) => d?.displayId === displayConf.displayId,
           )
           if (display) {
             return display

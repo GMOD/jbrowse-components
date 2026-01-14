@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Checkbox,
@@ -9,7 +10,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -58,7 +58,7 @@ const ConnectionRow = observer(function ConnectionRow({
         name,
         assemblyNames.length ? `(${ellipses(assemblyNames.join(','))})` : '',
       ]
-        .filter(f => !!f)
+        .filter(Boolean)
         .join(' ')}
     />
   )
@@ -91,7 +91,7 @@ const ConnectionList = observer(function ConnectionsList({
   )
 })
 
-const ToggleConnectionDialog = observer(function ({
+const ToggleConnectionDialog = observer(function ToggleConnectionDialog({
   session,
   handleClose,
   breakConnection,

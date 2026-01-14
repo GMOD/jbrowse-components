@@ -45,6 +45,8 @@ bigWigLocation: {
 
 #### slot: source
 
+added as feature.get('source') on all features
+
 ```js
 source: {
       type: 'string',
@@ -59,6 +61,7 @@ source: {
 resolutionMultiplier: {
       type: 'number',
       defaultValue: 1,
-      description: 'Initial resolution multiplier',
+      description:
+        'Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution',
     }
 ```

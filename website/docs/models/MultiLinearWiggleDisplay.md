@@ -3,8 +3,8 @@ id: multilinearwiggledisplay
 title: MultiLinearWiggleDisplay
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -59,14 +59,14 @@ showSidebar: true
 
 ```js
 // type
-Feature
+any
 ```
 
 #### getter: TooltipComponent
 
 ```js
 // type
-React.ComponentType<any>
+AnyReactComponentType
 ```
 
 #### getter: rendererTypeName
@@ -97,17 +97,17 @@ boolean
 boolean
 ```
 
-#### getter: needsCustomLegend
-
-can be used to give it a "color scale" like a R heatmap, not implemented like
-this yet but flag can be used for this
+#### getter: canHaveFill
 
 ```js
 // type
 boolean
 ```
 
-#### getter: canHaveFill
+#### getter: needsCustomLegend
+
+can be used to give it a "color scale" like a R heatmap, not implemented like
+this yet but flag can be used for this
 
 ```js
 // type
@@ -138,14 +138,14 @@ any
 
 ```js
 // type
-{ color: string; baseUri?: string; name: string; group?: string; }[]
+{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
 ```
 
 #### getter: sources
 
 ```js
 // type
-{ color: string; baseUri?: string; name: string; group?: string; }[]
+{ color: any; baseUri?: string; name: string; source: string; group?: string; }[]
 ```
 
 #### getter: quantitativeStatsReady
@@ -203,14 +203,14 @@ boolean
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: hasGlobalStats
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: fillSetting
@@ -236,11 +236,18 @@ adapterProps: () => any
 renderProps: () => any
 ```
 
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
+```
+
 #### method: trackMenuItems
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+trackMenuItems: () => any[]
 ```
 
 ### MultiLinearWiggleDisplay - Actions
@@ -256,7 +263,7 @@ setShowSidebar: (arg: boolean) => void
 
 ```js
 // type signature
-setSourcesLoading: (str: string) => void
+setSourcesLoading: (str: StopToken) => void
 ```
 
 #### action: setLayout

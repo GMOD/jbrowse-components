@@ -1,6 +1,6 @@
 *.ix
 test_data/many_contigs/large.chrom.sizes
-packages/core/ui/react-colorful.js
+packages/core/src/ui/react-colorful.ts
 plugins/legacy-jbrowse/test_data
 plugins/data-management/src/UCSCTrackHubConnection/ucscAssemblies.ts
 products/jbrowse-web/src/tests/Loader.test.tsx
@@ -21,3 +21,7 @@ test_data/sars-cov2/ncbi_original.gff3
 plugins/data-management/src/UCSCTrackHub/ucscAssemblies.ts
 test_data/config_demo.json
 docs/models/LinearGenomeView.md
+plugins/variants/src/d3-hierarchy2
+benchmarks
+products/jbrowse-web/src/tests/__file_snapshots__/save_track_data.sam
+products/jbrowse-web/src/tests/__file_snapshots__/save_track_data.cram.sam

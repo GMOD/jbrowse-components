@@ -1,7 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { getFileName } from '@jbrowse/core/util/tracks'
 
-import SPARQLAdapterF from './SPARQLAdapter'
+import SPARQLAdapterF from './SPARQLAdapter/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AdapterGuesser } from '@jbrowse/core/util/tracks'

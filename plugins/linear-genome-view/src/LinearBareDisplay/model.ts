@@ -1,9 +1,8 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getEnv } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import { BaseLinearDisplay } from '../BaseLinearDisplay'
+import { BaseLinearDisplay } from '../BaseLinearDisplay/index.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
@@ -35,9 +34,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
-        const config = configBlob as Omit<typeof configBlob, symbol>
-
-        return self.rendererType.configSchema.create(config, getEnv(self))
+        return configBlob as Omit<typeof configBlob, symbol>
       },
       /**
        * #getter
@@ -56,7 +53,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return {
             ...superRenderProps(),
             ...getParentRenderProps(self),
-            rpcDriverName: self.rpcDriverName,
             config: self.rendererConfig,
           }
         },

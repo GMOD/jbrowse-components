@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
   Alert,
@@ -12,13 +13,10 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-// Icons
+import { downloadBookmarkFile } from '../../utils.ts'
 
-import { downloadBookmarkFile } from '../../utils'
-
-import type { GridBookmarkModel } from '../../model'
+import type { GridBookmarkModel } from '../../model.ts'
 
 const useStyles = makeStyles()({
   flexItem: {
@@ -33,7 +31,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const ExportBookmarksDialog = observer(function ({
+const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   model,
   onClose,
 }: {
@@ -47,10 +45,10 @@ const ExportBookmarksDialog = observer(function ({
   return (
     <Dialog
       open
+      title="Export bookmarks"
       onClose={() => {
         onClose()
       }}
-      title="Export bookmarks"
     >
       <DialogContent className={classes.container}>
         <Alert severity="info">
@@ -86,6 +84,7 @@ const ExportBookmarksDialog = observer(function ({
           color="primary"
           startIcon={<GetAppIcon />}
           onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             downloadBookmarkFile(fileType, model)
             onClose()
           }}

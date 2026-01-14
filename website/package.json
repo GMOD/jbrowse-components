@@ -3,43 +3,44 @@
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
-    "prep": "cp ../products/jbrowse-cli/README.md docs/cli.md && npm run fetchPlugins",
+    "prep": "cp ../products/jbrowse-cli/README.md docs/cli.md && pnpm fetchPlugins",
     "fetchPlugins": "rimraf plugins.json && wget -q https://s3.amazonaws.com/jbrowse.org/plugin-store/plugins.json",
-    "prebuild": "npm run prep",
-    "prestart": "npm run prep",
+    "prebuild": "pnpm prep",
+    "prestart": "pnpm prep",
     "start": "docusaurus start",
     "build": "docusaurus build",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "typecheck": "tsc",
-    "predeploy": "npm run build",
+    "predeploy": "pnpm build",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/",
     "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\""
   },
   "dependencies": {
-    "@cmfcmf/docusaurus-search-local": "^1.1.0",
-    "@docusaurus/core": "^3.3.0",
-    "@docusaurus/faster": "^3.8.0",
-    "@docusaurus/plugin-google-gtag": "^3.8.1",
-    "@docusaurus/preset-classic": "^3.3.0",
-    "@emotion/react": "^11.10.6",
-    "@emotion/styled": "^11.10.6",
-    "@mdx-js/react": "^3.0.0",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
-    "acorn": "^8.8.2",
+    "@cmfcmf/docusaurus-search-local": "^2.0.1",
+    "@docusaurus/core": "^3.9.2",
+    "@docusaurus/faster": "^3.9.2",
+    "@docusaurus/plugin-google-gtag": "^3.9.2",
+    "@docusaurus/preset-classic": "^3.9.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mdx-js/react": "^3.1.1",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "acorn": "^8.15.0",
     "acorn-jsx": "^5.3.2",
-    "clsx": "^2.0.0",
+    "clsx": "^2.1.1",
     "copy-to-clipboard": "^3.3.3",
-    "prism-react-renderer": "^2.1.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-player": "^3.3.2"
+    "prism-react-renderer": "^2.4.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-player": "^3.4.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.3.0",
-    "@tsconfig/docusaurus": "^2.0.2",
-    "typescript": "^5.0.4"
+    "@docusaurus/module-type-aliases": "^3.9.2",
+    "@tsconfig/docusaurus": "^2.0.7",
+    "rimraf": "^6.1.2",
+    "typescript": "^5.9.3"
   },
   "browserslist": {
     "production": [
@@ -52,8 +53,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "resolutions": {
-    "cheerio": "1.0.0-rc.9"
   }
 }

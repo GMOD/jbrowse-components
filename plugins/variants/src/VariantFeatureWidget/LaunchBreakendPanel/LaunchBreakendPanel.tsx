@@ -2,17 +2,14 @@ import { lazy } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
+import { getAssemblyName } from '@jbrowse/sv-core'
 import { Link, Typography } from '@mui/material'
 
-import type { VariantFeatureWidgetModel } from '../stateModelFactory'
+import type { VariantFeatureWidgetModel } from '../stateModelFactory.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
-// lazies
-const BreakendMultiLevelOptionDialog = lazy(
-  () => import('./BreakendMultiLevelOptionDialog'),
-)
-const BreakendSingleLevelOptionDialog = lazy(
-  () => import('./BreakendSingleLevelOptionDialog'),
+const BreakpointSplitViewChoiceDialog = lazy(
+  () => import('./BreakpointSplitViewChoiceDialog.tsx'),
 )
 
 function LocStringList({
@@ -70,57 +67,39 @@ function LaunchBreakpointSplitViewPanel({
 }) {
   const session = getSession(model)
   const simpleFeature = new SimpleFeature(feature)
-  const assemblyName = model.view?.displayedRegions[0]?.assemblyName
-  return (
+  const assemblyName = getAssemblyName(model.view)
+
+  return assemblyName ? (
     <div>
       <Typography>Launch split view</Typography>
       <ul>
         {locStrings.map(locString => (
-          <li key={JSON.stringify(locString)}>
+          <li key={locString}>
             {`${feature.refName}:${feature.start} // ${locString}`}{' '}
             <Link
               href="#"
               onClick={event => {
                 event.preventDefault()
                 session.queueDialog(handleClose => [
-                  BreakendMultiLevelOptionDialog,
+                  BreakpointSplitViewChoiceDialog,
                   {
                     handleClose,
                     session,
                     feature: simpleFeature,
-                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_multilevel`,
+                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
                     view: model.view,
                     assemblyName,
                   },
                 ])
               }}
             >
-              (top/bottom)
-            </Link>{' '}
-            <Link
-              href="#"
-              onClick={event => {
-                event.preventDefault()
-                session.queueDialog(handleClose => [
-                  BreakendSingleLevelOptionDialog,
-                  {
-                    handleClose,
-                    session,
-                    feature: simpleFeature,
-                    stableViewId: `${model.id}_${assemblyName}_breakpointsplitview_singlelevel`,
-                    view: model.view,
-                    assemblyName,
-                  },
-                ])
-              }}
-            >
-              (single row)
+              (breakpoint split view)
             </Link>
           </li>
         ))}
       </ul>
     </div>
-  )
+  ) : null
 }
 
 export default function LaunchBreakendPanel(props: {

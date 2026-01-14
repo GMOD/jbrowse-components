@@ -1,8 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { cast, getParent, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { toJS } from 'mobx'
-import { cast, getParent, getSnapshot } from 'mobx-state-tree'
 
-import { JBrowseConfigF } from '../JBrowseConfig'
+import { JBrowseConfigF } from '../JBrowseConfig/index.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -25,6 +25,7 @@ export function JBrowseModelF({
   pluginManager,
   assemblyConfigSchema,
 }: {
+  adminMode?: boolean
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
@@ -79,13 +80,13 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      addTrackConf(trackConf: AnyConfigurationModel) {
+      addTrackConf(trackConf: { trackId: string; type: string }) {
         const { type } = trackConf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        const length = self.tracks.push(trackConf)
-        return self.tracks[length - 1]
+        self.tracks = [...self.tracks, trackConf]
+        return self.tracks.at(-1)
       },
       /**
        * #action
@@ -108,9 +109,24 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      deleteTrackConf(trackConf: AnyConfigurationModel) {
-        const elt = self.tracks.find(t => t.trackId === trackConf.trackId)
-        return self.tracks.remove(elt)
+      deleteTrackConf(trackConf: AnyConfigurationModel | { trackId: string }) {
+        const trackId = trackConf.trackId
+        self.tracks = self.tracks.filter(t => t.trackId !== trackId)
+      },
+      /**
+       * #action
+       * Updates an existing track configuration. Used to sync editable configs
+       * back to the frozen tracks array.
+       */
+      updateTrackConf(trackConf: { trackId: string; [key: string]: unknown }) {
+        const { trackId } = trackConf
+        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+        if (idx !== -1) {
+          // Replace the track at that index
+          const newTracks = [...self.tracks]
+          newTracks[idx] = trackConf
+          self.tracks = newTracks
+        }
       },
       /**
        * #action

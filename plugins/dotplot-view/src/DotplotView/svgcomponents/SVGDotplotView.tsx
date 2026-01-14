@@ -3,11 +3,11 @@ import { getSession, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground'
-import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
-import { GridRaw } from '../components/Grid'
+import SVGBackground from './SVGBackground.tsx'
+import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
+import DotplotGrid from '../components/DotplotGrid.tsx'
 
-import type { DotplotViewModel, ExportSvgOptions } from '../model'
+import type { DotplotViewModel, ExportSvgOptions } from '../model.ts'
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -44,7 +44,7 @@ export async function renderToSvg(
           <SVGBackground width={w} height={height} />
           <VerticalAxisRaw model={model} />
           <g transform={`translate(${borderX} 0)`}>
-            <GridRaw model={model} />
+            <DotplotGrid model={model} />
             <defs>
               <clipPath id="clip-ruler">
                 <rect x={0} y={0} width={viewWidth} height={viewHeight} />

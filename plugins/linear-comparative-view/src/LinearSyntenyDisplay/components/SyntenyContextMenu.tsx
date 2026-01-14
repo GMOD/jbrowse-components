@@ -1,8 +1,8 @@
 import { Menu } from '@jbrowse/core/ui'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
-import type { LinearSyntenyDisplayModel } from '../model'
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
+import type { LinearSyntenyDisplayModel } from '../model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 interface ClickCoord {
@@ -24,28 +24,12 @@ export default function SyntenyContextMenu({
   const { clientX, clientY, feature } = anchorEl
   return (
     <Menu
-      onMenuItemClick={(event, callback) => {
-        callback(event)
+      onMenuItemClick={(_, callback) => {
+        callback()
         onClose()
       }}
-      anchorEl={{
-        nodeType: 1,
-        getBoundingClientRect: () => {
-          const x = clientX
-          const y = clientY
-          return {
-            top: y,
-            left: x,
-            bottom: y,
-            right: x,
-            width: 0,
-            height: 0,
-            x,
-            y,
-            toJSON() {},
-          }
-        },
-      }}
+      anchorReference="anchorPosition"
+      anchorPosition={{ top: clientY, left: clientX }}
       onClose={onClose}
       open={Boolean(anchorEl)}
       menuItems={[
@@ -60,24 +44,12 @@ export default function SyntenyContextMenu({
 
             const l1 = view.views[model.level]!
             const l2 = view.views[model.level + 1]!
-            const l1asm = l1.assemblyNames[0]
-            const l2asm = l2.assemblyNames[0]
 
-            l1.navToLocString(`${refName}:${start}-${end}`).catch(
-              (e: unknown) => {
-                const err = `${l1asm}:${e}`
-                console.error(l1asm, err)
-                getSession(model).notifyError(err, e)
-              },
-            )
+            const center1 = (start + end) / 2
+            const center2 = (mate.start + mate.end) / 2
 
-            l2.navToLocString(
-              `${mate.refName}:${mate.start}-${mate.end}`,
-            ).catch((e: unknown) => {
-              const err = `${l2asm}:${e}`
-              console.error(l2asm, err)
-              getSession(model).notifyError(err, e)
-            })
+            l1.centerAt(center1, refName)
+            l2.centerAt(center2, mate.refName)
           },
         },
       ]}

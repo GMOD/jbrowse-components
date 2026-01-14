@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './VcfTabixAdapter'
-import configSchema from './configSchema'
+import Adapter from './VcfTabixAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
   const adapter = new Adapter(

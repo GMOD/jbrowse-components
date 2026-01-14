@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BedAdapter from './BedAdapter'
-import MyConfigSchema from './configSchema'
+import BedAdapter from './BedAdapter.ts'
+import MyConfigSchema from './configSchema.ts'
 
 test('adapter can fetch features from volvox-bed12.bed', async () => {
   const adapter = new BedAdapter(

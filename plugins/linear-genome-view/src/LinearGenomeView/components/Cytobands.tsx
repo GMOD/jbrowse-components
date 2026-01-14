@@ -2,8 +2,8 @@ import { getFillProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 // core
-import { getCytobands } from './util'
-import { HEADER_OVERVIEW_HEIGHT } from '../consts'
+import { getCytobands } from './util.ts'
+import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
@@ -59,7 +59,7 @@ const colorMap: Record<string, string> = {
   acen: '#800',
 }
 
-const Cytobands = observer(function ({
+const Cytobands = observer(function Cytobands({
   overview,
   block,
   assembly,

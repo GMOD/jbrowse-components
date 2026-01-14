@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Step,
@@ -10,13 +11,12 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import ConfirmTrack from './ConfirmTrack'
-import TrackSourceSelect from './TrackSourceSelect'
-import { doSubmit } from './doSubmit'
+import ConfirmTrack from './ConfirmTrack.tsx'
+import TrackSourceSelect from './TrackSourceSelect.tsx'
+import { doSubmit } from './doSubmit.ts'
 
-import type { AddTrackModel } from '../model'
+import type { AddTrackModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -32,14 +32,11 @@ const useStyles = makeStyles()(theme => ({
     marginTop: theme.spacing(10),
     marginBottom: theme.spacing(2),
   },
-  alertContainer: {
-    padding: `${theme.spacing(2)}px 0px ${theme.spacing(2)}px 0px`,
-  },
 }))
 
 const steps = ['Enter track data', 'Confirm track type']
 
-const DefaultAddTrackWorkflow = observer(function ({
+const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
   model,
 }: {
   model: AddTrackModel

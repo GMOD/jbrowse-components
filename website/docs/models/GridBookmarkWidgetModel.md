@@ -3,8 +3,8 @@ id: gridbookmarkwidgetmodel
 title: GridBookmarkWidgetModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -26,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+any
 // code
 id: ElementId
 ```
@@ -46,7 +46,7 @@ removed by postProcessSnapshot, only loaded from localStorage
 
 ```js
 // type signature
-IOptionalIType<IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
+IOptionalIType<IArrayType<IModelType<ModelProperties & { label: IOptionalIType<ISimpleType<string>, [undefined]>; highlight: IOptionalIType<ISimpleType<string>, [...]>; }, { ...; }, _NotCustomized, _NotCustomized>>, [...]>
 // code
 bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
@@ -73,35 +73,35 @@ Set<unknown>
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: areBookmarksHighlightLabelsOnAllOpenViews
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: bookmarksWithValidAssemblies
 
 ```js
 // type
-({ refName: string; start: number; end: number; reversed: boolean; assemblyName: string; label: string; highlight: string; } & NonEmptyObject & { setRefName(newRefName: string): void; } & { ...; } & IStateTreeNode<...>)[]
+({ [x: string]: any; label: string; highlight: string; } & NonEmptyObject & { setLabel(label: string): void; setHighlight(color: string): void; } & IStateTreeNode<IModelType<ModelProperties & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>)[]
 ```
 
 #### getter: sharedBookmarksModel
 
 ```js
 // type
-{ sharedBookmarks: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTreeNod...
+{ sharedBookmarks: IMSTArray<IModelType<ModelProperties & { label: IOptionalIType<ISimpleType<string>, [undefined]>; highlight: IOptionalIType<ISimpleType<string>, [...]>; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTreeNode<...>
 ```
 
 #### getter: allBookmarksModel
 
 ```js
 // type
-{ sharedBookmarks: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTreeNod...
+{ sharedBookmarks: IMSTArray<IModelType<ModelProperties & { label: IOptionalIType<ISimpleType<string>, [undefined]>; highlight: IOptionalIType<ISimpleType<string>, [...]>; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; } & NonEmptyObject & IStateTreeNode<...>
 ```
 
 #### getter: selectedAssemblies
@@ -173,7 +173,7 @@ setSelectedBookmarks: (bookmarks: IExtendedLabeledRegionModel[]) => void
 
 ```js
 // type signature
-setBookmarkedRegions: (regions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; } & { ...; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>) => void
+setBookmarkedRegions: (regions: IMSTArray<IModelType<ModelProperties & { label: IOptionalIType<ISimpleType<string>, [undefined]>; highlight: IOptionalIType<ISimpleType<string>, [...]>; }, { ...; }, _NotCustomized, _NotCustomized>>) => void
 ```
 
 #### action: setBookmarkHighlightsVisible

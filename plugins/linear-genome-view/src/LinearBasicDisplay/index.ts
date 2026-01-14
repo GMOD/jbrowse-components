@@ -1,8 +1,9 @@
+import { lazy } from 'react'
+
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
-import { BaseLinearDisplayComponent } from '../BaseLinearDisplay'
-import configSchema from './configSchema'
-import modelFactory from './model'
+import configSchema from './configSchema.ts'
+import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -16,10 +17,12 @@ export default function LinearBasicDisplay(pluginManager: PluginManager) {
       stateModel: modelFactory(config),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: lazy(
+        () => import('./components/LinearBasicDisplayComponent.tsx'),
+      ),
     })
   })
 }
 
-export { default as modelFactory } from './model'
-export { default as configSchema } from './configSchema'
+export { default as modelFactory } from './model.ts'
+export { default as configSchema } from './configSchema.ts'

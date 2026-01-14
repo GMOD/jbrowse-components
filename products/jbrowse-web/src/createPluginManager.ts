@@ -1,13 +1,13 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
-import corePlugins from './corePlugins'
-import { loadHubSpec } from './loadHubSpec'
-import { loadSessionSpec } from './loadSessionSpec'
-import JBrowseRootModelFactory from './rootModel/rootModel'
-import sessionModelFactory from './sessionModel'
+import corePlugins from './corePlugins.ts'
+import { loadHubSpec } from './loadHubSpec.ts'
+import { loadSessionSpec } from './loadSessionSpec.ts'
+import JBrowseRootModelFactory from './rootModel/rootModel.ts'
+import sessionModelFactory from './sessionModel/index.ts'
 
-import type { SessionLoaderModel } from './SessionLoader'
+import type { SessionLoaderModel } from './SessionLoader.ts'
 
 export function createPluginManager(
   model: SessionLoaderModel,
@@ -90,7 +90,9 @@ export function createPluginManager(
     } catch (e) {
       rootModel.setDefaultSession()
       const str = `${e}`
-      const m = str.replace('[mobx-state-tree] ', '').replace(/\(.+/, '')
+      const m = str
+        .replace('[@jbrowse/mobx-state-tree] ', '')
+        .replace(/\(.+/, '')
       const r =
         m.length > 1000 ? `${m.slice(0, 1000)}...see more in console` : m
       const s = r.startsWith('Error:') ? r : `Error: ${r}`

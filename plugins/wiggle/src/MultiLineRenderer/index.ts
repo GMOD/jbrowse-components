@@ -1,6 +1,7 @@
-import ReactComponent from '../MultiWiggleRendering'
-import MultiLineRenderer from './MultiLineRenderer'
-import configSchema from './configSchema'
+import { lazy } from 'react'
+
+import MultiLineRenderer from './MultiLineRenderer.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -9,7 +10,7 @@ export default function MultiLineRendererF(pluginManager: PluginManager) {
     () =>
       new MultiLineRenderer({
         name: 'MultiLineRenderer',
-        ReactComponent,
+        ReactComponent: lazy(() => import('../MultiWiggleRendering.tsx')),
         configSchema,
         pluginManager,
       }),

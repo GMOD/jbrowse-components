@@ -2,15 +2,21 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun, reaction } from 'mobx'
-import { addDisposer, types } from 'mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 import type { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
-import type { Instance } from 'mobx-state-tree'
+
+interface SvInspectorViewInit {
+  assembly: string
+  uri: string
+  fileType?: string
+}
 
 /**
  * #stateModel SvInspectorView
@@ -76,6 +82,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             disableImportForm: true,
           }),
         ),
+        /**
+         * #property
+         * used for initializing the view from a session snapshot
+         */
+        init: types.frozen<SvInspectorViewInit | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -218,6 +229,13 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       setOnlyDisplayRelevantRegionsInCircularView(val: boolean) {
         self.onlyDisplayRelevantRegionsInCircularView = val
       },
+
+      /**
+       * #action
+       */
+      setInit(init?: SvInspectorViewInit) {
+        self.init = init
+      },
     }))
     .views(self => ({
       /**
@@ -245,6 +263,49 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         return newHeight - oldHeight
       },
       afterAttach() {
+        // Init autorun for initializing from session snapshot
+        addDisposer(
+          self,
+          autorun(
+            async function svInspectorViewInitAutorun() {
+              const { init, width } = self
+              if (!width || !init) {
+                return
+              }
+
+              const session = getSession(self)
+
+              try {
+                const exts = init.uri.split('.')
+                let ext = exts.pop()?.toUpperCase()
+                if (ext === 'GZ') {
+                  ext = exts.pop()?.toUpperCase()
+                }
+
+                self.spreadsheetView.importWizard.setFileType(
+                  init.fileType || ext || '',
+                )
+                self.spreadsheetView.importWizard.setSelectedAssemblyName(
+                  init.assembly,
+                )
+                self.spreadsheetView.importWizard.setFileSource({
+                  uri: init.uri,
+                  locationType: 'UriLocation',
+                })
+                await self.spreadsheetView.importWizard.import(init.assembly)
+
+                // Clear init state
+                self.setInit(undefined)
+              } catch (e) {
+                console.error(e)
+                session.notifyError(`${e}`, e)
+                self.setInit(undefined)
+              }
+            },
+            { name: 'SvInspectorViewInit' },
+          ),
+        )
+
         // synchronize subview widths
         addDisposer(
           self,
@@ -353,8 +414,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      const { circularView, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest
+      const { init, circularView, ...rest } = snap as Omit<typeof snap, symbol>
+      return rest as Omit<typeof rest, symbol>
     })
 }
 

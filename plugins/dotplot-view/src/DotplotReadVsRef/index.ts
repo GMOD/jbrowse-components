@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add'
 
-import { onClick } from './DotplotReadVsRef'
+import { onClick } from './DotplotReadVsRef.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {

@@ -1,40 +1,107 @@
+import { getTickDisplayStr } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import ScalebarCoordinateTicks from './ScalebarCoordinateTicks'
-import {
-  ElidedBlock as ElidedBlockComponent,
-  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
-} from '../../BaseLinearDisplay/components/Block'
+import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '..'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-const ScalebarCoordinateLabels = observer(function ({ model }: { model: LGV }) {
-  const { staticBlocks, bpPerPx } = model
+const useStyles = makeStyles()(theme => ({
+  block: {
+    position: 'relative',
+    flexShrink: 0,
+    overflow: 'hidden',
+    height: 13,
+  },
+  elidedBlock: {
+    backgroundColor: '#999',
+    backgroundImage:
+      'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+  },
+  tick: {
+    position: 'absolute',
+    width: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
+  label: {
+    fontSize: 11,
+    zIndex: 1,
+    background: theme.palette.background.paper,
+    lineHeight: 'normal',
+    pointerEvents: 'none',
+  },
+}))
+
+function ContentBlockLabels({
+  block,
+  bpPerPx,
+}: {
+  block: ContentBlock
+  bpPerPx: number
+}) {
+  const { classes } = useStyles()
+  const ticks = makeTicks(block.start, block.end, bpPerPx, true, false)
+
   return (
-    <>
-      {staticBlocks.map((b, idx) => {
-        const { key, widthPx } = b
-        const k = `${key}-${idx}`
-        if (b.type === 'ContentBlock') {
-          return <ScalebarCoordinateTicks key={k} block={b} bpPerPx={bpPerPx} />
-        } else if (b.type === 'ElidedBlock') {
-          return <ElidedBlockComponent key={k} width={widthPx} />
-        } else if (b.type === 'InterRegionPaddingBlock') {
-          return (
-            <InterRegionPaddingBlockComponent
-              key={k}
-              width={widthPx}
-              style={{ background: 'none' }}
-              boundary={b.variant === 'boundary'}
-            />
-          )
-        } else {
+    <div className={classes.block} style={{ width: block.widthPx }}>
+      {ticks.map(({ type, base }) => {
+        if (type !== 'major') {
           return null
         }
+        const x =
+          (block.reversed ? block.end - base : base - block.start) / bpPerPx
+        return (
+          <div key={base} className={classes.tick} style={{ left: x }}>
+            <div className={classes.label}>
+              {getTickDisplayStr(base + 1, bpPerPx)}
+            </div>
+          </div>
+        )
       })}
-    </>
+    </div>
+  )
+}
+
+const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
+  model,
+}: {
+  model: LGV
+}) {
+  const { classes, cx } = useStyles()
+  const { staticBlocks, bpPerPx } = model
+
+  return (
+    <div style={{ display: 'flex' }}>
+      {staticBlocks.map((block, index) => {
+        const key = `${block.key}-${index}`
+        if (block.type === 'ContentBlock') {
+          return (
+            <ContentBlockLabels key={key} block={block} bpPerPx={bpPerPx} />
+          )
+        } else if (block.type === 'ElidedBlock') {
+          return (
+            <div
+              key={key}
+              className={cx(classes.block, classes.elidedBlock)}
+              style={{ width: block.widthPx }}
+            />
+          )
+        }
+        // InterRegionPaddingBlock renders as empty div
+        return (
+          <div
+            key={key}
+            className={classes.block}
+            style={{ width: block.widthPx }}
+          />
+        )
+      })}
+    </div>
   )
 })
 

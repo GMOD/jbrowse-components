@@ -1,105 +1,119 @@
+/**
+ * The pluginManager/rootModel can be destroyed and recreated without a full
+ * page reload. Plugin install passes the session explicitly via the
+ * reloadPluginManager callback. HMR uses a different mechanism: the useEffect
+ * cleanup saves the current session to the loader before destroying, so
+ * createPluginManager can restore it.
+ */
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { destroy, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
-import { destroy } from 'mobx-state-tree'
-import {
-  QueryParamProvider,
-  StringParam,
-  useQueryParam,
-} from 'use-query-params'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 import '@fontsource/roboto'
 
-import JBrowse from './JBrowse'
-import Loading from './Loading'
-import SessionLoader from '../SessionLoader'
-import { createPluginManager } from '../createPluginManager'
-import factoryReset from '../factoryReset'
+import JBrowse from './JBrowse.tsx'
+import Loading from './Loading.tsx'
+import SessionLoader from '../SessionLoader.ts'
+import { createPluginManager } from '../createPluginManager.ts'
+import factoryReset from '../factoryReset.ts'
+import { deleteQueryParams, readQueryParams } from '../useQueryParam.ts'
 
-import type { SessionLoaderModel } from '../SessionLoader'
+import type { SessionLoaderModel } from '../SessionLoader.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const SessionTriaged = lazy(() => import('./SessionTriaged'))
-const StartScreenErrorMessage = lazy(() => import('./StartScreenErrorMessage'))
+const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
+const StartScreenErrorMessage = lazy(
+  () => import('./StartScreenErrorMessage.tsx'),
+)
 
-// return value if defined, else convert null to undefined for use with
-// types.maybe
-function normalize<T>(param: T | null | undefined) {
-  return param === null ? undefined : param
-}
+const paramsToDelete = [
+  'loc',
+  'tracks',
+  'assembly',
+  'password',
+  'sessionTracks',
+  'hubURL',
+  'tracklist',
+  'nav',
+  'highlight',
+] as const
 
 export function Loader({
-  initialTimestamp = Date.now(),
+  initialTimestamp: initialTimestampProp,
 }: {
   initialTimestamp?: number
 }) {
-  const Str = StringParam
+  const [initialTimestamp] = useState(() => initialTimestampProp ?? Date.now())
 
-  const [config] = useQueryParam('config', Str)
-  const [session] = useQueryParam('session', Str)
-  const [adminKey] = useQueryParam('adminKey', Str)
-  const [password, setPassword] = useQueryParam('password', Str)
-  const [loc, setLoc] = useQueryParam('loc', Str)
-  const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
-  const [hubURL, setHubURL] = useQueryParam('hubURL', Str)
-  const [assembly, setAssembly] = useQueryParam('assembly', Str)
-  const [tracks, setTracks] = useQueryParam('tracks', Str)
-  const [highlight, setHighlight] = useQueryParam('highlight', Str)
-  const [nav, setNav] = useQueryParam('nav', Str)
-  const [tracklist, setTrackList] = useQueryParam('tracklist', Str)
+  const [loader] = useState(() => {
+    const {
+      config,
+      session,
+      adminKey,
+      password,
+      loc,
+      assembly,
+      tracks,
+      sessionTracks,
+      tracklist,
+      highlight,
+      nav,
+      hubURL,
+    } = readQueryParams([
+      'config',
+      'session',
+      'adminKey',
+      'password',
+      'loc',
+      'assembly',
+      'tracks',
+      'sessionTracks',
+      'tracklist',
+      'highlight',
+      'nav',
+      'hubURL',
+    ])
 
-  const loader = SessionLoader.create({
-    configPath: normalize(config),
-    sessionQuery: normalize(session),
-    password: normalize(password),
-    adminKey: normalize(adminKey),
-    loc: normalize(loc),
-    assembly: normalize(assembly),
-    tracks: normalize(tracks),
-    sessionTracks: normalize(sessionTracks),
-    tracklist: JSON.parse(normalize(tracklist) || 'false'),
-    highlight: normalize(highlight),
-    nav: JSON.parse(normalize(nav) || 'true'),
-    hubURL: normalize(hubURL?.split(',')),
-    initialTimestamp,
+    return SessionLoader.create({
+      configPath: config,
+      sessionQuery: session,
+      password,
+      adminKey,
+      loc,
+      assembly,
+      tracks,
+      sessionTracks,
+      tracklist: JSON.parse(tracklist || 'false'),
+      highlight,
+      nav: JSON.parse(nav || 'true'),
+      hubURL: hubURL?.split(','),
+      initialTimestamp,
+    })
   })
 
   useEffect(() => {
-    setLoc(undefined, 'replaceIn')
-    setTracks(undefined, 'replaceIn')
-    setAssembly(undefined, 'replaceIn')
-    setPassword(undefined, 'replaceIn')
-    setSessionTracks(undefined, 'replaceIn')
-    setHubURL(undefined, 'replaceIn')
-    setTrackList(undefined, 'replaceIn')
-    setNav(undefined, 'replaceIn')
-    setHighlight(undefined, 'replaceIn')
-  }, [
-    setAssembly,
-    setHighlight,
-    setLoc,
-    setNav,
-    setPassword,
-    setSessionTracks,
-    setHubURL,
-    setTrackList,
-    setTracks,
-  ])
+    deleteQueryParams([...paramsToDelete])
+  }, [])
 
   return <Renderer loader={loader} />
 }
 
-const Renderer = observer(function ({
+const Renderer = observer(function Renderer({
   loader: firstLoader,
 }: {
   loader: SessionLoaderModel
 }) {
+  // Store loader in state so reloadPluginManager can replace it
   const [loader, setLoader] = useState(firstLoader)
   const pluginManager = useRef<PluginManager | undefined>(undefined)
   const [pluginManagerCreated, setPluginManagerCreated] = useState(false)
+
+  // Called by rootModel when plugins are installed/removed. Creates a new
+  // loader with the updated config and current session, triggering a full
+  // pluginManager recreation.
   const reloadPluginManager = useCallback(
     (
       configSnapshot: Record<string, unknown>,
@@ -131,6 +145,7 @@ const Renderer = observer(function ({
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
+    // Skip destroy in Jest since it interferes with test cleanup
     const isJest = typeof jest !== 'undefined'
     if (ready) {
       try {
@@ -146,6 +161,13 @@ const Renderer = observer(function ({
     }
     return () => {
       if (pluginManager.current?.rootModel && !isJest) {
+        const rootModel = pluginManager.current.rootModel
+        const session = rootModel.session
+        if (session) {
+          // Save session before destroying so it can be restored (see file
+          // header comment for details on when this is needed)
+          loader.setSessionSnapshot(getSnapshot(session))
+        }
         destroy(pluginManager.current.rootModel)
       }
     }
@@ -178,9 +200,7 @@ function LoaderWrapper({ initialTimestamp }: { initialTimestamp: number }) {
         />
       )}
     >
-      <QueryParamProvider adapter={WindowHistoryAdapter}>
-        <Loader initialTimestamp={initialTimestamp} />
-      </QueryParamProvider>
+      <Loader initialTimestamp={initialTimestamp} />
     </ErrorBoundary>
   )
 }

@@ -1,13 +1,12 @@
-import IntervalTree from '@flatten-js/interval-tree'
+import { IntervalTree } from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseStringSync } from 'gff-nostream'
+import { parseStringSyncJBrowse } from 'gff-nostream'
 
-import { featureData } from '../featureData'
-import { parseGffBuffer } from './gffParser'
+import { parseGffBuffer } from './gffParser.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -16,11 +15,14 @@ import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 type StatusCallback = (arg: string) => void
 
 export default class Gff3Adapter extends BaseFeatureDataAdapter {
-  calculatedIntervalTreeMap: Record<string, IntervalTree> = {}
+  calculatedIntervalTreeMap: Record<string, IntervalTree<Feature>> = {}
 
   gffFeatures?: Promise<{
     header: string
-    intervalTreeMap: Record<string, (sc?: StatusCallback) => IntervalTree>
+    intervalTreeMap: Record<
+      string,
+      (sc?: StatusCallback) => IntervalTree<Feature>
+    >
   }>
 
   private async loadDataP(opts?: BaseOptions) {
@@ -38,17 +40,15 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         (sc?: (arg: string) => void) => {
           if (!this.calculatedIntervalTreeMap[refName]) {
             sc?.('Parsing GFF data')
-            const intervalTree = new IntervalTree()
-            for (const obj of parseStringSync(lines)
-              .flat()
-              .map(
-                (f, i) =>
-                  new SimpleFeature({
-                    data: featureData(f),
-                    id: `${this.id}-${refName}-${i}`,
-                  }),
-              )) {
-              intervalTree.insert([obj.get('start'), obj.get('end')], obj)
+            const intervalTree = new IntervalTree<Feature>()
+            const features = parseStringSyncJBrowse(lines)
+            for (let i = 0, l = features.length; i < l; i++) {
+              const f = features[i]!
+              const obj = new SimpleFeature({
+                data: f as unknown as Record<string, unknown>,
+                id: `${this.id}-${refName}-${i}`,
+              })
+              intervalTree.insert([f.start, f.end], obj)
             }
 
             this.calculatedIntervalTreeMap[refName] = intervalTree

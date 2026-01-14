@@ -4,11 +4,11 @@ import 'electron'
 
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import corePlugins from '../corePlugins'
-import rootModelFactory from './rootModel'
-import sessionModelFactory from '../sessionModel/sessionModel'
+import corePlugins from '../corePlugins.ts'
+import rootModelFactory from './rootModel.ts'
+import sessionModelFactory from '../sessionModel/sessionModel.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -103,7 +103,7 @@ test('adds track and connection configs to an assembly', () => {
     type: 'FeatureTrack',
     trackId: 'trackId0',
   })
-  expect(getSnapshot(newTrackConf)).toMatchSnapshot()
+  expect(newTrackConf).toMatchSnapshot()
   expect(root.jbrowse.tracks.length).toBe(1)
   const newConnectionConf = root.jbrowse.addConnectionConf({
     type: 'JBrowse1Connection',

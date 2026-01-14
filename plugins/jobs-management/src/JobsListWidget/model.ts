@@ -1,10 +1,10 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import { Job } from './jobModel'
+import { Job } from './jobModel.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance, SnapshotIn } from 'mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 export interface NewJob extends SnapshotIn<typeof Job> {
   cancelCallback(): void

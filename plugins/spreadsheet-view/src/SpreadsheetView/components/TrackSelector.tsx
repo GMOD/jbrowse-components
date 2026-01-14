@@ -5,9 +5,9 @@ import { coarseStripHTML } from '@jbrowse/core/util'
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { ImportWizardModel } from '../ImportWizard'
+import type { ImportWizardModel } from '../ImportWizard.ts'
 
-const TrackSelector = observer(function ({
+const TrackSelector = observer(function TrackSelector({
   model,
   selectedAssembly,
 }: {

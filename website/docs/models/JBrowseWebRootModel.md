@@ -3,8 +3,8 @@ id: jbrowsewebrootmodel
 title: JBrowseWebRootModel
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -78,7 +78,7 @@ setSessionDB: (sessionDB: IDBPDatabase<SessionDB>) => void
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: any; name: ISimpleType<string>; margin: IType<number, number, number>; }>>) => void
 ```
 
 #### action: setPluginsUpdated

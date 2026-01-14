@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-import type { ImportWizardModel } from '../ImportWizard'
+import type { ImportWizardModel } from '../ImportWizard.ts'
 
 const useStyles = makeStyles()({
   textField: {
@@ -13,7 +13,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const NumberEditor = observer(function ({
+const NumberEditor = observer(function NumberEditor({
   model,
   disabled,
   modelPropName,

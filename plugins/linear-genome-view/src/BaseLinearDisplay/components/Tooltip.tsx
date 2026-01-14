@@ -1,4 +1,4 @@
-import { forwardRef, isValidElement } from 'react'
+import { forwardRef, isValidElement, useMemo } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
@@ -27,25 +27,35 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
 
 type Coord = [number, number]
 
-const Tooltip = observer(function ({
+const Tooltip = observer(function Tooltip({
   model,
   clientMouseCoord,
 }: {
   model: {
     featureUnderMouse: Feature | undefined
+    featureIdUnderMouse: string | undefined
+    mouseoverExtraInformation: string | undefined
     configuration: AnyConfigurationModel
   }
   clientMouseCoord: Coord
 }) {
-  const { featureUnderMouse } = model
+  const { featureUnderMouse, featureIdUnderMouse, mouseoverExtraInformation } =
+    model
   const x = clientMouseCoord[0] + 15
   const y = clientMouseCoord[1]
 
-  const contents = featureUnderMouse
-    ? getConf(model, 'mouseover', { feature: featureUnderMouse })
-    : undefined
+  const contents = useMemo(
+    () =>
+      featureUnderMouse || mouseoverExtraInformation
+        ? getConf(model, 'mouseover', {
+            feature: featureUnderMouse,
+            mouseoverExtraInformation,
+          })
+        : undefined,
+    [featureUnderMouse, model, mouseoverExtraInformation],
+  )
 
-  return featureUnderMouse && contents ? (
+  return featureIdUnderMouse && contents ? (
     <BaseTooltip clientPoint={{ x, y }}>
       <TooltipContents message={contents} />
     </BaseTooltip>

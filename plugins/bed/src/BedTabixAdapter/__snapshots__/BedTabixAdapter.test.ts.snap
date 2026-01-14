@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`adapter can fetch bed with header 1`] = `
 [
@@ -253,7 +253,6 @@ exports[`adapter can fetch features from volvox.sort.bed.gz simple bed3 1`] = `
 exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
 [
   {
-    "description": undefined,
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.1",
@@ -325,7 +324,6 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
     "uniqueId": "test-45690",
   },
   {
-    "description": undefined,
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.2",
@@ -387,7 +385,6 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
     "uniqueId": "test-45787",
   },
   {
-    "description": undefined,
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.3",
@@ -427,7 +424,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 5500,
         "parentId": "test-45875",
-        "phase": 0,
+        "phase": 1,
         "refName": "ctgA",
         "start": 4999,
         "strand": 1,
@@ -437,7 +434,7 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
       {
         "end": 7600,
         "parentId": "test-45875",
-        "phase": 0,
+        "phase": 1,
         "refName": "ctgA",
         "start": 6999,
         "strand": 1,
@@ -458,7 +455,6 @@ exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
     "uniqueId": "test-45875",
   },
   {
-    "description": undefined,
     "end": 23000,
     "itemRgb": "0,0,0",
     "name": "rna-Apple3",

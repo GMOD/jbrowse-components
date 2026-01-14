@@ -1,14 +1,15 @@
 import { forwardRef } from 'react'
 
+import { toLocale } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import Tooltip from '../../Tooltip'
-import { toP } from '../../util'
+import Tooltip from '../../Tooltip.tsx'
+import { toP } from '../../util.ts'
 
-import type { TooltipContentsComponent } from '../../Tooltip'
+import type { TooltipContentsComponent } from '../../Tooltip.tsx'
 import type { Feature } from '@jbrowse/core/util'
 
-const en = (n: number) => n.toLocaleString('en-US')
+const en = toLocale
 
 interface Props {
   feature: Feature
@@ -28,15 +29,19 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
       .filter(f => !!f)
       .join(':')
 
-    return feature.get('summary') !== undefined ? (
+    const minScore = feature.get('minScore')
+    const maxScore = feature.get('maxScore')
+    const hasSummary = feature.get('summary') && minScore != null
+
+    return hasSummary ? (
       <div ref={ref}>
         {loc}
         <br />
-        Max: {toP(feature.get('maxScore'))}
+        Max: {toP(maxScore)}
         <br />
         Avg: {toP(feature.get('score'))}
         <br />
-        Min: {toP(feature.get('minScore'))}
+        Min: {toP(minScore)}
       </div>
     ) : (
       <div ref={ref}>
@@ -50,7 +55,7 @@ const TooltipContents = forwardRef<HTMLDivElement, Props>(
 
 type Coord = [number, number]
 
-const WiggleTooltip = observer(function (props: {
+const WiggleTooltip = observer(function WiggleTooltip(props: {
   model: {
     featureUnderMouse?: Feature
   }
@@ -64,4 +69,4 @@ const WiggleTooltip = observer(function (props: {
 })
 export default WiggleTooltip
 
-export { default as Tooltip } from '../../Tooltip'
+export { default as Tooltip } from '../../Tooltip.tsx'

@@ -4,8 +4,8 @@ import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import Adapter from './NCListAdapter'
-import configSchema from './configSchema'
+import Adapter from './NCListAdapter.ts'
+import configSchema from './configSchema.ts'
 
 import type { GenericFilehandle } from 'generic-filehandle2'
 

@@ -1,8 +1,8 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import configSchema from './configSchema'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -31,7 +31,7 @@ export default function JB2TrackHubConnection(pluginManager: PluginManager) {
        * #action
        */
       async connect() {
-        const { doConnect } = await import('./doConnect')
+        const { doConnect } = await import('./doConnect.ts')
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         doConnect(self)

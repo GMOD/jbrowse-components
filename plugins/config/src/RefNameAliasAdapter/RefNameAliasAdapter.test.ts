@@ -1,5 +1,5 @@
-import Adapter from './RefNameAliasAdapter'
-import configSchema from './configSchema'
+import Adapter from './RefNameAliasAdapter.ts'
+import configSchema from './configSchema.ts'
 
 test('adapter can fetch a simple alias file', async () => {
   const adapter = new Adapter(

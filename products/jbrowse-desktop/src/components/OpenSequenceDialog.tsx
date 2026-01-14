@@ -6,6 +6,7 @@ import {
   FileSelector,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Alert,
   Button,
@@ -17,7 +18,6 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
@@ -25,7 +25,7 @@ const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()(theme => ({
   message: {
-    background: '#ddd',
+    background: theme.palette.grey[300],
     margin: theme.spacing(2),
     padding: theme.spacing(2),
   },
@@ -34,7 +34,7 @@ const useStyles = makeStyles()(theme => ({
     margin: theme.spacing(2),
   },
   stagedAssemblies: {
-    background: '#dfd',
+    background: theme.palette.success.light,
     margin: theme.spacing(4),
     padding: theme.spacing(2),
   },
@@ -46,7 +46,7 @@ function isBlank(location: FileLocation) {
   return 'uri' in location && location.uri === ''
 }
 
-const AdapterSelector = observer(function ({
+const AdapterSelector = observer(function AdapterSelector({
   adapterSelection,
   setAdapterSelection,
   adapterTypes,
@@ -76,7 +76,7 @@ const AdapterSelector = observer(function ({
   )
 })
 
-const FastaAdapterInput = observer(function ({
+const FastaAdapterInput = observer(function FastaAdapterInput({
   fastaLocation,
   setFastaLocation,
 }: {
@@ -86,8 +86,8 @@ const FastaAdapterInput = observer(function ({
   return (
     <>
       <Alert severity="warning" style={{ margin: 8 }}>
-        Note: use only relatively small files for this type, it will be indexed
-        on submit
+        Note: a FASTA index will be generated on submit, might take a couple
+        minutes and if the file is remote, it will be downloaded in full
       </Alert>
       <FileSelector
         inline
@@ -99,7 +99,7 @@ const FastaAdapterInput = observer(function ({
   )
 })
 
-const IndexedFastaAdapterInput = observer(function ({
+const IndexedFastaAdapterInput = observer(function IndexedFastaAdapterInput({
   fastaLocation,
   faiLocation,
   setFastaLocation,
@@ -128,7 +128,7 @@ const IndexedFastaAdapterInput = observer(function ({
   )
 })
 
-const BgzipFastaAdapterInput = observer(function ({
+const BgzipFastaAdapterInput = observer(function BgzipFastaAdapterInput({
   fastaLocation,
   faiLocation,
   gziLocation,
@@ -167,7 +167,7 @@ const BgzipFastaAdapterInput = observer(function ({
   )
 })
 
-const TwoBitAdapterInput = observer(function ({
+const TwoBitAdapterInput = observer(function TwoBitAdapterInput({
   twoBitLocation,
   chromSizesLocation,
   setTwoBitLocation,
@@ -209,332 +209,334 @@ type AdapterType =
   | 'FastaAdapter'
   | 'TwoBitAdapter'
 
-const OpenSequenceDialog = observer(
-  ({ onClose }: { onClose: (conf?: unknown) => Promise<void> }) => {
-    const { classes } = useStyles()
-    type AssemblyConf = Awaited<ReturnType<typeof createAssemblyConfig>>
+const OpenSequenceDialog = observer(function OpenSequenceDialog({
+  onClose,
+}: {
+  onClose: (conf?: unknown) => Promise<void>
+}) {
+  const { classes } = useStyles()
+  type AssemblyConf = Awaited<ReturnType<typeof createAssemblyConfig>>
 
-    const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
-    const [error, setError] = useState<unknown>()
-    const [assemblyName, setAssemblyName] = useState('')
-    const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
-    const [loading, setLoading] = useState('')
-    const [adapterSelection, setAdapterSelection] = useState<AdapterType>(
-      adapterTypes[0],
-    )
-    const [fastaLocation, setFastaLocation] = useState(blank)
-    const [faiLocation, setFaiLocation] = useState(blank)
-    const [gziLocation, setGziLocation] = useState(blank)
-    const [twoBitLocation, setTwoBitLocation] = useState(blank)
-    const [chromSizesLocation, setChromSizesLocation] = useState(blank)
-    const [refNameAliasesLocation, setRefNameAliasesLocation] = useState(blank)
-    const [cytobandsLocation, setCytobandsLocation] = useState(blank)
-    const [showAdvanced, setShowAdvanced] = useState(false)
+  const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
+  const [error, setError] = useState<unknown>()
+  const [assemblyName, setAssemblyName] = useState('')
+  const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
+  const [loading, setLoading] = useState('')
+  const [adapterSelection, setAdapterSelection] = useState<AdapterType>(
+    adapterTypes[0],
+  )
+  const [fastaLocation, setFastaLocation] = useState(blank)
+  const [faiLocation, setFaiLocation] = useState(blank)
+  const [gziLocation, setGziLocation] = useState(blank)
+  const [twoBitLocation, setTwoBitLocation] = useState(blank)
+  const [chromSizesLocation, setChromSizesLocation] = useState(blank)
+  const [refNameAliasesLocation, setRefNameAliasesLocation] = useState(blank)
+  const [cytobandsLocation, setCytobandsLocation] = useState(blank)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
-    function clearState() {
-      setFastaLocation(blank)
-      setFaiLocation(blank)
-      setGziLocation(blank)
-      setTwoBitLocation(blank)
-      setChromSizesLocation(blank)
-      setRefNameAliasesLocation(blank)
-      setCytobandsLocation(blank)
-      setAssemblyName('')
-      setAssemblyDisplayName('')
+  function clearState() {
+    setFastaLocation(blank)
+    setFaiLocation(blank)
+    setGziLocation(blank)
+    setTwoBitLocation(blank)
+    setChromSizesLocation(blank)
+    setRefNameAliasesLocation(blank)
+    setCytobandsLocation(blank)
+    setAssemblyName('')
+    setAssemblyDisplayName('')
+  }
+
+  function getAdapterConfig() {
+    if (adapterSelection === 'FastaAdapter') {
+      if (isBlank(fastaLocation)) {
+        throw new Error('FASTA location is required')
+      }
+      return {
+        type: 'IndexedFastaAdapter',
+        fastaLocation,
+        needsIndexing: true,
+      }
     }
-
-    function getAdapterConfig() {
-      if (adapterSelection === 'FastaAdapter') {
-        if (isBlank(fastaLocation)) {
-          throw new Error('FASTA location is required')
-        }
-        return {
-          type: 'IndexedFastaAdapter',
-          fastaLocation,
-          needsIndexing: true,
-        }
+    if (adapterSelection === 'IndexedFastaAdapter') {
+      if (isBlank(fastaLocation) || isBlank(faiLocation)) {
+        throw new Error('Both FASTA and FAI locations are required')
       }
-      if (adapterSelection === 'IndexedFastaAdapter') {
-        if (isBlank(fastaLocation) || isBlank(faiLocation)) {
-          throw new Error('Both FASTA and FAI locations are required')
-        }
-        return {
-          type: 'IndexedFastaAdapter',
-          fastaLocation,
-          faiLocation,
-        }
+      return {
+        type: 'IndexedFastaAdapter',
+        fastaLocation,
+        faiLocation,
       }
-      if (adapterSelection === 'BgzipFastaAdapter') {
-        if (
-          isBlank(fastaLocation) ||
-          isBlank(faiLocation) ||
-          isBlank(gziLocation)
-        ) {
-          throw new Error('FASTA, FAI, and GZI locations are all required')
-        }
-        return {
-          type: 'BgzipFastaAdapter',
-          fastaLocation,
-          faiLocation,
-          gziLocation,
-        }
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (adapterSelection === 'TwoBitAdapter') {
-        if (isBlank(twoBitLocation)) {
-          throw new Error('2bit location is required')
-        }
-        return {
-          type: 'TwoBitAdapter',
-          twoBitLocation,
-          chromSizesLocation,
-        }
-      }
-      throw new Error('Unknown adapter type')
     }
+    if (adapterSelection === 'BgzipFastaAdapter') {
+      if (
+        isBlank(fastaLocation) ||
+        isBlank(faiLocation) ||
+        isBlank(gziLocation)
+      ) {
+        throw new Error('FASTA, FAI, and GZI locations are all required')
+      }
+      return {
+        type: 'BgzipFastaAdapter',
+        fastaLocation,
+        faiLocation,
+        gziLocation,
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (adapterSelection === 'TwoBitAdapter') {
+      if (isBlank(twoBitLocation)) {
+        throw new Error('2bit location is required')
+      }
+      return {
+        type: 'TwoBitAdapter',
+        twoBitLocation,
+        chromSizesLocation,
+      }
+    }
+    throw new Error('Unknown adapter type')
+  }
 
-    async function createAssemblyConfig() {
-      const { needsIndexing, ...adapterConfig } = getAdapterConfig()
+  async function createAssemblyConfig() {
+    const { needsIndexing, ...adapterConfig } = getAdapterConfig()
 
-      if (needsIndexing) {
-        setLoading('Creating .fai file for FASTA')
-        const faiLocation = await ipcRenderer.invoke(
-          'indexFasta',
-          fastaLocation,
-        )
-        return {
-          name: assemblyName,
-          displayName: assemblyDisplayName,
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: `${assemblyName}-${Date.now()}`,
-            adapter: {
-              ...adapterConfig,
-              faiLocation: { localPath: faiLocation },
-            },
+    if (needsIndexing) {
+      setLoading('Creating .fai file for FASTA')
+      const faiLocation = await ipcRenderer.invoke('indexFasta', fastaLocation)
+      return {
+        name: assemblyName,
+        displayName: assemblyDisplayName,
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: `${assemblyName}-${Date.now()}`,
+          adapter: {
+            ...adapterConfig,
+            faiLocation: { localPath: faiLocation },
           },
-          ...(!isBlank(refNameAliasesLocation)
-            ? {
-                refNameAliases: {
-                  adapter: {
-                    type: 'RefNameAliasAdapter',
-                    location: refNameAliasesLocation,
-                  },
+        },
+        ...(!isBlank(refNameAliasesLocation)
+          ? {
+              refNameAliases: {
+                adapter: {
+                  type: 'RefNameAliasAdapter',
+                  location: refNameAliasesLocation,
                 },
-              }
-            : {}),
-          ...(!isBlank(cytobandsLocation)
-            ? {
-                cytobands: {
-                  adapter: {
-                    type: 'CytobandAdapter',
-                    cytobandsLocation: cytobandsLocation,
-                  },
+              },
+            }
+          : {}),
+        ...(!isBlank(cytobandsLocation)
+          ? {
+              cytobands: {
+                adapter: {
+                  type: 'CytobandAdapter',
+                  cytobandsLocation: cytobandsLocation,
                 },
-              }
-            : {}),
-        }
-      } else {
-        return {
-          name: assemblyName,
-          displayName: assemblyDisplayName,
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: `${assemblyName}-${Date.now()}`,
-            adapter: adapterConfig,
-          },
-          ...(!isBlank(refNameAliasesLocation)
-            ? {
-                refNameAliases: {
-                  adapter: {
-                    type: 'RefNameAliasAdapter',
-                    location: refNameAliasesLocation,
-                  },
+              },
+            }
+          : {}),
+      }
+    } else {
+      return {
+        name: assemblyName,
+        displayName: assemblyDisplayName,
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: `${assemblyName}-${Date.now()}`,
+          adapter: adapterConfig,
+        },
+        ...(!isBlank(refNameAliasesLocation)
+          ? {
+              refNameAliases: {
+                adapter: {
+                  type: 'RefNameAliasAdapter',
+                  location: refNameAliasesLocation,
                 },
-              }
-            : {}),
-          ...(!isBlank(cytobandsLocation)
-            ? {
-                cytobands: {
-                  adapter: {
-                    type: 'CytobandAdapter',
-                    cytobandsLocation: cytobandsLocation,
-                  },
+              },
+            }
+          : {}),
+        ...(!isBlank(cytobandsLocation)
+          ? {
+              cytobands: {
+                adapter: {
+                  type: 'CytobandAdapter',
+                  cytobandsLocation: cytobandsLocation,
                 },
-              }
-            : {}),
-        }
+              },
+            }
+          : {}),
       }
     }
-    return (
-      <Dialog open onClose={() => onClose()} title="Open genome(s)">
-        <DialogContent>
-          <Typography>
-            Use this dialog to open an indexed FASTA file (.fa and .fai),
-            bgzipped+indexed FASTA files (.fa.gz, .fa.gz.fai, and .fa.gz.gzi),
-            or .2bit files. A plaintext FASTA file can also be supplied , which
-            will be indexed on submit.
+  }
+  return (
+    <Dialog
+      open
+      onClose={() => {
+        if (!loading) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          onClose()
+        }
+      }}
+      title="Open genome(s)"
+    >
+      <DialogContent>
+        <Typography>
+          Use this dialog to open an indexed FASTA file (.fa and .fai),
+          bgzipped+indexed FASTA files (.fa.gz, .fa.gz.fai, and .fa.gz.gzi), or
+          .2bit files. A plaintext FASTA file can also be supplied , which will
+          be indexed on submit.
+        </Typography>
+
+        {assemblyConfs.length ? (
+          <Typography className={classes.stagedAssemblies}>
+            Currently staged assemblies:{' '}
+            {assemblyConfs.map(conf => conf.name).join(', ')}
           </Typography>
+        ) : null}
 
-          {assemblyConfs.length ? (
-            <Typography className={classes.stagedAssemblies}>
-              Currently staged assemblies:{' '}
-              {assemblyConfs.map(conf => conf.name).join(', ')}
-            </Typography>
-          ) : null}
+        {loading ? (
+          <LoadingEllipses className={classes.message} message={loading} />
+        ) : null}
 
-          {loading ? (
-            <LoadingEllipses className={classes.message}>
-              {loading}
-            </LoadingEllipses>
-          ) : null}
+        {error ? <ErrorMessage error={error} /> : null}
 
-          {error ? <ErrorMessage error={error} /> : null}
+        <Paper className={classes.paper}>
+          <TextField
+            label="Assembly name"
+            helperText="The assembly name e.g. hg38"
+            variant="outlined"
+            value={assemblyName}
+            onChange={event => {
+              setAssemblyName(event.target.value)
+            }}
+          />
 
-          <Paper className={classes.paper}>
-            <TextField
-              label="Assembly name"
-              helperText="The assembly name e.g. hg38"
-              variant="outlined"
-              value={assemblyName}
-              onChange={event => {
-                setAssemblyName(event.target.value)
-              }}
+          <AdapterSelector
+            adapterSelection={adapterSelection}
+            adapterTypes={adapterTypes}
+            setAdapterSelection={setAdapterSelection}
+          />
+
+          {adapterSelection === 'FastaAdapter' ? (
+            <FastaAdapterInput
+              fastaLocation={fastaLocation}
+              setFastaLocation={setFastaLocation}
             />
-
-            <AdapterSelector
-              adapterSelection={adapterSelection}
-              adapterTypes={adapterTypes}
-              setAdapterSelection={setAdapterSelection}
+          ) : adapterSelection === 'IndexedFastaAdapter' ? (
+            <IndexedFastaAdapterInput
+              fastaLocation={fastaLocation}
+              faiLocation={faiLocation}
+              setFastaLocation={setFastaLocation}
+              setFaiLocation={setFaiLocation}
             />
+          ) : adapterSelection === 'BgzipFastaAdapter' ? (
+            <BgzipFastaAdapterInput
+              fastaLocation={fastaLocation}
+              faiLocation={faiLocation}
+              gziLocation={gziLocation}
+              setFastaLocation={setFastaLocation}
+              setFaiLocation={setFaiLocation}
+              setGziLocation={setGziLocation}
+            />
+          ) : (
+            <TwoBitAdapterInput
+              twoBitLocation={twoBitLocation}
+              chromSizesLocation={chromSizesLocation}
+              setTwoBitLocation={setTwoBitLocation}
+              setChromSizesLocation={setChromSizesLocation}
+            />
+          )}
 
-            {adapterSelection === 'FastaAdapter' ? (
-              <FastaAdapterInput
-                fastaLocation={fastaLocation}
-                setFastaLocation={setFastaLocation}
-              />
-            ) : adapterSelection === 'IndexedFastaAdapter' ? (
-              <IndexedFastaAdapterInput
-                fastaLocation={fastaLocation}
-                faiLocation={faiLocation}
-                setFastaLocation={setFastaLocation}
-                setFaiLocation={setFaiLocation}
-              />
-            ) : adapterSelection === 'BgzipFastaAdapter' ? (
-              <BgzipFastaAdapterInput
-                fastaLocation={fastaLocation}
-                faiLocation={faiLocation}
-                gziLocation={gziLocation}
-                setFastaLocation={setFastaLocation}
-                setFaiLocation={setFaiLocation}
-                setGziLocation={setGziLocation}
-              />
-            ) : (
-              <TwoBitAdapterInput
-                twoBitLocation={twoBitLocation}
-                chromSizesLocation={chromSizesLocation}
-                setTwoBitLocation={setTwoBitLocation}
-                setChromSizesLocation={setChromSizesLocation}
-              />
-            )}
-
-            <Button
-              variant="contained"
-              style={{ marginTop: 10 }}
-              onClick={() => {
-                setShowAdvanced(a => !a)
-              }}
-            >
-              {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
-            </Button>
-            {showAdvanced ? (
-              <>
-                <TextField
-                  label="Assembly display name"
-                  helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
-                  variant="outlined"
-                  value={assemblyDisplayName}
-                  onChange={event => {
-                    setAssemblyDisplayName(event.target.value)
-                  }}
-                />
-                <FileSelector
-                  inline
-                  name="Add refName aliases e.g. remap chr1 and 1 to same entity. Can use a tab separated file of aliases, such as a .chromAliases files from UCSC"
-                  location={refNameAliasesLocation}
-                  setLocation={setRefNameAliasesLocation}
-                />
-                <FileSelector
-                  inline
-                  name="Add cytobands for assembly with the format of cytoBands.txt/cytoBandIdeo.txt from UCSC (.gz also allowed)"
-                  location={cytobandsLocation}
-                  setLocation={setCytobandsLocation}
-                />
-              </>
-            ) : null}
-          </Paper>
-        </DialogContent>
-        <DialogActions>
           <Button
-            onClick={async () => {
-              try {
-                if (!assemblyName) {
-                  throw new Error('No assembly name set')
-                }
-                setError(undefined)
+            variant="contained"
+            style={{ marginTop: 10 }}
+            onClick={() => {
+              setShowAdvanced(a => !a)
+            }}
+          >
+            {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
+          </Button>
+          {showAdvanced ? (
+            <>
+              <TextField
+                label="Assembly display name"
+                helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
+                variant="outlined"
+                value={assemblyDisplayName}
+                onChange={event => {
+                  setAssemblyDisplayName(event.target.value)
+                }}
+              />
+              <FileSelector
+                inline
+                name="Add refName aliases e.g. remap chr1 and 1 to same entity. Can use a tab separated file of aliases, such as a .chromAliases files from UCSC"
+                location={refNameAliasesLocation}
+                setLocation={setRefNameAliasesLocation}
+              />
+              <FileSelector
+                inline
+                name="Add cytobands for assembly with the format of cytoBands.txt/cytoBandIdeo.txt from UCSC (.gz also allowed)"
+                location={cytobandsLocation}
+                setLocation={setCytobandsLocation}
+              />
+            </>
+          ) : null}
+        </Paper>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={async () => {
+            try {
+              if (!assemblyName) {
+                throw new Error('No assembly name set')
+              }
+              setError(undefined)
+              const assemblyConf = await createAssemblyConfig()
+              setAssemblyConfs([...assemblyConfs, assemblyConf])
+              clearState()
+            } catch (e) {
+              setError(e)
+              console.error(e)
+            } finally {
+              setLoading('')
+            }
+          }}
+          disabled={!!loading}
+          variant="contained"
+          color="inherit"
+        >
+          Add another assembly
+        </Button>
+        <Button onClick={() => onClose()} color="secondary" variant="contained">
+          Cancel
+        </Button>
+        <Button
+          onClick={async () => {
+            try {
+              let confs = assemblyConfs
+              if (assemblyName) {
                 const assemblyConf = await createAssemblyConfig()
-                setAssemblyConfs([...assemblyConfs, assemblyConf])
-                clearState()
-              } catch (e) {
-                setError(e)
-                console.error(e)
-              } finally {
-                setLoading('')
+                confs = [...assemblyConfs, assemblyConf]
+                setAssemblyConfs(confs)
               }
-            }}
-            disabled={!!loading}
-            variant="contained"
-            color="inherit"
-          >
-            Add another assembly
-          </Button>
-          <Button
-            onClick={() => onClose()}
-            color="secondary"
-            variant="contained"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={async () => {
-              try {
-                let confs = assemblyConfs
-                if (assemblyName) {
-                  const assemblyConf = await createAssemblyConfig()
-                  confs = [...assemblyConfs, assemblyConf]
-                  setAssemblyConfs(confs)
-                }
-                if (!confs.length) {
-                  throw new Error('No assemblies specified')
-                }
-                await onClose(confs)
-              } catch (e) {
-                setError(e)
-                console.error(e)
-              } finally {
-                setLoading('')
+              if (!confs.length) {
+                throw new Error('No assemblies specified')
               }
-            }}
-            color="primary"
-            disabled={!!loading}
-            variant="contained"
-          >
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
-    )
-  },
-)
+              await onClose(confs)
+            } catch (e) {
+              setError(e)
+              console.error(e)
+            } finally {
+              setLoading('')
+            }
+          }}
+          color="primary"
+          disabled={!!loading}
+          variant="contained"
+        >
+          Submit
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+})
 
 export default OpenSequenceDialog

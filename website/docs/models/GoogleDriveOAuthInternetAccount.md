@@ -3,8 +3,8 @@ id: googledriveoauthinternetaccount
 title: GoogleDriveOAuthInternetAccount
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -35,7 +35,7 @@ type: types.literal('GoogleDriveOAuthInternetAccount')
 
 ```js
 // type signature
-ConfigurationSchemaType<{ authEndpoint: { description: string; type: string; defaultValue: string; }; scopes: { description: string; type: string; defaultValue: string; }; domains: { description: string; type: string; defaultValue: string[]; }; responseType: { ...; }; }, ConfigurationSchemaOptions<...>>
+any
 // code
 configuration: ConfigurationReference(configSchema)
 ```

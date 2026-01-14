@@ -1,6 +1,6 @@
-import { types } from 'mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import type { Menu, MenuAction } from '../menus'
+import type { Menu, MenuAction } from '../menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 /**

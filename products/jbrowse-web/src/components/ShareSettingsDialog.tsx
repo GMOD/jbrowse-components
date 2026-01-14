@@ -12,7 +12,7 @@ import {
   RadioGroup,
 } from '@mui/material'
 
-import InfoDialog from './ShareInfoDialog'
+import InfoDialog from './ShareInfoDialog.tsx'
 
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
 

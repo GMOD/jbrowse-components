@@ -1,12 +1,12 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { saveAs } from 'file-saver'
+import { saveAs } from 'file-saver-es'
 
-import { createView, doBeforeEach, setup } from './util'
+import { createView, doBeforeEach, setup } from './util.tsx'
 
-jest.mock('file-saver', () => {
+jest.mock('file-saver-es', () => {
   return {
-    ...jest.requireActual('file-saver'),
+    ...jest.requireActual('file-saver-es'),
     saveAs: jest.fn(),
   }
 })
@@ -35,6 +35,7 @@ test('Open the bookmarks widget from the view menu', async () => {
 
   const user = userEvent.setup()
   await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Bookmarks'))
   await user.click(await findByText('Open bookmark widget'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
@@ -92,6 +93,7 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
 
   const user = userEvent.setup()
   await user.click(await findByTestId('view_menu_icon'))
+  await user.click(await findByText('Bookmarks'))
   await user.click(await findByText('Open bookmark widget'))
 
   // @ts-expect-error
@@ -261,10 +263,16 @@ test('Downloads a BED file correctly', async () => {
   fireEvent.click(await findByText('Export', ...opts))
   fireEvent.click(await findByText(/Download/, ...opts))
 
+  await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(saveAs).toHaveBeenCalled()
+  }, delay)
+
   const blob = new Blob([''], {
     type: 'text/x-bed;charset=utf-8',
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_volvox.bed')
 }, 60000)
 
@@ -292,9 +300,15 @@ test('Downloads a TSV file correctly', async () => {
   fireEvent.click(listbox.getByText('TSV'))
   fireEvent.click(await findByText(/Download/))
 
+  await waitFor(() => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(saveAs).toHaveBeenCalled()
+  }, delay)
+
   const blob = new Blob([''], {
     type: 'text/tab-separated-values;charset=utf-8',
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.tsv')
 }, 60000)

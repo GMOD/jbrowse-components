@@ -3,8 +3,8 @@ id: featuredensitymixin
 title: FeatureDensityMixin
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -46,7 +46,7 @@ userByteSizeLimit: types.maybe(types.number)
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: currentFeatureScreenDensity
@@ -74,7 +74,7 @@ boolean
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: regionTooLarge
@@ -101,7 +101,7 @@ stats don't produce any helpful message besides to zoom in
 string
 ```
 
-#### getter: statsReadyAndRegionNotTooLarge
+#### getter: featureDensityStatsReadyAndRegionNotTooLarge
 
 ```js
 // type

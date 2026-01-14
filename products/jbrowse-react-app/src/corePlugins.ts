@@ -3,6 +3,7 @@ import Arc from '@jbrowse/plugin-arc'
 import Authentication from '@jbrowse/plugin-authentication'
 import Bed from '@jbrowse/plugin-bed'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
+import Canvas from '@jbrowse/plugin-canvas'
 import CircularView from '@jbrowse/plugin-circular-view'
 import ComparativeAdapters from '@jbrowse/plugin-comparative-adapters'
 import Config from '@jbrowse/plugin-config'
@@ -22,13 +23,12 @@ import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
-import SVG from '@jbrowse/plugin-svg'
 import TrixPlugin from '@jbrowse/plugin-trix'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
 const corePlugins = [
-  SVG,
+  Canvas,
   LinearGenomeView,
   Alignments,
   Authentication,

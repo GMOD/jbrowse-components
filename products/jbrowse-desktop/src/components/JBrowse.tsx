@@ -3,10 +3,10 @@ import { CssBaseline } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
-import type { DesktopRootModel } from '../rootModel/rootModel'
+import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const JBrowseNonNullRoot = observer(function ({
+const JBrowseNonNullRoot = observer(function JBrowseNonNullRoot({
   rootModel,
 }: {
   rootModel: DesktopRootModel
@@ -26,7 +26,7 @@ const JBrowseNonNullRoot = observer(function ({
   ) : null
 })
 
-const JBrowse = observer(function ({
+const JBrowse = observer(function JBrowse({
   pluginManager,
 }: {
   pluginManager: PluginManager

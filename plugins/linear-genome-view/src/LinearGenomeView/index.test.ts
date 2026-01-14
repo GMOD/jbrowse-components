@@ -6,16 +6,16 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { types } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
-import { types } from 'mobx-state-tree'
 
-import { stateModelFactory } from '.'
-import { BaseLinearDisplayComponent } from '..'
-import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
+import { stateModelFactory } from './index.ts'
+import { BaseLinearDisplayComponent } from '../index.ts'
 import hg38Regions from './hg38DisplayedRegions.json'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
+import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay/index.ts'
 
-import type { LinearGenomeViewModel } from '.'
+import type { LinearGenomeViewModel } from './index.ts'
 
 type LGV = LinearGenomeViewModel
 
@@ -62,6 +62,7 @@ function initialize() {
     .model({})
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
+      initialized: true,
     }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
@@ -147,7 +148,7 @@ test('can instantiate a model that lets you navigate', () => {
   expect(model.maxBpPerPx).toBeCloseTo(13.888)
   model.setNewView(0.02, 0)
 
-  expect(model.scaleBarHeight).toEqual(20)
+  expect(model.scalebarHeight).toEqual(20)
   // header height 20 + area where polygons get drawn has height of 48
   expect(model.headerHeight).toEqual(68)
   // TODO: figure out how to better test height
@@ -515,7 +516,7 @@ test('can instantiate a model that >2 regions', () => {
   expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
   expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
   model.showAllRegions()
-  expect(model.offsetPx).toEqual(-40)
+  expect(model.offsetPx).toEqual(-38)
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 100 })).toEqual({
     index: 0,
@@ -659,6 +660,30 @@ test('can showAllRegionsInAssembly', async () => {
     'ctgA',
     'ctgB',
   ])
+})
+
+test('init without loc shows whole genome', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testInitNoLoc',
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+      },
+    }),
+  )
+  model.setWidth(width)
+  await waitFor(() => {
+    expect(model.displayedRegions.map(reg => reg.refName)).toEqual([
+      'ctgA',
+      'ctgB',
+    ])
+  })
 })
 
 describe('get sequence for selected displayed regions', () => {
@@ -1001,4 +1026,106 @@ test('space separated locstring', async () => {
   await waitFor(() => {
     expect(model.bpPerPx).toBe(0.125)
   })
+})
+
+test('showLoading is true when displayedRegions are set but not yet initialized', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+      ],
+      bpPerPx: 1,
+      offsetPx: 0,
+    }),
+  )
+  // width not set yet, so not initialized
+  expect(model.showLoading).toBe(true)
+  expect(model.initialized).toBe(false)
+
+  // after setting width, should be initialized
+  model.setWidth(800)
+  expect(model.showLoading).toBe(false)
+  expect(model.initialized).toBe(true)
+})
+
+test('showLoading is true when init is set and becomes false after initialization', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      init: {
+        assembly: 'volvox',
+        loc: 'ctgA:1000-2000',
+      },
+    }),
+  )
+  // not initialized yet, so showLoading should be true
+  expect(model.showLoading).toBe(true)
+  expect(model.initialized).toBe(false)
+
+  model.setWidth(800)
+  // after init autorun processes and view initializes, showLoading should become false
+  await waitFor(() => {
+    expect(model.showLoading).toBe(false)
+  })
+  await waitFor(() => {
+    expect(model.initialized).toBe(true)
+  })
+})
+
+test('showAllRegions accounts for inter-region padding when centering', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 2000, end: 3000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 4000, end: 5000 },
+      ],
+    }),
+  )
+
+  model.setWidth(900)
+  model.showAllRegions()
+
+  // Total BP = 3000
+  // With 3 regions, there are 2 inter-region paddings = 4px
+  // bpPerPx = 3000 / (900 * 0.9) = 3.7037
+  // totalContentPx = 3000 / 3.7037 + 4 = 810 + 4 = 814
+  // centerPx = 407, offsetPx = 407 - 450 = -43
+
+  expect(model.bpPerPx).toBeCloseTo(3.7037, 3)
+  expect(model.offsetPx).toBe(-43)
+})
+
+test('showAllRegions with single region has no padding adjustment', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+      ],
+    }),
+  )
+
+  model.setWidth(900)
+  model.showAllRegions()
+
+  // Single region = 0 paddings
+  // bpPerPx = 1000 / (900 * 0.9) = 1.234567
+  // totalContentPx = 1000 / 1.234567 + 0 = 810
+  // centerPx = 405, offsetPx = 405 - 450 = -45
+
+  expect(model.bpPerPx).toBeCloseTo(1.2346, 3)
+  expect(model.offsetPx).toBe(-45)
 })

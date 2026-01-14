@@ -3,8 +3,8 @@ id: circularview
 title: CircularView
 ---
 
-Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See
+Note: this document is automatically generated from @jbrowse/mobx-state-tree
+objects in our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
@@ -43,7 +43,7 @@ similar to offsetPx in linear genome view
 // type signature
 number
 // code
-offsetRadians: -Math.PI / 2
+offsetRadians: defaultOffsetRadians
 ```
 
 #### property: bpPerPx
@@ -52,14 +52,14 @@ offsetRadians: -Math.PI / 2
 // type signature
 number
 // code
-bpPerPx: 200
+bpPerPx: defaultBpPerPx
 ```
 
 #### property: tracks
 
 ```js
 // type signature
-IArrayType<IAnyType>
+IArrayType<any>
 // code
 tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
@@ -135,7 +135,7 @@ scrollY: 0
 // type signature
 number
 // code
-minimumRadiusPx: 25
+minimumRadiusPx: defaultMinimumRadiusPx
 ```
 
 #### property: spacingPx
@@ -144,7 +144,7 @@ minimumRadiusPx: 25
 // type signature
 number
 // code
-spacingPx: 10
+spacingPx: defaultSpacingPx
 ```
 
 #### property: paddingPx
@@ -153,7 +153,7 @@ spacingPx: 10
 // type signature
 number
 // code
-paddingPx: 80
+paddingPx: defaultPaddingPx
 ```
 
 #### property: lockedPaddingPx
@@ -162,7 +162,7 @@ paddingPx: 80
 // type signature
 number
 // code
-lockedPaddingPx: 100
+lockedPaddingPx: defaultLockedPaddingPx
 ```
 
 #### property: minVisibleWidth
@@ -171,7 +171,7 @@ lockedPaddingPx: 100
 // type signature
 number
 // code
-minVisibleWidth: 6
+minVisibleWidth: defaultMinVisibleWidth
 ```
 
 #### property: minimumBlockWidth
@@ -180,7 +180,7 @@ minVisibleWidth: 6
 // type signature
 number
 // code
-minimumBlockWidth: 20
+minimumBlockWidth: defaultMinimumBlockWidth
 ```
 
 #### property: trackSelectorType
@@ -190,6 +190,17 @@ minimumBlockWidth: 20
 string
 // code
 trackSelectorType: 'hierarchical'
+```
+
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```js
+// type signature
+IType<CircularViewInit, CircularViewInit, CircularViewInit>
+// code
+init: types.frozen<CircularViewInit | undefined>()
 ```
 
 ### CircularView - Getters
@@ -271,7 +282,7 @@ number
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: atMaxBpPerPx
@@ -338,6 +349,62 @@ string[]
 ```js
 // type
 any
+```
+
+#### getter: assemblyErrors
+
+```js
+// type
+any
+```
+
+#### getter: error
+
+```js
+// type
+unknown
+```
+
+#### getter: loadingMessage
+
+```js
+// type
+string
+```
+
+#### getter: hasSomethingToShow
+
+```js
+// type
+boolean
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```js
+// type
+any
+```
+
+#### getter: showView
+
+Whether the view is fully initialized and ready to display
+
+```js
+// type
+any
+```
+
+#### getter: showImportForm
+
+Whether to show the import form (when not ready to display and import form is
+enabled, or when there's an error)
+
+```js
+// type
+boolean
 ```
 
 #### getter: staticSlices
@@ -455,21 +522,21 @@ setModelViewWhenAdjust: (secondCondition: boolean) => void
 
 ```js
 // type signature
-setDisplayedRegions: (regions: SnapshotOrInstance<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>[]) => void
+setDisplayedRegions: (regions: Region[]) => void
 ```
 
 #### action: activateTrackSelector
 
 ```js
 // type signature
-activateTrackSelector: () => Widget
+activateTrackSelector: () => any
 ```
 
 #### action: toggleTrack
 
 ```js
 // type signature
-toggleTrack: (trackId: string) => boolean
+toggleTrack: (trackId: string) => void
 ```
 
 #### action: setError
@@ -477,6 +544,13 @@ toggleTrack: (trackId: string) => boolean
 ```js
 // type signature
 setError: (error: unknown) => void
+```
+
+#### action: setInit
+
+```js
+// type signature
+setInit: (init?: CircularViewInit) => void
 ```
 
 #### action: showTrack
@@ -490,14 +564,14 @@ showTrack: (trackId: string, initialSnapshot?: {}) => void
 
 ```js
 // type signature
-addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => void
+addTrackConf: (configuration: AnyConfigurationModel, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => void
 ```
 
 #### action: toggleFitToWindowLock

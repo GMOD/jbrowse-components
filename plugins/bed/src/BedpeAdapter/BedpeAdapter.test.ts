@@ -1,8 +1,8 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BedpeAdapter from './BedpeAdapter'
-import configSchema from './configSchema'
+import BedpeAdapter from './BedpeAdapter.ts'
+import configSchema from './configSchema.ts'
 
 function makeAdapter() {
   return new BedpeAdapter(

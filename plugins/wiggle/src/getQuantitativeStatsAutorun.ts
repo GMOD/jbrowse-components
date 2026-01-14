@@ -1,12 +1,13 @@
 import { getContainingView, isAbortException } from '@jbrowse/core/util'
 import { createStopToken } from '@jbrowse/core/util/stopToken'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive } from 'mobx-state-tree'
 
-import { getQuantitativeStats } from './getQuantitativeStats'
+import { getQuantitativeStats } from './getQuantitativeStats.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -17,9 +18,9 @@ export function getQuantitativeStatsAutorun(self: {
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
   adapterProps: () => Record<string, unknown>
-  setStatsLoading: (token: string) => void
+  setStatsLoading: (token: StopToken) => void
   setError: (error: unknown) => void
-  setMessage: (str: string) => void
+  setStatusMessage: (str: string) => void
   updateQuantitativeStats: (stats: QuantitativeStats, region: string) => void
 }) {
   addDisposer(
@@ -50,7 +51,7 @@ export function getQuantitativeStatsAutorun(self: {
           }
         }
       },
-      { delay: 1000 },
+      { delay: 500 },
     ),
   )
 }
