@@ -37,7 +37,8 @@
     "build-electron-only-unpacked:win": "electron-builder build -w --dir",
     "build-electron-only-unpacked:mac": "electron-builder build -m --dir",
     "build-electron-only-unpacked:linux": "electron-builder build -l --dir",
-    "wdio": "wdio run ./wdio.conf.ts"
+    "wdio": "wdio run ./wdio.conf.ts --tsConfigPath ./tsconfig.wdio.json",
+    "wdio:build": "pnpm build-electron-unpacked:linux && pnpm wdio"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

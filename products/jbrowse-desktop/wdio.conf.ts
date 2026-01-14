@@ -1,4 +1,3 @@
-/// <reference types="wdio-electron-service" />
 import type { Options } from '@wdio/types'
 
 const appBinaryPath =
@@ -34,13 +33,5 @@ export const config: Options.Testrunner = {
   mochaOpts: {
     ui: 'bdd',
     timeout: 60000,
-  },
-
-  afterTest: async function (_test, _context, { passed }) {
-    if (!passed) {
-      const { browser } = await import('@wdio/globals')
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-      await browser.saveScreenshot(`./test/screenshots/failure-${timestamp}.png`)
-    }
   },
 }
