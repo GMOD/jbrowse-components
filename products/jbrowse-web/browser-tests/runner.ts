@@ -684,6 +684,12 @@ async function runTests(page: Page, browser: Browser, includeAuth: boolean) {
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       try {
+        // Clear storage between tests to prevent state leaking
+        await page.goto(`http://localhost:${PORT}/test_data/volvox/config.json`)
+        await page.evaluate(() => {
+          localStorage.clear()
+          sessionStorage.clear()
+        })
         await page.goto('about:blank')
         await test.fn(page, browser)
 

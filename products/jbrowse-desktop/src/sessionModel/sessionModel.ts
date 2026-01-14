@@ -1,5 +1,6 @@
 import {
   AppFocusMixin,
+  DockviewLayoutMixin,
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
@@ -12,8 +13,8 @@ import {
   DrawerWidgetSessionMixin,
   MultipleViewsSessionMixin,
   ReferenceManagementSessionMixin,
+  SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
-  TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
 
 import { DesktopSessionFactory } from './DesktopSession.ts'
@@ -34,12 +35,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * - DrawerWidgetSessionMixin
  * - DialogQueueSessionMixin
  * - ThemeManagerSessionMixin
- * - TracksManagerSessionMixin
+ * - SessionTracksManagerSessionMixin
  * - MultipleViewsSessionMixin
  * - DesktopSessionMixin
  * - SessionAssembliesMixin
  * - TemporaryAssembliesMixin
  * - DesktopSessionTrackMenuMixin
+ * - DockviewLayoutMixin
  * - SnackbarModel
  * - AppFocusMixin
  *
@@ -60,13 +62,14 @@ export default function sessionModelFactory({
         DrawerWidgetSessionMixin(pluginManager),
         DialogQueueSessionMixin(pluginManager),
         ThemeManagerSessionMixin(pluginManager),
-        TracksManagerSessionMixin(pluginManager),
+        SessionTracksManagerSessionMixin(pluginManager),
         MultipleViewsSessionMixin(pluginManager),
         DesktopSessionFactory(pluginManager),
       ),
       SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
       TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
+      DockviewLayoutMixin(),
       AppFocusMixin(),
       SnackbarModel(),
     )
