@@ -49,6 +49,7 @@
     "**/plugin-development-tools/",
     "**/webpack.config.js",
     "**/website",
-    "**/auth_test_utils"
+    "**/auth_test_utils",
+    "products/jbrowse-desktop/test"
   ]
 }

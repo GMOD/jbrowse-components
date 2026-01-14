@@ -36,6 +36,10 @@ export default defineConfig(
       'packages/core/src/ReExports/material-ui-colors.js',
       'plugins/variants/src/d3-hierarchy2',
 
+      // Desktop tests
+      'products/jbrowse-desktop/test/specs/test.e2e.ts',
+      'products/jbrowse-desktop/wdio.conf.ts',
+
       // Scripts
       'scripts/analyze_cpuprof.ts',
       'scripts/getSuggestions.js',

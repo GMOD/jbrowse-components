@@ -37,8 +37,8 @@
     "build-electron-only-unpacked:win": "electron-builder build -w --dir",
     "build-electron-only-unpacked:mac": "electron-builder build -m --dir",
     "build-electron-only-unpacked:linux": "electron-builder build -l --dir",
-    "wdio": "wdio run ./wdio.conf.ts --tsConfigPath ./tsconfig.wdio.json",
-    "wdio:build": "pnpm build-electron-unpacked:linux && pnpm wdio"
+    "test:e2e": "node --experimental-strip-types test/e2e.ts",
+    "test:e2e:build": "pnpm build-electron-unpacked:linux && pnpm test:e2e"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -99,7 +99,10 @@
     "swr": "^2.3.8"
   },
   "devDependencies": {
-    "electron": "39.2.7"
+    "@types/selenium-webdriver": "^4.35.5",
+    "electron": "39.2.7",
+    "electron-chromedriver": "^39.2.7",
+    "selenium-webdriver": "^4.39.0"
   },
   "browserslist": [
     "last 1 chrome version"
