@@ -260,13 +260,15 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         sessionRef.current.dockviewLayout &&
         !hasPendingAction
 
-      if (canRestoreLayout) {
+      if (canRestoreLayout && isSessionWithDockviewLayout(sessionRef.current)) {
+        const s = sessionRef.current
         try {
           rearrangingRef.current = true
-          event.api.fromJSON(sessionRef.current.dockviewLayout)
-          updatePanelParams(event.api, sessionRef.current)
+          // dockviewLayout is checked in canRestoreLayout above
+          event.api.fromJSON(s.dockviewLayout!)
+          updatePanelParams(event.api, s)
 
-          for (const viewIds of sessionRef.current.panelViewAssignments.values()) {
+          for (const viewIds of s.panelViewAssignments.values()) {
             for (const viewId of viewIds) {
               trackedViewIdsRef.current.add(viewId)
             }
