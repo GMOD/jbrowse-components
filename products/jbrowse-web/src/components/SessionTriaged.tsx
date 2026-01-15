@@ -1,4 +1,4 @@
-import { nanoid } from '@jbrowse/core/util/nanoid'
+import { createElementId } from '@jbrowse/core/util/types/mst'
 import { observer } from 'mobx-react'
 
 import ConfigWarningDialog from './ConfigWarningDialog.tsx'
@@ -21,7 +21,7 @@ const SessionTriaged = observer(function SessionTriaged({
         const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
 
         // second param true says we passed user confirmation
-        await loader.loadSession({ ...session, id: nanoid() }, true)
+        await loader.loadSession({ ...session, id: createElementId() }, true)
         loader.setSessionTriaged(undefined)
       }}
       onCancel={() => {
@@ -35,7 +35,7 @@ const SessionTriaged = observer(function SessionTriaged({
       onConfirm={async () => {
         const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
         await loader.fetchPlugins(session)
-        loader.setConfigSnapshot({ ...session, id: nanoid() })
+        loader.setConfigSnapshot({ ...session, id: createElementId() })
         loader.setSessionTriaged(undefined)
       }}
       onCancel={async () => {

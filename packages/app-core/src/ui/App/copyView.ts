@@ -1,4 +1,4 @@
-import { nanoid } from '@jbrowse/core/util/nanoid'
+import { createElementId } from '@jbrowse/core/util/types/mst'
 
 export function renameIds(
   obj: Record<string, unknown>,
@@ -19,7 +19,7 @@ export function renameIds(
       for (const [key, val] of Object.entries(value)) {
         if (key === 'id' && typeof val === 'string') {
           if (!idMap.has(val)) {
-            idMap.set(val, nanoid())
+            idMap.set(val, createElementId())
           }
           result[key] = `${val}-${idMap.get(val)}`
         } else {

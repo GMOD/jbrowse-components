@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { createElementId } from '@jbrowse/core/util/types/mst'
 import { useTheme } from '@mui/material'
 import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
@@ -83,7 +83,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       if (!api) {
         return
       }
-      const panelId = `panel-${nanoid()}`
+      const panelId = `panel-${createElementId()}`
       const group = targetGroup ?? api.activeGroup
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
@@ -107,7 +107,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       session.removeViewFromPanel(viewId)
 
       // Create new panel and assign the view to it
-      const panelId = `panel-${nanoid()}`
+      const panelId = `panel-${createElementId()}`
       const group = api.activeGroup
       const position = group
         ? direction
@@ -178,7 +178,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Create first panel for existing views (excluding the pending view)
       // Only create if there are other views to put in it
       if (otherViewIds.length > 0) {
-        const firstPanelId = `panel-${nanoid()}`
+        const firstPanelId = `panel-${createElementId()}`
         dockviewApi.addPanel(createPanelConfig(firstPanelId, session))
         for (const viewId of otherViewIds) {
           session.assignViewToPanel(firstPanelId, viewId)
@@ -187,7 +187,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       }
 
       // Create panel for the pending view
-      const pendingPanelId = `panel-${nanoid()}`
+      const pendingPanelId = `panel-${createElementId()}`
       const direction = type === 'splitRight' ? 'right' : undefined
       const activeGroup = dockviewApi.activeGroup
       dockviewApi.addPanel({
@@ -206,7 +206,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       clearPendingMoveAction()
     } else {
       // Normal case: create single initial panel
-      const panelId = `panel-${nanoid()}`
+      const panelId = `panel-${createElementId()}`
       dockviewApi.addPanel(createPanelConfig(panelId, session))
 
       if (isSessionWithDockviewLayout(session)) {
@@ -306,7 +306,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
               if (firstPanel) {
                 activePanelId = firstPanel.id
               } else {
-                activePanelId = `panel-${nanoid()}`
+                activePanelId = `panel-${createElementId()}`
                 api.addPanel(createPanelConfig(activePanelId, session))
               }
               session.setActivePanelId(activePanelId)

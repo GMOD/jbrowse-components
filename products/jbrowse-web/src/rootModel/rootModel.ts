@@ -47,16 +47,8 @@ import { filterSessionInPlace } from '../util.ts'
 import type { SessionDB, SessionMetadata } from '../types.ts'
 import type { Menu } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AbstractSessionModel,
-  SessionWithWidgets,
-} from '@jbrowse/core/util'
-import type {
-  IAnyStateTreeNode,
-  IAnyType,
-  Instance,
-  SnapshotIn,
-} from '@jbrowse/mobx-state-tree'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { BaseSessionType, SessionWithDialogs } from '@jbrowse/product-core'
 import type { IDBPDatabase } from 'idb'
 
@@ -372,7 +364,7 @@ export default function RootModel({
         if (ret) {
           this.setSession(ret)
         } else {
-          self.session.notifyError('Session not found')
+          self.session?.notifyError('Session not found')
         }
       },
       /**
@@ -472,44 +464,50 @@ export default function RootModel({
                 {
                   label: 'Import session...',
                   icon: PublishIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    const widget = session.addWidget(
+                  onClick: () => {
+                    const widget = self.session?.addWidget(
                       'ImportSessionWidget',
                       'importSessionWidget',
                     )
-                    session.showWidget(widget)
+                    if (widget) {
+                      self.session?.showWidget(widget)
+                    }
                   },
                 },
                 {
                   label: 'Export session',
                   icon: GetAppIcon,
-                  onClick: async (session: IAnyStateTreeNode) => {
-                    // eslint-disable-next-line @typescript-eslint/no-deprecated
-                    const { saveAs } = await import('file-saver-es')
+                  onClick: async () => {
+                    if (self.session) {
+                      // eslint-disable-next-line @typescript-eslint/no-deprecated
+                      const { saveAs } = await import('file-saver-es')
 
-                    saveAs(
-                      new Blob(
-                        [
-                          JSON.stringify(
-                            { session: getSnapshot(session) },
-                            null,
-                            2,
-                          ),
-                        ],
-                        { type: 'text/plain;charset=utf-8' },
-                      ),
-                      'session.json',
-                      { autoBom: false },
-                    )
+                      saveAs(
+                        new Blob(
+                          [
+                            JSON.stringify(
+                              { session: getSnapshot(self.session) },
+                              null,
+                              2,
+                            ),
+                          ],
+                          { type: 'text/plain;charset=utf-8' },
+                        ),
+                        'session.json',
+                        { autoBom: false },
+                      )
+                    }
                   },
                 },
                 {
                   label: 'Duplicate session',
                   icon: FileCopyIcon,
                   onClick: () => {
-                    // @ts-expect-error
-                    const { id, ...rest } = getSnapshot(self.session)
-                    self.setSession(rest)
+                    if (self.session) {
+                      // @ts-expect-error
+                      const { id, ...rest } = getSnapshot(self.session)
+                      self.setSession(rest)
+                    }
                   },
                 },
                 ...(preConfiguredSessions?.length
@@ -533,8 +531,8 @@ export default function RootModel({
                         label: 'Favorite sessions...',
                         subMenu: [
                           ...favs.slice(0, 5).map(r => ({
-                            label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                            disabled: r.id === self.session.id,
+                            label: `${r.name} (${r.id === self.session?.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                            disabled: r.id === self.session?.id,
                             icon: StarIcon,
                             onClick: () => {
                               // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -542,7 +540,7 @@ export default function RootModel({
                                 try {
                                   await self.activateSession(r.id)
                                 } catch (e) {
-                                  self.session.notifyError(`${e}`, e)
+                                  self.session?.notifyError(`${e}`, e)
                                 }
                               })()
                             },
@@ -550,12 +548,14 @@ export default function RootModel({
                           {
                             label: 'More...',
                             icon: FolderOpenIcon,
-                            onClick: (session: SessionWithWidgets) => {
-                              const widget = session.addWidget(
+                            onClick: () => {
+                              const widget = self.session?.addWidget(
                                 'SessionManager',
                                 'sessionManager',
                               )
-                              session.showWidget(widget)
+                              if (widget) {
+                                self.session?.showWidget(widget)
+                              }
                             },
                           },
                         ],
@@ -568,15 +568,15 @@ export default function RootModel({
                   subMenu: rest?.length
                     ? [
                         ...rest.map(r => ({
-                          label: `${r.name} (${r.id === self.session.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
-                          disabled: r.id === self.session.id,
+                          label: `${r.name} (${r.id === self.session?.id ? 'current' : formatDistanceToNow(r.createdAt, { addSuffix: true })})`,
+                          disabled: r.id === self.session?.id,
                           onClick: () => {
                             // eslint-disable-next-line @typescript-eslint/no-floating-promises
                             ;(async () => {
                               try {
                                 await self.activateSession(r.id)
                               } catch (e) {
-                                self.session.notifyError(`${e}`, e)
+                                self.session?.notifyError(`${e}`, e)
                               }
                             })()
                           },
@@ -584,12 +584,14 @@ export default function RootModel({
                         {
                           label: 'More...',
                           icon: FolderOpenIcon,
-                          onClick: (session: SessionWithWidgets) => {
-                            const widget = session.addWidget(
+                          onClick: () => {
+                            const widget = self.session?.addWidget(
                               'SessionManager',
                               'sessionManager',
                             )
-                            session.showWidget(widget)
+                            if (widget) {
+                              self.session?.showWidget(widget)
+                            }
                           },
                         },
                       ]
@@ -599,20 +601,24 @@ export default function RootModel({
                 {
                   label: 'Open track...',
                   icon: StorageIcon,
-                  onClick: (session: SessionWithWidgets) => {
-                    if (session.views.length === 0) {
-                      session.notify('Please open a view to add a track first')
-                    } else if (session.views.length > 0) {
-                      const widget = session.addWidget(
-                        'AddTrackWidget',
-                        'addTrackWidget',
-                        { view: session.views[0]!.id },
-                      )
-                      session.showWidget(widget)
-                      if (session.views.length > 1) {
-                        session.notify(
-                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
+                  onClick: () => {
+                    if (self.session) {
+                      if (self.session.views.length === 0) {
+                        self.session.notify(
+                          'Please open a view to add a track first',
                         )
+                      } else {
+                        const widget = self.session.addWidget(
+                          'AddTrackWidget',
+                          'addTrackWidget',
+                          { view: self.session.views[0]!.id },
+                        )
+                        self.session.showWidget(widget)
+                        if (self.session.views.length > 1) {
+                          self.session.notify(
+                            'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
+                          )
+                        }
                       }
                     }
                   },
@@ -620,13 +626,14 @@ export default function RootModel({
                 {
                   label: 'Open connection...',
                   icon: Cable,
-                  onClick: (session: SessionWithWidgets) => {
-                    session.showWidget(
-                      session.addWidget(
-                        'AddConnectionWidget',
-                        'addConnectionWidget',
-                      ),
+                  onClick: () => {
+                    const widget = self.session?.addWidget(
+                      'AddConnectionWidget',
+                      'addConnectionWidget',
                     )
+                    if (widget) {
+                      self.session?.showWidget(widget)
+                    }
                   },
                 },
               ]
@@ -640,7 +647,7 @@ export default function RootModel({
                     {
                       label: 'Set default session',
                       onClick: () => {
-                        self.session.queueDialog((onClose: () => void) => [
+                        self.session?.queueDialog((onClose: () => void) => [
                           SetDefaultSession,
                           {
                             rootModel: self,
@@ -697,7 +704,7 @@ export default function RootModel({
                 label: 'Assembly manager',
                 icon: DNA,
                 onClick: () => {
-                  self.session.queueDialog((onClose: () => void) => [
+                  self.session?.queueDialog((onClose: () => void) => [
                     AssemblyManager,
                     {
                       onClose,

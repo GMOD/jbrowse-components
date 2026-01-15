@@ -399,8 +399,8 @@ importers:
         specifier: ^6.0.9
         version: 6.0.9
       '@gmod/http-range-fetcher':
-        specifier: ^5.0.6
-        version: 5.0.6
+        specifier: ^5.0.7
+        version: 5.0.7
       '@jbrowse/jexl':
         specifier: ^3.0.1
         version: 3.0.1
@@ -3439,8 +3439,8 @@ packages:
   '@gmod/hclust@1.0.7':
     resolution: {integrity: sha512-aG3ccCvxM00oaPi/guM6iAaQ1dBjb4OnqfEHXYN90grVi80x62nv9sqy5jKu7RlhNv4ohYbjgvtuwKkPuFlapA==}
 
-  '@gmod/http-range-fetcher@5.0.6':
-    resolution: {integrity: sha512-5Gaa1I5oMH1WBzNMMR+q2BGpZ/9qt6G6h3r85CF5NbBJ/um7n1FyoJNtCEzEBvxnQcYa+7rR9tqo2/bXela+1g==}
+  '@gmod/http-range-fetcher@5.0.7':
+    resolution: {integrity: sha512-WEOm5SnRbdhtB5RDXDW7LSUsam/fJH1hiGsyqjdG1vvkn6Ddv4wcCAY8AP4qqxPZicg1KNz53qhifMMksg6eLQ==}
 
   '@gmod/indexedfasta@5.0.0':
     resolution: {integrity: sha512-Gm4YxGgJGVLaZ1VjGTvHzxb5C6eKO7+ibfO1KIQfcgMrNdA3W0uTTd27L3ZNFAeVWYlq8hBgpVsw/EEgfDNDaQ==}
@@ -10750,7 +10750,7 @@ snapshots:
 
   '@gmod/hclust@1.0.7': {}
 
-  '@gmod/http-range-fetcher@5.0.6':
+  '@gmod/http-range-fetcher@5.0.7':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
 

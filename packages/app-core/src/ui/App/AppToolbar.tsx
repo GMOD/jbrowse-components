@@ -39,6 +39,22 @@ type AppSession = SessionWithDrawerWidgets & {
   popSnackbarMessage: () => unknown
 }
 
+function wrapMenuItems(items: JBMenuItem[], session: AppSession): JBMenuItem[] {
+  return items.map(item => ({
+    ...item,
+    ...('onClick' in item
+      ? {
+          onClick: () => {
+            item.onClick(session)
+          },
+        }
+      : {}),
+    ...('subMenu' in item
+      ? { subMenu: wrapMenuItems(item.subMenu, session) }
+      : {}),
+  }))
+}
+
 const AppToolbar = observer(function AppToolbar({
   session,
   HeaderButtons = <div />,
@@ -60,16 +76,7 @@ const AppToolbar = observer(function AppToolbar({
               typeof menu.menuItems === 'function'
                 ? menu.menuItems()
                 : menu.menuItems
-            return items.map(arg => ({
-              ...arg,
-              ...('onClick' in arg
-                ? {
-                    onClick: () => {
-                      arg.onClick(session)
-                    },
-                  }
-                : {}),
-            }))
+            return wrapMenuItems(items, session)
           }}
         />
       ))}
