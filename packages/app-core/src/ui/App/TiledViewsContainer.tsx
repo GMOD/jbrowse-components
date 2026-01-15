@@ -255,25 +255,24 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // If there's a pending move action, always create fresh panels to handle it
       // Otherwise, try to restore from saved layout if available
       const hasPendingAction = peekPendingMoveAction() !== null
-      const canRestoreLayout =
-        isSessionWithDockviewLayout(sessionRef.current) &&
-        sessionRef.current.dockviewLayout &&
-        !hasPendingAction
+      const s = sessionRef.current
+      const savedLayout =
+        !hasPendingAction && isSessionWithDockviewLayout(s)
+          ? s.dockviewLayout
+          : undefined
 
-      if (canRestoreLayout && isSessionWithDockviewLayout(sessionRef.current)) {
-        const s = sessionRef.current
+      if (savedLayout) {
         try {
           rearrangingRef.current = true
-          // dockviewLayout is checked in canRestoreLayout above
-          event.api.fromJSON(s.dockviewLayout!)
+          event.api.fromJSON(savedLayout)
           updatePanelParams(event.api, s)
-
-          for (const viewIds of s.panelViewAssignments.values()) {
-            for (const viewId of viewIds) {
-              trackedViewIdsRef.current.add(viewId)
+          if (isSessionWithDockviewLayout(s)) {
+            for (const viewIds of s.panelViewAssignments.values()) {
+              for (const viewId of viewIds) {
+                trackedViewIdsRef.current.add(viewId)
+              }
             }
           }
-
           rearrangingRef.current = false
         } catch (e) {
           console.error('Failed to restore dockview layout:', e)
