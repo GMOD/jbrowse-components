@@ -47,6 +47,10 @@ const ViewMenu = observer(function ViewMenu({
     moveViewUp: (arg: string) => void
     moveViewToBottom: (arg: string) => void
     moveViewToTop: (arg: string) => void
+    moveViewUpInPanel: (arg: string) => void
+    moveViewDownInPanel: (arg: string) => void
+    moveViewToTopInPanel: (arg: string) => void
+    moveViewToBottomInPanel: (arg: string) => void
     useWorkspaces: boolean
     setUseWorkspaces: (arg: boolean) => void
   }
@@ -56,6 +60,17 @@ const ViewMenu = observer(function ViewMenu({
   const viewCount = usePanel
     ? getPanelViewCount(session, model.id)
     : session.views.length
+
+  const moveView = (
+    panelFn: (id: string) => void,
+    sessionFn: (id: string) => void,
+  ) => {
+    if (usePanel) {
+      panelFn(model.id)
+    } else {
+      sessionFn(model.id)
+    }
+  }
 
   return (
     <CascadingMenuButton
@@ -101,13 +116,11 @@ const ViewMenu = observer(function ViewMenu({
                   {
                     label: 'Move view to top',
                     icon: KeyboardDoubleArrowUpIcon,
-                    onClick: () => {
-                      if (usePanel) {
-                        session.moveViewToTopInPanel(model.id)
-                      } else {
-                        session.moveViewToTop(model.id)
-                      }
-                    },
+                    onClick: () =>
+                      moveView(
+                        session.moveViewToTopInPanel,
+                        session.moveViewToTop,
+                      ),
                   },
                 ]
               : []),
@@ -116,24 +129,17 @@ const ViewMenu = observer(function ViewMenu({
                   {
                     label: 'Move view up',
                     icon: KeyboardArrowUpIcon,
-                    onClick: () => {
-                      if (usePanel) {
-                        session.moveViewUpInPanel(model.id)
-                      } else {
-                        session.moveViewUp(model.id)
-                      }
-                    },
+                    onClick: () =>
+                      moveView(session.moveViewUpInPanel, session.moveViewUp),
                   },
                   {
                     label: 'Move view down',
                     icon: KeyboardArrowDownIcon,
-                    onClick: () => {
-                      if (usePanel) {
-                        session.moveViewDownInPanel(model.id)
-                      } else {
-                        session.moveViewDown(model.id)
-                      }
-                    },
+                    onClick: () =>
+                      moveView(
+                        session.moveViewDownInPanel,
+                        session.moveViewDown,
+                      ),
                   },
                 ]
               : []),
@@ -142,13 +148,11 @@ const ViewMenu = observer(function ViewMenu({
                   {
                     label: 'Move view to bottom',
                     icon: KeyboardDoubleArrowDownIcon,
-                    onClick: () => {
-                      if (usePanel) {
-                        session.moveViewToBottomInPanel(model.id)
-                      } else {
-                        session.moveViewToBottom(model.id)
-                      }
-                    },
+                    onClick: () =>
+                      moveView(
+                        session.moveViewToBottomInPanel,
+                        session.moveViewToBottom,
+                      ),
                   },
                 ]
               : []),

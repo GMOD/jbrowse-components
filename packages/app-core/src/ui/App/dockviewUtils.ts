@@ -1,5 +1,21 @@
+import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
+
 import type { DockviewSessionType } from './types.ts'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { DockviewApi } from 'dockview-react'
+
+export function getViewsForPanel(
+  panelId: string,
+  session: DockviewSessionType | undefined,
+): AbstractViewModel[] {
+  if (!session || !isSessionWithDockviewLayout(session)) {
+    return []
+  }
+  const viewIds = session.getViewIdsForPanel(panelId)
+  return [...viewIds]
+    .map(id => session.views.find(v => v.id === id))
+    .filter((v): v is AbstractViewModel => v !== undefined)
+}
 
 export function createPanelConfig(
   panelId: string,
