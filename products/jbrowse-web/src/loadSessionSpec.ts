@@ -12,13 +12,14 @@ function convertLayoutNode(
     const viewIds = node.views
       .map(idx => views[idx]?.id)
       .filter((id): id is string => id !== undefined)
-    return { viewIds }
+    return { viewIds, size: node.size }
   }
   if (node.children) {
     // Container node - recursively convert children
     return {
       direction: node.direction,
       children: node.children.map(child => convertLayoutNode(child, views)),
+      size: node.size,
     }
   }
   return {}

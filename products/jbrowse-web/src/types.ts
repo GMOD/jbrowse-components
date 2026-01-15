@@ -40,30 +40,13 @@ export interface ViewSpec {
  * - A panel (has `views` array) - displays views stacked vertically
  * - A container (has `children` array) - arranges children horizontally or vertically
  *
- * Example - horizontal split:
+ * Example - horizontal split with custom sizes:
  * ```json
  * {
  *   "direction": "horizontal",
  *   "children": [
- *     { "views": [0, 1] },
- *     { "views": [2] }
- *   ]
- * }
- * ```
- *
- * Example - complex nested layout:
- * ```json
- * {
- *   "direction": "horizontal",
- *   "children": [
- *     { "views": [0, 1] },
- *     {
- *       "direction": "vertical",
- *       "children": [
- *         { "views": [2] },
- *         { "views": [3] }
- *       ]
- *     }
+ *     { "views": [0, 1], "size": 70 },
+ *     { "views": [2], "size": 30 }
  *   ]
  * }
  * ```
@@ -74,6 +57,8 @@ export interface LayoutNode {
   // Container node - arranges children in a direction
   direction?: 'horizontal' | 'vertical'
   children?: LayoutNode[]
+  // Size as percentage (0-100) of the parent container
+  size?: number
 }
 
 export interface SessionTriagedInfo {

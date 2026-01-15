@@ -427,6 +427,29 @@ This creates a left-right split:
 - **Left panel** contains views 0 and 1 stacked vertically
 - **Right panel** contains view 2
 
+#### Custom panel sizes
+
+You can specify the `size` property to control the proportional width/height of
+panels:
+
+```json
+{
+  "views": [
+    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgA:1-5000" },
+    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgB:1-5000" }
+  ],
+  "layout": {
+    "direction": "horizontal",
+    "children": [
+      { "views": [0], "size": 70 },
+      { "views": [1], "size": 30 }
+    ]
+  }
+}
+```
+
+This creates a 70/30 split with the left panel taking 70% of the width.
+
 #### Complex nested layout example
 
 You can create more complex layouts by nesting containers:
@@ -471,6 +494,7 @@ The `layout` parameter:
 - Automatically enables workspaces mode
 - `direction` can be `"horizontal"` (left-right) or `"vertical"` (top-bottom)
 - `views` is an array of view indices (referencing the `views` array)
+- `size` is an optional number specifying the proportional size of a panel
 - Views within the same panel are stacked vertically
 - Layouts can be nested arbitrarily deep
 

@@ -176,6 +176,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         node: typeof initLayout,
         referenceGroup: DockviewGroupPanel | undefined,
         direction: 'right' | 'below' | undefined,
+        size: number | undefined,
       ): DockviewGroupPanel | undefined {
         if (!node) {
           return undefined
@@ -188,7 +189,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
           }
           const position =
             referenceGroup && direction
-              ? { referenceGroup, direction }
+              ? { referenceGroup, direction, size }
               : referenceGroup
                 ? { referenceGroup }
                 : undefined
@@ -214,7 +215,12 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
             // First child uses parent's reference/direction, subsequent children split from previous
             const childDirection = i === 0 ? direction : dockviewDirection
             const childRef = i === 0 ? referenceGroup : currentGroup
-            const newGroup = processNode(child, childRef, childDirection)
+            const newGroup = processNode(
+              child,
+              childRef,
+              childDirection,
+              child.size,
+            )
             if (newGroup) {
               currentGroup = newGroup
             }
@@ -224,7 +230,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         return undefined
       }
 
-      processNode(initLayout, undefined, undefined)
+      processNode(initLayout, undefined, undefined, undefined)
 
       // Clear init after processing (it's only needed once)
       session.setInit(undefined)

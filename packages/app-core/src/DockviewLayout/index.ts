@@ -13,6 +13,8 @@ export interface DockviewLayoutNode {
   // Container node - arranges children in a direction
   direction?: 'horizontal' | 'vertical'
   children?: DockviewLayoutNode[]
+  // Size as percentage (0-100) of the parent container
+  size?: number
 }
 
 /**

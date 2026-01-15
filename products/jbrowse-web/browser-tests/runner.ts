@@ -493,6 +493,63 @@ const testSuites: TestSuite[] = [
         },
       },
       {
+        name: 'layout URL param with custom sizes',
+        fn: async page => {
+          const sessionSpec = {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:1-5000',
+              },
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgB:1-5000',
+              },
+            ],
+            // 70/30 horizontal split
+            layout: {
+              direction: 'horizontal',
+              children: [
+                { views: [0], size: 70 },
+                { views: [1], size: 30 },
+              ],
+            },
+          }
+
+          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
+          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}`
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+
+          // Wait for dockview to render
+          await page.waitForSelector(
+            '.dockview-theme-light, .dockview-theme-dark',
+            { timeout: 10000 },
+          )
+          await delay(2000)
+
+          // Should have 2 dockview groups
+          const groups = await page.$$('.dv-groupview')
+          if (groups.length < 2) {
+            throw new Error(`Expected 2 dockview groups, got ${groups.length}`)
+          }
+
+          // Should have 2 view containers
+          const viewContainers = await page.$$(
+            '[data-testid^="view-container-"]',
+          )
+          if (viewContainers.length !== 2) {
+            throw new Error(
+              `Expected 2 view containers, got ${viewContainers.length}`,
+            )
+          }
+
+          await waitForLoadingToComplete(page)
+          await snapshot(page, 'workspaces-layout-custom-sizes')
+        },
+      },
+      {
         name: 'multiple views in workspace - move up and down',
         fn: async page => {
           await navigateToApp(page)
