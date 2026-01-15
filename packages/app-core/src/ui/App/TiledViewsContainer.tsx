@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { createElementId } from '@jbrowse/core/util/types/mst'
 import { useTheme } from '@mui/material'
 import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
@@ -79,7 +79,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       if (!api) {
         return
       }
-      const panelId = `panel-${nanoid()}`
+      const panelId = `panel-${createElementId()}`
       const group = targetGroup ?? api.activeGroup
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
@@ -102,7 +102,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       session.removeViewFromPanel(viewId)
 
       // Create new panel and assign the view to it
-      const panelId = `panel-${nanoid()}`
+      const panelId = `panel-${createElementId()}`
       const group = api.activeGroup
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
@@ -123,7 +123,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       session.removeViewFromPanel(viewId)
 
       // Create new panel to the right of the current group
-      const panelId = `panel-${nanoid()}`
+      const panelId = `panel-${createElementId()}`
       const group = api.activeGroup
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
@@ -149,7 +149,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   )
 
   const createInitialPanel = useCallback((dockviewApi: DockviewApi) => {
-    const panelId = `panel-${nanoid()}`
+    const panelId = `panel-${createElementId()}`
     dockviewApi.addPanel(createPanelConfig(panelId, sessionRef.current))
 
     if (isSessionWithDockviewLayout(sessionRef.current)) {
@@ -243,7 +243,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
               if (firstPanel) {
                 activePanelId = firstPanel.id
               } else {
-                activePanelId = `panel-${nanoid()}`
+                activePanelId = `panel-${createElementId()}`
                 api.addPanel(createPanelConfig(activePanelId, session))
               }
               session.setActivePanelId(activePanelId)

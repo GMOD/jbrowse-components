@@ -2,7 +2,7 @@ import { HubFile, SingleFileHub } from '@gmod/ucsc-hub'
 import { getConf } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { nanoid } from '@jbrowse/core/util/nanoid'
+import { createElementId } from '@jbrowse/core/util/types/mst'
 
 import { generateTracks } from './ucscTrackHub.ts'
 import { fetchGenomesFile, fetchTrackDbFile, resolve } from './util.ts'
@@ -45,7 +45,7 @@ export async function doConnect(self: {
                   }
                 : {}),
             },
-            trackId: `${genomeName}-${nanoid()}`,
+            trackId: `${genomeName}-${createElementId()}`,
             adapter: {
               type: 'TwoBitAdapter',
               twoBitLocation: {

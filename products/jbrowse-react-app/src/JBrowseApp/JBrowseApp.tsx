@@ -32,7 +32,9 @@ const JBrowseApp = observer(function JBrowseApp({
       <div className={classes.avoidParentStyle}>
         <ScopedCssBaseline>
           <Suspense fallback={<LoadingEllipses />}>
-            <App session={session} />
+            {/* key forces React to remount App when session changes (e.g.
+                duplicate session) preventing stale references to old session views */}
+            <App key={session.id} session={session} />
           </Suspense>
         </ScopedCssBaseline>
       </div>

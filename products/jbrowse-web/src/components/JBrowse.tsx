@@ -66,7 +66,10 @@ const JBrowse = observer(function JBrowse({
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      {/* key={id} forces React to remount App when session changes (e.g.
+          duplicate session) preventing stale references to old session views */}
       <App
+        key={id}
         // @ts-expect-error
         session={session}
         HeaderButtons={<ShareButton session={session} />}

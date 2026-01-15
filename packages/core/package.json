@@ -116,7 +116,6 @@
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
     "./util/librpc": "./src/util/librpc.ts",
     "./util/mst-reflection": "./src/util/mst-reflection.ts",
-    "./util/nanoid": "./src/util/nanoid.ts",
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.tsx",
     "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
@@ -130,7 +129,8 @@
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
-    "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx"
+    "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
+    "./util/nanoid": "./src/util/nanoid.ts"
   },
   "files": [
     "esm"
@@ -569,10 +569,6 @@
         "types": "./esm/util/mst-reflection.d.ts",
         "import": "./esm/util/mst-reflection.js"
       },
-      "./util/nanoid": {
-        "types": "./esm/util/nanoid.d.ts",
-        "import": "./esm/util/nanoid.js"
-      },
       "./util/offscreenCanvasPonyfill": {
         "types": "./esm/util/offscreenCanvasPonyfill.d.ts",
         "import": "./esm/util/offscreenCanvasPonyfill.js"
@@ -628,6 +624,10 @@
       "./ui/ReturnToImportFormDialog": {
         "types": "./esm/ui/ReturnToImportFormDialog.d.ts",
         "import": "./esm/ui/ReturnToImportFormDialog.js"
+      },
+      "./util/nanoid": {
+        "types": "./esm/util/nanoid.d.ts",
+        "import": "./esm/util/nanoid.js"
       }
     }
   },
