@@ -104,12 +104,10 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Create new panel and assign the view to it
       const panelId = `panel-${nanoid()}`
       const group = api.activeGroup
-      const newPanel = api.addPanel({
+      api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
         position: group ? { referenceGroup: group } : undefined,
       })
-      // Ensure params are set - dockview may not pass them on initial render
-      newPanel.update({ params: { panelId, session } })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
     },
@@ -127,14 +125,12 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Create new panel to the right of the current group
       const panelId = `panel-${nanoid()}`
       const group = api.activeGroup
-      const newPanel = api.addPanel({
+      api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
         position: group
           ? { referenceGroup: group, direction: 'right' }
           : undefined,
       })
-      // Ensure params are set - dockview may not pass them on initial render
-      newPanel.update({ params: { panelId, session } })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
     },
@@ -274,27 +270,18 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   // where user clicks "Move to new tab" before workspaces is enabled - the
   // action is stored as pending, then executed here once TiledViewsContainer
   // mounts and the dockview api is ready.
-  // IMPORTANT: The setTimeout delay is required to allow dockview to fully
-  // initialize before we modify its layout. Without this delay, the split/tab
-  // creation fails on slower environments like CI.
   useEffect(() => {
     if (!api) {
       return
     }
     const pendingAction = getPendingMoveAction()
-    if (!pendingAction) {
-      return
-    }
-    const { type, viewId } = pendingAction
-    const timeoutId = setTimeout(() => {
+    if (pendingAction) {
+      const { type, viewId } = pendingAction
       if (type === 'newTab') {
         moveViewToNewTab(viewId)
       } else {
         moveViewToSplitRight(viewId)
       }
-    }, 100)
-    return () => {
-      clearTimeout(timeoutId)
     }
   }, [api, moveViewToNewTab, moveViewToSplitRight])
 
