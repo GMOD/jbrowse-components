@@ -33,6 +33,49 @@ export interface ViewSpec {
   loc: string
 }
 
+/**
+ * Nested layout structure for workspaces.
+ *
+ * A LayoutNode is either:
+ * - A panel (has `views` array) - displays views stacked vertically
+ * - A container (has `children` array) - arranges children horizontally or vertically
+ *
+ * Example - horizontal split:
+ * ```json
+ * {
+ *   "direction": "horizontal",
+ *   "children": [
+ *     { "views": [0, 1] },
+ *     { "views": [2] }
+ *   ]
+ * }
+ * ```
+ *
+ * Example - complex nested layout:
+ * ```json
+ * {
+ *   "direction": "horizontal",
+ *   "children": [
+ *     { "views": [0, 1] },
+ *     {
+ *       "direction": "vertical",
+ *       "children": [
+ *         { "views": [2] },
+ *         { "views": [3] }
+ *       ]
+ *     }
+ *   ]
+ * }
+ * ```
+ */
+export interface LayoutNode {
+  // Panel node - contains views stacked vertically
+  views?: number[]
+  // Container node - arranges children in a direction
+  direction?: 'horizontal' | 'vertical'
+  children?: LayoutNode[]
+}
+
 export interface SessionTriagedInfo {
   snap: unknown
   origin: string

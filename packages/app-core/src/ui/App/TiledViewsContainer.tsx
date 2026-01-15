@@ -46,7 +46,7 @@ interface Props {
 
 function getPanelPosition(
   group: DockviewGroupPanel | undefined,
-  direction?: 'right',
+  direction?: 'right' | 'below',
 ) {
   if (!group) {
     return undefined
@@ -159,6 +159,82 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   const createInitialPanels = useCallback((dockviewApi: DockviewApi) => {
     const session = sessionRef.current
     const pendingAction = peekPendingMoveAction()
+
+    // Check if there's init configuration from URL params
+    const initLayout = isSessionWithDockviewLayout(session)
+      ? session.init
+      : undefined
+
+    // If we have init configuration from URL params, use it
+    if (initLayout) {
+      trackedViewIdsRef.current.clear()
+      let firstPanelId: string | undefined
+
+      // Process nested layout structure
+      // Returns the group created for this node (for use as reference by siblings)
+      function processNode(
+        node: typeof initLayout,
+        referenceGroup: DockviewGroupPanel | undefined,
+        direction: 'right' | 'below' | undefined,
+      ): DockviewGroupPanel | undefined {
+        if (!node) {
+          return undefined
+        }
+        if (node.viewIds !== undefined) {
+          // Panel node - create a dockview panel
+          const panelId = `panel-${createElementId()}`
+          if (!firstPanelId) {
+            firstPanelId = panelId
+          }
+          const position =
+            referenceGroup && direction
+              ? { referenceGroup, direction }
+              : referenceGroup
+                ? { referenceGroup }
+                : undefined
+          dockviewApi.addPanel({
+            ...createPanelConfig(panelId, session, 'Tab'),
+            position,
+          })
+          // Populate panelViewAssignments from init
+          for (const viewId of node.viewIds) {
+            session.assignViewToPanel(panelId, viewId)
+            trackedViewIdsRef.current.add(viewId)
+          }
+          // Return the group this panel was added to
+          return dockviewApi.getPanel(panelId)?.group
+        }
+        if (node.children && node.children.length > 0) {
+          // Container node - process children
+          const dockviewDirection =
+            node.direction === 'horizontal' ? 'right' : 'below'
+          let currentGroup = referenceGroup
+          for (let i = 0; i < node.children.length; i++) {
+            const child = node.children[i]!
+            // First child uses parent's reference/direction, subsequent children split from previous
+            const childDirection = i === 0 ? direction : dockviewDirection
+            const childRef = i === 0 ? referenceGroup : currentGroup
+            const newGroup = processNode(child, childRef, childDirection)
+            if (newGroup) {
+              currentGroup = newGroup
+            }
+          }
+          return currentGroup
+        }
+        return undefined
+      }
+
+      processNode(initLayout, undefined, undefined)
+
+      // Clear init after processing (it's only needed once)
+      session.setInit(undefined)
+      if (firstPanelId) {
+        session.setActivePanelId(firstPanelId)
+        // Activate the first panel in dockview (otherwise the last added panel is active)
+        dockviewApi.getPanel(firstPanelId)?.api.setActive()
+      }
+      return
+    }
 
     // Clear any stale state from previous mounts (e.g., React StrictMode double-mounting)
     if (isSessionWithDockviewLayout(session)) {

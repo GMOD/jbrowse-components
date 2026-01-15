@@ -425,6 +425,74 @@ const testSuites: TestSuite[] = [
         },
       },
       {
+        name: 'layout URL param creates workspaces with horizontal split',
+        fn: async page => {
+          // Create a session spec with 3 views and nested layout
+          const sessionSpec = {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:1-5000',
+              },
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:5000-10000',
+              },
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgB:1-5000',
+              },
+            ],
+            // Horizontal split: left panel has views 0 and 1 stacked, right panel has view 2
+            layout: {
+              direction: 'horizontal',
+              children: [{ views: [0, 1] }, { views: [2] }],
+            },
+          }
+
+          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
+          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}`
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+
+          // Wait for dockview to render
+          await page.waitForSelector(
+            '.dockview-theme-light, .dockview-theme-dark',
+            { timeout: 10000 },
+          )
+          await delay(2000)
+
+          // With a horizontal split, we should have 2 dockview groups
+          const groups = await page.$$('.dv-groupview')
+          if (groups.length < 2) {
+            throw new Error(
+              `Expected at least 2 dockview groups for horizontal split, got ${groups.length}`,
+            )
+          }
+
+          // Should have 3 total view containers (2 in left panel, 1 in right)
+          let viewContainers: Awaited<ReturnType<typeof page.$$>> = []
+          for (let i = 0; i < 20; i++) {
+            viewContainers = await page.$$('[data-testid^="view-container-"]')
+            if (viewContainers.length >= 3) {
+              break
+            }
+            await delay(500)
+          }
+
+          if (viewContainers.length < 3) {
+            throw new Error(
+              `Expected 3 view containers total, got ${viewContainers.length}`,
+            )
+          }
+
+          await waitForLoadingToComplete(page)
+          await snapshot(page, 'workspaces-layout-url-param')
+        },
+      },
+      {
         name: 'multiple views in workspace - move up and down',
         fn: async page => {
           await navigateToApp(page)

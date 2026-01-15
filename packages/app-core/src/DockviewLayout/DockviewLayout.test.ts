@@ -274,6 +274,72 @@ describe('DockviewLayoutMixin', () => {
   })
 })
 
+describe('init configuration', () => {
+  it('starts with no init', () => {
+    const session = createTestSession()
+    expect(session.init).toBeUndefined()
+  })
+
+  it('setInit sets a simple panel layout', () => {
+    const session = createTestSession()
+    const initConfig = {
+      viewIds: ['view-1', 'view-2'],
+    }
+
+    session.setInit(initConfig)
+
+    expect(session.init).toEqual(initConfig)
+  })
+
+  it('setInit sets a nested layout', () => {
+    const session = createTestSession()
+    const initConfig = {
+      direction: 'horizontal' as const,
+      children: [{ viewIds: ['view-1', 'view-2'] }, { viewIds: ['view-3'] }],
+    }
+
+    session.setInit(initConfig)
+
+    expect(session.init).toEqual(initConfig)
+  })
+
+  it('setInit sets a deeply nested layout', () => {
+    const session = createTestSession()
+    const initConfig = {
+      direction: 'horizontal' as const,
+      children: [
+        { viewIds: ['view-1'] },
+        {
+          direction: 'vertical' as const,
+          children: [{ viewIds: ['view-2'] }, { viewIds: ['view-3'] }],
+        },
+      ],
+    }
+
+    session.setInit(initConfig)
+
+    expect(session.init).toEqual(initConfig)
+  })
+
+  it('setInit can clear init', () => {
+    const session = createTestSession()
+    session.setInit({ viewIds: ['view-1'] })
+    session.setInit(undefined)
+    expect(session.init).toBeUndefined()
+  })
+
+  it('init is excluded from snapshot', () => {
+    const session = createTestSession()
+    session.setInit({
+      direction: 'horizontal',
+      children: [{ viewIds: ['view-1'] }, { viewIds: ['view-2'] }],
+    })
+    const snapshot = getSnapshot(session)
+
+    expect(snapshot).not.toHaveProperty('init')
+  })
+})
+
 describe('Move to new tab scenario', () => {
   it('correctly sets up two panels when moving a view to new tab', () => {
     const session = createTestSession()
