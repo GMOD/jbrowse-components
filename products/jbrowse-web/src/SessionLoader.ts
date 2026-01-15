@@ -1,6 +1,6 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { openLocation } from '@jbrowse/core/util/io'
-import { nanoid } from '@jbrowse/core/util/nanoid'
+import { createElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
@@ -458,7 +458,7 @@ const SessionLoader = types
     async loadDecodedSession(session: Record<string, unknown>) {
       await this.loadSession({
         ...session,
-        id: nanoid(),
+        id: createElementId(),
       })
     },
     /**

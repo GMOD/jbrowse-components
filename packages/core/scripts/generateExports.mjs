@@ -8,6 +8,9 @@ const packageRoot = join(__dirname, '..')
 const repoRoot = join(packageRoot, '../..')
 const srcDir = join(packageRoot, 'src')
 
+// Exports to keep even if not used internally (for backwards compatibility)
+const preservedExports = ['@jbrowse/core/util/nanoid']
+
 // Scan the codebase for all @jbrowse/core imports
 function findAllImports() {
   try {
@@ -85,8 +88,8 @@ function getOutputPath(entry) {
   return `/${relativePath}.js`
 }
 
-// Find all imports
-const imports = findAllImports()
+// Find all imports and add preserved exports
+const imports = [...new Set([...findAllImports(), ...preservedExports])]
 console.log(`Found ${imports.length} unique @jbrowse/core import paths`)
 
 // Generate dev exports (pointing to src)
