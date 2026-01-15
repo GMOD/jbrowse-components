@@ -256,8 +256,9 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // If there's a pending move action, always create fresh panels to handle it
       // Otherwise, try to restore from saved layout if available
       const hasPendingAction = peekPendingMoveAction() !== null
-      const s = sessionRef.current
-      const dockviewSession = isSessionWithDockviewLayout(s) ? s : null
+      const dockviewSession = isSessionWithDockviewLayout(sessionRef.current)
+        ? sessionRef.current
+        : null
       const savedLayout = !hasPendingAction && dockviewSession?.dockviewLayout
 
       if (savedLayout && dockviewSession) {
