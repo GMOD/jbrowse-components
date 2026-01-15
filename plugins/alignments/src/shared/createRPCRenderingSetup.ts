@@ -91,19 +91,24 @@ export function createRPCRenderFunction<
       self.setRenderingStopToken(stopToken)
       self.setLoading(true)
 
-      const viewSnapshot = structuredClone({
-        ...getSnapshot(view),
-        staticBlocks: view.staticBlocks,
+      const viewSnapshot = {
+        displayedRegions: structuredClone(view.displayedRegions),
+        bpPerPx: view.bpPerPx,
+        offsetPx: view.offsetPx,
+        interRegionPaddingWidth: view.interRegionPaddingWidth,
+        minimumBlockWidth: view.minimumBlockWidth,
         width: view.width,
-      })
+      }
 
       const sessionId = getRpcSessionId(self)
+      const adapterConfig = self.adapterConfig
+      const config = getSnapshot(self.configuration)
       const result = (await rpcManager.call(sessionId, rpcMethodName, {
         sessionId,
         view: viewSnapshot,
-        adapterConfig: self.adapterConfig,
+        adapterConfig,
         sequenceAdapter,
-        config: getSnapshot(self.configuration),
+        config,
         statusCallback: (msg: string) => {
           if (isAlive(self)) {
             self.setStatusMessage?.(msg)
