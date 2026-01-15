@@ -44,7 +44,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y install tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+          sudo apt-get -y install tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev xvfb
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
@@ -150,6 +150,9 @@ jobs:
           steps.browser-tests.outcome == 'failure' ||
           steps.auth-browser-tests.outcome == 'failure'
         run: exit 1
+      - name: Test desktop app
+        run: pnpm test:e2e:ci
+        working-directory: products/jbrowse-desktop
 
       # Deploy storybooks
       - name: Build LGV storybook

@@ -25,6 +25,19 @@
     "releasenotes": "pnpm prettier --prose-wrap never website/blog/$(ls -Art website/blog/ | tail -n 1)|sed -e '/## Downloads/,+7d'|tail -n +7",
     "copynotes": "pnpm --silent releasenotes | xclip -selection clipboard"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "canvas",
+      "electron",
+      "electron-chromedriver",
+      "esbuild",
+      "puppeteer"
+    ],
+    "minimumReleaseAge": "1440",
+    "minimumReleaseAgeExclude": [
+      "@gmod/*"
+    ]
+  },
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",

@@ -36,7 +36,11 @@
     "build-electron-only-unpacked": "electron-builder build -wml --dir",
     "build-electron-only-unpacked:win": "electron-builder build -w --dir",
     "build-electron-only-unpacked:mac": "electron-builder build -m --dir",
-    "build-electron-only-unpacked:linux": "electron-builder build -l --dir"
+    "build-electron-only-unpacked:linux": "electron-builder build -l --dir",
+    "test:e2e": "node --experimental-strip-types test/e2e.ts",
+    "test:e2e:headless": "xvfb-run --auto-servernum node --experimental-strip-types test/e2e.ts --headless",
+    "test:e2e:build": "pnpm build-electron-unpacked:linux && pnpm test:e2e",
+    "test:e2e:ci": "pnpm build-electron-unpacked:linux && pnpm test:e2e:headless"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -98,7 +102,10 @@
     "swr": "^2.3.8"
   },
   "devDependencies": {
-    "electron": "39.2.7"
+    "@types/selenium-webdriver": "^4.35.5",
+    "electron": "39.2.7",
+    "electron-chromedriver": "^39.2.7",
+    "selenium-webdriver": "^4.39.0"
   },
   "browserslist": [
     "last 1 chrome version"

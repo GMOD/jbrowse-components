@@ -509,6 +509,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           Cancel
         </Button>
         <Button
+          data-testid="open-sequence-submit"
           onClick={async () => {
             try {
               let confs = assemblyConfs

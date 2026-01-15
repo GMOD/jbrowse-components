@@ -4,10 +4,9 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import ViewContainer from './ViewContainer.tsx'
-import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
+import { getViewsForPanel } from './dockviewUtils.ts'
 
 import type { DockviewSessionType } from './types.ts'
-import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { IDockviewPanelProps } from 'dockview-react'
 
 const ViewLauncher = lazy(() => import('./ViewLauncher.tsx'))
@@ -36,19 +35,6 @@ const useStyles = makeStyles()(theme => ({
 export interface JBrowseViewPanelParams {
   panelId: string
   session?: DockviewSessionType
-}
-
-function getViewsForPanel(
-  panelId: string,
-  session: DockviewSessionType | undefined,
-): AbstractViewModel[] {
-  if (!session || !isSessionWithDockviewLayout(session)) {
-    return []
-  }
-  const viewIds = session.getViewIdsForPanel(panelId)
-  return [...viewIds]
-    .map(id => session.views.find(v => v.id === id))
-    .filter((v): v is AbstractViewModel => v !== undefined)
 }
 
 const JBrowseViewPanel = observer(function JBrowseViewPanel({

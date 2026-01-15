@@ -7,7 +7,11 @@ import { DockviewReact } from 'dockview-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { DockviewContext, getPendingMoveAction } from './DockviewContext.tsx'
+import {
+  DockviewContext,
+  clearPendingMoveAction,
+  peekPendingMoveAction,
+} from './DockviewContext.tsx'
 import DockviewLeftHeaderActions from './DockviewLeftHeaderActions.tsx'
 import DockviewRightHeaderActions from './DockviewRightHeaderActions.tsx'
 import JBrowseViewPanel from './JBrowseViewPanel.tsx'
@@ -38,6 +42,19 @@ const useStyles = makeStyles()(() => ({
 
 interface Props {
   session: DockviewSessionType
+}
+
+function getPanelPosition(
+  group: DockviewGroupPanel | undefined,
+  direction?: 'right',
+) {
+  if (!group) {
+    return undefined
+  }
+  if (direction) {
+    return { referenceGroup: group, direction }
+  }
+  return { referenceGroup: group }
 }
 
 const components = {
@@ -83,7 +100,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       const group = targetGroup ?? api.activeGroup
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
-        position: group ? { referenceGroup: group } : undefined,
+        position: getPanelPosition(group),
       })
 
       if (isSessionWithDockviewLayout(session)) {
@@ -93,20 +110,20 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     [api, session],
   )
 
-  const moveViewToNewTab = useCallback(
-    (viewId: string) => {
+  const moveViewToPanel = useCallback(
+    (viewId: string, direction?: 'right') => {
       if (!api || !isSessionWithDockviewLayout(session)) {
         return
       }
+
       // Remove view from current panel
       session.removeViewFromPanel(viewId)
 
       // Create new panel and assign the view to it
       const panelId = `panel-${createElementId()}`
-      const group = api.activeGroup
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
-        position: group ? { referenceGroup: group } : undefined,
+        position: getPanelPosition(api.activeGroup, direction),
       })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
@@ -114,27 +131,18 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     [api, session],
   )
 
+  const moveViewToNewTab = useCallback(
+    (viewId: string) => {
+      moveViewToPanel(viewId)
+    },
+    [moveViewToPanel],
+  )
+
   const moveViewToSplitRight = useCallback(
     (viewId: string) => {
-      if (!api || !isSessionWithDockviewLayout(session)) {
-        return
-      }
-      // Remove view from current panel
-      session.removeViewFromPanel(viewId)
-
-      // Create new panel to the right of the current group
-      const panelId = `panel-${createElementId()}`
-      const group = api.activeGroup
-      api.addPanel({
-        ...createPanelConfig(panelId, session, 'New Tab'),
-        position: group
-          ? { referenceGroup: group, direction: 'right' }
-          : undefined,
-      })
-      session.assignViewToPanel(panelId, viewId)
-      session.setActivePanelId(panelId)
+      moveViewToPanel(viewId, 'right')
     },
-    [api, session],
+    [moveViewToPanel],
   )
 
   const contextValue = useMemo(
@@ -148,12 +156,63 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     [api, rearrangePanels, addEmptyTab, moveViewToNewTab, moveViewToSplitRight],
   )
 
-  const createInitialPanel = useCallback((dockviewApi: DockviewApi) => {
-    const panelId = `panel-${createElementId()}`
-    dockviewApi.addPanel(createPanelConfig(panelId, sessionRef.current))
+  const createInitialPanels = useCallback((dockviewApi: DockviewApi) => {
+    const session = sessionRef.current
+    const pendingAction = peekPendingMoveAction()
 
-    if (isSessionWithDockviewLayout(sessionRef.current)) {
-      sessionRef.current.setActivePanelId(panelId)
+    // Clear any stale state from previous mounts (e.g., React StrictMode double-mounting)
+    if (isSessionWithDockviewLayout(session)) {
+      for (const panelId of session.panelViewAssignments.keys()) {
+        session.removePanel(panelId)
+      }
+      session.setDockviewLayout(undefined)
+    }
+    trackedViewIdsRef.current.clear()
+
+    // Only handle pending action if the view actually exists in session.views
+    // This handles React StrictMode double-mounting and ensures we have all views
+    const pendingViewExists =
+      pendingAction && session.views.some(v => v.id === pendingAction.viewId)
+
+    if (pendingViewExists && isSessionWithDockviewLayout(session)) {
+      // Create correct panel structure upfront when there's a pending move action
+      const { type, viewId: pendingViewId } = pendingAction
+      const otherViewIds = session.views
+        .map(v => v.id)
+        .filter(id => id !== pendingViewId)
+
+      // Create first panel for existing views (excluding the pending view)
+      // Only create if there are other views to put in it
+      if (otherViewIds.length > 0) {
+        const firstPanelId = `panel-${createElementId()}`
+        dockviewApi.addPanel(createPanelConfig(firstPanelId, session))
+        for (const viewId of otherViewIds) {
+          session.assignViewToPanel(firstPanelId, viewId)
+          trackedViewIdsRef.current.add(viewId)
+        }
+      }
+
+      // Create panel for the pending view
+      const pendingPanelId = `panel-${createElementId()}`
+      const direction = type === 'splitRight' ? 'right' : undefined
+      dockviewApi.addPanel({
+        ...createPanelConfig(pendingPanelId, session, 'New Tab'),
+        position: getPanelPosition(dockviewApi.activeGroup, direction),
+      })
+      session.assignViewToPanel(pendingPanelId, pendingViewId)
+      trackedViewIdsRef.current.add(pendingViewId)
+      session.setActivePanelId(pendingPanelId)
+
+      // Only clear the pending action after successful setup
+      clearPendingMoveAction()
+    } else {
+      // Normal case: create single initial panel
+      const panelId = `panel-${createElementId()}`
+      dockviewApi.addPanel(createPanelConfig(panelId, session))
+
+      if (isSessionWithDockviewLayout(session)) {
+        session.setActivePanelId(panelId)
+      }
     }
   }, [])
 
@@ -194,32 +253,35 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         }
       })
 
-      if (
-        isSessionWithDockviewLayout(sessionRef.current) &&
-        sessionRef.current.dockviewLayout
-      ) {
+      // If there's a pending move action, always create fresh panels to handle it
+      // Otherwise, try to restore from saved layout if available
+      const hasPendingAction = peekPendingMoveAction() !== null
+      const dockviewSession = isSessionWithDockviewLayout(sessionRef.current)
+        ? sessionRef.current
+        : null
+      const savedLayout = !hasPendingAction && dockviewSession?.dockviewLayout
+
+      if (savedLayout) {
         try {
           rearrangingRef.current = true
-          event.api.fromJSON(sessionRef.current.dockviewLayout)
-          updatePanelParams(event.api, sessionRef.current)
-
-          for (const viewIds of sessionRef.current.panelViewAssignments.values()) {
+          event.api.fromJSON(savedLayout)
+          updatePanelParams(event.api, dockviewSession)
+          for (const viewIds of dockviewSession.panelViewAssignments.values()) {
             for (const viewId of viewIds) {
               trackedViewIdsRef.current.add(viewId)
             }
           }
-
           rearrangingRef.current = false
         } catch (e) {
           console.error('Failed to restore dockview layout:', e)
           rearrangingRef.current = false
-          createInitialPanel(event.api)
+          createInitialPanels(event.api)
         }
       } else {
-        createInitialPanel(event.api)
+        createInitialPanels(event.api)
       }
     },
-    [createInitialPanel],
+    [createInitialPanels],
   )
 
   useEffect(() => {
@@ -265,25 +327,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
     return dispose
   }, [session, api])
-
-  // Execute pending move action when api becomes defined. This handles the case
-  // where user clicks "Move to new tab" before workspaces is enabled - the
-  // action is stored as pending, then executed here once TiledViewsContainer
-  // mounts and the dockview api is ready.
-  useEffect(() => {
-    if (!api) {
-      return
-    }
-    const pendingAction = getPendingMoveAction()
-    if (pendingAction) {
-      const { type, viewId } = pendingAction
-      if (type === 'newTab') {
-        moveViewToNewTab(viewId)
-      } else {
-        moveViewToSplitRight(viewId)
-      }
-    }
-  }, [api, moveViewToNewTab, moveViewToSplitRight])
 
   // React to layout changes from undo/redo
   useEffect(() => {

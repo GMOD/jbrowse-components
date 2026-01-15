@@ -16,22 +16,35 @@ let pendingMoveAction: {
   viewId: string
 } | null = null
 
+export function peekPendingMoveAction() {
+  return pendingMoveAction
+}
+
+export function clearPendingMoveAction() {
+  pendingMoveAction = null
+}
+
 export function getPendingMoveAction() {
   const action = pendingMoveAction
   pendingMoveAction = null
   return action
 }
 
+// Functions to set pending actions (used by default context and for testing)
+export function setPendingMoveToNewTab(viewId: string) {
+  pendingMoveAction = { type: 'newTab', viewId }
+}
+
+export function setPendingMoveToSplitRight(viewId: string) {
+  pendingMoveAction = { type: 'splitRight', viewId }
+}
+
 export const DockviewContext = createContext<DockviewContextValue>({
   api: null,
   rearrangePanels: () => {},
   addEmptyTab: () => {},
-  moveViewToNewTab: (viewId: string) => {
-    pendingMoveAction = { type: 'newTab', viewId }
-  },
-  moveViewToSplitRight: (viewId: string) => {
-    pendingMoveAction = { type: 'splitRight', viewId }
-  },
+  moveViewToNewTab: setPendingMoveToNewTab,
+  moveViewToSplitRight: setPendingMoveToSplitRight,
 })
 
 export function useDockview() {
