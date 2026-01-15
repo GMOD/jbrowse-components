@@ -7,8 +7,8 @@ import { Menu } from '@mui/material'
 
 import type { MenuProps } from '@mui/material'
 
-const HoverMenu: React.ComponentType<MenuProps> = React.forwardRef(
-  function HoverMenu(props: MenuProps, ref): any {
+const HoverMenu = React.forwardRef<HTMLDivElement, MenuProps>(
+  function HoverMenu(props, ref) {
     return (
       <Menu
         {...props}

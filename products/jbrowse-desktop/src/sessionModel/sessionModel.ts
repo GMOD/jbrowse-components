@@ -1,5 +1,6 @@
 import {
   AppFocusMixin,
+  DockviewLayoutMixin,
   SessionAssembliesMixin,
   TemporaryAssembliesMixin,
 } from '@jbrowse/app-core'
@@ -40,6 +41,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * - SessionAssembliesMixin
  * - TemporaryAssembliesMixin
  * - DesktopSessionTrackMenuMixin
+ * - DockviewLayoutMixin
  * - SnackbarModel
  * - AppFocusMixin
  *
@@ -67,6 +69,7 @@ export default function sessionModelFactory({
       SessionAssembliesMixin(pluginManager, assemblyConfigSchema),
       TemporaryAssembliesMixin(pluginManager, assemblyConfigSchema),
       DesktopSessionTrackMenuMixin(pluginManager),
+      DockviewLayoutMixin(),
       AppFocusMixin(),
       SnackbarModel(),
     )

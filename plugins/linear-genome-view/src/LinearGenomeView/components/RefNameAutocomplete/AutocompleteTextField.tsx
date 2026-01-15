@@ -19,6 +19,8 @@ export default function AutocompleteTextField({
   setCurrentSearch: (arg: string) => void
 }) {
   const { helperText, slotProps = {} } = TextFieldProps
+  const { ref: inputRef, ...restInputProps } = params.InputProps
+  const { InputProps: _InputProps, ...restParams } = params
   return (
     <TextField
       onBlur={() => {
@@ -26,13 +28,14 @@ export default function AutocompleteTextField({
         // box on blurring
         setInputValue(inputBoxVal)
       }}
-      {...params}
+      {...restParams}
       {...TextFieldProps}
+      inputRef={inputRef}
       size="small"
       helperText={helperText}
       slotProps={{
         input: {
-          ...params.InputProps,
+          ...restInputProps,
           // eslint-disable-next-line @typescript-eslint/no-misused-spread
           ...slotProps.input,
         },
