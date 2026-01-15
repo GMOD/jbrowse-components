@@ -44,6 +44,19 @@ interface Props {
   session: DockviewSessionType
 }
 
+function getPanelPosition(
+  group: DockviewGroupPanel | undefined,
+  direction?: 'right',
+) {
+  if (!group) {
+    return undefined
+  }
+  if (direction) {
+    return { referenceGroup: group, direction }
+  }
+  return { referenceGroup: group }
+}
+
 const components = {
   jbrowseView: JBrowseViewPanel,
 }
@@ -87,7 +100,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       const group = targetGroup ?? api.activeGroup
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
-        position: group ? { referenceGroup: group } : undefined,
+        position: getPanelPosition(group),
       })
 
       if (isSessionWithDockviewLayout(session)) {
@@ -108,16 +121,9 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
       // Create new panel and assign the view to it
       const panelId = `panel-${createElementId()}`
-      const group = api.activeGroup
-      const position = group
-        ? direction
-          ? { referenceGroup: group, direction }
-          : { referenceGroup: group }
-        : undefined
-
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
-        position,
+        position: getPanelPosition(api.activeGroup, direction),
       })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
@@ -189,14 +195,9 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Create panel for the pending view
       const pendingPanelId = `panel-${createElementId()}`
       const direction = type === 'splitRight' ? 'right' : undefined
-      const activeGroup = dockviewApi.activeGroup
       dockviewApi.addPanel({
         ...createPanelConfig(pendingPanelId, session, 'New Tab'),
-        position: activeGroup
-          ? direction
-            ? { referenceGroup: activeGroup, direction }
-            : { referenceGroup: activeGroup }
-          : undefined,
+        position: getPanelPosition(dockviewApi.activeGroup, direction),
       })
       session.assignViewToPanel(pendingPanelId, pendingViewId)
       trackedViewIdsRef.current.add(pendingViewId)
@@ -256,21 +257,17 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Otherwise, try to restore from saved layout if available
       const hasPendingAction = peekPendingMoveAction() !== null
       const s = sessionRef.current
-      const savedLayout =
-        !hasPendingAction && isSessionWithDockviewLayout(s)
-          ? s.dockviewLayout
-          : undefined
+      const dockviewSession = isSessionWithDockviewLayout(s) ? s : null
+      const savedLayout = !hasPendingAction && dockviewSession?.dockviewLayout
 
-      if (savedLayout) {
+      if (savedLayout && dockviewSession) {
         try {
           rearrangingRef.current = true
           event.api.fromJSON(savedLayout)
-          updatePanelParams(event.api, s)
-          if (isSessionWithDockviewLayout(s)) {
-            for (const viewIds of s.panelViewAssignments.values()) {
-              for (const viewId of viewIds) {
-                trackedViewIdsRef.current.add(viewId)
-              }
+          updatePanelParams(event.api, dockviewSession)
+          for (const viewIds of dockviewSession.panelViewAssignments.values()) {
+            for (const viewId of viewIds) {
+              trackedViewIdsRef.current.add(viewId)
             }
           }
           rearrangingRef.current = false
