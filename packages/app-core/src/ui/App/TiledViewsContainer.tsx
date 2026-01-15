@@ -261,7 +261,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         : null
       const savedLayout = !hasPendingAction && dockviewSession?.dockviewLayout
 
-      if (savedLayout && dockviewSession) {
+      if (savedLayout) {
         try {
           rearrangingRef.current = true
           event.api.fromJSON(savedLayout)

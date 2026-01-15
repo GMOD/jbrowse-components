@@ -116,11 +116,12 @@ const ViewMenu = observer(function ViewMenu({
                   {
                     label: 'Move view to top',
                     icon: KeyboardDoubleArrowUpIcon,
-                    onClick: () =>
+                    onClick: () => {
                       moveView(
                         session.moveViewToTopInPanel,
                         session.moveViewToTop,
-                      ),
+                      )
+                    },
                   },
                 ]
               : []),
@@ -129,17 +130,19 @@ const ViewMenu = observer(function ViewMenu({
                   {
                     label: 'Move view up',
                     icon: KeyboardArrowUpIcon,
-                    onClick: () =>
-                      moveView(session.moveViewUpInPanel, session.moveViewUp),
+                    onClick: () => {
+                      moveView(session.moveViewUpInPanel, session.moveViewUp)
+                    },
                   },
                   {
                     label: 'Move view down',
                     icon: KeyboardArrowDownIcon,
-                    onClick: () =>
+                    onClick: () => {
                       moveView(
                         session.moveViewDownInPanel,
                         session.moveViewDown,
-                      ),
+                      )
+                    },
                   },
                 ]
               : []),
@@ -148,11 +151,12 @@ const ViewMenu = observer(function ViewMenu({
                   {
                     label: 'Move view to bottom',
                     icon: KeyboardDoubleArrowDownIcon,
-                    onClick: () =>
+                    onClick: () => {
                       moveView(
                         session.moveViewToBottomInPanel,
                         session.moveViewToBottom,
-                      ),
+                      )
+                    },
                   },
                 ]
               : []),
