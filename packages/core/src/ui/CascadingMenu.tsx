@@ -27,6 +27,14 @@ import type { SvgIconProps } from '@mui/material'
 export type { MenuItemsGetter } from './MenuTypes.ts'
 type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
 
+// Helper to create a data-testid from a label
+function labelToTestId(label: React.ReactNode) {
+  if (typeof label === 'string') {
+    return label.toLowerCase().replace(/\s+/g, '_')
+  }
+  return undefined
+}
+
 function CascadingSubmenu({
   title,
   Icon,
@@ -51,11 +59,13 @@ function CascadingSubmenu({
   onClose: () => void
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
+  const testId = labelToTestId(title)
 
   return (
     <>
       <MenuItem
         ref={setAnchorEl}
+        data-testid={testId ? `cascading-submenu-${testId}` : undefined}
         onMouseOver={onOpen}
         onFocus={onOpen}
         onClick={onOpen}
@@ -151,10 +161,14 @@ function CascadingMenuList({
         const helpText = actionItem.helpText
         const isCheckOrRadio =
           actionItem.type === 'checkbox' || actionItem.type === 'radio'
+        const itemTestId = labelToTestId(actionItem.label)
 
         return (
           <MenuItem
             key={`${actionItem.label}-${idx}`}
+            data-testid={
+              itemTestId ? `cascading-menuitem-${itemTestId}` : undefined
+            }
             disabled={Boolean(actionItem.disabled)}
             onClick={event => {
               if (closeAfterItemClick) {

@@ -12,6 +12,11 @@ describe('DockviewContext pending move actions', () => {
     clearPendingMoveAction()
   })
 
+  afterEach(() => {
+    // Ensure cleanup even if test fails
+    clearPendingMoveAction()
+  })
+
   describe('when no pending action exists', () => {
     it('peekPendingMoveAction returns null', () => {
       expect(peekPendingMoveAction()).toBeNull()

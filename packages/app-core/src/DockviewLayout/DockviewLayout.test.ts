@@ -317,4 +317,41 @@ describe('Move to new tab scenario', () => {
     expect(session.getViewIdsForPanel('panel-1')).toEqual(['view-1', 'view-2'])
     expect(session.getViewIdsForPanel('panel-2')).toEqual(['view-3'])
   })
+
+  it('handles moving the only view to new tab (first panel becomes empty)', () => {
+    const session = createTestSession()
+
+    // Only 1 view exists, user clicks "Move to new tab"
+    const pendingViewId = 'view-1'
+
+    // Second panel gets the only view
+    const secondPanelId = 'panel-2'
+    session.assignViewToPanel(secondPanelId, pendingViewId)
+    session.setActivePanelId(secondPanelId)
+
+    // Verify structure - first panel doesn't exist (no views)
+    expect(session.getViewIdsForPanel('panel-1')).toEqual([])
+    expect(session.getViewIdsForPanel('panel-2')).toEqual(['view-1'])
+    expect(session.panelViewAssignments.size).toBe(1)
+  })
+
+  it('handles clearing all panel assignments', () => {
+    const session = createTestSession()
+
+    // Set up some panels
+    session.assignViewToPanel('panel-1', 'view-1')
+    session.assignViewToPanel('panel-1', 'view-2')
+    session.assignViewToPanel('panel-2', 'view-3')
+    session.setDockviewLayout({ grid: {} } as any)
+
+    // Clear all panels (simulates what happens on remount)
+    for (const panelId of session.panelViewAssignments.keys()) {
+      session.removePanel(panelId)
+    }
+    session.setDockviewLayout(undefined)
+
+    // Verify everything is cleared
+    expect(session.panelViewAssignments.size).toBe(0)
+    expect(session.dockviewLayout).toBeUndefined()
+  })
 })

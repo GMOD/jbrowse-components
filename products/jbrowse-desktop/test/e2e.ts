@@ -151,6 +151,23 @@ async function closeAllDialogs(driver: WebDriver): Promise<void> {
   }
 }
 
+// Helper to close any open menus by clicking on the body
+async function closeAllMenus(driver: WebDriver): Promise<void> {
+  // Press Escape multiple times
+  for (let i = 0; i < 3; i++) {
+    await driver.actions().sendKeys('\uE00C').perform()
+    await delay(200)
+  }
+  // Also click on body to dismiss any popups/menus
+  try {
+    const body = await driver.findElement(By.css('body'))
+    await driver.executeScript('arguments[0].click();', body)
+    await delay(300)
+  } catch {
+    // Ignore errors
+  }
+}
+
 async function runTest(
   name: string,
   fn: (driver: WebDriver) => Promise<void>,
@@ -300,10 +317,13 @@ async function testOpenHg19Genome(driver: WebDriver): Promise<void> {
     ),
     15000,
   )
-  console.log('    DEBUG: Found launch link, waiting for visibility...')
+  console.log('    DEBUG: Found launch link, scrolling into view...')
+  await driver.executeScript('arguments[0].scrollIntoView(true);', launchLink)
+  await delay(500)
+  console.log('    DEBUG: Waiting for visibility...')
   await driver.wait(until.elementIsVisible(launchLink), 15000)
   console.log('    DEBUG: Clicking launch link...')
-  await launchLink.click()
+  await driver.executeScript('arguments[0].click();', launchLink)
 
   // View is launched automatically, wait for it to load
   console.log('    DEBUG: Waiting for view to load...')
@@ -623,25 +643,27 @@ async function testWorkspaceMoveToTab(driver: WebDriver): Promise<void> {
   await viewMenu.click()
   await delay(500)
 
-  // Hover over "View options" menu item to open submenu
+  // Click "View options" menu item to open submenu using data-testid
   console.log('    DEBUG: Looking for View options submenu...')
-  const viewOptions = await findByText(driver, 'View options', 5000)
-  console.log('    DEBUG: Found View options, hovering...')
-  await driver.actions().move({ origin: viewOptions }).perform()
+  const viewOptions = await driver.wait(
+    until.elementLocated(
+      By.css('[data-testid="cascading-submenu-view_options"]'),
+    ),
+    5000,
+  )
+  console.log('    DEBUG: Found View options, clicking to open submenu...')
+  await viewOptions.click()
   await delay(1000)
 
   console.log('    DEBUG: Looking for Move to new tab...')
   const moveToTab = await driver.wait(
     until.elementLocated(
-      By.xpath(
-        "//li[contains(@class, 'MuiMenuItem') and contains(., 'Move to new tab')]",
-      ),
+      By.css('[data-testid="cascading-menuitem-move_to_new_tab"]'),
     ),
     5000,
   )
-  console.log('    DEBUG: Found Move to new tab, clicking via JavaScript...')
-  // Use JavaScript click which is more reliable for menu items
-  await driver.executeScript('arguments[0].click();', moveToTab)
+  console.log('    DEBUG: Found Move to new tab, clicking...')
+  await moveToTab.click()
   await delay(2000)
 
   // Verify dockview is present - check for various possible class names
@@ -659,70 +681,230 @@ async function testWorkspaceMoveToTab(driver: WebDriver): Promise<void> {
   }
 }
 
-async function testWorkspaceCopyView(driver: WebDriver): Promise<void> {
-  // Close any open dialogs from previous tests
+async function testWorkspaceMoveToTabWithMultipleViews(
+  driver: WebDriver,
+): Promise<void> {
+  // This tests the bug fix: with 3 views and workspaces OFF, clicking
+  // "Move to new tab" should create 2 tabs (one with 2 views, one with 1 view)
   await closeAllDialogs(driver)
+  await closeAllMenus(driver)
 
-  // After moving to a new tab, the view structure might be different
-  // Let's see what's available
+  // First, create additional views using "Copy view" so we have multiple views
+  // We should already have at least 1 view from previous tests
+  console.log('    DEBUG: Counting initial views...')
+  let viewMenus = await driver.findElements(
+    By.css('[data-testid="view_menu_icon"]'),
+  )
+  console.log(`    DEBUG: Initial view count: ${viewMenus.length}`)
+
+  // Create views until we have at least 3
+  while (viewMenus.length < 3) {
+    console.log(`    DEBUG: Creating view ${viewMenus.length + 1}...`)
+
+    // Close any open menus first
+    await driver.actions().sendKeys('\uE00C').perform()
+    await delay(300)
+
+    // Re-find the view menu in case DOM changed
+    viewMenus = await driver.findElements(
+      By.css('[data-testid="view_menu_icon"]'),
+    )
+    const viewMenu = viewMenus[0]!
+
+    console.log('    DEBUG: Clicking view menu...')
+    await driver.executeScript('arguments[0].click();', viewMenu)
+    await delay(700)
+
+    // Check if menu opened by looking for menu items
+    const menuItems = await driver.findElements(By.css('.MuiMenuItem-root'))
+    console.log(`    DEBUG: Found ${menuItems.length} menu items`)
+
+    if (menuItems.length === 0) {
+      console.log('    DEBUG: Menu did not open, retrying...')
+      await driver.executeScript('arguments[0].click();', viewMenu)
+      await delay(700)
+    }
+
+    console.log('    DEBUG: Looking for View options...')
+    const viewOptions = await driver.wait(
+      until.elementLocated(
+        By.css('[data-testid="cascading-submenu-view_options"]'),
+      ),
+      5000,
+    )
+    console.log('    DEBUG: Found View options, clicking to open submenu...')
+    await viewOptions.click()
+    await delay(1000)
+
+    console.log('    DEBUG: Looking for Copy view...')
+    const copyView = await driver.wait(
+      until.elementLocated(
+        By.css('[data-testid="cascading-menuitem-copy_view"]'),
+      ),
+      5000,
+    )
+    console.log('    DEBUG: Found Copy view, clicking...')
+    await copyView.click()
+    await delay(1500)
+
+    // Close any leftover menus by pressing Escape multiple times
+    await driver.actions().sendKeys('\uE00C').perform()
+    await delay(200)
+    await driver.actions().sendKeys('\uE00C').perform()
+    await delay(300)
+
+    viewMenus = await driver.findElements(
+      By.css('[data-testid="view_menu_icon"]'),
+    )
+    console.log(`    DEBUG: Now have ${viewMenus.length} views`)
+  }
+
+  console.log(`    DEBUG: Now have ${viewMenus.length} views`)
+
+  // Now click "Move to new tab" on one of the views
+  // This should enable workspaces and create 2 tabs
+  console.log('    DEBUG: Opening view menu for Move to new tab...')
+  const targetViewMenu = viewMenus[viewMenus.length - 1]! // Use last view
+  await driver.executeScript('arguments[0].click();', targetViewMenu)
+  await delay(500)
+
+  const viewOptions2 = await driver.wait(
+    until.elementLocated(
+      By.css('[data-testid="cascading-submenu-view_options"]'),
+    ),
+    5000,
+  )
+  console.log('    DEBUG: Found View options, clicking to open submenu...')
+  await viewOptions2.click()
+  await delay(1000)
+
+  console.log('    DEBUG: Clicking Move to new tab...')
+  const moveToTab = await driver.wait(
+    until.elementLocated(
+      By.css('[data-testid="cascading-menuitem-move_to_new_tab"]'),
+    ),
+    5000,
+  )
+  await moveToTab.click()
+
+  // Wait longer for workspace transition to complete
+  console.log('    DEBUG: Waiting for workspace transition...')
+  await delay(3000)
+
+  // Debug: Check what's in the DOM after transition
+  const dockviewElements = await driver.findElements(
+    By.css('[class*="dockview"]'),
+  )
+  console.log(
+    `    DEBUG: Found ${dockviewElements.length} elements with "dockview" in class`,
+  )
+
+  const allTabs = await driver.findElements(By.css('.tab, [class*="tab"]'))
+  console.log(`    DEBUG: Found ${allTabs.length} elements with "tab" in class`)
+
+  // Check for any error alerts
+  const alerts = await driver.findElements(By.css('.MuiAlert-root'))
+  if (alerts.length > 0) {
+    console.log(`    DEBUG: Found ${alerts.length} alert elements`)
+  }
+
+  // Verify we have tabs in dockview - try multiple selectors
+  console.log('    DEBUG: Checking for dockview tabs...')
+  let tabs = await driver.findElements(By.css('.dockview-react .tab'))
+  if (tabs.length === 0) {
+    // Try alternative selector
+    tabs = await driver.findElements(
+      By.css('[class*="dockview"] [class*="tab"]'),
+    )
+  }
+  console.log(`    DEBUG: Found ${tabs.length} dockview tabs`)
+
+  // In dockview/workspace mode, only the active tab's content is rendered in DOM
+  // So we can't count view_menu_icons to verify all views exist
+  // Instead, verify that:
+  // 1. Dockview is active (has tabs)
+  // 2. At least one view is visible in the active tab
+  viewMenus = await driver.findElements(
+    By.css('[data-testid="view_menu_icon"]'),
+  )
+  console.log(`    DEBUG: Visible views in active tab: ${viewMenus.length}`)
+
+  if (viewMenus.length < 1) {
+    throw new Error(
+      `Expected at least 1 view to be visible in active tab, got ${viewMenus.length}`,
+    )
+  }
+
+  // Check that we have at least 2 tabs (workspaces enabled successfully)
+  if (tabs.length < 2) {
+    throw new Error(
+      `Expected at least 2 tabs after "Move to new tab", got ${tabs.length}`,
+    )
+  }
+
+  console.log('    DEBUG: Move to new tab with multiple views succeeded!')
+}
+
+async function testWorkspaceCopyView(driver: WebDriver): Promise<void> {
+  // Close any open dialogs and menus from previous tests
+  await closeAllDialogs(driver)
+  await closeAllMenus(driver)
+
   console.log('    DEBUG: Looking for view menu icon...')
 
-  // First check what elements exist
-  const allTestIds = await driver.findElements(By.css('[data-testid]'))
-  console.log(`    DEBUG: Found ${allTestIds.length} elements with data-testid`)
-
-  // Try to find the view menu icon - it might be inside the dockview panel now
+  // Try to find the view menu icon
   let viewMenu = await driver.findElements(
     By.css('[data-testid="view_menu_icon"]'),
   )
   console.log(`    DEBUG: Found ${viewMenu.length} view_menu_icon elements`)
 
   if (viewMenu.length === 0) {
-    // Maybe the view is inside a dockview panel, try a broader search
-    viewMenu = await driver.findElements(By.css('[class*="view"] button'))
-    console.log(
-      `    DEBUG: Found ${viewMenu.length} buttons in view-related elements`,
-    )
-  }
-
-  if (viewMenu.length === 0) {
     throw new Error('Could not find view menu icon')
   }
 
+  // Get current count to verify we add one more
+  const initialCount = viewMenu.length
+
   const viewMenuElement = viewMenu[0]!
-  console.log('    DEBUG: Found view menu, clicking...')
-  await viewMenuElement.click()
+  console.log('    DEBUG: Found view menu, clicking via JavaScript...')
+  await driver.executeScript('arguments[0].click();', viewMenuElement)
   await delay(500)
 
-  // Hover over "View options" menu item to open submenu
+  // Click "View options" to open submenu using data-testid
   console.log('    DEBUG: Looking for View options submenu...')
-  const viewOptions = await findByText(driver, 'View options', 5000)
-  console.log('    DEBUG: Found View options, hovering...')
-  await driver.actions().move({ origin: viewOptions }).perform()
+  const viewOptions = await driver.wait(
+    until.elementLocated(
+      By.css('[data-testid="cascading-submenu-view_options"]'),
+    ),
+    5000,
+  )
+  console.log('    DEBUG: Found View options, clicking to open submenu...')
+  await viewOptions.click()
   await delay(1000)
 
   console.log('    DEBUG: Looking for Copy view...')
   const copyView = await driver.wait(
     until.elementLocated(
-      By.xpath(
-        "//li[contains(@class, 'MuiMenuItem') and contains(., 'Copy view')]",
-      ),
+      By.css('[data-testid="cascading-menuitem-copy_view"]'),
     ),
     5000,
   )
-  console.log('    DEBUG: Found Copy view, clicking via JavaScript...')
-  // Use JavaScript click which is more reliable for menu items
-  await driver.executeScript('arguments[0].click();', copyView)
+  console.log('    DEBUG: Found Copy view, clicking...')
+  await copyView.click()
   await delay(2000)
 
   console.log('    DEBUG: Counting view menus...')
   const viewMenus = await driver.findElements(
     By.css('[data-testid="view_menu_icon"]'),
   )
-  console.log(`    DEBUG: Found ${viewMenus.length} view menus`)
+  console.log(
+    `    DEBUG: Found ${viewMenus.length} view menus (was ${initialCount})`,
+  )
 
-  if (viewMenus.length !== 2) {
-    throw new Error(`Expected 2 view menus, got ${viewMenus.length}`)
+  if (viewMenus.length <= initialCount) {
+    throw new Error(
+      `Expected more than ${initialCount} view menus after copy, got ${viewMenus.length}`,
+    )
   }
 }
 
@@ -773,7 +955,11 @@ async function main(): Promise<void> {
   await runTest('should search for location', testLocationSearch, driver)
 
   console.log('\nWorkspaces:')
-  await runTest('should move view to new tab', testWorkspaceMoveToTab, driver)
+  await runTest(
+    'should move view to new tab with multiple views',
+    testWorkspaceMoveToTabWithMultipleViews,
+    driver,
+  )
   await runTest('should copy view', testWorkspaceCopyView, driver)
 
   // Summary

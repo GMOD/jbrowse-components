@@ -97,8 +97,8 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     [api, session],
   )
 
-  const moveViewToNewTab = useCallback(
-    (viewId: string) => {
+  const moveViewToPanel = useCallback(
+    (viewId: string, direction?: 'right') => {
       if (!api || !isSessionWithDockviewLayout(session)) {
         return
       }
@@ -109,10 +109,15 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Create new panel and assign the view to it
       const panelId = `panel-${nanoid()}`
       const group = api.activeGroup
+      const position = group
+        ? direction
+          ? { referenceGroup: group, direction }
+          : { referenceGroup: group }
+        : undefined
 
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
-        position: group ? { referenceGroup: group } : undefined,
+        position,
       })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
@@ -120,27 +125,18 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     [api, session],
   )
 
+  const moveViewToNewTab = useCallback(
+    (viewId: string) => {
+      moveViewToPanel(viewId)
+    },
+    [moveViewToPanel],
+  )
+
   const moveViewToSplitRight = useCallback(
     (viewId: string) => {
-      if (!api || !isSessionWithDockviewLayout(session)) {
-        return
-      }
-      // Remove view from current panel
-      session.removeViewFromPanel(viewId)
-
-      // Create new panel to the right of the current group
-      const panelId = `panel-${nanoid()}`
-      const group = api.activeGroup
-      api.addPanel({
-        ...createPanelConfig(panelId, session, 'New Tab'),
-        position: group
-          ? { referenceGroup: group, direction: 'right' }
-          : undefined,
-      })
-      session.assignViewToPanel(panelId, viewId)
-      session.setActivePanelId(panelId)
+      moveViewToPanel(viewId, 'right')
     },
-    [api, session],
+    [moveViewToPanel],
   )
 
   const contextValue = useMemo(
@@ -180,25 +176,31 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         .filter(id => id !== pendingViewId)
 
       // Create first panel for existing views (excluding the pending view)
-      const firstPanelId = `panel-${nanoid()}`
-      dockviewApi.addPanel(createPanelConfig(firstPanelId, session))
-      for (const viewId of otherViewIds) {
-        session.assignViewToPanel(firstPanelId, viewId)
-        trackedViewIdsRef.current.add(viewId)
+      // Only create if there are other views to put in it
+      if (otherViewIds.length > 0) {
+        const firstPanelId = `panel-${nanoid()}`
+        dockviewApi.addPanel(createPanelConfig(firstPanelId, session))
+        for (const viewId of otherViewIds) {
+          session.assignViewToPanel(firstPanelId, viewId)
+          trackedViewIdsRef.current.add(viewId)
+        }
       }
 
-      // Create second panel for the pending view
-      const secondPanelId = `panel-${nanoid()}`
+      // Create panel for the pending view
+      const pendingPanelId = `panel-${nanoid()}`
       const direction = type === 'splitRight' ? 'right' : undefined
+      const activeGroup = dockviewApi.activeGroup
       dockviewApi.addPanel({
-        ...createPanelConfig(secondPanelId, session, 'New Tab'),
-        position: direction
-          ? { referenceGroup: dockviewApi.activeGroup!, direction }
-          : { referenceGroup: dockviewApi.activeGroup! },
+        ...createPanelConfig(pendingPanelId, session, 'New Tab'),
+        position: activeGroup
+          ? direction
+            ? { referenceGroup: activeGroup, direction }
+            : { referenceGroup: activeGroup }
+          : undefined,
       })
-      session.assignViewToPanel(secondPanelId, pendingViewId)
+      session.assignViewToPanel(pendingPanelId, pendingViewId)
       trackedViewIdsRef.current.add(pendingViewId)
-      session.setActivePanelId(secondPanelId)
+      session.setActivePanelId(pendingPanelId)
 
       // Only clear the pending action after successful setup
       clearPendingMoveAction()
