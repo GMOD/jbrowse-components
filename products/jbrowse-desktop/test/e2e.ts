@@ -15,8 +15,11 @@ const CHROMEDRIVER_PORT = 9515
 const isHeadless =
   process.argv.includes('--headless') || process.env.HEADLESS === 'true'
 
-// Get chromedriver path from electron-chromedriver package
-const CHROMEDRIVER_PATH = require('electron-chromedriver/chromedriver').path
+// Get chromedriver path by resolving the electron-chromedriver package location
+const electronChromedriverDir = dirname(
+  require.resolve('electron-chromedriver/package.json'),
+)
+const CHROMEDRIVER_PATH = join(electronChromedriverDir, 'bin', 'chromedriver')
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
