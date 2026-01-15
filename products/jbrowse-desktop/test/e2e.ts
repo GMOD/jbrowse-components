@@ -1,15 +1,22 @@
 import { fileURLToPath } from 'url'
 import { dirname, resolve, join } from 'path'
 import { spawn, ChildProcess } from 'child_process'
+import { createRequire } from 'module'
 import { Builder, WebDriver, By, until } from 'selenium-webdriver'
+
+const require = createRequire(import.meta.url)
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const TEST_DATA_DIR = resolve(__dirname, '../../../test_data/volvox')
 const APP_BINARY = resolve(__dirname, '../dist/linux-unpacked/jbrowse-desktop')
 const CHROMEDRIVER_PORT = 9515
 
-// Find electron-chromedriver binary (installed via pnpm in .bin)
-const CHROMEDRIVER_PATH = resolve(__dirname, '../node_modules/.bin/chromedriver')
+// Check for headless mode via CLI arg or environment variable
+const isHeadless =
+  process.argv.includes('--headless') || process.env.HEADLESS === 'true'
+
+// Get chromedriver path from electron-chromedriver package
+const CHROMEDRIVER_PATH = require('electron-chromedriver/chromedriver').path
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -28,9 +35,13 @@ const results: TestResult[] = []
 async function startChromedriver(): Promise<void> {
   return new Promise((resolve, reject) => {
     console.log(`  Launching: ${CHROMEDRIVER_PATH}`)
-    chromedriverProcess = spawn(CHROMEDRIVER_PATH, [`--port=${CHROMEDRIVER_PORT}`], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-    })
+    chromedriverProcess = spawn(
+      CHROMEDRIVER_PATH,
+      [`--port=${CHROMEDRIVER_PORT}`],
+      {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      },
+    )
 
     chromedriverProcess.on('error', err => {
       console.error('  ChromeDriver spawn error:', err)
@@ -55,12 +66,22 @@ async function startChromedriver(): Promise<void> {
 }
 
 async function createDriver(): Promise<WebDriver> {
+  const chromeArgs = ['--no-sandbox']
+
+  if (isHeadless) {
+    chromeArgs.push(
+      '--disable-gpu',
+      '--disable-dev-shm-usage',
+      '--disable-software-rasterizer',
+    )
+  }
+
   const driver = await new Builder()
     .usingServer(`http://localhost:${CHROMEDRIVER_PORT}`)
     .withCapabilities({
       'goog:chromeOptions': {
         binary: APP_BINARY,
-        args: ['--no-sandbox'],
+        args: chromeArgs,
       },
     })
     .forBrowser('chrome')
@@ -76,10 +97,17 @@ function textContainsXPath(text: string, elementType = '*') {
 }
 
 async function findByText(driver: WebDriver, text: string, timeout = 30000) {
-  return driver.wait(until.elementLocated(By.xpath(textContainsXPath(text))), timeout)
+  return driver.wait(
+    until.elementLocated(By.xpath(textContainsXPath(text))),
+    timeout,
+  )
 }
 
-async function clickButton(driver: WebDriver, text: string, timeout = 10000): Promise<void> {
+async function clickButton(
+  driver: WebDriver,
+  text: string,
+  timeout = 10000,
+): Promise<void> {
   const button = await driver.wait(
     until.elementLocated(By.xpath(textContainsXPath(text, 'button'))),
     timeout,
@@ -92,11 +120,19 @@ async function clickButton(driver: WebDriver, text: string, timeout = 10000): Pr
 async function clearInput(driver: WebDriver, element: any): Promise<void> {
   await element.click()
   // Select all and delete
-  await driver.actions().keyDown('\uE009').sendKeys('a').keyUp('\uE009').perform() // Ctrl+A
+  await driver
+    .actions()
+    .keyDown('\uE009')
+    .sendKeys('a')
+    .keyUp('\uE009')
+    .perform() // Ctrl+A
   await driver.actions().sendKeys('\uE017').perform() // Delete
 }
 
-async function waitForStartScreen(driver: WebDriver, timeout = 30000): Promise<void> {
+async function waitForStartScreen(
+  driver: WebDriver,
+  timeout = 30000,
+): Promise<void> {
   await findByText(driver, 'Launch new session', timeout)
 }
 
@@ -164,7 +200,9 @@ async function testAvailableGenomesDialog(driver: WebDriver): Promise<void> {
   await findByText(driver, 'Available genomes')
 }
 
-async function testCloseAvailableGenomesDialog(driver: WebDriver): Promise<void> {
+async function testCloseAvailableGenomesDialog(
+  driver: WebDriver,
+): Promise<void> {
   // Find the close button (IconButton in dialog title with CloseIcon)
   // It's the button in the dialog title area
   const closeButton = await driver.findElement(
@@ -196,7 +234,9 @@ async function testOpenHg19Genome(driver: WebDriver): Promise<void> {
 
   // Find the row containing hg19 and click the (launch) link within it
   const launchLink = await driver.wait(
-    until.elementLocated(By.xpath("//td[contains(., 'hg19')]//a[contains(text(), 'launch')]")),
+    until.elementLocated(
+      By.xpath("//td[contains(., 'hg19')]//a[contains(text(), 'launch')]"),
+    ),
     15000,
   )
   await driver.wait(until.elementIsVisible(launchLink), 5000)
@@ -220,7 +260,10 @@ async function testOpenHg19Genome(driver: WebDriver): Promise<void> {
   await delay(3000)
 
   // Wait for zoom controls to appear (indicates view is fully loaded)
-  await driver.wait(until.elementLocated(By.css('[data-testid="zoom_in"]')), 15000)
+  await driver.wait(
+    until.elementLocated(By.css('[data-testid="zoom_in"]')),
+    15000,
+  )
 }
 
 async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
@@ -240,7 +283,9 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
   await assemblyInput.sendKeys('volvox')
 
   // Click URL toggle buttons to switch from file to URL mode
-  const urlToggleButtons = await driver.findElements(By.css('button[value="url"]'))
+  const urlToggleButtons = await driver.findElements(
+    By.css('button[value="url"]'),
+  )
 
   // Click first URL toggle (for FASTA file)
   if (urlToggleButtons.length >= 1) {
@@ -265,7 +310,9 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
   urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
 
   if (urlInputs.length >= 2) {
-    await urlInputs[1].sendKeys(`file://${join(TEST_DATA_DIR, 'volvox.fa.fai')}`)
+    await urlInputs[1].sendKeys(
+      `file://${join(TEST_DATA_DIR, 'volvox.fa.fai')}`,
+    )
   }
 
   await clickButton(driver, 'Submit')
@@ -290,7 +337,10 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
   await delay(2000)
 
   // Wait for zoom controls to appear (indicates view is fully loaded)
-  await driver.wait(until.elementLocated(By.css('[data-testid="zoom_in"]')), 10000)
+  await driver.wait(
+    until.elementLocated(By.css('[data-testid="zoom_in"]')),
+    10000,
+  )
 }
 
 async function testFileMenu(driver: WebDriver): Promise<void> {
@@ -332,7 +382,9 @@ async function testZoom(driver: WebDriver): Promise<void> {
 }
 
 async function testLocationSearch(driver: WebDriver): Promise<void> {
-  const searchInput = await driver.findElement(By.css('input[placeholder="Search for location"]'))
+  const searchInput = await driver.findElement(
+    By.css('input[placeholder="Search for location"]'),
+  )
   await clearInput(driver, searchInput)
   // Use volvox location since volvox is the last genome loaded
   await searchInput.sendKeys('ctgA:5000..15000')
@@ -358,7 +410,9 @@ async function testWorkspaceMoveToTab(driver: WebDriver): Promise<void> {
   await delay(1000)
 
   // Verify dockview is present
-  const dockview = await driver.findElements(By.css('.dockview-theme-light, .dockview-theme-dark'))
+  const dockview = await driver.findElements(
+    By.css('.dockview-theme-light, .dockview-theme-dark'),
+  )
   if (dockview.length === 0) {
     throw new Error('Dockview not found after moving to new tab')
   }
@@ -381,7 +435,9 @@ async function testWorkspaceCopyView(driver: WebDriver): Promise<void> {
   await copyView.click()
   await delay(1000)
 
-  const viewMenus = await driver.findElements(By.css('[data-testid="view_menu_icon"]'))
+  const viewMenus = await driver.findElements(
+    By.css('[data-testid="view_menu_icon"]'),
+  )
   if (viewMenus.length !== 2) {
     throw new Error(`Expected 2 view menus, got ${viewMenus.length}`)
   }
@@ -399,6 +455,8 @@ async function cleanup(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  console.log(`Running in ${isHeadless ? 'headless' : 'headed'} mode`)
+
   // Clean up any leftover processes from previous runs
   console.log('Cleaning up leftover processes...')
   await cleanup()
@@ -413,15 +471,27 @@ async function main(): Promise<void> {
 
   console.log('Start Screen:')
   await runTest('should display application title', testStartScreen, driver)
-  await runTest('should show start screen elements', testStartScreenElements, driver)
+  await runTest(
+    'should show start screen elements',
+    testStartScreenElements,
+    driver,
+  )
 
   console.log('\nOpen Genome Dialog:')
   await runTest('should open genome dialog', testOpenGenomeDialog, driver)
   await runTest('should cancel genome dialog', testCancelGenomeDialog, driver)
 
   console.log('\nAvailable Genomes:')
-  await runTest('should open available genomes dialog', testAvailableGenomesDialog, driver)
-  await runTest('should close available genomes dialog', testCloseAvailableGenomesDialog, driver)
+  await runTest(
+    'should open available genomes dialog',
+    testAvailableGenomesDialog,
+    driver,
+  )
+  await runTest(
+    'should close available genomes dialog',
+    testCloseAvailableGenomesDialog,
+    driver,
+  )
 
   console.log('\nOpen Genome from Available Genomes:')
   await runTest('should open hg19 genome', testOpenHg19Genome, driver)

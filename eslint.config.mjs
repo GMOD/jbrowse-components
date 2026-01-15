@@ -30,6 +30,8 @@ export default defineConfig(
       '**/output-version.js',
       '**/umd_plugin.js',
 
+      'products/jbrowse-desktop/test/e2e.ts',
+
       // Vendored/external code
       'packages/core/src/util/map-obj',
       'packages/core/src/util/nanoid.js',
