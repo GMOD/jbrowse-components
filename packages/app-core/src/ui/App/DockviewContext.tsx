@@ -30,16 +30,21 @@ export function getPendingMoveAction() {
   return action
 }
 
+// Functions to set pending actions (used by default context and for testing)
+export function setPendingMoveToNewTab(viewId: string) {
+  pendingMoveAction = { type: 'newTab', viewId }
+}
+
+export function setPendingMoveToSplitRight(viewId: string) {
+  pendingMoveAction = { type: 'splitRight', viewId }
+}
+
 export const DockviewContext = createContext<DockviewContextValue>({
   api: null,
   rearrangePanels: () => {},
   addEmptyTab: () => {},
-  moveViewToNewTab: (viewId: string) => {
-    pendingMoveAction = { type: 'newTab', viewId }
-  },
-  moveViewToSplitRight: (viewId: string) => {
-    pendingMoveAction = { type: 'splitRight', viewId }
-  },
+  moveViewToNewTab: setPendingMoveToNewTab,
+  moveViewToSplitRight: setPendingMoveToSplitRight,
 })
 
 export function useDockview() {

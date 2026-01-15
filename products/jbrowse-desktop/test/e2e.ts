@@ -403,10 +403,14 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
 
   // Find URL inputs by data-testid
   let urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
-  console.log(`    DEBUG: Found ${urlInputs.length} URL inputs after first toggle`)
+  console.log(
+    `    DEBUG: Found ${urlInputs.length} URL inputs after first toggle`,
+  )
 
   if (urlInputs.length >= 1) {
-    console.log(`    DEBUG: Entering FASTA URL: file://${join(TEST_DATA_DIR, 'volvox.fa')}`)
+    console.log(
+      `    DEBUG: Entering FASTA URL: file://${join(TEST_DATA_DIR, 'volvox.fa')}`,
+    )
     await urlInputs[0].sendKeys(`file://${join(TEST_DATA_DIR, 'volvox.fa')}`)
   }
 
@@ -419,10 +423,14 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
 
   // Find URL inputs again after second toggle
   urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
-  console.log(`    DEBUG: Found ${urlInputs.length} URL inputs after second toggle`)
+  console.log(
+    `    DEBUG: Found ${urlInputs.length} URL inputs after second toggle`,
+  )
 
   if (urlInputs.length >= 2) {
-    console.log(`    DEBUG: Entering FAI URL: file://${join(TEST_DATA_DIR, 'volvox.fa.fai')}`)
+    console.log(
+      `    DEBUG: Entering FAI URL: file://${join(TEST_DATA_DIR, 'volvox.fa.fai')}`,
+    )
     await urlInputs[1].sendKeys(
       `file://${join(TEST_DATA_DIR, 'volvox.fa.fai')}`,
     )
@@ -525,7 +533,9 @@ async function testHelpAbout(driver: WebDriver): Promise<void> {
   )
   if (startScreenElements.length > 0) {
     console.log('    DEBUG: On start screen, no active session - skipping test')
-    throw new Error('No active session - previous genome loading test may have failed')
+    throw new Error(
+      'No active session - previous genome loading test may have failed',
+    )
   }
 
   // First, let's see what menus are available
@@ -623,7 +633,9 @@ async function testWorkspaceMoveToTab(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Looking for Move to new tab...')
   const moveToTab = await driver.wait(
     until.elementLocated(
-      By.xpath("//li[contains(@class, 'MuiMenuItem') and contains(., 'Move to new tab')]"),
+      By.xpath(
+        "//li[contains(@class, 'MuiMenuItem') and contains(., 'Move to new tab')]",
+      ),
     ),
     5000,
   )
@@ -668,7 +680,9 @@ async function testWorkspaceCopyView(driver: WebDriver): Promise<void> {
   if (viewMenu.length === 0) {
     // Maybe the view is inside a dockview panel, try a broader search
     viewMenu = await driver.findElements(By.css('[class*="view"] button'))
-    console.log(`    DEBUG: Found ${viewMenu.length} buttons in view-related elements`)
+    console.log(
+      `    DEBUG: Found ${viewMenu.length} buttons in view-related elements`,
+    )
   }
 
   if (viewMenu.length === 0) {
@@ -690,7 +704,9 @@ async function testWorkspaceCopyView(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Looking for Copy view...')
   const copyView = await driver.wait(
     until.elementLocated(
-      By.xpath("//li[contains(@class, 'MuiMenuItem') and contains(., 'Copy view')]"),
+      By.xpath(
+        "//li[contains(@class, 'MuiMenuItem') and contains(., 'Copy view')]",
+      ),
     ),
     5000,
   )

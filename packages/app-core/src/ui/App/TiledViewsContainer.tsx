@@ -100,22 +100,15 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   const moveViewToNewTab = useCallback(
     (viewId: string) => {
       if (!api || !isSessionWithDockviewLayout(session)) {
-        console.log('[moveViewToNewTab] Early return - api:', !!api, 'isSessionWithDockviewLayout:', isSessionWithDockviewLayout(session))
         return
       }
 
-      console.log('[moveViewToNewTab] Moving view:', viewId)
-      console.log('[moveViewToNewTab] Current panels:', api.panels.map(p => p.id))
-      console.log('[moveViewToNewTab] Current panelViewAssignments:', JSON.stringify([...session.panelViewAssignments.entries()]))
-
       // Remove view from current panel
       session.removeViewFromPanel(viewId)
-      console.log('[moveViewToNewTab] After removeViewFromPanel:', JSON.stringify([...session.panelViewAssignments.entries()]))
 
       // Create new panel and assign the view to it
       const panelId = `panel-${nanoid()}`
       const group = api.activeGroup
-      console.log('[moveViewToNewTab] Creating panel:', panelId, 'in group:', group?.id)
 
       api.addPanel({
         ...createPanelConfig(panelId, session, 'New Tab'),
@@ -123,9 +116,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       })
       session.assignViewToPanel(panelId, viewId)
       session.setActivePanelId(panelId)
-
-      console.log('[moveViewToNewTab] Final panels:', api.panels.map(p => p.id))
-      console.log('[moveViewToNewTab] Final panelViewAssignments:', JSON.stringify([...session.panelViewAssignments.entries()]))
     },
     [api, session],
   )
@@ -170,7 +160,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
     // Clear any stale state from previous mounts (e.g., React StrictMode double-mounting)
     if (isSessionWithDockviewLayout(session)) {
-      for (const panelId of [...session.panelViewAssignments.keys()]) {
+      for (const panelId of session.panelViewAssignments.keys()) {
         session.removePanel(panelId)
       }
       session.setDockviewLayout(undefined)
@@ -181,8 +171,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     // This handles React StrictMode double-mounting and ensures we have all views
     const pendingViewExists =
       pendingAction && session.views.some(v => v.id === pendingAction.viewId)
-
-    console.log('[createInitialPanels] Starting with', session.views.length, 'views, pendingAction:', pendingAction, 'pendingViewExists:', pendingViewExists)
 
     if (pendingViewExists && isSessionWithDockviewLayout(session)) {
       // Create correct panel structure upfront when there's a pending move action
@@ -214,13 +202,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
       // Only clear the pending action after successful setup
       clearPendingMoveAction()
-
-      console.log('[createInitialPanels] Created panels for pending action:', {
-        firstPanelId,
-        secondPanelId,
-        otherViewIds,
-        pendingViewId,
-      })
     } else {
       // Normal case: create single initial panel
       const panelId = `panel-${nanoid()}`
@@ -280,7 +261,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       if (canRestoreLayout) {
         try {
           rearrangingRef.current = true
-          event.api.fromJSON(sessionRef.current.dockviewLayout!)
+          event.api.fromJSON(sessionRef.current.dockviewLayout)
           updatePanelParams(event.api, sessionRef.current)
 
           for (const viewIds of sessionRef.current.panelViewAssignments.values()) {
@@ -305,7 +286,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   useEffect(() => {
     const dispose = autorun(() => {
       if (!api) {
-        console.log('[autorun] No api yet, skipping')
         return
       }
 
@@ -313,12 +293,9 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       const currentViewIds = new Set(views.map(v => v.id))
       const trackedIds = trackedViewIdsRef.current
 
-      console.log('[autorun] Running with', views.length, 'views, tracked:', trackedIds.size)
-
       for (const view of views) {
         if (!trackedIds.has(view.id)) {
           trackedIds.add(view.id)
-          console.log('[autorun] New view to assign:', view.id)
 
           if (isSessionWithDockviewLayout(session)) {
             let activePanelId = session.activePanelId
@@ -332,7 +309,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
               }
               session.setActivePanelId(activePanelId)
             }
-            console.log('[autorun] Assigning view', view.id, 'to panel', activePanelId)
             session.assignViewToPanel(activePanelId, view.id)
           }
         }
@@ -346,8 +322,6 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
           }
         }
       }
-
-      console.log('[autorun] Done. Assignments:', JSON.stringify([...session.panelViewAssignments.entries()]))
     })
 
     return dispose
