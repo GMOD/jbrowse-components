@@ -34,13 +34,6 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      - name: Debug chromedriver location
-        run: |
-          echo "Looking for chromedriver..."
-          find node_modules -name "chromedriver*" -type f 2>/dev/null | head -20 || true
-          ls -la node_modules/.pnpm/electron-chromedriver@*/node_modules/electron-chromedriver/ || true
-          ls -la node_modules/.pnpm/electron-chromedriver@*/node_modules/electron-chromedriver/bin/ || true
-
       - name: Test desktop app
         run: pnpm test:e2e:ci
         working-directory: products/jbrowse-desktop

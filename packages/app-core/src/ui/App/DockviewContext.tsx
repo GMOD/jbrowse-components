@@ -16,6 +16,14 @@ let pendingMoveAction: {
   viewId: string
 } | null = null
 
+export function peekPendingMoveAction() {
+  return pendingMoveAction
+}
+
+export function clearPendingMoveAction() {
+  pendingMoveAction = null
+}
+
 export function getPendingMoveAction() {
   const action = pendingMoveAction
   pendingMoveAction = null
