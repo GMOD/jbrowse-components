@@ -39,10 +39,7 @@ type AppSession = SessionWithDrawerWidgets & {
   popSnackbarMessage: () => unknown
 }
 
-function wrapMenuItems(
-  items: JBMenuItem[],
-  session: AppSession | undefined,
-): JBMenuItem[] {
+function wrapMenuItems(items: JBMenuItem[], session: AppSession): JBMenuItem[] {
   return items.map(item => ({
     ...item,
     ...('onClick' in item
