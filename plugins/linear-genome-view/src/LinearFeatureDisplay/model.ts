@@ -8,7 +8,14 @@ import {
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { cast, getParent, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getParent,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import { reaction } from 'mobx'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay/index.ts'
@@ -83,7 +90,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get activeFilters() {
+      get activeFilters(): string[] {
         // config jexlFilters are deferred evaluated so they are prepended with
         // jexl at runtime rather than being stored with jexl in the config
         return (
@@ -264,7 +271,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
+                  )) as {
+                    feature: SimpleFeatureSerialized | undefined
+                  }
 
                   if (isAlive(self) && feature) {
                     self.selectFeature(new SimpleFeature(feature))
@@ -293,7 +302,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
-                  )) as { feature: SimpleFeatureSerialized | undefined }
+                  )) as {
+                    feature: SimpleFeatureSerialized | undefined
+                  }
 
                   if (isAlive(self) && feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))
@@ -393,6 +404,55 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      afterAttach() {
+        // Set up a reaction to fetch feature details when hovering
+        // This enables custom mouseover jexl expressions that use get(feature, ...)
+        addDisposer(
+          self,
+          reaction(
+            () => self.featureIdUnderMouse,
+            async featureId => {
+              if (!featureId) {
+                self.setFeatureUnderMouse(undefined)
+                return
+              }
+
+              const session = getSession(self)
+              const { rpcManager } = session
+              const { parentTrack } = self
+              try {
+                const sessionId = getRpcSessionId(self)
+                const { feature } = (await rpcManager.call(
+                  sessionId,
+                  'CoreGetFeatureDetails',
+                  {
+                    featureId,
+                    sessionId,
+                    trackInstanceId: parentTrack.id,
+                    rendererType: self.rendererTypeName,
+                  },
+                )) as {
+                  feature: SimpleFeatureSerialized | undefined
+                }
+
+                // Only set if still alive and feature ID hasn't changed
+                if (
+                  isAlive(self) &&
+                  feature &&
+                  self.featureIdUnderMouse === featureId
+                ) {
+                  self.setFeatureUnderMouse(new SimpleFeature(feature))
+                }
+              } catch (e) {
+                // Silently ignore errors for mouseover - don't spam console
+              }
+            },
+            { delay: 50, name: 'LinearFeatureDisplayMouseoverReaction' },
+          ),
+        )
+      },
+    }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
