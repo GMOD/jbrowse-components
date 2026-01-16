@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import {
   ConfigurationReference,
-  getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'

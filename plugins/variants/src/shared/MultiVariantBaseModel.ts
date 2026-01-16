@@ -488,7 +488,7 @@ export default function MultiVariantBaseModelF(
                   },
                 },
                 {
-                  label: 'Show tree',
+                  label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
                   type: 'checkbox',
                   checked: self.showTree,
                   disabled: !self.clusterTree,
