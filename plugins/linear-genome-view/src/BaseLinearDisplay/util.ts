@@ -1,4 +1,4 @@
-import { mergeIntervals, SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, mergeIntervals } from '@jbrowse/core/util'
 
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'

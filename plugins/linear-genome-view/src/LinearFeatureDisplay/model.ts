@@ -15,8 +15,8 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { reaction } from 'mobx'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import { reaction } from 'mobx'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay/index.ts'
 
