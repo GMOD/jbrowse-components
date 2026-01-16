@@ -55,5 +55,12 @@
       }
     }
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "types": "esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./esm/index.d.ts",
+      "import": "./esm/index.js"
+    }
+  }
 }

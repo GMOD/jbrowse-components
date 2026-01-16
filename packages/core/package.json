@@ -37,7 +37,9 @@
     "./assemblyManager": "./src/assemblyManager/index.ts",
     "./assemblyManager/assembly": "./src/assemblyManager/assembly.ts",
     "./assemblyManager/assemblyConfigSchema": "./src/assemblyManager/assemblyConfigSchema.ts",
+    "./assemblyManager/assemblyManager": "./src/assemblyManager/assemblyManager.ts",
     "./configuration": "./src/configuration/index.ts",
+    "./configuration/configurationSchema": "./src/configuration/configurationSchema.ts",
     "./data_adapters/BaseAdapter": "./src/data_adapters/BaseAdapter/index.ts",
     "./data_adapters/BaseAdapter/BaseOptions": "./src/data_adapters/BaseAdapter/BaseOptions.ts",
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
@@ -253,9 +255,17 @@
         "types": "./esm/assemblyManager/assemblyConfigSchema.d.ts",
         "import": "./esm/assemblyManager/assemblyConfigSchema.js"
       },
+      "./assemblyManager/assemblyManager": {
+        "types": "./esm/assemblyManager/assemblyManager.d.ts",
+        "import": "./esm/assemblyManager/assemblyManager.js"
+      },
       "./configuration": {
         "types": "./esm/configuration/index.d.ts",
         "import": "./esm/configuration/index.js"
+      },
+      "./configuration/configurationSchema": {
+        "types": "./esm/configuration/configurationSchema.d.ts",
+        "import": "./esm/configuration/configurationSchema.js"
       },
       "./data_adapters/BaseAdapter": {
         "types": "./esm/data_adapters/BaseAdapter/index.d.ts",

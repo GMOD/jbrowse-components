@@ -24,7 +24,7 @@
     "docs"
   ],
   "scripts": {
-    "build": "yarn run /^build:/",
+    "build": "yarn build:esm",
     "prepublishOnly": "node output-version.js > src/version.ts && git add -A src && git commit -m '[skip ci] Bump version.ts'",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:webpack": "webpack",
@@ -78,5 +78,6 @@
       }
     }
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "types": "esm/index.d.ts"
 }

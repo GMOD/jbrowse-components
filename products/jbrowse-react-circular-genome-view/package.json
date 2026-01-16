@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "prebuild": "yarn clean",
-    "build": "yarn run /^build:/",
+    "build": "yarn build:esm",
     "prepublishOnly": "node output-version.js > src/version.ts && git add -A src && git commit -m '[skip ci] Bump version.ts'",
     "prepack": "yarn build",
     "build:esm": "tsc -p tsconfig.build.esm.json",
@@ -68,5 +68,6 @@
       }
     }
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "types": "esm/index.d.ts"
 }

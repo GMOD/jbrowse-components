@@ -25,7 +25,7 @@
   "scripts": {
     "clean": "rm -rf esm *.tsbuildinfo",
     "prebuild": "yarn clean",
-    "build": "yarn run /^build:/",
+    "build": "yarn build:esm",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "preversion": "yarn build"
   },

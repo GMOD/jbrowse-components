@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "prebuild": "yarn clean",
-    "build": "yarn run /^build:/",
+    "build": "yarn build:esm",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo",
     "test": "cd ../..; jest --passWithNoTests plugins/linear-genome-view",
@@ -55,5 +55,12 @@
       }
     }
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "types": "esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./esm/index.d.ts",
+      "import": "./esm/index.js"
+    }
+  }
 }

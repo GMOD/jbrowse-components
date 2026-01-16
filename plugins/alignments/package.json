@@ -20,7 +20,7 @@
     "esm"
   ],
   "scripts": {
-    "build": "yarn run /^build:/",
+    "build": "yarn build:esm",
     "test": "cd ../..; jest --passWithNoTests plugins/alignments",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build",
@@ -61,5 +61,12 @@
       }
     }
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "types": "esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./esm/index.d.ts",
+      "import": "./esm/index.js"
+    }
+  }
 }
