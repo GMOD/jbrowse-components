@@ -1313,6 +1313,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param input - e.g. "chr1:1-100", "chr1:1-100 chr2:1-100", "chr 1 100"
        * @param optAssemblyName - (optional) the assembly name to use when
        * navigating to the locstring
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
       async navToLocString(
         input: string,
@@ -1360,6 +1362,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Similar to `navToLocString`, but accepts a parsed location object
        * instead of a locstring. Will try to perform `setDisplayedRegions` if
        * changing regions
+       *
+       * @param parsedLocString - a parsed location object with refName, start,
+       * end, etc.
+       * @param assemblyName - optional assembly name
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
       async navToLocation(
         parsedLocString: ParsedLocString,
@@ -1374,6 +1382,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Similar to `navToLocString`, but accepts a list of parsed location
        * objects instead of a locstring. Will try to perform
        * `setDisplayedRegions` if changing regions
+       *
+       * @param regions - array of parsed location objects
+       * @param assemblyName - optional assembly name
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
       async navToLocations(
         regions: ParsedLocString[],
@@ -1440,9 +1453,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Throws an error if navigation was unsuccessful
        *
        * @param query - a proposed location to navigate to
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
-      navTo(query: NavLocation) {
-        this.navToMultiple([query])
+      navTo(query: NavLocation, grow?: number) {
+        this.navToMultiple([query], grow)
       },
 
       /**
@@ -1456,8 +1471,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Throws an error if navigation was unsuccessful
        *
        * @param locations - proposed location to navigate to
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
-      navToMultiple(locations: NavLocation[]) {
+      navToMultiple(locations: NavLocation[], grow?: number) {
         if (
           locations.some(
             l =>
@@ -1513,18 +1530,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
 
         // Calculate coordinates, using region bounds if not specified
-        const firstStart =
+        let firstStart =
           firstLocation.start === undefined
             ? firstRegion.start
             : firstLocation.start
-        const firstEnd =
+        let firstEnd =
           firstLocation.end === undefined ? firstRegion.end : firstLocation.end
-        const lastStart =
+        let lastStart =
           lastLocation.start === undefined
             ? lastRegion.start
             : lastLocation.start
-        const lastEnd =
+        let lastEnd =
           lastLocation.end === undefined ? lastRegion.end : lastLocation.end
+
+        // Apply grow factor to add padding around the region
+        if (grow) {
+          const len = lastEnd - firstStart
+          const margin = len * grow
+          firstStart = Math.max(firstRegion.start, firstStart - margin)
+          firstEnd = Math.min(firstRegion.end, firstEnd + margin)
+          lastStart = Math.max(lastRegion.start, lastStart - margin)
+          lastEnd = Math.min(lastRegion.end, lastEnd + margin)
+        }
 
         // Find region indices that contain our locations
         const firstIndex = self.displayedRegions.findIndex(

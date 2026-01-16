@@ -88,6 +88,14 @@ export function makeTicks(
  * 'parentRegion'
  *
  * Used by navToLocations and navToLocString
+ *
+ * @param regions - array of parsed location strings to generate locations for
+ * @param assemblyManager - the assembly manager instance
+ * @param assemblyName - optional assembly name to use for regions that don't
+ * specify one
+ * @param grow - optional multiplier to expand regions by (e.g., 0.2 adds 20%
+ * padding on each side of the region). Useful for adding visual padding when
+ * navigating to a feature
  */
 export async function generateLocations({
   regions,
