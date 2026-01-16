@@ -78,9 +78,28 @@ yarn format
 git add .
 git commit --message "$RELEASE_TAG"
 git tag -a "$RELEASE_TAG" -m "$RELEASE_TAG"
-if ! yarn publish -r --access public --no-git-checks; then
+
+# Publish all packages
+publish_failed=0
+for ws in packages products plugins; do
+  [[ -d "$ws" ]] || continue
+  for dir in "$ws"/*/; do
+    [[ -f "$dir/package.json" ]] || continue
+    pkg_name=$(node --print "require('./$dir/package.json').name")
+    pkg_private=$(node --print "require('./$dir/package.json').private || false")
+    [[ "$pkg_private" == "true" ]] && continue
+    echo "Publishing $pkg_name..."
+    if ! (cd "$dir" && npm publish --access public); then
+      echo "Failed to publish $pkg_name"
+      publish_failed=1
+      break
+    fi
+  done
+  [[ $publish_failed -eq 1 ]] && break
+done
+
+if [[ $publish_failed -eq 1 ]]; then
   echo "Publish failed. The commit and tag have been created locally but not pushed."
-  echo "To retry: yarn publish -r --access public --no-git-checks && git push && git push --tags"
   echo "To abort: git reset --hard HEAD~1 && git tag -d $RELEASE_TAG"
   exit 1
 fi
