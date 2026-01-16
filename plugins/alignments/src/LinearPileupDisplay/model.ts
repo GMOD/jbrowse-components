@@ -186,21 +186,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           noSpacing,
           trackMaxHeight,
           mismatchAlpha,
-          rendererTypeName,
           hideSmallIndels,
           hideMismatches,
         } = self
-        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
+        // @ts-ignore
+        const conf = self.configuration.renderers?.PileupRenderer
         return {
-          ...configBlob,
-          ...(featureHeight !== undefined ? { height: featureHeight } : {}),
-          ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
-          ...(hideMismatches !== undefined ? { hideMismatches } : {}),
-          ...(noSpacing !== undefined ? { noSpacing } : {}),
-          ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
-          ...(trackMaxHeight !== undefined
-            ? { maxHeight: trackMaxHeight }
-            : {}),
+          height: featureHeight ?? readConfObject(conf, 'height'),
+          noSpacing: noSpacing ?? readConfObject(conf, 'noSpacing'),
+          maxHeight: trackMaxHeight ?? readConfObject(conf, 'maxHeight'),
+          mismatchAlpha: mismatchAlpha ?? readConfObject(conf, 'mismatchAlpha'),
+          hideSmallIndels:
+            hideSmallIndels ?? readConfObject(conf, 'hideSmallIndels'),
+          hideMismatches:
+            hideMismatches ?? readConfObject(conf, 'hideMismatches'),
         }
       },
     }))

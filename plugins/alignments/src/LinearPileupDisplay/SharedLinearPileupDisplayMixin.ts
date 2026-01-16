@@ -366,7 +366,24 @@ export function SharedLinearPileupDisplayMixin(
        * #getter
        */
       get featureHeightSetting() {
-        return readConfObject(self.rendererConfig, 'height')
+        return (
+          self.featureHeight ??
+          // @ts-ignore
+          readConfObject(self.configuration.renderers?.PileupRenderer, 'height')
+        )
+      },
+      /**
+       * #getter
+       */
+      get noSpacingSetting() {
+        return (
+          self.noSpacing ??
+          readConfObject(
+            // @ts-ignore
+            self.configuration.renderers?.PileupRenderer,
+            'noSpacing',
+          )
+        )
       },
       /**
        * #getter
@@ -644,7 +661,9 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Normal',
                   type: 'radio',
-                  checked: self.featureHeight === 7 && self.noSpacing === false,
+                  checked:
+                    self.featureHeightSetting === 7 &&
+                    self.noSpacingSetting === false,
                   onClick: () => {
                     self.setFeatureHeight(7)
                     self.setNoSpacing(false)
@@ -653,7 +672,9 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Compact',
                   type: 'radio',
-                  checked: self.featureHeight === 2 && self.noSpacing === true,
+                  checked:
+                    self.featureHeightSetting === 2 &&
+                    self.noSpacingSetting === true,
                   onClick: () => {
                     self.setFeatureHeight(2)
                     self.setNoSpacing(true)
@@ -662,7 +683,9 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Super-compact',
                   type: 'radio',
-                  checked: self.featureHeight === 1 && self.noSpacing === true,
+                  checked:
+                    self.featureHeightSetting === 1 &&
+                    self.noSpacingSetting === true,
                   onClick: () => {
                     self.setFeatureHeight(1)
                     self.setNoSpacing(true)
