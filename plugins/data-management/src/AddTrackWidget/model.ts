@@ -32,7 +32,6 @@ interface IndexingAttr {
 }
 
 const defaultVolatileState = {
-  trackSource: 'fromFile',
   trackData: undefined as FileLocation | undefined,
   indexTrackData: undefined as FileLocation | undefined,
   altAssemblyName: '',
@@ -79,12 +78,6 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setTrackSource(str: string) {
-        self.trackSource = str
-      },
-      /**
-       * #action
-       */
       setTextIndexingConf(conf: IndexingAttr) {
         self.textIndexingConf = conf
       },
@@ -107,6 +100,8 @@ export default function f(pluginManager: PluginManager) {
        */
       setIndexTrackData(obj: FileLocation) {
         self.indexTrackData = obj
+        // Clear adapter hint when index data changes to force re-evaluation
+        self.adapterHint = ''
       },
       /**
        * #action
@@ -130,7 +125,6 @@ export default function f(pluginManager: PluginManager) {
        * #action
        */
       clearData() {
-        self.trackSource = defaultVolatileState.trackSource
         self.altTrackName = defaultVolatileState.altTrackName
         self.altTrackType = defaultVolatileState.altTrackType
         self.altAssemblyName = defaultVolatileState.altAssemblyName
@@ -230,7 +224,7 @@ export default function f(pluginManager: PluginManager) {
        * #getter
        */
       get assembly() {
-        return self.altAssemblyName || self.view.assemblyNames?.[0]
+        return self.altAssemblyName || self.view?.assemblyNames?.[0]
       },
 
       /**
