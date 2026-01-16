@@ -139,8 +139,9 @@ async function waitForStartScreen(
   await findByText(driver, 'Launch new session', timeout)
 }
 
-// Helper to close any open dialogs - useful for test recovery
-async function closeAllDialogs(driver: WebDriver): Promise<void> {
+// Unified helper to clean up all UI overlays (dialogs, menus, backdrops)
+async function cleanupUI(driver: WebDriver): Promise<void> {
+  // Close dialogs
   for (let i = 0; i < 5; i++) {
     const dialogs = await driver.findElements(By.css('.MuiDialog-root'))
     if (dialogs.length === 0) {
@@ -149,16 +150,23 @@ async function closeAllDialogs(driver: WebDriver): Promise<void> {
     await driver.actions().sendKeys('\uE00C').perform()
     await delay(300)
   }
-}
 
-// Helper to close any open menus by clicking on the body
-async function closeAllMenus(driver: WebDriver): Promise<void> {
-  // Press Escape multiple times
+  // Dismiss backdrops by clicking on them
+  const backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
+  for (const backdrop of backdrops) {
+    try {
+      await driver.executeScript('arguments[0].click();', backdrop)
+      await delay(200)
+    } catch {
+      // Ignore if backdrop is no longer present
+    }
+  }
+
+  // Press Escape multiple times and click body to dismiss menus/popups
   for (let i = 0; i < 3; i++) {
     await driver.actions().sendKeys('\uE00C').perform()
     await delay(200)
   }
-  // Also click on body to dismiss any popups/menus
   try {
     const body = await driver.findElement(By.css('body'))
     await driver.executeScript('arguments[0].click();', body)
@@ -166,6 +174,23 @@ async function closeAllMenus(driver: WebDriver): Promise<void> {
   } catch {
     // Ignore errors
   }
+}
+
+// Helper to open a menu and click an item
+async function openMenuItem(
+  driver: WebDriver,
+  menuName: string,
+  itemText: string,
+): Promise<void> {
+  await clickButton(driver, menuName)
+  await delay(500)
+  const menuItem = await driver.wait(
+    until.elementLocated(By.xpath(`//*[contains(text(), '${itemText}')]`)),
+    5000,
+  )
+  await driver.wait(until.elementIsVisible(menuItem), 3000)
+  await menuItem.click()
+  await delay(500)
 }
 
 async function runTest(
@@ -177,6 +202,7 @@ async function runTest(
   process.stdout.write(`  ⏳ ${name}...`)
 
   try {
+    await cleanupUI(d) // Cleanup before each test
     await fn(d)
     const duration = Date.now() - start
     results.push({ name, passed: true, duration })
@@ -370,25 +396,8 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
     console.log(
       '    DEBUG: Already in a session, returning to start screen via File menu...',
     )
-    // Click File menu
-    console.log('    DEBUG: Clicking File menu...')
-    await clickButton(driver, 'File')
-    await delay(1000)
-
-    // Click "Return to start screen"
-    console.log('    DEBUG: Looking for Return to start screen menu item...')
-    const returnItem = await driver.wait(
-      until.elementLocated(
-        By.xpath("//*[contains(text(), 'Return to start screen')]"),
-      ),
-      5000,
-    )
-    console.log('    DEBUG: Found menu item, waiting for visibility...')
-    await driver.wait(until.elementIsVisible(returnItem), 3000)
-    console.log('    DEBUG: Clicking Return to start screen...')
-    await returnItem.click()
-    await delay(2000)
-    console.log('    DEBUG: Clicked, waiting for start screen...')
+    await openMenuItem(driver, 'File', 'Return to start screen')
+    await delay(1500)
   }
 
   console.log('    DEBUG: Waiting for start screen...')
@@ -530,79 +539,21 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
   await searchInput.sendKeys('\uE007') // Enter
   await delay(2000)
 
-  // Click somewhere else to dismiss the autocomplete dropdown
-  console.log('    DEBUG: Clicking body to dismiss autocomplete...')
-  const body = await driver.findElement(By.css('body'))
-  await driver.executeScript('arguments[0].click();', body)
-  await delay(300)
-
-  // Press Escape to ensure any popups are closed
-  await driver.actions().sendKeys('\uE00C').perform()
-  await delay(300)
-
   // Wait for zoom controls to appear (indicates view is fully loaded)
   console.log('    DEBUG: Waiting for zoom controls...')
   await driver.wait(
     until.elementLocated(By.css('[data-testid="zoom_in"]')),
     10000,
   )
-
-  // Clean up any open menus/dialogs before ending
-  console.log('    DEBUG: Cleaning up before next test...')
-  await closeAllDialogs(driver)
-  await closeAllMenus(driver)
-  await delay(500)
-
   console.log('    DEBUG: Volvox genome loaded successfully!')
 }
 
 async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Adding GFF3 track and searching for EDEN.1...')
 
-  // Close any open dialogs and menus
-  await closeAllDialogs(driver)
-  await closeAllMenus(driver)
-
-  // Extra: dismiss any remaining backdrops by clicking on them
-  console.log('    DEBUG: Dismissing any open backdrops...')
-  let backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
-  if (backdrops.length > 0) {
-    console.log(
-      `    DEBUG: Found ${backdrops.length} backdrops, clicking to dismiss...`,
-    )
-    for (const backdrop of backdrops) {
-      try {
-        await driver.executeScript('arguments[0].click();', backdrop)
-        await delay(200)
-      } catch {
-        // Ignore errors if backdrop is no longer present
-      }
-    }
-    // Also press Escape multiple times
-    for (let i = 0; i < 5; i++) {
-      await driver.actions().sendKeys('\uE00C').perform()
-      await delay(200)
-    }
-  }
-  await delay(500)
-
-  // Verify backdrops are gone
-  backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
-  console.log(`    DEBUG: Backdrops remaining: ${backdrops.length}`)
-
   // Add track via File > Open track menu
-  console.log('    DEBUG: Clicking File menu...')
-  await clickButton(driver, 'File')
+  await openMenuItem(driver, 'File', 'Open track')
   await delay(500)
-
-  console.log('    DEBUG: Looking for Open track menu item...')
-  const openTrackItem = await driver.wait(
-    until.elementLocated(By.xpath("//*[contains(text(), 'Open track')]")),
-    5000,
-  )
-  await driver.wait(until.elementIsVisible(openTrackItem), 3000)
-  await openTrackItem.click()
-  await delay(1000)
 
   // The "Add a track" dialog should appear
   console.log('    DEBUG: Waiting for Add track dialog...')
@@ -702,103 +653,33 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     until.elementLocated(By.css('[data-testid="zoom_in"]')),
     5000,
   )
-
-  // Clean up after test
-  await closeAllDialogs(driver)
-  await closeAllMenus(driver)
-  await delay(300)
-
   console.log(
     '    DEBUG: Successfully added GFF3 track and searched for EDEN.1!',
   )
 }
 
 async function testFileMenu(driver: WebDriver): Promise<void> {
-  await closeAllMenus(driver)
   await findByText(driver, 'File', 10000)
 }
 
 async function testHelpAbout(driver: WebDriver): Promise<void> {
-  // Close any open dialogs and backdrops from previous tests
-  await closeAllDialogs(driver)
-  await closeAllMenus(driver)
-
-  // Extra: dismiss any remaining backdrops
-  const backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
-  if (backdrops.length > 0) {
-    console.log(`    DEBUG: Found ${backdrops.length} backdrops, dismissing...`)
-    for (const backdrop of backdrops) {
-      try {
-        await driver.executeScript('arguments[0].click();', backdrop)
-        await delay(200)
-      } catch {
-        // Ignore
-      }
-    }
-    for (let i = 0; i < 3; i++) {
-      await driver.actions().sendKeys('\uE00C').perform()
-      await delay(200)
-    }
-  }
-
   // Check if we're in an active session (not on start screen)
   const startScreenElements = await driver.findElements(
     By.xpath("//*[contains(text(), 'Launch new session')]"),
   )
   if (startScreenElements.length > 0) {
-    console.log('    DEBUG: On start screen, no active session - skipping test')
     throw new Error(
       'No active session - previous genome loading test may have failed',
     )
   }
 
-  // First, let's see what menus are available
-  console.log('    DEBUG: Looking for menu buttons in toolbar...')
-  const allButtons = await driver.findElements(By.css('button'))
-  console.log(`    DEBUG: Found ${allButtons.length} buttons total`)
-
-  // Try to find the Help menu by looking for buttons in the toolbar area
-  // The menus are rendered using DropDownMenu which creates buttons with menu labels
-  const helpButton = await driver.wait(
-    until.elementLocated(
-      By.xpath(
-        "//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'help')]",
-      ),
-    ),
-    10000,
-  )
-  console.log('    DEBUG: Found Help button, clicking...')
-  await helpButton.click()
-  await delay(500)
-
-  // Click About in the dropdown menu - look specifically for a MenuItem or li element
-  console.log('    DEBUG: Looking for About menu item in dropdown...')
-  const aboutItem = await driver.wait(
-    until.elementLocated(
-      By.xpath(
-        "//li[contains(@class, 'MuiMenuItem') and contains(., 'About')]",
-      ),
-    ),
-    5000,
-  )
-  console.log('    DEBUG: Found About menu item, clicking...')
-  await aboutItem.click()
-  await delay(500)
+  await openMenuItem(driver, 'Help', 'About')
 
   console.log('    DEBUG: Looking for About dialog content...')
   await findByText(driver, 'The Evolutionary Software Foundation', 10000)
-
-  // Press Escape to close
-  console.log('    DEBUG: Closing About dialog...')
-  await driver.actions().sendKeys('\uE00C').perform()
-  await delay(300)
 }
 
 async function testZoom(driver: WebDriver): Promise<void> {
-  // Close any open dialogs and backdrops from previous tests
-  await closeAllDialogs(driver)
-  await closeAllMenus(driver)
-
   const zoomIn = await driver.wait(
     until.elementLocated(By.css('[data-testid="zoom_in"]')),
     10000,
@@ -815,10 +696,6 @@ async function testZoom(driver: WebDriver): Promise<void> {
 }
 
 async function testLocationSearch(driver: WebDriver): Promise<void> {
-  // Close any open dialogs and backdrops from previous tests
-  await closeAllDialogs(driver)
-  await closeAllMenus(driver)
-
   const searchInput = await driver.findElement(
     By.css('input[placeholder="Search for location"]'),
   )
@@ -830,9 +707,6 @@ async function testLocationSearch(driver: WebDriver): Promise<void> {
 }
 
 async function testWorkspaceMoveToTab(driver: WebDriver): Promise<void> {
-  // Close any open dialogs from previous tests
-  await closeAllDialogs(driver)
-
   console.log('    DEBUG: Looking for view menu icon...')
   const viewMenu = await driver.wait(
     until.elementLocated(By.css('[data-testid="view_menu_icon"]')),
@@ -885,8 +759,6 @@ async function testWorkspaceMoveToTabWithMultipleViews(
 ): Promise<void> {
   // This tests the bug fix: with 3 views and workspaces OFF, clicking
   // "Move to new tab" should create 2 tabs (one with 2 views, one with 1 view)
-  await closeAllDialogs(driver)
-  await closeAllMenus(driver)
 
   // First, create additional views using "Copy view" so we have multiple views
   // We should already have at least 1 view from previous tests
@@ -1045,10 +917,6 @@ async function testWorkspaceMoveToTabWithMultipleViews(
 }
 
 async function testWorkspaceCopyView(driver: WebDriver): Promise<void> {
-  // Close any open dialogs and menus from previous tests
-  await closeAllDialogs(driver)
-  await closeAllMenus(driver)
-
   console.log('    DEBUG: Looking for view menu icon...')
 
   // Try to find the view menu icon

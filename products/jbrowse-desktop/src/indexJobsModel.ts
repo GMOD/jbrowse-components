@@ -2,12 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
-import {
-  addDisposer,
-  getParent,
-  getSnapshot,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   createTextSearchConf,
   findTrackConfigsToIndex,
@@ -84,12 +79,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        */
       get tracks() {
         return getParent<any>(self).jbrowse.tracks
-      },
-      /**
-       * #getter
-       */
-      get sessionPath() {
-        return getParent<any>(self).sessionPath
       },
       /**
        * #getter
@@ -204,7 +193,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           const jobStatusWidget = self.getJobStatusWidget()
           jobStatusWidget.removeJob(self.jobName)
         }
-        return self.jobsQueue.splice(0, 1)[0]
+        return self.jobsQueue.shift()
       },
       /**
        * #action
@@ -229,8 +218,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
         const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
-          // @ts-expect-error
-          c => JSON.parse(JSON.stringify(getSnapshot(c))),
+          c => JSON.parse(JSON.stringify(toJS(c))),
         )
         try {
           this.setRunning(true)
@@ -272,11 +260,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           } else {
             for (const assemblyName of assemblies) {
               const indexedTrackIds = trackConfigs
-                .filter(track =>
-                  assemblyName
-                    ? track.assemblyNames.includes(assemblyName)
-                    : true,
-                )
+                .filter(track => track.assemblyNames.includes(assemblyName))
                 .map(trackConf => trackConf.trackId)
               this.addAggregateTextSearchConf({
                 trackIds: indexedTrackIds,
@@ -369,26 +353,27 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         exclude: string[]
         outLocation: string
       }) {
-        const currentTrackIdx = self.session.tracks.findIndex(
-          t => trackId === t.trackId,
-        )
-        const id = `${trackId}-index`
-        const adapterConf = createTextSearchConf(
-          id,
-          [trackId],
-          assemblies,
-          outLocation,
-        )
-        self.session.tracks[currentTrackIdx]?.textSearching.setSubschema(
-          'textSearchAdapter',
-          adapterConf,
-        )
-        self.session.tracks[
-          currentTrackIdx
-        ]?.textSearching.indexingAttributes.set(attributes)
-        self.session.tracks[
-          currentTrackIdx
-        ]?.textSearching.indexingFeatureTypesToExclude.set(exclude)
+        const track = self.tracks.find(t => trackId === t.trackId)
+        if (track) {
+          const id = `${trackId}-index`
+          const adapterConf = createTextSearchConf(
+            id,
+            [trackId],
+            assemblies,
+            outLocation,
+          )
+          if (typeof track.textSearching?.setSubschema === 'function') {
+            track.textSearching.setSubschema('textSearchAdapter', adapterConf)
+            track.textSearching.indexingAttributes.set(attributes)
+            track.textSearching.indexingFeatureTypesToExclude.set(exclude)
+          } else {
+            track.textSearching = {
+              textSearchAdapter: adapterConf,
+              indexingAttributes: attributes,
+              indexingFeatureTypesToExclude: exclude,
+            }
+          }
+        }
       },
       /**
        * #action
