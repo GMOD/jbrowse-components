@@ -4,6 +4,7 @@ import path from 'path'
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
+  type Track,
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
@@ -78,7 +79,9 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get tracks() {
-        return getParent<any>(self).jbrowse.tracks
+        return getParent<{
+          jbrowse: { tracks: Track[] }
+        }>(self).jbrowse.tracks
       },
       /**
        * #getter
@@ -362,16 +365,10 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             assemblies,
             outLocation,
           )
-          if (typeof track.textSearching?.setSubschema === 'function') {
-            track.textSearching.setSubschema('textSearchAdapter', adapterConf)
-            track.textSearching.indexingAttributes.set(attributes)
-            track.textSearching.indexingFeatureTypesToExclude.set(exclude)
-          } else {
-            track.textSearching = {
-              textSearchAdapter: adapterConf,
-              indexingAttributes: attributes,
-              indexingFeatureTypesToExclude: exclude,
-            }
+          track.textSearching = {
+            textSearchAdapter: adapterConf,
+            indexingAttributes: attributes,
+            indexingFeatureTypesToExclude: exclude,
           }
         }
       },

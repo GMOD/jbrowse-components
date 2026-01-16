@@ -354,10 +354,7 @@ async function testOpenHg19Genome(driver: WebDriver): Promise<void> {
 
   // Wait for table rows to appear (network fetch may take time)
   console.log('    DEBUG: Waiting for table rows to load...')
-  await driver.wait(
-    until.elementLocated(By.css('table tbody tr')),
-    30000,
-  )
+  await driver.wait(until.elementLocated(By.css('table tbody tr')), 30000)
   await delay(1000) // Additional delay for filtering to complete
 
   // Find the row containing hg19 and click the (launch) link within it
@@ -653,9 +650,13 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
 
   // Check what assembly is selected on step 2
   const assemblySelects = await driver.findElements(
-    By.css('[data-testid="annotationTrackAssembly"], select, [role="combobox"]'),
+    By.css(
+      '[data-testid="annotationTrackAssembly"], select, [role="combobox"]',
+    ),
   )
-  console.log(`    DEBUG: Found ${assemblySelects.length} potential assembly selectors`)
+  console.log(
+    `    DEBUG: Found ${assemblySelects.length} potential assembly selectors`,
+  )
 
   console.log('    DEBUG: Pausing to observe step 2...')
   await delay(3000)

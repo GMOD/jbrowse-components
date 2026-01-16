@@ -56,7 +56,7 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
     ) {
       doTextIndexTrack({
         model,
-        trackId,
+        trackId: String(trackId),
       })
     }
     model.clearData()

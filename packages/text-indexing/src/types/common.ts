@@ -67,7 +67,9 @@ export async function getLocalOrRemoteStream({
   } else {
     // Handle file:// URLs by converting to local path
     const localPath = fileUrlToPath(file) ?? file
-    const filename = path.isAbsolute(localPath) ? localPath : path.join(out, localPath)
+    const filename = path.isAbsolute(localPath)
+      ? localPath
+      : path.join(out, localPath)
     const stream = fs.createReadStream(filename)
     stream.on('data', chunk => {
       receivedBytes += chunk.length

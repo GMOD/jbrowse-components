@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isUriLocation } from '@jbrowse/core/util'
 import {
   UNSUPPORTED,
   getFileName,
@@ -13,18 +13,35 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-function isAbsoluteUrl(url = '') {
+function getUri(location: FileLocation | undefined) {
+  return isUriLocation(location) ? location.uri : undefined
+}
+
+function isRelativeUrl(url = '') {
   try {
     new URL(url)
-    return true
-  } catch (error) {
-    return url.startsWith('/')
+    return false
+  } catch {
+    return !url.startsWith('/')
   }
 }
 
 interface IndexingAttr {
   attributes: string[]
   exclude: string[]
+}
+
+const defaultVolatileState = {
+  trackSource: 'fromFile',
+  trackData: undefined as FileLocation | undefined,
+  indexTrackData: undefined as FileLocation | undefined,
+  altAssemblyName: '',
+  altTrackName: '',
+  altTrackType: '',
+  adapterHint: '',
+  textIndexTrack: true,
+  textIndexingConf: undefined as IndexingAttr | undefined,
+  mixinData: {} as Record<string, unknown>,
 }
 
 /**
@@ -48,21 +65,7 @@ export default function f(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
     })
-    .volatile(() => ({
-      trackSource: 'fromFile',
-      trackData: undefined as FileLocation | undefined,
-      indexTrackData: undefined as FileLocation | undefined,
-
-      // alts
-      altAssemblyName: '',
-      altTrackName: '',
-      altTrackType: '',
-
-      adapterHint: '',
-      textIndexTrack: true,
-      textIndexingConf: undefined as IndexingAttr | undefined,
-      mixinData: {},
-    }))
+    .volatile(() => ({ ...defaultVolatileState }))
     .actions(self => ({
       setMixinData(arg: Record<string, unknown>) {
         self.mixinData = arg
@@ -127,15 +130,16 @@ export default function f(pluginManager: PluginManager) {
        * #action
        */
       clearData() {
-        self.trackSource = ''
-        self.altTrackName = ''
-        self.altTrackType = ''
-        self.altAssemblyName = ''
-        self.adapterHint = ''
-        self.indexTrackData = undefined
-        self.trackData = undefined
-        self.textIndexingConf = undefined
-        self.textIndexTrack = true
+        self.trackSource = defaultVolatileState.trackSource
+        self.altTrackName = defaultVolatileState.altTrackName
+        self.altTrackType = defaultVolatileState.altTrackType
+        self.altAssemblyName = defaultVolatileState.altAssemblyName
+        self.adapterHint = defaultVolatileState.adapterHint
+        self.indexTrackData = defaultVolatileState.indexTrackData
+        self.trackData = defaultVolatileState.trackData
+        self.textIndexingConf = defaultVolatileState.textIndexingConf
+        self.textIndexTrack = defaultVolatileState.textIndexTrack
+        self.mixinData = {}
       },
     }))
     .views(self => ({
@@ -164,10 +168,10 @@ export default function f(pluginManager: PluginManager) {
        * #getter
        */
       get isFtp() {
-        const { trackData: track, indexTrackData: index } = self
+        const trackUri = getUri(self.trackData)
+        const indexUri = getUri(self.indexTrackData)
         return !!(
-          // @ts-expect-error
-          (index?.uri?.startsWith('ftp://') || track?.uri?.startsWith('ftp://'))
+          indexUri?.startsWith('ftp://') || trackUri?.startsWith('ftp://')
         )
       },
 
@@ -175,17 +179,15 @@ export default function f(pluginManager: PluginManager) {
        * #getter
        */
       get isRelativeTrackUrl() {
-        // @ts-expect-error
-        const uri = self.trackData?.uri
-        return uri ? !isAbsoluteUrl(uri) : false
+        const uri = getUri(self.trackData)
+        return uri ? isRelativeUrl(uri) : false
       },
       /**
        * #getter
        */
       get isRelativeIndexUrl() {
-        // @ts-expect-error
-        const uri = self.indexTrackData?.uri
-        return uri ? !isAbsoluteUrl(uri) : false
+        const uri = getUri(self.indexTrackData)
+        return uri ? isRelativeUrl(uri) : false
       },
       /**
        * #getter
@@ -198,15 +200,13 @@ export default function f(pluginManager: PluginManager) {
        * #getter
        */
       get trackHttp() {
-        // @ts-expect-error
-        return self.trackData?.uri?.startsWith('http://')
+        return getUri(self.trackData)?.startsWith('http://')
       },
       /**
        * #getter
        */
       get indexHttp() {
-        // @ts-expect-error
-        return self.indexTrackData?.uri?.startsWith('http://')
+        return getUri(self.indexTrackData)?.startsWith('http://')
       },
 
       /**

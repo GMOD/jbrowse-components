@@ -36,18 +36,24 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
   model: AddTrackModel
 }) {
   const { classes } = useStyles()
-  const [value1, setValue1] = useState('')
-  const [value2, setValue2] = useState('')
+  const [attributeInput, setAttributeInput] = useState('')
+  const [excludeInput, setExcludeInput] = useState('')
   const [attributes, setAttributes] = useState(['Name', 'ID'])
   const [exclude, setExclude] = useState(['CDS', 'exon'])
   const sections = [
     {
       label: 'Indexing attributes',
       values: attributes,
+      setValues: setAttributes,
+      inputValue: attributeInput,
+      setInputValue: setAttributeInput,
     },
     {
       label: 'Feature types to exclude',
       values: exclude,
+      setValues: setExclude,
+      inputValue: excludeInput,
+      setInputValue: setExcludeInput,
     },
   ]
   useEffect(() => {
@@ -57,7 +63,7 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
   return (
     <Paper className={classes.paper}>
       <InputLabel>Indexing configuration</InputLabel>
-      {sections.map((section, index) => (
+      {sections.map(section => (
         <Card raised key={section.label} className={classes.card}>
           <CardContent>
             <InputLabel>{section.label}</InputLabel>
@@ -73,14 +79,9 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
                           <InputAdornment position="end">
                             <IconButton
                               onClick={() => {
-                                const newAttr = section.values.filter(
-                                  (_, i) => i !== idx,
+                                section.setValues(
+                                  section.values.filter((_, i) => i !== idx),
                                 )
-                                if (index === 0) {
-                                  setAttributes(newAttr)
-                                } else {
-                                  setExclude(newAttr)
-                                }
                               }}
                             >
                               <DeleteIcon />
@@ -94,14 +95,10 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
               ))}
               <ListItem disableGutters>
                 <TextField
-                  value={index === 0 ? value1 : value2}
+                  value={section.inputValue}
                   placeholder="add new"
                   onChange={event => {
-                    if (index === 0) {
-                      setValue1(event.target.value)
-                    } else {
-                      setValue2(event.target.value)
-                    }
+                    section.setInputValue(event.target.value)
                   }}
                   slotProps={{
                     input: {
@@ -109,17 +106,13 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
                         <InputAdornment position="end">
                           <IconButton
                             onClick={() => {
-                              if (index === 0) {
-                                setAttributes([...attributes, value1])
-                                setValue1('')
-                              } else {
-                                setExclude([...exclude, value2])
-                                setValue2('')
-                              }
+                              section.setValues([
+                                ...section.values,
+                                section.inputValue,
+                              ])
+                              section.setInputValue('')
                             }}
-                            disabled={
-                              index === 0 ? value1 === '' : value2 === ''
-                            }
+                            disabled={section.inputValue === ''}
                             data-testid="stringArrayAdd-Feat"
                           >
                             <AddIcon />

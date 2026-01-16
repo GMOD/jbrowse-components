@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import {
@@ -31,6 +31,11 @@ const useStyles = makeStyles()(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),
   },
+  selectorsContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+  },
 }))
 
 const ConfirmTrack = observer(function ConfirmTrack({
@@ -39,7 +44,6 @@ const ConfirmTrack = observer(function ConfirmTrack({
   model: AddTrackModel
 }) {
   const { classes } = useStyles()
-  const [check, setCheck] = useState(true)
   const session = getSession(model)
   const {
     trackName,
@@ -48,13 +52,14 @@ const ConfirmTrack = observer(function ConfirmTrack({
     trackType,
     warningMessage,
     adapterHint,
+    textIndexTrack,
   } = model
 
   useEffect(() => {
     if (adapterHint === '' && trackAdapter) {
       model.setAdapterHint(trackAdapter.type)
     }
-  }, [adapterHint, trackAdapter, trackAdapter?.type, model])
+  }, [adapterHint, trackAdapter, model])
 
   if (unsupported) {
     return <Unsupported />
@@ -96,7 +101,7 @@ const ConfirmTrack = observer(function ConfirmTrack({
         ) : null}
         <TextField
           className={classes.spacing}
-          label="trackName"
+          label="Track name"
           helperText="A name for this track"
           fullWidth
           value={trackName}
@@ -109,13 +114,7 @@ const ConfirmTrack = observer(function ConfirmTrack({
             },
           }}
         />
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-          }}
-        >
+        <div className={classes.selectorsContainer}>
           <TrackAdapterSelector model={model} />
           <TrackTypeSelector model={model} />
 
@@ -130,9 +129,8 @@ const ConfirmTrack = observer(function ConfirmTrack({
               label="Index track for text searching?"
               control={
                 <Checkbox
-                  checked={check}
+                  checked={textIndexTrack}
                   onChange={e => {
-                    setCheck(e.target.checked)
                     model.setTextIndexTrack(e.target.checked)
                   }}
                 />
@@ -140,7 +138,7 @@ const ConfirmTrack = observer(function ConfirmTrack({
             />
           </FormControl>
         )}
-        {isElectron && check && supportedForIndexing ? (
+        {isElectron && textIndexTrack && supportedForIndexing ? (
           <TextIndexingConfig model={model} />
         ) : null}
       </div>
