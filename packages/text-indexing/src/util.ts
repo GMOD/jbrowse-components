@@ -108,9 +108,9 @@ export interface TextSearching {
 export interface TrixTextSearchAdapter {
   type: string
   textSearchAdapterId: string
-  ixFilePath: UriLocation
-  ixxFilePath: UriLocation
-  metaFilePath: UriLocation
+  ixFilePath: UriLocation | LocalPathLocation
+  ixxFilePath: UriLocation | LocalPathLocation
+  metaFilePath: UriLocation | LocalPathLocation
   assemblyNames: string[]
 }
 
@@ -139,15 +139,15 @@ export function createTextSearchConf(
     textSearchAdapterId: name,
     ixFilePath: {
       localPath: path.join(base, `${n}.ix`),
-      locationType: 'LocalPathLocation',
+      locationType: 'LocalPathLocation' as const,
     },
     ixxFilePath: {
       localPath: path.join(base, `${n}.ixx`),
-      locationType: 'LocalPathLocation',
+      locationType: 'LocalPathLocation' as const,
     },
     metaFilePath: {
       localPath: path.join(base, `${n}.json`),
-      locationType: 'LocalPathLocation',
+      locationType: 'LocalPathLocation' as const,
     },
     tracks: trackIds,
     assemblyNames,

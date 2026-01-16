@@ -40,7 +40,6 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
         description="(Optional) The URL of the index file is automatically inferred from the URL of the main file if it is not supplied."
         location={model.indexTrackData}
         setLocation={model.setIndexTrackData}
-        setName={model.setTrackName}
         rootModel={rootModel}
       />
     </Paper>

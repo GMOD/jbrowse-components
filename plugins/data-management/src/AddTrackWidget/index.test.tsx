@@ -231,3 +231,221 @@ test('adds bam localpath', () => {
   expect(widget.wrongProtocol).toBe(false)
   expect(widget.assembly).toBe('volvox')
 })
+
+test('clearData resets all volatile state', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  // Set various state
+  widget.setTrackData({
+    uri: 'test.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setIndexTrackData({
+    uri: 'test.bam.bai',
+    locationType: 'UriLocation',
+  })
+  widget.setTrackName('Custom Name')
+  widget.setTrackType('FeatureTrack')
+  widget.setAssembly('customAssembly')
+  widget.setAdapterHint('BamAdapter')
+  widget.setTextIndexTrack(false)
+  widget.setTextIndexingConf({ attributes: ['Gene'], exclude: ['mRNA'] })
+  widget.setMixinData({ extra: 'data' })
+
+  // Verify state was set
+  expect(widget.trackData).toBeDefined()
+  expect(widget.indexTrackData).toBeDefined()
+  expect(widget.altTrackName).toBe('Custom Name')
+  expect(widget.altTrackType).toBe('FeatureTrack')
+  expect(widget.altAssemblyName).toBe('customAssembly')
+  expect(widget.adapterHint).toBe('BamAdapter')
+  expect(widget.textIndexTrack).toBe(false)
+  expect(widget.textIndexingConf).toEqual({
+    attributes: ['Gene'],
+    exclude: ['mRNA'],
+  })
+  expect(widget.mixinData).toEqual({ extra: 'data' })
+
+  // Clear and verify reset
+  widget.clearData()
+
+  expect(widget.trackData).toBeUndefined()
+  expect(widget.indexTrackData).toBeUndefined()
+  expect(widget.altTrackName).toBe('')
+  expect(widget.altTrackType).toBe('')
+  expect(widget.altAssemblyName).toBe('')
+  expect(widget.adapterHint).toBe('')
+  expect(widget.textIndexTrack).toBe(true)
+  expect(widget.textIndexingConf).toBeUndefined()
+  expect(widget.mixinData).toEqual({})
+})
+
+test('setTrackData clears adapterHint for re-evaluation', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'test.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setAdapterHint('BamAdapter')
+  expect(widget.adapterHint).toBe('BamAdapter')
+
+  // Changing track data should clear the adapter hint
+  widget.setTrackData({
+    uri: 'test.vcf.gz',
+    locationType: 'UriLocation',
+  })
+  expect(widget.adapterHint).toBe('')
+})
+
+test('setIndexTrackData clears adapterHint for re-evaluation', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'test.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setAdapterHint('BamAdapter')
+  expect(widget.adapterHint).toBe('BamAdapter')
+
+  // Changing index data should also clear the adapter hint
+  widget.setIndexTrackData({
+    uri: 'test.bam.csi',
+    locationType: 'UriLocation',
+  })
+  expect(widget.adapterHint).toBe('')
+})
+
+test('detects FTP URLs in track data', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'ftp://example.com/test.bam',
+    locationType: 'UriLocation',
+  })
+  expect(widget.isFtp).toBe(true)
+})
+
+test('detects FTP URLs in index data', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'https://example.com/test.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setIndexTrackData({
+    uri: 'ftp://example.com/test.bam.bai',
+    locationType: 'UriLocation',
+  })
+  expect(widget.isFtp).toBe(true)
+})
+
+test('warningMessage returns FTP warning', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'ftp://example.com/test.bam',
+    locationType: 'UriLocation',
+  })
+  expect(widget.warningMessage).toContain('ftp protocol')
+})
+
+test('warningMessage returns relative URL warning', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'path/to/test.bam',
+    locationType: 'UriLocation',
+  })
+  expect(widget.warningMessage).toContain('relative URL')
+})
+
+test('root-relative URLs are not considered relative', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: '/absolute/path/test.bam',
+    locationType: 'UriLocation',
+  })
+  expect(widget.isRelativeUrl).toBe(false)
+})
+
+test('mixinData is stored and can be retrieved', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  expect(widget.mixinData).toEqual({})
+
+  widget.setMixinData({
+    adapter: {
+      customOption: 'value',
+    },
+    metadata: {
+      description: 'Test track',
+    },
+  })
+
+  expect(widget.mixinData).toEqual({
+    adapter: {
+      customOption: 'value',
+    },
+    metadata: {
+      description: 'Test track',
+    },
+  })
+})
+
+test('trackName falls back to filename when altTrackName is empty', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'https://example.com/my-track.bam',
+    locationType: 'UriLocation',
+  })
+  expect(widget.trackName).toBe('my-track.bam')
+
+  widget.setTrackName('Custom Name')
+  expect(widget.trackName).toBe('Custom Name')
+})
+
+test('assembly falls back to view assemblyNames when altAssemblyName is empty', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  // Should use view's assembly
+  expect(widget.assembly).toBe('volvox')
+
+  // Setting altAssemblyName should override
+  widget.setAssembly('customAssembly')
+  expect(widget.assembly).toBe('customAssembly')
+})
+
+test('handles undefined view gracefully', () => {
+  const pluginManager = new PluginManager([new FakeViewPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+
+  const SessionModel = types.model({
+    widget: stateModelFactory(pluginManager),
+  })
+
+  const session = SessionModel.create({
+    widget: {
+      type: 'AddTrackWidget',
+      // no view reference
+    },
+  })
+
+  const { widget } = session
+  // Should not throw when view is undefined
+  expect(widget.assembly).toBeUndefined()
+})

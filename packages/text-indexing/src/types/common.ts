@@ -31,6 +31,19 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
+// Convert file:// URLs to local paths
+function fileUrlToPath(fileUrl: string): string | undefined {
+  try {
+    const url = new URL(fileUrl)
+    if (url.protocol === 'file:') {
+      return url.pathname
+    }
+  } catch {
+    // not a valid URL
+  }
+  return undefined
+}
+
 export async function getLocalOrRemoteStream({
   file,
   out,
@@ -52,7 +65,11 @@ export async function getLocalOrRemoteStream({
     onTotalBytes(+(result.headers.get('Content-Length') || 0))
     return result.body
   } else {
-    const filename = path.isAbsolute(file) ? file : path.join(out, file)
+    // Handle file:// URLs by converting to local path
+    const localPath = fileUrlToPath(file) ?? file
+    const filename = path.isAbsolute(localPath)
+      ? localPath
+      : path.join(out, localPath)
     const stream = fs.createReadStream(filename)
     stream.on('data', chunk => {
       receivedBytes += chunk.length

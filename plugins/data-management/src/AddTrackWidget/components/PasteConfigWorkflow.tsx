@@ -62,7 +62,7 @@ const PasteConfigAddTrackWorkflow = observer(
                     session.addTrackConf(c)
                   }
                   for (const c of confs) {
-                    model.view.showTrack(c.trackId)
+                    model.view?.showTrack?.(c.trackId)
                   }
                   model.clearData()
                 })
