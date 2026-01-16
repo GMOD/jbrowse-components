@@ -25,7 +25,8 @@ export function getMultiVariantSourcesAutorun(self: {
     autorun(
       async () => {
         try {
-          if (self.isMinimized) {
+          // isAlive check guards against display being destroyed during async import
+          if (!isAlive(self) || self.isMinimized) {
             return
           }
           const view = getContainingView(self) as LinearGenomeViewModel

@@ -10,7 +10,7 @@ import SliderTooltip from './SliderTooltip.tsx'
 import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory.tsx'
 import type { DotplotViewModel } from '../model.ts'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   container: {
     display: 'flex',
     alignItems: 'center',
@@ -18,7 +18,11 @@ const useStyles = makeStyles()({
     marginRight: 16,
     minWidth: 150,
   },
-})
+  slider: {
+    width: 100,
+    color: theme.palette.text.secondary,
+  },
+}))
 
 const MinLengthSlider = observer(function MinLengthSlider({
   model,
@@ -71,7 +75,7 @@ const MinLengthSlider = observer(function MinLengthSlider({
           toLocale(Math.round(2 ** (newValue / 100)))
         }
         size="small"
-        style={{ minWidth: 100 }}
+        className={classes.slider}
         slots={{
           valueLabel: SliderTooltip,
         }}

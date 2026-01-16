@@ -7,7 +7,7 @@ import SliderTooltip from './SliderTooltip.tsx'
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   container: {
     display: 'flex',
     alignItems: 'center',
@@ -15,7 +15,11 @@ const useStyles = makeStyles()({
     marginRight: 16,
     minWidth: 150,
   },
-})
+  slider: {
+    width: 100,
+    color: theme.palette.text.secondary,
+  },
+}))
 
 const OpacitySlider = observer(function OpacitySlider({
   model,
@@ -66,7 +70,7 @@ const OpacitySlider = observer(function OpacitySlider({
         step={0.01}
         valueLabelDisplay="auto"
         size="small"
-        style={{ minWidth: 100 }}
+        className={classes.slider}
         slots={{
           valueLabel: SliderTooltip,
         }}

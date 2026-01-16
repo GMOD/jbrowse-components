@@ -49,7 +49,9 @@ const Scalebar = observer(function Scalebar({
       data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
       className={cx(classes.container, className)}
       variant="outlined"
-      style={{ ...style, '--offset-px': `${offsetPx}px` } as React.CSSProperties}
+      style={
+        { ...style, '--offset-px': `${offsetPx}px` } as React.CSSProperties
+      }
       {...other}
     >
       {/* offset 1px for left track border */}

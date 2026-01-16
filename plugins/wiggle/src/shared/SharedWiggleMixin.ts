@@ -350,6 +350,7 @@ export default function SharedWiggleMixin(
         // @ts-ignore
         const conf = self.configuration.renderers?.[rendererTypeName]
         return {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           scaleType: scaleType ?? readConfObject(conf, 'scaleType'),
           filled: fill ?? readConfObject(conf, 'filled'),
           displayCrossHatches:

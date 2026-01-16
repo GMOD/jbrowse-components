@@ -155,7 +155,8 @@ function stateModelFactory(
           const conf = self.configuration.renderers?.[self.rendererTypeName]
           return {
             showInterbaseCounts:
-              showInterbaseCounts ?? readConfObject(conf, 'showInterbaseCounts'),
+              showInterbaseCounts ??
+              readConfObject(conf, 'showInterbaseCounts'),
             showInterbaseIndicators:
               showInterbaseIndicators ??
               readConfObject(conf, 'showInterbaseIndicators'),
