@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const EXCLUDE_KEYS = new Set(['color', 'HP', 'name', 'id'])
+const EXCLUDE_KEYS = new Set(['color', 'HP', 'name', 'baseName', 'id'])
 
 const MultiVariantTooltip = memo(function MultiVariantTooltip({
   source,
@@ -39,6 +39,7 @@ const MultiVariantTooltip = memo(function MultiVariantTooltip({
 }: {
   source: {
     color?: string
+    name?: string
     [key: string]: unknown
   }
   x: number
@@ -58,6 +59,7 @@ const MultiVariantTooltip = memo(function MultiVariantTooltip({
             style={{ backgroundColor: source.color }}
           />
         ) : null}
+        {source.name ? <div className={classes.row}>{source.name}</div> : null}
         {Object.entries(source).map(([key, value]) =>
           !EXCLUDE_KEYS.has(key) && value !== undefined ? (
             <div key={key} className={classes.row}>

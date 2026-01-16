@@ -229,19 +229,6 @@ function stateModelFactory(
          */
         wiggleOnlyTrackMenuItems() {
           return [
-            ...(self.graphType
-              ? [
-                  {
-                    label: 'Inverted',
-                    type: 'checkbox',
-                    checked: self.inverted,
-                    onClick: () => {
-                      self.setInverted(!self.inverted)
-                    },
-                  },
-                ]
-              : []),
-
             ...(self.canHaveFill
               ? [
                   {
@@ -289,20 +276,6 @@ function stateModelFactory(
                 ])
               },
             },
-
-            ...(self.graphType
-              ? [
-                  {
-                    type: 'checkbox',
-                    icon: VisibilityIcon,
-                    label: 'Show cross hatches',
-                    checked: self.displayCrossHatchesSetting,
-                    onClick: () => {
-                      self.toggleCrossHatches()
-                    },
-                  },
-                ]
-              : []),
           ]
         },
       }
@@ -326,6 +299,26 @@ function stateModelFactory(
                   self.setShowTooltips(!self.showTooltipsEnabled)
                 },
               },
+              ...(self.graphType
+                ? [
+                    {
+                      label: 'Show inverted',
+                      type: 'checkbox',
+                      checked: self.inverted,
+                      onClick: () => {
+                        self.setInverted(!self.inverted)
+                      },
+                    },
+                    {
+                      label: 'Show cross hatches',
+                      type: 'checkbox',
+                      checked: self.displayCrossHatchesSetting,
+                      onClick: () => {
+                        self.toggleCrossHatches()
+                      },
+                    },
+                  ]
+                : []),
             ],
           },
           ...self.wiggleOnlyTrackMenuItems(),

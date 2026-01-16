@@ -505,11 +505,25 @@ export default function SharedWiggleMixin(
               ]
             : []),
           {
-            label:
-              self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
-            onClick: () => {
-              self.toggleLogScale()
-            },
+            label: 'Scale type',
+            subMenu: [
+              {
+                label: 'Linear scale',
+                type: 'radio',
+                checked: self.scaleType === 'linear',
+                onClick: () => {
+                  self.setScaleType('linear')
+                },
+              },
+              {
+                label: 'Log scale',
+                type: 'radio',
+                checked: self.scaleType === 'log',
+                onClick: () => {
+                  self.setScaleType('log')
+                },
+              },
+            ],
           },
           {
             label: 'Autoscale type',
