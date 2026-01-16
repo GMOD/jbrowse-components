@@ -1,8 +1,12 @@
+import { useState } from 'react'
+
 import Attributes from './Attributes.tsx'
 import BasicValue from './BasicValue.tsx'
 import FieldName from './FieldName.tsx'
 import { isObject } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
+
+const MAX_ARRAY_LENGTH = 100
 
 const useStyles = makeStyles()(theme => ({
   field: {
@@ -34,6 +38,11 @@ export default function ArrayValue({
   prefix?: string[]
 }) {
   const { classes } = useStyles()
+  const [showAll, setShowAll] = useState(false)
+  const needsTruncation = value.length > MAX_ARRAY_LENGTH
+  const displayedValues =
+    needsTruncation && !showAll ? value.slice(0, MAX_ARRAY_LENGTH) : value
+
   if (value.length === 1) {
     return isObject(value[0]) ? (
       <Attributes
@@ -48,6 +57,8 @@ export default function ArrayValue({
       </div>
     )
   } else if (value.every(val => isObject(val))) {
+    // note: this branch is rarely reached since Attributes.tsx routes
+    // arrays of objects with length > 1 to DataGridDetails
     return (
       <>
         {value.map((val, i) => (
@@ -64,7 +75,7 @@ export default function ArrayValue({
     return (
       <div className={classes.field}>
         <FieldName prefix={prefix} description={description} name={name} />
-        {value.map((val, i) => (
+        {displayedValues.map((val, i) => (
           <div
             key={`${JSON.stringify(val)}-${i}`}
             className={classes.fieldSubvalue}
@@ -72,6 +83,18 @@ export default function ArrayValue({
             <BasicValue value={formatter ? formatter(val, name) : val} />
           </div>
         ))}
+        {needsTruncation ? (
+          <button
+            type="button"
+            onClick={() => {
+              setShowAll(val => !val)
+            }}
+          >
+            {showAll
+              ? 'Show less'
+              : `Showing ${MAX_ARRAY_LENGTH} of ${value.length}. Show all...`}
+          </button>
+        ) : null}
       </div>
     )
   }
