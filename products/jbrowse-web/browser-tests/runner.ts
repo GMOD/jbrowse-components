@@ -347,9 +347,12 @@ const testSuites: TestSuite[] = [
           })
 
           // Wait for location search input (view is fully rendered)
-          await page.waitForSelector('input[placeholder="Search for location"]', {
-            timeout: 10000,
-          })
+          await page.waitForSelector(
+            'input[placeholder="Search for location"]',
+            {
+              timeout: 10000,
+            },
+          )
 
           await waitForLoadingToComplete(page)
 
@@ -942,10 +945,7 @@ async function main() {
     const page = await browser.newPage()
     page.on('console', msg => {
       const text = msg.text()
-      // Print debug logs from TiledViewsContainer
-      if (text.includes('[TiledViewsContainer]')) {
-        console.log('  Browser:', text)
-      } else if (msg.type() === 'error' && !text.includes('favicon')) {
+      if (msg.type() === 'error' && !text.includes('favicon')) {
         console.error('  Browser:', text)
       }
     })
