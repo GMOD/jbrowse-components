@@ -4,6 +4,32 @@ import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 /**
+ * Expand a region by a grow factor, adding padding on each side.
+ *
+ * @param start - region start coordinate
+ * @param end - region end coordinate
+ * @param grow - multiplier for expansion (e.g., 0.2 adds 20% padding on each
+ * side)
+ * @param minBound - minimum bound to clamp start to (default 0)
+ * @param maxBound - maximum bound to clamp end to (default Infinity)
+ * @returns object with expanded start and end coordinates
+ */
+export function expandRegion(
+  start: number,
+  end: number,
+  grow: number,
+  minBound = 0,
+  maxBound = Infinity,
+) {
+  const len = end - start
+  const margin = len * grow
+  return {
+    start: Math.max(minBound, start - margin),
+    end: Math.min(maxBound, end + margin),
+  }
+}
+
+/**
  * Given a scale ( bp/px ) and minimum distances (px) between major and minor
  * gridlines, return an object like `{ majorPitch: bp, minorPitch: bp }` giving
  * the gridline pitches to use.
@@ -133,22 +159,15 @@ export async function generateLocations({
       }
 
       const { start, end } = region
-      if (grow && start && end) {
-        const len = end - start
-        const margin = len * grow
-        return {
-          ...(region as Omit<typeof region, symbol>),
-          start: Math.max(0, start - margin),
-          end: end + margin,
-          assemblyName: asmName,
-          parentRegion,
-        }
-      } else {
-        return {
-          ...(region as Omit<typeof region, symbol>),
-          assemblyName: asmName,
-          parentRegion,
-        }
+      const expanded =
+        grow && start !== undefined && end !== undefined
+          ? expandRegion(start, end, grow)
+          : undefined
+      return {
+        ...(region as Omit<typeof region, symbol>),
+        ...(expanded ? { start: expanded.start, end: expanded.end } : {}),
+        assemblyName: asmName,
+        parentRegion,
       }
     }),
   )

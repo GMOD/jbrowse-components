@@ -52,6 +52,7 @@ import {
 } from './menuItems.tsx'
 import {
   calculateVisibleLocStrings,
+  expandRegion,
   generateLocations,
   parseLocStrings,
 } from './util.ts'
@@ -1545,12 +1546,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         // Apply grow factor to add padding around the region
         if (grow) {
-          const len = lastEnd - firstStart
-          const margin = len * grow
-          firstStart = Math.max(firstRegion.start, firstStart - margin)
-          firstEnd = Math.min(firstRegion.end, firstEnd + margin)
-          lastStart = Math.max(lastRegion.start, lastStart - margin)
-          lastEnd = Math.min(lastRegion.end, lastEnd + margin)
+          const expanded = expandRegion(
+            firstStart,
+            lastEnd,
+            grow,
+            firstRegion.start,
+            lastRegion.end,
+          )
+          firstStart = expanded.start
+          firstEnd = expanded.end
+          lastStart = expanded.start
+          lastEnd = expanded.end
         }
 
         // Find region indices that contain our locations

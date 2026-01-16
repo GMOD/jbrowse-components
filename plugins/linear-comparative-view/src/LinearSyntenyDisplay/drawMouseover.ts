@@ -1,19 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
 
 import { drawMatchSimple } from './components/util.ts'
+import { oobLimit } from './drawSyntenyUtils.ts'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
-
-const oobLimit = 1600
-
-// Reusable callbacks to avoid closure allocation
-const fillCallback = (ctx: CanvasRenderingContext2D) => {
-  ctx.fill()
-}
-const strokeCallback = (ctx: CanvasRenderingContext2D) => {
-  ctx.stroke()
-}
 
 export function drawMouseoverClickMap(model: LinearSyntenyDisplayModel) {
   const { level, clickId, mouseoverId } = model
@@ -35,12 +26,14 @@ export function drawMouseoverClickMap(model: LinearSyntenyDisplayModel) {
   const feature1 = model.featMap[mouseoverId || '']
   if (feature1) {
     drawMatchSimple({
-      cb: fillCallback,
+      cb: ctx => {
+        ctx.fill()
+      },
       feature: feature1,
       level,
       ctx,
       oobLimit,
-      viewWidth: width,
+      viewWidth: view.width,
       drawCurves,
       offsets,
       height,
@@ -50,12 +43,14 @@ export function drawMouseoverClickMap(model: LinearSyntenyDisplayModel) {
   const feature2 = model.featMap[clickId || '']
   if (feature2) {
     drawMatchSimple({
-      cb: strokeCallback,
+      cb: ctx => {
+        ctx.stroke()
+      },
       feature: feature2,
       ctx,
       level,
       oobLimit,
-      viewWidth: width,
+      viewWidth: view.width,
       drawCurves,
       offsets,
       height,
