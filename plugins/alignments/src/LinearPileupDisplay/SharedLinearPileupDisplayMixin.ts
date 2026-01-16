@@ -337,23 +337,26 @@ export function SharedLinearPileupDisplayMixin(
        */
       get rendererConfig() {
         const {
-          featureHeight: height,
+          featureHeight,
           noSpacing,
           hideSmallIndels,
           hideMismatches,
           hideLargeIndels,
-          trackMaxHeight: maxHeight,
+          trackMaxHeight,
           rendererTypeName,
         } = self
-        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
+        // @ts-ignore
+        const conf = self.configuration.renderers?.[rendererTypeName]
         return {
-          ...configBlob,
-          ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
-          ...(hideMismatches !== undefined ? { hideMismatches } : {}),
-          ...(hideLargeIndels !== undefined ? { hideLargeIndels } : {}),
-          ...(height !== undefined ? { height } : {}),
-          ...(noSpacing !== undefined ? { noSpacing } : {}),
-          ...(maxHeight !== undefined ? { maxHeight } : {}),
+          height: featureHeight ?? readConfObject(conf, 'height'),
+          noSpacing: noSpacing ?? readConfObject(conf, 'noSpacing'),
+          maxHeight: trackMaxHeight ?? readConfObject(conf, 'maxHeight'),
+          hideSmallIndels:
+            hideSmallIndels ?? readConfObject(conf, 'hideSmallIndels'),
+          hideMismatches:
+            hideMismatches ?? readConfObject(conf, 'hideMismatches'),
+          hideLargeIndels:
+            hideLargeIndels ?? readConfObject(conf, 'hideLargeIndels'),
         }
       },
     }))
@@ -362,31 +365,20 @@ export function SharedLinearPileupDisplayMixin(
        * #getter
        */
       get maxHeight() {
-        return readConfObject(self.rendererConfig, 'maxHeight')
+        return self.rendererConfig.maxHeight
       },
 
       /**
        * #getter
        */
       get featureHeightSetting() {
-        return (
-          self.featureHeight ??
-          // @ts-ignore
-          readConfObject(self.configuration.renderers?.PileupRenderer, 'height')
-        )
+        return self.rendererConfig.height
       },
       /**
        * #getter
        */
       get noSpacingSetting() {
-        return (
-          self.noSpacing ??
-          readConfObject(
-            // @ts-ignore
-            self.configuration.renderers?.PileupRenderer,
-            'noSpacing',
-          )
-        )
+        return self.rendererConfig.noSpacing
       },
       /**
        * #getter

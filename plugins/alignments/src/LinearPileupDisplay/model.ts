@@ -187,6 +187,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           mismatchAlpha,
           hideSmallIndels,
           hideMismatches,
+          hideLargeIndels,
         } = self
         // @ts-ignore
         const conf = self.configuration.renderers?.PileupRenderer
@@ -199,6 +200,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             hideSmallIndels ?? readConfObject(conf, 'hideSmallIndels'),
           hideMismatches:
             hideMismatches ?? readConfObject(conf, 'hideMismatches'),
+          hideLargeIndels:
+            hideLargeIndels ?? readConfObject(conf, 'hideLargeIndels'),
         }
       },
     }))
@@ -209,7 +212,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #getter
          */
         get mismatchAlphaSetting() {
-          return readConfObject(self.rendererConfig, 'mismatchAlpha')
+          return self.rendererConfig.mismatchAlpha
         },
         /**
          * #method

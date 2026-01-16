@@ -347,17 +347,19 @@ export default function SharedWiggleMixin(
           scaleType,
           rendererTypeName,
         } = self
-        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
+        // @ts-ignore
+        const conf = self.configuration.renderers?.[rendererTypeName]
         return {
-          ...configBlob,
-          ...(scaleType ? { scaleType } : {}),
-          ...(fill !== undefined ? { filled: fill } : {}),
-          ...(displayCrossHatches !== undefined ? { displayCrossHatches } : {}),
-          ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
-          ...(color !== undefined ? { color } : {}),
-          ...(negColor !== undefined ? { negColor } : {}),
-          ...(posColor !== undefined ? { posColor } : {}),
-          ...(minSize !== undefined ? { minSize } : {}),
+          scaleType: scaleType ?? readConfObject(conf, 'scaleType'),
+          filled: fill ?? readConfObject(conf, 'filled'),
+          displayCrossHatches:
+            displayCrossHatches ?? readConfObject(conf, 'displayCrossHatches'),
+          summaryScoreMode:
+            summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode'),
+          color: color ?? readConfObject(conf, 'color'),
+          negColor: negColor ?? readConfObject(conf, 'negColor'),
+          posColor: posColor ?? readConfObject(conf, 'posColor'),
+          minSize: minSize ?? readConfObject(conf, 'minSize'),
         }
       },
 
@@ -405,19 +407,13 @@ export default function SharedWiggleMixin(
        * #getter
        */
       get filled() {
-        return (
-          self.fill ??
-          (readConfObject(self.rendererConfig, 'filled') as boolean)
-        )
+        return self.rendererConfig.filled
       },
       /**
        * #getter
        */
       get summaryScoreModeSetting() {
-        return (
-          self.summaryScoreMode ??
-          (readConfObject(self.rendererConfig, 'summaryScoreMode') as string)
-        )
+        return self.rendererConfig.summaryScoreMode
       },
 
       /**
