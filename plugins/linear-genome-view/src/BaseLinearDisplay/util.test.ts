@@ -1,6 +1,8 @@
 import { hasIntrons } from './util.ts'
 
-function mockFeature(subfeatures: { type: string; start: number; end: number }[]) {
+function mockFeature(
+  subfeatures: { type: string; start: number; end: number }[],
+) {
   return {
     get: (key: string) => {
       if (key === 'subfeatures') {
