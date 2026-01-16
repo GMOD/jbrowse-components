@@ -276,6 +276,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       rightOffset: undefined as undefined | BpOffset,
+      /**
+       * #volatile
+       */
+      isScalebarRefNameMenuOpen: false,
     }))
     .views(self => ({
       /**
@@ -704,6 +708,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setError(error: unknown) {
         self.volatileError = error
+      },
+      /**
+       * #action
+       */
+      setIsScalebarRefNameMenuOpen(isOpen: boolean) {
+        self.isScalebarRefNameMenuOpen = isOpen
       },
       /**
        * #action

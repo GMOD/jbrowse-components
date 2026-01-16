@@ -91,6 +91,9 @@ export function useRangeSelect(
     if (shiftOnly && !event.shiftKey) {
       return
     }
+    if (model.isScalebarRefNameMenuOpen) {
+      return
+    }
 
     event.preventDefault()
     event.stopPropagation()

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -11,6 +11,7 @@ type LGV = LinearGenomeViewModel
 interface MenuState {
   anchorEl: HTMLElement
   refName: string
+  regionNumber: number
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -46,6 +47,10 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
   const [menuState, setMenuState] = useState<MenuState>()
 
+  useEffect(() => {
+    model.setIsScalebarRefNameMenuOpen(!!menuState)
+  }, [model, menuState])
+
   // find the block that needs pinning to the left side for context
   // default to first ContentBlock if nothing is scrolled left
   let lastLeftBlock = staticBlocks.blocks.findIndex(
@@ -68,7 +73,9 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
       {b0?.type !== 'ContentBlock' && val ? (
         <span
           className={cx(classes.b0, classes.refLabel)}
-          onMouseDown={event => event.stopPropagation()}
+          onMouseDown={event => {
+            event.stopPropagation()
+          }}
         >
           {val}
         </span>
@@ -80,6 +87,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           key,
           type,
           refName,
+          regionNumber,
         } = block
         const last = index === lastLeftBlock
         return type === 'ContentBlock' &&
@@ -94,13 +102,16 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
             }}
             className={classes.refLabel}
             data-testid={`refLabel-${refName}`}
-            onMouseDown={event => event.stopPropagation()}
-            onClick={event =>
+            onMouseDown={event => {
+              event.stopPropagation()
+            }}
+            onClick={event => {
               setMenuState({
                 anchorEl: event.currentTarget,
                 refName,
+                regionNumber: regionNumber!,
               })
-            }
+            }}
           >
             {last && val ? `${val}:` : ''}
             {refName}
@@ -108,24 +119,105 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
         ) : null
       })}
       {menuState ? (
-        <Menu
-          anchorEl={menuState.anchorEl}
-          open
+        <RefNameMenu
+          model={model}
+          menuState={menuState}
           onClose={() => setMenuState(undefined)}
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setMenuState(undefined)
-          }}
-          menuItems={[
-            {
-              label: `Focus on ${menuState.refName}`,
-              onClick: () => model.navTo({ refName: menuState.refName }),
-            },
-          ]}
         />
       ) : null}
     </>
   )
 })
+
+function RefNameMenu({
+  model,
+  menuState,
+  onClose,
+}: {
+  model: LGV
+  menuState: MenuState
+  onClose: () => void
+}) {
+  const { displayedRegions } = model
+  const { refName, regionNumber } = menuState
+  const numRegions = displayedRegions.length
+
+  function moveRegion(fromIndex: number, toIndex: number) {
+    const regions = [...displayedRegions]
+    const [removed] = regions.splice(fromIndex, 1)
+    regions.splice(toIndex, 0, removed!)
+    model.setDisplayedRegions(regions)
+  }
+
+  function removeRegion(index: number) {
+    const regions = displayedRegions.filter((_, i) => i !== index)
+    model.setDisplayedRegions(regions)
+  }
+
+  const actionItems = [
+    ...(regionNumber > 0
+      ? [
+          {
+            label: 'Move left',
+            onClick: () => moveRegion(regionNumber, regionNumber - 1),
+          },
+        ]
+      : []),
+    ...(regionNumber < numRegions - 1
+      ? [
+          {
+            label: 'Move right',
+            onClick: () => moveRegion(regionNumber, regionNumber + 1),
+          },
+        ]
+      : []),
+    ...(numRegions > 2 && regionNumber > 0
+      ? [
+          {
+            label: 'Move to far left',
+            onClick: () => moveRegion(regionNumber, 0),
+          },
+        ]
+      : []),
+    ...(numRegions > 2 && regionNumber < numRegions - 1
+      ? [
+          {
+            label: 'Move to far right',
+            onClick: () => moveRegion(regionNumber, numRegions - 1),
+          },
+        ]
+      : []),
+    {
+      label: 'Remove this region from view',
+      onClick: () => removeRegion(regionNumber),
+    },
+  ]
+
+  return (
+    <Menu
+      anchorEl={menuState.anchorEl}
+      open
+      onClose={onClose}
+      onMenuItemClick={(_, callback) => {
+        callback()
+        onClose()
+      }}
+      menuItems={[
+        {
+          label: `Focus on ${refName}`,
+          onClick: () => model.navTo({ refName }),
+        },
+        ...(numRegions > 1
+          ? [
+              {
+                label: 'Actions',
+                subMenu: actionItems,
+              },
+            ]
+          : []),
+      ]}
+    />
+  )
+}
 
 export default ScalebarRefNameLabels

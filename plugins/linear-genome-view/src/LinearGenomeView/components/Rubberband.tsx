@@ -30,7 +30,7 @@ const Rubberband = observer(function Rubberband({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
-  const { stickyViewHeaders, rubberbandTop } = model
+  const { stickyViewHeaders, rubberbandTop, isScalebarRefNameMenuOpen } = model
 
   const {
     guideX,
@@ -53,7 +53,7 @@ const Rubberband = observer(function Rubberband({
 
   return (
     <>
-      {guideX !== undefined ? (
+      {guideX !== undefined && !isScalebarRefNameMenuOpen ? (
         <VerticalGuide model={model} coordX={guideX} />
       ) : rubberbandOn ? (
         <RubberbandSpan

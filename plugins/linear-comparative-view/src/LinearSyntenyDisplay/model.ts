@@ -46,6 +46,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * color scheme to use for rendering synteny features
          */
         colorBy: types.optional(types.string, 'default'),
+        /**
+         * #property
+         * alpha transparency value for synteny drawing (0-1)
+         */
+        alpha: types.optional(types.number, 0.2),
+        /**
+         * #property
+         * minimum alignment length to display (in bp)
+         */
+        minAlignmentLength: types.optional(types.number, 0),
       }),
     )
     .volatile(() => ({
@@ -102,18 +112,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * currently mouseover'd CIGAR subfeature
        */
       cigarMouseoverId: -1,
-
-      /**
-       * #volatile
-       * alpha transparency value for synteny drawing (0-1)
-       */
-      alpha: 0.2,
-
-      /**
-       * #volatile
-       * minimum alignment length to display (in bp)
-       */
-      minAlignmentLength: 0,
     }))
     .actions(self => ({
       /**
