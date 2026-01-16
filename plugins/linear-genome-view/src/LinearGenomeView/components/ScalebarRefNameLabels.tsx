@@ -1,9 +1,17 @@
+import { useState } from 'react'
+
+import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
+
+interface MenuState {
+  anchorEl: HTMLElement
+  refName: string
+}
 
 const useStyles = makeStyles()(theme => ({
   // Base styles for ref name labels (chromosome names in scalebar)
@@ -36,6 +44,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
 }) {
   const { classes, cx } = useStyles()
   const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
+  const [menuState, setMenuState] = useState<MenuState>()
 
   // find the block that needs pinning to the left side for context
   // default to first ContentBlock if nothing is scrolled left
@@ -86,12 +95,35 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
             className={classes.refLabel}
             data-testid={`refLabel-${refName}`}
             onMouseDown={event => event.stopPropagation()}
+            onClick={event =>
+              setMenuState({
+                anchorEl: event.currentTarget,
+                refName,
+              })
+            }
           >
             {last && val ? `${val}:` : ''}
             {refName}
           </span>
         ) : null
       })}
+      {menuState ? (
+        <Menu
+          anchorEl={menuState.anchorEl}
+          open
+          onClose={() => setMenuState(undefined)}
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setMenuState(undefined)
+          }}
+          menuItems={[
+            {
+              label: `Focus on ${menuState.refName}`,
+              onClick: () => model.navTo({ refName: menuState.refName }),
+            },
+          ]}
+        />
+      ) : null}
     </>
   )
 })
