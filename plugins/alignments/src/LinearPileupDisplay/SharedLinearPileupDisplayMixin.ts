@@ -151,6 +151,9 @@ export function SharedLinearPileupDisplayMixin(
        * #getter
        */
       get autorunReady() {
+        if (self.isMinimized) {
+          return false
+        }
         const view = getContainingView(self) as LGV
         return (
           view.initialized && self.featureDensityStatsReadyAndRegionNotTooLarge

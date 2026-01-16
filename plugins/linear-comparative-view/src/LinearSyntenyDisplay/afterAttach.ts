@@ -34,6 +34,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(
       function syntenyDrawAutorun() {
+        if (self.isMinimized) {
+          return
+        }
         const view = getContainingView(self) as LinearSyntenyViewModel
         if (
           !view.initialized ||
@@ -68,6 +71,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(
       function syntenyMouseoverAutorun() {
+        if (self.isMinimized) {
+          return
+        }
         const view = getContainingView(self) as LinearSyntenyViewModel
         if (
           !view.initialized ||
@@ -93,6 +99,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     reaction(
       () => {
+        if (self.isMinimized) {
+          return { initialized: false }
+        }
         const view = getContainingView(self) as LSV
         return {
           bpPerPx: view.views.map(v => v.bpPerPx),

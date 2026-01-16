@@ -36,11 +36,10 @@ export function doAfterAttach(model: {
   createAutorun(
     model,
     async () => {
-      const view = getContainingView(model) as LGV
       if (!model.autorunReady) {
         return
       }
-
+      const view = getContainingView(model) as LGV
       model.setCurrSortBpPerPx(view.bpPerPx)
     },
     {
@@ -51,12 +50,11 @@ export function doAfterAttach(model: {
   createAutorun(
     model,
     async () => {
-      const { rpcManager } = getSession(model)
-      const view = getContainingView(model) as LGV
       if (!model.autorunReady) {
         return
       }
-
+      const { rpcManager } = getSession(model)
+      const view = getContainingView(model) as LGV
       const { sortedBy, adapterConfig, rendererType, sortReady } = model
       const { bpPerPx } = view
 

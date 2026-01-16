@@ -47,6 +47,9 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
   })()
 
   const performRender = async () => {
+    if (self.isMinimized) {
+      return
+    }
     const view = getContainingView(self) as LGV
     const { bpPerPx, dynamicBlocks } = view
     const regions = dynamicBlocks.contentBlocks
@@ -122,6 +125,9 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
     self,
     autorun(
       () => {
+        if (self.isMinimized) {
+          return
+        }
         const view = getContainingView(self) as LGV
         if (!view.initialized) {
           return
@@ -157,6 +163,9 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
     self,
     autorun(
       () => {
+        if (self.isMinimized) {
+          return
+        }
         const view = getContainingView(self) as LGV
         if (!view.initialized) {
           return

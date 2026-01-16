@@ -17,6 +17,7 @@ export function getQuantitativeStatsAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
+  isMinimized: boolean
   adapterProps: () => Record<string, unknown>
   setStatsLoading: (token: StopToken) => void
   setError: (error: unknown) => void
@@ -28,6 +29,9 @@ export function getQuantitativeStatsAutorun(self: {
     autorun(
       async () => {
         try {
+          if (self.isMinimized) {
+            return
+          }
           if (self.quantitativeStatsReady) {
             const view = getContainingView(self) as LGV
             const stopToken = createStopToken()

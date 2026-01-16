@@ -20,6 +20,7 @@ interface TreeDrawingModel {
   totalHeight: number
   hoveredTreeNode?: HoveredTreeNode
   sources?: Source[]
+  isMinimized: boolean
 }
 
 export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
@@ -28,6 +29,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
     self,
     autorun(
       function treeDrawAutorun() {
+        if (self.isMinimized) {
+          return
+        }
         const {
           treeCanvas,
           hierarchy,
@@ -90,6 +94,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
     self,
     autorun(
       function treeHoverAutorun() {
+        if (self.isMinimized) {
+          return
+        }
         const {
           mouseoverCanvas,
           hierarchy,
