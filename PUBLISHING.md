@@ -4,7 +4,7 @@
 
 - Stable internet connection (AWS machine recommended to avoid npm publish
   failures)
-- npm login: `pnpm login`
+- npm login: `yarn login`
 - GitHub CLI: `gh` (for changelog generation)
 - For Mac builds: check https://developer.apple.com/account for updated signing
   terms
@@ -14,7 +14,7 @@
 To see what would be in the next release:
 
 ```bash
-pnpm changelog
+yarn changelog
 ```
 
 This uses `gh` CLI to list PRs merged since the last release.
@@ -48,7 +48,7 @@ This will:
 Wait for all build artifacts (jbrowse-web, mac/windows/linux desktop) to upload,
 then publish the draft release on GitHub.
 
-Copy release notes: `pnpm --silent releasenotes | pbcopy`
+Copy release notes: `yarn --silent releasenotes | pbcopy`
 
 ### 4. Update embedded demos
 

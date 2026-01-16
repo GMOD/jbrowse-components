@@ -9,7 +9,7 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "yarn workspaces run build",
     "changelog": "scripts/generate-changelog.sh",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
@@ -20,23 +20,10 @@
     "test": "jest",
     "configdocs": "rm -rf website/docs/config && mkdir website/docs/config && node --experimental-strip-types docs/generateConfigDocs.ts",
     "statedocs": "rm -rf website/docs/models && mkdir website/docs/models && node --experimental-strip-types docs/generateStateModelDocs.ts",
-    "autogen": "pnpm statedocs && pnpm configdocs && pnpm format",
+    "autogen": "yarn statedocs && yarn configdocs && yarn format",
     "fix-extensions": "node --experimental-strip-types scripts/add-extensions.ts",
-    "releasenotes": "pnpm prettier --prose-wrap never website/blog/$(ls -Art website/blog/ | tail -n 1)|sed -e '/## Downloads/,+7d'|tail -n +7",
-    "copynotes": "pnpm --silent releasenotes | xclip -selection clipboard"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "canvas",
-      "electron",
-      "electron-chromedriver",
-      "esbuild",
-      "puppeteer"
-    ],
-    "minimumReleaseAge": "1440",
-    "minimumReleaseAgeExclude": [
-      "@gmod/*"
-    ]
+    "releasenotes": "yarn prettier --prose-wrap never website/blog/$(ls -Art website/blog/ | tail -n 1)|sed -e '/## Downloads/,+7d'|tail -n +7",
+    "copynotes": "yarn --silent releasenotes | xclip -selection clipboard"
   },
   "devDependencies": {
     "@babel/core": "^7.28.6",

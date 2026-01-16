@@ -8,9 +8,9 @@ To quickly boot up the jbrowse-web app, run these commands
 ```
 git clone https://github.com/GMOD/jbrowse-components
 cd jbrowse-components
-pnpm install
+yarn
 cd products/jbrowse-web
-pnpm start
+yarn start
 ```
 
 This will boot up a dev server of jbrowse-web, or web version of jbrowse 2
@@ -40,8 +40,8 @@ After installing dependencies, if you still see errors about missing
 `canvas.node`, you may need to rebuild the native module and reinstall:
 
 ```
-pnpm rebuild canvas
-pnpm install
+yarn rebuild canvas
+yarn install
 ```
 
 ## Windows git clone instructions
@@ -57,14 +57,14 @@ command:
 # You may also need to clone as an administrator for symlinks to work.
 git clone -c core.symlinks=true https://github.com/GMOD/jbrowse-components.git
 cd .\jbrowse-components\
-pnpm install
+yarn
 ```
 
 ## Running jbrowse-web
 
 ```sh
 cd products/jbrowse-web
-pnpm start
+yarn start
 ```
 
 ## Running jbrowse-desktop
@@ -75,11 +75,11 @@ server, one with the electron shell
 ```sh
 # starts webpack dev server
 cd products/jbrowse-desktop
-pnpm start
+yarn start
 
 # starts electron window
 cd products/jbrowse-desktop
-pnpm electron
+yarn electron
 ```
 
 ## Running storybook
@@ -88,7 +88,7 @@ For running e.g. jbrowse-react-linear-genome-view you can use storybook
 
 ```sh
 cd products/jbrowse-react-linear-genome-view
-pnpm storybook
+yarn storybook
 ```
 
 You can similarly run storybooks in the circular and react-app embedded
@@ -97,7 +97,7 @@ components
 ## Running eslint
 
 ```sh
-pnpm lint # optionally with --fix
+yarn lint # optionally with --fix
 ```
 
 It is a fairly heavy lint process, so takes time
@@ -107,7 +107,7 @@ It is a fairly heavy lint process, so takes time
 We also use typescript, and you can use this command in the repo root
 
 ```sh
-pnpm tsc
+yarn tsc
 ```
 
 Editing source code with your text editor should automatically pick up our
@@ -145,11 +145,11 @@ below the image on the website
 ## Monorepo code organization
 
 JBrowse 2 code is organized as a monorepo using
-[pnpm workspaces](https://pnpm.io/workspaces). Using a monorepo means that
-instead of separate GitHub repositories for each piece of JBrowse, they are all
-in a single place and can share code easily. In the top level of the repository
-there are two directories, `packages/` and `products/` that each contain
-multiple packages.
+[yarn workspaces](https://classic.yarnpkg.com/en/docs/workspaces/). Using a
+monorepo means that instead of separate GitHub repositories for each piece of
+JBrowse, they are all in a single place and can share code easily. In the top
+level of the repository there are two directories, `packages/` and `products/`
+that each contain multiple packages.
 
 Each "package" is an npm-style (i.e. contains `package.json`) package. The
 packages in `packages/` are core code, development tools, etc. The packages in
@@ -263,8 +263,8 @@ plugins in this monorepo by default points to the un-built code (e.g.
 `src/index.ts`). JBrowse Web then takes care of building the plugins itself (see
 `products/jbrowse-web/rescripts/yarnWorkspacesRescript.js`).
 
-When publishing to NPM, pnpm's `publishConfig` feature automatically overrides
-the `main` and `module` fields to point to the built output (e.g.
+When publishing to NPM, the `publishConfig` feature in package.json automatically
+overrides the `main` and `module` fields to point to the built output (e.g.
 `dist/index.js`). This means no manual switching between source and dist is
 needed.
 

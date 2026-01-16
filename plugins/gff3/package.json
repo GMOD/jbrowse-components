@@ -20,18 +20,18 @@
     "esm"
   ],
   "scripts": {
-    "build": "pnpm run /^build:/",
+    "build": "yarn run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/gff3 --passWithNoTests",
-    "prepublishOnly": "pnpm test",
-    "prepack": "pnpm build",
-    "prebuild": "pnpm clean",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build",
+    "prebuild": "yarn clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^2.0.3",
     "@gmod/tabix": "^3.2.2",
-    "@jbrowse/core": "workspace:^",
+    "@jbrowse/core": "^4.0.3",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "gff-nostream": "^3.0.2",
     "mobx": "^6.15.0",

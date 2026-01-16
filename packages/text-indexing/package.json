@@ -24,14 +24,14 @@
   ],
   "scripts": {
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "build": "pnpm build:esm",
+    "build": "yarn build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/text-indexing",
     "clean": "rimraf esm *.tsbuildinfo",
-    "prebuild": "pnpm clean",
-    "prepack": "pnpm build"
+    "prebuild": "yarn clean",
+    "prepack": "yarn build"
   },
   "dependencies": {
-    "@jbrowse/core": "workspace:^",
+    "@jbrowse/core": "^4.0.3",
     "ixixx": "^3.0.2",
     "node-fetch": "^2.7.0",
     "sanitize-filename": "^1.6.3"

@@ -20,11 +20,11 @@
     "esm"
   ],
   "scripts": {
-    "build": "pnpm run /^build:/",
+    "build": "yarn run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/trix",
-    "prepublishOnly": "pnpm test",
-    "prepack": "pnpm build",
-    "prebuild": "pnpm clean",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build",
+    "prebuild": "yarn clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@gmod/trix": "^3.0.4",
-    "@jbrowse/core": "workspace:^"
+    "@jbrowse/core": "^4.0.3"
   },
   "publishConfig": {
     "access": "public",

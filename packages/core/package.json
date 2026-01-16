@@ -139,13 +139,13 @@
     "test": "cd ../..; jest --passWithNoTests packages/core",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
-    "coverage": "pnpm test --coverage",
+    "coverage": "yarn test --coverage",
     "clean": "rimraf esm *.tsbuildinfo",
-    "prebuild": "pnpm clean",
-    "prepack": "pnpm build",
+    "prebuild": "yarn clean",
+    "prepack": "yarn build",
     "generate:exports": "node scripts/generateExports.mjs",
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "build": "pnpm build:esm"
+    "build": "yarn build:esm"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

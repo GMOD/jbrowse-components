@@ -8,8 +8,8 @@ This folder contains scripts to auto-generate some docs
 In the root dir run
 
 ```
-pnpm statedocs
-pnpm configdocs
+yarn statedocs
+yarn configdocs
 ```
 
 To update statemodels and config individually

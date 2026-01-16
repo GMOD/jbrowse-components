@@ -4,16 +4,16 @@
 
 ### Developing
 
-While in the jbrowse-desktop directory, you can run `pnpm start` to start a
+While in the jbrowse-desktop directory, you can run `yarn start` to start a
 development build of JBrowse Desktop. This both starts the development server
 and opens the Electron window when the server is ready.
 
 For more control over the development, you can run the server and the electron
-window separately. Just run `pnpm serve` to start the server, and once the
-server is ready run `pnpm develop` to open the Electron window.
+window separately. Just run `yarn serve` to start the server, and once the
+server is ready run `yarn develop` to open the Electron window.
 
 The Electron process can also take a custom server URL in case you run the dev
-server on another machine, e.g. `DEV_SERVER_URL=http://some.url pnpm develop`.
+server on another machine, e.g. `DEV_SERVER_URL=http://some.url yarn develop`.
 
 ### Packaging
 
@@ -31,9 +31,9 @@ sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev li
 sudo apt install -y wine-stable
 ```
 
-`pnpm build-electron` will then build and package the application for Linux,
-Mac, and Windows. You can also use `pnpm build-electron:win`,
-`pnpm build-electron:linux`, or `pnpm build-electron:mac` to build and package
+`yarn build-electron` will then build and package the application for Linux,
+Mac, and Windows. You can also use `yarn build-electron:win`,
+`yarn build-electron:linux`, or `yarn build-electron:mac` to build and package
 for a specific platform.
 
 #### MacOS
@@ -67,5 +67,5 @@ Remove-Item -path .\gtk+-bundle_2.22.1-20101229_win64.zip
 # Install to C:\libjpeg-turbo if 32bit or C:\libjpeg-turbo64 if 64bit
 ```
 
-Then you can run `pnpm build-electron:win` to build and package the Windows
+Then you can run `yarn build-electron:win` to build and package the Windows
 application.

@@ -20,19 +20,19 @@
     "esm"
   ],
   "scripts": {
-    "build": "pnpm run /^build:/",
+    "build": "yarn run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/hic",
-    "prepublishOnly": "pnpm test",
-    "prepack": "pnpm build",
-    "prebuild": "pnpm clean",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build",
+    "prebuild": "yarn clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/core": "workspace:^",
+    "@jbrowse/core": "^4.0.3",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "generic-filehandle2": "^2.0.18",
-    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/plugin-linear-genome-view": "^4.0.3",
     "@mui/x-charts-vendor": "^8.23.0",
     "hic-straw": "^2.1.4",
     "mobx": "^6.15.0",

@@ -20,18 +20,18 @@
     "esm"
   ],
   "scripts": {
-    "prebuild": "pnpm clean",
-    "build": "pnpm run /^build:/",
+    "prebuild": "yarn clean",
+    "build": "yarn run /^build:/",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo",
     "test": "cd ../..; jest --passWithNoTests plugins/linear-genome-view",
-    "prepublishOnly": "pnpm test",
-    "prepack": "pnpm build"
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build"
   },
   "dependencies": {
-    "@jbrowse/core": "workspace:^",
+    "@jbrowse/core": "^4.0.3",
     "@jbrowse/mobx-state-tree": "^5.5.0",
-    "@jbrowse/product-core": "workspace:^",
+    "@jbrowse/product-core": "^4.0.3",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
     "@types/file-saver-es": "^2.0.3",

@@ -30,7 +30,7 @@
 ### enhancement
 
 - Show full dotplot when zoomed all the way out (#5387) @cmdcolin
-- Switch to pnpm as package manager and add ESM "exports" to packages (#5382)
+- Switch to yarn as package manager and add ESM "exports" to packages (#5382)
   @cmdcolin
 - Re-organize 'track action' menu items into a submenu (#5378) @cmdcolin
 - Remove BroadcastChannel from SessionLoader (#5375) @cmdcolin
@@ -169,7 +169,7 @@
 ### enhancement
 
 - Show full dotplot when zoomed all the way out (#5387) @cmdcolin
-- Switch to pnpm as package manager and add ESM "exports" to packages (#5382)
+- Switch to yarn as package manager and add ESM "exports" to packages (#5382)
   @cmdcolin
 - Re-organize 'track action' menu items into a submenu (#5378) @cmdcolin
 - Remove BroadcastChannel from SessionLoader (#5375) @cmdcolin
@@ -308,7 +308,7 @@
 ### enhancement
 
 - Show full dotplot when zoomed all the way out (#5387) @cmdcolin
-- Switch to pnpm as package manager and add ESM "exports" to packages (#5382)
+- Switch to yarn as package manager and add ESM "exports" to packages (#5382)
   @cmdcolin
 - Re-organize 'track action' menu items into a submenu (#5378) @cmdcolin
 - Remove BroadcastChannel from SessionLoader (#5375) @cmdcolin
@@ -447,7 +447,7 @@
 ### enhancement
 
 - Show full dotplot when zoomed all the way out (#5387) @cmdcolin
-- Switch to pnpm as package manager and add ESM "exports" to packages (#5382)
+- Switch to yarn as package manager and add ESM "exports" to packages (#5382)
   @cmdcolin
 - Re-organize 'track action' menu items into a submenu (#5378) @cmdcolin
 - Remove BroadcastChannel from SessionLoader (#5375) @cmdcolin

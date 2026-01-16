@@ -24,17 +24,17 @@
   ],
   "scripts": {
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "build": "pnpm build:esm",
+    "build": "yarn build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/sv-core",
     "clean": "rimraf esm *.tsbuildinfo",
-    "prebuild": "pnpm clean",
-    "prepack": "pnpm build"
+    "prebuild": "yarn clean",
+    "prepack": "yarn build"
   },
   "dependencies": {
     "@gmod/vcf": "^6.1.0",
-    "@jbrowse/core": "workspace:^",
+    "@jbrowse/core": "^4.0.3",
     "@jbrowse/mobx-state-tree": "^5.5.0",
-    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/plugin-linear-genome-view": "^4.0.3",
     "@mui/material": "^7.3.6",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1"

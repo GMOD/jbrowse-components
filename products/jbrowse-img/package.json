@@ -24,16 +24,16 @@
   "sideEffects": false,
   "scripts": {
     "clean": "rm -rf esm *.tsbuildinfo",
-    "prebuild": "pnpm clean",
-    "build": "pnpm run /^build:/",
+    "prebuild": "yarn clean",
+    "build": "yarn run /^build:/",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "preversion": "pnpm build"
+    "preversion": "yarn build"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
-    "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@jbrowse/react-linear-genome-view2": "workspace:^",
+    "@jbrowse/plugin-linear-genome-view": "^4.0.3",
+    "@jbrowse/react-linear-genome-view2": "^4.0.3",
     "canvas": "^3.2.0",
     "@types/jsdom": "^21.1.7",
     "@types/yargs": "^17.0.33",

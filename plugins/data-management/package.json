@@ -20,20 +20,20 @@
     "esm"
   ],
   "scripts": {
-    "build": "pnpm run /^build:/",
+    "build": "yarn run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/data-management",
-    "prepublishOnly": "pnpm test",
-    "prepack": "pnpm build",
-    "prebuild": "pnpm clean",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build",
+    "prebuild": "yarn clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
     "@gmod/ucsc-hub": "^2.0.3",
-    "@jbrowse/core": "workspace:^",
+    "@jbrowse/core": "^4.0.3",
     "@jbrowse/mobx-state-tree": "^5.5.0",
-    "@jbrowse/plugin-config": "workspace:^",
-    "@jbrowse/product-core": "workspace:^",
+    "@jbrowse/plugin-config": "^4.0.3",
+    "@jbrowse/product-core": "^4.0.3",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
     "@mui/x-data-grid": "^8.23.0",

@@ -21,7 +21,7 @@ for (const dir of workspaceDirs) {
       const pkgJsonPath = path.join(pkgDir, 'package.json')
       if (fs.existsSync(pkgJsonPath)) {
         const location = pkgDir
-        const { signal, status } = spawn.sync('pnpm', ['pack'], {
+        const { signal, status } = spawn.sync('yarn', ['pack'], {
           stdio: 'inherit',
           cwd: location,
         })

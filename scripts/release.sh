@@ -11,8 +11,8 @@ set -o pipefail
 # Pre-flight checks
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 [[ "$BRANCH" != "main" ]] && { echo "Current branch is not main, please switch to main branch" && exit 1; }
-NPMUSER=$(pnpm whoami)
-[[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'pnpm login'" && exit 1; }
+NPMUSER=$(yarn whoami)
+[[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'yarn login'" && exit 1; }
 git fetch origin main
 MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
 [[ "$MAINUPDATED" != 0 ]] && { echo "main is not up to date with origin/main. Please pull and try again" && exit 1; }
@@ -20,13 +20,13 @@ LOCAL_CHANGES=$(git status --short)
 [[ "$LOCAL_CHANGES" != "" ]] && { echo "Please discard or stash changes and try again." && exit 1; }
 
 # Run checks
-pnpm install
-# pnpm lint
-# pnpm test
+yarn install
+# yarn lint
+# yarn test
 
 # Calculate new version
 PREVIOUS_VERSION=$(node --print "require('./plugins/alignments/package.json').version")
-VERSION=$(pnpm exec semver --increment "$SEMVER_LEVEL" "$PREVIOUS_VERSION")
+VERSION=$(yarn exec semver --increment "$SEMVER_LEVEL" "$PREVIOUS_VERSION")
 RELEASE_TAG=v$VERSION
 
 # Check for blog post draft
@@ -74,13 +74,13 @@ for (const ws of ['packages', 'products', 'plugins']) {
 "
 
 # Commit, tag, publish
-pnpm format
+yarn format
 git add .
 git commit --message "$RELEASE_TAG"
 git tag -a "$RELEASE_TAG" -m "$RELEASE_TAG"
-if ! pnpm publish -r --access public --no-git-checks; then
+if ! yarn publish -r --access public --no-git-checks; then
   echo "Publish failed. The commit and tag have been created locally but not pushed."
-  echo "To retry: pnpm publish -r --access public --no-git-checks && git push && git push --tags"
+  echo "To retry: yarn publish -r --access public --no-git-checks && git push && git push --tags"
   echo "To abort: git reset --hard HEAD~1 && git tag -d $RELEASE_TAG"
   exit 1
 fi

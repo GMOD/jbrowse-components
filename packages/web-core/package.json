@@ -24,17 +24,17 @@
   ],
   "scripts": {
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "build": "pnpm build:esm",
+    "build": "yarn build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/web-core",
     "clean": "rimraf esm *.tsbuildinfo",
-    "prebuild": "pnpm clean",
-    "prepack": "pnpm build"
+    "prebuild": "yarn clean",
+    "prepack": "yarn build"
   },
   "dependencies": {
-    "@jbrowse/app-core": "workspace:^",
-    "@jbrowse/core": "workspace:^",
+    "@jbrowse/app-core": "^4.0.3",
+    "@jbrowse/core": "^4.0.3",
     "@jbrowse/mobx-state-tree": "^5.5.0",
-    "@jbrowse/product-core": "workspace:^",
+    "@jbrowse/product-core": "^4.0.3",
     "dockview-core": "^4.13.1",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",

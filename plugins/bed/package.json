@@ -20,11 +20,11 @@
     "esm"
   ],
   "scripts": {
-    "build": "pnpm run /^build:/",
+    "build": "yarn run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/bed",
-    "prepublishOnly": "pnpm test",
-    "prepack": "pnpm build",
-    "prebuild": "pnpm clean",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build",
+    "prebuild": "yarn clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
@@ -33,7 +33,7 @@
     "@gmod/bbi": "^8.1.1",
     "@gmod/bed": "^2.1.7",
     "@gmod/tabix": "^3.2.2",
-    "@jbrowse/core": "workspace:^",
+    "@jbrowse/core": "^4.0.3",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "mobx": "^6.15.0",
     "rxjs": "^7.8.2"

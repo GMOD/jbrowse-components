@@ -28,10 +28,10 @@
     "node": ">=18.3.0"
   },
   "scripts": {
-    "prebuild": "pnpm clean",
+    "prebuild": "yarn clean",
     "build": "tsc && webpack",
     "clean": "rimraf bundle",
-    "prepack": "pnpm clean && pnpm build && pnpm generate-readme",
+    "prepack": "yarn clean && yarn build && yarn generate-readme",
     "generate-readme": "./generate_readme.sh > README.md"
   },
   "dependencies": {

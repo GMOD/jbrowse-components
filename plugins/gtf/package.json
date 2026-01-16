@@ -20,20 +20,20 @@
     "esm"
   ],
   "scripts": {
-    "build": "pnpm run /^build:/",
+    "build": "yarn run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/gtf --passWithNoTests",
-    "prepublishOnly": "pnpm test",
-    "prepack": "pnpm build",
-    "prebuild": "pnpm clean",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build",
+    "prebuild": "yarn clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^2.0.3",
     "@gmod/bgzf-filehandle": "^6.0.9",
-    "@jbrowse/core": "workspace:^",
+    "@jbrowse/core": "^4.0.3",
     "@jbrowse/mobx-state-tree": "^5.5.0",
-    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/plugin-linear-genome-view": "^4.0.3",
     "@mui/material": "^7.3.6",
     "gtf-nostream": "^1.3.4",
     "mobx": "^6.15.0",

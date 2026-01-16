@@ -9,7 +9,7 @@ Build jbrowse-web first:
 
 ```bash
 cd products/jbrowse-web
-pnpm build
+yarn build
 ```
 
 ## Running Tests
@@ -18,13 +18,13 @@ From `products/jbrowse-web`:
 
 ```bash
 # Run tests in headless mode
-pnpm test:browser
+yarn test:browser
 
 # Run tests with visible browser
-pnpm test:browser:headed
+yarn test:browser:headed
 
 # Update canvas snapshots
-pnpm test:browser:update
+yarn test:browser:update
 ```
 
 Or run directly:
