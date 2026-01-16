@@ -17,6 +17,10 @@ const useStyles = makeStyles()(theme => ({
     lineHeight: 'normal',
     zIndex: 1,
     background: theme.palette.background.paper,
+    cursor: 'pointer',
+    '&:hover': {
+      background: theme.palette.grey[300],
+    },
   },
   // First block label when it's not a ContentBlock
   b0: {
@@ -53,7 +57,12 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   return (
     <>
       {b0?.type !== 'ContentBlock' && val ? (
-        <span className={cx(classes.b0, classes.refLabel)}>{val}</span>
+        <span
+          className={cx(classes.b0, classes.refLabel)}
+          onMouseDown={event => event.stopPropagation()}
+        >
+          {val}
+        </span>
       ) : null}
       {staticBlocks.map((block, index) => {
         const {
@@ -76,6 +85,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
             }}
             className={classes.refLabel}
             data-testid={`refLabel-${refName}`}
+            onMouseDown={event => event.stopPropagation()}
           >
             {last && val ? `${val}:` : ''}
             {refName}

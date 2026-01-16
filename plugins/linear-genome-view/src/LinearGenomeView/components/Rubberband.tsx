@@ -70,7 +70,7 @@ const Rubberband = observer(function Rubberband({
         <Menu
           anchorReference="anchorPosition"
           anchorPosition={{
-            left: anchorPosition.clientX,
+            left: anchorPosition.clientX + 10,
             top: anchorPosition.clientY,
           }}
           onMenuItemClick={handleMenuItemClick}

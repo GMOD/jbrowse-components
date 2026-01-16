@@ -30,6 +30,7 @@ export function useRangeSelect(
     setAnchorPosition(undefined)
     setStartX(undefined)
     setCurrentX(undefined)
+    setGuideX(undefined)
   }, [])
 
   useEffect(() => {
@@ -64,13 +65,15 @@ export function useRangeSelect(
           clientY,
           isClick,
         })
-        if (!isClick) {
+        if (isClick) {
+          setGuideX(offsetX)
+        } else {
           const args = computeOffsets(offsetX)
           if (args) {
             model.setOffsets(args.leftOffset, args.rightOffset)
           }
+          setGuideX(undefined)
         }
-        setGuideX(undefined)
       }
     }
     if (mouseDragging) {
@@ -97,7 +100,9 @@ export function useRangeSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (shiftOnly) {
+    if (mouseDragging) {
+      setGuideX(undefined)
+    } else if (shiftOnly) {
       if (event.shiftKey) {
         setGuideX(getRelativeX(event, ref.current))
       } else {
@@ -109,7 +114,9 @@ export function useRangeSelect(
   }
 
   function mouseOut() {
-    setGuideX(undefined)
+    if (!anchorPosition?.isClick) {
+      setGuideX(undefined)
+    }
   }
 
   function handleMenuItemClick(_: unknown, callback: () => void) {
@@ -148,6 +155,7 @@ export function useRangeSelect(
     open,
     isClick,
     clickBpOffset,
+    guideX,
     rubberbandOn: !isClick,
     mouseDown,
     mouseMove,

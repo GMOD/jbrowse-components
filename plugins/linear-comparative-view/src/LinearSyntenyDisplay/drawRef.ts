@@ -7,17 +7,19 @@ import {
 } from './components/util.ts'
 import {
   MAX_COLOR_RANGE,
-  applyAlpha,
-  colorSchemes,
-  getQueryColor,
   lineLimit,
   makeColor,
   oobLimit,
 } from './drawSyntenyUtils.ts'
 
-import type { ColorScheme, defaultCigarColors } from './drawSyntenyUtils.ts'
+import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+
+// Constant callback for click map fill - avoids creating new function each iteration
+const fillCb = (ctx: CanvasRenderingContext2D) => {
+  ctx.fill()
+}
 
 export function drawRef(
   model: LinearSyntenyDisplayModel,
@@ -28,61 +30,20 @@ export function drawRef(
   const drawCIGAR = view.drawCIGAR
   const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
   const drawLocationMarkersEnabled = view.drawLocationMarkers
-  const { level, height, featPositions, alpha, minAlignmentLength, colorBy } =
-    model
+  const { level, height, featPositions, minAlignmentLength, colorBy } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
-  // Get the appropriate color map for the current scheme
-  const schemeConfig =
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    colorSchemes[colorBy as ColorScheme] || colorSchemes.default
-  const activeColorMap = schemeConfig.cigarColors
-
-  // Define colors for strand-based coloring
-  const posColor = colorBy === 'strand' ? colorSchemes.strand.posColor : 'red'
-  const negColor = colorBy === 'strand' ? colorSchemes.strand.negColor : 'blue'
-
-  // Precalculate colors with alpha applied to avoid repeated calls
-  const colorMapWithAlpha = {
-    I: applyAlpha(activeColorMap.I, alpha),
-    N: applyAlpha(activeColorMap.N, alpha),
-    D: applyAlpha(activeColorMap.D, alpha),
-    X: applyAlpha(activeColorMap.X, alpha),
-    M: applyAlpha(activeColorMap.M, alpha),
-    '=': applyAlpha(activeColorMap['='], alpha),
-  }
-
-  // Precalculate strand colors with alpha
-  const posColorWithAlpha = applyAlpha(posColor, alpha)
-  const negColorWithAlpha = applyAlpha(negColor, alpha)
-
-  // Cache for query colors with alpha applied
-  const queryColorCache = new Map<string, string>()
-
-  const getQueryColorWithAlpha = (queryName: string) => {
-    if (!queryColorCache.has(queryName)) {
-      const color = getQueryColor(queryName)
-      queryColorCache.set(queryName, applyAlpha(color, alpha))
-    }
-    return queryColorCache.get(queryName)!
-  }
+  // Use cached colors from model (only recalculated when alpha/colorBy change)
+  const colorMapWithAlpha = model.colorMapWithAlpha
+  const posColorWithAlpha = model.posColorWithAlpha
+  const negColorWithAlpha = model.negColorWithAlpha
+  const getQueryColorWithAlpha = model.queryColorWithAlphaMap
+  const queryTotalLengths = model.queryTotalLengths
 
   const offsets = view.views.map(v => v.offsetPx)
   const offsetsL0 = offsets[level]!
   const offsetsL1 = offsets[level + 1]!
-
-  // Pre-calculate query total lengths for filtering
-  let queryTotalLengths: Map<string, number> | undefined
-  if (minAlignmentLength > 0) {
-    queryTotalLengths = new Map<string, number>()
-    for (const { f } of featPositions) {
-      const queryName = f.get('name') || f.get('id') || f.id()
-      const alignmentLength = Math.abs(f.get('end') - f.get('start'))
-      const currentTotal = queryTotalLengths.get(queryName) || 0
-      queryTotalLengths.set(queryName, currentTotal + alignmentLength)
-    }
-  }
 
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
   const y1 = 0
@@ -313,9 +274,7 @@ export function drawRef(
       clickMapCtx.fillStyle = makeColor(idx)
 
       drawMatchSimple({
-        cb: ctx => {
-          ctx.fill()
-        },
+        cb: fillCb,
         feature,
         ctx: clickMapCtx,
         drawCurves,

@@ -28,6 +28,9 @@ const useStyles = makeStyles()({
   resizeHandle: {
     height: 4,
     background: '#ccc',
+    '&:hover': {
+      background: '#aaa',
+    },
   },
 })
 
