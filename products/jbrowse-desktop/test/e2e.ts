@@ -530,22 +530,216 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
   await searchInput.sendKeys('\uE007') // Enter
   await delay(2000)
 
+  // Click somewhere else to dismiss the autocomplete dropdown
+  console.log('    DEBUG: Clicking body to dismiss autocomplete...')
+  const body = await driver.findElement(By.css('body'))
+  await driver.executeScript('arguments[0].click();', body)
+  await delay(300)
+
+  // Press Escape to ensure any popups are closed
+  await driver.actions().sendKeys('\uE00C').perform()
+  await delay(300)
+
   // Wait for zoom controls to appear (indicates view is fully loaded)
   console.log('    DEBUG: Waiting for zoom controls...')
   await driver.wait(
     until.elementLocated(By.css('[data-testid="zoom_in"]')),
     10000,
   )
+
+  // Clean up any open menus/dialogs before ending
+  console.log('    DEBUG: Cleaning up before next test...')
+  await closeAllDialogs(driver)
+  await closeAllMenus(driver)
+  await delay(500)
+
   console.log('    DEBUG: Volvox genome loaded successfully!')
 }
 
+async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
+  console.log('    DEBUG: Adding GFF3 track and searching for EDEN.1...')
+
+  // Close any open dialogs and menus
+  await closeAllDialogs(driver)
+  await closeAllMenus(driver)
+
+  // Extra: dismiss any remaining backdrops by clicking on them
+  console.log('    DEBUG: Dismissing any open backdrops...')
+  let backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
+  if (backdrops.length > 0) {
+    console.log(
+      `    DEBUG: Found ${backdrops.length} backdrops, clicking to dismiss...`,
+    )
+    for (const backdrop of backdrops) {
+      try {
+        await driver.executeScript('arguments[0].click();', backdrop)
+        await delay(200)
+      } catch {
+        // Ignore errors if backdrop is no longer present
+      }
+    }
+    // Also press Escape multiple times
+    for (let i = 0; i < 5; i++) {
+      await driver.actions().sendKeys('\uE00C').perform()
+      await delay(200)
+    }
+  }
+  await delay(500)
+
+  // Verify backdrops are gone
+  backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
+  console.log(`    DEBUG: Backdrops remaining: ${backdrops.length}`)
+
+  // Add track via File > Open track menu
+  console.log('    DEBUG: Clicking File menu...')
+  await clickButton(driver, 'File')
+  await delay(500)
+
+  console.log('    DEBUG: Looking for Open track menu item...')
+  const openTrackItem = await driver.wait(
+    until.elementLocated(By.xpath("//*[contains(text(), 'Open track')]")),
+    5000,
+  )
+  await driver.wait(until.elementIsVisible(openTrackItem), 3000)
+  await openTrackItem.click()
+  await delay(1000)
+
+  // The "Add a track" dialog should appear
+  console.log('    DEBUG: Waiting for Add track dialog...')
+  await findByText(driver, 'Add a track', 10000)
+
+  // Click URL toggles to switch from file to URL mode
+  console.log('    DEBUG: Looking for URL toggle buttons...')
+  const urlToggleButtons = await driver.findElements(
+    By.xpath("//button[contains(., 'URL')]"),
+  )
+  console.log(`    DEBUG: Found ${urlToggleButtons.length} URL toggle buttons`)
+
+  // Click first URL toggle (for GFF file)
+  if (urlToggleButtons.length >= 1) {
+    console.log('    DEBUG: Clicking first URL toggle...')
+    await urlToggleButtons[0].click()
+    await delay(500)
+  }
+
+  // Find URL inputs
+  let urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
+  console.log(`    DEBUG: Found ${urlInputs.length} URL inputs after toggle`)
+
+  if (urlInputs.length >= 1) {
+    const gffPath = `file://${join(TEST_DATA_DIR, 'volvox.sort.gff3.gz')}`
+    console.log(`    DEBUG: Entering GFF URL: ${gffPath}`)
+    await urlInputs[0].sendKeys(gffPath)
+  }
+
+  // Click second URL toggle for index file if available
+  if (urlToggleButtons.length >= 2) {
+    console.log('    DEBUG: Clicking second URL toggle...')
+    await urlToggleButtons[1].click()
+    await delay(500)
+  }
+
+  // Find URL inputs again
+  urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
+  console.log(
+    `    DEBUG: Found ${urlInputs.length} URL inputs after second toggle`,
+  )
+
+  if (urlInputs.length >= 2) {
+    const indexPath = `file://${join(TEST_DATA_DIR, 'volvox.sort.gff3.gz.tbi')}`
+    console.log(`    DEBUG: Entering index URL: ${indexPath}`)
+    await urlInputs[1].sendKeys(indexPath)
+  }
+
+  // Click Submit/Open button
+  console.log('    DEBUG: Looking for Submit button...')
+  const submitButtons = await driver.findElements(
+    By.xpath("//button[contains(., 'Submit') or contains(., 'Open')]"),
+  )
+  if (submitButtons.length > 0) {
+    const submitBtn = submitButtons[submitButtons.length - 1]!
+    await driver.executeScript('arguments[0].scrollIntoView(true);', submitBtn)
+    await delay(300)
+    console.log('    DEBUG: Clicking Submit...')
+    await driver.executeScript('arguments[0].click();', submitBtn)
+  }
+
+  await delay(2000)
+
+  // Close any remaining dialogs
+  await driver.actions().sendKeys('\uE00C').perform()
+  await delay(500)
+
+  // Now search for EDEN.1 in the refname autocomplete
+  console.log('    DEBUG: Looking for location search input...')
+  const searchInput = await driver.wait(
+    until.elementLocated(By.css('input[placeholder="Search for location"]')),
+    10000,
+  )
+
+  console.log('    DEBUG: Clearing and typing EDEN.1...')
+  await clearInput(driver, searchInput)
+  await searchInput.sendKeys('EDEN.1')
+  await delay(1500) // Wait for autocomplete suggestions
+
+  // Look for EDEN.1 in the autocomplete dropdown and click it
+  console.log('    DEBUG: Looking for EDEN.1 in autocomplete suggestions...')
+  const edenOption = await driver.wait(
+    until.elementLocated(
+      By.xpath(
+        "//*[contains(@class, 'MuiAutocomplete') or contains(@class, 'MuiPopper')]//*[contains(text(), 'EDEN')]",
+      ),
+    ),
+    10000,
+  )
+  console.log('    DEBUG: Found EDEN.1 suggestion, clicking...')
+  await edenOption.click()
+  await delay(2000)
+
+  // Verify navigation happened - the view should have updated
+  console.log('    DEBUG: Verifying navigation to EDEN.1...')
+  await driver.wait(
+    until.elementLocated(By.css('[data-testid="zoom_in"]')),
+    5000,
+  )
+
+  // Clean up after test
+  await closeAllDialogs(driver)
+  await closeAllMenus(driver)
+  await delay(300)
+
+  console.log(
+    '    DEBUG: Successfully added GFF3 track and searched for EDEN.1!',
+  )
+}
+
 async function testFileMenu(driver: WebDriver): Promise<void> {
+  await closeAllMenus(driver)
   await findByText(driver, 'File', 10000)
 }
 
 async function testHelpAbout(driver: WebDriver): Promise<void> {
-  // Close any open dialogs from previous tests
+  // Close any open dialogs and backdrops from previous tests
   await closeAllDialogs(driver)
+  await closeAllMenus(driver)
+
+  // Extra: dismiss any remaining backdrops
+  const backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
+  if (backdrops.length > 0) {
+    console.log(`    DEBUG: Found ${backdrops.length} backdrops, dismissing...`)
+    for (const backdrop of backdrops) {
+      try {
+        await driver.executeScript('arguments[0].click();', backdrop)
+        await delay(200)
+      } catch {
+        // Ignore
+      }
+    }
+    for (let i = 0; i < 3; i++) {
+      await driver.actions().sendKeys('\uE00C').perform()
+      await delay(200)
+    }
+  }
 
   // Check if we're in an active session (not on start screen)
   const startScreenElements = await driver.findElements(
@@ -601,8 +795,9 @@ async function testHelpAbout(driver: WebDriver): Promise<void> {
 }
 
 async function testZoom(driver: WebDriver): Promise<void> {
-  // Close any open dialogs from previous tests
+  // Close any open dialogs and backdrops from previous tests
   await closeAllDialogs(driver)
+  await closeAllMenus(driver)
 
   const zoomIn = await driver.wait(
     until.elementLocated(By.css('[data-testid="zoom_in"]')),
@@ -620,6 +815,10 @@ async function testZoom(driver: WebDriver): Promise<void> {
 }
 
 async function testLocationSearch(driver: WebDriver): Promise<void> {
+  // Close any open dialogs and backdrops from previous tests
+  await closeAllDialogs(driver)
+  await closeAllMenus(driver)
+
   const searchInput = await driver.findElement(
     By.css('input[placeholder="Search for location"]'),
   )
@@ -947,6 +1146,11 @@ async function main(): Promise<void> {
 
   console.log('\nOpen Genome with Local Files:')
   await runTest('should open volvox genome', testOpenVolvoxGenome, driver)
+  await runTest(
+    'should add GFF3 track and search for EDEN.1',
+    testAddGff3TrackAndSearch,
+    driver,
+  )
 
   console.log('\nTrack Operations:')
   await runTest('should show File menu', testFileMenu, driver)
