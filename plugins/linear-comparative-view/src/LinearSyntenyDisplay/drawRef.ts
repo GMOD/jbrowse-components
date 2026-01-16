@@ -1,18 +1,21 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 
-import { draw, drawLocationMarkers, drawMatchSimple } from './components/util.ts'
+import {
+  draw,
+  drawLocationMarkers,
+  drawMatchSimple,
+} from './components/util.ts'
 import {
   MAX_COLOR_RANGE,
   applyAlpha,
   colorSchemes,
-  defaultCigarColors,
   getQueryColor,
   lineLimit,
   makeColor,
   oobLimit,
 } from './drawSyntenyUtils.ts'
 
-import type { ColorScheme } from './drawSyntenyUtils.ts'
+import type { ColorScheme, defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
@@ -29,18 +32,6 @@ export function drawRef(
     model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
-
-  // Calculate total alignment length per query sequence
-  // Group by query name and sum up all alignment lengths
-  const queryTotalLengths = new Map<string, number>()
-  if (minAlignmentLength > 0) {
-    for (const { f } of featPositions) {
-      const queryName = f.get('name') || f.get('id') || f.id()
-      const alignmentLength = Math.abs(f.get('end') - f.get('start'))
-      const currentTotal = queryTotalLengths.get(queryName) || 0
-      queryTotalLengths.set(queryName, currentTotal + alignmentLength)
-    }
-  }
 
   // Get the appropriate color map for the current scheme
   const schemeConfig =
@@ -77,69 +68,30 @@ export function drawRef(
     return queryColorCache.get(queryName)!
   }
 
-  mainCanvas.beginPath()
   const offsets = view.views.map(v => v.offsetPx)
   const offsetsL0 = offsets[level]!
   const offsetsL1 = offsets[level + 1]!
+
+  // Pre-calculate query total lengths for filtering
+  let queryTotalLengths: Map<string, number> | undefined
+  if (minAlignmentLength > 0) {
+    queryTotalLengths = new Map<string, number>()
+    for (const { f } of featPositions) {
+      const queryName = f.get('name') || f.get('id') || f.id()
+      const alignmentLength = Math.abs(f.get('end') - f.get('start'))
+      const currentTotal = queryTotalLengths.get(queryName) || 0
+      queryTotalLengths.set(queryName, currentTotal + alignmentLength)
+    }
+  }
+
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
   const y1 = 0
   const y2 = height
   const mid = (y2 - y1) / 2
 
   // Cache colorBy checks outside loop for performance
-  const useStrandColorThin = colorBy === 'strand'
-  const useQueryColorThin = colorBy === 'query'
-
-  mainCanvas.fillStyle = colorMapWithAlpha.M
-  mainCanvas.strokeStyle = colorMapWithAlpha.M
-
-  // Draw thin lines
-  for (const { p11, p12, p21, p22, f } of featPositions) {
-    // Filter by total alignment length for this query sequence
-    if (minAlignmentLength > 0) {
-      const queryName = f.get('name') || f.get('id') || f.id()
-      const totalLength = queryTotalLengths.get(queryName) || 0
-      if (totalLength < minAlignmentLength) {
-        continue
-      }
-    }
-
-    const x11 = p11.offsetPx - offsetsL0
-    const x12 = p12.offsetPx - offsetsL0
-    const x21 = p21.offsetPx - offsetsL1
-    const x22 = p22.offsetPx - offsetsL1
-    const l1 = Math.abs(x12 - x11)
-    const l2 = Math.abs(x22 - x21)
-
-    // drawing a line if the results are thin results in much less pixellation
-    // than filling in a thin polygon
-    if (
-      l1 <= lineLimit &&
-      l2 <= lineLimit &&
-      x21 < width + oobLimit &&
-      x21 > -oobLimit
-    ) {
-      // Set color for this line
-      if (useStrandColorThin) {
-        const strand = f.get('strand')
-        mainCanvas.strokeStyle =
-          strand === -1 ? negColorWithAlpha : posColorWithAlpha
-      } else if (useQueryColorThin) {
-        mainCanvas.strokeStyle = getQueryColorWithAlpha(f.get('refName'))
-      } else {
-        mainCanvas.strokeStyle = colorMapWithAlpha.M
-      }
-
-      mainCanvas.beginPath()
-      mainCanvas.moveTo(x11, y1)
-      if (drawCurves) {
-        mainCanvas.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-      } else {
-        mainCanvas.lineTo(x21, y2)
-      }
-      mainCanvas.stroke()
-    }
-  }
+  const useStrandColor = colorBy === 'strand'
+  const useQueryColor = colorBy === 'query'
 
   // Cache bpPerPx values and reciprocals for division in CIGAR loop
   const bpPerPx0 = bpPerPxs[level]!
@@ -147,19 +99,27 @@ export function drawRef(
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
 
-  // Cache colorBy checks outside loop for performance
-  const useStrandColor = colorBy === 'strand'
-  const useQueryColor = colorBy === 'query'
+  // Get click map context once
+  const clickMapCtx = model.clickMapCanvas?.getContext('2d')
+  if (clickMapCtx) {
+    clickMapCtx.imageSmoothingEnabled = false
+    clickMapCtx.clearRect(0, 0, width, height)
+  }
 
   mainCanvas.fillStyle = colorMapWithAlpha.M
   mainCanvas.strokeStyle = colorMapWithAlpha.M
-  for (const { p11, p12, p21, p22, f, cigar } of featPositions) {
-    // Cache feature properties at loop start
+
+  // Single loop over features - draw main canvas and click map together
+  for (const [i, featPosition] of featPositions.entries()) {
+    const feature = featPosition
+    const { p11, p12, p21, p22, f, cigar } = feature
+
+    // Cache feature properties
     const strand = f.get('strand')
     const refName = f.get('refName')
 
-    // Filter by total alignment length for this query sequence
-    if (minAlignmentLength > 0) {
+    // Filter by minAlignmentLength if enabled
+    if (queryTotalLengths) {
       const queryName = f.get('name') || f.get('id') || f.id()
       const totalLength = queryTotalLengths.get(queryName) || 0
       if (totalLength < minAlignmentLength) {
@@ -176,10 +136,34 @@ export function drawRef(
     const minX = Math.min(x21, x22)
     const maxX = Math.max(x21, x22)
 
+    // Draw thin lines (when both dimensions are small)
     if (
-      !(l1 <= lineLimit && l2 <= lineLimit) &&
-      doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)
+      l1 <= lineLimit &&
+      l2 <= lineLimit &&
+      x21 < width + oobLimit &&
+      x21 > -oobLimit
     ) {
+      // Set color for this line
+      if (useStrandColor) {
+        mainCanvas.strokeStyle =
+          strand === -1 ? negColorWithAlpha : posColorWithAlpha
+      } else if (useQueryColor) {
+        mainCanvas.strokeStyle = getQueryColorWithAlpha(refName)
+      } else {
+        mainCanvas.strokeStyle = colorMapWithAlpha.M
+      }
+
+      mainCanvas.beginPath()
+      mainCanvas.moveTo(x11, y1)
+      if (drawCurves) {
+        mainCanvas.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+      } else {
+        mainCanvas.lineTo(x21, y2)
+      }
+      mainCanvas.stroke()
+    }
+    // Draw thick features
+    else if (doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)) {
       const s1 = strand
       const k1 = s1 === -1 ? x12 : x11
       const k2 = s1 === -1 ? x11 : x12
@@ -322,47 +306,26 @@ export function drawRef(
         }
       }
     }
-  }
 
-  // draw click map
-  const ctx2 = model.clickMapCanvas?.getContext('2d')
-  if (!ctx2) {
-    return
-  }
-  ctx2.imageSmoothingEnabled = false
-  ctx2.clearRect(0, 0, width, height)
+    // Draw to click map (for all visible features, not just thick ones)
+    if (clickMapCtx) {
+      const idx = i * unitMultiplier + 1
+      clickMapCtx.fillStyle = makeColor(idx)
 
-  // eslint-disable-next-line unicorn/no-for-loop
-  for (let i = 0; i < featPositions.length; i++) {
-    const feature = featPositions[i]!
-
-    // Filter by total alignment length for this query sequence
-    if (minAlignmentLength > 0) {
-      const queryName =
-        feature.f.get('name') || feature.f.get('id') || feature.f.id()
-      const totalLength = queryTotalLengths.get(queryName) || 0
-      if (totalLength < minAlignmentLength) {
-        continue
-      }
+      drawMatchSimple({
+        cb: ctx => {
+          ctx.fill()
+        },
+        feature,
+        ctx: clickMapCtx,
+        drawCurves,
+        level,
+        offsets,
+        oobLimit,
+        viewWidth: view.width,
+        hideTiny: true,
+        height,
+      })
     }
-
-    const idx = i * unitMultiplier + 1
-    ctx2.fillStyle = makeColor(idx)
-
-    // too many click map false positives with colored stroked lines
-    drawMatchSimple({
-      cb: ctx => {
-        ctx.fill()
-      },
-      feature,
-      ctx: ctx2,
-      drawCurves,
-      level,
-      offsets,
-      oobLimit,
-      viewWidth: view.width,
-      hideTiny: true,
-      height,
-    })
   }
 }

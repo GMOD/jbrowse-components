@@ -3,12 +3,12 @@ import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { draw } from './components/util.ts'
 import {
   MAX_COLOR_RANGE,
-  defaultCigarColors,
   lineLimit,
   makeColor,
   oobLimit,
 } from './drawSyntenyUtils.ts'
 
+import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 

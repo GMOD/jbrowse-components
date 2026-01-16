@@ -39,7 +39,10 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
                 // model state e.g. when clicking on a feature from a
                 // LinearSyntenyRendering
                 views[level]?.navTo(feat, 0.2)
-                views[level + 1]?.navTo(feat.mate as SimpleFeatureSerialized, 0.2)
+                views[level + 1]?.navTo(
+                  feat.mate as SimpleFeatureSerialized,
+                  0.2,
+                )
               } else {
                 // best effort to find the right level. this is triggered for
                 // example if a user clicks on a feature in a LGVSyntenyDisplay

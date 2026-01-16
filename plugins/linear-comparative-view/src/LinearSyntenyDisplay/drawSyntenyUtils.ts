@@ -14,12 +14,7 @@ export function makeColor(idx: number) {
   return `rgb(${r},${g},${b})`
 }
 
-export function getId(
-  r: number,
-  g: number,
-  b: number,
-  unitMultiplier: number,
-) {
+export function getId(r: number, g: number, b: number, unitMultiplier: number) {
   return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
 }
 
