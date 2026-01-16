@@ -5,7 +5,6 @@ export type SkipMap = Record<
   string,
   {
     score: number
-    feature: unknown
     start: number
     end: number
     strand: number

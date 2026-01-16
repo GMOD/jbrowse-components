@@ -166,6 +166,8 @@ export async function generateCoverageBinsPrefixSum({
   for (let i = 0, l = features.length; i < l; i++) {
     processFeature(region, features[i]!, skipmap, noncovEvents, snpEvents)
   }
+  // Clear feature reference to avoid retaining last feature in memory
+  featureCtx.feature = undefined
 
   // Compute deletion depth prefix sums
   const deletionDepth = new Int32Array(regionSize)
@@ -491,7 +493,6 @@ function mismatchHandler(
       const hash = `${mstart}_${mend}_${effectiveStrand}`
       if (skipmap![hash] === undefined) {
         skipmap![hash] = {
-          feature: feature!,
           start: mstart,
           end: mend,
           strand: fstrand,

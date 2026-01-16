@@ -440,13 +440,7 @@ export default function SharedWiggleMixin(
        * #getter
        */
       get displayCrossHatchesSetting() {
-        return (
-          self.displayCrossHatches ??
-          (readConfObject(
-            self.rendererConfig,
-            'displayCrossHatches',
-          ) as boolean)
-        )
+        return self.rendererConfig.displayCrossHatches
       },
       /**
        * #getter

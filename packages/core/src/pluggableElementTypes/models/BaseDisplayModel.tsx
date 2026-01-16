@@ -141,7 +141,7 @@ function stateModelFactory() {
       renderProps() {
         return {
           ...getParentRenderProps(self),
-          notReady: this.isMinimized || getContainingView(self).minimized,
+          notReady: self.isMinimized || getContainingView(self).minimized,
           rpcDriverName: self.effectiveRpcDriverName,
         }
       },

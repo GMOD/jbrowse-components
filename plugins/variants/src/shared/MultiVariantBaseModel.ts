@@ -563,7 +563,7 @@ export default function MultiVariantBaseModelF(
                   label: `Phased${
                     self.hasPhased
                       ? ''
-                      : !self.featuresReady
+                      : !self.featuresVolatile
                         ? ' (checking for phased variants...)'
                         : ' (disabled, no phased variants found)'
                   }`,
