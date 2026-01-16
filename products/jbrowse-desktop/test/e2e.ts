@@ -116,7 +116,8 @@ async function clickButton(
     timeout,
   )
   await driver.wait(until.elementIsVisible(button), timeout)
-  await button.click()
+  // Use JavaScript click to bypass any backdrop overlays
+  await driver.executeScript('arguments[0].click();', button)
 }
 
 // Clear input field properly using keyboard shortcuts
@@ -204,7 +205,8 @@ async function openMenuItem(
     5000,
   )
   await driver.wait(until.elementIsVisible(menuItem), 3000)
-  await menuItem.click()
+  // Use JavaScript click to bypass any backdrop overlays
+  await driver.executeScript('arguments[0].click();', menuItem)
   await delay(500)
 }
 
@@ -218,6 +220,7 @@ async function runTest(
 
   try {
     await cleanupUI(d) // Cleanup before each test
+    await delay(500) // Wait for any backdrop animations to complete (MUI uses 225ms transitions)
     await fn(d)
     const duration = Date.now() - start
     results.push({ name, passed: true, duration })
@@ -348,7 +351,14 @@ async function testOpenHg19Genome(driver: WebDriver): Promise<void> {
   )
   console.log('    DEBUG: Found search input, typing hg19...')
   await genomeSearchInput.sendKeys('hg19')
-  await delay(1000)
+
+  // Wait for table rows to appear (network fetch may take time)
+  console.log('    DEBUG: Waiting for table rows to load...')
+  await driver.wait(
+    until.elementLocated(By.css('table tbody tr')),
+    30000,
+  )
+  await delay(1000) // Additional delay for filtering to complete
 
   // Find the row containing hg19 and click the (launch) link within it
   console.log('    DEBUG: Looking for hg19 launch link...')
@@ -566,17 +576,19 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
 async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Adding GFF3 track and searching for EDEN.1...')
 
-  // Add track via File > Open track menu
-  await openMenuItem(driver, 'File', 'Open track')
+  // Add track via File > Open track... menu
+  await openMenuItem(driver, 'File', 'Open track...')
 
   // Wait for menu backdrop to disappear before interacting with dialog
   console.log('    DEBUG: Waiting for menu backdrop to disappear...')
   await waitForBackdropsToDisappear(driver)
-  await delay(500)
+  await delay(1000)
 
   // The "Add a track" dialog should appear
   console.log('    DEBUG: Waiting for Add track dialog...')
   await findByText(driver, 'Add a track', 10000)
+  console.log('    DEBUG: Add track dialog is open, pausing for observation...')
+  await delay(3000)
 
   // Click URL toggles to switch from file to URL mode
   console.log('    DEBUG: Looking for URL toggle buttons...')
@@ -589,7 +601,7 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   if (urlToggleButtons.length >= 1) {
     console.log('    DEBUG: Clicking first URL toggle...')
     await driver.executeScript('arguments[0].click();', urlToggleButtons[0])
-    await delay(500)
+    await delay(1000)
   }
 
   // Find URL inputs
@@ -600,13 +612,14 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     const gffPath = `file://${join(TEST_DATA_DIR, 'volvox.sort.gff3.gz')}`
     console.log(`    DEBUG: Entering GFF URL: ${gffPath}`)
     await urlInputs[0].sendKeys(gffPath)
+    await delay(1000)
   }
 
   // Click second URL toggle for index file if available - use JavaScript click
   if (urlToggleButtons.length >= 2) {
     console.log('    DEBUG: Clicking second URL toggle...')
     await driver.executeScript('arguments[0].click();', urlToggleButtons[1])
-    await delay(500)
+    await delay(1000)
   }
 
   // Find URL inputs again
@@ -619,26 +632,65 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     const indexPath = `file://${join(TEST_DATA_DIR, 'volvox.sort.gff3.gz.tbi')}`
     console.log(`    DEBUG: Entering index URL: ${indexPath}`)
     await urlInputs[1].sendKeys(indexPath)
+    await delay(1000)
   }
 
-  // Click Submit/Open button
-  console.log('    DEBUG: Looking for Submit button...')
-  const submitButtons = await driver.findElements(
-    By.xpath("//button[contains(., 'Submit') or contains(., 'Open')]"),
+  console.log('    DEBUG: Pausing before Next to observe dialog state...')
+  await delay(3000)
+
+  // Click Next button to go to step 2 (uses data-testid="addTrackNextButton")
+  console.log('    DEBUG: Looking for Next button...')
+  const nextButton = await driver.wait(
+    until.elementLocated(By.css('[data-testid="addTrackNextButton"]')),
+    5000,
   )
-  if (submitButtons.length > 0) {
-    const submitBtn = submitButtons[submitButtons.length - 1]!
-    await driver.executeScript('arguments[0].scrollIntoView(true);', submitBtn)
-    await delay(300)
-    console.log('    DEBUG: Clicking Submit...')
-    await driver.executeScript('arguments[0].click();', submitBtn)
-  }
+  await driver.executeScript('arguments[0].scrollIntoView(true);', nextButton)
+  await delay(500)
+  console.log('    DEBUG: Clicking Next...')
+  await driver.executeScript('arguments[0].click();', nextButton)
 
   await delay(2000)
 
-  // Close any remaining dialogs
-  await driver.actions().sendKeys('\uE00C').perform()
+  // Check what assembly is selected on step 2
+  const assemblySelects = await driver.findElements(
+    By.css('[data-testid="annotationTrackAssembly"], select, [role="combobox"]'),
+  )
+  console.log(`    DEBUG: Found ${assemblySelects.length} potential assembly selectors`)
+
+  console.log('    DEBUG: Pausing to observe step 2...')
+  await delay(3000)
+
+  // Click Add button to finish the wizard (same data-testid, now shows "Add")
+  console.log('    DEBUG: Looking for Add button...')
+  const addButton = await driver.wait(
+    until.elementLocated(By.css('[data-testid="addTrackNextButton"]')),
+    5000,
+  )
+  await driver.executeScript('arguments[0].scrollIntoView(true);', addButton)
   await delay(500)
+  console.log('    DEBUG: Clicking Add...')
+  await driver.executeScript('arguments[0].click();', addButton)
+
+  console.log('    DEBUG: Waiting after Submit...')
+  await delay(5000)
+
+  // Check for any error messages
+  const errors = await driver.findElements(By.css('.MuiAlert-standardError'))
+  console.log(`    DEBUG: Found ${errors.length} error alerts`)
+
+  // Check if dialog is still open
+  const dialogs = await driver.findElements(By.css('.MuiDialog-root'))
+  console.log(`    DEBUG: ${dialogs.length} dialogs still open after Submit`)
+
+  // Close any remaining dialogs
+  if (dialogs.length > 0) {
+    console.log('    DEBUG: Pressing Escape to close dialogs...')
+    await driver.actions().sendKeys('\uE00C').perform()
+    await delay(1000)
+  }
+
+  console.log('    DEBUG: Pausing to observe track list...')
+  await delay(5000)
 
   // Now search for EDEN.1 in the refname autocomplete
   console.log('    DEBUG: Looking for location search input...')
@@ -650,7 +702,8 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Clearing and typing EDEN.1...')
   await clearInput(driver, searchInput)
   await searchInput.sendKeys('EDEN.1')
-  await delay(1500) // Wait for autocomplete suggestions
+  console.log('    DEBUG: Waiting for autocomplete suggestions...')
+  await delay(3000) // Wait for autocomplete suggestions
 
   // Look for EDEN.1 in the autocomplete dropdown and click it
   console.log('    DEBUG: Looking for EDEN.1 in autocomplete suggestions...')
