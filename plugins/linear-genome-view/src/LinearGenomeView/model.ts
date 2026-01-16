@@ -280,6 +280,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       isScalebarRefNameMenuOpen: false,
+      /**
+       * #volatile
+       */
+      scalebarRefNameClickPending: false,
     }))
     .views(self => ({
       /**
@@ -714,6 +718,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setIsScalebarRefNameMenuOpen(isOpen: boolean) {
         self.isScalebarRefNameMenuOpen = isOpen
+      },
+      /**
+       * #action
+       */
+      setScalebarRefNameClickPending(pending: boolean) {
+        self.scalebarRefNameClickPending = pending
       },
       /**
        * #action

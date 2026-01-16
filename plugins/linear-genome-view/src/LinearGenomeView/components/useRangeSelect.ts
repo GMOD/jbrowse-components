@@ -58,6 +58,20 @@ export function useRangeSelect(
         const { clientX, clientY } = event
         const offsetX = getRelativeX(event, ref.current)
         const isClick = Math.abs(offsetX - startX) <= 3
+
+        // If click started on a scalebar refname label, let that component
+        // handle it instead of showing the rubberband menu
+        if (isClick && model.scalebarRefNameClickPending) {
+          setStartX(undefined)
+          setCurrentX(undefined)
+          return
+        }
+
+        // Clear the pending flag if it was a drag (not a click)
+        if (!isClick && model.scalebarRefNameClickPending) {
+          model.setScalebarRefNameClickPending(false)
+        }
+
         // store both clientX/Y and offsetX for different purposes
         setAnchorPosition({
           offsetX,
