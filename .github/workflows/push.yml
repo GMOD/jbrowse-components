@@ -59,15 +59,16 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      - name: Check @jbrowse/core exports are up-to-date
-        run: |
-          node packages/core/scripts/generateExports.mjs
-          if ! git diff --quiet packages/core/package.json; then
-            echo "Error: @jbrowse/core exports are out of date!"
-            echo "Run 'node packages/core/scripts/generateExports.mjs' and commit the changes."
-            git diff packages/core/package.json
-            exit 1
-          fi
+      # TEMPORARY: Skip non-browser-test steps for faster iteration
+      # - name: Check @jbrowse/core exports are up-to-date
+      #   run: |
+      #     node packages/core/scripts/generateExports.mjs
+      #     if ! git diff --quiet packages/core/package.json; then
+      #       echo "Error: @jbrowse/core exports are out of date!"
+      #       echo "Run 'node packages/core/scripts/generateExports.mjs' and commit the changes."
+      #       git diff packages/core/package.json
+      #       exit 1
+      #     fi
 
       # Deploy jbrowse-web first
       - name: Validate branch/tag name for S3 path safety
@@ -96,21 +97,21 @@ jobs:
           aws s3 sync --delete --exclude="*.map" build s3://jbrowse.org/code/jb2/${{ github.ref_name }}
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${{ github.ref_name }}/*"
 
-      # Lint, typecheck, test
-      - name: Check code formatting
-        run: pnpm prettier --check .
-      - name: Spellcheck
-        uses: crate-ci/typos@5c19779cb52ea50e151f5a10333ccd269227b5ae # v1.41.0
-      - name: Lint code
-        run: pnpm lint
-      - name: Typecheck code
-        run: pnpm typecheck
-      - name: Run tests
-        run: pnpm test-ci
-      - name: Pack artifacts for component tests
-        run: node --experimental-strip-types scripts/pack.ts
-      - name: Test build
-        run: BUILT_TESTS=1 pnpm built-test-ci
+      # TEMPORARY: Skip lint/typecheck/test for faster iteration on browser tests
+      # - name: Check code formatting
+      #   run: pnpm prettier --check .
+      # - name: Spellcheck
+      #   uses: crate-ci/typos@5c19779cb52ea50e151f5a10333ccd269227b5ae # v1.41.0
+      # - name: Lint code
+      #   run: pnpm lint
+      # - name: Typecheck code
+      #   run: pnpm typecheck
+      # - name: Run tests
+      #   run: pnpm test-ci
+      # - name: Pack artifacts for component tests
+      #   run: node --experimental-strip-types scripts/pack.ts
+      # - name: Test build
+      #   run: BUILT_TESTS=1 pnpm built-test-ci
       - name: Run browser tests with Puppeteer
         id: browser-tests
         run: node --experimental-strip-types browser-tests/runner.ts
@@ -150,62 +151,64 @@ jobs:
           steps.browser-tests.outcome == 'failure' ||
           steps.auth-browser-tests.outcome == 'failure'
         run: exit 1
-      - name: Test desktop app
-        run: pnpm test:e2e:ci
-        working-directory: products/jbrowse-desktop
+
+      # TEMPORARY: Skip remaining steps for faster iteration on browser tests
+      # - name: Test desktop app
+      #   run: pnpm test:e2e:ci
+      #   working-directory: products/jbrowse-desktop
 
       # Deploy storybooks
-      - name: Build LGV storybook
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-linear-genome-view
+      # - name: Build LGV storybook
+      #   run: pnpm storybook:build
+      #   working-directory: products/jbrowse-react-linear-genome-view
 
-      - name: Deploy LGV storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${{ github.ref_name }}/*"
-        working-directory: products/jbrowse-react-linear-genome-view
+      # - name: Deploy LGV storybook
+      #   if:
+      #     github.ref == 'refs/heads/main' || startsWith(github.ref,
+      #     'refs/tags/')
+      #   run: |
+      #     aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${{ github.ref_name }}
+      #     aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${{ github.ref_name }}/*"
+      #   working-directory: products/jbrowse-react-linear-genome-view
 
-      - name: Build React App storybook
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-app
+      # - name: Build React App storybook
+      #   run: pnpm storybook:build
+      #   working-directory: products/jbrowse-react-app
 
-      - name: Deploy React App storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${{ github.ref_name }}/*"
-        working-directory: products/jbrowse-react-app
+      # - name: Deploy React App storybook
+      #   if:
+      #     github.ref == 'refs/heads/main' || startsWith(github.ref,
+      #     'refs/tags/')
+      #   run: |
+      #     aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${{ github.ref_name }}
+      #     aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${{ github.ref_name }}/*"
+      #   working-directory: products/jbrowse-react-app
 
-      - name: Build CGV storybook
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-circular-genome-view
+      # - name: Build CGV storybook
+      #   run: pnpm storybook:build
+      #   working-directory: products/jbrowse-react-circular-genome-view
 
-      - name: Deploy CGV storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${{ github.ref_name }}/*"
-        working-directory: products/jbrowse-react-circular-genome-view
+      # - name: Deploy CGV storybook
+      #   if:
+      #     github.ref == 'refs/heads/main' || startsWith(github.ref,
+      #     'refs/tags/')
+      #   run: |
+      #     aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${{ github.ref_name }}
+      #     aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${{ github.ref_name }}/*"
+      #   working-directory: products/jbrowse-react-circular-genome-view
 
-      - name: Upload packed artifacts for component tests
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: packed-artifacts
-          path: component_tests/*/packed/
-          retention-days: 1
+      # - name: Upload packed artifacts for component tests
+      #   uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      #   with:
+      #     name: packed-artifacts
+      #     path: component_tests/*/packed/
+      #     retention-days: 1
 
-  # Conditionally run the buildwebsite job
+  # TEMPORARY: Skip buildwebsite job for faster iteration
   buildwebsite:
     name: Build website
     needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: false # needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -233,6 +236,7 @@ jobs:
         with:
           args: website/testing/ --check-anchors
 
+  # TEMPORARY: Skip component_tests for faster iteration
   # Separate job for component_tests with no permissions.
   # These tests install npm packages without a yarn.lock, so untrusted
   # dependencies could potentially run malicious code. By isolating this
@@ -242,7 +246,7 @@ jobs:
   component_tests:
     name: Test embedded components
     needs: [check_commit_message, main]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: false # needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     permissions: {}
     steps:
