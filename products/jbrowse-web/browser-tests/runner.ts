@@ -340,11 +340,21 @@ const testSuites: TestSuite[] = [
             { timeout: 10000 },
           )
 
-          // Give dockview extra time to fully render the new tab
-          await delay(3000)
+          // Wait for view content to render - the active tab should show a view
+          // Look for the view container which indicates a view has rendered
+          await page.waitForSelector('[data-testid^="view-container-"]', {
+            timeout: 10000,
+          })
+
+          // Wait for location search input (view is fully rendered)
+          await page.waitForSelector('input[placeholder="Search for location"]', {
+            timeout: 10000,
+          })
 
           await waitForLoadingToComplete(page)
-          await delay(3000)
+
+          // Extra time for any animations/transitions
+          await delay(1000)
           await snapshot(page, 'workspaces-new-tab')
         },
       },

@@ -44,19 +44,19 @@ const JBrowseViewPanel = observer(function JBrowseViewPanel({
   const { classes } = useStyles()
 
   if (!session) {
-    console.log('[TiledViewsContainer] JBrowseViewPanel: no session', {
-      panelId,
-    })
+    console.log(
+      '[TiledViewsContainer] JBrowseViewPanel: no session',
+      JSON.stringify({ panelId }),
+    )
     return <div className={classes.container}>Loading...</div>
   }
 
   const views = getViewsForPanel(panelId, session)
 
-  console.log('[TiledViewsContainer] JBrowseViewPanel render', {
-    panelId,
-    viewCount: views.length,
-    viewIds: views.map(v => v.id),
-  })
+  console.log(
+    '[TiledViewsContainer] JBrowseViewPanel render',
+    JSON.stringify({ panelId, viewCount: views.length, viewIds: views.map(v => v.id) }),
+  )
 
   if (views.length === 0) {
     return (

@@ -160,11 +160,14 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     const session = sessionRef.current
     const pendingAction = peekPendingMoveAction()
 
-    console.log('[TiledViewsContainer] createInitialPanels called', {
-      pendingAction,
-      viewCount: session.views.length,
-      viewIds: session.views.map(v => v.id),
-    })
+    console.log(
+      '[TiledViewsContainer] createInitialPanels called',
+      JSON.stringify({
+        pendingAction,
+        viewCount: session.views.length,
+        viewIds: session.views.map(v => v.id),
+      }),
+    )
 
     // Check if there's init configuration from URL params
     const initLayout = isSessionWithDockviewLayout(session)
@@ -308,11 +311,10 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         .map(v => v.id)
         .filter(id => id !== pendingViewId)
 
-      console.log('[TiledViewsContainer] Processing pending action', {
-        type,
-        pendingViewId,
-        otherViewIds,
-      })
+      console.log(
+        '[TiledViewsContainer] Processing pending action',
+        JSON.stringify({ type, pendingViewId, otherViewIds }),
+      )
 
       // Create first panel for existing views (excluding the pending view)
       // Only create if there are other views to put in it
@@ -339,19 +341,22 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // Only clear the pending action after successful setup
       clearPendingMoveAction()
 
-      console.log('[TiledViewsContainer] Pending action handled', {
-        panelCount: dockviewApi.panels.length,
-        panelIds: dockviewApi.panels.map(p => p.id),
-      })
+      console.log(
+        '[TiledViewsContainer] Pending action handled',
+        JSON.stringify({
+          panelCount: dockviewApi.panels.length,
+          panelIds: dockviewApi.panels.map(p => p.id),
+        }),
+      )
     } else {
       // Normal case: create single initial panel
       const panelId = `panel-${createElementId()}`
       dockviewApi.addPanel(createPanelConfig(panelId, session))
 
-      console.log('[TiledViewsContainer] Normal case - created single panel', {
-        panelId,
-        panelCount: dockviewApi.panels.length,
-      })
+      console.log(
+        '[TiledViewsContainer] Normal case - created single panel',
+        JSON.stringify({ panelId, panelCount: dockviewApi.panels.length }),
+      )
 
       if (isSessionWithDockviewLayout(session)) {
         session.setActivePanelId(panelId)
@@ -404,14 +409,14 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         : null
       const savedLayout = !hasPendingAction && dockviewSession?.dockviewLayout
 
-      console.log('[TiledViewsContainer] onReady called', {
-        hasPendingAction,
-        hasSavedLayout: !!savedLayout,
-        viewCount: sessionRef.current.views.length,
-        panelAssignments: dockviewSession
-          ? Object.fromEntries(dockviewSession.panelViewAssignments.entries())
-          : null,
-      })
+      console.log(
+        '[TiledViewsContainer] onReady called',
+        JSON.stringify({
+          hasPendingAction,
+          hasSavedLayout: !!savedLayout,
+          viewCount: sessionRef.current.views.length,
+        }),
+      )
 
       if (savedLayout) {
         try {
@@ -427,10 +432,13 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
           if (event.api.panels.length === 0) {
             throw new Error('No panels after fromJSON restore')
           }
-          console.log('[TiledViewsContainer] Restored from savedLayout', {
-            panelCount: event.api.panels.length,
-            panelIds: event.api.panels.map(p => p.id),
-          })
+          console.log(
+            '[TiledViewsContainer] Restored from savedLayout',
+            JSON.stringify({
+              panelCount: event.api.panels.length,
+              panelIds: event.api.panels.map(p => p.id),
+            }),
+          )
         } catch (e) {
           console.error('Failed to restore dockview layout:', e)
           createInitialPanels(event.api)
