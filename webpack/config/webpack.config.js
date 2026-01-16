@@ -1,4 +1,5 @@
 import { execSync } from 'child_process'
+import fs from 'fs'
 import path from 'path'
 
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
@@ -17,13 +18,36 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false'
 
-function getWorkspaces(fromDir) {
-  const cwd = fromDir || process.cwd()
-  const workspacesStr = execSync('yarn workspaces info --json', {
-    cwd,
+function getWorkspaces() {
+  // Find the monorepo root (where the root package.json with workspaces is)
+  let root = process.cwd()
+  while (root !== '/') {
+    try {
+      const pkg = JSON.parse(
+        fs.readFileSync(path.join(root, 'package.json'), 'utf8'),
+      )
+      if (pkg.workspaces) {
+        break
+      }
+    } catch {
+      // continue
+    }
+    root = path.dirname(root)
+  }
+
+  const workspacesOutput = execSync('yarn workspaces info --json', {
+    cwd: root,
   }).toString()
-  const workspacesInfo = JSON.parse(workspacesStr)
-  return Object.values(workspacesInfo).map(e => path.resolve(cwd, e.location))
+
+  // yarn workspaces info --json outputs a header line, then JSON, then "Done"
+  // Extract just the JSON part
+  const jsonMatch = workspacesOutput.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) {
+    return []
+  }
+
+  const workspacesInfo = JSON.parse(jsonMatch[0])
+  return Object.values(workspacesInfo).map(e => path.resolve(root, e.location))
 }
 
 const cssRegex = /\.css$/
@@ -98,7 +122,7 @@ export default function webpackBuilder() {
           oneOf: [
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
-              include: [paths.appSrc, getWorkspaces()],
+              include: [paths.appSrc, ...getWorkspaces()],
               loader: 'babel-loader',
               options: {
                 plugins: ['babel-plugin-react-compiler'],
