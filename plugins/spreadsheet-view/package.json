@@ -53,6 +53,14 @@
       ".": {
         "types": "./esm/index.d.ts",
         "import": "./esm/index.js"
+      },
+      "./SpreadsheetView/SpreadsheetModel": {
+        "types": "./esm/SpreadsheetView/SpreadsheetModel.d.ts",
+        "import": "./esm/SpreadsheetView/SpreadsheetModel.js"
+      },
+      "./SpreadsheetView/SpreadsheetViewModel": {
+        "types": "./esm/SpreadsheetView/SpreadsheetViewModel.d.ts",
+        "import": "./esm/SpreadsheetView/SpreadsheetViewModel.js"
       }
     }
   },
@@ -62,6 +70,8 @@
     ".": {
       "types": "./esm/index.d.ts",
       "import": "./esm/index.js"
-    }
+    },
+    "./SpreadsheetView/SpreadsheetModel": "./src/SpreadsheetView/SpreadsheetModel.tsx",
+    "./SpreadsheetView/SpreadsheetViewModel": "./src/SpreadsheetView/SpreadsheetViewModel.ts"
   }
 }

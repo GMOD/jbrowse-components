@@ -50,6 +50,14 @@
       ".": {
         "types": "./esm/index.d.ts",
         "import": "./esm/index.js"
+      },
+      "./CircularView/slices": {
+        "types": "./esm/CircularView/slices.d.ts",
+        "import": "./esm/CircularView/slices.js"
+      },
+      "./CircularView/model": {
+        "types": "./esm/CircularView/model.d.ts",
+        "import": "./esm/CircularView/model.js"
       }
     }
   },
@@ -59,6 +67,8 @@
     ".": {
       "types": "./esm/index.d.ts",
       "import": "./esm/index.js"
-    }
+    },
+    "./CircularView/slices": "./src/CircularView/slices.ts",
+    "./CircularView/model": "./src/CircularView/model.ts"
   }
 }

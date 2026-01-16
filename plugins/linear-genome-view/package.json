@@ -52,15 +52,32 @@
       ".": {
         "types": "./esm/index.d.ts",
         "import": "./esm/index.js"
+      },
+      "./BaseLinearDisplay/types": {
+        "types": "./esm/BaseLinearDisplay/types.d.ts",
+        "import": "./esm/BaseLinearDisplay/types.js"
+      },
+      "./BaseLinearDisplay/models/serverSideRenderedBlock": {
+        "types": "./esm/BaseLinearDisplay/models/serverSideRenderedBlock.d.ts",
+        "import": "./esm/BaseLinearDisplay/models/serverSideRenderedBlock.js"
+      },
+      "./BaseLinearDisplay/components/util": {
+        "types": "./esm/BaseLinearDisplay/components/util.d.ts",
+        "import": "./esm/BaseLinearDisplay/components/util.js"
+      },
+      "./LinearGenomeView/types": {
+        "types": "./esm/LinearGenomeView/types.d.ts",
+        "import": "./esm/LinearGenomeView/types.js"
       }
     }
   },
   "sideEffects": false,
   "types": "esm/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./esm/index.d.ts",
-      "import": "./esm/index.js"
-    }
+    ".": "./src/index.ts",
+    "./BaseLinearDisplay/types": "./src/BaseLinearDisplay/types.ts",
+    "./BaseLinearDisplay/models/serverSideRenderedBlock": "./src/BaseLinearDisplay/models/serverSideRenderedBlock.ts",
+    "./BaseLinearDisplay/components/util": "./src/BaseLinearDisplay/components/util.ts",
+    "./LinearGenomeView/types": "./src/LinearGenomeView/types.ts"
   }
 }

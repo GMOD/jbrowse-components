@@ -128,11 +128,13 @@
     "./util/stopToken": "./src/util/stopToken.ts",
     "./util/tracks": "./src/util/tracks.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
+    "./util/tss-react/types": "./src/util/tss-react/types.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
-    "./util/nanoid": "./src/util/nanoid.ts"
+    "./util/nanoid": "./src/util/nanoid.ts",
+    "./BaseFeatureWidget/types": "./src/BaseFeatureWidget/types.tsx"
   },
   "files": [
     "esm"
@@ -619,6 +621,10 @@
         "types": "./esm/util/tss-react/index.d.ts",
         "import": "./esm/util/tss-react/index.js"
       },
+      "./util/tss-react/types": {
+        "types": "./esm/util/tss-react/types.d.ts",
+        "import": "./esm/util/tss-react/types.js"
+      },
       "./util/types": {
         "types": "./esm/util/types/index.d.ts",
         "import": "./esm/util/types/index.js"
@@ -638,6 +644,10 @@
       "./util/nanoid": {
         "types": "./esm/util/nanoid.d.ts",
         "import": "./esm/util/nanoid.js"
+      },
+      "./BaseFeatureWidget/types": {
+        "types": "./esm/BaseFeatureWidget/types.d.ts",
+        "import": "./esm/BaseFeatureWidget/types.js"
       }
     }
   },

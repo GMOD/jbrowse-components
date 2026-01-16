@@ -12,6 +12,7 @@
     "build": "node --experimental-strip-types scripts/build.ts",
     "useDist": "node --experimental-strip-types scripts/useDist.ts",
     "useSrc": "node --experimental-strip-types scripts/useSrc.ts",
+    "fix-exports": "node --experimental-strip-types scripts/fixMissingExports.ts",
     "changelog": "scripts/generate-changelog.sh",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",

@@ -58,6 +58,10 @@
       ".": {
         "types": "./esm/index.d.ts",
         "import": "./esm/index.js"
+      },
+      "./shared/types": {
+        "types": "./esm/shared/types.d.ts",
+        "import": "./esm/shared/types.js"
       }
     }
   },
@@ -67,6 +71,7 @@
     ".": {
       "types": "./esm/index.d.ts",
       "import": "./esm/index.js"
-    }
+    },
+    "./shared/types": "./src/shared/types.ts"
   }
 }
