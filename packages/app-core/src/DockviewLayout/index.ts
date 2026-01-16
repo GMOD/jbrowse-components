@@ -4,6 +4,20 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { SerializedDockview } from 'dockview-react'
 
 /**
+ * Nested layout structure for initializing dockview.
+ * A node is either a panel (has viewIds) or a container (has children).
+ */
+export interface DockviewLayoutNode {
+  // Panel node - view IDs to display stacked vertically
+  viewIds?: string[]
+  // Container node - arranges children in a direction
+  direction?: 'horizontal' | 'vertical'
+  children?: DockviewLayoutNode[]
+  // Size as percentage (0-100) of the parent container
+  size?: number
+}
+
+/**
  * #stateModel DockviewLayoutMixin
  * Session mixin that persists dockview layout state.
  * Each dockview panel can contain multiple views stacked vertically.
@@ -24,6 +38,11 @@ export function DockviewLayoutMixin() {
         types.map(types.array(types.string)),
         {},
       ),
+      /**
+       * #property
+       * Initial layout configuration from URL params. Processed once then cleared.
+       */
+      init: types.frozen<DockviewLayoutNode | undefined>(),
       /**
        * #property
        * The currently active panel ID in dockview
@@ -54,6 +73,14 @@ export function DockviewLayoutMixin() {
        */
       setActivePanelId(panelId: string | undefined) {
         self.activePanelId = panelId
+      },
+
+      /**
+       * #action
+       * Set the initial layout configuration (from URL params)
+       */
+      setInit(init: DockviewLayoutNode | undefined) {
+        self.init = init
       },
 
       /**
@@ -163,8 +190,13 @@ export function DockviewLayoutMixin() {
       if (!snap) {
         return snap
       }
-      const { dockviewLayout, panelViewAssignments, activePanelId, ...rest } =
-        snap as Omit<typeof snap, symbol>
+      const {
+        dockviewLayout,
+        panelViewAssignments,
+        init: _init,
+        activePanelId,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         ...(dockviewLayout !== undefined ? { dockviewLayout } : {}),

@@ -46,7 +46,7 @@ interface Props {
 
 function getPanelPosition(
   group: DockviewGroupPanel | undefined,
-  direction?: 'right',
+  direction?: 'right' | 'below',
 ) {
   if (!group) {
     return undefined
@@ -160,6 +160,127 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
     const session = sessionRef.current
     const pendingAction = peekPendingMoveAction()
 
+    // Check if there's init configuration from URL params
+    const initLayout = isSessionWithDockviewLayout(session)
+      ? session.init
+      : undefined
+
+    // If we have init configuration from URL params, use it
+    if (initLayout && isSessionWithDockviewLayout(session)) {
+      trackedViewIdsRef.current.clear()
+      let firstPanelId: string | undefined
+
+      // Collect groups and their sizes for post-processing
+      const groupSizes: { group: DockviewGroupPanel; size: number }[] = []
+
+      // Process nested layout structure
+      // Returns the group created for this node (for use as reference by siblings)
+      function processNode(
+        node: typeof initLayout,
+        referenceGroup: DockviewGroupPanel | undefined,
+        direction: 'right' | 'below' | undefined,
+      ): DockviewGroupPanel | undefined {
+        if (!node) {
+          return undefined
+        }
+        if (node.viewIds !== undefined) {
+          // Panel node - create a dockview panel
+          const panelId = `panel-${createElementId()}`
+          if (!firstPanelId) {
+            firstPanelId = panelId
+          }
+          const position =
+            referenceGroup && direction
+              ? { referenceGroup, direction }
+              : referenceGroup
+                ? { referenceGroup }
+                : undefined
+          dockviewApi.addPanel({
+            ...createPanelConfig(panelId, session, 'Tab'),
+            position,
+          })
+          // Populate panelViewAssignments from init
+          for (const viewId of node.viewIds) {
+            if (isSessionWithDockviewLayout(session)) {
+              session.assignViewToPanel(panelId, viewId)
+            }
+            trackedViewIdsRef.current.add(viewId)
+          }
+          // Return the group this panel was added to
+          const group = dockviewApi.getPanel(panelId)?.group
+          // Track size for this group if specified
+          if (group && node.size !== undefined) {
+            groupSizes.push({ group, size: node.size })
+          }
+          return group
+        }
+        if (node.children && node.children.length > 0) {
+          // Container node - process children
+          const dockviewDirection =
+            node.direction === 'horizontal' ? 'right' : 'below'
+          let currentGroup = referenceGroup
+          for (let i = 0; i < node.children.length; i++) {
+            const child = node.children[i]!
+            // First child uses parent's reference/direction, subsequent children split from previous
+            const childDirection = i === 0 ? direction : dockviewDirection
+            const childRef = i === 0 ? referenceGroup : currentGroup
+            const newGroup = processNode(child, childRef, childDirection)
+            if (newGroup) {
+              currentGroup = newGroup
+            }
+          }
+          return currentGroup
+        }
+        return undefined
+      }
+
+      processNode(initLayout, undefined, undefined)
+
+      // Apply proportional sizes after all panels are created
+      // Only handle simple horizontal/vertical splits at the root level
+      // Use requestAnimationFrame to ensure layout is complete
+      if (
+        groupSizes.length >= 2 &&
+        initLayout.direction &&
+        groupSizes.length === initLayout.children?.length
+      ) {
+        const direction = initLayout.direction
+        requestAnimationFrame(() => {
+          const totalSize = groupSizes.reduce((sum, g) => sum + g.size, 0)
+          if (totalSize > 0) {
+            if (direction === 'horizontal') {
+              const containerWidth = dockviewApi.width
+              if (containerWidth > 0) {
+                for (const { group, size } of groupSizes) {
+                  const width = Math.round(containerWidth * (size / totalSize))
+                  group.api.setSize({ width })
+                }
+              }
+            } else {
+              const containerHeight = dockviewApi.height
+              if (containerHeight > 0) {
+                for (const { group, size } of groupSizes) {
+                  const height = Math.round(
+                    containerHeight * (size / totalSize),
+                  )
+                  group.api.setSize({ height })
+                }
+              }
+            }
+          }
+        })
+      }
+
+      // Clear init after processing (it's only needed once)
+      session.setInit(undefined)
+      if (firstPanelId) {
+        session.setActivePanelId(firstPanelId)
+        // Activate the first panel in dockview (otherwise the last added panel is active)
+        dockviewApi.getPanel(firstPanelId)?.api.setActive()
+      }
+      return
+    }
+
     // Clear any stale state from previous mounts (e.g., React StrictMode double-mounting)
     if (isSessionWithDockviewLayout(session)) {
       for (const panelId of session.panelViewAssignments.keys()) {
@@ -271,11 +392,15 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
               trackedViewIdsRef.current.add(viewId)
             }
           }
-          rearrangingRef.current = false
+          // Verify restoration succeeded - if no panels, fall back to fresh creation
+          if (event.api.panels.length === 0) {
+            throw new Error('No panels after fromJSON restore')
+          }
         } catch (e) {
           console.error('Failed to restore dockview layout:', e)
-          rearrangingRef.current = false
           createInitialPanels(event.api)
+        } finally {
+          rearrangingRef.current = false
         }
       } else {
         createInitialPanels(event.api)

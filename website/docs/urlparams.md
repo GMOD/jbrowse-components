@@ -392,6 +392,112 @@ Expanded
 }
 ```
 
+### Tiled views / Workspaces
+
+You can use the `layout` parameter in a session spec to arrange multiple views
+into a tiled workspace layout. The `layout` parameter uses a nested structure
+where each node is either:
+
+- A **panel** (has `views` array) - displays views stacked vertically
+- A **container** (has `children` array) - arranges children horizontally or
+  vertically
+
+#### Horizontal split example
+
+```json
+{
+  "views": [
+    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgA:1-5000" },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:5000-10000"
+    },
+    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgB:1-5000" }
+  ],
+  "layout": {
+    "direction": "horizontal",
+    "children": [{ "views": [0, 1] }, { "views": [2] }]
+  }
+}
+```
+
+This creates a left-right split:
+
+- **Left panel** contains views 0 and 1 stacked vertically
+- **Right panel** contains view 2
+
+#### Custom panel sizes
+
+You can specify the `size` property to control the proportional width/height of
+panels:
+
+```json
+{
+  "views": [
+    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgA:1-5000" },
+    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgB:1-5000" }
+  ],
+  "layout": {
+    "direction": "horizontal",
+    "children": [
+      { "views": [0], "size": 70 },
+      { "views": [1], "size": 30 }
+    ]
+  }
+}
+```
+
+This creates a 70/30 split with the left panel taking 70% of the width.
+
+#### Complex nested layout example
+
+You can create more complex layouts by nesting containers:
+
+```json
+{
+  "views": [
+    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgA:1-5000" },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:5000-10000"
+    },
+    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgB:1-5000" },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgB:5000-10000"
+    }
+  ],
+  "layout": {
+    "direction": "horizontal",
+    "children": [
+      { "views": [0, 1] },
+      {
+        "direction": "vertical",
+        "children": [{ "views": [2] }, { "views": [3] }]
+      }
+    ]
+  }
+}
+```
+
+This creates:
+
+- **Left panel** with views 0 and 1 stacked
+- **Right side** split vertically into two panels (view 2 on top, view 3 on
+  bottom)
+
+The `layout` parameter:
+
+- Automatically enables workspaces mode
+- `direction` can be `"horizontal"` (left-right) or `"vertical"` (top-bottom)
+- `views` is an array of view indices (referencing the `views` array)
+- `size` is an optional number specifying the proportional size of a panel
+- Views within the same panel are stacked vertically
+- Layouts can be nested arbitrarily deep
+
 ## Other session options
 
 Another useful session URL is called a "session spec" or "session
