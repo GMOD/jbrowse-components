@@ -64,14 +64,5 @@
       }
     }
   },
-  "sideEffects": false,
-  "types": "esm/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./esm/index.d.ts",
-      "import": "./esm/index.js"
-    },
-    "./SpreadsheetView/SpreadsheetModel": "./src/SpreadsheetView/SpreadsheetModel.tsx",
-    "./SpreadsheetView/SpreadsheetViewModel": "./src/SpreadsheetView/SpreadsheetViewModel.ts"
-  }
+  "sideEffects": false
 }

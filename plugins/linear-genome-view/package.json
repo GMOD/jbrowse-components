@@ -71,13 +71,5 @@
       }
     }
   },
-  "sideEffects": false,
-  "types": "esm/index.d.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./BaseLinearDisplay/types": "./src/BaseLinearDisplay/types.ts",
-    "./BaseLinearDisplay/models/serverSideRenderedBlock": "./src/BaseLinearDisplay/models/serverSideRenderedBlock.ts",
-    "./BaseLinearDisplay/components/util": "./src/BaseLinearDisplay/components/util.ts",
-    "./LinearGenomeView/types": "./src/LinearGenomeView/types.ts"
-  }
+  "sideEffects": false
 }

@@ -54,9 +54,5 @@
         "import": "./esm/index.js"
       }
     }
-  },
-  "types": "esm/index.d.ts",
-  "exports": {
-    ".": "./src/index.ts"
   }
 }

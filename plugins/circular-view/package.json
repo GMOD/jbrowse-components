@@ -61,14 +61,5 @@
       }
     }
   },
-  "sideEffects": false,
-  "types": "esm/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./esm/index.d.ts",
-      "import": "./esm/index.js"
-    },
-    "./CircularView/slices": "./src/CircularView/slices.ts",
-    "./CircularView/model": "./src/CircularView/model.ts"
-  }
+  "sideEffects": false
 }

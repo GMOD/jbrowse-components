@@ -16,9 +16,6 @@
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
-  "exports": {
-    ".": "./src/index.ts"
-  },
   "files": [
     "esm",
     "docs"
@@ -68,6 +65,5 @@
       }
     }
   },
-  "sideEffects": false,
-  "types": "esm/index.d.ts"
+  "sideEffects": false
 }

@@ -56,9 +56,5 @@
       }
     }
   },
-  "sideEffects": false,
-  "types": "esm/index.d.ts",
-  "exports": {
-    ".": "./src/index.ts"
-  }
+  "sideEffects": false
 }
