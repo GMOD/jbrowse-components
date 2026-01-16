@@ -139,6 +139,21 @@ async function waitForStartScreen(
   await findByText(driver, 'Launch new session', timeout)
 }
 
+// Wait for all backdrops to disappear
+async function waitForBackdropsToDisappear(
+  driver: WebDriver,
+  timeout = 5000,
+): Promise<void> {
+  const startTime = Date.now()
+  while (Date.now() - startTime < timeout) {
+    const backdrops = await driver.findElements(By.css('.MuiBackdrop-root'))
+    if (backdrops.length === 0) {
+      return
+    }
+    await delay(200)
+  }
+}
+
 // Unified helper to clean up all UI overlays (dialogs, menus, backdrops)
 async function cleanupUI(driver: WebDriver): Promise<void> {
   // Close dialogs
@@ -553,6 +568,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
 
   // Add track via File > Open track menu
   await openMenuItem(driver, 'File', 'Open track')
+
+  // Wait for menu backdrop to disappear before interacting with dialog
+  console.log('    DEBUG: Waiting for menu backdrop to disappear...')
+  await waitForBackdropsToDisappear(driver)
   await delay(500)
 
   // The "Add a track" dialog should appear
@@ -566,10 +585,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   )
   console.log(`    DEBUG: Found ${urlToggleButtons.length} URL toggle buttons`)
 
-  // Click first URL toggle (for GFF file)
+  // Click first URL toggle (for GFF file) - use JavaScript click to bypass any backdrop issues
   if (urlToggleButtons.length >= 1) {
     console.log('    DEBUG: Clicking first URL toggle...')
-    await urlToggleButtons[0].click()
+    await driver.executeScript('arguments[0].click();', urlToggleButtons[0])
     await delay(500)
   }
 
@@ -583,10 +602,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     await urlInputs[0].sendKeys(gffPath)
   }
 
-  // Click second URL toggle for index file if available
+  // Click second URL toggle for index file if available - use JavaScript click
   if (urlToggleButtons.length >= 2) {
     console.log('    DEBUG: Clicking second URL toggle...')
-    await urlToggleButtons[1].click()
+    await driver.executeScript('arguments[0].click();', urlToggleButtons[1])
     await delay(500)
   }
 
