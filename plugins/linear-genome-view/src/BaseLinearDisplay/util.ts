@@ -1,4 +1,4 @@
-import { SimpleFeature } from '@jbrowse/core/util'
+import { mergeIntervals, SimpleFeature } from '@jbrowse/core/util'
 
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -82,6 +82,25 @@ export function featureHasExonsOrCDS(feature: Feature) {
 
 export function hasExonsOrCDS(transcripts: Feature[]) {
   return transcripts.some(t => featureHasExonsOrCDS(t))
+}
+
+export function hasIntrons(transcripts: Feature[]) {
+  const subs = transcripts.flatMap(
+    transcript =>
+      transcript
+        .get('subfeatures')
+        ?.filter(
+          (f: Feature) => f.get('type') === 'exon' || f.get('type') === 'CDS',
+        ) ?? [],
+  )
+  if (subs.length < 2) {
+    return false
+  }
+  const merged = mergeIntervals(
+    subs.map((f: Feature) => ({ start: f.get('start'), end: f.get('end') })),
+    0,
+  )
+  return merged.length > 1
 }
 
 export function getTranscripts(feature?: Feature): Feature[] {

@@ -33,7 +33,7 @@ import {
   fetchFeatureByIdRpc,
   findSubfeatureById,
   getTranscripts,
-  hasExonsOrCDS,
+  hasIntrons,
 } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
@@ -572,7 +572,7 @@ function stateModelFactory() {
                   session.notify('Copied to clipboard', 'success')
                 },
               },
-              ...(hasExonsOrCDS(transcripts)
+              ...(hasIntrons(transcripts)
                 ? [
                     {
                       label: 'Collapse introns',
