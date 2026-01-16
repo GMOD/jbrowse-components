@@ -311,8 +311,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                 ])
               },
-              helpText:
-                'Export the current synteny view as a scalable vector graphics (SVG) file. SVG format preserves quality at any zoom level and can be edited in vector graphics software like Inkscape or Adobe Illustrator. Perfect for creating publication-quality figures.',
             },
           ]
         },

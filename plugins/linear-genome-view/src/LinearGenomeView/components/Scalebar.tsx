@@ -1,5 +1,4 @@
 import type React from 'react'
-import { forwardRef } from 'react'
 
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
@@ -36,47 +35,44 @@ interface ScalebarProps {
   className?: string
 }
 
-const Scalebar = observer(
-  forwardRef<HTMLDivElement, ScalebarProps>(function Scalebar2(
-    { model, style, className, ...other },
-    ref,
-  ) {
-    const { classes } = useStyles()
-    const { scaleFactor, staticBlocks, offsetPx } = model
+const Scalebar = observer(function Scalebar({
+  model,
+  style,
+  className,
+  ...other
+}: ScalebarProps) {
+  const { classes } = useStyles()
+  const { scaleFactor, staticBlocks, offsetPx } = model
 
-    return (
-      <Paper
-        data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
-        className={cx(classes.container, className)}
-        variant="outlined"
-        ref={ref}
-        style={
-          { ...style, '--offset-px': `${offsetPx}px` } as React.CSSProperties
-        }
-        {...other}
+  return (
+    <Paper
+      data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
+      className={cx(classes.container, className)}
+      variant="outlined"
+      style={{ ...style, '--offset-px': `${offsetPx}px` } as React.CSSProperties}
+      {...other}
+    >
+      {/* offset 1px for left track border */}
+      <Gridlines model={model} offset={1} />
+      <div
+        className={classes.zoomContainer}
+        style={{
+          transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
+        }}
       >
-        {/* offset 1px for left track border */}
-        <Gridlines model={model} offset={1} />
         <div
-          className={classes.zoomContainer}
+          className={classes.scalebar}
           style={{
-            transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
+            transform: `translateX(calc(${staticBlocks.offsetPx}px - var(--offset-px) - 1px))`,
+            width: staticBlocks.totalWidthPx,
           }}
         >
-          <div
-            className={classes.scalebar}
-            style={{
-              transform: `translateX(calc(${staticBlocks.offsetPx}px - var(--offset-px) - 1px))`,
-              width: staticBlocks.totalWidthPx,
-            }}
-          >
-            <ScalebarCoordinateLabels model={model} />
-          </div>
+          <ScalebarCoordinateLabels model={model} />
         </div>
-        <ScalebarRefNameLabels model={model} />
-      </Paper>
-    )
-  }),
-)
+      </div>
+      <ScalebarRefNameLabels model={model} />
+    </Paper>
+  )
+})
 
 export default Scalebar
