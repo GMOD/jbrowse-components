@@ -46,7 +46,7 @@ const Tooltip = observer(function Tooltip({
 
   const contents = useMemo(
     () =>
-      featureUnderMouse || mouseoverExtraInformation
+      featureUnderMouse && mouseoverExtraInformation
         ? getConf(model, 'mouseover', {
             feature: featureUnderMouse,
             mouseoverExtraInformation,
