@@ -1161,10 +1161,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       function zoom(targetBpPerPx: number) {
         cancelLastAnimation()
 
-        // Calculate current visual bpPerPx accounting for in-progress animation
-        // scaleFactor < 1 means zoomed out, > 1 means zoomed in
-        const currentVisualBpPerPx = self.bpPerPx / self.scaleFactor
-
         // Calculate the zoom factor the caller intended (e.g., 2 for zoom out, 0.5 for zoom in)
         const intendedFactor = targetBpPerPx / self.bpPerPx
 
@@ -1179,21 +1175,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
           Math.min(self.maxBpPerPx, effectiveTarget),
         )
 
-        // Commit to current visual position (no jump)
-        self.zoomTo(currentVisualBpPerPx)
-        self.setScaleFactor(1)
+        const currentTarget = pendingTargetBpPerPx ?? self.bpPerPx
 
         // If already at limit (or effectively no change), do nothing
-        if (effectiveTarget === currentVisualBpPerPx) {
-          pendingTargetBpPerPx = undefined
+        if (effectiveTarget === currentTarget) {
           return
         }
 
         pendingTargetBpPerPx = effectiveTarget
-        const factor = currentVisualBpPerPx / effectiveTarget
+
+        // Calculate target scale factor relative to committed bpPerPx
+        // Don't update bpPerPx until animation completes - keeps blocks stable
+        const targetScaleFactor = self.bpPerPx / effectiveTarget
+
+        // Animate from current scaleFactor to target (smooth continuation on rapid clicks)
         const [animate, cancelAnimation] = springAnimate(
-          1,
-          factor,
+          self.scaleFactor,
+          targetScaleFactor,
           self.setScaleFactor,
           () => {
             self.zoomTo(effectiveTarget)

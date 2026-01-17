@@ -235,6 +235,53 @@ async function waitForDisplay(page: Page, trackId: string, timeout = 60000) {
   await page.waitForSelector(`[data-testid^="display-${trackId}"]`, { timeout })
 }
 
+async function waitForWorkspacesReady(page: Page) {
+  await page.waitForSelector('.dockview-theme-light, .dockview-theme-dark', {
+    timeout: 10000,
+  })
+  await page.waitForSelector('[data-testid^="view-container-"]', {
+    timeout: 10000,
+  })
+  await page.waitForSelector('input[placeholder="Search for location"]', {
+    timeout: 10000,
+  })
+  await waitForLoadingToComplete(page)
+  await delay(1000)
+}
+
+async function copyView(page: Page) {
+  const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
+  await viewMenu?.click()
+  await delay(300)
+  const viewOptions = await findByText(page, 'View options', 10000)
+  await viewOptions?.click()
+  await delay(300)
+  const copyViewBtn = await findByText(page, 'Copy view', 10000)
+  await copyViewBtn?.click()
+  await delay(1000)
+}
+
+async function clickViewMenuOption(
+  page: Page,
+  optionText: string,
+  viewIndex = 0,
+) {
+  const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
+  await viewMenus[viewIndex]?.click()
+  await delay(300)
+  const viewOptions = await findByText(page, 'View options', 10000)
+  await viewOptions?.click()
+  await delay(300)
+  const option = await findByText(page, optionText, 10000)
+  await option?.click()
+}
+
+async function setupWorkspacesViaMoveToTab(page: Page) {
+  await copyView(page)
+  await clickViewMenuOption(page, 'Move to new tab', 0)
+  await waitForWorkspacesReady(page)
+}
+
 // Test suites
 interface TestSuite {
   name: string
@@ -312,52 +359,7 @@ const testSuites: TestSuite[] = [
         name: 'move to new tab enables workspaces',
         fn: async page => {
           await navigateToApp(page)
-
-          // First copy the view to have 2 views
-          const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
-          await viewMenu?.click()
-          await delay(300)
-          let viewOptions = await findByText(page, 'View options', 10000)
-          await viewOptions?.click()
-          await delay(300)
-          const copyView = await findByText(page, 'Copy view', 10000)
-          await copyView?.click()
-          await delay(1000)
-
-          // Now click Move to new tab on first view - this enables workspaces
-          const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
-          await viewMenus[0]?.click()
-          await delay(300)
-          viewOptions = await findByText(page, 'View options', 10000)
-          await viewOptions?.click()
-          await delay(300)
-          const moveToTab = await findByText(page, 'Move to new tab', 10000)
-          await moveToTab?.click()
-
-          // Wait for workspaces to be enabled (dockview should appear)
-          await page.waitForSelector(
-            '.dockview-theme-light, .dockview-theme-dark',
-            { timeout: 10000 },
-          )
-
-          // Wait for view content to render - the active tab should show a view
-          // Look for the view container which indicates a view has rendered
-          await page.waitForSelector('[data-testid^="view-container-"]', {
-            timeout: 10000,
-          })
-
-          // Wait for location search input (view is fully rendered)
-          await page.waitForSelector(
-            'input[placeholder="Search for location"]',
-            {
-              timeout: 10000,
-            },
-          )
-
-          await waitForLoadingToComplete(page)
-
-          // Extra time for any animations/transitions
-          await delay(1000)
+          await setupWorkspacesViaMoveToTab(page)
           await snapshot(page, 'workspaces-new-tab')
         },
       },
@@ -365,52 +367,9 @@ const testSuites: TestSuite[] = [
         name: 'move to split right enables workspaces',
         fn: async page => {
           await navigateToApp(page)
-
-          // First copy the view to have 2 views
-          const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
-          await viewMenu?.click()
-          await delay(300)
-          let viewOptions = await findByText(page, 'View options', 10000)
-          await viewOptions?.click()
-          await delay(300)
-          const copyView = await findByText(page, 'Copy view', 10000)
-          await copyView?.click()
-          await delay(1000)
-
-          // Verify we have 2 views before proceeding
-          const viewMenusBefore = await page.$$(
-            '[data-testid="view_menu_icon"]',
-          )
-          if (viewMenusBefore.length !== 2) {
-            throw new Error(
-              `Expected 2 views after copy, got ${viewMenusBefore.length}`,
-            )
-          }
-
-          // Now click Move to split view on first view - this enables workspaces
-          const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
-          await viewMenus[0]?.click()
-          await delay(300)
-          viewOptions = await findByText(page, 'View options', 10000)
-          await viewOptions?.click()
-          await delay(300)
-          const moveToSplit = await findByText(
-            page,
-            'Move to split view',
-            10000,
-          )
-          await moveToSplit?.click()
-
-          // Wait for workspaces to be enabled (dockview should appear)
-          await page.waitForSelector(
-            '.dockview-theme-light, .dockview-theme-dark',
-            { timeout: 10000 },
-          )
-
-          // Give dockview time to fully render the split layout
-          await delay(3000)
-
-          await waitForLoadingToComplete(page)
+          await copyView(page)
+          await clickViewMenuOption(page, 'Move to split view', 0)
+          await waitForWorkspacesReady(page)
           await snapshot(page, 'workspaces-split-view')
         },
       },
@@ -418,19 +377,7 @@ const testSuites: TestSuite[] = [
         name: 'copy view creates second view',
         fn: async page => {
           await navigateToApp(page)
-          // Open view menu
-          const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
-          await viewMenu?.click()
-          await delay(300)
-          // Click View options
-          const viewOptions = await findByText(page, 'View options', 10000)
-          await viewOptions?.click()
-          await delay(300)
-          // Click Copy view
-          const copyView = await findByText(page, 'Copy view', 10000)
-          await copyView?.click()
-          await delay(1000)
-          // Should now have 2 view menus
+          await copyView(page)
           const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
           if (viewMenus.length !== 2) {
             throw new Error(`Expected 2 views, got ${viewMenus.length}`)
@@ -566,44 +513,10 @@ const testSuites: TestSuite[] = [
         name: 'multiple views in workspace - move up and down',
         fn: async page => {
           await navigateToApp(page)
-          // First copy the view to get 2 views
-          let viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
-          await viewMenu?.click()
-          await delay(300)
-          let viewOptions = await findByText(page, 'View options', 10000)
-          await viewOptions?.click()
-          await delay(300)
-          const copyView = await findByText(page, 'Copy view', 10000)
-          await copyView?.click()
-          await delay(1000)
-
-          // Enable workspaces by moving to new tab
-          const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
-          await viewMenus[0]?.click()
-          await delay(300)
-          viewOptions = await findByText(page, 'View options', 10000)
-          await viewOptions?.click()
-          await delay(300)
-          const moveToTab = await findByText(page, 'Move to new tab', 10000)
-          await moveToTab?.click()
-          await delay(1000)
-
-          // Wait for dockview
-          await page.waitForSelector(
-            '.dockview-theme-light, .dockview-theme-dark',
-            { timeout: 10000 },
-          )
+          await setupWorkspacesViaMoveToTab(page)
 
           // Copy view again to have multiple views in one panel
-          viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
-          await viewMenu?.click()
-          await delay(300)
-          viewOptions = await findByText(page, 'View options', 10000)
-          await viewOptions?.click()
-          await delay(300)
-          const copyView2 = await findByText(page, 'Copy view', 10000)
-          await copyView2?.click()
-          await delay(1000)
+          await copyView(page)
 
           // Get the order of view containers before moving
           const getViewOrder = () =>
@@ -622,14 +535,7 @@ const testSuites: TestSuite[] = [
           }
 
           // Now try to move first view down
-          const viewMenusAfter = await page.$$('[data-testid="view_menu_icon"]')
-          await viewMenusAfter[0]?.click()
-          await delay(300)
-          viewOptions = await findByText(page, 'View options', 10000)
-          await viewOptions?.click()
-          await delay(300)
-          const moveDown = await findByText(page, 'Move view down', 10000)
-          await moveDown?.click()
+          await clickViewMenuOption(page, 'Move view down', 0)
           await delay(500)
 
           // Verify the order actually changed
