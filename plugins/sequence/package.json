@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@gmod/abortable-promise-cache": "^3.0.4",
-    "@gmod/indexedfasta": "^5.0.0",
+    "@gmod/indexedfasta": "^5.0.2",
     "@gmod/twobit": "^6.0.1",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",

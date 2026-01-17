@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^2.0.3",
-    "@gmod/bgzf-filehandle": "^6.0.9",
+    "@gmod/bgzf-filehandle": "^6.0.10",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",

@@ -36,7 +36,7 @@
     "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
-    "@mui/x-data-grid": "^8.23.0",
+    "@mui/x-data-grid": "^8.25.0",
     "deepmerge": "^4.3.1",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1"
