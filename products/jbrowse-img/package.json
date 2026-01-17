@@ -1,13 +1,13 @@
 {
   "name": "@jbrowse/img",
   "version": "4.0.4",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "esm/index.js",
+  "types": "esm/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./esm/index.js",
-      "require": "./dist/index.js"
+      "types": "./esm/index.d.ts",
+      "import": "./esm/index.js"
     }
   },
   "author": "JBrowse Team",
@@ -16,7 +16,7 @@
     "node": ">=20"
   },
   "bin": {
-    "jb2export": "./dist/bin.js"
+    "jb2export": "./esm/index.js"
   },
   "files": [
     "esm"
