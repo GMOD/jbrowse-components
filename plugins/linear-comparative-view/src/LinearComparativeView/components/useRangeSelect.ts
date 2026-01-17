@@ -98,6 +98,10 @@ export function useRangeSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    // If we have a rubberband selection active (menu is open), don't update guideX
+    if (anchorPosition) {
+      return
+    }
     setGuideX(getRelativeX(event, ref.current))
   }
 

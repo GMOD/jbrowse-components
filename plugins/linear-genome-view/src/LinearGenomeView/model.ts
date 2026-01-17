@@ -258,6 +258,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       scaleFactor: 1,
       /**
        * #volatile
+       * target bpPerPx during zoom animation, used for immediate UI feedback
+       */
+      targetBpPerPx: undefined as number | undefined,
+      /**
+       * #volatile
        */
       trackRefs: {} as Record<string, HTMLDivElement>,
       /**
@@ -1091,6 +1096,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       */
+      setTargetBpPerPx(target: number | undefined) {
+        self.targetBpPerPx = target
+      },
+
+      /**
+       * #action
        * this "clears the view" and makes the view return to the import form
        */
       clearView() {
@@ -1152,7 +1164,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
     })
     .actions(self => {
       let cancelLastAnimation = () => {}
-      let pendingTargetBpPerPx: number | undefined
 
       /**
        * #action
@@ -1166,7 +1177,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         // Apply that factor to the pending target (if mid-animation) or current bpPerPx
         // This allows rapid clicks to accumulate
-        const effectiveBase = pendingTargetBpPerPx ?? self.bpPerPx
+        const effectiveBase = self.targetBpPerPx ?? self.bpPerPx
         let effectiveTarget = effectiveBase * intendedFactor
 
         // Clamp to zoom limits
@@ -1175,14 +1186,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
           Math.min(self.maxBpPerPx, effectiveTarget),
         )
 
-        const currentTarget = pendingTargetBpPerPx ?? self.bpPerPx
+        const currentTarget = self.targetBpPerPx ?? self.bpPerPx
 
         // If already at limit (or effectively no change), do nothing
         if (effectiveTarget === currentTarget) {
           return
         }
 
-        pendingTargetBpPerPx = effectiveTarget
+        // Set target immediately for UI feedback
+        self.setTargetBpPerPx(effectiveTarget)
 
         // Calculate target scale factor relative to committed bpPerPx
         // Don't update bpPerPx until animation completes - keeps blocks stable
@@ -1196,7 +1208,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           () => {
             self.zoomTo(effectiveTarget)
             self.setScaleFactor(1)
-            pendingTargetBpPerPx = undefined
+            self.setTargetBpPerPx(undefined)
           },
           0,
           1000,
@@ -1324,6 +1336,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         get coarseTotalBpDisplayStr() {
           return getBpDisplayStr(self.coarseTotalBp)
+        },
+
+        /**
+         * #getter
+         * effective bpPerPx accounting for pending zoom target
+         */
+        get effectiveBpPerPx() {
+          return self.targetBpPerPx ?? self.bpPerPx
+        },
+
+        /**
+         * #getter
+         * total bp based on effective bpPerPx (updates immediately on zoom click)
+         */
+        get effectiveTotalBp() {
+          return this.effectiveBpPerPx * self.width
+        },
+
+        /**
+         * #getter
+         * display string for effective total bp (updates immediately on zoom click)
+         */
+        get effectiveTotalBpDisplayStr() {
+          return getBpDisplayStr(this.effectiveTotalBp)
         },
       }
     })

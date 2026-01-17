@@ -29,7 +29,8 @@ const MiniControls = observer(function MiniControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { id, bpPerPx, maxBpPerPx, minBpPerPx, hideHeader } = model
+  const { id, bpPerPx, maxBpPerPx, minBpPerPx, hideHeader, effectiveBpPerPx } =
+    model
   const { focusedViewId } = getSession(model)
   return hideHeader ? (
     <Paper className={classes.background}>
@@ -44,7 +45,7 @@ const MiniControls = observer(function MiniControls({
           onClick={() => {
             model.zoom(bpPerPx * 2)
           }}
-          disabled={bpPerPx >= maxBpPerPx - 0.0001}
+          disabled={effectiveBpPerPx >= maxBpPerPx - 0.0001}
         >
           <ZoomOut fontSize="small" />
         </IconButton>
@@ -53,7 +54,7 @@ const MiniControls = observer(function MiniControls({
           onClick={() => {
             model.zoom(bpPerPx / 2)
           }}
-          disabled={bpPerPx <= minBpPerPx + 0.0001}
+          disabled={effectiveBpPerPx <= minBpPerPx + 0.0001}
         >
           <ZoomIn fontSize="small" />
         </IconButton>

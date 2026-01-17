@@ -117,6 +117,11 @@ export function useRangeSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    // If we have a rubberband selection active (menu is open from a drag, not a click),
+    // don't update guideX - let the rubberband stay visible
+    if (anchorPosition?.isClick === false) {
+      return
+    }
     if (mouseDragging) {
       setGuideX(undefined)
     } else if (shiftOnly) {
