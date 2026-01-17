@@ -236,13 +236,17 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     const { bpPerPx, statsEstimationMode } = opts
 
     // Clear cache when bpPerPx changes (zoom level changed)
-    if (this.lastBpPerPx !== undefined && this.lastBpPerPx !== bpPerPx) {
-      // console.log(
-      //   `[SNPCoverageAdapter] bpPerPx changed (${this.lastBpPerPx} -> ${bpPerPx}), clearing cache`,
-      // )
+    // Only compare when both values are defined to avoid clearing on stats calls
+    if (
+      bpPerPx !== undefined &&
+      this.lastBpPerPx !== undefined &&
+      this.lastBpPerPx !== bpPerPx
+    ) {
       this.cache.clear()
     }
-    this.lastBpPerPx = bpPerPx
+    if (bpPerPx !== undefined) {
+      this.lastBpPerPx = bpPerPx
+    }
 
     // For statsEstimationMode, check for any cached result with same region+filterBy
     if (statsEstimationMode) {

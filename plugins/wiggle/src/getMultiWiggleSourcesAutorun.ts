@@ -21,6 +21,7 @@ export function getMultiWiggleSourcesAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
+  isMinimized: boolean
   adapterProps: () => Record<string, unknown>
   setSourcesLoading: (aborter: StopToken) => void
   setError: (error: unknown) => void
@@ -32,6 +33,9 @@ export function getMultiWiggleSourcesAutorun(self: {
     autorun(
       async () => {
         try {
+          if (self.isMinimized) {
+            return
+          }
           const view = getContainingView(self) as LinearGenomeViewModel
           if (!view.initialized) {
             return

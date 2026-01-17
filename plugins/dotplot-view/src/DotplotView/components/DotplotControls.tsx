@@ -75,14 +75,6 @@ const DotplotControls = observer(function DotplotControls({
               'Adjusts zoom levels proportionally so both views show the same total number of base pairs. This accounts for different view widths while maintaining the same total genomic span.',
           },
           {
-            label: 'Show all regions',
-            onClick: () => {
-              model.showAllRegions()
-            },
-            helpText:
-              'Zooms out to display all genome assemblies in their entirety. Useful for getting a high-level overview or resetting the view after zooming into specific regions.',
-          },
-          {
             label: 'Re-order chromosomes',
             icon: ShuffleIcon,
             onClick: () => {
@@ -98,34 +90,47 @@ const DotplotControls = observer(function DotplotControls({
               'Diagonalization algorithmically reorders and reorients chromosomes to minimize crossing synteny lines, creating a more diagonal pattern. This makes it easier to identify large-scale genomic rearrangements, inversions, and translocations. The process runs on the webworker for better performance.',
           },
           {
-            type: 'checkbox',
-            label: 'Draw CIGAR',
-            checked: model.drawCigar,
-            onClick: () => {
-              model.setDrawCigar(!model.drawCigar)
-            },
-            helpText:
-              'Toggle detailed CIGAR string visualization showing matches, insertions, and deletions in alignments. Disable for a cleaner view that shows only broad syntenic blocks.',
-          },
-          {
-            label: 'Show pan buttons',
-            type: 'checkbox',
-            checked: model.showPanButtons,
-            onClick: () => {
-              model.setShowPanButtons(!model.showPanButtons)
-            },
-            helpText:
-              'Show or hide directional pan buttons that allow you to navigate the dotplot view by clicking arrows. Useful for precise navigation without using mouse drag.',
-          },
-          {
-            label: 'Show dynamic controls',
-            type: 'checkbox',
-            checked: showDynamicControls,
-            onClick: () => {
-              setShowDynamicControls(!showDynamicControls)
-            },
-            helpText:
-              'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust dotplot visualization parameters in real-time.',
+            label: 'Show...',
+            subMenu: [
+              {
+                label: 'Show all regions',
+                onClick: () => {
+                  model.showAllRegions()
+                },
+                helpText:
+                  'Zooms out to display all genome assemblies in their entirety. Useful for getting a high-level overview or resetting the view after zooming into specific regions.',
+              },
+              {
+                label: 'Show pan buttons',
+                type: 'checkbox',
+                checked: model.showPanButtons,
+                onClick: () => {
+                  model.setShowPanButtons(!model.showPanButtons)
+                },
+                helpText:
+                  'Show or hide directional pan buttons that allow you to navigate the dotplot view by clicking arrows. Useful for precise navigation without using mouse drag.',
+              },
+              {
+                label: 'Show dynamic controls',
+                type: 'checkbox',
+                checked: showDynamicControls,
+                onClick: () => {
+                  setShowDynamicControls(!showDynamicControls)
+                },
+                helpText:
+                  'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust dotplot visualization parameters in real-time.',
+              },
+              {
+                type: 'checkbox',
+                label: 'Draw CIGAR insertions/deletions',
+                checked: model.drawCigar,
+                onClick: () => {
+                  model.setDrawCigar(!model.drawCigar)
+                },
+                helpText:
+                  'Toggle detailed CIGAR string visualization showing matches, insertions, and deletions in alignments. Disable for a cleaner view that shows only broad syntenic blocks.',
+              },
+            ],
           },
           {
             label: 'Click and drag mode',

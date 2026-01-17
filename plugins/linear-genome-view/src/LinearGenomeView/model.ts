@@ -52,6 +52,7 @@ import {
 } from './menuItems.tsx'
 import {
   calculateVisibleLocStrings,
+  expandRegion,
   generateLocations,
   parseLocStrings,
 } from './util.ts'
@@ -257,6 +258,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       scaleFactor: 1,
       /**
        * #volatile
+       * target bpPerPx during zoom animation, used for immediate UI feedback
+       */
+      targetBpPerPx: undefined as number | undefined,
+      /**
+       * #volatile
        */
       trackRefs: {} as Record<string, HTMLDivElement>,
       /**
@@ -275,6 +281,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       rightOffset: undefined as undefined | BpOffset,
+      /**
+       * #volatile
+       */
+      isScalebarRefNameMenuOpen: false,
+      /**
+       * #volatile
+       */
+      scalebarRefNameClickPending: false,
     }))
     .views(self => ({
       /**
@@ -707,6 +721,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setIsScalebarRefNameMenuOpen(isOpen: boolean) {
+        self.isScalebarRefNameMenuOpen = isOpen
+      },
+      /**
+       * #action
+       */
+      setScalebarRefNameClickPending(pending: boolean) {
+        self.scalebarRefNameClickPending = pending
+      },
+      /**
+       * #action
+       */
       setHideHeader(b: boolean) {
         self.hideHeader = b
       },
@@ -1070,6 +1096,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       */
+      setTargetBpPerPx(target: number | undefined) {
+        self.targetBpPerPx = target
+      },
+
+      /**
+       * #action
        * this "clears the view" and makes the view return to the import form
        */
       clearView() {
@@ -1138,25 +1171,48 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       function zoom(targetBpPerPx: number) {
         cancelLastAnimation()
-        self.setScaleFactor(1)
-        self.zoomTo(self.bpPerPx)
-        if (
-          // already zoomed all the way in
-          (targetBpPerPx < self.bpPerPx && self.bpPerPx === self.minBpPerPx) ||
-          // already zoomed all the way out
-          (targetBpPerPx > self.bpPerPx && self.bpPerPx === self.maxBpPerPx)
-        ) {
+
+        // Calculate the zoom factor the caller intended (e.g., 2 for zoom out, 0.5 for zoom in)
+        const intendedFactor = targetBpPerPx / self.bpPerPx
+
+        // Apply that factor to the pending target (if mid-animation) or current bpPerPx
+        // This allows rapid clicks to accumulate
+        const effectiveBase = self.targetBpPerPx ?? self.bpPerPx
+        let effectiveTarget = effectiveBase * intendedFactor
+
+        // Clamp to zoom limits
+        effectiveTarget = Math.max(
+          self.minBpPerPx,
+          Math.min(self.maxBpPerPx, effectiveTarget),
+        )
+
+        const currentTarget = self.targetBpPerPx ?? self.bpPerPx
+
+        // If already at limit (or effectively no change), do nothing
+        if (effectiveTarget === currentTarget) {
           return
         }
-        const factor = self.bpPerPx / targetBpPerPx
+
+        // Set target immediately for UI feedback
+        self.setTargetBpPerPx(effectiveTarget)
+
+        // Calculate target scale factor relative to committed bpPerPx
+        // Don't update bpPerPx until animation completes - keeps blocks stable
+        const targetScaleFactor = self.bpPerPx / effectiveTarget
+
+        // Animate from current scaleFactor to target (smooth continuation on rapid clicks)
         const [animate, cancelAnimation] = springAnimate(
-          1,
-          factor,
+          self.scaleFactor,
+          targetScaleFactor,
           self.setScaleFactor,
           () => {
-            self.zoomTo(targetBpPerPx)
+            self.zoomTo(effectiveTarget)
             self.setScaleFactor(1)
+            self.setTargetBpPerPx(undefined)
           },
+          0,
+          1000,
+          50,
         )
         cancelLastAnimation = cancelAnimation!
         animate!()
@@ -1281,6 +1337,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get coarseTotalBpDisplayStr() {
           return getBpDisplayStr(self.coarseTotalBp)
         },
+
+        /**
+         * #getter
+         * effective bpPerPx accounting for pending zoom target
+         */
+        get effectiveBpPerPx() {
+          return self.targetBpPerPx ?? self.bpPerPx
+        },
+
+        /**
+         * #getter
+         * total bp based on effective bpPerPx (updates immediately on zoom click)
+         */
+        get effectiveTotalBp() {
+          return this.effectiveBpPerPx * self.width
+        },
+
+        /**
+         * #getter
+         * display string for effective total bp (updates immediately on zoom click)
+         */
+        get effectiveTotalBpDisplayStr() {
+          return getBpDisplayStr(this.effectiveTotalBp)
+        },
       }
     })
     .actions(self => ({
@@ -1313,6 +1393,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param input - e.g. "chr1:1-100", "chr1:1-100 chr2:1-100", "chr 1 100"
        * @param optAssemblyName - (optional) the assembly name to use when
        * navigating to the locstring
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
       async navToLocString(
         input: string,
@@ -1360,6 +1442,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Similar to `navToLocString`, but accepts a parsed location object
        * instead of a locstring. Will try to perform `setDisplayedRegions` if
        * changing regions
+       *
+       * @param parsedLocString - a parsed location object with refName, start,
+       * end, etc.
+       * @param assemblyName - optional assembly name
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
       async navToLocation(
         parsedLocString: ParsedLocString,
@@ -1374,6 +1462,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Similar to `navToLocString`, but accepts a list of parsed location
        * objects instead of a locstring. Will try to perform
        * `setDisplayedRegions` if changing regions
+       *
+       * @param regions - array of parsed location objects
+       * @param assemblyName - optional assembly name
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
       async navToLocations(
         regions: ParsedLocString[],
@@ -1440,9 +1533,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Throws an error if navigation was unsuccessful
        *
        * @param query - a proposed location to navigate to
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
-      navTo(query: NavLocation) {
-        this.navToMultiple([query])
+      navTo(query: NavLocation, grow?: number) {
+        this.navToMultiple([query], grow)
       },
 
       /**
@@ -1456,8 +1551,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Throws an error if navigation was unsuccessful
        *
        * @param locations - proposed location to navigate to
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
        */
-      navToMultiple(locations: NavLocation[]) {
+      navToMultiple(locations: NavLocation[], grow?: number) {
         if (
           locations.some(
             l =>
@@ -1513,18 +1610,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
 
         // Calculate coordinates, using region bounds if not specified
-        const firstStart =
+        let firstStart =
           firstLocation.start === undefined
             ? firstRegion.start
             : firstLocation.start
-        const firstEnd =
+        let firstEnd =
           firstLocation.end === undefined ? firstRegion.end : firstLocation.end
-        const lastStart =
+        let lastStart =
           lastLocation.start === undefined
             ? lastRegion.start
             : lastLocation.start
-        const lastEnd =
+        let lastEnd =
           lastLocation.end === undefined ? lastRegion.end : lastLocation.end
+
+        // Apply grow factor to add padding around the region
+        if (grow) {
+          const expanded = expandRegion(
+            firstStart,
+            lastEnd,
+            grow,
+            firstRegion.start,
+            lastRegion.end,
+          )
+          firstStart = expanded.start
+          firstEnd = expanded.end
+          lastStart = expanded.start
+          lastEnd = expanded.end
+        }
 
         // Find region indices that contain our locations
         const firstIndex = self.displayedRegions.findIndex(

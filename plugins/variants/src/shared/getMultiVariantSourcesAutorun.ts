@@ -13,6 +13,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export function getMultiVariantSourcesAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
+  isMinimized: boolean
   adapterProps: () => Record<string, unknown>
   setSourcesLoading: (aborter: StopToken) => void
   setError: (error: unknown) => void
@@ -24,6 +25,10 @@ export function getMultiVariantSourcesAutorun(self: {
     autorun(
       async () => {
         try {
+          // isAlive check guards against display being destroyed during async import
+          if (!isAlive(self) || self.isMinimized) {
+            return
+          }
           const view = getContainingView(self) as LinearGenomeViewModel
           if (!view.initialized) {
             return

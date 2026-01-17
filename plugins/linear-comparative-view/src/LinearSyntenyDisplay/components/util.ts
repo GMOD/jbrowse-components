@@ -223,45 +223,45 @@ export function drawBezierBox(
   ctx.closePath()
 }
 
+export function getFeatureAtClick(
+  event: React.MouseEvent,
+  model: LinearSyntenyDisplayModel,
+) {
+  const { clickMapCanvas, numFeats, featPositions } = model
+  if (!clickMapCanvas) {
+    return undefined
+  }
+  const ctx = clickMapCanvas.getContext('2d')
+  if (!ctx) {
+    return undefined
+  }
+  const rect = clickMapCanvas.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  const [r, g, b] = ctx.getImageData(x, y, 1, 1).data
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
+  const id = getId(r!, g!, b!, unitMultiplier)
+  return featPositions[id]
+}
+
 export function onSynClick(
   event: React.MouseEvent,
   model: LinearSyntenyDisplayModel,
 ) {
-  const view = getContainingView(model)
-  const track = getContainingTrack(model)
-  const {
-    featPositions,
-    numFeats,
-    clickMapCanvas: ref1,
-    cigarClickMapCanvas: ref2,
-    level,
-  } = model
-  if (!ref1 || !ref2) {
-    return
-  }
-  const rect = ref1.getBoundingClientRect()
-  const ctx1 = ref1.getContext('2d')
-  const ctx2 = ref2.getContext('2d')
-  if (!ctx1 || !ctx2) {
-    return
-  }
-  const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-  const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
-  const id = getId(r1!, g1!, b1!, unitMultiplier)
-  const feat = featPositions[id]
+  const feat = getFeatureAtClick(event, model)
   if (feat) {
     const { f } = feat
     model.setClickId(f.id())
     const session = getSession(model)
     if (isSessionModelWithWidgets(session)) {
+      const view = getContainingView(model)
+      const track = getContainingTrack(model)
       session.showWidget(
         session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
           view,
           track,
           featureData: f.toJSON(),
-          level,
+          level: model.level,
         }),
       )
     }
@@ -275,30 +275,13 @@ export function onSynContextClick(
   setAnchorEl: (arg: ClickCoord) => void,
 ) {
   event.preventDefault()
-  const ref1 = model.clickMapCanvas
-  const ref2 = model.cigarClickMapCanvas
-  if (!ref1 || !ref2) {
-    return
-  }
-  const rect = ref1.getBoundingClientRect()
-  const ctx1 = ref1.getContext('2d')
-  const ctx2 = ref2.getContext('2d')
-  if (!ctx1 || !ctx2) {
-    return
-  }
-  const { clientX, clientY } = event
-  const x = clientX - rect.left
-  const y = clientY - rect.top
-  const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-  const id = getId(r1!, g1!, b1!, unitMultiplier)
-  const f = model.featPositions[id]
-  if (f) {
-    model.setClickId(f.f.id())
+  const feat = getFeatureAtClick(event, model)
+  if (feat) {
+    model.setClickId(feat.f.id())
     setAnchorEl({
-      clientX,
-      clientY,
-      feature: f,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      feature: feat,
     })
   }
 }

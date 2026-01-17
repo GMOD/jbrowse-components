@@ -22,6 +22,7 @@ export function getMultiVariantFeaturesAutorun(self: {
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
   featureDensityStatsReadyAndRegionNotTooLarge: boolean
+  isMinimized: boolean
   adapterProps: () => Record<string, unknown>
   setError: (error: unknown) => void
   setFeatures: (f: Feature[]) => void
@@ -35,6 +36,10 @@ export function getMultiVariantFeaturesAutorun(self: {
     autorun(
       async () => {
         try {
+          // isAlive check guards against display being destroyed during async import
+          if (!isAlive(self) || self.isMinimized) {
+            return
+          }
           const view = getContainingView(self) as LinearGenomeViewModel
           if (
             !view.initialized ||

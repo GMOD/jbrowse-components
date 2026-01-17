@@ -21,11 +21,10 @@ export function sharedDoAfterAttach(self: {
   createAutorun(
     self,
     async () => {
-      const view = getContainingView(self) as LGV
       if (!self.autorunReady) {
         return
       }
-
+      const view = getContainingView(self) as LGV
       const { colorBy, tagsReady } = self
       const { staticBlocks } = view
       if (colorBy?.tag && !tagsReady) {

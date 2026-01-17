@@ -655,7 +655,7 @@ function stateModelFactory() {
           autorun(
             function blockDefinitionsAutorun() {
               try {
-                if (!isAlive(self)) {
+                if (!isAlive(self) || self.isMinimized) {
                   return
                 }
                 const view = getContainingView(self) as LGV

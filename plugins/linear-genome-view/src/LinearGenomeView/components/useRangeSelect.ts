@@ -30,6 +30,7 @@ export function useRangeSelect(
     setAnchorPosition(undefined)
     setStartX(undefined)
     setCurrentX(undefined)
+    setGuideX(undefined)
   }, [])
 
   useEffect(() => {
@@ -57,6 +58,20 @@ export function useRangeSelect(
         const { clientX, clientY } = event
         const offsetX = getRelativeX(event, ref.current)
         const isClick = Math.abs(offsetX - startX) <= 3
+
+        // If click started on a scalebar refname label, let that component
+        // handle it instead of showing the rubberband menu
+        if (isClick && model.scalebarRefNameClickPending) {
+          setStartX(undefined)
+          setCurrentX(undefined)
+          return
+        }
+
+        // Clear the pending flag if it was a drag (not a click)
+        if (!isClick && model.scalebarRefNameClickPending) {
+          model.setScalebarRefNameClickPending(false)
+        }
+
         // store both clientX/Y and offsetX for different purposes
         setAnchorPosition({
           offsetX,
@@ -64,13 +79,15 @@ export function useRangeSelect(
           clientY,
           isClick,
         })
-        if (!isClick) {
+        if (isClick) {
+          setGuideX(offsetX)
+        } else {
           const args = computeOffsets(offsetX)
           if (args) {
             model.setOffsets(args.leftOffset, args.rightOffset)
           }
+          setGuideX(undefined)
         }
-        setGuideX(undefined)
       }
     }
     if (mouseDragging) {
@@ -88,6 +105,9 @@ export function useRangeSelect(
     if (shiftOnly && !event.shiftKey) {
       return
     }
+    if (model.isScalebarRefNameMenuOpen) {
+      return
+    }
 
     event.preventDefault()
     event.stopPropagation()
@@ -97,7 +117,14 @@ export function useRangeSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (shiftOnly) {
+    // If we have a rubberband selection active (menu is open from a drag, not a click),
+    // don't update guideX - let the rubberband stay visible
+    if (anchorPosition?.isClick === false) {
+      return
+    }
+    if (mouseDragging) {
+      setGuideX(undefined)
+    } else if (shiftOnly) {
       if (event.shiftKey) {
         setGuideX(getRelativeX(event, ref.current))
       } else {
@@ -109,7 +136,9 @@ export function useRangeSelect(
   }
 
   function mouseOut() {
-    setGuideX(undefined)
+    if (!anchorPosition?.isClick) {
+      setGuideX(undefined)
+    }
   }
 
   function handleMenuItemClick(_: unknown, callback: () => void) {
@@ -148,6 +177,7 @@ export function useRangeSelect(
     open,
     isClick,
     clickBpOffset,
+    guideX,
     rubberbandOn: !isClick,
     mouseDown,
     mouseMove,

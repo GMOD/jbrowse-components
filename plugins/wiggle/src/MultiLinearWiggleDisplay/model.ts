@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import EqualizerIcon from '@mui/icons-material/Equalizer'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import deepEqual from 'fast-deep-equal'
 
@@ -470,10 +471,31 @@ export function stateModelFactory(
                     self.setShowTooltips(!self.showTooltipsEnabled)
                   },
                 },
+                {
+                  label: 'Show sidebar',
+                  type: 'checkbox',
+                  checked: self.showSidebar,
+                  onClick: () => {
+                    self.setShowSidebar(!self.showSidebar)
+                  },
+                },
+                ...(self.graphType
+                  ? [
+                      {
+                        type: 'checkbox',
+                        label: 'Show cross hatches',
+                        checked: self.displayCrossHatchesSetting,
+                        onClick: () => {
+                          self.toggleCrossHatches()
+                        },
+                      },
+                    ]
+                  : []),
               ],
             },
             {
               label: 'Score',
+              icon: EqualizerIcon,
               subMenu: self.scoreTrackMenuItems(),
             },
 
@@ -515,18 +537,6 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-            ...(self.graphType
-              ? [
-                  {
-                    type: 'checkbox',
-                    label: 'Draw cross hatches',
-                    checked: self.displayCrossHatchesSetting,
-                    onClick: () => {
-                      self.toggleCrossHatches()
-                    },
-                  },
-                ]
-              : []),
             ...(self.isMultiRow
               ? [
                   {
@@ -543,14 +553,6 @@ export function stateModelFactory(
                   },
                 ]
               : []),
-            {
-              label: 'Show sidebar',
-              type: 'checkbox',
-              checked: self.showSidebar,
-              onClick: () => {
-                self.setShowSidebar(!self.showSidebar)
-              },
-            },
             {
               label: 'Edit colors/arrangement...',
               onClick: () => {

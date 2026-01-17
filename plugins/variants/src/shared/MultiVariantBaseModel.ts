@@ -488,7 +488,7 @@ export default function MultiVariantBaseModelF(
                   },
                 },
                 {
-                  label: 'Show tree',
+                  label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
                   type: 'checkbox',
                   checked: self.showTree,
                   disabled: !self.clusterTree,
@@ -561,9 +561,11 @@ export default function MultiVariantBaseModelF(
                 },
                 {
                   label: `Phased${
-                    !self.hasPhased
-                      ? ' (disabled, no phased variants found)'
-                      : ''
+                    self.hasPhased
+                      ? ''
+                      : !self.featuresVolatile
+                        ? ' (checking for phased variants...)'
+                        : ' (disabled, no phased variants found)'
                   }`,
                   helpText:
                     'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1-HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',

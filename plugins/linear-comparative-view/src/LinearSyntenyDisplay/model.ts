@@ -1,8 +1,10 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory.ts'
 
+import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -44,6 +46,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * color scheme to use for rendering synteny features
          */
         colorBy: types.optional(types.string, 'default'),
+        /**
+         * #property
+         * alpha transparency value for synteny drawing (0-1)
+         */
+        alpha: types.optional(types.number, 0.2),
+        /**
+         * #property
+         * minimum alignment length to display (in bp)
+         */
+        minAlignmentLength: types.optional(types.number, 0),
       }),
     )
     .volatile(() => ({
@@ -100,18 +112,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * currently mouseover'd CIGAR subfeature
        */
       cigarMouseoverId: -1,
-
-      /**
-       * #volatile
-       * alpha transparency value for synteny drawing (0-1)
-       */
-      alpha: 0.2,
-
-      /**
-       * #volatile
-       * minimum alignment length to display (in bp)
-       */
-      minAlignmentLength: 0,
     }))
     .actions(self => ({
       /**
@@ -221,6 +221,86 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get featMap() {
         return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))
+      },
+
+      /**
+       * #getter
+       * cached color scheme config based on colorBy
+       */
+      get colorSchemeConfig() {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        return colorSchemes[self.colorBy as ColorScheme] || colorSchemes.default
+      },
+
+      /**
+       * #getter
+       * cached CIGAR colors with alpha applied
+       */
+      get colorMapWithAlpha() {
+        const { alpha } = self
+        const activeColorMap = this.colorSchemeConfig.cigarColors
+        return {
+          I: applyAlpha(activeColorMap.I, alpha),
+          N: applyAlpha(activeColorMap.N, alpha),
+          D: applyAlpha(activeColorMap.D, alpha),
+          X: applyAlpha(activeColorMap.X, alpha),
+          M: applyAlpha(activeColorMap.M, alpha),
+          '=': applyAlpha(activeColorMap['='], alpha),
+        }
+      },
+
+      /**
+       * #getter
+       * cached positive strand color with alpha
+       */
+      get posColorWithAlpha() {
+        const posColor =
+          self.colorBy === 'strand' ? colorSchemes.strand.posColor : 'red'
+        return applyAlpha(posColor, self.alpha)
+      },
+
+      /**
+       * #getter
+       * cached negative strand color with alpha
+       */
+      get negColorWithAlpha() {
+        const negColor =
+          self.colorBy === 'strand' ? colorSchemes.strand.negColor : 'blue'
+        return applyAlpha(negColor, self.alpha)
+      },
+
+      /**
+       * #getter
+       * cached query colors with alpha - returns a function that caches results
+       */
+      get queryColorWithAlphaMap() {
+        const { alpha } = self
+        const cache = new Map<string, string>()
+        return (queryName: string) => {
+          if (!cache.has(queryName)) {
+            const color = getQueryColor(queryName)
+            cache.set(queryName, applyAlpha(color, alpha))
+          }
+          return cache.get(queryName)!
+        }
+      },
+
+      /**
+       * #getter
+       * cached query total lengths for minAlignmentLength filtering
+       */
+      get queryTotalLengths() {
+        if (self.minAlignmentLength <= 0) {
+          return undefined
+        }
+        const lengths = new Map<string, number>()
+        for (const { f } of self.featPositions) {
+          const queryName = f.get('name') || f.get('id') || f.id()
+          const alignmentLength = Math.abs(f.get('end') - f.get('start'))
+          const currentTotal = lengths.get(queryName) || 0
+          lengths.set(queryName, currentTotal + alignmentLength)
+        }
+        return lengths
       },
     }))
     .actions(self => ({

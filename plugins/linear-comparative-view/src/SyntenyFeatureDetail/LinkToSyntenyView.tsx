@@ -38,8 +38,11 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
                 // level is "pre-known", and stored in the SyntenyFeatureWidget
                 // model state e.g. when clicking on a feature from a
                 // LinearSyntenyRendering
-                views[level]?.navTo(feat)
-                views[level + 1]?.navTo(feat.mate as SimpleFeatureSerialized)
+                views[level]?.navTo(feat, 0.2)
+                views[level + 1]?.navTo(
+                  feat.mate as SimpleFeatureSerialized,
+                  0.2,
+                )
               } else {
                 // best effort to find the right level. this is triggered for
                 // example if a user clicks on a feature in a LGVSyntenyDisplay
@@ -63,8 +66,8 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
                     ].join(' ... '),
                   )
                 }
-                v1?.navTo(f1)
-                v2?.navTo(f2)
+                v1?.navTo(f1, 0.2)
+                v2?.navTo(f2, 0.2)
               }
             }}
           >

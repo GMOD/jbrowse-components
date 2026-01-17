@@ -151,6 +151,9 @@ export function SharedLinearPileupDisplayMixin(
        * #getter
        */
       get autorunReady() {
+        if (self.isMinimized) {
+          return false
+        }
         const view = getContainingView(self) as LGV
         return (
           view.initialized && self.featureDensityStatsReadyAndRegionNotTooLarge
@@ -334,23 +337,26 @@ export function SharedLinearPileupDisplayMixin(
        */
       get rendererConfig() {
         const {
-          featureHeight: height,
+          featureHeight,
           noSpacing,
           hideSmallIndels,
           hideMismatches,
           hideLargeIndels,
-          trackMaxHeight: maxHeight,
+          trackMaxHeight,
           rendererTypeName,
         } = self
-        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
+        // @ts-ignore
+        const conf = self.configuration.renderers?.[rendererTypeName]
         return {
-          ...configBlob,
-          ...(hideSmallIndels !== undefined ? { hideSmallIndels } : {}),
-          ...(hideMismatches !== undefined ? { hideMismatches } : {}),
-          ...(hideLargeIndels !== undefined ? { hideLargeIndels } : {}),
-          ...(height !== undefined ? { height } : {}),
-          ...(noSpacing !== undefined ? { noSpacing } : {}),
-          ...(maxHeight !== undefined ? { maxHeight } : {}),
+          height: featureHeight ?? readConfObject(conf, 'height'),
+          noSpacing: noSpacing ?? readConfObject(conf, 'noSpacing'),
+          maxHeight: trackMaxHeight ?? readConfObject(conf, 'maxHeight'),
+          hideSmallIndels:
+            hideSmallIndels ?? readConfObject(conf, 'hideSmallIndels'),
+          hideMismatches:
+            hideMismatches ?? readConfObject(conf, 'hideMismatches'),
+          hideLargeIndels:
+            hideLargeIndels ?? readConfObject(conf, 'hideLargeIndels'),
         }
       },
     }))
@@ -359,14 +365,20 @@ export function SharedLinearPileupDisplayMixin(
        * #getter
        */
       get maxHeight() {
-        return readConfObject(self.rendererConfig, 'maxHeight')
+        return self.rendererConfig.maxHeight
       },
 
       /**
        * #getter
        */
       get featureHeightSetting() {
-        return readConfObject(self.rendererConfig, 'height')
+        return self.rendererConfig.height
+      },
+      /**
+       * #getter
+       */
+      get noSpacingSetting() {
+        return self.rendererConfig.noSpacing
       },
       /**
        * #getter
@@ -644,7 +656,9 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Normal',
                   type: 'radio',
-                  checked: self.featureHeight === 7 && self.noSpacing === false,
+                  checked:
+                    self.featureHeightSetting === 7 &&
+                    self.noSpacingSetting === false,
                   onClick: () => {
                     self.setFeatureHeight(7)
                     self.setNoSpacing(false)
@@ -653,7 +667,9 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Compact',
                   type: 'radio',
-                  checked: self.featureHeight === 2 && self.noSpacing === true,
+                  checked:
+                    self.featureHeightSetting === 2 &&
+                    self.noSpacingSetting === true,
                   onClick: () => {
                     self.setFeatureHeight(2)
                     self.setNoSpacing(true)
@@ -662,7 +678,9 @@ export function SharedLinearPileupDisplayMixin(
                 {
                   label: 'Super-compact',
                   type: 'radio',
-                  checked: self.featureHeight === 1 && self.noSpacing === true,
+                  checked:
+                    self.featureHeightSetting === 1 &&
+                    self.noSpacingSetting === true,
                   onClick: () => {
                     self.setFeatureHeight(1)
                     self.setNoSpacing(true)

@@ -149,27 +149,25 @@ function stateModelFactory(
          * #getter
          */
         get rendererConfig() {
-          const configBlob =
-            getConf(self, ['renderers', self.rendererTypeName]) || {}
-
           const { showArcs, showInterbaseCounts, showInterbaseIndicators } =
             self
+          // @ts-ignore
+          const conf = self.configuration.renderers?.[self.rendererTypeName]
           return {
-            ...configBlob,
             showInterbaseCounts:
-              showInterbaseCounts ?? configBlob.showInterbaseCounts,
+              showInterbaseCounts ??
+              readConfObject(conf, 'showInterbaseCounts'),
             showInterbaseIndicators:
-              showInterbaseIndicators ?? configBlob.showInterbaseIndicators,
-            showArcs: showArcs ?? configBlob.showArcs,
+              showInterbaseIndicators ??
+              readConfObject(conf, 'showInterbaseIndicators'),
+            showArcs: showArcs ?? readConfObject(conf, 'showArcs'),
           }
         },
         /**
          * #getter
          */
         get showArcsSetting() {
-          return (
-            self.showArcs ?? readConfObject(this.rendererConfig, 'showArcs')
-          )
+          return this.rendererConfig.showArcs
         },
         /**
          * #getter
@@ -202,19 +200,13 @@ function stateModelFactory(
          * #getter
          */
         get showInterbaseCountsSetting() {
-          return (
-            self.showInterbaseCounts ??
-            readConfObject(this.rendererConfig, 'showInterbaseCounts')
-          )
+          return this.rendererConfig.showInterbaseCounts
         },
         /**
          * #getter
          */
         get showInterbaseIndicatorsSetting() {
-          return (
-            self.showInterbaseIndicators ??
-            readConfObject(this.rendererConfig, 'showInterbaseIndicators')
-          )
+          return this.rendererConfig.showInterbaseIndicators
         },
 
         /**

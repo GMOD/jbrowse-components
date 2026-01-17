@@ -319,6 +319,7 @@ export interface AbstractTrackModel {
   id: string
   displays: AbstractDisplayModel[]
   configuration: AnyConfigurationModel & { displays: Display[] }
+  minimized: boolean
 }
 
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {

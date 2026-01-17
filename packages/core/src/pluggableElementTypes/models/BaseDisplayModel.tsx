@@ -80,6 +80,15 @@ function stateModelFactory() {
 
       /**
        * #getter
+       * Returns true if the parent track is minimized. Used to skip
+       * expensive operations like autoruns when track is not visible.
+       */
+      get isMinimized() {
+        return this.parentTrack.minimized
+      },
+
+      /**
+       * #getter
        * Returns the parent display if this display is nested within another display
        * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
        */
@@ -132,7 +141,7 @@ function stateModelFactory() {
       renderProps() {
         return {
           ...getParentRenderProps(self),
-          notReady: getContainingView(self).minimized,
+          notReady: self.isMinimized || getContainingView(self).minimized,
           rpcDriverName: self.effectiveRpcDriverName,
         }
       },

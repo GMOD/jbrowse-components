@@ -1,5 +1,5 @@
 import { getContainingView } from '@jbrowse/core/util'
-import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type {
@@ -20,6 +20,7 @@ interface TreeDrawingModel {
   totalHeight: number
   hoveredTreeNode?: HoveredTreeNode
   sources?: Source[]
+  isMinimized: boolean
 }
 
 export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
@@ -28,6 +29,10 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
     self,
     autorun(
       function treeDrawAutorun() {
+        // isAlive check guards against display being destroyed during async import
+        if (!isAlive(self) || self.isMinimized) {
+          return
+        }
         const {
           treeCanvas,
           hierarchy,
@@ -90,6 +95,10 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
     self,
     autorun(
       function treeHoverAutorun() {
+        // isAlive check guards against display being destroyed during async import
+        if (!isAlive(self) || self.isMinimized) {
+          return
+        }
         const {
           mouseoverCanvas,
           hierarchy,

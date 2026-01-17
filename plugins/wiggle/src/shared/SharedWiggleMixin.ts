@@ -347,17 +347,20 @@ export default function SharedWiggleMixin(
           scaleType,
           rendererTypeName,
         } = self
-        const configBlob = getConf(self, ['renderers', rendererTypeName]) || {}
+        // @ts-ignore
+        const conf = self.configuration.renderers?.[rendererTypeName]
         return {
-          ...configBlob,
-          ...(scaleType ? { scaleType } : {}),
-          ...(fill !== undefined ? { filled: fill } : {}),
-          ...(displayCrossHatches !== undefined ? { displayCrossHatches } : {}),
-          ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
-          ...(color !== undefined ? { color } : {}),
-          ...(negColor !== undefined ? { negColor } : {}),
-          ...(posColor !== undefined ? { posColor } : {}),
-          ...(minSize !== undefined ? { minSize } : {}),
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          scaleType: scaleType ?? readConfObject(conf, 'scaleType'),
+          filled: fill ?? readConfObject(conf, 'filled'),
+          displayCrossHatches:
+            displayCrossHatches ?? readConfObject(conf, 'displayCrossHatches'),
+          summaryScoreMode:
+            summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode'),
+          color: color ?? readConfObject(conf, 'color'),
+          negColor: negColor ?? readConfObject(conf, 'negColor'),
+          posColor: posColor ?? readConfObject(conf, 'posColor'),
+          minSize: minSize ?? readConfObject(conf, 'minSize'),
         }
       },
 
@@ -405,19 +408,13 @@ export default function SharedWiggleMixin(
        * #getter
        */
       get filled() {
-        return (
-          self.fill ??
-          (readConfObject(self.rendererConfig, 'filled') as boolean)
-        )
+        return self.rendererConfig.filled
       },
       /**
        * #getter
        */
       get summaryScoreModeSetting() {
-        return (
-          self.summaryScoreMode ??
-          (readConfObject(self.rendererConfig, 'summaryScoreMode') as string)
-        )
+        return self.rendererConfig.summaryScoreMode
       },
 
       /**
@@ -444,13 +441,7 @@ export default function SharedWiggleMixin(
        * #getter
        */
       get displayCrossHatchesSetting() {
-        return (
-          self.displayCrossHatches ??
-          (readConfObject(
-            self.rendererConfig,
-            'displayCrossHatches',
-          ) as boolean)
-        )
+        return self.rendererConfig.displayCrossHatches
       },
       /**
        * #getter
@@ -505,11 +496,25 @@ export default function SharedWiggleMixin(
               ]
             : []),
           {
-            label:
-              self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
-            onClick: () => {
-              self.toggleLogScale()
-            },
+            label: 'Scale type',
+            subMenu: [
+              {
+                label: 'Linear scale',
+                type: 'radio',
+                checked: self.scaleType === 'linear',
+                onClick: () => {
+                  self.setScaleType('linear')
+                },
+              },
+              {
+                label: 'Log scale',
+                type: 'radio',
+                checked: self.scaleType === 'log',
+                onClick: () => {
+                  self.setScaleType('log')
+                },
+              },
+            ],
           },
           {
             label: 'Autoscale type',

@@ -42,8 +42,13 @@ const TracksContainer = observer(function TracksContainer({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
-  const { stickyViewHeaders, rubberbandTop, showGridlines, showCenterLine } =
-    model
+  const {
+    stickyViewHeaders,
+    rubberbandTop,
+    showGridlines,
+    showCenterLine,
+    isScalebarRefNameMenuOpen,
+  } = model
   const ref = useRef<HTMLDivElement>(null)
   const {
     guideX,
@@ -87,7 +92,7 @@ const TracksContainer = observer(function TracksContainer({
       <Suspense fallback={null}>
         {showCenterLine ? <CenterLine model={model} /> : null}
       </Suspense>
-      {guideX !== undefined ? (
+      {guideX !== undefined && !isScalebarRefNameMenuOpen ? (
         <VerticalGuide model={model} coordX={guideX} />
       ) : rubberbandOn ? (
         <Suspense fallback={null}>
