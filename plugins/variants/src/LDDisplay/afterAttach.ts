@@ -133,7 +133,7 @@ export function doAfterAttach(self: LDDisplayModel) {
         self.lengthCutoffFilter
         self.colorScheme
         self.height
-        self.lineZoneHeight
+        // Note: lineZoneHeight not included - SVG lines component handles it reactively
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 
         if (untracked(() => self.error) || !regions.length) {

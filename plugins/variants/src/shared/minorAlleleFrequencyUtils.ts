@@ -31,7 +31,7 @@ export function calculateMinorAlleleFrequency(
     if (count > firstMax) {
       secondMax = firstMax
       firstMax = count
-    } else if (count > secondMax && count !== firstMax) {
+    } else if (count > secondMax) {
       secondMax = count
     }
   }

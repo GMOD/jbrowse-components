@@ -46,8 +46,8 @@ export default class LDRenderer extends ServerSideRendererType {
     }
     const width = totalWidthBp / bpPerPx
     const hyp = width / 2
-    const matrixHeight = displayHeight ?? hyp
-    const height = matrixHeight + lineZoneHeight
+    const height = displayHeight ?? hyp + lineZoneHeight
+    const matrixHeight = height - lineZoneHeight
 
     // Get LD data
     const ldData = await this.getLDData(renderProps)
