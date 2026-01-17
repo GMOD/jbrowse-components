@@ -1,3 +1,9 @@
+## Changes since v4.0.3 (2026-01-10)
+
+### enhancement
+
+- Add selenium tests for jbrowse desktop (#5110) @cmdcolin
+
 ## Changes since v3.7.0 (2025-11-07)
 
 ### bug
