@@ -11,6 +11,7 @@ import { autorun, untracked } from 'mobx'
 
 import type { LDDisplayModel } from './model.ts'
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
+import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -19,6 +20,9 @@ interface RenderResult {
   imageData?: ImageBitmap
   flatbush?: ArrayBufferLike
   items?: LDFlatbushItem[]
+  ldData?: {
+    snps: LDMatrixResult['snps']
+  }
   maxScore?: number
   yScalar?: number
   width: number
@@ -89,6 +93,7 @@ export function doAfterAttach(self: LDDisplayModel) {
       self.setFlatbushData(
         result.flatbush,
         result.items ?? [],
+        result.ldData?.snps ?? [],
         result.maxScore ?? 1,
         result.yScalar ?? 1,
       )
@@ -160,6 +165,7 @@ export function doAfterAttach(self: LDDisplayModel) {
         drawCanvasImageData(self.ref, self.renderingImageData)
       },
       {
+        delay: 100,
         name: 'LDDisplayCanvas',
       },
     ),

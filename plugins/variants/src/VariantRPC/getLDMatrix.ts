@@ -7,9 +7,9 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -25,8 +25,8 @@ function encodeGenotypes(
   splitCache: Record<string, string[]>,
 ): Int8Array {
   const encoded = new Int8Array(samples.length)
-  for (let i = 0; i < samples.length; i++) {
-    const val = genotypes[samples[i]!]!
+  for (const [i, sample] of samples.entries()) {
+    const val = genotypes[sample]!
     const alleles = splitCache[val] ?? (splitCache[val] = val.split(SPLITTER))
 
     let nonRefCount = 0
@@ -79,8 +79,8 @@ function calculateLDStats(
   // Genotype encoding: 0=AA, 1=Aa, 2=aa (where A=ref, a=alt)
   // We count allele dosages and estimate haplotype freqs
 
-  for (let i = 0; i < geno1.length; i++) {
-    const g1 = geno1[i]!
+  for (const [i, element] of geno1.entries()) {
+    const g1 = element
     const g2 = geno2[i]!
     // Only include samples where both genotypes are called
     if (g1 >= 0 && g2 >= 0) {
@@ -153,12 +153,12 @@ function calculateLDStats(
 }
 
 export interface LDMatrixResult {
-  snps: Array<{
+  snps: {
     id: string
     refName: string
     start: number
     end: number
-  }>
+  }[]
   // Lower triangular matrix stored as flat array
   // For n SNPs: [ld(1,0), ld(2,0), ld(2,1), ld(3,0), ...]
   ldValues: Float32Array

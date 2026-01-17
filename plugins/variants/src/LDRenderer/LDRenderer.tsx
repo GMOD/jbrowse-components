@@ -54,17 +54,22 @@ export default class LDRenderer extends ServerSideRendererType {
 
     if (!ldData || ldData.snps.length === 0) {
       // Return empty result
-      const res = await renderToAbstractCanvas(width, height, renderProps, ctx => {
-        ctx.fillStyle = '#666'
-        ctx.font = '12px sans-serif'
-        ctx.textAlign = 'center'
-        ctx.fillText(
-          'No variants in view (try adjusting MAF filter or zooming in)',
-          width / 2,
-          height / 2,
-        )
-        return undefined
-      })
+      const res = await renderToAbstractCanvas(
+        width,
+        height,
+        renderProps,
+        ctx => {
+          ctx.fillStyle = '#666'
+          ctx.font = '12px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.fillText(
+            'No variants in view (try adjusting MAF filter or zooming in)',
+            width / 2,
+            height / 2,
+          )
+          return undefined
+        },
+      )
       return rpcResult(
         { ...res, height, width, ldData: null },
         collectTransferables(res),
@@ -74,32 +79,26 @@ export default class LDRenderer extends ServerSideRendererType {
     // Like HiC: yScalar = matrixHeight / max(matrixHeight, hyp)
     const yScalar = matrixHeight / Math.max(matrixHeight, hyp)
 
-    const { makeImageData, drawConnectingLines } = await import('./makeImageData.ts')
+    const { makeImageData } = await import('./makeImageData.ts')
 
-    const res = await renderToAbstractCanvas(width, height, renderProps, ctx => {
-      // Draw connecting lines first (in the line zone at the top)
-      const region = regions[0]
-      if (region) {
-        drawConnectingLines(ctx, {
-          snps: ldData.snps,
-          region,
+    const res = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      ctx => {
+        // Translate down past the line zone, then draw the matrix
+        // Lines are drawn separately as SVG in the display component
+        ctx.translate(0, lineZoneHeight)
+
+        return makeImageData(ctx, {
+          ldData,
+          regions,
           bpPerPx,
-          lineZoneHeight,
-          viewWidthPx: width,
+          stopToken: renderProps.stopToken,
+          yScalar,
         })
-      }
-
-      // Translate down past the line zone, then draw the matrix
-      ctx.translate(0, lineZoneHeight)
-
-      return makeImageData(ctx, {
-        ldData,
-        regions,
-        bpPerPx,
-        stopToken: renderProps.stopToken,
-        yScalar,
-      })
-    })
+      },
+    )
 
     const serialized = {
       ...res,
@@ -117,7 +116,9 @@ export default class LDRenderer extends ServerSideRendererType {
     return rpcResult(serialized, collectTransferables(serialized))
   }
 
-  async getLDData(args: RenderArgsDeserialized): Promise<LDMatrixResult | null> {
+  async getLDData(
+    args: RenderArgsDeserialized,
+  ): Promise<LDMatrixResult | null> {
     const {
       regions,
       sessionId,

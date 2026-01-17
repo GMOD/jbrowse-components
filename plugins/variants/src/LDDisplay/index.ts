@@ -19,9 +19,7 @@ export default function LDDisplayF(pluginManager: PluginManager) {
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(
-        () => import('./components/LDDisplayComponent.tsx'),
-      ),
+      ReactComponent: lazy(() => import('./components/LDDisplayComponent.tsx')),
     })
   })
 }

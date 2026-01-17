@@ -7,8 +7,8 @@ import {
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import { scaleSequential } from '@mui/x-charts-vendor/d3-scale'
 
-import type { LDMatrixResult, LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { LDFlatbushItem } from './types.ts'
+import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { Region, StopToken } from '@jbrowse/core/util'
 
 export interface MakeImageDataResult {
@@ -76,7 +76,8 @@ export function makeImageData(
   }
 
   // Select color scheme based on metric
-  const colorInterpolator = metric === 'dprime' ? colorSchemes.dprime : colorSchemes.r2
+  const colorInterpolator =
+    metric === 'dprime' ? colorSchemes.dprime : colorSchemes.r2
   const scale = scaleSequential(colorInterpolator).domain([0, 1])
 
   // Calculate uniform cell width based on view width and number of SNPs
@@ -138,7 +139,7 @@ export function makeImageData(
   const flatbush = new Flatbush(Math.max(items.length, 1))
   if (coords.length) {
     for (let k = 0; k < coords.length; k += 4) {
-      flatbush.add(coords[k]!, coords[k + 1]!, coords[k + 2]!, coords[k + 3]!)
+      flatbush.add(coords[k]!, coords[k + 1]!, coords[k + 2], coords[k + 3])
     }
   } else {
     flatbush.add(0, 0, 0, 0)
@@ -153,52 +154,3 @@ export function makeImageData(
   }
 }
 
-/**
- * Draw connecting lines from matrix column positions to genomic coordinates.
- * The matrix uses uniform cell widths based on indices, so we need to map
- * each SNP's matrix column position to its actual genomic position.
- */
-export function drawConnectingLines(
-  ctx: CanvasRenderingContext2D,
-  props: {
-    snps: LDMatrixResult['snps']
-    region: Region
-    bpPerPx: number
-    lineZoneHeight: number
-    viewWidthPx: number
-  },
-) {
-  const { snps, region, bpPerPx, lineZoneHeight, viewWidthPx } = props
-  const n = snps.length
-
-  if (n === 0) {
-    return
-  }
-
-  // Same cell width calculation as in makeImageData
-  const w = viewWidthPx / (n * Math.sqrt(2))
-
-  // After rotation, the matrix diagonal spans the view width
-  // Each SNP column i has its top point at screen x = (i + 0.5) * w * sqrt(2)
-  // which simplifies to (i + 0.5) * viewWidthPx / n
-
-  ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)'
-  ctx.lineWidth = 0.5
-
-  for (let i = 0; i < n; i++) {
-    const snp = snps[i]!
-
-    // Matrix column position (center of column at the diagonal/top edge)
-    // After -45° rotation, position (i*w, i*w) maps to screen x = i*w*sqrt(2), y = 0
-    // Center of cell: ((i+0.5)*w, (i+0.5)*w) -> screen x = (i+0.5)*w*sqrt(2)
-    const matrixX = (i + 0.5) * w * Math.sqrt(2)
-
-    // Genomic position in view coordinates
-    const genomicX = (snp.start - region.start) / bpPerPx
-
-    ctx.beginPath()
-    ctx.moveTo(matrixX, lineZoneHeight)
-    ctx.lineTo(genomicX, 0)
-    ctx.stroke()
-  }
-}

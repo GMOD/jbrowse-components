@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
+import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -79,6 +80,10 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
+      snps: [] as LDMatrixResult['snps'],
+      /**
+       * #volatile
+       */
       maxScore: 1,
       /**
        * #volatile
@@ -96,13 +101,22 @@ export default function stateModelFactory(
       setFlatbushData(
         flatbush: ArrayBufferLike | undefined,
         items: LDFlatbushItem[],
+        snps: LDMatrixResult['snps'],
         maxScore: number,
         yScalar: number,
       ) {
         self.flatbush = flatbush
         self.flatbushItems = items
+        self.snps = snps
         self.maxScore = maxScore
         self.yScalar = yScalar
+      },
+      /**
+       * #action
+       */
+      setLineZoneHeight(n: number) {
+        self.lineZoneHeight = Math.max(0, n)
+        return self.lineZoneHeight
       },
       /**
        * #action
@@ -269,7 +283,7 @@ export default function stateModelFactory(
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self)
+            doAfterAttach(self as LDDisplayModel)
           } catch (e) {
             console.error(e)
             getSession(self).notifyError(`${e}`, e)
