@@ -1,18 +1,22 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import {
+  NonBlockCanvasDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
-import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel LDDisplay
  * extends
- * - [LinearBareDisplay](../linearbaredisplay)
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
+ * - [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -20,7 +24,9 @@ export default function stateModelFactory(
   return types
     .compose(
       'LDDisplay',
-      linearBareDisplayStateModelFactory(configSchema),
+      BaseDisplay,
+      TrackHeightMixin(),
+      NonBlockCanvasDisplayMixin(),
       types.model({
         /**
          * #property
@@ -43,16 +49,14 @@ export default function stateModelFactory(
         ),
         /**
          * #property
+         * Height of the zone for connecting lines at the top
          */
-        lineZoneHeight: types.optional(types.number, 30),
+        lineZoneHeight: types.optional(types.number, 20),
         /**
          * #property
          * LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)
          */
-        ldMetric: types.optional(
-          types.enumeration(['r2', 'dprime'] as const),
-          'r2',
-        ),
+        ldMetric: types.optional(types.string, 'r2'),
         /**
          * #property
          */
@@ -64,18 +68,6 @@ export default function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      /**
-       * #volatile
-       */
-      renderingStopToken: undefined as StopToken | undefined,
-      /**
-       * #volatile
-       */
-      renderingImageData: undefined as ImageBitmap | undefined,
-      /**
-       * #volatile
-       */
-      lastDrawnOffsetPx: 0,
       /**
        * #volatile
        */
@@ -95,45 +87,9 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      loading: false,
-      /**
-       * #volatile
-       */
       error: undefined as Error | undefined,
-      /**
-       * #volatile
-       */
-      ref: null as HTMLCanvasElement | null,
-      /**
-       * #volatile
-       */
-      statusMessage: '',
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setRef(ref: HTMLCanvasElement | null) {
-        self.ref = ref
-      },
-      /**
-       * #action
-       */
-      setRenderingStopToken(token: StopToken | undefined) {
-        self.renderingStopToken = token
-      },
-      /**
-       * #action
-       */
-      setRenderingImageData(data: ImageBitmap | undefined) {
-        self.renderingImageData = data
-      },
-      /**
-       * #action
-       */
-      setLastDrawnOffsetPx(offset: number) {
-        self.lastDrawnOffsetPx = offset
-      },
       /**
        * #action
        */
@@ -151,20 +107,14 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setLoading(loading: boolean) {
-        self.loading = loading
-      },
-      /**
-       * #action
-       */
       setError(error: Error | unknown | undefined) {
         self.error = error as Error | undefined
       },
       /**
        * #action
        */
-      setStatusMessage(msg: string) {
-        self.statusMessage = msg
+      reload() {
+        self.error = undefined
       },
       /**
        * #action
@@ -175,13 +125,13 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setLineZoneHeight(n: number) {
-        self.lineZoneHeight = Math.max(10, Math.min(100, n))
+      setLengthCutoffFilter(arg: number) {
+        self.lengthCutoffFilter = arg
       },
       /**
        * #action
        */
-      setLDMetric(metric: LDMetric) {
+      setLDMetric(metric: string) {
         self.ldMetric = metric
       },
       /**
@@ -216,6 +166,24 @@ export default function stateModelFactory(
       get rendererTypeName() {
         return 'LDRenderer'
       },
+      /**
+       * #getter
+       */
+      get rendererConfig() {
+        return getConf(self, 'renderer')
+      },
+      /**
+       * #getter
+       */
+      get regionTooLarge() {
+        return false
+      },
+      /**
+       * #method
+       */
+      regionCannotBeRendered() {
+        return null
+      },
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
@@ -228,9 +196,9 @@ export default function stateModelFactory(
             ...superRenderProps(),
             config: self.rendererConfig,
             displayHeight: self.height,
+            lineZoneHeight: self.lineZoneHeight,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             lengthCutoffFilter: self.lengthCutoffFilter,
-            lineZoneHeight: self.lineZoneHeight,
             ldMetric: self.ldMetric,
             colorScheme: self.colorScheme,
           }
@@ -317,7 +285,6 @@ export default function stateModelFactory(
       const {
         minorAlleleFrequencyFilter,
         lengthCutoffFilter,
-        lineZoneHeight,
         ldMetric,
         colorScheme,
         showLegend,
@@ -331,7 +298,6 @@ export default function stateModelFactory(
         ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
           ? { lengthCutoffFilter }
           : {}),
-        ...(lineZoneHeight !== 30 ? { lineZoneHeight } : {}),
         ...(ldMetric !== 'r2' ? { ldMetric } : {}),
         ...(colorScheme ? { colorScheme } : {}),
         ...(!showLegend ? { showLegend } : {}),

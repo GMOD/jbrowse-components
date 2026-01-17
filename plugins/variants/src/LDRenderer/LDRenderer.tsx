@@ -36,18 +36,18 @@ export default class LDRenderer extends ServerSideRendererType {
       regions,
       bpPerPx,
       ldMetric = 'r2',
-      lineZoneHeight = 30,
+      lineZoneHeight = 20,
     } = renderProps
 
-    // Calculate total width across all regions
+    // Calculate total width across all regions (like HiC)
     let totalWidthBp = 0
     for (const region of regions) {
       totalWidthBp += region.end - region.start
     }
     const width = totalWidthBp / bpPerPx
     const hyp = width / 2
-    const height = displayHeight ?? hyp + lineZoneHeight
-    const matrixHeight = height - lineZoneHeight
+    const matrixHeight = displayHeight ?? hyp
+    const height = matrixHeight + lineZoneHeight
 
     // Get LD data
     const ldData = await this.getLDData(renderProps)
@@ -71,12 +71,13 @@ export default class LDRenderer extends ServerSideRendererType {
       )
     }
 
+    // Like HiC: yScalar = matrixHeight / max(matrixHeight, hyp)
     const yScalar = matrixHeight / Math.max(matrixHeight, hyp)
 
     const { makeImageData, drawConnectingLines } = await import('./makeImageData.ts')
 
     const res = await renderToAbstractCanvas(width, height, renderProps, ctx => {
-      // Draw connecting lines first (in the line zone area)
+      // Draw connecting lines first (in the line zone at the top)
       const region = regions[0]
       if (region) {
         drawConnectingLines(ctx, {
@@ -84,7 +85,7 @@ export default class LDRenderer extends ServerSideRendererType {
           region,
           bpPerPx,
           lineZoneHeight,
-          totalWidthPx: width,
+          viewWidthPx: width,
         })
       }
 

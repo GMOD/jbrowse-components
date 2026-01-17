@@ -1,103 +1,194 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-import type { LDDisplayModel } from '../model.ts'
+import BaseDisplayComponent from './BaseDisplayComponent.tsx'
+import LDColorLegend from './LDColorLegend.tsx'
+
 import type { LDFlatbushItem } from '../../LDRenderer/types.ts'
+import type { LDDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()({
-  container: {
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  canvas: {
-    display: 'block',
-  },
-  legend: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    background: 'rgba(255,255,255,0.9)',
-    border: '1px solid #ccc',
-    borderRadius: 4,
-    padding: '4px 8px',
-    fontSize: 11,
-  },
-  legendGradient: {
-    width: 100,
-    height: 12,
-    marginBottom: 2,
-  },
-  legendLabels: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: 10,
-  },
-  tooltip: {
-    position: 'absolute',
-    background: 'rgba(0,0,0,0.8)',
-    color: 'white',
-    padding: '4px 8px',
-    borderRadius: 4,
-    fontSize: 11,
-    pointerEvents: 'none',
-    whiteSpace: 'nowrap',
-  },
-  loading: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    color: '#666',
-  },
-})
+type LGV = LinearGenomeViewModel
 
 const SQRT2 = Math.sqrt(2)
 
-// Convert screen coordinates to unrotated matrix coordinates
+function LDTooltip({
+  item,
+  x,
+  y,
+  ldMetric,
+}: {
+  item: LDFlatbushItem
+  x: number
+  y: number
+  ldMetric: string
+}) {
+  return (
+    <BaseTooltip clientPoint={{ x: x + 15, y }}>
+      <div>
+        {ldMetric === 'dprime' ? "D'" : 'R²'}: {item.ldValue.toFixed(3)}
+      </div>
+      <div style={{ fontSize: '0.85em', color: '#666' }}>
+        {item.snp1.id} × {item.snp2.id}
+      </div>
+    </BaseTooltip>
+  )
+}
+
+/**
+ * Transform screen coordinates to the unrotated coordinate space.
+ * The canvas is rotated by -45 degrees, so we apply the inverse rotation (+45 degrees).
+ * Also accounts for the yScalar transformation and lineZoneHeight offset.
+ */
 function screenToUnrotated(
   screenX: number,
   screenY: number,
   yScalar: number,
   lineZoneHeight: number,
 ): { x: number; y: number } {
-  // Account for the line zone offset
-  const adjustedY = (screenY - lineZoneHeight) / yScalar
-  // Inverse 45° rotation
-  const x = (screenX - adjustedY) / SQRT2
-  const y = (screenX + adjustedY) / SQRT2
+  // Subtract lineZoneHeight since the matrix is translated down by that amount
+  const matrixY = screenY - lineZoneHeight
+  const scaledY = matrixY / yScalar
+  const x = (screenX - scaledY) / SQRT2
+  const y = (screenX + scaledY) / SQRT2
   return { x, y }
 }
 
-const LDColorLegend = observer(function LDColorLegend({
+const LDCanvas = observer(function LDCanvas({
   model,
 }: {
   model: LDDisplayModel
 }) {
-  const { classes } = useStyles()
-  const { ldMetric } = model
+  const view = getContainingView(model) as LGV
+  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const {
+    height,
+    drawn,
+    loading,
+    flatbush,
+    flatbushItems,
+    yScalar,
+    showLegend,
+    ldMetric,
+    lineZoneHeight,
+  } = model
 
-  // Create gradient style based on metric
-  const gradientStyle =
-    ldMetric === 'dprime'
-      ? 'linear-gradient(to right, white, #8080ff, #0000a0)'
-      : 'linear-gradient(to right, white, #ff8080, #a00000)'
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>()
+
+  // Convert flatbush data to Flatbush instance
+  const flatbushIndex = useMemo(
+    () => (flatbush ? Flatbush.from(flatbush) : null),
+    [flatbush],
+  )
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  const cb = useCallback(
+    (ref: HTMLCanvasElement) => {
+      model.setRef(ref)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, width, height],
+  )
+
+  const onMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      if (!containerRef.current || !flatbushIndex || !flatbushItems.length) {
+        setHoveredItem(undefined)
+        setMousePosition(undefined)
+        return
+      }
+
+      const rect = containerRef.current.getBoundingClientRect()
+      const screenX = event.clientX - rect.left
+      const screenY = event.clientY - rect.top
+
+      setMousePosition({ x: event.clientX, y: event.clientY })
+
+      // Only query if we're below the line zone
+      if (screenY < lineZoneHeight) {
+        setHoveredItem(undefined)
+        return
+      }
+
+      // Transform screen coordinates to unrotated space for Flatbush query
+      const { x, y } = screenToUnrotated(screenX, screenY, yScalar, lineZoneHeight)
+
+      // Query Flatbush with a small region around the transformed point
+      const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
+
+      if (results.length > 0) {
+        const item = flatbushItems[results[0]!]
+        setHoveredItem(item)
+      } else {
+        setHoveredItem(undefined)
+      }
+    },
+    [flatbushIndex, flatbushItems, yScalar, lineZoneHeight],
+  )
+
+  const onMouseLeave = useCallback(() => {
+    setHoveredItem(undefined)
+    setMousePosition(undefined)
+  }, [])
+
+  // Show message when zoomed out
+  if (view.bpPerPx > 1000) {
+    return (
+      <div
+        style={{
+          width,
+          height,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#666',
+        }}
+      >
+        Zoom in to see LD
+      </div>
+    )
+  }
 
   return (
-    <div className={classes.legend}>
-      <div
-        className={classes.legendGradient}
-        style={{ background: gradientStyle }}
+    <div
+      ref={containerRef}
+      style={{
+        cursor: hoveredItem && mousePosition ? 'crosshair' : undefined,
+        position: 'relative',
+        width,
+        height,
+      }}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+    >
+      <canvas
+        data-testid={`ld_canvas${drawn && !loading ? '_done' : ''}`}
+        ref={cb}
+        style={{
+          width,
+          height,
+          position: 'absolute',
+          left: 0,
+        }}
+        width={width * 2}
+        height={height * 2}
       />
-      <div className={classes.legendLabels}>
-        <span>0</span>
-        <span>{ldMetric === 'dprime' ? "D'" : 'R²'}</span>
-        <span>1</span>
-      </div>
+
+      {hoveredItem && mousePosition ? (
+        <LDTooltip
+          item={hoveredItem}
+          x={mousePosition.x}
+          y={mousePosition.y}
+          ldMetric={ldMetric}
+        />
+      ) : null}
+      {showLegend ? <LDColorLegend ldMetric={ldMetric} /> : null}
     </div>
   )
 })
@@ -107,122 +198,10 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
 }: {
   model: LDDisplayModel
 }) {
-  const { classes } = useStyles()
-  const {
-    height,
-    error,
-    loading,
-    flatbush,
-    flatbushItems,
-    yScalar,
-    lineZoneHeight,
-    showLegend,
-    ldMetric,
-  } = model
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const { width } = view
-
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [tooltip, setTooltip] = useState<{
-    x: number
-    y: number
-    item: LDFlatbushItem
-  } | null>(null)
-
-  // Set canvas ref on model
-  useEffect(() => {
-    model.setRef(canvasRef.current)
-    return () => {
-      model.setRef(null)
-    }
-  }, [model])
-
-  // Handle mousemove for tooltip
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      if (!flatbush || !flatbushItems.length) {
-        setTooltip(null)
-        return
-      }
-
-      const rect = event.currentTarget.getBoundingClientRect()
-      const screenX = event.clientX - rect.left
-      const screenY = event.clientY - rect.top
-
-      // Transform screen coordinates to matrix coordinates
-      const { x, y } = screenToUnrotated(screenX, screenY, yScalar, lineZoneHeight)
-
-      // Query Flatbush
-      const fb = Flatbush.from(flatbush)
-      const results = fb.search(x - 2, y - 2, x + 2, y + 2)
-
-      if (results.length > 0) {
-        const idx = results[0]!
-        const item = flatbushItems[idx]
-        if (item) {
-          setTooltip({ x: screenX, y: screenY, item })
-          return
-        }
-      }
-      setTooltip(null)
-    },
-    [flatbush, flatbushItems, yScalar, lineZoneHeight],
-  )
-
-  const handleMouseLeave = useCallback(() => {
-    setTooltip(null)
-  }, [])
-
-  if (error) {
-    return (
-      <div
-        className={classes.container}
-        style={{ height, width }}
-      >
-        <div className={classes.loading} style={{ color: 'red' }}>
-          Error: {error.message}
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div
-      className={classes.container}
-      style={{ height, width }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      <canvas
-        ref={canvasRef}
-        className={classes.canvas}
-        width={width}
-        height={height}
-      />
-
-      {loading && (
-        <div className={classes.loading}>Computing LD...</div>
-      )}
-
-      {showLegend && !loading && <LDColorLegend model={model} />}
-
-      {tooltip && (
-        <div
-          className={classes.tooltip}
-          style={{
-            left: tooltip.x + 10,
-            top: tooltip.y + 10,
-          }}
-        >
-          <div>
-            {ldMetric === 'dprime' ? "D'" : 'R²'}: {tooltip.item.ldValue.toFixed(3)}
-          </div>
-          <div style={{ fontSize: 10, color: '#aaa' }}>
-            {tooltip.item.snp1.id} × {tooltip.item.snp2.id}
-          </div>
-        </div>
-      )}
-    </div>
+    <BaseDisplayComponent model={model}>
+      <LDCanvas model={model} />
+    </BaseDisplayComponent>
   )
 })
 

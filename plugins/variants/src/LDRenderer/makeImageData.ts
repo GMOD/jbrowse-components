@@ -75,42 +75,35 @@ export function makeImageData(
     return undefined
   }
 
-  // Calculate total width
-  const totalWidthPx = (region.end - region.start) / bpPerPx
-
-  // Calculate box size based on number of SNPs and available width
-  // The matrix is rotated 45°, so the diagonal width is totalWidthPx
-  // For n SNPs, we have n columns, each of width w
-  // After rotation, the horizontal span is n * w * sqrt(2) / 2 ≈ n * w * 0.707
-  const w = Math.min(totalWidthPx / n, 20)
-
   // Select color scheme based on metric
   const colorInterpolator = metric === 'dprime' ? colorSchemes.dprime : colorSchemes.r2
   const scale = scaleSequential(colorInterpolator).domain([0, 1])
 
-  // Apply yScalar for height adjustment
-  if (yScalar !== 1) {
+  // Calculate uniform cell width based on view width and number of SNPs
+  // The rotated matrix diagonal should span the view width
+  const viewWidthPx = (region.end - region.start) / bpPerPx
+  // After 45° rotation, n cells of width w have diagonal span of n * w * sqrt(2)
+  // We want this to equal viewWidthPx, so: w = viewWidthPx / (n * sqrt(2))
+  const w = viewWidthPx / (n * Math.sqrt(2))
+
+  // Apply yScalar for height adjustment (like HiC)
+  if (yScalar) {
     ctx.scale(1, yScalar)
   }
   ctx.save()
 
-  // Calculate offset to center the matrix
-  const matrixWidth = n * w
-  const offsetX = (totalWidthPx - matrixWidth) / 2
-
-  // Translate to center and rotate for diamond orientation
-  ctx.translate(offsetX + matrixWidth / 2, 0)
+  // Just rotate, like HiC does
   ctx.rotate(-Math.PI / 4)
 
   // Build Flatbush index and items array
   const coords: number[] = []
   const items: LDFlatbushItem[] = []
 
-  // Draw the lower triangular matrix
+  // Draw the lower triangular matrix with uniform cell sizes
   // ldValues is stored as: [ld(1,0), ld(2,0), ld(2,1), ld(3,0), ld(3,1), ld(3,2), ...]
   let ldIdx = 0
-  const wDiag = w / Math.sqrt(2)
 
+  // Use index-based positioning for uniform squares
   for (let i = 1; i < n; i++) {
     for (let j = 0; j < i; j++) {
       const ldVal = ldValues[ldIdx] ?? 0
@@ -118,14 +111,14 @@ export function makeImageData(
       // Color based on LD value
       ctx.fillStyle = scale(ldVal)
 
-      // Position in rotated coordinate system
-      const x = j * wDiag
-      const y = (i - 1) * wDiag
+      // Use indices directly for uniform cell positioning
+      const x = j * w
+      const y = i * w
 
-      ctx.fillRect(x, y, wDiag, wDiag)
+      ctx.fillRect(x, y, w, w)
 
       // Store for Flatbush (in unrotated coordinates)
-      coords.push(x, y, x + wDiag, y + wDiag)
+      coords.push(x, y, x + w, y + w)
       items.push({
         i,
         j,
@@ -156,12 +149,14 @@ export function makeImageData(
     flatbush: flatbush.data,
     items,
     maxScore: 1, // LD values are always 0-1
-    w: wDiag,
+    w,
   }
 }
 
 /**
- * Draw connecting lines from matrix positions to genomic coordinates
+ * Draw connecting lines from matrix column positions to genomic coordinates.
+ * The matrix uses uniform cell widths based on indices, so we need to map
+ * each SNP's matrix column position to its actual genomic position.
  */
 export function drawConnectingLines(
   ctx: CanvasRenderingContext2D,
@@ -170,27 +165,33 @@ export function drawConnectingLines(
     region: Region
     bpPerPx: number
     lineZoneHeight: number
-    totalWidthPx: number
+    viewWidthPx: number
   },
 ) {
-  const { snps, region, bpPerPx, lineZoneHeight, totalWidthPx } = props
+  const { snps, region, bpPerPx, lineZoneHeight, viewWidthPx } = props
   const n = snps.length
 
   if (n === 0) {
     return
   }
 
-  const w = Math.min(totalWidthPx / n, 20)
-  const matrixWidth = n * w
-  const offsetX = (totalWidthPx - matrixWidth) / 2
+  // Same cell width calculation as in makeImageData
+  const w = viewWidthPx / (n * Math.sqrt(2))
 
-  ctx.strokeStyle = '#999'
+  // After rotation, the matrix diagonal spans the view width
+  // Each SNP column i has its top point at screen x = (i + 0.5) * w * sqrt(2)
+  // which simplifies to (i + 0.5) * viewWidthPx / n
+
+  ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)'
   ctx.lineWidth = 0.5
 
   for (let i = 0; i < n; i++) {
     const snp = snps[i]!
-    // Matrix column position (center of column)
-    const matrixX = offsetX + i * w + w / 2
+
+    // Matrix column position (center of column at the diagonal/top edge)
+    // After -45° rotation, position (i*w, i*w) maps to screen x = i*w*sqrt(2), y = 0
+    // Center of cell: ((i+0.5)*w, (i+0.5)*w) -> screen x = (i+0.5)*w*sqrt(2)
+    const matrixX = (i + 0.5) * w * Math.sqrt(2)
 
     // Genomic position in view coordinates
     const genomicX = (snp.start - region.start) / bpPerPx
