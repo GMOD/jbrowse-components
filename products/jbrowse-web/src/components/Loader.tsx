@@ -9,7 +9,7 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { destroy, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { destroy, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import '@fontsource/roboto'
@@ -163,7 +163,10 @@ const Renderer = observer(function Renderer({
       if (pluginManager.current?.rootModel && !isJest) {
         const rootModel = pluginManager.current.rootModel
         const session = rootModel.session
-        if (session) {
+        // Note: isAlive check crucial because if not a 'dead' session is
+        // snapshotted and the safeReference in activeWidgets is stripped from
+        // the snapshot (xref #5414)
+        if (session && isAlive(session)) {
           // Save session before destroying so it can be restored (see file
           // header comment for details on when this is needed)
           loader.setSessionSnapshot(getSnapshot(session))
