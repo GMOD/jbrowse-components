@@ -23,3 +23,5 @@ export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
   statusCallback: (arg: string) => void
   sources: Source[]
 }
+
+export type GetLDMatrixArgs = BaseVariantRpcArgs
