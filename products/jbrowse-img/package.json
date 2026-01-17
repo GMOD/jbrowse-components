@@ -37,7 +37,7 @@
     "@types/jsdom": "^21.1.7",
     "@types/yargs": "^17.0.33",
     "canvas": "^3.2.1",
-    "jsdom": "27.4.0",
+    "jsdom": "27.0.0",
     "node-fetch": "^2.7.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
