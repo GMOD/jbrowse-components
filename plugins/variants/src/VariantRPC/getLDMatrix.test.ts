@@ -89,7 +89,7 @@ function calculateLDStats(
   }
 
   const covG = sumProd / n - mean1 * mean2
-  const D = covG / 4
+  const D = covG / 2 // Under HWE: Cov(g1,g2) = 2D, so D = Cov/2
 
   let dprime = 0
   if (D > 0) {
@@ -338,5 +338,262 @@ describe('LD with missing data patterns', () => {
     const stats = calculateLDStats(geno1, geno2)
     expect(stats.r2).toBe(0)
     expect(stats.dprime).toBe(0)
+  })
+})
+
+// Helper functions for phased data tests
+function isPhased(genotypes: Record<string, string>): boolean {
+  const firstVal = Object.values(genotypes)[0]
+  return firstVal?.includes('|') ?? false
+}
+
+function encodePhasedHaplotypes(
+  genotypes: Record<string, string>,
+  samples: string[],
+): { hap1: Int8Array; hap2: Int8Array } {
+  const hap1 = new Int8Array(samples.length)
+  const hap2 = new Int8Array(samples.length)
+
+  for (const [i, sample] of samples.entries()) {
+    const val = genotypes[sample]!
+    const alleles = val.split('|')
+
+    if (alleles.length !== 2) {
+      hap1[i] = -1
+      hap2[i] = -1
+      continue
+    }
+
+    hap1[i] = alleles[0] === '.' ? -1 : alleles[0] === '0' ? 0 : 1
+    hap2[i] = alleles[1] === '.' ? -1 : alleles[1] === '0' ? 0 : 1
+  }
+
+  return { hap1, hap2 }
+}
+
+function calculateLDStatsPhased(
+  haps1: { hap1: Int8Array; hap2: Int8Array },
+  haps2: { hap1: Int8Array; hap2: Int8Array },
+): { r2: number; dprime: number } {
+  let n00 = 0,
+    n01 = 0,
+    n10 = 0,
+    n11 = 0,
+    total = 0
+
+  const numSamples = haps1.hap1.length
+
+  // Count haplotypes from both chromosomes
+  for (let i = 0; i < numSamples; i++) {
+    const a1 = haps1.hap1[i]!
+    const b1 = haps2.hap1[i]!
+    if (a1 >= 0 && b1 >= 0) {
+      if (a1 === 0 && b1 === 0) {
+        n00++
+      } else if (a1 === 0 && b1 === 1) {
+        n01++
+      } else if (a1 === 1 && b1 === 0) {
+        n10++
+      } else {
+        n11++
+      }
+      total++
+    }
+
+    const a2 = haps1.hap2[i]!
+    const b2 = haps2.hap2[i]!
+    if (a2 >= 0 && b2 >= 0) {
+      if (a2 === 0 && b2 === 0) {
+        n00++
+      } else if (a2 === 0 && b2 === 1) {
+        n01++
+      } else if (a2 === 1 && b2 === 0) {
+        n10++
+      } else {
+        n11++
+      }
+      total++
+    }
+  }
+
+  if (total < 4) {
+    return { r2: 0, dprime: 0 }
+  }
+
+  const p00 = n00 / total
+  const p01 = n01 / total
+  const p10 = n10 / total
+  const p11 = n11 / total
+
+  const pA = p10 + p11
+  const pB = p01 + p11
+  const qA = 1 - pA
+  const qB = 1 - pB
+
+  if (pA <= 0 || pA >= 1 || pB <= 0 || pB >= 1) {
+    return { r2: 0, dprime: 0 }
+  }
+
+  const D = p11 - pA * pB
+  const r2 = Math.min(1, Math.max(0, (D * D) / (pA * qA * pB * qB)))
+
+  let dprime = 0
+  if (D > 0) {
+    const Dmax = Math.min(pA * qB, qA * pB)
+    if (Dmax > 0) {
+      dprime = Math.min(1, D / Dmax)
+    }
+  } else if (D < 0) {
+    const Dmin = -Math.min(pA * pB, qA * qB)
+    if (Dmin < 0) {
+      dprime = Math.min(1, Math.abs(D / Dmin))
+    }
+  }
+
+  return { r2, dprime }
+}
+
+describe('isPhased', () => {
+  it('detects phased genotypes', () => {
+    expect(isPhased({ s1: '0|1', s2: '1|0' })).toBe(true)
+    expect(isPhased({ s1: '0|0', s2: '1|1' })).toBe(true)
+  })
+
+  it('detects unphased genotypes', () => {
+    expect(isPhased({ s1: '0/1', s2: '1/0' })).toBe(false)
+    expect(isPhased({ s1: '0/0', s2: '1/1' })).toBe(false)
+  })
+})
+
+describe('encodePhasedHaplotypes', () => {
+  const samples = ['s1', 's2', 's3', 's4']
+
+  it('encodes phased homozygous ref correctly', () => {
+    const genotypes = { s1: '0|0', s2: '0|0', s3: '0|0', s4: '0|0' }
+    const { hap1, hap2 } = encodePhasedHaplotypes(genotypes, samples)
+    expect(Array.from(hap1)).toEqual([0, 0, 0, 0])
+    expect(Array.from(hap2)).toEqual([0, 0, 0, 0])
+  })
+
+  it('encodes phased heterozygous correctly', () => {
+    const genotypes = { s1: '0|1', s2: '1|0', s3: '0|1', s4: '1|0' }
+    const { hap1, hap2 } = encodePhasedHaplotypes(genotypes, samples)
+    // s1: chrom1=ref, chrom2=alt
+    // s2: chrom1=alt, chrom2=ref
+    expect(Array.from(hap1)).toEqual([0, 1, 0, 1])
+    expect(Array.from(hap2)).toEqual([1, 0, 1, 0])
+  })
+
+  it('encodes phased homozygous alt correctly', () => {
+    const genotypes = { s1: '1|1', s2: '1|1', s3: '1|1', s4: '1|1' }
+    const { hap1, hap2 } = encodePhasedHaplotypes(genotypes, samples)
+    expect(Array.from(hap1)).toEqual([1, 1, 1, 1])
+    expect(Array.from(hap2)).toEqual([1, 1, 1, 1])
+  })
+
+  it('handles missing alleles', () => {
+    const genotypes = { s1: '.|.', s2: '0|.', s3: '.|1', s4: '0|1' }
+    const { hap1, hap2 } = encodePhasedHaplotypes(genotypes, samples)
+    expect(Array.from(hap1)).toEqual([-1, 0, -1, 0])
+    expect(Array.from(hap2)).toEqual([-1, -1, 1, 1])
+  })
+})
+
+describe('calculateLDStatsPhased', () => {
+  it('returns perfect LD for identical phased haplotypes', () => {
+    // All samples have same haplotypes at both loci
+    const samples = ['s1', 's2', 's3', 's4', 's5', 's6']
+    const geno1 = { s1: '0|0', s2: '0|1', s3: '1|0', s4: '1|1', s5: '0|1', s6: '1|0' }
+    const geno2 = { s1: '0|0', s2: '0|1', s3: '1|0', s4: '1|1', s5: '0|1', s6: '1|0' }
+
+    const haps1 = encodePhasedHaplotypes(geno1, samples)
+    const haps2 = encodePhasedHaplotypes(geno2, samples)
+    const stats = calculateLDStatsPhased(haps1, haps2)
+
+    expect(stats.r2).toBeCloseTo(1.0)
+    expect(stats.dprime).toBeCloseTo(1.0)
+  })
+
+  it('returns zero LD for independent loci', () => {
+    // Construct haplotypes where loci are independent
+    const samples = ['s1', 's2', 's3', 's4']
+    // Locus 1: alternating 0|1, 1|0
+    // Locus 2: all 0|1
+    const geno1 = { s1: '0|1', s2: '1|0', s3: '0|1', s4: '1|0' }
+    const geno2 = { s1: '0|0', s2: '1|1', s3: '1|1', s4: '0|0' }
+
+    const haps1 = encodePhasedHaplotypes(geno1, samples)
+    const haps2 = encodePhasedHaplotypes(geno2, samples)
+    const stats = calculateLDStatsPhased(haps1, haps2)
+
+    // Should have low LD
+    expect(stats.r2).toBeLessThan(0.5)
+  })
+
+  it('correctly identifies cis vs trans haplotypes', () => {
+    // This is the key advantage of phased data
+    // Two individuals, both heterozygous at both loci
+    // But one is cis (0|1, 0|1) and one is trans (0|1, 1|0)
+    const samples = ['s1', 's2', 's3', 's4']
+
+    // All cis: alt alleles on same chromosome
+    const geno1_cis = { s1: '0|1', s2: '0|1', s3: '0|1', s4: '0|1' }
+    const geno2_cis = { s1: '0|1', s2: '0|1', s3: '0|1', s4: '0|1' }
+
+    const haps1_cis = encodePhasedHaplotypes(geno1_cis, samples)
+    const haps2_cis = encodePhasedHaplotypes(geno2_cis, samples)
+    const stats_cis = calculateLDStatsPhased(haps1_cis, haps2_cis)
+
+    // All trans: alt alleles on different chromosomes
+    const geno1_trans = { s1: '0|1', s2: '0|1', s3: '0|1', s4: '0|1' }
+    const geno2_trans = { s1: '1|0', s2: '1|0', s3: '1|0', s4: '1|0' }
+
+    const haps1_trans = encodePhasedHaplotypes(geno1_trans, samples)
+    const haps2_trans = encodePhasedHaplotypes(geno2_trans, samples)
+    const stats_trans = calculateLDStatsPhased(haps1_trans, haps2_trans)
+
+    // Cis should show positive LD (high r², D' = 1)
+    expect(stats_cis.r2).toBeCloseTo(1.0)
+    expect(stats_cis.dprime).toBeCloseTo(1.0)
+
+    // Trans should show negative LD (high r², D' = 1 but D is negative)
+    expect(stats_trans.r2).toBeCloseTo(1.0)
+    expect(stats_trans.dprime).toBeCloseTo(1.0)
+  })
+
+  it('handles population with mixed phase', () => {
+    const samples = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8']
+
+    // Mix of haplotypes to create moderate LD
+    const geno1 = {
+      s1: '0|0',
+      s2: '0|0',
+      s3: '0|1',
+      s4: '0|1',
+      s5: '1|0',
+      s6: '1|0',
+      s7: '1|1',
+      s8: '1|1',
+    }
+    const geno2 = {
+      s1: '0|0',
+      s2: '0|1',
+      s3: '0|0',
+      s4: '1|1',
+      s5: '1|0',
+      s6: '0|1',
+      s7: '1|1',
+      s8: '1|0',
+    }
+
+    const haps1 = encodePhasedHaplotypes(geno1, samples)
+    const haps2 = encodePhasedHaplotypes(geno2, samples)
+    const stats = calculateLDStatsPhased(haps1, haps2)
+
+    // Should have moderate LD
+    expect(stats.r2).toBeGreaterThanOrEqual(0)
+    expect(stats.r2).toBeLessThanOrEqual(1)
+    expect(stats.dprime).toBeGreaterThanOrEqual(0)
+    expect(stats.dprime).toBeLessThanOrEqual(1)
   })
 })

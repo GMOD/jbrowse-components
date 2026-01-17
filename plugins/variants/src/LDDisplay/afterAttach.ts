@@ -24,6 +24,10 @@ interface RenderResult {
     snps: LDMatrixResult['snps']
   }
   filterStats?: FilterStats
+  recombination?: {
+    values: number[]
+    positions: number[]
+  }
   maxScore?: number
   yScalar?: number
   width: number
@@ -33,6 +37,10 @@ interface RenderResult {
 export function doAfterAttach(self: LDDisplayModel) {
   const performRender = async () => {
     if (self.isMinimized) {
+      return
+    }
+    // Skip rendering if LD triangle is hidden
+    if (!self.showLDTriangle) {
       return
     }
     const view = getContainingView(self) as LGV
@@ -100,6 +108,8 @@ export function doAfterAttach(self: LDDisplayModel) {
       )
       // Store filter stats
       self.setFilterStats(result.filterStats)
+      // Store recombination data
+      self.setRecombination(result.recombination)
     } catch (error) {
       if (!isAbortException(error)) {
         if (isAlive(self)) {
@@ -137,6 +147,11 @@ export function doAfterAttach(self: LDDisplayModel) {
         self.hweFilterThreshold
         self.colorScheme
         self.height
+        self.ldCanvasHeight
+        self.showLDTriangle
+        self.showRecombination
+        self.recombinationZoneHeight
+        self.fitToHeight
         // Note: lineZoneHeight not included - SVG lines component handles it reactively
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 

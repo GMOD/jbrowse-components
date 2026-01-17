@@ -1,13 +1,16 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
+import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
+import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 
 import type { LDFlatbushItem } from '../../LDRenderer/types.ts'
 import type { LDDisplayModel } from '../model.ts'
@@ -16,6 +19,18 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 const SQRT2 = Math.sqrt(2)
+
+const useStyles = makeStyles()(() => ({
+  resizeHandle: {
+    position: 'absolute',
+    height: 6,
+    background: 'transparent',
+    zIndex: 2,
+    '&:hover': {
+      background: '#ccc',
+    },
+  },
+}))
 
 function LDTooltip({
   item,
@@ -113,13 +128,14 @@ function screenToUnrotated(
 
 const LDCanvas = observer(function LDCanvas({
   model,
+  canvasHeight,
 }: {
   model: LDDisplayModel
+  canvasHeight: number
 }) {
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const {
-    height,
     drawn,
     loading,
     flatbush,
@@ -147,7 +163,7 @@ const LDCanvas = observer(function LDCanvas({
       model.setRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, width, height],
+    [model, width, canvasHeight],
   )
 
   const onMouseMove = useCallback(
@@ -199,24 +215,6 @@ const LDCanvas = observer(function LDCanvas({
     setLocalMousePos(undefined)
   }, [])
 
-  // Show message when zoomed out
-  if (view.bpPerPx > 1000) {
-    return (
-      <div
-        style={{
-          width,
-          height,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#666',
-        }}
-      >
-        Zoom in to see LD
-      </div>
-    )
-  }
-
   return (
     <div
       ref={containerRef}
@@ -224,7 +222,7 @@ const LDCanvas = observer(function LDCanvas({
         cursor: hoveredItem && mousePosition ? 'crosshair' : undefined,
         position: 'relative',
         width,
-        height,
+        height: canvasHeight,
       }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
@@ -234,12 +232,13 @@ const LDCanvas = observer(function LDCanvas({
         ref={cb}
         style={{
           width,
-          height,
+          height: canvasHeight,
           position: 'absolute',
           left: 0,
+          top: 0,
         }}
         width={width * 2}
-        height={height * 2}
+        height={canvasHeight * 2}
       />
 
       {hoveredItem && localMousePos
@@ -264,7 +263,7 @@ const LDCanvas = observer(function LDCanvas({
                 yScalar={yScalar}
                 lineZoneHeight={lineZoneHeight}
                 width={width}
-                height={height}
+                height={canvasHeight}
               />
             )
           })()
@@ -284,6 +283,96 @@ const LDCanvas = observer(function LDCanvas({
   )
 })
 
+const LDDisplayContent = observer(function LDDisplayContent({
+  model,
+}: {
+  model: LDDisplayModel
+}) {
+  const { classes } = useStyles()
+  const view = getContainingView(model) as LGV
+  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const {
+    height,
+    showLDTriangle,
+    showRecombination,
+    recombinationZoneHeight,
+  } = model
+
+  // Show message when zoomed out
+  if (view.bpPerPx > 1000) {
+    return (
+      <div
+        style={{
+          width,
+          height,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#666',
+        }}
+      >
+        Zoom in to see LD data
+      </div>
+    )
+  }
+
+  // Show message when nothing is enabled
+  if (!showLDTriangle && !showRecombination) {
+    return (
+      <div
+        style={{
+          width,
+          height,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#666',
+        }}
+      >
+        Enable LD triangle or recombination track in display settings
+      </div>
+    )
+  }
+
+  const { ldCanvasHeight } = model
+
+  return (
+    <div style={{ position: 'relative', width, height }}>
+      {/* Recombination track at top */}
+      {showRecombination ? (
+        <div style={{ position: 'relative', height: recombinationZoneHeight }}>
+          <RecombinationTrack
+            model={model}
+            width={width}
+            height={recombinationZoneHeight}
+          />
+          {/* Resize handle overlapping bottom of recombination track */}
+          {showLDTriangle ? (
+            <ResizeHandle
+              onDrag={delta => {
+                model.setRecombinationZoneHeight(recombinationZoneHeight + delta)
+                return delta
+              }}
+              className={classes.resizeHandle}
+              style={{
+                bottom: 0,
+                left: 0,
+                width: '100%',
+                cursor: 'row-resize',
+              }}
+            />
+          ) : null}
+        </div>
+      ) : null}
+
+      {/* LD canvas below */}
+      {showLDTriangle ? (
+        <LDCanvas model={model} canvasHeight={ldCanvasHeight} />
+      ) : null}
+    </div>
+  )
+})
+
 const LDDisplayComponent = observer(function LDDisplayComponent({
   model,
 }: {
@@ -291,7 +380,7 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
 }) {
   return (
     <BaseDisplayComponent model={model}>
-      <LDCanvas model={model} />
+      <LDDisplayContent model={model} />
     </BaseDisplayComponent>
   )
 })

@@ -26,6 +26,7 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
   lengthCutoffFilter?: number
   hweFilterThreshold?: number
   colorScheme?: string
+  fitToHeight?: boolean
 }
 
 export interface RenderArgsDeserializedWithLDData extends RenderArgsDeserialized {
@@ -42,6 +43,7 @@ export default class LDRenderer extends ServerSideRendererType {
       bpPerPx,
       ldMetric = 'r2',
       lineZoneHeight = 20,
+      fitToHeight = false,
     } = renderProps
 
     // Calculate total width across all regions (like HiC)
@@ -87,8 +89,9 @@ export default class LDRenderer extends ServerSideRendererType {
       )
     }
 
-    // Like HiC: yScalar = matrixHeight / max(matrixHeight, hyp)
-    const yScalar = matrixHeight / Math.max(matrixHeight, hyp)
+    // When fitToHeight is true, scale the triangle to fit the display height
+    // When false, maintain true aspect ratio (yScalar = 1)
+    const yScalar = fitToHeight ? matrixHeight / Math.max(matrixHeight, hyp) : 1
 
     const { makeImageData } = await import('./makeImageData.ts')
 
@@ -124,6 +127,10 @@ export default class LDRenderer extends ServerSideRendererType {
         numValues: ldData.ldValues.length,
       },
       filterStats: ldData.filterStats,
+      recombination: {
+        values: Array.from(ldData.recombination.values),
+        positions: ldData.recombination.positions,
+      },
     }
     return rpcResult(serialized, collectTransferables(serialized))
   }

@@ -73,6 +73,26 @@ export default function stateModelFactory(
         showLegend: types.optional(types.boolean, true),
         /**
          * #property
+         * Whether to show the LD triangle heatmap
+         */
+        showLDTriangle: types.optional(types.boolean, true),
+        /**
+         * #property
+         * Whether to show the recombination rate track
+         */
+        showRecombination: types.optional(types.boolean, true),
+        /**
+         * #property
+         * Height of the recombination track zone at the top
+         */
+        recombinationZoneHeight: types.optional(types.number, 50),
+        /**
+         * #property
+         * When true, squash the LD triangle to fit the display height
+         */
+        fitToHeight: types.optional(types.boolean, false),
+        /**
+         * #property
          * HWE filter p-value threshold (variants with HWE p < this are excluded)
          * Set to 0 to disable HWE filtering
          */
@@ -109,6 +129,13 @@ export default function stateModelFactory(
        * Stats about filtered variants
        */
       filterStats: undefined as FilterStats | undefined,
+      /**
+       * #volatile
+       * Recombination rate estimates between adjacent SNPs
+       */
+      recombination: undefined as
+        | { values: number[]; positions: number[] }
+        | undefined,
     }))
     .actions(self => ({
       /**
@@ -179,6 +206,31 @@ export default function stateModelFactory(
       /**
        * #action
        */
+      setShowLDTriangle(show: boolean) {
+        self.showLDTriangle = show
+      },
+      /**
+       * #action
+       */
+      setShowRecombination(show: boolean) {
+        self.showRecombination = show
+      },
+      /**
+       * #action
+       */
+      setRecombinationZoneHeight(n: number) {
+        self.recombinationZoneHeight = Math.max(20, n)
+        return self.recombinationZoneHeight
+      },
+      /**
+       * #action
+       */
+      setFitToHeight(value: boolean) {
+        self.fitToHeight = value
+      },
+      /**
+       * #action
+       */
       setHweFilter(threshold: number) {
         self.hweFilterThreshold = threshold
       },
@@ -187,6 +239,12 @@ export default function stateModelFactory(
        */
       setFilterStats(stats: typeof self.filterStats) {
         self.filterStats = stats
+      },
+      /**
+       * #action
+       */
+      setRecombination(data: typeof self.recombination) {
+        self.recombination = data
       },
     }))
     .views(self => ({
@@ -201,6 +259,17 @@ export default function stateModelFactory(
        */
       get prefersOffset() {
         return true
+      },
+      /**
+       * #getter
+       * Effective height for the LD canvas (total height minus recombination zone if shown)
+       */
+      get ldCanvasHeight() {
+        const h = self.height
+        if (self.showRecombination) {
+          return Math.max(50, h - self.recombinationZoneHeight)
+        }
+        return h
       },
       /**
        * #getter
@@ -237,13 +306,14 @@ export default function stateModelFactory(
           return {
             ...superRenderProps(),
             config: self.rendererConfig,
-            displayHeight: self.height,
+            displayHeight: self.ldCanvasHeight,
             lineZoneHeight: self.lineZoneHeight,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             lengthCutoffFilter: self.lengthCutoffFilter,
             hweFilterThreshold: self.hweFilterThreshold,
             ldMetric: self.ldMetric,
             colorScheme: self.colorScheme,
+            fitToHeight: self.fitToHeight,
           }
         },
       }
@@ -284,11 +354,35 @@ export default function stateModelFactory(
               type: 'subMenu',
               subMenu: [
                 {
+                  label: 'Show LD triangle',
+                  type: 'checkbox',
+                  checked: self.showLDTriangle,
+                  onClick: () => {
+                    self.setShowLDTriangle(!self.showLDTriangle)
+                  },
+                },
+                {
+                  label: 'Show recombination track',
+                  type: 'checkbox',
+                  checked: self.showRecombination,
+                  onClick: () => {
+                    self.setShowRecombination(!self.showRecombination)
+                  },
+                },
+                {
                   label: 'Show legend',
                   type: 'checkbox',
                   checked: self.showLegend,
                   onClick: () => {
                     self.setShowLegend(!self.showLegend)
+                  },
+                },
+                {
+                  label: 'LD triangle adjusted to display height',
+                  type: 'checkbox',
+                  checked: self.fitToHeight,
+                  onClick: () => {
+                    self.setFitToHeight(!self.fitToHeight)
                   },
                 },
               ],
@@ -345,6 +439,10 @@ export default function stateModelFactory(
         ldMetric,
         colorScheme,
         showLegend,
+        showLDTriangle,
+        showRecombination,
+        recombinationZoneHeight,
+        fitToHeight,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -359,6 +457,10 @@ export default function stateModelFactory(
         ...(ldMetric !== 'r2' ? { ldMetric } : {}),
         ...(colorScheme ? { colorScheme } : {}),
         ...(!showLegend ? { showLegend } : {}),
+        ...(!showLDTriangle ? { showLDTriangle } : {}),
+        ...(!showRecombination ? { showRecombination } : {}),
+        ...(recombinationZoneHeight !== 50 ? { recombinationZoneHeight } : {}),
+        ...(fitToHeight ? { fitToHeight } : {}),
       } as typeof snap
     })
 }
