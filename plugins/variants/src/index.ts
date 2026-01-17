@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import ChordVariantDisplayF from './ChordVariantDisplay/index.ts'
 import LDDisplayF from './LDDisplay/index.ts'
+import LDRendererF from './LDRenderer/index.ts'
 import LinearVariantDisplayF from './LinearVariantDisplay/index.ts'
 import MultiLinearVariantDisplayF from './MultiLinearVariantDisplay/index.ts'
 import LinearVariantMatrixDisplayF from './MultiLinearVariantMatrixDisplay/index.ts'
@@ -12,7 +13,6 @@ import StructuralVariantChordRendererF from './StructuralVariantChordRenderer/in
 import VariantFeatureWidgetF from './VariantFeatureWidget/index.ts'
 import { MultiVariantClusterGenotypeMatrix } from './VariantRPC/MultiVariantClusterGenotypeMatrix.ts'
 import { MultiVariantGetGenotypeMatrix } from './VariantRPC/MultiVariantGetGenotypeMatrix.ts'
-import { MultiVariantGetLDMatrix } from './VariantRPC/MultiVariantGetLDMatrix.ts'
 import { MultiVariantGetSimplifiedFeatures } from './VariantRPC/MultiVariantGetSimplifiedFeatures.ts'
 import { MultiVariantGetSources } from './VariantRPC/MultiVariantGetSources.ts'
 import VariantTrackF from './VariantTrack/index.ts'
@@ -36,6 +36,7 @@ export default class VariantsPlugin extends Plugin {
     LinearVariantMatrixDisplayF(pluginManager)
     MultiLinearVariantDisplayF(pluginManager)
     LDDisplayF(pluginManager)
+    LDRendererF(pluginManager)
     MultiVariantRendererF(pluginManager)
     LinearVariantMatrixRendererF(pluginManager)
     StructuralVariantChordRendererF(pluginManager)
@@ -50,9 +51,6 @@ export default class VariantsPlugin extends Plugin {
     )
     pluginManager.addRpcMethod(
       () => new MultiVariantGetSimplifiedFeatures(pluginManager),
-    )
-    pluginManager.addRpcMethod(
-      () => new MultiVariantGetLDMatrix(pluginManager),
     )
   }
 }

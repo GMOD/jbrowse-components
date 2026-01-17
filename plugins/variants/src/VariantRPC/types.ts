@@ -24,4 +24,6 @@ export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sources: Source[]
 }
 
-export type GetLDMatrixArgs = BaseVariantRpcArgs
+export interface GetLDMatrixArgs extends BaseVariantRpcArgs {
+  ldMetric?: 'r2' | 'dprime'
+}

@@ -1,10 +1,10 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
-import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type { LDFlatbushItem } from '../LDRenderer/types.ts'
+import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -45,44 +45,126 @@ export default function stateModelFactory(
          * #property
          */
         lineZoneHeight: types.optional(types.number, 30),
+        /**
+         * #property
+         * LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)
+         */
+        ldMetric: types.optional(
+          types.enumeration(['r2', 'dprime'] as const),
+          'r2',
+        ),
+        /**
+         * #property
+         */
+        colorScheme: types.maybe(types.string),
+        /**
+         * #property
+         */
+        showLegend: types.optional(types.boolean, true),
       }),
     )
     .volatile(() => ({
       /**
        * #volatile
        */
-      ldDataStopToken: undefined as StopToken | undefined,
+      renderingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
        */
-      ldData: undefined as LDMatrixResult | undefined,
+      renderingImageData: undefined as ImageBitmap | undefined,
+      /**
+       * #volatile
+       */
+      lastDrawnOffsetPx: 0,
+      /**
+       * #volatile
+       */
+      flatbush: undefined as ArrayBufferLike | undefined,
+      /**
+       * #volatile
+       */
+      flatbushItems: [] as LDFlatbushItem[],
+      /**
+       * #volatile
+       */
+      maxScore: 1,
+      /**
+       * #volatile
+       */
+      yScalar: 1,
+      /**
+       * #volatile
+       */
+      loading: false,
       /**
        * #volatile
        */
       error: undefined as Error | undefined,
+      /**
+       * #volatile
+       */
+      ref: null as HTMLCanvasElement | null,
+      /**
+       * #volatile
+       */
+      statusMessage: '',
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setLDData(data: LDMatrixResult) {
-        self.ldData = data
-        self.error = undefined
+      setRef(ref: HTMLCanvasElement | null) {
+        self.ref = ref
       },
       /**
        * #action
        */
-      setError(error: Error) {
-        self.error = error
+      setRenderingStopToken(token: StopToken | undefined) {
+        self.renderingStopToken = token
       },
       /**
        * #action
        */
-      setLDDataLoading(token: StopToken) {
-        if (self.ldDataStopToken) {
-          stopStopToken(self.ldDataStopToken)
-        }
-        self.ldDataStopToken = token
+      setRenderingImageData(data: ImageBitmap | undefined) {
+        self.renderingImageData = data
+      },
+      /**
+       * #action
+       */
+      setLastDrawnOffsetPx(offset: number) {
+        self.lastDrawnOffsetPx = offset
+      },
+      /**
+       * #action
+       */
+      setFlatbushData(
+        flatbush: ArrayBufferLike | undefined,
+        items: LDFlatbushItem[],
+        maxScore: number,
+        yScalar: number,
+      ) {
+        self.flatbush = flatbush
+        self.flatbushItems = items
+        self.maxScore = maxScore
+        self.yScalar = yScalar
+      },
+      /**
+       * #action
+       */
+      setLoading(loading: boolean) {
+        self.loading = loading
+      },
+      /**
+       * #action
+       */
+      setError(error: Error | unknown | undefined) {
+        self.error = error as Error | undefined
+      },
+      /**
+       * #action
+       */
+      setStatusMessage(msg: string) {
+        self.statusMessage = msg
       },
       /**
        * #action
@@ -95,6 +177,24 @@ export default function stateModelFactory(
        */
       setLineZoneHeight(n: number) {
         self.lineZoneHeight = Math.max(10, Math.min(100, n))
+      },
+      /**
+       * #action
+       */
+      setLDMetric(metric: LDMetric) {
+        self.ldMetric = metric
+      },
+      /**
+       * #action
+       */
+      setColorScheme(scheme: string | undefined) {
+        self.colorScheme = scheme
+      },
+      /**
+       * #action
+       */
+      setShowLegend(show: boolean) {
+        self.showLegend = show
       },
     }))
     .views(self => ({
@@ -113,36 +213,8 @@ export default function stateModelFactory(
       /**
        * #getter
        */
-      get snps() {
-        return self.ldData?.snps ?? []
-      },
-      /**
-       * #getter
-       */
-      get ldValues() {
-        return self.ldData?.ldValues ?? new Float32Array(0)
-      },
-      /**
-       * #getter
-       */
-      get numSnps() {
-        return this.snps.length
-      },
-      /**
-       * #method
-       * Get R² value between SNP i and SNP j (i > j)
-       */
-      getLD(i: number, j: number): number {
-        if (i === j) {
-          return 1
-        }
-        // Ensure i > j for lower triangular access
-        if (i < j) {
-          ;[i, j] = [j, i]
-        }
-        // Lower triangular index: sum of 0...(i-1) + j
-        const idx = (i * (i - 1)) / 2 + j
-        return this.ldValues[idx] ?? 0
+      get rendererTypeName() {
+        return 'LDRenderer'
       },
     }))
     .views(self => {
@@ -155,11 +227,12 @@ export default function stateModelFactory(
           return {
             ...superRenderProps(),
             config: self.rendererConfig,
-            notReady: !self.ldData,
-            ldData: self.ldData,
+            displayHeight: self.height,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             lengthCutoffFilter: self.lengthCutoffFilter,
             lineZoneHeight: self.lineZoneHeight,
+            ldMetric: self.ldMetric,
+            colorScheme: self.colorScheme,
           }
         },
       }
@@ -173,6 +246,36 @@ export default function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            {
+              label: 'LD metric',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'R² (squared correlation)',
+                  type: 'radio',
+                  checked: self.ldMetric === 'r2',
+                  onClick: () => {
+                    self.setLDMetric('r2')
+                  },
+                },
+                {
+                  label: "D' (normalized D)",
+                  type: 'radio',
+                  checked: self.ldMetric === 'dprime',
+                  onClick: () => {
+                    self.setLDMetric('dprime')
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Show legend',
+              type: 'checkbox',
+              checked: self.showLegend,
+              onClick: () => {
+                self.setShowLegend(!self.showLegend)
+              },
+            },
             {
               label: 'Set MAF filter...',
               onClick: () => {
@@ -197,13 +300,11 @@ export default function stateModelFactory(
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { setupLDAutorun } = await import('./setupLDAutorun.ts')
-            setupLDAutorun(self)
+            const { doAfterAttach } = await import('./afterAttach.ts')
+            doAfterAttach(self)
           } catch (e) {
-            if (isAlive(self)) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            }
+            console.error(e)
+            getSession(self).notifyError(`${e}`, e)
           }
         })()
       },
@@ -217,6 +318,9 @@ export default function stateModelFactory(
         minorAlleleFrequencyFilter,
         lengthCutoffFilter,
         lineZoneHeight,
+        ldMetric,
+        colorScheme,
+        showLegend,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -228,6 +332,9 @@ export default function stateModelFactory(
           ? { lengthCutoffFilter }
           : {}),
         ...(lineZoneHeight !== 30 ? { lineZoneHeight } : {}),
+        ...(ldMetric !== 'r2' ? { ldMetric } : {}),
+        ...(colorScheme ? { colorScheme } : {}),
+        ...(!showLegend ? { showLegend } : {}),
       } as typeof snap
     })
 }

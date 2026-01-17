@@ -1,117 +1,104 @@
-import { useEffect, useRef } from 'react'
+import React, { useRef, useEffect, useCallback, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { LDDisplayModel } from '../model.ts'
+import type { LDFlatbushItem } from '../../LDRenderer/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-/**
- * Get color for R² value using a red color scale
- * Higher R² = darker red
- */
-function getColorForR2(r2: number): string {
-  // Clamp to 0-1
-  const val = Math.max(0, Math.min(1, r2))
-  // HSL: hue=0 (red), saturation=80%, lightness varies from 95% (low LD) to 40% (high LD)
-  const lightness = 95 - val * 55
-  return `hsl(0, 80%, ${lightness}%)`
+const useStyles = makeStyles()({
+  container: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  canvas: {
+    display: 'block',
+  },
+  legend: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    background: 'rgba(255,255,255,0.9)',
+    border: '1px solid #ccc',
+    borderRadius: 4,
+    padding: '4px 8px',
+    fontSize: 11,
+  },
+  legendGradient: {
+    width: 100,
+    height: 12,
+    marginBottom: 2,
+  },
+  legendLabels: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: 10,
+  },
+  tooltip: {
+    position: 'absolute',
+    background: 'rgba(0,0,0,0.8)',
+    color: 'white',
+    padding: '4px 8px',
+    borderRadius: 4,
+    fontSize: 11,
+    pointerEvents: 'none',
+    whiteSpace: 'nowrap',
+  },
+  loading: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    color: '#666',
+  },
+})
+
+const SQRT2 = Math.sqrt(2)
+
+// Convert screen coordinates to unrotated matrix coordinates
+function screenToUnrotated(
+  screenX: number,
+  screenY: number,
+  yScalar: number,
+  lineZoneHeight: number,
+): { x: number; y: number } {
+  // Account for the line zone offset
+  const adjustedY = (screenY - lineZoneHeight) / yScalar
+  // Inverse 45° rotation
+  const x = (screenX - adjustedY) / SQRT2
+  const y = (screenX + adjustedY) / SQRT2
+  return { x, y }
 }
 
-const LDCanvas = observer(function LDCanvas({
+const LDColorLegend = observer(function LDColorLegend({
   model,
 }: {
   model: LDDisplayModel
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { ldData, height, lineZoneHeight } = model
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const { width } = view
+  const { classes } = useStyles()
+  const { ldMetric } = model
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || !ldData) {
-      return
-    }
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
-
-    const { snps, ldValues } = ldData
-    const n = snps.length
-
-    if (n === 0) {
-      ctx.clearRect(0, 0, width, height)
-      ctx.fillStyle = '#666'
-      ctx.font = '12px sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText('No variants in view (try adjusting MAF filter)', width / 2, height / 2)
-      return
-    }
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height)
-
-    // Calculate dimensions for the diamond/triangle display
-    const matrixHeight = height - lineZoneHeight
-    const padding = 10
-    const availableWidth = width - 2 * padding
-
-    // Box size based on number of SNPs
-    const boxSize = Math.min(availableWidth / n, matrixHeight / (n / 2), 20)
-    const boxDiag = boxSize / Math.sqrt(2)
-
-    // Center the matrix horizontally
-    const matrixWidth = n * boxSize
-    const offsetX = (width - matrixWidth) / 2
-
-    // Draw connecting lines from matrix columns to genomic positions
-    ctx.strokeStyle = '#999'
-    ctx.lineWidth = 0.5
-
-    const region = view.dynamicBlocks.contentBlocks[0]
-    if (region) {
-      for (let i = 0; i < n; i++) {
-        const snp = snps[i]!
-        // Matrix column position (center of column)
-        const matrixX = offsetX + i * boxSize + boxSize / 2
-
-        // Genomic position in view coordinates
-        const genomicX = (snp.start - region.start) / view.bpPerPx + region.offsetPx
-
-        ctx.beginPath()
-        ctx.moveTo(matrixX, lineZoneHeight)
-        ctx.lineTo(genomicX, 0)
-        ctx.stroke()
-      }
-    }
-
-    // Draw the LD matrix as rotated squares (diamond orientation)
-    ctx.save()
-    ctx.translate(offsetX + matrixWidth / 2, lineZoneHeight)
-    ctx.rotate(-Math.PI / 4)
-
-    let ldIdx = 0
-    for (let i = 1; i < n; i++) {
-      for (let j = 0; j < i; j++) {
-        const r2 = ldValues[ldIdx++] ?? 0
-        ctx.fillStyle = getColorForR2(r2)
-        ctx.fillRect(j * boxDiag, (i - 1) * boxDiag, boxDiag, boxDiag)
-      }
-    }
-
-    ctx.restore()
-  }, [ldData, width, height, lineZoneHeight, view])
+  // Create gradient style based on metric
+  const gradientStyle =
+    ldMetric === 'dprime'
+      ? 'linear-gradient(to right, white, #8080ff, #0000a0)'
+      : 'linear-gradient(to right, white, #ff8080, #a00000)'
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      style={{ display: 'block' }}
-    />
+    <div className={classes.legend}>
+      <div
+        className={classes.legendGradient}
+        style={{ background: gradientStyle }}
+      />
+      <div className={classes.legendLabels}>
+        <span>0</span>
+        <span>{ldMetric === 'dprime' ? "D'" : 'R²'}</span>
+        <span>1</span>
+      </div>
+    </div>
   )
 })
 
@@ -120,19 +107,121 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
 }: {
   model: LDDisplayModel
 }) {
-  const { height, error } = model
+  const { classes } = useStyles()
+  const {
+    height,
+    error,
+    loading,
+    flatbush,
+    flatbushItems,
+    yScalar,
+    lineZoneHeight,
+    showLegend,
+    ldMetric,
+  } = model
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const { width } = view
+
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [tooltip, setTooltip] = useState<{
+    x: number
+    y: number
+    item: LDFlatbushItem
+  } | null>(null)
+
+  // Set canvas ref on model
+  useEffect(() => {
+    model.setRef(canvasRef.current)
+    return () => {
+      model.setRef(null)
+    }
+  }, [model])
+
+  // Handle mousemove for tooltip
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      if (!flatbush || !flatbushItems.length) {
+        setTooltip(null)
+        return
+      }
+
+      const rect = event.currentTarget.getBoundingClientRect()
+      const screenX = event.clientX - rect.left
+      const screenY = event.clientY - rect.top
+
+      // Transform screen coordinates to matrix coordinates
+      const { x, y } = screenToUnrotated(screenX, screenY, yScalar, lineZoneHeight)
+
+      // Query Flatbush
+      const fb = Flatbush.from(flatbush)
+      const results = fb.search(x - 2, y - 2, x + 2, y + 2)
+
+      if (results.length > 0) {
+        const idx = results[0]!
+        const item = flatbushItems[idx]
+        if (item) {
+          setTooltip({ x: screenX, y: screenY, item })
+          return
+        }
+      }
+      setTooltip(null)
+    },
+    [flatbush, flatbushItems, yScalar, lineZoneHeight],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    setTooltip(null)
+  }, [])
 
   if (error) {
     return (
-      <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'red' }}>Error: {error.message}</span>
+      <div
+        className={classes.container}
+        style={{ height, width }}
+      >
+        <div className={classes.loading} style={{ color: 'red' }}>
+          Error: {error.message}
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{ position: 'relative', height }}>
-      <LDCanvas model={model} />
+    <div
+      className={classes.container}
+      style={{ height, width }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <canvas
+        ref={canvasRef}
+        className={classes.canvas}
+        width={width}
+        height={height}
+      />
+
+      {loading && (
+        <div className={classes.loading}>Computing LD...</div>
+      )}
+
+      {showLegend && !loading && <LDColorLegend model={model} />}
+
+      {tooltip && (
+        <div
+          className={classes.tooltip}
+          style={{
+            left: tooltip.x + 10,
+            top: tooltip.y + 10,
+          }}
+        >
+          <div>
+            {ldMetric === 'dprime' ? "D'" : 'R²'}: {tooltip.item.ldValue.toFixed(3)}
+          </div>
+          <div style={{ fontSize: 10, color: '#aaa' }}>
+            {tooltip.item.snp1.id} × {tooltip.item.snp2.id}
+          </div>
+        </div>
+      )}
     </div>
   )
 })

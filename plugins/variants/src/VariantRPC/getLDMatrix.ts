@@ -52,64 +52,104 @@ function encodeGenotypes(
   return encoded
 }
 
+export type LDMetric = 'r2' | 'dprime'
+
 /**
- * Calculate R² between two SNPs using genotype data
- * Uses composite LD (genotype correlation) approach
- * Based on Rogers and Huff (2009) method
+ * Calculate LD statistics from genotype counts
+ * Returns both R² and D' so caller can choose which to use
  */
-function calculateR2(geno1: Int8Array, geno2: Int8Array): number {
+function calculateLDStats(
+  geno1: Int8Array,
+  geno2: Int8Array,
+): {
+  r2: number
+  dprime: number
+} {
   let n = 0
-  // Genotype pair counts [geno1][geno2] for geno1,geno2 in {0,1,2}
-  const counts = new Float64Array(9)
+  let sumG1 = 0
+  let sumG2 = 0
+  let sumG1sq = 0
+  let sumG2sq = 0
+  let sumProd = 0
+
+  // Count haplotype frequencies from genotype data
+  // For unphased diploid data, we estimate haplotype frequencies
+  // using the composite approach
+  //
+  // Genotype encoding: 0=AA, 1=Aa, 2=aa (where A=ref, a=alt)
+  // We count allele dosages and estimate haplotype freqs
 
   for (let i = 0; i < geno1.length; i++) {
     const g1 = geno1[i]!
     const g2 = geno2[i]!
+    // Only include samples where both genotypes are called
     if (g1 >= 0 && g2 >= 0) {
-      counts[g1 * 3 + g2]++
       n++
+      sumG1 += g1
+      sumG2 += g2
+      sumG1sq += g1 * g1
+      sumG2sq += g2 * g2
+      sumProd += g1 * g2
     }
   }
 
-  if (n < 3) {
-    return 0
+  // Need at least 2 samples
+  if (n < 2) {
+    return { r2: 0, dprime: 0 }
   }
 
-  // Calculate sums for allele frequencies
-  let sumG1 = 0
-  let sumG2 = 0
-  let sumProd = 0
-  for (let g1 = 0; g1 < 3; g1++) {
-    for (let g2 = 0; g2 < 3; g2++) {
-      const c = counts[g1 * 3 + g2]!
-      sumG1 += g1 * c
-      sumG2 += g2 * c
-      sumProd += g1 * g2 * c
+  // Allele frequencies (frequency of alt allele)
+  const pA = sumG1 / (2 * n) // freq of alt at locus 1
+  const pB = sumG2 / (2 * n) // freq of alt at locus 2
+  const qA = 1 - pA // freq of ref at locus 1
+  const qB = 1 - pB // freq of ref at locus 2
+
+  // If either locus is monomorphic, LD is undefined
+  if (pA <= 0 || pA >= 1 || pB <= 0 || pB >= 1) {
+    return { r2: 0, dprime: 0 }
+  }
+
+  // === R² calculation (PLINK style) ===
+  // Squared Pearson correlation of genotype dosages
+  const mean1 = sumG1 / n
+  const mean2 = sumG2 / n
+  const var1 = sumG1sq / n - mean1 * mean1
+  const var2 = sumG2sq / n - mean2 * mean2
+
+  let r2 = 0
+  if (var1 > 0 && var2 > 0) {
+    const cov = sumProd / n - mean1 * mean2
+    r2 = (cov * cov) / (var1 * var2)
+    r2 = Math.min(1, Math.max(0, r2))
+  }
+
+  // === D' calculation ===
+  // D = P(AB) - P(A)*P(B)
+  // For unphased data, estimate P(AB) from genotype correlation
+  //
+  // Using composite LD: D ≈ cov(g1,g2) / 4
+  // (since genotypes are 0,1,2 and we want haplotype-level D)
+  const covG = sumProd / n - mean1 * mean2
+  const D = covG / 4 // Scale from genotype to haplotype level
+
+  // D' = D / Dmax
+  // Dmax depends on sign of D:
+  // If D > 0: Dmax = min(pA*qB, qA*pB)
+  // If D < 0: Dmax = min(pA*pB, qA*qB)
+  let dprime = 0
+  if (D > 0) {
+    const Dmax = Math.min(pA * qB, qA * pB)
+    if (Dmax > 0) {
+      dprime = Math.min(1, D / Dmax)
+    }
+  } else if (D < 0) {
+    const Dmin = -Math.min(pA * pB, qA * qB)
+    if (Dmin < 0) {
+      dprime = Math.min(1, Math.abs(D / Dmin))
     }
   }
 
-  const p1 = sumG1 / (2 * n)
-  const p2 = sumG2 / (2 * n)
-
-  // Handle edge cases where allele is fixed
-  if (p1 <= 0 || p1 >= 1 || p2 <= 0 || p2 >= 1) {
-    return 0
-  }
-
-  // Genotype covariance
-  const covG = sumProd / n - (sumG1 / n) * (sumG2 / n)
-
-  // Variance of genotype = 2*p*(1-p) for HWE
-  const var1 = 2 * p1 * (1 - p1)
-  const var2 = 2 * p2 * (1 - p2)
-
-  if (var1 <= 0 || var2 <= 0) {
-    return 0
-  }
-
-  // Composite LD r²
-  const r2 = (covG * covG) / (var1 * var2)
-  return Math.min(1, Math.max(0, r2))
+  return { r2, dprime }
 }
 
 export interface LDMatrixResult {
@@ -120,8 +160,10 @@ export interface LDMatrixResult {
     end: number
   }>
   // Lower triangular matrix stored as flat array
-  // For n SNPs: [r2(1,0), r2(2,0), r2(2,1), r2(3,0), ...]
+  // For n SNPs: [ld(1,0), ld(2,0), ld(2,1), ld(3,0), ...]
   ldValues: Float32Array
+  // Which metric was computed
+  metric: LDMetric
 }
 
 export async function getLDMatrix({
@@ -138,6 +180,7 @@ export async function getLDMatrix({
     bpPerPx: number
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
+    ldMetric?: LDMetric
   }
 }): Promise<LDMatrixResult> {
   const {
@@ -147,6 +190,7 @@ export async function getLDMatrix({
     sessionId,
     lengthCutoffFilter,
     stopToken,
+    ldMetric = 'r2',
   } = args
 
   const lastCheck = createStopTokenChecker(stopToken)
@@ -154,11 +198,11 @@ export async function getLDMatrix({
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
   // Get all samples from adapter
-  const sources = await dataAdapter.getSources?.()
+  const sources = await dataAdapter.getSources?.(regions)
   const samples = sources?.map(s => s.name) ?? []
 
   if (samples.length === 0) {
-    return { snps: [], ldValues: new Float32Array(0) }
+    return { snps: [], ldValues: new Float32Array(0), metric: ldMetric }
   }
 
   const splitCache = {} as Record<string, string[]>
@@ -200,10 +244,11 @@ export async function getLDMatrix({
   let idx = 0
   for (let i = 1; i < n; i++) {
     for (let j = 0; j < i; j++) {
-      ldValues[idx++] = calculateR2(encodedGenotypes[i]!, encodedGenotypes[j]!)
+      const stats = calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!)
+      ldValues[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
     }
     checkStopToken2(lastCheck)
   }
 
-  return { snps, ldValues }
+  return { snps, ldValues, metric: ldMetric }
 }
