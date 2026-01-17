@@ -12,6 +12,7 @@ import {
 
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import SVGRecombinationTrack from './components/SVGRecombinationTrack.tsx'
 
 import type { LDDisplayModel } from './model.ts'
 import type {
@@ -25,6 +26,10 @@ interface RenderingResult {
   reactElement?: React.ReactNode
   html?: string
   canvasRecordedData?: unknown
+  recombination?: {
+    values: number[]
+    positions: number[]
+  }
 }
 
 export async function renderSvg(
@@ -36,7 +41,13 @@ export async function renderSvg(
   const { rpcManager } = session
   const height = opts.overrideHeight ?? self.height
 
-  const { ldMetric, showLegend, adapterConfig } = self
+  const {
+    ldMetric,
+    showLegend,
+    adapterConfig,
+    showRecombination,
+    recombinationZoneHeight,
+  } = self
   const { bpPerPx, dynamicBlocks } = view
   const regions = dynamicBlocks.contentBlocks
 
@@ -44,6 +55,7 @@ export async function renderSvg(
     return null
   }
 
+  const region = regions[0]!
   const renderProps = self.renderProps()
 
   const rpcSessionId = getRpcSessionId(self)
@@ -57,10 +69,13 @@ export async function renderSvg(
     exportSVG: opts,
   })) as RenderingResult
 
+  const recombinationOffset = showRecombination ? recombinationZoneHeight : 0
+  const ldHeight = height - recombinationOffset
+
   const finalRendering = await renderingToSvg(
     rendering,
     view.staticBlocks.totalWidthPx,
-    height,
+    ldHeight,
   )
 
   const visibleWidth = view.width
@@ -74,10 +89,23 @@ export async function renderSvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${clipId})`}>
-        <g transform={`translate(${Math.max(0, -view.offsetPx)} 0)`}>
+        {showRecombination && rendering.recombination ? (
+          <SVGRecombinationTrack
+            recombination={rendering.recombination}
+            width={visibleWidth}
+            height={recombinationZoneHeight}
+            bpPerPx={bpPerPx}
+            regionStart={region.start}
+          />
+        ) : null}
+        <g transform={`translate(${Math.max(0, -view.offsetPx)} ${recombinationOffset})`}>
           <ReactRendering rendering={finalRendering} />
         </g>
-        <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
+        <LinesConnectingMatrixToGenomicPosition
+          model={self}
+          exportSVG
+          yOffset={recombinationOffset}
+        />
       </g>
       {showLegend ? (
         <LDSVGColorLegend ldMetric={ldMetric} width={visibleWidth} />

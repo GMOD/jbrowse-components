@@ -29,16 +29,18 @@ const Wrapper = observer(function Wrapper({
   children,
   model,
   exportSVG,
+  yOffset = 0,
 }: {
   model: LDDisplayModel
   children: React.ReactNode
   exportSVG?: boolean
+  yOffset?: number
 }) {
   const { height } = model
   const { width, offsetPx } = getContainingView(model) as LinearGenomeViewModel
   const left = Math.max(0, -offsetPx)
   return exportSVG ? (
-    <g transform={`translate(${left})`}>{children}</g>
+    <g transform={`translate(${left} ${yOffset})`}>{children}</g>
   ) : (
     <svg
       style={{
@@ -100,7 +102,7 @@ const AllLines = observer(function AllLines({
   const theme = useTheme()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight, snps } = model
+  const { lineZoneHeight, snps, showLabels, tickHeight } = model
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
@@ -126,21 +128,42 @@ const AllLines = observer(function AllLines({
         const matrixX = ((i + 0.5) * b0) / n
 
         return (
-          <line
-            {...p}
-            strokeWidth={1}
+          <g
             key={`${snp.id}-${i}`}
-            x1={matrixX}
-            x2={genomicX}
-            y1={lineZoneHeight}
-            y2={0}
             onMouseEnter={() => {
               setMouseOverLine({ snp, idx: i, genomicX })
             }}
             onMouseLeave={() => {
               setMouseOverLine(undefined)
             }}
-          />
+          >
+            {/* Main connecting line */}
+            <line
+              {...p}
+              strokeWidth={1}
+              x1={matrixX}
+              x2={genomicX}
+              y1={lineZoneHeight}
+              y2={tickHeight}
+            />
+            {/* Vertical tick mark at genomic position */}
+            <line {...p} strokeWidth={1} x1={genomicX} x2={genomicX} y1={0} y2={tickHeight} />
+            {/* Variant label */}
+            {showLabels ? (
+              <text
+                x={genomicX}
+                y={0}
+                transform={`rotate(-60, ${genomicX}, 0)`}
+                fontSize={10}
+                textAnchor="start"
+                dominantBaseline="middle"
+                fill={theme.palette.text.primary}
+                style={{ pointerEvents: 'none' }}
+              >
+                {snp.id}
+              </text>
+            ) : null}
+          </g>
         )
       })}
     </>
@@ -151,9 +174,11 @@ const LinesConnectingMatrixToGenomicPosition = observer(
   function LinesConnectingMatrixToGenomicPosition({
     model,
     exportSVG,
+    yOffset = 0,
   }: {
     model: LDDisplayModel
     exportSVG?: boolean
+    yOffset?: number
   }) {
     const { classes } = useStyles()
     const view = getContainingView(model) as LinearGenomeViewModel
@@ -169,7 +194,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
 
     return (
       <>
-        <Wrapper exportSVG={exportSVG} model={model}>
+        <Wrapper exportSVG={exportSVG} model={model} yOffset={yOffset}>
           <AllLines model={model} setMouseOverLine={setMouseOverLine} />
           {mouseOverLine ? (
             <>
@@ -182,7 +207,18 @@ const LinesConnectingMatrixToGenomicPosition = observer(
                 x1={(mouseOverLine.idx + 0.5) * b0 / n}
                 x2={mouseOverLine.genomicX}
                 y1={lineZoneHeight}
-                y2={0}
+                y2={model.tickHeight}
+              />
+              <line
+                stroke="#f00c"
+                strokeWidth={2}
+                style={{
+                  pointerEvents: 'none',
+                }}
+                x1={mouseOverLine.genomicX}
+                x2={mouseOverLine.genomicX}
+                y1={0}
+                y2={model.tickHeight}
               />
               <LineTooltip contents={mouseOverLine.snp.id} />
             </>

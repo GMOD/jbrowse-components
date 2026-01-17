@@ -30,6 +30,7 @@ interface RenderResult {
   }
   maxScore?: number
   yScalar?: number
+  w?: number
   width: number
   height: number
 }
@@ -105,6 +106,7 @@ export function doAfterAttach(self: LDDisplayModel) {
         result.ldData?.snps ?? [],
         result.maxScore ?? 1,
         result.yScalar ?? 1,
+        result.w ?? 0,
       )
       // Store filter stats
       self.setFilterStats(result.filterStats)
@@ -146,13 +148,12 @@ export function doAfterAttach(self: LDDisplayModel) {
         self.lengthCutoffFilter
         self.hweFilterThreshold
         self.colorScheme
-        self.height
-        self.ldCanvasHeight
         self.showLDTriangle
         self.showRecombination
         self.recombinationZoneHeight
         self.fitToHeight
-        // Note: lineZoneHeight not included - SVG lines component handles it reactively
+        // Note: height tracking is handled conditionally in renderProps()
+        // lineZoneHeight not included - SVG lines component handles it reactively
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 
         if (untracked(() => self.error) || !regions.length) {
@@ -184,7 +185,7 @@ export function doAfterAttach(self: LDDisplayModel) {
         drawCanvasImageData(self.ref, self.renderingImageData)
       },
       {
-        delay: 100,
+        delay: 1000,
         name: 'LDDisplayCanvas',
       },
     ),

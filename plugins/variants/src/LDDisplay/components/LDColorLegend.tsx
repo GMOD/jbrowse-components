@@ -10,6 +10,7 @@ const useStyles = makeStyles()({
     borderRadius: 4,
     padding: '4px 8px',
     fontSize: 11,
+    zIndex: 10,
   },
   legendGradient: {
     width: 100,

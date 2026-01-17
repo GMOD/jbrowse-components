@@ -2,19 +2,43 @@ import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
 
+const GENOTYPE_SPLIT_REGEX = /[/|]/
+
 export function calculateAlleleCounts(
   genotypes: Record<string, string>,
   cacheSplit: Record<string, string[]>,
 ) {
   const alleleCounts = {} as Record<string, number>
-  const vals = Object.values(genotypes)
-  for (const val of vals) {
-    const genotype = val
-    const alleles =
-      cacheSplit[genotype] ?? (cacheSplit[genotype] = genotype.split(/[/|]/))
+  for (const key in genotypes) {
+    const genotype = genotypes[key]!
+    const len = genotype.length
+
+    // Fast path for common diploid genotypes like "0/1" or "0|1"
+    if (len === 3) {
+      const sep = genotype[1]
+      if (sep === '/' || sep === '|') {
+        const a0 = genotype[0]!
+        const a1 = genotype[2]!
+        alleleCounts[a0] = (alleleCounts[a0] || 0) + 1
+        alleleCounts[a1] = (alleleCounts[a1] || 0) + 1
+        continue
+      }
+    }
+
+    // Fast path for haploid
+    if (len === 1) {
+      alleleCounts[genotype] = (alleleCounts[genotype] || 0) + 1
+      continue
+    }
+
+    // General case: polyploid or multi-digit alleles - use cache
+    let alleles = cacheSplit[genotype]
+    if (!alleles) {
+      alleles = genotype.split(GENOTYPE_SPLIT_REGEX)
+      cacheSplit[genotype] = alleles
+    }
     for (const allele of alleles) {
-      const a = allele
-      alleleCounts[a] = (alleleCounts[a] || 0) + 1
+      alleleCounts[allele] = (alleleCounts[allele] || 0) + 1
     }
   }
   return alleleCounts
@@ -26,7 +50,8 @@ export function calculateMinorAlleleFrequency(
   let firstMax = 0
   let secondMax = 0
   let total = 0
-  for (const count of Object.values(alleleCounts)) {
+  for (const key in alleleCounts) {
+    const count = alleleCounts[key]!
     total += count
     if (count > firstMax) {
       secondMax = firstMax
@@ -41,7 +66,8 @@ export function calculateMinorAlleleFrequency(
 function getMostFrequentAlt(alleleCounts: Record<string, number>) {
   let mostFrequentAlt
   let max = 0
-  for (const [alt, altCount] of Object.entries(alleleCounts)) {
+  for (const alt in alleleCounts) {
+    const altCount = alleleCounts[alt]!
     if (alt !== '.' && alt !== '0' && altCount > max) {
       mostFrequentAlt = alt
       max = altCount

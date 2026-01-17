@@ -1,10 +1,12 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, stringify } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
@@ -29,6 +31,22 @@ const useStyles = makeStyles()(() => ({
     '&:hover': {
       background: '#ccc',
     },
+  },
+  verticalGuide: {
+    pointerEvents: 'none',
+    width: 1,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    background: 'red',
+    zIndex: 1001,
+  },
+  tooltipTarget: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 1,
+    height: 1,
   },
 }))
 
@@ -55,32 +73,57 @@ function LDTooltip({
 }
 
 /**
- * Draw crosshair lines from the hovered matrix cell back to the matrix column positions
- * at the top of the heatmap, and highlight the connecting lines to the genome.
+ * Draw highlighted cells along the V-shape path from the hovered cell
+ * back to the matrix column positions at the top of the heatmap.
+ * Uses thick lines matching cell width instead of individual squares.
  */
 function Crosshairs({
-  localX,
-  localY,
+  hoveredItem,
+  cellWidth,
   genomicX1,
   genomicX2,
   yScalar,
   lineZoneHeight,
+  tickHeight,
   width,
   height,
 }: {
-  localX: number
-  localY: number
+  hoveredItem: LDFlatbushItem
+  cellWidth: number
   genomicX1: number
   genomicX2: number
   yScalar: number
   lineZoneHeight: number
+  tickHeight: number
   width: number
   height: number
 }) {
-  const matrixY = localY - lineZoneHeight
-  const dx = matrixY / yScalar
-  const matrixX1 = localX - dx
-  const matrixX2 = localX + dx
+  const { i, j } = hoveredItem
+  const w = cellWidth
+
+  // Transform a point from unrotated cell coordinates to screen coordinates
+  // Canvas transformations: rotate(-45°), scale(1, yScalar), translate(0, lineZoneHeight)
+  const toScreen = (x: number, y: number) => {
+    // Rotate -45 degrees
+    const rx = (x + y) / SQRT2
+    const ry = (y - x) / SQRT2
+    // Scale Y and translate
+    return { x: rx, y: ry * yScalar + lineZoneHeight }
+  }
+
+  // Cell centers for the V-shape endpoints
+  // The hovered cell is at (i, j), its center in unrotated coords is ((j+0.5)*w, (i+0.5)*w)
+  const hoveredCenter = toScreen((j + 0.5) * w, (i + 0.5) * w)
+
+  // Left arm goes to snp j (diagonal position j,j)
+  const snpJCenter = toScreen((j + 0.5) * w, (j + 0.5) * w)
+
+  // Right arm goes to snp i (diagonal position i,i)
+  const snpICenter = toScreen((i + 0.5) * w, (i + 0.5) * w)
+
+  // Line thickness to match cell width
+  const lineThickness = w
+
   return (
     <svg
       style={{
@@ -92,18 +135,97 @@ function Crosshairs({
         pointerEvents: 'none',
       }}
     >
-      {/* V-shape from matrix column positions to hovered point */}
-      <g stroke="#000" strokeWidth="1" fill="none">
-        <path
-          d={`M ${matrixX1} ${lineZoneHeight} L ${localX} ${localY} L ${matrixX2} ${lineZoneHeight}`}
-        />
+      {/* V-shape with thick lines matching cell width */}
+      <g stroke="rgba(0, 0, 0, 0.3)" strokeWidth={lineThickness} fill="none" strokeLinecap="square">
+        {/* Left arm: from snp j down to hovered cell */}
+        <path d={`M ${snpJCenter.x} ${snpJCenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`} />
+        {/* Right arm: from snp i down to hovered cell */}
+        <path d={`M ${snpICenter.x} ${snpICenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`} />
       </g>
       {/* Highlighted connecting lines from matrix to genome */}
       <g stroke="#e00" strokeWidth="1.5" fill="none">
-        <path d={`M ${matrixX1} ${lineZoneHeight} L ${genomicX1} 0`} />
-        <path d={`M ${matrixX2} ${lineZoneHeight} L ${genomicX2} 0`} />
+        {/* Diagonal lines ending at top of tick marks */}
+        <path d={`M ${snpJCenter.x} ${snpJCenter.y} L ${genomicX1} ${tickHeight}`} />
+        <path d={`M ${snpICenter.x} ${snpICenter.y} L ${genomicX2} ${tickHeight}`} />
+        {/* Vertical tick marks */}
+        <path d={`M ${genomicX1} 0 L ${genomicX1} ${tickHeight}`} />
+        <path d={`M ${genomicX2} 0 L ${genomicX2} ${tickHeight}`} />
       </g>
     </svg>
+  )
+}
+
+/**
+ * Vertical guides that extend through the entire LinearGenomeView.
+ * Uses a portal to render at the TracksContainer level.
+ */
+function VerticalGuides({
+  genomicX1,
+  genomicX2,
+  snp1,
+  snp2,
+  containerRef,
+}: {
+  genomicX1: number
+  genomicX2: number
+  snp1: { id: string; start: number; refName: string }
+  snp2: { id: string; start: number; refName: string }
+  containerRef: React.RefObject<HTMLDivElement | null>
+}) {
+  const { classes } = useStyles()
+  const [tracksContainer, setTracksContainer] = useState<HTMLElement | null>(null)
+
+  // Find the TracksContainer by traversing up from our container
+  useEffect(() => {
+    if (containerRef.current) {
+      let el: HTMLElement | null = containerRef.current
+      while (el && el.dataset.testid !== 'tracksContainer') {
+        el = el.parentElement
+      }
+      if (el) {
+        setTracksContainer(el)
+      }
+    }
+  }, [containerRef])
+
+  if (!tracksContainer) {
+    return null
+  }
+
+  return createPortal(
+    <>
+      <Tooltip
+        open
+        placement="top"
+        title={stringify({ refName: snp2.refName, coord: snp2.start })}
+        arrow
+      >
+        <div
+          className={classes.tooltipTarget}
+          style={{ transform: `translateX(${genomicX1}px)` }}
+        />
+      </Tooltip>
+      <div
+        className={classes.verticalGuide}
+        style={{ transform: `translateX(${genomicX1}px)`, height: '100%' }}
+      />
+      <Tooltip
+        open
+        placement="top"
+        title={stringify({ refName: snp1.refName, coord: snp1.start })}
+        arrow
+      >
+        <div
+          className={classes.tooltipTarget}
+          style={{ transform: `translateX(${genomicX2}px)` }}
+        />
+      </Tooltip>
+      <div
+        className={classes.verticalGuide}
+        style={{ transform: `translateX(${genomicX2}px)`, height: '100%' }}
+      />
+    </>,
+    tracksContainer,
   )
 }
 
@@ -141,10 +263,16 @@ const LDCanvas = observer(function LDCanvas({
     flatbush,
     flatbushItems,
     yScalar,
+    cellWidth,
     showLegend,
     ldMetric,
     lineZoneHeight,
+    fitToHeight,
   } = model
+
+  // When fitToHeight is false, use the natural triangle height
+  const naturalHeight = width / 2 + lineZoneHeight
+  const effectiveCanvasHeight = fitToHeight ? canvasHeight : naturalHeight
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
@@ -163,7 +291,7 @@ const LDCanvas = observer(function LDCanvas({
       model.setRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, width, canvasHeight],
+    [model, width, effectiveCanvasHeight],
   )
 
   const onMouseMove = useCallback(
@@ -222,7 +350,7 @@ const LDCanvas = observer(function LDCanvas({
         cursor: hoveredItem && mousePosition ? 'crosshair' : undefined,
         position: 'relative',
         width,
-        height: canvasHeight,
+        height: effectiveCanvasHeight,
       }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
@@ -232,16 +360,16 @@ const LDCanvas = observer(function LDCanvas({
         ref={cb}
         style={{
           width,
-          height: canvasHeight,
+          height: effectiveCanvasHeight,
           position: 'absolute',
           left: 0,
           top: 0,
         }}
         width={width * 2}
-        height={canvasHeight * 2}
+        height={effectiveCanvasHeight * 2}
       />
 
-      {hoveredItem && localMousePos
+      {hoveredItem
         ? (() => {
             // Calculate positions for crosshairs
             const region = view.dynamicBlocks.contentBlocks[0]
@@ -255,16 +383,28 @@ const LDCanvas = observer(function LDCanvas({
             const genomicX2 = (hoveredItem.snp1.start - region.start) / bpPerPx
 
             return (
-              <Crosshairs
-                localX={localMousePos.x}
-                localY={localMousePos.y}
-                genomicX1={genomicX1}
-                genomicX2={genomicX2}
-                yScalar={yScalar}
-                lineZoneHeight={lineZoneHeight}
-                width={width}
-                height={canvasHeight}
-              />
+              <>
+                <Crosshairs
+                  hoveredItem={hoveredItem}
+                  cellWidth={cellWidth}
+                  genomicX1={genomicX1}
+                  genomicX2={genomicX2}
+                  yScalar={yScalar}
+                  lineZoneHeight={lineZoneHeight}
+                  tickHeight={model.tickHeight}
+                  width={width}
+                  height={effectiveCanvasHeight}
+                />
+                {model.showVerticalGuides ? (
+                  <VerticalGuides
+                    genomicX1={genomicX1}
+                    genomicX2={genomicX2}
+                    snp1={hoveredItem.snp1}
+                    snp2={hoveredItem.snp2}
+                    containerRef={containerRef}
+                  />
+                ) : null}
+              </>
             )
           })()
         : null}

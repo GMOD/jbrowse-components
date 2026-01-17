@@ -97,6 +97,21 @@ export default function stateModelFactory(
          * Set to 0 to disable HWE filtering
          */
         hweFilterThreshold: types.optional(types.number, 0.001),
+        /**
+         * #property
+         * Whether to show vertical guides at the connected genome positions on hover
+         */
+        showVerticalGuides: types.optional(types.boolean, true),
+        /**
+         * #property
+         * Whether to show variant labels above the tick marks
+         */
+        showLabels: types.optional(types.boolean, false),
+        /**
+         * #property
+         * Height of the vertical tick marks at the genomic position
+         */
+        tickHeight: types.optional(types.number, 6),
       }),
     )
     .volatile(() => ({
@@ -120,6 +135,11 @@ export default function stateModelFactory(
        * #volatile
        */
       yScalar: 1,
+      /**
+       * #volatile
+       * Width of each cell in the LD matrix (in unrotated coordinates)
+       */
+      cellWidth: 0,
       /**
        * #volatile
        */
@@ -147,12 +167,14 @@ export default function stateModelFactory(
         snps: LDMatrixResult['snps'],
         maxScore: number,
         yScalar: number,
+        cellWidth: number,
       ) {
         self.flatbush = flatbush
         self.flatbushItems = items
         self.snps = snps
         self.maxScore = maxScore
         self.yScalar = yScalar
+        self.cellWidth = cellWidth
       },
       /**
        * #action
@@ -246,6 +268,24 @@ export default function stateModelFactory(
       setRecombination(data: typeof self.recombination) {
         self.recombination = data
       },
+      /**
+       * #action
+       */
+      setShowVerticalGuides(show: boolean) {
+        self.showVerticalGuides = show
+      },
+      /**
+       * #action
+       */
+      setShowLabels(show: boolean) {
+        self.showLabels = show
+      },
+      /**
+       * #action
+       */
+      setTickHeight(height: number) {
+        self.tickHeight = Math.max(0, height)
+      },
     }))
     .views(self => ({
       /**
@@ -306,7 +346,9 @@ export default function stateModelFactory(
           return {
             ...superRenderProps(),
             config: self.rendererConfig,
-            displayHeight: self.ldCanvasHeight,
+            // Only pass displayHeight when fitToHeight is true
+            // This avoids tracking height changes when using natural triangle size
+            ...(self.fitToHeight ? { displayHeight: self.ldCanvasHeight } : {}),
             lineZoneHeight: self.lineZoneHeight,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             lengthCutoffFilter: self.lengthCutoffFilter,
@@ -385,6 +427,22 @@ export default function stateModelFactory(
                     self.setFitToHeight(!self.fitToHeight)
                   },
                 },
+                {
+                  label: 'Vertical guides on hover',
+                  type: 'checkbox',
+                  checked: self.showVerticalGuides,
+                  onClick: () => {
+                    self.setShowVerticalGuides(!self.showVerticalGuides)
+                  },
+                },
+                {
+                  label: 'Variant labels',
+                  type: 'checkbox',
+                  checked: self.showLabels,
+                  onClick: () => {
+                    self.setShowLabels(!self.showLabels)
+                  },
+                },
               ],
             },
             {
@@ -443,6 +501,9 @@ export default function stateModelFactory(
         showRecombination,
         recombinationZoneHeight,
         fitToHeight,
+        showVerticalGuides,
+        showLabels,
+        tickHeight,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -461,6 +522,9 @@ export default function stateModelFactory(
         ...(!showRecombination ? { showRecombination } : {}),
         ...(recombinationZoneHeight !== 50 ? { recombinationZoneHeight } : {}),
         ...(fitToHeight ? { fitToHeight } : {}),
+        ...(!showVerticalGuides ? { showVerticalGuides } : {}),
+        ...(showLabels ? { showLabels } : {}),
+        ...(tickHeight !== 6 ? { tickHeight } : {}),
       } as typeof snap
     })
 }

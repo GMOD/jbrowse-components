@@ -53,7 +53,9 @@ export default class LDRenderer extends ServerSideRendererType {
     }
     const width = totalWidthBp / bpPerPx
     const hyp = width / 2
-    const height = displayHeight ?? hyp + lineZoneHeight
+    // When fitToHeight is false, use natural triangle height (hyp + lineZoneHeight)
+    // When true, use the provided displayHeight
+    const height = fitToHeight ? (displayHeight ?? hyp + lineZoneHeight) : hyp + lineZoneHeight
     const matrixHeight = height - lineZoneHeight
 
     // Get LD data
