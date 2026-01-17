@@ -9,7 +9,13 @@ const repoRoot = join(packageRoot, '../..')
 const srcDir = join(packageRoot, 'src')
 
 // Exports to keep even if not used internally (for backwards compatibility)
-const preservedExports = ['@jbrowse/core/util/nanoid']
+const preservedExports = [
+  '@jbrowse/core/assemblyManager/assemblyManager',
+  '@jbrowse/core/configuration/configurationSchema',
+  '@jbrowse/core/util/tss-react/types',
+  '@jbrowse/core/util/nanoid',
+  '@jbrowse/core/BaseFeatureWidget/types',
+]
 
 // Scan the codebase for all @jbrowse/core imports
 function findAllImports() {
