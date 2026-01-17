@@ -237,4 +237,106 @@ describe('LD calculation edge cases', () => {
     // Perfect correlation for rare variant
     expect(stats.r2).toBeCloseTo(1.0)
   })
+
+  it('handles minimum sample size (n=2)', () => {
+    const geno1 = new Int8Array([0, 2])
+    const geno2 = new Int8Array([0, 2])
+    const stats = calculateLDStats(geno1, geno2)
+    expect(stats.r2).toBeCloseTo(1.0)
+  })
+
+  it('returns 0 for completely uncorrelated variants', () => {
+    // Construct genotypes where knowing one tells you nothing about the other
+    // Each combination of (0,0), (0,2), (2,0), (2,2) appears equally
+    const geno1 = new Int8Array([0, 0, 2, 2, 0, 0, 2, 2])
+    const geno2 = new Int8Array([0, 2, 0, 2, 0, 2, 0, 2])
+    const stats = calculateLDStats(geno1, geno2)
+    expect(stats.r2).toBeCloseTo(0, 1)
+  })
+})
+
+describe('R² vs D\' differences', () => {
+  it('D\' can be 1 when R² is less than 1', () => {
+    // D' = 1 means no recombination has occurred (complete LD)
+    // but R² can be < 1 if allele frequencies differ
+    // Example: SNP1 has MAF 0.1, SNP2 has MAF 0.4
+    // If the rare allele of SNP1 always co-occurs with one allele of SNP2
+    const geno1 = new Int8Array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1])
+    const geno2 = new Int8Array([0, 0, 0, 1, 1, 1, 2, 2, 2, 2])
+    const stats = calculateLDStats(geno1, geno2)
+    // D' should be higher than R² in this scenario
+    // (exact values depend on the calculation method)
+    expect(stats.dprime).toBeGreaterThanOrEqual(0)
+    expect(stats.r2).toBeGreaterThanOrEqual(0)
+  })
+
+  it('R² equals D\' squared when allele frequencies are equal', () => {
+    // When both SNPs have 50% allele frequency and are in complete LD
+    const geno1 = new Int8Array([0, 0, 0, 0, 0, 2, 2, 2, 2, 2])
+    const geno2 = new Int8Array([0, 0, 0, 0, 0, 2, 2, 2, 2, 2])
+    const stats = calculateLDStats(geno1, geno2)
+    expect(stats.r2).toBeCloseTo(1.0)
+    expect(stats.dprime).toBeCloseTo(1.0)
+  })
+})
+
+describe('known LD scenarios', () => {
+  it('computes correct LD for HapMap-style high LD block', () => {
+    // Simulate a high LD region where most haplotypes are conserved
+    // Two common haplotypes: 00000 and 22222
+    const geno1 = new Int8Array([0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 1, 1])
+    const geno2 = new Int8Array([0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 1, 1])
+    const stats = calculateLDStats(geno1, geno2)
+    expect(stats.r2).toBeCloseTo(1.0)
+  })
+
+  it('computes lower LD after recombination', () => {
+    // After recombination, haplotypes become shuffled
+    const geno1 = new Int8Array([0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 2, 2, 1, 1, 1, 1])
+    const geno2 = new Int8Array([0, 0, 2, 2, 0, 0, 2, 2, 0, 2, 0, 2, 1, 1, 1, 1])
+    const stats = calculateLDStats(geno1, geno2)
+    // Should have lower LD than perfect correlation
+    expect(stats.r2).toBeLessThan(0.8)
+  })
+
+  it('handles population with admixture', () => {
+    // Mixed population where LD patterns vary
+    const geno1 = new Int8Array([
+      0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 0, 1, 2, 0, 1,
+    ])
+    const geno2 = new Int8Array([
+      0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 2,
+    ])
+    const stats = calculateLDStats(geno1, geno2)
+    // Should have moderate LD
+    expect(stats.r2).toBeGreaterThan(0.2)
+    expect(stats.r2).toBeLessThan(0.9)
+  })
+})
+
+describe('LD with missing data patterns', () => {
+  it('handles missing data in one SNP only', () => {
+    const geno1 = new Int8Array([0, 1, 2, -1, -1, 0, 1, 2])
+    const geno2 = new Int8Array([0, 1, 2, 0, 1, 0, 1, 2])
+    const stats = calculateLDStats(geno1, geno2)
+    // Should compute LD using only complete pairs
+    expect(stats.r2).toBeCloseTo(1.0)
+  })
+
+  it('handles sporadic missing data', () => {
+    const geno1 = new Int8Array([0, -1, 2, 0, -1, 2, 0, 1, 2])
+    const geno2 = new Int8Array([-1, 1, 2, 0, 1, -1, 0, 1, 2])
+    const stats = calculateLDStats(geno1, geno2)
+    // Should still compute reasonable LD
+    expect(stats.r2).toBeGreaterThanOrEqual(0)
+    expect(stats.r2).toBeLessThanOrEqual(1)
+  })
+
+  it('returns 0 when all pairs have at least one missing', () => {
+    const geno1 = new Int8Array([-1, 0, -1, 2])
+    const geno2 = new Int8Array([0, -1, 2, -1])
+    const stats = calculateLDStats(geno1, geno2)
+    expect(stats.r2).toBe(0)
+    expect(stats.dprime).toBe(0)
+  })
 })

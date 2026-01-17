@@ -61,6 +61,7 @@ export type LDMetric = 'r2' | 'dprime'
 function calculateLDStats(
   geno1: Int8Array,
   geno2: Int8Array,
+  debugInfo?: { snp1Id: string; snp2Id: string },
 ): {
   r2: number
   dprime: number
@@ -71,6 +72,9 @@ function calculateLDStats(
   let sumG1sq = 0
   let sumG2sq = 0
   let sumProd = 0
+
+  // Count genotype combinations for debugging
+  const genoCounts: Record<string, number> = {}
 
   // Count haplotype frequencies from genotype data
   // For unphased diploid data, we estimate haplotype frequencies
@@ -90,6 +94,10 @@ function calculateLDStats(
       sumG1sq += g1 * g1
       sumG2sq += g2 * g2
       sumProd += g1 * g2
+
+      // Track genotype combinations
+      const key = `${g1},${g2}`
+      genoCounts[key] = (genoCounts[key] || 0) + 1
     }
   }
 
@@ -147,6 +155,20 @@ function calculateLDStats(
     if (Dmin < 0) {
       dprime = Math.min(1, Math.abs(D / Dmin))
     }
+  }
+
+  // Debug logging for low R² values
+  if (r2 < 0.1 && debugInfo) {
+    console.log('=== Low R² Debug ===')
+    console.log(`SNPs: ${debugInfo.snp1Id} x ${debugInfo.snp2Id}`)
+    console.log(`R² = ${r2.toFixed(4)}, D' = ${dprime.toFixed(4)}`)
+    console.log(`n samples: ${n}`)
+    console.log(`Allele freqs: pA=${pA.toFixed(3)}, pB=${pB.toFixed(3)}`)
+    console.log(`MAF1=${Math.min(pA, qA).toFixed(3)}, MAF2=${Math.min(pB, qB).toFixed(3)}`)
+    console.log(`Genotype counts (g1,g2): ${JSON.stringify(genoCounts)}`)
+    console.log(`Variance: var1=${var1.toFixed(4)}, var2=${var2.toFixed(4)}`)
+    console.log(`Covariance: ${covG.toFixed(4)}`)
+    console.log('====================')
   }
 
   return { r2, dprime }
@@ -219,19 +241,79 @@ export async function getLDMatrix({
   })
 
   // Extract SNP info and encode genotypes
+  // Like Haploview, we only include biallelic sites
   const snps: LDMatrixResult['snps'] = []
   const encodedGenotypes: Int8Array[] = []
 
   for (const { feature } of filteredFeatures) {
+    // Skip multiallelic sites (Haploview only works with biallelic SNPs)
+    const alt = feature.get('ALT') as string[] | undefined
+    if (alt && alt.length > 1) {
+      continue
+    }
+
+    const genotypes = feature.get('genotypes') as Record<string, string>
+    const encoded = encodeGenotypes(genotypes, samples, splitCache)
+
+    // Check for Hardy-Weinberg equilibrium (like Haploview's HWE filter)
+    // Count genotypes: 0=hom ref, 1=het, 2=hom alt
+    let nHomRef = 0
+    let nHet = 0
+    let nHomAlt = 0
+    let nValid = 0
+    for (const g of encoded) {
+      if (g === 0) {
+        nHomRef++
+        nValid++
+      } else if (g === 1) {
+        nHet++
+        nValid++
+      } else if (g === 2) {
+        nHomAlt++
+        nValid++
+      }
+    }
+
+    // Calculate HWE chi-square test
+    // Under HWE: p² + 2pq + q² = 1
+    if (nValid > 0) {
+      const p = (2 * nHomRef + nHet) / (2 * nValid) // ref allele freq
+      const q = 1 - p // alt allele freq
+      const expectedHomRef = p * p * nValid
+      const expectedHet = 2 * p * q * nValid
+      const expectedHomAlt = q * q * nValid
+
+      // Chi-square statistic
+      let chiSq = 0
+      if (expectedHomRef > 0) {
+        chiSq += ((nHomRef - expectedHomRef) ** 2) / expectedHomRef
+      }
+      if (expectedHet > 0) {
+        chiSq += ((nHet - expectedHet) ** 2) / expectedHet
+      }
+      if (expectedHomAlt > 0) {
+        chiSq += ((nHomAlt - expectedHomAlt) ** 2) / expectedHomAlt
+      }
+
+      // Chi-square critical value for p=0.001 with df=1 is ~10.83
+      // Haploview uses p < 0.001 as default HWE filter
+      if (chiSq > 10.83) {
+        console.log(
+          `Excluding ${feature.get('name') || feature.id()} - HWE violation (χ²=${chiSq.toFixed(2)}), ` +
+            `observed: ${nHomRef}/${nHet}/${nHomAlt}, ` +
+            `expected: ${expectedHomRef.toFixed(0)}/${expectedHet.toFixed(0)}/${expectedHomAlt.toFixed(0)}`,
+        )
+        continue
+      }
+    }
+
     snps.push({
       id: feature.get('name') || feature.id(),
       refName: feature.get('refName'),
       start: feature.get('start'),
       end: feature.get('end'),
     })
-
-    const genotypes = feature.get('genotypes') as Record<string, string>
-    encodedGenotypes.push(encodeGenotypes(genotypes, samples, splitCache))
+    encodedGenotypes.push(encoded)
 
     checkStopToken2(lastCheck)
   }
@@ -244,7 +326,10 @@ export async function getLDMatrix({
   let idx = 0
   for (let i = 1; i < n; i++) {
     for (let j = 0; j < i; j++) {
-      const stats = calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!)
+      const stats = calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!, {
+        snp1Id: snps[i]!.id,
+        snp2Id: snps[j]!.id,
+      })
       ldValues[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
     }
     checkStopToken2(lastCheck)

@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
@@ -7,10 +9,13 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
+
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
 import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LDDisplay
@@ -66,6 +71,12 @@ export default function stateModelFactory(
          * #property
          */
         showLegend: types.optional(types.boolean, true),
+        /**
+         * #property
+         * HWE filter p-value threshold (variants with HWE p < this are excluded)
+         * Set to 0 to disable HWE filtering
+         */
+        hweFilterThreshold: types.optional(types.number, 0.001),
       }),
     )
     .volatile(() => ({
@@ -93,6 +104,20 @@ export default function stateModelFactory(
        * #volatile
        */
       error: undefined as Error | undefined,
+      /**
+       * #volatile
+       * Stats about filtered variants
+       */
+      filterStats: undefined as
+        | {
+            totalVariants: number
+            passedVariants: number
+            filteredByMaf: number
+            filteredByLength: number
+            filteredByMultiallelic: number
+            filteredByHwe: number
+          }
+        | undefined,
     }))
     .actions(self => ({
       /**
@@ -160,6 +185,18 @@ export default function stateModelFactory(
       setShowLegend(show: boolean) {
         self.showLegend = show
       },
+      /**
+       * #action
+       */
+      setHweFilter(threshold: number) {
+        self.hweFilterThreshold = threshold
+      },
+      /**
+       * #action
+       */
+      setFilterStats(stats: typeof self.filterStats) {
+        self.filterStats = stats
+      },
     }))
     .views(self => ({
       /**
@@ -213,6 +250,7 @@ export default function stateModelFactory(
             lineZoneHeight: self.lineZoneHeight,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             lengthCutoffFilter: self.lengthCutoffFilter,
+            hweFilterThreshold: self.hweFilterThreshold,
             ldMetric: self.ldMetric,
             colorScheme: self.colorScheme,
           }
@@ -259,21 +297,28 @@ export default function stateModelFactory(
               },
             },
             {
-              label: 'Set MAF filter...',
+              label: 'Filter settings...',
               onClick: () => {
-                const maf = prompt(
-                  'Enter minimum minor allele frequency (0-0.5):',
-                  String(self.minorAlleleFrequencyFilter),
-                )
-                if (maf !== null) {
-                  const val = Number.parseFloat(maf)
-                  if (!Number.isNaN(val) && val >= 0 && val <= 0.5) {
-                    self.setMafFilter(val)
-                  }
-                }
+                getSession(self).queueDialog(handleClose => [
+                  LDFilterDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
               },
             },
           ]
+        },
+
+        /**
+         * #method
+         */
+        async renderSvg(
+          opts: ExportSvgDisplayOptions,
+        ): Promise<React.ReactNode> {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self as LDDisplayModel, opts)
         },
       }
     })
@@ -299,6 +344,7 @@ export default function stateModelFactory(
       const {
         minorAlleleFrequencyFilter,
         lengthCutoffFilter,
+        hweFilterThreshold,
         ldMetric,
         colorScheme,
         showLegend,
@@ -312,6 +358,7 @@ export default function stateModelFactory(
         ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
           ? { lengthCutoffFilter }
           : {}),
+        ...(hweFilterThreshold !== 0.001 ? { hweFilterThreshold } : {}),
         ...(ldMetric !== 'r2' ? { ldMetric } : {}),
         ...(colorScheme ? { colorScheme } : {}),
         ...(!showLegend ? { showLegend } : {}),
