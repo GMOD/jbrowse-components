@@ -1152,6 +1152,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     })
     .actions(self => {
       let cancelLastAnimation = () => {}
+      let pendingTargetBpPerPx: number | undefined
 
       /**
        * #action
@@ -1159,25 +1160,49 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       function zoom(targetBpPerPx: number) {
         cancelLastAnimation()
+
+        // Calculate current visual bpPerPx accounting for in-progress animation
+        // scaleFactor < 1 means zoomed out, > 1 means zoomed in
+        const currentVisualBpPerPx = self.bpPerPx / self.scaleFactor
+
+        // Calculate the zoom factor the caller intended (e.g., 2 for zoom out, 0.5 for zoom in)
+        const intendedFactor = targetBpPerPx / self.bpPerPx
+
+        // Apply that factor to the pending target (if mid-animation) or current bpPerPx
+        // This allows rapid clicks to accumulate
+        const effectiveBase = pendingTargetBpPerPx ?? self.bpPerPx
+        let effectiveTarget = effectiveBase * intendedFactor
+
+        // Clamp to zoom limits
+        effectiveTarget = Math.max(
+          self.minBpPerPx,
+          Math.min(self.maxBpPerPx, effectiveTarget),
+        )
+
+        // Commit to current visual position (no jump)
+        self.zoomTo(currentVisualBpPerPx)
         self.setScaleFactor(1)
-        self.zoomTo(self.bpPerPx)
-        if (
-          // already zoomed all the way in
-          (targetBpPerPx < self.bpPerPx && self.bpPerPx === self.minBpPerPx) ||
-          // already zoomed all the way out
-          (targetBpPerPx > self.bpPerPx && self.bpPerPx === self.maxBpPerPx)
-        ) {
+
+        // If already at limit (or effectively no change), do nothing
+        if (effectiveTarget === currentVisualBpPerPx) {
+          pendingTargetBpPerPx = undefined
           return
         }
-        const factor = self.bpPerPx / targetBpPerPx
+
+        pendingTargetBpPerPx = effectiveTarget
+        const factor = currentVisualBpPerPx / effectiveTarget
         const [animate, cancelAnimation] = springAnimate(
           1,
           factor,
           self.setScaleFactor,
           () => {
-            self.zoomTo(targetBpPerPx)
+            self.zoomTo(effectiveTarget)
             self.setScaleFactor(1)
+            pendingTargetBpPerPx = undefined
           },
+          0,
+          1000,
+          50,
         )
         cancelLastAnimation = cancelAnimation!
         animate!()
