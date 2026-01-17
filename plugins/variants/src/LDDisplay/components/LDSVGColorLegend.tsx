@@ -1,11 +1,9 @@
 export default function LDSVGColorLegend({
   ldMetric,
   width,
-  legendAreaWidth,
 }: {
   ldMetric: string
   width: number
-  legendAreaWidth?: number
 }) {
   const gradientId = `ld-gradient-${ldMetric}`
 
@@ -30,8 +28,8 @@ export default function LDSVGColorLegend({
   const padding = 8
   const fontSize = 10
 
-  // Position legend to the right if legendAreaWidth is provided, otherwise top-right inside
-  const x = legendAreaWidth ? width + 10 : width - legendWidth - 10
+  // Always position legend to the right of the image for SVG export
+  const x = width + 10
   const y = 10
 
   const label = ldMetric === 'dprime' ? "D'" : 'R²'

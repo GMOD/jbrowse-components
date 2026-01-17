@@ -174,6 +174,15 @@ function calculateLDStats(
   return { r2, dprime }
 }
 
+export interface FilterStats {
+  totalVariants: number
+  passedVariants: number
+  filteredByMaf: number
+  filteredByLength: number
+  filteredByMultiallelic: number
+  filteredByHwe: number
+}
+
 export interface LDMatrixResult {
   snps: {
     id: string
@@ -186,6 +195,8 @@ export interface LDMatrixResult {
   ldValues: Float32Array
   // Which metric was computed
   metric: LDMetric
+  // Statistics about filtered variants
+  filterStats: FilterStats
 }
 
 export async function getLDMatrix({
@@ -202,6 +213,7 @@ export async function getLDMatrix({
     bpPerPx: number
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
+    hweFilterThreshold?: number
     ldMetric?: LDMetric
   }
 }): Promise<LDMatrixResult> {
@@ -211,6 +223,7 @@ export async function getLDMatrix({
     adapterConfig,
     sessionId,
     lengthCutoffFilter,
+    hweFilterThreshold = 0.001,
     stopToken,
     ldMetric = 'r2',
   } = args
@@ -224,31 +237,100 @@ export async function getLDMatrix({
   const samples = sources?.map(s => s.name) ?? []
 
   if (samples.length === 0) {
-    return { snps: [], ldValues: new Float32Array(0), metric: ldMetric }
+    return {
+      snps: [],
+      ldValues: new Float32Array(0),
+      metric: ldMetric,
+      filterStats: {
+        totalVariants: 0,
+        passedVariants: 0,
+        filteredByMaf: 0,
+        filteredByLength: 0,
+        filteredByMultiallelic: 0,
+        filteredByHwe: 0,
+      },
+    }
   }
 
   const splitCache = {} as Record<string, string[]>
 
-  // Get features that pass MAF filter
+  // Get all raw features first to count total
+  const rawFeatures = await firstValueFrom(
+    dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
+  )
+  const totalVariants = rawFeatures.length
+
+  // Get features that pass MAF and length filters
   const filteredFeatures = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
     lastCheck,
     splitCache,
-    features: await firstValueFrom(
-      dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
-    ),
+    features: rawFeatures,
   })
+
+  // Count how many were filtered by length vs MAF
+  // We need to count separately
+  let filteredByLength = 0
+  let filteredByMaf = 0
+  for (const feature of rawFeatures) {
+    if (feature.get('end') - feature.get('start') > lengthCutoffFilter) {
+      filteredByLength++
+    } else {
+      // Check if it was filtered by MAF
+      const featureId = feature.id()
+      const wasPassed = filteredFeatures.some(f => f.feature.id() === featureId)
+      if (!wasPassed) {
+        filteredByMaf++
+      }
+    }
+  }
 
   // Extract SNP info and encode genotypes
   // Like Haploview, we only include biallelic sites
   const snps: LDMatrixResult['snps'] = []
   const encodedGenotypes: Int8Array[] = []
+  let filteredByMultiallelic = 0
+  let filteredByHwe = 0
+
+  // Chi-square critical values for common p-value thresholds (df=1)
+  // Use lookup table for common values, approximate for others
+  const getChiSquareCritical = (pValue: number): number => {
+    if (pValue <= 0) {
+      return Number.POSITIVE_INFINITY // Disable filter
+    }
+    if (pValue >= 1) {
+      return 0
+    }
+    // Common lookup values
+    if (pValue === 0.05) {
+      return 3.841
+    }
+    if (pValue === 0.01) {
+      return 6.635
+    }
+    if (pValue === 0.001) {
+      return 10.828
+    }
+    if (pValue === 0.0001) {
+      return 15.137
+    }
+    // Approximation using inverse chi-square for df=1
+    // chi-sq ≈ -2 * ln(p) is rough; use better approximation
+    // For df=1, P(χ² > x) = 2*(1 - Φ(√x)) where Φ is normal CDF
+    // So x = (Φ⁻¹(1 - p/2))²
+    // Use approximation: for small p, x ≈ -2*ln(p)
+    return -2 * Math.log(pValue)
+  }
+
+  const chiSqCritical = getChiSquareCritical(hweFilterThreshold)
+  const hweFilterEnabled = hweFilterThreshold > 0
 
   for (const { feature } of filteredFeatures) {
     // Skip multiallelic sites (Haploview only works with biallelic SNPs)
     const alt = feature.get('ALT') as string[] | undefined
     if (alt && alt.length > 1) {
+      filteredByMultiallelic++
       continue
     }
 
@@ -257,53 +339,54 @@ export async function getLDMatrix({
 
     // Check for Hardy-Weinberg equilibrium (like Haploview's HWE filter)
     // Count genotypes: 0=hom ref, 1=het, 2=hom alt
-    let nHomRef = 0
-    let nHet = 0
-    let nHomAlt = 0
-    let nValid = 0
-    for (const g of encoded) {
-      if (g === 0) {
-        nHomRef++
-        nValid++
-      } else if (g === 1) {
-        nHet++
-        nValid++
-      } else if (g === 2) {
-        nHomAlt++
-        nValid++
-      }
-    }
-
-    // Calculate HWE chi-square test
-    // Under HWE: p² + 2pq + q² = 1
-    if (nValid > 0) {
-      const p = (2 * nHomRef + nHet) / (2 * nValid) // ref allele freq
-      const q = 1 - p // alt allele freq
-      const expectedHomRef = p * p * nValid
-      const expectedHet = 2 * p * q * nValid
-      const expectedHomAlt = q * q * nValid
-
-      // Chi-square statistic
-      let chiSq = 0
-      if (expectedHomRef > 0) {
-        chiSq += ((nHomRef - expectedHomRef) ** 2) / expectedHomRef
-      }
-      if (expectedHet > 0) {
-        chiSq += ((nHet - expectedHet) ** 2) / expectedHet
-      }
-      if (expectedHomAlt > 0) {
-        chiSq += ((nHomAlt - expectedHomAlt) ** 2) / expectedHomAlt
+    if (hweFilterEnabled) {
+      let nHomRef = 0
+      let nHet = 0
+      let nHomAlt = 0
+      let nValid = 0
+      for (const g of encoded) {
+        if (g === 0) {
+          nHomRef++
+          nValid++
+        } else if (g === 1) {
+          nHet++
+          nValid++
+        } else if (g === 2) {
+          nHomAlt++
+          nValid++
+        }
       }
 
-      // Chi-square critical value for p=0.001 with df=1 is ~10.83
-      // Haploview uses p < 0.001 as default HWE filter
-      if (chiSq > 10.83) {
-        console.log(
-          `Excluding ${feature.get('name') || feature.id()} - HWE violation (χ²=${chiSq.toFixed(2)}), ` +
-            `observed: ${nHomRef}/${nHet}/${nHomAlt}, ` +
-            `expected: ${expectedHomRef.toFixed(0)}/${expectedHet.toFixed(0)}/${expectedHomAlt.toFixed(0)}`,
-        )
-        continue
+      // Calculate HWE chi-square test
+      // Under HWE: p² + 2pq + q² = 1
+      if (nValid > 0) {
+        const p = (2 * nHomRef + nHet) / (2 * nValid) // ref allele freq
+        const q = 1 - p // alt allele freq
+        const expectedHomRef = p * p * nValid
+        const expectedHet = 2 * p * q * nValid
+        const expectedHomAlt = q * q * nValid
+
+        // Chi-square statistic
+        let chiSq = 0
+        if (expectedHomRef > 0) {
+          chiSq += ((nHomRef - expectedHomRef) ** 2) / expectedHomRef
+        }
+        if (expectedHet > 0) {
+          chiSq += ((nHet - expectedHet) ** 2) / expectedHet
+        }
+        if (expectedHomAlt > 0) {
+          chiSq += ((nHomAlt - expectedHomAlt) ** 2) / expectedHomAlt
+        }
+
+        if (chiSq > chiSqCritical) {
+          console.log(
+            `Excluding ${feature.get('name') || feature.id()} - HWE violation (χ²=${chiSq.toFixed(2)} > ${chiSqCritical.toFixed(2)}), ` +
+              `observed: ${nHomRef}/${nHet}/${nHomAlt}, ` +
+              `expected: ${expectedHomRef.toFixed(0)}/${expectedHet.toFixed(0)}/${expectedHomAlt.toFixed(0)}`,
+          )
+          filteredByHwe++
+          continue
+        }
       }
     }
 
@@ -335,5 +418,14 @@ export async function getLDMatrix({
     checkStopToken2(lastCheck)
   }
 
-  return { snps, ldValues, metric: ldMetric }
+  const filterStats: FilterStats = {
+    totalVariants,
+    passedVariants: snps.length,
+    filteredByMaf,
+    filteredByLength,
+    filteredByMultiallelic,
+    filteredByHwe,
+  }
+
+  return { snps, ldValues, metric: ldMetric, filterStats }
 }

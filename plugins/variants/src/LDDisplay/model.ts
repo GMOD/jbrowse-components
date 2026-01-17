@@ -12,7 +12,7 @@ import {
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
-import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -108,16 +108,7 @@ export default function stateModelFactory(
        * #volatile
        * Stats about filtered variants
        */
-      filterStats: undefined as
-        | {
-            totalVariants: number
-            passedVariants: number
-            filteredByMaf: number
-            filteredByLength: number
-            filteredByMultiallelic: number
-            filteredByHwe: number
-          }
-        | undefined,
+      filterStats: undefined as FilterStats | undefined,
     }))
     .actions(self => ({
       /**
@@ -289,12 +280,18 @@ export default function stateModelFactory(
               ],
             },
             {
-              label: 'Show legend',
-              type: 'checkbox',
-              checked: self.showLegend,
-              onClick: () => {
-                self.setShowLegend(!self.showLegend)
-              },
+              label: 'Show...',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Show legend',
+                  type: 'checkbox',
+                  checked: self.showLegend,
+                  onClick: () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                },
+              ],
             },
             {
               label: 'Filter settings...',

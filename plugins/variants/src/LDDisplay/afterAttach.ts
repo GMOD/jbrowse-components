@@ -11,7 +11,7 @@ import { autorun, untracked } from 'mobx'
 
 import type { LDDisplayModel } from './model.ts'
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
-import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -23,6 +23,7 @@ interface RenderResult {
   ldData?: {
     snps: LDMatrixResult['snps']
   }
+  filterStats?: FilterStats
   maxScore?: number
   yScalar?: number
   width: number
@@ -97,6 +98,8 @@ export function doAfterAttach(self: LDDisplayModel) {
         result.maxScore ?? 1,
         result.yScalar ?? 1,
       )
+      // Store filter stats
+      self.setFilterStats(result.filterStats)
     } catch (error) {
       if (!isAbortException(error)) {
         if (isAlive(self)) {
@@ -131,6 +134,7 @@ export function doAfterAttach(self: LDDisplayModel) {
         self.ldMetric
         self.minorAlleleFrequencyFilter
         self.lengthCutoffFilter
+        self.hweFilterThreshold
         self.colorScheme
         self.height
         // Note: lineZoneHeight not included - SVG lines component handles it reactively

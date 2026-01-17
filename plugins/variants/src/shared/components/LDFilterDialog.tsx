@@ -13,14 +13,7 @@ import {
   Typography,
 } from '@mui/material'
 
-interface FilterStats {
-  totalVariants: number
-  passedVariants: number
-  filteredByMaf: number
-  filteredByLength: number
-  filteredByMultiallelic: number
-  filteredByHwe: number
-}
+import type { FilterStats } from '../../VariantRPC/getLDMatrix.ts'
 
 export default function LDFilterDialog({
   model,

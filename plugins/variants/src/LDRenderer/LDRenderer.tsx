@@ -5,7 +5,11 @@ import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 
-import type { LDMatrixResult, LDMetric } from '../VariantRPC/getLDMatrix.ts'
+import type {
+  FilterStats,
+  LDMatrixResult,
+  LDMetric,
+} from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RenderArgsDeserialized as ServerSideRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
@@ -20,6 +24,7 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
   ldMetric?: LDMetric
   minorAlleleFrequencyFilter?: number
   lengthCutoffFilter?: number
+  hweFilterThreshold?: number
   colorScheme?: string
 }
 
@@ -71,7 +76,13 @@ export default class LDRenderer extends ServerSideRendererType {
         },
       )
       return rpcResult(
-        { ...res, height, width, ldData: null },
+        {
+          ...res,
+          height,
+          width,
+          ldData: null,
+          filterStats: ldData?.filterStats,
+        },
         collectTransferables(res),
       )
     }
@@ -112,6 +123,7 @@ export default class LDRenderer extends ServerSideRendererType {
         metric: ldData.metric,
         numValues: ldData.ldValues.length,
       },
+      filterStats: ldData.filterStats,
     }
     return rpcResult(serialized, collectTransferables(serialized))
   }
@@ -127,6 +139,7 @@ export default class LDRenderer extends ServerSideRendererType {
       ldMetric = 'r2',
       minorAlleleFrequencyFilter = 0.01,
       lengthCutoffFilter = Number.MAX_SAFE_INTEGER,
+      hweFilterThreshold = 0.001,
       stopToken,
     } = args
 
@@ -141,6 +154,7 @@ export default class LDRenderer extends ServerSideRendererType {
           ldMetric,
           minorAlleleFrequencyFilter,
           lengthCutoffFilter,
+          hweFilterThreshold,
           stopToken,
         },
       })

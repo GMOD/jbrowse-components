@@ -80,11 +80,7 @@ export async function renderSvg(
         <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
       </g>
       {showLegend ? (
-        <LDSVGColorLegend
-          ldMetric={ldMetric}
-          width={visibleWidth}
-          legendAreaWidth={opts.legendWidth}
-        />
+        <LDSVGColorLegend ldMetric={ldMetric} width={visibleWidth} />
       ) : null}
     </>
   )
