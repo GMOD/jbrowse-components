@@ -98,6 +98,17 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         description:
           'A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while the assembly name may just be "hg38"',
       },
+
+      /**
+       * #slot
+       * Configuration for sequence search functionality (e.g., BLAT)
+       */
+      sequenceSearch: {
+        type: 'frozen',
+        defaultValue: {},
+        description:
+          'Configuration for sequence search. Example: { blat: { db: "hg38" } }',
+      },
     },
     {
       /**

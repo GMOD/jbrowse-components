@@ -75,6 +75,7 @@
     "@jbrowse/plugin-menus": "workspace:^",
     "@jbrowse/plugin-rdf": "workspace:^",
     "@jbrowse/plugin-sequence": "workspace:^",
+    "@jbrowse/plugin-sequence-search": "workspace:^",
     "@jbrowse/plugin-spreadsheet-view": "workspace:^",
     "@jbrowse/plugin-sv-inspector": "workspace:^",
     "@jbrowse/plugin-text-indexing": "workspace:^",

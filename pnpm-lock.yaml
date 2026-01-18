@@ -1443,6 +1443,30 @@ importers:
         specifier: ^7.8.2
         version: 7.8.2
 
+  plugins/sequence-search:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^5.5.0
+        version: 5.5.0(mobx@6.15.0)
+      '@mui/icons-material':
+        specifier: ^7.3.6
+        version: 7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.8)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.8)(react@19.2.3))(@types/react@19.2.8)(react@19.2.3))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.8)(react@19.2.3)
+      '@mui/material':
+        specifier: ^7.3.6
+        version: 7.3.7(@emotion/react@11.14.0(@types/react@19.2.8)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.8)(react@19.2.3))(@types/react@19.2.8)(react@19.2.3))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      mobx:
+        specifier: ^6.15.0
+        version: 6.15.0
+      react:
+        specifier: '>=18.0.0'
+        version: 19.2.3
+      react-dom:
+        specifier: '>=18.0.0'
+        version: 19.2.3(react@19.2.3)
+
   plugins/spreadsheet-view:
     dependencies:
       '@gmod/vcf':
@@ -1796,6 +1820,9 @@ importers:
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence
+      '@jbrowse/plugin-sequence-search':
+        specifier: workspace:^
+        version: link:../../plugins/sequence-search
       '@jbrowse/plugin-spreadsheet-view':
         specifier: workspace:^
         version: link:../../plugins/spreadsheet-view
@@ -2313,6 +2340,9 @@ importers:
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence
+      '@jbrowse/plugin-sequence-search':
+        specifier: workspace:^
+        version: link:../../plugins/sequence-search
       '@jbrowse/plugin-spreadsheet-view':
         specifier: workspace:^
         version: link:../../plugins/spreadsheet-view
@@ -11230,7 +11260,7 @@ snapshots:
 
   '@mui/icons-material@7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.8)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.8)(react@19.2.3))(@types/react@19.2.8)(react@19.2.3))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.8)(react@19.2.3)':
     dependencies:
-      '@babel/runtime': 7.28.4
+      '@babel/runtime': 7.28.6
       '@mui/material': 7.3.7(@emotion/react@11.14.0(@types/react@19.2.8)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.8)(react@19.2.3))(@types/react@19.2.8)(react@19.2.3))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
     optionalDependencies:
@@ -12757,7 +12787,7 @@ snapshots:
 
   babel-plugin-macros@3.1.0:
     dependencies:
-      '@babel/runtime': 7.28.4
+      '@babel/runtime': 7.28.6
       cosmiconfig: 7.1.0
       resolve: 1.22.11
 
@@ -13708,7 +13738,7 @@ snapshots:
 
   dom-helpers@5.2.1:
     dependencies:
-      '@babel/runtime': 7.28.4
+      '@babel/runtime': 7.28.6
       csstype: 3.2.3
 
   dom-serializer@1.4.1:
