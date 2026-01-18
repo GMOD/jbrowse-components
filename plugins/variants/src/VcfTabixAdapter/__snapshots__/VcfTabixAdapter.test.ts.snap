@@ -48,6 +48,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "description": "T -> C",
     "end": 277,
     "name": undefined,
+    "processGenotypes": [Function],
     "refName": "ctgA",
     "samples": {
       "sample_data/raw/volvox/volvox-sorted.bam": {
@@ -114,6 +115,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "description": "T -> C",
     "end": 1694,
     "name": undefined,
+    "processGenotypes": [Function],
     "refName": "ctgA",
     "samples": {
       "sample_data/raw/volvox/volvox-sorted.bam": {
@@ -180,6 +182,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "description": "T -> G",
     "end": 2644,
     "name": undefined,
+    "processGenotypes": [Function],
     "refName": "ctgA",
     "samples": {
       "sample_data/raw/volvox/volvox-sorted.bam": {
@@ -240,6 +243,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "description": "T -> A",
     "end": 3213,
     "name": undefined,
+    "processGenotypes": [Function],
     "refName": "ctgA",
     "samples": {
       "sample_data/raw/volvox/volvox-sorted.bam": {
@@ -301,6 +305,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     "description": "ctt -> ct",
     "end": 3860,
     "name": undefined,
+    "processGenotypes": [Function],
     "refName": "ctgA",
     "samples": {
       "sample_data/raw/volvox/volvox-sorted.bam": {

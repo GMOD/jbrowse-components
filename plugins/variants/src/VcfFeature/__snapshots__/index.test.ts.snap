@@ -18,6 +18,7 @@ exports[`null ALT 1`] = `
   "description": "no alternative alleles",
   "end": 100,
   "name": "rs123",
+  "processGenotypes": [Function],
   "refName": "chr1",
   "samples": {},
   "start": 99,
