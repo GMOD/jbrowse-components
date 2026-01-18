@@ -4,6 +4,7 @@ import ChordVariantDisplayF from './ChordVariantDisplay/index.ts'
 import LDDisplayF from './LDDisplay/index.ts'
 import LDRendererF from './LDRenderer/index.ts'
 import LDTrackF from './LDTrack/index.ts'
+import LdmatAdapterF from './LdmatAdapter/index.ts'
 import LinearVariantDisplayF from './LinearVariantDisplay/index.ts'
 import MultiLinearVariantDisplayF from './MultiLinearVariantDisplay/index.ts'
 import LinearVariantMatrixDisplayF from './MultiLinearVariantMatrixDisplay/index.ts'
@@ -32,6 +33,7 @@ export default class VariantsPlugin extends Plugin {
     VcfTabixAdapterF(pluginManager)
     SplitVcfTabixAdapterF(pluginManager)
     PlinkLDAdapterF(pluginManager)
+    LdmatAdapterF(pluginManager)
     VariantFeatureWidgetF(pluginManager)
     VariantTrackF(pluginManager)
     LDTrackF(pluginManager)

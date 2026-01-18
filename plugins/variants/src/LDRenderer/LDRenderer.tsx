@@ -156,11 +156,12 @@ export default class LDRenderer extends ServerSideRendererType {
     } = args
 
     try {
-      // Check if this is a PLINK LD adapter (pre-computed LD)
+      // Check if this is a pre-computed LD adapter (PLINK or ldmat)
       const adapterType = adapterConfig?.type as string | undefined
       if (
         adapterType === 'PlinkLDAdapter' ||
-        adapterType === 'PlinkLDTabixAdapter'
+        adapterType === 'PlinkLDTabixAdapter' ||
+        adapterType === 'LdmatAdapter'
       ) {
         return await getLDMatrixFromPlink({
           pluginManager: this.pluginManager,

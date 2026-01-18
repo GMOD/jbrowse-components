@@ -66,6 +66,14 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
             type: 'PlinkLDAdapter',
             ldLocation: file,
           }
+        } else if (
+          testAdapter(fileName, /\.h5$/i, adapterHint, 'LdmatAdapter')
+        ) {
+          // HDF5 files in ldmat format
+          return {
+            type: 'LdmatAdapter',
+            ldmatLocation: file,
+          }
         } else {
           return adapterGuesser(file, index, adapterHint)
         }
@@ -79,7 +87,11 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
         if (['VcfTabixAdapter', 'VcfAdapter'].includes(adapterName)) {
           return 'VariantTrack'
         }
-        if (['PlinkLDAdapter', 'PlinkLDTabixAdapter'].includes(adapterName)) {
+        if (
+          ['PlinkLDAdapter', 'PlinkLDTabixAdapter', 'LdmatAdapter'].includes(
+            adapterName,
+          )
+        ) {
           return 'LDTrack'
         }
         return trackTypeGuesser(adapterName)

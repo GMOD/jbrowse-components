@@ -101,9 +101,9 @@ from_ld() {
         sort -k1,1V -k2,2n "$input" >> "$tmpfile"
     fi
 
-    # Convert spaces to tabs if needed, bgzip
+    # Remove leading spaces and convert multiple spaces to tabs, then bgzip
     echo "Compressing..."
-    sed 's/  */\t/g' "$tmpfile" | bgzip -c > "$output"
+    sed 's/^ *//' "$tmpfile" | sed 's/  */\t/g' | bgzip -c > "$output"
 
     # Create tabix index (CHR_A is col 1, BP_A is col 2)
     echo "Indexing..."

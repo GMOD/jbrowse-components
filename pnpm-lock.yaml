@@ -1550,6 +1550,9 @@ importers:
       '@flatten-js/interval-tree':
         specifier: ^2.0.3
         version: 2.0.3
+      '@gmod/bgzf-filehandle':
+        specifier: ^1.4.4
+        version: 1.5.5
       '@gmod/hclust':
         specifier: ^1.0.7
         version: 1.0.7
@@ -1601,6 +1604,9 @@ importers:
       file-saver-es:
         specifier: ^2.0.5
         version: 2.0.5
+      h5wasm:
+        specifier: ^0.7.5
+        version: 0.7.9
       mobx:
         specifier: ^6.15.0
         version: 6.15.0
@@ -3455,6 +3461,10 @@ packages:
 
   '@gmod/bed@2.1.7':
     resolution: {integrity: sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==}
+    engines: {node: '>=6'}
+
+  '@gmod/bgzf-filehandle@1.5.5':
+    resolution: {integrity: sha512-3f4mvW0ov7rFip2TQneZJsYiQN6Be0M3ET+k4DS0Mc4GIJJblKARbY4lFt2pT5fpgOmrL55/8A0qwGawKwQN+Q==}
     engines: {node: '>=6'}
 
   '@gmod/bgzf-filehandle@6.0.10':
@@ -6062,6 +6072,13 @@ packages:
   es6-error@4.1.1:
     resolution: {integrity: sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg==}
 
+  es6-promisify@6.1.1:
+    resolution: {integrity: sha512-HBL8I3mIki5C1Cc9QjKUenHtnG0A5/xA8Q/AllRcfiwl2CZFXGK7ddBiCoRwAix4i2KxcQfjtIVcrVbB3vbmwg==}
+
+  es6-promisify@7.0.0:
+    resolution: {integrity: sha512-ginqzK3J90Rd4/Yz7qRrqUeIpe3TwSXTPPZtPne7tGBPeAaQiU8qt4fpKApnxHcq1AwtUdHVg5P77x/yrggG8Q==}
+    engines: {node: '>=6'}
+
   esbuild@0.27.2:
     resolution: {integrity: sha512-HyNQImnsOC7X9PMNaCIeAm4ISCQXs5a5YasTXVliKv4uuBo1dKrG0A+uQS8M5eXjVMnLg3WgXaKvprHlFJQffw==}
     engines: {node: '>=18'}
@@ -6522,6 +6539,10 @@ packages:
     resolution: {integrity: sha512-dcXce+k0lp066pvx+4Me3nPFVqJHgbOp/a0KzMEnyP0qgnPSrUKIKVy3tFBy8mV03NBL6goszU7rwpQMQy72qw==}
     engines: {node: '>=14'}
 
+  generic-filehandle@3.4.0:
+    resolution: {integrity: sha512-HQh9z5tDB/lWsMbjnGXjGVvKuYzM3JR9Fhb9hk1rESB6RQ1yGJGllnx4N2Hv795eyekzsfUaYBIE5AoGucacog==}
+    engines: {node: '>=12'}
+
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -6642,6 +6663,9 @@ packages:
 
   gtf-nostream@1.3.4:
     resolution: {integrity: sha512-o1Aw0PiyDC18fGoPBk523FCpLHCFfCDl+fLWevYgAjULH9jj2sPSr2A4L138jjHzSEgfUl0v8bWEBN8+EdbgrQ==}
+
+  h5wasm@0.7.9:
+    resolution: {integrity: sha512-V3N+SSQdrTjQUqwu6sJsOcwocZCXeZnwmuNO/gervRaTiqJD1lSybqB+7d3YSciej3OIwmturEP1UzhIOZ77pA==}
 
   handle-thing@2.0.1:
     resolution: {integrity: sha512-9Qn4yBxelxoh2Ow62nP+Ka/kMnOXRi8BXnRaUwezLNhqelnN49xKz4F/dPP8OYLxLxq6JDtZb2i9XznUQbNPTg==}
@@ -7468,6 +7492,9 @@ packages:
   log-symbols@4.1.0:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
     engines: {node: '>=10'}
+
+  long@4.0.0:
+    resolution: {integrity: sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA==}
 
   loose-envify@1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
@@ -10843,6 +10870,13 @@ snapshots:
 
   '@gmod/bed@2.1.7': {}
 
+  '@gmod/bgzf-filehandle@1.5.5':
+    dependencies:
+      es6-promisify: 7.0.0
+      generic-filehandle: 3.4.0
+      long: 4.0.0
+      pako: 1.0.11
+
   '@gmod/bgzf-filehandle@6.0.10':
     dependencies:
       generic-filehandle2: 2.0.18
@@ -14015,6 +14049,10 @@ snapshots:
   es6-error@4.1.1:
     optional: true
 
+  es6-promisify@6.1.1: {}
+
+  es6-promisify@7.0.0: {}
+
   esbuild@0.27.2:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.27.2
@@ -14647,6 +14685,10 @@ snapshots:
 
   generic-filehandle2@2.0.18: {}
 
+  generic-filehandle@3.4.0:
+    dependencies:
+      es6-promisify: 6.1.1
+
   gensync@1.0.0-beta.2: {}
 
   get-caller-file@2.0.5: {}
@@ -14786,6 +14828,8 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   gtf-nostream@1.3.4: {}
+
+  h5wasm@0.7.9: {}
 
   handle-thing@2.0.1: {}
 
@@ -15814,6 +15858,8 @@ snapshots:
     dependencies:
       chalk: 4.1.2
       is-unicode-supported: 0.1.0
+
+  long@4.0.0: {}
 
   loose-envify@1.4.0:
     dependencies:
