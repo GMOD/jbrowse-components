@@ -57,8 +57,10 @@ export function doAfterAttach(self: SharedLDModel) {
       return
     }
 
+    // Use untracked to prevent these from being tracked by the autorun
+    // We explicitly list what should trigger re-rendering above
     const { adapterConfig } = self
-    const renderProps = self.renderProps()
+    const renderProps = untracked(() => self.renderProps())
 
     try {
       const session = getSession(self)
@@ -149,11 +151,9 @@ export function doAfterAttach(self: SharedLDModel) {
         self.hweFilterThreshold
         self.colorScheme
         self.showLDTriangle
-        self.showRecombination
-        self.recombinationZoneHeight
         self.fitToHeight
-        // Note: height tracking is handled conditionally in renderProps()
-        // lineZoneHeight not included - SVG lines component handles it reactively
+        // Note: lineZoneHeight, recombinationZoneHeight, and showRecombination
+        // are handled by CSS/React, not canvas rendering
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 
         if (untracked(() => self.error) || !regions.length) {

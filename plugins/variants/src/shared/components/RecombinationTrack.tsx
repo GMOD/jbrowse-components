@@ -112,4 +112,5 @@ const RecombinationTrack = observer(function RecombinationTrack({
 })
 
 export default RecombinationTrack
-export { Y_AXIS_WIDTH }
+
+export { Y_AXIS_WIDTH } from './RecombinationYScaleBar.tsx'

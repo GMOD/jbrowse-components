@@ -16,8 +16,7 @@ export default function LdmatAdapterF(pluginManager: PluginManager) {
           description:
             'Adapter for LD matrices in ldmat HDF5 format (https://github.com/G2Lab/ldmat)',
         },
-        getAdapterClass: () =>
-          import('./LdmatAdapter.ts').then(r => r.default),
+        getAdapterClass: () => import('./LdmatAdapter.ts').then(r => r.default),
       }),
   )
 }

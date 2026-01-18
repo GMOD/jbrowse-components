@@ -230,7 +230,9 @@ export default function f(pluginManager: PluginManager) {
         const adapterType = this.trackAdapter?.type
         return !!(
           adapterHint &&
-          (!adapterType || adapterType === 'UNKNOWN' || adapterType !== adapterHint)
+          (!adapterType ||
+            adapterType === 'UNKNOWN' ||
+            adapterType !== adapterHint)
         )
       },
 

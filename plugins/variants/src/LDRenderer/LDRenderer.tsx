@@ -21,7 +21,6 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
   highResolutionScaling: number
   adapterConfig: AnyConfigurationModel
   displayHeight?: number
-  lineZoneHeight?: number
   ldMetric?: LDMetric
   minorAlleleFrequencyFilter?: number
   lengthCutoffFilter?: number
@@ -43,7 +42,6 @@ export default class LDRenderer extends ServerSideRendererType {
       regions,
       bpPerPx,
       ldMetric = 'r2',
-      lineZoneHeight = 20,
       fitToHeight = false,
     } = renderProps
 
@@ -54,12 +52,11 @@ export default class LDRenderer extends ServerSideRendererType {
     }
     const width = totalWidthBp / bpPerPx
     const hyp = width / 2
-    // When fitToHeight is false, use natural triangle height (hyp + lineZoneHeight)
-    // When true, use the provided displayHeight
-    const height = fitToHeight
-      ? (displayHeight ?? hyp + lineZoneHeight)
-      : hyp + lineZoneHeight
-    const matrixHeight = height - lineZoneHeight
+    // Canvas contains only the triangle
+    // lineZoneHeight/recombinationZoneHeight are handled by CSS positioning
+    // displayHeight already accounts for these when fitToHeight is true
+    const height = fitToHeight ? (displayHeight ?? hyp) : hyp
+    const matrixHeight = height
 
     // Get LD data
     const ldData = await this.getLDData(renderProps)
@@ -105,10 +102,8 @@ export default class LDRenderer extends ServerSideRendererType {
       height,
       renderProps,
       ctx => {
-        // Translate down past the line zone, then draw the matrix
-        // Lines are drawn separately as SVG in the display component
-        ctx.translate(0, lineZoneHeight)
-
+        // Canvas contains only the triangle at y=0
+        // lineZoneHeight positioning is handled by CSS in the display component
         return makeImageData(ctx, {
           ldData,
           regions,
@@ -125,7 +120,6 @@ export default class LDRenderer extends ServerSideRendererType {
       width,
       yScalar,
       ldMetric,
-      lineZoneHeight,
       ldData: {
         snps: ldData.snps,
         metric: ldData.metric,

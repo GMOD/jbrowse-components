@@ -266,10 +266,8 @@ function screenToUnrotated(
 
 const LDCanvas = observer(function LDCanvas({
   model,
-  canvasHeight,
 }: {
   model: SharedLDModel
-  canvasHeight: number
 }) {
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
@@ -284,11 +282,15 @@ const LDCanvas = observer(function LDCanvas({
     ldMetric,
     lineZoneHeight,
     fitToHeight,
+    ldCanvasHeight,
   } = model
 
-  // When fitToHeight is false, use the natural triangle height
-  const naturalHeight = width / 2 + lineZoneHeight
-  const effectiveCanvasHeight = fitToHeight ? canvasHeight : naturalHeight
+  // Container height includes lineZoneHeight + triangle
+  // Canvas height is just the triangle (lineZoneHeight is handled by CSS positioning)
+  // ldCanvasHeight already has lineZoneHeight subtracted
+  const triangleHeight = width / 2
+  const canvasOnlyHeight = fitToHeight ? ldCanvasHeight : triangleHeight
+  const containerHeight = canvasOnlyHeight + lineZoneHeight
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
@@ -307,7 +309,7 @@ const LDCanvas = observer(function LDCanvas({
       model.setRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, width, effectiveCanvasHeight],
+    [model, width, canvasOnlyHeight],
   )
 
   const onMouseMove = useCallback(
@@ -366,7 +368,7 @@ const LDCanvas = observer(function LDCanvas({
         cursor: hoveredItem && mousePosition ? 'crosshair' : undefined,
         position: 'relative',
         width,
-        height: effectiveCanvasHeight,
+        height: containerHeight,
       }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
@@ -376,13 +378,13 @@ const LDCanvas = observer(function LDCanvas({
         ref={cb}
         style={{
           width,
-          height: effectiveCanvasHeight,
+          height: canvasOnlyHeight,
           position: 'absolute',
           left: 0,
-          top: 0,
+          top: lineZoneHeight,
         }}
         width={width * 2}
-        height={effectiveCanvasHeight * 2}
+        height={canvasOnlyHeight * 2}
       />
 
       {hoveredItem
@@ -409,7 +411,7 @@ const LDCanvas = observer(function LDCanvas({
                   lineZoneHeight={lineZoneHeight}
                   tickHeight={model.tickHeight}
                   width={width}
-                  height={effectiveCanvasHeight}
+                  height={containerHeight}
                 />
                 {model.showVerticalGuides ? (
                   <VerticalGuides
@@ -486,8 +488,6 @@ const LDDisplayContent = observer(function LDDisplayContent({
     )
   }
 
-  const { ldCanvasHeight } = model
-
   return (
     <div style={{ position: 'relative', width, height }}>
       {/* Recombination track at top */}
@@ -526,9 +526,7 @@ const LDDisplayContent = observer(function LDDisplayContent({
       ) : null}
 
       {/* LD canvas below */}
-      {showLDTriangle ? (
-        <LDCanvas model={model} canvasHeight={ldCanvasHeight} />
-      ) : null}
+      {showLDTriangle ? <LDCanvas model={model} /> : null}
     </div>
   )
 })

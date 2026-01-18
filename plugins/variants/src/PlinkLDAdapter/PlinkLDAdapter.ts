@@ -23,7 +23,12 @@ export default class PlinkLDAdapter extends BaseAdapter {
     const uri = isUriLocation(ldLocation) ? ldLocation.uri : ''
     const isGzipped = /\.gz$/i.test(uri) || buffer[0] === 0x1f
 
-    console.log('[PlinkLDAdapter] Loading file, size:', buffer.length, 'gzipped:', isGzipped)
+    console.log(
+      '[PlinkLDAdapter] Loading file, size:',
+      buffer.length,
+      'gzipped:',
+      isGzipped,
+    )
 
     if (isGzipped) {
       const decompressed = await unzip(buffer)
@@ -166,8 +171,15 @@ export default class PlinkLDAdapter extends BaseAdapter {
 
     console.log('[PlinkLDAdapter] Filtered records:', filtered.length)
     if (filtered.length === 0 && records.length > 0) {
-      console.log('[PlinkLDAdapter] Sample record chrA values:', [...new Set(records.slice(0, 100).map(r => r.chrA))])
-      console.log('[PlinkLDAdapter] Sample record bpA range:', Math.min(...records.slice(0, 100).map(r => r.bpA)), '-', Math.max(...records.slice(0, 100).map(r => r.bpA)))
+      console.log('[PlinkLDAdapter] Sample record chrA values:', [
+        ...new Set(records.slice(0, 100).map(r => r.chrA)),
+      ])
+      console.log(
+        '[PlinkLDAdapter] Sample record bpA range:',
+        Math.min(...records.slice(0, 100).map(r => r.bpA)),
+        '-',
+        Math.max(...records.slice(0, 100).map(r => r.bpA)),
+      )
     }
 
     return filtered
@@ -184,7 +196,10 @@ export default class PlinkLDAdapter extends BaseAdapter {
     const { refName, start, end } = query
     const records = await this.getLDRecords(query, opts)
 
-    console.log('[PlinkLDAdapter] getLDRecordsInRegion input records:', records.length)
+    console.log(
+      '[PlinkLDAdapter] getLDRecordsInRegion input records:',
+      records.length,
+    )
 
     // Filter for pairs where both SNPs are in the region
     const filtered = records.filter(
@@ -197,7 +212,10 @@ export default class PlinkLDAdapter extends BaseAdapter {
         r.bpA <= end,
     )
 
-    console.log('[PlinkLDAdapter] getLDRecordsInRegion filtered:', filtered.length)
+    console.log(
+      '[PlinkLDAdapter] getLDRecordsInRegion filtered:',
+      filtered.length,
+    )
 
     return filtered
   }

@@ -299,14 +299,14 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * Effective height for the LD canvas (total height minus recombination zone if shown)
+       * Effective height for the LD canvas (total height minus recombination zone and line zone)
        */
       get ldCanvasHeight() {
-        const h = self.height
+        let h = self.height - self.lineZoneHeight
         if (self.showRecombination) {
-          return Math.max(50, h - self.recombinationZoneHeight)
+          h -= self.recombinationZoneHeight
         }
-        return h
+        return Math.max(50, h)
       },
       /**
        * #getter
@@ -345,8 +345,8 @@ export default function sharedModelFactory(
             config: self.rendererConfig,
             // Only pass displayHeight when fitToHeight is true
             // This avoids tracking height changes when using natural triangle size
+            // ldCanvasHeight already accounts for lineZoneHeight and recombinationZoneHeight
             ...(self.fitToHeight ? { displayHeight: self.ldCanvasHeight } : {}),
-            lineZoneHeight: self.lineZoneHeight,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             lengthCutoffFilter: self.lengthCutoffFilter,
             hweFilterThreshold: self.hweFilterThreshold,
