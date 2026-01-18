@@ -21,14 +21,12 @@ interface ChunkInfo {
 }
 
 interface LdmatConfig {
-   
   file: any
   chunks: ChunkInfo[]
   chromosome: string
   refNames: string[]
 }
 
- 
 type H5wasmModule = any
 
 export default class LdmatAdapter extends BaseAdapter {
@@ -68,7 +66,6 @@ export default class LdmatAdapter extends BaseAdapter {
     const chunks: ChunkInfo[] = []
     for (const key of file.keys()) {
       if (key.startsWith(CHUNK_NAME)) {
-         
         const group = file.get(key)
         if (group) {
           // Attributes may be BigInt, convert to Number
