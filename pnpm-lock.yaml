@@ -552,8 +552,8 @@ importers:
   packages/sv-core:
     dependencies:
       '@gmod/vcf':
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^7.0.0
+        version: 7.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -693,8 +693,8 @@ importers:
   plugins/arc:
     dependencies:
       '@gmod/vcf':
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^7.0.0
+        version: 7.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -783,8 +783,8 @@ importers:
   plugins/breakpoint-split-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^7.0.0
+        version: 7.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1446,8 +1446,8 @@ importers:
   plugins/spreadsheet-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^7.0.0
+        version: 7.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1557,8 +1557,8 @@ importers:
         specifier: ^3.2.2
         version: 3.2.2
       '@gmod/vcf':
-        specifier: ^6.1.1
-        version: 6.1.1
+        specifier: ^7.0.0
+        version: 7.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3498,8 +3498,8 @@ packages:
   '@gmod/ucsc-hub@2.0.3':
     resolution: {integrity: sha512-w0qs1J2rjxt/ytxYH0VhxcFW+03Uh6R216skpbc5Q4to73lmXbaatJz6cZ+M4vgBkTQXoOpvaULAha0g7nxjWA==}
 
-  '@gmod/vcf@6.1.1':
-    resolution: {integrity: sha512-7E4Oox1MaJFJN6XMukbhgzVIrdgR4jBINw2EfJ76aQvWNZlqd0+EEZA9j2TOzZopWPpl3VgwHQ1Qo9bvEHMfAQ==}
+  '@gmod/vcf@7.0.0':
+    resolution: {integrity: sha512-nuGPtm/reJHvhdxgAGV8qU7BNyC8i6FUh6T+hktTSAtBmnipV74vs6f+vo2qeZRx9S1yPmhmPneT3EX38xXClg==}
     engines: {node: '>=6'}
 
   '@humanfs/core@0.19.1':
@@ -10891,7 +10891,7 @@ snapshots:
 
   '@gmod/ucsc-hub@2.0.3': {}
 
-  '@gmod/vcf@6.1.1': {}
+  '@gmod/vcf@7.0.0': {}
 
   '@humanfs/core@0.19.1': {}
 

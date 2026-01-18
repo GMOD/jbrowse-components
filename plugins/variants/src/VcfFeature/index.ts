@@ -99,10 +99,9 @@ export default class VCFFeature implements Feature {
   }
 
   toJSON(): any {
-    const { SAMPLES, GENOTYPES, ...rest } = this.variant
     return {
       uniqueId: this._id,
-      ...rest,
+      ...this.variant.toJSON(),
       ...this.data,
       samples: this.variant.SAMPLES(),
     }
