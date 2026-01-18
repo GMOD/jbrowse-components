@@ -3,7 +3,7 @@ name: Windows Electron Tests
 on:
   push:
     branches:
-      - winelectron
+      - main
 
 permissions:
   contents: read

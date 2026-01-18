@@ -153,6 +153,12 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
+// Sanitize a string to be safe for use in filenames on all platforms
+// Replaces characters that are invalid in Windows filenames: \ / : * ? " < > |
+export function sanitizeForFilename(name: string) {
+  return name.replace(/[\\/:*?"<>|]/g, '_')
+}
+
 /**
  * Generates metadata of index given a filename (trackId or assembly)
  */
@@ -171,8 +177,9 @@ export async function generateMeta({
   featureTypesToExclude: string[]
   assemblyNames: string[]
 }) {
+  const safeName = sanitizeForFilename(name)
   fs.writeFileSync(
-    path.join(outDir, 'trix', `${name}_meta.json`),
+    path.join(outDir, 'trix', `${safeName}_meta.json`),
     JSON.stringify(
       {
         dateCreated: new Date().toISOString(),

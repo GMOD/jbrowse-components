@@ -181,12 +181,24 @@ export function getFileName(track: FileLocation) {
   const uri = 'uri' in track ? track.uri : undefined
   const localPath = 'localPath' in track ? track.localPath : undefined
   const blob = 'blobId' in track ? track : undefined
-  return (
-    blob?.name ||
-    uri?.slice(uri.lastIndexOf('/') + 1) ||
-    localPath?.slice(localPath.replace(/\\/g, '/').lastIndexOf('/') + 1) ||
-    ''
-  )
+
+  if (blob?.name) {
+    return blob.name
+  }
+
+  if (uri) {
+    // Normalize path separators and find the last one
+    // This handles both forward slashes and Windows backslashes in file:// URLs
+    const normalized = uri.replace(/\\/g, '/')
+    return normalized.slice(normalized.lastIndexOf('/') + 1)
+  }
+
+  if (localPath) {
+    const normalized = localPath.replace(/\\/g, '/')
+    return normalized.slice(normalized.lastIndexOf('/') + 1)
+  }
+
+  return ''
 }
 
 export function guessAdapter(

@@ -1,5 +1,5 @@
 import path from 'path'
-import url from 'url'
+import url, { pathToFileURL } from 'url'
 
 import electron, { BrowserWindow, Menu, app, shell } from 'electron'
 import windowStateKeeper from 'electron-window-state'
@@ -15,9 +15,7 @@ const DEFAULT_DEV_SERVER_URL = 'http://localhost:3000'
 
 function getAppUrl(devServerUrl: URL): URL {
   if (app.isPackaged) {
-    return new URL(
-      `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
-    )
+    return pathToFileURL(path.join(app.getAppPath(), 'build', 'index.html'))
   }
   return devServerUrl
 }
