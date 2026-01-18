@@ -108,7 +108,12 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     level?: NotificationLevel,
     action?: SnackAction,
   ) => void
-  notifyError: (message: string, error?: unknown, extra?: unknown) => void
+  notifyError: (
+    message: string,
+    error?: unknown,
+    extra?: unknown,
+    action?: SnackAction,
+  ) => void
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: (
