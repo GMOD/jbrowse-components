@@ -1433,6 +1433,10 @@ export {
 
 export { blobToDataURL } from './blobToDataURL.ts'
 export { makeAbortableReaction } from './makeAbortableReaction.ts'
+export {
+  findNonSerializable,
+  diagnoseSerializationError,
+} from './serializationCheck.ts'
 export * from './aborting.ts'
 export * from './linkify.ts'
 export * from './locString.ts'

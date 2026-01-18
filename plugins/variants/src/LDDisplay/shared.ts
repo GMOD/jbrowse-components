@@ -54,7 +54,7 @@ export default function sharedModelFactory(
          * #property
          * Height of the zone for connecting lines at the top
          */
-        lineZoneHeight: types.optional(types.number, 20),
+        lineZoneHeight: types.optional(types.number, 100),
         /**
          * #property
          * LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)
