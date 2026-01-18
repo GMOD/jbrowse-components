@@ -53,10 +53,11 @@ const ConfirmTrack = observer(function ConfirmTrack({
     warningMessage,
     adapterHint,
     textIndexTrack,
+    adapterHintNotConfigurable,
   } = model
 
   useEffect(() => {
-    if (adapterHint === '' && trackAdapter) {
+    if (adapterHint === '' && trackAdapter && trackAdapter.type !== UNKNOWN) {
       model.setAdapterHint(trackAdapter.type)
     }
   }, [adapterHint, trackAdapter, model])
@@ -65,6 +66,14 @@ const ConfirmTrack = observer(function ConfirmTrack({
     return <Unsupported />
   } else if (trackAdapter?.type === UNKNOWN) {
     return <UnknownAdapterPrompt model={model} />
+  } else if (adapterHintNotConfigurable) {
+    return (
+      <Typography color="error">
+        The &quot;{adapterHint}&quot; adapter cannot be configured for the
+        provided file. This adapter may require a specific file extension or
+        format. Please check the file or select a different adapter.
+      </Typography>
+    )
   } else if (!trackAdapter?.type) {
     return <Typography>Could not recognize this data type.</Typography>
   } else {

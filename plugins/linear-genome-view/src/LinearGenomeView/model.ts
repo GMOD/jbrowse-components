@@ -63,6 +63,7 @@ import type {
   HighlightType,
   InitState,
   NavLocation,
+  VolatileGuide,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -289,6 +290,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       scalebarRefNameClickPending: false,
+      /**
+       * #volatile
+       * temporary vertical guides that can be set by displays (e.g., LD display hover)
+       */
+      volatileGuides: [] as VolatileGuide[],
     }))
     .views(self => ({
       /**
@@ -771,6 +777,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       removeHighlight(highlight: HighlightType) {
         self.highlight.remove(highlight)
+      },
+      /**
+       * #action
+       * set temporary vertical guides (e.g., for LD display hover)
+       */
+      setVolatileGuides(guides: VolatileGuide[]) {
+        self.volatileGuides = guides
       },
       /**
        * #action

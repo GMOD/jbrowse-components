@@ -107,6 +107,9 @@ const TracksContainer = observer(function TracksContainer({
           />
         </Suspense>
       ) : null}
+      {model.volatileGuides.map((guide, idx) => (
+        <VerticalGuide key={idx} model={model} coordX={guide.xPos} />
+      ))}
       {anchorPosition ? (
         <Menu
           anchorReference="anchorPosition"

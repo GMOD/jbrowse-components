@@ -24,6 +24,7 @@ export interface NonBlockCanvasDisplayModel {
   drawn: boolean
   loading: boolean
   lastDrawnOffsetPx?: number
+  lastDrawnBpPerPx?: number
   statusMessage?: string
   showLegend?: boolean
   legendItems?: () => LegendItem[]
@@ -86,15 +87,24 @@ const DataDisplay = observer(function DataDisplay({
   model: NonBlockCanvasDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading, showLegend, legendItems } = model
+  const { drawn, loading, showLegend, legendItems, lastDrawnBpPerPx } = model
   const view = getContainingView(model) as LinearGenomeViewModel
   const items = legendItems?.() ?? []
+
+  // Check if the view has zoomed (bpPerPx changed) since the last render.
+  // When zoomed, we don't show the old shifted content because it's at
+  // the wrong scale.
+  const hasZoomed =
+    lastDrawnBpPerPx !== undefined && lastDrawnBpPerPx !== view.bpPerPx
 
   // Calculate how much to shift the rendered canvas to account for scrolling.
   // When the user scrolls, view.offsetPx changes but the canvas content
   // stays the same until a new render completes. This shift keeps the
   // content aligned during that time.
-  const calculatedLeft = (model.lastDrawnOffsetPx ?? 0) - view.offsetPx
+  // Only apply the shift if we haven't zoomed.
+  const calculatedLeft = hasZoomed
+    ? 0
+    : (model.lastDrawnOffsetPx ?? 0) - view.offsetPx
 
   return (
     // this data-testid is located here because changing props on the canvas
@@ -104,12 +114,16 @@ const DataDisplay = observer(function DataDisplay({
         style={{
           position: 'absolute',
           left: calculatedLeft,
+          // Hide content when zoomed until new render completes
+          visibility: hasZoomed ? 'hidden' : undefined,
         }}
       >
         {children}
       </div>
       {showLegend && items.length > 0 ? <FloatingLegend items={items} /> : null}
-      {calculatedLeft !== 0 || loading ? <LoadingBar model={model} /> : null}
+      {hasZoomed || calculatedLeft !== 0 || loading ? (
+        <LoadingBar model={model} />
+      ) : null}
     </div>
   )
 })

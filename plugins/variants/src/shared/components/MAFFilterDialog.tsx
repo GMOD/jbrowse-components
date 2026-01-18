@@ -1,20 +1,13 @@
 import { useState } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import Dialog from '@jbrowse/core/ui/Dialog'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   TextField,
   Typography,
 } from '@mui/material'
-
-const useStyles = makeStyles()({
-  root: {
-    width: 500,
-  },
-})
 
 export default function MAFFilterDialog({
   model,
@@ -26,45 +19,63 @@ export default function MAFFilterDialog({
   }
   handleClose: () => void
 }) {
-  const { minorAlleleFrequencyFilter = '' } = model
-  const { classes } = useStyles()
+  const { minorAlleleFrequencyFilter = 0.01 } = model
   const [maf, setMaf] = useState(`${minorAlleleFrequencyFilter}`)
+  const [error, setError] = useState<string>()
 
   return (
-    <Dialog open onClose={handleClose} title="Set minor allele frequency (MAF)">
-      <DialogContent className={classes.root}>
+    <Dialog
+      open
+      onClose={handleClose}
+      title="Set minor allele frequency (MAF) filter"
+    >
+      <DialogContent style={{ width: 400 }}>
         <Typography>
-          Set minor allele frequency cutoff track. This will filter out rare
-          variants that might not contribute to meaningful large scale patterns
+          Filter out variants with minor allele frequency below this threshold.
+          Valid range: 0 to 0.5
         </Typography>
         <TextField
           value={maf}
           autoFocus
-          placeholder="Enter MAF"
+          fullWidth
+          margin="normal"
+          label="MAF threshold"
+          placeholder="Enter MAF (0-0.5)"
+          error={!!error}
+          helperText={error}
           onChange={event => {
-            setMaf(event.target.value)
+            const val = event.target.value
+            setMaf(val)
+            const num = Number.parseFloat(val)
+            if (Number.isNaN(num)) {
+              setError('Please enter a valid number')
+            } else if (num < 0 || num > 0.5) {
+              setError('MAF must be between 0 and 0.5')
+            } else {
+              setError(undefined)
+            }
           }}
         />
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            autoFocus
-            onClick={() => {
-              if (!Number.isNaN(+maf)) {
-                model.setMafFilter(+maf)
-              }
-              handleClose()
-            }}
-          >
-            Submit
-          </Button>
-          <Button variant="contained" color="secondary" onClick={handleClose}>
-            Cancel
-          </Button>
-        </DialogActions>
       </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            const val = Number.parseFloat(maf)
+            if (!Number.isNaN(val) && val >= 0 && val <= 0.5) {
+              model.setMafFilter(val)
+              handleClose()
+            }
+          }}
+          color="primary"
+          variant="contained"
+          disabled={!!error}
+        >
+          Submit
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 }

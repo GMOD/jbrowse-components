@@ -222,6 +222,22 @@ export default function f(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * Returns true if the user selected an adapter from the dropdown
+       * but the extension point couldn't build a config for it
+       */
+      get adapterHintNotConfigurable() {
+        const { adapterHint } = self
+        const adapterType = this.trackAdapter?.type
+        return !!(
+          adapterHint &&
+          (!adapterType ||
+            adapterType === 'UNKNOWN' ||
+            adapterType !== adapterHint)
+        )
+      },
+
+      /**
+       * #getter
        */
       get assembly() {
         return self.altAssemblyName || self.view?.assemblyNames?.[0]
