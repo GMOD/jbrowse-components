@@ -19,6 +19,11 @@ export function setupAutoUpdater(
   autoUpdater.autoDownload = false
 
   autoUpdater.on('error', (error: Error) => {
+    // Skip dialogs in CI environments to avoid blocking tests
+    if (process.env.CI) {
+      console.error('Auto-updater error (CI mode, skipping dialog):', error)
+      return
+    }
     dialog.showErrorBox(
       'Error: ',
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -27,6 +32,11 @@ export function setupAutoUpdater(
   })
 
   autoUpdater.on('update-available', async () => {
+    // Skip dialogs in CI environments
+    if (process.env.CI) {
+      console.log('Update available (CI mode, skipping dialog)')
+      return
+    }
     const result = await dialog.showMessageBox({
       type: 'info',
       title: 'Found updates',
@@ -51,6 +61,11 @@ export function setupAutoUpdater(
   })
 
   autoUpdater.on('update-downloaded', () => {
+    // Skip dialogs in CI environments
+    if (process.env.CI) {
+      console.log('Update downloaded (CI mode, skipping dialog)')
+      return
+    }
     dialog
       .showMessageBox({
         type: 'info',

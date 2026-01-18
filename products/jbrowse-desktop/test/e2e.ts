@@ -2,7 +2,7 @@ import { fileURLToPath } from 'url'
 import { dirname, resolve, join } from 'path'
 import { spawn, ChildProcess } from 'child_process'
 import { createRequire } from 'module'
-import { Builder, WebDriver, By, until } from 'selenium-webdriver'
+import { Builder, WebDriver, By, until, logging } from 'selenium-webdriver'
 
 const require = createRequire(import.meta.url)
 
@@ -79,15 +79,22 @@ async function startChromedriver(): Promise<void> {
 }
 
 async function createDriver(): Promise<WebDriver> {
-  const chromeArgs = ['--no-sandbox']
+  const chromeArgs = ['--no-sandbox', '--disable-extensions']
 
   if (isHeadless) {
     chromeArgs.push(
       '--disable-gpu',
       '--disable-dev-shm-usage',
       '--disable-software-rasterizer',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+      '--force-device-scale-factor=1',
     )
   }
+
+  // Enable browser logging to capture console output
+  const prefs = new logging.Preferences()
+  prefs.setLevel(logging.Type.BROWSER, logging.Level.ALL)
 
   const driver = await new Builder()
     .usingServer(`http://localhost:${CHROMEDRIVER_PORT}`)
@@ -96,11 +103,36 @@ async function createDriver(): Promise<WebDriver> {
         binary: APP_BINARY,
         args: chromeArgs,
       },
+      'goog:loggingPrefs': {
+        browser: 'ALL',
+      },
     })
+    .setLoggingPrefs(prefs)
     .forBrowser('chrome')
     .build()
 
+  // Set longer timeouts for CI environments
+  await driver.manage().setTimeouts({
+    implicit: 30000,
+    pageLoad: 120000,
+    script: 60000,
+  })
+
   return driver
+}
+
+// Flush browser console logs to stdout
+async function flushBrowserLogs(driver: WebDriver): Promise<void> {
+  try {
+    const logs = await driver.manage().logs().get(logging.Type.BROWSER)
+    for (const entry of logs) {
+      const level = entry.level.name
+      const message = entry.message
+      console.log(`    [Browser ${level}] ${message}`)
+    }
+  } catch {
+    // Ignore errors fetching logs
+  }
 }
 
 // Utility for case-insensitive XPath text search
@@ -235,12 +267,16 @@ async function runTest(
     const duration = Date.now() - start
     results.push({ name, passed: true, duration })
     console.log(`\r  ✓ ${name} (${duration}ms)`)
+    await flushBrowserLogs(d)
   } catch (e) {
     const duration = Date.now() - start
     const error = e instanceof Error ? e.message : String(e)
     results.push({ name, passed: false, error, duration })
     console.log(`\r  ✗ ${name}`)
     console.log(`    Error: ${error}`)
+
+    // Flush browser logs on failure for debugging
+    await flushBrowserLogs(d)
 
     // Capture debug info on failure
     try {
@@ -688,6 +724,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   // Check for any error messages
   const errors = await driver.findElements(By.css('.MuiAlert-standardError'))
   console.log(`    DEBUG: Found ${errors.length} error alerts`)
+  for (const error of errors) {
+    const text = await error.getText()
+    console.log(`    DEBUG: Error alert text: ${text}`)
+  }
 
   // Check if dialog is still open
   const dialogs = await driver.findElements(By.css('.MuiDialog-root'))
@@ -1061,8 +1101,13 @@ async function testWorkspaceCopyView(driver: WebDriver): Promise<void> {
 async function cleanup(): Promise<void> {
   const { execSync } = await import('child_process')
   try {
-    execSync('pkill -f chromedriver || true', { stdio: 'ignore' })
-    execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
+    if (isWindows) {
+      execSync('taskkill /F /IM chromedriver.exe 2>nul', { stdio: 'ignore' })
+      execSync('taskkill /F /IM "JBrowse 2.exe" 2>nul', { stdio: 'ignore' })
+    } else {
+      execSync('pkill -f chromedriver || true', { stdio: 'ignore' })
+      execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
+    }
   } catch {
     // Ignore errors
   }
@@ -1071,6 +1116,16 @@ async function cleanup(): Promise<void> {
 
 async function main(): Promise<void> {
   console.log(`Running in ${isHeadless ? 'headless' : 'headed'} mode`)
+  console.log(`Platform: ${process.platform}`)
+  console.log(`App binary: ${APP_BINARY}`)
+
+  // Verify app binary exists
+  const { existsSync } = await import('fs')
+  if (!existsSync(APP_BINARY)) {
+    console.error(`ERROR: App binary not found at ${APP_BINARY}`)
+    process.exit(1)
+  }
+  console.log('App binary exists: yes')
 
   // Clean up any leftover processes from previous runs
   console.log('Cleaning up leftover processes...')
@@ -1080,7 +1135,14 @@ async function main(): Promise<void> {
   await startChromedriver()
 
   console.log('Creating WebDriver and launching Electron app...')
-  driver = await createDriver()
+  console.log('This may take a while on first run...')
+  try {
+    driver = await createDriver()
+    console.log('WebDriver created successfully')
+  } catch (e) {
+    console.error('Failed to create WebDriver:', e)
+    throw e
+  }
 
   console.log('\nRunning tests...\n')
 
@@ -1140,7 +1202,11 @@ async function main(): Promise<void> {
   // Force kill any remaining jbrowse-desktop processes
   const { execSync } = await import('child_process')
   try {
-    execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
+    if (isWindows) {
+      execSync('taskkill /F /IM "JBrowse 2.exe" 2>nul', { stdio: 'ignore' })
+    } else {
+      execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
+    }
   } catch {
     // Ignore errors
   }
@@ -1163,7 +1229,11 @@ main().catch(async e => {
   // Force kill any remaining jbrowse-desktop processes
   const { execSync } = await import('child_process')
   try {
-    execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
+    if (isWindows) {
+      execSync('taskkill /F /IM "JBrowse 2.exe" 2>nul', { stdio: 'ignore' })
+    } else {
+      execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
+    }
   } catch {
     // Ignore errors
   }
