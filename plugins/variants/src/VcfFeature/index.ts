@@ -3,7 +3,7 @@ import { type Feature, max } from '@jbrowse/core/util'
 import { getSOTermAndDescription } from './util.ts'
 
 import type VCFParser from '@gmod/vcf'
-import type { Variant } from '@gmod/vcf'
+import type { GenotypeCallback, Variant } from '@gmod/vcf'
 
 type FeatureData = ReturnType<typeof dataFromVariant>
 
@@ -92,6 +92,10 @@ export default class VCFFeature implements Feature {
 
   id() {
     return this._id
+  }
+
+  processGenotypes(callback: GenotypeCallback) {
+    this.variant.processGenotypes(callback)
   }
 
   toJSON(): any {

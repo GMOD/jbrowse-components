@@ -3512,6 +3512,10 @@ packages:
     resolution: {integrity: sha512-7E4Oox1MaJFJN6XMukbhgzVIrdgR4jBINw2EfJ76aQvWNZlqd0+EEZA9j2TOzZopWPpl3VgwHQ1Qo9bvEHMfAQ==}
     engines: {node: '>=6'}
 
+  '@gmod/vcf@6.1.1':
+    resolution: {integrity: sha512-7E4Oox1MaJFJN6XMukbhgzVIrdgR4jBINw2EfJ76aQvWNZlqd0+EEZA9j2TOzZopWPpl3VgwHQ1Qo9bvEHMfAQ==}
+    engines: {node: '>=6'}
+
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
     engines: {node: '>=18.18.0'}
@@ -10924,6 +10928,8 @@ snapshots:
       generic-filehandle2: 2.0.18
 
   '@gmod/ucsc-hub@2.0.3': {}
+
+  '@gmod/vcf@6.1.1': {}
 
   '@gmod/vcf@6.1.1': {}
 
