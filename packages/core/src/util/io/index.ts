@@ -73,12 +73,23 @@ export function openLocation(
   if (isFileHandleLocationLocal(location)) {
     // FileHandleLocation uses an in-memory cache of File objects
     // The cache is populated asynchronously via ensureFileHandleReady
+    console.log(
+      '[openLocation] FileHandleLocation detected, handleId:',
+      location.handleId,
+      'name:',
+      location.name,
+    )
     const file = getFileFromCache(location.handleId)
     if (!file) {
+      console.error(
+        '[openLocation] File not in cache for handleId:',
+        location.handleId,
+      )
       throw new Error(
         `file ("${location.name}") requires permission. Please reopen the file from track settings`,
       )
     }
+    console.log('[openLocation] File found in cache:', file.name)
     return new BlobFile(file)
   }
   if (isUriLocation(location)) {

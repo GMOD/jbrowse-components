@@ -138,14 +138,24 @@ export function storeBlobLocation(location: PreFileLocation) {
 let fileHandleCache: Record<string, File> = {}
 
 export function getFileFromCache(handleId: string) {
-  return fileHandleCache[handleId]
+  const file = fileHandleCache[handleId]
+  console.log(
+    '[tracks] getFileFromCache:',
+    handleId,
+    'found:',
+    !!file,
+    file ? `name: ${file.name}` : '',
+  )
+  return file
 }
 
 export function setFileInCache(handleId: string, file: File) {
+  console.log('[tracks] setFileInCache:', handleId, 'name:', file.name)
   fileHandleCache[handleId] = file
 }
 
 export function clearFileFromCache(handleId: string) {
+  console.log('[tracks] clearFileFromCache:', handleId)
   delete fileHandleCache[handleId]
 }
 
@@ -163,39 +173,185 @@ export async function ensureFileHandleReady(
   handleId: string,
   requestPermission = true,
 ) {
+  console.log(
+    '[tracks] ensureFileHandleReady: handleId',
+    handleId,
+    'requestPermission:',
+    requestPermission,
+  )
   const cached = fileHandleCache[handleId]
   if (cached) {
+    console.log('[tracks] ensureFileHandleReady: found in cache', cached.name)
     return cached
   }
 
+  console.log('[tracks] ensureFileHandleReady: not in cache, fetching handle from IndexedDB')
   const handle = await getFileHandle(handleId)
   if (!handle) {
-    throw new Error(`File handle not found for handleId: ${handleId}`)
+    console.error(
+      '[tracks] ensureFileHandleReady: handle not found in IndexedDB for handleId:',
+      handleId,
+    )
+    throw new Error(`File handle not found for handleId: ${handleId}. The file may have been opened in a different browser or the IndexedDB was cleared.`)
   }
 
+  console.log(
+    '[tracks] ensureFileHandleReady: got handle from IndexedDB:',
+    handle.name,
+    '- verifying permission',
+  )
   const hasPermission = await verifyPermission(handle, requestPermission)
   if (!hasPermission) {
+    console.error(
+      '[tracks] ensureFileHandleReady: permission denied for',
+      handle.name,
+      '- user gesture required to request permission',
+    )
     throw new Error(
-      `Permission denied for file "${handle.name}". Please reopen the file.`,
+      `Permission denied for file "${handle.name}". Click "Restore access" to grant permission.`,
     )
   }
 
+  console.log('[tracks] ensureFileHandleReady: permission granted, getting file')
   const file = await handle.getFile()
   fileHandleCache[handleId] = file
+  console.log('[tracks] ensureFileHandleReady: file cached', file.name)
   return file
 }
 
 export async function storeFileHandleLocation(
   handle: FileSystemFileHandle,
 ): Promise<FileHandleLocation> {
+  console.log('[tracks] storeFileHandleLocation: storing handle', handle.name)
   const handleId = await storeFileHandle(handle)
   const file = await handle.getFile()
   fileHandleCache[handleId] = file
+  console.log(
+    '[tracks] storeFileHandleLocation: stored with handleId',
+    handleId,
+  )
   return {
     locationType: 'FileHandleLocation',
     name: handle.name,
     handleId,
   }
+}
+
+// Helper to restore file handles from a list of handleIds
+// Call this on app startup or when restoring a session
+// Returns an array of { handleId, success, error? } results
+export async function restoreFileHandles(
+  handleIds: string[],
+  requestPermission = false,
+) {
+  console.log(
+    '[tracks] restoreFileHandles: restoring',
+    handleIds.length,
+    'handles, requestPermission:',
+    requestPermission,
+  )
+  const results = []
+  for (const handleId of handleIds) {
+    try {
+      await ensureFileHandleReady(handleId, requestPermission)
+      results.push({ handleId, success: true })
+    } catch (e) {
+      console.error(
+        '[tracks] restoreFileHandles: failed to restore',
+        handleId,
+        e,
+      )
+      results.push({ handleId, success: false, error: e })
+    }
+  }
+  console.log('[tracks] restoreFileHandles: results', results)
+  return results
+}
+
+// Recursively find all FileHandleLocation handleIds in a session snapshot
+export function findFileHandleIds(obj: unknown, handleIds: Set<string> = new Set()) {
+  if (!obj || typeof obj !== 'object') {
+    return handleIds
+  }
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      findFileHandleIds(item, handleIds)
+    }
+  } else {
+    const record = obj as Record<string, unknown>
+    // Check if this object is a FileHandleLocation
+    if (
+      record.locationType === 'FileHandleLocation' &&
+      typeof record.handleId === 'string'
+    ) {
+      console.log(
+        '[tracks] findFileHandleIds: found FileHandleLocation',
+        record.handleId,
+        record.name,
+      )
+      handleIds.add(record.handleId)
+    }
+    // Recurse into all properties
+    for (const value of Object.values(record)) {
+      findFileHandleIds(value, handleIds)
+    }
+  }
+  return handleIds
+}
+
+// Restore all file handles found in a session snapshot
+// Call this before setSession to ensure files are available
+export async function restoreFileHandlesFromSnapshot(
+  sessionSnapshot: unknown,
+  requestPermission = false,
+) {
+  console.log('[tracks] restoreFileHandlesFromSnapshot: scanning snapshot')
+  const handleIds = findFileHandleIds(sessionSnapshot)
+  console.log(
+    '[tracks] restoreFileHandlesFromSnapshot: found',
+    handleIds.size,
+    'FileHandleLocations',
+  )
+  if (handleIds.size > 0) {
+    return restoreFileHandles([...handleIds], requestPermission)
+  }
+  return []
+}
+
+// Track pending file handle IDs that failed to restore and need user gesture
+let pendingFileHandleIds: string[] = []
+
+export function getPendingFileHandleIds() {
+  return pendingFileHandleIds
+}
+
+export function setPendingFileHandleIds(ids: string[]) {
+  pendingFileHandleIds = ids
+}
+
+export function clearPendingFileHandleIds() {
+  pendingFileHandleIds = []
+}
+
+// Call this from a user gesture (button click) to restore pending file handles
+export async function restorePendingFileHandles() {
+  console.log(
+    '[tracks] restorePendingFileHandles: restoring',
+    pendingFileHandleIds.length,
+    'pending handles with user gesture',
+  )
+  if (pendingFileHandleIds.length === 0) {
+    return []
+  }
+  const results = await restoreFileHandles(pendingFileHandleIds, true)
+  const stillFailed = results.filter(r => !r.success).map(r => r.handleId)
+  pendingFileHandleIds = stillFailed
+  console.log(
+    '[tracks] restorePendingFileHandles: completed, still pending:',
+    stillFailed,
+  )
+  return results
 }
 
 /**

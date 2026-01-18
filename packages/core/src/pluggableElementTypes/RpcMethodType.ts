@@ -128,6 +128,95 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
+  private convertFileHandleLocations(
+    obj: unknown,
+    blobMap: Record<string, File>,
+    seen: WeakSet<object> = new WeakSet(),
+  ): { counter: number } {
+    const state = { counter: 0 }
+
+    const convert = (current: unknown): void => {
+      if (!current || typeof current !== 'object') {
+        return
+      }
+
+      if (seen.has(current)) {
+        return
+      }
+      seen.add(current)
+
+      if (Array.isArray(current)) {
+        for (let i = 0; i < current.length; i++) {
+          const item = current[i]
+          if (isFileHandleLocation(item)) {
+            console.log(
+              '[RpcMethodType] Converting FileHandleLocation in array:',
+              item.handleId,
+              item.name,
+            )
+            const file = getFileFromCache(item.handleId)
+            if (file) {
+              const blobId = `fh-rpc-${Date.now()}-${state.counter++}`
+              blobMap[blobId] = file
+              console.log(
+                '[RpcMethodType] Converted to BlobLocation with blobId:',
+                blobId,
+              )
+              current[i] = {
+                locationType: 'BlobLocation',
+                name: item.name,
+                blobId,
+              }
+            } else {
+              console.error(
+                '[RpcMethodType] File not in cache for handleId:',
+                item.handleId,
+              )
+            }
+          } else {
+            convert(item)
+          }
+        }
+      } else {
+        const record = current as Record<string, unknown>
+        for (const key of Object.keys(record)) {
+          const val = record[key]
+          if (isFileHandleLocation(val)) {
+            console.log(
+              '[RpcMethodType] Converting FileHandleLocation:',
+              val.handleId,
+              val.name,
+            )
+            const file = getFileFromCache(val.handleId)
+            if (file) {
+              const blobId = `fh-rpc-${Date.now()}-${state.counter++}`
+              blobMap[blobId] = file
+              console.log(
+                '[RpcMethodType] Converted to BlobLocation with blobId:',
+                blobId,
+              )
+              record[key] = {
+                locationType: 'BlobLocation',
+                name: val.name,
+                blobId,
+              }
+            } else {
+              console.error(
+                '[RpcMethodType] File not in cache for handleId:',
+                val.handleId,
+              )
+            }
+          } else if (val && typeof val === 'object') {
+            convert(val)
+          }
+        }
+      }
+    }
+
+    convert(obj)
+    return state
+  }
+
   private async augmentLocationObjects(
     thing: Record<string, unknown>,
     rpcDriverClassName: string,
@@ -135,43 +224,24 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const rootModel = this.pluginManager.rootModel
 
     const uris = [] as UriLocation[]
-    const fileHandleLocations = [] as {
-      location: FileHandleLocation
-      parent: Record<string, unknown>
-      key: string
-    }[]
+    const blobMap = getBlobMap()
 
-    // exclude renderingProps from deep traversal - it is only needed
-    // client-side for React components and can contain circular references
-    // (e.g. d3 hierarchy nodes) or non-serializable objects like callbacks
+    // Convert FileHandleLocation to BlobLocation in-place
+    // Skip renderingProps as it may have circular references
     const { renderingProps, ...rest } = thing
+    this.convertFileHandleLocations(rest, blobMap)
 
-    // using map-obj avoids cycles, seen in circular view svg export
+    // Collect UriLocations for auth augmentation using map-obj (handles cycles)
     mapObject(
       rest,
-      (key, val: unknown, source) => {
+      (key, val: unknown) => {
         if (isUriLocation(val)) {
           uris.push(val)
         }
-        if (isFileHandleLocation(val)) {
-          fileHandleLocations.push({
-            location: val,
-            parent: source as Record<string, unknown>,
-            key,
-          })
-        }
         if (Array.isArray(val)) {
-          for (let i = 0; i < val.length; i++) {
-            const item = val[i]
+          for (const item of val) {
             if (isUriLocation(item)) {
               uris.push(item)
-            }
-            if (isFileHandleLocation(item)) {
-              fileHandleLocations.push({
-                location: item,
-                parent: val as unknown as Record<string, unknown>,
-                key: String(i),
-              })
             }
           }
         }
@@ -179,24 +249,6 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       },
       { deep: true },
     )
-
-    // Convert FileHandleLocation to BlobLocation for worker transfer
-    // FileSystemFileHandle cannot be transferred, but File objects can
-    const blobMap = getBlobMap()
-    let counter = 0
-    for (const { location, parent, key } of fileHandleLocations) {
-      const file = getFileFromCache(location.handleId)
-      if (file) {
-        const blobId = `fh-rpc-${Date.now()}-${counter++}`
-        blobMap[blobId] = file
-        // Replace FileHandleLocation with BlobLocation in parent
-        parent[key] = {
-          locationType: 'BlobLocation',
-          name: location.name,
-          blobId,
-        }
-      }
-    }
 
     // Skip URI auth augmentation if we have a valid root model with no internet accounts
     if (isAppRootModel(rootModel) && rootModel.internetAccounts.length === 0) {
