@@ -19,7 +19,7 @@ export default function SnackbarContents({
   onClose: (_event: unknown, reason?: string) => void
   contents: SnackbarMessage
 }) {
-  const actionName = contents.action?.name
+  const { actions } = contents
   return (
     <MUISnackbar
       open
@@ -29,17 +29,20 @@ export default function SnackbarContents({
       <Alert
         onClose={onClose}
         action={
-          contents.action ? (
+          actions?.length ? (
             <>
-              <Button
-                color="inherit"
-                onClick={e => {
-                  contents.action?.onClick()
-                  onClose(e)
-                }}
-              >
-                {actionName === 'report' ? <Report /> : actionName}
-              </Button>
+              {actions.map((action, idx) => (
+                <Button
+                  key={idx}
+                  color="inherit"
+                  onClick={e => {
+                    action.onClick()
+                    onClose(e)
+                  }}
+                >
+                  {action.name === 'report' ? <Report /> : action.name}
+                </Button>
+              ))}
               <IconButton color="inherit" onClick={onClose}>
                 <CloseIcon />
               </IconButton>

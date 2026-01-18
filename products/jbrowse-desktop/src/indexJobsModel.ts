@@ -298,9 +298,10 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         } catch (e) {
           console.error(e)
 
-          self.session.notify(
+          self.session.notifyError(
             `An error occurred while indexing: ${e}`,
-            'error',
+            e,
+            undefined,
             {
               name: 'Retry',
               onClick: () => {
