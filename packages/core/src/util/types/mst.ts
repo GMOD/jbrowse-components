@@ -33,6 +33,14 @@ export const BlobLocation = types.model('BlobLocation', {
   blobId: types.string,
 })
 
+// FileHandleLocation stores a reference to a FileSystemFileHandle via IndexedDB
+// The handleId is used to retrieve the handle from IndexedDB storage
+export const FileHandleLocation = types.model('FileHandleLocation', {
+  locationType: types.literal('FileHandleLocation'),
+  name: types.string,
+  handleId: types.string,
+})
+
 export const UriLocationRaw = types.model('UriLocation', {
   locationType: types.literal('UriLocation'),
   uri: types.string,
@@ -62,7 +70,7 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
 })
 
 export const FileLocation = types.snapshotProcessor(
-  types.union(LocalPathLocation, UriLocation, BlobLocation),
+  types.union(LocalPathLocation, UriLocation, BlobLocation, FileHandleLocation),
   {
     // @ts-expect-error
     preProcessor(snap) {
@@ -76,7 +84,7 @@ export const FileLocation = types.snapshotProcessor(
       const { locationType, ...rest } = snap as Omit<typeof snap, symbol>
       if (!locationType) {
         // @ts-expect-error
-        const { uri, localPath, blob } = rest
+        const { uri, localPath, blob, handleId } = rest
         let locationType = ''
         if (uri !== undefined) {
           locationType = 'UriLocation'
@@ -84,6 +92,8 @@ export const FileLocation = types.snapshotProcessor(
           locationType = 'LocalPathLocation'
         } else if (blob !== undefined) {
           locationType = 'BlobLocation'
+        } else if (handleId !== undefined) {
+          locationType = 'FileHandleLocation'
         }
 
         return { ...rest, locationType }

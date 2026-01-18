@@ -125,6 +125,7 @@
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
     "./util/tracks": "./src/util/tracks.ts",
+    "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
@@ -177,6 +178,7 @@
     "fast-deep-equal": "^3.1.3",
     "file-saver-es": "^2.0.5",
     "generic-filehandle2": "^2.0.18",
+    "idb": "^8.0.3",
     "librpc-web-mod": "^2.1.1",
     "load-script": "^2.0.0",
     "mobx": "^6.15.0",
@@ -605,6 +607,10 @@
       "./util/tracks": {
         "types": "./esm/util/tracks.d.ts",
         "import": "./esm/util/tracks.js"
+      },
+      "./util/fileHandleStore": {
+        "types": "./esm/util/fileHandleStore.d.ts",
+        "import": "./esm/util/fileHandleStore.js"
       },
       "./util/tss-react": {
         "types": "./esm/util/tss-react/index.d.ts",

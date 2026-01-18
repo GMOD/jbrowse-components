@@ -1,9 +1,18 @@
 import { getParent, isRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+import {
+  getFileHandle,
+  storeFileHandle,
+  verifyPermission,
+} from './fileHandleStore.ts'
 import { getEnv, getSession, objectHash } from './index.ts'
 import { readConfObject } from '../configuration/index.ts'
 
-import type { FileLocation, PreFileLocation } from './types/index.ts'
+import type {
+  FileHandleLocation,
+  FileLocation,
+  PreFileLocation,
+} from './types/index.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   IAnyStateTreeNode,
@@ -124,6 +133,71 @@ export function storeBlobLocation(location: PreFileLocation) {
   return location
 }
 
+// In-memory cache of File objects from FileSystemFileHandles
+// This allows openLocation to remain synchronous while FileHandle access is async
+let fileHandleCache: Record<string, File> = {}
+
+export function getFileFromCache(handleId: string) {
+  return fileHandleCache[handleId]
+}
+
+export function setFileInCache(handleId: string, file: File) {
+  fileHandleCache[handleId] = file
+}
+
+export function clearFileFromCache(handleId: string) {
+  delete fileHandleCache[handleId]
+}
+
+export function getFileHandleCache() {
+  return fileHandleCache
+}
+
+export function setFileHandleCache(cache: Record<string, File>) {
+  fileHandleCache = cache
+}
+
+// Async function to resolve handle and populate cache
+// Returns the File if permission is granted, throws if not
+export async function ensureFileHandleReady(
+  handleId: string,
+  requestPermission = true,
+) {
+  const cached = fileHandleCache[handleId]
+  if (cached) {
+    return cached
+  }
+
+  const handle = await getFileHandle(handleId)
+  if (!handle) {
+    throw new Error(`File handle not found for handleId: ${handleId}`)
+  }
+
+  const hasPermission = await verifyPermission(handle, requestPermission)
+  if (!hasPermission) {
+    throw new Error(
+      `Permission denied for file "${handle.name}". Please reopen the file.`,
+    )
+  }
+
+  const file = await handle.getFile()
+  fileHandleCache[handleId] = file
+  return file
+}
+
+export async function storeFileHandleLocation(
+  handle: FileSystemFileHandle,
+): Promise<FileHandleLocation> {
+  const handleId = await storeFileHandle(handle)
+  const file = await handle.getFile()
+  fileHandleCache[handleId] = file
+  return {
+    locationType: 'FileHandleLocation',
+    name: handle.name,
+    handleId,
+  }
+}
+
 /**
  * creates a new location from the provided location including the appropriate
  * suffix and location type
@@ -181,9 +255,14 @@ export function getFileName(track: FileLocation) {
   const uri = 'uri' in track ? track.uri : undefined
   const localPath = 'localPath' in track ? track.localPath : undefined
   const blob = 'blobId' in track ? track : undefined
+  const fileHandle = 'handleId' in track ? track : undefined
 
   if (blob?.name) {
     return blob.name
+  }
+
+  if (fileHandle?.name) {
+    return fileHandle.name
   }
 
   if (uri) {

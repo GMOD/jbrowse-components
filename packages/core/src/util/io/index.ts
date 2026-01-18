@@ -3,9 +3,10 @@ import { BlobFile, LocalFile } from 'generic-filehandle2'
 
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache.ts'
 import { isElectron } from '../index.ts'
-import { getBlob } from '../tracks.ts'
+import { getBlob, getFileFromCache } from '../tracks.ts'
 import {
   AuthNeededError,
+  isFileHandleLocation,
   isRootModelWithInternetAccounts,
   isUriLocation,
 } from '../types/index.ts'
@@ -14,6 +15,7 @@ import type PluginManager from '../../PluginManager.ts'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
 import type {
   BlobLocation,
+  FileHandleLocation,
   FileLocation,
   LocalPathLocation,
   UriLocation,
@@ -28,6 +30,12 @@ function isLocalPathLocation(
 
 function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
+}
+
+function isFileHandleLocationLocal(
+  location: FileLocation,
+): location is FileHandleLocation {
+  return 'handleId' in location
 }
 
 /** if a UriLocation has a baseUri, resolves its uri with respect to that base */
@@ -61,6 +69,17 @@ export function openLocation(
       )
     }
     return new BlobFile(blob)
+  }
+  if (isFileHandleLocationLocal(location)) {
+    // FileHandleLocation uses an in-memory cache of File objects
+    // The cache is populated asynchronously via ensureFileHandleReady
+    const file = getFileFromCache(location.handleId)
+    if (!file) {
+      throw new Error(
+        `file ("${location.name}") requires permission. Please reopen the file from track settings`,
+      )
+    }
+    return new BlobFile(file)
   }
   if (isUriLocation(location)) {
     // Check for empty string
