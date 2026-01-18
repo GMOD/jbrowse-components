@@ -130,7 +130,8 @@
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
-    "./util/nanoid": "./src/util/nanoid.ts"
+    "./util/nanoid": "./src/util/nanoid.ts",
+    "./ReExports/list": "./src/ReExports/list.ts"
   },
   "files": [
     "esm"
@@ -628,6 +629,10 @@
       "./util/nanoid": {
         "types": "./esm/util/nanoid.d.ts",
         "import": "./esm/util/nanoid.js"
+      },
+      "./ReExports/list": {
+        "types": "./esm/ReExports/list.d.ts",
+        "import": "./esm/ReExports/list.js"
       }
     }
   },
