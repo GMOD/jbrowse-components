@@ -103,7 +103,6 @@ export default class VCFFeature implements Feature {
       uniqueId: this._id,
       ...this.variant.toJSON(),
       ...this.data,
-      wow: () => 'wtf',
       samples: this.variant.SAMPLES(),
     }
   }

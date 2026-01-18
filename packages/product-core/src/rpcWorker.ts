@@ -1,8 +1,6 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { findNonSerializable } from '@jbrowse/core/util'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
-import { isRpcResult } from '@jbrowse/core/util/rpc'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
@@ -62,11 +60,11 @@ interface WrappedFuncArgs {
 
 type RpcFunc = (args: unknown, rpcDriverClassName: string) => Promise<unknown>
 
-function wrapForRpc(func: RpcFunc, funcName: string) {
-  return async (args: unknown) => {
+function wrapForRpc(func: RpcFunc) {
+  return (args: unknown) => {
     const wrappedArgs = args as WrappedFuncArgs
     const { channel, rpcDriverClassName } = wrappedArgs
-    const result = await func(
+    return func(
       {
         ...wrappedArgs,
         statusCallback: (message: string) => {
@@ -75,34 +73,6 @@ function wrapForRpc(func: RpcFunc, funcName: string) {
       },
       rpcDriverClassName,
     )
-
-    // Skip check for RpcResult - those contain transferables (ImageBitmap, etc.)
-    // that can't be structuredCloned but are handled correctly by librpc
-    if (!isRpcResult(result)) {
-      // Try structuredClone first - only run detailed analysis if it fails
-      // This minimizes overhead on successful calls
-      try {
-        structuredClone(result)
-      } catch {
-        const issues = findNonSerializable(result)
-        if (issues.length > 0) {
-          const details = issues
-            .slice(0, 10)
-            .map(i => `  - ${i.path}: ${i.reason}`)
-            .join('\n')
-          const suffix =
-            issues.length > 10 ? `\n  ... and ${issues.length - 10} more` : ''
-          throw new Error(
-            `RPC method ${funcName} returned non-serializable data:\n${details}${suffix}`,
-          )
-        }
-        throw new Error(
-          `RPC method ${funcName} returned non-serializable data (could not identify specific field)`,
-        )
-      }
-    }
-
-    return result
   }
 }
 
@@ -126,7 +96,7 @@ export async function initializeWorker(
     const rpcConfig = Object.fromEntries(
       pluginManager
         .getRpcElements()
-        .map(e => [e.name, wrapForRpc(e.execute.bind(e), e.name)]),
+        .map(e => [e.name, wrapForRpc(e.execute.bind(e))]),
     )
 
     self.rpcServer = new RpcServer(rpcConfig)

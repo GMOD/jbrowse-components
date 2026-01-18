@@ -42,7 +42,7 @@ export default function sharedModelFactory(
         /**
          * #property
          */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0.01),
+        minorAlleleFrequencyFilter: types.optional(types.number, 0.1),
         /**
          * #property
          */
@@ -504,7 +504,7 @@ export default function sharedModelFactory(
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(minorAlleleFrequencyFilter !== 0.01
+        ...(minorAlleleFrequencyFilter !== 0.1
           ? { minorAlleleFrequencyFilter }
           : {}),
         ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER

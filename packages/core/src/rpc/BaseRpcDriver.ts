@@ -2,7 +2,6 @@ import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { readConfObject } from '../configuration/index.ts'
 import { clamp } from '../util/index.ts'
-import { diagnoseSerializationError } from '../util/serializationCheck.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -181,20 +180,11 @@ export default abstract class BaseRpcDriver {
     const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
 
     // now actually call the worker
-    let call
-    try {
-      call = await worker.call(functionName, filteredAndSerializedArgs, {
-        statusCallback: args.statusCallback,
-        rpcDriverClassName: this.name,
-        ...options,
-      })
-    } catch (e) {
-      throw diagnoseSerializationError(
-        e,
-        filteredAndSerializedArgs,
-        `RPC call ${functionName}`,
-      )
-    }
+    const call = await worker.call(functionName, filteredAndSerializedArgs, {
+      statusCallback: args.statusCallback,
+      rpcDriverClassName: this.name,
+      ...options,
+    })
 
     return rpcMethod.deserializeReturn(call, args, this.name)
   }

@@ -24,7 +24,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
        */
       height: {
         type: 'number',
-        defaultValue: 250,
+        defaultValue: 400,
       },
     },
     {

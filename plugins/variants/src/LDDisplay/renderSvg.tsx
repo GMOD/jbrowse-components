@@ -10,10 +10,10 @@ import {
   renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 
-import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
-import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
+import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 
 import type { SharedLDModel } from './shared.ts'
 import type {
@@ -42,8 +42,13 @@ export async function renderSvg(
   const { rpcManager } = session
   const height = opts.overrideHeight ?? self.height
 
-  const { ldMetric, showLegend, adapterConfig, showRecombination, lineZoneHeight } =
-    self
+  const {
+    ldMetric,
+    showLegend,
+    adapterConfig,
+    showRecombination,
+    lineZoneHeight,
+  } = self
   const { bpPerPx, dynamicBlocks } = view
   const regions = dynamicBlocks.contentBlocks
 
@@ -85,7 +90,9 @@ export async function renderSvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${clipId})`}>
-        <g transform={`translate(${Math.max(0, -view.offsetPx)} ${lineZoneHeight})`}>
+        <g
+          transform={`translate(${Math.max(0, -view.offsetPx)} ${lineZoneHeight})`}
+        >
           <ReactRendering rendering={finalRendering} />
         </g>
         <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
