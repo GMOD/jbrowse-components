@@ -100,6 +100,7 @@ export function doAfterAttach(self: SharedLDModel) {
       if (result.imageData) {
         self.setRenderingImageData(result.imageData)
         self.setLastDrawnOffsetPx(view.offsetPx)
+        self.setLastDrawnBpPerPx(view.bpPerPx)
       }
       // Store flatbush data for mouseover
       self.setFlatbushData(

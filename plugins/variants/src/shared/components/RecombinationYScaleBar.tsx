@@ -16,11 +16,11 @@ export default function RecombinationYScaleBar({
   exportSVG?: boolean
 }) {
   const theme = useTheme()
-  const topPadding = 5
-  const bottomPadding = 5
+  const topPadding = 2
+  const bottomPadding = 2
   const plotHeight = height - topPadding - bottomPadding
 
-  const fg = theme.palette.text.primary
+  const fg = exportSVG ? '#333' : theme.palette.text.primary
   const bg = exportSVG ? '#fafafa' : theme.palette.background.default
 
   // Generate y-axis ticks
@@ -35,23 +35,8 @@ export default function RecombinationYScaleBar({
   const range0 = topPadding + 0.5
   const range1 = topPadding + plotHeight + 0.5
 
-  return (
-    <svg
-      style={
-        exportSVG
-          ? undefined
-          : {
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: Y_AXIS_WIDTH,
-              height,
-              zIndex: 1,
-            }
-      }
-      width={Y_AXIS_WIDTH}
-      height={height}
-    >
+  const content = (
+    <>
       {/* Y-axis background */}
       <rect x={0} y={0} width={Y_AXIS_WIDTH} height={height} fill={bg} />
 
@@ -106,6 +91,27 @@ export default function RecombinationYScaleBar({
       >
         1 - r²
       </text>
+    </>
+  )
+
+  if (exportSVG) {
+    return <g>{content}</g>
+  }
+
+  return (
+    <svg
+      style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: Y_AXIS_WIDTH,
+        height,
+        zIndex: 1,
+      }}
+      width={Y_AXIS_WIDTH}
+      height={height}
+    >
+      {content}
     </svg>
   )
 }

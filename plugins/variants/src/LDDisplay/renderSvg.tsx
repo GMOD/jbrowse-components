@@ -10,10 +10,10 @@ import {
   renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 
+import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
+import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
-import SVGRecombinationTrack from './components/SVGRecombinationTrack.tsx'
-import SVGRecombinationYScaleBar from './components/SVGRecombinationYScaleBar.tsx'
 
 import type { SharedLDModel } from './shared.ts'
 import type {
@@ -42,13 +42,8 @@ export async function renderSvg(
   const { rpcManager } = session
   const height = opts.overrideHeight ?? self.height
 
-  const {
-    ldMetric,
-    showLegend,
-    adapterConfig,
-    showRecombination,
-    recombinationZoneHeight,
-  } = self
+  const { ldMetric, showLegend, adapterConfig, showRecombination, lineZoneHeight } =
+    self
   const { bpPerPx, dynamicBlocks } = view
   const regions = dynamicBlocks.contentBlocks
 
@@ -56,7 +51,6 @@ export async function renderSvg(
     return null
   }
 
-  const region = regions[0]!
   const renderProps = self.renderProps()
 
   const rpcSessionId = getRpcSessionId(self)
@@ -70,17 +64,18 @@ export async function renderSvg(
     exportSVG: opts,
   })) as RenderingResult
 
-  const recombinationOffset = showRecombination ? recombinationZoneHeight : 0
-  const ldHeight = height - recombinationOffset
-
   const finalRendering = await renderingToSvg(
     rendering,
     view.staticBlocks.totalWidthPx,
-    ldHeight,
+    height,
   )
 
   const visibleWidth = view.width
   const clipId = `clip-${self.id}-svg`
+
+  // Recombination track is overlaid at the bottom half of the line zone
+  const recombTrackHeight = lineZoneHeight / 2
+  const recombTrackYOffset = lineZoneHeight / 2
 
   return (
     <>
@@ -90,31 +85,26 @@ export async function renderSvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${clipId})`}>
-        {showRecombination && rendering.recombination ? (
-          <>
-            <SVGRecombinationTrack
-              recombination={rendering.recombination}
-              width={visibleWidth}
-              height={recombinationZoneHeight}
-              bpPerPx={bpPerPx}
-              regionStart={region.start}
-            />
-            <SVGRecombinationYScaleBar
-              height={recombinationZoneHeight}
-              maxValue={Math.max(...rendering.recombination.values, 0.1)}
-            />
-          </>
-        ) : null}
-        <g
-          transform={`translate(${Math.max(0, -view.offsetPx)} ${recombinationOffset})`}
-        >
+        <g transform={`translate(${Math.max(0, -view.offsetPx)} ${lineZoneHeight})`}>
           <ReactRendering rendering={finalRendering} />
         </g>
-        <LinesConnectingMatrixToGenomicPosition
-          model={self}
-          exportSVG
-          yOffset={recombinationOffset}
-        />
+        <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
+        {/* Recombination track overlaid at bottom of line zone */}
+        {showRecombination && rendering.recombination ? (
+          <g transform={`translate(0 ${recombTrackYOffset})`}>
+            <RecombinationTrack
+              recombination={rendering.recombination}
+              width={visibleWidth}
+              height={recombTrackHeight}
+              exportSVG
+            />
+            <RecombinationYScaleBar
+              height={recombTrackHeight}
+              maxValue={Math.max(...rendering.recombination.values, 0.1)}
+              exportSVG
+            />
+          </g>
+        ) : null}
       </g>
       {showLegend ? (
         <LDSVGColorLegend ldMetric={ldMetric} width={visibleWidth} />

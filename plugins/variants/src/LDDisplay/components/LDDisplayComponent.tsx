@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
@@ -20,18 +18,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 const SQRT2 = Math.sqrt(2)
-
-const useStyles = makeStyles()(() => ({
-  resizeHandle: {
-    position: 'absolute',
-    height: 6,
-    background: 'transparent',
-    zIndex: 2,
-    '&:hover': {
-      background: '#ccc',
-    },
-  },
-}))
 
 function LDTooltip({
   item,
@@ -104,8 +90,10 @@ function Crosshairs({
   // Right arm goes to snp i (diagonal position i,i)
   const snpICenter = toScreen((i + 0.5) * w, (i + 0.5) * w)
 
-  // Line thickness to match cell width
-  const lineThickness = w
+  // Line thickness calculated to match the perpendicular extent of cells
+  // in screen space after rotation and yScalar transformation.
+  // Formula: w * yScalar * sqrt(2) / sqrt(1 + yScalar^2)
+  const lineThickness = (w * yScalar * SQRT2) / Math.sqrt(1 + yScalar * yScalar)
 
   return (
     <svg
@@ -342,6 +330,28 @@ const LDCanvas = observer(function LDCanvas({
       ) : null}
       {showLegend ? <LDColorLegend ldMetric={ldMetric} /> : null}
       <LinesConnectingMatrixToGenomicPosition model={model} />
+      {/* Recombination track overlaid at bottom of line zone */}
+      {model.showRecombination && model.recombination ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: lineZoneHeight / 2,
+            width,
+            height: lineZoneHeight / 2,
+          }}
+        >
+          <RecombinationTrack
+            model={model}
+            width={width}
+            height={lineZoneHeight / 2}
+          />
+          <RecombinationYScaleBar
+            height={lineZoneHeight / 2}
+            maxValue={Math.max(...model.recombination.values, 0.1)}
+          />
+        </div>
+      ) : null}
     </div>
   )
 })
@@ -351,11 +361,9 @@ const LDDisplayContent = observer(function LDDisplayContent({
 }: {
   model: SharedLDModel
 }) {
-  const { classes } = useStyles()
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
-  const { height, showLDTriangle, showRecombination, recombinationZoneHeight } =
-    model
+  const { height, showLDTriangle, showRecombination } = model
 
   // Show message when zoomed out
   if (view.bpPerPx > 1000) {
@@ -395,42 +403,7 @@ const LDDisplayContent = observer(function LDDisplayContent({
 
   return (
     <div style={{ position: 'relative', width, height }}>
-      {/* Recombination track at top */}
-      {showRecombination ? (
-        <div style={{ position: 'relative', height: recombinationZoneHeight }}>
-          <RecombinationTrack
-            model={model}
-            width={width}
-            height={recombinationZoneHeight}
-          />
-          {model.recombination && model.recombination.values.length > 0 ? (
-            <RecombinationYScaleBar
-              height={recombinationZoneHeight}
-              maxValue={Math.max(...model.recombination.values, 0.1)}
-            />
-          ) : null}
-          {/* Resize handle overlapping bottom of recombination track */}
-          {showLDTriangle ? (
-            <ResizeHandle
-              onDrag={delta => {
-                model.setRecombinationZoneHeight(
-                  recombinationZoneHeight + delta,
-                )
-                return delta
-              }}
-              className={classes.resizeHandle}
-              style={{
-                bottom: 0,
-                left: 0,
-                width: '100%',
-                cursor: 'row-resize',
-              }}
-            />
-          ) : null}
-        </div>
-      ) : null}
-
-      {/* LD canvas below */}
+      {/* LD canvas with recombination track overlaid on line zone */}
       {showLDTriangle ? <LDCanvas model={model} /> : null}
     </div>
   )

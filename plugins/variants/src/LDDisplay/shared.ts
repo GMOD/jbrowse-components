@@ -299,14 +299,11 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * Effective height for the LD canvas (total height minus recombination zone and line zone)
+       * Effective height for the LD canvas (total height minus line zone)
+       * Note: Recombination track is overlaid on the line zone, not in a separate zone
        */
       get ldCanvasHeight() {
-        let h = self.height - self.lineZoneHeight
-        if (self.showRecombination) {
-          h -= self.recombinationZoneHeight
-        }
-        return Math.max(50, h)
+        return Math.max(50, self.height - self.lineZoneHeight)
       },
       /**
        * #getter
@@ -402,6 +399,8 @@ export default function sharedModelFactory(
                 },
                 {
                   label: 'Show recombination track',
+                  helpText:
+                    'Displays 1-r² between neighboring SNPs only (not all pairwise comparisons). Peaks indicate haplotype block boundaries where historical recombination has broken down LD between adjacent variants.',
                   type: 'checkbox',
                   checked: self.showRecombination,
                   onClick: () => {

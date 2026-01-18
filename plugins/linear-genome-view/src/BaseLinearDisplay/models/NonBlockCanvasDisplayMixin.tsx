@@ -33,6 +33,13 @@ export default function NonBlockCanvasDisplayMixin() {
       lastDrawnOffsetPx: undefined as number | undefined,
       /**
        * #volatile
+       * The bpPerPx of the view when the canvas was last rendered.
+       * Used to determine if the view has zoomed (vs just scrolled).
+       * When zoomed, we don't show the old shifted content.
+       */
+      lastDrawnBpPerPx: undefined as number | undefined,
+      /**
+       * #volatile
        * Reference to the main canvas element
        */
       ref: null as HTMLCanvasElement | null,
@@ -68,6 +75,13 @@ export default function NonBlockCanvasDisplayMixin() {
        */
       setLastDrawnOffsetPx(n: number) {
         self.lastDrawnOffsetPx = n
+      },
+      /**
+       * #action
+       * Set the bpPerPx at which the canvas was rendered
+       */
+      setLastDrawnBpPerPx(n: number) {
+        self.lastDrawnBpPerPx = n
       },
       /**
        * #action

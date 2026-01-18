@@ -28,8 +28,8 @@ export default function LDSVGColorLegend({
   const padding = 8
   const fontSize = 10
 
-  // Always position legend to the right of the image for SVG export
-  const x = width + 10
+  // Position legend in the top-right corner of the visible area
+  const x = width - legendWidth - 10
   const y = 10
 
   const label = ldMetric === 'dprime' ? "D'" : 'R²'
