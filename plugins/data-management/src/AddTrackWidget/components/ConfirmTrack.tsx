@@ -57,7 +57,7 @@ const ConfirmTrack = observer(function ConfirmTrack({
   } = model
 
   useEffect(() => {
-    if (adapterHint === '' && trackAdapter) {
+    if (adapterHint === '' && trackAdapter && trackAdapter.type !== UNKNOWN) {
       model.setAdapterHint(trackAdapter.type)
     }
   }, [adapterHint, trackAdapter, model])
