@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import fetch from 'node-fetch'
 
@@ -31,12 +32,12 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-// Convert file:// URLs to local paths
-function fileUrlToPath(fileUrl: string): string | undefined {
+// Convert file:// URLs to local paths (handles Windows paths correctly)
+function convertFileUrlToPath(fileUrl: string): string | undefined {
   try {
     const url = new URL(fileUrl)
     if (url.protocol === 'file:') {
-      return url.pathname
+      return fileURLToPath(url)
     }
   } catch {
     // not a valid URL
@@ -66,7 +67,7 @@ export async function getLocalOrRemoteStream({
     return result.body
   } else {
     // Handle file:// URLs by converting to local path
-    const localPath = fileUrlToPath(file) ?? file
+    const localPath = convertFileUrlToPath(file) ?? file
     const filename = path.isAbsolute(localPath)
       ? localPath
       : path.join(out, localPath)
