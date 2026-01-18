@@ -1,14 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config PlinkLDAdapter
  *
  * Adapter for reading pre-computed LD data from PLINK --r2 output.
+ * Loads the entire file into memory - suitable for small to medium files.
  *
- * The input file should be bgzipped and tabix-indexed:
- *   bgzip plink.ld
- *   tabix -s1 -b2 -e2 plink.ld.gz
+ * For large files, use PlinkLDTabixAdapter with tabix indexing.
  *
  * Expected columns: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
  * Optional columns: DP (D'), MAF_A, MAF_B
@@ -20,36 +18,15 @@ const PlinkLDAdapter = ConfigurationSchema(
   {
     /**
      * #slot
-     * Location of the bgzipped PLINK LD file (.ld.gz)
+     * Location of the PLINK LD file (.ld or .ld.gz)
      */
     ldLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/plink.ld.gz',
+        uri: '/path/to/plink.ld',
         locationType: 'UriLocation',
       },
     },
-
-    index: ConfigurationSchema('PlinkLDIndex', {
-      /**
-       * #slot index.indexType
-       */
-      indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      },
-      /**
-       * #slot index.location
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/plink.ld.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      },
-    }),
   },
   {
     explicitlyTyped: true,
@@ -62,7 +39,7 @@ const PlinkLDAdapter = ConfigurationSchema(
      * ```json
      * {
      *   "type": "PlinkLDAdapter",
-     *   "uri": "plink.ld.gz"
+     *   "uri": "plink.ld"
      * }
      * ```
      */
@@ -73,12 +50,6 @@ const PlinkLDAdapter = ConfigurationSchema(
             ldLocation: {
               uri: snap.uri,
               baseUri: snap.baseUri,
-            },
-            index: {
-              location: {
-                uri: `${snap.uri}.tbi`,
-                baseUri: snap.baseUri,
-              },
             },
           }
         : snap

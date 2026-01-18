@@ -13,6 +13,7 @@ import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
+import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 
 import type { LDFlatbushItem } from '../../LDRenderer/types.ts'
 import type { SharedLDModel } from '../shared.ts'
@@ -497,6 +498,12 @@ const LDDisplayContent = observer(function LDDisplayContent({
             width={width}
             height={recombinationZoneHeight}
           />
+          {model.recombination && model.recombination.values.length > 0 ? (
+            <RecombinationYScaleBar
+              height={recombinationZoneHeight}
+              maxValue={Math.max(...model.recombination.values, 0.1)}
+            />
+          ) : null}
           {/* Resize handle overlapping bottom of recombination track */}
           {showLDTriangle ? (
             <ResizeHandle

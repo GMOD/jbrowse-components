@@ -156,9 +156,12 @@ export default class LDRenderer extends ServerSideRendererType {
     } = args
 
     try {
-      // Check if this is a PlinkLDAdapter (pre-computed LD)
+      // Check if this is a PLINK LD adapter (pre-computed LD)
       const adapterType = adapterConfig?.type as string | undefined
-      if (adapterType === 'PlinkLDAdapter') {
+      if (
+        adapterType === 'PlinkLDAdapter' ||
+        adapterType === 'PlinkLDTabixAdapter'
+      ) {
         return await getLDMatrixFromPlink({
           pluginManager: this.pluginManager,
           args: {
@@ -187,7 +190,7 @@ export default class LDRenderer extends ServerSideRendererType {
       })
     } catch (e) {
       console.error('Error computing LD matrix:', e)
-      return null
+      throw e
     }
   }
 }

@@ -11,16 +11,28 @@ const TrackAdapterSelector = observer(function ({
 }: {
   model: AddTrackModel
 }) {
-  const { trackAdapter } = model
+  const { trackAdapter, adapterHintNotConfigurable } = model
+  const { adapterHint } = model
   const { pluginManager } = getEnv(model)
+
+  // Show the adapterHint if set (even if config couldn't be built),
+  // otherwise show the resolved adapter type
+  const displayValue =
+    adapterHint || (trackAdapter?.type !== 'UNKNOWN' ? trackAdapter?.type : '')
 
   return (
     <TextField
-      value={trackAdapter?.type !== 'UNKNOWN' ? trackAdapter?.type : ''}
+      value={displayValue}
       label="Adapter type"
       variant="outlined"
       select
       fullWidth
+      error={adapterHintNotConfigurable}
+      helperText={
+        adapterHintNotConfigurable
+          ? `The "${adapterHint}" adapter cannot be configured for the provided file. This adapter may require a specific file extension or additional setup.`
+          : undefined
+      }
       onChange={event => {
         model.setAdapterHint(event.target.value)
       }}

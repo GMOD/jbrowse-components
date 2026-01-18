@@ -1,65 +1,41 @@
-import { unzip } from '@gmod/bgzf-filehandle'
+import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { isUriLocation, updateStatus } from '@jbrowse/core/util'
+import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import type { PlinkLDHeader, PlinkLDRecord } from './types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
-export default class PlinkLDAdapter extends BaseAdapter {
+export default class PlinkLDTabixAdapter extends BaseAdapter {
   private configured?: Promise<{
-    records: PlinkLDRecord[]
+    ld: TabixIndexedFile
     header: PlinkLDHeader
-    refNames: string[]
   }>
 
-  private async configurePre() {
+  private async configurePre(_opts?: BaseOptions) {
     const ldLocation = this.getConf('ldLocation')
+    const location = this.getConf(['index', 'location'])
+    const indexType = this.getConf(['index', 'indexType'])
+
     const filehandle = openLocation(ldLocation, this.pluginManager)
+    const isCSI = indexType === 'CSI'
+    const ld = new TabixIndexedFile({
+      filehandle,
+      csiFilehandle: isCSI
+        ? openLocation(location, this.pluginManager)
+        : undefined,
+      tbiFilehandle: !isCSI
+        ? openLocation(location, this.pluginManager)
+        : undefined,
+      chunkCacheSize: 50 * 2 ** 20,
+    })
 
-    let text: string
-    const buffer = await filehandle.readFile()
-    const uri = isUriLocation(ldLocation) ? ldLocation.uri : ''
-    const isGzipped = /\.gz$/i.test(uri) || buffer[0] === 0x1f
+    // Parse the header line to determine column positions
+    const headerLine = await ld.getHeader()
+    const header = this.parseHeader(headerLine)
 
-    console.log('[PlinkLDAdapter] Loading file, size:', buffer.length, 'gzipped:', isGzipped)
-
-    if (isGzipped) {
-      const decompressed = await unzip(buffer)
-      text = new TextDecoder().decode(decompressed)
-    } else {
-      text = new TextDecoder().decode(buffer)
-    }
-
-    const lines = text.split('\n').filter(line => line.trim())
-    console.log('[PlinkLDAdapter] Total lines:', lines.length)
-    if (lines.length === 0) {
-      throw new Error('Empty LD file')
-    }
-
-    console.log('[PlinkLDAdapter] Header line:', lines[0])
-    const header = this.parseHeader(lines[0]!)
-    console.log('[PlinkLDAdapter] Parsed header:', header)
-
-    const records: PlinkLDRecord[] = []
-    const refNamesSet = new Set<string>()
-
-    for (let i = 1; i < lines.length; i++) {
-      const record = this.parseLine(lines[i]!, header)
-      if (record) {
-        records.push(record)
-        refNamesSet.add(record.chrA)
-        refNamesSet.add(record.chrB)
-      }
-    }
-
-    console.log('[PlinkLDAdapter] Parsed records:', records.length)
-    console.log('[PlinkLDAdapter] First 3 records:', records.slice(0, 3))
-
-    const refNames = [...refNamesSet].sort()
-    console.log('[PlinkLDAdapter] RefNames:', refNames)
-    return { records, header, refNames }
+    return { ld, header }
   }
 
   private parseHeader(headerLine: string): PlinkLDHeader {
@@ -131,14 +107,14 @@ export default class PlinkLDAdapter extends BaseAdapter {
 
   async configure(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    return updateStatus('Loading LD data', statusCallback, () =>
+    return updateStatus('Downloading index', statusCallback, () =>
       this.configurePre2(),
     )
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    const { refNames } = await this.configure(opts)
-    return refNames
+    const { ld } = await this.configure(opts)
+    return ld.getReferenceSequenceNames(opts)
   }
 
   async getHeader(opts?: BaseOptions) {
@@ -155,22 +131,21 @@ export default class PlinkLDAdapter extends BaseAdapter {
     opts: BaseOptions = {},
   ): Promise<PlinkLDRecord[]> {
     const { refName, start, end } = query
-    const { records } = await this.configure(opts)
+    const { ld, header } = await this.configure(opts)
 
-    console.log('[PlinkLDAdapter] getLDRecords query:', { refName, start, end })
-    console.log('[PlinkLDAdapter] Total records to filter:', records.length)
+    const records: PlinkLDRecord[] = []
 
-    const filtered = records.filter(
-      r => r.chrA === refName && r.bpA >= start && r.bpA <= end,
-    )
+    await ld.getLines(refName, start, end, {
+      lineCallback: (line: string) => {
+        const record = this.parseLine(line, header)
+        if (record) {
+          records.push(record)
+        }
+      },
+      ...opts,
+    })
 
-    console.log('[PlinkLDAdapter] Filtered records:', filtered.length)
-    if (filtered.length === 0 && records.length > 0) {
-      console.log('[PlinkLDAdapter] Sample record chrA values:', [...new Set(records.slice(0, 100).map(r => r.chrA))])
-      console.log('[PlinkLDAdapter] Sample record bpA range:', Math.min(...records.slice(0, 100).map(r => r.bpA)), '-', Math.max(...records.slice(0, 100).map(r => r.bpA)))
-    }
-
-    return filtered
+    return records
   }
 
   /**
@@ -184,10 +159,8 @@ export default class PlinkLDAdapter extends BaseAdapter {
     const { refName, start, end } = query
     const records = await this.getLDRecords(query, opts)
 
-    console.log('[PlinkLDAdapter] getLDRecordsInRegion input records:', records.length)
-
     // Filter for pairs where both SNPs are in the region
-    const filtered = records.filter(
+    return records.filter(
       r =>
         r.chrB === refName &&
         r.bpB >= start &&
@@ -196,10 +169,6 @@ export default class PlinkLDAdapter extends BaseAdapter {
         r.bpA >= start &&
         r.bpA <= end,
     )
-
-    console.log('[PlinkLDAdapter] getLDRecordsInRegion filtered:', filtered.length)
-
-    return filtered
   }
 
   private parseLine(line: string, header: PlinkLDHeader): PlinkLDRecord | null {

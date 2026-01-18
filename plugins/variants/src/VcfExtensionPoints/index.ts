@@ -41,6 +41,31 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
             type: 'VcfAdapter',
             vcfLocation: file,
           }
+        } else if (
+          testAdapter(
+            fileName,
+            /\.ld\.b?gz$/i,
+            adapterHint,
+            'PlinkLDTabixAdapter',
+          )
+        ) {
+          // Gzipped LD files use tabix adapter
+          return {
+            type: 'PlinkLDTabixAdapter',
+            ldLocation: file,
+            index: {
+              location: index || makeIndex(file, '.tbi'),
+              indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+            },
+          }
+        } else if (
+          testAdapter(fileName, /\.ld$/i, adapterHint, 'PlinkLDAdapter')
+        ) {
+          // Plain .ld files use in-memory adapter
+          return {
+            type: 'PlinkLDAdapter',
+            ldLocation: file,
+          }
         } else {
           return adapterGuesser(file, index, adapterHint)
         }
@@ -51,9 +76,13 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
     'Core-guessTrackTypeForLocation',
     (trackTypeGuesser: TrackTypeGuesser) => {
       return (adapterName: string) => {
-        return ['VcfTabixAdapter', 'VcfAdapter'].includes(adapterName)
-          ? 'VariantTrack'
-          : trackTypeGuesser(adapterName)
+        if (['VcfTabixAdapter', 'VcfAdapter'].includes(adapterName)) {
+          return 'VariantTrack'
+        }
+        if (['PlinkLDAdapter', 'PlinkLDTabixAdapter'].includes(adapterName)) {
+          return 'LDTrack'
+        }
+        return trackTypeGuesser(adapterName)
       }
     },
   )

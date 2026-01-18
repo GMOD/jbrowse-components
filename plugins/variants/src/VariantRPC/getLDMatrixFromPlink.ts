@@ -7,7 +7,7 @@ import type {
   RecombinationData,
 } from './getLDMatrix.ts'
 import type PlinkLDAdapter from '../PlinkLDAdapter/PlinkLDAdapter.ts'
-import type { PlinkLDRecord } from '../PlinkLDAdapter/PlinkLDAdapter.ts'
+import type { PlinkLDRecord } from '../PlinkLDAdapter/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'

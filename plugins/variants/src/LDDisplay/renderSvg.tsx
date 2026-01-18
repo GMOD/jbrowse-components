@@ -13,6 +13,7 @@ import {
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import SVGRecombinationTrack from './components/SVGRecombinationTrack.tsx'
+import SVGRecombinationYScaleBar from './components/SVGRecombinationYScaleBar.tsx'
 
 import type { SharedLDModel } from './shared.ts'
 import type {
@@ -90,13 +91,19 @@ export async function renderSvg(
       </defs>
       <g clipPath={`url(#${clipId})`}>
         {showRecombination && rendering.recombination ? (
-          <SVGRecombinationTrack
-            recombination={rendering.recombination}
-            width={visibleWidth}
-            height={recombinationZoneHeight}
-            bpPerPx={bpPerPx}
-            regionStart={region.start}
-          />
+          <>
+            <SVGRecombinationTrack
+              recombination={rendering.recombination}
+              width={visibleWidth}
+              height={recombinationZoneHeight}
+              bpPerPx={bpPerPx}
+              regionStart={region.start}
+            />
+            <SVGRecombinationYScaleBar
+              height={recombinationZoneHeight}
+              maxValue={Math.max(...rendering.recombination.values, 0.1)}
+            />
+          </>
         ) : null}
         <g
           transform={`translate(${Math.max(0, -view.offsetPx)} ${recombinationOffset})`}
