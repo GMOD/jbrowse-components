@@ -152,6 +152,11 @@ export function doAfterAttach(self: SharedLDModel) {
         self.colorScheme
         self.showLDTriangle
         self.fitToHeight
+        // When fitToHeight is true, also track ldCanvasHeight so resizing
+        // the display triggers a re-render
+        if (self.fitToHeight) {
+          self.ldCanvasHeight
+        }
         // Note: lineZoneHeight, recombinationZoneHeight, and showRecombination
         // are handled by CSS/React, not canvas rendering
         /* eslint-enable @typescript-eslint/no-unused-expressions */

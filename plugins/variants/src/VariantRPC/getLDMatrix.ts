@@ -208,7 +208,6 @@ export type LDMetric = 'r2' | 'dprime'
 function calculateLDStats(
   geno1: Int8Array,
   geno2: Int8Array,
-  _debugInfo?: { snp1Id: string; snp2Id: string },
 ): {
   r2: number
   dprime: number
@@ -219,9 +218,6 @@ function calculateLDStats(
   let sumG1sq = 0
   let sumG2sq = 0
   let sumProd = 0
-
-  // Count genotype combinations for debugging
-  const genoCounts: Record<string, number> = {}
 
   // Count haplotype frequencies from genotype data
   // For unphased diploid data, we estimate haplotype frequencies
@@ -241,10 +237,6 @@ function calculateLDStats(
       sumG1sq += g1 * g1
       sumG2sq += g2 * g2
       sumProd += g1 * g2
-
-      // Track genotype combinations
-      const key = `${g1},${g2}`
-      genoCounts[key] = (genoCounts[key] || 0) + 1
     }
   }
 
@@ -571,10 +563,7 @@ export async function getLDMatrix({
       // use composite LD estimator for unphased data
       const stats = dataIsPhased
         ? calculateLDStatsPhased(phasedHaplotypes[i]!, phasedHaplotypes[j]!)
-        : calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!, {
-            snp1Id: snps[i]!.id,
-            snp2Id: snps[j]!.id,
-          })
+        : calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!)
 
       ldValues[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
     }

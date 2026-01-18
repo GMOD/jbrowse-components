@@ -38,6 +38,10 @@ export interface NavLocation {
   assemblyName?: string
 }
 
+export interface VolatileGuide {
+  xPos: number
+}
+
 export interface InitState {
   loc?: string
   assembly: string

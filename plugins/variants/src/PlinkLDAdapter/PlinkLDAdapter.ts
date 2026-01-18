@@ -1,7 +1,5 @@
-import { unzip } from '@gmod/bgzf-filehandle'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { isUriLocation, updateStatus } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 
 import type { PlinkLDHeader, PlinkLDRecord } from './types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -14,22 +12,9 @@ export default class PlinkLDAdapter extends BaseAdapter {
     refNames: string[]
   }>
 
-  private async configurePre() {
+  private async configurePre(opts?: BaseOptions) {
     const ldLocation = this.getConf('ldLocation')
-    const filehandle = openLocation(ldLocation, this.pluginManager)
-
-    let text: string
-    const buffer = await filehandle.readFile()
-    const uri = isUriLocation(ldLocation) ? ldLocation.uri : ''
-    const isGzipped = /\.gz$/i.test(uri) || buffer[0] === 0x1f
-
-    if (isGzipped) {
-      const decompressed = await unzip(buffer)
-      text = new TextDecoder().decode(decompressed)
-    } else {
-      text = new TextDecoder().decode(buffer)
-    }
-
+    const text = await fetchAndMaybeUnzipText(ldLocation, opts)
     const lines = text.split('\n').filter(line => line.trim())
     if (lines.length === 0) {
       throw new Error('Empty LD file')
@@ -110,9 +95,9 @@ export default class PlinkLDAdapter extends BaseAdapter {
     }
   }
 
-  protected async configurePre2() {
+  protected async configurePre2(opts?: BaseOptions) {
     if (!this.configured) {
-      this.configured = this.configurePre().catch((e: unknown) => {
+      this.configured = this.configurePre(opts).catch((e: unknown) => {
         this.configured = undefined
         throw e
       })
@@ -123,7 +108,7 @@ export default class PlinkLDAdapter extends BaseAdapter {
   async configure(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     return updateStatus('Loading LD data', statusCallback, () =>
-      this.configurePre2(),
+      this.configurePre2(opts),
     )
   }
 

@@ -89,7 +89,7 @@ export default class LDRenderer extends ServerSideRendererType {
 
     // When fitToHeight is true, scale the triangle to fit the display height
     // When false, maintain true aspect ratio (yScalar = 1)
-    const yScalar = fitToHeight ? matrixHeight / Math.max(matrixHeight, hyp) : 1
+    const yScalar = fitToHeight ? matrixHeight / hyp : 1
 
     const { makeImageData } = await import('./makeImageData.ts')
 

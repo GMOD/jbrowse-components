@@ -2,12 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, stringify } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-import { createPortal } from 'react-dom'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
@@ -32,22 +30,6 @@ const useStyles = makeStyles()(() => ({
     '&:hover': {
       background: '#ccc',
     },
-  },
-  verticalGuide: {
-    pointerEvents: 'none',
-    width: 1,
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    background: 'red',
-    zIndex: 1001,
-  },
-  tooltipTarget: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 1,
-    height: 1,
   },
 }))
 
@@ -170,81 +152,6 @@ function Crosshairs({
 }
 
 /**
- * Vertical guides that extend through the entire LinearGenomeView.
- * Uses a portal to render at the TracksContainer level.
- */
-function VerticalGuides({
-  genomicX1,
-  genomicX2,
-  snp1,
-  snp2,
-  containerRef,
-}: {
-  genomicX1: number
-  genomicX2: number
-  snp1: { id: string; start: number; refName: string }
-  snp2: { id: string; start: number; refName: string }
-  containerRef: React.RefObject<HTMLDivElement | null>
-}) {
-  const { classes } = useStyles()
-  const [tracksContainer, setTracksContainer] = useState<HTMLElement | null>(
-    null,
-  )
-
-  // Find the TracksContainer by traversing up from our container
-  useEffect(() => {
-    const current = containerRef.current
-    if (current) {
-      let el: HTMLElement | null = current
-      while (el && el.dataset.testid !== 'tracksContainer') {
-        el = el.parentElement
-      }
-      setTracksContainer(prev => (prev !== el ? el : prev))
-    }
-  }, [containerRef])
-
-  if (!tracksContainer) {
-    return null
-  }
-
-  return createPortal(
-    <>
-      <Tooltip
-        open
-        placement="top"
-        title={stringify({ refName: snp2.refName, coord: snp2.start })}
-        arrow
-      >
-        <div
-          className={classes.tooltipTarget}
-          style={{ transform: `translateX(${genomicX1}px)` }}
-        />
-      </Tooltip>
-      <div
-        className={classes.verticalGuide}
-        style={{ transform: `translateX(${genomicX1}px)`, height: '100%' }}
-      />
-      <Tooltip
-        open
-        placement="top"
-        title={stringify({ refName: snp1.refName, coord: snp1.start })}
-        arrow
-      >
-        <div
-          className={classes.tooltipTarget}
-          style={{ transform: `translateX(${genomicX2}px)` }}
-        />
-      </Tooltip>
-      <div
-        className={classes.verticalGuide}
-        style={{ transform: `translateX(${genomicX2}px)`, height: '100%' }}
-      />
-    </>,
-    tracksContainer,
-  )
-}
-
-/**
  * Transform screen coordinates to the unrotated coordinate space.
  * The canvas is rotated by -45 degrees, so we apply the inverse rotation (+45 degrees).
  * Also accounts for the yScalar transformation and lineZoneHeight offset.
@@ -291,9 +198,37 @@ const LDCanvas = observer(function LDCanvas({
   const canvasOnlyHeight = fitToHeight ? ldCanvasHeight : triangleHeight
   const containerHeight = canvasOnlyHeight + lineZoneHeight
 
-  const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>()
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Calculate genomic positions for hovered item
+  const region = view.dynamicBlocks.contentBlocks[0]
+  const bpPerPx = view.bpPerPx
+  const genomicX1 =
+    hoveredItem && region
+      ? (hoveredItem.snp2.start - region.start) / bpPerPx
+      : undefined
+  const genomicX2 =
+    hoveredItem && region
+      ? (hoveredItem.snp1.start - region.start) / bpPerPx
+      : undefined
+
+  // Update volatile guides when hovered item changes
+  useEffect(() => {
+    if (
+      genomicX1 !== undefined &&
+      genomicX2 !== undefined &&
+      model.showVerticalGuides
+    ) {
+      view.setVolatileGuides([{ xPos: genomicX1 }, { xPos: genomicX2 }])
+    } else {
+      view.setVolatileGuides([])
+    }
+    return () => {
+      view.setVolatileGuides([])
+    }
+  }, [genomicX1, genomicX2, model.showVerticalGuides, view])
 
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(
@@ -312,13 +247,14 @@ const LDCanvas = observer(function LDCanvas({
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
-      if (!containerRef.current || !flatbushIndex || !flatbushItems.length) {
+      const container = containerRef.current
+      if (!container || !flatbushIndex || !flatbushItems.length) {
         setHoveredItem(undefined)
         setMousePosition(undefined)
         return
       }
 
-      const rect = containerRef.current.getBoundingClientRect()
+      const rect = container.getBoundingClientRect()
       const screenX = event.clientX - rect.left
       const screenY = event.clientY - rect.top
 
@@ -382,45 +318,19 @@ const LDCanvas = observer(function LDCanvas({
         height={canvasOnlyHeight * 2}
       />
 
-      {hoveredItem
-        ? (() => {
-            // Calculate positions for crosshairs
-            const region = view.dynamicBlocks.contentBlocks[0]
-            if (!region) {
-              return null
-            }
-            const bpPerPx = view.bpPerPx
-
-            // Genomic positions
-            const genomicX1 = (hoveredItem.snp2.start - region.start) / bpPerPx
-            const genomicX2 = (hoveredItem.snp1.start - region.start) / bpPerPx
-
-            return (
-              <>
-                <Crosshairs
-                  hoveredItem={hoveredItem}
-                  cellWidth={cellWidth}
-                  genomicX1={genomicX1}
-                  genomicX2={genomicX2}
-                  yScalar={yScalar}
-                  lineZoneHeight={lineZoneHeight}
-                  tickHeight={model.tickHeight}
-                  width={width}
-                  height={containerHeight}
-                />
-                {model.showVerticalGuides ? (
-                  <VerticalGuides
-                    genomicX1={genomicX1}
-                    genomicX2={genomicX2}
-                    snp1={hoveredItem.snp1}
-                    snp2={hoveredItem.snp2}
-                    containerRef={containerRef}
-                  />
-                ) : null}
-              </>
-            )
-          })()
-        : null}
+      {hoveredItem && genomicX1 !== undefined && genomicX2 !== undefined ? (
+        <Crosshairs
+          hoveredItem={hoveredItem}
+          cellWidth={cellWidth}
+          genomicX1={genomicX1}
+          genomicX2={genomicX2}
+          yScalar={yScalar}
+          lineZoneHeight={lineZoneHeight}
+          tickHeight={model.tickHeight}
+          width={width}
+          height={containerHeight}
+        />
+      ) : null}
 
       {hoveredItem && mousePosition ? (
         <LDTooltip
