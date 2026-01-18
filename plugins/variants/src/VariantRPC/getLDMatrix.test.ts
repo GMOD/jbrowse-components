@@ -383,7 +383,6 @@ function calculateLDStatsPhased(
   haps1: { hap1: Int8Array; hap2: Int8Array },
   haps2: { hap1: Int8Array; hap2: Int8Array },
 ): { r2: number; dprime: number } {
-  let n00 = 0
   let n01 = 0
   let n10 = 0
   let n11 = 0
@@ -396,13 +395,11 @@ function calculateLDStatsPhased(
     const a1 = haps1.hap1[i]!
     const b1 = haps2.hap1[i]!
     if (a1 >= 0 && b1 >= 0) {
-      if (a1 === 0 && b1 === 0) {
-        n00++
-      } else if (a1 === 0 && b1 === 1) {
+      if (a1 === 0 && b1 === 1) {
         n01++
       } else if (a1 === 1 && b1 === 0) {
         n10++
-      } else {
+      } else if (a1 === 1 && b1 === 1) {
         n11++
       }
       total++
@@ -411,13 +408,11 @@ function calculateLDStatsPhased(
     const a2 = haps1.hap2[i]!
     const b2 = haps2.hap2[i]!
     if (a2 >= 0 && b2 >= 0) {
-      if (a2 === 0 && b2 === 0) {
-        n00++
-      } else if (a2 === 0 && b2 === 1) {
+      if (a2 === 0 && b2 === 1) {
         n01++
       } else if (a2 === 1 && b2 === 0) {
         n10++
-      } else {
+      } else if (a2 === 1 && b2 === 1) {
         n11++
       }
       total++
@@ -428,7 +423,6 @@ function calculateLDStatsPhased(
     return { r2: 0, dprime: 0 }
   }
 
-  const p00 = n00 / total
   const p01 = n01 / total
   const p10 = n10 / total
   const p11 = n11 / total

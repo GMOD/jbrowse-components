@@ -6,11 +6,7 @@ import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 
-import type {
-  FilterStats,
-  LDMatrixResult,
-  LDMetric,
-} from '../VariantRPC/getLDMatrix.ts'
+import type { LDMatrixResult, LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RenderArgsDeserialized as ServerSideRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import type { Region } from '@jbrowse/core/util/types'
@@ -151,7 +147,7 @@ export default class LDRenderer extends ServerSideRendererType {
 
     try {
       // Check if this is a pre-computed LD adapter (PLINK or ldmat)
-      const adapterType = adapterConfig?.type as string | undefined
+      const adapterType = adapterConfig.type as string | undefined
       if (
         adapterType === 'PlinkLDAdapter' ||
         adapterType === 'PlinkLDTabixAdapter' ||

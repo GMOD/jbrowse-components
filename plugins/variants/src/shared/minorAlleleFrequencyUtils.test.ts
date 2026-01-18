@@ -377,16 +377,6 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
 
   it('keeps variant at exact MAF threshold', () => {
     // MAF exactly 0.2
-    const features = [
-      createMockFeature('snp1', 100, 101, {
-        s1: '0/0',
-        s2: '0/0',
-        s3: '0/0',
-        s4: '0/0',
-        s5: '0/1', // 1 alt out of 10 total = wait, that's 0.1
-      }),
-    ]
-
     // Actually need MAF = 0.2: 2 alt out of 10
     const features2 = [
       createMockFeature('snp1', 100, 101, {

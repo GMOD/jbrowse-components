@@ -183,7 +183,7 @@ export default function sharedModelFactory(
       /**
        * #action
        */
-      setError(error: Error | unknown | undefined) {
+      setError(error: unknown) {
         self.error = error as Error | undefined
       },
       /**

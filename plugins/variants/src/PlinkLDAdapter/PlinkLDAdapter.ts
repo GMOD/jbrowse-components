@@ -23,13 +23,6 @@ export default class PlinkLDAdapter extends BaseAdapter {
     const uri = isUriLocation(ldLocation) ? ldLocation.uri : ''
     const isGzipped = /\.gz$/i.test(uri) || buffer[0] === 0x1f
 
-    console.log(
-      '[PlinkLDAdapter] Loading file, size:',
-      buffer.length,
-      'gzipped:',
-      isGzipped,
-    )
-
     if (isGzipped) {
       const decompressed = await unzip(buffer)
       text = new TextDecoder().decode(decompressed)
@@ -38,14 +31,11 @@ export default class PlinkLDAdapter extends BaseAdapter {
     }
 
     const lines = text.split('\n').filter(line => line.trim())
-    console.log('[PlinkLDAdapter] Total lines:', lines.length)
     if (lines.length === 0) {
       throw new Error('Empty LD file')
     }
 
-    console.log('[PlinkLDAdapter] Header line:', lines[0])
     const header = this.parseHeader(lines[0]!)
-    console.log('[PlinkLDAdapter] Parsed header:', header)
 
     const records: PlinkLDRecord[] = []
     const refNamesSet = new Set<string>()
@@ -59,11 +49,7 @@ export default class PlinkLDAdapter extends BaseAdapter {
       }
     }
 
-    console.log('[PlinkLDAdapter] Parsed records:', records.length)
-    console.log('[PlinkLDAdapter] First 3 records:', records.slice(0, 3))
-
     const refNames = [...refNamesSet].sort()
-    console.log('[PlinkLDAdapter] RefNames:', refNames)
     return { records, header, refNames }
   }
 
@@ -162,25 +148,9 @@ export default class PlinkLDAdapter extends BaseAdapter {
     const { refName, start, end } = query
     const { records } = await this.configure(opts)
 
-    console.log('[PlinkLDAdapter] getLDRecords query:', { refName, start, end })
-    console.log('[PlinkLDAdapter] Total records to filter:', records.length)
-
     const filtered = records.filter(
       r => r.chrA === refName && r.bpA >= start && r.bpA <= end,
     )
-
-    console.log('[PlinkLDAdapter] Filtered records:', filtered.length)
-    if (filtered.length === 0 && records.length > 0) {
-      console.log('[PlinkLDAdapter] Sample record chrA values:', [
-        ...new Set(records.slice(0, 100).map(r => r.chrA)),
-      ])
-      console.log(
-        '[PlinkLDAdapter] Sample record bpA range:',
-        Math.min(...records.slice(0, 100).map(r => r.bpA)),
-        '-',
-        Math.max(...records.slice(0, 100).map(r => r.bpA)),
-      )
-    }
 
     return filtered
   }
@@ -196,11 +166,6 @@ export default class PlinkLDAdapter extends BaseAdapter {
     const { refName, start, end } = query
     const records = await this.getLDRecords(query, opts)
 
-    console.log(
-      '[PlinkLDAdapter] getLDRecordsInRegion input records:',
-      records.length,
-    )
-
     // Filter for pairs where both SNPs are in the region
     const filtered = records.filter(
       r =>
@@ -210,11 +175,6 @@ export default class PlinkLDAdapter extends BaseAdapter {
         r.chrA === refName &&
         r.bpA >= start &&
         r.bpA <= end,
-    )
-
-    console.log(
-      '[PlinkLDAdapter] getLDRecordsInRegion filtered:',
-      filtered.length,
     )
 
     return filtered

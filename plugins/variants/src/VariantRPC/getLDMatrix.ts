@@ -10,7 +10,7 @@ import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAl
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const SPLITTER = /[/|]/
@@ -114,7 +114,6 @@ function calculateLDStatsPhased(
 } {
   // Count haplotype frequencies directly
   // Haplotypes: 00 (ref-ref), 01 (ref-alt), 10 (alt-ref), 11 (alt-alt)
-  let n00 = 0 // ref at locus 1, ref at locus 2
   let n01 = 0 // ref at locus 1, alt at locus 2
   let n10 = 0 // alt at locus 1, ref at locus 2
   let n11 = 0 // alt at locus 1, alt at locus 2
@@ -128,13 +127,11 @@ function calculateLDStatsPhased(
     const b1 = haps2.hap1[i]! // allele at locus 2, chrom 1
 
     if (a1 >= 0 && b1 >= 0) {
-      if (a1 === 0 && b1 === 0) {
-        n00++
-      } else if (a1 === 0 && b1 === 1) {
+      if (a1 === 0 && b1 === 1) {
         n01++
       } else if (a1 === 1 && b1 === 0) {
         n10++
-      } else {
+      } else if (a1 === 1 && b1 === 1) {
         n11++
       }
       total++
@@ -147,13 +144,11 @@ function calculateLDStatsPhased(
     const b2 = haps2.hap2[i]! // allele at locus 2, chrom 2
 
     if (a2 >= 0 && b2 >= 0) {
-      if (a2 === 0 && b2 === 0) {
-        n00++
-      } else if (a2 === 0 && b2 === 1) {
+      if (a2 === 0 && b2 === 1) {
         n01++
       } else if (a2 === 1 && b2 === 0) {
         n10++
-      } else {
+      } else if (a2 === 1 && b2 === 1) {
         n11++
       }
       total++
@@ -166,7 +161,6 @@ function calculateLDStatsPhased(
   }
 
   // Haplotype frequencies
-  const p00 = n00 / total // freq of ref-ref haplotype
   const p01 = n01 / total // freq of ref-alt haplotype
   const p10 = n10 / total // freq of alt-ref haplotype
   const p11 = n11 / total // freq of alt-alt haplotype
@@ -214,7 +208,7 @@ export type LDMetric = 'r2' | 'dprime'
 function calculateLDStats(
   geno1: Int8Array,
   geno2: Int8Array,
-  debugInfo?: { snp1Id: string; snp2Id: string },
+  _debugInfo?: { snp1Id: string; snp2Id: string },
 ): {
   r2: number
   dprime: number
@@ -311,22 +305,6 @@ function calculateLDStats(
     }
   }
 
-  // Debug logging for low R² values
-  if (r2 < 0.1 && debugInfo) {
-    console.log('=== Low R² Debug ===')
-    console.log(`SNPs: ${debugInfo.snp1Id} x ${debugInfo.snp2Id}`)
-    console.log(`R² = ${r2.toFixed(4)}, D' = ${dprime.toFixed(4)}`)
-    console.log(`n samples: ${n}`)
-    console.log(`Allele freqs: pA=${pA.toFixed(3)}, pB=${pB.toFixed(3)}`)
-    console.log(
-      `MAF1=${Math.min(pA, qA).toFixed(3)}, MAF2=${Math.min(pB, qB).toFixed(3)}`,
-    )
-    console.log(`Genotype counts (g1,g2): ${JSON.stringify(genoCounts)}`)
-    console.log(`Variance: var1=${var1.toFixed(4)}, var2=${var2.toFixed(4)}`)
-    console.log(`Covariance: ${covG.toFixed(4)}`)
-    console.log('====================')
-  }
-
   return { r2, dprime }
 }
 
@@ -399,8 +377,8 @@ export async function getLDMatrix({
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
   // Get all samples from adapter
-  const sources = await dataAdapter.getSources?.(regions)
-  const samples = sources?.map(s => s.name) ?? []
+  const sources = await dataAdapter.getSources(regions)
+  const samples = sources.map(s => s.name)
 
   if (samples.length === 0) {
     return {
@@ -471,11 +449,6 @@ export async function getLDMatrix({
       'genotypes',
     ) as Record<string, string>
     dataIsPhased = isPhased(firstGenotypes)
-    if (dataIsPhased) {
-      console.log(
-        'Detected phased genotype data - using haplotype-based LD calculation',
-      )
-    }
   }
 
   // Chi-square critical values for common p-value thresholds (df=1)
@@ -564,11 +537,6 @@ export async function getLDMatrix({
         }
 
         if (chiSq > chiSqCritical) {
-          console.log(
-            `Excluding ${feature.get('name') || feature.id()} - HWE violation (χ²=${chiSq.toFixed(2)} > ${chiSqCritical.toFixed(2)}), ` +
-              `observed: ${nHomRef}/${nHet}/${nHomAlt}, ` +
-              `expected: ${expectedHomRef.toFixed(0)}/${expectedHet.toFixed(0)}/${expectedHomAlt.toFixed(0)}`,
-          )
           filteredByHwe++
           continue
         }

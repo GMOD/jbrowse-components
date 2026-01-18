@@ -99,7 +99,7 @@ export default function LDFilterDialog({
         <Typography variant="subtitle1" gutterBottom>
           Minor Allele Frequency (MAF) Filter
         </Typography>
-        <Typography variant="body2" color="textSecondary" paragraph>
+        <Typography variant="body2" color="textSecondary" component="p">
           Exclude variants with minor allele frequency below this threshold.
         </Typography>
         <TextField
@@ -120,7 +120,7 @@ export default function LDFilterDialog({
         <Typography variant="subtitle1" gutterBottom>
           Hardy-Weinberg Equilibrium (HWE) Filter
         </Typography>
-        <Typography variant="body2" color="textSecondary" paragraph>
+        <Typography variant="body2" color="textSecondary" component="p">
           Exclude variants that deviate significantly from HWE, which may
           indicate genotyping errors or population stratification. This follows
           Haploview&apos;s approach.

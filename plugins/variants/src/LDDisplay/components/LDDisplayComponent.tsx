@@ -193,14 +193,13 @@ function VerticalGuides({
 
   // Find the TracksContainer by traversing up from our container
   useEffect(() => {
-    if (containerRef.current) {
-      let el: HTMLElement | null = containerRef.current
+    const current = containerRef.current
+    if (current) {
+      let el: HTMLElement | null = current
       while (el && el.dataset.testid !== 'tracksContainer') {
         el = el.parentElement
       }
-      if (el) {
-        setTracksContainer(el)
-      }
+      setTracksContainer(prev => (prev !== el ? el : prev))
     }
   }, [containerRef])
 
@@ -295,7 +294,6 @@ const LDCanvas = observer(function LDCanvas({
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>()
-  const [localMousePos, setLocalMousePos] = useState<{ x: number; y: number }>()
 
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(
@@ -317,7 +315,6 @@ const LDCanvas = observer(function LDCanvas({
       if (!containerRef.current || !flatbushIndex || !flatbushItems.length) {
         setHoveredItem(undefined)
         setMousePosition(undefined)
-        setLocalMousePos(undefined)
         return
       }
 
@@ -326,7 +323,6 @@ const LDCanvas = observer(function LDCanvas({
       const screenY = event.clientY - rect.top
 
       setMousePosition({ x: event.clientX, y: event.clientY })
-      setLocalMousePos({ x: screenX, y: screenY })
 
       // Only query if we're below the line zone
       if (screenY < lineZoneHeight) {
@@ -358,7 +354,6 @@ const LDCanvas = observer(function LDCanvas({
   const onMouseLeave = useCallback(() => {
     setHoveredItem(undefined)
     setMousePosition(undefined)
-    setLocalMousePos(undefined)
   }, [])
 
   return (
