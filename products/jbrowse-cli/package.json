@@ -40,7 +40,7 @@
     "cors": "^2.8.5",
     "decompress": "^4.2.1",
     "express": "^5.2.1",
-    "ixixx": "^3.0.2",
+    "ixixx": "^3.0.3",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch-native": "^1.6.7",
     "tmp": "^0.2.5"

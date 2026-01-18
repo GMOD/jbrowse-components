@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "ixixx": "^3.0.2",
+    "ixixx": "^3.0.3",
     "node-fetch": "^2.7.0",
     "sanitize-filename": "^1.6.3"
   },

@@ -552,8 +552,8 @@ importers:
   packages/sv-core:
     dependencies:
       '@gmod/vcf':
-        specifier: ^6.1.0
-        version: 6.1.0
+        specifier: ^6.1.1
+        version: 6.1.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -585,8 +585,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       ixixx:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       node-fetch:
         specifier: ^2.7.0
         version: 2.7.0(encoding@0.1.13)
@@ -693,8 +693,8 @@ importers:
   plugins/arc:
     dependencies:
       '@gmod/vcf':
-        specifier: ^6.1.0
-        version: 6.1.0
+        specifier: ^6.1.1
+        version: 6.1.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -783,8 +783,8 @@ importers:
   plugins/breakpoint-split-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^6.1.0
-        version: 6.1.0
+        specifier: ^6.1.1
+        version: 6.1.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1446,8 +1446,8 @@ importers:
   plugins/spreadsheet-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^6.1.0
-        version: 6.1.0
+        specifier: ^6.1.1
+        version: 6.1.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1536,8 +1536,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.4
-        version: 3.0.4
+        specifier: ^3.0.5
+        version: 3.0.5
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1557,8 +1557,8 @@ importers:
         specifier: ^3.2.2
         version: 3.2.2
       '@gmod/vcf':
-        specifier: ^6.1.0
-        version: 6.1.0
+        specifier: ^6.1.1
+        version: 6.1.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1692,8 +1692,8 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1
       ixixx:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^3.0.3
+        version: 3.0.3
       json-parse-better-errors:
         specifier: ^1.0.2
         version: 1.0.2
@@ -3487,8 +3487,8 @@ packages:
     resolution: {integrity: sha512-lQQCuanjsnVNzH9n21LTMGykvRbpLbEQk3AL+aKnjf72gfV07mLZ116gtvDFu5huxbxWialOHGGC7iJAQDEi5Q==}
     engines: {node: '>=6'}
 
-  '@gmod/trix@3.0.4':
-    resolution: {integrity: sha512-T8Y6VUh14SenH7kbFPfnqHzvLd9Ui4QCMsMorelN/VxqBXQAyIKlNG+n3eO3iNqfl1zVU8Bsor4A/dRSkFgDQg==}
+  '@gmod/trix@3.0.5':
+    resolution: {integrity: sha512-/v8Sn9OUT5UYlhNW3GE4wedxo8gHn1Zgs9DYRwjpjsetNgFtWrEZwjTHaAkTE6HDuYd5qtEyT1C0leD3ljURoQ==}
     engines: {node: '>=10'}
 
   '@gmod/twobit@6.0.1':
@@ -3498,8 +3498,8 @@ packages:
   '@gmod/ucsc-hub@2.0.3':
     resolution: {integrity: sha512-w0qs1J2rjxt/ytxYH0VhxcFW+03Uh6R216skpbc5Q4to73lmXbaatJz6cZ+M4vgBkTQXoOpvaULAha0g7nxjWA==}
 
-  '@gmod/vcf@6.1.0':
-    resolution: {integrity: sha512-5hvxb504iOFjYiqvOVuG7x/AffbCax6o8CIsA+oXqMzSwvC/sX6LTPm4FA8Fw9JGRtsQR5RL/eJbOagc3qDkgQ==}
+  '@gmod/vcf@6.1.1':
+    resolution: {integrity: sha512-7E4Oox1MaJFJN6XMukbhgzVIrdgR4jBINw2EfJ76aQvWNZlqd0+EEZA9j2TOzZopWPpl3VgwHQ1Qo9bvEHMfAQ==}
     engines: {node: '>=6'}
 
   '@humanfs/core@0.19.1':
@@ -6297,9 +6297,6 @@ packages:
     resolution: {integrity: sha512-yblEwXAbGv1VQDmow7s38W77hzAgJAO50ztBLMcUyUBfxv1HC+LGwtiEN+Co6LtlqT/5uwVOxsD4TNIilWhwdQ==}
     engines: {node: '>=4'}
 
-  external-sorting@1.3.1:
-    resolution: {integrity: sha512-eqI/TxUu4U5RW90ml7bRyvk/0Qh/Lf3JecZQKeLmC0eVRzPQ2UG3ZR7k66EDO1UnTJat0D8bn129K+gnZYMJuw==}
-
   extract-zip@2.0.1:
     resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
     engines: {node: '>= 10.17.0'}
@@ -6323,9 +6320,6 @@ packages:
 
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
-
-  fast-sort@2.2.0:
-    resolution: {integrity: sha512-W7zqnn2zsYoQA87FKmYtgOsbJohOrh7XrtZrCVHN5XZKqTBTv5UG+rSS3+iWbg/nepRQUOu+wnas8BwtK8kiCg==}
 
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
@@ -7139,8 +7133,8 @@ packages:
     resolution: {integrity: sha512-H0dkQoCa3b2VEeKQBOxFph+JAbcrQdE7KC0UkqwpLmv2EC4P41QXP+rqo9wYodACiG5/WM5s9oDApTU8utwj9g==}
     engines: {node: '>= 0.4'}
 
-  ixixx@3.0.2:
-    resolution: {integrity: sha512-NmzkqETsLh2rsP0ROar8LA9AIfiTUCaqBwG1BVyh+M4AEmCsrovUqMf3FW1J3eLYsIxDTtrL5bykW/rpsATAuA==}
+  ixixx@3.0.3:
+    resolution: {integrity: sha512-gn9sV/0LkM+S3xGDm67gnWucpHApe7pW784ehB7Hx7hjmgtBlSd2n7e2Tz6NMv16s6TszX8TzVWcvQ8Qr0L74Q==}
     hasBin: true
 
   jackspeak@3.4.3:
@@ -10889,7 +10883,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.0.18
 
-  '@gmod/trix@3.0.4': {}
+  '@gmod/trix@3.0.5': {}
 
   '@gmod/twobit@6.0.1':
     dependencies:
@@ -10897,7 +10891,7 @@ snapshots:
 
   '@gmod/ucsc-hub@2.0.3': {}
 
-  '@gmod/vcf@6.1.0': {}
+  '@gmod/vcf@6.1.1': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -14416,10 +14410,6 @@ snapshots:
       ext-list: 2.2.2
       sort-keys-length: 1.0.1
 
-  external-sorting@1.3.1:
-    dependencies:
-      fast-sort: 2.2.0
-
   extract-zip@2.0.1:
     dependencies:
       debug: 4.4.3
@@ -14442,8 +14432,6 @@ snapshots:
   fast-json-stable-stringify@2.1.0: {}
 
   fast-levenshtein@2.0.6: {}
-
-  fast-sort@2.2.0: {}
 
   fast-uri@3.1.0: {}
 
@@ -15267,10 +15255,9 @@ snapshots:
       has-symbols: 1.1.0
       set-function-name: 2.0.2
 
-  ixixx@3.0.2:
+  ixixx@3.0.3:
     dependencies:
       command-exists: 1.2.9
-      external-sorting: 1.3.1
       split2: 4.2.0
       tmp: 0.2.5
 
