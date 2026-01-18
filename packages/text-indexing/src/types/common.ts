@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import fetch from 'node-fetch'
 
@@ -31,12 +32,12 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-// Convert file:// URLs to local paths
-function fileUrlToPath(fileUrl: string): string | undefined {
+// Convert file:// URLs to local paths (handles Windows paths correctly)
+function convertFileUrlToPath(fileUrl: string): string | undefined {
   try {
     const url = new URL(fileUrl)
     if (url.protocol === 'file:') {
-      return url.pathname
+      return fileURLToPath(url)
     }
   } catch {
     // not a valid URL
@@ -66,7 +67,7 @@ export async function getLocalOrRemoteStream({
     return result.body
   } else {
     // Handle file:// URLs by converting to local path
-    const localPath = fileUrlToPath(file) ?? file
+    const localPath = convertFileUrlToPath(file) ?? file
     const filename = path.isAbsolute(localPath)
       ? localPath
       : path.join(out, localPath)
@@ -152,6 +153,12 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
+// Sanitize a string to be safe for use in filenames on all platforms
+// Replaces characters that are invalid in Windows filenames: \ / : * ? " < > |
+export function sanitizeForFilename(name: string) {
+  return name.replace(/[\\/:*?"<>|]/g, '_')
+}
+
 /**
  * Generates metadata of index given a filename (trackId or assembly)
  */
@@ -170,8 +177,9 @@ export async function generateMeta({
   featureTypesToExclude: string[]
   assemblyNames: string[]
 }) {
+  const safeName = sanitizeForFilename(name)
   fs.writeFileSync(
-    path.join(outDir, 'trix', `${name}_meta.json`),
+    path.join(outDir, 'trix', `${safeName}_meta.json`),
     JSON.stringify(
       {
         dateCreated: new Date().toISOString(),

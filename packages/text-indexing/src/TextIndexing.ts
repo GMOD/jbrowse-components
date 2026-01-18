@@ -7,7 +7,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { ixIxxStream } from 'ixixx'
 
 // misc
-import { generateMeta } from './types/common.ts'
+import { generateMeta, sanitizeForFilename } from './types/common.ts'
 import { indexGff3 } from './types/gff3Adapter.ts'
 import { indexVcf } from './types/vcfAdapter.ts'
 
@@ -290,7 +290,8 @@ function getLoc(attr: string, config: Track) {
 }
 
 function runIxIxx(readStream: Readable, idxLocation: string, name: string) {
-  const ixFilename = path.join(idxLocation, 'trix', `${name}.ix`)
-  const ixxFilename = path.join(idxLocation, 'trix', `${name}.ixx`)
+  const safeName = sanitizeForFilename(name)
+  const ixFilename = path.join(idxLocation, 'trix', `${safeName}.ix`)
+  const ixxFilename = path.join(idxLocation, 'trix', `${safeName}.ixx`)
   return ixIxxStream(readStream, ixFilename, ixxFilename)
 }

@@ -10,13 +10,13 @@
   "dir": "src",
   "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
-    "start": "NODE_ENV=development node scripts/start.js",
+    "start": "cross-env NODE_ENV=development node scripts/start.js",
     "electron": "electron . --no-sandbox",
     "electron-ts": "tsc -p tsconfig.electron.json",
     "preelectron": "pnpm electron-ts",
     "prebuild": "pnpm electron-ts",
     "prepack": "pnpm build",
-    "build": "NODE_ENV=production node scripts/build.js",
+    "build": "cross-env NODE_ENV=production node scripts/build.js",
     "build-electron": "pnpm build && electron-builder build --windows --mac --linux",
     "build-electron:win": "pnpm build && electron-builder build --windows",
     "build-electron:mac": "pnpm build && electron-builder build --mac",
@@ -40,7 +40,9 @@
     "test:e2e": "node --experimental-strip-types test/e2e.ts",
     "test:e2e:headless": "xvfb-run --auto-servernum node --experimental-strip-types test/e2e.ts --headless",
     "test:e2e:build": "pnpm build-electron-unpacked:linux && pnpm test:e2e",
-    "test:e2e:ci": "pnpm build-electron-unpacked:linux && pnpm test:e2e:headless"
+    "test:e2e:ci": "pnpm build-electron-unpacked:linux && pnpm test:e2e:headless",
+    "test:e2e:build:win": "pnpm build-electron-unpacked:win && pnpm test:e2e",
+    "test:e2e:ci:win": "pnpm build-electron-unpacked:win && node --experimental-strip-types test/e2e.ts --headless"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -103,6 +105,7 @@
   },
   "devDependencies": {
     "@types/selenium-webdriver": "^4.35.5",
+    "cross-env": "^7.0.3",
     "electron": "40.0.0",
     "electron-chromedriver": "^40.0.0",
     "selenium-webdriver": "^4.39.0"

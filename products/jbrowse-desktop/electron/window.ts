@@ -1,5 +1,5 @@
 import path from 'path'
-import url from 'url'
+import url, { pathToFileURL } from 'url'
 
 import electron, { BrowserWindow, Menu, app, shell } from 'electron'
 import windowStateKeeper from 'electron-window-state'
@@ -15,9 +15,7 @@ const DEFAULT_DEV_SERVER_URL = 'http://localhost:3000'
 
 function getAppUrl(devServerUrl: URL): URL {
   if (app.isPackaged) {
-    return new URL(
-      `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
-    )
+    return pathToFileURL(path.join(app.getAppPath(), 'build', 'index.html'))
   }
   return devServerUrl
 }
@@ -84,11 +82,14 @@ export async function createMainWindow(
   mainWindowState.manage(mainWindow)
 
   // This ready-to-show handler must be attached before the loadURL
-  mainWindow.once('ready-to-show', () => {
-    autoUpdater.checkForUpdatesAndNotify().catch((e: unknown) => {
-      console.error(e)
+  // Skip auto-update check in CI environments to avoid blocking dialogs
+  if (!process.env.CI) {
+    mainWindow.once('ready-to-show', () => {
+      autoUpdater.checkForUpdatesAndNotify().catch((e: unknown) => {
+        console.error(e)
+      })
     })
-  })
+  }
 
   const serverUrl = new URL(devServerUrl || DEFAULT_DEV_SERVER_URL)
   const appUrl = getAppUrl(serverUrl)
