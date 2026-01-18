@@ -743,6 +743,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Pausing to observe track list...')
   await delay(5000)
 
+  // Flush browser logs to see any track loading errors
+  console.log('    DEBUG: Browser logs after track add:')
+  await flushBrowserLogs(driver)
+
   // Now search for EDEN.1 in the refname autocomplete
   console.log('    DEBUG: Looking for location search input...')
   const searchInput = await driver.wait(
@@ -755,6 +759,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   await searchInput.sendKeys('EDEN.1')
   console.log('    DEBUG: Waiting for autocomplete suggestions...')
   await delay(3000) // Wait for autocomplete suggestions
+
+  // Flush browser logs to see any errors from the app
+  console.log('    DEBUG: Browser logs before EDEN.1 search:')
+  await flushBrowserLogs(driver)
 
   // Look for EDEN.1 in the autocomplete dropdown and click it
   console.log('    DEBUG: Looking for EDEN.1 in autocomplete suggestions...')
@@ -1146,38 +1154,14 @@ async function main(): Promise<void> {
 
   console.log('\nRunning tests...\n')
 
-  console.log('Start Screen:')
-  await runTest('should display application title', testStartScreen, driver)
-  await runTest(
-    'should show start screen elements',
-    testStartScreenElements,
-    driver,
-  )
-
-  console.log('\nOpen Genome from Available Genomes:')
-  await runTest('should open hg19 genome', testOpenHg19Genome, driver)
-
-  console.log('\nOpen Genome with Local Files:')
+  // Temporarily focusing on volvox tests only for Windows CI debugging
+  console.log('Open Genome with Local Files:')
   await runTest('should open volvox genome', testOpenVolvoxGenome, driver)
   await runTest(
     'should add GFF3 track and search for EDEN.1',
     testAddGff3TrackAndSearch,
     driver,
   )
-
-  console.log('\nTrack Operations:')
-  await runTest('should show File menu', testFileMenu, driver)
-  await runTest('should open Help > About dialog', testHelpAbout, driver)
-  await runTest('should zoom in and out', testZoom, driver)
-  await runTest('should search for location', testLocationSearch, driver)
-
-  console.log('\nWorkspaces:')
-  await runTest(
-    'should move view to new tab with multiple views',
-    testWorkspaceMoveToTabWithMultipleViews,
-    driver,
-  )
-  await runTest('should copy view', testWorkspaceCopyView, driver)
 
   // Summary
   const passed = results.filter(r => r.passed).length
