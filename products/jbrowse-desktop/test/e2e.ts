@@ -8,7 +8,13 @@ const require = createRequire(import.meta.url)
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const TEST_DATA_DIR = resolve(__dirname, '../../../test_data/volvox')
-const APP_BINARY = resolve(__dirname, '../dist/linux-unpacked/jbrowse-desktop')
+const isWindows = process.platform === 'win32'
+const APP_BINARY = resolve(
+  __dirname,
+  isWindows
+    ? '../dist/win-unpacked/JBrowse 2.exe'
+    : '../dist/linux-unpacked/jbrowse-desktop',
+)
 const CHROMEDRIVER_PORT = 9515
 
 // Check for headless mode via CLI arg or environment variable
@@ -19,7 +25,11 @@ const isHeadless =
 const electronChromedriverDir = dirname(
   require.resolve('electron-chromedriver/package.json'),
 )
-const CHROMEDRIVER_PATH = join(electronChromedriverDir, 'bin', 'chromedriver')
+const CHROMEDRIVER_PATH = join(
+  electronChromedriverDir,
+  'bin',
+  isWindows ? 'chromedriver.exe' : 'chromedriver',
+)
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 

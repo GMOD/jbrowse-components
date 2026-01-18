@@ -40,7 +40,9 @@
     "test:e2e": "node --experimental-strip-types test/e2e.ts",
     "test:e2e:headless": "xvfb-run --auto-servernum node --experimental-strip-types test/e2e.ts --headless",
     "test:e2e:build": "pnpm build-electron-unpacked:linux && pnpm test:e2e",
-    "test:e2e:ci": "pnpm build-electron-unpacked:linux && pnpm test:e2e:headless"
+    "test:e2e:ci": "pnpm build-electron-unpacked:linux && pnpm test:e2e:headless",
+    "test:e2e:build:win": "pnpm build-electron-unpacked:win && pnpm test:e2e",
+    "test:e2e:ci:win": "pnpm build-electron-unpacked:win && node --experimental-strip-types test/e2e.ts --headless"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
