@@ -22,7 +22,7 @@ interface ChunkInfo {
 }
 
 interface LdmatConfig {
-  h5: Awaited<ReturnType<typeof import('h5wasm')>>['FS']
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   file: any
   chunks: ChunkInfo[]
   chromosome: string
@@ -56,7 +56,7 @@ export default class LdmatAdapter extends BaseAdapter {
     const h5wasm = await this.getH5wasm()
 
     // Write buffer to virtual filesystem
-    h5wasm.FS.writeFile(filename, new Uint8Array(buffer))
+    h5wasm.FS!.writeFile(filename, new Uint8Array(buffer))
 
     // Open the HDF5 file
     const file = new h5wasm.File(filename, 'r')
@@ -71,10 +71,20 @@ export default class LdmatAdapter extends BaseAdapter {
     const chunks: ChunkInfo[] = []
     for (const key of file.keys()) {
       if (key.startsWith(CHUNK_NAME)) {
-        const group = file.get(key)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const group = file.get(key) as any
         if (group) {
-          const startLocus = group.attrs[START_ATTR]?.value as number
-          const endLocus = group.attrs[END_ATTR]?.value as number
+          // Attributes may be BigInt, convert to Number
+          const startLocusRaw = group.attrs?.[START_ATTR]?.value
+          const endLocusRaw = group.attrs?.[END_ATTR]?.value
+          const startLocus =
+            typeof startLocusRaw === 'bigint'
+              ? Number(startLocusRaw)
+              : (startLocusRaw as number)
+          const endLocus =
+            typeof endLocusRaw === 'bigint'
+              ? Number(endLocusRaw)
+              : (endLocusRaw as number)
           chunks.push({
             name: key,
             startLocus,
@@ -150,9 +160,18 @@ export default class LdmatAdapter extends BaseAdapter {
     const { file, chunks, chromosome } = await this.configure(opts)
 
     console.log('[LdmatAdapter] getLDRecords query:', { refName, start, end })
+    console.log('[LdmatAdapter] Available chunks:', chunks.map(c => `${c.name}: ${c.startLocus}-${c.endLocus}`))
+    console.log('[LdmatAdapter] Chromosome in file:', chromosome, 'query refName:', refName)
 
-    // Check chromosome match
-    if (chromosome && refName !== chromosome && refName !== `chr${chromosome}`) {
+    // Check chromosome match - be flexible with chr prefix
+    const chrMatch =
+      !chromosome ||
+      refName === chromosome ||
+      refName === `chr${chromosome}` ||
+      refName === chromosome.replace(/^chr/i, '') ||
+      `chr${refName}` === chromosome
+
+    if (!chrMatch) {
       console.log('[LdmatAdapter] Chromosome mismatch:', refName, 'vs', chromosome)
       return []
     }
@@ -161,7 +180,9 @@ export default class LdmatAdapter extends BaseAdapter {
 
     // Find chunks that overlap with the query region
     for (const chunk of chunks) {
+      console.log(`[LdmatAdapter] Checking chunk ${chunk.name}: ${chunk.startLocus}-${chunk.endLocus} vs query ${start}-${end}`)
       if (chunk.endLocus < start || chunk.startLocus > end) {
+        console.log('[LdmatAdapter] Chunk does not overlap, skipping')
         continue
       }
 
@@ -182,16 +203,64 @@ export default class LdmatAdapter extends BaseAdapter {
         continue
       }
 
-      const positions = positionsDataset.value as number[]
-      const names = namesDataset?.value as string[] | undefined
-      const ldMatrix = ldDataset.value as number[][]
+      // HDF5 int64 comes as BigInt64Array, need to convert to Number[]
+      const positionsRaw = positionsDataset.value
+      console.log('[LdmatAdapter] positionsRaw type:', positionsRaw?.constructor?.name, 'length:', positionsRaw?.length, 'first elem type:', positionsRaw?.[0] !== undefined ? typeof positionsRaw[0] : 'N/A')
 
-      console.log('[LdmatAdapter] Chunk has', positions.length, 'positions')
+      const positions: number[] = []
+      if (positionsRaw && typeof positionsRaw.length === 'number') {
+        for (let i = 0; i < positionsRaw.length; i++) {
+          const p = positionsRaw[i]
+          positions.push(typeof p === 'bigint' ? Number(p) : Number(p))
+        }
+      }
+
+      const namesRaw = namesDataset?.value
+      // Names may be byte arrays or typed array
+      const names: string[] = []
+      if (namesRaw && typeof namesRaw.length === 'number') {
+        for (let i = 0; i < namesRaw.length; i++) {
+          const n = namesRaw[i]
+          if (n instanceof Uint8Array) {
+            names.push(new TextDecoder().decode(n))
+          } else {
+            names.push(String(n))
+          }
+        }
+      }
+
+      const ldMatrixRaw = ldDataset.value as Float32Array | number[][]
+      const numSnps = positions.length
+      const isFlat = ldMatrixRaw instanceof Float32Array || !Array.isArray(ldMatrixRaw[0])
+
+      console.log('[LdmatAdapter] ldMatrix type:', ldMatrixRaw?.constructor?.name, 'length:', ldMatrixRaw?.length, 'isFlat:', isFlat, 'numSnps:', numSnps)
+
+      // Debug: check some actual values
+      if (isFlat && ldMatrixRaw.length > 0) {
+        const flat = ldMatrixRaw as Float32Array
+        console.log('[LdmatAdapter] ldMatrix flat[0]:', flat[0], 'flat[1]:', flat[1], 'flat[numSnps]:', flat[numSnps], 'flat[numSnps+1]:', flat[numSnps + 1])
+      }
+
+      // Helper to get LD value - handles both flat and 2D arrays
+      const getLDValue = (row: number, col: number): number => {
+        if (isFlat) {
+          // Flat array: index = row * numCols + col
+          const flat = ldMatrixRaw as Float32Array
+          return flat[row * numSnps + col] ?? 0
+        } else {
+          // 2D array
+          const matrix = ldMatrixRaw as number[][]
+          return matrix[row]?.[col] ?? 0
+        }
+      }
+
+      console.log('[LdmatAdapter] Chunk has', positions.length, 'positions, first:', positions[0], 'last:', positions[positions.length - 1])
 
       // Find indices within query range
       const queryIndices: number[] = []
       for (let i = 0; i < positions.length; i++) {
-        if (positions[i] >= start && positions[i] <= end) {
+        const pos = positions[i]
+        if (pos !== undefined && pos >= start && pos <= end) {
           queryIndices.push(i)
         }
       }
@@ -199,24 +268,25 @@ export default class LdmatAdapter extends BaseAdapter {
       console.log('[LdmatAdapter] Found', queryIndices.length, 'positions in range')
 
       // Extract LD values for pairs within the query region
-      // The ldmat format stores upper triangular matrix
+      // The ldmat format stores full symmetric matrix
+      let sampleCount = 0
       for (let ii = 0; ii < queryIndices.length; ii++) {
         const i = queryIndices[ii]!
         const posA = positions[i]!
-        const nameA = names?.[i] || `${refName}:${posA}`
+        const nameA = names[i] || `${refName}:${posA}`
 
         for (let jj = ii + 1; jj < queryIndices.length; jj++) {
           const j = queryIndices[jj]!
           const posB = positions[j]!
-          const nameB = names?.[j] || `${refName}:${posB}`
+          const nameB = names[j] || `${refName}:${posB}`
 
-          // Get LD value - ldmat stores upper triangular, so use min/max for indices
-          const rowIdx = Math.min(i, j)
-          const colIdx = Math.max(i, j)
+          // Get LD value from matrix using helper
+          const r2 = getLDValue(i, j)
 
-          let r2 = 0
-          if (ldMatrix[rowIdx] && ldMatrix[rowIdx][colIdx] !== undefined) {
-            r2 = ldMatrix[rowIdx][colIdx]!
+          // Log first few extractions
+          if (sampleCount < 5) {
+            console.log(`[LdmatAdapter] Extracting LD[${i}][${j}]: r2=${r2}`)
+            sampleCount++
           }
 
           records.push({
