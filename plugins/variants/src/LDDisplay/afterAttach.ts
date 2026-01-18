@@ -9,7 +9,7 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { drawCanvasImageData } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, untracked } from 'mobx'
 
-import type { LDDisplayModel } from './model.ts'
+import type { SharedLDModel } from './shared.ts'
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -35,7 +35,7 @@ interface RenderResult {
   height: number
 }
 
-export function doAfterAttach(self: LDDisplayModel) {
+export function doAfterAttach(self: SharedLDModel) {
   const performRender = async () => {
     if (self.isMinimized) {
       return

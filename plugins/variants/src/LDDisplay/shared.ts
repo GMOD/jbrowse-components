@@ -18,26 +18,23 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * #stateModel LDDisplay
+ * #stateModel SharedLDModel
+ * Shared state model for LD displays
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
  * - [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
  */
-export default function stateModelFactory(
+export default function sharedModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
     .compose(
-      'LDDisplay',
+      'SharedLDModel',
       BaseDisplay,
       TrackHeightMixin(),
       NonBlockCanvasDisplayMixin(),
       types.model({
-        /**
-         * #property
-         */
-        type: types.literal('LDDisplay'),
         /**
          * #property
          */
@@ -467,7 +464,7 @@ export default function stateModelFactory(
           opts: ExportSvgDisplayOptions,
         ): Promise<React.ReactNode> {
           const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as LDDisplayModel, opts)
+          return renderSvg(self as SharedLDModel, opts)
         },
       }
     })
@@ -477,7 +474,7 @@ export default function stateModelFactory(
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self as LDDisplayModel)
+            doAfterAttach(self as SharedLDModel)
           } catch (e) {
             console.error(e)
             getSession(self).notifyError(`${e}`, e)
@@ -529,5 +526,5 @@ export default function stateModelFactory(
     })
 }
 
-export type LDDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type LDDisplayModel = Instance<LDDisplayStateModel>
+export type SharedLDStateModel = ReturnType<typeof sharedModelFactory>
+export type SharedLDModel = Instance<SharedLDStateModel>

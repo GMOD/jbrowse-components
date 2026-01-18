@@ -4,6 +4,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
+import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 
 import type {
   FilterStats,
@@ -55,7 +56,9 @@ export default class LDRenderer extends ServerSideRendererType {
     const hyp = width / 2
     // When fitToHeight is false, use natural triangle height (hyp + lineZoneHeight)
     // When true, use the provided displayHeight
-    const height = fitToHeight ? (displayHeight ?? hyp + lineZoneHeight) : hyp + lineZoneHeight
+    const height = fitToHeight
+      ? (displayHeight ?? hyp + lineZoneHeight)
+      : hyp + lineZoneHeight
     const matrixHeight = height - lineZoneHeight
 
     // Get LD data
@@ -153,6 +156,21 @@ export default class LDRenderer extends ServerSideRendererType {
     } = args
 
     try {
+      // Check if this is a PlinkLDAdapter (pre-computed LD)
+      const adapterType = adapterConfig?.type as string | undefined
+      if (adapterType === 'PlinkLDAdapter') {
+        return await getLDMatrixFromPlink({
+          pluginManager: this.pluginManager,
+          args: {
+            regions,
+            sessionId,
+            adapterConfig,
+            ldMetric,
+          },
+        })
+      }
+
+      // Otherwise compute LD from VCF genotypes
       return await getLDMatrix({
         pluginManager: this.pluginManager,
         args: {

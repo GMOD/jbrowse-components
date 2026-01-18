@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, stringify } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
+import { createPortal } from 'react-dom'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
@@ -15,7 +15,7 @@ import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGen
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 
 import type { LDFlatbushItem } from '../../LDRenderer/types.ts'
-import type { LDDisplayModel } from '../model.ts'
+import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -136,17 +136,30 @@ function Crosshairs({
       }}
     >
       {/* V-shape with thick lines matching cell width */}
-      <g stroke="rgba(0, 0, 0, 0.3)" strokeWidth={lineThickness} fill="none" strokeLinecap="square">
+      <g
+        stroke="rgba(0, 0, 0, 0.3)"
+        strokeWidth={lineThickness}
+        fill="none"
+        strokeLinecap="square"
+      >
         {/* Left arm: from snp j down to hovered cell */}
-        <path d={`M ${snpJCenter.x} ${snpJCenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`} />
+        <path
+          d={`M ${snpJCenter.x} ${snpJCenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`}
+        />
         {/* Right arm: from snp i down to hovered cell */}
-        <path d={`M ${snpICenter.x} ${snpICenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`} />
+        <path
+          d={`M ${snpICenter.x} ${snpICenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`}
+        />
       </g>
       {/* Highlighted connecting lines from matrix to genome */}
       <g stroke="#e00" strokeWidth="1.5" fill="none">
         {/* Diagonal lines ending at top of tick marks */}
-        <path d={`M ${snpJCenter.x} ${snpJCenter.y} L ${genomicX1} ${tickHeight}`} />
-        <path d={`M ${snpICenter.x} ${snpICenter.y} L ${genomicX2} ${tickHeight}`} />
+        <path
+          d={`M ${snpJCenter.x} ${snpJCenter.y} L ${genomicX1} ${tickHeight}`}
+        />
+        <path
+          d={`M ${snpICenter.x} ${snpICenter.y} L ${genomicX2} ${tickHeight}`}
+        />
         {/* Vertical tick marks */}
         <path d={`M ${genomicX1} 0 L ${genomicX1} ${tickHeight}`} />
         <path d={`M ${genomicX2} 0 L ${genomicX2} ${tickHeight}`} />
@@ -173,7 +186,9 @@ function VerticalGuides({
   containerRef: React.RefObject<HTMLDivElement | null>
 }) {
   const { classes } = useStyles()
-  const [tracksContainer, setTracksContainer] = useState<HTMLElement | null>(null)
+  const [tracksContainer, setTracksContainer] = useState<HTMLElement | null>(
+    null,
+  )
 
   // Find the TracksContainer by traversing up from our container
   useEffect(() => {
@@ -252,7 +267,7 @@ const LDCanvas = observer(function LDCanvas({
   model,
   canvasHeight,
 }: {
-  model: LDDisplayModel
+  model: SharedLDModel
   canvasHeight: number
 }) {
   const view = getContainingView(model) as LGV
@@ -426,17 +441,13 @@ const LDCanvas = observer(function LDCanvas({
 const LDDisplayContent = observer(function LDDisplayContent({
   model,
 }: {
-  model: LDDisplayModel
+  model: SharedLDModel
 }) {
   const { classes } = useStyles()
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
-  const {
-    height,
-    showLDTriangle,
-    showRecombination,
-    recombinationZoneHeight,
-  } = model
+  const { height, showLDTriangle, showRecombination, recombinationZoneHeight } =
+    model
 
   // Show message when zoomed out
   if (view.bpPerPx > 1000) {
@@ -490,7 +501,9 @@ const LDDisplayContent = observer(function LDDisplayContent({
           {showLDTriangle ? (
             <ResizeHandle
               onDrag={delta => {
-                model.setRecombinationZoneHeight(recombinationZoneHeight + delta)
+                model.setRecombinationZoneHeight(
+                  recombinationZoneHeight + delta,
+                )
                 return delta
               }}
               className={classes.resizeHandle}
@@ -516,7 +529,7 @@ const LDDisplayContent = observer(function LDDisplayContent({
 const LDDisplayComponent = observer(function LDDisplayComponent({
   model,
 }: {
-  model: LDDisplayModel
+  model: SharedLDModel
 }) {
   return (
     <BaseDisplayComponent model={model}>

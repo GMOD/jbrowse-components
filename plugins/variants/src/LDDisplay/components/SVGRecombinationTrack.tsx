@@ -44,7 +44,9 @@ export default function SVGRecombinationTrack({
         firstX = x
       }
       lastX = x
-      points.push(`${points.length === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`)
+      points.push(
+        `${points.length === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`,
+      )
     }
   }
 

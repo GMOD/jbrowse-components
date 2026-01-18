@@ -159,7 +159,7 @@ describe('calculateLDStats', () => {
     const geno1 = new Int8Array([0, 1, 2, 0, 1, 2])
     const geno2 = new Int8Array([0, 1, 2, 0, 1, 2])
     const stats = calculateLDStats(geno1, geno2)
-    expect(stats.r2).toBeCloseTo(1.0)
+    expect(stats.r2).toBeCloseTo(1)
   })
 
   it('returns zero LD for independent genotypes', () => {
@@ -183,7 +183,7 @@ describe('calculateLDStats', () => {
     const geno2 = new Int8Array([0, 1, 2, 0, 1, 2])
     const stats = calculateLDStats(geno1, geno2)
     // Only first 3 samples are used
-    expect(stats.r2).toBeCloseTo(1.0)
+    expect(stats.r2).toBeCloseTo(1)
   })
 
   it('returns zero if less than 2 valid samples', () => {
@@ -201,7 +201,7 @@ describe('calculateLDStats', () => {
     const geno2 = new Int8Array([2, 2, 0, 0, 2, 0])
     const stats = calculateLDStats(geno1, geno2)
     // Should have high R² (perfect negative correlation squares to positive)
-    expect(stats.r2).toBeCloseTo(1.0)
+    expect(stats.r2).toBeCloseTo(1)
   })
 
   it('calculates LD for realistic population data', () => {
@@ -216,7 +216,7 @@ describe('calculateLDStats', () => {
     const stats = calculateLDStats(geno1, geno2)
     // Should have moderate LD
     expect(stats.r2).toBeGreaterThan(0.3)
-    expect(stats.r2).toBeLessThan(1.0)
+    expect(stats.r2).toBeLessThan(1)
   })
 })
 
@@ -235,14 +235,14 @@ describe('LD calculation edge cases', () => {
     const geno2 = new Int8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
     const stats = calculateLDStats(geno1, geno2)
     // Perfect correlation for rare variant
-    expect(stats.r2).toBeCloseTo(1.0)
+    expect(stats.r2).toBeCloseTo(1)
   })
 
   it('handles minimum sample size (n=2)', () => {
     const geno1 = new Int8Array([0, 2])
     const geno2 = new Int8Array([0, 2])
     const stats = calculateLDStats(geno1, geno2)
-    expect(stats.r2).toBeCloseTo(1.0)
+    expect(stats.r2).toBeCloseTo(1)
   })
 
   it('returns 0 for completely uncorrelated variants', () => {
@@ -255,8 +255,8 @@ describe('LD calculation edge cases', () => {
   })
 })
 
-describe('R² vs D\' differences', () => {
-  it('D\' can be 1 when R² is less than 1', () => {
+describe("R² vs D' differences", () => {
+  it("D' can be 1 when R² is less than 1", () => {
     // D' = 1 means no recombination has occurred (complete LD)
     // but R² can be < 1 if allele frequencies differ
     // Example: SNP1 has MAF 0.1, SNP2 has MAF 0.4
@@ -270,13 +270,13 @@ describe('R² vs D\' differences', () => {
     expect(stats.r2).toBeGreaterThanOrEqual(0)
   })
 
-  it('R² equals D\' squared when allele frequencies are equal', () => {
+  it("R² equals D' squared when allele frequencies are equal", () => {
     // When both SNPs have 50% allele frequency and are in complete LD
     const geno1 = new Int8Array([0, 0, 0, 0, 0, 2, 2, 2, 2, 2])
     const geno2 = new Int8Array([0, 0, 0, 0, 0, 2, 2, 2, 2, 2])
     const stats = calculateLDStats(geno1, geno2)
-    expect(stats.r2).toBeCloseTo(1.0)
-    expect(stats.dprime).toBeCloseTo(1.0)
+    expect(stats.r2).toBeCloseTo(1)
+    expect(stats.dprime).toBeCloseTo(1)
   })
 })
 
@@ -284,16 +284,24 @@ describe('known LD scenarios', () => {
   it('computes correct LD for HapMap-style high LD block', () => {
     // Simulate a high LD region where most haplotypes are conserved
     // Two common haplotypes: 00000 and 22222
-    const geno1 = new Int8Array([0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 1, 1])
-    const geno2 = new Int8Array([0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 1, 1])
+    const geno1 = new Int8Array([
+      0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 1, 1,
+    ])
+    const geno2 = new Int8Array([
+      0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 1, 1,
+    ])
     const stats = calculateLDStats(geno1, geno2)
-    expect(stats.r2).toBeCloseTo(1.0)
+    expect(stats.r2).toBeCloseTo(1)
   })
 
   it('computes lower LD after recombination', () => {
     // After recombination, haplotypes become shuffled
-    const geno1 = new Int8Array([0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 2, 2, 1, 1, 1, 1])
-    const geno2 = new Int8Array([0, 0, 2, 2, 0, 0, 2, 2, 0, 2, 0, 2, 1, 1, 1, 1])
+    const geno1 = new Int8Array([
+      0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 2, 2, 1, 1, 1, 1,
+    ])
+    const geno2 = new Int8Array([
+      0, 0, 2, 2, 0, 0, 2, 2, 0, 2, 0, 2, 1, 1, 1, 1,
+    ])
     const stats = calculateLDStats(geno1, geno2)
     // Should have lower LD than perfect correlation
     expect(stats.r2).toBeLessThan(0.8)
@@ -320,7 +328,7 @@ describe('LD with missing data patterns', () => {
     const geno2 = new Int8Array([0, 1, 2, 0, 1, 0, 1, 2])
     const stats = calculateLDStats(geno1, geno2)
     // Should compute LD using only complete pairs
-    expect(stats.r2).toBeCloseTo(1.0)
+    expect(stats.r2).toBeCloseTo(1)
   })
 
   it('handles sporadic missing data', () => {
@@ -375,11 +383,11 @@ function calculateLDStatsPhased(
   haps1: { hap1: Int8Array; hap2: Int8Array },
   haps2: { hap1: Int8Array; hap2: Int8Array },
 ): { r2: number; dprime: number } {
-  let n00 = 0,
-    n01 = 0,
-    n10 = 0,
-    n11 = 0,
-    total = 0
+  let n00 = 0
+  let n01 = 0
+  let n10 = 0
+  let n11 = 0
+  let total = 0
 
   const numSamples = haps1.hap1.length
 
@@ -503,15 +511,29 @@ describe('calculateLDStatsPhased', () => {
   it('returns perfect LD for identical phased haplotypes', () => {
     // All samples have same haplotypes at both loci
     const samples = ['s1', 's2', 's3', 's4', 's5', 's6']
-    const geno1 = { s1: '0|0', s2: '0|1', s3: '1|0', s4: '1|1', s5: '0|1', s6: '1|0' }
-    const geno2 = { s1: '0|0', s2: '0|1', s3: '1|0', s4: '1|1', s5: '0|1', s6: '1|0' }
+    const geno1 = {
+      s1: '0|0',
+      s2: '0|1',
+      s3: '1|0',
+      s4: '1|1',
+      s5: '0|1',
+      s6: '1|0',
+    }
+    const geno2 = {
+      s1: '0|0',
+      s2: '0|1',
+      s3: '1|0',
+      s4: '1|1',
+      s5: '0|1',
+      s6: '1|0',
+    }
 
     const haps1 = encodePhasedHaplotypes(geno1, samples)
     const haps2 = encodePhasedHaplotypes(geno2, samples)
     const stats = calculateLDStatsPhased(haps1, haps2)
 
-    expect(stats.r2).toBeCloseTo(1.0)
-    expect(stats.dprime).toBeCloseTo(1.0)
+    expect(stats.r2).toBeCloseTo(1)
+    expect(stats.dprime).toBeCloseTo(1)
   })
 
   it('returns zero LD for independent loci', () => {
@@ -553,12 +575,12 @@ describe('calculateLDStatsPhased', () => {
     const stats_trans = calculateLDStatsPhased(haps1_trans, haps2_trans)
 
     // Cis should show positive LD (high r², D' = 1)
-    expect(stats_cis.r2).toBeCloseTo(1.0)
-    expect(stats_cis.dprime).toBeCloseTo(1.0)
+    expect(stats_cis.r2).toBeCloseTo(1)
+    expect(stats_cis.dprime).toBeCloseTo(1)
 
     // Trans should show negative LD (high r², D' = 1 but D is negative)
-    expect(stats_trans.r2).toBeCloseTo(1.0)
-    expect(stats_trans.dprime).toBeCloseTo(1.0)
+    expect(stats_trans.r2).toBeCloseTo(1)
+    expect(stats_trans.dprime).toBeCloseTo(1)
   })
 
   it('handles population with mixed phase', () => {

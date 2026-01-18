@@ -318,7 +318,9 @@ function calculateLDStats(
     console.log(`R² = ${r2.toFixed(4)}, D' = ${dprime.toFixed(4)}`)
     console.log(`n samples: ${n}`)
     console.log(`Allele freqs: pA=${pA.toFixed(3)}, pB=${pB.toFixed(3)}`)
-    console.log(`MAF1=${Math.min(pA, qA).toFixed(3)}, MAF2=${Math.min(pB, qB).toFixed(3)}`)
+    console.log(
+      `MAF1=${Math.min(pA, qA).toFixed(3)}, MAF2=${Math.min(pB, qB).toFixed(3)}`,
+    )
     console.log(`Genotype counts (g1,g2): ${JSON.stringify(genoCounts)}`)
     console.log(`Variance: var1=${var1.toFixed(4)}, var2=${var2.toFixed(4)}`)
     console.log(`Covariance: ${covG.toFixed(4)}`)
@@ -465,10 +467,14 @@ export async function getLDMatrix({
   // Detect if data is phased by checking first feature
   let dataIsPhased = false
   if (filteredFeatures.length > 0) {
-    const firstGenotypes = filteredFeatures[0]!.feature.get('genotypes') as Record<string, string>
+    const firstGenotypes = filteredFeatures[0]!.feature.get(
+      'genotypes',
+    ) as Record<string, string>
     dataIsPhased = isPhased(firstGenotypes)
     if (dataIsPhased) {
-      console.log('Detected phased genotype data - using haplotype-based LD calculation')
+      console.log(
+        'Detected phased genotype data - using haplotype-based LD calculation',
+      )
     }
   }
 
@@ -548,13 +554,13 @@ export async function getLDMatrix({
         // Chi-square statistic
         let chiSq = 0
         if (expectedHomRef > 0) {
-          chiSq += ((nHomRef - expectedHomRef) ** 2) / expectedHomRef
+          chiSq += (nHomRef - expectedHomRef) ** 2 / expectedHomRef
         }
         if (expectedHet > 0) {
-          chiSq += ((nHet - expectedHet) ** 2) / expectedHet
+          chiSq += (nHet - expectedHet) ** 2 / expectedHet
         }
         if (expectedHomAlt > 0) {
-          chiSq += ((nHomAlt - expectedHomAlt) ** 2) / expectedHomAlt
+          chiSq += (nHomAlt - expectedHomAlt) ** 2 / expectedHomAlt
         }
 
         if (chiSq > chiSqCritical) {
@@ -597,7 +603,10 @@ export async function getLDMatrix({
 
       if (dataIsPhased) {
         // Use exact haplotype-based calculation for phased data
-        stats = calculateLDStatsPhased(phasedHaplotypes[i]!, phasedHaplotypes[j]!)
+        stats = calculateLDStatsPhased(
+          phasedHaplotypes[i]!,
+          phasedHaplotypes[j]!,
+        )
       } else {
         // Use composite LD estimator for unphased data
         stats = calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!, {

@@ -62,7 +62,9 @@ const RecombinationTrack = observer(function RecombinationTrack({
         firstX = x
       }
       lastX = x
-      points.push(`${points.length === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`)
+      points.push(
+        `${points.length === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`,
+      )
     }
   }
 
@@ -104,7 +106,13 @@ const RecombinationTrack = observer(function RecombinationTrack({
       />
 
       {/* Y-axis background */}
-      <rect x={0} y={0} width={Y_AXIS_WIDTH} height={trackHeight} fill="#fafafa" />
+      <rect
+        x={0}
+        y={0}
+        width={Y_AXIS_WIDTH}
+        height={trackHeight}
+        fill="#fafafa"
+      />
 
       {/* Y-axis line */}
       <line

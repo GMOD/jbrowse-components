@@ -11,7 +11,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LDDisplayModel } from '../model.ts'
+import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
@@ -31,7 +31,7 @@ const Wrapper = observer(function Wrapper({
   exportSVG,
   yOffset = 0,
 }: {
-  model: LDDisplayModel
+  model: SharedLDModel
   children: React.ReactNode
   exportSVG?: boolean
   yOffset?: number
@@ -96,7 +96,7 @@ const AllLines = observer(function AllLines({
   model,
   setMouseOverLine,
 }: {
-  model: LDDisplayModel
+  model: SharedLDModel
   setMouseOverLine: (arg: MouseOverLine | undefined) => void
 }) {
   const theme = useTheme()
@@ -147,7 +147,14 @@ const AllLines = observer(function AllLines({
               y2={tickHeight}
             />
             {/* Vertical tick mark at genomic position */}
-            <line {...p} strokeWidth={1} x1={genomicX} x2={genomicX} y1={0} y2={tickHeight} />
+            <line
+              {...p}
+              strokeWidth={1}
+              x1={genomicX}
+              x2={genomicX}
+              y1={0}
+              y2={tickHeight}
+            />
             {/* Variant label */}
             {showLabels ? (
               <text
@@ -176,7 +183,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     exportSVG,
     yOffset = 0,
   }: {
-    model: LDDisplayModel
+    model: SharedLDModel
     exportSVG?: boolean
     yOffset?: number
   }) {
@@ -204,7 +211,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
                 style={{
                   pointerEvents: 'none',
                 }}
-                x1={(mouseOverLine.idx + 0.5) * b0 / n}
+                x1={((mouseOverLine.idx + 0.5) * b0) / n}
                 x2={mouseOverLine.genomicX}
                 y1={lineZoneHeight}
                 y2={model.tickHeight}

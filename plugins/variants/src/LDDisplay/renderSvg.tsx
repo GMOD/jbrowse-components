@@ -14,7 +14,7 @@ import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import SVGRecombinationTrack from './components/SVGRecombinationTrack.tsx'
 
-import type { LDDisplayModel } from './model.ts'
+import type { SharedLDModel } from './shared.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -33,7 +33,7 @@ interface RenderingResult {
 }
 
 export async function renderSvg(
-  self: LDDisplayModel,
+  self: SharedLDModel,
   opts: ExportSvgDisplayOptions,
 ) {
   const view = getContainingView(self) as LGV
@@ -98,7 +98,9 @@ export async function renderSvg(
             regionStart={region.start}
           />
         ) : null}
-        <g transform={`translate(${Math.max(0, -view.offsetPx)} ${recombinationOffset})`}>
+        <g
+          transform={`translate(${Math.max(0, -view.offsetPx)} ${recombinationOffset})`}
+        >
           <ReactRendering rendering={finalRendering} />
         </g>
         <LinesConnectingMatrixToGenomicPosition
