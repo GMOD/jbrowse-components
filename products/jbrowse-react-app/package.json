@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-app2",
-  "version": "4.0.4",
+  "version": "4.0.3",
   "description": "JBrowse 2 app React component",
   "keywords": [
     "jbrowse",
@@ -17,7 +17,13 @@
   "author": "JBrowse Team",
   "main": "src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./esm/makeWorkerInstance": "./src/makeWorkerInstance.ts",
+    "./esm/makeWorkerInstance.js": "./src/makeWorkerInstance.ts",
+    "./esm/rpcWorker": "./src/rpcWorker.ts",
+    "./esm/rpcWorker.js": "./src/rpcWorker.ts",
+    "./esm/workerPolyfill": "./src/workerPolyfill.js",
+    "./esm/workerPolyfill.js": "./src/workerPolyfill.js"
   },
   "files": [
     "esm",
@@ -92,6 +98,28 @@
       ".": {
         "types": "./esm/index.d.ts",
         "import": "./esm/index.js"
+      },
+      "./esm/makeWorkerInstance": {
+        "types": "./esm/makeWorkerInstance.d.ts",
+        "import": "./esm/makeWorkerInstance.js"
+      },
+      "./esm/makeWorkerInstance.js": {
+        "types": "./esm/makeWorkerInstance.d.ts",
+        "import": "./esm/makeWorkerInstance.js"
+      },
+      "./esm/rpcWorker": {
+        "types": "./esm/rpcWorker.d.ts",
+        "import": "./esm/rpcWorker.js"
+      },
+      "./esm/rpcWorker.js": {
+        "types": "./esm/rpcWorker.d.ts",
+        "import": "./esm/rpcWorker.js"
+      },
+      "./esm/workerPolyfill": {
+        "import": "./esm/workerPolyfill.js"
+      },
+      "./esm/workerPolyfill.js": {
+        "import": "./esm/workerPolyfill.js"
       }
     }
   },

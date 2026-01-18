@@ -24,7 +24,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun } from 'mobx'
 
 import { deduplicateFeatureLabels } from './components/util.ts'
-import { calculateSvgLegendWidth } from './index.ts'
+import { calculateSvgLegendWidth } from './calculateSvgLegendWidth.ts'
 import FeatureDensityMixin from './models/FeatureDensityMixin.tsx'
 import TrackHeightMixin from './models/TrackHeightMixin.tsx'
 import configSchema from './models/configSchema.ts'
