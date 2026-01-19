@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,

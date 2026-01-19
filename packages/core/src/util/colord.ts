@@ -183,7 +183,7 @@ function rgbToHsl(
 function parseColor(input: string | { h: number; s: number; l: number }): RGBA {
   if (typeof input === 'object') {
     const { h, s, l } = input
-    return { ...hslToRgb(h, s * 100, l * 100), a: 1 }
+    return { ...hslToRgb(h, s / 100, l / 100), a: 1 }
   }
 
   const str = input.trim().toLowerCase()
@@ -248,7 +248,12 @@ function createColord(rgba: RGBA): Colord {
 
     toHsl(): HSLA {
       const { h, s, l } = rgbToHsl(rgba.r, rgba.g, rgba.b)
-      return { h: round(h, 1), s: round(s, 3), l: round(l, 3), a: rgba.a }
+      return {
+        h: round(h, 1),
+        s: round(s * 100, 1),
+        l: round(l * 100, 1),
+        a: rgba.a,
+      }
     },
 
     toHslString(): string {
