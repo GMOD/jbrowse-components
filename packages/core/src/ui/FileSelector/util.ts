@@ -1,7 +1,7 @@
-import { isUriLocation } from '@jbrowse/core/util/index'
+import { isUriLocation } from '../../util/index.ts'
 
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/index.ts'
-import type { FileLocation } from '@jbrowse/core/util/index'
+import type { FileLocation } from '../../util/index.ts'
 
 export const MAX_LABEL_LENGTH = 5
 
