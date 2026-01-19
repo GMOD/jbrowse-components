@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "include": ["electron"],
   "compilerOptions": {
-    "module": "nodenext",
+    "module": "esnext",
     "target": "esnext",
     "outDir": "public",
     "noEmit": false,

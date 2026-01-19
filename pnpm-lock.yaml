@@ -1530,8 +1530,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.8
-        version: 3.0.8
+        specifier: ^3.0.9
+        version: 3.0.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3487,8 +3487,8 @@ packages:
     resolution: {integrity: sha512-lQQCuanjsnVNzH9n21LTMGykvRbpLbEQk3AL+aKnjf72gfV07mLZ116gtvDFu5huxbxWialOHGGC7iJAQDEi5Q==}
     engines: {node: '>=6'}
 
-  '@gmod/trix@3.0.8':
-    resolution: {integrity: sha512-YeSdsW3ijRjbtGSetWo+gGbNaW616vplRfsX0E7GpLzCdKLzs7vLDQO5fAIBYO0mY9stGgiK1/eyPFhMtDsJ0A==}
+  '@gmod/trix@3.0.9':
+    resolution: {integrity: sha512-fOVWXVRKt+51tHo9QBk7kpwYqsoDOqtvtw/Mio+FX4JGxV6rVduCpljtSwd2sYe8GyCpmUFOJtWQMAVXdqHsHw==}
     engines: {node: '>=10'}
 
   '@gmod/twobit@6.0.1':
@@ -10882,7 +10882,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.0.18
 
-  '@gmod/trix@3.0.8': {}
+  '@gmod/trix@3.0.9': {}
 
   '@gmod/twobit@6.0.1':
     dependencies:
