@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/plugin-hic",
   "version": "4.0.4",
+  "type": "module",
   "description": "JBrowse 2 hic adapters, tracks, etc.",
   "keywords": [
     "jbrowse",

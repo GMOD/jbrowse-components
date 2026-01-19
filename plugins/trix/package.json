@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/plugin-trix",
   "version": "4.0.4",
+  "type": "module",
   "description": "JBrowse 2 trix text search adapter",
   "keywords": [
     "jbrowse",

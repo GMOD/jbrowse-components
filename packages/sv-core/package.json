@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/sv-core",
   "version": "4.0.4",
+  "type": "module",
   "description": "JBrowse 2 code shared between sv type code",
   "keywords": [
     "jbrowse",
