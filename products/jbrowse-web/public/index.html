@@ -14,6 +14,16 @@
         overscroll-behavior-x: none;
       }
     </style>
+    <script>
+      // Detect dark mode preference early to prevent flash of white on page load
+      (function () {
+        var themeName = localStorage.getItem('themeName')
+        if (themeName?.startsWith('dark')) {
+          document.documentElement.style.backgroundColor = '#121212'
+          document.documentElement.style.colorScheme = 'dark'
+        }
+      })()
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
