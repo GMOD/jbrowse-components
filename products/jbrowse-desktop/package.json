@@ -105,10 +105,10 @@
   },
   "devDependencies": {
     "@types/selenium-webdriver": "^4.35.5",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "electron": "40.0.0",
     "electron-chromedriver": "^40.0.0",
-    "selenium-webdriver": "^4.39.0"
+    "selenium-webdriver": "^4.40.0"
   },
   "browserslist": [
     "last 1 chrome version"

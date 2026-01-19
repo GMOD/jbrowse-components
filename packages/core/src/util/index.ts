@@ -58,6 +58,7 @@ export * from './coarseStripHTML.ts'
 export * from './offscreenCanvasPonyfill.tsx'
 export * from './offscreenCanvasUtils.tsx'
 export * from './rpc.ts'
+export * from './crypto.ts'
 
 // WeakMap caches for containing model lookups to avoid repeated tree traversal
 const containingDisplayCache = new WeakMap<
@@ -1439,3 +1440,4 @@ export * from './locString.ts'
 export * from './stopToken.ts'
 export * from './tracks.ts'
 export * from './fileHandleStore.ts'
+export { IntervalTree } from './IntervalTree.ts'

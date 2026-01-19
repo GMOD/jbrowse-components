@@ -1,5 +1,5 @@
 import { fireEvent, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { userEvent } from '@testing-library/user-event'
 import { saveAs } from 'file-saver-es'
 
 let mockCounter = 0

@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { userEvent } from '@testing-library/user-event'
 import { saveAs } from 'file-saver-es'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'

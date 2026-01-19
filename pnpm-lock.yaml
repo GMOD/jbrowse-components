@@ -209,9 +209,6 @@ importers:
       electron-builder:
         specifier: ^25.1.8
         version: 25.1.8(electron-builder-squirrel-windows@25.1.8)
-      electron-mock-ipc:
-        specifier: ^0.3.14
-        version: 0.3.14(electron@40.0.0)
       eslint:
         specifier: ^9.39.2
         version: 9.39.2
@@ -437,9 +434,6 @@ importers:
       canvas2svg:
         specifier: ^1.0.16
         version: 1.0.16
-      colord:
-        specifier: ^2.9.3
-        version: 2.9.3
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
@@ -470,9 +464,6 @@ importers:
       librpc-web-mod:
         specifier: ^2.1.1
         version: 2.1.1
-      load-script:
-        specifier: ^2.0.0
-        version: 2.0.0
       mobx:
         specifier: ^6.15.0
         version: 6.15.0
@@ -765,8 +756,8 @@ importers:
         specifier: ^8.1.1
         version: 8.1.1
       '@gmod/bed':
-        specifier: ^2.1.7
-        version: 2.1.7
+        specifier: ^2.1.10
+        version: 2.1.10
       '@gmod/tabix':
         specifier: ^3.2.2
         version: 3.2.2
@@ -1539,8 +1530,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.5
-        version: 3.0.5
+        specifier: ^3.0.9
+        version: 3.0.9
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1885,8 +1876,8 @@ importers:
         specifier: ^4.35.5
         version: 4.35.5
       cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
+        specifier: ^10.1.0
+        version: 10.1.0
       electron:
         specifier: 40.0.0
         version: 40.0.0
@@ -1894,8 +1885,8 @@ importers:
         specifier: ^40.0.0
         version: 40.0.0
       selenium-webdriver:
-        specifier: ^4.39.0
-        version: 4.39.0
+        specifier: ^4.40.0
+        version: 4.40.0
 
   products/jbrowse-img:
     dependencies:
@@ -3223,6 +3214,9 @@ packages:
   '@emotion/weak-memoize@0.4.0':
     resolution: {integrity: sha512-snKqtPW01tN0ui7yu9rGv69aJXr/a/Ywvl11sUjNtEcRc+ng/mQriFL0wLXMef74iHa/EkftbDzU9F8iFbH+zg==}
 
+  '@epic-web/invariant@1.0.0':
+    resolution: {integrity: sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA==}
+
   '@esbuild/aix-ppc64@0.27.2':
     resolution: {integrity: sha512-GZMB+a0mOMZs4MpDbj8RJp4cw+w1WV5NYD6xzgvzUJ5Ek2jerwfO2eADyI6ExDSUED+1X8aMbegahsJi+8mgpw==}
     engines: {node: '>=18'}
@@ -3459,8 +3453,8 @@ packages:
     resolution: {integrity: sha512-Vpz/ezTAUslIsKCEvsA0zPHkobrwMCUw7E+hvAwsBP8H1BiD67Scak5hX8cJI7Sv4NRgKB/Zjvq0XfVa/wZ6KQ==}
     engines: {node: '>=6'}
 
-  '@gmod/bed@2.1.7':
-    resolution: {integrity: sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==}
+  '@gmod/bed@2.1.10':
+    resolution: {integrity: sha512-begb47SbolFRLXUaQA8w1yBdzPFEw+FncHvfLMxfDC0nacDeU3N72BUPhK4Dq51mi8QpN4NfT3dR8O2j2g1Lww==}
     engines: {node: '>=6'}
 
   '@gmod/bgzf-filehandle@6.0.10':
@@ -3493,8 +3487,8 @@ packages:
     resolution: {integrity: sha512-lQQCuanjsnVNzH9n21LTMGykvRbpLbEQk3AL+aKnjf72gfV07mLZ116gtvDFu5huxbxWialOHGGC7iJAQDEi5Q==}
     engines: {node: '>=6'}
 
-  '@gmod/trix@3.0.5':
-    resolution: {integrity: sha512-/v8Sn9OUT5UYlhNW3GE4wedxo8gHn1Zgs9DYRwjpjsetNgFtWrEZwjTHaAkTE6HDuYd5qtEyT1C0leD3ljURoQ==}
+  '@gmod/trix@3.0.9':
+    resolution: {integrity: sha512-fOVWXVRKt+51tHo9QBk7kpwYqsoDOqtvtw/Mio+FX4JGxV6rVduCpljtSwd2sYe8GyCpmUFOJtWQMAVXdqHsHw==}
     engines: {node: '>=10'}
 
   '@gmod/twobit@6.0.1':
@@ -5540,9 +5534,9 @@ packages:
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
 
-  cross-env@7.0.3:
-    resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
-    engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
+  cross-env@10.1.0:
+    resolution: {integrity: sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw==}
+    engines: {node: '>=20'}
     hasBin: true
 
   cross-fetch@3.2.0:
@@ -5953,11 +5947,6 @@ packages:
 
   electron-localshortcut@3.2.1:
     resolution: {integrity: sha512-DWvhKv36GsdXKnaFFhEiK8kZZA+24/yFLgtTwJJHc7AFgDjNRIBJZ/jq62Y/dWv9E4ypYwrVWN2bVrCYw1uv7Q==}
-
-  electron-mock-ipc@0.3.14:
-    resolution: {integrity: sha512-DouQtwlfk/lDfMQXo7ltefMoJ5t6FTUTfTh99zEJNYok+SlUMzbOFMW5cBzem20NOJ2aAD4Lrc/26CuXCWCTdw==}
-    peerDependencies:
-      electron: '>=6.0.0'
 
   electron-publish@25.1.7:
     resolution: {integrity: sha512-+jbTkR9m39eDBMP4gfbqglDd6UvBC7RLh5Y0MhFSsc6UkGHj9Vj9TWobxevHYMMqmoujL11ZLjfPpMX+Pt6YEg==}
@@ -7430,9 +7419,6 @@ packages:
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
-  load-script@2.0.0:
-    resolution: {integrity: sha512-km6cyoPW4rM22JMGb+SHUKPMZVDpUaMpMAKrv8UHWllIxc/qjgMGHD91nY+5hM+/NFs310OZ2pqQeJKs7HqWPA==}
-
   loader-runner@4.3.1:
     resolution: {integrity: sha512-IWqP2SCPhyVFTBtRcgMHdzlf9ul25NwaFx4wCEH/KjAXuuHY4yNjvPXsBokp8jCB936PyWRaPKUNh8NvylLp2Q==}
     engines: {node: '>=6.11.5'}
@@ -8553,8 +8539,8 @@ packages:
   select-hose@2.0.0:
     resolution: {integrity: sha512-mEugaLK+YfkijB4fx0e6kImuJdCIt2LxCRcbEYPqRGCs4F2ogyfZU5IAZRdjCP8JPq2AtdNoC/Dux63d9Kiryg==}
 
-  selenium-webdriver@4.39.0:
-    resolution: {integrity: sha512-NAs9jCU+UeZ/ZmRb8R6zOp7N8eMklefdBYASnaRmCNXdgFE8w3OCxxZmLixkwqnGDHY5VF7hCulfw1Mls43N/A==}
+  selenium-webdriver@4.40.0:
+    resolution: {integrity: sha512-dU0QbnVKdPmoNP8OtMCazRdtU2Ux6Wl4FEpG1iwUbDeajJK1dBAywBLrC1D7YFRtogHzN96AbXBgBAJaarcysw==}
     engines: {node: '>= 20.0.0'}
 
   selfsigned@5.5.0:
@@ -10676,6 +10662,8 @@ snapshots:
 
   '@emotion/weak-memoize@0.4.0': {}
 
+  '@epic-web/invariant@1.0.0': {}
+
   '@esbuild/aix-ppc64@0.27.2':
     optional: true
 
@@ -10852,7 +10840,7 @@ snapshots:
       pako-esm2: 2.0.2
       rxjs: 7.8.2
 
-  '@gmod/bed@2.1.7': {}
+  '@gmod/bed@2.1.10': {}
 
   '@gmod/bgzf-filehandle@6.0.10':
     dependencies:
@@ -10894,7 +10882,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.0.18
 
-  '@gmod/trix@3.0.5': {}
+  '@gmod/trix@3.0.9': {}
 
   '@gmod/twobit@6.0.1':
     dependencies:
@@ -13375,8 +13363,9 @@ snapshots:
   create-require@1.1.1:
     optional: true
 
-  cross-env@7.0.3:
+  cross-env@10.1.0:
     dependencies:
+      '@epic-web/invariant': 1.0.0
       cross-spawn: 7.0.6
 
   cross-fetch@3.2.0(encoding@0.1.13):
@@ -13829,10 +13818,6 @@ snapshots:
       keyboardevents-areequal: 0.2.2
     transitivePeerDependencies:
       - supports-color
-
-  electron-mock-ipc@0.3.14(electron@40.0.0):
-    dependencies:
-      electron: 40.0.0
 
   electron-publish@25.1.7:
     dependencies:
@@ -15793,8 +15778,6 @@ snapshots:
 
   lines-and-columns@1.2.4: {}
 
-  load-script@2.0.0: {}
-
   loader-runner@4.3.1: {}
 
   locate-path@5.0.0:
@@ -16958,7 +16941,7 @@ snapshots:
 
   select-hose@2.0.0: {}
 
-  selenium-webdriver@4.39.0:
+  selenium-webdriver@4.40.0:
     dependencies:
       '@bazel/runfiles': 6.5.0
       jszip: 3.10.1

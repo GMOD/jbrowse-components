@@ -1,4 +1,4 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { render, waitFor } from '@testing-library/react'
 
 import Scalebar from './Scalebar.tsx'

@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import LinearGenomeViewContainer from './LinearGenomeViewContainer.tsx'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 // lazies
 const ImportForm = lazy(() => import('./ImportForm.tsx'))

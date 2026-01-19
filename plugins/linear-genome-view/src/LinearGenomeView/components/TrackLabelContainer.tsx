@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import TrackLabel from './TrackLabel.tsx'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({

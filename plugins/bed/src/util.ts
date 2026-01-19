@@ -11,7 +11,7 @@ import {
   isUcscTranscript,
 } from './generateUcscTranscript.ts'
 
-import type { MinimalFeature } from './types'
+import type { MinimalFeature } from './types.ts'
 import type BED from '@gmod/bed'
 
 function defaultParser(fields: string[], splitLine: string[]) {

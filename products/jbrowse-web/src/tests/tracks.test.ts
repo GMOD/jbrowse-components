@@ -1,5 +1,6 @@
 import { guessAdapter as guessAdapter2 } from '@jbrowse/core/util/tracks'
-import { createTestSession } from '@jbrowse/web/src/rootModel'
+
+import { createTestSession } from '../rootModel/index.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

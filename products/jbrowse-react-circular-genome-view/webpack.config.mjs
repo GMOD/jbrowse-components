@@ -1,14 +1,15 @@
-const path = require('path')
-const webpack = require('webpack')
+import path from 'path'
 
-module.exports = {
+import webpack from 'webpack'
+
+export default {
   mode: process.env.NODE_ENV || 'production',
   entry: './src/webpack.ts',
   devtool: 'source-map',
   output: {
     path: path.resolve('dist'),
-    filename: 'react-app.umd.production.min.js',
-    library: 'JBrowseReactApp',
+    filename: 'react-circular-genome-view.umd.production.min.js',
+    library: 'JBrowseReactCircularGenomeView',
     libraryTarget: 'umd',
   },
   devServer: {

@@ -1,5 +1,3 @@
-import domLoadScript from 'load-script'
-
 import Plugin from './Plugin.ts'
 import ReExports from './ReExports/index.ts'
 import { isElectron } from './util/index.ts'
@@ -71,14 +69,18 @@ export interface CJSPluginDefinition {
 }
 
 function promisifiedLoadScript(src: string) {
-  return new Promise((resolve, reject) => {
-    domLoadScript(src, (err, script) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(script.src)
-      }
-    })
+  return new Promise<string>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.type = 'text/javascript'
+    script.async = true
+    script.src = src
+    script.onload = () => {
+      resolve(script.src)
+    }
+    script.onerror = () => {
+      reject(new Error(`Failed to load script: ${src}`))
+    }
+    document.head.append(script)
   })
 }
 

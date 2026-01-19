@@ -8,7 +8,7 @@ import OverviewRubberbandHoverTooltip from './OverviewRubberbandHoverTooltip.tsx
 import RubberbandSpan from './RubberbandSpan.tsx'
 import { getRelativeX } from './util.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 type LGV = LinearGenomeViewModel

@@ -26,6 +26,7 @@ export default defineConfig(
       'babel.config.cjs',
       'eslint.config.mjs',
       'products/**/webpack.config.js',
+      'products/**/webpack.config.mjs',
       '**/.storybook',
       '**/output-version.js',
       '**/umd_plugin.js',

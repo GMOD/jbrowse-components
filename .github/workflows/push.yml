@@ -106,7 +106,34 @@ jobs:
       - name: Typecheck code
         run: pnpm typecheck
       - name: Run tests
+        id: tests
         run: pnpm test-ci
+        continue-on-error: true
+      - name: Upload jest image snapshot diffs to S3
+        if: steps.tests.outcome == 'failure'
+        run: |
+          SNAPSHOTS_DIR="products/jbrowse-web/src/tests/__image_snapshots__/__diff_output__"
+          S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
+
+          if ls ${SNAPSHOTS_DIR}/*.png 1> /dev/null 2>&1; then
+            echo "Uploading jest image snapshot diffs to S3..."
+            aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.png"
+
+            echo ""
+            echo "============================================"
+            echo "JEST SNAPSHOT DIFF IMAGES UPLOADED TO S3"
+            echo "============================================"
+            for file in ${SNAPSHOTS_DIR}/*.png; do
+              filename=$(basename "$file")
+              echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
+            done
+            echo "============================================"
+          else
+            echo "No jest snapshot diff files found"
+          fi
+      - name: Fail if tests failed
+        if: steps.tests.outcome == 'failure'
+        run: exit 1
       - name: Pack artifacts for component tests
         run: node --experimental-strip-types scripts/pack.ts
       - name: Test build

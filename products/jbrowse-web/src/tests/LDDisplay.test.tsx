@@ -30,6 +30,7 @@ test(
     fireEvent.click(await findByText('Display types', ...opts))
     fireEvent.click(await findByText('LD heatmap display', ...opts))
 
+    await new Promise(res => setTimeout(res, 3000))
     expectCanvasMatch(await findByTestId('ld_canvas_done', ...opts))
   },
   timeout,

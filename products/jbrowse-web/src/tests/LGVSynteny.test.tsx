@@ -1,6 +1,6 @@
 import { getEnv } from '@jbrowse/core/util'
 import { fireEvent, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { userEvent } from '@testing-library/user-event'
 
 import {
   createView,

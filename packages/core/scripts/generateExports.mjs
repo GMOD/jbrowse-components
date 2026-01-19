@@ -98,16 +98,17 @@ console.log(`Found ${imports.length} unique @jbrowse/core import paths`)
 
 // Generate dev exports (pointing to src)
 // Using simple string format since import/require point to same .ts file
-const devExports = {
-  '.': './src/index.ts',
-}
+// Note: No "." entry - this package is designed for subpath imports only
+const devExports = {}
 
 // Generate publish exports (pointing to esm)
-const publishExports = {
-  '.': {
-    types: './esm/index.d.ts',
-    import: './esm/index.js',
-  },
+// Note: No "." entry - this package is designed for subpath imports only
+const publishExports = {}
+
+// Generate typesVersions for moduleResolution "node" consumers
+// This allows TypeScript to resolve subpath imports even without exports field support
+const typesVersions = {
+  '*': {},
 }
 
 for (const entry of imports) {
@@ -120,6 +121,14 @@ for (const entry of imports) {
   publishExports[exportPath] = {
     types: `./esm${outPath.replace('.js', '.d.ts')}`,
     import: `./esm${outPath}`,
+  }
+
+  // typesVersions uses paths without leading './' and maps to array of paths
+  const typesVersionsKey = exportPath.slice(2) // remove './'
+  if (typesVersionsKey) {
+    typesVersions['*'][typesVersionsKey] = [
+      `esm${outPath.replace('.js', '.d.ts')}`,
+    ]
   }
 }
 
@@ -135,6 +144,7 @@ if (!packageJson.publishConfig) {
   packageJson.publishConfig = {}
 }
 packageJson.publishConfig.exports = publishExports
+packageJson.publishConfig.typesVersions = typesVersions
 
 // Write back
 writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
@@ -142,4 +152,7 @@ writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 console.log(`Generated ${Object.keys(devExports).length} dev export entries`)
 console.log(
   `Generated ${Object.keys(publishExports).length} publish export entries`,
+)
+console.log(
+  `Generated ${Object.keys(typesVersions['*']).length} typesVersions entries`,
 )
