@@ -13,7 +13,7 @@ import LaunchDotplotViewF from './LaunchDotplotView.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-export type { DotplotImportFormSyntenyOption } from './DotplotView/components/ImportForm/TrackSelector'
+export type { DotplotImportFormSyntenyOption } from './DotplotView/components/ImportForm/TrackSelector.ts'
 
 export default class DotplotPlugin extends Plugin {
   name = 'DotplotPlugin'

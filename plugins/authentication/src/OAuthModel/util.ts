@@ -3,9 +3,8 @@ export function fixup(buf: string) {
 }
 
 export async function generateChallenge(val: string) {
-  const sha256 = await import('crypto-js/sha256').then(f => f.default)
-  const Base64 = await import('crypto-js/enc-base64')
-  return fixup(Base64.stringify(sha256(val)))
+  const CryptoJS = await import('crypto-js')
+  return fixup(CryptoJS.enc.Base64.stringify(CryptoJS.SHA256(val)))
 }
 
 // if response is JSON, checks if it needs to remove tokens in error, or just plain throw

@@ -36,7 +36,7 @@ export default class TrixTextSearchAdapter
   implements BaseTextSearchAdapter
 {
   indexingAttributes?: string[]
-  trixJs: typeof Trix
+  trixJs: Trix
   tracksNames?: string[]
 
   constructor(
