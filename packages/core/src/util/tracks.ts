@@ -9,6 +9,7 @@ import { getEnv, getSession, objectHash } from './index.ts'
 import { readConfObject } from '../configuration/index.ts'
 
 import type {
+  BlobLocation,
   FileHandleLocation,
   FileLocation,
   PreFileLocation,
@@ -124,11 +125,17 @@ let counter = 0
 // blob files are stored in a global map. the blobId is based on a combination
 // of timestamp plus counter to be unique across sessions and fast repeated
 // calls
-export function storeBlobLocation(location: PreFileLocation) {
+export function storeBlobLocation(
+  location: PreFileLocation,
+): BlobLocation | PreFileLocation {
   if ('blob' in location) {
     const blobId = `b${Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
-    return { name: location.blob.name, blobId, locationType: 'BlobLocation' }
+    return {
+      name: location.blob.name,
+      blobId,
+      locationType: 'BlobLocation' as const,
+    }
   }
   return location
 }
@@ -185,14 +192,18 @@ export async function ensureFileHandleReady(
     return cached
   }
 
-  console.log('[tracks] ensureFileHandleReady: not in cache, fetching handle from IndexedDB')
+  console.log(
+    '[tracks] ensureFileHandleReady: not in cache, fetching handle from IndexedDB',
+  )
   const handle = await getFileHandle(handleId)
   if (!handle) {
     console.error(
       '[tracks] ensureFileHandleReady: handle not found in IndexedDB for handleId:',
       handleId,
     )
-    throw new Error(`File handle not found for handleId: ${handleId}. The file may have been opened in a different browser or the IndexedDB was cleared.`)
+    throw new Error(
+      `File handle not found for handleId: ${handleId}. The file may have been opened in a different browser or the IndexedDB was cleared.`,
+    )
   }
 
   console.log(
@@ -212,7 +223,9 @@ export async function ensureFileHandleReady(
     )
   }
 
-  console.log('[tracks] ensureFileHandleReady: permission granted, getting file')
+  console.log(
+    '[tracks] ensureFileHandleReady: permission granted, getting file',
+  )
   const file = await handle.getFile()
   fileHandleCache[handleId] = file
   console.log('[tracks] ensureFileHandleReady: file cached', file.name)
@@ -269,18 +282,26 @@ export async function restoreFileHandles(
 }
 
 // Recursively find all FileHandleLocation handleIds in a session snapshot
-export function findFileHandleIds(obj: unknown, handleIds: Set<string> = new Set()) {
+export function findFileHandleIds(
+  obj: unknown,
+  handleIds = new Set<string>(),
+  seen = new WeakSet<object>(),
+) {
   if (!obj || typeof obj !== 'object') {
     return handleIds
   }
 
+  if (seen.has(obj)) {
+    return handleIds
+  }
+  seen.add(obj)
+
   if (Array.isArray(obj)) {
     for (const item of obj) {
-      findFileHandleIds(item, handleIds)
+      findFileHandleIds(item, handleIds, seen)
     }
   } else {
     const record = obj as Record<string, unknown>
-    // Check if this object is a FileHandleLocation
     if (
       record.locationType === 'FileHandleLocation' &&
       typeof record.handleId === 'string'
@@ -292,9 +313,8 @@ export function findFileHandleIds(obj: unknown, handleIds: Set<string> = new Set
       )
       handleIds.add(record.handleId)
     }
-    // Recurse into all properties
     for (const value of Object.values(record)) {
-      findFileHandleIds(value, handleIds)
+      findFileHandleIds(value, handleIds, seen)
     }
   }
   return handleIds

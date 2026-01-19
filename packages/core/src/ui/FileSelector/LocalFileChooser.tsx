@@ -11,24 +11,13 @@ import {
 } from '../../util/tracks.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 
-import type {
-  BlobLocation,
-  FileHandleLocation,
-  FileLocation,
-  LocalPathLocation,
+import {
+  isBlobLocation,
+  isFileHandleLocation,
+  isLocalPathLocation,
 } from '../../util/types/index.ts'
 
-function isLocalPathLocation(loc: FileLocation): loc is LocalPathLocation {
-  return 'localPath' in loc
-}
-
-function isBlobLocation(loc: FileLocation): loc is BlobLocation {
-  return 'blobId' in loc
-}
-
-function isFileHandleLocation(loc: FileLocation): loc is FileHandleLocation {
-  return 'handleId' in loc
-}
+import type { FileLocation } from '../../util/types/index.ts'
 
 const useStyles = makeStyles()(theme => ({
   filename: {
@@ -121,7 +110,6 @@ function LocalFileChooser({
                         locationType: 'LocalPathLocation',
                       })
                     } else {
-                      // @ts-expect-error
                       setLocation(storeBlobLocation({ blob: file }))
                     }
                   }

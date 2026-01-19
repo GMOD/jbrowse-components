@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { Alert, Button } from '@mui/material'
 import {
   getPendingFileHandleIds,
   restorePendingFileHandles,
 } from '@jbrowse/core/util/tracks'
+import { Alert, Button } from '@mui/material'
 
 export default function FileHandleRestoreBanner() {
   const [pendingCount, setPendingCount] = useState(0)
@@ -17,7 +17,9 @@ export default function FileHandleRestoreBanner() {
     }
     checkPending()
     const interval = setInterval(checkPending, 1000)
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+    }
   }, [])
 
   const handleRestore = async () => {

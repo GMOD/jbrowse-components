@@ -90,7 +90,10 @@ export function createPluginManager(
         )
         restoreFileHandlesFromSnapshot(sessionSnapshot, false)
           .then(results => {
-            console.log('[createPluginManager] File handle restoration results:', results)
+            console.log(
+              '[createPluginManager] File handle restoration results:',
+              results,
+            )
             const failed = results.filter(r => !r.success)
             if (failed.length > 0) {
               const failedIds = failed.map(f => f.handleId)
@@ -103,7 +106,10 @@ export function createPluginManager(
             }
           })
           .catch(err => {
-            console.error('[createPluginManager] Error restoring file handles:', err)
+            console.error(
+              '[createPluginManager] Error restoring file handles:',
+              err,
+            )
           })
         rootModel.setSession(sessionSnapshot)
       } else if (hubSpec) {
