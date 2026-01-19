@@ -1,13 +1,7 @@
 import PluggableElementBase from './PluggableElementBase.ts'
 import mapObject from '../util/map-obj/index.ts'
 import { isRpcResult } from '../util/rpc.ts'
-import {
-  getBlobMap,
-  getFileFromCache,
-  getFileHandleCache,
-  setBlobMap,
-  setFileHandleCache,
-} from '../util/tracks.ts'
+import { getBlobMap, getFileFromCache, setBlobMap } from '../util/tracks.ts'
 import {
   RetryError,
   isAppRootModel,

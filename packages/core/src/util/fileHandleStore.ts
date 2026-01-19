@@ -68,12 +68,14 @@ export async function verifyPermission(
   handle: FileSystemFileHandle,
   requestPermission = false,
 ) {
-  const options: FileSystemHandlePermissionDescriptor = { mode: 'read' }
+  const options = { mode: 'read' } as const
+  // @ts-expect-error - File System Access API not fully typed
   const currentPermission = await handle.queryPermission(options)
   if (currentPermission === 'granted') {
     return true
   }
   if (requestPermission) {
+    // @ts-expect-error - File System Access API not fully typed
     const newPermission = await handle.requestPermission(options)
     if (newPermission === 'granted') {
       return true
