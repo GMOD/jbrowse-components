@@ -106,22 +106,14 @@ function Crosshairs({
         pointerEvents: 'none',
       }}
     >
-      {/* V-shape with thick lines matching cell width */}
-      <g
+      {/* V-shape with thick line matching cell width */}
+      <path
         stroke="rgba(0, 0, 0, 0.3)"
         strokeWidth={lineThickness}
         fill="none"
-        strokeLinecap="square"
-      >
-        {/* Left arm: from snp j down to hovered cell */}
-        <path
-          d={`M ${snpJCenter.x} ${snpJCenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`}
-        />
-        {/* Right arm: from snp i down to hovered cell */}
-        <path
-          d={`M ${snpICenter.x} ${snpICenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`}
-        />
-      </g>
+        strokeLinejoin="miter"
+        d={`M ${snpJCenter.x} ${snpJCenter.y} L ${hoveredCenter.x} ${hoveredCenter.y} L ${snpICenter.x} ${snpICenter.y}`}
+      />
       {/* Highlighted connecting lines from matrix to genome */}
       <g stroke="#e00" strokeWidth="1.5" fill="none">
         {/* Diagonal lines ending at top of tick marks */}
@@ -339,6 +331,7 @@ const LDCanvas = observer(function LDCanvas({
             top: lineZoneHeight / 2,
             width,
             height: lineZoneHeight / 2,
+            pointerEvents: 'none',
           }}
         >
           <RecombinationTrack

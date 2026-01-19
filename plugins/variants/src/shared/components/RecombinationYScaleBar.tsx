@@ -1,6 +1,7 @@
 import { useTheme } from '@mui/material'
 
 const Y_AXIS_WIDTH = 40
+const YSCALEBAR_LABEL_OFFSET = 5
 
 /**
  * Y-axis scalebar for the recombination track.
@@ -16,8 +17,8 @@ export default function RecombinationYScaleBar({
   exportSVG?: boolean
 }) {
   const theme = useTheme()
-  const topPadding = 2
-  const bottomPadding = 2
+  const topPadding = YSCALEBAR_LABEL_OFFSET
+  const bottomPadding = YSCALEBAR_LABEL_OFFSET
   const plotHeight = height - topPadding - bottomPadding
 
   const fg = exportSVG ? '#333' : theme.palette.text.primary

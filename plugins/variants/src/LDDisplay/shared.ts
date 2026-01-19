@@ -67,7 +67,7 @@ export default function sharedModelFactory(
         /**
          * #property
          */
-        showLegend: types.optional(types.boolean, true),
+        showLegend: types.optional(types.boolean, false),
         /**
          * #property
          * Whether to show the LD triangle heatmap
@@ -77,7 +77,7 @@ export default function sharedModelFactory(
          * #property
          * Whether to show the recombination rate track
          */
-        showRecombination: types.optional(types.boolean, true),
+        showRecombination: types.optional(types.boolean, false),
         /**
          * #property
          * Height of the recombination track zone at the top
@@ -513,9 +513,9 @@ export default function sharedModelFactory(
         ...(hweFilterThreshold !== 0.001 ? { hweFilterThreshold } : {}),
         ...(ldMetric !== 'r2' ? { ldMetric } : {}),
         ...(colorScheme ? { colorScheme } : {}),
-        ...(!showLegend ? { showLegend } : {}),
+        ...(showLegend ? { showLegend } : {}),
         ...(!showLDTriangle ? { showLDTriangle } : {}),
-        ...(!showRecombination ? { showRecombination } : {}),
+        ...(showRecombination ? { showRecombination } : {}),
         ...(recombinationZoneHeight !== 50 ? { recombinationZoneHeight } : {}),
         ...(fitToHeight ? { fitToHeight } : {}),
         ...(!showVerticalGuides ? { showVerticalGuides } : {}),
