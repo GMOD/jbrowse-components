@@ -20,7 +20,15 @@ export default function idMaker(
         if (typeof val === 'object' && val !== null) {
           stack.push(val as Record<string, unknown>)
         } else {
-          id += `${key}-${val}`
+          // Normalize FileHandleLocation to BlobLocation for consistent hashing.
+          // This ensures rpcSessionId matches adapter cache key.
+          if (key === 'locationType' && val === 'FileHandleLocation') {
+            id += `${key}-BlobLocation`
+          } else if (key === 'handleId') {
+            id += `blobId-fh-blob-${val}`
+          } else {
+            id += `${key}-${val}`
+          }
         }
       }
     }

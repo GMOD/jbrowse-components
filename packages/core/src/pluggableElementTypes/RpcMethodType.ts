@@ -1,18 +1,75 @@
 import PluggableElementBase from './PluggableElementBase.ts'
 import mapObject from '../util/map-obj/index.ts'
 import { isRpcResult } from '../util/rpc.ts'
-import { getBlobMap, setBlobMap } from '../util/tracks.ts'
+import { getBlobMap, getFileFromCache, setBlobMap } from '../util/tracks.ts'
 import {
   RetryError,
   isAppRootModel,
   isAuthNeededException,
+  isFileHandleLocation,
   isUriLocation,
 } from '../util/types/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { UriLocation } from '../util/types/index.ts'
+import type { FileHandleLocation, UriLocation } from '../util/types/index.ts'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
+
+// Note: We use custom recursion instead of mapObject here because mapObject's
+// mapper function only receives object properties, not array items directly.
+// FileHandleLocation objects can appear as array elements (e.g., in adapter
+// configs with multiple file locations), so we need direct array item access.
+export function convertFileHandleLocations(
+  obj: unknown,
+  blobMap: Record<string, File>,
+  seen = new WeakSet<object>(),
+) {
+  const convertLocation = (loc: FileHandleLocation) => {
+    const file = getFileFromCache(loc.handleId)
+    if (!file) {
+      throw new Error(
+        `File not in cache for handleId: ${loc.handleId}. ` +
+          `The file "${loc.name}" may need to be reopened.`,
+      )
+    }
+    // Use deterministic blobId based on handleId so the same FileHandleLocation
+    // always converts to the same BlobLocation. This ensures adapter config
+    // hashes remain stable across render calls.
+    const blobId = `fh-blob-${loc.handleId}`
+    blobMap[blobId] = file
+    return { locationType: 'BlobLocation' as const, name: loc.name, blobId }
+  }
+
+  const convert = (current: unknown): void => {
+    if (!current || typeof current !== 'object' || seen.has(current)) {
+      return
+    }
+    seen.add(current)
+
+    if (Array.isArray(current)) {
+      for (let i = 0; i < current.length; i++) {
+        const item = current[i]
+        if (isFileHandleLocation(item)) {
+          current[i] = convertLocation(item)
+        } else {
+          convert(item)
+        }
+      }
+    } else {
+      const record = current as Record<string, unknown>
+      for (const key of Object.keys(record)) {
+        const val = record[key]
+        if (isFileHandleLocation(val)) {
+          record[key] = convertLocation(val)
+        } else {
+          convert(val)
+        }
+      }
+    }
+  }
+
+  convert(obj)
+}
 
 export default abstract class RpcMethodType extends PluggableElementBase {
   pluginManager: PluginManager
@@ -127,20 +184,15 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   ) {
     const rootModel = this.pluginManager.rootModel
 
-    // Skip expensive deep traversal only if we have a valid root model with no internet accounts
-    // (Don't skip if rootModel isn't set up - let serializeNewAuthArguments handle that case)
-    if (isAppRootModel(rootModel) && rootModel.internetAccounts.length === 0) {
-      return thing
-    }
-
     const uris = [] as UriLocation[]
+    const blobMap = getBlobMap()
 
-    // exclude renderingProps from deep traversal - it is only needed
-    // client-side for React components and can contain circular references
-    // (e.g. d3 hierarchy nodes) or non-serializable objects like callbacks
+    // Convert FileHandleLocation to BlobLocation in-place
+    // Skip renderingProps as it may have circular references
     const { renderingProps, ...rest } = thing
+    convertFileHandleLocations(rest, blobMap)
 
-    // using map-obj avoids cycles, seen in circular view svg export
+    // Collect UriLocations for auth augmentation using map-obj (handles cycles)
     mapObject(
       rest,
       (key, val: unknown) => {
@@ -158,6 +210,12 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       },
       { deep: true },
     )
+
+    // Skip URI auth augmentation if we have a valid root model with no internet accounts
+    if (isAppRootModel(rootModel) && rootModel.internetAccounts.length === 0) {
+      return thing
+    }
+
     for (const uri of uris) {
       await this.serializeNewAuthArguments(uri, rpcDriverClassName)
     }

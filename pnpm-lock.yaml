@@ -464,6 +464,9 @@ importers:
       generic-filehandle2:
         specifier: ^2.0.18
         version: 2.0.18
+      idb:
+        specifier: ^8.0.3
+        version: 8.0.3
       librpc-web-mod:
         specifier: ^2.1.1
         version: 2.1.1

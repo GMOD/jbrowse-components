@@ -1,6 +1,9 @@
 import { validateRendererType } from './util.ts'
-import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
+import RpcMethodType, {
+  convertFileHandleLocations,
+} from '../../pluggableElementTypes/RpcMethodType.ts'
 import { renameRegionsIfNeeded } from '../../util/index.ts'
+import { getBlobMap, setBlobMap } from '../../util/tracks.ts'
 
 import type {
   RenderArgs,
@@ -41,10 +44,18 @@ export default class CoreRender extends RpcMethodType {
       throw new Error('must pass a unique session id')
     }
 
+    // Convert FileHandleLocation to BlobLocation for consistent adapter caching.
+    // Even though we're on the main thread and don't need to transfer files,
+    // the adapter config hash must match what the serialized path produces.
+    const { renderingProps, ...rest } = renamedArgs
+    const blobMap = getBlobMap()
+    convertFileHandleLocations(rest, blobMap)
+    setBlobMap(blobMap)
+
     return validateRendererType(
       rendererType,
       this.pluginManager.getRendererType(rendererType),
-    ).renderDirect(renamedArgs)
+    ).renderDirect({ ...rest, renderingProps } as RenderArgs)
   }
 
   async execute(

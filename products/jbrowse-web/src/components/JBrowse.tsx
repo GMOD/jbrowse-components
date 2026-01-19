@@ -5,6 +5,7 @@ import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import FileHandleRestoreBanner from './FileHandleRestoreBanner.tsx'
 import ShareButton from './ShareButton.tsx'
 import { readQueryParams, setQueryParams } from '../useQueryParam.ts'
 
@@ -66,6 +67,7 @@ const JBrowse = observer(function JBrowse({
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <FileHandleRestoreBanner />
       {/* key={id} forces React to remount App when session changes (e.g.
           duplicate session) preventing stale references to old session views */}
       <App
