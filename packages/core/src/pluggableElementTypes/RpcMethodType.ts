@@ -30,8 +30,6 @@ export function convertFileHandleLocations(
   blobMap: Record<string, File>,
   seen = new WeakSet<object>(),
 ) {
-  let counter = 0
-
   const convertLocation = (loc: FileHandleLocation) => {
     const file = getFileFromCache(loc.handleId)
     if (!file) {
@@ -40,7 +38,10 @@ export function convertFileHandleLocations(
           `The file "${loc.name}" may need to be reopened.`,
       )
     }
-    const blobId = `fh-rpc-${Date.now()}-${counter++}`
+    // Use deterministic blobId based on handleId so the same FileHandleLocation
+    // always converts to the same BlobLocation. This ensures adapter config
+    // hashes remain stable across render calls.
+    const blobId = `fh-blob-${loc.handleId}`
     blobMap[blobId] = file
     return { locationType: 'BlobLocation' as const, name: loc.name, blobId }
   }

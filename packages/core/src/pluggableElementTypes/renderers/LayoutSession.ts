@@ -57,14 +57,15 @@ export class LayoutSession implements LayoutSessionLike {
   }
 
   cachedLayoutIsValid(cachedLayout: CachedLayout) {
-    return (
-      cachedLayout.props.bpPerPx === this.props.bpPerPx &&
-      deepEqual(
-        readConfObject(this.props.config),
-        readConfObject(cachedLayout.props.config),
-      ) &&
-      deepEqual(this.props.filters, cachedLayout.props.filters)
+    const bpPerPxMatch = cachedLayout.props.bpPerPx === this.props.bpPerPx
+    const currentConfig = readConfObject(this.props.config)
+    const cachedConfig = readConfObject(cachedLayout.props.config)
+    const configMatch = deepEqual(currentConfig, cachedConfig)
+    const filtersMatch = deepEqual(
+      this.props.filters,
+      cachedLayout.props.filters,
     )
+    return bpPerPxMatch && configMatch && filtersMatch
   }
 
   get layout(): BaseMultiLayout {

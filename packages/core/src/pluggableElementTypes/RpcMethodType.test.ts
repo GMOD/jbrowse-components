@@ -1,6 +1,6 @@
 import PluginManager from '../PluginManager.ts'
 import RpcMethodType, { convertFileHandleLocations } from './RpcMethodType.ts'
-import { setFileInCache, clearFileFromCache } from '../util/tracks.ts'
+import { clearFileFromCache, setFileInCache } from '../util/tracks.ts'
 
 const pluginManager = new PluginManager()
 
@@ -82,7 +82,7 @@ describe('convertFileHandleLocations', () => {
     const converted = obj.adapter.fileLocation as any
     expect(converted.locationType).toBe('BlobLocation')
     expect(converted.name).toBe('test.bam')
-    expect(converted.blobId).toMatch(/^fh-rpc-\d+-\d+$/)
+    expect(converted.blobId).toBe('fh-blob-test-handle-1')
     expect(blobMap[converted.blobId]).toBe(mockFile)
   })
 

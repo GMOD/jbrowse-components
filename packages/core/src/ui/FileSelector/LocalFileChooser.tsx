@@ -10,7 +10,6 @@ import {
   storeFileHandleLocation,
 } from '../../util/tracks.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
-
 import {
   isBlobLocation,
   isFileHandleLocation,
@@ -46,41 +45,25 @@ function LocalFileChooser({
       !getFileFromCache(location.handleId))
 
   const supportsFileSystemAccess = isFileSystemAccessSupported() && !isElectron
-  console.log(
-    '[LocalFileChooser] supportsFileSystemAccess:',
-    supportsFileSystemAccess,
-    'isElectron:',
-    isElectron,
-  )
 
   const handleFileSystemAccessPicker = async () => {
-    console.log('[LocalFileChooser] handleFileSystemAccessPicker called')
     try {
       const [handle] = await window.showOpenFilePicker()
-      console.log('[LocalFileChooser] got file handle:', handle.name)
       const loc = await storeFileHandleLocation(handle)
-      console.log('[LocalFileChooser] stored location:', loc)
       setLocation(loc)
     } catch (e) {
       if ((e as Error).name !== 'AbortError') {
-        console.error('[LocalFileChooser] File picker error:', e)
+        throw e
       }
     }
   }
 
   const handleReopenFileHandle = async () => {
-    console.log('[LocalFileChooser] handleReopenFileHandle called')
     if (location && isFileHandleLocation(location)) {
-      console.log(
-        '[LocalFileChooser] attempting to reopen handleId:',
-        location.handleId,
-      )
       try {
         await ensureFileHandleReady(location.handleId, true)
-        console.log('[LocalFileChooser] reopen successful, updating location')
         setLocation({ ...location })
       } catch (e) {
-        console.error('[LocalFileChooser] Failed to reopen file:', e)
         handleFileSystemAccessPicker()
       }
     }

@@ -33,22 +33,13 @@ function getDB() {
 }
 
 export function isFileSystemAccessSupported() {
-  const supported =
-    typeof window !== 'undefined' && 'showOpenFilePicker' in window
-  console.log('[FileHandleStore] isFileSystemAccessSupported:', supported)
-  return supported
+  return typeof window !== 'undefined' && 'showOpenFilePicker' in window
 }
 
 let counter = 0
 
 export async function storeFileHandle(handle: FileSystemFileHandle) {
   const handleId = `fh${Date.now()}-${counter++}`
-  console.log(
-    '[FileHandleStore] storeFileHandle: storing handle with id',
-    handleId,
-    'name:',
-    handle.name,
-  )
   const db = await getDB()
   await db.put(
     STORE_NAME,
@@ -59,24 +50,16 @@ export async function storeFileHandle(handle: FileSystemFileHandle) {
     },
     handleId,
   )
-  console.log('[FileHandleStore] storeFileHandle: successfully stored in IDB')
   return handleId
 }
 
 export async function getFileHandle(handleId: string) {
-  console.log('[FileHandleStore] getFileHandle: looking up handleId', handleId)
   const db = await getDB()
   const entry = await db.get(STORE_NAME, handleId)
-  console.log(
-    '[FileHandleStore] getFileHandle: found entry?',
-    !!entry,
-    entry ? `name: ${entry.name}` : '',
-  )
   return entry?.handle
 }
 
 export async function removeFileHandle(handleId: string) {
-  console.log('[FileHandleStore] removeFileHandle:', handleId)
   const db = await getDB()
   await db.delete(STORE_NAME, handleId)
 }
@@ -87,23 +70,11 @@ export async function verifyPermission(
 ) {
   const options: FileSystemHandlePermissionDescriptor = { mode: 'read' }
   const currentPermission = await handle.queryPermission(options)
-  console.log(
-    '[FileHandleStore] verifyPermission: current permission for',
-    handle.name,
-    'is',
-    currentPermission,
-    'requestPermission:',
-    requestPermission,
-  )
   if (currentPermission === 'granted') {
     return true
   }
   if (requestPermission) {
     const newPermission = await handle.requestPermission(options)
-    console.log(
-      '[FileHandleStore] verifyPermission: after request, permission is',
-      newPermission,
-    )
     if (newPermission === 'granted') {
       return true
     }

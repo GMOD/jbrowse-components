@@ -125,14 +125,14 @@
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
     "./util/tracks": "./src/util/tracks.ts",
-    "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/types": "./src/util/types/index.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./util/nanoid": "./src/util/nanoid.ts",
-    "./ReExports/list": "./src/ReExports/list.ts"
+    "./ReExports/list": "./src/ReExports/list.ts",
+    "./util/fileHandleStore": "./src/util/fileHandleStore.ts"
   },
   "files": [
     "esm"
@@ -608,10 +608,6 @@
         "types": "./esm/util/tracks.d.ts",
         "import": "./esm/util/tracks.js"
       },
-      "./util/fileHandleStore": {
-        "types": "./esm/util/fileHandleStore.d.ts",
-        "import": "./esm/util/fileHandleStore.js"
-      },
       "./util/tss-react": {
         "types": "./esm/util/tss-react/index.d.ts",
         "import": "./esm/util/tss-react/index.js"
@@ -639,6 +635,10 @@
       "./ReExports/list": {
         "types": "./esm/ReExports/list.d.ts",
         "import": "./esm/ReExports/list.js"
+      },
+      "./util/fileHandleStore": {
+        "types": "./esm/util/fileHandleStore.d.ts",
+        "import": "./esm/util/fileHandleStore.js"
       }
     }
   },
