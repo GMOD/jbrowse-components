@@ -198,7 +198,7 @@ function wrapText(text: string, width: number, indent: string) {
       }
     }
   }
-  return lines.join('\n' + indent)
+  return lines.join(`\n${indent}`)
 }
 
 export function printHelp({

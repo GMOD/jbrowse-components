@@ -98,17 +98,12 @@ console.log(`Found ${imports.length} unique @jbrowse/core import paths`)
 
 // Generate dev exports (pointing to src)
 // Using simple string format since import/require point to same .ts file
-const devExports = {
-  '.': './src/index.ts',
-}
+// Note: No "." entry - this package is designed for subpath imports only
+const devExports = {}
 
 // Generate publish exports (pointing to esm)
-const publishExports = {
-  '.': {
-    types: './esm/index.d.ts',
-    import: './esm/index.js',
-  },
-}
+// Note: No "." entry - this package is designed for subpath imports only
+const publishExports = {}
 
 // Generate typesVersions for moduleResolution "node" consumers
 // This allows TypeScript to resolve subpath imports even without exports field support

@@ -19,10 +19,7 @@
     "directory": "packages/core"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
     "./BaseFeatureWidget": "./src/BaseFeatureWidget/index.ts",
     "./BaseFeatureWidget/BaseFeatureDetail": "./src/BaseFeatureWidget/BaseFeatureDetail/index.tsx",
     "./BaseFeatureWidget/BaseFeatureDetail/Attributes": "./src/BaseFeatureWidget/BaseFeatureDetail/Attributes.tsx",
@@ -191,13 +188,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "esm/index.js",
-    "types": "esm/index.d.ts",
     "exports": {
-      ".": {
-        "types": "./esm/index.d.ts",
-        "import": "./esm/index.js"
-      },
       "./BaseFeatureWidget": {
         "types": "./esm/BaseFeatureWidget/index.d.ts",
         "import": "./esm/BaseFeatureWidget/index.js"
@@ -967,6 +958,9 @@
         ],
         "ReExports/list": [
           "esm/ReExports/list.d.ts"
+        ],
+        "util/fileHandleStore": [
+          "esm/util/fileHandleStore.d.ts"
         ]
       }
     }
