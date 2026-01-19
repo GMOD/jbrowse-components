@@ -172,7 +172,10 @@ export async function getBranch(branch: string) {
 
 function wrapText(text: string, width: number, indent: string) {
   // Normalize: join single \n into spaces, preserve \n\n as paragraph breaks
-  const normalized = text.replace(/\n\n/g, '\0').replace(/\n/g, ' ').replace(/\0/g, '\n\n')
+  const normalized = text
+    .replace(/\n\n/g, '\0')
+    .replace(/\n/g, ' ')
+    .replace(/\0/g, '\n\n')
   const lines = []
   for (const line of normalized.split('\n')) {
     if (line.length <= width) {
