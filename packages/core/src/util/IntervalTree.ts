@@ -1,491 +1,312 @@
 /**
- * Vendored from @flatten-js/interval-tree
+ * Vendored and simplified from @flatten-js/interval-tree
  * https://github.com/nickolanack/flatten-interval-tree
  * License: MIT
  * Created by Alex Bol on 3/31/2017.
+ *
+ * Simplified to only support numeric intervals and the subset of API we use:
+ * - constructor, insert, search
  */
 
-// Constants
 const RB_TREE_COLOR_RED = 1
 const RB_TREE_COLOR_BLACK = 0
 type NodeColor = typeof RB_TREE_COLOR_RED | typeof RB_TREE_COLOR_BLACK
 
-// Types
-type Comparable = number | bigint | string | Date | [number, number]
-type IntervalInput = IntervalBase | [number, number]
+class Interval {
+  constructor(
+    public low: number,
+    public high: number,
+  ) {}
 
-// Abstract base for intervals
-abstract class IntervalBase {
-  low: Comparable
-  high: Comparable
-
-  constructor(low: Comparable, high: Comparable) {
-    this.low = low
-    this.high = high
-  }
-
-  abstract clone(): IntervalBase
-
-  get max(): IntervalBase {
-    return this.clone()
-  }
-
-  less_than(other_interval: IntervalBase): boolean {
+  lessThan(other: Interval) {
     return (
-      (this.low as number) < (other_interval.low as number) ||
-      ((this.low as number) === (other_interval.low as number) &&
-        (this.high as number) < (other_interval.high as number))
+      this.low < other.low || (this.low === other.low && this.high < other.high)
     )
   }
 
-  equal_to(other_interval: IntervalBase): boolean {
-    return (
-      (this.low as number) === (other_interval.low as number) &&
-      (this.high as number) === (other_interval.high as number)
+  equalTo(other: Interval) {
+    return this.low === other.low && this.high === other.high
+  }
+
+  intersects(other: Interval) {
+    return !(this.high < other.low || other.high < this.low)
+  }
+
+  merge(other: Interval) {
+    return new Interval(
+      Math.min(this.low, other.low),
+      Math.max(this.high, other.high),
     )
-  }
-
-  intersect(other_interval: IntervalBase): boolean {
-    return !this.not_intersect(other_interval)
-  }
-
-  not_intersect(other_interval: IntervalBase): boolean {
-    return (
-      (this.high as number) < (other_interval.low as number) ||
-      (other_interval.high as number) < (this.low as number)
-    )
-  }
-
-  merge(other_interval: IntervalBase): IntervalBase {
-    const low =
-      this.low === undefined
-        ? other_interval.low
-        : (this.low as number) < (other_interval.low as number)
-          ? this.low
-          : other_interval.low
-    const high =
-      this.high === undefined
-        ? other_interval.high
-        : (this.high as number) > (other_interval.high as number)
-          ? this.high
-          : other_interval.high
-    const cloned = this.clone()
-    cloned.low = low
-    cloned.high = high
-    return cloned
-  }
-
-  output(): [Comparable, Comparable] {
-    return [this.low, this.high]
-  }
-
-  comparable_less_than(val1: Comparable, val2: Comparable): boolean {
-    return (val1 as number) < (val2 as number)
   }
 }
 
-// 1D numeric interval (default)
-class Interval extends IntervalBase {
-  clone(): Interval {
-    return new Interval(this.low, this.high)
-  }
-}
-
-// Node class
-class Node<V = unknown> {
-  left: Node<V> | null
-  right: Node<V> | null
-  parent: Node<V> | null
-  color: NodeColor
-  item: { key?: IntervalBase; values: V[] }
-  max: IntervalBase | undefined
+class Node<V> {
+  left: Node<V> | null = null
+  right: Node<V> | null = null
+  parent: Node<V> | null = null
+  color: NodeColor = RB_TREE_COLOR_BLACK
+  key: Interval | undefined
+  values: V[] = []
+  max: Interval | undefined
 
   constructor(
-    key?: IntervalInput,
+    key?: Interval | [number, number],
     value?: V,
-    left: Node<V> | null = null,
-    right: Node<V> | null = null,
-    parent: Node<V> | null = null,
-    color: NodeColor = RB_TREE_COLOR_BLACK,
+    left?: Node<V> | null,
+    right?: Node<V> | null,
+    parent?: Node<V> | null,
+    color?: NodeColor,
   ) {
-    this.left = left
-    this.right = right
-    this.parent = parent
-    this.color = color
-    this.item = { key: undefined, values: [] }
-
-    if (value !== undefined) {
-      this.item.values.push(value)
+    if (left !== undefined) {
+      this.left = left
     }
-
+    if (right !== undefined) {
+      this.right = right
+    }
+    if (parent !== undefined) {
+      this.parent = parent
+    }
+    if (color !== undefined) {
+      this.color = color
+    }
+    if (value !== undefined) {
+      this.values.push(value)
+    }
     if (key !== undefined) {
       if (Array.isArray(key)) {
-        const [rawLow, rawHigh] = key
-        if (!Number.isNaN(rawLow) && !Number.isNaN(rawHigh)) {
-          let low = rawLow
-          let high = rawHigh
-          if (low > high) {
-            ;[low, high] = [high, low]
-          }
-          this.item.key = new Interval(low, high)
-        }
+        const [low, high] = key
+        this.key =
+          low <= high ? new Interval(low, high) : new Interval(high, low)
       } else {
-        this.item.key = key
+        this.key = key
       }
-    }
-
-    this.max = this.item.key ? this.item.key.max : undefined
-  }
-
-  private requireKey(): IntervalBase {
-    if (!this.item.key) {
-      throw new Error('Node key is undefined')
-    }
-    return this.item.key
-  }
-
-  less_than(other_node: Node<V>): boolean {
-    const a = this.requireKey()
-    const b = other_node.requireKey()
-    return a.less_than(b)
-  }
-
-  equal_to(other_node: Node<V>): boolean {
-    const a = this.requireKey()
-    const b = other_node.requireKey()
-    return a.equal_to(b)
-  }
-
-  intersect(other_node: Node<V>): boolean {
-    const a = this.requireKey()
-    const b = other_node.requireKey()
-    return a.intersect(b)
-  }
-
-  copy_data(other_node: Node<V>): void {
-    this.item.key = other_node.item.key
-    this.item.values = other_node.item.values.slice()
-  }
-
-  update_max(): void {
-    this.max = this.item.key ? this.item.key.max : undefined
-    if (this.right && this.right.max) {
-      this.max = this.max ? this.max.merge(this.right.max) : this.right.max
-    }
-    if (this.left && this.left.max) {
-      this.max = this.max ? this.max.merge(this.left.max) : this.left.max
+      this.max = this.key
     }
   }
 
-  not_intersect_left_subtree(search_node: Node<V>): boolean {
+  lessThan(other: Node<V>) {
+    return this.key!.lessThan(other.key!)
+  }
+
+  equalTo(other: Node<V>) {
+    return this.key!.equalTo(other.key!)
+  }
+
+  intersects(other: Node<V>) {
+    return this.key!.intersects(other.key!)
+  }
+
+  updateMax() {
+    this.max = this.key
+    if (this.right?.max && this.max) {
+      this.max = this.max.merge(this.right.max)
+    }
+    if (this.left?.max && this.max) {
+      this.max = this.max.merge(this.left.max)
+    }
+  }
+
+  notIntersectLeftSubtree(searchNode: Node<V>) {
     if (!this.left) {
       return true
     }
-    const high = this.left.max ? this.left.max.high : this.left.item.key!.high
-    const selfKey = this.requireKey()
-    const searchKey = search_node.requireKey()
-    return selfKey.comparable_less_than(high, searchKey.low)
+    const high = this.left.max?.high ?? this.left.key!.high
+    return high < searchNode.key!.low
   }
 
-  not_intersect_right_subtree(search_node: Node<V>): boolean {
+  notIntersectRightSubtree(searchNode: Node<V>) {
     if (!this.right) {
       return true
     }
-    const low = this.right.max ? this.right.max.low : this.right.item.key!.low
-    const selfKey = this.requireKey()
-    const searchKey = search_node.requireKey()
-    return selfKey.comparable_less_than(searchKey.high, low)
+    const low = this.right.max?.low ?? this.right.key!.low
+    return searchNode.key!.high < low
   }
 }
 
-// IntervalTree class
-export class IntervalTree<V = unknown> {
-  root: Node<V> | null
-  nil_node: Node<V>
+export class IntervalTree<V> {
+  root: Node<V> | null = null
+  private nilNode = new Node<V>()
 
-  constructor() {
-    this.root = null
-    this.nil_node = new Node<V>()
-  }
-
-  get size(): number {
-    let count = 0
-    this.tree_walk(this.root, node => (count += node.item.values.length))
-    return count
-  }
-
-  get values(): V[] {
-    const res: V[] = []
-    this.tree_walk(this.root, node => {
-      for (const v of node.item.values) {
-        res.push(v)
-      }
-    })
-    return res
-  }
-
-  isEmpty(): boolean {
-    return this.root == null || this.root === this.nil_node
-  }
-
-  clear(): void {
-    this.root = null
-  }
-
-  insert(key: IntervalInput, value: V = key as V): Node<V> | undefined {
-    if (key === undefined) {
-      return
-    }
-    const existing = this.tree_search(this.root, new Node<V>(key))
+  insert(key: [number, number], value: V) {
+    const existing = this.treeSearch(this.root, new Node<V>(key))
     if (existing) {
-      existing.item.values.push(value)
+      existing.values.push(value)
       return existing
     }
-    const insert_node = new Node<V>(
+    const insertNode = new Node<V>(
       key,
       value,
-      this.nil_node,
-      this.nil_node,
+      this.nilNode,
+      this.nilNode,
       null,
       RB_TREE_COLOR_RED,
     )
-    this.tree_insert(insert_node)
-    this.recalc_max(insert_node)
-    return insert_node
+    this.treeInsert(insertNode)
+    this.recalcMax(insertNode)
+    return insertNode
   }
 
-  search(interval: IntervalInput): V[] {
-    const search_node = new Node<V>(interval)
-    const resp_nodes: Node<V>[] = []
-    this.tree_search_interval(this.root, search_node, resp_nodes)
-    const res: V[] = []
-    for (const node of resp_nodes) {
-      for (const v of node.item.values) {
-        res.push(v)
+  search(interval: [number, number]): V[] {
+    const searchNode = new Node<V>(interval)
+    const resultNodes: Node<V>[] = []
+    this.treeSearchInterval(this.root, searchNode, resultNodes)
+    const results: V[] = []
+    for (const node of resultNodes) {
+      for (const v of node.values) {
+        results.push(v)
       }
     }
-    return res
+    return results
   }
 
-  intersect_any(interval: IntervalInput): boolean {
-    const search_node = new Node<V>(interval)
-    return this.tree_find_any_interval(this.root, search_node)
-  }
-
-  forEach(visitor: (key: IntervalBase, value: V) => void): void {
-    this.tree_walk(this.root, node => {
-      for (const v of node.item.values) {
-        visitor(node.item.key!, v)
-      }
-    })
-  }
-
-  private recalc_max(node: Node<V>): void {
-    let node_current = node
-    while (node_current.parent != null) {
-      node_current.parent.update_max()
-      node_current = node_current.parent
+  private recalcMax(node: Node<V>) {
+    let current = node
+    while (current.parent != null) {
+      current.parent.updateMax()
+      current = current.parent
     }
   }
 
-  private tree_insert(insert_node: Node<V>): void {
-    let current_node: Node<V> | null = this.root
-    let parent_node: Node<V> | null = null
+  private treeInsert(insertNode: Node<V>) {
+    let current: Node<V> | null = this.root
+    let parent: Node<V> | null = null
 
-    if (this.root == null || this.root === this.nil_node) {
-      this.root = insert_node
+    if (this.root == null || this.root === this.nilNode) {
+      this.root = insertNode
     } else {
-      while (current_node !== this.nil_node) {
-        parent_node = current_node!
-        if (insert_node.less_than(current_node!)) {
-          current_node = current_node!.left
-        } else {
-          current_node = current_node!.right
-        }
+      while (current !== this.nilNode) {
+        parent = current!
+        current = insertNode.lessThan(current!) ? current!.left : current!.right
       }
-      insert_node.parent = parent_node
-      if (insert_node.less_than(parent_node!)) {
-        parent_node!.left = insert_node
+      insertNode.parent = parent
+      if (insertNode.lessThan(parent!)) {
+        parent!.left = insertNode
       } else {
-        parent_node!.right = insert_node
+        parent!.right = insertNode
       }
     }
-    this.insert_fixup(insert_node)
+    this.insertFixup(insertNode)
   }
 
-  private insert_fixup(insert_node: Node<V>): void {
-    let current_node: Node<V>
-    let uncle_node: Node<V>
-
-    current_node = insert_node
+  private insertFixup(insertNode: Node<V>) {
+    let current = insertNode
     while (
-      current_node !== this.root &&
-      current_node.parent!.color === RB_TREE_COLOR_RED
+      current !== this.root &&
+      current.parent!.color === RB_TREE_COLOR_RED
     ) {
-      if (current_node.parent === current_node.parent!.parent!.left) {
-        uncle_node = current_node.parent!.parent!.right!
-        if (uncle_node.color === RB_TREE_COLOR_RED) {
-          current_node.parent!.color = RB_TREE_COLOR_BLACK
-          uncle_node.color = RB_TREE_COLOR_BLACK
-          current_node.parent!.parent!.color = RB_TREE_COLOR_RED
-          current_node = current_node.parent!.parent!
+      if (current.parent === current.parent!.parent!.left) {
+        const uncle = current.parent!.parent!.right!
+        if (uncle.color === RB_TREE_COLOR_RED) {
+          current.parent!.color = RB_TREE_COLOR_BLACK
+          uncle.color = RB_TREE_COLOR_BLACK
+          current.parent!.parent!.color = RB_TREE_COLOR_RED
+          current = current.parent!.parent!
         } else {
-          if (current_node === current_node.parent!.right) {
-            current_node = current_node.parent!
-            this.rotate_left(current_node)
+          if (current === current.parent!.right) {
+            current = current.parent!
+            this.rotateLeft(current)
           }
-          current_node.parent!.color = RB_TREE_COLOR_BLACK
-          current_node.parent!.parent!.color = RB_TREE_COLOR_RED
-          this.rotate_right(current_node.parent!.parent!)
+          current.parent!.color = RB_TREE_COLOR_BLACK
+          current.parent!.parent!.color = RB_TREE_COLOR_RED
+          this.rotateRight(current.parent!.parent!)
         }
       } else {
-        uncle_node = current_node.parent!.parent!.left!
-        if (uncle_node.color === RB_TREE_COLOR_RED) {
-          current_node.parent!.color = RB_TREE_COLOR_BLACK
-          uncle_node.color = RB_TREE_COLOR_BLACK
-          current_node.parent!.parent!.color = RB_TREE_COLOR_RED
-          current_node = current_node.parent!.parent!
+        const uncle = current.parent!.parent!.left!
+        if (uncle.color === RB_TREE_COLOR_RED) {
+          current.parent!.color = RB_TREE_COLOR_BLACK
+          uncle.color = RB_TREE_COLOR_BLACK
+          current.parent!.parent!.color = RB_TREE_COLOR_RED
+          current = current.parent!.parent!
         } else {
-          if (current_node === current_node.parent!.left) {
-            current_node = current_node.parent!
-            this.rotate_right(current_node)
+          if (current === current.parent!.left) {
+            current = current.parent!
+            this.rotateRight(current)
           }
-          current_node.parent!.color = RB_TREE_COLOR_BLACK
-          current_node.parent!.parent!.color = RB_TREE_COLOR_RED
-          this.rotate_left(current_node.parent!.parent!)
+          current.parent!.color = RB_TREE_COLOR_BLACK
+          current.parent!.parent!.color = RB_TREE_COLOR_RED
+          this.rotateLeft(current.parent!.parent!)
         }
       }
     }
     this.root!.color = RB_TREE_COLOR_BLACK
   }
 
-  private tree_search(
+  private treeSearch(
     node: Node<V> | null,
-    search_node: Node<V>,
+    searchNode: Node<V>,
   ): Node<V> | undefined {
-    if (node == null || node === this.nil_node) {
+    if (node == null || node === this.nilNode) {
       return undefined
     }
-    if (search_node.equal_to(node)) {
+    if (searchNode.equalTo(node)) {
       return node
     }
-    if (search_node.less_than(node)) {
-      return this.tree_search(node.left, search_node)
-    } else {
-      return this.tree_search(node.right, search_node)
-    }
+    return searchNode.lessThan(node)
+      ? this.treeSearch(node.left, searchNode)
+      : this.treeSearch(node.right, searchNode)
   }
 
-  private tree_search_interval(
+  private treeSearchInterval(
     node: Node<V> | null,
-    search_node: Node<V>,
-    res: Node<V>[],
-  ): void {
-    if (node != null && node !== this.nil_node) {
+    searchNode: Node<V>,
+    results: Node<V>[],
+  ) {
+    if (node != null && node !== this.nilNode) {
       if (
-        node.left !== this.nil_node &&
-        !node.not_intersect_left_subtree(search_node)
+        node.left !== this.nilNode &&
+        !node.notIntersectLeftSubtree(searchNode)
       ) {
-        this.tree_search_interval(node.left, search_node, res)
+        this.treeSearchInterval(node.left, searchNode, results)
       }
-      if (node.intersect(search_node)) {
-        res.push(node)
+      if (node.intersects(searchNode)) {
+        results.push(node)
       }
       if (
-        node.right !== this.nil_node &&
-        !node.not_intersect_right_subtree(search_node)
+        node.right !== this.nilNode &&
+        !node.notIntersectRightSubtree(searchNode)
       ) {
-        this.tree_search_interval(node.right, search_node, res)
+        this.treeSearchInterval(node.right, searchNode, results)
       }
     }
   }
 
-  private tree_find_any_interval(
-    node: Node<V> | null,
-    search_node: Node<V>,
-  ): boolean {
-    let found = false
-    if (node != null && node !== this.nil_node) {
-      if (
-        node.left !== this.nil_node &&
-        !node.not_intersect_left_subtree(search_node)
-      ) {
-        found = this.tree_find_any_interval(node.left, search_node)
-      }
-      if (!found) {
-        found = node.intersect(search_node)
-      }
-      if (
-        !found &&
-        node.right !== this.nil_node &&
-        !node.not_intersect_right_subtree(search_node)
-      ) {
-        found = this.tree_find_any_interval(node.right, search_node)
-      }
-    }
-    return found
-  }
-
-  private rotate_left(x: Node<V>): void {
+  private rotateLeft(x: Node<V>) {
     const y = x.right!
     x.right = y.left
-    if (y.left !== this.nil_node) {
+    if (y.left !== this.nilNode) {
       y.left!.parent = x
     }
     y.parent = x.parent
     if (x === this.root) {
       this.root = y
+    } else if (x === x.parent!.left) {
+      x.parent!.left = y
     } else {
-      if (x === x.parent!.left) {
-        x.parent!.left = y
-      } else {
-        x.parent!.right = y
-      }
+      x.parent!.right = y
     }
     y.left = x
     x.parent = y
-    if (x !== null && x !== this.nil_node) {
-      x.update_max()
-    }
-    if (y != null && y !== this.nil_node) {
-      y.update_max()
-    }
+    x.updateMax()
+    y.updateMax()
   }
 
-  private rotate_right(y: Node<V>): void {
+  private rotateRight(y: Node<V>) {
     const x = y.left!
     y.left = x.right
-    if (x.right !== this.nil_node) {
+    if (x.right !== this.nilNode) {
       x.right!.parent = y
     }
     x.parent = y.parent
     if (y === this.root) {
       this.root = x
+    } else if (y === y.parent!.left) {
+      y.parent!.left = x
     } else {
-      if (y === y.parent!.left) {
-        y.parent!.left = x
-      } else {
-        y.parent!.right = x
-      }
+      y.parent!.right = x
     }
     x.right = y
     y.parent = x
-    if (y !== null && y !== this.nil_node) {
-      y.update_max()
-    }
-    if (x != null && x !== this.nil_node) {
-      x.update_max()
-    }
-  }
-
-  private tree_walk(
-    node: Node<V> | null,
-    action: (node: Node<V>) => void,
-  ): void {
-    if (node != null && node !== this.nil_node) {
-      this.tree_walk(node.left, action)
-      action(node)
-      this.tree_walk(node.right, action)
-    }
+    y.updateMax()
+    x.updateMax()
   }
 }
