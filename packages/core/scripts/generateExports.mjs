@@ -9,7 +9,10 @@ const repoRoot = join(packageRoot, '../..')
 const srcDir = join(packageRoot, 'src')
 
 // Exports to keep even if not used internally (for backwards compatibility)
-const preservedExports = ['@jbrowse/core/util/nanoid']
+const preservedExports = [
+  '@jbrowse/core/util/nanoid',
+  '@jbrowse/core/ReExports/list',
+]
 
 // Scan the codebase for all @jbrowse/core imports
 function findAllImports() {

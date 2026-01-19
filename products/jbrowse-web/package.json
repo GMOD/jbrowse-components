@@ -6,6 +6,10 @@
   "homepage": ".",
   "main": "build",
   "dir": "src",
+  "exports": {
+    "./src/rootModel/index.js": "./src/rootModel/index.ts",
+    "./src/makeWorkerInstance": "./src/makeWorkerInstance.ts"
+  },
   "scripts": {
     "start": "NODE_ENV=development node scripts/start.js",
     "build": "NODE_ENV=production node scripts/build.js",
