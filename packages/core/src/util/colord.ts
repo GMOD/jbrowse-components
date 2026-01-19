@@ -36,7 +36,7 @@ function round(value: number, precision = 0): number {
 }
 
 function parseHex(hex: string): RGBA | null {
-  const match = hex.match(/^#([0-9a-f]{3,8})$/i)
+  const match = /^#([0-9a-f]{3,8})$/i.exec(hex)
   if (!match) {
     return null
   }
@@ -77,9 +77,10 @@ function parseHex(hex: string): RGBA | null {
 }
 
 function parseRgb(str: string): RGBA | null {
-  const match = str.match(
-    /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/i,
-  )
+  const match =
+    /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/i.exec(
+      str,
+    )
   if (match) {
     return {
       r: parseInt(match[1]!, 10),
@@ -92,9 +93,10 @@ function parseRgb(str: string): RGBA | null {
 }
 
 function parseHsl(str: string): RGBA | null {
-  const match = str.match(
-    /^hsla?\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*(?:,\s*([\d.]+)\s*)?\)$/i,
-  )
+  const match =
+    /^hsla?\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*(?:,\s*([\d.]+)\s*)?\)$/i.exec(
+      str,
+    )
   if (match) {
     const h = parseFloat(match[1]!)
     const s = parseFloat(match[2]!) / 100

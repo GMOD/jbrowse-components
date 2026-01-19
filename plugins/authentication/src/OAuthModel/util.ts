@@ -1,6 +1,4 @@
-import { sha256Base64Url, toBase64Url } from '@jbrowse/core/util'
-
-export { toBase64Url }
+import { sha256Base64Url } from '@jbrowse/core/util'
 
 export async function generateChallenge(val: string) {
   return sha256Base64Url(val)
@@ -29,3 +27,5 @@ export function processTokenResponse(
   }
   return data.access_token
 }
+
+export { toBase64Url } from '@jbrowse/core/util'

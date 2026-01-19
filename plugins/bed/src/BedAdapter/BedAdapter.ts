@@ -23,6 +23,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     colEnd: number
   }>
 
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   protected intervalTrees: Record<
     string,
     Promise<IntervalTree<Feature> | undefined> | undefined
