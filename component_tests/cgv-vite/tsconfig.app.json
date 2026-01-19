@@ -6,7 +6,7 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* Node module resolution - tests external consumer experience */
     "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,

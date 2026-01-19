@@ -110,6 +110,12 @@ const publishExports = {
   },
 }
 
+// Generate typesVersions for moduleResolution "node" consumers
+// This allows TypeScript to resolve subpath imports even without exports field support
+const typesVersions = {
+  '*': {},
+}
+
 for (const entry of imports) {
   const exportPath = entry.replace('@jbrowse/core', '.')
   const srcPath = getSourcePath(entry)
@@ -120,6 +126,14 @@ for (const entry of imports) {
   publishExports[exportPath] = {
     types: `./esm${outPath.replace('.js', '.d.ts')}`,
     import: `./esm${outPath}`,
+  }
+
+  // typesVersions uses paths without leading './' and maps to array of paths
+  const typesVersionsKey = exportPath.slice(2) // remove './'
+  if (typesVersionsKey) {
+    typesVersions['*'][typesVersionsKey] = [
+      `esm${outPath.replace('.js', '.d.ts')}`,
+    ]
   }
 }
 
@@ -135,6 +149,7 @@ if (!packageJson.publishConfig) {
   packageJson.publishConfig = {}
 }
 packageJson.publishConfig.exports = publishExports
+packageJson.publishConfig.typesVersions = typesVersions
 
 // Write back
 writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
@@ -142,4 +157,7 @@ writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 console.log(`Generated ${Object.keys(devExports).length} dev export entries`)
 console.log(
   `Generated ${Object.keys(publishExports).length} publish export entries`,
+)
+console.log(
+  `Generated ${Object.keys(typesVersions['*']).length} typesVersions entries`,
 )
