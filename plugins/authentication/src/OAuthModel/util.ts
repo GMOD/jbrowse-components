@@ -1,10 +1,9 @@
-export function fixup(buf: string) {
-  return buf.replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
-}
+import { sha256Base64Url, toBase64Url } from '@jbrowse/core/util'
+
+export { toBase64Url }
 
 export async function generateChallenge(val: string) {
-  const CryptoJS = await import('crypto-js')
-  return fixup(CryptoJS.enc.Base64.stringify(CryptoJS.SHA256(val)))
+  return sha256Base64Url(val)
 }
 
 // if response is JSON, checks if it needs to remove tokens in error, or just plain throw
