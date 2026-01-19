@@ -6,7 +6,6 @@ import { isElectron } from '../index.ts'
 import { getBlob, getFileFromCache } from '../tracks.ts'
 import {
   AuthNeededError,
-  isFileHandleLocation,
   isRootModelWithInternetAccounts,
   isUriLocation,
 } from '../types/index.ts'

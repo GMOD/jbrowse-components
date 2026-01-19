@@ -85,15 +85,8 @@ export function createPluginManager(
         // This is async but we kick it off before setting the session
         // If permission is already granted (persisted), files will be available
         // If not, user will need to click to grant permission
-        console.log(
-          '[createPluginManager] Attempting to restore file handles from session',
-        )
         restoreFileHandlesFromSnapshot(sessionSnapshot, false)
           .then(results => {
-            console.log(
-              '[createPluginManager] File handle restoration results:',
-              results,
-            )
             const failed = results.filter(r => !r.success)
             if (failed.length > 0) {
               const failedIds = failed.map(f => f.handleId)
@@ -105,7 +98,7 @@ export function createPluginManager(
               setPendingFileHandleIds(failedIds)
             }
           })
-          .catch(err => {
+          .catch((err: unknown) => {
             console.error(
               '[createPluginManager] Error restoring file handles:',
               err,

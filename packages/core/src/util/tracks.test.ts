@@ -160,7 +160,7 @@ describe('findFileHandleIds', () => {
 describe('getFileName', () => {
   test('returns name from BlobLocation', () => {
     const loc = {
-      locationType: 'BlobLocation',
+      locationType: 'BlobLocation' as const,
       blobId: 'b123',
       name: 'test.bam',
     }
@@ -169,7 +169,7 @@ describe('getFileName', () => {
 
   test('returns name from FileHandleLocation', () => {
     const loc = {
-      locationType: 'FileHandleLocation',
+      locationType: 'FileHandleLocation' as const,
       handleId: 'fh123',
       name: 'handle.bam',
     }
@@ -178,7 +178,7 @@ describe('getFileName', () => {
 
   test('extracts filename from UriLocation', () => {
     const loc = {
-      locationType: 'UriLocation',
+      locationType: 'UriLocation' as const,
       uri: 'https://example.com/path/to/file.bam',
     }
     expect(getFileName(loc)).toBe('file.bam')
@@ -186,7 +186,7 @@ describe('getFileName', () => {
 
   test('handles Windows backslashes in URI', () => {
     const loc = {
-      locationType: 'UriLocation',
+      locationType: 'UriLocation' as const,
       uri: String.raw`file://C:\Users\test\file.bam`,
     }
     expect(getFileName(loc)).toBe('file.bam')
@@ -194,7 +194,7 @@ describe('getFileName', () => {
 
   test('extracts filename from LocalPathLocation', () => {
     const loc = {
-      locationType: 'LocalPathLocation',
+      locationType: 'LocalPathLocation' as const,
       localPath: '/home/user/data.vcf',
     }
     expect(getFileName(loc)).toBe('data.vcf')
@@ -202,7 +202,7 @@ describe('getFileName', () => {
 
   test('handles Windows paths in LocalPathLocation', () => {
     const loc = {
-      locationType: 'LocalPathLocation',
+      locationType: 'LocalPathLocation' as const,
       localPath: String.raw`C:\Users\test\data.vcf`,
     }
     expect(getFileName(loc)).toBe('data.vcf')
