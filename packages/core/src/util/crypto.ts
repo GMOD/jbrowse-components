@@ -110,10 +110,10 @@ function evpBytesToKey(
   salt: Uint8Array,
   keyLen: number,
   ivLen: number,
-): { key: Uint8Array; iv: Uint8Array } {
+): { key: Uint8Array<ArrayBuffer>; iv: Uint8Array<ArrayBuffer> } {
   const result = new Uint8Array(keyLen + ivLen)
   let offset = 0
-  let prevHash = new Uint8Array(0)
+  let prevHash: Uint8Array = new Uint8Array(0)
 
   while (offset < keyLen + ivLen) {
     const data = new Uint8Array(prevHash.length + password.length + salt.length)
@@ -121,18 +121,24 @@ function evpBytesToKey(
     data.set(password, prevHash.length)
     data.set(salt, prevHash.length + password.length)
     prevHash = md5(data)
-    result.set(prevHash.subarray(0, Math.min(16, keyLen + ivLen - offset)), offset)
+    result.set(
+      prevHash.subarray(0, Math.min(16, keyLen + ivLen - offset)),
+      offset,
+    )
     offset += 16
   }
 
   return {
-    key: result.subarray(0, keyLen),
-    iv: result.subarray(keyLen, keyLen + ivLen),
+    key: result.slice(0, keyLen),
+    iv: result.slice(keyLen, keyLen + ivLen),
   }
 }
 
 // PKCS7 padding
-function pkcs7Pad(data: Uint8Array, blockSize: number): Uint8Array {
+function pkcs7Pad(
+  data: Uint8Array,
+  blockSize: number,
+): Uint8Array<ArrayBuffer> {
   const padding = blockSize - (data.length % blockSize)
   const padded = new Uint8Array(data.length + padding)
   padded.set(data)
@@ -149,8 +155,10 @@ function pkcs7Unpad(data: Uint8Array): Uint8Array {
 }
 
 // Convert string to Uint8Array (UTF-8)
-function stringToBytes(str: string): Uint8Array {
-  return new TextEncoder().encode(str)
+function stringToBytes(str: string): Uint8Array<ArrayBuffer> {
+  const encoded = new TextEncoder().encode(str)
+  // Return a copy with a fresh ArrayBuffer to satisfy TypeScript's strict typing
+  return encoded.slice()
 }
 
 // Convert Uint8Array to string (UTF-8)
@@ -168,7 +176,7 @@ function base64Encode(data: Uint8Array): string {
 }
 
 // Base64 decode
-function base64Decode(str: string): Uint8Array {
+function base64Decode(str: string): Uint8Array<ArrayBuffer> {
   const binary = atob(str)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) {
@@ -233,8 +241,8 @@ export async function aesDecrypt(
     throw new Error('Invalid encrypted data format')
   }
 
-  const salt = data.subarray(saltPrefix.length, saltPrefix.length + 8)
-  const encrypted = data.subarray(saltPrefix.length + 8)
+  const salt = data.slice(saltPrefix.length, saltPrefix.length + 8)
+  const encrypted = data.slice(saltPrefix.length + 8)
 
   const { key, iv } = evpBytesToKey(stringToBytes(password), salt, 32, 16)
 

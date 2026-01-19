@@ -15,6 +15,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     columnNames: string[]
   }>
 
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   protected intervalTrees: Record<
     string,
     Promise<IntervalTree<Feature> | undefined> | undefined

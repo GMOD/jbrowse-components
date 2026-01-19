@@ -756,8 +756,8 @@ importers:
         specifier: ^8.1.1
         version: 8.1.1
       '@gmod/bed':
-        specifier: ^2.1.8
-        version: 2.1.8
+        specifier: ^2.1.10
+        version: 2.1.10
       '@gmod/tabix':
         specifier: ^3.2.2
         version: 3.2.2
@@ -1530,8 +1530,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.7
-        version: 3.0.7
+        specifier: ^3.0.8
+        version: 3.0.8
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3453,8 +3453,8 @@ packages:
     resolution: {integrity: sha512-Vpz/ezTAUslIsKCEvsA0zPHkobrwMCUw7E+hvAwsBP8H1BiD67Scak5hX8cJI7Sv4NRgKB/Zjvq0XfVa/wZ6KQ==}
     engines: {node: '>=6'}
 
-  '@gmod/bed@2.1.8':
-    resolution: {integrity: sha512-8TWvgErw+Oldl1CLmVyplMzkU/Uca1u9Uq4v26hkDaWjrY6nYi7bAjRlTkrCpqB5V7HRebF4/0Mt6MXNIVxblQ==}
+  '@gmod/bed@2.1.10':
+    resolution: {integrity: sha512-begb47SbolFRLXUaQA8w1yBdzPFEw+FncHvfLMxfDC0nacDeU3N72BUPhK4Dq51mi8QpN4NfT3dR8O2j2g1Lww==}
     engines: {node: '>=6'}
 
   '@gmod/bgzf-filehandle@6.0.10':
@@ -3487,8 +3487,8 @@ packages:
     resolution: {integrity: sha512-lQQCuanjsnVNzH9n21LTMGykvRbpLbEQk3AL+aKnjf72gfV07mLZ116gtvDFu5huxbxWialOHGGC7iJAQDEi5Q==}
     engines: {node: '>=6'}
 
-  '@gmod/trix@3.0.7':
-    resolution: {integrity: sha512-zv7nLIJQL7Kldwvp6oG+/Se7vlnq44pk6c51jLRNrAUBqYDPGB9WhByv6JO51X2r9tq4m4zqsiXLvzoEK9HETg==}
+  '@gmod/trix@3.0.8':
+    resolution: {integrity: sha512-YeSdsW3ijRjbtGSetWo+gGbNaW616vplRfsX0E7GpLzCdKLzs7vLDQO5fAIBYO0mY9stGgiK1/eyPFhMtDsJ0A==}
     engines: {node: '>=10'}
 
   '@gmod/twobit@6.0.1':
@@ -10840,7 +10840,7 @@ snapshots:
       pako-esm2: 2.0.2
       rxjs: 7.8.2
 
-  '@gmod/bed@2.1.8': {}
+  '@gmod/bed@2.1.10': {}
 
   '@gmod/bgzf-filehandle@6.0.10':
     dependencies:
@@ -10882,7 +10882,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.0.18
 
-  '@gmod/trix@3.0.7': {}
+  '@gmod/trix@3.0.8': {}
 
   '@gmod/twobit@6.0.1':
     dependencies:

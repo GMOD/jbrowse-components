@@ -74,9 +74,13 @@ function promisifiedLoadScript(src: string) {
     script.type = 'text/javascript'
     script.async = true
     script.src = src
-    script.onload = () => resolve(script.src)
-    script.onerror = () => reject(new Error(`Failed to load script: ${src}`))
-    document.head.appendChild(script)
+    script.onload = () => {
+      resolve(script.src)
+    }
+    script.onerror = () => {
+      reject(new Error(`Failed to load script: ${src}`))
+    }
+    document.head.append(script)
   })
 }
 
