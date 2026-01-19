@@ -2,6 +2,7 @@ import { memo } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { calculateFloatingLabelPosition } from './util.ts'
@@ -9,7 +10,7 @@ import { calculateFloatingLabelPosition } from './util.ts'
 import type { FeatureTrackModel } from '../../LinearBasicDisplay/model.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   // Full-size overlay container for floating labels
   // pointerEvents:none allows clicks to pass through to features beneath
   container: {
@@ -28,24 +29,33 @@ const useStyles = makeStyles()({
     fontSize: 11,
     cursor: 'default',
     pointerEvents: 'auto',
+    color: theme.palette.text.primary,
+  },
+  // Description labels use a blue color appropriate for the theme
+  description: {
+    color:
+      theme.palette.mode === 'dark'
+        ? '#6eb5ff'
+        : theme.palette.featureDescription.main,
   },
   // Overlay labels get a semi-transparent background for readability
   overlay: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: alpha(theme.palette.background.paper, 0.8),
     lineHeight: 1,
   },
-})
+}))
 
 interface BaseLabelProps {
   text: string
-  color: string
   isOverlay: boolean
+  isDescription: boolean
   featureLeftPx: number
   featureId: string
   subfeatureId?: string
   y: number
   tooltip?: string
   labelClass: string
+  descriptionClass: string
   overlayClass: string
 }
 
@@ -60,24 +70,32 @@ interface FloatingLabelProps extends BaseLabelProps {
 // This avoids React re-renders during scroll for labels that don't float
 const FixedLabel = memo(function FixedLabel({
   text,
-  color,
   isOverlay,
+  isDescription,
   featureLeftPx,
   featureId,
   subfeatureId,
   y,
   tooltip,
   labelClass,
+  descriptionClass,
   overlayClass,
 }: BaseLabelProps) {
+  const className = [
+    labelClass,
+    isDescription ? descriptionClass : '',
+    isOverlay ? overlayClass : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div
       data-feature-id={featureId}
       data-subfeature-id={subfeatureId}
       data-tooltip={tooltip}
-      className={isOverlay ? `${labelClass} ${overlayClass}` : labelClass}
+      className={className}
       style={{
-        color,
         transform: `translate(calc(${featureLeftPx}px - var(--offset-px)), ${y}px)`,
       }}
     >
@@ -89,8 +107,8 @@ const FixedLabel = memo(function FixedLabel({
 // Floating labels need JS calculation for the clamp logic
 function FloatingLabel({
   text,
-  color,
   isOverlay,
+  isDescription,
   featureLeftPx,
   featureRightPx,
   featureId,
@@ -101,6 +119,7 @@ function FloatingLabel({
   viewportLeft,
   tooltip,
   labelClass,
+  descriptionClass,
   overlayClass,
 }: FloatingLabelProps) {
   const x = calculateFloatingLabelPosition(
@@ -111,13 +130,23 @@ function FloatingLabel({
     viewportLeft,
   )
 
+  const className = [
+    labelClass,
+    isDescription ? descriptionClass : '',
+    isOverlay ? overlayClass : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div
       data-feature-id={featureId}
       data-subfeature-id={subfeatureId}
       data-tooltip={tooltip}
-      className={isOverlay ? `${labelClass} ${overlayClass}` : labelClass}
-      style={{ color, transform: `translate(${x}px,${y}px)` }}
+      className={className}
+      style={{
+        transform: `translate(${x}px,${y}px)`,
+      }}
     >
       {text}
     </div>
@@ -162,8 +191,8 @@ const FloatingLabels = observer(function FloatingLabels({
       const {
         text,
         relativeY,
-        color,
         isOverlay,
+        isDescription,
         textWidth: labelWidth,
         parentFeatureId,
         subfeatureId,
@@ -181,14 +210,15 @@ const FloatingLabels = observer(function FloatingLabels({
           <FixedLabel
             key={labelKey}
             text={text}
-            color={color}
             isOverlay={isOverlay ?? false}
+            isDescription={isDescription ?? false}
             featureLeftPx={leftPx}
             featureId={featureId}
             subfeatureId={subfeatureId}
             y={y}
             tooltip={tooltip}
             labelClass={classes.label}
+            descriptionClass={classes.description}
             overlayClass={classes.overlay}
           />,
         )
@@ -198,8 +228,8 @@ const FloatingLabels = observer(function FloatingLabels({
           <FloatingLabel
             key={labelKey}
             text={text}
-            color={color}
             isOverlay={isOverlay ?? false}
+            isDescription={isDescription ?? false}
             featureLeftPx={leftPx}
             featureRightPx={featureRightPx}
             featureId={featureId}
@@ -210,6 +240,7 @@ const FloatingLabels = observer(function FloatingLabels({
             viewportLeft={viewportLeft}
             tooltip={tooltip}
             labelClass={classes.label}
+            descriptionClass={classes.description}
             overlayClass={classes.overlay}
           />,
         )

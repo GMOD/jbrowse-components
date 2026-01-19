@@ -67,6 +67,7 @@ export function createFeatureFloatingLabels({
         relativeY: actualFontHeight,
         color: descriptionColor,
         textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
+        isDescription: true,
       },
     )
   } else if (shouldShowLabel) {
@@ -82,6 +83,7 @@ export function createFeatureFloatingLabels({
       relativeY: 0,
       color: descriptionColor,
       textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
+      isDescription: true,
     })
   }
 

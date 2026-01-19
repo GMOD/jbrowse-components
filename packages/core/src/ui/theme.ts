@@ -35,6 +35,8 @@ declare module '@mui/material/styles' {
     skip: string
     hardclip: string
     deletion: string
+    featureLabel: PaletteColor
+    featureDescription: PaletteColor
     bases: {
       A: PaletteColor
       C: PaletteColor
@@ -55,6 +57,8 @@ declare module '@mui/material/styles' {
     insertion?: string
     skip?: string
     deletion?: string
+    featureLabel?: PaletteColorOptions
+    featureDescription?: PaletteColorOptions
     bases?: {
       A?: PaletteColorOptions
       C?: PaletteColorOptions
@@ -72,6 +76,10 @@ const grape = refTheme.palette.augmentColor({ color: { main: '#721E63' } })
 const forest = refTheme.palette.augmentColor({ color: { main: '#135560' } })
 const mandarin = refTheme.palette.augmentColor({ color: { main: '#FFB11D' } })
 const lightgrey = refTheme.palette.augmentColor({ color: { main: '#aaa' } })
+const featureLabel = refTheme.palette.augmentColor({ color: { main: '#000000' } })
+const featureDescription = refTheme.palette.augmentColor({
+  color: { main: '#0000ee' },
+})
 const bases = {
   A: refTheme.palette.augmentColor({ color: green }),
   C: refTheme.palette.augmentColor({ color: blue }),
@@ -116,6 +124,8 @@ const defaults = {
   deletion,
   softclip,
   hardclip,
+  featureLabel,
+  featureDescription,
   bases,
   frames,
   framesCDS,
