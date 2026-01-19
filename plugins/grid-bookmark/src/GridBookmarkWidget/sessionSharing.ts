@@ -14,15 +14,14 @@ function generateUID(length: number) {
 }
 
 const encrypt = async (text: string, password: string) => {
-  const AES = await import('crypto-js/aes')
-  return AES.encrypt(text, password).toString()
+  const CryptoJS = await import('crypto-js')
+  return CryptoJS.AES.encrypt(text, password).toString()
 }
 
 const decrypt = async (text: string, password: string) => {
-  const AES = await import('crypto-js/aes')
-  const Utf8 = await import('crypto-js/enc-utf8')
-  const bytes = AES.decrypt(text, password)
-  return bytes.toString(Utf8)
+  const CryptoJS = await import('crypto-js')
+  const bytes = CryptoJS.AES.decrypt(text, password)
+  return bytes.toString(CryptoJS.enc.Utf8)
 }
 
 function getErrorMsg(err: string) {
