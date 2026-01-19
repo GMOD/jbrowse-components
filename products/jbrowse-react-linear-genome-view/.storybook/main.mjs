@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   stories: [
     '../stories/**/*.mdx',
     '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
@@ -15,7 +15,7 @@ module.exports = {
       test: /\.(ts|tsx|js|jsx)$/,
       use: [
         {
-          loader: require.resolve('babel-loader'),
+          loader: 'babel-loader',
           options: {
             rootMode: 'upward',
           },

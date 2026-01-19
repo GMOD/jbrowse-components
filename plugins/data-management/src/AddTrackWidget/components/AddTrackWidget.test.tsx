@@ -1,4 +1,4 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { fireEvent, render } from '@testing-library/react'
 
 import AddTrackWidget from './AddTrackWidget.tsx'

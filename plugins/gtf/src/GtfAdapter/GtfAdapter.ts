@@ -1,6 +1,6 @@
-import { IntervalTree } from '@flatten-js/interval-tree'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
+  IntervalTree,
   SimpleFeature,
   doesIntersect2,
   fetchAndMaybeUnzip,

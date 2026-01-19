@@ -1,7 +1,8 @@
-const path = require('path')
-const webpack = require('webpack')
+import path from 'path'
 
-module.exports = {
+import webpack from 'webpack'
+
+export default {
   mode: process.env.NODE_ENV || 'production',
   entry: './src/webpack.ts',
   devtool: 'source-map',

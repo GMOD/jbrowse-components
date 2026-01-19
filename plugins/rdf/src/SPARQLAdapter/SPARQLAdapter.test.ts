@@ -3,9 +3,9 @@ import { toArray } from 'rxjs/operators'
 
 import Adapter from './SPARQLAdapter.ts'
 import configSchema from './configSchema.ts'
-import emptyQueryResponse from './test_data/emptyQueryResponse.json'
-import queryResponse from './test_data/queryResponse.json'
-import refNamesResponse from './test_data/refNamesResponse.json'
+import emptyQueryResponse from './test_data/emptyQueryResponse.json' with { type: 'json' }
+import queryResponse from './test_data/queryResponse.json' with { type: 'json' }
+import refNamesResponse from './test_data/refNamesResponse.json' with { type: 'json' }
 
 // window.fetch = jest.fn(url => new Promise(resolve => resolve()))
 

@@ -9,7 +9,7 @@ import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton, Slider, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { SliderValueLabelProps } from '@mui/material'
 
 // lazies

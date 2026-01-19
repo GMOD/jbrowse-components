@@ -11,8 +11,8 @@ import { waitFor } from '@testing-library/react'
 
 import { stateModelFactory } from './index.ts'
 import { BaseLinearDisplayComponent } from '../index.ts'
-import hg38Regions from './hg38DisplayedRegions.json'
-import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
+import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
+import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay/index.ts'
 
 import type { LinearGenomeViewModel } from './index.ts'

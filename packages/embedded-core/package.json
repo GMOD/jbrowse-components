@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/embedded-core",
   "version": "4.0.4",
+  "type": "module",
   "description": "JBrowse 2 code shared between embedded products",
   "keywords": [
     "jbrowse",

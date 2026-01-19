@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/react-circular-genome-view2",
   "version": "4.0.4",
+  "type": "module",
   "description": "JBrowse 2 circular genome view React component",
   "keywords": [
     "jbrowse",
@@ -29,7 +30,7 @@
     "prepublishOnly": "node output-version.js > src/version.ts && git add -A src && git commit -m '[skip ci] Bump version.ts'",
     "prepack": "pnpm build",
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "build:webpack": "webpack",
+    "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm dist *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build"

@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 import TrackLabelDragHandle from './TrackLabelDragHandle.tsx'
 import TrackLabelMenu from './TrackLabelMenu.tsx'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({

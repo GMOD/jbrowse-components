@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import RefNameAutocomplete from './RefNameAutocomplete/index.tsx'
 import { fetchResults } from './util.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 type LGV = LinearGenomeViewModel

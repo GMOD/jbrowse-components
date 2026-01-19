@@ -8,7 +8,7 @@ import Gridlines from './Gridlines.tsx'
 import ScalebarCoordinateLabels from './ScalebarCoordinateLabels.tsx'
 import ScalebarRefNameLabels from './ScalebarRefNameLabels.tsx'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 

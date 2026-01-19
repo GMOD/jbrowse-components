@@ -3,11 +3,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// core
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 import { chooseGridPitch } from '../util.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 

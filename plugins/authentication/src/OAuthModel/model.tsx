@@ -4,28 +4,16 @@ import { isElectron } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
-  fixup,
   generateChallenge,
   processError,
   processTokenResponse,
+  toBase64Url,
 } from './util.ts'
 import { getResponseError } from '../util.ts'
 
 import type { OAuthInternetAccountConfigModel } from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-
-// ISC Copyright (c) 2020, Andrea Giammarchi, @WebReflection
-// https://github.com/WebReflection/uint8-to-base64
-function encode(uint8array: Uint8Array) {
-  const output = []
-
-  for (let i = 0, length = uint8array.length; i < length; i++) {
-    output.push(String.fromCharCode(uint8array[i]!))
-  }
-
-  return btoa(output.join(''))
-}
 
 interface OAuthData {
   client_id: string
@@ -63,7 +51,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (!codeVerifier) {
             const array = new Uint8Array(32)
             globalThis.crypto.getRandomValues(array)
-            codeVerifier = fixup(encode(array))
+            codeVerifier = toBase64Url(array)
           }
           return codeVerifier
         },

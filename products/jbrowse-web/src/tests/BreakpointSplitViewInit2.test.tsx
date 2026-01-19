@@ -5,7 +5,7 @@ import { LocalFile } from 'generic-filehandle2'
 
 import { handleRequest } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
-import configSnapshot from '../../test_data/breakpoint/config.json'
+import configSnapshot from '../../test_data/breakpoint/config.json' with { type: 'json' }
 
 setup()
 

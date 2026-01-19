@@ -1,8 +1,8 @@
 import { ThemeProvider } from '@emotion/react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { userEvent } from '@testing-library/user-event'
 
 import AddConnectionWidget2 from './AddConnectionWidget.tsx'
 

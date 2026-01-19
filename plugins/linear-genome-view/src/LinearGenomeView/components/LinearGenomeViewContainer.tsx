@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 // lazies
 const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton.tsx'))

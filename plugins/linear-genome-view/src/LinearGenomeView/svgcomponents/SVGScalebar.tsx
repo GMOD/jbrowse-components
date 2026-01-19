@@ -1,7 +1,7 @@
 import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 

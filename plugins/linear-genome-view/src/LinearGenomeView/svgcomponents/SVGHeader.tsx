@@ -8,7 +8,7 @@ import Cytobands from '../components/Cytobands.tsx'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 export default function SVGHeader({
   model,

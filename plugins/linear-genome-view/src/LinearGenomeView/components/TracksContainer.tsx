@@ -14,7 +14,7 @@ import { useRangeSelect } from './useRangeSelect.ts'
 import { useSideScroll } from './useSideScroll.ts'
 import { useWheelScroll } from './useWheelScroll.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 const CenterLine = lazy(() => import('./CenterLine.tsx'))
 const Highlight = lazy(() => import('./Highlight.tsx'))

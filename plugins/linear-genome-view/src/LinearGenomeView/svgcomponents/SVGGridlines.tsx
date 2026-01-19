@@ -3,7 +3,7 @@ import { useTheme } from '@mui/material'
 
 import { makeTicks } from '../util.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 

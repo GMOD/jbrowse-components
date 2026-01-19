@@ -1,5 +1,5 @@
 import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util.tsx'
-import breakpointConfig from '../../test_data/breakpoint/config.json'
+import breakpointConfig from '../../test_data/breakpoint/config.json' with { type: 'json' }
 
 // @ts-expect-error
 global.Blob = (content, options) => ({ content, options })

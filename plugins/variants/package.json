@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/plugin-variants",
   "version": "4.0.4",
+  "type": "module",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "keywords": [
     "jbrowse",

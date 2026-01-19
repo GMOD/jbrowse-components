@@ -1,10 +1,10 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
-import conf from '../../../../../test_data/test_order/config.json'
+import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
