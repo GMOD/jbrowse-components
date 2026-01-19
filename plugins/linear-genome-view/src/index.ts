@@ -114,6 +114,14 @@ export {
   RefNameAutocomplete,
   SearchBox,
 } from './LinearGenomeView/index.ts'
+export type {
+  BpOffset,
+  ExportSvgOptions,
+  HighlightType,
+  InitState,
+  NavLocation,
+  VolatileGuide,
+} from './LinearGenomeView/types.ts'
 export {
   SVGGridlines,
   SVGRuler,
