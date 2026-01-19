@@ -146,7 +146,11 @@ function hslToRgb(
   }
 }
 
-function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number } {
+function rgbToHsl(
+  r: number,
+  g: number,
+  b: number,
+): { h: number; s: number; l: number } {
   r /= 255
   g /= 255
   b /= 255
@@ -210,7 +214,9 @@ function parseColor(input: string | { h: number; s: number; l: number }): RGBA {
 }
 
 function toHex2(n: number): string {
-  return Math.round(clamp(n, 0, 255)).toString(16).padStart(2, '0')
+  return Math.round(clamp(n, 0, 255))
+    .toString(16)
+    .padStart(2, '0')
 }
 
 function createColord(rgba: RGBA): Colord {
@@ -252,7 +258,10 @@ function createColord(rgba: RGBA): Colord {
     },
 
     mix(color2: Colord | string, ratio = 0.5): Colord {
-      const c2 = typeof color2 === 'string' ? parseColor(color2) : parseColor(color2.toHex())
+      const c2 =
+        typeof color2 === 'string'
+          ? parseColor(color2)
+          : parseColor(color2.toHex())
       const r = rgba.r + (c2.r - rgba.r) * ratio
       const g = rgba.g + (c2.g - rgba.g) * ratio
       const b = rgba.b + (c2.b - rgba.b) * ratio
@@ -278,6 +287,8 @@ function createColord(rgba: RGBA): Colord {
   return obj
 }
 
-export function colord(input: string | { h: number; s: number; l: number }): Colord {
+export function colord(
+  input: string | { h: number; s: number; l: number },
+): Colord {
   return createColord(parseColor(input))
 }
