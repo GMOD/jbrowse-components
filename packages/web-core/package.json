@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/web-core",
   "version": "4.0.4",
+  "type": "module",
   "description": "JBrowse 2 code shared between web-app type products",
   "keywords": [
     "jbrowse",

@@ -1,6 +1,7 @@
 {
   "name": "@jbrowse/plugin-gccontent",
   "version": "4.0.4",
+  "type": "module",
   "description": "JBrowse 2 gccontent concepts",
   "keywords": [
     "jbrowse",
