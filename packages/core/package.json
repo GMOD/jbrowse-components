@@ -131,7 +131,8 @@
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./util/nanoid": "./src/util/nanoid.ts",
-    "./ReExports/list": "./src/ReExports/list.ts"
+    "./ReExports/list": "./src/ReExports/list.ts",
+    "./util/fileHandleStore": "./src/util/fileHandleStore.ts"
   },
   "files": [
     "esm"
@@ -177,6 +178,7 @@
     "fast-deep-equal": "^3.1.3",
     "file-saver-es": "^2.0.5",
     "generic-filehandle2": "^2.0.18",
+    "idb": "^8.0.3",
     "librpc-web-mod": "^2.1.1",
     "load-script": "^2.0.0",
     "mobx": "^6.15.0",
@@ -633,6 +635,10 @@
       "./ReExports/list": {
         "types": "./esm/ReExports/list.d.ts",
         "import": "./esm/ReExports/list.js"
+      },
+      "./util/fileHandleStore": {
+        "types": "./esm/util/fileHandleStore.d.ts",
+        "import": "./esm/util/fileHandleStore.js"
       }
     }
   },

@@ -31,7 +31,6 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
         description=""
         location={model.trackData}
         setLocation={model.setTrackData}
-        setName={model.setTrackName}
         rootModel={rootModel}
       />
       <div className={classes.spacer} />

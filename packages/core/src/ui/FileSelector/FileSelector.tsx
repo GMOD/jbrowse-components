@@ -6,21 +6,11 @@ import { observer } from 'mobx-react'
 import LocationInput from './LocationInput.tsx'
 import SourceTypeSelector from './SourceTypeSelector.tsx'
 import useInternetAccounts from './useInternetAccounts.ts'
+import { addAccountToLocation, getInitialSourceType } from './util.ts'
 import { notEmpty } from '../../util/index.ts'
 import { isUriLocation } from '../../util/types/index.ts'
 
 import type { AbstractRootModel, FileLocation } from '../../util/types/index.ts'
-
-function getInitialToggleValue(location?: FileLocation) {
-  if (
-    location &&
-    'internetAccountId' in location &&
-    location.internetAccountId
-  ) {
-    return location.internetAccountId
-  }
-  return !location || isUriLocation(location) ? 'url' : 'file'
-}
 
 const FileSelector = observer(function FileSelector({
   inline,
@@ -36,10 +26,9 @@ const FileSelector = observer(function FileSelector({
   inline?: boolean
   rootModel?: AbstractRootModel
   setLocation: (param: FileLocation) => void
-  setName?: (str: string) => void
 }) {
-  const [toggleButtonValue, setToggleButtonValue] = useState(() =>
-    getInitialToggleValue(location),
+  const [sourceType, setSourceType] = useState(() =>
+    getInitialSourceType(location),
   )
 
   const {
@@ -50,43 +39,39 @@ const FileSelector = observer(function FileSelector({
     setRecentlyUsed,
   } = useInternetAccounts(rootModel)
 
-  const selectedAccount = accountMap[toggleButtonValue]
+  const selectedAccount = accountMap[sourceType]
 
-  const setLocationWithAccount = useCallback(
+  const handleLocationChange = useCallback(
     (loc: FileLocation) => {
-      setLocation({
-        ...loc,
-        ...(selectedAccount && isUriLocation(loc)
-          ? { internetAccountId: selectedAccount.internetAccountId }
-          : {}),
-      })
+      setLocation(addAccountToLocation(loc, selectedAccount))
     },
     [setLocation, selectedAccount],
   )
 
+  // Sync account ID to location when account selection changes
   useEffect(() => {
     if (
       selectedAccount &&
       isUriLocation(location) &&
       location.internetAccountId !== selectedAccount.internetAccountId
     ) {
-      setLocationWithAccount(location)
+      handleLocationChange(location)
     }
-  }, [location, selectedAccount, setLocationWithAccount])
+  }, [location, selectedAccount, handleLocationChange])
 
-  const selectSourceType = useCallback(
+  const handleSourceTypeChange = useCallback(
     (newValue: string | null) => {
-      setRecentlyUsed([
-        ...new Set([newValue, ...recentlyUsed].filter(notEmpty)),
-      ])
       if (newValue) {
-        setToggleButtonValue(newValue)
-      }
-      if (isUriLocation(location)) {
-        setLocationWithAccount(location)
+        setRecentlyUsed([
+          ...new Set([newValue, ...recentlyUsed].filter(notEmpty)),
+        ])
+        setSourceType(newValue)
+        if (isUriLocation(location)) {
+          handleLocationChange(location)
+        }
       }
     },
-    [location, recentlyUsed, setRecentlyUsed, setLocationWithAccount],
+    [location, recentlyUsed, setRecentlyUsed, handleLocationChange],
   )
 
   return (
@@ -97,21 +82,21 @@ const FileSelector = observer(function FileSelector({
       <FormGroup>
         <Box display="flex" flexDirection={inline ? 'row' : 'column'} gap={0.5}>
           <SourceTypeSelector
-            value={toggleButtonValue}
+            value={sourceType}
             shownAccountIds={shownAccountIds}
             hiddenAccountIds={hiddenAccountIds}
             accountMap={accountMap}
             onChange={(_event, newValue) => {
-              selectSourceType(newValue)
+              handleSourceTypeChange(newValue)
             }}
-            onHiddenAccountSelect={selectSourceType}
+            onHiddenAccountSelect={handleSourceTypeChange}
           />
           <LocationInput
-            toggleButtonValue={toggleButtonValue}
+            toggleButtonValue={sourceType}
             selectedAccount={selectedAccount}
             location={location}
             inline={inline}
-            setLocation={setLocationWithAccount}
+            setLocation={handleLocationChange}
           />
         </Box>
       </FormGroup>

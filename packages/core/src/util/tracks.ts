@@ -1,9 +1,19 @@
 import { getParent, isRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+import {
+  getFileHandle,
+  storeFileHandle,
+  verifyPermission,
+} from './fileHandleStore.ts'
 import { getEnv, getSession, objectHash } from './index.ts'
 import { readConfObject } from '../configuration/index.ts'
 
-import type { FileLocation, PreFileLocation } from './types/index.ts'
+import type {
+  BlobLocation,
+  FileHandleLocation,
+  FileLocation,
+  PreFileLocation,
+} from './types/index.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   IAnyStateTreeNode,
@@ -115,13 +125,178 @@ let counter = 0
 // blob files are stored in a global map. the blobId is based on a combination
 // of timestamp plus counter to be unique across sessions and fast repeated
 // calls
-export function storeBlobLocation(location: PreFileLocation) {
+export function storeBlobLocation(
+  location: PreFileLocation,
+): BlobLocation | PreFileLocation {
   if ('blob' in location) {
     const blobId = `b${Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
-    return { name: location.blob.name, blobId, locationType: 'BlobLocation' }
+    return {
+      name: location.blob.name,
+      blobId,
+      locationType: 'BlobLocation' as const,
+    }
   }
   return location
+}
+
+// In-memory cache of File objects from FileSystemFileHandles
+// This allows openLocation to remain synchronous while FileHandle access is async
+let fileHandleCache: Record<string, File> = {}
+
+export function getFileFromCache(handleId: string) {
+  return fileHandleCache[handleId]
+}
+
+export function setFileInCache(handleId: string, file: File) {
+  fileHandleCache[handleId] = file
+}
+
+export function clearFileFromCache(handleId: string) {
+  delete fileHandleCache[handleId]
+}
+
+export function getFileHandleCache() {
+  return fileHandleCache
+}
+
+export function setFileHandleCache(cache: Record<string, File>) {
+  fileHandleCache = cache
+}
+
+// Async function to resolve handle and populate cache
+// Returns the File if permission is granted, throws if not
+export async function ensureFileHandleReady(
+  handleId: string,
+  requestPermission = true,
+) {
+  const cached = fileHandleCache[handleId]
+  if (cached) {
+    return cached
+  }
+
+  const handle = await getFileHandle(handleId)
+  if (!handle) {
+    throw new Error(
+      `File handle not found for handleId: ${handleId}. The file may have been opened in a different browser or the IndexedDB was cleared.`,
+    )
+  }
+
+  const hasPermission = await verifyPermission(handle, requestPermission)
+  if (!hasPermission) {
+    throw new Error(
+      `Permission denied for file "${handle.name}". Click "Restore access" to grant permission.`,
+    )
+  }
+
+  const file = await handle.getFile()
+  fileHandleCache[handleId] = file
+  return file
+}
+
+export async function storeFileHandleLocation(
+  handle: FileSystemFileHandle,
+): Promise<FileHandleLocation> {
+  const handleId = await storeFileHandle(handle)
+  const file = await handle.getFile()
+  fileHandleCache[handleId] = file
+  return {
+    locationType: 'FileHandleLocation',
+    name: handle.name,
+    handleId,
+  }
+}
+
+// Helper to restore file handles from a list of handleIds
+// Call this on app startup or when restoring a session
+// Returns an array of { handleId, success, error? } results
+export async function restoreFileHandles(
+  handleIds: string[],
+  requestPermission = false,
+) {
+  const results = []
+  for (const handleId of handleIds) {
+    try {
+      await ensureFileHandleReady(handleId, requestPermission)
+      results.push({ handleId, success: true })
+    } catch (e) {
+      results.push({ handleId, success: false, error: e })
+    }
+  }
+  return results
+}
+
+// Recursively find all FileHandleLocation handleIds in a session snapshot
+export function findFileHandleIds(
+  obj: unknown,
+  handleIds = new Set<string>(),
+  seen = new WeakSet<object>(),
+) {
+  if (!obj || typeof obj !== 'object') {
+    return handleIds
+  }
+
+  if (seen.has(obj)) {
+    return handleIds
+  }
+  seen.add(obj)
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      findFileHandleIds(item, handleIds, seen)
+    }
+  } else {
+    const record = obj as Record<string, unknown>
+    if (
+      record.locationType === 'FileHandleLocation' &&
+      typeof record.handleId === 'string'
+    ) {
+      handleIds.add(record.handleId)
+    }
+    for (const value of Object.values(record)) {
+      findFileHandleIds(value, handleIds, seen)
+    }
+  }
+  return handleIds
+}
+
+// Restore all file handles found in a session snapshot
+// Call this before setSession to ensure files are available
+export async function restoreFileHandlesFromSnapshot(
+  sessionSnapshot: unknown,
+  requestPermission = false,
+) {
+  const handleIds = findFileHandleIds(sessionSnapshot)
+  if (handleIds.size > 0) {
+    return restoreFileHandles([...handleIds], requestPermission)
+  }
+  return []
+}
+
+// Track pending file handle IDs that failed to restore and need user gesture
+let pendingFileHandleIds: string[] = []
+
+export function getPendingFileHandleIds() {
+  return pendingFileHandleIds
+}
+
+export function setPendingFileHandleIds(ids: string[]) {
+  pendingFileHandleIds = ids
+}
+
+export function clearPendingFileHandleIds() {
+  pendingFileHandleIds = []
+}
+
+// Call this from a user gesture (button click) to restore pending file handles
+export async function restorePendingFileHandles() {
+  if (pendingFileHandleIds.length === 0) {
+    return []
+  }
+  const results = await restoreFileHandles(pendingFileHandleIds, true)
+  const stillFailed = results.filter(r => !r.success).map(r => r.handleId)
+  pendingFileHandleIds = stillFailed
+  return results
 }
 
 /**
@@ -181,9 +356,14 @@ export function getFileName(track: FileLocation) {
   const uri = 'uri' in track ? track.uri : undefined
   const localPath = 'localPath' in track ? track.localPath : undefined
   const blob = 'blobId' in track ? track : undefined
+  const fileHandle = 'handleId' in track ? track : undefined
 
   if (blob?.name) {
     return blob.name
+  }
+
+  if (fileHandle?.name) {
+    return fileHandle.name
   }
 
   if (uri) {
