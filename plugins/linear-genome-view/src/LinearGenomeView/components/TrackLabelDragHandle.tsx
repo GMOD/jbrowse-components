@@ -1,7 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DragIcon from '@mui/icons-material/DragIndicator'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({

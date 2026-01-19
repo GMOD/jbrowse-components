@@ -8,7 +8,7 @@ import RubberbandSpan from './RubberbandSpan.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 

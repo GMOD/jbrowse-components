@@ -10,7 +10,7 @@ import OverviewScalebar from './OverviewScalebar.tsx'
 import SearchBox from './SearchBox.tsx'
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 const useStyles = makeStyles()({
   headerBar: {

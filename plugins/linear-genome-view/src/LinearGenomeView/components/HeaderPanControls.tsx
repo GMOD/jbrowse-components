@@ -5,7 +5,7 @@ import { Button, alpha } from '@mui/material'
 
 import { SPACING } from '../consts.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({

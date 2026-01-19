@@ -33,7 +33,7 @@
     "react": ">=18.0.0"
   },
   "dependencies": {
-    "@gmod/trix": "^3.0.5",
+    "@gmod/trix": "^3.0.6",
     "@jbrowse/core": "workspace:^"
   },
   "publishConfig": {

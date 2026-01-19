@@ -437,9 +437,6 @@ importers:
       canvas2svg:
         specifier: ^1.0.16
         version: 1.0.16
-      colord:
-        specifier: ^2.9.3
-        version: 2.9.3
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
@@ -470,9 +467,6 @@ importers:
       librpc-web-mod:
         specifier: ^2.1.1
         version: 2.1.1
-      load-script:
-        specifier: ^2.0.0
-        version: 2.0.0
       mobx:
         specifier: ^6.15.0
         version: 6.15.0
@@ -765,8 +759,8 @@ importers:
         specifier: ^8.1.1
         version: 8.1.1
       '@gmod/bed':
-        specifier: ^2.1.7
-        version: 2.1.7
+        specifier: ^2.1.8
+        version: 2.1.8
       '@gmod/tabix':
         specifier: ^3.2.2
         version: 3.2.2
@@ -1539,8 +1533,8 @@ importers:
   plugins/trix:
     dependencies:
       '@gmod/trix':
-        specifier: ^3.0.5
-        version: 3.0.5
+        specifier: ^3.0.6
+        version: 3.0.6
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3459,8 +3453,8 @@ packages:
     resolution: {integrity: sha512-Vpz/ezTAUslIsKCEvsA0zPHkobrwMCUw7E+hvAwsBP8H1BiD67Scak5hX8cJI7Sv4NRgKB/Zjvq0XfVa/wZ6KQ==}
     engines: {node: '>=6'}
 
-  '@gmod/bed@2.1.7':
-    resolution: {integrity: sha512-ddxGWgcbI984gTdsIPbrFpM2h7s7kNWWKmxD+xKtv5N+Pe4RaoPdJ6nAc33QFkUjuM2s+3QIf81qjFLDVGhLsA==}
+  '@gmod/bed@2.1.8':
+    resolution: {integrity: sha512-8TWvgErw+Oldl1CLmVyplMzkU/Uca1u9Uq4v26hkDaWjrY6nYi7bAjRlTkrCpqB5V7HRebF4/0Mt6MXNIVxblQ==}
     engines: {node: '>=6'}
 
   '@gmod/bgzf-filehandle@6.0.10':
@@ -3493,8 +3487,8 @@ packages:
     resolution: {integrity: sha512-lQQCuanjsnVNzH9n21LTMGykvRbpLbEQk3AL+aKnjf72gfV07mLZ116gtvDFu5huxbxWialOHGGC7iJAQDEi5Q==}
     engines: {node: '>=6'}
 
-  '@gmod/trix@3.0.5':
-    resolution: {integrity: sha512-/v8Sn9OUT5UYlhNW3GE4wedxo8gHn1Zgs9DYRwjpjsetNgFtWrEZwjTHaAkTE6HDuYd5qtEyT1C0leD3ljURoQ==}
+  '@gmod/trix@3.0.6':
+    resolution: {integrity: sha512-x6tJimw31cjWaZ0QeX9hWRMxLlwfasFZUgsq5Oh5IDEL7UtCRbmZe3TAXXWbz6LgBlC3PsGI9m+UnIzFi0LsuQ==}
     engines: {node: '>=10'}
 
   '@gmod/twobit@6.0.1':
@@ -7430,9 +7424,6 @@ packages:
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
-  load-script@2.0.0:
-    resolution: {integrity: sha512-km6cyoPW4rM22JMGb+SHUKPMZVDpUaMpMAKrv8UHWllIxc/qjgMGHD91nY+5hM+/NFs310OZ2pqQeJKs7HqWPA==}
-
   loader-runner@4.3.1:
     resolution: {integrity: sha512-IWqP2SCPhyVFTBtRcgMHdzlf9ul25NwaFx4wCEH/KjAXuuHY4yNjvPXsBokp8jCB936PyWRaPKUNh8NvylLp2Q==}
     engines: {node: '>=6.11.5'}
@@ -10852,7 +10843,7 @@ snapshots:
       pako-esm2: 2.0.2
       rxjs: 7.8.2
 
-  '@gmod/bed@2.1.7': {}
+  '@gmod/bed@2.1.8': {}
 
   '@gmod/bgzf-filehandle@6.0.10':
     dependencies:
@@ -10894,7 +10885,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.0.18
 
-  '@gmod/trix@3.0.5': {}
+  '@gmod/trix@3.0.6': {}
 
   '@gmod/twobit@6.0.1':
     dependencies:
@@ -15792,8 +15783,6 @@ snapshots:
       immediate: 3.0.6
 
   lines-and-columns@1.2.4: {}
-
-  load-script@2.0.0: {}
 
   loader-runner@4.3.1: {}
 

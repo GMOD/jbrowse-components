@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { getRelativeX } from './util.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 interface AnchorPosition {
   offsetX: number

@@ -3,7 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 const useStyles = makeStyles()(theme => ({
   toggleButton: {
