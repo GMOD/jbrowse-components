@@ -1,6 +1,6 @@
 // replace with this in your code:
 // import {createViewState,JBrowseApp} from '@jbrowse/react-app2'
-import volvoxConfig from '../../public/test_data/volvox/config.json'
+import volvoxConfig from '../../public/test_data/volvox/config.json' with { type: 'json' }
 import { JBrowseApp, createViewState } from '../../src/index.ts'
 // replace with this in your code:
 // import makeWorkerInstance from '@jbrowse/react-app2/esm/makeWorkerInstance'

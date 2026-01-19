@@ -2,7 +2,7 @@ import { LogoFull } from '@jbrowse/core/ui/Logo'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
 
-import packageJSON from '../../../package.json'
+import packageJSON from '../../../package.json' with { type: 'json' }
 
 const useStyles = makeStyles()({
   logo: {

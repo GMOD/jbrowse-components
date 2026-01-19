@@ -1,5 +1,5 @@
 // configs
-import config from '../../public/test_data/volvox/config.json'
+import config from '../../public/test_data/volvox/config.json' with { type: 'json' }
 
 export function addRelativeUris(config: any, baseUri: string) {
   if (typeof config === 'object') {

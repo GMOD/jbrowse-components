@@ -11,7 +11,7 @@ import {
   ipcMain,
   ipcRenderer,
 } from '../../../../packages/__mocks__/electron.ts'
-import configSnapshot from '../../test_data/volvox/config.json'
+import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 import corePlugins from '../corePlugins.ts'
 import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/sessionModel.ts'

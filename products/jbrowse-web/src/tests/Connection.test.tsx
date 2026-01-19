@@ -1,9 +1,9 @@
 import { screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { userEvent } from '@testing-library/user-event'
 import { LocalFile } from 'generic-filehandle2'
 
 import { createView, doBeforeEach, generateReadBuffer } from './util.tsx'
-import configSnapshot from '../../test_data/volvox/config.json'
+import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

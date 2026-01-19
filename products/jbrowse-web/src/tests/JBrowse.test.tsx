@@ -4,7 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { fireEvent } from '@testing-library/react'
 
-import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
+import volvoxConfigSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 import corePlugins from '../corePlugins.ts'
 import TestPlugin from './TestPlugin.ts'
 import {

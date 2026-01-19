@@ -9,7 +9,7 @@ import {
   pv,
   setup,
 } from './util.tsx'
-import config from '../../test_data/volvox/config_auth.json'
+import config from '../../test_data/volvox/config_auth.json' with { type: 'json' }
 
 setup()
 

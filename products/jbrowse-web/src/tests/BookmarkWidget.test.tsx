@@ -1,5 +1,5 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { userEvent } from '@testing-library/user-event'
 import { saveAs } from 'file-saver-es'
 
 import { createView, doBeforeEach, setup } from './util.tsx'

@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import { makeTicks } from '../util.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel

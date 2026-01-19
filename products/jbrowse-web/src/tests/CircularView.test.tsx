@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 import { fireEvent, waitFor } from '@testing-library/react'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
-import configSnapshot from '../../test_data/volvox/config.json'
+import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 
 setup()
 

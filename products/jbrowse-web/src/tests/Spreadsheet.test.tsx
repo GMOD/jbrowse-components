@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 import { screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { userEvent } from '@testing-library/user-event'
 
 import { doBeforeEach, openSpreadsheetView, setup } from './util.tsx'
 

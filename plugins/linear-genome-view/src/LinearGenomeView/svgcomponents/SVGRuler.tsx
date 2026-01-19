@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material'
 import { makeTicks } from '../util.ts'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 

@@ -39,7 +39,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { openDB } from 'idb'
 import { autorun } from 'mobx'
 
-import packageJSON from '../../package.json'
+import packageJSON from '../../package.json' with { type: 'json' }
 import jbrowseWebFactory from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
 import { filterSessionInPlace } from '../util.ts'

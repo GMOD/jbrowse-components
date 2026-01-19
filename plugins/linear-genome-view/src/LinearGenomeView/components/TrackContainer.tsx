@@ -12,7 +12,7 @@ import TrackLabelContainer from './TrackLabelContainer.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
 import { shouldSwapTracks } from './util.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({

@@ -1,23 +1,23 @@
-module.exports = {
-  stories: ['../stories/**/*.mdx', '../stories/**/*.stories.@(js|jsx|ts|tsx)'],
-  addons: ['@storybook/addon-essentials'],
+export default {
+  stories: [
+    '../stories/**/*.mdx',
+    '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+  ],
+  addons: ['@storybook/addon-docs'],
   framework: {
     name: '@storybook/react-webpack5',
     options: {},
   },
-  docs: {
-    docsPage: true,
-  },
+  staticDirs: ['../public'],
 
   webpackFinal: async config => {
     config.module.rules.push({
       test: /\.(ts|tsx|js|jsx)$/,
       use: [
         {
-          loader: require.resolve('babel-loader'),
+          loader: 'babel-loader',
           options: {
             rootMode: 'upward',
-            presets: ['@babel/preset-react'],
           },
         },
       ],

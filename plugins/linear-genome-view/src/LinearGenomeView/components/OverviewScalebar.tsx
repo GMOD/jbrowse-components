@@ -15,7 +15,7 @@ import OverviewScalebarTickLabels from './OverviewScalebarTickLabels.tsx'
 import { getCytobands } from './util.ts'
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
