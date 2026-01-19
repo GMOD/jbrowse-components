@@ -1,3 +1,5 @@
+import { aesDecrypt, aesEncrypt } from '@jbrowse/core/util'
+
 import { toUrlSafeB64 } from './util.ts'
 
 // from https://stackoverflow.com/questions/1349404/
@@ -10,17 +12,6 @@ function generateUID(length: number) {
     )
     .replaceAll(/[+/]/g, '')
     .slice(0, length)
-}
-
-const encrypt = async (text: string, password: string) => {
-  const CryptoJS = await import('crypto-js')
-  return CryptoJS.AES.encrypt(text, password).toString()
-}
-
-const decrypt = async (text: string, password: string) => {
-  const CryptoJS = await import('crypto-js')
-  const bytes = CryptoJS.AES.decrypt(text, password)
-  return bytes.toString(CryptoJS.enc.Utf8)
 }
 
 function getErrorMsg(err: string) {
@@ -39,7 +30,7 @@ export async function shareSessionToDynamo(
 ) {
   const sess = await toUrlSafeB64(JSON.stringify(session))
   const password = generateUID(5)
-  const encryptedSession = await encrypt(sess, password)
+  const encryptedSession = await aesEncrypt(sess, password)
 
   const data = new FormData()
   data.append('session', encryptedSession)
@@ -82,5 +73,5 @@ export async function readSessionFromDynamo(
   }
 
   const json = await response.json()
-  return decrypt(json.session, password)
+  return aesDecrypt(json.session, password)
 }
