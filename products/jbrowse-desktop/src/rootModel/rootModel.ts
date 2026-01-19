@@ -26,7 +26,7 @@ import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 
 import { DesktopSessionManagementMixin, getSaveSession } from './Sessions.ts'
-import packageJSON from '../../package.json'
+import packageJSON from '../../package.json' with { type: 'json' }
 import OpenSequenceDialog from '../components/OpenSequenceDialog.tsx'
 import jobsModelFactory from '../indexJobsModel.ts'
 import JBrowseDesktop from '../jbrowseModel.ts'

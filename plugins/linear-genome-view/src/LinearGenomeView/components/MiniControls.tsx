@@ -7,7 +7,7 @@ import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton, Paper, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 const useStyles = makeStyles()(theme => ({
   background: {

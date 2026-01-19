@@ -1,5 +1,5 @@
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
-import config from '../../test_data/cfam2/config.json'
+import config from '../../test_data/cfam2/config.json' with { type: 'json' }
 
 setup()
 

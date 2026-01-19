@@ -16,7 +16,7 @@ import { observer } from 'mobx-react'
 import ImportFormRefNameAutocomplete from './ImportFormRefNameAutocomplete.tsx'
 import { handleSelectedRegion, navToOption } from '../../searchUtils.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 const useStyles = makeStyles()(theme => ({

@@ -1,6 +1,6 @@
-const { createHash } = require('crypto')
+import { createHash } from 'crypto'
 
-module.exports = function createEnvironmentHash(env) {
+export default function createEnvironmentHash(env) {
   const hash = createHash('md5')
   hash.update(JSON.stringify(env))
 

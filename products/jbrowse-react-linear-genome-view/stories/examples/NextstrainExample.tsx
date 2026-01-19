@@ -1,4 +1,4 @@
-import nextstrainConfig from '../../public/nextstrain_covid.json'
+import nextstrainConfig from '../../public/nextstrain_covid.json' with { type: 'json' }
 // in your code
 // import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 import { JBrowseLinearGenomeView, createViewState } from '../../src/index.ts'

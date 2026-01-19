@@ -1,9 +1,9 @@
 import path from 'path'
 
 import HttpMap from './HttpMap.ts'
-import first from '../../test_data/names/0.json'
-import last from '../../test_data/names/f.json'
-import meta from '../../test_data/names/meta.json'
+import first from '../../test_data/names/0.json' with { type: 'json' }
+import last from '../../test_data/names/f.json' with { type: 'json' }
+import meta from '../../test_data/names/meta.json' with { type: 'json' }
 
 test('read from meta', async () => {
   const rootTemplate = path

@@ -2,7 +2,7 @@ import path from 'path'
 
 import { testAlignmentModificationsDisplay } from './testAlignmentModificationsDisplay.tsx'
 import { doBeforeEach, setup } from './util.tsx'
-import config from '../../test_data/modifications_test/config.json'
+import config from '../../test_data/modifications_test/config.json' with { type: 'json' }
 
 setup()
 

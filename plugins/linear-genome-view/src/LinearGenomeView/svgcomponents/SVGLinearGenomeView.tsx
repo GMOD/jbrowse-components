@@ -18,7 +18,7 @@ import SVGHeader from './SVGHeader.tsx'
 import SVGTracks from './SVGTracks.tsx'
 import { totalHeight } from './util.ts'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { ExportSvgOptions } from '../types.ts'
 
 type LGV = LinearGenomeViewModel

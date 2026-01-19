@@ -1,9 +1,9 @@
 import path from 'path'
 
-import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
-import dotplotSession from './dotplot_inverted_test.json'
+import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json' with { type: 'json' }
+import dotplotSession from './dotplot_inverted_test.json' with { type: 'json' }
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
-import config from '../../test_data/config_dotplot.json'
+import config from '../../test_data/config_dotplot.json' with { type: 'json' }
 
 const delay = { timeout: 50000 }
 const opts = [{}, delay]

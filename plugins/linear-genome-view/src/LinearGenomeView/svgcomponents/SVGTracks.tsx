@@ -4,7 +4,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
 
-import type { LinearGenomeViewModel } from '..'
+import type { LinearGenomeViewModel } from '../index.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 type LGV = LinearGenomeViewModel

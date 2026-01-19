@@ -1,7 +1,10 @@
-const path = require('path')
-const webpack = require('webpack')
+import path from 'path'
+import { fileURLToPath } from 'url'
+import webpack from 'webpack'
 
-module.exports = {
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+export default {
   mode: 'development',
   entry: './src/bin.ts',
   target: 'node',

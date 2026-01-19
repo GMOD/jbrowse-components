@@ -4,7 +4,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from './corePlugins.ts'
 import jbrowseModelFactory from './jbrowseModel.ts'
-import configSnapshot from '../test_data/volvox/config.json'
+import configSnapshot from '../test_data/volvox/config.json' with { type: 'json' }
 
 type JBrowseModelType = ReturnType<typeof jbrowseModelFactory>
 

@@ -10,7 +10,7 @@ import {
   mockConsoleWarn,
   setup,
 } from './util.tsx'
-import masterConfig from '../../test_data/volvox/connection_test.json'
+import masterConfig from '../../test_data/volvox/connection_test.json' with { type: 'json' }
 
 setup()
 beforeEach(() => {

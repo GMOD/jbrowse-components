@@ -34,7 +34,7 @@
     "build": "pnpm run /^build:/",
     "prepublishOnly": "node output-version.js > src/version.ts && git add -A src && git commit -m '[skip ci] Bump version.ts'",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:webpack": "webpack",
+    "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm *.tsbuildinfo",
     "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
