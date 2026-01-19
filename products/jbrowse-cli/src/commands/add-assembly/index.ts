@@ -15,7 +15,7 @@ export async function run(args?: string[]) {
     type: {
       type: 'string',
       short: 't',
-      description: `type of sequence, by default inferred from sequence file\n\nindexedFasta   An index FASTA (e.g. .fa or .fasta) file;\n               can optionally specify --faiLocation\n\nbgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file;\n               can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit         A twoBit (e.g. .2bit) file\n\nchromSizes     A chromosome sizes (e.g. .chrom.sizes) file\n\ncustom         Either a JSON file location or inline JSON that defines a custom\n               sequence adapter; must provide --name if using inline JSON`,
+      description: `type of sequence, by default inferred from sequence file\n\nindexedFasta - An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation\n\nbgzipFasta - A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit - A twoBit (e.g. .2bit) file\n\nchromSizes - A chromosome sizes (e.g. .chrom.sizes) file\n\ncustom - Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
       choices: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     },
     name: {
@@ -28,7 +28,7 @@ export async function run(args?: string[]) {
       type: 'string',
       short: 'a',
       description:
-        'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
+        'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38"); can be specified multiple times',
       multiple: true,
     },
     displayName: {
@@ -48,24 +48,24 @@ export async function run(args?: string[]) {
     refNameAliases: {
       type: 'string',
       description:
-        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
+        'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases file unless --refNameAliasesType is specified',
     },
     refNameAliasesType: {
       type: 'string',
       description:
-        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either\na JSON file location or inline JSON that defines a custom sequence adapter',
+        'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline JSON that defines a custom sequence adapter',
       choices: ['aliases', 'custom'],
       dependsOn: ['refNameAliases'],
     },
     refNameColors: {
       type: 'string',
       description:
-        'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
+        'A comma-separated list of color strings for the reference sequence names; will cycle through colors if there are fewer colors than sequences',
     },
     target: {
       type: 'string',
       description:
-        'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
+        'path to config file in JB2 installation directory to write out to. Creates ./config.json if nonexistent',
     },
     out: {
       type: 'string',

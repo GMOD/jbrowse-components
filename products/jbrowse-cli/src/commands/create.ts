@@ -67,7 +67,7 @@ const options = {
     type: 'string',
     short: 't',
     description:
-      'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
+      'Version of JBrowse 2 to install. Format is v1.0.0. Defaults to latest',
   },
 } as const
 

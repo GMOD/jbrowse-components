@@ -170,6 +170,34 @@ export async function getBranch(branch: string) {
   return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
 }
 
+function wrapText(text: string, width: number, indent: string) {
+  // Normalize: join single \n into spaces, preserve \n\n as paragraph breaks
+  const normalized = text.replace(/\n\n/g, '\0').replace(/\n/g, ' ').replace(/\0/g, '\n\n')
+  const lines = []
+  for (const line of normalized.split('\n')) {
+    if (line.length <= width) {
+      lines.push(line)
+    } else {
+      const words = line.split(' ')
+      let current = ''
+      for (const word of words) {
+        if (current.length + word.length + 1 <= width) {
+          current += (current ? ' ' : '') + word
+        } else {
+          if (current) {
+            lines.push(current)
+          }
+          current = word
+        }
+      }
+      if (current) {
+        lines.push(current)
+      }
+    }
+  }
+  return lines.join('\n' + indent)
+}
+
 export function printHelp({
   description,
   options,
@@ -181,20 +209,28 @@ export function printHelp({
   examples: string[]
   usage?: string
 }) {
+  const termWidth = process.stdout.columns || 80
   console.log(description)
   console.log(`\nUsage: ${usage || 'jbrowse <command> [options]'}`)
   console.log('\nOptions:')
   for (const [name, option] of Object.entries(options)) {
-    const short =
-      'short' in (option as any) && (option as any).short
-        ? `-${(option as any).short}`
-        : '   '
-    const namePadded = `--${name}`.padEnd(25, ' ')
-    const desc = (option as any).description?.replace(
-      /\n/g,
-      `\n${' '.repeat(29)}`,
-    )
-    console.log(`  ${short}, ${namePadded} ${desc}`)
+    const opt = option as Record<string, unknown>
+    const shortFlag = opt.short
+    const prefix = shortFlag ? `  -${shortFlag}, ` : '      '
+    const namePadded = `--${name}`.padEnd(22, ' ')
+    const indent = ' '.repeat(prefix.length + namePadded.length + 1)
+    const descWidth = termWidth - indent.length
+
+    let desc = (opt.description as string) || ''
+    if (opt.choices) {
+      desc += ` [choices: ${(opt.choices as string[]).join(', ')}]`
+    }
+    if (opt.default !== undefined) {
+      desc += ` [default: ${opt.default}]`
+    }
+
+    const wrapped = desc ? wrapText(desc, descWidth, indent) : ''
+    console.log(`${prefix}${namePadded} ${wrapped}\n`)
   }
-  console.log(`\n${examples.join('\n')}`)
+  console.log(examples.join('\n'))
 }
