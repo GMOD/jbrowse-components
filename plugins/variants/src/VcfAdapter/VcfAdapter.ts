@@ -1,7 +1,6 @@
-import { IntervalTree } from '@flatten-js/interval-tree'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
