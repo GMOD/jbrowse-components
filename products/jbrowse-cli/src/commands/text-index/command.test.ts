@@ -3,6 +3,7 @@
  */
 
 import fs from 'fs'
+import http from 'http'
 import path from 'path'
 
 import {
@@ -287,5 +288,99 @@ test('indexes entire volvox config', async () => {
     expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
     expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
     expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
+  })
+})
+
+// Integration test with real HTTP server - tests fix for remote gz file streaming
+// This tests the ReadableStream.from() fix in streamUtils.ts
+describe('real HTTP server integration', () => {
+  let server: http.Server
+  let serverPort: number
+
+  beforeAll(done => {
+    server = http.createServer((req, res) => {
+      const gzFilePath = dataDir('volvox.sort.gff3.gz')
+      if (req.url?.includes('volvox.sort.gff3.gz')) {
+        const stat = fs.statSync(gzFilePath)
+        res.writeHead(200, {
+          'Content-Type': 'application/gzip',
+          'Content-Length': stat.size,
+        })
+        fs.createReadStream(gzFilePath).pipe(res)
+      } else {
+        res.writeHead(404)
+        res.end('Not found')
+      }
+    })
+    server.listen(0, () => {
+      const addr = server.address()
+      if (addr && typeof addr === 'object') {
+        serverPort = addr.port
+      }
+      done()
+    })
+  })
+
+  afterAll(done => {
+    server.close(done)
+  })
+
+  test('indexes a remote gz gff3 file from real HTTP server', async () => {
+    // Unmock fetchWithProxy for this test to use real fetch
+    const originalFetch = jest.requireActual('../../fetchWithProxy.ts').default
+    const fetchWithProxy = require('../../fetchWithProxy.ts')
+      .default as jest.MockedFunction<typeof originalFetch>
+    fetchWithProxy.mockImplementation(originalFetch)
+
+    await runInTmpDir(async ctx => {
+      const config = {
+        assemblies: [
+          {
+            name: 'volvox',
+            sequence: {
+              type: 'ReferenceSequenceTrack',
+              trackId: 'volvox_refseq',
+              adapter: {
+                type: 'TwoBitAdapter',
+                twoBitLocation: {
+                  uri: 'volvox.2bit',
+                  locationType: 'UriLocation',
+                },
+              },
+            },
+          },
+        ],
+        tracks: [
+          {
+            type: 'FeatureTrack',
+            trackId: 'remote_gff3_gz',
+            assemblyNames: ['volvox'],
+            name: 'Remote GFF3 GZ',
+            adapter: {
+              type: 'Gff3TabixAdapter',
+              gffGzLocation: {
+                uri: `http://localhost:${serverPort}/volvox.sort.gff3.gz`,
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        ],
+      }
+      fs.writeFileSync(
+        path.join(ctx.dir, 'config.json'),
+        JSON.stringify(config),
+      )
+
+      await runCommand([
+        'text-index',
+        '--tracks=remote_gff3_gz',
+        '--target=config.json',
+      ])
+
+      // Verify index files were created
+      expect(fs.existsSync(ixLoc(ctx.dir))).toBe(true)
+      expect(fs.existsSync(ixxLoc(ctx.dir))).toBe(true)
+      verifyIxxFiles(ctx.dir)
+    })
   })
 })
