@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import { types } from '@jbrowse/mobx-state-tree'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #config SharedVariantDisplay
@@ -52,6 +52,17 @@ export default function sharedVariantConfigFactory() {
       minorAlleleFrequencyFilter: {
         type: 'number',
         defaultValue: 0,
+      },
+      /**
+       * #slot
+       * Automatically color samples by this metadata attribute when the track
+       * loads. The attribute must be present in the sample metadata TSV file
+       * (configured via samplesTsvLocation on the adapter). Leave empty to
+       * disable auto-coloring.
+       */
+      colorBy: {
+        type: 'string',
+        defaultValue: '',
       },
     },
     {

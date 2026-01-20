@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import sharedVariantConfigFactory from './SharedVariantConfigSchema.ts'
+import { applyColorPalette } from './applyColorPalette.ts'
 
 describe('SharedVariantConfigSchema', () => {
   const configSchema = sharedVariantConfigFactory()
@@ -103,7 +104,6 @@ describe('SharedVariantConfigSchema', () => {
 })
 
 describe('Config-to-getter fallback logic', () => {
-
   it('referenceDrawingMode getter returns draw when showReferenceAlleles config is true', () => {
     const showReferenceAlleles = true
     const referenceDrawingModeSetting: string | undefined = undefined
@@ -198,5 +198,123 @@ describe('Config-to-getter fallback logic', () => {
     const result = settingValue ?? configValue
 
     expect(result).toBe(0.2)
+  })
+})
+
+describe('colorBy config slot', () => {
+  const configSchema = sharedVariantConfigFactory()
+
+  it('has default value of empty string', () => {
+    const config = configSchema.create({
+      type: 'SharedVariantDisplay',
+      displayId: 'test-colorby-1',
+    })
+    expect(readConfObject(config, 'colorBy')).toBe('')
+  })
+
+  it('can be set to a metadata attribute name', () => {
+    const config = configSchema.create({
+      type: 'SharedVariantDisplay',
+      displayId: 'test-colorby-2',
+      colorBy: 'population',
+    })
+    expect(readConfObject(config, 'colorBy')).toBe('population')
+  })
+})
+
+describe('applyColorPalette', () => {
+  it('returns original sources when attribute is empty', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2', population: 'AFR' },
+    ]
+    const result = applyColorPalette(sources, '')
+    expect(result).toBe(sources)
+  })
+
+  it('returns original sources when sources array is empty', () => {
+    const sources: { name: string }[] = []
+    const result = applyColorPalette(sources, 'population')
+    expect(result).toBe(sources)
+  })
+
+  it('returns original sources when attribute does not exist', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2', population: 'AFR' },
+    ]
+    const result = applyColorPalette(sources, 'nonexistent')
+    expect(result).toBe(sources)
+  })
+
+  it('applies colors based on attribute values', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2', population: 'AFR' },
+      { name: 'sample3', population: 'EUR' },
+    ]
+    const result = applyColorPalette(sources, 'population')
+
+    expect(result).toHaveLength(3)
+    expect(result[0]).toHaveProperty('color')
+    expect(result[1]).toHaveProperty('color')
+    expect(result[2]).toHaveProperty('color')
+
+    // Samples with same population value should have same color
+    expect(result[0]!.color).toBe(result[2]!.color)
+    // Samples with different population values should have different colors
+    expect(result[0]!.color).not.toBe(result[1]!.color)
+  })
+
+  it('assigns colors by frequency (less common values get colors first)', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2', population: 'EUR' },
+      { name: 'sample3', population: 'EUR' },
+      { name: 'sample4', population: 'AFR' },
+    ]
+    const result = applyColorPalette(sources, 'population')
+
+    // AFR (1 occurrence) should get the first color from palette
+    // EUR (3 occurrences) should get the second color
+    const afrSample = result.find(s => s.population === 'AFR')
+    const eurSample = result.find(s => s.population === 'EUR')
+
+    expect(afrSample).toHaveProperty('color')
+    expect(eurSample).toHaveProperty('color')
+    expect(afrSample!.color).not.toBe(eurSample!.color)
+  })
+
+  it('preserves other properties on sources', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR', region: 'Western', custom: 123 },
+      { name: 'sample2', population: 'AFR', region: 'Eastern', custom: 456 },
+    ]
+    const result = applyColorPalette(sources, 'population')
+
+    expect(result[0]!.name).toBe('sample1')
+    // @ts-expect-error
+    expect(result[0]!.region).toBe('Western')
+    // @ts-expect-error
+    expect(result[0]!.custom).toBe(123)
+    expect(result[1]!.name).toBe('sample2')
+    // @ts-expect-error
+    expect(result[1]!.region).toBe('Eastern')
+    // @ts-expect-error
+    expect(result[1]!.custom).toBe(456)
+  })
+
+  it('handles undefined attribute values by converting to string', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2' }, // no population attribute
+    ]
+    const result = applyColorPalette(sources, 'population')
+
+    expect(result).toHaveLength(2)
+    expect(result[0]).toHaveProperty('color')
+    expect(result[1]).toHaveProperty('color')
+    // They should have different colors (EUR vs undefined)
+    expect(result[0]!.color).not.toBe(result[1]!.color)
   })
 })

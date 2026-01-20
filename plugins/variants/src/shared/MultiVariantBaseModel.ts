@@ -161,6 +161,12 @@ export default function MultiVariantBaseModelF(
       sourcesVolatile: undefined as Source[] | undefined,
       /**
        * #volatile
+       * Tracks whether the colorBy config has been applied (to avoid
+       * re-applying on every source update)
+       */
+      colorByApplied: false,
+      /**
+       * #volatile
        */
       featuresVolatile: undefined as Feature[] | undefined,
       /**
@@ -189,6 +195,15 @@ export default function MultiVariantBaseModelF(
        * #volatile
        */
       mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Returns the effective rendering mode, falling back to config
+       */
+      get renderingMode(): string {
+        return self.renderingModeSetting ?? getConf(self, 'renderingMode')
+      },
     }))
     .actions(self => ({
       /**
@@ -238,6 +253,13 @@ export default function MultiVariantBaseModelF(
        */
       setFeatures(f: Feature[]) {
         self.featuresVolatile = f
+      },
+
+      /**
+       * #action
+       */
+      setColorByApplied(value: boolean) {
+        self.colorByApplied = value
       },
 
       /**
@@ -388,14 +410,6 @@ export default function MultiVariantBaseModelF(
        */
       get showTree() {
         return self.showTreeSetting ?? getConf(self, 'showTree')
-      },
-
-      /**
-       * #getter
-       * Returns the effective rendering mode, falling back to config
-       */
-      get renderingMode(): string {
-        return self.renderingModeSetting ?? getConf(self, 'renderingMode')
       },
 
       /**
