@@ -32,10 +32,12 @@
     "prebuild": "pnpm clean",
     "build": "tsc && webpack -c webpack.config.mjs",
     "clean": "rimraf bundle",
+    "prepublishOnly": "node output-version.js > src/version.ts",
     "prepack": "pnpm clean && pnpm build && pnpm generate-readme",
     "generate-readme": "./generate_readme.sh > README.md"
   },
   "dependencies": {
+    "@jbrowse/text-indexing-core": "workspace:^",
     "cli-progress": "^3.12.0",
     "command-exists": "^1.2.9",
     "cors": "^2.8.5",

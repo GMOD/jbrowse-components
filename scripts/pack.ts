@@ -3,7 +3,7 @@ import path from 'path'
 
 import spawn from 'cross-spawn'
 
-const subDirs = ['cgv-vite', 'lgv-vite', 'app-vite']
+const subDirs = ['cgv-vite', 'lgv-vite', 'app-vite', 'cli-node18']
 const root = path.resolve(import.meta.dirname, '..')
 const workspaceDirs = ['packages', 'products', 'plugins']
 

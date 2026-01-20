@@ -4,14 +4,16 @@ import { Readable } from 'stream'
 
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  generateMeta,
+  indexGff3,
+  indexVcf,
+  sanitizeForFilename,
+} from '@jbrowse/text-indexing-core'
 import { ixIxxStream } from 'ixixx'
 
-// misc
-import { generateMeta, sanitizeForFilename } from './types/common.ts'
-import { indexGff3 } from './types/gff3Adapter.ts'
-import { indexVcf } from './types/vcfAdapter.ts'
-
-import type { Track, indexType } from './util.ts'
+import type { indexType } from './util.ts'
+import type { Track } from '@jbrowse/text-indexing-core'
 
 export async function indexTracks(args: {
   tracks: Track[]

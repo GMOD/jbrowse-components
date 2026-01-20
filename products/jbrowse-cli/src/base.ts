@@ -2,37 +2,22 @@
  * By convention, exit codes in this base class are below 100
  */
 
-export interface UriLocation {
-  uri: string
-  locationType: 'UriLocation'
-}
-export interface LocalPathLocation {
-  localPath: string
-  locationType: 'LocalPathLocation'
-}
+export type {
+  Gff3Adapter,
+  Gff3TabixAdapter,
+  GtfAdapter,
+  LocalPathLocation,
+  Track,
+  UriLocation,
+  VcfAdapter,
+  VcfTabixAdapter,
+} from '@jbrowse/text-indexing-core'
 
-export interface Gff3TabixAdapter {
-  type: 'Gff3TabixAdapter'
-  gffGzLocation: UriLocation | LocalPathLocation
-}
-
-export interface Gff3Adapter {
-  type: 'Gff3Adapter'
-  gffLocation: UriLocation | LocalPathLocation
-}
-export interface GtfAdapter {
-  type: 'GtfAdapter'
-  gtfLocation: UriLocation
-}
-
-export interface VcfTabixAdapter {
-  type: 'VcfTabixAdapter'
-  vcfGzLocation: UriLocation | LocalPathLocation
-}
-export interface VcfAdapter {
-  type: 'VcfAdapter'
-  vcfLocation: UriLocation | LocalPathLocation
-}
+import type {
+  LocalPathLocation,
+  Track,
+  UriLocation,
+} from '@jbrowse/text-indexing-core'
 
 export interface IndexedFastaAdapter {
   type: 'IndexedFastaAdapter'
@@ -95,22 +80,17 @@ export interface Assembly {
 export interface TrixTextSearchAdapter {
   type: string
   textSearchAdapterId: string
-  ixFilePath: UriLocation
-  ixxFilePath: UriLocation
-  metaFilePath: UriLocation
+  ixFilePath: UriLocation | LocalPathLocation
+  ixxFilePath: UriLocation | LocalPathLocation
+  metaFilePath: UriLocation | LocalPathLocation
   assemblyNames: string[]
 }
+
 export interface TextSearching {
   indexingFeatureTypesToExclude?: string[]
   indexingAttributes?: string[]
-  textSearchAdapter: TrixTextSearchAdapter
-}
-export interface Track {
-  trackId: string
-  name: string
-  assemblyNames: string[]
-  adapter?: { type: string; [key: string]: unknown }
-  textSearching?: TextSearching
+  textSearchAdapter?: TrixTextSearchAdapter
+  [key: string]: unknown
 }
 
 export interface Config {

@@ -3,14 +3,12 @@ import path from 'path'
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import sanitize from 'sanitize-filename'
 
-export interface UriLocation {
-  uri: string
-  locationType: 'UriLocation'
-}
-export interface LocalPathLocation {
-  localPath: string
-  locationType: 'LocalPathLocation'
-}
+import type {
+  LocalPathLocation,
+  Track,
+  UriLocation,
+} from '@jbrowse/text-indexing-core'
+
 export interface IndexedFastaAdapter {
   type: 'IndexedFastaAdapter'
   fastaLocation: UriLocation
@@ -46,6 +44,7 @@ export interface RefNameAliasAdapter {
 export interface CustomRefNameAliasAdapter {
   type: string
 }
+
 export interface Assembly {
   displayName?: string
   name: string
@@ -67,43 +66,6 @@ export interface Sequence {
     | ChromeSizesAdapter
     | CustomSequenceAdapter
 }
-type Loc = UriLocation | LocalPathLocation
-export interface Gff3TabixAdapter {
-  type: 'Gff3TabixAdapter'
-  gffGzLocation: Loc
-}
-
-export interface Gff3Adapter {
-  type: 'Gff3Adapter'
-  gffLocation: Loc
-}
-export interface GtfAdapter {
-  type: 'GtfAdapter'
-  gtfLocation: Loc
-}
-
-export interface VcfTabixAdapter {
-  type: 'VcfTabixAdapter'
-  vcfGzLocation: Loc
-}
-export interface VcfAdapter {
-  type: 'VcfAdapter'
-  vcfLocation: Loc
-}
-
-export interface Track {
-  adapter?: { type: string; [key: string]: unknown }
-  textSearching?: TextSearching
-  name: string
-  assemblyNames: string[]
-  trackId: string
-}
-
-export interface TextSearching {
-  indexingFeatureTypesToExclude?: string[]
-  indexingAttributes?: string[]
-  textSearchAdapter: TrixTextSearchAdapter
-}
 
 export interface TrixTextSearchAdapter {
   type: string
@@ -112,6 +74,13 @@ export interface TrixTextSearchAdapter {
   ixxFilePath: UriLocation | LocalPathLocation
   metaFilePath: UriLocation | LocalPathLocation
   assemblyNames: string[]
+}
+
+export interface TextSearching {
+  indexingFeatureTypesToExclude?: string[]
+  indexingAttributes?: string[]
+  textSearchAdapter?: TrixTextSearchAdapter
+  [key: string]: unknown
 }
 
 export interface Config {
@@ -171,13 +140,4 @@ export function findTrackConfigsToIndex(
       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
     )
     .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
-}
-
-export function decodeURIComponentNoThrow(uri: string) {
-  try {
-    return decodeURIComponent(uri)
-  } catch (e) {
-    // avoid throwing exception on a failure to decode URI component
-    return uri
-  }
 }

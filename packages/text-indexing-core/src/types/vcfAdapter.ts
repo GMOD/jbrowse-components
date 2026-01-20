@@ -1,30 +1,34 @@
 import { decodeURIComponentNoThrow } from '../util.ts'
-import { createIndexingStream, parseAttributes } from './streamUtils.ts'
-
-import type { Track } from '../base.ts'
+import {
+  createReadlineInterface,
+  getLocalOrRemoteStream,
+  parseAttributes,
+} from './common.ts'
 
 export async function* indexVcf({
   config,
   attributesToIndex,
   inLocation,
-  outLocation,
-  quiet,
+  outDir,
+  onStart,
+  onUpdate,
 }: {
-  config: Track
+  config: { trackId: string }
   attributesToIndex: string[]
   inLocation: string
-  outLocation: string
-  typesToExclude: string[]
-  quiet: boolean
+  outDir: string
+  onStart: (totalBytes: number) => void
+  onUpdate: (progressBytes: number) => void
 }) {
   const { trackId } = config
-  const { rl, progressBar } = await createIndexingStream({
-    inLocation,
-    outLocation,
-    trackId,
-    quiet,
+  const stream = await getLocalOrRemoteStream({
+    file: inLocation,
+    out: outDir,
+    onStart,
+    onUpdate,
   })
 
+  const rl = createReadlineInterface(stream, inLocation)
   const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
@@ -41,7 +45,7 @@ export async function* indexVcf({
 
     const fields = parseAttributes(info!, decodeURIComponentNoThrow)
     const end = fields.END
-    const locStr = `${ref}:${pos!}..${end || +pos! + 1}`
+    const locStr = `${ref}:${pos}..${end || +pos! + 1}`
     const encodedLocStr = encodeURIComponent(locStr)
 
     const infoAttrs = attributesToIndex
@@ -56,6 +60,4 @@ export async function* indexVcf({
       yield `${record} ${variantId}\n`
     }
   }
-
-  progressBar.stop()
 }

@@ -5,6 +5,7 @@ const SALT_PREFIX = 'Salted__'
 
 // Check if Web Crypto API is available (only in secure contexts)
 function isWebCryptoAvailable() {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return typeof crypto !== 'undefined' && crypto.subtle !== undefined
 }
 
@@ -86,7 +87,7 @@ function aesKeyExpansion(key: Uint8Array) {
   expandedKey.set(key)
 
   for (let i = Nk; i < 4 * (Nr + 1); i++) {
-    let temp = expandedKey.slice((i - 1) * 4, i * 4)
+    const temp = expandedKey.slice((i - 1) * 4, i * 4)
     if (i % Nk === 0) {
       // RotWord + SubWord + Rcon
       const t = temp[0]!
@@ -94,6 +95,7 @@ function aesKeyExpansion(key: Uint8Array) {
       temp[1] = SBOX[temp[2]!]!
       temp[2] = SBOX[temp[3]!]!
       temp[3] = SBOX[t]!
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     } else if (Nk > 6 && i % Nk === 4) {
       // SubWord for 256-bit keys
       for (let j = 0; j < 4; j++) {
@@ -115,7 +117,7 @@ function aesEncryptBlock(block: Uint8Array, expandedKey: Uint8Array) {
 
   // AddRoundKey
   for (let i = 0; i < 16; i++) {
-    state[i] ^= expandedKey[i]!
+    state[i]! ^= expandedKey[i]!
   }
 
   for (let round = 1; round <= Nr; round++) {
@@ -162,7 +164,7 @@ function aesEncryptBlock(block: Uint8Array, expandedKey: Uint8Array) {
     // AddRoundKey
     const roundKey = expandedKey.subarray(round * 16, (round + 1) * 16)
     for (let i = 0; i < 16; i++) {
-      state[i] ^= roundKey[i]!
+      state[i]! ^= roundKey[i]!
     }
   }
 
@@ -177,7 +179,7 @@ function aesDecryptBlock(block: Uint8Array, expandedKey: Uint8Array) {
 
   // AddRoundKey
   for (let i = 0; i < 16; i++) {
-    state[i] ^= expandedKey[Nr * 16 + i]!
+    state[i]! ^= expandedKey[Nr * 16 + i]!
   }
 
   for (let round = Nr - 1; round >= 0; round--) {
@@ -209,7 +211,7 @@ function aesDecryptBlock(block: Uint8Array, expandedKey: Uint8Array) {
     // AddRoundKey
     const roundKey = expandedKey.subarray(round * 16, (round + 1) * 16)
     for (let i = 0; i < 16; i++) {
-      state[i] ^= roundKey[i]!
+      state[i]! ^= roundKey[i]!
     }
 
     // InvMixColumns (skip in last round)
@@ -268,7 +270,7 @@ function aesCbcEncryptFallback(
     const block = padded.slice(i, i + 16)
     // XOR with previous ciphertext block (or IV for first block)
     for (let j = 0; j < 16; j++) {
-      block[j] ^= prevBlock[j]!
+      block[j]! ^= prevBlock[j]!
     }
     const encrypted = aesEncryptBlock(block, expandedKey)
     ciphertext.set(encrypted, i)
@@ -293,7 +295,7 @@ function aesCbcDecryptFallback(
     const decrypted = aesDecryptBlock(block, expandedKey)
     // XOR with previous ciphertext block (or IV for first block)
     for (let j = 0; j < 16; j++) {
-      decrypted[j] ^= prevBlock[j]!
+      decrypted[j]! ^= prevBlock[j]!
     }
     plaintext.set(decrypted, i)
     prevBlock = block
@@ -304,6 +306,7 @@ function aesCbcDecryptFallback(
 
 // Generate random bytes (works in both secure and non-secure contexts)
 function getRandomBytes(length: number) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
     return crypto.getRandomValues(new Uint8Array(length))
   }

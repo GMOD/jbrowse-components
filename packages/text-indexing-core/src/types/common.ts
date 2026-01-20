@@ -1,22 +1,13 @@
 import fs from 'fs'
 import path from 'path'
+import readline from 'readline'
 import { fileURLToPath } from 'url'
+import { createGunzip } from 'zlib'
 
 import fetch from 'node-fetch'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
-
-// Method for handing off the parsing of a gff3 file URL. Calls the proper
-// parser depending on if it is gzipped or not. Returns a @gmod/gff stream.
-export async function createRemoteStream(urlIn: string) {
-  const res = await fetch(urlIn)
-  if (!res.ok) {
-    throw new Error(
-      `Failed to fetch ${urlIn} status ${res.status} ${await res.text()}`,
-    )
-  }
-  return res
-}
+import type { Readable } from 'stream'
 
 // Checks if the passed in string is a valid URL.
 // Returns a boolean.
@@ -48,37 +39,122 @@ function convertFileUrlToPath(fileUrl: string): string | undefined {
 export async function getLocalOrRemoteStream({
   file,
   out,
-  onBytesReceived,
-  onTotalBytes,
+  onStart,
+  onUpdate,
 }: {
   file: string
   out: string
-  onBytesReceived: (totalBytesReceived: number) => void
-  onTotalBytes: (totalBytes: number) => void
-}) {
+  onStart: (totalBytes: number) => void
+  onUpdate: (receivedBytes: number) => void
+}): Promise<Readable> {
   let receivedBytes = 0
+
   if (isURL(file)) {
-    const result = await createRemoteStream(file)
-    result.body.on('data', chunk => {
+    console.error(`[DEBUG] Fetching remote file: ${file}`)
+    const res = await fetch(file)
+    console.error(`[DEBUG] Fetch response status: ${res.status}`)
+    if (!res.ok) {
+      throw new Error(
+        `Failed to fetch ${file} status ${res.status} ${await res.text()}`,
+      )
+    }
+    const totalBytes = +(res.headers.get('Content-Length') || 0)
+    console.error(`[DEBUG] Content-Length: ${totalBytes}`)
+    onStart(totalBytes)
+
+    const body = res.body
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!body) {
+      throw new Error(`Failed to fetch ${file}: no response body`)
+    }
+
+    body.on('data', chunk => {
       receivedBytes += chunk.length
-      onBytesReceived(receivedBytes)
+      console.error(
+        `[DEBUG] Received chunk: ${chunk.length} bytes, total: ${receivedBytes}`,
+      )
+      onUpdate(receivedBytes)
     })
-    onTotalBytes(+(result.headers.get('Content-Length') || 0))
-    return result.body
+
+    body.on('end', () => {
+      console.error(`[DEBUG] Body stream ended, total bytes: ${receivedBytes}`)
+    })
+
+    body.on('error', err => {
+      console.error(`[DEBUG] Body stream error:`, err)
+    })
+
+    return body as unknown as Readable
   } else {
     // Handle file:// URLs by converting to local path
     const localPath = convertFileUrlToPath(file) ?? file
     const filename = path.isAbsolute(localPath)
       ? localPath
       : path.join(out, localPath)
+    const totalBytes = fs.statSync(filename).size
+    onStart(totalBytes)
+
     const stream = fs.createReadStream(filename)
     stream.on('data', chunk => {
       receivedBytes += chunk.length
-      onBytesReceived(receivedBytes)
+      onUpdate(receivedBytes)
     })
-    onTotalBytes(fs.statSync(filename).size)
+
     return stream
   }
+}
+
+export function createReadlineInterface(
+  stream: Readable,
+  inLocation: string,
+): readline.Interface {
+  console.error(`[DEBUG] createReadlineInterface: inLocation=${inLocation}`)
+  const isGzipped = /.b?gz$/.exec(inLocation)
+  console.error(`[DEBUG] Is gzipped: ${!!isGzipped}`)
+
+  let inputStream: Readable
+  if (isGzipped) {
+    const gunzip = createGunzip()
+    gunzip.on('error', err => {
+      console.error(`[DEBUG] Gunzip error:`, err)
+    })
+    gunzip.on('end', () => {
+      console.error(`[DEBUG] Gunzip stream ended`)
+    })
+    inputStream = stream.pipe(gunzip)
+  } else {
+    inputStream = stream
+  }
+
+  const rl = readline.createInterface({
+    input: inputStream,
+  })
+
+  rl.on('close', () => {
+    console.error(`[DEBUG] Readline interface closed`)
+  })
+
+  return rl
+}
+
+// Efficient attribute parsing for GFF3/VCF info fields
+export function parseAttributes(
+  infoString: string,
+  decodeFunc: (s: string) => string,
+) {
+  const result: Record<string, string | undefined> = {}
+  for (const field of infoString.split(';')) {
+    const trimmed = field.trim()
+    if (trimmed) {
+      const eqIdx = trimmed.indexOf('=')
+      if (eqIdx !== -1) {
+        const key = trimmed.slice(0, eqIdx).trim()
+        const val = trimmed.slice(eqIdx + 1)
+        result[key] = decodeFunc(val).trim().replaceAll(',', ' ')
+      }
+    }
+  }
+  return result
 }
 
 export function makeLocation(location: string, protocol: string) {

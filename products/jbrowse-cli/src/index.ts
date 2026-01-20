@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import fs from 'fs'
-import path from 'path'
 import { parseArgs } from 'util'
 
 // Command imports
@@ -18,6 +16,7 @@ import { run as sortBedRun } from './commands/sort-bed.ts'
 import { run as sortGffRun } from './commands/sort-gff.ts'
 import { run as textIndexRun } from './commands/text-index/index.ts'
 import { run as upgradeRun } from './commands/upgrade.ts'
+import { version } from './version.ts'
 
 const commands = {
   create: createRun,
@@ -62,10 +61,7 @@ export async function main(args: string[]) {
     }
 
     if (flags.version && positionals.length === 0) {
-      const packageJson = JSON.parse(
-        fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'),
-      )
-      console.log(`@jbrowse/cli version ${packageJson.version}`)
+      console.log(`@jbrowse/cli version ${version}`)
       return
     }
 
