@@ -329,7 +329,7 @@ describe('real HTTP server integration', () => {
     // Unmock fetchWithProxy for this test to use real fetch
     const originalFetch = jest.requireActual('../../fetchWithProxy.ts').default
     const fetchWithProxy = require('../../fetchWithProxy.ts')
-      .default as jest.MockedFunction<typeof originalFetch>
+      .default
     fetchWithProxy.mockImplementation(originalFetch)
 
     await runInTmpDir(async ctx => {

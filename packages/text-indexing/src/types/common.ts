@@ -1,21 +1,12 @@
 import fs from 'fs'
-import { Readable } from 'stream'
 import path from 'path'
+import readline from 'readline'
 import { fileURLToPath } from 'url'
+import { createGunzip } from 'zlib'
+
+import fetch from 'node-fetch'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
-
-// Method for handing off the parsing of a gff3 file URL. Calls the proper
-// parser depending on if it is gzipped or not. Returns a @gmod/gff stream.
-export async function createRemoteStream(urlIn: string) {
-  const res = await fetch(urlIn)
-  if (!res.ok) {
-    throw new Error(
-      `Failed to fetch ${urlIn} status ${res.status} ${await res.text()}`,
-    )
-  }
-  return res
-}
 
 // Checks if the passed in string is a valid URL.
 // Returns a boolean.
@@ -47,60 +38,67 @@ function convertFileUrlToPath(fileUrl: string): string | undefined {
 export async function getLocalOrRemoteStream({
   file,
   out,
+  onStart,
+  onUpdate,
 }: {
   file: string
   out: string
+  onStart: (totalBytes: number) => void
+  onUpdate: (receivedBytes: number) => void
 }) {
+  let receivedBytes = 0
+
   if (isURL(file)) {
-    const result = await createRemoteStream(file)
-    return {
-      totalBytes: +(result.headers.get('Content-Length') || 0),
-      stream: result.body,
+    const res = await fetch(file)
+    if (!res.ok) {
+      throw new Error(
+        `Failed to fetch ${file} status ${res.status} ${await res.text()}`,
+      )
     }
+    const totalBytes = +(res.headers.get('Content-Length') || 0)
+    onStart(totalBytes)
+
+    const body = res.body
+    if (!body) {
+      throw new Error(`Failed to fetch ${file}: no response body`)
+    }
+
+    body.on('data', (chunk: Buffer) => {
+      receivedBytes += chunk.length
+      onUpdate(receivedBytes)
+    })
+
+    return body
   } else {
     // Handle file:// URLs by converting to local path
     const localPath = convertFileUrlToPath(file) ?? file
     const filename = path.isAbsolute(localPath)
       ? localPath
       : path.join(out, localPath)
-    const nodeStream = fs.createReadStream(filename)
-    return {
-      totalBytes: fs.statSync(filename).size,
-      stream: Readable.toWeb(nodeStream) as ReadableStream<Uint8Array>,
-    }
+    const totalBytes = fs.statSync(filename).size
+    onStart(totalBytes)
+
+    const stream = fs.createReadStream(filename)
+    stream.on('data', (chunk: Buffer) => {
+      receivedBytes += chunk.length
+      onUpdate(receivedBytes)
+    })
+
+    return stream
   }
 }
 
-export async function* readLines(
-  reader: ReadableStreamDefaultReader<Uint8Array>,
-  onUpdate: (bytes: number) => void,
-) {
-  const decoder = new TextDecoder()
-  let buffer = ''
-  let receivedBytes = 0
+export function createReadlineInterface(
+  stream: Readable,
+  inLocation: string,
+): readline.Interface {
+  const inputStream = /.b?gz$/.exec(inLocation)
+    ? stream.pipe(createGunzip())
+    : stream
 
-  try {
-    let result = await reader.read()
-    while (!result.done) {
-      receivedBytes += result.value.length
-      onUpdate(receivedBytes)
-      buffer += decoder.decode(result.value, { stream: true })
-
-      const lines = buffer.split('\n')
-      buffer = lines.pop()!
-      for (const line of lines) {
-        yield line
-      }
-      result = await reader.read()
-    }
-  } finally {
-    reader.releaseLock()
-  }
-
-  buffer += decoder.decode()
-  if (buffer) {
-    yield buffer
-  }
+  return readline.createInterface({
+    input: inputStream,
+  })
 }
 
 // Efficient attribute parsing for GFF3/VCF info fields

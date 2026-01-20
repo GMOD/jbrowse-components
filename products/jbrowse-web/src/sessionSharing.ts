@@ -30,7 +30,7 @@ export async function shareSessionToDynamo(
 ) {
   const sess = await toUrlSafeB64(JSON.stringify(session))
   const password = generateUID(5)
-  const encryptedSession = await aesEncrypt(sess, password)
+  const encryptedSession = aesEncrypt(sess, password)
 
   const data = new FormData()
   data.append('session', encryptedSession)

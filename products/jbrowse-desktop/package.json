@@ -97,7 +97,7 @@
     "json-parse-even-better-errors": "^5.0.0",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",
-    "node-fetch": "^2.7.0",
+    "node-fetch": "^2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "sanitize-filename": "^1.6.3",

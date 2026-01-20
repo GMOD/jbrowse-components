@@ -1,8 +1,8 @@
 import { decodeURIComponentNoThrow } from '../util.ts'
 import {
+  createReadlineInterface,
   getLocalOrRemoteStream,
   parseAttributes,
-  readLines,
 } from './common.ts'
 
 export async function* indexVcf({
@@ -21,23 +21,14 @@ export async function* indexVcf({
   onUpdate: (progressBytes: number) => void
 }) {
   const { trackId } = config
-  const { totalBytes, stream } = await getLocalOrRemoteStream({
+  const stream = await getLocalOrRemoteStream({
     file: inLocation,
     out: outDir,
+    onStart,
+    onUpdate,
   })
 
-  onStart(totalBytes)
-
-  if (!stream) {
-    throw new Error(`Failed to fetch ${inLocation}: no response body`)
-  }
-
-  const inputStream = /.b?gz$/.exec(inLocation)
-    ? // @ts-expect-error
-      ReadableStream.from(stream).pipeThrough(new DecompressionStream('gzip'))
-    : ReadableStream.from(stream)
-
-  const rl = readLines(inputStream.getReader(), onUpdate)
+  const rl = createReadlineInterface(stream, inLocation)
   const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
