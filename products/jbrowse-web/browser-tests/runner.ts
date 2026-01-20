@@ -322,11 +322,7 @@ const testSuites: TestSuite[] = [
           await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
 
           await findByText(page, 'ctgA')
-          await findByTestId(
-            page,
-            'display-volvox_sv_cram-LinearReadCloudDisplay',
-            60000,
-          )
+          await findByTestId(page, 'stack-canvas', 60000)
           await waitForLoadingToComplete(page)
           await delay(1000)
           await snapshot(page, 'session-spec-display-snapshot-type')

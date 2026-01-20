@@ -129,6 +129,7 @@ export function createRPCRenderFunction<
       self.setLastDrawnBpPerPx(bpPerPx)
     } catch (error) {
       if (!isAbortException(error)) {
+        console.error(error)
         self.setError(error)
       }
     } finally {

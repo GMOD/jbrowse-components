@@ -117,6 +117,7 @@ export function doAfterAttach(self: SharedLDModel) {
       self.setRecombination(result.recombination)
     } catch (error) {
       if (!isAbortException(error)) {
+        console.error(error)
         if (isAlive(self)) {
           self.setError(error)
         }
