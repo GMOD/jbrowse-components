@@ -77,23 +77,27 @@ export default function MultiVariantBaseModelF(
 
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0),
+        minorAlleleFrequencyFilterSetting: types.maybe(types.number),
 
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        showSidebarLabelsSetting: types.optional(types.boolean, true),
+        showSidebarLabelsSetting: types.maybe(types.boolean),
 
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        showTree: types.optional(types.boolean, true),
+        showTreeSetting: types.maybe(types.boolean),
 
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        renderingMode: types.optional(types.string, 'alleleCount'),
+        renderingModeSetting: types.maybe(types.string),
 
         /**
          * #property
@@ -120,8 +124,9 @@ export default function MultiVariantBaseModelF(
 
         /**
          * #property
+         * When undefined, falls back to config value (showReferenceAlleles)
          */
-        referenceDrawingMode: types.optional(types.string, 'skip'),
+        referenceDrawingModeSetting: types.maybe(types.string),
         /**
          * #property
          */
@@ -294,7 +299,7 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setMafFilter(arg: number) {
-        self.minorAlleleFrequencyFilter = arg
+        self.minorAlleleFrequencyFilterSetting = arg
       },
       /**
        * #action
@@ -306,17 +311,19 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setShowTree(arg: boolean) {
-        self.showTree = arg
+        self.showTreeSetting = arg
       },
       /**
        * #action
        */
       setPhasedMode(arg: string) {
-        if (self.renderingMode !== arg) {
+        const currentMode =
+          self.renderingModeSetting ?? getConf(self, 'renderingMode')
+        if (currentMode !== arg) {
           self.layout = []
           self.clusterTree = undefined
         }
-        self.renderingMode = arg
+        self.renderingModeSetting = arg
       },
       /**
        * #action
@@ -343,7 +350,7 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setReferenceDrawingMode(arg: string) {
-        self.referenceDrawingMode = arg
+        self.referenceDrawingModeSetting = arg
       },
     }))
     .views(self => ({
@@ -352,6 +359,55 @@ export default function MultiVariantBaseModelF(
        */
       get autoHeight() {
         return self.rowHeightMode === 'auto'
+      },
+
+      /**
+       * #getter
+       * Returns the effective minor allele frequency filter, falling back to config
+       */
+      get minorAlleleFrequencyFilter() {
+        return (
+          self.minorAlleleFrequencyFilterSetting ??
+          getConf(self, 'minorAlleleFrequencyFilter')
+        )
+      },
+
+      /**
+       * #getter
+       * Returns the effective showSidebarLabels setting, falling back to config
+       */
+      get showSidebarLabels() {
+        return (
+          self.showSidebarLabelsSetting ?? getConf(self, 'showSidebarLabels')
+        )
+      },
+
+      /**
+       * #getter
+       * Returns the effective showTree setting, falling back to config
+       */
+      get showTree() {
+        return self.showTreeSetting ?? getConf(self, 'showTree')
+      },
+
+      /**
+       * #getter
+       * Returns the effective rendering mode, falling back to config
+       */
+      get renderingMode(): string {
+        return self.renderingModeSetting ?? getConf(self, 'renderingMode')
+      },
+
+      /**
+       * #getter
+       * Returns the effective reference drawing mode, derived from config showReferenceAlleles
+       */
+      get referenceDrawingMode(): string {
+        if (self.referenceDrawingModeSetting !== undefined) {
+          return self.referenceDrawingModeSetting
+        }
+        const showRef = getConf(self, 'showReferenceAlleles')
+        return showRef ? 'draw' : 'skip'
       },
 
       /**
@@ -482,9 +538,9 @@ export default function MultiVariantBaseModelF(
                 {
                   label: 'Show sidebar labels',
                   type: 'checkbox',
-                  checked: self.showSidebarLabelsSetting,
+                  checked: self.showSidebarLabels,
                   onClick: () => {
-                    self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
+                    self.setShowSidebarLabels(!self.showSidebarLabels)
                   },
                 },
                 {
@@ -643,7 +699,7 @@ export default function MultiVariantBaseModelF(
        * #getter
        */
       get canDisplayLabels() {
-        return self.rowHeight >= 6 && self.showSidebarLabelsSetting
+        return self.rowHeight >= 6 && self.showSidebarLabels
       },
       /**
        * #getter
@@ -763,14 +819,14 @@ export default function MultiVariantBaseModelF(
       }
       const {
         layout,
-        minorAlleleFrequencyFilter,
+        minorAlleleFrequencyFilterSetting,
         showSidebarLabelsSetting,
-        showTree,
-        renderingMode,
+        showTreeSetting,
+        renderingModeSetting,
         rowHeightMode,
         lengthCutoffFilter,
         jexlFilters,
-        referenceDrawingMode,
+        referenceDrawingModeSetting,
         clusterTree,
         treeAreaWidth,
         lineZoneHeight,
@@ -779,16 +835,22 @@ export default function MultiVariantBaseModelF(
       return {
         ...rest,
         ...(layout.length ? { layout } : {}),
-        ...(minorAlleleFrequencyFilter ? { minorAlleleFrequencyFilter } : {}),
-        ...(!showSidebarLabelsSetting ? { showSidebarLabelsSetting } : {}),
-        ...(!showTree ? { showTree } : {}),
-        ...(renderingMode !== 'alleleCount' ? { renderingMode } : {}),
+        ...(minorAlleleFrequencyFilterSetting !== undefined
+          ? { minorAlleleFrequencyFilterSetting }
+          : {}),
+        ...(showSidebarLabelsSetting !== undefined
+          ? { showSidebarLabelsSetting }
+          : {}),
+        ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
+        ...(renderingModeSetting !== undefined ? { renderingModeSetting } : {}),
         ...(rowHeightMode !== 'auto' ? { rowHeightMode } : {}),
         ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
           ? { lengthCutoffFilter }
           : {}),
         ...(jexlFilters?.length ? { jexlFilters } : {}),
-        ...(referenceDrawingMode !== 'skip' ? { referenceDrawingMode } : {}),
+        ...(referenceDrawingModeSetting !== undefined
+          ? { referenceDrawingModeSetting }
+          : {}),
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(lineZoneHeight ? { lineZoneHeight } : {}),
