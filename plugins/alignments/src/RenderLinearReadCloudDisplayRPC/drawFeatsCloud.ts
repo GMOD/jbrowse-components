@@ -11,77 +11,50 @@ const DEFAULT_MAX_DISTANCE = 1000
 export interface CloudTicks {
   ticks: { value: number; y: number }[]
   height: number
-  minDistance: number
   maxDistance: number
 }
 
 /**
  * Create a d3 log scale for cloud mode y-positioning
- * Used consistently for both read positions and tick marks
+ * Domain is [1, maxDistance] since we use a log scale (log(0) is undefined)
  */
-export function createCloudScale(
-  minDistance: number,
-  maxDistance: number,
-  height: number,
-) {
+export function createCloudScale(maxDistance: number, height: number) {
   return scaleLog()
     .base(2)
-    .domain([Math.max(1, minDistance), Math.max(2, maxDistance)])
+    .domain([1, Math.max(2, maxDistance)])
     .range([0, height - CLOUD_HEIGHT_PADDING])
     .clamp(true)
 }
 
 /**
  * Calculate tick marks for the cloud mode y-axis scalebar
- * Uses d3 scaleLog for nice tick generation (similar to LinearWiggleDisplay)
  */
 export function calculateCloudTicks(
-  domain: [number, number],
+  maxDistance: number,
   height: number,
 ): CloudTicks {
-  const [minDistance, maxDistance] = domain
-  const scale = createCloudScale(minDistance, maxDistance, height)
-
+  const scale = createCloudScale(maxDistance, height)
   const tickValues = scale.ticks(6)
   const ticks = tickValues.map(value => ({
     value,
     y: scale(value),
   }))
 
-  return { ticks, height, minDistance, maxDistance }
+  return { ticks, height, maxDistance }
 }
 
 /**
  * Calculate Y-offsets using logarithmic scaling for cloud mode
  * @param computedChains - Pre-computed chain data with distances
  * @param height - Canvas height
- * @param cloudDomain - Optional [min, max] domain. If provided, use it; otherwise compute from data
  */
 export function calculateCloudYOffsetsUtil(
   computedChains: ComputedChain[],
   height: number,
-  cloudDomain?: [number, number],
 ) {
-  // Calculate Y-offsets for each chain using the d3 scale
   const chainYOffsets = new Map<string, number>()
 
-  // If cloudDomain is provided, use it directly
-  if (cloudDomain) {
-    const [, maxDistance] = cloudDomain
-    const scale = createCloudScale(1, maxDistance, height)
-
-    for (const { id, distance } of computedChains) {
-      const top = distance > 0 ? scale(distance) : 0
-      chainYOffsets.set(id, top)
-    }
-
-    return {
-      chainYOffsets,
-      cloudMaxDistance: maxDistance,
-    }
-  }
-
-  // Otherwise, compute maxDistance from data
+  // Compute maxDistance from visible data
   let maxDistance = Number.MIN_VALUE
 
   for (const { distance } of computedChains) {
@@ -95,7 +68,7 @@ export function calculateCloudYOffsetsUtil(
     maxDistance = DEFAULT_MAX_DISTANCE
   }
 
-  const scale = createCloudScale(1, maxDistance, height)
+  const scale = createCloudScale(maxDistance, height)
 
   for (const { id, distance } of computedChains) {
     const top = distance > 0 ? scale(distance) : 0

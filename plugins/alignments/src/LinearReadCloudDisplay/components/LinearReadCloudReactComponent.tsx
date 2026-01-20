@@ -461,23 +461,6 @@ const Cloud = observer(function Cloud({
         selectedFeatureBounds={selectedFeatureBounds}
         hoveredFeature={hoveredFeature}
       />
-      {model.drawCloud && model.cloudTicks ? (
-        <svg
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 50,
-            pointerEvents: 'none',
-            height: model.cloudTicks.height,
-            width: 60,
-            zIndex: 100,
-          }}
-        >
-          <g transform="translate(55, 0)">
-            <CloudYScaleBar model={model} orientation="left" />
-          </g>
-        </svg>
-      ) : null}
       {hoveredMismatchData && mousePosition ? (
         <MismatchTooltip
           mismatchData={hoveredMismatchData}
@@ -501,9 +484,27 @@ const LinearReadCloudReactComponent = observer(
     model: LinearReadCloudDisplayModel
   }) {
     return (
-      <BaseDisplayComponent model={model}>
-        <Cloud model={model} />
-      </BaseDisplayComponent>
+      <div>
+        <BaseDisplayComponent model={model}>
+          <Cloud model={model} />
+        </BaseDisplayComponent>
+        {model.drawCloud && model.cloudTicks ? (
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 50,
+              pointerEvents: 'none',
+              height: model.cloudTicks.height,
+              width: 50,
+            }}
+          >
+            <g transform="translate(45, 0)">
+              <CloudYScaleBar model={model} orientation="left" />
+            </g>
+          </svg>
+        ) : null}
+      </div>
     )
   },
 )

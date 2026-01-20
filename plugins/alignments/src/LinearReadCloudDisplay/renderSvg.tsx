@@ -91,14 +91,11 @@ export async function renderSvg(
   const legendItems = self.showLegend ? self.legendItems() : []
 
   // Compute cloudTicks for SVG export if in cloud mode
-  // Use [1, maxDistance] as domain since it's a log scale
-  const cloudDomain =
-    rendering.cloudMaxDistance !== undefined && self.drawCloud
-      ? ([1, rendering.cloudMaxDistance] as [number, number])
-      : null
   const cloudTicks =
-    cloudDomain && self.showYScalebar
-      ? calculateCloudTicks(cloudDomain, height)
+    rendering.cloudMaxDistance !== undefined &&
+    self.drawCloud &&
+    self.showYScalebar
+      ? calculateCloudTicks(rendering.cloudMaxDistance, height)
       : null
 
   return (

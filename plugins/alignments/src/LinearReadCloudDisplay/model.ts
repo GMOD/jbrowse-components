@@ -201,26 +201,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * Domain for cloud mode scale: [1, maxDistance]
-       * Uses 1 as lower bound since it's a log scale
-       */
-      get cloudDomain(): [number, number] | undefined {
-        if (self.cloudMaxDistance === undefined) {
-          return undefined
-        }
-        return [1, self.cloudMaxDistance]
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * Calculate ticks for the y-axis scalebar in cloud mode
        */
       get cloudTicks() {
-        if (!self.drawCloud || !self.cloudDomain || !self.showYScalebar) {
+        if (
+          !self.drawCloud ||
+          self.cloudMaxDistance === undefined ||
+          !self.showYScalebar
+        ) {
           return undefined
         }
-        return calculateCloudTicks(self.cloudDomain, self.height)
+        return calculateCloudTicks(self.cloudMaxDistance, self.height)
       },
     }))
     .actions(self => ({
@@ -378,7 +369,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             hideMismatches: self.hideMismatches,
             hideLargeIndels: self.hideLargeIndels,
             showOutline: self.showOutline,
-            cloudDomain: self.cloudDomain,
             visibleModifications: Object.fromEntries(
               self.visibleModifications.toJSON(),
             ),

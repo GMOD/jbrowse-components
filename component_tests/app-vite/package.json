@@ -54,6 +54,7 @@
     "@jbrowse/sv-core": "file:./packed/jbrowse-sv-core.tgz",
     "@jbrowse/embedded-core": "file:./packed/jbrowse-embedded-core.tgz",
     "@jbrowse/text-indexing": "file:./packed/jbrowse-text-indexing.tgz",
+    "@jbrowse/text-indexing-core": "file:./packed/jbrowse-text-indexing-core.tgz",
     "@jbrowse/app-core": "file:./packed/jbrowse-app-core.tgz",
     "@jbrowse/react-app2": "file:./packed/jbrowse-react-app2.tgz"
   },
