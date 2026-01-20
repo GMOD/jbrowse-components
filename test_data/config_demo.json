@@ -4119,7 +4119,6 @@
         "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam"
       }
     },
-
     {
       "type": "AlignmentsTrack",
       "trackId": "hg002_cram",
@@ -5035,6 +5034,26 @@
         "uri": "https://hgdownload.gi.ucsc.edu/gbdb/hg19/bbi/hic/GSE63525_HMEC_combined.hic"
       },
       "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "freq.vcf",
+      "name": "freq.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nih.gov/snp/population_frequency/latest_release/freq.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nih.gov/snp/population_frequency/latest_release/freq.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],

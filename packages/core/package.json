@@ -152,7 +152,7 @@
     "@emotion/utils": "^1.4.2",
     "@floating-ui/react": "^0.27.16",
     "@gmod/abortable-promise-cache": "^3.0.4",
-    "@gmod/bgzf-filehandle": "^6.0.10",
+    "@gmod/bgzf-filehandle": "^6.0.12",
     "@gmod/http-range-fetcher": "^5.0.7",
     "@jbrowse/jexl": "^3.0.1",
     "@jbrowse/mobx-state-tree": "^5.5.0",
