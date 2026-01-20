@@ -23,23 +23,35 @@ export async function* indexGff3({
   onUpdate: (progressBytes: number) => void
 }) {
   const { trackId } = config
+  console.error(
+    `[DEBUG] indexGff3 starting for trackId=${trackId}, inLocation=${inLocation}`,
+  )
   const stream = await getLocalOrRemoteStream({
     file: inLocation,
     out: outDir,
     onStart,
     onUpdate,
   })
+  console.error(`[DEBUG] Got stream, creating readline interface`)
 
   const rl = createReadlineInterface(stream, inLocation)
   const excludeSet = new Set(featureTypesToExclude)
   const encodedTrackId = encodeURIComponent(trackId)
 
+  let lineCount = 0
+  let yieldCount = 0
+  console.error(`[DEBUG] Starting to read lines`)
   for await (const line of rl) {
+    lineCount++
+    if (lineCount <= 5 || lineCount % 100 === 0) {
+      console.error(`[DEBUG] Read line ${lineCount}: ${line.slice(0, 50)}...`)
+    }
     if (!line.trim()) {
       continue
     } else if (line.startsWith('#')) {
       continue
     } else if (line.startsWith('>')) {
+      console.error(`[DEBUG] Found FASTA header, breaking at line ${lineCount}`)
       break
     }
 
@@ -57,8 +69,12 @@ export async function* indexGff3({
         const record = `["${encodeURIComponent(locStr)}"|"${encodedTrackId}"|${encodedAttrs.join('|')}]`
         const uniqueAttrs = [...new Set(attrs)]
 
+        yieldCount++
         yield `${record} ${uniqueAttrs.join(' ')}\n`
       }
     }
   }
+  console.error(
+    `[DEBUG] indexGff3 finished: read ${lineCount} lines, yielded ${yieldCount} records`,
+  )
 }

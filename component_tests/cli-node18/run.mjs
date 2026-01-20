@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync, exec } from 'child_process'
 import {
   mkdtempSync,
   writeFileSync,
@@ -162,13 +162,25 @@ ctgA\ttest\tgene\t5000\t6000\t.\t+\t.\tID=gene3;Name=TestGene3
 
     // Create HTTP server to serve the gzipped file
     const server = createServer((req, res) => {
+      console.log(`[SERVER] Received request: ${req.method} ${req.url}`)
       if (req.url === '/test.gff3.gz') {
         const stat = statSync(gzFile)
+        console.log(`[SERVER] Serving file, size: ${stat.size} bytes`)
         res.writeHead(200, {
           'Content-Type': 'application/gzip',
           'Content-Length': stat.size,
         })
-        createReadStream(gzFile).pipe(res)
+        const fileStream = createReadStream(gzFile)
+        fileStream.on('end', () => {
+          console.log('[SERVER] File stream ended')
+        })
+        fileStream.on('error', err => {
+          console.log('[SERVER] File stream error:', err)
+        })
+        fileStream.pipe(res)
+        res.on('finish', () => {
+          console.log('[SERVER] Response finished')
+        })
       } else {
         res.writeHead(404)
         res.end('Not found')
@@ -182,13 +194,30 @@ ctgA\ttest\tgene\t5000\t6000\t.\t+\t.\tID=gene3;Name=TestGene3
       })
       const addr = server.address()
       const port = addr.port
+      console.log(`[TEST] Server listening on port ${port}`)
 
       const outDir = join(tmpDir, 'indexes')
 
       // Run text-index command against the remote file
-      run(
-        `npx jbrowse text-index --file http://localhost:${port}/test.gff3.gz --out ${outDir} --quiet`,
-      )
+      // NOTE: Must use async exec, not execSync, because execSync blocks the event loop
+      // and prevents the HTTP server from responding to requests
+      console.log(`[TEST] Running text-index command...`)
+      const cmd = `npx jbrowse text-index --file http://localhost:${port}/test.gff3.gz --out ${outDir} --quiet`
+      console.log(`[TEST] Command: ${cmd}`)
+      const { stdout, stderr } = await new Promise((resolve, reject) => {
+        exec(cmd, { encoding: 'utf8', timeout: 60000 }, (error, stdout, stderr) => {
+          if (error) {
+            console.log(`[TEST] Command stderr: ${stderr}`)
+            console.log(`[TEST] Command stdout: ${stdout}`)
+            reject(error)
+          } else {
+            resolve({ stdout, stderr })
+          }
+        })
+      })
+      console.log(`[TEST] Command stdout: ${stdout}`)
+      console.log(`[TEST] Command stderr: ${stderr}`)
+      console.log(`[TEST] Command completed`)
 
       // Check that index files were created
       // The command creates .ix and .ixx files
