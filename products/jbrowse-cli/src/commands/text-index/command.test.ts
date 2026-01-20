@@ -328,8 +328,7 @@ describe('real HTTP server integration', () => {
   test('indexes a remote gz gff3 file from real HTTP server', async () => {
     // Unmock fetchWithProxy for this test to use real fetch
     const originalFetch = jest.requireActual('../../fetchWithProxy.ts').default
-    const fetchWithProxy = require('../../fetchWithProxy.ts')
-      .default
+    const fetchWithProxy = require('../../fetchWithProxy.ts').default
     fetchWithProxy.mockImplementation(originalFetch)
 
     await runInTmpDir(async ctx => {

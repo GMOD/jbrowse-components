@@ -105,7 +105,7 @@ exports[`indexes a remote gz gff3 file 2`] = `
 "
 `;
 
-exports[`indexes a remote gz gff3 file 3`] = `13815`;
+exports[`indexes a remote gz gff3 file 3`] = `13949`;
 
 exports[`indexes a remote gz gff3 file 4`] = `
 "agt220000000000
@@ -254,12 +254,12 @@ exports[`indexes multiple remote gff3 file 2`] = `
 "
 `;
 
-exports[`indexes multiple remote gff3 file 3`] = `136335`;
+exports[`indexes multiple remote gff3 file 3`] = `136469`;
 
 exports[`indexes multiple remote gff3 file 4`] = `
 "agt220000000000
-au9.g00000004CC
-seg080000020289
+au9.g000000050F
+seg070000020042
 "
 `;
 

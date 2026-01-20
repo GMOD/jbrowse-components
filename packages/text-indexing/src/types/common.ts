@@ -1,13 +1,13 @@
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
-import { Readable } from 'stream'
 import { fileURLToPath } from 'url'
 import { createGunzip } from 'zlib'
 
 import fetch from 'node-fetch'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
+import type { Readable } from 'stream'
 
 // Checks if the passed in string is a valid URL.
 // Returns a boolean.
@@ -60,6 +60,7 @@ export async function getLocalOrRemoteStream({
     onStart(totalBytes)
 
     const body = res.body
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!body) {
       throw new Error(`Failed to fetch ${file}: no response body`)
     }

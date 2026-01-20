@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "node test.mjs"
+    "testcli": "node run.mjs"
   },
   "dependencies": {
     "@jbrowse/cli": "file:./packed/jbrowse-cli.tgz"
