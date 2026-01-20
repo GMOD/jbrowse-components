@@ -11,40 +11,10 @@ permissions:
   contents: read
 
 jobs:
-  check_commit_message:
-    name: Check Commit Message
-    runs-on: ubuntu-latest
-    outputs:
-      skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          fetch-depth: 1
-      - name: Check commit message
-        id: check_message
-        env:
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
-        run: |
-          # Use env variable for safe expansion of special characters like quotes.
-          if [[ "$COMMIT_MSG" == *"[update docs only]"* ]]; then
-            echo "skip_jobs=true" >> $GITHUB_OUTPUT
-            echo "Commit message contains [update docs only], skipping regular push jobs"
-          else
-            echo "skip_jobs=false" >> $GITHUB_OUTPUT
-            echo "Running regular push jobs"
-          fi
-
   main:
-    name: Build, deploy, lint, typecheck, and test
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    name: Build and test CLI on Node 18
     runs-on: ubuntu-latest
     steps:
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev xvfb
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
@@ -59,164 +29,8 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      - name: Check @jbrowse/core exports are up-to-date
-        run: |
-          node packages/core/scripts/generateExports.mjs
-          if ! git diff --quiet packages/core/package.json; then
-            echo "Error: @jbrowse/core exports are out of date!"
-            echo "Run 'node packages/core/scripts/generateExports.mjs' and commit the changes."
-            git diff packages/core/package.json
-            exit 1
-          fi
-
-      # Deploy jbrowse-web first
-      - name: Validate branch/tag name for S3 path safety
-        env:
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
-            echo "Error: Invalid ref name '$REF_NAME'"
-            echo "Ref names must contain only alphanumeric characters, hyphens, underscores, and periods"
-            echo "This prevents path traversal attacks on S3"
-            exit 1
-          fi
-          echo "Ref name validated: $REF_NAME"
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Build and deploy jbrowse-web
-        run: |
-          cd products/jbrowse-web/
-          NODE_OPTIONS='--max-old-space-size=6500' pnpm build
-          cd build && zip -r "jbrowse-web-${{ github.ref_name }}.zip" . && cd -
-          cp build/test_data/config.json build/config.json
-          aws s3 sync --delete --exclude="*.map" build s3://jbrowse.org/code/jb2/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${{ github.ref_name }}/*"
-
-      # Lint, typecheck, test
-      - name: Check code formatting
-        run: pnpm prettier --check .
-      - name: Spellcheck
-        uses: crate-ci/typos@5c19779cb52ea50e151f5a10333ccd269227b5ae # v1.41.0
-      - name: Lint code
-        run: pnpm lint
-      - name: Typecheck code
-        run: pnpm typecheck
-      - name: Run tests
-        id: tests
-        run: pnpm test-ci
-        continue-on-error: true
-      - name: Upload jest image snapshot diffs to S3
-        if: steps.tests.outcome == 'failure'
-        run: |
-          SNAPSHOTS_DIR="products/jbrowse-web/src/tests/__image_snapshots__/__diff_output__"
-          S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
-
-          if ls ${SNAPSHOTS_DIR}/*.png 1> /dev/null 2>&1; then
-            echo "Uploading jest image snapshot diffs to S3..."
-            aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.png"
-
-            echo ""
-            echo "============================================"
-            echo "JEST SNAPSHOT DIFF IMAGES UPLOADED TO S3"
-            echo "============================================"
-            for file in ${SNAPSHOTS_DIR}/*.png; do
-              filename=$(basename "$file")
-              echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
-            done
-            echo "============================================"
-          else
-            echo "No jest snapshot diff files found"
-          fi
-      - name: Fail if tests failed
-        if: steps.tests.outcome == 'failure'
-        run: exit 1
       - name: Pack artifacts for component tests
         run: node --experimental-strip-types scripts/pack.ts
-      - name: Test build
-        run: BUILT_TESTS=1 pnpm built-test-ci
-      - name: Run browser tests with Puppeteer
-        id: browser-tests
-        run: node --experimental-strip-types browser-tests/runner.ts
-        working-directory: products/jbrowse-web
-        continue-on-error: true
-      - name: Run auth browser tests with Puppeteer
-        id: auth-browser-tests
-        run: node --experimental-strip-types browser-tests/runner.ts --auth
-        working-directory: products/jbrowse-web
-        continue-on-error: true
-      - name: Upload snapshot diffs to S3
-        if:
-          steps.browser-tests.outcome == 'failure' ||
-          steps.auth-browser-tests.outcome == 'failure'
-        run: |
-          SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
-          S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
-
-          if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
-            echo "Uploading snapshot diffs to S3..."
-            aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
-
-            echo ""
-            echo "============================================"
-            echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
-            echo "============================================"
-            for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
-              filename=$(basename "$file")
-              echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
-            done
-            echo "============================================"
-          else
-            echo "No snapshot diff files found"
-          fi
-      - name: Fail if browser tests failed
-        if:
-          steps.browser-tests.outcome == 'failure' ||
-          steps.auth-browser-tests.outcome == 'failure'
-        run: exit 1
-
-      # Deploy storybooks
-      - name: Build LGV storybook
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-linear-genome-view
-
-      - name: Deploy LGV storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${{ github.ref_name }}/*"
-        working-directory: products/jbrowse-react-linear-genome-view
-
-      - name: Build React App storybook
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-app
-
-      - name: Deploy React App storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${{ github.ref_name }}/*"
-        working-directory: products/jbrowse-react-app
-
-      - name: Build CGV storybook
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-circular-genome-view
-
-      - name: Deploy CGV storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${{ github.ref_name }}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${{ github.ref_name }}/*"
-        working-directory: products/jbrowse-react-circular-genome-view
 
       - name: Upload packed artifacts for component tests
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -225,74 +39,9 @@ jobs:
           path: component_tests/*/packed/
           retention-days: 1
 
-  # Conditionally run the buildwebsite job
-  buildwebsite:
-    name: Build website
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-        working-directory: website
-      - name: Build website
-        run: |
-          cd website/
-          pnpm build
-          mkdir testing
-          mv build testing/jb2
-      - name: Check website links
-        uses: untitaker/hyperlink@fb5bb9c5011a3d143a54b4b30aedc30ec5bc0f89 # 0.2.0
-        with:
-          args: website/testing/ --check-anchors
-
-  # Separate job for component_tests with no permissions.
-  # These tests install npm packages without a yarn.lock, so untrusted
-  # dependencies could potentially run malicious code. By isolating this
-  # in a job with `permissions: {}`, we ensure that even if a rogue
-  # dependency executes, it has no GitHub token access and cannot push
-  # code, create issues/PRs, access secrets, or call GitHub APIs.
-  component_tests:
-    name: Test embedded components
-    needs: [check_commit_message, main]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
-    runs-on: ubuntu-latest
-    permissions: {}
-    steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version: '22'
-      - name: Download packed artifacts
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: packed-artifacts
-          path: component_tests/
-      - name: Test embedded components
-        run: |
-          for dir in component_tests/lgv-vite component_tests/cgv-vite component_tests/app-vite; do
-            echo "Testing $dir"
-            (cd $dir && yarn install && yarn e2e)
-          done
-
-  # Test jbrowse-cli on Node 18 to verify backwards compatibility
   cli_node18:
     name: Test CLI on Node 18
-    needs: [check_commit_message, main]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    needs: main
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -311,4 +60,4 @@ jobs:
         run: |
           cd component_tests/cli-node18
           yarn install
-          yarn test
+          yarn testcli

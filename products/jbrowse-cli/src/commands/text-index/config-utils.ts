@@ -89,7 +89,7 @@ export async function loadConfigForIndexing(
 export function ensureTrixDir(outLocation: string): string {
   const trixDir = path.join(outLocation, 'trix')
   if (!fs.existsSync(trixDir)) {
-    fs.mkdirSync(trixDir)
+    fs.mkdirSync(trixDir, { recursive: true })
   }
   return trixDir
 }

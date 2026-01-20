@@ -9,5 +9,9 @@
   "dependencies": {
     "@jbrowse/cli": "file:./packed/jbrowse-cli.tgz",
     "@jbrowse/text-indexing-core": "file:./packed/jbrowse-text-indexing-core.tgz"
+  },
+  "resolutions": {
+    "@jbrowse/cli": "file:./packed/jbrowse-cli.tgz",
+    "@jbrowse/text-indexing-core": "file:./packed/jbrowse-text-indexing-core.tgz"
   }
 }
