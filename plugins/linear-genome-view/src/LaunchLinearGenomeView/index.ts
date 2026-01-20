@@ -1,4 +1,5 @@
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
+import type { TrackInit } from '../LinearGenomeView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -20,7 +21,7 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
       session: AbstractSessionModel
       assembly?: string
       loc?: string
-      tracks?: string[]
+      tracks?: TrackInit[]
       tracklist?: boolean
       nav?: boolean
       highlight?: string[]

@@ -110,6 +110,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
       )
     } catch (error) {
       if (!isAbortException(error)) {
+        console.error(error)
         if (isAlive(self)) {
           self.setError(error)
         }

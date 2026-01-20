@@ -534,9 +534,12 @@ export function showTrackGeneric(
   )
 
   // Find a compatible display type for this view
-  const displayType =
+  // If displayInitialSnapshot specifies a type, use that instead
+  const snapshotType = (displayInitialSnapshot as { type?: string }).type
+  const defaultDisplayType =
     displayConf?.type ??
     trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
+  const displayType = snapshotType ?? defaultDisplayType
 
   if (!displayType) {
     throw new Error(
@@ -544,7 +547,7 @@ export function showTrackGeneric(
     )
   }
 
-  // Generate displayId if not found in config - must use the actual displayType
+  // Generate displayId based on the actual display type being used
   const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
 
   // Create track with just the trackId - the ConfigurationReference will resolve it

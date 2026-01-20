@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
@@ -1128,4 +1129,243 @@ test('showAllRegions with single region has no padding adjustment', () => {
 
   expect(model.bpPerPx).toBeCloseTo(1.2346, 3)
   expect(model.offsetPx).toBe(-45)
+})
+
+describe('TrackInit with display configuration', () => {
+  function initializeWithTracks() {
+    console.warn = jest.fn()
+    console.error = jest.fn()
+    const stubManager = new PluginManager()
+
+    // Add a track type
+    stubManager.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        'BasicTrack',
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(stubManager),
+          explicitIdentifier: 'trackId',
+        },
+      )
+      return new TrackType({
+        name: 'BasicTrack',
+        configSchema,
+        stateModel: createBaseTrackModel(
+          stubManager,
+          'BasicTrack',
+          configSchema,
+        ),
+      })
+    })
+
+    // Add view type (must be before display types so they get linked)
+    stubManager.addViewType(() => {
+      return new ViewType({
+        name: 'LinearGenomeView',
+        stateModel: stateModelFactory(stubManager),
+        ReactComponent: () => null,
+      })
+    })
+
+    // Add display type
+    stubManager.addDisplayType(() => {
+      const configSchema = ConfigurationSchema(
+        'LinearBareDisplay',
+        {},
+        { explicitlyTyped: true },
+      )
+      return new DisplayType({
+        name: 'LinearBareDisplay',
+        configSchema,
+        stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+        trackType: 'BasicTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      })
+    })
+
+    stubManager.createPluggableElements()
+    stubManager.configure()
+
+    const Assembly = types
+      .model({})
+      .volatile(() => ({
+        regions: volvoxDisplayedRegions,
+        initialized: true,
+      }))
+      .views(() => ({
+        getCanonicalRefName(refName: string) {
+          return refName
+        },
+      }))
+
+    const AssemblyManager = types
+      .model({
+        assemblies: types.map(Assembly),
+      })
+      .actions(self => ({
+        isValidRefName(str: string) {
+          return str === 'ctgA' || str === 'ctgB'
+        },
+        get(str: string) {
+          return self.assemblies.get(str)
+        },
+        waitForAssembly(str: string) {
+          return self.assemblies.get(str)
+        },
+      }))
+
+    const LinearGenomeModel = stateModelFactory(stubManager)
+
+    // Track configurations that the session knows about
+    const trackConfigs: Record<string, { type: string; trackId: string }> = {
+      track1: { type: 'BasicTrack', trackId: 'track1' },
+      track2: { type: 'BasicTrack', trackId: 'track2' },
+    }
+
+    const Session = types
+      .model({
+        name: 'testSession',
+        view: types.maybe(LinearGenomeModel),
+        configuration: types.map(types.string),
+        assemblyManager: types.optional(AssemblyManager, {
+          assemblies: {
+            volvox: {
+              // @ts-expect-error
+              regions: volvoxDisplayedRegions,
+            },
+          },
+        }),
+      })
+      .volatile(() => ({
+        rpcManager: {
+          call: async () => {},
+        },
+      }))
+      .views(() => ({
+        getTracksById() {
+          return trackConfigs
+        },
+      }))
+      .actions(self => ({
+        setView(view: LGV) {
+          self.view = view
+          return view
+        },
+        notifyError(msg: string, _err: Error) {
+          console.warn(msg)
+        },
+      }))
+
+    return { Session, LinearGenomeModel, pluginManager: stubManager }
+  }
+
+  test('init with string trackIds works (backwards compatibility)', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'volvox',
+          loc: 'ctgA:1-1000',
+          tracks: ['track1', 'track2'],
+        },
+      }),
+    )
+    model.setWidth(800)
+
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(2)
+    })
+    expect(model.tracks[0]!.configuration.trackId).toBe('track1')
+    expect(model.tracks[1]!.configuration.trackId).toBe('track2')
+  })
+
+  test('init with object trackIds allows specifying display type via displaySnapshot', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'volvox',
+          loc: 'ctgA:1-1000',
+          tracks: [
+            {
+              trackId: 'track1',
+              displaySnapshot: { type: 'LinearBareDisplay' },
+            },
+          ],
+        },
+      }),
+    )
+    model.setWidth(800)
+
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(1)
+    })
+    expect(model.tracks[0]!.configuration.trackId).toBe('track1')
+    expect(model.tracks[0]!.displays[0]!.type).toBe('LinearBareDisplay')
+  })
+
+  test('init with object trackIds allows specifying displaySnapshot', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'volvox',
+          loc: 'ctgA:1-1000',
+          tracks: [
+            {
+              trackId: 'track1',
+              displaySnapshot: { height: 250 },
+            },
+          ],
+        },
+      }),
+    )
+    model.setWidth(800)
+
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(1)
+    })
+    expect(model.tracks[0]!.displays[0]!.height).toBe(250)
+  })
+
+  test('init with mixed string and object trackIds', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'volvox',
+          loc: 'ctgA:1-1000',
+          tracks: [
+            'track1',
+            {
+              trackId: 'track2',
+              displaySnapshot: { height: 300 },
+            },
+          ],
+        },
+      }),
+    )
+    model.setWidth(800)
+
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(2)
+    })
+    // First track - simple string, uses default display
+    expect(model.tracks[0]!.configuration.trackId).toBe('track1')
+    expect(model.tracks[0]!.displays[0]!.type).toBe('LinearBareDisplay')
+
+    // Second track - object with height in displaySnapshot
+    expect(model.tracks[1]!.configuration.trackId).toBe('track2')
+    expect(model.tracks[1]!.displays[0]!.type).toBe('LinearBareDisplay')
+    expect(model.tracks[1]!.displays[0]!.height).toBe(300)
+  })
 })
