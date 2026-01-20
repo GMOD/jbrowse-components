@@ -1,6 +1,16 @@
-import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
-
 import { guessAdapterFromFileName, isURL, makeLocation } from './common.ts'
+
+const supportedIndexingAdapters = new Set([
+  'Gff3TabixAdapter',
+  'Gff3Adapter',
+  'VcfTabixAdapter',
+  'VcfAdapter',
+  'GtfAdapter',
+])
+
+function isSupportedIndexingAdapter(type?: string) {
+  return supportedIndexingAdapters.has(type || '')
+}
 
 describe('utils for text indexing', () => {
   const local = './volvox.sort.gff3.gz'

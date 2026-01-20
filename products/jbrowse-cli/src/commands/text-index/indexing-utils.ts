@@ -6,7 +6,7 @@ import {
   guessAdapterFromFileName,
   indexGff3,
   indexVcf,
-} from '@jbrowse/text-indexing'
+} from '@jbrowse/text-indexing-core'
 import { Presets, SingleBar } from 'cli-progress'
 import { ixIxxStream } from 'ixixx'
 

@@ -1,8 +1,8 @@
 {
-  "name": "@jbrowse/text-indexing",
+  "name": "@jbrowse/text-indexing-core",
   "version": "4.0.4",
   "type": "module",
-  "description": "JBrowse 2 text indexing for desktop",
+  "description": "JBrowse 2 core text indexing routines for parsing GFF3 and VCF files",
   "keywords": [
     "jbrowse",
     "jbrowse2",
@@ -16,7 +16,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "packages/text-indexing"
+    "directory": "packages/text-indexing-core"
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
@@ -26,20 +26,13 @@
   "scripts": {
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build": "pnpm build:esm",
-    "test": "cd ../..; jest --passWithNoTests packages/text-indexing",
+    "test": "cd ../..; jest --passWithNoTests packages/text-indexing-core",
     "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@jbrowse/core": "workspace:^",
-    "@jbrowse/text-indexing-core": "workspace:^",
-    "ixixx": "^3.0.3",
-    "sanitize-filename": "^1.6.3"
-  },
-  "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "node-fetch": "^2"
   },
   "publishConfig": {
     "access": "public",

@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@jbrowse/text-indexing": "workspace:^",
+    "@jbrowse/text-indexing-core": "workspace:^",
     "cli-progress": "^3.12.0",
     "command-exists": "^1.2.9",
     "cors": "^2.8.5",
