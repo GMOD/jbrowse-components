@@ -68,8 +68,8 @@ export async function createIndexingStream({
 
   const inputStream = /.b?gz$/.exec(inLocation)
     ? // @ts-ignore root tsconfig includes DOM lib which has incompatible stream types
-      stream.pipeThrough(new DecompressionStream('gzip'))
-    : stream
+      ReadableStream.from(stream).pipeThrough(new DecompressionStream('gzip'))
+    : ReadableStream.from(stream)
 
   const rl = readLines(inputStream.getReader(), progressBar)
 
