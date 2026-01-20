@@ -102,7 +102,8 @@ const AllLines = observer(function AllLines({
   const theme = useTheme()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight, snps, showLabels, tickHeight } = model
+  const { lineZoneHeight, snps, showLabels, tickHeight, useGenomicPositions } =
+    model
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
@@ -124,8 +125,8 @@ const AllLines = observer(function AllLines({
             coord: snp.start,
           })?.offsetPx || 0) - l
 
-        // Matrix column position: uniform distribution across view width
-        const matrixX = ((i + 0.5) * b0) / n
+        // Matrix column position: use genomic position or uniform distribution
+        const matrixX = useGenomicPositions ? genomicX : ((i + 0.5) * b0) / n
 
         return (
           <g
@@ -190,7 +191,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const { classes } = useStyles()
     const view = getContainingView(model) as LinearGenomeViewModel
     const [mouseOverLine, setMouseOverLine] = useState<MouseOverLine>()
-    const { lineZoneHeight, snps } = model
+    const { lineZoneHeight, snps, useGenomicPositions } = model
     const { dynamicBlocks } = view
     const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
     const n = snps.length
@@ -198,6 +199,13 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     if (n === 0) {
       return null
     }
+
+    // Calculate matrix X position for highlighted line
+    const highlightMatrixX = mouseOverLine
+      ? useGenomicPositions
+        ? mouseOverLine.genomicX
+        : ((mouseOverLine.idx + 0.5) * b0) / n
+      : 0
 
     return (
       <>
@@ -211,7 +219,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
                 style={{
                   pointerEvents: 'none',
                 }}
-                x1={((mouseOverLine.idx + 0.5) * b0) / n}
+                x1={highlightMatrixX}
                 x2={mouseOverLine.genomicX}
                 y1={lineZoneHeight}
                 y2={model.tickHeight}

@@ -153,6 +153,7 @@ export function doAfterAttach(self: SharedLDModel) {
         self.colorScheme
         self.showLDTriangle
         self.fitToHeight
+        self.useGenomicPositions
         // When fitToHeight is true, also track ldCanvasHeight so resizing
         // the display triggers a re-render
         if (self.fitToHeight) {

@@ -48,6 +48,7 @@ export async function renderSvg(
     adapterConfig,
     showRecombination,
     lineZoneHeight,
+    useGenomicPositions,
   } = self
   const { bpPerPx, dynamicBlocks } = view
   const regions = dynamicBlocks.contentBlocks
@@ -95,7 +96,9 @@ export async function renderSvg(
         >
           <ReactRendering rendering={finalRendering} />
         </g>
-        <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
+        {!useGenomicPositions ? (
+          <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
+        ) : null}
         {/* Recombination track overlaid at bottom of line zone */}
         {showRecombination && rendering.recombination ? (
           <g transform={`translate(0 ${recombTrackYOffset})`}>

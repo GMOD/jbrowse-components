@@ -1,6 +1,8 @@
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+const YSCALEBAR_LABEL_OFFSET = 5
+
 interface RecombinationTrackModel {
   recombination?: { values: number[]; positions: number[] }
   recombinationZoneHeight: number
@@ -34,8 +36,8 @@ const RecombinationTrack = observer(function RecombinationTrack({
     return null
   }
 
-  const topPadding = 2
-  const bottomPadding = 2
+  const topPadding = YSCALEBAR_LABEL_OFFSET
+  const bottomPadding = YSCALEBAR_LABEL_OFFSET
   const plotHeight = trackHeight - topPadding - bottomPadding
   const maxValue = Math.max(...recombination.values, 0.1)
 

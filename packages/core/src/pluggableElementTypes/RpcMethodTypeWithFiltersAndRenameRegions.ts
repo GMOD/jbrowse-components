@@ -15,6 +15,7 @@ export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends R
       filters: args.filters
         ? new SerializableFilterChain({
             filters: args.filters,
+            jexl: this.pluginManager.jexl,
           })
         : undefined,
     }

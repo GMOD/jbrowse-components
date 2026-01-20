@@ -67,7 +67,7 @@ export default function sharedModelFactory(
         /**
          * #property
          */
-        showLegend: types.optional(types.boolean, true),
+        showLegend: types.optional(types.boolean, false),
         /**
          * #property
          * Whether to show the LD triangle heatmap
@@ -77,7 +77,7 @@ export default function sharedModelFactory(
          * #property
          * Whether to show the recombination rate track
          */
-        showRecombination: types.optional(types.boolean, true),
+        showRecombination: types.optional(types.boolean, false),
         /**
          * #property
          * Height of the recombination track zone at the top
@@ -109,6 +109,12 @@ export default function sharedModelFactory(
          * Height of the vertical tick marks at the genomic position
          */
         tickHeight: types.optional(types.number, 6),
+        /**
+         * #property
+         * When true, draw cells sized according to genomic distance between SNPs
+         * rather than uniform squares
+         */
+        useGenomicPositions: types.optional(types.boolean, false),
       }),
     )
     .volatile(() => ({
@@ -283,6 +289,12 @@ export default function sharedModelFactory(
       setTickHeight(height: number) {
         self.tickHeight = Math.max(0, height)
       },
+      /**
+       * #action
+       */
+      setUseGenomicPositions(value: boolean) {
+        self.useGenomicPositions = value
+      },
     }))
     .views(self => ({
       /**
@@ -350,6 +362,7 @@ export default function sharedModelFactory(
             ldMetric: self.ldMetric,
             colorScheme: self.colorScheme,
             fitToHeight: self.fitToHeight,
+            useGenomicPositions: self.useGenomicPositions,
           }
         },
       }
@@ -439,6 +452,14 @@ export default function sharedModelFactory(
                     self.setShowLabels(!self.showLabels)
                   },
                 },
+                {
+                  label: 'Use genomic positions for cell sizes',
+                  type: 'checkbox',
+                  checked: self.useGenomicPositions,
+                  onClick: () => {
+                    self.setUseGenomicPositions(!self.useGenomicPositions)
+                  },
+                },
               ],
             },
             {
@@ -500,6 +521,7 @@ export default function sharedModelFactory(
         showVerticalGuides,
         showLabels,
         tickHeight,
+        useGenomicPositions,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -513,14 +535,15 @@ export default function sharedModelFactory(
         ...(hweFilterThreshold !== 0.001 ? { hweFilterThreshold } : {}),
         ...(ldMetric !== 'r2' ? { ldMetric } : {}),
         ...(colorScheme ? { colorScheme } : {}),
-        ...(!showLegend ? { showLegend } : {}),
+        ...(showLegend ? { showLegend } : {}),
         ...(!showLDTriangle ? { showLDTriangle } : {}),
-        ...(!showRecombination ? { showRecombination } : {}),
+        ...(showRecombination ? { showRecombination } : {}),
         ...(recombinationZoneHeight !== 50 ? { recombinationZoneHeight } : {}),
         ...(fitToHeight ? { fitToHeight } : {}),
         ...(!showVerticalGuides ? { showVerticalGuides } : {}),
         ...(showLabels ? { showLabels } : {}),
         ...(tickHeight !== 6 ? { tickHeight } : {}),
+        ...(useGenomicPositions ? { useGenomicPositions } : {}),
       } as typeof snap
     })
 }

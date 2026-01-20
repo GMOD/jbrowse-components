@@ -42,9 +42,8 @@ function LDTooltip({
 }
 
 /**
- * Draw highlighted cells along the V-shape path from the hovered cell
- * back to the matrix column positions at the top of the heatmap.
- * Uses thick lines matching cell width instead of individual squares.
+ * Draw V-shape highlight from the hovered cell to the matrix diagonal,
+ * plus connecting lines to genomic positions.
  */
 function Crosshairs({
   hoveredItem,
@@ -56,6 +55,10 @@ function Crosshairs({
   tickHeight,
   width,
   height,
+  useGenomicPositions,
+  snps,
+  regionStart,
+  bpPerPx,
 }: {
   hoveredItem: LDFlatbushItem
   cellWidth: number
@@ -66,9 +69,12 @@ function Crosshairs({
   tickHeight: number
   width: number
   height: number
+  useGenomicPositions: boolean
+  snps: { start: number }[]
+  regionStart: number
+  bpPerPx: number
 }) {
   const { i, j } = hoveredItem
-  const w = cellWidth
 
   // Transform a point from unrotated cell coordinates to screen coordinates
   // Canvas transformations: rotate(-45°), scale(1, yScalar), translate(0, lineZoneHeight)
@@ -80,20 +86,46 @@ function Crosshairs({
     return { x: rx, y: ry * yScalar + lineZoneHeight }
   }
 
-  // Cell centers for the V-shape endpoints
-  // The hovered cell is at (i, j), its center in unrotated coords is ((j+0.5)*w, (i+0.5)*w)
-  const hoveredCenter = toScreen((j + 0.5) * w, (i + 0.5) * w)
+  // Calculate positions based on mode
+  let hoveredCenter: { x: number; y: number }
+  let snpJPos: { x: number; y: number }
+  let snpIPos: { x: number; y: number }
 
-  // Left arm goes to snp j (diagonal position j,j)
-  const snpJCenter = toScreen((j + 0.5) * w, (j + 0.5) * w)
+  if (useGenomicPositions && snps.length > 0) {
+    // Use genomic positions for cell boundaries
+    const getPos = (idx: number) =>
+      (snps[idx]!.start - regionStart) / bpPerPx / SQRT2
 
-  // Right arm goes to snp i (diagonal position i,i)
-  const snpICenter = toScreen((i + 0.5) * w, (i + 0.5) * w)
+    const jPos = getPos(j)
+    const iPos = getPos(i)
 
-  // Line thickness calculated to match the perpendicular extent of cells
-  // in screen space after rotation and yScalar transformation.
-  // Formula: w * yScalar * sqrt(2) / sqrt(1 + yScalar^2)
-  const lineThickness = (w * yScalar * SQRT2) / Math.sqrt(1 + yScalar * yScalar)
+    // Cell center for hovered cell
+    const jNextPos =
+      j + 1 < snps.length
+        ? (snps[j + 1]!.start - regionStart) / bpPerPx / SQRT2
+        : width / SQRT2
+    const iNextPos =
+      i + 1 < snps.length
+        ? (snps[i + 1]!.start - regionStart) / bpPerPx / SQRT2
+        : width / SQRT2
+    const cellCenterX = (jPos + jNextPos) / 2
+    const cellCenterY = (iPos + iNextPos) / 2
+    hoveredCenter = toScreen(cellCenterX, cellCenterY)
+
+    // Diagonal positions at exact SNP positions
+    snpJPos = toScreen(jPos, jPos)
+    snpIPos = toScreen(iPos, iPos)
+  } else {
+    // Uniform cell positioning
+    const w = cellWidth
+
+    // Cell center for hovered cell
+    hoveredCenter = toScreen((j + 0.5) * w, (i + 0.5) * w)
+
+    // Diagonal positions at cell centers (matching where connecting lines attach)
+    snpJPos = toScreen((j + 0.5) * w, (j + 0.5) * w)
+    snpIPos = toScreen((i + 0.5) * w, (i + 0.5) * w)
+  }
 
   return (
     <svg
@@ -106,31 +138,26 @@ function Crosshairs({
         pointerEvents: 'none',
       }}
     >
-      {/* V-shape with thick lines matching cell width */}
-      <g
-        stroke="rgba(0, 0, 0, 0.3)"
-        strokeWidth={lineThickness}
+      {/* V-shape: single line from snp j through hovered cell to snp i */}
+      <path
+        stroke="rgba(0, 0, 0, 0.6)"
+        strokeWidth={1}
         fill="none"
-        strokeLinecap="square"
-      >
-        {/* Left arm: from snp j down to hovered cell */}
-        <path
-          d={`M ${snpJCenter.x} ${snpJCenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`}
-        />
-        {/* Right arm: from snp i down to hovered cell */}
-        <path
-          d={`M ${snpICenter.x} ${snpICenter.y} L ${hoveredCenter.x} ${hoveredCenter.y}`}
-        />
-      </g>
+        d={`M ${snpJPos.x} ${snpJPos.y} L ${hoveredCenter.x} ${hoveredCenter.y} L ${snpIPos.x} ${snpIPos.y}`}
+      />
       {/* Highlighted connecting lines from matrix to genome */}
       <g stroke="#e00" strokeWidth="1.5" fill="none">
-        {/* Diagonal lines ending at top of tick marks */}
-        <path
-          d={`M ${snpJCenter.x} ${snpJCenter.y} L ${genomicX1} ${tickHeight}`}
-        />
-        <path
-          d={`M ${snpICenter.x} ${snpICenter.y} L ${genomicX2} ${tickHeight}`}
-        />
+        {/* Diagonal lines ending at top of tick marks (only when not using genomic positions) */}
+        {!useGenomicPositions ? (
+          <>
+            <path
+              d={`M ${snpJPos.x} ${snpJPos.y} L ${genomicX1} ${tickHeight}`}
+            />
+            <path
+              d={`M ${snpIPos.x} ${snpIPos.y} L ${genomicX2} ${tickHeight}`}
+            />
+          </>
+        ) : null}
         {/* Vertical tick marks */}
         <path d={`M ${genomicX1} 0 L ${genomicX1} ${tickHeight}`} />
         <path d={`M ${genomicX2} 0 L ${genomicX2} ${tickHeight}`} />
@@ -177,6 +204,8 @@ const LDCanvas = observer(function LDCanvas({
     lineZoneHeight,
     fitToHeight,
     ldCanvasHeight,
+    useGenomicPositions,
+    snps,
   } = model
 
   // Container height includes lineZoneHeight + triangle
@@ -317,6 +346,10 @@ const LDCanvas = observer(function LDCanvas({
           tickHeight={model.tickHeight}
           width={width}
           height={containerHeight}
+          useGenomicPositions={useGenomicPositions}
+          snps={snps}
+          regionStart={region?.start ?? 0}
+          bpPerPx={bpPerPx}
         />
       ) : null}
 
@@ -329,7 +362,9 @@ const LDCanvas = observer(function LDCanvas({
         />
       ) : null}
       {showLegend ? <LDColorLegend ldMetric={ldMetric} /> : null}
-      <LinesConnectingMatrixToGenomicPosition model={model} />
+      {!useGenomicPositions ? (
+        <LinesConnectingMatrixToGenomicPosition model={model} />
+      ) : null}
       {/* Recombination track overlaid at bottom of line zone */}
       {model.showRecombination && model.recombination ? (
         <div
@@ -339,6 +374,7 @@ const LDCanvas = observer(function LDCanvas({
             top: lineZoneHeight / 2,
             width,
             height: lineZoneHeight / 2,
+            pointerEvents: 'none',
           }}
         >
           <RecombinationTrack
