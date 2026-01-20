@@ -12,7 +12,8 @@ import {
 } from '@jbrowse/text-indexing-core'
 import { ixIxxStream } from 'ixixx'
 
-import type { Track, indexType } from '@jbrowse/text-indexing-core'
+import type { indexType } from './util.ts'
+import type { Track } from '@jbrowse/text-indexing-core'
 
 export async function indexTracks(args: {
   tracks: Track[]

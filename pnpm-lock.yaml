@@ -578,12 +578,12 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
+      '@jbrowse/text-indexing-core':
+        specifier: workspace:^
+        version: link:../text-indexing-core
       ixixx:
         specifier: ^3.0.3
         version: 3.0.3
-      node-fetch:
-        specifier: ^2
-        version: 2.7.0(encoding@0.1.13)
       react:
         specifier: '>=18.0.0'
         version: 19.2.3
@@ -593,6 +593,12 @@ importers:
       sanitize-filename:
         specifier: ^1.6.3
         version: 1.6.3
+
+  packages/text-indexing-core:
+    dependencies:
+      node-fetch:
+        specifier: ^2.7.0
+        version: 2.7.0(encoding@0.1.13)
 
   packages/web-core:
     dependencies:
@@ -1670,9 +1676,9 @@ importers:
 
   products/jbrowse-cli:
     dependencies:
-      '@jbrowse/text-indexing':
+      '@jbrowse/text-indexing-core':
         specifier: workspace:^
-        version: link:../../packages/text-indexing
+        version: link:../../packages/text-indexing-core
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
@@ -1860,7 +1866,7 @@ importers:
         specifier: ^9.2.1
         version: 9.2.1(mobx@6.15.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       node-fetch:
-        specifier: ^2
+        specifier: ^2.7.0
         version: 2.7.0(encoding@0.1.13)
       react:
         specifier: ^19.2.3
@@ -1918,7 +1924,7 @@ importers:
         specifier: 27.0.0
         version: 27.0.0(canvas@3.2.1)
       node-fetch:
-        specifier: ^2
+        specifier: ^2.7.0
         version: 2.7.0(encoding@0.1.13)
       react:
         specifier: ^19.2.3

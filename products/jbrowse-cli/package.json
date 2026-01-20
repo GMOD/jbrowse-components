@@ -36,7 +36,6 @@
     "generate-readme": "./generate_readme.sh > README.md"
   },
   "dependencies": {
-    "@jbrowse/text-indexing": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
     "cli-progress": "^3.12.0",
     "command-exists": "^1.2.9",

@@ -13,7 +13,7 @@ import { ixIxxStream } from 'ixixx'
 import { getAdapterLocation, getLoc } from './adapter-utils.ts'
 import { supported } from '../../types/common.ts'
 
-import type { Track } from '../../base.ts'
+import type { Track } from '@jbrowse/text-indexing-core'
 
 export async function runIxIxx({
   readStream,

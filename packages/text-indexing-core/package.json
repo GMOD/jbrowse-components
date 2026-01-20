@@ -32,7 +32,7 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "node-fetch": "^2"
+    "node-fetch": "^2.7.0"
   },
   "publishConfig": {
     "access": "public",
