@@ -56,7 +56,8 @@ const WiggleClusterDialogManuals = observer(
     const [samplesPerPixel, setSamplesPerPixel] = useState('1')
 
     useEffect(() => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      const controller = new AbortController()
+      const { signal } = controller
       ;(async () => {
         try {
           setError(undefined)
@@ -79,16 +80,23 @@ const WiggleClusterDialogManuals = observer(
             },
           )) as Record<string, number[]>
 
-          setRet(ret)
+          if (!signal.aborted) {
+            setRet(ret)
+          }
         } catch (e) {
-          if (!isAbortException(e) && isAlive(model)) {
+          if (!signal.aborted && !isAbortException(e) && isAlive(model)) {
             console.error(e)
             setError(e)
           }
         } finally {
-          setLoading(false)
+          if (!signal.aborted) {
+            setLoading(false)
+          }
         }
       })()
+      return () => {
+        controller.abort()
+      }
     }, [model, samplesPerPixel])
 
     const results = ret

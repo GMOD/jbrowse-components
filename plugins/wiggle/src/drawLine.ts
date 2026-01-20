@@ -33,6 +33,8 @@ export function drawLine(
     lastCheck?: LastStopTokenCheck
     // when color is static (e.g. in Multi renderers), set strokeStyle once and skip callback
     staticColor?: string
+    // array to push reduced features to
+    reducedFeatures: Feature[]
   },
 ) {
   const {
@@ -49,6 +51,7 @@ export function drawLine(
     staticColor,
     stopToken,
     lastCheck = createStopTokenChecker(stopToken),
+    reducedFeatures: reducedFeaturesArg,
   } = props
   const region = regions[0]!
   const regionStart = region.start
@@ -88,7 +91,7 @@ export function drawLine(
 
   let lastVal: number | undefined
   let prevLeftPx = Number.NEGATIVE_INFINITY
-  const reducedFeatures = []
+  const reducedFeatures = reducedFeaturesArg
 
   // when staticColor is set, batch all path operations into a single stroke
   if (staticColor) {
@@ -221,8 +224,5 @@ export function drawLine(
       ctx.lineTo(width, Math.round(toY(tick)))
       ctx.stroke()
     }
-  }
-  return {
-    reducedFeatures,
   }
 }

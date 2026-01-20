@@ -24,17 +24,19 @@ export async function renderLinePlot(
   const width = (region.end - region.start) / bpPerPx
   const colorCallback = getColorCallback(config, { defaultColor: 'grey' })
 
-  const { reducedFeatures, ...rest } = await updateStatus(
+  const reducedFeatures: Feature[] = []
+  const rest = await updateStatus(
     'Rendering plot',
     statusCallback,
     () =>
-      renderToAbstractCanvas(width, height, renderProps, ctx =>
+      renderToAbstractCanvas(width, height, renderProps, ctx => {
         drawLine(ctx, {
           ...renderProps,
           features,
           colorCallback,
-        }),
-      ),
+          reducedFeatures,
+        })
+      }),
   )
 
   const serialized = {

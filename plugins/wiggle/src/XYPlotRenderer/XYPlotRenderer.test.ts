@@ -15,6 +15,7 @@ test('several features', async () => {
     new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
   ]
   const config = configSchema.create()
+  const reducedFeatures: SimpleFeature[] = []
   const renderProps = {
     features,
     regions: [
@@ -38,12 +39,16 @@ test('several features', async () => {
     displayCrossHatches: false,
     inverted: false,
     colorCallback: () => 'blue',
+    reducedFeatures,
   }
 
-  const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx =>
-    drawXY(ctx, renderProps),
-  )
+  const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx => {
+    drawXY(ctx, renderProps)
+  })
   expect(res).toMatchSnapshot({
     imageData: expect.any(Object),
   })
+  expect(reducedFeatures.length).toBe(2)
+  expect(reducedFeatures[0]!.get('start')).toBe(1)
+  expect(reducedFeatures[1]!.get('start')).toBe(101)
 })

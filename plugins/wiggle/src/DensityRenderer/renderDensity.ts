@@ -17,13 +17,14 @@ export async function renderDensity(
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
 
-  const { reducedFeatures, ...rest } = await updateStatus(
+  const reducedFeatures: Feature[] = []
+  const rest = await updateStatus(
     'Rendering plot',
     statusCallback,
     () =>
-      renderToAbstractCanvas(width, height, renderProps, ctx =>
-        drawDensity(ctx, { ...renderProps, features }),
-      ),
+      renderToAbstractCanvas(width, height, renderProps, ctx => {
+        drawDensity(ctx, { ...renderProps, features, reducedFeatures })
+      }),
   )
 
   const serialized = {

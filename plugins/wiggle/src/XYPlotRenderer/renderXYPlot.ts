@@ -24,17 +24,19 @@ export async function renderXYPlot(
   const width = (region.end - region.start) / bpPerPx
   const colorCallback = getColorCallback(config)
 
-  const { reducedFeatures, ...rest } = await updateStatus(
+  const reducedFeatures: Feature[] = []
+  const rest = await updateStatus(
     'Rendering plot',
     statusCallback,
     () =>
-      renderToAbstractCanvas(width, height, renderProps, ctx =>
+      renderToAbstractCanvas(width, height, renderProps, ctx => {
         drawXY(ctx, {
           ...renderProps,
           colorCallback,
           features,
-        }),
-      ),
+          reducedFeatures,
+        })
+      }),
   )
 
   const serialized = {

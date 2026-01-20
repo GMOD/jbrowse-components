@@ -105,14 +105,12 @@ function SourcesGrid({
         color={widgetColor}
         onChange={c => {
           setWidgetColor(c)
-          for (const id of selected) {
-            const elt = rows.find(f => f.name === id)
-            if (elt) {
-              elt.color = c
-            }
-          }
-
-          onChange([...rows])
+          const selectedSet = new Set(selected)
+          onChange(
+            rows.map(row =>
+              selectedSet.has(row.name) ? { ...row, color: c } : row,
+            ),
+          )
         }}
         onClose={() => {
           setAnchorEl(null)
@@ -137,11 +135,11 @@ function SourcesGrid({
                 <ColorPicker
                   color={value || 'blue'}
                   onChange={c => {
-                    const elt = rows.find(f => f.name === id)
-                    if (elt) {
-                      elt.color = c
-                    }
-                    onChange([...rows])
+                    onChange(
+                      rows.map(row =>
+                        row.name === id ? { ...row, color: c } : row,
+                      ),
+                    )
                   }}
                 />
               ),

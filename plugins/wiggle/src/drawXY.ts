@@ -54,6 +54,8 @@ export function drawXY(
     lastCheck?: LastStopTokenCheck
     stopToken?: StopToken
     colorCallback: (f: Feature, score: number) => string
+    // array to push reduced features to
+    reducedFeatures: Feature[]
   },
 ) {
   const {
@@ -70,6 +72,7 @@ export function drawXY(
     inverted,
     stopToken,
     lastCheck = createStopTokenChecker(stopToken),
+    reducedFeatures,
   } = props
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
@@ -131,7 +134,6 @@ export function drawXY(
   let hasClipping = false
 
   let prevLeftPx = Number.NEGATIVE_INFINITY
-  const reducedFeatures = []
   const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
 
   // we handle whiskers separately to render max row, min row, and avg in three
@@ -302,9 +304,5 @@ export function drawXY(
       ctx.lineTo(width, Math.round(toY(tick)))
       ctx.stroke()
     }
-  }
-
-  return {
-    reducedFeatures,
   }
 }

@@ -30,6 +30,8 @@ export function drawDensity(
     config: AnyConfigurationModel
     stopToken?: StopToken
     lastCheck?: LastStopTokenCheck
+    // array to push reduced features to
+    reducedFeatures: Feature[]
   },
 ) {
   const {
@@ -41,6 +43,7 @@ export function drawDensity(
     config,
     stopToken,
     lastCheck = createStopTokenChecker(stopToken),
+    reducedFeatures: reducedFeaturesArg,
   } = props
   const region = regions[0]!
   const regionStart = region.start
@@ -73,7 +76,7 @@ export function drawDensity(
 
   let prevLeftPx = Number.NEGATIVE_INFINITY
   let hasClipping = false
-  const reducedFeatures = []
+  const reducedFeatures = reducedFeaturesArg
   for (const feature of features.values()) {
     checkStopToken2(lastCheck)
     const fStart = feature.get('start')
@@ -127,8 +130,4 @@ export function drawDensity(
     }
   }
   ctx.restore()
-
-  return {
-    reducedFeatures,
-  }
 }

@@ -17,6 +17,7 @@ test('inverted mode and reversed', async () => {
     new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
   ]
   const config = configSchema.create()
+  const reducedFeatures: SimpleFeature[] = []
   const renderProps = {
     features,
     regions: [
@@ -39,12 +40,16 @@ test('inverted mode and reversed', async () => {
     height: 100,
     ticks: { values: [0, 100] },
     displayCrossHatches: false,
+    reducedFeatures,
   }
 
-  const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx =>
-    drawDensity(ctx, renderProps),
-  )
+  const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx => {
+    drawDensity(ctx, renderProps)
+  })
   expect(res).toMatchSnapshot({
     imageData: expect.any(Object),
   })
+  expect(reducedFeatures.length).toBe(2)
+  expect(reducedFeatures[0]!.get('start')).toBe(1)
+  expect(reducedFeatures[1]!.get('start')).toBe(101)
 })

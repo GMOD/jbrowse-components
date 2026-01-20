@@ -281,6 +281,26 @@ export function getScaleValues(
   }
 }
 
+/**
+ * Groups features by source, optimized for multi-wiggle rendering.
+ * Pre-allocates arrays for known sources to avoid dynamic key checking.
+ * Uses Object.create(null) to avoid prototype chain lookups.
+ */
+export function groupFeaturesBySource(
+  features: Feature[],
+  sources: Source[],
+): Record<string, Feature[]> {
+  const groups: Record<string, Feature[]> = Object.create(null)
+  for (const { name } of sources) {
+    groups[name] = []
+  }
+  for (const feature of features) {
+    const sourceName = feature.get('source') as string
+    groups[sourceName]?.push(feature)
+  }
+  return groups
+}
+
 // avoid drawing negative width features for SVG exports
 export function fillRectCtx(
   x: number,
