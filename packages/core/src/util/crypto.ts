@@ -14,7 +14,8 @@ export function aesEncrypt(plaintext: string, password: string): string {
  */
 export function aesDecrypt(ciphertext: string, password: string): string {
   const bytes = CryptoJS.AES.decrypt(ciphertext, password)
-  return bytes.toString(CryptoJS.enc.Utf8)
+  const result = bytes.toString(CryptoJS.enc.Utf8)
+  return result
 }
 
 /**
