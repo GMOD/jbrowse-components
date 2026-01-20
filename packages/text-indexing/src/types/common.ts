@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
+import { Readable } from 'stream'
 import { fileURLToPath } from 'url'
 import { createGunzip } from 'zlib'
 
@@ -45,7 +46,7 @@ export async function getLocalOrRemoteStream({
   out: string
   onStart: (totalBytes: number) => void
   onUpdate: (receivedBytes: number) => void
-}) {
+}): Promise<Readable> {
   let receivedBytes = 0
 
   if (isURL(file)) {
@@ -63,12 +64,12 @@ export async function getLocalOrRemoteStream({
       throw new Error(`Failed to fetch ${file}: no response body`)
     }
 
-    body.on('data', (chunk: Buffer) => {
+    body.on('data', chunk => {
       receivedBytes += chunk.length
       onUpdate(receivedBytes)
     })
 
-    return body
+    return body as unknown as Readable
   } else {
     // Handle file:// URLs by converting to local path
     const localPath = convertFileUrlToPath(file) ?? file
@@ -79,7 +80,7 @@ export async function getLocalOrRemoteStream({
     onStart(totalBytes)
 
     const stream = fs.createReadStream(filename)
-    stream.on('data', (chunk: Buffer) => {
+    stream.on('data', chunk => {
       receivedBytes += chunk.length
       onUpdate(receivedBytes)
     })
