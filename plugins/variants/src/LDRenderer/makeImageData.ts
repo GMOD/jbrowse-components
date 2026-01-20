@@ -25,6 +25,7 @@ export interface MakeImageDataProps {
   stopToken?: StopToken
   yScalar: number
   colorScheme?: string
+  useGenomicPositions?: boolean
 }
 
 // Color schemes for different LD metrics
@@ -57,7 +58,14 @@ export function makeImageData(
   ctx: CanvasRenderingContext2D,
   props: MakeImageDataProps,
 ): MakeImageDataResult | undefined {
-  const { ldData, regions, bpPerPx, stopToken, yScalar } = props
+  const {
+    ldData,
+    regions,
+    bpPerPx,
+    stopToken,
+    yScalar,
+    useGenomicPositions = false,
+  } = props
 
   const lastCheck = createStopTokenChecker(stopToken)
   const { snps, ldValues, metric } = ldData
@@ -80,12 +88,29 @@ export function makeImageData(
     metric === 'dprime' ? colorSchemes.dprime : colorSchemes.r2
   const scale = scaleSequential(colorInterpolator).domain([0, 1])
 
-  // Calculate uniform cell width based on view width and number of SNPs
-  // The rotated matrix diagonal should span the view width
+  // Calculate view width in pixels
   const viewWidthPx = (region.end - region.start) / bpPerPx
+  const sqrt2 = Math.sqrt(2)
+
+  // Calculate uniform cell width (used when useGenomicPositions is false)
   // After 45° rotation, n cells of width w have diagonal span of n * w * sqrt(2)
   // We want this to equal viewWidthPx, so: w = viewWidthPx / (n * sqrt(2))
-  const w = viewWidthPx / (n * Math.sqrt(2))
+  const uniformW = viewWidthPx / (n * sqrt2)
+
+  // Calculate genomic boundaries for each SNP (used when useGenomicPositions is true)
+  // Each boundary[i] is the pixel position (in unrotated coords) where SNP i's region starts
+  // We divide by sqrt(2) because the canvas is rotated 45 degrees
+  const boundaries: number[] = []
+  if (useGenomicPositions) {
+    for (let i = 0; i < n; i++) {
+      const snpPos = snps[i]!.start
+      // Calculate pixel position relative to region start, scaled for rotation
+      const pixelPos = (snpPos - region.start) / bpPerPx / sqrt2
+      boundaries.push(pixelPos)
+    }
+    // Add final boundary at view edge
+    boundaries.push(viewWidthPx / sqrt2)
+  }
 
   // Apply yScalar for height adjustment (like HiC)
   if (yScalar) {
@@ -100,11 +125,10 @@ export function makeImageData(
   const coords: number[] = []
   const items: LDFlatbushItem[] = []
 
-  // Draw the lower triangular matrix with uniform cell sizes
+  // Draw the lower triangular matrix
   // ldValues is stored as: [ld(1,0), ld(2,0), ld(2,1), ld(3,0), ld(3,1), ld(3,2), ...]
   let ldIdx = 0
 
-  // Use index-based positioning for uniform squares
   for (let i = 1; i < n; i++) {
     for (let j = 0; j < i; j++) {
       const ldVal = ldValues[ldIdx] ?? 0
@@ -112,14 +136,29 @@ export function makeImageData(
       // Color based on LD value
       ctx.fillStyle = scale(ldVal)
 
-      // Use indices directly for uniform cell positioning
-      const x = j * w
-      const y = i * w
+      let x: number
+      let y: number
+      let cellW: number
+      let cellH: number
 
-      ctx.fillRect(x, y, w, w)
+      if (useGenomicPositions) {
+        // Use genomic positions for cell boundaries
+        x = boundaries[j]!
+        y = boundaries[i]!
+        cellW = boundaries[j + 1]! - x
+        cellH = boundaries[i + 1]! - y
+      } else {
+        // Use uniform cell positioning
+        x = j * uniformW
+        y = i * uniformW
+        cellW = uniformW
+        cellH = uniformW
+      }
+
+      ctx.fillRect(x, y, cellW, cellH)
 
       // Store for Flatbush (in unrotated coordinates)
-      coords.push(x, y, x + w, y + w)
+      coords.push(x, y, x + cellW, y + cellH)
       items.push({
         i,
         j,
@@ -150,6 +189,6 @@ export function makeImageData(
     flatbush: flatbush.data,
     items,
     maxScore: 1, // LD values are always 0-1
-    w,
+    w: uniformW, // Return uniform width for backward compatibility
   }
 }

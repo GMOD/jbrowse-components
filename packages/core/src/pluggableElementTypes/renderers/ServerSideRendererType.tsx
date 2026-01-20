@@ -201,7 +201,10 @@ export default class ServerSideRenderer extends RendererType {
         pluginManager: this.pluginManager,
       }),
       filters: args.filters
-        ? new SerializableFilterChain({ filters: args.filters })
+        ? new SerializableFilterChain({
+            filters: args.filters,
+            jexl: this.pluginManager.jexl,
+          })
         : undefined,
     }
   }

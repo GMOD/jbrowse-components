@@ -23,6 +23,7 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
   hweFilterThreshold?: number
   colorScheme?: string
   fitToHeight?: boolean
+  useGenomicPositions?: boolean
 }
 
 export interface RenderArgsDeserializedWithLDData extends RenderArgsDeserialized {
@@ -39,6 +40,7 @@ export default class LDRenderer extends ServerSideRendererType {
       bpPerPx,
       ldMetric = 'r2',
       fitToHeight = false,
+      useGenomicPositions = false,
     } = renderProps
 
     // Calculate total width across all regions (like HiC)
@@ -106,6 +108,7 @@ export default class LDRenderer extends ServerSideRendererType {
           bpPerPx,
           stopToken: renderProps.stopToken,
           yScalar,
+          useGenomicPositions,
         })
       },
     )

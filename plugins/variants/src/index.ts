@@ -21,8 +21,13 @@ import VariantTrackF from './VariantTrack/index.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import ExtensionPointsF from './VcfExtensionPoints/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
+import {
+  calculateAlleleCounts,
+  calculateMinorAlleleFrequency,
+} from './shared/minorAlleleFrequencyUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Feature } from '@jbrowse/core/util'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'
@@ -56,6 +61,23 @@ export default class VariantsPlugin extends Plugin {
     pluginManager.addRpcMethod(
       () => new MultiVariantGetSimplifiedFeatures(pluginManager),
     )
+  }
+
+  configure(pluginManager: PluginManager) {
+    const { jexl } = pluginManager
+    const splitCache = {} as Record<string, string[]>
+
+    // Add jexl function to calculate MAF for a feature
+    jexl.addFunction('maf', (feature: Feature) => {
+      const genotypes = feature.get('genotypes') as
+        | Record<string, string>
+        | undefined
+      if (!genotypes) {
+        return 0
+      }
+      const alleleCounts = calculateAlleleCounts(genotypes, splitCache)
+      return calculateMinorAlleleFrequency(alleleCounts)
+    })
   }
 }
 
