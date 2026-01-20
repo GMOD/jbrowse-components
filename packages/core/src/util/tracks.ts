@@ -1,4 +1,9 @@
-import { getParent, isRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import {
+  getParent,
+  getSnapshot,
+  isRoot,
+  isStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 
 import {
   getFileHandle,
@@ -521,9 +526,13 @@ export function showTrackGeneric(
   }
 
   // Allow plugins to preprocess the track config (e.g. to add default displays)
+  // Use getSnapshot for MST models, structuredClone for plain objects
+  const confSnapshot = isStateTreeNode(rawConf)
+    ? getSnapshot(rawConf)
+    : structuredClone(rawConf)
   const conf = pluginManager.evaluateExtensionPoint(
     'Core-preProcessTrackConfig',
-    structuredClone(rawConf),
+    confSnapshot,
   ) as typeof rawConf
 
   const trackType = pluginManager.getTrackType(conf.type)

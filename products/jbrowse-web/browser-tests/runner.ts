@@ -317,12 +317,14 @@ const testSuites: TestSuite[] = [
             ],
           }
 
-          const specParam = JSON.stringify(sessionSpec)
+          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
           const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}`
+          console.log({ url })
           await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
 
           await findByText(page, 'ctgA')
-          await findByTestId(page, 'stack-canvas', 60000)
+          // The UMD plugin adds LinearReadCloudDisplay with drawCloud:true for _sv tracks
+          await findByTestId(page, 'cloud-canvas', 60000)
           await waitForLoadingToComplete(page)
           await delay(1000)
           await snapshot(page, 'session-spec-display-snapshot-type')
@@ -676,6 +678,17 @@ const testSuites: TestSuite[] = [
           await findByTestId(page, 'Blockset-pileup', 60000)
           await waitForLoadingToComplete(page)
           await snapshot(page, 'alignments-bam')
+        },
+      },
+      {
+        name: 'volvox_sv track screenshot',
+        fn: async page => {
+          await navigateToApp(page)
+          await openTrack(page, 'volvox_sv')
+          // The UMD plugin adds LinearReadCloudDisplay with drawCloud:true for _sv tracks
+          await findByTestId(page, 'cloud-canvas', 60000)
+          await waitForLoadingToComplete(page)
+          await snapshot(page, 'alignments-volvox-sv')
         },
       },
     ],
