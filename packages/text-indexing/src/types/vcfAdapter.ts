@@ -1,8 +1,9 @@
-import readline from 'readline'
-import { createGunzip } from 'zlib'
-
 import { decodeURIComponentNoThrow } from '../util.ts'
-import { getLocalOrRemoteStream } from './common.ts'
+import {
+  getLocalOrRemoteStream,
+  parseAttributes,
+  readLines,
+} from './common.ts'
 
 export async function* indexVcf({
   config,
@@ -12,7 +13,7 @@ export async function* indexVcf({
   onStart,
   onUpdate,
 }: {
-  config: any
+  config: { trackId: string }
   attributesToIndex: string[]
   inLocation: string
   outDir: string
@@ -20,20 +21,24 @@ export async function* indexVcf({
   onUpdate: (progressBytes: number) => void
 }) {
   const { trackId } = config
-  const stream = await getLocalOrRemoteStream({
+  const { totalBytes, stream } = await getLocalOrRemoteStream({
     file: inLocation,
     out: outDir,
-    onTotalBytes: onStart,
-    onBytesReceived: onUpdate,
   })
 
-  const gzStream = /.b?gz$/.exec(inLocation)
-    ? stream.pipe(createGunzip())
-    : stream
+  onStart(totalBytes)
 
-  const rl = readline.createInterface({
-    input: gzStream,
-  })
+  if (!stream) {
+    throw new Error(`Failed to fetch ${inLocation}: no response body`)
+  }
+
+  const inputStream = /.b?gz$/.exec(inLocation)
+    ? // @ts-expect-error
+      ReadableStream.from(stream).pipeThrough(new DecompressionStream('gzip'))
+    : ReadableStream.from(stream)
+
+  const rl = readLines(inputStream.getReader(), onUpdate)
+  const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
     if (line.startsWith('#')) {
@@ -43,43 +48,25 @@ export async function* indexVcf({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
 
-    // turns gff3 attrs into a map, and converts the arrays into space
-    // separated strings
-    const fields = Object.fromEntries(
-      info!
-        .split(';')
-        .map(f => f.trim())
-        .filter(f => !!f)
-        .map(f => f.split('='))
-        .map(([key, val]) => [
-          key!.trim(),
-          val
-            ? decodeURIComponentNoThrow(val).trim().split(',').join(' ')
-            : undefined,
-        ]),
-    )
-
-    const end = fields.END
-
-    const locStr = `${ref}:${pos}..${end || +pos! + 1}`
     if (id === '.') {
       continue
     }
+
+    const fields = parseAttributes(info!, decodeURIComponentNoThrow)
+    const end = fields.END
+    const locStr = `${ref}:${pos}..${end || +pos! + 1}`
+    const encodedLocStr = encodeURIComponent(locStr)
 
     const infoAttrs = attributesToIndex
       .map(attr => fields[attr])
       .filter((f): f is string => !!f)
 
-    const ids = id!.split(',')
-    for (const id of ids) {
-      const attrs = [id]
-      const record = JSON.stringify([
-        encodeURIComponent(locStr),
-        encodeURIComponent(trackId),
-        encodeURIComponent(id || ''),
-        ...infoAttrs.map(a => encodeURIComponent(a || '')),
-      ]).replaceAll(',', '|')
-      yield `${record} ${[...new Set(attrs)].join(' ')}\n`
+    const encodedInfoAttrs = infoAttrs.map(a => `"${encodeURIComponent(a)}"`)
+
+    for (const variantId of id!.split(',')) {
+      const encodedId = encodeURIComponent(variantId)
+      const record = `["${encodedLocStr}"|"${encodedTrackId}"|"${encodedId}"${encodedInfoAttrs.length > 0 ? `|${encodedInfoAttrs.join('|')}` : ''}]`
+      yield `${record} ${variantId}\n`
     }
   }
 }

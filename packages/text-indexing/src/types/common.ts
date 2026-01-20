@@ -1,8 +1,7 @@
 import fs from 'fs'
+import { Readable } from 'stream'
 import path from 'path'
 import { fileURLToPath } from 'url'
-
-import fetch from 'node-fetch'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
 
@@ -48,37 +47,80 @@ function convertFileUrlToPath(fileUrl: string): string | undefined {
 export async function getLocalOrRemoteStream({
   file,
   out,
-  onBytesReceived,
-  onTotalBytes,
 }: {
   file: string
   out: string
-  onBytesReceived: (totalBytesReceived: number) => void
-  onTotalBytes: (totalBytes: number) => void
 }) {
-  let receivedBytes = 0
   if (isURL(file)) {
     const result = await createRemoteStream(file)
-    result.body.on('data', chunk => {
-      receivedBytes += chunk.length
-      onBytesReceived(receivedBytes)
-    })
-    onTotalBytes(+(result.headers.get('Content-Length') || 0))
-    return result.body
+    return {
+      totalBytes: +(result.headers.get('Content-Length') || 0),
+      stream: result.body,
+    }
   } else {
     // Handle file:// URLs by converting to local path
     const localPath = convertFileUrlToPath(file) ?? file
     const filename = path.isAbsolute(localPath)
       ? localPath
       : path.join(out, localPath)
-    const stream = fs.createReadStream(filename)
-    stream.on('data', chunk => {
-      receivedBytes += chunk.length
-      onBytesReceived(receivedBytes)
-    })
-    onTotalBytes(fs.statSync(filename).size)
-    return stream
+    const nodeStream = fs.createReadStream(filename)
+    return {
+      totalBytes: fs.statSync(filename).size,
+      stream: Readable.toWeb(nodeStream) as ReadableStream<Uint8Array>,
+    }
   }
+}
+
+export async function* readLines(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  onUpdate: (bytes: number) => void,
+) {
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let receivedBytes = 0
+
+  try {
+    let result = await reader.read()
+    while (!result.done) {
+      receivedBytes += result.value.length
+      onUpdate(receivedBytes)
+      buffer += decoder.decode(result.value, { stream: true })
+
+      const lines = buffer.split('\n')
+      buffer = lines.pop()!
+      for (const line of lines) {
+        yield line
+      }
+      result = await reader.read()
+    }
+  } finally {
+    reader.releaseLock()
+  }
+
+  buffer += decoder.decode()
+  if (buffer) {
+    yield buffer
+  }
+}
+
+// Efficient attribute parsing for GFF3/VCF info fields
+export function parseAttributes(
+  infoString: string,
+  decodeFunc: (s: string) => string,
+) {
+  const result: Record<string, string | undefined> = {}
+  for (const field of infoString.split(';')) {
+    const trimmed = field.trim()
+    if (trimmed) {
+      const eqIdx = trimmed.indexOf('=')
+      if (eqIdx !== -1) {
+        const key = trimmed.slice(0, eqIdx).trim()
+        const val = trimmed.slice(eqIdx + 1)
+        result[key] = decodeFunc(val).trim().replaceAll(',', ' ')
+      }
+    }
+  }
+  return result
 }
 
 export function makeLocation(location: string, protocol: string) {

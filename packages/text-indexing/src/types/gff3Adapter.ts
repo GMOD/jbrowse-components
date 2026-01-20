@@ -1,8 +1,9 @@
-import readline from 'readline'
-import { createGunzip } from 'zlib'
-
 import { decodeURIComponentNoThrow } from '../util.ts'
-import { getLocalOrRemoteStream } from './common.ts'
+import {
+  getLocalOrRemoteStream,
+  parseAttributes,
+  readLines,
+} from './common.ts'
 
 export async function* indexGff3({
   config,
@@ -22,16 +23,25 @@ export async function* indexGff3({
   onUpdate: (progressBytes: number) => void
 }) {
   const { trackId } = config
-  const stream = await getLocalOrRemoteStream({
+  const { totalBytes, stream } = await getLocalOrRemoteStream({
     file: inLocation,
     out: outDir,
-    onTotalBytes: onStart,
-    onBytesReceived: onUpdate,
   })
 
-  const rl = readline.createInterface({
-    input: /.b?gz$/.exec(inLocation) ? stream.pipe(createGunzip()) : stream,
-  })
+  onStart(totalBytes)
+
+  if (!stream) {
+    throw new Error(`Failed to fetch ${inLocation}: no response body`)
+  }
+
+  const inputStream = /.b?gz$/.exec(inLocation)
+    ? // @ts-expect-error
+      ReadableStream.from(stream).pipeThrough(new DecompressionStream('gzip'))
+    : ReadableStream.from(stream)
+
+  const rl = readLines(inputStream.getReader(), onUpdate)
+  const excludeSet = new Set(featureTypesToExclude)
+  const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
     if (!line.trim()) {
@@ -43,36 +53,20 @@ export async function* indexGff3({
     }
 
     const [seq_id, , type, start, end, , , , col9] = line.split('\t')
-    const locStr = `${seq_id}:${start}..${end}`
 
-    if (!featureTypesToExclude.includes(type!)) {
-      // turns gff3 attrs into a map, and converts the arrays into space
-      // separated strings
-      const col9attrs = Object.fromEntries(
-        col9!
-          .split(';')
-          .map(f => f.trim())
-          .filter(f => !!f)
-          .map(f => f.split('='))
-          .map(([key, val]) => [
-            key!.trim(),
-            val
-              ? decodeURIComponentNoThrow(val).trim().split(',').join(' ')
-              : undefined,
-          ]),
-      )
+    if (!excludeSet.has(type!)) {
+      const col9attrs = parseAttributes(col9!, decodeURIComponentNoThrow)
       const attrs = attributesToIndex
         .map(attr => col9attrs[attr])
         .filter((f): f is string => !!f)
 
-      if (attrs.length) {
-        const record = JSON.stringify([
-          encodeURIComponent(locStr),
-          encodeURIComponent(trackId),
-          ...attrs.map(a => encodeURIComponent(a)),
-        ]).replaceAll(',', '|')
+      if (attrs.length > 0) {
+        const locStr = `${seq_id}:${start}..${end}`
+        const encodedAttrs = attrs.map(a => `"${encodeURIComponent(a)}"`)
+        const record = `["${encodeURIComponent(locStr)}"|"${encodedTrackId}"|${encodedAttrs.join('|')}]`
+        const uniqueAttrs = [...new Set(attrs)]
 
-        yield `${record} ${[...new Set(attrs)].join(' ')}\n`
+        yield `${record} ${uniqueAttrs.join(' ')}\n`
       }
     }
   }
