@@ -294,6 +294,47 @@ interface TestSuite {
 
 const testSuites: TestSuite[] = [
   {
+    name: 'Session Spec URL Parameters',
+    tests: [
+      {
+        name: 'displaySnapshot type opens track with specific display type',
+        fn: async page => {
+          const sessionSpec = {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:1-10000',
+                tracks: [
+                  {
+                    trackId: 'volvox_sv_cram',
+                    displaySnapshot: {
+                      type: 'LinearReadCloudDisplay',
+                    },
+                  },
+                ],
+              },
+            ],
+          }
+
+          const specParam = JSON.stringify(sessionSpec)
+          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}`
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+
+          await findByText(page, 'ctgA')
+          await findByTestId(
+            page,
+            'display-volvox_sv_cram-LinearReadCloudDisplay',
+            60000,
+          )
+          await waitForLoadingToComplete(page)
+          await delay(1000)
+          await snapshot(page, 'session-spec-display-snapshot-type')
+        },
+      },
+    ],
+  },
+  {
     name: 'Workspaces',
     tests: [
       {

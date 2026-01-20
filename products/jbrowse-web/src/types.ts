@@ -26,9 +26,21 @@ export interface SessionDB extends DBSchema {
   }
 }
 
+/**
+ * Track initialization can be a simple trackId string or an object with
+ * additional configuration for display type and initial state.
+ */
+export type TrackInit =
+  | string
+  | {
+      trackId: string
+      displaySnapshot?: Record<string, unknown>
+      trackSnapshot?: Record<string, unknown>
+    }
+
 export interface ViewSpec {
   type: string
-  tracks?: string[]
+  tracks?: TrackInit[]
   assembly: string
   loc: string
 }

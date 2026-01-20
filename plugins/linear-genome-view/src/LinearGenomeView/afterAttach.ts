@@ -54,10 +54,19 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
             const idsNotFound = [] as string[]
             for (const t of init.tracks) {
               try {
-                self.showTrack(t)
+                if (typeof t === 'string') {
+                  self.showTrack(t)
+                } else {
+                  self.showTrack(
+                    t.trackId,
+                    t.trackSnapshot ?? {},
+                    t.displaySnapshot ?? {},
+                  )
+                }
               } catch (e) {
+                const trackId = typeof t === 'string' ? t : t.trackId
                 if (/Could not resolve identifier/.exec(`${e}`)) {
-                  idsNotFound.push(t)
+                  idsNotFound.push(trackId)
                 } else {
                   throw e
                 }
