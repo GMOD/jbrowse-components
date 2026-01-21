@@ -14,7 +14,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import CategoryIcon from '@mui/icons-material/Category'
-import FilterListIcon from '@mui/icons-material/FilterList'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -656,7 +656,7 @@ export default function MultiVariantBaseModelF(
 
             {
               label: 'Filter by',
-              icon: FilterListIcon,
+              icon: ClearAllIcon,
               subMenu: [
                 {
                   label: 'Minor allele frequency',

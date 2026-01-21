@@ -4,7 +4,6 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearFeatureDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
-import FilterListIcon from '@mui/icons-material/FilterList'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -87,8 +86,7 @@ export default function stateModelFactory(
           return [
             ...superFilterMenuItems(),
             {
-              label: 'Filter by minor allele frequency',
-              icon: FilterListIcon,
+              label: 'Minor allele frequency',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   MAFFilterDialog,

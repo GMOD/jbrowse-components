@@ -5,7 +5,7 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { cast, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
-import FilterListIcon from '@mui/icons-material/FilterList'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin.ts'
@@ -458,7 +458,7 @@ function stateModelFactory(
             },
             {
               label: 'Filter arcs by score...',
-              icon: FilterListIcon,
+              icon: ClearAllIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   FilterArcsByScoreDialog,

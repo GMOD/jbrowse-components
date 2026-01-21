@@ -15,6 +15,7 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { reaction } from 'mobx'
 
@@ -407,7 +408,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               },
             },
             {
-              label: 'Filters',
+              label: 'Filter by...',
+              icon: ClearAllIcon,
               subMenu: self.filterMenuItems(),
             },
           ]

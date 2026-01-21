@@ -666,37 +666,56 @@ export default function sharedModelFactory(
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(minorAlleleFrequencyFilterSetting !== undefined
+        // Only save settings that differ from config defaults
+        ...(minorAlleleFrequencyFilterSetting !== undefined &&
+        minorAlleleFrequencyFilterSetting !== 0.1
           ? { minorAlleleFrequencyFilterSetting }
           : {}),
-        ...(lengthCutoffFilterSetting !== undefined
+        ...(lengthCutoffFilterSetting !== undefined &&
+        lengthCutoffFilterSetting !== Number.MAX_SAFE_INTEGER
           ? { lengthCutoffFilterSetting }
           : {}),
-        ...(lineZoneHeightSetting !== undefined
+        ...(lineZoneHeightSetting !== undefined && lineZoneHeightSetting !== 100
           ? { lineZoneHeightSetting }
           : {}),
-        ...(ldMetricSetting !== undefined ? { ldMetricSetting } : {}),
-        ...(colorSchemeSetting !== undefined ? { colorSchemeSetting } : {}),
-        ...(showLegendSetting !== undefined ? { showLegendSetting } : {}),
-        ...(showLDTriangleSetting !== undefined
+        ...(ldMetricSetting !== undefined && ldMetricSetting !== 'r2'
+          ? { ldMetricSetting }
+          : {}),
+        ...(colorSchemeSetting !== undefined && colorSchemeSetting !== ''
+          ? { colorSchemeSetting }
+          : {}),
+        ...(showLegendSetting !== undefined && showLegendSetting
+          ? { showLegendSetting }
+          : {}),
+        ...(showLDTriangleSetting !== undefined && !showLDTriangleSetting
           ? { showLDTriangleSetting }
           : {}),
-        ...(showRecombinationSetting !== undefined
+        ...(showRecombinationSetting !== undefined && showRecombinationSetting
           ? { showRecombinationSetting }
           : {}),
-        ...(recombinationZoneHeightSetting !== undefined
+        ...(recombinationZoneHeightSetting !== undefined &&
+        recombinationZoneHeightSetting !== 50
           ? { recombinationZoneHeightSetting }
           : {}),
-        ...(fitToHeightSetting !== undefined ? { fitToHeightSetting } : {}),
-        ...(hweFilterThresholdSetting !== undefined
+        ...(fitToHeightSetting !== undefined && fitToHeightSetting
+          ? { fitToHeightSetting }
+          : {}),
+        ...(hweFilterThresholdSetting !== undefined &&
+        hweFilterThresholdSetting !== 0.001
           ? { hweFilterThresholdSetting }
           : {}),
-        ...(showVerticalGuidesSetting !== undefined
+        ...(showVerticalGuidesSetting !== undefined &&
+        !showVerticalGuidesSetting
           ? { showVerticalGuidesSetting }
           : {}),
-        ...(showLabelsSetting !== undefined ? { showLabelsSetting } : {}),
-        ...(tickHeightSetting !== undefined ? { tickHeightSetting } : {}),
-        ...(useGenomicPositionsSetting !== undefined
+        ...(showLabelsSetting !== undefined && showLabelsSetting
+          ? { showLabelsSetting }
+          : {}),
+        ...(tickHeightSetting !== undefined && tickHeightSetting !== 6
+          ? { tickHeightSetting }
+          : {}),
+        ...(useGenomicPositionsSetting !== undefined &&
+        useGenomicPositionsSetting
           ? { useGenomicPositionsSetting }
           : {}),
       } as typeof snap

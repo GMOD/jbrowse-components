@@ -16,7 +16,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import FilterListIcon from '@mui/icons-material/ClearAll'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -722,7 +722,7 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Filter by...',
-              icon: FilterListIcon,
+              icon: ClearAllIcon,
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   FilterByTagDialog,
