@@ -47,6 +47,13 @@ export function drawPhased(
         ctx.closePath()
         ctx.fill()
       }
+    } else if (featureType === 'insertion') {
+      ctx.beginPath()
+      ctx.moveTo(x + w / 2, y - f2)
+      ctx.lineTo(x - f2, y + h + f2)
+      ctx.lineTo(x + w + f2, y + h + f2)
+      ctx.closePath()
+      ctx.fill()
     } else {
       ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
     }
