@@ -319,7 +319,6 @@ const testSuites: TestSuite[] = [
 
           const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
           const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}`
-          console.log({ url })
           await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
 
           await findByText(page, 'ctgA')
@@ -328,6 +327,29 @@ const testSuites: TestSuite[] = [
           await waitForLoadingToComplete(page)
           await delay(1000)
           await snapshot(page, 'session-spec-display-snapshot-type')
+        },
+      },
+      {
+        name: 'jexl',
+        fn: async page => {
+          const sessionSpec = {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:2,707..8,600',
+                tracks: ['volvox_test_vcf_jexl'],
+              },
+            ],
+          }
+
+          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
+          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}`
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+          await findByTestId(page, 'canvas-feature-overlay', 60000)
+          await waitForLoadingToComplete(page)
+          await delay(1000)
+          await snapshot(page, 'session-spec-jexl')
         },
       },
     ],
