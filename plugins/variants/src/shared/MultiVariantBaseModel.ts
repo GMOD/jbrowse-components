@@ -4,8 +4,13 @@ import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { set1 } from '@jbrowse/core/ui/colors'
-import { getSession } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  getContainingTrack,
+  getSession,
+} from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import CategoryIcon from '@mui/icons-material/Category'
@@ -32,7 +37,7 @@ import type {
 } from './components/types.ts'
 import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
@@ -769,6 +774,40 @@ export default function MultiVariantBaseModelF(
           filters: new SerializableFilterChain({
             filters: self.activeFilters,
           }),
+        }
+      },
+      /**
+       * #method
+       */
+      renderingProps() {
+        return {
+          displayModel: self,
+          async onFeatureClick(_: React.MouseEvent, featureId: string) {
+            const session = getSession(self)
+            const { rpcManager } = session
+            try {
+              const sessionId = getRpcSessionId(self)
+              const track = getContainingTrack(self)
+
+              const { feature } = (await rpcManager.call(
+                sessionId,
+                'MultiVariantGetFeatureDetails',
+                {
+                  featureId,
+                  sessionId,
+                  trackInstanceId: track.id,
+                  rendererType: self.rendererTypeName,
+                },
+              )) as { feature: SimpleFeatureSerialized | undefined }
+
+              if (isAlive(self) && feature) {
+                self.selectFeature(new SimpleFeature(feature))
+              }
+            } catch (e) {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            }
+          },
         }
       },
       /**

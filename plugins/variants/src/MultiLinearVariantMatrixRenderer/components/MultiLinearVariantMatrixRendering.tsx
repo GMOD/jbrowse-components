@@ -16,6 +16,14 @@ interface FeatureData {
   length: number
 }
 
+interface SimplifiedFeature {
+  uniqueId: string
+}
+
+interface RenderingProps {
+  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
+}
+
 const MultiLinearVariantMatrixRendering = observer(
   function MultiLinearVariantMatrixRendering(props: {
     width: number
@@ -26,6 +34,8 @@ const MultiLinearVariantMatrixRendering = observer(
     rowHeight: number
     origScrollTop: number
     totalHeight: number
+    simplifiedFeatures?: SimplifiedFeature[]
+    renderingProps?: RenderingProps
   }) {
     const {
       arr,
@@ -35,6 +45,8 @@ const MultiLinearVariantMatrixRendering = observer(
       totalHeight,
       origScrollTop,
       rowHeight,
+      simplifiedFeatures,
+      renderingProps,
     } = props
     const ref = useRef<HTMLDivElement>(null)
     const lastHoveredRef = useRef<string | undefined>(undefined)
@@ -98,12 +110,29 @@ const MultiLinearVariantMatrixRendering = observer(
       }
     }, [displayModel])
 
+    const handleClick = useCallback(
+      (e: React.MouseEvent) => {
+        if (!ref.current || !simplifiedFeatures) {
+          return
+        }
+        const r = ref.current.getBoundingClientRect()
+        const offsetX = e.clientX - r.left
+        const featureIdx = Math.floor((offsetX / width) * arr.length)
+        const feature = simplifiedFeatures[featureIdx]
+        if (feature) {
+          renderingProps?.onFeatureClick?.(e, feature.uniqueId)
+        }
+      },
+      [arr.length, width, simplifiedFeatures, renderingProps],
+    )
+
     return (
       <div
         ref={ref}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseOut={handleMouseLeave}
+        onClick={handleClick}
         style={{
           overflow: 'visible',
           position: 'relative',

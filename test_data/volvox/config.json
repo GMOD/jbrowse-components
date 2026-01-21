@@ -2425,13 +2425,18 @@
       "name": "volvox multi-sample sv",
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "volvox.sv.vcf"
+        "uri": "volvox.sv.vcf.gz",
+        "samplesTsvLocation": {
+          "uri": "volvox.sv.samples.tsv",
+          "locationType": "UriLocation"
+        }
       },
       "assemblyNames": ["volvox"],
       "displays": [
         {
           "type": "MultiLinearVariantDisplay",
-          "showReferenceAlleles": true
+          "showReferenceAlleles": true,
+          "colorBy": "population"
         }
       ]
     }

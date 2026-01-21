@@ -107,10 +107,11 @@ export function drawColorAlleleCount(
       ctx.fill()
     }
   } else if (featureType === 'insertion') {
+    const widthExtension = 3
     ctx.beginPath()
-    ctx.moveTo(x + w / 2, y - f2)
-    ctx.lineTo(x - f2, y + h + f2)
-    ctx.lineTo(x + w + f2, y + h + f2)
+    ctx.moveTo(x - f2 - widthExtension, y - f2)
+    ctx.lineTo(x + w + f2 + widthExtension, y - f2)
+    ctx.lineTo(x + w / 2, y + h + f2)
     ctx.closePath()
     ctx.fill()
   } else {

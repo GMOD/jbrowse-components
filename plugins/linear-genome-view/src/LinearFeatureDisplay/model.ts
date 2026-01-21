@@ -225,7 +225,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
     .views(self => {
       const {
-        trackMenuItems: superTrackMenuItems,
         renderProps: superRenderProps,
         renderingProps: superRenderingProps,
       } = self
@@ -321,6 +320,30 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
+        filterMenuItems(): MenuItem[] {
+          return [
+            {
+              label: 'Edit filters...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  AddFiltersDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+          ]
+        },
+      }
+    })
+    .views(self => {
+      const { trackMenuItems: superTrackMenuItems } = self
+      return {
+        /**
+         * #method
+         */
         trackMenuItems(): MenuItem[] {
           return [
             ...superTrackMenuItems(),
@@ -385,20 +408,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             {
               label: 'Filters',
-              subMenu: [
-                {
-                  label: 'Edit filters...',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      AddFiltersDialog,
-                      {
-                        model: self,
-                        handleClose,
-                      },
-                    ])
-                  },
-                },
-              ],
+              subMenu: self.filterMenuItems(),
             },
           ]
         },

@@ -53,8 +53,10 @@ export default function stateModelFactory(
       },
     }))
     .views(self => {
-      const { activeFilters: superActiveFilters, trackMenuItems: superMenu } =
-        self
+      const {
+        activeFilters: superActiveFilters,
+        filterMenuItems: superFilterMenuItems,
+      } = self
       return {
         /**
          * #getter
@@ -81,9 +83,9 @@ export default function stateModelFactory(
         /**
          * #method
          */
-        trackMenuItems() {
+        filterMenuItems() {
           return [
-            ...superMenu(),
+            ...superFilterMenuItems(),
             {
               label: 'Filter by minor allele frequency',
               icon: FilterListIcon,
