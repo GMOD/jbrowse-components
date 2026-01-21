@@ -1,16 +1,18 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
+import sharedLDConfigFactory from './SharedLDConfigSchema.ts'
 import configSchema from '../LDRenderer/configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LDDisplay
+ * extends
+ * - [SharedLDDisplay](../sharedlddisplay)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export default function configSchemaF(pluginManager: PluginManager) {
+export default function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LDDisplay',
     {
@@ -31,7 +33,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration: sharedLDConfigFactory(),
       explicitlyTyped: true,
     },
   )

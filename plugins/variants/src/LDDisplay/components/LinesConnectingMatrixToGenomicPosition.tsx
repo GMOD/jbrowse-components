@@ -245,7 +245,10 @@ const LinesConnectingMatrixToGenomicPosition = observer(
               position: 'absolute',
               top: lineZoneHeight - 4,
             }}
-            onDrag={d => model.setLineZoneHeight(lineZoneHeight + d)}
+            onDrag={d => {
+              model.setLineZoneHeight(lineZoneHeight + d)
+              return undefined
+            }}
             className={classes.resizeHandle}
           />
         ) : null}

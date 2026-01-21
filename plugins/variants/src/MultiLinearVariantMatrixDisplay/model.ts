@@ -46,6 +46,16 @@ export default function stateModelFactory(
       get prefersOffset() {
         return true
       },
+
+      /**
+       * #getter
+       */
+      get featureWidgetType() {
+        return {
+          type: 'VariantFeatureWidget',
+          id: 'variantFeature',
+        }
+      },
     }))
     .views(self => ({
       /**

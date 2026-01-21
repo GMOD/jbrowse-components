@@ -2,11 +2,19 @@ import { when } from 'mobx'
 
 import { makeSidebarSvg } from '../shared/makeSidebarSvg.tsx'
 
-import type { MultiLinearVariantDisplayModel } from './model.ts'
+import type { LegendBarModel } from '../shared/components/types.ts'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
+interface Model extends LegendBarModel {
+  regionCannotBeRenderedText?: any
+  hierarchy: any
+  availableHeight: number
+  totalHeight: number
+  treeAreaWidth: number
+}
+
 export async function renderSvg(
-  self: MultiLinearVariantDisplayModel,
+  self: Model,
   opts: ExportSvgDisplayOptions,
   superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
 ) {

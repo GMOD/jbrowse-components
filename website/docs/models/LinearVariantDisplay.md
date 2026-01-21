@@ -45,7 +45,29 @@ any
 configuration: ConfigurationReference(configSchema)
 ```
 
+#### property: minorAlleleFrequencyFilterSetting
+
+Minor allele frequency filter threshold (0-0.5) When undefined, falls back to
+config value
+
+```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
+minorAlleleFrequencyFilterSetting: types.maybe(types.number)
+```
+
 ### LinearVariantDisplay - Getters
+
+#### getter: minorAlleleFrequencyFilter
+
+Gets the minor allele frequency filter threshold Falls back to config value if
+setting is not defined
+
+```js
+// type
+any
+```
 
 #### getter: featureWidgetType
 
@@ -55,4 +77,31 @@ configuration: ConfigurationReference(configSchema)
   type: string
   id: string
 }
+```
+
+#### getter: activeFilters
+
+Override to add MAF filter to active filters
+
+```js
+// type
+string[]
+```
+
+### LinearVariantDisplay - Methods
+
+#### method: filterMenuItems
+
+```js
+// type signature
+filterMenuItems: () => any[]
+```
+
+### LinearVariantDisplay - Actions
+
+#### action: setMafFilter
+
+```js
+// type signature
+setMafFilter: (value: number) => void
 ```

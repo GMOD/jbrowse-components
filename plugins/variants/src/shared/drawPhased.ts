@@ -18,6 +18,8 @@ export function drawPhased(
   PS?: string,
   drawReference = true,
   alpha = 1,
+  featureType = '',
+  featureStrand?: number,
 ) {
   const allele = +alleles[HP]!
   const c = allele
@@ -29,7 +31,33 @@ export function drawPhased(
       : undefined
   if (c) {
     ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
-    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+    if (featureType === 'inversion') {
+      if (featureStrand === 1) {
+        ctx.beginPath()
+        ctx.moveTo(x - f2, y - f2)
+        ctx.lineTo(x - f2, y + h + f2)
+        ctx.lineTo(x + w + f2, y + h / 2)
+        ctx.closePath()
+        ctx.fill()
+      } else {
+        ctx.beginPath()
+        ctx.moveTo(x + w + f2, y - f2)
+        ctx.lineTo(x + w + f2, y + h + f2)
+        ctx.lineTo(x - f2, y + h / 2)
+        ctx.closePath()
+        ctx.fill()
+      }
+    } else if (featureType === 'insertion') {
+      const widthExtension = 3
+      ctx.beginPath()
+      ctx.moveTo(x - f2 - widthExtension, y - f2)
+      ctx.lineTo(x + w + f2 + widthExtension, y - f2)
+      ctx.lineTo(x + w / 2, y + h + f2)
+      ctx.closePath()
+      ctx.fill()
+    } else {
+      ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
+    }
   }
   return c
 }

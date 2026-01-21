@@ -53,40 +53,48 @@ any
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: minorAlleleFrequencyFilter
+#### property: minorAlleleFrequencyFilterSetting
+
+When undefined, falls back to config value
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+IMaybe<ISimpleType<number>>
 // code
-minorAlleleFrequencyFilter: types.optional(types.number, 0)
+minorAlleleFrequencyFilterSetting: types.maybe(types.number)
 ```
 
 #### property: showSidebarLabelsSetting
 
+When undefined, falls back to config value
+
 ```js
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+IMaybe<ISimpleType<boolean>>
 // code
-showSidebarLabelsSetting: types.optional(types.boolean, true)
+showSidebarLabelsSetting: types.maybe(types.boolean)
 ```
 
-#### property: showTree
+#### property: showTreeSetting
+
+When undefined, falls back to config value
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+IMaybe<ISimpleType<boolean>>
 // code
-showTree: types.optional(types.boolean, true)
+showTreeSetting: types.maybe(types.boolean)
 ```
 
-#### property: renderingMode
+#### property: renderingModeSetting
+
+When undefined, falls back to config value
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+IMaybe<ISimpleType<string>>
 // code
-renderingMode: types.optional(types.string, 'alleleCount')
+renderingModeSetting: types.maybe(types.string)
 ```
 
 #### property: rowHeightMode
@@ -125,13 +133,15 @@ IMaybe<IArrayType<ISimpleType<string>>>
 jexlFilters: types.maybe(types.array(types.string))
 ```
 
-#### property: referenceDrawingMode
+#### property: referenceDrawingModeSetting
+
+When undefined, falls back to config value (showReferenceAlleles)
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+IMaybe<ISimpleType<string>>
 // code
-referenceDrawingMode: types.optional(types.string, 'skip')
+referenceDrawingModeSetting: types.maybe(types.string)
 ```
 
 #### property: clusterTree
@@ -166,11 +176,57 @@ lineZoneHeight: types.optional(types.number, 0)
 
 ### MultiVariantBaseModel - Getters
 
+#### getter: renderingMode
+
+Returns the effective rendering mode, falling back to config
+
+```js
+// type
+string
+```
+
 #### getter: autoHeight
 
 ```js
 // type
 boolean
+```
+
+#### getter: minorAlleleFrequencyFilter
+
+Returns the effective minor allele frequency filter, falling back to config
+
+```js
+// type
+any
+```
+
+#### getter: showSidebarLabels
+
+Returns the effective showSidebarLabels setting, falling back to config
+
+```js
+// type
+any
+```
+
+#### getter: showTree
+
+Returns the effective showTree setting, falling back to config
+
+```js
+// type
+any
+```
+
+#### getter: referenceDrawingMode
+
+Returns the effective reference drawing mode, derived from config
+showReferenceAlleles
+
+```js
+// type
+string
 ```
 
 #### getter: activeFilters
@@ -184,7 +240,7 @@ any
 
 ```js
 // type
-any[]
+Source[]
 ```
 
 #### getter: root
@@ -198,7 +254,7 @@ any
 
 ```js
 // type
-any
+{ [k: string]: Source; }
 ```
 
 #### getter: availableHeight
@@ -235,7 +291,7 @@ any
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: totalHeight
@@ -272,7 +328,7 @@ trackMenuItems: () => any[]
 
 ```js
 // type signature
-getPortableSettings: () => { minorAlleleFrequencyFilter: number; showSidebarLabelsSetting: boolean; showTree: boolean; renderingMode: string; lengthCutoffFilter: number; jexlFilters: IMSTArray<ISimpleType<string>> & IStateTreeNode<...>; ... 4 more ...; height: number; }
+getPortableSettings: () => { minorAlleleFrequencyFilter: any; showSidebarLabelsSetting: boolean; showTree: any; renderingMode: string; lengthCutoffFilter: number; jexlFilters: IMSTArray<ISimpleType<string>> & IStateTreeNode<...>; ... 4 more ...; height: number; }
 ```
 
 #### method: renderProps
@@ -280,6 +336,13 @@ getPortableSettings: () => { minorAlleleFrequencyFilter: number; showSidebarLabe
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderingProps
+
+```js
+// type signature
+renderingProps: () => { displayModel: { [x: string]: any; heightPreConfig: number; userBpPerPxLimit: number; userByteSizeLimit: number; blockState: IMSTMap<IModelType<{ key: ISimpleType<string>; region: IType<...>; reloadFlag: IType<...>; isLeftEndOfDisplayedRegion: IType<...>; isRightEndOfDisplayedRegion: IType<...>; }, { ...; } &...
 ```
 
 #### method: legendItems
@@ -347,6 +410,13 @@ setTreeAreaWidth: (width: number) => void
 ```js
 // type signature
 setFeatures: (f: Feature[]) => void
+```
+
+#### action: setColorByApplied
+
+```js
+// type signature
+setColorByApplied: (value: boolean) => void
 ```
 
 #### action: setLayout

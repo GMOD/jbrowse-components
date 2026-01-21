@@ -28,7 +28,6 @@ export async function runIxIxx({
   prefixSize?: number
   quiet?: boolean
 }): Promise<void> {
-  console.error(`[DEBUG] runIxIxx starting: name=${name}`)
   const progressBar = new SingleBar(
     { format: '{bar} Sorting and writing index...', etaBuffer: 2000 },
     Presets.shades_classic,
@@ -40,11 +39,8 @@ export async function runIxIxx({
 
   const ixPath = path.join(outLocation, 'trix', `${name}.ix`)
   const ixxPath = path.join(outLocation, 'trix', `${name}.ixx`)
-  console.error(`[DEBUG] Calling ixIxxStream: ix=${ixPath}, ixx=${ixxPath}`)
 
   await ixIxxStream(readStream, ixPath, ixxPath, prefixSize)
-
-  console.error(`[DEBUG] ixIxxStream completed`)
 
   if (!quiet) {
     progressBar.update(1)
@@ -148,11 +144,6 @@ export async function indexDriver({
   assemblyNames: string[]
   prefixSize?: number
 }): Promise<void> {
-  console.error(
-    `[DEBUG] indexDriver starting: name=${name}, outLocation=${outLocation}`,
-  )
-  console.error(`[DEBUG] trackConfigs count: ${trackConfigs.length}`)
-
   const readStream = Readable.from(
     indexFiles({
       trackConfigs,
@@ -163,8 +154,6 @@ export async function indexDriver({
     }),
   )
 
-  console.error(`[DEBUG] Created readStream from indexFiles, calling runIxIxx`)
-
   await runIxIxx({
     readStream,
     outLocation,
@@ -172,8 +161,6 @@ export async function indexDriver({
     prefixSize,
     quiet,
   })
-
-  console.error(`[DEBUG] runIxIxx completed, generating meta`)
 
   await generateMeta({
     configs: trackConfigs,
@@ -183,8 +170,6 @@ export async function indexDriver({
     featureTypesToExclude: typesToExclude,
     assemblyNames,
   })
-
-  console.error(`[DEBUG] indexDriver completed`)
 }
 
 export function prepareFileTrackConfigs(

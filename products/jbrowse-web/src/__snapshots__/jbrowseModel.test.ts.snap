@@ -3067,6 +3067,29 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox_del_sv",
       "type": "VariantTrack",
     },
+    {
+      "adapter": {
+        "samplesTsvLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sv.samples.tsv",
+        },
+        "type": "VcfTabixAdapter",
+        "uri": "volvox.sv.vcf.gz",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "displays": [
+        {
+          "colorBy": "population",
+          "showReferenceAlleles": true,
+          "type": "MultiLinearVariantDisplay",
+        },
+      ],
+      "name": "volvox multi-sample sv",
+      "trackId": "volvox multi-sample sv",
+      "type": "VariantTrack",
+    },
   ],
 }
 `;

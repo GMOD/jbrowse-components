@@ -2186,7 +2186,6 @@
       },
       "assemblyNames": ["volvox_del", "volvox"]
     },
-
     {
       "type": "SyntenyTrack",
       "trackId": "volvox_ins.pif",
@@ -2419,6 +2418,27 @@
         }
       },
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox multi-sample sv",
+      "name": "volvox multi-sample sv",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "volvox.sv.vcf.gz",
+        "samplesTsvLocation": {
+          "uri": "volvox.sv.samples.tsv",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox"],
+      "displays": [
+        {
+          "type": "MultiLinearVariantDisplay",
+          "showReferenceAlleles": true,
+          "colorBy": "population"
+        }
+      ]
     }
   ],
   "plugins": [

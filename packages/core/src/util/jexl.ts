@@ -43,6 +43,7 @@ export default function JexlF(/* config?: any*/) {
   j.addFunction('charAt', (s: string, index: number) => s.charAt(index))
   j.addFunction('charCodeAt', (s: string, index: number) => s.charCodeAt(index))
   j.addFunction('codePointAt', (s: string, pos: number) => s.codePointAt(pos))
+  j.addFunction('includes', (s: string, search: string) => s.includes(search))
   j.addFunction('startsWith', (s: string, search: string, len?: number) =>
     s.startsWith(search, len),
   )

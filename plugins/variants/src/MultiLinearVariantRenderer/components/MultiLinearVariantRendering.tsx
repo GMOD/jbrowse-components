@@ -31,6 +31,10 @@ interface MultiVariantDisplayModel {
   setHoveredGenotype?: (genotype?: Record<string, unknown>) => void
 }
 
+interface RenderingProps {
+  onFeatureClick?: (event: React.MouseEvent, featureId: string) => void
+}
+
 const MultiVariantRendering = observer(function MultiVariantRendering(props: {
   regions: Region[]
   features: Map<string, Feature>
@@ -44,6 +48,7 @@ const MultiVariantRendering = observer(function MultiVariantRendering(props: {
   flatbush: any
   items: Item[]
   displayModel: MultiVariantDisplayModel
+  renderingProps?: RenderingProps
 }) {
   const {
     flatbush,
@@ -52,6 +57,7 @@ const MultiVariantRendering = observer(function MultiVariantRendering(props: {
     featureGenotypeMap,
     totalHeight,
     origScrollTop,
+    renderingProps,
   } = props
   const ref = useRef<HTMLDivElement>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
@@ -117,12 +123,47 @@ const MultiVariantRendering = observer(function MultiVariantRendering(props: {
     }
   }, [displayModel])
 
+  const getFeatureIdUnderMouse = useCallback(
+    (eventClientX: number, eventClientY: number) => {
+      if (!ref.current) {
+        return undefined
+      }
+      const rect = ref.current.getBoundingClientRect()
+      const offsetX = eventClientX - rect.left
+      const offsetY = eventClientY - rect.top
+      const canvasOffsetY = offsetY - origScrollTop
+      const x = flatbush2.search(
+        offsetX,
+        canvasOffsetY,
+        offsetX + 1,
+        canvasOffsetY + 1,
+      )
+      if (x.length) {
+        const res = minElt(x, idx => items[idx]?.bpLen ?? 0)!
+        return items[res]?.featureId
+      }
+      return undefined
+    },
+    [flatbush2, items, origScrollTop],
+  )
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const featureId = getFeatureIdUnderMouse(e.clientX, e.clientY)
+      if (featureId) {
+        renderingProps?.onFeatureClick?.(e, featureId)
+      }
+    },
+    [getFeatureIdUnderMouse, renderingProps],
+  )
+
   return (
     <div
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseOut={handleMouseLeave}
+      onClick={handleClick}
       style={{
         overflow: 'visible',
         position: 'relative',

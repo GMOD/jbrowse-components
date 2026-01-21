@@ -98,7 +98,7 @@ jexlFilters: types.maybe(types.array(types.string))
 
 ```js
 // type
-any
+string[]
 ```
 
 #### getter: rendererTypeName
@@ -188,6 +188,13 @@ renderProps: () => {
 ```js
 // type signature
 renderingProps: () => { onFeatureClick(_: unknown, featureId?: string): Promise<void>; onFeatureContextMenu(_: unknown, featureId?: string): Promise<void>; displayModel: { [x: string]: any; ... 6 more ...; showTooltips: boolean; } & ... 17 more ... & IStateTreeNode<...>; onMouseMove(_: unknown, featureId?: string): void; onMouseLea...
+```
+
+#### method: filterMenuItems
+
+```js
+// type signature
+filterMenuItems: () => MenuItem[]
 ```
 
 #### method: trackMenuItems

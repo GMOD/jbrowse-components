@@ -173,7 +173,14 @@ boolean
 
 ```js
 // type
-any
+{
+  height: any
+  noSpacing: any
+  maxHeight: any
+  hideSmallIndels: any
+  hideMismatches: any
+  hideLargeIndels: any
+}
 ```
 
 #### getter: maxHeight
@@ -184,6 +191,13 @@ any
 ```
 
 #### getter: featureHeightSetting
+
+```js
+// type
+any
+```
+
+#### getter: noSpacingSetting
 
 ```js
 // type

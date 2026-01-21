@@ -1,3 +1,4 @@
+import { setupColorByAutorun } from './colorByAutorun.ts'
 import { getMultiVariantFeaturesAutorun } from './getMultiVariantFeaturesAutorun.ts'
 import { getMultiVariantSourcesAutorun } from './getMultiVariantSourcesAutorun.ts'
 import { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
@@ -12,4 +13,5 @@ export function setupMultiVariantAutoruns(self: MultiVariantBaseModel) {
   getMultiVariantSourcesAutorun(self)
   getMultiVariantFeaturesAutorun(self)
   setupTreeDrawingAutorun(self)
+  setupColorByAutorun(self)
 }

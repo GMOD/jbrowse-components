@@ -79,6 +79,16 @@ any
 AbstractTrackModel
 ```
 
+#### getter: isMinimized
+
+Returns true if the parent track is minimized. Used to skip expensive operations
+like autoruns when track is not visible.
+
+```js
+// type
+any
+```
+
 #### getter: parentDisplay
 
 Returns the parent display if this display is nested within another display
@@ -148,7 +158,7 @@ callbacks
 
 ```js
 // type signature
-renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & { readonly RenderingComponent: React.FC<...>; ... 4 more ...; readonly effectiveRpcDriverName: any; } & IStateTreeNode<...>; }
+renderingProps: () => { displayModel: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; statusMessage: string; } & { readonly RenderingComponent: React.FC<...>; ... 5 more ...; readonly effectiveRpcDriverName: any; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
