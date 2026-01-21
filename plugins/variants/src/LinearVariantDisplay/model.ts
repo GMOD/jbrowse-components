@@ -77,11 +77,11 @@ export default function stateModelFactory(
         },
 
         /**
-         * #getter
+         * #method
          * Override to add MAF filter to active filters
          */
-        get activeFilters(): string[] {
-          const filters = [...superActiveFilters]
+        activeFilters(): string[] {
+          const filters = [...superActiveFilters()]
           if (self.minorAlleleFrequencyFilter > 0) {
             filters.push(
               `jexl:maf(feature) >= ${self.minorAlleleFrequencyFilter}`,

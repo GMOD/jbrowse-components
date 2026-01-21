@@ -3093,6 +3093,34 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "trackId": "volvox multi-sample sv",
       "type": "VariantTrack",
     },
+    {
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "volvox.test.vcf.gz",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Variants",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
+          "jexlFilters": [
+            "get(feature,'start')<8000",
+          ],
+          "renderer": {
+            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'",
+            "type": "CanvasFeatureRenderer",
+          },
+          "type": "LinearVariantDisplay",
+        },
+      ],
+      "name": "volvox 1000genomes vcf (JEXL filters + coloring)",
+      "trackId": "volvox_test_vcf_jexl",
+      "type": "VariantTrack",
+    },
   ],
 }
 `;

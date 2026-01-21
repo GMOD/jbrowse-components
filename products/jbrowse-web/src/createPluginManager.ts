@@ -76,7 +76,13 @@ export function createPluginManager(
     // in order: saves the previous autosave for recovery, tries to load the
     // local session if session in query, or loads the default session
     try {
-      const { sessionError, sessionSpec, sessionSnapshot, hubSpec } = model
+      const {
+        sessionError,
+        sessionSpec,
+        sessionSnapshot,
+        hubSpec,
+        sessionName,
+      } = model
       if (sessionError) {
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw sessionError
@@ -106,13 +112,18 @@ export function createPluginManager(
           })
         rootModel.setSession(sessionSnapshot)
       } else if (hubSpec) {
-        // @ts-expect-error
-        afterInitializedCb = () => loadHubSpec(hubSpec, pluginManager)
+        afterInitializedCb = () =>
+          // @ts-expect-error
+          loadHubSpec({ ...hubSpec, sessionName }, pluginManager)
       } else if (sessionSpec) {
-        // @ts-expect-error
-        afterInitializedCb = () => loadSessionSpec(sessionSpec, pluginManager)
+        afterInitializedCb = () =>
+          // @ts-expect-error
+          loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
       } else {
         rootModel.setDefaultSession()
+        if (sessionName) {
+          rootModel.renameCurrentSession(sessionName)
+        }
       }
     } catch (e) {
       rootModel.setDefaultSession()

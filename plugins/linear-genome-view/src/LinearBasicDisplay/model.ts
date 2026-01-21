@@ -125,6 +125,30 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .views(self => {
+      const { filterMenuItems: superFilterMenuItems } = self
+      return {
+        filterMenuItems() {
+          const filters = self.activeFilters()
+          return [
+            {
+              label: 'Show only genes',
+              type: 'checkbox',
+              checked: filters.includes("jexl:get(feature,'type')=='gene'"),
+              onClick: () => {
+                const geneFilter = "jexl:get(feature,'type')=='gene'"
+                if (filters.includes(geneFilter)) {
+                  self.setJexlFilters(filters.filter(f => f !== geneFilter))
+                } else {
+                  self.setJexlFilters([...filters, geneFilter])
+                }
+              },
+            },
+            ...superFilterMenuItems(),
+          ]
+        },
+      }
+    })
+    .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
         /**
@@ -179,30 +203,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   },
                 })),
               },
-            ]
-          }
-          const filtersMenu = findSubMenu(items, 'Filters')
-          if (filtersMenu) {
-            filtersMenu.subMenu = [
-              {
-                label: 'Show only genes',
-                type: 'checkbox',
-                checked: self.activeFilters.includes(
-                  "jexl:get(feature,'type')=='gene'",
-                ),
-                onClick: () => {
-                  const geneFilter = "jexl:get(feature,'type')=='gene'"
-                  const currentFilters = self.activeFilters
-                  if (currentFilters.includes(geneFilter)) {
-                    self.setJexlFilters(
-                      currentFilters.filter((f: string) => f !== geneFilter),
-                    )
-                  } else {
-                    self.setJexlFilters([...currentFilters, geneFilter])
-                  }
-                },
-              },
-              ...filtersMenu.subMenu,
             ]
           }
           return items
