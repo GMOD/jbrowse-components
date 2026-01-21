@@ -291,7 +291,7 @@ describe('GenBank export', () => {
     })
     expect(result).toMatchSnapshot()
     // Type should be truncated to 16 chars
-    expect(result).toContain('very_long_feature')
+    expect(result).toContain('very_long_featur')
     expect(result).not.toContain('very_long_feature_type_name')
   })
 
