@@ -2423,6 +2423,7 @@
       "type": "VariantTrack",
       "trackId": "volvox multi-sample sv",
       "name": "volvox multi-sample sv",
+      "category": ["Variants"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "volvox.sv.vcf.gz",

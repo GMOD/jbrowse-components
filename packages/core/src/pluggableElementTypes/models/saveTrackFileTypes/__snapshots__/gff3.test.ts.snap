@@ -1,31 +1,53 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`GFF3 export URL encodes special characters in attribute values 1`] = `
+"##gff-version 3
+chr1	.	gene	101	200	.	.	.	ID=test4;note2=contains%3Bsemicolon%3Dequals%2Ccomma%26ampersand%25percent;Note=has%09tab%0Anewline%0Dcarriage
+"
+`;
+
 exports[`GFF3 export can export a feature with a subfeature 1`] = `
 "##gff-version 3
 chr1	.	gene	101	900	.	.	.	ID=gene1
-chr1	.	exon	101	200	.	.	.	Parent=gene1;ID=exon1
-chr1	.	exon	801	900	.	.	.	Parent=gene1;ID=exon2"
+chr1	.	exon	101	200	.	.	.	ID=exon1;Parent=gene1
+chr1	.	exon	801	900	.	.	.	ID=exon2;Parent=gene1
+"
 `;
 
 exports[`GFF3 export can export a feature with multiple levels of subfeatures 1`] = `
 "##gff-version 3
 chr1	.	gene	101	900	.	.	.	ID=gene1
-chr1	.	mRNA	101	900	.	.	.	Parent=gene1;ID=mrna1
-chr1	.	exon	101	200	.	.	.	Parent=mrna1;ID=exon1
-chr1	.	exon	801	900	.	.	.	Parent=mrna1;ID=exon2"
+chr1	.	mRNA	101	900	.	.	.	ID=mrna1;Parent=gene1
+chr1	.	exon	101	200	.	.	.	ID=exon1;Parent=mrna1
+chr1	.	exon	801	900	.	.	.	ID=exon2;Parent=mrna1
+"
 `;
 
 exports[`GFF3 export can export a feature with score and strand 1`] = `
 "##gff-version 3
-chr1	.	gene	101	200	100	-	.	ID=test2"
+chr1	.	gene	101	200	100	-	.	ID=test2
+"
 `;
 
 exports[`GFF3 export can export a simple feature 1`] = `
 "##gff-version 3
-chr1	test	gene	101	200	.	.	.	ID=test;Name=gene1"
+chr1	test	gene	101	200	.	.	.	ID=test;Name=gene1
+"
+`;
+
+exports[`GFF3 export handles deeply nested subfeatures 1`] = `
+"##gff-version 3
+chr1	.	gene	1	10000	.	.	.	ID=gene1
+chr1	.	mRNA	1	10000	.	.	.	ID=mrna1;Parent=gene1
+chr1	.	exon	1	500	.	.	.	ID=exon1;Parent=mrna1
+chr1	.	CDS	101	400	.	.	0	ID=cds1;Parent=mrna1
+chr1	.	exon	9501	10000	.	.	.	ID=exon2;Parent=mrna1
+chr1	.	CDS	9501	9800	.	.	2	ID=cds2;Parent=mrna1
+"
 `;
 
 exports[`GFF3 export handles various attribute types 1`] = `
 "##gff-version 3
-chr1	.	tf_binding_site	101	200	.	.	.	ID=test3;Note=some note;Alias=a,b;custom={"foo":"bar"}"
+chr1	.	tf_binding_site	101	200	.	.	.	ID=test3;Note=some note;Alias=a,b;custom={"foo":"bar"}
+"
 `;

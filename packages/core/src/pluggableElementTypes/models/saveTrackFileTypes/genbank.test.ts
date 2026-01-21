@@ -1,5 +1,5 @@
 import { fetchSequence } from './fetchSequence.ts'
-import { stringifyGBK, formatFeatWithSubfeatures } from './genbank.ts'
+import { formatFeatWithSubfeatures, stringifyGBK } from './genbank.ts'
 import SimpleFeature from '../../../util/simpleFeature.ts'
 
 import type { AbstractSessionModel } from '../../../util/index.ts'
@@ -291,7 +291,7 @@ describe('GenBank export', () => {
     })
     expect(result).toMatchSnapshot()
     // Type should be truncated to 16 chars
-    expect(result).toContain('very_long_featur')
+    expect(result).toContain('very_long_feature')
     expect(result).not.toContain('very_long_feature_type_name')
   })
 

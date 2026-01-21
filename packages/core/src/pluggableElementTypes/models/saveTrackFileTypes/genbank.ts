@@ -187,5 +187,5 @@ export async function stringifyGBK({
       region: { assemblyName, start, end, refName },
     })) ?? ''
   const lines = features.map(feat => formatFeatWithSubfeatures(feat, start))
-  return [l1, l2, ...lines, ...formatOrigin(contig)].join('\n')
+  return `${[l1, l2, ...lines, ...formatOrigin(contig)].join('\n')}\n`
 }

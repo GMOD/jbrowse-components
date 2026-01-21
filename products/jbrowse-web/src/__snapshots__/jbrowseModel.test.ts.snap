@@ -3079,6 +3079,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "category": [
+        "Variants",
+      ],
       "displays": [
         {
           "colorBy": "population",

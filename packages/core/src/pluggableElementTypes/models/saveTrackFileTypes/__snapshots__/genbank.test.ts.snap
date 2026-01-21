@@ -28,7 +28,8 @@ ORIGIN
       841 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       901 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       961 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
-//"
+//
+"
 `;
 
 exports[`GenBank export can export a simple feature 1`] = `
@@ -41,7 +42,8 @@ FEATURES             Location/Qualifiers
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
-//"
+//
+"
 `;
 
 exports[`GenBank export formats ORIGIN section with proper line breaks for long sequences 1`] = `
@@ -53,7 +55,8 @@ ORIGIN
         1 acgtacgtac gtacgtacgt acgtacgtac gtacgtacgt acgtacgtac gtacgtacgt
        61 acgtacgtac gtacgtacgt acgtacgtac gtacgtacgt acgtacgtac gtacgtacgt
       121 acgtacgtac gtacgtacgt acgtacgtac
-//"
+//
+"
 `;
 
 exports[`GenBank export handles custom attributes 1`] = `
@@ -67,7 +70,8 @@ FEATURES             Location/Qualifiers
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
-//"
+//
+"
 `;
 
 exports[`GenBank export handles features on negative strand 1`] = `
@@ -83,7 +87,8 @@ FEATURES             Location/Qualifiers
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
-//"
+//
+"
 `;
 
 exports[`GenBank export handles mRNA with only exons (no CDS) 1`] = `
@@ -104,7 +109,8 @@ ORIGIN
       361 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       421 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       481 aaaaaaaaaa aaaaaaaaaa
-//"
+//
+"
 `;
 
 exports[`GenBank export handles multiple top-level features 1`] = `
@@ -120,7 +126,8 @@ ORIGIN
       121 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       181 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       241 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
-//"
+//
+"
 `;
 
 exports[`GenBank export handles single CDS without join() wrapper 1`] = `
@@ -138,7 +145,8 @@ ORIGIN
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       121 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       181 aaaaaaaaaa aaaaaaaaaa
-//"
+//
+"
 `;
 
 exports[`GenBank export truncates long feature type names to 16 characters 1`] = `
@@ -149,5 +157,6 @@ FEATURES             Location/Qualifiers
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
-//"
+//
+"
 `;

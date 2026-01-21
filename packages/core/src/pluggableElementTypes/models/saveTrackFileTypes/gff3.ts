@@ -2,6 +2,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 const coreFields = new Set([
   'uniqueId',
+  'id',
   'refName',
   'source',
   'type',
@@ -17,10 +18,8 @@ const coreFields = new Set([
 ])
 
 const retitle = {
-  id: 'ID',
   name: 'Name',
   alias: 'Alias',
-  parent: 'Parent',
   target: 'Target',
   gap: 'Gap',
   derives_from: 'Derives_from',
@@ -31,32 +30,57 @@ const retitle = {
   is_circular: 'Is_circular',
 } as Record<string, string>
 
-function fmt(obj: unknown): string {
-  if (Array.isArray(obj)) {
-    return obj.map(o => fmt(o)).join(',')
-  } else if (typeof obj === 'object' && obj !== null) {
-    return JSON.stringify(obj)
-  } else {
-    return String(obj)
+function encodeGFF3Value(str: string): string {
+  return str
+    .replace(/%/g, '%25')
+    .replace(/;/g, '%3B')
+    .replace(/=/g, '%3D')
+    .replace(/&/g, '%26')
+    .replace(/,/g, '%2C')
+    .replace(/\t/g, '%09')
+    .replace(/\n/g, '%0A')
+    .replace(/\r/g, '%0D')
+}
+
+function fmt(obj: unknown): string | undefined {
+  if (obj === null || obj === undefined) {
+    return undefined
   }
+  if (Array.isArray(obj)) {
+    const items = obj.map(o => fmt(o)).filter(o => o !== undefined)
+    return items.length > 0 ? items.join(',') : undefined
+  }
+  if (typeof obj === 'object') {
+    return encodeGFF3Value(JSON.stringify(obj))
+  }
+  return encodeGFF3Value(String(obj))
 }
 
 function formatAttributes(f: Feature, parentId?: string) {
-  const attributes = []
+  const attributes: string[] = []
+
+  const id = f.get('id')
+  if (id) {
+    attributes.push(`ID=${encodeGFF3Value(String(id))}`)
+  }
+
   if (parentId) {
-    attributes.push(`Parent=${parentId}`)
+    attributes.push(`Parent=${encodeGFF3Value(String(parentId))}`)
   }
 
   const tags = Object.keys(f.toJSON()).filter(tag => !coreFields.has(tag))
+  const hasDescription = tags.includes('description')
+  const hasNote = tags.includes('note')
 
   for (const tag of tags) {
     const val = f.get(tag)
-    if (val !== undefined && val !== null) {
-      const formattedVal = fmt(val)
-      if (formattedVal) {
-        const key = retitle[tag] || tag
-        attributes.push(`${key}=${formattedVal}`)
+    const formattedVal = fmt(val)
+    if (formattedVal) {
+      let key = retitle[tag] || tag
+      if (tag === 'note' && hasDescription && hasNote) {
+        key = 'note2'
       }
+      attributes.push(`${key}=${formattedVal}`)
     }
   }
   return attributes.join(';')
@@ -96,8 +120,8 @@ export function formatMultiLevelFeat(
 }
 
 export function stringifyGFF3({ features }: { features: Feature[] }) {
-  return [
+  return `${[
     '##gff-version 3',
     ...features.map(f => formatMultiLevelFeat(f)),
-  ].join('\n')
+  ].join('\n')}\n`
 }
