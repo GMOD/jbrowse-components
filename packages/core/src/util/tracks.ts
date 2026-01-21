@@ -1,4 +1,9 @@
-import { getParent, isRoot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import {
+  getParent,
+  getSnapshot,
+  isRoot,
+  isStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 
 import {
   getFileHandle,
@@ -515,10 +520,20 @@ export function showTrackGeneric(
     return found
   }
 
-  const conf = session.getTracksById()[trackId]
-  if (!conf) {
+  const rawConf = session.getTracksById()[trackId]
+  if (!rawConf) {
     throw new Error(`Could not resolve identifier "${trackId}"`)
   }
+
+  // Allow plugins to preprocess the track config (e.g. to add default displays)
+  // Use getSnapshot for MST models, structuredClone for plain objects
+  const confSnapshot = isStateTreeNode(rawConf)
+    ? getSnapshot(rawConf)
+    : structuredClone(rawConf)
+  const conf = pluginManager.evaluateExtensionPoint(
+    'Core-preProcessTrackConfig',
+    confSnapshot,
+  ) as typeof rawConf
 
   const trackType = pluginManager.getTrackType(conf.type)
   if (!trackType) {
@@ -550,6 +565,13 @@ export function showTrackGeneric(
   // Generate displayId based on the actual display type being used
   const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
 
+  // Extract initial state properties from displayConf (excluding config-specific fields)
+  const {
+    type: _type,
+    displayId: _displayId,
+    ...displayConfState
+  } = displayConf ?? {}
+
   // Create track with just the trackId - the ConfigurationReference will resolve it
   const track = trackType.stateModel.create({
     ...initialSnapshot,
@@ -559,6 +581,7 @@ export function showTrackGeneric(
       {
         type: displayType,
         configuration: displayId,
+        ...displayConfState,
         ...displayInitialSnapshot,
       },
     ],

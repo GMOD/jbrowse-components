@@ -205,15 +205,19 @@ ctgA\ttest\tgene\t5000\t6000\t.\t+\t.\tID=gene3;Name=TestGene3
       const cmd = `npx jbrowse text-index --file http://localhost:${port}/test.gff3.gz --out ${outDir} --quiet`
       console.log(`[TEST] Command: ${cmd}`)
       const { stdout, stderr } = await new Promise((resolve, reject) => {
-        exec(cmd, { encoding: 'utf8', timeout: 60000 }, (error, stdout, stderr) => {
-          if (error) {
-            console.log(`[TEST] Command stderr: ${stderr}`)
-            console.log(`[TEST] Command stdout: ${stdout}`)
-            reject(error)
-          } else {
-            resolve({ stdout, stderr })
-          }
-        })
+        exec(
+          cmd,
+          { encoding: 'utf8', timeout: 60000 },
+          (error, stdout, stderr) => {
+            if (error) {
+              console.log(`[TEST] Command stderr: ${stderr}`)
+              console.log(`[TEST] Command stdout: ${stdout}`)
+              reject(error)
+            } else {
+              resolve({ stdout, stderr })
+            }
+          },
+        )
       })
       console.log(`[TEST] Command stdout: ${stdout}`)
       console.log(`[TEST] Command stderr: ${stderr}`)

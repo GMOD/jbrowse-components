@@ -4,6 +4,8 @@ export default {
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
     '^@jbrowse/core/ui/SanitizedHTML$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
+    '^@jbrowse/text-indexing-core$':
+      '<rootDir>/packages/text-indexing-core/src/index.ts',
   },
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.cjs',
