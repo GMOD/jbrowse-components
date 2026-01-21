@@ -32,10 +32,12 @@ export async function loadSessionSpec(
     views,
     sessionTracks = [],
     layout,
+    sessionName,
   }: {
     views: ViewSpec[]
     sessionTracks?: Record<string, unknown>[]
     layout?: LayoutNode
+    sessionName?: string
   },
   pluginManager: PluginManager,
 ) {
@@ -44,7 +46,7 @@ export async function loadSessionSpec(
   try {
     // @ts-expect-error
     rootModel.setSession({
-      name: `New session ${new Date().toLocaleString()}`,
+      name: sessionName ?? `New session ${new Date().toLocaleString()}`,
     })
 
     for (const track of sessionTracks) {

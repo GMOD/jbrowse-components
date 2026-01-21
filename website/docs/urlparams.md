@@ -159,6 +159,23 @@ above URL, looks like this when pretty-printed
 ]
 ```
 
+### &sessionName=
+
+Example
+
+`&sessionName=My%20Custom%20Session`
+
+Sets the session name displayed in the header bar. This parameter works with all
+session types including:
+
+- Default sessions (loaded from config)
+- Session specs (`&session=spec-...`)
+- Hub sessions (`&hubURL=...`)
+
+This is useful for giving meaningful names to sessions launched via URL, rather
+than using auto-generated names with timestamps. The value should be URL-encoded
+if it contains special characters or spaces.
+
 ## Session spec
 
 ### Linear genome view
@@ -195,6 +212,13 @@ As you can see, you can supply an array of views (so you can open multiple views
 at once) and can specify the loc, tracks, assembly, and view type, or other view
 specific parameters (different view types may accept different params, e.g.
 dotplot has two assemblies)
+
+You can also use `&sessionName=` with session specs to set a custom session
+name:
+
+```
+&session=spec-{...}&sessionName=My%20Analysis
+```
 
 #### Advanced track configuration
 

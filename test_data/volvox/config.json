@@ -2440,6 +2440,28 @@
           "colorBy": "population"
         }
       ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_test_vcf_jexl",
+      "name": "volvox 1000genomes vcf (JEXL filters + coloring)",
+      "assemblyNames": ["volvox"],
+      "category": ["Variants"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "volvox.test.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
+          "jexlFilters": ["get(feature,'start')<8000"],
+          "renderer": {
+            "type": "CanvasFeatureRenderer",
+            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
+          }
+        }
+      ]
     }
   ],
   "plugins": [

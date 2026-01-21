@@ -4,10 +4,12 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export async function loadHubSpec(
   {
     hubURL,
+    sessionName,
     // sessionTracks = [],
   }: {
     hubURL: string[]
     sessionTracks: Record<string, unknown>[]
+    sessionName?: string
   },
   pluginManager: PluginManager,
 ) {
@@ -27,7 +29,7 @@ export async function loadHubSpec(
 
     // @ts-expect-error
     rootModel.setSession({
-      name: sessionLabel || hubURL[0],
+      name: sessionName ?? sessionLabel ?? hubURL[0],
       sessionConnections: hubURL.map(r => ({
         type: 'UCSCTrackHubConnection',
         connectionId: r,

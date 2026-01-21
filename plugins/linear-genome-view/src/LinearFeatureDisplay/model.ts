@@ -17,7 +17,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { reaction } from 'mobx'
+import { reaction, toJS } from 'mobx'
 
 import { BaseLinearDisplay } from '../BaseLinearDisplay/index.ts'
 
@@ -76,7 +76,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        jexlFilters: types.maybe(types.array(types.string)),
+        jexlFiltersSetting: types.maybe(types.array(types.string)),
       }),
     )
     .volatile(() => ({
@@ -89,13 +89,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
     .views(self => ({
       /**
-       * #getter
+       * #method
        */
-      get activeFilters(): string[] {
-        // config jexlFilters are deferred evaluated so they are prepended with
+      activeFilters(): string[] {
+        // config jexlFiltersSetting are deferred evaluated so they are prepended with
         // jexl at runtime rather than being stored with jexl in the config
         return (
-          self.jexlFilters ??
+          toJS(self.jexlFiltersSetting) ??
           getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
         )
       },
@@ -181,7 +181,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       setJexlFilters(f?: string[]) {
-        self.jexlFilters = cast(f)
+        self.jexlFiltersSetting = cast(f)
       },
       /**
        * #action
@@ -239,7 +239,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ...(superProps as Omit<typeof superProps, symbol>),
             config: self.rendererConfig,
             filters: new SerializableFilterChain({
-              filters: self.activeFilters,
+              filters: self.activeFilters(),
             }),
             sequenceAdapter: self.sequenceAdapter,
           }
@@ -475,7 +475,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         trackShowDescriptions,
         trackDisplayMode,
         trackMaxHeight,
-        jexlFilters,
+        jexlFiltersSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -486,7 +486,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           : {}),
         ...(trackDisplayMode !== undefined ? { trackDisplayMode } : {}),
         ...(trackMaxHeight !== undefined ? { trackMaxHeight } : {}),
-        ...(jexlFilters?.length ? { jexlFilters } : {}),
+        ...(jexlFiltersSetting?.length ? { jexlFiltersSetting } : {}),
       } as typeof snap
     })
 }

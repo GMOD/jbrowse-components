@@ -437,9 +437,9 @@ export default function MultiVariantBaseModelF(
       },
 
       /**
-       * #getter
+       * #method
        */
-      get activeFilters() {
+      activeFilters() {
         // config jexlFilters are deferred evaluated so they are prepended with
         // jexl at runtime rather than being stored with jexl in the config
         return (
@@ -447,6 +447,10 @@ export default function MultiVariantBaseModelF(
           getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
         )
       },
+
+      /**
+       * #getter
+       */
       get sourcesWithoutLayout() {
         return self.sourcesVolatile
           ? getSources({
@@ -768,7 +772,7 @@ export default function MultiVariantBaseModelF(
           scrollTop: self.scrollTop,
           referenceDrawingMode: self.referenceDrawingMode,
           filters: new SerializableFilterChain({
-            filters: self.activeFilters,
+            filters: self.activeFilters(),
           }),
         }
       },

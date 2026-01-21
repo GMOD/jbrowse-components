@@ -30,25 +30,24 @@ const AddFiltersDialog = observer(function AddFiltersDialog({
 }: {
   model: {
     jexlFilters?: string[]
-    activeFilters: string[]
+    activeFilters: () => string[]
     setJexlFilters: (arg?: string[]) => void
   }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
   const { activeFilters } = model
-  const [data, setData] = useState(activeFilters.join('\n'))
+  const [data, setData] = useState(activeFilters().join('\n'))
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
     try {
-      data
+      for (const line of data
         .split('\n')
         .map(line => line.trim())
-        .filter(line => !!line)
-        .map(line => {
-          checkJexl(line.trim())
-        })
+        .filter(line => !!line)) {
+        checkJexl(line)
+      }
       setError(undefined)
     } catch (e) {
       console.error(e)

@@ -230,6 +230,9 @@ export function createBaseTrackModel(
       },
     }))
     .views(() => ({
+      /**
+       * #method
+       */
       saveTrackFileFormatOptions() {
         return {
           gff3: {
@@ -257,8 +260,8 @@ export function createBaseTrackModel(
        * #method
        */
       trackMenuItems(): MenuItem[] {
-        const menuItems: MenuItem[] = self.displays.flatMap(d =>
-          d.trackMenuItems(),
+        const menuItems = self.displays.flatMap(
+          d => d.trackMenuItems() as MenuItem[],
         )
         const shownId = self.displays[0].configuration.displayId
         const compatDisp = getCompatibleDisplays(self)

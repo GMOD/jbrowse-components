@@ -39,6 +39,7 @@ const paramsToDelete = [
   'tracklist',
   'nav',
   'highlight',
+  'sessionName',
 ] as const
 
 export function Loader({
@@ -62,6 +63,7 @@ export function Loader({
       highlight,
       nav,
       hubURL,
+      sessionName,
     } = readQueryParams([
       'config',
       'session',
@@ -75,6 +77,7 @@ export function Loader({
       'highlight',
       'nav',
       'hubURL',
+      'sessionName',
     ])
 
     return SessionLoader.create({
@@ -90,6 +93,7 @@ export function Loader({
       highlight,
       nav: JSON.parse(nav || 'true'),
       hubURL: hubURL?.split(','),
+      sessionName,
       initialTimestamp,
     })
   })
@@ -132,6 +136,7 @@ const Renderer = observer(function Renderer({
         highlight: loader.highlight,
         nav: loader.nav,
         hubURL: loader.hubURL,
+        sessionName: loader.sessionName,
         initialTimestamp: Date.now(),
         configSnapshot,
         sessionSnapshot,
