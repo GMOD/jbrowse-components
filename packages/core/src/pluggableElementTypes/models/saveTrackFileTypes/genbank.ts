@@ -12,6 +12,7 @@ import type { AbstractSessionModel, Feature } from '../../../util/index.ts'
 
 const coreFields = new Set([
   'uniqueId',
+  'id',
   'refName',
   'source',
   'type',
@@ -25,32 +26,46 @@ const coreFields = new Set([
   'phase',
 ])
 
+const TYPE_COLUMN_WIDTH = 16
+
 const blank = '                     '
 
 const retitle = {
   name: 'Name',
 } as Record<string, string | undefined>
 
-function fmt(obj: unknown): string {
-  if (Array.isArray(obj)) {
-    return obj.map(o => fmt(o)).join(',')
-  } else if (typeof obj === 'object') {
-    return JSON.stringify(obj)
-  } else {
-    return `${obj}`
+function fmt(obj: unknown): string | undefined {
+  if (obj === null || obj === undefined) {
+    return undefined
   }
+  if (Array.isArray(obj)) {
+    const items = obj.map(o => fmt(o)).filter(o => o !== undefined)
+    return items.length > 0 ? items.join(',') : undefined
+  }
+  if (typeof obj === 'object') {
+    return JSON.stringify(obj)
+  }
+  return `${obj}`
 }
 
 function formatTags(f: Feature, parentId?: string, parentType?: string) {
-  return [
-    parentId && parentType ? `${blank}/${parentType}="${parentId}"` : '',
-    f.get('id') ? `${blank}/name=${f.get('id')}` : '',
-    ...Object.keys(f.toJSON())
-      .filter(tag => !coreFields.has(tag))
-      .map(tag => [tag, fmt(f.get(tag))] as const)
-      .filter(tag => !!tag[1] && tag[0] !== parentType)
-      .map(tag => `${blank}/${retitle[tag[0]] || tag[0]}="${tag[1]}"`),
-  ].filter(f => !!f)
+  const tags: string[] = []
+  if (parentId && parentType) {
+    tags.push(`${blank}/${parentType}="${parentId}"`)
+  }
+  const id = f.get('id')
+  if (id) {
+    tags.push(`${blank}/name="${id}"`)
+  }
+  for (const key of Object.keys(f.toJSON())) {
+    if (!coreFields.has(key) && key !== parentType) {
+      const value = fmt(f.get(key))
+      if (value) {
+        tags.push(`${blank}/${retitle[key] || key}="${value}"`)
+      }
+    }
+  }
+  return tags
 }
 
 function relativeStart(f: Feature, min: number) {
@@ -68,11 +83,11 @@ function formatFeat(
   parentType?: string,
   parentId?: string,
 ) {
-  const type = `${f.get('type')}`.slice(0, 16)
+  const type = `${f.get('type')}`.slice(0, TYPE_COLUMN_WIDTH)
   const l = loc(f, min)
   const locstrand = f.get('strand') === -1 ? `complement(${l})` : l
   return [
-    `     ${type.padEnd(16)}${locstrand}`,
+    `     ${type.padEnd(TYPE_COLUMN_WIDTH)}${locstrand}`,
     ...formatTags(f, parentType, parentId),
   ]
 }
@@ -84,12 +99,16 @@ function formatCDS(
   strand: number,
   min: number,
 ) {
-  const cds = feats.map(f => loc(f, min))
-  const pre = `join(${cds})`
-  const str = strand === -1 ? `complement(${pre})` : pre
-  return feats.length
-    ? [`     ${'CDS'.padEnd(16)}${str}`, `${blank}/${parentType}="${parentId}"`]
-    : []
+  if (feats.length === 0) {
+    return []
+  }
+  const locs = feats.map(f => loc(f, min))
+  const locExpr = locs.length === 1 ? locs[0] : `join(${locs.join(',')})`
+  const strandExpr = strand === -1 ? `complement(${locExpr})` : locExpr
+  return [
+    `     ${'CDS'.padEnd(TYPE_COLUMN_WIDTH)}${strandExpr}`,
+    `${blank}/${parentType}="${parentId}"`,
+  ]
 }
 
 export function formatFeatWithSubfeatures(
@@ -100,20 +119,38 @@ export function formatFeatWithSubfeatures(
 ): string {
   const primary = formatFeat(feature, min, parentId, parentType)
   const subfeatures = feature.get('subfeatures') || []
-  const cds = subfeatures.filter(f => f.get('type') === 'CDS')
+  const cds = subfeatures
+    .filter(f => f.get('type') === 'CDS')
+    .sort((a, b) => a.get('start') - b.get('start'))
   const sansCDS = subfeatures.filter(
     f => f.get('type') !== 'CDS' && f.get('type') !== 'exon',
   )
   const newParentId = feature.get('id')
   const newParentType = feature.get('type')
   const newParentStrand = feature.get('strand')
+  const cdsLines =
+    cds.length > 0 && newParentId && newParentType
+      ? formatCDS(cds, newParentId, newParentType, newParentStrand, min)
+      : []
   return [
     ...primary,
-    ...formatCDS(cds, newParentId, newParentType, newParentStrand, min),
+    ...cdsLines,
     ...sansCDS.flatMap(sub =>
       formatFeatWithSubfeatures(sub, min, newParentId, newParentType),
     ),
   ].join('\n')
+}
+
+function formatOrigin(sequence: string): string[] {
+  const lines = ['ORIGIN']
+  for (let i = 0; i < sequence.length; i += 60) {
+    const pos = String(i + 1).padStart(9)
+    const chunk = sequence.slice(i, i + 60).toLowerCase()
+    const groups = chunk.match(/.{1,10}/g) || []
+    lines.push(`${pos} ${groups.join(' ')}`)
+  }
+  lines.push('//')
+  return lines
 }
 
 export async function stringifyGBK({
@@ -150,6 +187,5 @@ export async function stringifyGBK({
       region: { assemblyName, start, end, refName },
     })) ?? ''
   const lines = features.map(feat => formatFeatWithSubfeatures(feat, start))
-  const seqlines = ['ORIGIN', `\t1 ${contig}`, '//']
-  return [l1, l2, ...lines, ...seqlines].join('\n')
+  return `${[l1, l2, ...lines, ...formatOrigin(contig)].join('\n')}\n`
 }
