@@ -59,7 +59,7 @@
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
     "@node-oauth/oauth2-server": "^5.2.1",
-    "@types/body-parser": "^1.19.5",
+    "@types/body-parser": "^1.19.6",
     "@types/file-saver-es": "^2.0.3",
     "base64-js": "^1.5.1",
     "body-parser": "^2.2.2",
