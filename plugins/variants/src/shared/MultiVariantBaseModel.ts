@@ -29,6 +29,7 @@ import {
   getAltColorForDosage,
 } from './constants.ts'
 import { getSources } from './getSources.ts'
+import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
 import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 
 import type {
@@ -44,8 +45,10 @@ import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
-const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog.tsx'))
-const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
+const AddFiltersDialog = lazy(
+  () =>
+    import('@jbrowse/plugin-linear-genome-view/src/LinearFeatureDisplay/components/AddFiltersDialog'),
+)
 const ClusterDialog = lazy(
   () => import('./components/MultiVariantClusterDialog/ClusterDialog.tsx'),
 )
@@ -207,7 +210,9 @@ export default function MultiVariantBaseModelF(
        * Returns the effective rendering mode, falling back to config
        */
       get renderingMode(): string {
-        return self.renderingModeSetting ?? getConf(self, 'renderingMode')
+        return (
+          self.renderingModeSetting ?? getConf(self as any, 'renderingMode')
+        )
       },
     }))
     .actions(self => ({
@@ -275,7 +280,9 @@ export default function MultiVariantBaseModelF(
           clearTree &&
           self.clusterTree &&
           self.layout.length === layout.length &&
-          self.layout.some((source, idx) => source.name !== layout[idx]?.name)
+          self.layout.some(
+            (source: Source, idx: number) => source.name !== layout[idx]?.name,
+          )
 
         self.layout = layout
         if (orderChanged) {
@@ -488,7 +495,7 @@ export default function MultiVariantBaseModelF(
         get sourceMap() {
           return self.sources
             ? Object.fromEntries(
-                self.sources.map(source => [source.name, source]),
+                self.sources.map((source: Source) => [source.name, source]),
               )
             : undefined
         },
@@ -658,18 +665,7 @@ export default function MultiVariantBaseModelF(
               label: 'Filter by',
               icon: ClearAllIcon,
               subMenu: [
-                {
-                  label: 'Minor allele frequency',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      MAFFilterDialog,
-                      {
-                        model: self,
-                        handleClose,
-                      },
-                    ])
-                  },
-                },
+                createMAFFilterMenuItem(self),
                 {
                   label: 'Edit filters',
                   onClick: () => {

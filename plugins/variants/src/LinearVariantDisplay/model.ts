@@ -1,16 +1,11 @@
-import { lazy } from 'react'
-
-import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearFeatureDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
+import { createMAFFilterMenuItem } from '../shared/mafFilterUtils.ts'
+
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-
-const MAFFilterDialog = lazy(
-  () => import('../shared/components/MAFFilterDialog.tsx'),
-)
 
 /**
  * #stateModel LinearVariantDisplay
@@ -39,16 +34,30 @@ export default function stateModelFactory(
         /**
          * #property
          * Minor allele frequency filter threshold (0-0.5)
+         * When undefined, falls back to config value
          */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0),
+        minorAlleleFrequencyFilterSetting: types.maybe(types.number),
       }),
     )
+    .views(self => ({
+      /**
+       * #getter
+       * Gets the minor allele frequency filter threshold
+       * Falls back to config value if setting is not defined
+       */
+      get minorAlleleFrequencyFilter() {
+        return (
+          self.minorAlleleFrequencyFilterSetting ??
+          getConf(self, 'minorAlleleFrequencyFilter')
+        )
+      },
+    }))
     .actions(self => ({
       /**
        * #action
        */
       setMafFilter(value: number) {
-        self.minorAlleleFrequencyFilter = value
+        self.minorAlleleFrequencyFilterSetting = value
       },
     }))
     .views(self => {
@@ -66,6 +75,7 @@ export default function stateModelFactory(
             id: 'variantFeature',
           }
         },
+
         /**
          * #getter
          * Override to add MAF filter to active filters
@@ -83,21 +93,7 @@ export default function stateModelFactory(
          * #method
          */
         filterMenuItems() {
-          return [
-            ...superFilterMenuItems(),
-            {
-              label: 'Minor allele frequency',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  MAFFilterDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-          ]
+          return [...superFilterMenuItems(), createMAFFilterMenuItem(self)]
         },
       }
     })
@@ -106,13 +102,15 @@ export default function stateModelFactory(
       if (!snap) {
         return snap
       }
-      const { minorAlleleFrequencyFilter, ...rest } = snap as Omit<
+      const { minorAlleleFrequencyFilterSetting, ...rest } = snap as Omit<
         typeof snap,
         symbol
       >
       return {
         ...rest,
-        ...(minorAlleleFrequencyFilter ? { minorAlleleFrequencyFilter } : {}),
+        ...(minorAlleleFrequencyFilterSetting
+          ? { minorAlleleFrequencyFilterSetting }
+          : {}),
       } as typeof snap
     })
 }
