@@ -40,57 +40,56 @@ height: {
 #### slot: showReferenceAlleles
 
 When true, reference alleles are drawn/colored. When false, the background is
-solid grey and only ALT alleles are colored on top. Note: This setting is
-available for configuration consistency but is not used by the matrix renderer.
+solid grey and only ALT alleles are colored on top
 
 ```js
 showReferenceAlleles: {
-  type: 'boolean',
-  defaultValue: false,
-}
+        type: 'boolean',
+        defaultValue: false,
+      }
 ```
 
 #### slot: showSidebarLabels
 
 ```js
 showSidebarLabels: {
-  type: 'boolean',
-  defaultValue: true,
-}
+        type: 'boolean',
+        defaultValue: true,
+      }
 ```
 
 #### slot: showTree
 
 ```js
 showTree: {
-  type: 'boolean',
-  defaultValue: true,
-}
+        type: 'boolean',
+        defaultValue: true,
+      }
 ```
 
 #### slot: renderingMode
 
 The rendering mode: 'alleleCount' shows dosage (darker color for homozygous),
-'phased' splits samples into haplotype rows.
+'phased' splits samples into haplotype rows
 
 ```js
 renderingMode: {
-  type: 'stringEnum',
-  model: types.enumeration('RenderingMode', ['alleleCount', 'phased']),
-  defaultValue: 'alleleCount',
-}
+        type: 'stringEnum',
+        model: types.enumeration('RenderingMode', ['alleleCount', 'phased']),
+        defaultValue: 'alleleCount',
+      }
 ```
 
 #### slot: minorAlleleFrequencyFilter
 
 Filter variants by minor allele frequency (0-1). Variants with MAF below this
-threshold will be hidden.
+threshold will be hidden
 
 ```js
 minorAlleleFrequencyFilter: {
-  type: 'number',
-  defaultValue: 0,
-}
+        type: 'number',
+        defaultValue: 0,
+      }
 ```
 
 #### slot: colorBy
@@ -101,9 +100,9 @@ samplesTsvLocation on the adapter). Leave empty to disable auto-coloring.
 
 ```js
 colorBy: {
-  type: 'string',
-  defaultValue: '',
-}
+        type: 'string',
+        defaultValue: '',
+      }
 ```
 
 ### LinearVariantMatrixDisplay - Derives from

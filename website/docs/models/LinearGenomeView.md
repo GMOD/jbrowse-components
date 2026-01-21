@@ -584,6 +584,33 @@ string
 any
 ```
 
+#### getter: effectiveBpPerPx
+
+effective bpPerPx accounting for pending zoom target
+
+```js
+// type
+number
+```
+
+#### getter: effectiveTotalBp
+
+total bp based on effective bpPerPx (updates immediately on zoom click)
+
+```js
+// type
+number
+```
+
+#### getter: effectiveTotalBpDisplayStr
+
+display string for effective total bp (updates immediately on zoom click)
+
+```js
+// type
+any
+```
+
 #### getter: centerLineInfo
 
 ```js
@@ -747,6 +774,20 @@ setWidth: (newWidth: number) => void
 setError: (error: unknown) => void
 ```
 
+#### action: setIsScalebarRefNameMenuOpen
+
+```js
+// type signature
+setIsScalebarRefNameMenuOpen: (isOpen: boolean) => void
+```
+
+#### action: setScalebarRefNameClickPending
+
+```js
+// type signature
+setScalebarRefNameClickPending: (pending: boolean) => void
+```
+
 #### action: setHideHeader
 
 ```js
@@ -794,6 +835,15 @@ setHighlight: (highlight?: HighlightType[]) => void
 ```js
 // type signature
 removeHighlight: (highlight: HighlightType) => void
+```
+
+#### action: setVolatileGuides
+
+set temporary vertical guides (e.g., for LD display hover)
+
+```js
+// type signature
+setVolatileGuides: (guides: VolatileGuide[]) => void
 ```
 
 #### action: scrollTo
@@ -975,6 +1025,13 @@ setLastTrackDragY: (y: number) => void
 setScaleFactor: (factor: number) => void
 ```
 
+#### action: setTargetBpPerPx
+
+```js
+// type signature
+setTargetBpPerPx: (target: number) => void
+```
+
 #### action: clearView
 
 this "clears the view" and makes the view return to the import form
@@ -1078,7 +1135,7 @@ Throws an error if navigation was unsuccessful
 
 ```js
 // type signature
-navTo: (query: NavLocation) => void
+navTo: (query: NavLocation, grow?: number) => void
 ```
 
 #### action: navToMultiple
@@ -1092,5 +1149,5 @@ Throws an error if navigation was unsuccessful
 
 ```js
 // type signature
-navToMultiple: (locations: NavLocation[]) => void
+navToMultiple: (locations: NavLocation[], grow?: number) => void
 ```

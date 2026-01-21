@@ -211,7 +211,16 @@ any
 
 ```js
 // type
-any
+{
+  scaleType: any
+  filled: any
+  displayCrossHatches: any
+  summaryScoreMode: any
+  color: any
+  negColor: any
+  posColor: any
+  minSize: any
+}
 ```
 
 #### getter: autoscaleType
@@ -232,14 +241,14 @@ number[]
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: summaryScoreModeSetting
 
 ```js
 // type
-string
+any
 ```
 
 #### getter: scaleOpts
@@ -260,7 +269,7 @@ boolean
 
 ```js
 // type
-boolean
+any
 ```
 
 #### getter: hasResolution

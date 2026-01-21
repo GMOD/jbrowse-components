@@ -50,16 +50,13 @@ export async function getLocalOrRemoteStream({
   let receivedBytes = 0
 
   if (isURL(file)) {
-    console.error(`[DEBUG] Fetching remote file: ${file}`)
     const res = await fetch(file)
-    console.error(`[DEBUG] Fetch response status: ${res.status}`)
     if (!res.ok) {
       throw new Error(
         `Failed to fetch ${file} status ${res.status} ${await res.text()}`,
       )
     }
     const totalBytes = +(res.headers.get('Content-Length') || 0)
-    console.error(`[DEBUG] Content-Length: ${totalBytes}`)
     onStart(totalBytes)
 
     const body = res.body
@@ -70,18 +67,8 @@ export async function getLocalOrRemoteStream({
 
     body.on('data', chunk => {
       receivedBytes += chunk.length
-      console.error(
-        `[DEBUG] Received chunk: ${chunk.length} bytes, total: ${receivedBytes}`,
-      )
+
       onUpdate(receivedBytes)
-    })
-
-    body.on('end', () => {
-      console.error(`[DEBUG] Body stream ended, total bytes: ${receivedBytes}`)
-    })
-
-    body.on('error', err => {
-      console.error(`[DEBUG] Body stream error:`, err)
     })
 
     return body as unknown as Readable
@@ -108,19 +95,11 @@ export function createReadlineInterface(
   stream: Readable,
   inLocation: string,
 ): readline.Interface {
-  console.error(`[DEBUG] createReadlineInterface: inLocation=${inLocation}`)
   const isGzipped = /.b?gz$/.exec(inLocation)
-  console.error(`[DEBUG] Is gzipped: ${!!isGzipped}`)
 
   let inputStream: Readable
   if (isGzipped) {
     const gunzip = createGunzip()
-    gunzip.on('error', err => {
-      console.error(`[DEBUG] Gunzip error:`, err)
-    })
-    gunzip.on('end', () => {
-      console.error(`[DEBUG] Gunzip stream ended`)
-    })
     inputStream = stream.pipe(gunzip)
   } else {
     inputStream = stream
@@ -129,11 +108,6 @@ export function createReadlineInterface(
   const rl = readline.createInterface({
     input: inputStream,
   })
-
-  rl.on('close', () => {
-    console.error(`[DEBUG] Readline interface closed`)
-  })
-
   return rl
 }
 

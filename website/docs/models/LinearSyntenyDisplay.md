@@ -55,6 +55,28 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 colorBy: types.optional(types.string, 'default')
 ```
 
+#### property: alpha
+
+alpha transparency value for synteny drawing (0-1)
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+alpha: types.optional(types.number, 0.2)
+```
+
+#### property: minAlignmentLength
+
+minimum alignment length to display (in bp)
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+minAlignmentLength: types.optional(types.number, 0)
+```
+
 ### LinearSyntenyDisplay - Getters
 
 #### getter: adapterConfig
@@ -92,6 +114,60 @@ boolean
 ```js
 // type
 any
+```
+
+#### getter: colorSchemeConfig
+
+cached color scheme config based on colorBy
+
+```js
+// type
+{ cigarColors: { I: string; N: string; D: string; X: string; M: string; '=': string; }; }
+```
+
+#### getter: colorMapWithAlpha
+
+cached CIGAR colors with alpha applied
+
+```js
+// type
+{ I: any; N: any; D: any; X: any; M: any; '=': any; }
+```
+
+#### getter: posColorWithAlpha
+
+cached positive strand color with alpha
+
+```js
+// type
+any
+```
+
+#### getter: negColorWithAlpha
+
+cached negative strand color with alpha
+
+```js
+// type
+any
+```
+
+#### getter: queryColorWithAlphaMap
+
+cached query colors with alpha - returns a function that caches results
+
+```js
+// type
+(queryName: string) => string
+```
+
+#### getter: queryTotalLengths
+
+cached query total lengths for minAlignmentLength filtering
+
+```js
+// type
+Map<string, number>
 ```
 
 ### LinearSyntenyDisplay - Actions

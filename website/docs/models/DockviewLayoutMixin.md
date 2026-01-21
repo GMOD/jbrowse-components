@@ -50,6 +50,17 @@ panelViewAssignments: types.optional(
       )
 ```
 
+#### property: init
+
+Initial layout configuration from URL params. Processed once then cleared.
+
+```js
+// type signature
+IType<DockviewLayoutNode, DockviewLayoutNode, DockviewLayoutNode>
+// code
+init: types.frozen<DockviewLayoutNode | undefined>()
+```
+
 #### property: activePanelId
 
 The currently active panel ID in dockview
@@ -90,6 +101,15 @@ Set the active panel ID
 ```js
 // type signature
 setActivePanelId: (panelId: string) => void
+```
+
+#### action: setInit
+
+Set the initial layout configuration (from URL params)
+
+```js
+// type signature
+setInit: (init: DockviewLayoutNode) => void
 ```
 
 #### action: assignViewToPanel

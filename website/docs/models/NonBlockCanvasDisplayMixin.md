@@ -50,6 +50,15 @@ Set the offsetPx at which the canvas was rendered
 setLastDrawnOffsetPx: (n: number) => void
 ```
 
+#### action: setLastDrawnBpPerPx
+
+Set the bpPerPx at which the canvas was rendered
+
+```js
+// type signature
+setLastDrawnBpPerPx: (n: number) => void
+```
+
 #### action: setLoading
 
 Set loading state

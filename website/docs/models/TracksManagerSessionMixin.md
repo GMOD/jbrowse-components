@@ -49,11 +49,15 @@ additional assemblies (e.g. sessionAssemblies).
 ;[]
 ```
 
-#### getter: tracksById
+### TracksManagerSessionMixin - Methods
+
+#### method: getTracksById
+
+Method to get tracks by ID. Includes tracks from connections if present.
 
 ```js
-// type
-Record<string, AnyConfigurationModel>
+// type signature
+getTracksById: () => Record<string, AnyConfigurationModel>
 ```
 
 ### TracksManagerSessionMixin - Actions
