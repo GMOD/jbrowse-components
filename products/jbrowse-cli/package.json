@@ -32,7 +32,7 @@
     "prebuild": "pnpm clean",
     "build": "tsc && webpack -c webpack.config.mjs",
     "clean": "rimraf bundle",
-    "prepublishOnly": "node output-version.js > src/version.ts",
+    "prepublishOnly": "node output-version.js > src/version.ts && git add -A src && git commit -m '[skip ci] Bump version.ts'",
     "prepack": "pnpm clean && pnpm build && pnpm generate-readme",
     "generate-readme": "./generate_readme.sh > README.md"
   },
