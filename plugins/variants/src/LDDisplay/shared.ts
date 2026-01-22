@@ -3,12 +3,13 @@ import type React from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
   NonBlockCanvasDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
@@ -105,6 +106,13 @@ export default function sharedModelFactory(
         /**
          * #property
          * When undefined, falls back to config value
+         * Call rate filter threshold (0-1). Variants with fewer than this
+         * proportion of non-missing genotypes are excluded.
+         */
+        callRateFilterSetting: types.maybe(types.number),
+        /**
+         * #property
+         * When undefined, falls back to config value
          * Whether to show vertical guides at the connected genome positions on hover
          */
         showVerticalGuidesSetting: types.maybe(types.boolean),
@@ -127,6 +135,18 @@ export default function sharedModelFactory(
          * rather than uniform squares
          */
         useGenomicPositionsSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         * When undefined, falls back to config value
+         * When true, show signed LD values (-1 to 1) instead of absolute values
+         */
+        signedLDSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         * When undefined, falls back to config value
+         * JEXL filter expressions to apply to variants
+         */
+        jexlFiltersSetting: types.maybe(types.array(types.string)),
       }),
     )
     .volatile(() => ({
@@ -272,6 +292,12 @@ export default function sharedModelFactory(
       /**
        * #action
        */
+      setCallRateFilter(threshold: number) {
+        self.callRateFilterSetting = threshold
+      },
+      /**
+       * #action
+       */
       setFilterStats(stats: typeof self.filterStats) {
         self.filterStats = stats
       },
@@ -304,6 +330,18 @@ export default function sharedModelFactory(
        */
       setUseGenomicPositions(value: boolean) {
         self.useGenomicPositionsSetting = value
+      },
+      /**
+       * #action
+       */
+      setSignedLD(value: boolean) {
+        self.signedLDSetting = value
+      },
+      /**
+       * #action
+       */
+      setJexlFilters(filters: string[] | undefined) {
+        self.jexlFiltersSetting = cast(filters)
       },
     }))
     .views(self => ({
@@ -433,6 +471,13 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
+       * Returns the effective call rate filter threshold, falling back to config
+       */
+      get callRateFilter() {
+        return self.callRateFilterSetting ?? getConf(self, 'callRateFilter')
+      },
+      /**
+       * #getter
        * Returns the effective show vertical guides setting, falling back to config
        */
       get showVerticalGuides() {
@@ -465,6 +510,33 @@ export default function sharedModelFactory(
         )
       },
       /**
+       * #getter
+       * Returns the effective signed LD setting, falling back to config
+       */
+      get signedLD() {
+        return self.signedLDSetting ?? getConf(self, 'signedLD')
+      },
+      /**
+       * #getter
+       * Returns the effective jexl filters, falling back to config
+       */
+      get jexlFilters() {
+        return self.jexlFiltersSetting ?? getConf(self, 'jexlFilters')
+      },
+      /**
+       * #getter
+       * Returns true if this display uses pre-computed LD data (PLINK, ldmat)
+       * rather than computing LD from VCF genotypes
+       */
+      get isPrecomputedLD() {
+        const adapterType = self.adapterConfig?.type as string | undefined
+        return (
+          adapterType === 'PlinkLDAdapter' ||
+          adapterType === 'PlinkLDTabixAdapter' ||
+          adapterType === 'LdmatAdapter'
+        )
+      },
+      /**
        * #method
        */
       regionCannotBeRendered() {
@@ -487,6 +559,41 @@ export default function sharedModelFactory(
         /**
          * #method
          */
+        filterMenuItems() {
+          // Filter settings only available for VCF-computed LD, not pre-computed
+          if (self.isPrecomputedLD) {
+            return []
+          }
+          return [
+            {
+              label: 'LD-specific filters...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  LDFilterDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+            {
+              label: 'General JEXL filters...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  AddFiltersDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+          ]
+        },
+        /**
+         * #method
+         */
         renderProps() {
           return {
             ...superRenderProps(),
@@ -498,10 +605,13 @@ export default function sharedModelFactory(
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             lengthCutoffFilter: self.lengthCutoffFilter,
             hweFilterThreshold: self.hweFilterThreshold,
+            callRateFilter: self.callRateFilter,
+            jexlFilters: self.jexlFilters,
             ldMetric: self.ldMetric,
             colorScheme: self.colorScheme,
             fitToHeight: self.fitToHeight,
             useGenomicPositions: self.useGenomicPositions,
+            signedLD: self.signedLD,
           }
         },
       }
@@ -599,20 +709,33 @@ export default function sharedModelFactory(
                     self.setUseGenomicPositions(!self.useGenomicPositions)
                   },
                 },
+                // Signed LD only available for VCF-computed LD, not pre-computed
+                ...(self.isPrecomputedLD
+                  ? []
+                  : [
+                      {
+                        label: 'Show signed LD values (-1 to 1)',
+                        helpText:
+                          "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
+                        type: 'checkbox',
+                        checked: self.signedLD,
+                        onClick: () => {
+                          self.setSignedLD(!self.signedLD)
+                        },
+                      },
+                    ]),
               ],
             },
-            {
-              label: 'Filter settings...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  LDFilterDialog,
+            // Filter menu only available for VCF-computed LD, not pre-computed
+            ...(self.isPrecomputedLD
+              ? []
+              : [
                   {
-                    model: self,
-                    handleClose,
+                    label: 'Filter by...',
+                    type: 'subMenu',
+                    subMenu: self.filterMenuItems(),
                   },
-                ])
-              },
-            },
+                ]),
           ]
         },
 
@@ -658,10 +781,13 @@ export default function sharedModelFactory(
         recombinationZoneHeightSetting,
         fitToHeightSetting,
         hweFilterThresholdSetting,
+        callRateFilterSetting,
         showVerticalGuidesSetting,
         showLabelsSetting,
         tickHeightSetting,
         useGenomicPositionsSetting,
+        signedLDSetting,
+        jexlFiltersSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -704,6 +830,9 @@ export default function sharedModelFactory(
         hweFilterThresholdSetting !== 0.001
           ? { hweFilterThresholdSetting }
           : {}),
+        ...(callRateFilterSetting !== undefined && callRateFilterSetting !== 0
+          ? { callRateFilterSetting }
+          : {}),
         ...(showVerticalGuidesSetting !== undefined &&
         !showVerticalGuidesSetting
           ? { showVerticalGuidesSetting }
@@ -718,6 +847,10 @@ export default function sharedModelFactory(
         useGenomicPositionsSetting
           ? { useGenomicPositionsSetting }
           : {}),
+        ...(signedLDSetting !== undefined && signedLDSetting
+          ? { signedLDSetting }
+          : {}),
+        ...(jexlFiltersSetting?.length ? { jexlFiltersSetting } : {}),
       } as typeof snap
     })
 }

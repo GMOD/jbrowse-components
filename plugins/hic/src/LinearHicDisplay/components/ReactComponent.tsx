@@ -100,6 +100,7 @@ const HicCanvas = observer(function HicCanvas({
     maxScore,
     colorScheme,
     useLogScale,
+    lastDrawnOffsetPx,
   } = model
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -131,7 +132,12 @@ const HicCanvas = observer(function HicCanvas({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const screenX = event.clientX - rect.left
+      // Account for canvas offset (same logic as canvas positioning)
+      const mouseCanvasOffset =
+        view.offsetPx >= 0
+          ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
+          : Math.max(0, -view.offsetPx)
+      const screenX = event.clientX - rect.left - mouseCanvasOffset
       const screenY = event.clientY - rect.top
 
       setMousePosition({ x: event.clientX, y: event.clientY })
@@ -150,7 +156,7 @@ const HicCanvas = observer(function HicCanvas({
         setHoveredItem(undefined)
       }
     },
-    [flatbushIndex, flatbushItems, yScalar],
+    [flatbushIndex, flatbushItems, yScalar, view.offsetPx, lastDrawnOffsetPx],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -158,6 +164,13 @@ const HicCanvas = observer(function HicCanvas({
     setMousePosition(undefined)
     setLocalMousePos(undefined)
   }, [])
+
+  // When offsetPx >= 0: use scroll offset for smooth scrolling between renders
+  // When offsetPx < 0: use boundary offset to prevent content going past left edge
+  const canvasOffset =
+    view.offsetPx >= 0
+      ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
+      : Math.max(0, -view.offsetPx)
 
   return (
     <div
@@ -167,6 +180,7 @@ const HicCanvas = observer(function HicCanvas({
         position: 'relative',
         width,
         height,
+        overflow: 'hidden',
       }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
@@ -178,7 +192,7 @@ const HicCanvas = observer(function HicCanvas({
           width,
           height,
           position: 'absolute',
-          left: 0,
+          left: canvasOffset,
         }}
         width={width * 2}
         height={height * 2}
@@ -188,7 +202,7 @@ const HicCanvas = observer(function HicCanvas({
           x={localMousePos.x}
           y={localMousePos.y}
           yScalar={yScalar}
-          left={0}
+          left={canvasOffset}
           width={width}
           height={height}
         />

@@ -157,7 +157,7 @@ const AllLines = observer(function AllLines({
   const theme = useTheme()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight, snps, tickHeight, useGenomicPositions } = model
+  const { lineZoneHeight, snps, tickHeight } = model
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
@@ -173,7 +173,9 @@ const AllLines = observer(function AllLines({
     <>
       {snps.map((snp, i) => {
         const genomicX = getGenomicX(view, assembly, snp, offsetAdj)
-        const matrixX = useGenomicPositions ? genomicX : ((i + 0.5) * b0) / n
+        // Matrix position uses uniform distribution (this component is only
+        // rendered when useGenomicPositions is false)
+        const matrixX = ((i + 0.5) * b0) / n
         return (
           <g
             key={`${snp.id}-${i}`}
@@ -221,7 +223,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const { classes } = useStyles()
     const view = getContainingView(model) as LinearGenomeViewModel
     const [mouseOverLine, setMouseOverLine] = useState<MouseOverLine>()
-    const { lineZoneHeight, snps, useGenomicPositions } = model
+    const { lineZoneHeight, snps } = model
     const { dynamicBlocks } = view
     const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
     const n = snps.length
@@ -230,11 +232,10 @@ const LinesConnectingMatrixToGenomicPosition = observer(
       return null
     }
 
-    // Calculate matrix X position for highlighted line
+    // Calculate matrix X position for highlighted line (uniform distribution,
+    // since this component is only rendered when useGenomicPositions is false)
     const highlightMatrixX = mouseOverLine
-      ? useGenomicPositions
-        ? mouseOverLine.genomicX
-        : ((mouseOverLine.idx + 0.5) * b0) / n
+      ? ((mouseOverLine.idx + 0.5) * b0) / n
       : 0
 
     return (

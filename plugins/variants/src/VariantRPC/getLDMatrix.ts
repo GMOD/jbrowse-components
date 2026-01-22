@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -21,6 +22,68 @@ const SPLITTER = /[/|]/
 function isPhased(genotypes: Record<string, string>): boolean {
   const firstVal = Object.values(genotypes)[0]
   return firstVal?.includes('|') ?? false
+}
+
+/**
+ * Calculate D' (normalized D) from D and allele frequencies
+ * @param D - Linkage disequilibrium coefficient
+ * @param pA - Frequency of alt allele at locus 1
+ * @param pB - Frequency of alt allele at locus 2
+ * @param signedLD - If true, return signed D' (-1 to 1), otherwise |D'| (0 to 1)
+ */
+function calculateDprime(
+  D: number,
+  pA: number,
+  pB: number,
+  signedLD: boolean,
+): number {
+  const qA = 1 - pA
+  const qB = 1 - pB
+
+  if (D > 0) {
+    const Dmax = Math.min(pA * qB, qA * pB)
+    if (Dmax > 0) {
+      return Math.min(1, D / Dmax)
+    }
+  } else if (D < 0) {
+    const absDmin = Math.min(pA * pB, qA * qB)
+    if (absDmin > 0) {
+      // For signed: D/|Dmin| preserves negative sign
+      // For unsigned: |D|/|Dmin|
+      return signedLD
+        ? Math.max(-1, D / absDmin)
+        : Math.min(1, Math.abs(D) / absDmin)
+    }
+  }
+  return 0
+}
+
+/**
+ * Chi-square critical values for common p-value thresholds (df=1)
+ * Use lookup table for common values, approximate for others
+ */
+function getChiSquareCritical(pValue: number): number {
+  if (pValue <= 0) {
+    return Number.POSITIVE_INFINITY // Disable filter
+  }
+  if (pValue >= 1) {
+    return 0
+  }
+  // Common lookup values
+  if (pValue === 0.05) {
+    return 3.841
+  }
+  if (pValue === 0.01) {
+    return 6.635
+  }
+  if (pValue === 0.001) {
+    return 10.828
+  }
+  if (pValue === 0.0001) {
+    return 15.137
+  }
+  // Approximation: for small p, x ≈ -2*ln(p)
+  return -2 * Math.log(pValue)
 }
 
 /**
@@ -104,10 +167,14 @@ function encodePhasedHaplotypes(
 /**
  * Calculate LD statistics from phased haplotype data
  * This gives exact values since we know the phase
+ *
+ * @param signedLD - If true, return signed values (R and signed D') ranging from -1 to 1.
+ *                   If false (default), return unsigned values (R² and |D'|) ranging from 0 to 1.
  */
 function calculateLDStatsPhased(
   haps1: { hap1: Int8Array; hap2: Int8Array },
   haps2: { hap1: Int8Array; hap2: Int8Array },
+  signedLD = false,
 ): {
   r2: number
   dprime: number
@@ -179,24 +246,15 @@ function calculateLDStatsPhased(
   // D = P(AB) - P(A)*P(B) where AB means alt-alt haplotype
   const D = p11 - pA * pB
 
-  // r² = D² / (pA * qA * pB * qB)
-  const r2 = Math.min(1, Math.max(0, (D * D) / (pA * qA * pB * qB)))
+  // Calculate R (correlation) and R²
+  const denom = pA * qA * pB * qB
+  const r = denom > 0 ? D / Math.sqrt(denom) : 0
+  const r2 = Math.min(1, Math.max(0, r * r))
 
-  // D' = |D| / Dmax
-  let dprime = 0
-  if (D > 0) {
-    const Dmax = Math.min(pA * qB, qA * pB)
-    if (Dmax > 0) {
-      dprime = Math.min(1, D / Dmax)
-    }
-  } else if (D < 0) {
-    const Dmin = -Math.min(pA * pB, qA * qB)
-    if (Dmin < 0) {
-      dprime = Math.min(1, Math.abs(D / Dmin))
-    }
-  }
+  const dprime = calculateDprime(D, pA, pB, signedLD)
 
-  return { r2, dprime }
+  // For signed mode, return R instead of R²
+  return { r2: signedLD ? r : r2, dprime }
 }
 
 export type LDMetric = 'r2' | 'dprime'
@@ -204,10 +262,14 @@ export type LDMetric = 'r2' | 'dprime'
 /**
  * Calculate LD statistics from genotype counts
  * Returns both R² and D' so caller can choose which to use
+ *
+ * @param signedLD - If true, return signed values (R and signed D') ranging from -1 to 1.
+ *                   If false (default), return unsigned values (R² and |D'|) ranging from 0 to 1.
  */
 function calculateLDStats(
   geno1: Int8Array,
   geno2: Int8Array,
+  signedLD = false,
 ): {
   r2: number
   dprime: number
@@ -246,58 +308,41 @@ function calculateLDStats(
   }
 
   // Allele frequencies (frequency of alt allele)
-  const pA = sumG1 / (2 * n) // freq of alt at locus 1
-  const pB = sumG2 / (2 * n) // freq of alt at locus 2
-  const qA = 1 - pA // freq of ref at locus 1
-  const qB = 1 - pB // freq of ref at locus 2
+  const pA = sumG1 / (2 * n)
+  const pB = sumG2 / (2 * n)
 
   // If either locus is monomorphic, LD is undefined
   if (pA <= 0 || pA >= 1 || pB <= 0 || pB >= 1) {
     return { r2: 0, dprime: 0 }
   }
 
-  // === R² calculation (PLINK style) ===
-  // Squared Pearson correlation of genotype dosages
+  // === R and R² calculation (PLINK style) ===
+  // Pearson correlation of genotype dosages
   const mean1 = sumG1 / n
   const mean2 = sumG2 / n
   const var1 = sumG1sq / n - mean1 * mean1
   const var2 = sumG2sq / n - mean2 * mean2
 
+  let r = 0
   let r2 = 0
   if (var1 > 0 && var2 > 0) {
     const cov = sumProd / n - mean1 * mean2
-    r2 = (cov * cov) / (var1 * var2)
-    r2 = Math.min(1, Math.max(0, r2))
+    r = cov / Math.sqrt(var1 * var2)
+    r2 = Math.min(1, Math.max(0, r * r))
   }
 
   // === D' calculation ===
   // D = P(AB) - P(A)*P(B)
   // For unphased data, estimate D from genotype covariance
-  //
   // Under Hardy-Weinberg equilibrium: Cov(g1, g2) = 2D
-  // So D = Cov(g1, g2) / 2
-  // This is the composite LD estimator (Weir 1979)
+  // So D = Cov(g1, g2) / 2 (composite LD estimator, Weir 1979)
   const covG = sumProd / n - mean1 * mean2
   const D = covG / 2
 
-  // D' = D / Dmax
-  // Dmax depends on sign of D:
-  // If D > 0: Dmax = min(pA*qB, qA*pB)
-  // If D < 0: Dmax = min(pA*pB, qA*qB)
-  let dprime = 0
-  if (D > 0) {
-    const Dmax = Math.min(pA * qB, qA * pB)
-    if (Dmax > 0) {
-      dprime = Math.min(1, D / Dmax)
-    }
-  } else if (D < 0) {
-    const Dmin = -Math.min(pA * pB, qA * qB)
-    if (Dmin < 0) {
-      dprime = Math.min(1, Math.abs(D / Dmin))
-    }
-  }
+  const dprime = calculateDprime(D, pA, pB, signedLD)
 
-  return { r2, dprime }
+  // For signed mode, return R instead of R²
+  return { r2: signedLD ? r : r2, dprime }
 }
 
 export interface FilterStats {
@@ -307,6 +352,7 @@ export interface FilterStats {
   filteredByLength: number
   filteredByMultiallelic: number
   filteredByHwe: number
+  filteredByCallRate: number
 }
 
 export interface RecombinationData {
@@ -350,7 +396,10 @@ export async function getLDMatrix({
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     hweFilterThreshold?: number
+    callRateFilter?: number
+    jexlFilters?: string[]
     ldMetric?: LDMetric
+    signedLD?: boolean
   }
 }): Promise<LDMatrixResult> {
   const {
@@ -360,8 +409,11 @@ export async function getLDMatrix({
     sessionId,
     lengthCutoffFilter,
     hweFilterThreshold = 0.001,
+    callRateFilter = 0,
+    jexlFilters = [],
     stopToken,
     ldMetric = 'r2',
+    signedLD = false,
   } = args
 
   const lastCheck = createStopTokenChecker(stopToken)
@@ -384,6 +436,7 @@ export async function getLDMatrix({
         filteredByLength: 0,
         filteredByMultiallelic: 0,
         filteredByHwe: 0,
+        filteredByCallRate: 0,
       },
       recombination: {
         values: new Float32Array(0),
@@ -426,6 +479,15 @@ export async function getLDMatrix({
     }
   }
 
+  // Apply jexl filters if provided
+  let featuresAfterJexl = filteredFeatures
+  if (jexlFilters.length > 0) {
+    const filterChain = new SerializableFilterChain({ filters: jexlFilters })
+    featuresAfterJexl = filteredFeatures.filter(({ feature }) =>
+      filterChain.passes(feature, undefined, undefined),
+    )
+  }
+
   // Extract SNP info and encode genotypes
   // Like Haploview, we only include biallelic sites
   const snps: LDMatrixResult['snps'] = []
@@ -433,50 +495,23 @@ export async function getLDMatrix({
   const phasedHaplotypes: { hap1: Int8Array; hap2: Int8Array }[] = []
   let filteredByMultiallelic = 0
   let filteredByHwe = 0
+  let filteredByCallRate = 0
+
+  const callRateFilterEnabled = callRateFilter > 0
 
   // Detect if data is phased by checking first feature
   let dataIsPhased = false
-  if (filteredFeatures.length > 0) {
-    const firstGenotypes = filteredFeatures[0]!.feature.get(
+  if (featuresAfterJexl.length > 0) {
+    const firstGenotypes = featuresAfterJexl[0]!.feature.get(
       'genotypes',
     ) as Record<string, string>
     dataIsPhased = isPhased(firstGenotypes)
   }
 
-  // Chi-square critical values for common p-value thresholds (df=1)
-  // Use lookup table for common values, approximate for others
-  const getChiSquareCritical = (pValue: number): number => {
-    if (pValue <= 0) {
-      return Number.POSITIVE_INFINITY // Disable filter
-    }
-    if (pValue >= 1) {
-      return 0
-    }
-    // Common lookup values
-    if (pValue === 0.05) {
-      return 3.841
-    }
-    if (pValue === 0.01) {
-      return 6.635
-    }
-    if (pValue === 0.001) {
-      return 10.828
-    }
-    if (pValue === 0.0001) {
-      return 15.137
-    }
-    // Approximation using inverse chi-square for df=1
-    // chi-sq ≈ -2 * ln(p) is rough; use better approximation
-    // For df=1, P(χ² > x) = 2*(1 - Φ(√x)) where Φ is normal CDF
-    // So x = (Φ⁻¹(1 - p/2))²
-    // Use approximation: for small p, x ≈ -2*ln(p)
-    return -2 * Math.log(pValue)
-  }
-
   const chiSqCritical = getChiSquareCritical(hweFilterThreshold)
   const hweFilterEnabled = hweFilterThreshold > 0
 
-  for (const { feature } of filteredFeatures) {
+  for (const { feature } of featuresAfterJexl) {
     // Skip multiallelic sites (Haploview only works with biallelic SNPs)
     const alt = feature.get('ALT') as string[] | undefined
     if (alt && alt.length > 1) {
@@ -487,51 +522,56 @@ export async function getLDMatrix({
     const genotypes = feature.get('genotypes') as Record<string, string>
     const encoded = encodeGenotypes(genotypes, samples, splitCache)
 
+    // Count genotypes for QC filters: 0=hom ref, 1=het, 2=hom alt, -1=missing
+    let nHomRef = 0
+    let nHet = 0
+    let nHomAlt = 0
+    let nValid = 0
+    for (const g of encoded) {
+      if (g === 0) {
+        nHomRef++
+        nValid++
+      } else if (g === 1) {
+        nHet++
+        nValid++
+      } else if (g === 2) {
+        nHomAlt++
+        nValid++
+      }
+    }
+
+    // Call rate filter: proportion of non-missing genotypes
+    if (callRateFilterEnabled) {
+      const callRate = nValid / samples.length
+      if (callRate < callRateFilter) {
+        filteredByCallRate++
+        continue
+      }
+    }
+
     // Check for Hardy-Weinberg equilibrium (like Haploview's HWE filter)
-    // Count genotypes: 0=hom ref, 1=het, 2=hom alt
-    if (hweFilterEnabled) {
-      let nHomRef = 0
-      let nHet = 0
-      let nHomAlt = 0
-      let nValid = 0
-      for (const g of encoded) {
-        if (g === 0) {
-          nHomRef++
-          nValid++
-        } else if (g === 1) {
-          nHet++
-          nValid++
-        } else if (g === 2) {
-          nHomAlt++
-          nValid++
-        }
+    if (hweFilterEnabled && nValid > 0) {
+      const p = (2 * nHomRef + nHet) / (2 * nValid) // ref allele freq
+      const q = 1 - p // alt allele freq
+      const expectedHomRef = p * p * nValid
+      const expectedHet = 2 * p * q * nValid
+      const expectedHomAlt = q * q * nValid
+
+      // Chi-square statistic
+      let chiSq = 0
+      if (expectedHomRef > 0) {
+        chiSq += (nHomRef - expectedHomRef) ** 2 / expectedHomRef
+      }
+      if (expectedHet > 0) {
+        chiSq += (nHet - expectedHet) ** 2 / expectedHet
+      }
+      if (expectedHomAlt > 0) {
+        chiSq += (nHomAlt - expectedHomAlt) ** 2 / expectedHomAlt
       }
 
-      // Calculate HWE chi-square test
-      // Under HWE: p² + 2pq + q² = 1
-      if (nValid > 0) {
-        const p = (2 * nHomRef + nHet) / (2 * nValid) // ref allele freq
-        const q = 1 - p // alt allele freq
-        const expectedHomRef = p * p * nValid
-        const expectedHet = 2 * p * q * nValid
-        const expectedHomAlt = q * q * nValid
-
-        // Chi-square statistic
-        let chiSq = 0
-        if (expectedHomRef > 0) {
-          chiSq += (nHomRef - expectedHomRef) ** 2 / expectedHomRef
-        }
-        if (expectedHet > 0) {
-          chiSq += (nHet - expectedHet) ** 2 / expectedHet
-        }
-        if (expectedHomAlt > 0) {
-          chiSq += (nHomAlt - expectedHomAlt) ** 2 / expectedHomAlt
-        }
-
-        if (chiSq > chiSqCritical) {
-          filteredByHwe++
-          continue
-        }
+      if (chiSq > chiSqCritical) {
+        filteredByHwe++
+        continue
       }
     }
 
@@ -562,8 +602,8 @@ export async function getLDMatrix({
       // Use exact haplotype-based calculation for phased data or
       // use composite LD estimator for unphased data
       const stats = dataIsPhased
-        ? calculateLDStatsPhased(phasedHaplotypes[i]!, phasedHaplotypes[j]!)
-        : calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!)
+        ? calculateLDStatsPhased(phasedHaplotypes[i]!, phasedHaplotypes[j]!, signedLD)
+        : calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!, signedLD)
 
       ldValues[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
     }
@@ -577,6 +617,7 @@ export async function getLDMatrix({
     filteredByLength,
     filteredByMultiallelic,
     filteredByHwe,
+    filteredByCallRate,
   }
 
   // Calculate recombination rate estimates between adjacent SNPs

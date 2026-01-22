@@ -151,10 +151,12 @@ export function doAfterAttach(self: SharedLDModel) {
         self.minorAlleleFrequencyFilter
         self.lengthCutoffFilter
         self.hweFilterThreshold
+        self.callRateFilter
         self.colorScheme
         self.showLDTriangle
         self.fitToHeight
         self.useGenomicPositions
+        self.signedLD
         // When fitToHeight is true, also track ldCanvasHeight so resizing
         // the display triggers a re-render
         if (self.fitToHeight) {

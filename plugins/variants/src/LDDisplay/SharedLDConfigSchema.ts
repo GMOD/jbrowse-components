@@ -104,6 +104,15 @@ export default function sharedLDConfigFactory() {
       },
       /**
        * #slot
+       * Call rate filter threshold (0-1). Variants with fewer than this
+       * proportion of non-missing genotypes are excluded. Set to 0 to disable.
+       */
+      callRateFilter: {
+        type: 'number',
+        defaultValue: 0,
+      },
+      /**
+       * #slot
        * Whether to show vertical guides at the connected genome positions on hover
        */
       showVerticalGuides: {
@@ -134,6 +143,23 @@ export default function sharedLDConfigFactory() {
       useGenomicPositions: {
         type: 'boolean',
         defaultValue: false,
+      },
+      /**
+       * #slot
+       * When true, show signed LD values (-1 to 1) instead of absolute values (0 to 1).
+       * For R², this shows R (correlation) instead. For D', this preserves the sign.
+       */
+      signedLD: {
+        type: 'boolean',
+        defaultValue: false,
+      },
+      /**
+       * #slot
+       * JEXL filter expressions to apply to variants (one per line, starting with jexl:)
+       */
+      jexlFilters: {
+        type: 'stringArray',
+        defaultValue: [],
       },
     },
     {
