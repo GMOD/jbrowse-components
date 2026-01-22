@@ -100,7 +100,7 @@ export default function sharedLDConfigFactory() {
        */
       hweFilterThreshold: {
         type: 'number',
-        defaultValue: 0.001,
+        defaultValue: 0,
       },
       /**
        * #slot

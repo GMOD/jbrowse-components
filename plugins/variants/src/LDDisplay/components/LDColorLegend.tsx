@@ -20,6 +20,7 @@ const useStyles = makeStyles()({
   legendLabels: {
     display: 'flex',
     justifyContent: 'space-between',
+    color: 'black',
     fontSize: 10,
   },
 })

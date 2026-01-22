@@ -7,7 +7,10 @@ import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
-import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
+import LinesConnectingMatrixToGenomicPosition, {
+  VariantLabels,
+  Wrapper,
+} from './LinesConnectingMatrixToGenomicPosition.tsx'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 
@@ -362,9 +365,13 @@ const LDCanvas = observer(function LDCanvas({
         />
       ) : null}
       {showLegend ? <LDColorLegend ldMetric={ldMetric} /> : null}
-      {!useGenomicPositions ? (
+      {useGenomicPositions ? (
+        <Wrapper model={model}>
+          <VariantLabels model={model} />
+        </Wrapper>
+      ) : (
         <LinesConnectingMatrixToGenomicPosition model={model} />
-      ) : null}
+      )}
       {/* Recombination track overlaid at bottom of line zone */}
       {model.showRecombination && model.recombination ? (
         <div
@@ -381,6 +388,9 @@ const LDCanvas = observer(function LDCanvas({
             model={model}
             width={width}
             height={lineZoneHeight / 2}
+            useGenomicPositions={useGenomicPositions}
+            regionStart={region?.start}
+            bpPerPx={bpPerPx}
           />
           <RecombinationYScaleBar
             height={lineZoneHeight / 2}
