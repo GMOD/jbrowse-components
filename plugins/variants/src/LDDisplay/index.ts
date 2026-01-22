@@ -19,7 +19,7 @@ export default function LDDisplayF(pluginManager: PluginManager) {
     const configSchema = configSchemaF1(pluginManager)
     return new DisplayType({
       name: 'LDDisplay',
-      displayName: 'LD heatmap display',
+      displayName: 'Linkage disequilibrium display',
       helpText:
         'Displays a linkage disequilibrium (LD) heatmap showing pairwise R² values between variants computed directly from VCF genotypes',
       configSchema,
@@ -35,7 +35,7 @@ export default function LDDisplayF(pluginManager: PluginManager) {
     const configSchema = configSchemaF2(pluginManager)
     return new DisplayType({
       name: 'LDTrackDisplay',
-      displayName: 'LD heatmap display',
+      displayName: 'Linkage disequilibrium display',
       helpText:
         'Displays a linkage disequilibrium (LD) heatmap from pre-computed LD data (e.g., PLINK --r2 output)',
       configSchema,
