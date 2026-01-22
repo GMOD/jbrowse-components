@@ -23,5 +23,5 @@ gh pr list --repo GMOD/jbrowse-components \
     [.[] | select(.author.login != "app/dependabot") | select(.labels | length > 0)]
     | group_by(.labels[0].name)
     | sort_by(.[0].labels[0].name)
-    | .[] | "### \(.[0].labels[0].name)\n" + (map("- \(.title) (#\(.number)) @\(.author.login)") | join("\n")) + "\n"
+    | .[] | "### \(.[0].labels[0].name)\n" + (map("- \(.title) ([#\(.number)](https://github.com/GMOD/jbrowse-components/pull/\(.number))) @\(.author.login)") | join("\n")) + "\n"
   '
