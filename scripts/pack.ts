@@ -21,11 +21,20 @@ for (const dir of workspaceDirs) {
       const pkgJsonPath = path.join(pkgDir, 'package.json')
       if (fs.existsSync(pkgJsonPath)) {
         const location = pkgDir
-        const { signal, status } = spawn.sync('pnpm', ['pack', '--silent'], {
-          stdio: 'inherit',
-          cwd: location,
-        })
+        const { signal, status, stderr } = spawn.sync(
+          'pnpm',
+          ['pack', '--silent'],
+          {
+            stdio: 'pipe',
+            cwd: location,
+            encoding: 'utf8',
+          },
+        )
         if (signal || (status !== null && status > 0)) {
+          if (stderr) {
+            console.error(`Error packing ${pkgDir}:`)
+            console.error(stderr)
+          }
           process.exit(status || 1)
         }
         const files = fs.readdirSync(location)
