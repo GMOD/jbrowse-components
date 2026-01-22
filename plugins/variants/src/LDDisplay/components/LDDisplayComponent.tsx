@@ -220,8 +220,7 @@ const LDCanvas = observer(function LDCanvas({
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const {
-    drawn,
-    loading,
+    fullyDrawn,
     flatbush,
     flatbushItems,
     yScalar,
@@ -378,7 +377,7 @@ const LDCanvas = observer(function LDCanvas({
       onMouseLeave={onMouseLeave}
     >
       <canvas
-        data-testid={`ld_canvas${drawn && !loading ? '_done' : ''}`}
+        data-testid={`ld_canvas${fullyDrawn ? '_done' : ''}`}
         ref={cb}
         style={{
           width,

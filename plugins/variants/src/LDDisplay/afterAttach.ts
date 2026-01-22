@@ -75,6 +75,7 @@ export function doAfterAttach(self: SharedLDModel) {
       const stopToken = createStopToken()
       self.setRenderingStopToken(stopToken)
       self.setLoading(true)
+      self.setCanvasDrawn(false)
 
       const result = (await rpcManager.call(
         rpcSessionId,
@@ -192,7 +193,10 @@ export function doAfterAttach(self: SharedLDModel) {
         if (!view.initialized) {
           return
         }
-        drawCanvasImageData(self.ref, self.renderingImageData)
+        const success = drawCanvasImageData(self.ref, self.renderingImageData)
+        if (isAlive(self)) {
+          self.setCanvasDrawn(success)
+        }
       },
       {
         delay: 1000,

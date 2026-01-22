@@ -91,8 +91,7 @@ const HicCanvas = observer(function HicCanvas({
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const {
     height,
-    drawn,
-    loading,
+    fullyDrawn,
     flatbush,
     flatbushItems,
     yScalar,
@@ -186,7 +185,7 @@ const HicCanvas = observer(function HicCanvas({
       onMouseLeave={onMouseLeave}
     >
       <canvas
-        data-testid={`hic_canvas${drawn && !loading ? '_done' : ''}`}
+        data-testid={`hic_canvas${fullyDrawn ? '_done' : ''}`}
         ref={cb}
         style={{
           width,

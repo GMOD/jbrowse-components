@@ -58,6 +58,11 @@ export default function NonBlockCanvasDisplayMixin() {
        * Status message to display during loading
        */
       statusMessage: undefined as string | undefined,
+      /**
+       * #volatile
+       * Whether the canvas has been drawn to (for testing)
+       */
+      canvasDrawn: false,
     }))
     .views(self => ({
       /**
@@ -66,6 +71,13 @@ export default function NonBlockCanvasDisplayMixin() {
        */
       get drawn() {
         return self.lastDrawnOffsetPx !== undefined
+      },
+      /**
+       * #getter
+       * Whether the display has completed both rendering and canvas drawing
+       */
+      get fullyDrawn() {
+        return this.drawn && !self.loading && self.canvasDrawn
       },
     }))
     .actions(self => ({
@@ -117,6 +129,13 @@ export default function NonBlockCanvasDisplayMixin() {
        */
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
+      },
+      /**
+       * #action
+       * Set whether the canvas has been drawn
+       */
+      setCanvasDrawn(drawn: boolean) {
+        self.canvasDrawn = drawn
       },
     }))
     .actions(self => ({
