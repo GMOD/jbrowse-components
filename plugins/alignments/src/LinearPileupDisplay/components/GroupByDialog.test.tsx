@@ -10,6 +10,23 @@ import userEvent from '@testing-library/user-event'
 import GroupByDialog from './GroupByDialog.tsx'
 import * as getUniqueTagsModule from '../../shared/getUniqueTags.ts'
 
+// mock for wrapping in act
+// https://github.com/mui/material-ui/issues/14352
+jest.mock('react-transition-group', () => {
+  const FakeTransition = jest.fn(({ children, in: inProp }) => {
+    if (inProp) {
+      // The real Transition component calls children with the state.
+      // When "in" is true, the state is typically "entered".
+      return typeof children === 'function' ? children('entered', {}) : children
+    }
+    return null
+  })
+  return {
+    ...jest.requireActual('react-transition-group'),
+    Transition: FakeTransition,
+  }
+})
+
 describe('GroupByDialog', () => {
   let mockModel: any
   let mockTrack: any
