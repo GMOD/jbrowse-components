@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import {
+  type SessionWithAddTracks,
   getContainingTrack,
   getContainingView,
   getSession,
   useDebounce,
-  type SessionWithAddTracks,
 } from '@jbrowse/core/util'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import {
