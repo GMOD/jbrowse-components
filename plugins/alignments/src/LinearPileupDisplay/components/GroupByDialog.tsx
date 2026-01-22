@@ -6,8 +6,9 @@ import {
   getContainingView,
   getSession,
   useDebounce,
+  type SessionWithAddTracks,
 } from '@jbrowse/core/util'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   DialogActions,
@@ -25,6 +26,128 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+const TAG_REGEX = /^[A-Za-z][A-Za-z0-9]$/
+
+function TagResults({ tag, tagSet }: { tag: string; tagSet: string[] }) {
+  if (tagSet.length === 0) {
+    return (
+      <Typography color="warning.main">
+        No values found for tag {tag} in the current region
+      </Typography>
+    )
+  }
+  return (
+    <div>
+      <div>Found unique {tag} values:</div>
+      <div>{tagSet.join(', ')}</div>
+    </div>
+  )
+}
+
+function createTrackId(baseId: string, suffix: string) {
+  return `${baseId}-${suffix}-${Date.now()}-sessionTrack`
+}
+
+function createTagBasedTracks({
+  trackConf,
+  tag,
+  tagSet,
+  session,
+  view,
+}: {
+  trackConf: any
+  tag: string
+  tagSet: string[]
+  session: SessionWithAddTracks
+  view: LinearGenomeViewModel
+}) {
+  const values = [...tagSet, undefined] as (string | undefined)[]
+  for (const tagValue of values) {
+    const trackId = createTrackId(trackConf.trackId, `${tag}:${tagValue}`)
+    session.addTrackConf({
+      ...trackConf,
+      trackId,
+      name: `${trackConf.name} (${tag}:${tagValue})`,
+      displays: [
+        {
+          displayId: `${trackId}-LinearAlignmentsDisplay`,
+          type: 'LinearAlignmentsDisplay',
+          pileupDisplay: {
+            displayId: `${trackId}-LinearAlignmentsDisplay-LinearPileupDisplay`,
+            type: 'LinearPileupDisplay',
+            filterBy: {
+              ...defaultFilterFlags,
+              tagFilter: {
+                tag,
+                value: tagValue,
+              },
+            },
+          },
+        },
+      ],
+    })
+    view.showTrack(trackId)
+  }
+}
+
+function createStrandBasedTracks({
+  trackConf,
+  session,
+  view,
+}: {
+  trackConf: any
+  session: SessionWithAddTracks
+  view: LinearGenomeViewModel
+}) {
+  const negTrackId = createTrackId(trackConf.trackId, 'strand:(-)')
+  const posTrackId = createTrackId(trackConf.trackId, 'strand:(+)')
+
+  session.addTrackConf({
+    ...trackConf,
+    trackId: negTrackId,
+    name: `${trackConf.name} (-)`,
+    displays: [
+      {
+        displayId: `${negTrackId}-LinearAlignmentsDisplay`,
+        type: 'LinearAlignmentsDisplay',
+        pileupDisplay: {
+          displayId: `${negTrackId}-LinearAlignmentsDisplay-LinearPileupDisplay`,
+          type: 'LinearPileupDisplay',
+          filterBy: negFlags,
+        },
+      },
+      {
+        displayId: `${negTrackId}-LinearSNPCoverageDisplay`,
+        type: 'LinearSNPCoverageDisplay',
+        filterBy: negFlags,
+      },
+    ],
+  })
+  session.addTrackConf({
+    ...trackConf,
+    trackId: posTrackId,
+    name: `${trackConf.name} (+)`,
+    displays: [
+      {
+        displayId: `${posTrackId}-LinearAlignmentsDisplay`,
+        type: 'LinearAlignmentsDisplay',
+        pileupDisplay: {
+          displayId: `${posTrackId}-LinearAlignmentsDisplay-LinearPileupDisplay`,
+          type: 'LinearPileupDisplay',
+          filterBy: posFlags,
+        },
+      },
+      {
+        displayId: `${posTrackId}-LinearSNPCoverageDisplay`,
+        type: 'LinearSNPCoverageDisplay',
+        filterBy: posFlags,
+      },
+    ],
+  })
+  view.showTrack(negTrackId)
+  view.showTrack(posTrackId)
+}
+
 const GroupByTagDialog = observer(function GroupByTagDialog(props: {
   model: {
     adapterConfig: AnyConfigurationModel
@@ -38,7 +161,7 @@ const GroupByTagDialog = observer(function GroupByTagDialog(props: {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
 
-  const validTag = /^[A-Za-z][A-Za-z0-9]$/.exec(tag)
+  const validTag = TAG_REGEX.exec(tag)
   const isInvalid = tag.length === 2 && !validTag
   const debouncedTag = useDebounce(tag, 1000)
   const [type, setType] = useState('')
@@ -46,8 +169,9 @@ const GroupByTagDialog = observer(function GroupByTagDialog(props: {
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
-      try {
-        if (!isInvalid) {
+      const isValidTag = TAG_REGEX.test(debouncedTag)
+      if (type === 'tag' && isValidTag) {
+        try {
           setError(undefined)
           setLoading(true)
           const vals = await getUniqueTags({
@@ -57,15 +181,24 @@ const GroupByTagDialog = observer(function GroupByTagDialog(props: {
               .staticBlocks,
           })
           setGroupByTagSet(vals)
+        } catch (e) {
+          console.error(e)
+          setError(e)
+        } finally {
+          setLoading(false)
         }
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      } finally {
-        setLoading(false)
       }
     })()
-  }, [model, isInvalid, debouncedTag])
+  }, [model, type, debouncedTag])
+
+  useEffect(() => {
+    if (type !== 'tag') {
+      setGroupByTagSet(undefined)
+      setError(undefined)
+      setLoading(false)
+    }
+  }, [type])
+
   return (
     <Dialog open onClose={handleClose} title="Group by">
       <DialogContent>
@@ -113,10 +246,7 @@ const GroupByTagDialog = observer(function GroupByTagDialog(props: {
             ) : loading ? (
               <LoadingEllipses message="Loading unique tags" />
             ) : tagSet ? (
-              <div>
-                <div>Found unique {tag} values:</div>
-                <div>{tagSet.join(', ')}</div>
-              </div>
+              <TagResults tag={tag} tagSet={tagSet} />
             ) : null}
           </>
         ) : null}
@@ -126,107 +256,42 @@ const GroupByTagDialog = observer(function GroupByTagDialog(props: {
           variant="contained"
           color="primary"
           type="submit"
-          disabled={!tagSet}
+          disabled={
+            !type ||
+            loading ||
+            (type === 'tag' && (!tagSet || tagSet.length === 0))
+          }
           autoFocus
           onClick={() => {
             const track = getContainingTrack(model)
-            const trackConf = structuredClone(getSnapshot(track.configuration))
-            const session = getSession(model)
+            const trackConf = isStateTreeNode(track.configuration)
+              ? structuredClone(getSnapshot(track.configuration))
+              : track.configuration
+            const session = getSession(model) as SessionWithAddTracks
             const view = getContainingView(model) as LinearGenomeViewModel
-            if (type === 'tag') {
-              if (tagSet) {
-                const ret = [...tagSet, undefined] as (string | undefined)[]
-                for (const tagValue of ret) {
-                  const t1 = `${trackConf.trackId}-${tag}:${tagValue}-${Date.now()}-sessionTrack`
-                  // @ts-expect-error
-                  session.addTrackConf({
-                    ...trackConf,
-                    trackId: t1,
-                    name: `${trackConf.name} (${tag}:${tagValue})`,
-                    displays: [
-                      {
-                        displayId: `${t1}-LinearAlignmentsDisplay`,
-                        type: 'LinearAlignmentsDisplay',
-                        pileupDisplay: {
-                          displayId: `${t1}-LinearAlignmentsDisplay-LinearPileupDisplay`,
-                          type: 'LinearPileupDisplay',
-                          filterBy: {
-                            ...defaultFilterFlags,
-                            tagFilter: {
-                              tag,
-                              value: tagValue,
-                            },
-                          },
-                        },
-                      },
-                    ],
-                  })
-                  view.showTrack(t1)
-                }
-              }
-            } else if (type === 'strand') {
-              const t1 = `${trackConf.trackId}-${tag}:(-)-${Date.now()}-sessionTrack`
-              const t2 = `${trackConf.trackId}-${tag}:(+)-${Date.now()}-sessionTrack`
 
-              // @ts-expect-error
-              session.addTrackConf({
-                ...trackConf,
-                trackId: t1,
-                name: `${trackConf.name} (-)`,
-                displays: [
-                  {
-                    displayId: `${t1}-LinearAlignmentsDisplay`,
-                    type: 'LinearAlignmentsDisplay',
-                    pileupDisplay: {
-                      displayId: `${t1}-LinearAlignmentsDisplay-LinearPileupDisplay`,
-                      type: 'LinearPileupDisplay',
-                      filterBy: negFlags,
-                    },
-                  },
-                  {
-                    displayId: `${t1}-LinearSNPCoverageDisplay`,
-                    type: 'LinearSNPCoverageDisplay',
-                    filterBy: negFlags,
-                  },
-                ],
+            if (type === 'tag' && tagSet) {
+              createTagBasedTracks({
+                trackConf,
+                tag,
+                tagSet,
+                session,
+                view,
               })
-              // @ts-expect-error
-              session.addTrackConf({
-                ...trackConf,
-                trackId: t2,
-                name: `${trackConf.name} (+)`,
-                displays: [
-                  {
-                    displayId: `${t2}-LinearAlignmentsDisplay`,
-                    type: 'LinearAlignmentsDisplay',
-                    pileupDisplay: {
-                      displayId: `${t2}-LinearAlignmentsDisplay-LinearPileupDisplay`,
-                      type: 'LinearPileupDisplay',
-                      filterBy: posFlags,
-                    },
-                  },
-                  {
-                    displayId: `${t2}-LinearSNPCoverageDisplay`,
-                    type: 'LinearSNPCoverageDisplay',
-                    filterBy: posFlags,
-                  },
-                ],
+            } else if (type === 'strand') {
+              createStrandBasedTracks({
+                trackConf,
+                session,
+                view,
               })
-              view.showTrack(t1)
-              view.showTrack(t2)
             }
+
             handleClose()
           }}
         >
           Submit
         </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
+        <Button variant="contained" color="secondary" onClick={handleClose}>
           Cancel
         </Button>
       </DialogActions>

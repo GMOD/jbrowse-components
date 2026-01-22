@@ -44,11 +44,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
+const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
+
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
-const AddFiltersDialog = lazy(
-  () =>
-    import('@jbrowse/plugin-linear-genome-view/src/LinearFeatureDisplay/components/AddFiltersDialog'),
-)
+
 const ClusterDialog = lazy(
   () => import('./components/MultiVariantClusterDialog/ClusterDialog.tsx'),
 )
