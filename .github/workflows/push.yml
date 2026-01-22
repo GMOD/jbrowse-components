@@ -313,3 +313,29 @@ jobs:
           cd component_tests/cli-node18
           yarn install
           yarn testcli
+
+  # Test @jbrowse/img on Node 20 to ensure the jb2export CLI works.
+  # This job has no permissions since it installs npm packages without a lockfile.
+  img_node20:
+    name: Test @jbrowse/img on Node 20
+    needs: [check_commit_message, main]
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: '20'
+      - name: Download packed artifacts
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: packed-artifacts
+          path: component_tests/
+      - name: Test @jbrowse/img on Node 20
+        run: |
+          cd component_tests/img-node20
+          yarn install
+          yarn testimg
