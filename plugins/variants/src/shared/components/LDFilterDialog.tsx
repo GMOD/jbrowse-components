@@ -248,7 +248,11 @@ export default function LDFilterDialog({
             }
             if (callRateEnabled) {
               const callRateVal = Number.parseFloat(callRate)
-              if (!Number.isNaN(callRateVal) && callRateVal >= 0 && callRateVal <= 1) {
+              if (
+                !Number.isNaN(callRateVal) &&
+                callRateVal >= 0 &&
+                callRateVal <= 1
+              ) {
                 model.setCallRateFilter(callRateVal)
               }
             } else {

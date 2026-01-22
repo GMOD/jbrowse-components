@@ -602,7 +602,11 @@ export async function getLDMatrix({
       // Use exact haplotype-based calculation for phased data or
       // use composite LD estimator for unphased data
       const stats = dataIsPhased
-        ? calculateLDStatsPhased(phasedHaplotypes[i]!, phasedHaplotypes[j]!, signedLD)
+        ? calculateLDStatsPhased(
+            phasedHaplotypes[i]!,
+            phasedHaplotypes[j]!,
+            signedLD,
+          )
         : calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!, signedLD)
 
       ldValues[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2

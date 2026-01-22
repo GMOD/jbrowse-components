@@ -154,7 +154,9 @@ export function LDSVGColorLegend({
 }) {
   const x = width - LEGEND_WIDTH - 10
   const y = 10
-  return <LDColorLegendContent ldMetric={ldMetric} signedLD={signedLD} x={x} y={y} />
+  return (
+    <LDColorLegendContent ldMetric={ldMetric} signedLD={signedLD} x={x} y={y} />
+  )
 }
 
 /**
