@@ -885,6 +885,28 @@
     },
     {
       "type": "QuantitativeTrack",
+      "trackId": "volvox_microarray_color",
+      "name": "wiggle_track xyplot color",
+      "category": ["Integration test", "Wiggle"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "volvox_microarray.bw"
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "renderers": {
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer",
+              "color": "#C8B414"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
       "trackId": "volvox_microarray",
       "name": "wiggle_track xyplot",
       "category": ["Integration test", "Wiggle"],

@@ -35,7 +35,7 @@
     "@jbrowse/plugin-alignments": "workspace:^",
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
-    "@mui/x-data-grid": "^8.25.0",
+    "@mui/x-data-grid": "^8.26.0",
     "@types/file-saver-es": "^2.0.3",
     "file-saver-es": "^2.0.5",
     "mobx": "^6.15.0",
