@@ -107,6 +107,13 @@ const HicCanvas = observer(function HicCanvas({
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>()
   const [localMousePos, setLocalMousePos] = useState<{ x: number; y: number }>()
 
+  // When offsetPx >= 0: use scroll offset for smooth scrolling between renders
+  // When offsetPx < 0: use boundary offset to prevent content going past left edge
+  const canvasOffset =
+    view.offsetPx >= 0
+      ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
+      : Math.max(0, -view.offsetPx)
+
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(
     () => (flatbush ? Flatbush.from(flatbush) : null),
@@ -131,11 +138,7 @@ const HicCanvas = observer(function HicCanvas({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      // Account for canvas offset (same logic as canvas positioning)
-      const mouseCanvasOffset =
-        view.offsetPx >= 0
-          ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
-          : Math.max(0, -view.offsetPx)
+      const mouseCanvasOffset = canvasOffset
       const screenX = event.clientX - rect.left - mouseCanvasOffset
       const screenY = event.clientY - rect.top
 
@@ -155,7 +158,7 @@ const HicCanvas = observer(function HicCanvas({
         setHoveredItem(undefined)
       }
     },
-    [flatbushIndex, flatbushItems, yScalar, view.offsetPx, lastDrawnOffsetPx],
+    [flatbushIndex, flatbushItems, yScalar, canvasOffset],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -163,13 +166,6 @@ const HicCanvas = observer(function HicCanvas({
     setMousePosition(undefined)
     setLocalMousePos(undefined)
   }, [])
-
-  // When offsetPx >= 0: use scroll offset for smooth scrolling between renders
-  // When offsetPx < 0: use boundary offset to prevent content going past left edge
-  const canvasOffset =
-    view.offsetPx >= 0
-      ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
-      : Math.max(0, -view.offsetPx)
 
   return (
     <div

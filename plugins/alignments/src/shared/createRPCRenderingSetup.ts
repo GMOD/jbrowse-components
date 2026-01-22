@@ -34,6 +34,7 @@ export interface RPCRenderableModel {
   ref: HTMLCanvasElement | null
   renderingImageData?: ImageBitmap
   setStatusMessage?: (msg: string) => void
+  setCanvasDrawn?: (drawn: boolean) => void
 }
 
 export interface RPCRenderSetupParams<
@@ -90,6 +91,7 @@ export function createRPCRenderFunction<
       const stopToken = createStopToken()
       self.setRenderingStopToken(stopToken)
       self.setLoading(true)
+      self.setCanvasDrawn?.(false)
 
       const viewSnapshot = {
         displayedRegions: structuredClone(view.displayedRegions),
@@ -145,7 +147,10 @@ export function setupCanvasRenderingAutorun<T extends RPCRenderableModel>(
   createAutorun(
     self,
     async () => {
-      drawCanvasImageData(self.ref, self.renderingImageData)
+      const success = drawCanvasImageData(self.ref, self.renderingImageData)
+      if (isAlive(self)) {
+        self.setCanvasDrawn?.(success)
+      }
     },
     {
       name: 'CanvasRenderAutorun',

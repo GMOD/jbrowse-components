@@ -314,11 +314,7 @@ const LDCanvas = observer(function LDCanvas({
       }
 
       const rect = container.getBoundingClientRect()
-      // Account for canvas offset (same logic as canvas positioning)
-      const mouseCanvasOffset =
-        view.offsetPx >= 0
-          ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
-          : Math.max(0, -view.offsetPx)
+      const mouseCanvasOffset = canvasOffset
       const screenX = event.clientX - rect.left - mouseCanvasOffset
       const screenY = event.clientY - rect.top
 
@@ -348,14 +344,7 @@ const LDCanvas = observer(function LDCanvas({
         setHoveredItem(undefined)
       }
     },
-    [
-      flatbushIndex,
-      flatbushItems,
-      yScalar,
-      lineZoneHeight,
-      view.offsetPx,
-      lastDrawnOffsetPx,
-    ],
+    [flatbushIndex, flatbushItems, yScalar, lineZoneHeight, canvasOffset],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -433,7 +422,7 @@ const LDCanvas = observer(function LDCanvas({
         <div
           style={{
             position: 'absolute',
-            left: 0,
+            left: canvasOffset,
             top: lineZoneHeight / 2,
             width,
             height: lineZoneHeight / 2,
