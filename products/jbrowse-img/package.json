@@ -16,7 +16,7 @@
     "node": ">=20"
   },
   "bin": {
-    "jb2export": "./esm/index.js"
+    "jb2export": "./esm/bin.js"
   },
   "files": [
     "esm"
