@@ -28,7 +28,7 @@ test(
 
     fireEvent.click(await findByTestId('track_menu_icon', ...opts))
     fireEvent.click(await findByText('Display types', ...opts))
-    fireEvent.click(await findByText('LD heatmap display', ...opts))
+    fireEvent.click(await findByText('Linkage disequilibrium display', ...opts))
 
     await new Promise(res => setTimeout(res, 3000))
     expectCanvasMatch(await findByTestId('ld_canvas_done', ...opts))
