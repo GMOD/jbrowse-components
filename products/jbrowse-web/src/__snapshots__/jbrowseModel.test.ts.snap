@@ -1182,6 +1182,33 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "volvox_microarray.bw",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+        "Wiggle",
+      ],
+      "displays": [
+        {
+          "renderers": {
+            "XYPlotRenderer": {
+              "color": "#C8B414",
+              "type": "XYPlotRenderer",
+            },
+          },
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "wiggle_track xyplot color",
+      "trackId": "volvox_microarray_color",
+      "type": "QuantitativeTrack",
+    },
+    {
+      "adapter": {
         "bigWigLocation": {
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
