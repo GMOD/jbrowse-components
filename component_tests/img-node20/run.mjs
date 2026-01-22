@@ -22,7 +22,7 @@ function run(cmd) {
 
 // Test --help
 test('jb2export --help shows usage', () => {
-  const output = run('npx jb2export --help')
+  const output = run('jb2export --help')
   if (!output.includes('jb2export')) {
     throw new Error('Expected jb2export in help output')
   }
@@ -36,9 +36,7 @@ test('jb2export with fasta creates SVG output', () => {
   const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
   try {
     const outFile = join(tmpDir, 'test-fasta.svg')
-    run(
-      `npx jb2export --fasta data/volvox.fa --loc ctgA:1-1000 --out ${outFile}`,
-    )
+    run(`jb2export --fasta data/volvox.fa --loc ctgA:1-1000 --out ${outFile}`)
 
     if (!existsSync(outFile)) {
       throw new Error(`Expected output file at ${outFile}`)
@@ -59,7 +57,7 @@ test('jb2export with fasta and bam creates SVG output', () => {
   try {
     const outFile = join(tmpDir, 'test-fasta-bam.svg')
     run(
-      `npx jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --loc ctgA:1-5000 --out ${outFile}`,
+      `jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --loc ctgA:1-5000 --out ${outFile}`,
     )
 
     if (!existsSync(outFile)) {
@@ -86,7 +84,7 @@ test('jb2export with fasta and gff creates SVG output', () => {
   try {
     const outFile = join(tmpDir, 'test-fasta-gff.svg')
     run(
-      `npx jb2export --fasta data/volvox.fa --gffgz data/volvox.sort.gff3.gz --loc ctgA:1-5000 --out ${outFile}`,
+      `jb2export --fasta data/volvox.fa --gffgz data/volvox.sort.gff3.gz --loc ctgA:1-5000 --out ${outFile}`,
     )
 
     if (!existsSync(outFile)) {
@@ -113,7 +111,7 @@ test('jb2export with fasta, bam, and gff creates SVG output', () => {
   try {
     const outFile = join(tmpDir, 'test-all.svg')
     run(
-      `npx jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --gffgz data/volvox.sort.gff3.gz --loc ctgA:1-10000 --out ${outFile}`,
+      `jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --gffgz data/volvox.sort.gff3.gz --loc ctgA:1-10000 --out ${outFile}`,
     )
 
     if (!existsSync(outFile)) {
@@ -140,7 +138,7 @@ test('jb2export can render a larger region', () => {
   try {
     const outFile = join(tmpDir, 'test-large.svg')
     run(
-      `npx jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --loc ctgA:1-50000 --out ${outFile}`,
+      `jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --loc ctgA:1-50000 --out ${outFile}`,
     )
 
     if (!existsSync(outFile)) {
