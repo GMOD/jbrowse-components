@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-text-indexing",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "type": "module",
   "description": "JBrowse 2 text indexing rpc method",
   "keywords": [
