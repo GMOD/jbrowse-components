@@ -458,8 +458,11 @@ function drawSecondPassMethylation(
     lastCheck,
   } = passCtx
 
-  let lastDrawnX = Number.NEGATIVE_INFINITY
-  let prevTotal = 0
+  let snpDrawn = 0
+  const snpSkipped = 0 // No skipping for the main methylation bars anymore
+
+  let lastDrawnX = Number.NEGATIVE_INFINITY // <--- Re-introduced declaration
+  let prevTotal = 0 // <--- Re-introduced declaration
 
   for (let i = 0, l = coverageFeatures.length; i < l; i++) {
     checkStopToken2(lastCheck)
@@ -471,24 +474,26 @@ function drawSecondPassMethylation(
     const drawX = Math.round(leftPx)
     const skipDraw = drawX === lastDrawnX
 
-    if (!skipDraw) {
-      const { depth, nonmods, mods } = snpinfo
-      const h = toHeight(score0)
-      const bottom = toY(score0) + h
-      const curr = drawStackedBars(
-        ctx,
-        mods,
-        colorMap,
-        drawX,
-        bottom,
-        w,
-        h,
-        depth,
-        0,
-      )
-      drawStackedBars(ctx, nonmods, colorMap, drawX, bottom, w, h, depth, curr)
-      lastDrawnX = drawX
-    }
+    // Minimal fix: always draw stacked bars, allowing overlap if drawX is the same
+    const { depth, nonmods, mods } = snpinfo
+    const h = toHeight(score0)
+    const bottom = toY(score0) + h
+    const curr = drawStackedBars(
+      ctx,
+      mods,
+      colorMap,
+      drawX,
+      bottom,
+      w,
+      h,
+      depth,
+      0,
+    )
+    drawStackedBars(ctx, nonmods, colorMap, drawX, bottom, w, h, depth, curr)
+
+    snpDrawn++ // Increment snpDrawn for each methylation bar drawn
+
+    lastDrawnX = drawX // Update lastDrawnX always, for the next feature's skipDraw calculation
 
     drawNoncovEvents(
       passCtx,
@@ -496,13 +501,13 @@ function drawSecondPassMethylation(
       leftPx,
       score0,
       prevTotal,
-      skipDraw,
+      skipDraw, // drawNoncovEvents still receives skipDraw for its own internal logic
       feature.get('start'),
     )
     prevTotal = score0
   }
 
-  return { snpDrawn: 0, snpSkipped: 0 }
+  return { snpDrawn, snpSkipped } // Return updated snpDrawn and 0 for snpSkipped
 }
 
 function drawSecondPassSNPs(passCtx: SecondPassContext): SecondPassStats {
