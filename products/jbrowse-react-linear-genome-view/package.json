@@ -28,6 +28,7 @@
   },
   "files": [
     "esm",
+    "dist",
     "docs"
   ],
   "scripts": {
