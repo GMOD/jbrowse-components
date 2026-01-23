@@ -1,14 +1,25 @@
 import { TextDecoder, TextEncoder } from 'util'
 
+import { Agent, setGlobalDispatcher } from 'undici'
 import { Image, createCanvas } from 'canvas'
 import { JSDOM } from 'jsdom'
-import fetch, { Headers, Request, Response } from 'node-fetch'
 
 export default function setupEnv() {
   addGlobalCanvasUtils()
   addGlobalTextUtils()
   addGlobalDocument()
-  addFetchPolyfill()
+  addGlobalHttpDispatcher()
+}
+
+function addGlobalHttpDispatcher() {
+  // Limit concurrent connections to prevent overwhelming the server
+  const dispatcher = new Agent({
+    connections: 10, // Limit concurrent kept-alive connections
+    pipelining: 1, // Disable pipelining for sequential requests
+    headersTimeout: 30_000, // 30 seconds
+    bodyTimeout: 30_000, // 30 seconds
+  })
+  setGlobalDispatcher(dispatcher)
 }
 
 function addGlobalCanvasUtils() {
@@ -25,19 +36,13 @@ function addGlobalTextUtils() {
 }
 
 function addGlobalDocument() {
-  const window = new JSDOM('...').window
+  const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
+    url: 'http://localhost/',
+    pretendToBeVisual: true,
+    resources: "usable",
+  })
+  // @ts-expect-error
+  global.window = dom.window
   global.document = window.document
-  // @ts-expect-error
-  global.window = window
-}
-
-function addFetchPolyfill() {
-  // @ts-expect-error
-  global.fetch = fetch
-  // @ts-expect-error
-  global.Headers = Headers
-  // @ts-expect-error
-  global.Response = Response
-  // @ts-expect-error
-  global.Request = Request
+  global.localStorage = window.localStorage
 }
