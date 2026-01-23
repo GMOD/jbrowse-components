@@ -108,13 +108,13 @@ export async function getLatest() {
   for await (const versions of fetchVersions()) {
     // if a release was just uploaded, or an erroneous build was made then it
     // might have no build asset
-    const nonprereleases = versions
+    const nonprerelease = versions
       .filter(release => !release.prerelease)
-      .filter(release => release.assets?.length)
+      .find(release => release.assets?.length)
 
-    if (nonprereleases.length > 0) {
-      // @ts-expect-error
-      const file = nonprereleases[0].assets.find(f =>
+    const first = nonprerelease
+    if (first?.assets) {
+      const file = first.assets.find(f =>
         f.name.includes('jbrowse-web'),
       )?.browser_download_url
 

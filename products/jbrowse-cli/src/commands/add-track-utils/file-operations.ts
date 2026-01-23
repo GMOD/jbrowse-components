@@ -24,8 +24,8 @@ export async function loadFile({
   if (force) {
     try {
       await unlink(dest)
-    } catch (e: any) {
-      if (e.code !== 'ENOENT') {
+    } catch (e) {
+      if (e && typeof e === 'object' && 'code' in e && e.code !== 'ENOENT') {
         throw e
       }
     }

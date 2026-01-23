@@ -9,7 +9,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { renderRegion } from './renderRegion.tsx'
-import setupEnv from './setupEnv.ts'
+import { setupEnv } from './setupEnv.ts'
 
 setupEnv()
 
