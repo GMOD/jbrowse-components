@@ -14,5 +14,8 @@ registerHooks({
       : nextLoad(url, context)
   },
 })
-// Now load the main entry point
+
 await import('./index.js')
+
+// eslint-disable-next-line unicorn/require-module-specifiers
+export {}

@@ -46,6 +46,28 @@ if (existsSync(imgPath)) {
   }
 }
 
+// Debug: check @jbrowse/core package contents (critical dependency)
+const corePath = './node_modules/@jbrowse/core'
+console.log('@jbrowse/core exists:', existsSync(corePath))
+if (existsSync(corePath)) {
+  console.log('@jbrowse/core contents:', readdirSync(corePath))
+  const coreEsmPath = join(corePath, 'esm')
+  console.log('@jbrowse/core/esm exists:', existsSync(coreEsmPath))
+}
+
+// Debug: check packed tarball sizes
+const packedPath = './packed'
+if (existsSync(packedPath)) {
+  const tarballs = readdirSync(packedPath).filter(f => f.endsWith('.tgz'))
+  console.log('Packed tarballs (sample):')
+  for (const t of ['jbrowse-core.tgz', 'jbrowse-img.tgz']) {
+    if (tarballs.includes(t)) {
+      const stats = statSync(join(packedPath, t))
+      console.log(`  ${t}: ${stats.size} bytes`)
+    }
+  }
+}
+
 // Use symlink if available, otherwise fall back to direct node invocation
 const jb2exportCmd = existsSync(join(binPath, 'jb2export'))
   ? 'jb2export'
@@ -53,11 +75,17 @@ const jb2exportCmd = existsSync(join(binPath, 'jb2export'))
 console.log('Using command:', jb2exportCmd)
 
 function run(cmd) {
-  return execSync(cmd, {
-    encoding: 'utf8',
-    stdio: ['pipe', 'pipe', 'pipe'],
-    env,
-  })
+  try {
+    return execSync(cmd, {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env,
+    })
+  } catch (error) {
+    // Re-throw with stderr included in the message
+    const stderr = error.stderr ? `\n  stderr: ${error.stderr.slice(0, 500)}` : ''
+    throw new Error(`Command failed: ${cmd}${stderr}`)
+  }
 }
 
 // Test --help
