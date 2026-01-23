@@ -384,6 +384,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 'normal',
                 'compact',
+                'superCompact',
                 'reducedRepresentation',
                 'collapse',
               ].map(val => ({

@@ -1,4 +1,4 @@
-import { readCachedConfig } from '../renderConfig.ts'
+import { getDisplayModeHeight, readCachedConfig } from '../renderConfig.ts'
 import { isOffScreen } from '../util.ts'
 import {
   drawConnectingLine,
@@ -50,7 +50,7 @@ export const repeatRegionGlyph: Glyph = {
     const start = feature.get('start')
     const end = feature.get('end')
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
+    const baseHeightPx = getDisplayModeHeight(heightPx, displayMode)
     const widthPx = (end - start) / bpPerPx
 
     const strand = feature.get('strand') as number

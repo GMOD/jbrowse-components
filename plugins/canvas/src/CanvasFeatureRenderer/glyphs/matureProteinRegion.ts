@@ -1,4 +1,4 @@
-import { readCachedConfig } from '../renderConfig.ts'
+import { getDisplayModeHeight, readCachedConfig } from '../renderConfig.ts'
 import { isOffScreen } from '../util.ts'
 import { drawStrandArrowAtPosition, layoutChild } from './glyphUtils.ts'
 
@@ -75,7 +75,7 @@ export const matureProteinRegionGlyph: Glyph = {
     const start = feature.get('start')
     const end = feature.get('end')
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
+    const baseHeightPx = getDisplayModeHeight(heightPx, displayMode)
     const widthPx = (end - start) / bpPerPx
 
     const matureProteins = getMatureProteinChildren(feature)

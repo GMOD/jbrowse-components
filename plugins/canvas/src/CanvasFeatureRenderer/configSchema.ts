@@ -169,6 +169,7 @@ const CanvasFeatureRenderer = ConfigurationSchema(
       model: types.enumeration('displayMode', [
         'normal',
         'compact',
+        'superCompact',
         'reducedRepresentation',
         'collapse',
       ]),

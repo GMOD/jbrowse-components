@@ -32,6 +32,22 @@ export interface CachedConfig<T> {
 }
 
 /**
+ * Compute the display height based on display mode.
+ * - normal: full height
+ * - compact: half height
+ * - superCompact: quarter height (minimum 2px)
+ */
+export function getDisplayModeHeight(heightPx: number, displayMode: string) {
+  if (displayMode === 'compact') {
+    return heightPx / 2
+  }
+  if (displayMode === 'superCompact') {
+    return Math.max(2, heightPx / 4)
+  }
+  return heightPx
+}
+
+/**
  * Read a potentially cached config value.
  * Uses cached value if not a callback, otherwise evaluates per-feature.
  */

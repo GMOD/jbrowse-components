@@ -1,5 +1,5 @@
 import { drawChevrons } from '../drawChevrons.ts'
-import { readCachedConfig } from '../renderConfig.ts'
+import { getDisplayModeHeight, readCachedConfig } from '../renderConfig.ts'
 import { getStrokeColor, isOffScreen } from '../util.ts'
 
 import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
@@ -40,7 +40,7 @@ export function layoutChild(
   const { config, displayMode, featureHeight } = configContext
 
   const heightPx = readCachedConfig(featureHeight, config, 'height', child)
-  const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
+  const baseHeightPx = getDisplayModeHeight(heightPx, displayMode)
 
   const childStart = child.get('start')
   const childEnd = child.get('end')

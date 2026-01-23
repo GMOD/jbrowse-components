@@ -1,5 +1,5 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
-import { readCachedConfig } from '../renderConfig.ts'
+import { getDisplayModeHeight, readCachedConfig } from '../renderConfig.ts'
 import { boxGlyph } from './box.ts'
 import { findChildGlyph } from './childGlyphs.ts'
 
@@ -85,7 +85,7 @@ export const subfeaturesGlyph: Glyph = {
       end: feature.get('end'),
     }
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
+    const baseHeightPx = getDisplayModeHeight(heightPx, displayMode)
     const widthPx = (featureBp.end - featureBp.start) / bpPerPx
 
     // Get and sort subfeatures (coding first)

@@ -1,7 +1,7 @@
 import { drawCDSBackground } from '../peptides/drawCDSBackground.ts'
 import { drawPeptidesOnCDS } from '../peptides/drawPeptidesOnCDS.ts'
 import { prepareAminoAcidData } from '../peptides/prepareAminoAcidData.ts'
-import { readCachedConfig } from '../renderConfig.ts'
+import { getDisplayModeHeight, readCachedConfig } from '../renderConfig.ts'
 import { getBoxColor, isOffScreen } from '../util.ts'
 import {
   shouldRenderPeptideBackground,
@@ -23,7 +23,7 @@ export const cdsGlyph: Glyph = {
     const { config, displayMode, featureHeight } = configContext
 
     const height = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeight = displayMode === 'compact' ? height / 2 : height
+    const baseHeight = getDisplayModeHeight(height, displayMode)
     const width = (feature.get('end') - feature.get('start')) / bpPerPx
 
     return {
