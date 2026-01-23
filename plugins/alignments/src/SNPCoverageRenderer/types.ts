@@ -6,7 +6,7 @@ import type {
   ModificationTypeWithColor,
 } from '../shared/types.ts'
 import type { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
 import type { ScaleOpts } from '@jbrowse/plugin-wiggle'
 
 export interface InterbaseIndicatorItem {
@@ -195,4 +195,67 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 
 export interface RenderArgsDeserializedWithFeatures extends RenderArgsDeserialized {
   features: Map<string, Feature>
+}
+
+export interface SecondPassContext {
+  ctx: CanvasRenderingContext2D
+  coverageFeatures: Feature[]
+  region: { start: number; end: number; refName: string; reversed?: boolean }
+  bpPerPx: number
+  colorMap: Record<string, string>
+  toY: (n: number) => number
+  toHeight: (n: number) => number
+  toHeight2: (n: number) => number
+  lastCheck: LastStopTokenCheck
+  extraHorizontallyFlippedOffset: number
+  coords: number[]
+  items: ClickMapItem[]
+  indicatorThreshold: number
+  showInterbaseCounts: boolean
+  showInterbaseIndicators: boolean
+}
+
+export interface SecondPassStats {
+  snpDrawn: number
+  snpSkipped: number
+}
+
+export interface StrandCounts {
+  readonly entryDepth: number
+  readonly '1': number
+  readonly '-1': number
+  readonly '0': number
+}
+
+export interface ModificationCountsParams {
+  readonly base: string
+  readonly isSimplex: boolean
+  readonly refbase: string | undefined
+  readonly snps: Readonly<Record<string, Partial<StrandCounts>>>
+  readonly ref: StrandCounts
+  readonly score0: number
+}
+
+export interface ModificationCountsResult {
+  readonly modifiable: number
+  readonly detectable: number
+}
+
+export interface ReducedFeature {
+  start: number
+  end: number
+  score: number
+  snpinfo: BaseCoverageBin
+  refName: string
+}
+
+export interface SkipFeatureSerialized {
+  uniqueId: string
+  type: 'skip'
+  refName: string
+  start: number
+  end: number
+  strand: number
+  score: number
+  effectiveStrand: number
 }

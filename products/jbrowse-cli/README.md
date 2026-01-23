@@ -44,84 +44,83 @@ It is likely preferable in most cases to install the tools globally with
 `npm install @jbrowse/cli -g` however
 
 ```
-```
 
+```
 
 ## jbrowse create
 
 ```
-```
 
+```
 
 ## jbrowse add-assembly
 
 ```
-```
 
+```
 
 ## jbrowse add-track
 
 ```
-```
 
+```
 
 ## jbrowse text-index
 
 ```
-```
 
+```
 
 ## jbrowse admin-server
 
 ```
-```
 
+```
 
 ## jbrowse upgrade
 
 ```
-```
 
+```
 
 ## jbrowse make-pif
 
 ```
-```
 
+```
 
 ## jbrowse sort-gff
 
 ```
-```
 
+```
 
 ## jbrowse sort-bed
 
 ```
-```
 
+```
 
 ## jbrowse add-connection
 
 ```
-```
 
+```
 
 ## jbrowse add-track-json
 
 ```
-```
 
+```
 
 ## jbrowse remove-track
 
 ```
-```
 
+```
 
 ## jbrowse set-default-session
 
 ```
+
 ```
-
-
