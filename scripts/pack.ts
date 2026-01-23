@@ -21,11 +21,18 @@ for (const dir of workspaceDirs) {
       const pkgJsonPath = path.join(pkgDir, 'package.json')
       if (fs.existsSync(pkgJsonPath)) {
         const location = pkgDir
-        const { signal, status } = spawn.sync('pnpm', ['pack'], {
-          stdio: 'inherit',
-          cwd: location,
-          encoding: 'utf8',
-        })
+        // Use --config.ignore-scripts=false to ensure prepack hooks run,
+        // even if user has ignore-scripts=true in their .npmrc (which is
+        // useful to avoid postinstall scripts but would otherwise block prepack)
+        const { signal, status } = spawn.sync(
+          'pnpm',
+          ['--config.ignore-scripts=false', 'pack'],
+          {
+            stdio: 'inherit',
+            cwd: location,
+            encoding: 'utf8',
+          },
+        )
         if (signal || (status !== null && status > 0)) {
           process.exit(status || 1)
         }
