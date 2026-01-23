@@ -16,6 +16,7 @@ import {
 import { debug, printHelp } from '../../utils.ts'
 
 import type { Request, Response } from 'express'
+import type { Server } from 'http'
 
 export async function run(args?: string[]) {
   const options = {
@@ -78,7 +79,7 @@ export async function run(args?: string[]) {
   app.use(express.json({ limit: bodySizeLimit }))
 
   // Add error handling middleware
-  app.use((err: any, _req: Request, res: Response, next: () => void) => {
+  app.use((err: unknown, _req: Request, res: Response, next: () => void) => {
     if (err) {
       console.error('Server error:', err)
       res.status(500).setHeader('Content-Type', 'text/plain')
@@ -95,13 +96,16 @@ export async function run(args?: string[]) {
   try {
     fs.writeFileSync(keyPath, key)
     debug(`Admin key stored at ${keyPath}`)
-  } catch (error: any) {
-    console.error(`Failed to write admin key to ${keyPath}:`, error.message)
+  } catch (error) {
+    console.error(
+      `Failed to write admin key to ${keyPath}:`,
+      error instanceof Error ? error.message : error,
+    )
     // Continue anyway, as this is not critical
   }
 
   // Create server reference for shutdown route
-  const serverRef = { current: null }
+  const serverRef: { current: Server | null } = { current: null }
 
   // Set up routes
   setupRoutes({
