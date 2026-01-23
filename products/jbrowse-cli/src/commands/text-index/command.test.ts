@@ -14,7 +14,7 @@ import {
   runInTmpDir,
 } from '../../testUtil.ts'
 
-jest.mock('../../fetchWithProxy')
+jest.mock('../../cliFetch')
 
 const configPath = dataDir('indexing_config.json')
 const volvoxDir = path.join(
@@ -326,10 +326,10 @@ describe('real HTTP server integration', () => {
   })
 
   test('indexes a remote gz gff3 file from real HTTP server', async () => {
-    // Unmock fetchWithProxy for this test to use real fetch
-    const originalFetch = jest.requireActual('../../fetchWithProxy.ts').default
-    const fetchWithProxy = require('../../fetchWithProxy.ts').default
-    fetchWithProxy.mockImplementation(originalFetch)
+    // Unmock cliFetch for this test to use real fetch
+    const originalFetch = jest.requireActual('../../cliFetch.ts').default
+    const cliFetch = require('../../cliFetch.ts').default
+    cliFetch.mockImplementation(originalFetch)
 
     await runInTmpDir(async ctx => {
       const config = {

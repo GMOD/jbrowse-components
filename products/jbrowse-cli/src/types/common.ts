@@ -1,4 +1,4 @@
-import fetch from '../fetchWithProxy.ts'
+import fetch from '../cliFetch.ts'
 
 export async function createRemoteStream(urlIn: string) {
   const res = await fetch(urlIn)

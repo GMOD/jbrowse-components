@@ -3,7 +3,7 @@ import path from 'path'
 
 import parseJSON from 'json-parse-better-errors'
 
-import fetch from './fetchWithProxy.ts'
+import fetch from './cliFetch.ts'
 
 interface GithubRelease {
   tag_name: string

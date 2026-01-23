@@ -3,7 +3,7 @@ import { parseArgs } from 'util'
 
 import decompress from 'decompress'
 
-import fetch from '../fetchWithProxy.ts'
+import fetch from '../cliFetch.ts'
 import {
   fetchGithubVersions,
   getBranch,

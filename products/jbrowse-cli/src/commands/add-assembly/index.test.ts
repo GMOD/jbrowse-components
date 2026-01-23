@@ -15,7 +15,7 @@ import {
   runInTmpDir,
 } from '../../testUtil.ts'
 
-jest.mock('../../fetchWithProxy')
+jest.mock('../../cliFetch')
 
 const { copyFile, writeFile, mkdir } = fs.promises
 

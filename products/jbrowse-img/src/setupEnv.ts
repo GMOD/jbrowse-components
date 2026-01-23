@@ -2,24 +2,11 @@ import { TextDecoder, TextEncoder } from 'util'
 
 import { Image, createCanvas } from 'canvas'
 import { JSDOM } from 'jsdom'
-import { Agent, setGlobalDispatcher } from 'undici'
 
 export default function setupEnv() {
   addGlobalCanvasUtils()
   addGlobalTextUtils()
   addGlobalDocument()
-  addGlobalHttpDispatcher()
-}
-
-function addGlobalHttpDispatcher() {
-  // Limit concurrent connections to prevent overwhelming the server
-  const dispatcher = new Agent({
-    connections: 10, // Limit concurrent kept-alive connections
-    pipelining: 1, // Disable pipelining for sequential requests
-    headersTimeout: 30_000, // 30 seconds
-    bodyTimeout: 30_000, // 30 seconds
-  })
-  setGlobalDispatcher(dispatcher)
 }
 
 function addGlobalCanvasUtils() {

@@ -7,7 +7,7 @@ import path from 'path'
 
 import { mockFetch, runCommand, runInTmpDir } from '../testUtil.ts'
 
-jest.mock('../fetchWithProxy')
+jest.mock('../cliFetch')
 
 const { stat, readdir, writeFile } = fs.promises
 

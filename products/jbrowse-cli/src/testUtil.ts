@@ -183,13 +183,12 @@ export function mockFetch(
         url: string,
       ) => MockFetchResponse | Promise<MockFetchResponse> | undefined),
 ) {
-  const fetchWithProxy = require('./fetchWithProxy.ts')
-    .default as jest.MockedFunction<
+  const cliFetch = require('./cliFetch.ts').default as jest.MockedFunction<
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-    typeof import('./fetchWithProxy.ts').default
+    typeof import('./cliFetch.ts').default
   >
 
-  fetchWithProxy.mockImplementation(async (url: string | URL) => {
+  cliFetch.mockImplementation(async (url: string | URL) => {
     const urlStr = url.toString()
     const response =
       typeof mockOrHandler === 'function'
@@ -211,5 +210,5 @@ export function mockFetch(
     } as unknown as Response
   })
 
-  return fetchWithProxy
+  return cliFetch
 }

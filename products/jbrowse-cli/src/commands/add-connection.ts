@@ -3,7 +3,7 @@ import { parseArgs } from 'util'
 
 import parseJSON from 'json-parse-better-errors'
 
-import fetch from '../fetchWithProxy.ts'
+import fetch from '../cliFetch.ts'
 import {
   debug,
   printHelp,
