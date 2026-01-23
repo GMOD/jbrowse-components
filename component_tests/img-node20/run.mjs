@@ -1,7 +1,7 @@
 import { execSync } from 'child_process'
 import { existsSync, mkdtempSync, rmSync, statSync } from 'fs'
 import { tmpdir } from 'os'
-import { join } from 'path'
+import { join, resolve } from 'path'
 
 let failures = 0
 
@@ -16,13 +16,17 @@ function test(name, fn) {
   }
 }
 
+// Add node_modules/.bin to PATH so we can call jb2export directly
+const binPath = resolve('./node_modules/.bin')
+const env = { ...process.env, PATH: `${binPath}:${process.env.PATH}` }
+
 function run(cmd) {
-  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] })
+  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], env })
 }
 
 // Test --help
 test('jb2export --help shows usage', () => {
-  const output = run('./node_modules/.bin/jb2export --help')
+  const output = run('jb2export --help')
   if (!output.includes('jb2export')) {
     throw new Error('Expected jb2export in help output')
   }
@@ -37,7 +41,7 @@ test('jb2export with fasta creates SVG output', () => {
   try {
     const outFile = join(tmpDir, 'test-fasta.svg')
     run(
-      `./node_modules/.bin/jb2export --fasta data/volvox.fa --loc ctgA:1-1000 --out ${outFile}`,
+      `jb2export --fasta data/volvox.fa --loc ctgA:1-1000 --out ${outFile}`,
     )
 
     if (!existsSync(outFile)) {
@@ -59,7 +63,7 @@ test('jb2export with fasta and bam creates SVG output', () => {
   try {
     const outFile = join(tmpDir, 'test-fasta-bam.svg')
     run(
-      `./node_modules/.bin/jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --loc ctgA:1-5000 --out ${outFile}`,
+      `jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --loc ctgA:1-5000 --out ${outFile}`,
     )
 
     if (!existsSync(outFile)) {
@@ -86,7 +90,7 @@ test('jb2export with fasta and gff creates SVG output', () => {
   try {
     const outFile = join(tmpDir, 'test-fasta-gff.svg')
     run(
-      `./node_modules/.bin/jb2export --fasta data/volvox.fa --gffgz data/volvox.sort.gff3.gz --loc ctgA:1-5000 --out ${outFile}`,
+      `jb2export --fasta data/volvox.fa --gffgz data/volvox.sort.gff3.gz --loc ctgA:1-5000 --out ${outFile}`,
     )
 
     if (!existsSync(outFile)) {
@@ -113,7 +117,7 @@ test('jb2export with fasta, bam, and gff creates SVG output', () => {
   try {
     const outFile = join(tmpDir, 'test-all.svg')
     run(
-      `./node_modules/.bin/jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --gffgz data/volvox.sort.gff3.gz --loc ctgA:1-10000 --out ${outFile}`,
+      `jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --gffgz data/volvox.sort.gff3.gz --loc ctgA:1-10000 --out ${outFile}`,
     )
 
     if (!existsSync(outFile)) {
@@ -140,7 +144,29 @@ test('jb2export can render a larger region', () => {
   try {
     const outFile = join(tmpDir, 'test-large.svg')
     run(
-      `./node_modules/.bin/jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --loc ctgA:1-50000 --out ${outFile}`,
+      `jb2export --fasta data/volvox.fa --bam data/volvox-sorted.bam --loc ctgA:1-50000 --out ${outFile}`,
+    )
+
+    if (!existsSync(outFile)) {
+      throw new Error(`Expected output file at ${outFile}`)
+    }
+
+    const stats = statSync(outFile)
+    if (stats.size === 0) {
+      throw new Error('Output file is empty')
+    }
+  } finally {
+    rmSync(tmpDir, { recursive: true })
+  }
+})
+
+// Test export with remote files
+test('jb2export with remote files creates SVG output', () => {
+  const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
+  try {
+    const outFile = join(tmpDir, 'test-remote.svg')
+    run(
+      `jb2export --fasta https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.fa --bam https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam --loc ctgA:1-1000 --out ${outFile}`,
     )
 
     if (!existsSync(outFile)) {
