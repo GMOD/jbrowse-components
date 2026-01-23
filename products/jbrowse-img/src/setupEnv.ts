@@ -1,8 +1,8 @@
 import { TextDecoder, TextEncoder } from 'util'
 
-import { Agent, setGlobalDispatcher } from 'undici'
 import { Image, createCanvas } from 'canvas'
 import { JSDOM } from 'jsdom'
+import { Agent, setGlobalDispatcher } from 'undici'
 
 export default function setupEnv() {
   addGlobalCanvasUtils()
