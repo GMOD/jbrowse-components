@@ -13,7 +13,7 @@ const ErrorMessageStackTraceDialog = lazy(
 export interface SnackbarMessage {
   message: string
   level?: NotificationLevel
-  action?: SnackAction
+  actions?: SnackAction[]
 }
 
 /**
@@ -41,8 +41,17 @@ export default function SnackbarModel() {
       /**
        * #action
        */
-      notify(message: string, level?: NotificationLevel, action?: SnackAction) {
-        this.pushSnackbarMessage(message, level, action)
+      notify(
+        message: string,
+        level?: NotificationLevel,
+        action?: SnackAction | SnackAction[],
+      ) {
+        const actions = action
+          ? Array.isArray(action)
+            ? action
+            : [action]
+          : undefined
+        this.pushSnackbarMessage(message, level, actions)
         if (level === 'info' || level === 'success') {
           setTimeout(() => {
             this.removeSnackbarMessage(message)
@@ -53,8 +62,13 @@ export default function SnackbarModel() {
       /**
        * #action
        */
-      notifyError(errorMessage: string, error?: unknown, extra?: unknown) {
-        this.notify(errorMessage, 'error', {
+      notifyError(
+        errorMessage: string,
+        error?: unknown,
+        extra?: unknown,
+        action?: SnackAction,
+      ) {
+        const reportAction: SnackAction = {
           name: 'report',
           onClick: () => {
             // @ts-expect-error
@@ -67,7 +81,9 @@ export default function SnackbarModel() {
               },
             ])
           },
-        })
+        }
+        const actions = action ? [reportAction, action] : [reportAction]
+        this.pushSnackbarMessage(errorMessage, 'error', actions)
       },
       /**
        * #action
@@ -75,10 +91,14 @@ export default function SnackbarModel() {
       pushSnackbarMessage(
         message: string,
         level?: NotificationLevel,
-        action?: SnackAction,
+        actions?: SnackAction[],
       ) {
-        if (action || !self.snackbarMessageSet.has(message)) {
-          self.snackbarMessages.push({ message, level, action })
+        if (actions?.length || !self.snackbarMessageSet.has(message)) {
+          self.snackbarMessages.push({
+            message,
+            level,
+            actions,
+          })
         }
       },
       /**

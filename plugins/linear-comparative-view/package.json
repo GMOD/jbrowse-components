@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-comparative-view",
-  "version": "4.0.4",
+  "version": "4.1.1",
   "type": "module",
   "description": "JBrowse 2 linear comparative view",
   "keywords": [
@@ -34,10 +34,10 @@
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@mui/icons-material": "^7.3.6",
-    "@mui/material": "^7.3.6",
-    "copy-to-clipboard": "^3.3.3",
+    "@mui/icons-material": "^7.3.7",
+    "@mui/material": "^7.3.7",
     "@types/file-saver-es": "^2.0.3",
+    "copy-to-clipboard": "^3.3.3",
     "file-saver-es": "^2.0.5",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1"

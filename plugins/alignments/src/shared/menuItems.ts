@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import FilterListIcon from '@mui/icons-material/ClearAll'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { modificationData } from './modificationData.ts'
@@ -200,7 +200,7 @@ export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
 export function getFilterByMenuItem(model: unknown) {
   return {
     label: 'Filter by',
-    icon: FilterListIcon,
+    icon: ClearAllIcon,
     onClick: () => {
       // @ts-expect-error getSession works on model
       getSession(model).queueDialog((handleClose: () => void) => [
@@ -224,7 +224,7 @@ interface EditFiltersModel {
 export function getEditFiltersMenuItem(model: EditFiltersModel) {
   return {
     label: 'Edit filters',
-    icon: FilterListIcon,
+    icon: ClearAllIcon,
     type: 'subMenu' as const,
     subMenu: [
       {

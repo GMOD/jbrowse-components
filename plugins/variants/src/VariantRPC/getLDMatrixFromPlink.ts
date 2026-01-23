@@ -148,6 +148,7 @@ export async function getLDMatrixFromPlink({
 
   // For pre-computed LD, we don't have filtering stats
   const filterStats: FilterStats = {
+    filteredByCallRate: 0,
     totalVariants: snps.length,
     passedVariants: snps.length,
     filteredByMaf: 0,

@@ -4,12 +4,17 @@ import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { set1 } from '@jbrowse/core/ui/colors'
-import { getSession } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  getContainingTrack,
+  getSession,
+} from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import CategoryIcon from '@mui/icons-material/Category'
-import FilterListIcon from '@mui/icons-material/FilterList'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -24,6 +29,7 @@ import {
   getAltColorForDosage,
 } from './constants.ts'
 import { getSources } from './getSources.ts'
+import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
 import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 
 import type {
@@ -32,15 +38,16 @@ import type {
 } from './components/types.ts'
 import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
-const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
-const MAFFilterDialog = lazy(() => import('./components/MAFFilterDialog.tsx'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
+
+const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
+
 const ClusterDialog = lazy(
   () => import('./components/MultiVariantClusterDialog/ClusterDialog.tsx'),
 )
@@ -77,23 +84,27 @@ export default function MultiVariantBaseModelF(
 
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0),
+        minorAlleleFrequencyFilterSetting: types.maybe(types.number),
 
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        showSidebarLabelsSetting: types.optional(types.boolean, true),
+        showSidebarLabelsSetting: types.maybe(types.boolean),
 
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        showTree: types.optional(types.boolean, true),
+        showTreeSetting: types.maybe(types.boolean),
 
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        renderingMode: types.optional(types.string, 'alleleCount'),
+        renderingModeSetting: types.maybe(types.string),
 
         /**
          * #property
@@ -120,8 +131,9 @@ export default function MultiVariantBaseModelF(
 
         /**
          * #property
+         * When undefined, falls back to config value (showReferenceAlleles)
          */
-        referenceDrawingMode: types.optional(types.string, 'skip'),
+        referenceDrawingModeSetting: types.maybe(types.string),
         /**
          * #property
          */
@@ -156,6 +168,12 @@ export default function MultiVariantBaseModelF(
       sourcesVolatile: undefined as Source[] | undefined,
       /**
        * #volatile
+       * Tracks whether the colorBy config has been applied (to avoid
+       * re-applying on every source update)
+       */
+      colorByApplied: false,
+      /**
+       * #volatile
        */
       featuresVolatile: undefined as Feature[] | undefined,
       /**
@@ -184,6 +202,17 @@ export default function MultiVariantBaseModelF(
        * #volatile
        */
       mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Returns the effective rendering mode, falling back to config
+       */
+      get renderingMode(): string {
+        return (
+          self.renderingModeSetting ?? getConf(self as any, 'renderingMode')
+        )
+      },
     }))
     .actions(self => ({
       /**
@@ -238,12 +267,21 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
+      setColorByApplied(value: boolean) {
+        self.colorByApplied = value
+      },
+
+      /**
+       * #action
+       */
       setLayout(layout: Source[], clearTree = true) {
         const orderChanged =
           clearTree &&
           self.clusterTree &&
           self.layout.length === layout.length &&
-          self.layout.some((source, idx) => source.name !== layout[idx]?.name)
+          self.layout.some(
+            (source: Source, idx: number) => source.name !== layout[idx]?.name,
+          )
 
         self.layout = layout
         if (orderChanged) {
@@ -294,7 +332,7 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setMafFilter(arg: number) {
-        self.minorAlleleFrequencyFilter = arg
+        self.minorAlleleFrequencyFilterSetting = arg
       },
       /**
        * #action
@@ -306,17 +344,19 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setShowTree(arg: boolean) {
-        self.showTree = arg
+        self.showTreeSetting = arg
       },
       /**
        * #action
        */
       setPhasedMode(arg: string) {
-        if (self.renderingMode !== arg) {
+        const currentMode =
+          self.renderingModeSetting ?? getConf(self, 'renderingMode')
+        if (currentMode !== arg) {
           self.layout = []
           self.clusterTree = undefined
         }
-        self.renderingMode = arg
+        self.renderingModeSetting = arg
       },
       /**
        * #action
@@ -343,7 +383,7 @@ export default function MultiVariantBaseModelF(
        * #action
        */
       setReferenceDrawingMode(arg: string) {
-        self.referenceDrawingMode = arg
+        self.referenceDrawingModeSetting = arg
       },
     }))
     .views(self => ({
@@ -356,8 +396,49 @@ export default function MultiVariantBaseModelF(
 
       /**
        * #getter
+       * Returns the effective minor allele frequency filter, falling back to config
        */
-      get activeFilters() {
+      get minorAlleleFrequencyFilter() {
+        return (
+          self.minorAlleleFrequencyFilterSetting ??
+          getConf(self, 'minorAlleleFrequencyFilter')
+        )
+      },
+
+      /**
+       * #getter
+       * Returns the effective showSidebarLabels setting, falling back to config
+       */
+      get showSidebarLabels() {
+        return (
+          self.showSidebarLabelsSetting ?? getConf(self, 'showSidebarLabels')
+        )
+      },
+
+      /**
+       * #getter
+       * Returns the effective showTree setting, falling back to config
+       */
+      get showTree() {
+        return self.showTreeSetting ?? getConf(self, 'showTree')
+      },
+
+      /**
+       * #getter
+       * Returns the effective reference drawing mode, derived from config showReferenceAlleles
+       */
+      get referenceDrawingMode(): string {
+        if (self.referenceDrawingModeSetting !== undefined) {
+          return self.referenceDrawingModeSetting
+        }
+        const showRef = getConf(self, 'showReferenceAlleles')
+        return showRef ? 'draw' : 'skip'
+      },
+
+      /**
+       * #method
+       */
+      activeFilters() {
         // config jexlFilters are deferred evaluated so they are prepended with
         // jexl at runtime rather than being stored with jexl in the config
         return (
@@ -365,6 +446,10 @@ export default function MultiVariantBaseModelF(
           getConf(self, 'jexlFilters').map((r: string) => `jexl:${r}`)
         )
       },
+
+      /**
+       * #getter
+       */
       get sourcesWithoutLayout() {
         return self.sourcesVolatile
           ? getSources({
@@ -413,7 +498,7 @@ export default function MultiVariantBaseModelF(
         get sourceMap() {
           return self.sources
             ? Object.fromEntries(
-                self.sources.map(source => [source.name, source]),
+                self.sources.map((source: Source) => [source.name, source]),
               )
             : undefined
         },
@@ -482,9 +567,9 @@ export default function MultiVariantBaseModelF(
                 {
                   label: 'Show sidebar labels',
                   type: 'checkbox',
-                  checked: self.showSidebarLabelsSetting,
+                  checked: self.showSidebarLabels,
                   onClick: () => {
-                    self.setShowSidebarLabels(!self.showSidebarLabelsSetting)
+                    self.setShowSidebarLabels(!self.showSidebarLabels)
                   },
                 },
                 {
@@ -581,20 +666,9 @@ export default function MultiVariantBaseModelF(
 
             {
               label: 'Filter by',
-              icon: FilterListIcon,
+              icon: ClearAllIcon,
               subMenu: [
-                {
-                  label: 'Minor allele frequency',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      MAFFilterDialog,
-                      {
-                        model: self,
-                        handleClose,
-                      },
-                    ])
-                  },
-                },
+                createMAFFilterMenuItem(self),
                 {
                   label: 'Edit filters',
                   onClick: () => {
@@ -643,7 +717,7 @@ export default function MultiVariantBaseModelF(
        * #getter
        */
       get canDisplayLabels() {
-        return self.rowHeight >= 6 && self.showSidebarLabelsSetting
+        return self.rowHeight >= 6 && self.showSidebarLabels
       },
       /**
        * #getter
@@ -697,8 +771,42 @@ export default function MultiVariantBaseModelF(
           scrollTop: self.scrollTop,
           referenceDrawingMode: self.referenceDrawingMode,
           filters: new SerializableFilterChain({
-            filters: self.activeFilters,
+            filters: self.activeFilters(),
           }),
+        }
+      },
+      /**
+       * #method
+       */
+      renderingProps() {
+        return {
+          displayModel: self,
+          async onFeatureClick(_: React.MouseEvent, featureId: string) {
+            const session = getSession(self)
+            const { rpcManager } = session
+            try {
+              const sessionId = getRpcSessionId(self)
+              const track = getContainingTrack(self)
+
+              const { feature } = (await rpcManager.call(
+                sessionId,
+                'MultiVariantGetFeatureDetails',
+                {
+                  featureId,
+                  sessionId,
+                  trackInstanceId: track.id,
+                  rendererType: self.rendererTypeName,
+                },
+              )) as { feature: SimpleFeatureSerialized | undefined }
+
+              if (isAlive(self) && feature) {
+                self.selectFeature(new SimpleFeature(feature))
+              }
+            } catch (e) {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            }
+          },
         }
       },
       /**
@@ -763,14 +871,14 @@ export default function MultiVariantBaseModelF(
       }
       const {
         layout,
-        minorAlleleFrequencyFilter,
+        minorAlleleFrequencyFilterSetting,
         showSidebarLabelsSetting,
-        showTree,
-        renderingMode,
+        showTreeSetting,
+        renderingModeSetting,
         rowHeightMode,
         lengthCutoffFilter,
         jexlFilters,
-        referenceDrawingMode,
+        referenceDrawingModeSetting,
         clusterTree,
         treeAreaWidth,
         lineZoneHeight,
@@ -779,16 +887,22 @@ export default function MultiVariantBaseModelF(
       return {
         ...rest,
         ...(layout.length ? { layout } : {}),
-        ...(minorAlleleFrequencyFilter ? { minorAlleleFrequencyFilter } : {}),
-        ...(!showSidebarLabelsSetting ? { showSidebarLabelsSetting } : {}),
-        ...(!showTree ? { showTree } : {}),
-        ...(renderingMode !== 'alleleCount' ? { renderingMode } : {}),
+        ...(minorAlleleFrequencyFilterSetting !== undefined
+          ? { minorAlleleFrequencyFilterSetting }
+          : {}),
+        ...(showSidebarLabelsSetting !== undefined
+          ? { showSidebarLabelsSetting }
+          : {}),
+        ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
+        ...(renderingModeSetting !== undefined ? { renderingModeSetting } : {}),
         ...(rowHeightMode !== 'auto' ? { rowHeightMode } : {}),
         ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
           ? { lengthCutoffFilter }
           : {}),
         ...(jexlFilters?.length ? { jexlFilters } : {}),
-        ...(referenceDrawingMode !== 'skip' ? { referenceDrawingMode } : {}),
+        ...(referenceDrawingModeSetting !== undefined
+          ? { referenceDrawingModeSetting }
+          : {}),
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(lineZoneHeight ? { lineZoneHeight } : {}),

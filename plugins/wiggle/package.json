@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-wiggle",
-  "version": "4.0.4",
+  "version": "4.1.1",
   "type": "module",
   "description": "JBrowse 2 wiggle adapters, tracks, etc.",
   "keywords": [
@@ -36,10 +36,10 @@
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-data-management": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@mui/icons-material": "^7.3.6",
-    "@mui/material": "^7.3.6",
-    "@mui/x-charts-vendor": "^8.25.0",
-    "@mui/x-data-grid": "^8.25.0",
+    "@mui/icons-material": "^7.3.7",
+    "@mui/material": "^7.3.7",
+    "@mui/x-charts-vendor": "^8.26.0",
+    "@mui/x-data-grid": "^8.26.0",
     "@types/file-saver-es": "^2.0.3",
     "colord": "^2.9.3",
     "copy-to-clipboard": "^3.3.3",

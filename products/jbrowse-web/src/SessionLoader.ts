@@ -66,6 +66,10 @@ const SessionLoader = types
     /**
      * #property
      */
+    sessionName: types.maybe(types.string),
+    /**
+     * #property
+     */
     initialTimestamp: types.number,
 
     /**

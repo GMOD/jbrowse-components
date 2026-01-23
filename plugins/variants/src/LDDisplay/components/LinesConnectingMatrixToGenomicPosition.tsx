@@ -25,7 +25,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Wrapper = observer(function Wrapper({
+export const Wrapper = observer(function Wrapper({
   children,
   model,
   exportSVG,
@@ -55,6 +55,20 @@ const Wrapper = observer(function Wrapper({
     </svg>
   )
 })
+
+function getGenomicX(
+  view: LinearGenomeViewModel,
+  assembly: { getCanonicalRefName2: (refName: string) => string },
+  snp: { refName: string; start: number },
+  offsetAdjustment: number,
+) {
+  return (
+    (view.bpToPx({
+      refName: assembly.getCanonicalRefName2(snp.refName),
+      coord: snp.start,
+    })?.offsetPx || 0) - offsetAdjustment
+  )
+}
 
 interface MouseOverLine {
   snp: { id: string; refName: string; start: number; end: number }
@@ -92,6 +106,47 @@ const LineTooltip = observer(function LineTooltip({
   ) : null
 })
 
+export const VariantLabels = observer(function VariantLabels({
+  model,
+}: {
+  model: SharedLDModel
+}) {
+  const theme = useTheme()
+  const { assemblyManager } = getSession(model)
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const { snps, showLabels } = model
+  const { offsetPx, assemblyNames } = view
+  const assembly = assemblyManager.get(assemblyNames[0]!)
+  const offsetAdj = Math.max(offsetPx, 0)
+
+  if (!assembly || snps.length === 0 || !showLabels) {
+    return null
+  }
+
+  return (
+    <>
+      {snps.map((snp, i) => {
+        const genomicX = getGenomicX(view, assembly, snp, offsetAdj)
+        return (
+          <text
+            key={`${snp.id}-${i}`}
+            x={genomicX}
+            y={0}
+            transform={`rotate(-90, ${genomicX}, 0)`}
+            fontSize={10}
+            textAnchor="end"
+            dominantBaseline="middle"
+            fill={theme.palette.text.primary}
+            style={{ pointerEvents: 'none' }}
+          >
+            {snp.id || 'NOLABEL'}
+          </text>
+        )
+      })}
+    </>
+  )
+})
+
 const AllLines = observer(function AllLines({
   model,
   setMouseOverLine,
@@ -102,14 +157,13 @@ const AllLines = observer(function AllLines({
   const theme = useTheme()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight, snps, showLabels, tickHeight, useGenomicPositions } =
-    model
+  const { lineZoneHeight, snps, tickHeight } = model
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
   const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
   const n = snps.length
-  const l = Math.max(offsetPx, 0)
-  const p = getStrokeProps(alpha(theme.palette.text.primary, 0.4))
+  const offsetAdj = Math.max(offsetPx, 0)
+  const strokeProps = getStrokeProps(alpha(theme.palette.text.primary, 0.4))
 
   if (!assembly || n === 0) {
     return null
@@ -118,16 +172,10 @@ const AllLines = observer(function AllLines({
   return (
     <>
       {snps.map((snp, i) => {
-        const ref = snp.refName
-        const genomicX =
-          (view.bpToPx({
-            refName: assembly.getCanonicalRefName2(ref),
-            coord: snp.start,
-          })?.offsetPx || 0) - l
-
-        // Matrix column position: use genomic position or uniform distribution
-        const matrixX = useGenomicPositions ? genomicX : ((i + 0.5) * b0) / n
-
+        const genomicX = getGenomicX(view, assembly, snp, offsetAdj)
+        // Matrix position uses uniform distribution (this component is only
+        // rendered when useGenomicPositions is false)
+        const matrixX = ((i + 0.5) * b0) / n
         return (
           <g
             key={`${snp.id}-${i}`}
@@ -138,42 +186,26 @@ const AllLines = observer(function AllLines({
               setMouseOverLine(undefined)
             }}
           >
-            {/* Main connecting line */}
             <line
-              {...p}
+              {...strokeProps}
               strokeWidth={1}
               x1={matrixX}
               x2={genomicX}
               y1={lineZoneHeight}
               y2={tickHeight}
             />
-            {/* Vertical tick mark at genomic position */}
             <line
-              {...p}
+              {...strokeProps}
               strokeWidth={1}
               x1={genomicX}
               x2={genomicX}
               y1={0}
               y2={tickHeight}
             />
-            {/* Variant label */}
-            {showLabels ? (
-              <text
-                x={genomicX}
-                y={0}
-                transform={`rotate(-60, ${genomicX}, 0)`}
-                fontSize={10}
-                textAnchor="start"
-                dominantBaseline="middle"
-                fill={theme.palette.text.primary}
-                style={{ pointerEvents: 'none' }}
-              >
-                {snp.id}
-              </text>
-            ) : null}
           </g>
         )
       })}
+      <VariantLabels model={model} />
     </>
   )
 })
@@ -191,7 +223,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const { classes } = useStyles()
     const view = getContainingView(model) as LinearGenomeViewModel
     const [mouseOverLine, setMouseOverLine] = useState<MouseOverLine>()
-    const { lineZoneHeight, snps, useGenomicPositions } = model
+    const { lineZoneHeight, snps } = model
     const { dynamicBlocks } = view
     const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
     const n = snps.length
@@ -200,11 +232,10 @@ const LinesConnectingMatrixToGenomicPosition = observer(
       return null
     }
 
-    // Calculate matrix X position for highlighted line
+    // Calculate matrix X position for highlighted line (uniform distribution,
+    // since this component is only rendered when useGenomicPositions is false)
     const highlightMatrixX = mouseOverLine
-      ? useGenomicPositions
-        ? mouseOverLine.genomicX
-        : ((mouseOverLine.idx + 0.5) * b0) / n
+      ? ((mouseOverLine.idx + 0.5) * b0) / n
       : 0
 
     return (
@@ -245,7 +276,10 @@ const LinesConnectingMatrixToGenomicPosition = observer(
               position: 'absolute',
               top: lineZoneHeight - 4,
             }}
-            onDrag={d => model.setLineZoneHeight(lineZoneHeight + d)}
+            onDrag={d => {
+              model.setLineZoneHeight(lineZoneHeight + d)
+              return undefined
+            }}
             className={classes.resizeHandle}
           />
         ) : null}

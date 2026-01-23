@@ -123,6 +123,16 @@ any
 boolean
 ```
 
+#### getter: adapterHintNotConfigurable
+
+Returns true if the user selected an adapter from the dropdown but the extension
+point couldn't build a config for it
+
+```js
+// type
+boolean
+```
+
 #### getter: assembly
 
 ```js
@@ -165,13 +175,6 @@ any
 ```js
 // type signature
 setAdapterHint: (obj: string) => void
-```
-
-#### action: setTrackSource
-
-```js
-// type signature
-setTrackSource: (str: string) => void
 ```
 
 #### action: setTextIndexingConf

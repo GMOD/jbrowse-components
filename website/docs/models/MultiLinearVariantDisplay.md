@@ -44,6 +44,16 @@ type: types.literal('MultiLinearVariantDisplay')
 string
 ```
 
+#### getter: featureWidgetType
+
+```js
+// type
+{
+  type: string
+  id: string
+}
+```
+
 ### MultiLinearVariantDisplay - Actions
 
 #### action: renderSvg

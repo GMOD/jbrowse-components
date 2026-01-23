@@ -3,12 +3,13 @@ import type React from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
   NonBlockCanvasDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
@@ -41,80 +42,111 @@ export default function sharedModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        minorAlleleFrequencyFilter: types.optional(types.number, 0.1),
+        minorAlleleFrequencyFilterSetting: types.maybe(types.number),
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        lengthCutoffFilter: types.optional(
-          types.number,
-          Number.MAX_SAFE_INTEGER,
-        ),
+        lengthCutoffFilterSetting: types.maybe(types.number),
         /**
          * #property
+         * When undefined, falls back to config value
          * Height of the zone for connecting lines at the top
          */
-        lineZoneHeight: types.optional(types.number, 100),
+        lineZoneHeightSetting: types.maybe(types.number),
         /**
          * #property
+         * When undefined, falls back to config value
          * LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)
          */
-        ldMetric: types.optional(types.string, 'r2'),
+        ldMetricSetting: types.maybe(types.string),
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        colorScheme: types.maybe(types.string),
+        colorSchemeSetting: types.maybe(types.string),
         /**
          * #property
+         * When undefined, falls back to config value
          */
-        showLegend: types.optional(types.boolean, false),
+        showLegendSetting: types.maybe(types.boolean),
         /**
          * #property
+         * When undefined, falls back to config value
          * Whether to show the LD triangle heatmap
          */
-        showLDTriangle: types.optional(types.boolean, true),
+        showLDTriangleSetting: types.maybe(types.boolean),
         /**
          * #property
+         * When undefined, falls back to config value
          * Whether to show the recombination rate track
          */
-        showRecombination: types.optional(types.boolean, false),
+        showRecombinationSetting: types.maybe(types.boolean),
         /**
          * #property
+         * When undefined, falls back to config value
          * Height of the recombination track zone at the top
          */
-        recombinationZoneHeight: types.optional(types.number, 50),
+        recombinationZoneHeightSetting: types.maybe(types.number),
         /**
          * #property
+         * When undefined, falls back to config value
          * When true, squash the LD triangle to fit the display height
          */
-        fitToHeight: types.optional(types.boolean, false),
+        fitToHeightSetting: types.maybe(types.boolean),
         /**
          * #property
+         * When undefined, falls back to config value
          * HWE filter p-value threshold (variants with HWE p < this are excluded)
          * Set to 0 to disable HWE filtering
          */
-        hweFilterThreshold: types.optional(types.number, 0.001),
+        hweFilterThresholdSetting: types.maybe(types.number),
         /**
          * #property
+         * When undefined, falls back to config value
+         * Call rate filter threshold (0-1). Variants with fewer than this
+         * proportion of non-missing genotypes are excluded.
+         */
+        callRateFilterSetting: types.maybe(types.number),
+        /**
+         * #property
+         * When undefined, falls back to config value
          * Whether to show vertical guides at the connected genome positions on hover
          */
-        showVerticalGuides: types.optional(types.boolean, true),
+        showVerticalGuidesSetting: types.maybe(types.boolean),
         /**
          * #property
+         * When undefined, falls back to config value
          * Whether to show variant labels above the tick marks
          */
-        showLabels: types.optional(types.boolean, false),
+        showLabelsSetting: types.maybe(types.boolean),
         /**
          * #property
+         * When undefined, falls back to config value
          * Height of the vertical tick marks at the genomic position
          */
-        tickHeight: types.optional(types.number, 6),
+        tickHeightSetting: types.maybe(types.number),
         /**
          * #property
+         * When undefined, falls back to config value
          * When true, draw cells sized according to genomic distance between SNPs
          * rather than uniform squares
          */
-        useGenomicPositions: types.optional(types.boolean, false),
+        useGenomicPositionsSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         * When undefined, falls back to config value
+         * When true, show signed LD values (-1 to 1) instead of absolute values
+         */
+        signedLDSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         * When undefined, falls back to config value
+         * JEXL filter expressions to apply to variants
+         */
+        jexlFiltersSetting: types.maybe(types.array(types.string)),
       }),
     )
     .volatile(() => ({
@@ -183,8 +215,7 @@ export default function sharedModelFactory(
        * #action
        */
       setLineZoneHeight(n: number) {
-        self.lineZoneHeight = Math.max(0, n)
-        return self.lineZoneHeight
+        self.lineZoneHeightSetting = Math.max(0, n)
       },
       /**
        * #action
@@ -202,62 +233,67 @@ export default function sharedModelFactory(
        * #action
        */
       setMafFilter(arg: number) {
-        self.minorAlleleFrequencyFilter = arg
+        self.minorAlleleFrequencyFilterSetting = arg
       },
       /**
        * #action
        */
       setLengthCutoffFilter(arg: number) {
-        self.lengthCutoffFilter = arg
+        self.lengthCutoffFilterSetting = arg
       },
       /**
        * #action
        */
       setLDMetric(metric: string) {
-        self.ldMetric = metric
+        self.ldMetricSetting = metric
       },
       /**
        * #action
        */
       setColorScheme(scheme: string | undefined) {
-        self.colorScheme = scheme
+        self.colorSchemeSetting = scheme
       },
       /**
        * #action
        */
       setShowLegend(show: boolean) {
-        self.showLegend = show
+        self.showLegendSetting = show
       },
       /**
        * #action
        */
       setShowLDTriangle(show: boolean) {
-        self.showLDTriangle = show
+        self.showLDTriangleSetting = show
       },
       /**
        * #action
        */
       setShowRecombination(show: boolean) {
-        self.showRecombination = show
+        self.showRecombinationSetting = show
       },
       /**
        * #action
        */
       setRecombinationZoneHeight(n: number) {
-        self.recombinationZoneHeight = Math.max(20, n)
-        return self.recombinationZoneHeight
+        self.recombinationZoneHeightSetting = Math.max(20, n)
       },
       /**
        * #action
        */
       setFitToHeight(value: boolean) {
-        self.fitToHeight = value
+        self.fitToHeightSetting = value
       },
       /**
        * #action
        */
       setHweFilter(threshold: number) {
-        self.hweFilterThreshold = threshold
+        self.hweFilterThresholdSetting = threshold
+      },
+      /**
+       * #action
+       */
+      setCallRateFilter(threshold: number) {
+        self.callRateFilterSetting = threshold
       },
       /**
        * #action
@@ -275,25 +311,37 @@ export default function sharedModelFactory(
        * #action
        */
       setShowVerticalGuides(show: boolean) {
-        self.showVerticalGuides = show
+        self.showVerticalGuidesSetting = show
       },
       /**
        * #action
        */
       setShowLabels(show: boolean) {
-        self.showLabels = show
+        self.showLabelsSetting = show
       },
       /**
        * #action
        */
       setTickHeight(height: number) {
-        self.tickHeight = Math.max(0, height)
+        self.tickHeightSetting = Math.max(0, height)
       },
       /**
        * #action
        */
       setUseGenomicPositions(value: boolean) {
-        self.useGenomicPositions = value
+        self.useGenomicPositionsSetting = value
+      },
+      /**
+       * #action
+       */
+      setSignedLD(value: boolean) {
+        self.signedLDSetting = value
+      },
+      /**
+       * #action
+       */
+      setJexlFilters(filters: string[] | undefined) {
+        self.jexlFiltersSetting = cast(filters)
       },
     }))
     .views(self => ({
@@ -308,14 +356,6 @@ export default function sharedModelFactory(
        */
       get prefersOffset() {
         return true
-      },
-      /**
-       * #getter
-       * Effective height for the LD canvas (total height minus line zone)
-       * Note: Recombination track is overlaid on the line zone, not in a separate zone
-       */
-      get ldCanvasHeight() {
-        return Math.max(50, self.height - self.lineZoneHeight)
       },
       /**
        * #getter
@@ -336,15 +376,221 @@ export default function sharedModelFactory(
         return false
       },
       /**
+       * #getter
+       * Returns the effective minor allele frequency filter, falling back to config
+       */
+      get minorAlleleFrequencyFilter() {
+        return (
+          self.minorAlleleFrequencyFilterSetting ??
+          getConf(self, 'minorAlleleFrequencyFilter')
+        )
+      },
+      /**
+       * #getter
+       * Returns the effective length cutoff filter, falling back to config
+       */
+      get lengthCutoffFilter() {
+        return (
+          self.lengthCutoffFilterSetting ?? getConf(self, 'lengthCutoffFilter')
+        )
+      },
+      /**
+       * #getter
+       * Returns the effective line zone height, falling back to config
+       */
+      get lineZoneHeight() {
+        return self.lineZoneHeightSetting ?? getConf(self, 'lineZoneHeight')
+      },
+      /**
+       * #getter
+       * Returns the effective LD metric, falling back to config
+       */
+      get ldMetric() {
+        return self.ldMetricSetting ?? getConf(self, 'ldMetric')
+      },
+      /**
+       * #getter
+       * Returns the effective color scheme, falling back to config
+       */
+      get colorScheme() {
+        const setting = self.colorSchemeSetting
+        if (setting !== undefined) {
+          return setting || undefined
+        }
+        const conf = getConf(self, 'colorScheme')
+        return conf || undefined
+      },
+      /**
+       * #getter
+       * Returns the effective show legend setting, falling back to config
+       */
+      get showLegend() {
+        return self.showLegendSetting ?? getConf(self, 'showLegend')
+      },
+      /**
+       * #getter
+       * Returns the effective show LD triangle setting, falling back to config
+       */
+      get showLDTriangle() {
+        return self.showLDTriangleSetting ?? getConf(self, 'showLDTriangle')
+      },
+      /**
+       * #getter
+       * Returns the effective show recombination setting, falling back to config
+       */
+      get showRecombination() {
+        return (
+          self.showRecombinationSetting ?? getConf(self, 'showRecombination')
+        )
+      },
+      /**
+       * #getter
+       * Returns the effective recombination zone height, falling back to config
+       */
+      get recombinationZoneHeight() {
+        return (
+          self.recombinationZoneHeightSetting ??
+          getConf(self, 'recombinationZoneHeight')
+        )
+      },
+      /**
+       * #getter
+       * Returns the effective fit to height setting, falling back to config
+       */
+      get fitToHeight() {
+        return self.fitToHeightSetting ?? getConf(self, 'fitToHeight')
+      },
+      /**
+       * #getter
+       * Returns the effective HWE filter threshold, falling back to config
+       */
+      get hweFilterThreshold() {
+        return (
+          self.hweFilterThresholdSetting ?? getConf(self, 'hweFilterThreshold')
+        )
+      },
+      /**
+       * #getter
+       * Returns the effective call rate filter threshold, falling back to config
+       */
+      get callRateFilter() {
+        return self.callRateFilterSetting ?? getConf(self, 'callRateFilter')
+      },
+      /**
+       * #getter
+       * Returns the effective show vertical guides setting, falling back to config
+       */
+      get showVerticalGuides() {
+        return (
+          self.showVerticalGuidesSetting ?? getConf(self, 'showVerticalGuides')
+        )
+      },
+      /**
+       * #getter
+       * Returns the effective show labels setting, falling back to config
+       */
+      get showLabels() {
+        return self.showLabelsSetting ?? getConf(self, 'showLabels')
+      },
+      /**
+       * #getter
+       * Returns the effective tick height, falling back to config
+       */
+      get tickHeight() {
+        return self.tickHeightSetting ?? getConf(self, 'tickHeight')
+      },
+      /**
+       * #getter
+       * Returns the effective use genomic positions setting, falling back to config
+       */
+      get useGenomicPositions() {
+        return (
+          self.useGenomicPositionsSetting ??
+          getConf(self, 'useGenomicPositions')
+        )
+      },
+      /**
+       * #getter
+       * Returns the effective signed LD setting, falling back to config
+       */
+      get signedLD() {
+        return self.signedLDSetting ?? getConf(self, 'signedLD')
+      },
+      /**
+       * #getter
+       * Returns the effective jexl filters, falling back to config
+       */
+      get jexlFilters() {
+        return self.jexlFiltersSetting ?? getConf(self, 'jexlFilters')
+      },
+      /**
+       * #getter
+       * Returns true if this display uses pre-computed LD data (PLINK, ldmat)
+       * rather than computing LD from VCF genotypes
+       */
+      get isPrecomputedLD() {
+        const adapterType = self.adapterConfig?.type as string | undefined
+        return (
+          adapterType === 'PlinkLDAdapter' ||
+          adapterType === 'PlinkLDTabixAdapter' ||
+          adapterType === 'LdmatAdapter'
+        )
+      },
+      /**
        * #method
        */
       regionCannotBeRendered() {
         return null
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * Effective height for the LD canvas (total height minus line zone)
+       * Note: Recombination track is overlaid on the line zone, not in a separate zone
+       */
+      get ldCanvasHeight() {
+        return Math.max(50, self.height - self.lineZoneHeight)
+      },
+    }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * #method
+         */
+        filterMenuItems() {
+          // Filter settings only available for VCF-computed LD, not pre-computed
+          if (self.isPrecomputedLD) {
+            return []
+          }
+          return [
+            {
+              label: 'LD-specific filters...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  LDFilterDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+            {
+              label: 'General JEXL filters...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  AddFiltersDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+          ]
+        },
         /**
          * #method
          */
@@ -359,10 +605,13 @@ export default function sharedModelFactory(
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             lengthCutoffFilter: self.lengthCutoffFilter,
             hweFilterThreshold: self.hweFilterThreshold,
+            callRateFilter: self.callRateFilter,
+            jexlFilters: self.jexlFilters,
             ldMetric: self.ldMetric,
             colorScheme: self.colorScheme,
             fitToHeight: self.fitToHeight,
             useGenomicPositions: self.useGenomicPositions,
+            signedLD: self.signedLD,
           }
         },
       }
@@ -460,20 +709,33 @@ export default function sharedModelFactory(
                     self.setUseGenomicPositions(!self.useGenomicPositions)
                   },
                 },
+                // Signed LD only available for VCF-computed LD, not pre-computed
+                ...(self.isPrecomputedLD
+                  ? []
+                  : [
+                      {
+                        label: 'Show signed LD values (-1 to 1)',
+                        helpText:
+                          "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
+                        type: 'checkbox',
+                        checked: self.signedLD,
+                        onClick: () => {
+                          self.setSignedLD(!self.signedLD)
+                        },
+                      },
+                    ]),
               ],
             },
-            {
-              label: 'Filter settings...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  LDFilterDialog,
+            // Filter menu only available for VCF-computed LD, not pre-computed
+            ...(self.isPrecomputedLD
+              ? []
+              : [
                   {
-                    model: self,
-                    handleClose,
+                    label: 'Filter by...',
+                    type: 'subMenu',
+                    subMenu: self.filterMenuItems(),
                   },
-                ])
-              },
-            },
+                ]),
           ]
         },
 
@@ -508,42 +770,87 @@ export default function sharedModelFactory(
         return snap
       }
       const {
-        minorAlleleFrequencyFilter,
-        lengthCutoffFilter,
-        hweFilterThreshold,
-        ldMetric,
-        colorScheme,
-        showLegend,
-        showLDTriangle,
-        showRecombination,
-        recombinationZoneHeight,
-        fitToHeight,
-        showVerticalGuides,
-        showLabels,
-        tickHeight,
-        useGenomicPositions,
+        minorAlleleFrequencyFilterSetting,
+        lengthCutoffFilterSetting,
+        lineZoneHeightSetting,
+        ldMetricSetting,
+        colorSchemeSetting,
+        showLegendSetting,
+        showLDTriangleSetting,
+        showRecombinationSetting,
+        recombinationZoneHeightSetting,
+        fitToHeightSetting,
+        hweFilterThresholdSetting,
+        callRateFilterSetting,
+        showVerticalGuidesSetting,
+        showLabelsSetting,
+        tickHeightSetting,
+        useGenomicPositionsSetting,
+        signedLDSetting,
+        jexlFiltersSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(minorAlleleFrequencyFilter !== 0.1
-          ? { minorAlleleFrequencyFilter }
+        // Only save settings that differ from config defaults
+        ...(minorAlleleFrequencyFilterSetting !== undefined &&
+        minorAlleleFrequencyFilterSetting !== 0.1
+          ? { minorAlleleFrequencyFilterSetting }
           : {}),
-        ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
-          ? { lengthCutoffFilter }
+        ...(lengthCutoffFilterSetting !== undefined &&
+        lengthCutoffFilterSetting !== Number.MAX_SAFE_INTEGER
+          ? { lengthCutoffFilterSetting }
           : {}),
-        ...(hweFilterThreshold !== 0.001 ? { hweFilterThreshold } : {}),
-        ...(ldMetric !== 'r2' ? { ldMetric } : {}),
-        ...(colorScheme ? { colorScheme } : {}),
-        ...(showLegend ? { showLegend } : {}),
-        ...(!showLDTriangle ? { showLDTriangle } : {}),
-        ...(showRecombination ? { showRecombination } : {}),
-        ...(recombinationZoneHeight !== 50 ? { recombinationZoneHeight } : {}),
-        ...(fitToHeight ? { fitToHeight } : {}),
-        ...(!showVerticalGuides ? { showVerticalGuides } : {}),
-        ...(showLabels ? { showLabels } : {}),
-        ...(tickHeight !== 6 ? { tickHeight } : {}),
-        ...(useGenomicPositions ? { useGenomicPositions } : {}),
+        ...(lineZoneHeightSetting !== undefined && lineZoneHeightSetting !== 100
+          ? { lineZoneHeightSetting }
+          : {}),
+        ...(ldMetricSetting !== undefined && ldMetricSetting !== 'r2'
+          ? { ldMetricSetting }
+          : {}),
+        ...(colorSchemeSetting !== undefined && colorSchemeSetting !== ''
+          ? { colorSchemeSetting }
+          : {}),
+        ...(showLegendSetting !== undefined && showLegendSetting
+          ? { showLegendSetting }
+          : {}),
+        ...(showLDTriangleSetting !== undefined && !showLDTriangleSetting
+          ? { showLDTriangleSetting }
+          : {}),
+        ...(showRecombinationSetting !== undefined && showRecombinationSetting
+          ? { showRecombinationSetting }
+          : {}),
+        ...(recombinationZoneHeightSetting !== undefined &&
+        recombinationZoneHeightSetting !== 50
+          ? { recombinationZoneHeightSetting }
+          : {}),
+        ...(fitToHeightSetting !== undefined && fitToHeightSetting
+          ? { fitToHeightSetting }
+          : {}),
+        ...(hweFilterThresholdSetting !== undefined &&
+        hweFilterThresholdSetting !== 0.001
+          ? { hweFilterThresholdSetting }
+          : {}),
+        ...(callRateFilterSetting !== undefined && callRateFilterSetting !== 0
+          ? { callRateFilterSetting }
+          : {}),
+        ...(showVerticalGuidesSetting !== undefined &&
+        !showVerticalGuidesSetting
+          ? { showVerticalGuidesSetting }
+          : {}),
+        ...(showLabelsSetting !== undefined && showLabelsSetting
+          ? { showLabelsSetting }
+          : {}),
+        ...(tickHeightSetting !== undefined && tickHeightSetting !== 6
+          ? { tickHeightSetting }
+          : {}),
+        ...(useGenomicPositionsSetting !== undefined &&
+        useGenomicPositionsSetting
+          ? { useGenomicPositionsSetting }
+          : {}),
+        ...(signedLDSetting !== undefined && signedLDSetting
+          ? { signedLDSetting }
+          : {}),
+        ...(jexlFiltersSetting?.length ? { jexlFiltersSetting } : {}),
       } as typeof snap
     })
 }

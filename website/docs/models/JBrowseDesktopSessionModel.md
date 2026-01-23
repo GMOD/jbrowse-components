@@ -33,6 +33,7 @@ composed of
 - SessionAssembliesMixin
 - TemporaryAssembliesMixin
 - DesktopSessionTrackMenuMixin
+- DockviewLayoutMixin
 - SnackbarModel
 - AppFocusMixin
 

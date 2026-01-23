@@ -136,7 +136,7 @@ SNPCoverageDisplay
 
 ```js
 // type signature
-wiggleOnlyTrackMenuItems: () => ({ label: string; type: string; checked: boolean; onClick: () => void; subMenu?: undefined; icon?: undefined; } | { label: string; subMenu: { label: string; type: string; checked: boolean; onClick: () => void; }[]; type?: undefined; checked?: undefined; onClick?: undefined; icon?: undefined; } | { ...; } | { ....
+wiggleOnlyTrackMenuItems: () => ({ label: string; subMenu: { label: string; type: string; checked: boolean; onClick: () => void; }[]; icon?: undefined; onClick?: undefined; } | { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { ...; }; onClick: () => void; subMenu?: undefined; })[]
 ```
 
 #### method: trackMenuItems

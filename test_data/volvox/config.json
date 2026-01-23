@@ -885,6 +885,28 @@
     },
     {
       "type": "QuantitativeTrack",
+      "trackId": "volvox_microarray_color",
+      "name": "wiggle_track xyplot color",
+      "category": ["Integration test", "Wiggle"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "volvox_microarray.bw"
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "renderers": {
+            "XYPlotRenderer": {
+              "type": "XYPlotRenderer",
+              "color": "#C8B414"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
       "trackId": "volvox_microarray",
       "name": "wiggle_track xyplot",
       "category": ["Integration test", "Wiggle"],
@@ -2186,7 +2208,6 @@
       },
       "assemblyNames": ["volvox_del", "volvox"]
     },
-
     {
       "type": "SyntenyTrack",
       "trackId": "volvox_ins.pif",
@@ -2419,6 +2440,50 @@
         }
       },
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox multi-sample sv",
+      "name": "volvox multi-sample sv",
+      "category": ["Variants"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "volvox.sv.vcf.gz",
+        "samplesTsvLocation": {
+          "uri": "volvox.sv.samples.tsv",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox"],
+      "displays": [
+        {
+          "type": "MultiLinearVariantDisplay",
+          "showReferenceAlleles": true,
+          "colorBy": "population"
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_test_vcf_jexl",
+      "name": "volvox 1000genomes vcf (JEXL filters + coloring)",
+      "assemblyNames": ["volvox"],
+      "category": ["Variants"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "volvox.test.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
+          "jexlFilters": ["get(feature,'start')<8000"],
+          "renderer": {
+            "type": "CanvasFeatureRenderer",
+            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
+          }
+        }
+      ]
     }
   ],
   "plugins": [

@@ -1,3 +1,33 @@
+## Changes since v4.0.4 (2026-01-17)
+
+### bug
+
+- Minor fixes for genbank and gff3 file export (#5435) @cmdcolin
+- Fix issues with large VCF files not displaying in v4.0.4 (#5432) @cmdcolin
+- Add testing for remote file fetching in text-index (#5429) @cmdcolin
+- Fix text-index from remote gz file. (#5427) @Yihuki
+
+### enhancement
+
+- Add stack trace to jbrowse desktop text indexing failures (#5436) @cmdcolin
+- Add config.json slots for multi-sample variant displays (#5434) @cmdcolin
+- Add examples of using the Core-preProcessConfig extension point (#5433)
+  @cmdcolin
+- Bump to @gmod/cram v8 for qual speed and memory optimization (#5430) @cmdcolin
+- Allow supplying initial display parameters when using URL query param API
+  (#5426) @cmdcolin
+- Allow custom jexl functions to be used in filters (#5425) @cmdcolin
+- Add type:"module" to package.json's to complete ESM conversion (#5422)
+  @cmdcolin
+- Add testing for electron app using windows github action runner and fix text
+  indexing on windows (#5421) @cmdcolin
+- Create system for visualizing linkage disequilibrium from VCF and PLINK output
+  files (#5420) @cmdcolin
+- Add ability to reload local files across page using FileSystemFileHandle API
+  (#5419) @cmdcolin
+- Add re-exports to enable embedded apps to use webworkers after v4 (#5418)
+  @cmdcolin
+
 ## Changes since v4.0.3 (2026-01-10)
 
 ### enhancement

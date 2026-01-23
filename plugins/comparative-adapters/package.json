@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-comparative-adapters",
-  "version": "4.0.4",
+  "version": "4.1.1",
   "type": "module",
   "description": "JBrowse 2 comparative adapters",
   "keywords": [
@@ -34,7 +34,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-alignments": "workspace:^",
-    "@mui/material": "^7.3.6",
+    "@mui/material": "^7.3.7",
     "generic-filehandle2": "^2.0.18",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",

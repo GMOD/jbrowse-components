@@ -72,6 +72,9 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
       samp = feature.get('genotypes') as Record<string, string>
       genotypesCache.set(featureId, samp)
     }
+    const featureType = feature.get('type')
+    const featureStrand = feature.get('strand')
+    const alpha = bpLen > 5 ? 0.75 : 1
 
     for (let j = startRow; j < endRow; j++) {
       const y = j * h - scrollTop
@@ -85,7 +88,20 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
           const alleles =
             splitCache[genotype] ?? (splitCache[genotype] = genotype.split('|'))
           if (
-            drawPhased(alleles, ctx, x, y, w, drawH, HP!, undefined, drawRef)
+            drawPhased(
+              alleles,
+              ctx,
+              x,
+              y,
+              w,
+              drawH,
+              HP!,
+              undefined,
+              drawRef,
+              alpha,
+              featureType,
+              featureStrand,
+            )
           ) {
             items.push({ name, genotype, featureId, bpLen })
             coords.push(x, y, x + w, y + drawH)

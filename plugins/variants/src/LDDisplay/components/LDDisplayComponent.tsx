@@ -7,7 +7,10 @@ import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
-import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
+import LinesConnectingMatrixToGenomicPosition, {
+  VariantLabels,
+  Wrapper,
+} from './LinesConnectingMatrixToGenomicPosition.tsx'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 
@@ -24,18 +27,28 @@ function LDTooltip({
   x,
   y,
   ldMetric,
+  signedLD,
 }: {
   item: LDFlatbushItem
   x: number
   y: number
   ldMetric: string
+  signedLD: boolean
 }) {
+  // Show appropriate metric label based on signed/unsigned mode
+  let metricLabel: string
+  if (ldMetric === 'dprime') {
+    metricLabel = "D'"
+  } else {
+    metricLabel = signedLD ? 'R' : 'R²'
+  }
+
   return (
     <BaseTooltip clientPoint={{ x: x + 15, y }}>
       <div>{item.snp1.id}</div>
       <div>{item.snp2.id}</div>
       <div>
-        {ldMetric === 'dprime' ? "D'" : 'R²'}: {item.ldValue.toFixed(3)}
+        {metricLabel}: {item.ldValue.toFixed(3)}
       </div>
     </BaseTooltip>
   )
@@ -59,6 +72,7 @@ function Crosshairs({
   snps,
   regionStart,
   bpPerPx,
+  canvasOffset,
 }: {
   hoveredItem: LDFlatbushItem
   cellWidth: number
@@ -73,6 +87,7 @@ function Crosshairs({
   snps: { start: number }[]
   regionStart: number
   bpPerPx: number
+  canvasOffset: number
 }) {
   const { i, j } = hoveredItem
 
@@ -92,29 +107,41 @@ function Crosshairs({
   let snpIPos: { x: number; y: number }
 
   if (useGenomicPositions && snps.length > 0) {
-    // Use genomic positions for cell boundaries
-    const getPos = (idx: number) =>
-      (snps[idx]!.start - regionStart) / bpPerPx / SQRT2
+    // Use midpoint boundaries (matching makeImageData.ts)
+    // Each SNP's cell extends from the midpoint to the previous SNP
+    // to the midpoint to the next SNP
+    const getBoundary = (idx: number) => {
+      const snpPos = snps[idx]!.start
+      const prevPos = idx > 0 ? snps[idx - 1]!.start : regionStart
+      const boundaryPos = (prevPos + snpPos) / 2
+      return (boundaryPos - regionStart) / bpPerPx / SQRT2
+    }
 
-    const jPos = getPos(j)
-    const iPos = getPos(i)
+    const getNextBoundary = (idx: number) => {
+      if (idx + 1 < snps.length) {
+        const snpPos = snps[idx]!.start
+        const nextPos = snps[idx + 1]!.start
+        return ((snpPos + nextPos) / 2 - regionStart) / bpPerPx / SQRT2
+      }
+      // Small fixed offset past the last SNP (50px)
+      const lastSnpPos = snps[snps.length - 1]!.start
+      return (lastSnpPos + 50 * bpPerPx - regionStart) / bpPerPx / SQRT2
+    }
 
-    // Cell center for hovered cell
-    const jNextPos =
-      j + 1 < snps.length
-        ? (snps[j + 1]!.start - regionStart) / bpPerPx / SQRT2
-        : width / SQRT2
-    const iNextPos =
-      i + 1 < snps.length
-        ? (snps[i + 1]!.start - regionStart) / bpPerPx / SQRT2
-        : width / SQRT2
-    const cellCenterX = (jPos + jNextPos) / 2
-    const cellCenterY = (iPos + iNextPos) / 2
+    const jBoundary = getBoundary(j)
+    const iBoundary = getBoundary(i)
+    const jNextBoundary = getNextBoundary(j)
+    const iNextBoundary = getNextBoundary(i)
+
+    // Cell center for the V-shape apex
+    const cellCenterX = (jBoundary + jNextBoundary) / 2
+    const cellCenterY = (iBoundary + iNextBoundary) / 2
     hoveredCenter = toScreen(cellCenterX, cellCenterY)
 
-    // Diagonal positions at exact SNP positions
-    snpJPos = toScreen(jPos, jPos)
-    snpIPos = toScreen(iPos, iPos)
+    // Diagonal positions should connect to the vertical guides at genomicX1/genomicX2
+    // The diagonal after rotation is at y = lineZoneHeight, x = genomicX
+    snpJPos = { x: genomicX1, y: lineZoneHeight }
+    snpIPos = { x: genomicX2, y: lineZoneHeight }
   } else {
     // Uniform cell positioning
     const w = cellWidth
@@ -131,7 +158,7 @@ function Crosshairs({
     <svg
       style={{
         position: 'absolute',
-        left: 0,
+        left: canvasOffset,
         top: 0,
         width,
         height,
@@ -193,8 +220,7 @@ const LDCanvas = observer(function LDCanvas({
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const {
-    drawn,
-    loading,
+    fullyDrawn,
     flatbush,
     flatbushItems,
     yScalar,
@@ -206,6 +232,8 @@ const LDCanvas = observer(function LDCanvas({
     ldCanvasHeight,
     useGenomicPositions,
     snps,
+    lastDrawnOffsetPx,
+    signedLD,
   } = model
 
   // Container height includes lineZoneHeight + triangle
@@ -220,6 +248,8 @@ const LDCanvas = observer(function LDCanvas({
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Calculate genomic positions for hovered item
+  // These are raw pixel positions from region start - no offset adjustment needed
+  // because the SVG/canvas is already positioned at Math.max(0, -offsetPx)
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx
   const genomicX1 =
@@ -231,21 +261,33 @@ const LDCanvas = observer(function LDCanvas({
       ? (hoveredItem.snp1.start - region.start) / bpPerPx
       : undefined
 
+  // When offsetPx >= 0: use scroll offset for smooth scrolling between renders
+  // When offsetPx < 0: use boundary offset to prevent content going past left edge
+  const canvasOffset =
+    view.offsetPx >= 0
+      ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
+      : Math.max(0, -view.offsetPx)
+
   // Update volatile guides when hovered item changes
+  // Add canvas offset to guide positions
+  const guideOffset = canvasOffset
   useEffect(() => {
     if (
       genomicX1 !== undefined &&
       genomicX2 !== undefined &&
       model.showVerticalGuides
     ) {
-      view.setVolatileGuides([{ xPos: genomicX1 }, { xPos: genomicX2 }])
+      view.setVolatileGuides([
+        { xPos: genomicX1 + guideOffset },
+        { xPos: genomicX2 + guideOffset },
+      ])
     } else {
       view.setVolatileGuides([])
     }
     return () => {
       view.setVolatileGuides([])
     }
-  }, [genomicX1, genomicX2, model.showVerticalGuides, view])
+  }, [genomicX1, genomicX2, model.showVerticalGuides, view, guideOffset])
 
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(
@@ -272,7 +314,8 @@ const LDCanvas = observer(function LDCanvas({
       }
 
       const rect = container.getBoundingClientRect()
-      const screenX = event.clientX - rect.left
+      const mouseCanvasOffset = canvasOffset
+      const screenX = event.clientX - rect.left - mouseCanvasOffset
       const screenY = event.clientY - rect.top
 
       setMousePosition({ x: event.clientX, y: event.clientY })
@@ -301,7 +344,7 @@ const LDCanvas = observer(function LDCanvas({
         setHoveredItem(undefined)
       }
     },
-    [flatbushIndex, flatbushItems, yScalar, lineZoneHeight],
+    [flatbushIndex, flatbushItems, yScalar, lineZoneHeight, canvasOffset],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -317,18 +360,19 @@ const LDCanvas = observer(function LDCanvas({
         position: 'relative',
         width,
         height: containerHeight,
+        overflow: 'hidden',
       }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
     >
       <canvas
-        data-testid={`ld_canvas${drawn && !loading ? '_done' : ''}`}
+        data-testid={`ld_canvas${fullyDrawn ? '_done' : ''}`}
         ref={cb}
         style={{
           width,
           height: canvasOnlyHeight,
           position: 'absolute',
-          left: 0,
+          left: canvasOffset,
           top: lineZoneHeight,
         }}
         width={width * 2}
@@ -350,6 +394,7 @@ const LDCanvas = observer(function LDCanvas({
           snps={snps}
           regionStart={region?.start ?? 0}
           bpPerPx={bpPerPx}
+          canvasOffset={canvasOffset}
         />
       ) : null}
 
@@ -359,18 +404,25 @@ const LDCanvas = observer(function LDCanvas({
           x={mousePosition.x}
           y={mousePosition.y}
           ldMetric={ldMetric}
+          signedLD={signedLD}
         />
       ) : null}
-      {showLegend ? <LDColorLegend ldMetric={ldMetric} /> : null}
-      {!useGenomicPositions ? (
-        <LinesConnectingMatrixToGenomicPosition model={model} />
+      {showLegend ? (
+        <LDColorLegend ldMetric={ldMetric} signedLD={signedLD} />
       ) : null}
+      {useGenomicPositions ? (
+        <Wrapper model={model}>
+          <VariantLabels model={model} />
+        </Wrapper>
+      ) : (
+        <LinesConnectingMatrixToGenomicPosition model={model} />
+      )}
       {/* Recombination track overlaid at bottom of line zone */}
       {model.showRecombination && model.recombination ? (
         <div
           style={{
             position: 'absolute',
-            left: 0,
+            left: canvasOffset,
             top: lineZoneHeight / 2,
             width,
             height: lineZoneHeight / 2,
@@ -381,6 +433,9 @@ const LDCanvas = observer(function LDCanvas({
             model={model}
             width={width}
             height={lineZoneHeight / 2}
+            useGenomicPositions={useGenomicPositions}
+            regionStart={region?.start}
+            bpPerPx={bpPerPx}
           />
           <RecombinationYScaleBar
             height={lineZoneHeight / 2}

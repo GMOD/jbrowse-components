@@ -1,6 +1,8 @@
-import { set1 } from '@jbrowse/core/ui/colors'
-import { randomColor } from '@jbrowse/core/util/color'
 import { Button } from '@mui/material'
+
+import { applyColorPalette } from '../applyColorPalette.ts'
+
+import type { Source } from '../types.ts'
 
 const excludedFields = new Set(['name', 'color', 'label', 'id', 'HP'])
 
@@ -8,8 +10,8 @@ export default function SetColorDialogRowPalettizer({
   setCurrLayout,
   currLayout,
 }: {
-  currLayout: { name: string; [key: string]: unknown }[]
-  setCurrLayout: (arg: { name: string; [key: string]: unknown }[]) => void
+  currLayout: Source[]
+  setCurrLayout: (arg: Source[]) => void
 }) {
   const firstRow = currLayout[0]
   if (!firstRow) {
@@ -27,22 +29,7 @@ export default function SetColorDialogRowPalettizer({
           variant="contained"
           color="inherit"
           onClick={() => {
-            const counts = new Map<string, number>()
-            for (const row of currLayout) {
-              const key = row[field] as string
-              counts.set(key, (counts.get(key) || 0) + 1)
-            }
-            const colorMap = Object.fromEntries(
-              [...counts.entries()]
-                .sort((a, b) => a[1] - b[1])
-                .map(([key], idx) => [key, set1[idx] || randomColor(key)]),
-            )
-            setCurrLayout(
-              currLayout.map(row => ({
-                ...row,
-                color: colorMap[row[field] as string],
-              })),
-            )
+            setCurrLayout(applyColorPalette(currLayout, field))
           }}
         >
           {field}

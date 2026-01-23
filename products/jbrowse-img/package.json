@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "4.0.4",
+  "version": "4.1.1",
   "main": "esm/index.js",
   "types": "esm/index.d.ts",
   "type": "module",
@@ -35,7 +35,7 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/react-linear-genome-view2": "workspace:^",
     "@types/jsdom": "^21.1.7",
-    "@types/yargs": "^17.0.33",
+    "@types/yargs": "^17.0.35",
     "canvas": "^3.2.1",
     "jsdom": "27.0.0",
     "node-fetch": "^2.7.0",

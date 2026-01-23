@@ -39,6 +39,7 @@ const paramsToDelete = [
   'tracklist',
   'nav',
   'highlight',
+  'sessionName',
 ] as const
 
 export function Loader({
@@ -62,6 +63,7 @@ export function Loader({
       highlight,
       nav,
       hubURL,
+      sessionName,
     } = readQueryParams([
       'config',
       'session',
@@ -75,6 +77,7 @@ export function Loader({
       'highlight',
       'nav',
       'hubURL',
+      'sessionName',
     ])
 
     return SessionLoader.create({
@@ -90,6 +93,7 @@ export function Loader({
       highlight,
       nav: JSON.parse(nav || 'true'),
       hubURL: hubURL?.split(','),
+      sessionName,
       initialTimestamp,
     })
   })
@@ -132,6 +136,7 @@ const Renderer = observer(function Renderer({
         highlight: loader.highlight,
         nav: loader.nav,
         hubURL: loader.hubURL,
+        sessionName: loader.sessionName,
         initialTimestamp: Date.now(),
         configSnapshot,
         sessionSnapshot,
@@ -167,8 +172,11 @@ const Renderer = observer(function Renderer({
         // snapshotted and the safeReference in activeWidgets is stripped from
         // the snapshot (xref #5414)
         if (session && isAlive(session)) {
-          // Save session before destroying so it can be restored (see file
-          // header comment for details on when this is needed)
+          // Save session before destroying so it can be restored on next
+          // effect run. This is essential for HMR where the same loader is
+          // reused. For plugin reload via reloadPluginManagerCallback, this
+          // writes to the old loader (captured in this closure) which is
+          // discarded - the new loader already has sessionSnapshot pre-set.
           loader.setSessionSnapshot(getSnapshot(session))
         }
         destroy(pluginManager.current.rootModel)

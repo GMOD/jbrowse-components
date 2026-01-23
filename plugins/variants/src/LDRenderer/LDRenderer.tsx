@@ -21,9 +21,12 @@ export interface RenderArgsDeserialized extends ServerSideRenderArgsDeserialized
   minorAlleleFrequencyFilter?: number
   lengthCutoffFilter?: number
   hweFilterThreshold?: number
+  callRateFilter?: number
+  jexlFilters?: string[]
   colorScheme?: string
   fitToHeight?: boolean
   useGenomicPositions?: boolean
+  signedLD?: boolean
 }
 
 export interface RenderArgsDeserializedWithLDData extends RenderArgsDeserialized {
@@ -41,6 +44,7 @@ export default class LDRenderer extends ServerSideRendererType {
       ldMetric = 'r2',
       fitToHeight = false,
       useGenomicPositions = false,
+      signedLD = false,
     } = renderProps
 
     // Calculate total width across all regions (like HiC)
@@ -109,6 +113,7 @@ export default class LDRenderer extends ServerSideRendererType {
           stopToken: renderProps.stopToken,
           yScalar,
           useGenomicPositions,
+          signedLD,
         })
       },
     )
@@ -119,6 +124,7 @@ export default class LDRenderer extends ServerSideRendererType {
       width,
       yScalar,
       ldMetric,
+      signedLD,
       ldData: {
         snps: ldData.snps,
         metric: ldData.metric,
@@ -145,6 +151,9 @@ export default class LDRenderer extends ServerSideRendererType {
       minorAlleleFrequencyFilter = 0.01,
       lengthCutoffFilter = Number.MAX_SAFE_INTEGER,
       hweFilterThreshold = 0.001,
+      callRateFilter = 0,
+      jexlFilters = [],
+      signedLD = false,
       stopToken,
     } = args
 
@@ -179,6 +188,9 @@ export default class LDRenderer extends ServerSideRendererType {
           minorAlleleFrequencyFilter,
           lengthCutoffFilter,
           hweFilterThreshold,
+          callRateFilter,
+          jexlFilters,
+          signedLD,
           stopToken,
         },
       })

@@ -26,3 +26,4 @@ benchmarks
 products/jbrowse-web/src/tests/__file_snapshots__/save_track_data.sam
 products/jbrowse-web/src/tests/__file_snapshots__/save_track_data.cram.sam
 plugins/variants/src/VariantRPC/getLDMatrix.ts
+packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.test.ts

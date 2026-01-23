@@ -91,8 +91,7 @@ const HicCanvas = observer(function HicCanvas({
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const {
     height,
-    drawn,
-    loading,
+    fullyDrawn,
     flatbush,
     flatbushItems,
     yScalar,
@@ -100,12 +99,20 @@ const HicCanvas = observer(function HicCanvas({
     maxScore,
     colorScheme,
     useLogScale,
+    lastDrawnOffsetPx,
   } = model
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<HicFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>()
   const [localMousePos, setLocalMousePos] = useState<{ x: number; y: number }>()
+
+  // When offsetPx >= 0: use scroll offset for smooth scrolling between renders
+  // When offsetPx < 0: use boundary offset to prevent content going past left edge
+  const canvasOffset =
+    view.offsetPx >= 0
+      ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
+      : Math.max(0, -view.offsetPx)
 
   // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(
@@ -131,7 +138,8 @@ const HicCanvas = observer(function HicCanvas({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const screenX = event.clientX - rect.left
+      const mouseCanvasOffset = canvasOffset
+      const screenX = event.clientX - rect.left - mouseCanvasOffset
       const screenY = event.clientY - rect.top
 
       setMousePosition({ x: event.clientX, y: event.clientY })
@@ -150,7 +158,7 @@ const HicCanvas = observer(function HicCanvas({
         setHoveredItem(undefined)
       }
     },
-    [flatbushIndex, flatbushItems, yScalar],
+    [flatbushIndex, flatbushItems, yScalar, canvasOffset],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -167,18 +175,19 @@ const HicCanvas = observer(function HicCanvas({
         position: 'relative',
         width,
         height,
+        overflow: 'hidden',
       }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
     >
       <canvas
-        data-testid={`hic_canvas${drawn && !loading ? '_done' : ''}`}
+        data-testid={`hic_canvas${fullyDrawn ? '_done' : ''}`}
         ref={cb}
         style={{
           width,
           height,
           position: 'absolute',
-          left: 0,
+          left: canvasOffset,
         }}
         width={width * 2}
         height={height * 2}
@@ -188,7 +197,7 @@ const HicCanvas = observer(function HicCanvas({
           x={localMousePos.x}
           y={localMousePos.y}
           yScalar={yScalar}
-          left={0}
+          left={canvasOffset}
           width={width}
           height={height}
         />

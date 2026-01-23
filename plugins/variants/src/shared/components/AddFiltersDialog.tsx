@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -12,42 +13,46 @@ const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
+
   error: {
     color: 'red',
     fontSize: '0.8em',
   },
 })
 
-function validateJexl(data: string) {
-  try {
-    for (const line of data
-      .split('\n')
-      .map(l => l.trim())
-      .filter(Boolean)) {
-      stringToJexlExpression(line)
-    }
-    return undefined
-  } catch (e) {
-    console.error(e)
-    return e
-  }
+function checkJexl(code: string) {
+  stringToJexlExpression(code)
 }
 
-export default function AddFiltersDialog({
+const AddFiltersDialog = observer(function AddFiltersDialog({
   model,
   handleClose,
 }: {
   model: {
     jexlFilters?: string[]
-    activeFilters: string[]
     setJexlFilters: (arg?: string[]) => void
   }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const { activeFilters } = model
-  const [data, setData] = useState(activeFilters.join('\n'))
-  const error = useMemo(() => validateJexl(data), [data])
+  const { jexlFilters } = model
+  const [data, setData] = useState((jexlFilters ?? []).join('\n'))
+  const [error, setError] = useState<unknown>()
+
+  useEffect(() => {
+    try {
+      for (const line of data
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => !!line)) {
+        checkJexl(line)
+      }
+      setError(undefined)
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    }
+  }, [data])
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Add track filters">
@@ -59,6 +64,16 @@ export default function AddFiltersDialog({
             <li>
               <code>jexl:get(feature,'name')=='BRCA1'</code> - show only feature
               where the name attribute is BRCA1
+            </li>
+            <li>
+              <code>jexl:startsWith(get(feature,'name'),'PREFIX')</code> - show
+              only feature where the string 'PREFIX' is the prefix of feature
+              name. endsWith also works
+            </li>
+            <li>
+              <code>jexl:includes(get(feature,'name'),'PREFIX')</code> - show
+              only feature where the string 'PREFIX' is the prefix of feature
+              name
             </li>
             <li>
               <code>jexl:get(feature,'type')=='gene'</code> - show only gene
@@ -75,6 +90,11 @@ export default function AddFiltersDialog({
               - show only features with length less than 1Mbp
             </li>
           </ul>
+          <p>
+            Please see{' '}
+            <a href="https://jbrowse.org/jb2/docs/config_guides/jexl/">Jexl</a>{' '}
+            documentation for more information
+          </p>
         </div>
 
         {error ? <p className={classes.error}>{`${error}`}</p> : null}
@@ -112,10 +132,18 @@ export default function AddFiltersDialog({
         >
           Submit
         </Button>
-        <Button variant="contained" color="secondary" onClick={handleClose}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            handleClose()
+          }}
+        >
           Cancel
         </Button>
       </DialogActions>
     </Dialog>
   )
-}
+})
+
+export default AddFiltersDialog

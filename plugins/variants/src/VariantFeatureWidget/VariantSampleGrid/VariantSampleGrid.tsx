@@ -79,7 +79,7 @@ export default function VariantSampleGrid(props: {
         <CascadingMenuButton
           menuItems={[
             {
-              label: 'Show allele counts ("dosage") instead of exact GT',
+              label: 'Show allele counts ("dosage")',
               helpText:
                 'This converts a genotype like 1/1 into 1:2 which says there were two occurrences of the ALT allele 1 in the genotype',
               type: 'checkbox',

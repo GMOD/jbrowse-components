@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/product-core",
-  "version": "4.0.4",
+  "version": "4.1.1",
   "type": "module",
   "sideEffects": false,
   "description": "JBrowse 2 code shared between products but not used by plugins",
@@ -35,7 +35,7 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
-    "@mui/material": "^7.3.6",
+    "@mui/material": "^7.3.7",
     "copy-to-clipboard": "^3.3.3",
     "librpc-web-mod": "^2.1.1",
     "mobx": "^6.15.0",

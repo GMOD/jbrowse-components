@@ -125,7 +125,11 @@ any
 
 ```js
 // type
-any
+{
+  showInterbaseCounts: any
+  showInterbaseIndicators: any
+  showArcs: any
+}
 ```
 
 #### getter: showArcsSetting

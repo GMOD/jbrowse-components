@@ -62,6 +62,16 @@ positions multi-row below the tracklabel even if using overlap tracklabels
 boolean
 ```
 
+#### getter: featureWidgetType
+
+```js
+// type
+{
+  type: string
+  id: string
+}
+```
+
 ### LinearVariantMatrixDisplay - Methods
 
 #### method: renderProps

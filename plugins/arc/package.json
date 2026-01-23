@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-arc",
-  "version": "4.0.4",
+  "version": "4.1.1",
   "type": "module",
   "description": "JBrowse 2 arc adapters, tracks, etc.",
   "keywords": [
@@ -34,8 +34,8 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@mui/icons-material": "^7.3.6",
-    "@mui/material": "^7.3.6",
+    "@mui/icons-material": "^7.3.7",
+    "@mui/material": "^7.3.7",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",
     "rxjs": "^7.8.2"

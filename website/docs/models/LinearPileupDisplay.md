@@ -84,7 +84,15 @@ any
 
 ```js
 // type
-any
+{
+  height: any
+  noSpacing: any
+  maxHeight: any
+  mismatchAlpha: any
+  hideSmallIndels: any
+  hideMismatches: any
+  hideLargeIndels: any
+}
 ```
 
 #### getter: mismatchAlphaSetting

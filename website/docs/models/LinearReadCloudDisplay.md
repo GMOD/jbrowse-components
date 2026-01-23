@@ -186,16 +186,6 @@ any
 any
 ```
 
-#### getter: cloudDomain
-
-Domain for cloud mode scale: [1, maxDistance] Uses 1 as lower bound since it's a
-log scale
-
-```js
-// type
-;[number, number]
-```
-
 #### getter: cloudTicks
 
 Calculate ticks for the y-axis scalebar in cloud mode

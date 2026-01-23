@@ -30,6 +30,15 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get rendererTypeName() {
         return 'MultiVariantRenderer'
       },
+      /**
+       * #getter
+       */
+      get featureWidgetType() {
+        return {
+          type: 'VariantFeatureWidget',
+          id: 'variantFeature',
+        }
+      },
     }))
     .actions(self => {
       const { renderSvg: superRenderSvg } = self

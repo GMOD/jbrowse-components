@@ -10,8 +10,11 @@ import {
   renderingToSvg,
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 
-import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
-import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
+import LinesConnectingMatrixToGenomicPosition, {
+  VariantLabels,
+  Wrapper,
+} from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 
@@ -49,6 +52,7 @@ export async function renderSvg(
     showRecombination,
     lineZoneHeight,
     useGenomicPositions,
+    signedLD,
   } = self
   const { bpPerPx, dynamicBlocks } = view
   const regions = dynamicBlocks.contentBlocks
@@ -96,9 +100,13 @@ export async function renderSvg(
         >
           <ReactRendering rendering={finalRendering} />
         </g>
-        {!useGenomicPositions ? (
+        {useGenomicPositions ? (
+          <Wrapper model={self} exportSVG>
+            <VariantLabels model={self} />
+          </Wrapper>
+        ) : (
           <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
-        ) : null}
+        )}
         {/* Recombination track overlaid at bottom of line zone */}
         {showRecombination && rendering.recombination ? (
           <g transform={`translate(0 ${recombTrackYOffset})`}>
@@ -107,6 +115,9 @@ export async function renderSvg(
               width={visibleWidth}
               height={recombTrackHeight}
               exportSVG
+              useGenomicPositions={useGenomicPositions}
+              regionStart={regions[0]?.start}
+              bpPerPx={bpPerPx}
             />
             <RecombinationYScaleBar
               height={recombTrackHeight}
@@ -117,7 +128,11 @@ export async function renderSvg(
         ) : null}
       </g>
       {showLegend ? (
-        <LDSVGColorLegend ldMetric={ldMetric} width={visibleWidth} />
+        <LDSVGColorLegend
+          ldMetric={ldMetric}
+          width={visibleWidth}
+          signedLD={signedLD}
+        />
       ) : null}
     </>
   )

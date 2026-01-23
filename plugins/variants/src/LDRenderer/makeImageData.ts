@@ -26,11 +26,12 @@ export interface MakeImageDataProps {
   yScalar: number
   colorScheme?: string
   useGenomicPositions?: boolean
+  signedLD?: boolean
 }
 
 // Color schemes for different LD metrics
 const colorSchemes = {
-  // Red scale for R² (traditional LD plot colors)
+  // Red scale for R² (traditional LD plot colors) - 0 to 1
   r2: interpolateRgbBasis([
     'rgb(255, 255, 255)',
     'rgb(255, 224, 224)',
@@ -41,8 +42,46 @@ const colorSchemes = {
     'rgb(208, 0, 0)',
     'rgb(160, 0, 0)',
   ]),
-  // Blue scale for D'
+  // Blue scale for D' - 0 to 1
   dprime: interpolateRgbBasis([
+    'rgb(255, 255, 255)',
+    'rgb(224, 224, 255)',
+    'rgb(192, 192, 255)',
+    'rgb(128, 128, 255)',
+    'rgb(64, 64, 255)',
+    'rgb(0, 0, 255)',
+    'rgb(0, 0, 208)',
+    'rgb(0, 0, 160)',
+  ]),
+  // Diverging scale for signed R (correlation) - -1 to 1
+  // Blue (negative) -> White (zero) -> Red (positive)
+  rSigned: interpolateRgbBasis([
+    'rgb(0, 0, 160)',
+    'rgb(0, 0, 208)',
+    'rgb(0, 0, 255)',
+    'rgb(64, 64, 255)',
+    'rgb(128, 128, 255)',
+    'rgb(192, 192, 255)',
+    'rgb(224, 224, 255)',
+    'rgb(255, 255, 255)',
+    'rgb(255, 224, 224)',
+    'rgb(255, 192, 192)',
+    'rgb(255, 128, 128)',
+    'rgb(255, 64, 64)',
+    'rgb(255, 0, 0)',
+    'rgb(208, 0, 0)',
+    'rgb(160, 0, 0)',
+  ]),
+  // Diverging scale for signed D' - -1 to 1
+  // Green (negative) -> White (zero) -> Blue (positive)
+  dprimeSigned: interpolateRgbBasis([
+    'rgb(0, 100, 0)',
+    'rgb(0, 128, 0)',
+    'rgb(0, 160, 0)',
+    'rgb(64, 192, 64)',
+    'rgb(128, 224, 128)',
+    'rgb(192, 240, 192)',
+    'rgb(224, 248, 224)',
     'rgb(255, 255, 255)',
     'rgb(224, 224, 255)',
     'rgb(192, 192, 255)',
@@ -65,6 +104,7 @@ export function makeImageData(
     stopToken,
     yScalar,
     useGenomicPositions = false,
+    signedLD = false,
   } = props
 
   const lastCheck = createStopTokenChecker(stopToken)
@@ -83,10 +123,19 @@ export function makeImageData(
     return undefined
   }
 
-  // Select color scheme based on metric
-  const colorInterpolator =
-    metric === 'dprime' ? colorSchemes.dprime : colorSchemes.r2
-  const scale = scaleSequential(colorInterpolator).domain([0, 1])
+  // Select color scheme based on metric and whether signed
+  let colorInterpolator
+  if (signedLD) {
+    colorInterpolator =
+      metric === 'dprime' ? colorSchemes.dprimeSigned : colorSchemes.rSigned
+  } else {
+    colorInterpolator =
+      metric === 'dprime' ? colorSchemes.dprime : colorSchemes.r2
+  }
+  // Domain is -1 to 1 for signed, 0 to 1 for unsigned
+  const scale = scaleSequential(colorInterpolator).domain(
+    signedLD ? [-1, 1] : [0, 1],
+  )
 
   // Calculate view width in pixels
   const viewWidthPx = (region.end - region.start) / bpPerPx
@@ -98,18 +147,23 @@ export function makeImageData(
   const uniformW = viewWidthPx / (n * sqrt2)
 
   // Calculate genomic boundaries for each SNP (used when useGenomicPositions is true)
-  // Each boundary[i] is the pixel position (in unrotated coords) where SNP i's region starts
+  // We use midpoints between adjacent SNPs so each SNP's cell extends halfway
+  // to its neighbors, preventing extremely large cells when SNPs are far apart
   // We divide by sqrt(2) because the canvas is rotated 45 degrees
   const boundaries: number[] = []
   if (useGenomicPositions) {
     for (let i = 0; i < n; i++) {
       const snpPos = snps[i]!.start
-      // Calculate pixel position relative to region start, scaled for rotation
-      const pixelPos = (snpPos - region.start) / bpPerPx / sqrt2
+      const prevPos = i > 0 ? snps[i - 1]!.start : region.start
+      // Boundary is midpoint between this SNP and the previous one
+      const boundaryPos = (prevPos + snpPos) / 2
+      const pixelPos = (boundaryPos - region.start) / bpPerPx / sqrt2
       boundaries.push(pixelPos)
     }
-    // Add final boundary at view edge
-    boundaries.push(viewWidthPx / sqrt2)
+    // Final boundary: small fixed offset past the last SNP
+    const lastSnpPos = snps[n - 1]!.start
+    const finalBoundary = lastSnpPos + 50 * bpPerPx
+    boundaries.push((finalBoundary - region.start) / bpPerPx / sqrt2)
   }
 
   // Apply yScalar for height adjustment (like HiC)
@@ -188,7 +242,7 @@ export function makeImageData(
   return {
     flatbush: flatbush.data,
     items,
-    maxScore: 1, // LD values are always 0-1
+    maxScore: signedLD ? 1 : 1, // LD values are -1 to 1 (signed) or 0 to 1 (unsigned)
     w: uniformW, // Return uniform width for backward compatibility
   }
 }

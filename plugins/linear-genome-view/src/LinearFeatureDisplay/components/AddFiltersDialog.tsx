@@ -30,25 +30,24 @@ const AddFiltersDialog = observer(function AddFiltersDialog({
 }: {
   model: {
     jexlFilters?: string[]
-    activeFilters: string[]
+    activeFilters: () => string[]
     setJexlFilters: (arg?: string[]) => void
   }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
   const { activeFilters } = model
-  const [data, setData] = useState(activeFilters.join('\n'))
+  const [data, setData] = useState(activeFilters().join('\n'))
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
     try {
-      data
+      for (const line of data
         .split('\n')
         .map(line => line.trim())
-        .filter(line => !!line)
-        .map(line => {
-          checkJexl(line.trim())
-        })
+        .filter(line => !!line)) {
+        checkJexl(line)
+      }
       setError(undefined)
     } catch (e) {
       console.error(e)
@@ -68,6 +67,16 @@ const AddFiltersDialog = observer(function AddFiltersDialog({
               where the name attribute is BRCA1
             </li>
             <li>
+              <code>jexl:startsWith(get(feature,'name'),'PREFIX')</code> - show
+              only feature where the string 'PREFIX' is the prefix of feature
+              name. endsWith also works
+            </li>
+            <li>
+              <code>jexl:includes(get(feature,'name'),'PREFIX')</code> - show
+              only feature where the string 'PREFIX' is the prefix of feature
+              name
+            </li>
+            <li>
               <code>jexl:get(feature,'type')=='gene'</code> - show only gene
               type features in a GFF that has many other feature types
             </li>
@@ -82,6 +91,11 @@ const AddFiltersDialog = observer(function AddFiltersDialog({
               - show only features with length less than 1Mbp
             </li>
           </ul>
+          <p>
+            Please see{' '}
+            <a href="https://jbrowse.org/jb2/docs/config_guides/jexl/">Jexl</a>{' '}
+            documentation for more information
+          </p>
         </div>
 
         {error ? <p className={classes.error}>{`${error}`}</p> : null}

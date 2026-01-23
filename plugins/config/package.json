@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-config",
-  "version": "4.0.4",
+  "version": "4.1.1",
   "type": "module",
   "description": "JBrowse 2 config utilities",
   "keywords": [
@@ -32,8 +32,8 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
-    "@mui/icons-material": "^7.3.6",
-    "@mui/material": "^7.3.6",
+    "@mui/icons-material": "^7.3.7",
+    "@mui/material": "^7.3.7",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",
     "pluralize": "^8.0.0",

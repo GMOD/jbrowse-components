@@ -19,7 +19,7 @@ export default function MAFFilterDialog({
   }
   handleClose: () => void
 }) {
-  const { minorAlleleFrequencyFilter = 0.01 } = model
+  const { minorAlleleFrequencyFilter = 0 } = model
   const [maf, setMaf] = useState(`${minorAlleleFrequencyFilter}`)
   const [error, setError] = useState<string>()
 

@@ -22,20 +22,32 @@ export default function LDFilterDialog({
   model: {
     minorAlleleFrequencyFilter: number
     hweFilterThreshold: number
+    callRateFilter: number
     filterStats?: FilterStats
     setMafFilter: (arg: number) => void
     setHweFilter: (arg: number) => void
+    setCallRateFilter: (arg: number) => void
   }
   handleClose: () => void
 }) {
-  const { minorAlleleFrequencyFilter, hweFilterThreshold, filterStats } = model
+  const {
+    minorAlleleFrequencyFilter,
+    hweFilterThreshold,
+    callRateFilter,
+    filterStats,
+  } = model
   const [maf, setMaf] = useState(`${minorAlleleFrequencyFilter}`)
   const [hweEnabled, setHweEnabled] = useState(hweFilterThreshold > 0)
   const [hweThreshold, setHweThreshold] = useState(
     hweFilterThreshold > 0 ? `${hweFilterThreshold}` : '0.001',
   )
+  const [callRateEnabled, setCallRateEnabled] = useState(callRateFilter > 0)
+  const [callRate, setCallRate] = useState(
+    callRateFilter > 0 ? `${callRateFilter}` : '0.95',
+  )
   const [mafError, setMafError] = useState<string>()
   const [hweError, setHweError] = useState<string>()
+  const [callRateError, setCallRateError] = useState<string>()
 
   const validateMaf = (val: string) => {
     const num = Number.parseFloat(val)
@@ -65,7 +77,24 @@ export default function LDFilterDialog({
     return true
   }
 
-  const hasError = !!mafError || (hweEnabled && !!hweError)
+  const validateCallRate = (val: string) => {
+    const num = Number.parseFloat(val)
+    if (Number.isNaN(num)) {
+      setCallRateError('Please enter a valid number')
+      return false
+    }
+    if (num < 0 || num > 1) {
+      setCallRateError('Call rate must be between 0 and 1')
+      return false
+    }
+    setCallRateError(undefined)
+    return true
+  }
+
+  const hasError =
+    !!mafError ||
+    (hweEnabled && !!hweError) ||
+    (callRateEnabled && !!callRateError)
 
   return (
     <Dialog open onClose={handleClose} title="LD Filter Settings">
@@ -91,6 +120,9 @@ export default function LDFilterDialog({
               )}
               {filterStats.filteredByHwe > 0 && (
                 <li>Filtered by HWE: {filterStats.filteredByHwe}</li>
+              )}
+              {filterStats.filteredByCallRate > 0 && (
+                <li>Filtered by call rate: {filterStats.filteredByCallRate}</li>
               )}
             </Box>
           </Alert>
@@ -152,6 +184,46 @@ export default function LDFilterDialog({
               setHweThreshold(val)
               validateHwe(val)
             }}
+            style={{ marginTop: 8, marginBottom: 24 }}
+          />
+        ) : (
+          <div style={{ marginBottom: 24 }} />
+        )}
+
+        <Typography variant="subtitle1" gutterBottom>
+          Call Rate Filter
+        </Typography>
+        <Typography variant="body2" color="textSecondary" component="p">
+          Exclude variants with too many missing genotypes. Call rate is the
+          proportion of samples with non-missing genotype calls.
+        </Typography>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={callRateEnabled}
+              onChange={e => {
+                setCallRateEnabled(e.target.checked)
+              }}
+            />
+          }
+          label="Enable call rate filter"
+        />
+        {callRateEnabled ? (
+          <TextField
+            value={callRate}
+            fullWidth
+            size="small"
+            label="Minimum call rate (0-1)"
+            error={!!callRateError}
+            helperText={
+              callRateError ||
+              'Variants with call rate below this threshold are excluded (default: 0.95 = 95%)'
+            }
+            onChange={event => {
+              const val = event.target.value
+              setCallRate(val)
+              validateCallRate(val)
+            }}
             style={{ marginTop: 8 }}
           />
         ) : null}
@@ -173,6 +245,18 @@ export default function LDFilterDialog({
               }
             } else {
               model.setHweFilter(0) // Disable HWE filter
+            }
+            if (callRateEnabled) {
+              const callRateVal = Number.parseFloat(callRate)
+              if (
+                !Number.isNaN(callRateVal) &&
+                callRateVal >= 0 &&
+                callRateVal <= 1
+              ) {
+                model.setCallRateFilter(callRateVal)
+              }
+            } else {
+              model.setCallRateFilter(0) // Disable call rate filter
             }
             handleClose()
           }}
