@@ -6,6 +6,11 @@ import { debug, resolveConfigPath, writeJsonFile } from '../../utils.ts'
 import { createDefaultConfig } from '../add-assembly/utils.ts'
 
 import type { Express, Request, Response } from 'express'
+import type http from 'http'
+
+interface ServerRef {
+  current: http.Server | null
+}
 
 /**
  * Validates if a port number is in the valid range
@@ -127,7 +132,7 @@ export function setupRoutes({
   baseDir: string
   outFile: string
   key: string
-  serverRef: { current: any }
+  serverRef: ServerRef
 }): void {
   // Root route
   app.get('/', (_req: Request, res: Response) => {
@@ -180,7 +185,7 @@ export function setupRoutes({
         res.status(404).setHeader('Content-Type', 'text/plain')
         res.send('Error: Config file not found')
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error reading config:', error)
       res.status(500).setHeader('Content-Type', 'text/plain')
       res.send('Error: Failed to read config')
@@ -226,7 +231,7 @@ export function startServer({
   key: string
   outFile: string
   keyPath: string
-  serverRef: { current: any }
+  serverRef: ServerRef
 }): void {
   // Start the server
   const server = app.listen(port, () => {
@@ -244,7 +249,7 @@ export function startServer({
   serverRef.current = server
 
   // Handle server errors
-  server.on('error', (error: any) => {
+  server.on('error', (error: NodeJS.ErrnoException) => {
     if (error.code === 'EADDRINUSE') {
       console.error(`Error: Port ${port} is already in use`)
     } else {

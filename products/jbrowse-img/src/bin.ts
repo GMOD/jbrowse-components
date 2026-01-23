@@ -7,15 +7,12 @@ registerHooks({
   load(
     url: string,
     context: { format?: string },
-    nextLoad: (url: string, context: { format?: string }) => void,
+    nextLoad: (url: string, context: { format?: string }) => unknown,
   ) {
-    if (url.endsWith('.css')) {
-      return { url, format: 'module', source: '', shortCircuit: true }
-    } else {
-      return nextLoad(url, context)
-    }
+    return url.endsWith('.css')
+      ? { url, format: 'module', source: '', shortCircuit: true }
+      : nextLoad(url, context)
   },
 })
 // Now load the main entry point
 await import('./index.js')
-export {}
