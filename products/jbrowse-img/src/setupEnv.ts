@@ -39,7 +39,7 @@ function addGlobalDocument() {
   const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
     url: 'http://localhost/',
     pretendToBeVisual: true,
-    resources: "usable",
+    resources: 'usable',
   })
   // @ts-expect-error
   global.window = dom.window
