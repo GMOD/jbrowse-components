@@ -34,6 +34,18 @@ if (existsSync(binPath)) {
 }
 console.log('PATH starts with:', env.PATH.slice(0, 200))
 
+// Debug: check @jbrowse/img package contents
+const imgPath = './node_modules/@jbrowse/img'
+console.log('@jbrowse/img exists:', existsSync(imgPath))
+if (existsSync(imgPath)) {
+  console.log('@jbrowse/img contents:', readdirSync(imgPath))
+  const esmPath = join(imgPath, 'esm')
+  console.log('@jbrowse/img/esm exists:', existsSync(esmPath))
+  if (existsSync(esmPath)) {
+    console.log('@jbrowse/img/esm contents:', readdirSync(esmPath))
+  }
+}
+
 // Use symlink if available, otherwise fall back to direct node invocation
 const jb2exportCmd = existsSync(join(binPath, 'jb2export'))
   ? 'jb2export'
@@ -41,7 +53,11 @@ const jb2exportCmd = existsSync(join(binPath, 'jb2export'))
 console.log('Using command:', jb2exportCmd)
 
 function run(cmd) {
-  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], env })
+  return execSync(cmd, {
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env,
+  })
 }
 
 // Test --help
@@ -104,7 +120,9 @@ test('jb2export can render a larger region', () => {
   const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
   try {
     const outFile = join(tmpDir, 'test-large.svg')
-    run(`${jb2exportCmd} --fasta ${FASTA} --bam ${BAM} --loc ctgA:1-50000 --out ${outFile}`)
+    run(
+      `${jb2exportCmd} --fasta ${FASTA} --bam ${BAM} --loc ctgA:1-50000 --out ${outFile}`,
+    )
 
     if (!existsSync(outFile)) {
       throw new Error(`Expected output file at ${outFile}`)
