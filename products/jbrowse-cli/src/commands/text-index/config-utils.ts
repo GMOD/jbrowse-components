@@ -133,7 +133,9 @@ export function getTrackConfigs(
   if (!tracks) {
     return []
   }
-  const trackIdsToIndex = trackIds || tracks.map(track => track.trackId)
+  const trackIdsToIndex = trackIds?.length
+    ? trackIds
+    : tracks.map(track => track.trackId)
   const excludeSet = new Set(excludeTrackIds || [])
 
   return trackIdsToIndex
@@ -148,13 +150,10 @@ export function getTrackConfigs(
     })
     .filter(track => {
       if (excludeSet.has(track.trackId)) {
-        console.log(`Skipping ${track.trackId}: excluded via --exclude-tracks`)
+        // console.log(`Skipping ${track.trackId}: excluded via --exclude-tracks`)
         return false
       }
       if (!supported(track.adapter?.type)) {
-        console.log(
-          `Skipping ${track.trackId}: unsupported adapter type '${track.adapter?.type}'`,
-        )
         return false
       }
       if (assemblyName && !track.assemblyNames.includes(assemblyName)) {

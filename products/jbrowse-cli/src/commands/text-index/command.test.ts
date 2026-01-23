@@ -64,6 +64,75 @@ test('fails if no track ids are provided with --tracks flag.', async () => {
   })
 })
 
+test('indexes all supported tracks when --tracks flag is not provided', async () => {
+  await runInTmpDir(async ctx => {
+    const gff3File = dataDir('volvox.sort.gff3.gz')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+    const config = {
+      assemblies: [
+        {
+          name: 'volvox',
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: 'volvox_refseq',
+            adapter: {
+              type: 'TwoBitAdapter',
+              twoBitLocation: {
+                uri: 'volvox.2bit',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'gff3_track_1',
+          assemblyNames: ['volvox'],
+          name: 'GFF3 Track 1',
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            gffGzLocation: {
+              uri: 'volvox.sort.gff3.gz',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'bam_track',
+          assemblyNames: ['volvox'],
+          name: 'BAM Track (should be skipped)',
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: { uri: 'test.bam', locationType: 'UriLocation' },
+          },
+        },
+      ],
+    }
+    fs.writeFileSync(path.join(ctx.dir, 'config.json'), JSON.stringify(config))
+
+    await runCommand([
+      'text-index',
+      '--target=config.json',
+      '--attributes',
+      'Name,ID,Note',
+      '--excludeTracks',
+      'gff3_custom_tooltips,gff3_mouseover_attr',
+    ])
+
+    expect(fs.existsSync(ixLoc(ctx.dir))).toBe(true)
+    expect(fs.existsSync(ixxLoc(ctx.dir))).toBe(true)
+
+    const metaPath = path.join(ctx.dir, 'trix', 'volvox_meta.json')
+    expect(fs.existsSync(metaPath)).toBe(true)
+    const meta = readJSON(metaPath)
+    expect(meta.tracks).toHaveLength(1)
+    expect(meta.tracks[0].trackId).toBe('gff3_track_1')
+  })
+})
+
 test('fails if there is an invalid flag', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand(['text-index', '--Command'])
@@ -256,9 +325,11 @@ test('indexes single assembly volvox config', async () => {
       '--force',
       '--attributes',
       'Name,ID,Note',
+      '--excludeTracks',
+      'gff3_custom_tooltips,gff3_mouseover_attr',
     ])
     // to update (e.g. if volvox config is updated) run:
-    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force --excludeTracks gff3_custom_tooltips,gff3_mouseover_attrvi
     expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
     expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
     expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
@@ -282,9 +353,11 @@ test('indexes entire volvox config', async () => {
       '--force',
       '--attributes',
       'Name,ID,Note',
+      '--excludeTracks',
+      'gff3_custom_tooltips,gff3_mouseover_attr',
     ])
     // to update (e.g. if volvox config is updated) run:
-    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force --excludeTracks gff3_custom_tooltips,gff3_mouseover_attrvi
     expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
     expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
     expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
