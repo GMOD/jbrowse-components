@@ -216,16 +216,17 @@ export default class ServerSideRenderer extends RendererType {
       setCachedConfigModel(cacheKey, config)
     }
 
-    return {
-      ...args,
-      config,
-      filters: args.filters
-        ? new SerializableFilterChain({
-            filters: args.filters,
-            jexl: this.pluginManager.jexl,
-          })
-        : undefined,
-    }
+    // Mutate in place to avoid creating a new object via spread
+    // args is not used after this point
+    const result = args as unknown as RenderArgsDeserialized
+    result.config = config
+    result.filters = args.filters
+      ? new SerializableFilterChain({
+          filters: args.filters,
+          jexl: this.pluginManager.jexl,
+        })
+      : undefined
+    return result
   }
 
   serializeResultsInWorker(

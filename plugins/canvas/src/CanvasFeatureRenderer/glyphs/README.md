@@ -131,12 +131,12 @@ Example layout function:
 ```typescript
 layout(args: LayoutArgs): FeatureLayout {
   const { feature, bpPerPx, configContext } = args
-  const { config, displayMode, featureHeight } = configContext
+  const { config, featureHeight, heightMultiplier } = configContext
 
   const start = feature.get('start') as number
   const end = feature.get('end') as number
   const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
-  const baseHeight = displayMode === 'compact' ? heightPx / 2 : heightPx
+  const baseHeight = heightPx * heightMultiplier
   const widthPx = (end - start) / bpPerPx
 
   return {
@@ -297,12 +297,12 @@ export const coloredBoxGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
-    const { config, displayMode, featureHeight } = configContext
+    const { config, featureHeight, heightMultiplier } = configContext
 
     const start = feature.get('start') as number
     const end = feature.get('end') as number
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeight = displayMode === 'compact' ? heightPx / 2 : heightPx
+    const baseHeight = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 
     return {

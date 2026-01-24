@@ -20,10 +20,10 @@ export const cdsGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
-    const { config, displayMode, featureHeight } = configContext
+    const { config, featureHeight, heightMultiplier } = configContext
 
     const height = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeight = displayMode === 'compact' ? height / 2 : height
+    const baseHeight = height * heightMultiplier
     const width = (feature.get('end') - feature.get('start')) / bpPerPx
 
     return {

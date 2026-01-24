@@ -69,13 +69,13 @@ export const matureProteinRegionGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
-    const { config, displayMode, featureHeight, subfeatureLabels } =
+    const { config, featureHeight, heightMultiplier, subfeatureLabels } =
       configContext
 
     const start = feature.get('start')
     const end = feature.get('end')
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
+    const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 
     const matureProteins = getMatureProteinChildren(feature)

@@ -31,12 +31,12 @@ export const processedTranscriptGlyph: Glyph = {
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, reversed, configContext } = args
-    const { config, displayMode, featureHeight } = configContext
+    const { config, featureHeight, heightMultiplier } = configContext
 
     const start = feature.get('start')
     const end = feature.get('end')
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
+    const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (end - start) / bpPerPx
 
     const strand = feature.get('strand') as number
