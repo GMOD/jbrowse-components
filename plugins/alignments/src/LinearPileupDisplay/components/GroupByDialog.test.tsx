@@ -33,13 +33,11 @@ describe('GroupByDialog', () => {
   let mockView: any
   let mockSession: any
   let handleClose: jest.Mock
-  let getSessionSpy: jest.SpyInstance
-  let getContainingTrackSpy: jest.SpyInstance
-  let getContainingViewSpy: jest.SpyInstance
-  let useDeBounceSpy: jest.SpyInstance
   let getUniqueTagsSpy: jest.SpyInstance
+  let user: ReturnType<typeof userEvent.setup>
 
   beforeEach(() => {
+    user = userEvent.setup()
     mockSession = {
       addTrackConf: jest.fn(),
     }
@@ -66,16 +64,10 @@ describe('GroupByDialog', () => {
     handleClose = jest.fn()
 
     // Setup spies
-    getSessionSpy = jest
-      .spyOn(coreUtil, 'getSession')
-      .mockReturnValue(mockSession)
-    getContainingTrackSpy = jest
-      .spyOn(coreUtil, 'getContainingTrack')
-      .mockReturnValue(mockTrack)
-    getContainingViewSpy = jest
-      .spyOn(coreUtil, 'getContainingView')
-      .mockReturnValue(mockView)
-    useDeBounceSpy = jest
+    jest.spyOn(coreUtil, 'getSession').mockReturnValue(mockSession)
+    jest.spyOn(coreUtil, 'getContainingTrack').mockReturnValue(mockTrack)
+    jest.spyOn(coreUtil, 'getContainingView').mockReturnValue(mockView)
+    jest
       .spyOn(coreUtil, 'useDebounce')
       .mockImplementation((value: unknown) => value)
     // Default mock for getUniqueTags - individual tests can override
@@ -85,11 +77,7 @@ describe('GroupByDialog', () => {
   })
 
   afterEach(() => {
-    getSessionSpy.mockRestore()
-    getContainingTrackSpy.mockRestore()
-    getContainingViewSpy.mockRestore()
-    useDeBounceSpy.mockRestore()
-    getUniqueTagsSpy.mockRestore()
+    jest.restoreAllMocks()
   })
 
   function renderDialog() {
@@ -98,6 +86,12 @@ describe('GroupByDialog', () => {
         <GroupByDialog model={mockModel} handleClose={handleClose} />
       </ThemeProvider>,
     )
+  }
+
+  async function selectGroupBy(optionName: 'Strand' | 'Tag') {
+    const groupBySelect = screen.getByLabelText('Group by...')
+    await user.click(groupBySelect)
+    await user.click(screen.getByRole('option', { name: optionName }))
   }
 
   test('renders dialog with initial state', () => {
@@ -110,27 +104,17 @@ describe('GroupByDialog', () => {
   })
 
   test('enables submit button when strand type is selected', async () => {
-    const user = userEvent.setup()
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-
-    const strandOption = screen.getByRole('option', { name: 'Strand' })
-    await user.click(strandOption)
+    await selectGroupBy('Strand')
 
     expect(screen.getByRole('button', { name: 'Submit' })).toBeEnabled()
   })
 
   test('shows tag input when tag type is selected', async () => {
-    const user = userEvent.setup()
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-
-    const tagOption = screen.getByRole('option', { name: 'Tag' })
-    await user.click(tagOption)
+    await selectGroupBy('Tag')
 
     expect(screen.getByPlaceholderText('Enter tag name')).toBeInTheDocument()
     expect(
@@ -139,12 +123,9 @@ describe('GroupByDialog', () => {
   })
 
   test('validates tag input', async () => {
-    const user = userEvent.setup()
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Tag' }))
+    await selectGroupBy('Tag')
 
     const tagInput = screen.getByPlaceholderText('Enter tag name')
 
@@ -159,14 +140,11 @@ describe('GroupByDialog', () => {
   })
 
   test('fetches unique tags when valid tag is entered', async () => {
-    const user = userEvent.setup()
     getUniqueTagsSpy.mockResolvedValue(['1', '2', 'untagged'])
 
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Tag' }))
+    await selectGroupBy('Tag')
 
     const tagInput = screen.getByPlaceholderText('Enter tag name')
     await user.type(tagInput, 'HP')
@@ -186,7 +164,6 @@ describe('GroupByDialog', () => {
   })
 
   test('button is disabled while loading tags', async () => {
-    const user = userEvent.setup()
     let resolvePromise: (value: string[]) => void
     getUniqueTagsSpy.mockReturnValue(
       new Promise(resolve => {
@@ -196,9 +173,7 @@ describe('GroupByDialog', () => {
 
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Tag' }))
+    await selectGroupBy('Tag')
 
     const tagInput = screen.getByPlaceholderText('Enter tag name')
     await user.type(tagInput, 'HP')
@@ -226,14 +201,11 @@ describe('GroupByDialog', () => {
   })
 
   test('button remains disabled if tag fetch returns empty array', async () => {
-    const user = userEvent.setup()
     getUniqueTagsSpy.mockResolvedValue([])
 
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Tag' }))
+    await selectGroupBy('Tag')
 
     const tagInput = screen.getByPlaceholderText('Enter tag name')
     await user.type(tagInput, 'HP')
@@ -252,15 +224,12 @@ describe('GroupByDialog', () => {
   })
 
   test('handles errors when fetching tags', async () => {
-    const user = userEvent.setup()
     const consoleError = jest.spyOn(console, 'error').mockImplementation()
     getUniqueTagsSpy.mockRejectedValue(new Error('Network error'))
 
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Tag' }))
+    await selectGroupBy('Tag')
 
     const tagInput = screen.getByPlaceholderText('Enter tag name')
     await user.type(tagInput, 'HP')
@@ -273,12 +242,9 @@ describe('GroupByDialog', () => {
   })
 
   test('does not fetch tags when type is not tag', async () => {
-    const user = userEvent.setup()
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Strand' }))
+    await selectGroupBy('Strand')
 
     // Wait a bit to ensure no fetch happens
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -287,14 +253,11 @@ describe('GroupByDialog', () => {
   })
 
   test('resets tagSet when switching from tag to strand', async () => {
-    const user = userEvent.setup()
     getUniqueTagsSpy.mockResolvedValue(['1', '2'])
 
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Tag' }))
+    await selectGroupBy('Tag')
 
     const tagInput = screen.getByPlaceholderText('Enter tag name')
     await user.type(tagInput, 'HP')
@@ -304,8 +267,7 @@ describe('GroupByDialog', () => {
     })
 
     // Switch to strand
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Strand' }))
+    await selectGroupBy('Strand')
 
     // Tag input and results should be gone
     expect(
@@ -317,14 +279,11 @@ describe('GroupByDialog', () => {
   })
 
   test('submits with tag grouping and creates tracks', async () => {
-    const user = userEvent.setup()
     getUniqueTagsSpy.mockResolvedValue(['1', '2'])
 
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Tag' }))
+    await selectGroupBy('Tag')
 
     const tagInput = screen.getByPlaceholderText('Enter tag name')
     await user.type(tagInput, 'HP')
@@ -354,13 +313,9 @@ describe('GroupByDialog', () => {
   })
 
   test('submits with strand grouping and creates tracks', async () => {
-    const user = userEvent.setup()
-
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Strand' }))
+    await selectGroupBy('Strand')
 
     const submitButton = screen.getByRole('button', { name: 'Submit' })
     await user.click(submitButton)
@@ -382,7 +337,6 @@ describe('GroupByDialog', () => {
   })
 
   test('cancel button closes dialog without creating tracks', async () => {
-    const user = userEvent.setup()
     renderDialog()
 
     const cancelButton = screen.getByRole('button', { name: 'Cancel' })
@@ -394,12 +348,9 @@ describe('GroupByDialog', () => {
   })
 
   test('does not fetch tags for invalid tag length', async () => {
-    const user = userEvent.setup()
     renderDialog()
 
-    const groupBySelect = screen.getByLabelText('Group by...')
-    await user.click(groupBySelect)
-    await user.click(screen.getByRole('option', { name: 'Tag' }))
+    await selectGroupBy('Tag')
 
     const tagInput = screen.getByPlaceholderText('Enter tag name')
 

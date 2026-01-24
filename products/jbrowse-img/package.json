@@ -13,7 +13,7 @@
   "author": "JBrowse Team",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=23"
   },
   "bin": {
     "jb2export": "./esm/bin.js"
@@ -27,6 +27,7 @@
     "prebuild": "pnpm clean",
     "build": "pnpm run /^build:/",
     "build:esm": "tsc --build tsconfig.build.esm.json",
+    "prepack": "pnpm build",
     "preversion": "pnpm build"
   },
   "dependencies": {

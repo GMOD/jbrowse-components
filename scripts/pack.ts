@@ -3,7 +3,13 @@ import path from 'path'
 
 import spawn from 'cross-spawn'
 
-const subDirs = ['cgv-vite', 'lgv-vite', 'app-vite', 'cli-node18']
+const subDirs = [
+  'cgv-vite',
+  'lgv-vite',
+  'app-vite',
+  'cli-node18',
+  'jbrowse-img',
+]
 const root = path.resolve(import.meta.dirname, '..')
 const workspaceDirs = ['packages', 'products', 'plugins']
 
@@ -21,15 +27,45 @@ for (const dir of workspaceDirs) {
       const pkgJsonPath = path.join(pkgDir, 'package.json')
       if (fs.existsSync(pkgJsonPath)) {
         const location = pkgDir
-        const { signal, status } = spawn.sync('pnpm', ['pack', '--silent'], {
-          stdio: 'inherit',
-          cwd: location,
-        })
+        const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+        console.log(`Packing ${pkgJson.name}...`)
+
+        // Use --config.ignore-scripts=false to ensure prepack hooks run,
+        // even if user has ignore-scripts=true in their .npmrc (which is
+        // useful to avoid postinstall scripts but would otherwise block prepack)
+        const { signal, status } = spawn.sync(
+          'pnpm',
+          ['--config.ignore-scripts=false', 'pack'],
+          {
+            stdio: 'inherit',
+            cwd: location,
+            encoding: 'utf8',
+          },
+        )
         if (signal || (status !== null && status > 0)) {
+          console.error(`Failed to pack ${pkgJson.name}`)
           process.exit(status || 1)
         }
+
+        // Verify esm folder exists for packages that should have it
+        const esmPath = path.join(location, 'esm')
+        if (pkgJson.files?.includes('esm') && !fs.existsSync(esmPath)) {
+          console.error(
+            `ERROR: ${pkgJson.name} should have esm folder but it doesn't exist!`,
+          )
+          console.error(`This likely means prepack/build didn't run.`)
+          process.exit(1)
+        }
+
         const files = fs.readdirSync(location)
         const tarball = files.find(f => f.endsWith('.tgz'))
+
+        // Log tarball size for debugging
+        if (tarball && pkgJson.files?.includes('esm')) {
+          const tarPath = path.join(location, tarball)
+          const stat = fs.statSync(tarPath)
+          console.log(`  Tarball size: ${stat.size} bytes`)
+        }
         if (tarball) {
           const newName = tarball.replace(/-\d+\.\d+\.\d+/, '')
           for (const sub of subDirs) {

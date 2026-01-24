@@ -4,7 +4,7 @@ import {
   parseCommaSeparatedString,
 } from './config-utils.ts'
 
-import type { Config } from '../../base.ts'
+import type { Assembly, Config } from '../../base.ts'
 
 describe('parseCommaSeparatedString', () => {
   test('returns empty array for undefined', () => {
@@ -26,7 +26,7 @@ describe('parseCommaSeparatedString', () => {
 
 describe('getTrackConfigs', () => {
   const mockConfig: Config = {
-    assemblies: [{ name: 'test_assembly' } as Config['assemblies'][0]],
+    assemblies: [{ name: 'test_assembly' } as Assembly],
     tracks: [
       {
         trackId: 'gff3_track',
@@ -106,10 +106,7 @@ describe('getTrackConfigs', () => {
 describe('getAssemblyNames', () => {
   test('extracts assembly names from config.assemblies', () => {
     const config: Config = {
-      assemblies: [
-        { name: 'asm1' } as Config['assemblies'][0],
-        { name: 'asm2' } as Config['assemblies'][0],
-      ],
+      assemblies: [{ name: 'asm1' } as Assembly, { name: 'asm2' } as Assembly],
     }
     expect(getAssemblyNames(config)).toEqual(['asm1', 'asm2'])
   })
@@ -123,7 +120,7 @@ describe('getAssemblyNames', () => {
 
   test('uses provided assemblies string over config', () => {
     const config: Config = {
-      assemblies: [{ name: 'asm1' } as Config['assemblies'][0]],
+      assemblies: [{ name: 'asm1' } as Assembly],
     }
     expect(getAssemblyNames(config, 'custom1,custom2')).toEqual([
       'custom1',

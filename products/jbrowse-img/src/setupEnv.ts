@@ -3,7 +3,7 @@ import { TextDecoder, TextEncoder } from 'util'
 import { Image, createCanvas } from 'canvas'
 import { JSDOM } from 'jsdom'
 
-export default function setupEnv() {
+export function setupEnv() {
   addGlobalCanvasUtils()
   addGlobalTextUtils()
   addGlobalDocument()
