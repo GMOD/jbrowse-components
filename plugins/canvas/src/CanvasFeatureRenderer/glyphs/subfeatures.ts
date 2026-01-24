@@ -74,8 +74,8 @@ export const subfeaturesGlyph: Glyph = {
     const { feature, bpPerPx, reversed, configContext } = args
     const {
       config,
-      displayMode,
       featureHeight,
+      heightMultiplier,
       geneGlyphMode,
       transcriptTypes,
     } = configContext
@@ -85,7 +85,7 @@ export const subfeaturesGlyph: Glyph = {
       end: feature.get('end'),
     }
     const heightPx = readCachedConfig(featureHeight, config, 'height', feature)
-    const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
+    const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (featureBp.end - featureBp.start) / bpPerPx
 
     // Get and sort subfeatures (coding first)

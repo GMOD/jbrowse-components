@@ -37,10 +37,10 @@ export function layoutChild(
   glyphType = 'Box',
 ): FeatureLayout {
   const { bpPerPx, reversed, configContext } = args
-  const { config, displayMode, featureHeight } = configContext
+  const { config, featureHeight, heightMultiplier } = configContext
 
   const heightPx = readCachedConfig(featureHeight, config, 'height', child)
-  const baseHeightPx = displayMode === 'compact' ? heightPx / 2 : heightPx
+  const baseHeightPx = heightPx * heightMultiplier
 
   const childStart = child.get('start')
   const childEnd = child.get('end')

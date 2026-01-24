@@ -82,6 +82,19 @@ export interface RenderConfigContext {
   labelAllowed: boolean
   geneGlyphMode: string
   displayDirectionalChevrons: boolean
+
+  /**
+   * Multiplier for feature height based on displayMode.
+   * normal=1, compact=0.5
+   */
+  heightMultiplier: number
+}
+
+function getHeightMultiplier(displayMode: string) {
+  if (displayMode === 'compact') {
+    return 0.5
+  }
+  return 1
 }
 
 export function createRenderConfigContext(
@@ -112,5 +125,6 @@ export function createRenderConfigContext(
     fontHeight: createCachedConfig(config, ['labels', 'fontSize'], 12),
 
     labelAllowed: displayMode !== 'collapse',
+    heightMultiplier: getHeightMultiplier(displayMode),
   }
 }

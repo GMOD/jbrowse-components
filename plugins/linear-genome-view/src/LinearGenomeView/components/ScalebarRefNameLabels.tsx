@@ -111,7 +111,9 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           <span
             key={`refLabel-${key}-${index}`}
             style={{
-              left: last ? Math.max(0, -offsetPx) : blockOffsetPx - offsetPx - 1,
+              left: last
+                ? Math.max(0, -offsetPx)
+                : blockOffsetPx - offsetPx - 1,
               paddingLeft: last ? 0 : 1,
               maxWidth:
                 maxWidth !== undefined && maxWidth > 0 ? maxWidth : undefined,
