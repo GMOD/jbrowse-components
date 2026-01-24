@@ -756,12 +756,27 @@ export function SharedLinearPileupDisplayMixin(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (snap) {
         // @ts-expect-error
-        const { colorBy, colorBySetting, filterBySetting, filterBy, ...rest } =
-          snap
+        const {
+          colorBy,
+          colorBySetting,
+          filterBySetting,
+          filterBy,
+          // Simplified string options for URL params and jbrowse-img
+          color,
+          ...rest
+        } = snap
+
+        // Parse simplified color string: "tag:HP" or "strand" or "methylation"
+        let resolvedColorBy = colorBySetting || colorBy
+        if (typeof color === 'string') {
+          const [type, tag] = color.split(':')
+          resolvedColorBy = tag ? { type, tag } : { type }
+        }
+
         return {
           ...rest,
           filterBySetting: filterBySetting || filterBy,
-          colorBySetting: colorBySetting || colorBy,
+          colorBySetting: resolvedColorBy,
         }
       }
       return snap

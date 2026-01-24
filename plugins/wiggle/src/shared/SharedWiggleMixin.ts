@@ -563,6 +563,33 @@ export default function SharedWiggleMixin(
         },
       }
     })
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      // Accept simplified aliases for URL params and jbrowse-img
+      // @ts-expect-error
+      const { minScore, maxScore, scaleType, crossHatches, ...rest } = snap
+      return {
+        ...rest,
+        // Map simplified names to actual property names
+        ...(scaleType !== undefined && !rest.scale ? { scale: scaleType } : {}),
+        ...(crossHatches !== undefined && rest.displayCrossHatches === undefined
+          ? { displayCrossHatches: crossHatches }
+          : {}),
+        // Map minScore/maxScore to constraints
+        ...(minScore !== undefined || maxScore !== undefined
+          ? {
+              constraints: {
+                ...rest.constraints,
+                ...(minScore !== undefined ? { min: minScore } : {}),
+                ...(maxScore !== undefined ? { max: maxScore } : {}),
+              },
+            }
+          : {}),
+      }
+    })
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

@@ -353,6 +353,74 @@ const testSuites: TestSuite[] = [
           await snapshot(page, 'session-spec-jexl')
         },
       },
+      {
+        name: 'simplified color option in displaySnapshot for alignments',
+        fn: async page => {
+          // Test the simplified "color" option which preProcessSnapshot transforms
+          // to colorBySetting: { type: 'strand' }
+          const sessionSpec = {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:1-10000',
+                tracks: [
+                  {
+                    trackId: 'volvox_cram_alignments',
+                    displaySnapshot: {
+                      color: 'strand',
+                    },
+                  },
+                ],
+              },
+            ],
+          }
+
+          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
+          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+
+          await findByText(page, 'ctgA')
+          await findByTestId(page, 'Blockset-pileup', 60000)
+          await waitForLoadingToComplete(page)
+          await delay(1000)
+          await snapshot(page, 'session-spec-simplified-color-strand')
+        },
+      },
+      {
+        name: 'simplified minScore/maxScore options for wiggle display',
+        fn: async page => {
+          // Test the simplified minScore/maxScore options which preProcessSnapshot
+          // transforms to constraints: { min, max }
+          const sessionSpec = {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:1-50000',
+                tracks: [
+                  {
+                    trackId: 'volvox_microarray',
+                    displaySnapshot: {
+                      minScore: 0,
+                      maxScore: 100,
+                    },
+                  },
+                ],
+              },
+            ],
+          }
+
+          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
+          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+
+          await findByText(page, 'ctgA')
+          await waitForLoadingToComplete(page)
+          await delay(2000)
+          await snapshot(page, 'session-spec-simplified-wiggle-minmax')
+        },
+      },
     ],
   },
   {
