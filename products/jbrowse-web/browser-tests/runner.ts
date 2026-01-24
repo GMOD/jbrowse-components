@@ -421,6 +421,38 @@ const testSuites: TestSuite[] = [
           await snapshot(page, 'session-spec-simplified-wiggle-minmax')
         },
       },
+      {
+        name: 'color option for wiggle display',
+        fn: async page => {
+          // Test the color option for wiggle displays
+          const sessionSpec = {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:1-50000',
+                tracks: [
+                  {
+                    trackId: 'volvox_microarray',
+                    displaySnapshot: {
+                      color: 'green',
+                    },
+                  },
+                ],
+              },
+            ],
+          }
+
+          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
+          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+
+          await findByText(page, 'ctgA')
+          await waitForLoadingToComplete(page)
+          await delay(2000)
+          await snapshot(page, 'session-spec-wiggle-color')
+        },
+      },
     ],
   },
   {
