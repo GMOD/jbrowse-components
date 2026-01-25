@@ -2,20 +2,19 @@ import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import RendererType from './RendererType.tsx'
 import SerializableFilterChain from './util/serializableFilterChain.ts'
-import { getSerializedSvg, updateStatus } from '../../util/index.ts'
 import idMaker from '../../util/idMaker.ts'
+import { getSerializedSvg, updateStatus } from '../../util/index.ts'
 import { isRpcResult } from '../../util/rpc.ts'
 import {
   checkStopToken2,
   createStopTokenChecker,
 } from '../../util/stopToken.ts'
 
-import type { LastStopTokenCheck } from '../../util/stopToken.ts'
-
 import type { RenderProps, RenderResults } from './RendererType.tsx'
 import type { SerializedFilterChain } from './util/serializableFilterChain.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
+import type { LastStopTokenCheck } from '../../util/stopToken.ts'
 import type { SnapshotIn, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 

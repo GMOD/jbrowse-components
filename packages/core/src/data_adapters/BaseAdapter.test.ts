@@ -4,9 +4,9 @@ import { toArray } from 'rxjs/operators'
 
 import { BaseFeatureDataAdapter } from './BaseAdapter/index.ts'
 import { adapterConfigCacheKey } from './util.ts'
+import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import { ObservableCreate } from '../util/rxjs.ts'
-import PluginManager from '../PluginManager.ts'
 import SimpleFeature from '../util/simpleFeature.ts'
 
 import type { Feature } from '../util/simpleFeature.ts'
@@ -120,7 +120,10 @@ describe('adapterConfigCacheKey', () => {
       { explicitlyTyped: true }, // no implicitIdentifier
     )
 
-    const adapter = AdapterConfig.create({ uri: '/path/to/file' }, { pluginManager })
+    const adapter = AdapterConfig.create(
+      { uri: '/path/to/file' },
+      { pluginManager },
+    )
     const snap = getSnapshot(adapter)
 
     // Verify snapshot has type but no adapterId
