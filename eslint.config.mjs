@@ -21,17 +21,9 @@ export default defineConfig(
       '**/storybook-static',
 
       // Config and tooling
-      'config/jest',
-      'jest.config.js',
-      'babel.config.cjs',
       'eslint.config.mjs',
-      'products/**/webpack.config.js',
-      'products/**/webpack.config.mjs',
-      '**/.storybook',
       '**/output-version.js',
       '**/umd_plugin.js',
-
-      'products/jbrowse-desktop/test/e2e.ts',
 
       // Vendored/external code
       'packages/core/src/util/map-obj',
@@ -39,42 +31,14 @@ export default defineConfig(
       'packages/core/src/ReExports/material-ui-colors.js',
       'plugins/variants/src/d3-hierarchy2',
 
-      // Desktop tests
-      'products/jbrowse-desktop/test/specs/test.e2e.ts',
-      'products/jbrowse-desktop/wdio.conf.ts',
-
-      // Scripts
-      'scripts/analyze_cpuprof.ts',
-      'scripts/getSuggestions.js',
-      'packages/core/scripts/generateExports.mjs',
-      'plugins/data-management/scripts',
-      'products/jbrowse-desktop/scripts',
-      'products/jbrowse-desktop/linux-sandbox-fix.cjs',
-      'products/jbrowse-desktop/linux-sandbox-fix.js',
-      'products/jbrowse-desktop/sign.js',
-      'products/jbrowse-web/scripts',
-      'products/jbrowse-img/src/bin.js',
-
-      // Worker polyfills (plain JS files)
-      '**/workerPolyfill.js',
-
-      // AWS Lambda functions
-      'products/jbrowse-aws-lambda-functions',
-
       // Test fixtures and mocks
       '**/test_data',
-      'packages/__mocks__',
-      'integration.test.js',
 
       // Excluded directories
-      'webpack',
       'website',
       'docs',
-      'benchmarks',
-      'auth_test_utils',
       'component_tests',
       'embedded_demos',
-      'plugin-development-tools',
       'products/jbrowse-cli/lib',
       'products/jbrowse-cli/bundle',
     ],
@@ -266,13 +230,23 @@ export default defineConfig(
   },
   {
     files: [
+      'jest.config.js',
       'babel.config.js',
+      'babel.config.cjs',
       'webpack/**/*',
+      'products/**/webpack.config.js',
+      'products/**/webpack.config.mjs',
+      '**/.storybook/*',
       'scripts/**/*',
+      'packages/*/scripts/*',
       'products/jbrowse-img/**/*',
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-cli/**/*',
+      'products/jbrowse-desktop/scripts/*',
+      'products/jbrowse-desktop/linux-sandbox-fix.js',
+      'products/jbrowse-desktop/sign.js',
       'products/jbrowse-desktop/sign.cjs',
+      'products/jbrowse-desktop/test/*.ts',
       'products/jbrowse-aws-lambda-functions/**/*.js',
       'plugins/data-management/scripts/*.js',
     ],
@@ -280,22 +254,30 @@ export default defineConfig(
       globals: {
         ...globals.node,
       },
+      parserOptions: {
+        project: null,
+      },
     },
     rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
       'no-restricted-globals': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
     },
   },
   {
-    files: ['integration.test.js'],
+    files: ['integration.test.js', 'config/jest/*'],
     languageOptions: {
       globals: {
         ...globals.node,
         ...globals.jest,
       },
+      parserOptions: {
+        project: null,
+      },
     },
     rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
     },
@@ -306,6 +288,12 @@ export default defineConfig(
       globals: {
         ...globals.worker,
       },
+      parserOptions: {
+        project: null,
+      },
+    },
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
     },
   },
 )

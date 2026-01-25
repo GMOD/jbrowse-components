@@ -58,7 +58,9 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
       - name: Build packages
-        run: pnpm -r --filter './packages/*' --filter '@jbrowse/react-*' --filter '@jbrowse/img' build
+        run:
+          pnpm -r --filter './packages/*' --filter '@jbrowse/react-*' --filter
+          '@jbrowse/img' build
       - name: Check types with attw
         run: pnpm attw
 

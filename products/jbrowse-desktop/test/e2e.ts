@@ -1,15 +1,20 @@
-import { fileURLToPath } from 'url'
-import { dirname, resolve, join } from 'path'
-import { spawn, ChildProcess } from 'child_process'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { spawn } from 'child_process'
 import { createRequire } from 'module'
-import { Builder, WebDriver, By, until, logging } from 'selenium-webdriver'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+import { Builder, By, logging, until } from 'selenium-webdriver'
+
+import type { ChildProcess } from 'child_process'
+import type { WebDriver } from 'selenium-webdriver'
 
 const require = createRequire(import.meta.url)
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const TEST_DATA_DIR = resolve(__dirname, '../../../test_data/volvox')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const TEST_DATA_DIR = path.resolve(__dirname, '../../../test_data/volvox')
 const isWindows = process.platform === 'win32'
-const APP_BINARY = resolve(
+const APP_BINARY = path.resolve(
   __dirname,
   isWindows
     ? '../dist/win-unpacked/JBrowse 2.exe'
@@ -22,10 +27,10 @@ const isHeadless =
   process.argv.includes('--headless') || process.env.HEADLESS === 'true'
 
 // Get chromedriver path by resolving the electron-chromedriver package location
-const electronChromedriverDir = dirname(
+const electronChromedriverDir = path.dirname(
   require.resolve('electron-chromedriver/package.json'),
 )
-const CHROMEDRIVER_PATH = join(
+const CHROMEDRIVER_PATH = path.join(
   electronChromedriverDir,
   'bin',
   isWindows ? 'chromedriver.exe' : 'chromedriver',
@@ -506,9 +511,11 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
 
   if (urlInputs.length >= 1) {
     console.log(
-      `    DEBUG: Entering FASTA URL: file://${join(TEST_DATA_DIR, 'volvox.fa')}`,
+      `    DEBUG: Entering FASTA URL: file://${path.join(TEST_DATA_DIR, 'volvox.fa')}`,
     )
-    await urlInputs[0].sendKeys(`file://${join(TEST_DATA_DIR, 'volvox.fa')}`)
+    await urlInputs[0].sendKeys(
+      `file://${path.join(TEST_DATA_DIR, 'volvox.fa')}`,
+    )
   }
 
   // Click second URL toggle (for FAI file) if there is one
@@ -526,10 +533,10 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
 
   if (urlInputs.length >= 2) {
     console.log(
-      `    DEBUG: Entering FAI URL: file://${join(TEST_DATA_DIR, 'volvox.fa.fai')}`,
+      `    DEBUG: Entering FAI URL: file://${path.join(TEST_DATA_DIR, 'volvox.fa.fai')}`,
     )
     await urlInputs[1].sendKeys(
-      `file://${join(TEST_DATA_DIR, 'volvox.fa.fai')}`,
+      `file://${path.join(TEST_DATA_DIR, 'volvox.fa.fai')}`,
     )
   }
 
@@ -652,7 +659,7 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   console.log(`    DEBUG: Found ${urlInputs.length} URL inputs after toggle`)
 
   if (urlInputs.length >= 1) {
-    const gffPath = `file://${join(TEST_DATA_DIR, 'volvox.sort.gff3.gz')}`
+    const gffPath = `file://${path.join(TEST_DATA_DIR, 'volvox.sort.gff3.gz')}`
     console.log(`    DEBUG: Entering GFF URL: ${gffPath}`)
     await urlInputs[0].sendKeys(gffPath)
     await delay(1000)
@@ -672,7 +679,7 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   )
 
   if (urlInputs.length >= 2) {
-    const indexPath = `file://${join(TEST_DATA_DIR, 'volvox.sort.gff3.gz.tbi')}`
+    const indexPath = `file://${path.join(TEST_DATA_DIR, 'volvox.sort.gff3.gz.tbi')}`
     console.log(`    DEBUG: Entering index URL: ${indexPath}`)
     await urlInputs[1].sendKeys(indexPath)
     await delay(1000)
@@ -872,7 +879,7 @@ async function testWorkspaceMoveToTab(driver: WebDriver): Promise<void> {
 
   // Verify dockview is present - check for various possible class names
   console.log('    DEBUG: Checking for dockview element...')
-  let dockview = await driver.findElements(
+  const dockview = await driver.findElements(
     By.css('.dockview-theme-light, .dockview-theme-dark, [class*="dockview"]'),
   )
   console.log(`    DEBUG: Found ${dockview.length} dockview elements`)
@@ -1051,7 +1058,7 @@ async function testWorkspaceCopyView(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Looking for view menu icon...')
 
   // Try to find the view menu icon
-  let viewMenu = await driver.findElements(
+  const viewMenu = await driver.findElements(
     By.css('[data-testid="view_menu_icon"]'),
   )
   console.log(`    DEBUG: Found ${viewMenu.length} view_menu_icon elements`)

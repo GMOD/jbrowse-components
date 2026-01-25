@@ -1,4 +1,4 @@
-//@ts-nocheck
+// @ts-nocheck
 import fs from 'fs'
 
 const profileFile =
@@ -21,7 +21,6 @@ for (const node of profile.nodes) {
 
 // Calculate self time for each node
 const selfTime = new Map()
-const totalTime = new Map()
 
 for (const sample of profile.samples) {
   const nodeId = sample

@@ -111,7 +111,6 @@ export function readData({
     configData.assembly = assemblyData
   }
   // else check if it was an assembly name in a config file
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   else if (configData.assemblies?.length) {
     configData.assemblies.find(entry => entry.name === asm)
     if (asm) {
@@ -160,7 +159,7 @@ export function readData({
   }
 
   // throw if still no assembly
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
   if (!configData.assembly) {
     throw new Error(
       'no assembly specified, use --fasta to supply an indexed FASTA file (generated with samtools faidx yourfile.fa). see README for alternatives with --assembly and --config',
@@ -169,10 +168,7 @@ export function readData({
 
   if (tracksData) {
     configData.tracks = tracksData
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  else if (!configData.tracks) {
+  } else if (!configData.tracks) {
     configData.tracks = []
   }
 

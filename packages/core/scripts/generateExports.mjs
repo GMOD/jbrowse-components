@@ -1,12 +1,12 @@
 import { execSync } from 'child_process'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { dirname, join } from 'path'
+import path from 'path'
 import { fileURLToPath } from 'url'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const packageRoot = join(__dirname, '..')
-const repoRoot = join(packageRoot, '../..')
-const srcDir = join(packageRoot, 'src')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const packageRoot = path.join(__dirname, '..')
+const repoRoot = path.join(packageRoot, '../..')
+const srcDir = path.join(packageRoot, 'src')
 
 // Exports to keep even if not used internally (for backwards compatibility)
 const preservedExports = [
@@ -47,14 +47,14 @@ function findAllImports() {
 // Check if a path is a directory with index file or a file
 function getSourcePath(entry) {
   const relativePath = entry.replace('@jbrowse/core/', '')
-  const dirPath = join(srcDir, relativePath)
+  const dirPath = path.join(srcDir, relativePath)
 
   // Check if it's a directory with index.ts or index.tsx
   if (existsSync(dirPath)) {
-    if (existsSync(join(dirPath, 'index.ts'))) {
+    if (existsSync(path.join(dirPath, 'index.ts'))) {
       return `/${relativePath}/index.ts`
     }
-    if (existsSync(join(dirPath, 'index.tsx'))) {
+    if (existsSync(path.join(dirPath, 'index.tsx'))) {
       return `/${relativePath}/index.tsx`
     }
   }
@@ -76,13 +76,13 @@ function getSourcePath(entry) {
 
 function getOutputPath(entry) {
   const relativePath = entry.replace('@jbrowse/core/', '')
-  const dirPath = join(srcDir, relativePath)
+  const dirPath = path.join(srcDir, relativePath)
 
   // Check if it's a directory with index file
   if (existsSync(dirPath)) {
     if (
-      existsSync(join(dirPath, 'index.ts')) ||
-      existsSync(join(dirPath, 'index.tsx'))
+      existsSync(path.join(dirPath, 'index.ts')) ||
+      existsSync(path.join(dirPath, 'index.tsx'))
     ) {
       return `/${relativePath}/index.js`
     }
@@ -133,7 +133,7 @@ for (const entry of imports) {
 }
 
 // Read package.json
-const packageJsonPath = join(packageRoot, 'package.json')
+const packageJsonPath = path.join(packageRoot, 'package.json')
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 
 // Update exports for dev time

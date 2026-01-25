@@ -47,8 +47,7 @@ export function getAdapterLocation(
 ): UriLocation | LocalPathLocation | undefined {
   const key = ADAPTER_LOCATION_KEYS[adapter?.type ?? '']
   return key
-    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      ((adapter?.[key] as UriLocation | LocalPathLocation) ??
+    ? ((adapter?.[key] as UriLocation | LocalPathLocation) ??
         (adapter as UriLocation | LocalPathLocation | undefined))
     : undefined
 }

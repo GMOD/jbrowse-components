@@ -73,7 +73,7 @@ export async function main(args: string[]) {
     }
 
     const command = commands[commandName as keyof typeof commands]
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
     if (!command) {
       console.error(`Error: Unknown command "${commandName}"`)
       console.error(`Available commands: ${Object.keys(commands).join(', ')}`)

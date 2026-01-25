@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
-import { createTheme, ThemeProvider } from '@mui/material/styles'
+
+import { ThemeProvider, createTheme } from '@mui/material/styles'
 
 const react = jest.requireActual('@testing-library/react')
 const render = (args: React.ReactNode) => {

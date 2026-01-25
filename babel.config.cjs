@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-undef
 module.exports = function babelConfig(api) {
   api.cache(true)
   return {

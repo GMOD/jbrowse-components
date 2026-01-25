@@ -39,51 +39,47 @@ if (browserslist.loadConfig({ path: paths.appPath }) == null) {
 const writeStatsJson = process.argv.includes('--stats')
 
 export default function buildWebpack(config) {
-  return (
-    measureFileSizesBeforeBuild(paths.appBuild)
-      .then(previousFileSizes => {
-        fs.rmSync(paths.appBuild, { recursive: true, force: true })
-        fs.cpSync(paths.appPublic, paths.appBuild, {
-          recursive: true,
-          dereference: true,
-          filter: file => file !== paths.appHtml,
-        })
-        return build(config, previousFileSizes)
+  return measureFileSizesBeforeBuild(paths.appBuild)
+    .then(previousFileSizes => {
+      fs.rmSync(paths.appBuild, { recursive: true, force: true })
+      fs.cpSync(paths.appPublic, paths.appBuild, {
+        recursive: true,
+        dereference: true,
+        filter: file => file !== paths.appHtml,
       })
-      .then(
-        ({ stats, previousFileSizes, warnings }) => {
-          if (warnings.length) {
-            console.log(chalk.yellow('Compiled with warnings.\n'))
-            console.log(warnings.join('\n\n'))
-          } else {
-            console.log(chalk.green('Compiled successfully.\n'))
-          }
-
-          console.log('File sizes:\n')
-          printFileSizesAfterBuild(stats, previousFileSizes, paths.appBuild)
-          console.log()
-
-          const buildFolder = path.relative(process.cwd(), paths.appBuild)
-          console.log(
-            `The ${chalk.cyan(buildFolder)} folder is ready to be deployed.`,
-          )
-          console.log()
-        },
-        // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
-        err => {
-          console.log(chalk.red('Failed to compile.\n'))
-          console.log(err?.message || err)
-          process.exit(1)
-        },
-      )
-      // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
-      .catch(err => {
-        if (err?.message) {
-          console.log(err.message)
+      return build(config, previousFileSizes)
+    })
+    .then(
+      ({ stats, previousFileSizes, warnings }) => {
+        if (warnings.length) {
+          console.log(chalk.yellow('Compiled with warnings.\n'))
+          console.log(warnings.join('\n\n'))
+        } else {
+          console.log(chalk.green('Compiled successfully.\n'))
         }
+
+        console.log('File sizes:\n')
+        printFileSizesAfterBuild(stats, previousFileSizes, paths.appBuild)
+        console.log()
+
+        const buildFolder = path.relative(process.cwd(), paths.appBuild)
+        console.log(
+          `The ${chalk.cyan(buildFolder)} folder is ready to be deployed.`,
+        )
+        console.log()
+      },
+      err => {
+        console.log(chalk.red('Failed to compile.\n'))
+        console.log(err?.message || err)
         process.exit(1)
-      })
-  )
+      },
+    )
+    .catch(err => {
+      if (err?.message) {
+        console.log(err.message)
+      }
+      process.exit(1)
+    })
 }
 
 function build(config, previousFileSizes) {
