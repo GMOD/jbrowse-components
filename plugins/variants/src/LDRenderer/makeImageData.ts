@@ -1,15 +1,11 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
-import {
-  checkStopToken2,
-  checkStopToken,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { interpolateRgbBasis } from '@mui/x-charts-vendor/d3-interpolate'
 import { scaleSequential } from '@mui/x-charts-vendor/d3-scale'
 
 import type { LDFlatbushItem } from './types.ts'
 import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
-import type { Region, StopToken } from '@jbrowse/core/util'
+import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
 
 export interface MakeImageDataResult {
   flatbush: ArrayBufferLike
@@ -22,7 +18,7 @@ export interface MakeImageDataProps {
   ldData: LDMatrixResult
   regions: Region[]
   bpPerPx: number
-  stopToken?: StopToken
+  stopTokenCheck?: LastStopTokenCheck
   yScalar: number
   colorScheme?: string
   useGenomicPositions?: boolean
@@ -101,13 +97,12 @@ export function makeImageData(
     ldData,
     regions,
     bpPerPx,
-    stopToken,
+    stopTokenCheck,
     yScalar,
     useGenomicPositions = false,
     signedLD = false,
   } = props
 
-  const lastCheck = createStopTokenChecker(stopToken)
   const { snps, ldValues, metric } = ldData
   const n = snps.length
 
@@ -115,7 +110,7 @@ export function makeImageData(
     return undefined
   }
 
-  checkStopToken(stopToken)
+  checkStopToken2(stopTokenCheck)
 
   // Get the region for coordinate calculations
   const region = regions[0]
@@ -222,7 +217,7 @@ export function makeImageData(
       })
 
       ldIdx++
-      checkStopToken2(lastCheck)
+      checkStopToken2(stopTokenCheck)
     }
   }
 

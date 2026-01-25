@@ -11,7 +11,10 @@ import {
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -70,6 +73,8 @@ export async function executeRenderLinearReadCloudDisplay({
     showOutline,
   } = args
 
+  const stopTokenCheck = createStopTokenChecker(stopToken)
+
   // Recreate the view from the snapshot (displayedRegions already have renamed refNames)
   const view = Base1DView.create(viewSnapshot)
   // Set the volatile width which is not part of the snapshot
@@ -126,7 +131,7 @@ export async function executeRenderLinearReadCloudDisplay({
   )
 
   // Check stop token after fetching features
-  checkStopToken(stopToken)
+  checkStopToken2(stopTokenCheck)
 
   // Dedupe features by ID while preserving full Feature objects
   const deduped = dedupe(featuresArray, f => f.id())
@@ -172,7 +177,7 @@ export async function executeRenderLinearReadCloudDisplay({
   const chainData = { chains, stats }
 
   // Check stop token after processing chain data
-  checkStopToken(stopToken)
+  checkStopToken2(stopTokenCheck)
 
   // Pre-calculate actual layout height to avoid oversized canvas
   const { computedChains } = await updateStatus(
@@ -243,7 +248,7 @@ export async function executeRenderLinearReadCloudDisplay({
             theme,
             regions,
             bpPerPx,
-            stopToken,
+            stopTokenCheck,
             visibleModifications,
             hideSmallIndels,
             hideMismatches,

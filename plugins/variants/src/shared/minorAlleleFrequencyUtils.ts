@@ -278,14 +278,14 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   features,
   minorAlleleFrequencyFilter,
   lengthCutoffFilter,
-  lastCheck,
+  stopTokenCheck,
   genotypesCache,
   splitCache = {},
 }: {
   features: Iterable<Feature>
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
-  lastCheck?: LastStopTokenCheck
+  stopTokenCheck?: LastStopTokenCheck
   genotypesCache?: Map<string, Record<string, string>>
   splitCache?: Record<string, string[]>
 }) {
@@ -323,7 +323,7 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
         })
       }
     }
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
   }
 
   return results

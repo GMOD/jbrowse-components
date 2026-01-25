@@ -1,7 +1,4 @@
-import {
-  checkStopToken2,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { featurizeSA, getTag } from '../MismatchParser/index.ts'
 import {
@@ -26,7 +23,7 @@ import { SAM_FLAG_MATE_UNMAPPED } from '../shared/samFlags.ts'
 import { hasPairedReads } from '../shared/util.ts'
 
 import type { ChainData, ChainStats, ColorBy } from '../shared/types.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
 
 // Arc rendering thresholds
 const ARC_VS_BEZIER_THRESHOLD = 10_000
@@ -51,7 +48,7 @@ interface DrawFeatsRPCParams {
     }) => { offsetPx: number } | undefined
   }
   offsetPx: number
-  stopToken?: string
+  stopTokenCheck?: LastStopTokenCheck
 }
 
 /**
@@ -180,7 +177,7 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     jitter: jitterVal,
     view,
     offsetPx,
-    stopToken,
+    stopTokenCheck,
   } = params
 
   const { chains, stats } = chainData
@@ -280,7 +277,6 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     }
   }
 
-  const lastCheck = createStopTokenChecker(stopToken)
   for (const chain of chains) {
     if (chain.length === 1 && drawLongRange) {
       const f = chain[0]!
@@ -294,6 +290,6 @@ export function drawFeatsRPC(params: DrawFeatsRPCParams) {
     } else {
       drawMultiFeatureChain(chain)
     }
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
   }
 }

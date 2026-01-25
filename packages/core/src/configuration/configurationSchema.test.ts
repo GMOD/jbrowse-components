@@ -310,4 +310,5 @@ describe('configuration schemas', () => {
     )
     expect(readConfObject(tester, ['index', 'indexType'])).toBe('TBI')
   })
+
 })

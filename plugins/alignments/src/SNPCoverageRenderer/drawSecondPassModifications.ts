@@ -15,8 +15,15 @@ export function drawSecondPassModifications(
   isolatedModification: string | undefined,
   simplexSet: Set<string>,
 ): SecondPassStats {
-  const { ctx, coverageFeatures, region, bpPerPx, toY, toHeight, lastCheck } =
-    passCtx
+  const {
+    ctx,
+    coverageFeatures,
+    region,
+    bpPerPx,
+    toY,
+    toHeight,
+    stopTokenCheck,
+  } = passCtx
 
   let snpDrawn = 0
   let snpSkipped = 0
@@ -24,7 +31,7 @@ export function drawSecondPassModifications(
   let prevTotal = 0
 
   for (let i = 0, l = coverageFeatures.length; i < l; i++) {
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
     const feature = coverageFeatures[i]!
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const snpinfo = feature.get('snpinfo')

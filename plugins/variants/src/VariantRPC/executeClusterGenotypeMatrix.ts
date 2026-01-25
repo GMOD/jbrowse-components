@@ -1,4 +1,5 @@
 import { clusterData, toNewick } from '@gmod/hclust'
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
 import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
@@ -28,14 +29,16 @@ export async function executeClusterGenotypeMatrix({
     sampleInfo?: Record<string, SampleInfo>
   }
 }) {
-  const { renderingMode, sampleInfo } = args
+  const { renderingMode, sampleInfo, stopToken } = args
+  const stopTokenCheck = createStopTokenChecker(stopToken)
+  const argsWithCheck = { ...args, stopTokenCheck }
   const matrix =
     renderingMode === 'phased' && sampleInfo
       ? await getPhasedGenotypeMatrix({
           pluginManager,
-          args: { ...args, sampleInfo },
+          args: { ...argsWithCheck, sampleInfo },
         })
-      : await getGenotypeMatrix({ pluginManager, args })
+      : await getGenotypeMatrix({ pluginManager, args: argsWithCheck })
   const sampleLabels = Object.keys(matrix)
   const result = await clusterData({
     data: Object.values(matrix),

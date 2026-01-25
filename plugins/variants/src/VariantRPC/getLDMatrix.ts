@@ -1,9 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import {
-  checkStopToken2,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
@@ -11,8 +8,7 @@ import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAl
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
 
 const SPLITTER = /[/|]/
 
@@ -388,7 +384,7 @@ export async function getLDMatrix({
   pluginManager: PluginManager
   args: {
     adapterConfig: AnyConfigurationModel
-    stopToken?: StopToken
+    stopTokenCheck?: LastStopTokenCheck
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]
@@ -411,12 +407,10 @@ export async function getLDMatrix({
     hweFilterThreshold = 0.001,
     callRateFilter = 0,
     jexlFilters = [],
-    stopToken,
+    stopTokenCheck,
     ldMetric = 'r2',
     signedLD = false,
   } = args
-
-  const lastCheck = createStopTokenChecker(stopToken)
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
@@ -457,7 +451,7 @@ export async function getLDMatrix({
   const filteredFeatures = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
-    lastCheck,
+    stopTokenCheck,
     splitCache,
     features: rawFeatures,
   })
@@ -588,7 +582,7 @@ export async function getLDMatrix({
       phasedHaplotypes.push(encodePhasedHaplotypes(genotypes, samples))
     }
 
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
   }
 
   // Calculate LD matrix (lower triangular, excluding diagonal)
@@ -611,7 +605,7 @@ export async function getLDMatrix({
 
       ldValues[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
     }
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
   }
 
   const filterStats: FilterStats = {

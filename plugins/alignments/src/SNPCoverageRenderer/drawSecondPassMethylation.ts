@@ -17,7 +17,7 @@ export function drawSecondPassMethylation(
     colorMap,
     toY,
     toHeight,
-    lastCheck,
+    stopTokenCheck,
   } = passCtx
 
   let snpDrawn = 0
@@ -27,7 +27,7 @@ export function drawSecondPassMethylation(
   let prevTotal = 0
 
   for (let i = 0, l = coverageFeatures.length; i < l; i++) {
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
     const feature = coverageFeatures[i]!
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const snpinfo = feature.get('snpinfo') as BaseCoverageBin

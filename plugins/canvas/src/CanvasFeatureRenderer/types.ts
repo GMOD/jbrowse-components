@@ -1,7 +1,7 @@
 import type { RenderConfigContext } from './renderConfig.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, LastStopTokenCheck, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 import type { Theme } from '@mui/material'
 
@@ -107,6 +107,7 @@ export interface RenderArgs {
   theme: Record<string, any>
   highResolutionScaling?: number
   stopToken?: string
+  stopTokenCheck?: LastStopTokenCheck
   peptideDataMap?: Map<string, PeptideData>
   colorByCDS?: boolean
   pluginManager?: PluginManager

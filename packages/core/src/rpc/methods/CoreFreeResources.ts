@@ -1,4 +1,5 @@
 import { freeAdapterResources } from '../../data_adapters/dataAdapterCache.ts'
+import { clearConfigModelCache } from '../../pluggableElementTypes/renderers/ServerSideRendererType.tsx'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
 /**
@@ -12,6 +13,10 @@ export default class CoreFreeResources extends RpcMethodType {
 
   async execute(args: Record<string, unknown>) {
     await freeAdapterResources(args)
+    const specKeys = Object.keys(args)
+    if (specKeys.length === 1 && specKeys[0] === 'sessionId') {
+      clearConfigModelCache()
+    }
     for (const renderer of this.pluginManager.getRendererTypes()) {
       renderer.freeResources(args)
     }

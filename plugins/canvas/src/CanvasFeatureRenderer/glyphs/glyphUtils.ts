@@ -204,6 +204,7 @@ export function drawSegmentedFeature(
         width,
         effectiveStrand,
         strokeColor,
+        canvasWidth,
       )
     }
   }

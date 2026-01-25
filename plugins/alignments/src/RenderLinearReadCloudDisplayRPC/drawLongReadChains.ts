@@ -1,7 +1,4 @@
-import {
-  checkStopToken2,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import {
   calculateFeaturePositionPx,
@@ -25,6 +22,7 @@ import type {
   ModificationTypeWithColor,
 } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { LastStopTokenCheck } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
@@ -43,7 +41,7 @@ export function drawLongReadChains({
   bpPerPx,
   colorBy,
   visibleModifications,
-  stopToken,
+  stopTokenCheck,
   hideSmallIndels,
   hideMismatches,
   hideLargeIndels,
@@ -63,7 +61,7 @@ export function drawLongReadChains({
   bpPerPx: number
   colorBy: ColorBy
   visibleModifications?: Record<string, ModificationTypeWithColor>
-  stopToken?: string
+  stopTokenCheck?: LastStopTokenCheck
   hideSmallIndels?: boolean
   hideMismatches?: boolean
   hideLargeIndels?: boolean
@@ -82,9 +80,8 @@ export function drawLongReadChains({
   const allCoords: MismatchData['coords'] = []
   const allItems: MismatchData['items'] = []
 
-  const lastCheck = createStopTokenChecker(stopToken)
   for (const computedChain of computedChains) {
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
     const { id, chain, isPairedEnd, nonSupplementary } = computedChain
 
     if (isPairedEnd) {
