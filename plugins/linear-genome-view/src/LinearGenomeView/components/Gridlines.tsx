@@ -14,7 +14,6 @@ import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
-  // Outer container that handles zoom scaling via CSS transform
   verticalGuidesZoomContainer: {
     position: 'absolute',
     top: 0,
@@ -22,7 +21,6 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     pointerEvents: 'none',
   },
-  // Inner container positioned using CSS calc() with --offset-px variable
   verticalGuidesContainer: {
     position: 'absolute',
     height: '100%',
@@ -112,7 +110,8 @@ const Gridlines = observer(function Gridlines({
   offset?: number
 }) {
   const { classes } = useStyles()
-  const { staticBlocks, scaleFactor } = model
+  const { staticBlocks, scaleFactor, offsetPx } = model
+  const offsetLeft = staticBlocks.offsetPx - offsetPx
   return (
     <div
       className={classes.verticalGuidesZoomContainer}
@@ -123,8 +122,7 @@ const Gridlines = observer(function Gridlines({
       <div
         className={classes.verticalGuidesContainer}
         style={{
-          // Uses --offset-px CSS variable from parent (TracksContainer or Scalebar)
-          left: `calc(${staticBlocks.offsetPx}px - var(--offset-px) - ${offset}px)`,
+          left: offsetLeft - offset,
           width: staticBlocks.totalWidthPx,
         }}
       >
