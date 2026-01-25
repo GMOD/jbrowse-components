@@ -157,6 +157,16 @@ function isInWebWorker() {
   return 'WorkerGlobalScope' in globalThis
 }
 
+function addCacheBuster(url: string) {
+  // @ts-expect-error
+  if (!globalThis.__jbrowseCacheBuster) {
+    return url
+  }
+  const u = new URL(url)
+  u.searchParams.set('_cb', Date.now().toString())
+  return u.href
+}
+
 export default class PluginLoader {
   definitions: PluginDefinition[] = []
 
@@ -204,7 +214,7 @@ export default class PluginLoader {
     if (!this.fetchESM) {
       throw new Error('No ESM fetcher installed')
     }
-    const plugin = await this.fetchESM(parsedUrl.href)
+    const plugin = await this.fetchESM(addCacheBuster(parsedUrl.href))
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!plugin) {
@@ -232,7 +242,7 @@ export default class PluginLoader {
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
     if (typeof jest === 'undefined') {
-      await loadScript(parsedUrl.href)
+      await loadScript(addCacheBuster(parsedUrl.href))
     } else {
       // @ts-expect-error
       globalThis[umdName] = { default: Plugin }

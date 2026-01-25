@@ -115,7 +115,7 @@ export async function createPluginManager(
 }
 
 export async function fetchjson(url: string) {
-  const res = await fetch(url)
+  const res = await fetch(url, { cache: 'no-cache' })
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} fetching ${url}`)
   }
