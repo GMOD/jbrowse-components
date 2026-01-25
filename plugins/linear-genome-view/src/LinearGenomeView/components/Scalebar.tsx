@@ -20,8 +20,6 @@ const useStyles = makeStyles()({
   zoomContainer: {
     position: 'relative',
   },
-  // Scalebar positioned using CSS calc() with --offset-px variable
-  // Uses translateX for smooth positioning (subpixel gaps less visible here)
   scalebar: {
     position: 'absolute',
     display: 'flex',
@@ -43,15 +41,14 @@ const Scalebar = observer(function Scalebar({
 }: ScalebarProps) {
   const { classes } = useStyles()
   const { scaleFactor, staticBlocks, offsetPx } = model
+  const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
 
   return (
     <Paper
       data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
       className={cx(classes.container, className)}
       variant="outlined"
-      style={
-        { ...style, '--offset-px': `${offsetPx}px` } as React.CSSProperties
-      }
+      style={style}
       {...other}
     >
       {/* offset 1px for left track border */}
@@ -65,7 +62,7 @@ const Scalebar = observer(function Scalebar({
         <div
           className={classes.scalebar}
           style={{
-            transform: `translateX(calc(${staticBlocks.offsetPx}px - var(--offset-px) - 1px))`,
+            transform: `translateX(${offsetLeft - 1}px)`,
             width: staticBlocks.totalWidthPx,
           }}
         >

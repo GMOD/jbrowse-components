@@ -15,8 +15,6 @@ interface MenuState {
 }
 
 const useStyles = makeStyles()(theme => ({
-  // Base styles for ref name labels (chromosome names in scalebar)
-  // Uses --offset-px CSS variable from parent Scalebar component
   refLabel: {
     fontSize: 11,
     position: 'absolute',
@@ -33,7 +31,6 @@ const useStyles = makeStyles()(theme => ({
       background: theme.palette.grey[300],
     },
   },
-  // First block label when it's not a ContentBlock
   b0: {
     left: 0,
     zIndex: 100,
@@ -114,9 +111,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           <span
             key={`refLabel-${key}-${index}`}
             style={{
-              left: last
-                ? 'max(0px, calc(-1 * var(--offset-px)))'
-                : `calc(${blockOffsetPx}px - var(--offset-px) - 1px)`,
+              left: last ? Math.max(0, -offsetPx) : blockOffsetPx - offsetPx - 1,
               paddingLeft: last ? 0 : 1,
               maxWidth:
                 maxWidth !== undefined && maxWidth > 0 ? maxWidth : undefined,
