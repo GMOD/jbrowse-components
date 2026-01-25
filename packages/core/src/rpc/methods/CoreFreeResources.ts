@@ -1,6 +1,6 @@
 import { freeAdapterResources } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
-import { clearConfigModelCache } from '../../pluggableElementTypes/renderers/ServerSideRendererType.tsx'
+import { clearConfigModelCache } from '../../pluggableElementTypes/renderers/configModelCache.ts'
 
 /**
  * free up any resources (e.g. cached adapter objects)

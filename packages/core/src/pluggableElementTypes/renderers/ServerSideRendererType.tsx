@@ -1,8 +1,12 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import RendererType from './RendererType.tsx'
+import {
+  getCachedConfigModel,
+  getConfigCacheKey,
+  setCachedConfigModel,
+} from './configModelCache.ts'
 import SerializableFilterChain from './util/serializableFilterChain.ts'
-import idMaker from '../../util/idMaker.ts'
 import { getSerializedSvg, updateStatus } from '../../util/index.ts'
 import { isRpcResult } from '../../util/rpc.ts'
 import {
@@ -17,21 +21,6 @@ import type RpcManager from '../../rpc/RpcManager.ts'
 import type { LastStopTokenCheck } from '../../util/stopToken.ts'
 import type { SnapshotIn, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
-
-// Cache for config models to avoid repeated MST tree instantiation in worker
-// Keyed by renderer name + config snapshot hash
-let configModelCache: Record<string, AnyConfigurationModel> = {}
-
-function getConfigCacheKey(
-  rendererName: string,
-  configSnapshot: Record<string, unknown>,
-) {
-  return `${rendererName}-${idMaker(configSnapshot)}`
-}
-
-export function clearConfigModelCache() {
-  configModelCache = {}
-}
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
@@ -219,15 +208,17 @@ export default class ServerSideRenderer extends RendererType {
     const configSnapshot = args.config ?? {}
     const cacheKey = getConfigCacheKey(this.name, configSnapshot)
 
-    if (!configModelCache[cacheKey]) {
-      configModelCache[cacheKey] = this.configSchema.create(configSnapshot, {
+    let config = getCachedConfigModel(cacheKey)
+    if (!config) {
+      config = this.configSchema.create(configSnapshot, {
         pluginManager: this.pluginManager,
       })
+      setCachedConfigModel(cacheKey, config)
     }
 
     return {
       ...args,
-      config: configModelCache[cacheKey]!,
+      config,
       filters: args.filters
         ? new SerializableFilterChain({
             filters: args.filters,
