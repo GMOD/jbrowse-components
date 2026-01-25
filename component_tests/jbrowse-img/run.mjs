@@ -83,7 +83,9 @@ function run(cmd) {
     })
   } catch (error) {
     // Re-throw with stderr included in the message
-    const stderr = error.stderr ? `\n  stderr: ${error.stderr.slice(0, 500)}` : ''
+    const stderr = error.stderr
+      ? `\n  stderr: ${error.stderr.slice(0, 500)}`
+      : ''
     throw new Error(`Command failed: ${cmd}${stderr}`)
   }
 }

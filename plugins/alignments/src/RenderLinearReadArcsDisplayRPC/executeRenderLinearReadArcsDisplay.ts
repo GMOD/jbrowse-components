@@ -11,7 +11,10 @@ import {
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -51,6 +54,8 @@ export async function executeRenderLinearReadArcsDisplay({
     statusCallback = () => {},
     stopToken,
   } = args
+
+  const stopTokenCheck = createStopTokenChecker(stopToken)
 
   // Recreate the view from the snapshot (displayedRegions already have renamed refNames)
   const view = Base1DView.create(viewSnapshot)
@@ -104,7 +109,7 @@ export async function executeRenderLinearReadArcsDisplay({
   )
 
   // Check stop token after fetching features
-  checkStopToken(stopToken)
+  checkStopToken2(stopTokenCheck)
 
   // Process chain data with status updates
   const { chains, stats } = await updateStatus(
@@ -161,7 +166,7 @@ export async function executeRenderLinearReadArcsDisplay({
   }
 
   // Check stop token after processing chain data
-  checkStopToken(stopToken)
+  checkStopToken2(stopTokenCheck)
 
   const renderOpts: RenderToAbstractCanvasOptions = {
     highResolutionScaling,
@@ -184,7 +189,7 @@ export async function executeRenderLinearReadArcsDisplay({
         jitter,
         view: viewSnap,
         offsetPx,
-        stopToken,
+        stopTokenCheck,
       })
       return undefined
     }),

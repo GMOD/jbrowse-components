@@ -20,7 +20,7 @@ import type {
   ModificationTypeWithColor,
 } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { ThemeOptions } from '@mui/material'
 
@@ -297,7 +297,7 @@ export interface DrawFeatsParams {
   regions: BaseBlock[]
   bpPerPx: number
   canvasWidth: number
-  stopToken?: string
+  stopTokenCheck?: LastStopTokenCheck
   visibleModifications?: Record<string, ModificationTypeWithColor>
   hideSmallIndels?: boolean
   hideMismatches?: boolean
@@ -335,7 +335,7 @@ export function drawFeatsCore({
     drawSingletons,
     drawProperPairs,
     flipStrandLongReadChains,
-    stopToken,
+    stopTokenCheck,
   } = params
 
   const type = colorBy.type || 'insertSizeAndOrientation'
@@ -400,7 +400,7 @@ export function drawFeatsCore({
       bpPerPx: params.bpPerPx,
       colorBy: params.colorBy,
       visibleModifications: params.visibleModifications,
-      stopToken,
+      stopTokenCheck,
       hideSmallIndels: params.hideSmallIndels,
       hideMismatches: params.hideMismatches,
       hideLargeIndels: params.hideLargeIndels,
@@ -422,7 +422,7 @@ export function drawFeatsCore({
       bpPerPx: params.bpPerPx,
       colorBy: params.colorBy,
       visibleModifications: params.visibleModifications,
-      stopToken,
+      stopTokenCheck,
       hideSmallIndels: params.hideSmallIndels,
       hideMismatches: params.hideMismatches,
       hideLargeIndels: params.hideLargeIndels,

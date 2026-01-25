@@ -206,7 +206,7 @@ export interface SecondPassContext {
   toY: (n: number) => number
   toHeight: (n: number) => number
   toHeight2: (n: number) => number
-  lastCheck: LastStopTokenCheck
+  stopTokenCheck?: LastStopTokenCheck
   extraHorizontallyFlippedOffset: number
   coords: number[]
   items: ClickMapItem[]

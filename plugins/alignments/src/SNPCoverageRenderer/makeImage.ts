@@ -2,7 +2,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   checkStopToken2,
-  createStopTokenChecker,
   featureSpanPx,
   renderToAbstractCanvas,
 } from '@jbrowse/core/util'
@@ -96,7 +95,7 @@ function drawSNPCoverage(
     theme: configTheme,
     config: cfg,
     ticks,
-    stopToken,
+    stopTokenCheck,
   } = props
   const theme = createJBrowseTheme(configTheme)
   const region = regions[0]!
@@ -146,9 +145,8 @@ function drawSNPCoverage(
 
   // First pass: draw the gray background
   ctx.fillStyle = colorMap.total!
-  const lastCheck = createStopTokenChecker(stopToken)
   for (let i = 0, l = coverageFeatures.length; i < l; i++) {
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
     const feature = coverageFeatures[i]!
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const w = rightPx - leftPx + fudgeFactor
@@ -178,7 +176,7 @@ function drawSNPCoverage(
     toY,
     toHeight,
     toHeight2,
-    lastCheck,
+    stopTokenCheck,
     extraHorizontallyFlippedOffset,
     coords,
     items,

@@ -28,6 +28,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
       stopToken,
       sessionId,
     } = deserializedArgs
+    const stopTokenCheck = createStopTokenChecker(stopToken)
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -43,12 +44,11 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
     const sampleInfo = {} as Record<string, SampleInfo>
     const genotypesCache = new Map<string, Record<string, string>>()
     let hasPhased = false
-    const lastCheck = createStopTokenChecker(stopToken)
 
     const features = getFeaturesThatPassMinorAlleleFrequencyFilter({
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
-      lastCheck,
+      stopTokenCheck,
       features: rawFeatures,
       genotypesCache,
     })
@@ -78,7 +78,7 @@ export class MultiVariantGetSimplifiedFeatures extends RpcMethodTypeWithFiltersA
           isPhased: existing?.isPhased || isPhased,
         }
       }
-      checkStopToken2(lastCheck)
+      checkStopToken2(stopTokenCheck)
     }
     return {
       hasPhased,

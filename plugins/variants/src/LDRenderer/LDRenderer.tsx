@@ -110,7 +110,7 @@ export default class LDRenderer extends ServerSideRendererType {
           ldData,
           regions,
           bpPerPx,
-          stopToken: renderProps.stopToken,
+          stopTokenCheck: renderProps.stopTokenCheck,
           yScalar,
           useGenomicPositions,
           signedLD,
@@ -154,7 +154,7 @@ export default class LDRenderer extends ServerSideRendererType {
       callRateFilter = 0,
       jexlFilters = [],
       signedLD = false,
-      stopToken,
+      stopTokenCheck,
     } = args
 
     try {
@@ -191,7 +191,7 @@ export default class LDRenderer extends ServerSideRendererType {
           callRateFilter,
           jexlFilters,
           signedLD,
-          stopToken,
+          stopTokenCheck,
         },
       })
     } catch (e) {

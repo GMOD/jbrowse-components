@@ -6,6 +6,7 @@
  * @param width - Width of the line
  * @param strand - Strand direction (-1 for reverse, 1 for forward)
  * @param color - Stroke color for the chevrons
+ * @param canvasWidth - Width of the canvas (for visibility check)
  * @param spacing - Spacing between chevrons (default 20)
  * @param size - Size of each chevron (default 4)
  */
@@ -16,6 +17,7 @@ export function drawChevrons(
   width: number,
   strand: number,
   color: string,
+  canvasWidth: number,
   spacing = 40,
   size = 4,
 ) {
@@ -33,6 +35,9 @@ export function drawChevrons(
 
   for (let i = 0; i < numChevrons; i++) {
     const cx = x + startOffset + i * spacing
+    if (cx + halfSize < 0 || cx - halfSize > canvasWidth) {
+      continue
+    }
     if (strand === 1) {
       // Forward strand: > shape pointing right
       ctx.moveTo(cx - halfSize, y - halfSize)

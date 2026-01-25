@@ -1,9 +1,6 @@
 import { featureSpanPx, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import {
-  checkStopToken2,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { f2 } from '../shared/constants.ts'
 import {
@@ -15,7 +12,7 @@ import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAl
 
 import type { MultiRenderArgsDeserialized } from './types.ts'
 import type { Source } from '../shared/types.ts'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, LastStopTokenCheck, Region } from '@jbrowse/core/util'
 
 interface Maf {
   feature: Feature
@@ -35,7 +32,7 @@ interface DrawContext {
   splitCache: Record<string, string[]>
   drawRef: boolean
   genotypesCache: Map<string, Record<string, string>>
-  stopToken?: string
+  stopTokenCheck?: LastStopTokenCheck
 }
 
 interface ItemData {
@@ -57,10 +54,9 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
     splitCache,
     drawRef,
     genotypesCache,
-    stopToken,
+    stopTokenCheck,
   } = drawCtx
   const { items, coords } = itemData
-  const lastCheck = createStopTokenChecker(stopToken)
   for (const { feature } of mafs) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const featureId = feature.id()
@@ -112,7 +108,7 @@ function drawPhasedMode(drawCtx: DrawContext, itemData: ItemData, mafs: Maf[]) {
         }
       }
     }
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
   }
 }
 
@@ -135,10 +131,9 @@ function drawAlleleCountMode(
     splitCache,
     drawRef,
     genotypesCache,
-    stopToken,
+    stopTokenCheck,
   } = drawCtx
   const { items, coords } = itemData
-  const lastCheck = createStopTokenChecker(stopToken)
   for (const { mostFrequentAlt, feature } of mafs) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
     const featureId = feature.id()
@@ -183,7 +178,7 @@ function drawAlleleCountMode(
         }
       }
     }
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
   }
 }
 
@@ -201,13 +196,12 @@ export async function makeImageData(
     regions,
     bpPerPx,
     renderingMode,
-    stopToken,
+    stopTokenCheck,
     lengthCutoffFilter,
     referenceDrawingMode,
     statusCallback = () => {},
   } = props
   const region = regions[0]!
-  const lastCheck = createStopTokenChecker(stopToken)
 
   const coords = [] as number[]
   const items = [] as {
@@ -230,7 +224,7 @@ export async function makeImageData(
 
   const mafs = await updateStatus('Calculating stats', statusCallback, () =>
     getFeaturesThatPassMinorAlleleFrequencyFilter({
-      lastCheck,
+      stopTokenCheck,
       features: features.values(),
       minorAlleleFrequencyFilter,
       lengthCutoffFilter,
@@ -252,7 +246,7 @@ export async function makeImageData(
     splitCache,
     drawRef,
     genotypesCache,
-    stopToken,
+    stopTokenCheck,
   }
   const itemData: ItemData = { items, coords }
 

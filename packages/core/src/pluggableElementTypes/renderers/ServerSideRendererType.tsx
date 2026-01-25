@@ -1,15 +1,24 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import RendererType from './RendererType.tsx'
+import {
+  getCachedConfigModel,
+  getConfigCacheKey,
+  setCachedConfigModel,
+} from './configModelCache.ts'
 import SerializableFilterChain from './util/serializableFilterChain.ts'
 import { getSerializedSvg, updateStatus } from '../../util/index.ts'
 import { isRpcResult } from '../../util/rpc.ts'
-import { checkStopToken } from '../../util/stopToken.ts'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '../../util/stopToken.ts'
 
 import type { RenderProps, RenderResults } from './RendererType.tsx'
 import type { SerializedFilterChain } from './util/serializableFilterChain.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
+import type { LastStopTokenCheck } from '../../util/stopToken.ts'
 import type { SnapshotIn, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
@@ -42,6 +51,7 @@ export interface RenderArgsSerialized extends BaseRenderArgs {
 export interface RenderArgsDeserialized extends BaseRenderArgs {
   config: AnyConfigurationModel
   filters?: SerializableFilterChain
+  stopTokenCheck?: LastStopTokenCheck
 }
 
 export type ResultsSerialized = Omit<RenderResults, 'reactElement'> & {
@@ -195,11 +205,20 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
+    const configSnapshot = args.config ?? {}
+    const cacheKey = getConfigCacheKey(this.name, configSnapshot)
+
+    let config = getCachedConfigModel(cacheKey)
+    if (!config) {
+      config = this.configSchema.create(configSnapshot, {
+        pluginManager: this.pluginManager,
+      })
+      setCachedConfigModel(cacheKey, config)
+    }
+
     return {
       ...args,
-      config: this.configSchema.create(args.config || {}, {
-        pluginManager: this.pluginManager,
-      }),
+      config,
       filters: args.filters
         ? new SerializableFilterChain({
             filters: args.filters,
@@ -237,11 +256,12 @@ export default class ServerSideRenderer extends RendererType {
 
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
     const { stopToken, statusCallback = () => {} } = args
+    const stopTokenCheck = createStopTokenChecker(stopToken)
     const args2 = this.deserializeArgsInWorker(args)
     const results = await updateStatus('Rendering plot', statusCallback, () =>
-      this.render(args2),
+      this.render({ ...args2, stopTokenCheck }),
     )
-    checkStopToken(stopToken)
+    checkStopToken2(stopTokenCheck)
 
     // If render() returned an rpcResult, it's already serialized - pass through
     if (isRpcResult(results)) {
@@ -249,7 +269,7 @@ export default class ServerSideRenderer extends RendererType {
     }
 
     return updateStatus('Serializing results', statusCallback, () =>
-      this.serializeResultsInWorker(results, args2),
+      this.serializeResultsInWorker(results, { ...args2, stopTokenCheck }),
     )
   }
 

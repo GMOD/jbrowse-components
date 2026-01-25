@@ -2,10 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { bpToPx } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import {
-  checkStopToken2,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { drawFeature } from './drawFeature.ts'
 import {
@@ -60,7 +57,7 @@ export function makeImageData({
     bpPerPx,
     regions,
     theme: configTheme,
-    stopToken,
+    stopTokenCheck,
     layout,
     peptideDataMap,
     colorByCDS,
@@ -91,7 +88,6 @@ export function makeImageData({
   ctx.textAlign = 'left'
 
   const { subfeatureLabels, transcriptTypes, config } = configContext
-  const lastCheck = createStopTokenChecker(stopToken)
 
   for (const record of layoutRecords) {
     const {
@@ -155,7 +151,7 @@ export function makeImageData({
       parentTooltip: tooltip,
     })
 
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
   }
 
   return {

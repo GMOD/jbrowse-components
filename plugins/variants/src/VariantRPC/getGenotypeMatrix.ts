@@ -1,8 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import {
-  checkStopToken2,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
@@ -11,8 +8,7 @@ import type { Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
 
 const SPLITTER = /[/|]/
 
@@ -23,7 +19,7 @@ export async function getGenotypeMatrix({
   pluginManager: PluginManager
   args: {
     adapterConfig: AnyConfigurationModel
-    stopToken?: StopToken
+    stopTokenCheck?: LastStopTokenCheck
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]
@@ -40,9 +36,8 @@ export async function getGenotypeMatrix({
     adapterConfig,
     sessionId,
     lengthCutoffFilter,
-    stopToken,
+    stopTokenCheck,
   } = args
-  const lastCheck = createStopTokenChecker(stopToken)
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
@@ -52,7 +47,7 @@ export async function getGenotypeMatrix({
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
-    lastCheck,
+    stopTokenCheck,
     splitCache,
     features: await firstValueFrom(
       dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
@@ -86,7 +81,7 @@ export async function getGenotypeMatrix({
 
       rows[name]!.push(genotypeStatus)
     }
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
   }
   return rows
 }

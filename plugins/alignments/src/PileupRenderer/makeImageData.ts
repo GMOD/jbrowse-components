@@ -3,10 +3,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { renderToAbstractCanvas } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import {
-  checkStopToken2,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { layoutFeats } from './layoutFeatures.ts'
 import { renderAlignment } from './renderers/renderAlignment.ts'
@@ -76,7 +73,7 @@ function renderFeatures({
   renderArgs: ProcessedRenderArgs
 }) {
   const {
-    stopToken,
+    stopTokenCheck,
     config,
     showSoftClip,
     colorBy,
@@ -102,7 +99,6 @@ function renderFeatures({
   const drawIndels = shouldDrawIndels()
   const coords = [] as number[]
   const items = [] as FlatbushItem[]
-  const lastCheck = createStopTokenChecker(stopToken)
 
   for (const feat of layoutRecords) {
     const alignmentRet = renderAlignment({
@@ -158,7 +154,7 @@ function renderFeatures({
         canvasWidth,
       })
     }
-    checkStopToken2(lastCheck)
+    checkStopToken2(stopTokenCheck)
   }
 
   const flatbush = new Flatbush(Math.max(items.length, 1))
