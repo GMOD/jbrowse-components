@@ -208,31 +208,30 @@ function makeConfigurationSchemaModel<
   completeModel = completeModel.postProcessSnapshot(snap => {
     const newSnap: SnapshotOut<typeof completeModel> = {}
     let matchesDefault = true
-    // let keyCount = 0
     for (const [key, value] of Object.entries(snap)) {
-      if (matchesDefault) {
-        if (typeof defaultSnap[key] === 'object' && typeof value === 'object') {
-          if (JSON.stringify(defaultSnap[key]) !== JSON.stringify(value)) {
-            matchesDefault = false
-          }
-        } else if (defaultSnap[key] !== value) {
+      if (volatileConstants[key] !== undefined) {
+        continue
+      }
+      if (value === undefined || isEmptyObject(value) || isEmptyArray(value)) {
+        continue
+      }
+
+      const defaultVal = defaultSnap[key]
+      // Fast path: reference equality for primitives
+      if (value !== defaultVal) {
+        // Slow path: deep comparison only for objects
+        if (
+          typeof value !== 'object' ||
+          typeof defaultVal !== 'object' ||
+          JSON.stringify(defaultVal) !== JSON.stringify(value)
+        ) {
           matchesDefault = false
         }
       }
-      if (
-        value !== undefined &&
-        volatileConstants[key] === undefined &&
-        !isEmptyObject(value) &&
-        !isEmptyArray(value)
-      ) {
-        // keyCount += 1
-        newSnap[key] = value
-      }
+
+      newSnap[key] = value
     }
-    if (matchesDefault) {
-      return {}
-    }
-    return newSnap
+    return matchesDefault ? {} : newSnap
   })
 
   if (options.preProcessSnapshot) {

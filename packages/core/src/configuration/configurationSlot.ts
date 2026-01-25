@@ -193,12 +193,12 @@ export default function ConfigSlot(
   const configSlotModelName = `${slotName.charAt(0).toUpperCase()}${slotName.slice(1)}ConfigSlot`
   let slot = types
     .model(configSlotModelName, {
-      name: types.literal(slotName),
-      description: types.literal(description),
-      type: types.literal(type),
       value: types.optional(types.union(JexlStringType, model), defaultValue),
     })
     .volatile(() => ({
+      name: slotName,
+      description,
+      type,
       contextVariable,
     }))
     .views(self => ({
@@ -234,23 +234,22 @@ export default function ConfigSlot(
           : v
       },
     }))
-    .preProcessSnapshot(val =>
-      typeof val === 'object' && val.name === slotName
-        ? val
-        : {
-            name: slotName,
-            description,
-            type,
-            value: val,
-          },
-    )
+    .preProcessSnapshot(val => {
+      // Handle backwards compatibility: old format had {name, description, type, value}
+      if (typeof val === 'object' && val !== null && 'value' in val) {
+        return { value: val.value }
+      }
+      // New format: bare value gets wrapped
+      return { value: val }
+    })
     .postProcessSnapshot(snap => {
-      if (typeof snap.value === 'object') {
-        return JSON.stringify(snap.value) !== JSON.stringify(defaultValue)
-          ? snap.value
+      const val = snap.value
+      if (typeof val === 'object') {
+        return JSON.stringify(val) !== JSON.stringify(defaultValue)
+          ? val
           : undefined
       }
-      return snap.value !== defaultValue ? snap.value : undefined
+      return val !== defaultValue ? val : undefined
     })
     .actions(self => ({
       set(newVal: any) {
@@ -297,9 +296,6 @@ export default function ConfigSlot(
   }
 
   const completeModel = types.optional(slot, {
-    name: slotName,
-    type,
-    description,
     value: defaultValue,
   })
   Object.defineProperty(completeModel, 'isJBrowseConfigurationSlot', {
