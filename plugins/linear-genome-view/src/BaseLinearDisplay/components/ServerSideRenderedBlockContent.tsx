@@ -18,6 +18,7 @@ const ServerSideRenderedBlockContent = observer(
       statusMessage?: string
       reactElement?: React.ReactElement
       isRenderingPending?: boolean
+      displayHeight?: number
     }
   }) {
     if (model.error) {
@@ -34,7 +35,10 @@ const ServerSideRenderedBlockContent = observer(
       )
     } else {
       return (
-        <LoadingOverlay statusMessage={model.statusMessage}>
+        <LoadingOverlay
+          statusMessage={model.statusMessage}
+          height={model.displayHeight}
+        >
           {model.reactElement}
         </LoadingOverlay>
       )
