@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-jobs-management",
-  "version": "4.1.1",
+  "version": "4.1.3",
   "type": "module",
   "description": "JBrowse 2 jobs management",
   "keywords": [

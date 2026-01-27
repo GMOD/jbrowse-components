@@ -1,3 +1,21 @@
+## Changes since v4.1.1 (2026-01-22)
+
+### bug
+
+- Revert css based --var scrolling due to visual glitches at large bp offsets
+  ([#5449](https://github.com/GMOD/jbrowse-components/pull/5449)) @cmdcolin
+- Fix jbrowse-cli text-index not working without --tracks parameter
+  ([#5446](https://github.com/GMOD/jbrowse-components/pull/5446)) @cmdcolin
+- Add E2E test for jbrowse img
+  ([#5443](https://github.com/GMOD/jbrowse-components/pull/5443)) @cmdcolin
+- Fix jbrowse-img for ESM css loader and setupEnv.
+  ([#5441](https://github.com/GMOD/jbrowse-components/pull/5441)) @Yihuki
+
+### enhancement
+
+- Cache configurations by snapshot identity
+  ([#5450](https://github.com/GMOD/jbrowse-components/pull/5450)) @cmdcolin
+
 ## Changes since v4.0.4 (2026-01-17)
 
 ### bug
