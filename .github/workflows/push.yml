@@ -57,7 +57,7 @@ jobs:
       - name: Test codebase
         run: pnpm test-ci
       - name: Upload coverage
-        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
       - name: Typecheck codebase
         run: pnpm typecheck
 
@@ -113,7 +113,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Check spelling
-        uses: crate-ci/typos@11ca450dea4e578d4e3d03c51db48ed901a87777 # v1.30.3
+        uses: crate-ci/typos@a1d64977b4aa1709d6328d518aa753f4899352d8 # v1.42.2
 
   main:
     name: Build and pack artifacts
