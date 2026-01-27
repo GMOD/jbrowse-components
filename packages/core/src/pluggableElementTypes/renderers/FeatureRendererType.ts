@@ -1,4 +1,4 @@
-import { firstValueFrom } from 'rxjs'
+import { firstValueFrom, type Observable } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import ServerSideRendererType from './ServerSideRendererType.tsx'
@@ -130,9 +130,14 @@ export default class FeatureRendererType extends ServerSideRendererType {
     return region
   }
 
-  async getFeatures(
+  /**
+   * Returns an Observable of features for streaming processing.
+   * Use this when you want to process features as they arrive
+   * rather than collecting them all first.
+   */
+  async getFeatureObservable(
     renderArgs: RenderArgsDeserialized,
-  ): Promise<Map<string, Feature>> {
+  ): Promise<Observable<Feature>> {
     const pm = this.pluginManager
     const { regions, sessionId, adapterConfig } = renderArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
@@ -142,14 +147,18 @@ export default class FeatureRendererType extends ServerSideRendererType {
     }
 
     const requestRegions = regions.map(r => normalizeRegion(r))
-    const featureObservable =
-      requestRegions.length === 1
-        ? dataAdapter.getFeatures(
-            this.getExpandedRegion(requestRegions[0]!, renderArgs),
-            renderArgs,
-          )
-        : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
+    return requestRegions.length === 1
+      ? dataAdapter.getFeatures(
+          this.getExpandedRegion(requestRegions[0]!, renderArgs),
+          renderArgs,
+        )
+      : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
+  }
 
+  async getFeatures(
+    renderArgs: RenderArgsDeserialized,
+  ): Promise<Map<string, Feature>> {
+    const featureObservable = await this.getFeatureObservable(renderArgs)
     const feats = await firstValueFrom(featureObservable.pipe(toArray()))
     return new Map<string, Feature>(
       feats
