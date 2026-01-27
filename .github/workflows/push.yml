@@ -73,7 +73,7 @@ jobs:
   buildwebsite:
     name: Build website
     needs: check_commit_message
-    if: false # Disabled for faster iteration
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -110,7 +110,7 @@ jobs:
   component_tests:
     name: Test embedded components
     needs: [check_commit_message, main]
-    if: false # Disabled for faster iteration
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -137,7 +137,7 @@ jobs:
   cli_node18:
     name: Test CLI on Node 18
     needs: [check_commit_message, main]
-    if: false # Disabled for faster iteration
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
     runs-on: ubuntu-latest
     permissions: {}
     steps:
