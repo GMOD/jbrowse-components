@@ -1,11 +1,6 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import RendererType from './RendererType.tsx'
-import {
-  getCachedConfigModel,
-  getConfigCacheKey,
-  setCachedConfigModel,
-} from './configModelCache.ts'
 import SerializableFilterChain from './util/serializableFilterChain.ts'
 import { getSerializedSvg, updateStatus } from '../../util/index.ts'
 import { isRpcResult } from '../../util/rpc.ts'
@@ -205,20 +200,11 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
-    const configSnapshot = args.config ?? {}
-    const cacheKey = getConfigCacheKey(this.name, configSnapshot)
-
-    let config = getCachedConfigModel(cacheKey)
-    if (!config) {
-      config = this.configSchema.create(configSnapshot, {
-        pluginManager: this.pluginManager,
-      })
-      setCachedConfigModel(cacheKey, config)
-    }
-
     return {
       ...args,
-      config,
+      config: this.configSchema.create(args.config || {}, {
+        pluginManager: this.pluginManager,
+      }),
       filters: args.filters
         ? new SerializableFilterChain({
             filters: args.filters,
