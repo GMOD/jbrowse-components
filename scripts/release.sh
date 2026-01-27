@@ -26,7 +26,7 @@ pnpm test
 
 # Calculate new version
 PREVIOUS_VERSION=$(node --print "require('./plugins/alignments/package.json').version")
-VERSION=$(pnpm exec semver --increment "$SEMVER_LEVEL" "$PREVIOUS_VERSION")
+VERSION=4.1.3
 RELEASE_TAG=v$VERSION
 
 # Check for blog post draft
