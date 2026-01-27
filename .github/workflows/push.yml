@@ -35,6 +35,86 @@ jobs:
             echo "Running regular push jobs"
           fi
 
+  test:
+    name: Test and typecheck
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get -y install tabix
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        with:
+          version: 10
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Test codebase
+        run: pnpm test-ci
+      - name: Upload coverage
+        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - name: Typecheck codebase
+        run: pnpm typecheck
+
+  lint:
+    name: Lint
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        with:
+          version: 10
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Lint codebase
+        run: pnpm lint
+
+  format:
+    name: Format
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        with:
+          version: 10
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Check codebase format
+        run: pnpm prettier --check .
+
+  spellcheck:
+    name: Spell check
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+      - name: Check spelling
+        uses: crate-ci/typos@11ca450dea4e578d4e3d03c51db48ed901a87777 # v1.30.3
+
   main:
     name: Build and pack artifacts
     needs: check_commit_message
