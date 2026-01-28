@@ -1,6 +1,4 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
-import { saveAs } from 'file-saver-es'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { ExportRCodeOptions, RCodeFragment } from './types.ts'
@@ -263,5 +261,8 @@ export async function exportR(
 
   const filename = opts.filename || 'jbrowse_view.R'
   const blob = new Blob([script], { type: 'text/plain;charset=utf-8' })
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const { saveAs } = await import('file-saver-es')
   saveAs(blob, filename)
 }

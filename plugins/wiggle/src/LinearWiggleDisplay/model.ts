@@ -348,8 +348,8 @@ function stateModelFactory(
          * #action
          * Export R code for reproducing this track's visualization
          */
-        exportRCode(opts: Record<string, unknown> = {}) {
-          const { exportRCode } = require('./exportRCode.ts')
+        async exportRCode(opts: Record<string, unknown> = {}) {
+          const { exportRCode } = await import('./exportRCode.ts')
           return exportRCode(self, opts)
         },
       }
