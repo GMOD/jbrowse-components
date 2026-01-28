@@ -98,8 +98,8 @@
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",
     "node-fetch": "^2.7.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "sanitize-filename": "^1.6.3",
     "swr": "^2.3.8"
   },

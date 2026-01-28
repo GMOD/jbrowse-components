@@ -80,6 +80,14 @@ const SearchResultsDialog = lazy(
 )
 
 /**
+ * Calculate the offsetPx needed to center content within a viewport.
+ * Returns a negative offset when content is smaller than viewport (padding on left).
+ */
+function getCenteredOffsetPx(contentPx: number, viewportPx: number) {
+  return Math.round(contentPx / 2 - viewportPx / 2)
+}
+
+/**
  * #stateModel LinearGenomeView
  * #category view
  *
@@ -559,10 +567,52 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #method
+       * Count regions that are large enough to not be elided at a given bpPerPx.
+       * A region is elided if its width in pixels < minimumBlockWidth.
+       */
+      getNonElidedRegionCount(bpPerPx: number) {
+        if (bpPerPx <= 0) {
+          return self.displayedRegions.length
+        }
+        return self.displayedRegions.filter(
+          r => (r.end - r.start) / bpPerPx >= self.minimumBlockWidth,
+        ).length
+      },
+
+      /**
+       * #method
+       * Calculate total inter-region padding pixels at a given bpPerPx.
+       * Only non-elided regions contribute to padding.
+       */
+      getInterRegionPaddingPx(bpPerPx: number) {
+        const nonElidedCount = this.getNonElidedRegionCount(bpPerPx)
+        const numPaddings = Math.max(0, nonElidedCount - 1)
+        return numPaddings * self.interRegionPaddingWidth
+      },
+
+      /**
        * #getter
        */
       get maxBpPerPx() {
-        return this.totalBp / (self.width * 0.9)
+        if (this.totalBp === 0 || self.width === 0) {
+          return 1
+        }
+        // Start with naive calculation (ignoring padding)
+        const naiveBpPerPx = this.totalBp / (self.width * 0.9)
+
+        // Calculate padding at this zoom level
+        const totalPaddingPx = this.getInterRegionPaddingPx(naiveBpPerPx)
+
+        // Calculate bpPerPx accounting for padding
+        const targetWidth = self.width * 0.9
+        const availableForBp = targetWidth - totalPaddingPx
+
+        if (availableForBp <= 0) {
+          // Padding exceeds available space - use naive value
+          return naiveBpPerPx
+        }
+        return this.totalBp / availableForBp
       },
 
       /**
@@ -621,7 +671,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get displayedRegionsTotalPx() {
-        return this.totalBp / self.bpPerPx
+        if (self.bpPerPx === 0) {
+          return 0
+        }
+        const totalPaddingPx = this.getInterRegionPaddingPx(self.bpPerPx)
+        return this.totalBp / self.bpPerPx + totalPaddingPx
       },
 
       /**
@@ -1039,23 +1093,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      center() {
-        // Calculate total content width including inter-region padding
-        const numPaddings = Math.max(0, self.displayedRegions.length - 1)
-        const totalPaddingPx = numPaddings * self.interRegionPaddingWidth
-        const totalContentPx = self.totalBp / self.bpPerPx + totalPaddingPx
-        const centerPx = totalContentPx / 2
-        const targetOffsetPx = Math.round(centerPx - self.width / 2)
-        self.scrollTo(targetOffsetPx)
-      },
-
-      /**
-       * #action
-       */
       showAllRegions() {
-        // Set zoom to show all regions, then center the view
         self.bpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
-        this.center()
+        self.scrollTo(
+          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
+        )
       },
 
       /**
@@ -1080,7 +1122,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         this.setDisplayedRegions(regions)
         self.zoomTo(self.maxBpPerPx)
-        this.center()
+        self.scrollTo(
+          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
+        )
       },
 
       /**

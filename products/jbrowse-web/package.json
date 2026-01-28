@@ -75,8 +75,8 @@
     "pako-esm2": "^2.0.2",
     "pixelmatch": "^7.1.0",
     "pngjs": "^7.0.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "browserslist": {
     "production": [
