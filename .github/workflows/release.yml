@@ -193,5 +193,5 @@ jobs:
         run: |
           cd products/jbrowse-web/build && zip -r jbrowse-web-latest.zip . && cd -
           cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
-          aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/latest/
+          aws s3 sync products/jbrowse-web/build s3://jbrowse.org/code/jb2/latest/
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/latest/*"
