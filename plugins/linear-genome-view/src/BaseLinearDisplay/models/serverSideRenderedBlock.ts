@@ -258,6 +258,10 @@ const blockState = types
             'Loading'
         : undefined
     },
+    get displayHeight() {
+      // @ts-expect-error
+      return self.cachedDisplay?.height as number | undefined
+    },
   }))
   .actions(self => ({
     afterAttach() {

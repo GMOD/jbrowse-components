@@ -47,14 +47,16 @@ const useStyles = makeStyles()({
 export default function LoadingOverlay({
   statusMessage,
   children,
+  height,
 }: {
   statusMessage?: string
   children?: React.ReactNode
+  height?: number
 }) {
   const { classes } = useStyles()
   const isLoading = !!statusMessage
   return (
-    <div className={classes.container}>
+    <div className={classes.container} style={height ? { height } : undefined}>
       {children}
       <span
         className={cx(classes.overlay, isLoading && classes.visible)}
