@@ -646,6 +646,14 @@ function stateModelFactory() {
         const { renderBaseLinearDisplaySvg } = await import('./renderSvg.tsx')
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },
+      /**
+       * #action
+       * Export R code for reproducing this track's visualization
+       */
+      exportRCode(opts: Record<string, unknown> = {}) {
+        const { exportRCode } = require('./exportRCode.ts')
+        return exportRCode(self, opts)
+      },
       afterAttach() {
         // watch the parent's blocks to update our block state when they
         // change, then we recreate the blocks on our own model (creating and

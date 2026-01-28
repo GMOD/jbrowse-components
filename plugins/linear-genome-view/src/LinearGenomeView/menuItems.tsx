@@ -12,6 +12,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
+import CodeIcon from '@mui/icons-material/Code'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
@@ -30,6 +31,7 @@ const SequenceSearchDialog = lazy(
   () => import('./components/SequenceSearchDialog.tsx'),
 )
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
+const ExportRDialog = lazy(() => import('./components/ExportRDialog.tsx'))
 const GetSequenceDialog = lazy(
   () => import('./components/GetSequenceDialog.tsx'),
 )
@@ -109,6 +111,19 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       onClick: () => {
         session.queueDialog(handleClose => [
           ExportSvgDialog,
+          {
+            model: self,
+            handleClose,
+          },
+        ])
+      },
+    },
+    {
+      label: 'Export R script',
+      icon: CodeIcon,
+      onClick: () => {
+        session.queueDialog(handleClose => [
+          ExportRDialog,
           {
             model: self,
             handleClose,

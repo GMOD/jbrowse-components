@@ -344,6 +344,14 @@ function stateModelFactory(
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts, superRenderSvg)
         },
+        /**
+         * #action
+         * Export R code for reproducing this track's visualization
+         */
+        exportRCode(opts: Record<string, unknown> = {}) {
+          const { exportRCode } = require('./exportRCode.ts')
+          return exportRCode(self, opts)
+        },
       }
     })
     .postProcessSnapshot(snap => {

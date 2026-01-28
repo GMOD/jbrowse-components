@@ -1,0 +1,28 @@
+Package: jbrowseR
+Title: R Interface to JBrowse 2 Genome Browser Data
+Version: 0.1.0
+Authors@R:
+    person("JBrowse", "Team", , "jbrowse@gmod.org", role = c("aut", "cre"))
+Description: Provides R functions to access genomic data from the same sources
+    used by JBrowse 2 genome browser. Supports BigWig, VCF, GFF3, BAM, and BED
+    formats through a unified interface. Enables reproducible analysis by using
+    the same data adapters as JBrowse 2.
+License: Apache License (>= 2)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports:
+    httr2,
+    jsonlite,
+    tibble,
+    dplyr,
+    rlang
+Suggests:
+    rtracklayer,
+    VariantAnnotation,
+    Rsamtools,
+    GenomicRanges,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/GMOD/jbrowseR
+BugReports: https://github.com/GMOD/jbrowseR/issues
