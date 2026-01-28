@@ -194,7 +194,8 @@ test('can instantiate a model that has multiple displayed regions', () => {
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
-  expect(model.maxBpPerPx).toBeCloseTo(27.777)
+  // 2 regions = 1 padding (2px), maxBpPerPx accounts for this
+  expect(model.maxBpPerPx).toBeCloseTo(27.855)
   model.setNewView(0.02, 0)
 
   expect(model.offsetPx).toEqual(0)
@@ -222,7 +223,8 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
-  expect(model.maxBpPerPx).toBeCloseTo(27.7777)
+  // 2 regions = 1 padding (2px), maxBpPerPx accounts for this
+  expect(model.maxBpPerPx).toBeCloseTo(27.855)
 
   model.navTo({ refName: 'ctgA', start: 0, end: 100 })
   expect(model.offsetPx).toBe(0)
@@ -414,7 +416,8 @@ describe('Zoom to selected displayed regions', () => {
   it('can select over two regions in the same reference sequence', () => {
     model.setWidth(800)
     model.showAllRegions()
-    expect(model.bpPerPx).toBeCloseTo(38.8888)
+    // 3 regions = 2 paddings (4px), maxBpPerPx accounts for this
+    expect(model.bpPerPx).toBeCloseTo(39.106)
     // totalBp = 28000 / 1000 = 28 as maxBpPerPx
     model.moveTo(
       {
@@ -447,8 +450,8 @@ describe('Zoom to selected displayed regions', () => {
     model.setWidth(800)
     model.showAllRegions()
     // totalBp 15000 + 3000 + 35000 = 53000
-    // then 53000 / (width*0.9) = 73.6111
-    expect(model.bpPerPx).toBeCloseTo(73.61111)
+    // 3 regions = 2 paddings (4px), maxBpPerPx accounts for this
+    expect(model.bpPerPx).toBeCloseTo(74.022)
     model.moveTo(
       {
         start: 5000,
@@ -515,9 +518,12 @@ test('can instantiate a model that >2 regions', () => {
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
   expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
-  expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
+  // 3 regions = 2 paddings (4px), displayedRegionsTotalPx includes padding
+  expect(model.displayedRegionsTotalPx).toBeCloseTo(
+    30000 / model.bpPerPx + 2 * model.interRegionPaddingWidth,
+  )
   model.showAllRegions()
-  expect(model.offsetPx).toEqual(-38)
+  expect(model.offsetPx).toEqual(-40)
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 100 })).toEqual({
     index: 0,
@@ -1207,49 +1213,6 @@ describe('getNonElidedRegionCount and getInterRegionPaddingPx', () => {
 
     // bpPerPx = 0 should return all regions (avoid division by zero)
     expect(model.getNonElidedRegionCount(0)).toBe(2)
-  })
-})
-
-describe('center behavior with content that does not fit', () => {
-  test('scrolls to 0 when content is wider than screen', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
-        ],
-        bpPerPx: 1, // Content = 10000px, much wider than screen
-      }),
-    )
-    model.setWidth(800)
-
-    model.center()
-
-    // Content (10000px) > width (800px), so should scroll to 0
-    expect(model.offsetPx).toBe(0)
-  })
-
-  test('centers when content fits on screen', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 400 },
-        ],
-        bpPerPx: 1, // Content = 400px
-      }),
-    )
-    model.setWidth(800)
-
-    model.center()
-
-    // Content (400px) < width (800px), so should center
-    // centerPx = 200, targetOffset = 200 - 400 = -200
-    expect(model.offsetPx).toBe(-200)
   })
 })
 

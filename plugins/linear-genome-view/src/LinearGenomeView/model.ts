@@ -80,6 +80,14 @@ const SearchResultsDialog = lazy(
 )
 
 /**
+ * Calculate the offsetPx needed to center content within a viewport.
+ * Returns a negative offset when content is smaller than viewport (padding on left).
+ */
+function getCenteredOffsetPx(contentPx: number, viewportPx: number) {
+  return Math.round(contentPx / 2 - viewportPx / 2)
+}
+
+/**
  * #stateModel LinearGenomeView
  * #category view
  *
@@ -1085,25 +1093,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      center() {
-        const totalContentPx = self.displayedRegionsTotalPx
-        if (totalContentPx <= self.width) {
-          // Content fits on screen, center it
-          const centerPx = totalContentPx / 2
-          const targetOffsetPx = Math.round(centerPx - self.width / 2)
-          self.scrollTo(targetOffsetPx)
-        } else {
-          // Content doesn't fit on screen, start from the beginning
-          self.scrollTo(0)
-        }
-      },
-
-      /**
-       * #action
-       */
       showAllRegions() {
         self.bpPerPx = clamp(self.maxBpPerPx, self.minBpPerPx, self.maxBpPerPx)
-        this.center()
+        self.scrollTo(
+          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
+        )
       },
 
       /**
@@ -1128,7 +1122,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         this.setDisplayedRegions(regions)
         self.zoomTo(self.maxBpPerPx)
-        this.center()
+        self.scrollTo(
+          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
+        )
       },
 
       /**
