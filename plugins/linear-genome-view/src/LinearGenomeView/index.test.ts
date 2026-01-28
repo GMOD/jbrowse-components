@@ -1099,12 +1099,12 @@ test('showAllRegions accounts for inter-region padding when centering', () => {
 
   // Total BP = 3000
   // With 3 regions, there are 2 inter-region paddings = 4px
-  // bpPerPx = 3000 / (900 * 0.9) = 3.7037
-  // totalContentPx = 3000 / 3.7037 + 4 = 810 + 4 = 814
-  // centerPx = 407, offsetPx = 407 - 450 = -43
+  // bpPerPx = 3000 / (900 * 0.9 - 4) = 3000 / 806 = 3.722
+  // totalContentPx = 3000 / 3.722 + 4 = 806 + 4 = 810
+  // centerPx = 405, offsetPx = 405 - 450 = -45
 
-  expect(model.bpPerPx).toBeCloseTo(3.7037, 3)
-  expect(model.offsetPx).toBe(-43)
+  expect(model.bpPerPx).toBeCloseTo(3.722, 2)
+  expect(model.offsetPx).toBe(-45)
 })
 
 test('showAllRegions with single region has no padding adjustment', () => {
@@ -1129,6 +1129,163 @@ test('showAllRegions with single region has no padding adjustment', () => {
 
   expect(model.bpPerPx).toBeCloseTo(1.2346, 3)
   expect(model.offsetPx).toBe(-45)
+})
+
+describe('getNonElidedRegionCount and getInterRegionPaddingPx', () => {
+  test('counts all regions as non-elided when they are large enough', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 2000 },
+          { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 3000 },
+        ],
+      }),
+    )
+    model.setWidth(800)
+
+    // At bpPerPx = 1, all regions are >= minimumBlockWidth (3px)
+    expect(model.getNonElidedRegionCount(1)).toBe(3)
+    expect(model.getInterRegionPaddingPx(1)).toBe(4) // 2 paddings * 2px
+  })
+
+  test('excludes small regions that would be elided', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 5 }, // tiny
+          { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 1000 },
+        ],
+      }),
+    )
+    model.setWidth(800)
+
+    // At bpPerPx = 10, ctgB (5bp) = 0.5px < minimumBlockWidth (3px), so elided
+    expect(model.getNonElidedRegionCount(10)).toBe(2)
+    expect(model.getInterRegionPaddingPx(10)).toBe(2) // 1 padding * 2px
+  })
+
+  test('returns 0 padding when all regions are elided', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10 },
+          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10 },
+        ],
+      }),
+    )
+    model.setWidth(800)
+
+    // At bpPerPx = 100, both 10bp regions = 0.1px < minimumBlockWidth (3px)
+    expect(model.getNonElidedRegionCount(100)).toBe(0)
+    expect(model.getInterRegionPaddingPx(100)).toBe(0)
+  })
+
+  test('handles edge case of bpPerPx = 0', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 2000 },
+        ],
+      }),
+    )
+    model.setWidth(800)
+
+    // bpPerPx = 0 should return all regions (avoid division by zero)
+    expect(model.getNonElidedRegionCount(0)).toBe(2)
+  })
+})
+
+describe('center behavior with content that does not fit', () => {
+  test('scrolls to 0 when content is wider than screen', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
+        ],
+        bpPerPx: 1, // Content = 10000px, much wider than screen
+      }),
+    )
+    model.setWidth(800)
+
+    model.center()
+
+    // Content (10000px) > width (800px), so should scroll to 0
+    expect(model.offsetPx).toBe(0)
+  })
+
+  test('centers when content fits on screen', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 400 },
+        ],
+        bpPerPx: 1, // Content = 400px
+      }),
+    )
+    model.setWidth(800)
+
+    model.center()
+
+    // Content (400px) < width (800px), so should center
+    // centerPx = 200, targetOffset = 200 - 400 = -200
+    expect(model.offsetPx).toBe(-200)
+  })
+})
+
+describe('maxBpPerPx accounts for elided regions', () => {
+  test('maxBpPerPx does not over-account for padding with many small regions', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+
+    // Create many small regions that will be elided at max zoom out
+    const regions = []
+    for (let i = 0; i < 100; i++) {
+      regions.push({
+        assemblyName: 'volvox',
+        refName: `ctg${i}`,
+        start: 0,
+        end: 100, // 100bp each
+      })
+    }
+
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: regions,
+      }),
+    )
+    model.setWidth(800)
+
+    // Total BP = 10000
+    // At naive maxBpPerPx = 10000 / (800 * 0.9) = 13.89
+    // Each 100bp region = 100 / 13.89 = 7.2px > minimumBlockWidth (3px)
+    // So all 100 regions are non-elided, 99 paddings = 198px
+    // Adjusted maxBpPerPx = 10000 / (720 - 198) = 10000 / 522 = 19.16
+
+    expect(model.maxBpPerPx).toBeGreaterThan(13.89) // Should be higher due to padding
+    expect(model.maxBpPerPx).toBeLessThan(100) // But not unreasonably high
+  })
 })
 
 describe('TrackInit with display configuration', () => {
