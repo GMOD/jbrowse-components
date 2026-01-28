@@ -1,6 +1,4 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
-import { saveAs } from 'file-saver-es'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { ExportRCodeOptions, RCodeFragment } from './types.ts'
@@ -24,7 +22,7 @@ function formatRegion(region: {
 }
 
 /**
- * Generate jbrowseR session setup code from track configurations
+ * Generate session setup code from track configurations
  */
 function generateSessionCode(
   model: LinearGenomeViewModel,
@@ -72,11 +70,11 @@ function generateSessionCode(
   }
 
   if (trackLines.length === 0) {
-    return '# No supported tracks found for jbrowseR session'
+    return '# No supported tracks found for session'
   }
 
   return `
-# Create jbrowseR session
+# Create session
 session <- jb_session(
   assembly = "${assemblyName}",
   tracks = list(
@@ -141,7 +139,7 @@ function assembleRScript(
   // Base packages always needed
   const basePackages = ['ggplot2', 'patchwork']
   if (opts.useJbrowseR) {
-    basePackages.unshift('jbrowseR', 'ggjbrowse')
+    basePackages.unshift('ggjbrowse')
   }
 
   const packages = [...new Set([...basePackages, ...allPackages])]
@@ -161,7 +159,6 @@ function assembleRScript(
 # Install packages if needed (uncomment to run)
 # install.packages(c("ggplot2", "patchwork", "dplyr", "tibble"))
 # BiocManager::install(c("rtracklayer", "VariantAnnotation", "Rsamtools"))
-# devtools::install_github("GMOD/jbrowseR")
 # devtools::install_github("GMOD/ggjbrowse")`)
 
   // Load packages
@@ -174,7 +171,7 @@ ${packages.map(p => `library(${p})`).join('\n')}`)
 # Define region of interest
 region <- jb_region("${regionStr}")`)
 
-  // Session setup (if using jbrowseR)
+  // Session setup (if using ggjbrowse)
   if (opts.useJbrowseR) {
     sections.push(generateSessionCode(model, opts))
   }
@@ -263,5 +260,8 @@ export async function exportR(
 
   const filename = opts.filename || 'jbrowse_view.R'
   const blob = new Blob([script], { type: 'text/plain;charset=utf-8' })
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const { saveAs } = await import('file-saver-es')
   saveAs(blob, filename)
 }

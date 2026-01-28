@@ -29,7 +29,7 @@
 #'
 #' @export
 jb_features <- function(session, track_id = NULL, region, ...) {
-  # Handle direct track input
+ # Handle direct track input
   if (inherits(session, "jbrowse_track")) {
     track <- session
   } else if (inherits(session, "jbrowse_session")) {
@@ -50,42 +50,47 @@ jb_features <- function(session, track_id = NULL, region, ...) {
   }
 
   # Dispatch to appropriate fetcher based on track type
-  UseMethod("jb_features_impl", track)
+  fetch_features(track, region, ...)
+}
+
+#' Internal generic for fetching features
+#' @param track A jbrowse_track object
+#' @param region A jbrowse_region object
+#' @param ... Additional arguments
+#' @keywords internal
+fetch_features <- function(track, region, ...) {
+  UseMethod("fetch_features", track)
 }
 
 #' @export
-jb_features_impl <- function(track, region, ...) {
-  UseMethod("jb_features_impl")
-}
-
-#' @export
-jb_features_impl.jbrowse_track_bigwig <- function(track, region, ...) {
+fetch_features.jbrowse_track_bigwig <- function(track, region, ...) {
   fetch_bigwig_features(track, region, ...)
 }
 
 #' @export
-jb_features_impl.jbrowse_track_vcf <- function(track, region, ...) {
+fetch_features.jbrowse_track_vcf <- function(track, region, ...) {
   fetch_vcf_features(track, region, ...)
 }
 
 #' @export
-jb_features_impl.jbrowse_track_gff3 <- function(track, region, ...) {
+fetch_features.jbrowse_track_gff3 <- function(track, region, ...) {
   fetch_gff3_features(track, region, ...)
 }
 
 #' @export
-jb_features_impl.jbrowse_track_bam <- function(track, region, ...) {
+fetch_features.jbrowse_track_bam <- function(track, region, ...) {
   fetch_bam_features(track, region, ...)
 }
 
 #' @export
-jb_features_impl.jbrowse_track_bed <- function(track, region, ...) {
+fetch_features.jbrowse_track_bed <- function(track, region, ...) {
   fetch_bed_features(track, region, ...)
 }
 
 #' @export
-jb_features_impl.default <- function(track, region, ...) {
-  stop("Unknown track type: ", class(track)[1])
+fetch_features.default <- function(track, region, ...) {
+  stop("Unknown track type: ", paste(class(track), collapse = ", "),
+       "\nSupported types: bigwig, vcf, gff3, bam, bed")
 }
 
 # Internal: Fetch BigWig features using rtracklayer
@@ -96,7 +101,7 @@ fetch_bigwig_features <- function(track, region, ...) {
 
   gr <- region_to_granges(region)
 
-  # Import BigWig data
+ # Import BigWig data
   bw_data <- rtracklayer::import(track$uri, which = gr)
 
   # Convert to tibble
@@ -117,7 +122,7 @@ fetch_vcf_features <- function(track, region, ...) {
   gr <- region_to_granges(region)
 
   # Open VCF file
-  vcf_file <- VariantAnnotation::VcfFile(track$uri, index = track$index)
+ vcf_file <- VariantAnnotation::VcfFile(track$uri, index = track$index)
   vcf_param <- VariantAnnotation::ScanVcfParam(which = gr)
 
   # Read VCF data
@@ -184,38 +189,59 @@ fetch_gff3_features <- function(track, region, ...) {
   }
 
   # Extract metadata columns
-  mcols <- S4Vectors::mcols(gff_data)
+  mcols_data <- S4Vectors::mcols(gff_data)
+  col_names <- names(mcols_data)
 
   # Convert strand
   strand_vec <- as.character(GenomicRanges::strand(gff_data))
-  strand_int <- dplyr::case_when(
-    strand_vec == "+" ~ 1L,
-    strand_vec == "-" ~ -1L,
-    TRUE ~ 0L
-  )
+  strand_int <- ifelse(strand_vec == "+", 1L,
+                       ifelse(strand_vec == "-", -1L, 0L))
 
-  tibble::tibble(
+  # Build result tibble
+  result <- tibble::tibble(
     ref_name = as.character(GenomicRanges::seqnames(gff_data)),
     start = GenomicRanges::start(gff_data) - 1L,
     end = GenomicRanges::end(gff_data),
-    feature_id = if ("ID" %in% names(mcols)) as.character(mcols$ID) else paste0("feature_", seq_along(gff_data)),
+    feature_id = if ("ID" %in% col_names) as.character(mcols_data$ID) else paste0("feature_", seq_along(gff_data)),
     strand = strand_int,
-    type = if ("type" %in% names(mcols)) as.character(mcols$type) else NA_character_,
-    name = if ("Name" %in% names(mcols)) {
-      as.character(mcols$Name)
-    } else if ("gene_name" %in% names(mcols)) {
-      as.character(mcols$gene_name)
-    } else {
-      NA_character_
-    },
-    parent_id = if ("Parent" %in% names(mcols)) {
-      sapply(mcols$Parent, function(x) if (length(x) > 0) paste(x, collapse = ",") else NA_character_)
-    } else {
-      NA_character_
-    },
-    phase = if ("phase" %in% names(mcols)) as.integer(mcols$phase) else NA_integer_,
-    source = if ("source" %in% names(mcols)) as.character(mcols$source) else NA_character_
+    type = if ("type" %in% col_names) as.character(mcols_data$type) else NA_character_
   )
+
+  # Add name (try multiple possible columns)
+  if ("Name" %in% col_names) {
+    result$name <- as.character(mcols_data$Name)
+  } else if ("gene_name" %in% col_names) {
+    result$name <- as.character(mcols_data$gene_name)
+  } else if ("ID" %in% col_names) {
+    result$name <- as.character(mcols_data$ID)
+  } else {
+    result$name <- NA_character_
+  }
+
+  # Add parent_id
+  if ("Parent" %in% col_names) {
+    result$parent_id <- sapply(mcols_data$Parent, function(x) {
+      if (is.null(x) || length(x) == 0) NA_character_ else paste(x, collapse = ",")
+    })
+  } else {
+    result$parent_id <- NA_character_
+  }
+
+  # Add phase
+  if ("phase" %in% col_names) {
+    result$phase <- as.integer(mcols_data$phase)
+  } else {
+    result$phase <- NA_integer_
+  }
+
+  # Add source
+  if ("source" %in% col_names) {
+    result$source <- as.character(mcols_data$source)
+  } else {
+    result$source <- NA_character_
+  }
+
+  result
 }
 
 # Internal: Fetch BAM features using Rsamtools
@@ -293,28 +319,26 @@ fetch_bed_features <- function(track, region, ...) {
     ))
   }
 
-  mcols <- S4Vectors::mcols(bed_data)
+  mcols_data <- S4Vectors::mcols(bed_data)
+  col_names <- names(mcols_data)
 
   # Convert strand
   strand_vec <- as.character(GenomicRanges::strand(bed_data))
-  strand_int <- dplyr::case_when(
-    strand_vec == "+" ~ 1L,
-    strand_vec == "-" ~ -1L,
-    TRUE ~ 0L
-  )
+  strand_int <- ifelse(strand_vec == "+", 1L,
+                       ifelse(strand_vec == "-", -1L, 0L))
 
   tibble::tibble(
     ref_name = as.character(GenomicRanges::seqnames(bed_data)),
     start = GenomicRanges::start(bed_data) - 1L,
     end = GenomicRanges::end(bed_data),
-    feature_id = if ("name" %in% names(mcols)) {
-      as.character(mcols$name)
+    feature_id = if ("name" %in% col_names) {
+      as.character(mcols_data$name)
     } else {
       paste0("feature_", seq_along(bed_data))
     },
-    name = if ("name" %in% names(mcols)) as.character(mcols$name) else NA_character_,
+    name = if ("name" %in% col_names) as.character(mcols_data$name) else NA_character_,
     strand = strand_int,
-    score = if ("score" %in% names(mcols)) as.numeric(mcols$score) else NA_real_
+    score = if ("score" %in% col_names) as.numeric(mcols_data$score) else NA_real_
   )
 }
 

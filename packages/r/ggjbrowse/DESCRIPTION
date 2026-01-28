@@ -1,12 +1,13 @@
 Package: ggjbrowse
-Title: ggplot2 Geoms for Genomic Visualization
+Title: ggplot2 Geoms and Data Access for Genomic Visualization
 Version: 0.1.0
 Authors@R:
     person("JBrowse", "Team", , "jbrowse@gmod.org", role = c("aut", "cre"))
 Description: Provides ggplot2 geoms and scales for creating JBrowse-style genomic
-    visualizations. Includes geoms for gene tracks, coverage plots, variant
-    displays, and multi-track assemblies. Designed to work seamlessly with
-    jbrowseR for reproducible genomic analysis.
+    visualizations, along with data access functions for genomic file formats.
+    Includes geoms for gene tracks, coverage plots, variant displays, and
+    multi-track assemblies. Supports BigWig, VCF, GFF3, BAM, and BED formats
+    through a unified interface for reproducible genomic analysis.
 License: Apache License (>= 2)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -17,10 +18,15 @@ Imports:
     scales,
     rlang,
     tibble,
-    dplyr
+    dplyr,
+    httr2,
+    jsonlite
 Suggests:
-    jbrowseR,
     patchwork,
+    rtracklayer,
+    VariantAnnotation,
+    Rsamtools,
+    GenomicRanges,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://github.com/GMOD/ggjbrowse

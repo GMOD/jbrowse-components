@@ -67,7 +67,7 @@ export interface ExportRCodeOptions {
   filename?: string
 
   // Package preferences
-  useJbrowseR?: boolean // Use jbrowseR package for data loading (recommended)
+  useJbrowseR?: boolean // Use ggjbrowse package for data loading (recommended)
   useBioconductor?: boolean // Use Bioconductor packages directly
 
   // Visualization options

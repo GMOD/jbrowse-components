@@ -112,7 +112,7 @@ scale_y_strand <- function(...) {
   )
 }
 
-# Simple region parser (doesn't require jbrowseR)
+# Simple region parser
 parse_region_simple <- function(region_string) {
   region_string <- gsub("[, ]", "", region_string)
   pattern <- "^([^:]+):([0-9]+)[-\\.\\.]+([0-9]+)$"

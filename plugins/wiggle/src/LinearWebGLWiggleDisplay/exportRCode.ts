@@ -70,8 +70,8 @@ export function exportRCode(
   let dataCode: string
 
   if (opts.useJbrowseR) {
-    packages = ['jbrowseR', 'ggjbrowse', 'ggplot2']
-    dataCode = `# Load coverage data using jbrowseR
+    packages = ['ggjbrowse', 'ggplot2']
+    dataCode = `# Load coverage data
 ${dataVar} <- jb_features(session, "${trackId}", region)`
   } else {
     packages = ['rtracklayer', 'ggjbrowse', 'ggplot2', 'tibble', 'dplyr']

@@ -3,7 +3,7 @@
 #' A convenience function that creates a JBrowse-like multi-track view
 #' by combining multiple ggplot2 plots using patchwork.
 #'
-#' @param session A jbrowseR session object (optional).
+#' @param session A jbrowse session object (optional).
 #' @param region A jbrowse_region or region string.
 #' @param tracks Character vector of track IDs to display (if using session).
 #' @param track_heights Relative heights for each track.
@@ -26,7 +26,7 @@
 #'   track_heights = c(2, 1)
 #' )
 #'
-#' # Using jbrowseR session
+#' # Using session
 #' jb_plot(
 #'   session = my_session,
 #'   region = "chr1:1000-5000",
@@ -46,13 +46,9 @@ jb_plot <- function(session = NULL, region = NULL, tracks = NULL,
 
   # If session provided, build plots from tracks
   if (!is.null(session) && !is.null(tracks)) {
-    if (!requireNamespace("jbrowseR", quietly = TRUE)) {
-      stop("Package 'jbrowseR' is required when using session argument")
-    }
-
     # Parse region
     if (is.character(region)) {
-      region_obj <- jbrowseR::jb_region(region)
+      region_obj <- jb_region(region)
     } else {
       region_obj <- region
     }
@@ -65,7 +61,7 @@ jb_plot <- function(session = NULL, region = NULL, tracks = NULL,
       }
 
       # Get features
-      features <- jbrowseR::jb_features(session, track_id, region_obj)
+      features <- jb_features(session, track_id, region_obj)
 
       # Create plot based on track type
       p <- create_track_plot(track, features, region_obj)

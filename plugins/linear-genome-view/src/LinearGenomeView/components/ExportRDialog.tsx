@@ -69,7 +69,7 @@ export default function ExportRDialog({
               }}
             />
           }
-          label="Use jbrowseR package (recommended)"
+          label="Use ggjbrowse package (recommended)"
         />
 
         <FormControlLabel
@@ -92,21 +92,13 @@ export default function ExportRDialog({
           The generated R script will recreate your current view using ggplot2.
           For best results, install the{' '}
           <Link
-            href="https://github.com/GMOD/jbrowseR"
-            target="_blank"
-            rel="noopener"
-          >
-            jbrowseR
-          </Link>{' '}
-          and{' '}
-          <Link
             href="https://github.com/GMOD/ggjbrowse"
             target="_blank"
             rel="noopener"
           >
             ggjbrowse
           </Link>{' '}
-          packages.
+          package.
         </Typography>
 
         {!useJbrowseR ? (
@@ -115,7 +107,7 @@ export default function ExportRDialog({
             color="warning.main"
             style={{ marginTop: 8 }}
           >
-            Without jbrowseR, the script will use Bioconductor packages directly
+            Without ggjbrowse, the script will use Bioconductor packages directly
             (rtracklayer, VariantAnnotation, Rsamtools).
           </Typography>
         ) : null}
