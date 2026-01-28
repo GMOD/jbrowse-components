@@ -10,6 +10,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
+import CodeIcon from '@mui/icons-material/Code'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
@@ -18,6 +19,7 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 
 import {
+  ExportRDialog,
   ExportSvgDialog,
   GetSequenceDialog,
   ReturnToImportFormDialog,
@@ -103,6 +105,19 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       onClick: () => {
         session.queueDialog(handleClose => [
           ExportSvgDialog,
+          {
+            model: self,
+            handleClose,
+          },
+        ])
+      },
+    },
+    {
+      label: 'Export R script',
+      icon: CodeIcon,
+      onClick: () => {
+        session.queueDialog(handleClose => [
+          ExportRDialog,
           {
             model: self,
             handleClose,

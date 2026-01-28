@@ -59,6 +59,7 @@ import {
 
 import type {
   BpOffset,
+  ExportRCodeOptions,
   ExportSvgOptions,
   HighlightType,
   InitState,
@@ -1225,6 +1226,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
             opts.filename || 'image.svg',
           )
         }
+      },
+
+      /**
+       * #method
+       * creates an R script export and saves using FileSaver
+       */
+      async exportR(opts: ExportRCodeOptions = {}) {
+        const { exportR } = await import('./exportR.ts')
+        await exportR(self as LinearGenomeViewModel, opts)
       },
     }))
     .actions(self => {
