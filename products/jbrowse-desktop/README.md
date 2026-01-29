@@ -8,13 +8,6 @@ While in the jbrowse-desktop directory, you can run `pnpm start` to start a
 development build of JBrowse Desktop. This both starts the development server
 and opens the Electron window when the server is ready.
 
-For more control over the development, you can run the server and the electron
-window separately. Just run `pnpm serve` to start the server, and once the
-server is ready run `pnpm develop` to open the Electron window.
-
-The Electron process can also take a custom server URL in case you run the dev
-server on another machine, e.g. `DEV_SERVER_URL=http://some.url pnpm develop`.
-
 ### Packaging
 
 You will need some development libraries installed to be able to package the
@@ -25,31 +18,29 @@ application, since native dependencies have to be rebuilt.
 To install the development libraries:
 
 ```sh
-# To build for Linux and Mac
 sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-# To build for Windows, you additionally need
-sudo apt install -y wine-stable
 ```
 
-`pnpm build-electron` will then build and package the application for Linux,
-Mac, and Windows. You can also use `pnpm build-electron:win`,
-`pnpm build-electron:linux`, or `pnpm build-electron:mac` to build and package
-for a specific platform.
+`pnpm package:linux` will build and package the application as an AppImage.
 
-#### MacOS
+#### macOS
 
 To install the development libraries on Mac:
 
 ```sh
-# To build for Linux and Mac
 brew install pkg-config cairo pango libpng jpeg giflib librsvg
 ```
 
+`pnpm package:mac` will build and package the application as a DMG and ZIP.
+
+For code signing and notarization, set these environment variables:
+
+- `APPLE_ID` - Your Apple ID email
+- `APPLE_ID_PASSWORD` - App-specific password
+
 #### Windows
 
-Only the Windows application can be packaged when developing on a Windows
-machine. Trying to package the Linux or Mac applications will fail. To install
-the development libraries:
+To install the development libraries on Windows:
 
 ```pwsh
 # Run in an elevated PowerShell window (i.e. use "Run as administrator")
@@ -67,5 +58,16 @@ Remove-Item -path .\gtk+-bundle_2.22.1-20101229_win64.zip
 # Install to C:\libjpeg-turbo if 32bit or C:\libjpeg-turbo64 if 64bit
 ```
 
-Then you can run `pnpm build-electron:win` to build and package the Windows
-application.
+`pnpm package:win` will build and package the application as an NSIS installer
+(or portable ZIP if NSIS is not available).
+
+For code signing, set these environment variables:
+
+- `WINDOWS_SIGN_CREDENTIAL_ID`
+- `WINDOWS_SIGN_USER_NAME`
+- `WINDOWS_SIGN_USER_PASSWORD`
+- `WINDOWS_SIGN_USER_TOTP`
+
+### All platforms
+
+You can also run `pnpm package` to build for the current platform automatically.

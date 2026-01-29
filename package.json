@@ -105,7 +105,6 @@
     "detect-port-alt": "^1.1.6",
     "dotenv": "^17.2.3",
     "electron": "40.0.0",
-    "electron-builder": "^25.1.8",
     "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-node": "^11.1.0",

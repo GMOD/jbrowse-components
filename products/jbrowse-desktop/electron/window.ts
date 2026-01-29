@@ -2,7 +2,8 @@ import path from 'path'
 import url, { pathToFileURL } from 'url'
 
 import electron, { BrowserWindow, Menu, app, shell } from 'electron'
-import windowStateKeeper from 'electron-window-state'
+
+import windowStateKeeper from './windowStateKeeper.ts'
 
 import type { AppUpdater } from 'electron-updater'
 
