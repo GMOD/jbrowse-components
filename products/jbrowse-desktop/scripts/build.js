@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 
 import webpack from 'webpack'
@@ -23,4 +24,10 @@ config.resolve.alias = {
 }
 config.output.publicPath = 'auto'
 
-build(config)
+build(config).then(() => {
+  const testDataPath = path.resolve(import.meta.dirname, '../build/test_data')
+  if (fs.existsSync(testDataPath)) {
+    fs.rmSync(testDataPath, { recursive: true })
+    console.log('Removed test_data from build')
+  }
+})
