@@ -4,10 +4,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { drawDensity } from '../drawDensity.ts'
-import {
-  forEachSourceFeatures,
-  getAdaptersForPerSourceRendering,
-} from '../multiRendererHelper.ts'
+import { forEachSourceFeatures } from '../multiRendererHelper.ts'
 import { serializeWiggleFeature } from '../util.ts'
 
 import type { MultiRenderArgsDeserialized } from '../types.ts'
@@ -32,11 +29,6 @@ export async function renderMultiDensity(
   const rowHeight = height / sources.length
   const lastCheck = createStopTokenChecker(stopToken)
 
-  const adapterBySource = await getAdaptersForPerSourceRendering(
-    pluginManager,
-    renderProps,
-  )
-
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
     statusCallback,
@@ -45,22 +37,16 @@ export async function renderMultiDensity(
         let feats: Feature[] = []
         ctx.save()
 
-        await forEachSourceFeatures(
-          adapterBySource,
-          sources,
-          region,
-          renderProps,
-          (source, features) => {
-            const { reducedFeatures } = drawDensity(ctx, {
-              ...renderProps,
-              features,
-              height: rowHeight,
-              lastCheck,
-            })
-            ctx.translate(0, rowHeight)
-            feats = feats.concat(reducedFeatures)
-          },
-        )
+        await forEachSourceFeatures(pluginManager, renderProps, (source, features) => {
+          const { reducedFeatures } = drawDensity(ctx, {
+            ...renderProps,
+            features,
+            height: rowHeight,
+            lastCheck,
+          })
+          ctx.translate(0, rowHeight)
+          feats = feats.concat(reducedFeatures)
+        })
 
         ctx.restore()
         return { reducedFeatures: feats }

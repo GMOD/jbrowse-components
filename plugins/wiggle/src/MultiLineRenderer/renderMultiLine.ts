@@ -4,10 +4,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { drawLine } from '../drawLine.ts'
-import {
-  forEachSourceFeatures,
-  getAdaptersForPerSourceRendering,
-} from '../multiRendererHelper.ts'
+import { forEachSourceFeatures } from '../multiRendererHelper.ts'
 import { serializeWiggleFeature } from '../util.ts'
 
 import type { MultiRenderArgsDeserialized } from '../types.ts'
@@ -18,23 +15,12 @@ export async function renderMultiLine(
   renderProps: MultiRenderArgsDeserialized,
   pluginManager: PluginManager,
 ) {
-  const {
-    sources,
-    height,
-    regions,
-    bpPerPx,
-    stopToken,
-    statusCallback = () => {},
-  } = renderProps
+  const { height, regions, bpPerPx, stopToken, statusCallback = () => {} } =
+    renderProps
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
   const lastCheck = createStopTokenChecker(stopToken)
-
-  const adapterBySource = await getAdaptersForPerSourceRendering(
-    pluginManager,
-    renderProps,
-  )
 
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
@@ -43,22 +29,16 @@ export async function renderMultiLine(
       renderToAbstractCanvas(width, height, renderProps, async ctx => {
         let feats: Feature[] = []
 
-        await forEachSourceFeatures(
-          adapterBySource,
-          sources,
-          region,
-          renderProps,
-          (source, features) => {
-            const { reducedFeatures } = drawLine(ctx, {
-              ...renderProps,
-              features,
-              staticColor: source.color || 'blue',
-              colorCallback: () => '', // unused when staticColor is set
-              lastCheck,
-            })
-            feats = feats.concat(reducedFeatures)
-          },
-        )
+        await forEachSourceFeatures(pluginManager, renderProps, (source, features) => {
+          const { reducedFeatures } = drawLine(ctx, {
+            ...renderProps,
+            features,
+            staticColor: source.color || 'blue',
+            colorCallback: () => '', // unused when staticColor is set
+            lastCheck,
+          })
+          feats = feats.concat(reducedFeatures)
+        })
 
         return { reducedFeatures: feats }
       }),

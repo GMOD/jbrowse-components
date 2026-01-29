@@ -7,10 +7,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
 import { drawXY } from '../drawXY.ts'
-import {
-  forEachSourceFeatures,
-  getAdaptersForPerSourceRendering,
-} from '../multiRendererHelper.ts'
+import { forEachSourceFeatures } from '../multiRendererHelper.ts'
 import { serializeWiggleFeature } from '../util.ts'
 
 import type { MultiRenderArgsDeserialized } from '../types.ts'
@@ -36,11 +33,6 @@ export async function renderMultiRowXYPlot(
 
   const lastCheck = createStopTokenChecker(stopToken)
 
-  const adapterBySource = await getAdaptersForPerSourceRendering(
-    pluginManager,
-    renderProps,
-  )
-
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
     statusCallback,
@@ -49,28 +41,22 @@ export async function renderMultiRowXYPlot(
         let allReducedFeatures: Feature[] = []
         ctx.save()
 
-        await forEachSourceFeatures(
-          adapterBySource,
-          sources,
-          region,
-          renderProps,
-          (source, features) => {
-            const { reducedFeatures: reduced } = drawXY(ctx, {
-              ...renderProps,
-              features,
-              height: rowHeight,
-              colorCallback: () => source.color || 'blue',
-              lastCheck,
-            })
-            allReducedFeatures = allReducedFeatures.concat(reduced)
-            ctx.strokeStyle = 'rgba(200,200,200,0.8)'
-            ctx.beginPath()
-            ctx.moveTo(0, rowHeight)
-            ctx.lineTo(width, rowHeight)
-            ctx.stroke()
-            ctx.translate(0, rowHeight)
-          },
-        )
+        await forEachSourceFeatures(pluginManager, renderProps, (source, features) => {
+          const { reducedFeatures: reduced } = drawXY(ctx, {
+            ...renderProps,
+            features,
+            height: rowHeight,
+            colorCallback: () => source.color || 'blue',
+            lastCheck,
+          })
+          allReducedFeatures = allReducedFeatures.concat(reduced)
+          ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+          ctx.beginPath()
+          ctx.moveTo(0, rowHeight)
+          ctx.lineTo(width, rowHeight)
+          ctx.stroke()
+          ctx.translate(0, rowHeight)
+        })
 
         ctx.restore()
         return { reducedFeatures: allReducedFeatures }

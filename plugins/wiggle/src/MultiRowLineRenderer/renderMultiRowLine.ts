@@ -4,10 +4,7 @@ import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { drawLine } from '../drawLine.ts'
-import {
-  forEachSourceFeatures,
-  getAdaptersForPerSourceRendering,
-} from '../multiRendererHelper.ts'
+import { forEachSourceFeatures } from '../multiRendererHelper.ts'
 import { serializeWiggleFeature } from '../util.ts'
 
 import type { MultiRenderArgsDeserialized } from '../types.ts'
@@ -32,11 +29,6 @@ export async function renderMultiRowLine(
   const rowHeight = height / sources.length
   const lastCheck = createStopTokenChecker(stopToken)
 
-  const adapterBySource = await getAdaptersForPerSourceRendering(
-    pluginManager,
-    renderProps,
-  )
-
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
     statusCallback,
@@ -45,29 +37,23 @@ export async function renderMultiRowLine(
         let feats: Feature[] = []
         ctx.save()
 
-        await forEachSourceFeatures(
-          adapterBySource,
-          sources,
-          region,
-          renderProps,
-          (source, features) => {
-            const { reducedFeatures } = drawLine(ctx, {
-              ...renderProps,
-              features,
-              height: rowHeight,
-              staticColor: source.color || 'blue',
-              colorCallback: () => '', // unused when staticColor is set
-              lastCheck,
-            })
-            ctx.strokeStyle = 'rgba(200,200,200,0.8)'
-            ctx.beginPath()
-            ctx.moveTo(0, rowHeight)
-            ctx.lineTo(width, rowHeight)
-            ctx.stroke()
-            ctx.translate(0, rowHeight)
-            feats = feats.concat(reducedFeatures)
-          },
-        )
+        await forEachSourceFeatures(pluginManager, renderProps, (source, features) => {
+          const { reducedFeatures } = drawLine(ctx, {
+            ...renderProps,
+            features,
+            height: rowHeight,
+            staticColor: source.color || 'blue',
+            colorCallback: () => '', // unused when staticColor is set
+            lastCheck,
+          })
+          ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+          ctx.beginPath()
+          ctx.moveTo(0, rowHeight)
+          ctx.lineTo(width, rowHeight)
+          ctx.stroke()
+          ctx.translate(0, rowHeight)
+          feats = feats.concat(reducedFeatures)
+        })
 
         ctx.restore()
         return { reducedFeatures: feats }
