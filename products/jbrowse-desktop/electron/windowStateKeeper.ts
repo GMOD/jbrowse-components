@@ -3,7 +3,7 @@ import path from 'path'
 
 import { app, screen } from 'electron'
 
-import type { BrowserWindow, Rectangle } from 'electron'
+import type { BrowserWindow } from 'electron'
 
 interface WindowState {
   x?: number
@@ -12,176 +12,129 @@ interface WindowState {
   height: number
   isMaximized?: boolean
   isFullScreen?: boolean
-  displayBounds?: Rectangle
 }
 
-interface WindowStateKeeperOptions {
-  defaultWidth?: number
-  defaultHeight?: number
-  file?: string
-  path?: string
-  maximize?: boolean
-  fullScreen?: boolean
+interface Options {
+  defaultWidth: number
+  defaultHeight: number
 }
 
-export default function windowStateKeeper(options: WindowStateKeeperOptions = {}) {
-  const config = {
-    file: 'window-state.json',
-    path: app.getPath('userData'),
-    maximize: true,
-    fullScreen: true,
-    ...options,
-  }
-
-  const fullStoreFileName = path.join(config.path, config.file)
-  let state: WindowState
+export default function windowStateKeeper(options: Options) {
+  const { defaultWidth, defaultHeight } = options
+  const stateFile = path.join(app.getPath('userData'), 'window-state.json')
+  const state = loadState()
   let winRef: BrowserWindow | null = null
-  let stateChangeTimer: ReturnType<typeof setTimeout> | null = null
-  const eventHandlingDelay = 100
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-  function isNormal(win: BrowserWindow) {
-    return !win.isMaximized() && !win.isMinimized() && !win.isFullScreen()
-  }
-
-  function hasBounds() {
-    return (
-      state &&
-      Number.isInteger(state.x) &&
-      Number.isInteger(state.y) &&
-      Number.isInteger(state.width) &&
-      state.width > 0 &&
-      Number.isInteger(state.height) &&
-      state.height > 0
-    )
-  }
-
-  function resetStateToDefault() {
-    const displayBounds = screen.getPrimaryDisplay().bounds
-    state = {
-      width: config.defaultWidth || 800,
-      height: config.defaultHeight || 600,
-      x: 0,
-      y: 0,
-      displayBounds,
-    }
-  }
-
-  function windowWithinBounds(bounds: Rectangle) {
-    return (
-      state.x! >= bounds.x &&
-      state.y! >= bounds.y &&
-      state.x! + state.width <= bounds.x + bounds.width &&
-      state.y! + state.height <= bounds.y + bounds.height
-    )
-  }
-
-  function ensureWindowVisibleOnSomeDisplay() {
-    const visible = screen.getAllDisplays().some(display => windowWithinBounds(display.bounds))
-    if (!visible) {
-      resetStateToDefault()
-    }
-  }
-
-  function validateState() {
-    const isValid = state && (hasBounds() || state.isMaximized || state.isFullScreen)
-    if (!isValid) {
-      state = { width: config.defaultWidth || 800, height: config.defaultHeight || 600 }
-      return
-    }
-    if (hasBounds() && state.displayBounds) {
-      ensureWindowVisibleOnSomeDisplay()
-    }
-  }
-
-  function updateState(win?: BrowserWindow | null) {
-    win = win || winRef
-    if (!win) {
-      return
-    }
+  function loadState(): WindowState {
     try {
-      const winBounds = win.getBounds()
-      if (isNormal(win)) {
-        state.x = winBounds.x
-        state.y = winBounds.y
-        state.width = winBounds.width
-        state.height = winBounds.height
+      const saved = JSON.parse(
+        fs.readFileSync(stateFile, 'utf8'),
+      ) as WindowState
+      if (isValidState(saved)) {
+        return saved
       }
-      state.isMaximized = win.isMaximized()
-      state.isFullScreen = win.isFullScreen()
-      state.displayBounds = screen.getDisplayMatching(winBounds).bounds
     } catch {
-      // Window might be closed
+      // No saved state or invalid JSON
     }
+    return { width: defaultWidth, height: defaultHeight }
   }
 
-  function saveState(win?: BrowserWindow) {
-    if (win) {
-      updateState(win)
+  function isValidState(s: WindowState) {
+    const hasBounds =
+      Number.isInteger(s.x) &&
+      Number.isInteger(s.y) &&
+      Number.isInteger(s.width) &&
+      s.width > 0 &&
+      Number.isInteger(s.height) &&
+      s.height > 0
+
+    if (!hasBounds && !s.isMaximized && !s.isFullScreen) {
+      return false
     }
+
+    // Ensure window is visible on some display
+    if (hasBounds) {
+      const visible = screen.getAllDisplays().some(display => {
+        const b = display.bounds
+        return (
+          s.x! >= b.x &&
+          s.y! >= b.y &&
+          s.x! + s.width <= b.x + b.width &&
+          s.y! + s.height <= b.y + b.height
+        )
+      })
+      if (!visible) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  function saveState() {
     try {
-      fs.mkdirSync(path.dirname(fullStoreFileName), { recursive: true })
-      fs.writeFileSync(fullStoreFileName, JSON.stringify(state))
+      fs.mkdirSync(path.dirname(stateFile), { recursive: true })
+      fs.writeFileSync(stateFile, JSON.stringify(state))
     } catch {
       // Ignore write errors
     }
   }
 
-  function stateChangeHandler() {
-    if (stateChangeTimer) {
-      clearTimeout(stateChangeTimer)
+  function updateState() {
+    if (!winRef) {
+      return
     }
-    stateChangeTimer = setTimeout(updateState, eventHandlingDelay)
+    try {
+      const isNormal =
+        !winRef.isMaximized() && !winRef.isMinimized() && !winRef.isFullScreen()
+      if (isNormal) {
+        const bounds = winRef.getBounds()
+        state.x = bounds.x
+        state.y = bounds.y
+        state.width = bounds.width
+        state.height = bounds.height
+      }
+      state.isMaximized = winRef.isMaximized()
+      state.isFullScreen = winRef.isFullScreen()
+    } catch {
+      // Window might be closed
+    }
   }
 
-  function closeHandler() {
-    updateState()
+  function onStateChange() {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
+    }
+    debounceTimer = setTimeout(updateState, 100)
   }
 
-  function closedHandler() {
-    unmanage()
+  function onClosed() {
+    if (winRef) {
+      winRef.off('resize', onStateChange)
+      winRef.off('move', onStateChange)
+      winRef.off('close', updateState)
+      winRef.off('closed', onClosed)
+      if (debounceTimer) {
+        clearTimeout(debounceTimer)
+      }
+      winRef = null
+    }
     saveState()
   }
 
   function manage(win: BrowserWindow) {
-    if (config.maximize && state.isMaximized) {
+    if (state.isMaximized) {
       win.maximize()
     }
-    if (config.fullScreen && state.isFullScreen) {
+    if (state.isFullScreen) {
       win.setFullScreen(true)
     }
-    win.on('resize', stateChangeHandler)
-    win.on('move', stateChangeHandler)
-    win.on('close', closeHandler)
-    win.on('closed', closedHandler)
+    win.on('resize', onStateChange)
+    win.on('move', onStateChange)
+    win.on('close', updateState)
+    win.on('closed', onClosed)
     winRef = win
-  }
-
-  function unmanage() {
-    if (winRef) {
-      winRef.removeListener('resize', stateChangeHandler)
-      winRef.removeListener('move', stateChangeHandler)
-      if (stateChangeTimer) {
-        clearTimeout(stateChangeTimer)
-      }
-      winRef.removeListener('close', closeHandler)
-      winRef.removeListener('closed', closedHandler)
-      winRef = null
-    }
-  }
-
-  // Load previous state
-  try {
-    state = JSON.parse(fs.readFileSync(fullStoreFileName, 'utf8'))
-  } catch {
-    state = { width: config.defaultWidth || 800, height: config.defaultHeight || 600 }
-  }
-
-  validateState()
-
-  state = {
-    width: config.defaultWidth || 800,
-    height: config.defaultHeight || 600,
-    ...state,
   }
 
   return {
@@ -197,18 +150,6 @@ export default function windowStateKeeper(options: WindowStateKeeperOptions = {}
     get height() {
       return state.height
     },
-    get displayBounds() {
-      return state.displayBounds
-    },
-    get isMaximized() {
-      return state.isMaximized
-    },
-    get isFullScreen() {
-      return state.isFullScreen
-    },
-    saveState,
-    unmanage,
     manage,
-    resetStateToDefault,
   }
 }

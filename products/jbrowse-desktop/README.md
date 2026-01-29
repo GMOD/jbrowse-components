@@ -34,6 +34,7 @@ brew install pkg-config cairo pango libpng jpeg giflib librsvg
 `pnpm package:mac` will build and package the application as a DMG and ZIP.
 
 For code signing and notarization, set these environment variables:
+
 - `APPLE_ID` - Your Apple ID email
 - `APPLE_ID_PASSWORD` - App-specific password
 
@@ -57,9 +58,11 @@ Remove-Item -path .\gtk+-bundle_2.22.1-20101229_win64.zip
 # Install to C:\libjpeg-turbo if 32bit or C:\libjpeg-turbo64 if 64bit
 ```
 
-`pnpm package:win` will build and package the application as an NSIS installer (or portable ZIP if NSIS is not available).
+`pnpm package:win` will build and package the application as an NSIS installer
+(or portable ZIP if NSIS is not available).
 
 For code signing, set these environment variables:
+
 - `WINDOWS_SIGN_CREDENTIAL_ID`
 - `WINDOWS_SIGN_USER_NAME`
 - `WINDOWS_SIGN_USER_PASSWORD`

@@ -102,7 +102,10 @@ async function packageApp(platform, arch) {
     main: 'electron.js',
     type: 'module',
   }
-  fs.writeFileSync(path.join(BUILD, 'package.json'), JSON.stringify(appPkg, null, 2))
+  fs.writeFileSync(
+    path.join(BUILD, 'package.json'),
+    JSON.stringify(appPkg, null, 2),
+  )
 
   // Also write app-update.yml for electron-updater
   fs.writeFileSync(path.join(BUILD, 'app-update.yml'), generateAppUpdateYml())
@@ -110,11 +113,12 @@ async function packageApp(platform, arch) {
   const outDir = path.join(DIST, 'unpacked')
   ensureDir(outDir)
 
-  const icon = platform === 'win32'
-    ? path.join(ASSETS, 'icon.ico')
-    : platform === 'darwin'
-      ? path.join(ASSETS, 'icon.icns')
-      : undefined
+  const icon =
+    platform === 'win32'
+      ? path.join(ASSETS, 'icon.ico')
+      : platform === 'darwin'
+        ? path.join(ASSETS, 'icon.icns')
+        : undefined
 
   const opts = {
     dir: BUILD,
@@ -162,7 +166,9 @@ async function signMacApp(appPath) {
 
   // Sign with codesign
   const identity = 'Developer ID Application'
-  run(`codesign --deep --force --options runtime --sign "${identity}" "${appPath}"`)
+  run(
+    `codesign --deep --force --options runtime --sign "${identity}" "${appPath}"`,
+  )
 
   log('macOS app signed')
 }
@@ -345,7 +351,10 @@ async function createWindowsInstaller(electronAppDir) {
 
   // Fallback: create portable ZIP
   log('NSIS not available - creating portable ZIP...')
-  const portableZip = path.join(DIST, `${APP_NAME}-v${VERSION}-win-portable.zip`)
+  const portableZip = path.join(
+    DIST,
+    `${APP_NAME}-v${VERSION}-win-portable.zip`,
+  )
   run(`cd "${electronAppDir}" && zip -r "${portableZip}" .`)
   log(`Created: ${path.basename(portableZip)}`)
   return portableZip
@@ -416,7 +425,9 @@ MimeType=application/x-jbrowse;
 
   if (!fs.existsSync(appimagetool)) {
     log('Downloading appimagetool...')
-    run(`curl -fsSL -o "${appimagetool}" "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"`)
+    run(
+      `curl -fsSL -o "${appimagetool}" "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"`,
+    )
     fs.chmodSync(appimagetool, 0o755)
   }
 
@@ -433,7 +444,9 @@ MimeType=application/x-jbrowse;
   const latestYml = generateLatestYml([appImageName])
   fs.writeFileSync(path.join(DIST, 'latest-linux.yml'), latestYml)
 
-  log(`Created: ${appImageName} (${(fileSize(appImagePath) / 1024 / 1024).toFixed(1)} MB)`)
+  log(
+    `Created: ${appImageName} (${(fileSize(appImagePath) / 1024 / 1024).toFixed(1)} MB)`,
+  )
   log('Created: latest-linux.yml')
 
   return appImagePath
@@ -464,7 +477,9 @@ async function buildMac() {
 
   // Create DMG
   log('Creating DMG...')
-  run(`hdiutil create -volname "${PRODUCT_NAME}" -srcfolder "${appPath}" -ov -format UDZO "${dmgPath}"`)
+  run(
+    `hdiutil create -volname "${PRODUCT_NAME}" -srcfolder "${appPath}" -ov -format UDZO "${dmgPath}"`,
+  )
 
   // Sign the DMG too
   if (process.env.APPLE_ID) {
@@ -482,8 +497,12 @@ async function buildMac() {
   const latestYml = generateLatestYml([zipName])
   fs.writeFileSync(path.join(DIST, 'latest-mac.yml'), latestYml)
 
-  log(`Created: ${dmgName} (${(fileSize(dmgPath) / 1024 / 1024).toFixed(1)} MB)`)
-  log(`Created: ${zipName} (${(fileSize(zipPath) / 1024 / 1024).toFixed(1)} MB)`)
+  log(
+    `Created: ${dmgName} (${(fileSize(dmgPath) / 1024 / 1024).toFixed(1)} MB)`,
+  )
+  log(
+    `Created: ${zipName} (${(fileSize(zipPath) / 1024 / 1024).toFixed(1)} MB)`,
+  )
   log('Created: latest-mac.yml')
 
   return { dmgPath, zipPath }
@@ -554,7 +573,10 @@ async function main() {
   fs.rmSync(DIST, { recursive: true, force: true })
   ensureDir(DIST)
 
-  if (!fs.existsSync(BUILD) || !fs.existsSync(path.join(BUILD, 'electron.js'))) {
+  if (
+    !fs.existsSync(BUILD) ||
+    !fs.existsSync(path.join(BUILD, 'electron.js'))
+  ) {
     console.error('\n❌ Build directory not found. Run `pnpm build` first.')
     process.exit(1)
   }
@@ -589,9 +611,10 @@ async function main() {
   console.log('\nArtifacts:')
   for (const file of files.sort()) {
     const size = fileSize(path.join(DIST, file))
-    const sizeMb = size > 1024 * 1024
-      ? `${(size / 1024 / 1024).toFixed(1)} MB`
-      : `${(size / 1024).toFixed(1)} KB`
+    const sizeMb =
+      size > 1024 * 1024
+        ? `${(size / 1024 / 1024).toFixed(1)} MB`
+        : `${(size / 1024).toFixed(1)} KB`
     console.log(`  ${file.padEnd(50)} ${sizeMb}`)
   }
 }
