@@ -1,4 +1,4 @@
-import { clusterData } from '@gmod/hclust'
+import { clusterData, toNewick } from '@gmod/hclust'
 
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
@@ -16,11 +16,15 @@ export async function executeClusterScoreMatrix({
     pluginManager,
     args,
   })
-  return clusterData({
+  const result = await clusterData({
     data: Object.values(matrix),
     stopToken: args.stopToken,
     onProgress: a => {
       args.statusCallback?.(a)
     },
   })
+  return {
+    order: result.order,
+    tree: toNewick(result.tree),
+  }
 }

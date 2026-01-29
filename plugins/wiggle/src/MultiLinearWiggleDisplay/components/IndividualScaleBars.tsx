@@ -21,15 +21,22 @@ const IndividualScaleBars = observer(function IndividualScaleBars({
     rowHeightTooSmallForScalebar,
     needsCustomLegend,
     ticks,
+    hierarchy,
+    showTree,
   } = model
+
+  // Skip ColorLegend when tree is showing - MultiWiggleLegendBar handles labels
+  const treeIsShowing = hierarchy && showTree
 
   return sources?.length ? (
     <>
-      <ColorLegend
-        exportSVG={exportSVG}
-        model={model}
-        rowHeight={model.rowHeight}
-      />
+      {treeIsShowing ? null : (
+        <ColorLegend
+          exportSVG={exportSVG}
+          model={model}
+          rowHeight={model.rowHeight}
+        />
+      )}
 
       {rowHeightTooSmallForScalebar || needsCustomLegend ? (
         <ScoreLegend model={model} />

@@ -27,3 +27,16 @@ export interface TreeSidebarModel {
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
 }
+
+export interface LegendBarModel {
+  id: string
+  scrollTop: number
+  height: number
+  hierarchy?: ClusterHierarchyNode
+  treeAreaWidth: number
+  totalHeight: number
+  canDisplayLegendLabels: boolean
+  rowHeight: number
+  sources?: Source[]
+  showTree: boolean
+}

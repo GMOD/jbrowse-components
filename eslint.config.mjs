@@ -38,6 +38,7 @@ export default defineConfig(
       'packages/core/src/util/nanoid.js',
       'packages/core/src/ReExports/material-ui-colors.js',
       'plugins/variants/src/d3-hierarchy2',
+      'plugins/wiggle/src/d3-hierarchy2',
 
       // Desktop tests
       'products/jbrowse-desktop/test/specs/test.e2e.ts',

@@ -21,11 +21,11 @@ import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
+import type { Source } from '../util.ts'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
 } from './components/treeTypes.ts'
-import type { Source } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'

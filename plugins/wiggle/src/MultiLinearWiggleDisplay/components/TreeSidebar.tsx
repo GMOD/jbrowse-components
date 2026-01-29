@@ -88,6 +88,8 @@ const TreeSidebar = observer(function TreeSidebar({
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { treeAreaWidth: _t, hierarchy: h, totalHeight: th } = model
         // Access totalHeight to rebuild index when row height changes
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        th
         if (!h) {
           setNodeIndex(null)
           setNodeData([])
