@@ -28,6 +28,7 @@ export interface NonBlockCanvasDisplayModel {
   statusMessage?: string
   showLegend?: boolean
   legendItems?: () => LegendItem[]
+  height: number
 }
 
 const useStyles = makeStyles()({
@@ -87,7 +88,8 @@ const DataDisplay = observer(function DataDisplay({
   model: NonBlockCanvasDisplayModel
   children?: React.ReactNode
 }) {
-  const { drawn, loading, showLegend, legendItems, lastDrawnBpPerPx } = model
+  const { drawn, loading, showLegend, legendItems, lastDrawnBpPerPx, height } =
+    model
   const view = getContainingView(model) as LinearGenomeViewModel
   const items = legendItems?.() ?? []
 
@@ -109,7 +111,10 @@ const DataDisplay = observer(function DataDisplay({
   return (
     // this data-testid is located here because changing props on the canvas
     // itself is very sensitive to triggering ref invalidation
-    <div data-testid={`drawn-${drawn}`}>
+    <div
+      data-testid={`drawn-${drawn}`}
+      style={{ position: 'relative', height }}
+    >
       <div
         style={{
           position: 'absolute',
