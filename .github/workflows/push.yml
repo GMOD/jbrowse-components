@@ -192,6 +192,8 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+      - name: Install Chrome for Puppeteer
+        run: npx puppeteer browsers install chrome
       - name: Run browser tests with Puppeteer
         id: browser-tests
         run: node --experimental-strip-types browser-tests/runner.ts
