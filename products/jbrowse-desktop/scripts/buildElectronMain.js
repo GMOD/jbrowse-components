@@ -21,9 +21,6 @@ await esbuild.build({
   external: ['electron'],
   sourcemap: false,
   minify: process.env.NODE_ENV === 'production',
-  banner: {
-    js: `import { createRequire } from 'module'; const require = createRequire(import.meta.url);`,
-  },
 })
 
 console.log('Electron main process bundled successfully')
