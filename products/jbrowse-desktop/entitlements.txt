@@ -1,0 +1,30 @@
+macOS Entitlements for JBrowse Desktop
+======================================
+
+The entitlements.plist file declares permissions needed to run with Apple's
+"hardened runtime" security feature, which is required for notarization.
+
+Entitlements:
+
+  allow-jit
+    Allows V8/Chromium's JavaScript JIT compiler to work. Required for Electron.
+
+  allow-unsigned-executable-memory
+    Allows creating writable+executable memory. Also required for V8's JIT.
+
+  disable-library-validation
+    Allows loading dynamic libraries without signature checks. Needed for
+    native Node modules.
+
+  network.client
+    Allows outbound network connections. JBrowse needs this to fetch remote
+    genomic data.
+
+  files.user-selected.read-write
+    Allows reading/writing files the user picks via file dialogs. Needed to
+    open local genome files.
+
+When it's used:
+
+  Only during macOS builds when APPLE_ID is set. The packager passes it to
+  codesign via the --entitlements flag.
