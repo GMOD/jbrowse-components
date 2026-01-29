@@ -186,6 +186,8 @@ const TreeSidebar = observer(function TreeSidebar({
           width={viewWidth}
           height={height}
           style={{
+            width: viewWidth,
+            height,
             position: 'absolute',
             top: 0,
             left: 0,
