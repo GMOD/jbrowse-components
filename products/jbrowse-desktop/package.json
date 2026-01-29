@@ -16,6 +16,10 @@
     "prepack": "pnpm build",
     "build": "cross-env NODE_ENV=production node scripts/build.js && pnpm build:electron-main",
     "build:electron-main": "node scripts/buildElectronMain.js",
+    "package": "pnpm build && node scripts/package.js",
+    "package:linux": "pnpm build && node scripts/package.js --linux",
+    "package:mac": "pnpm build && node scripts/package.js --mac",
+    "package:win": "pnpm build && node scripts/package.js --win",
     "build-electron": "pnpm build && electron-builder build --windows --mac --linux",
     "build-electron:win": "pnpm build && electron-builder build --windows",
     "build-electron:mac": "pnpm build && electron-builder build --mac",
@@ -103,6 +107,9 @@
     "swr": "^2.3.8"
   },
   "devDependencies": {
+    "@electron/asar": "^3.2.18",
+    "@electron/notarize": "^2.5.0",
+    "@electron/packager": "^18.3.5",
     "@types/selenium-webdriver": "^4.35.5",
     "cross-env": "^10.1.0",
     "electron": "40.0.0",
