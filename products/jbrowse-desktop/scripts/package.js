@@ -23,6 +23,7 @@ import { buildWindows } from './packaging/windows.js'
 function parseArgs() {
   const args = process.argv.slice(2)
   const platforms = []
+  let noInstaller = false
 
   for (const arg of args) {
     if (arg === '--linux' || arg === 'linux') {
@@ -32,16 +33,18 @@ function parseArgs() {
     } else if (arg === '--win' || arg === 'win' || arg === '--windows') {
       platforms.push('win')
     } else if (arg === '--all') {
-      return ['linux', 'mac', 'win']
+      platforms.push('linux', 'mac', 'win')
+    } else if (arg === '--no-installer') {
+      noInstaller = true
     }
   }
 
   if (platforms.length === 0) {
     const p = process.platform
-    return [p === 'darwin' ? 'mac' : p === 'win32' ? 'win' : 'linux']
+    platforms.push(p === 'darwin' ? 'mac' : p === 'win32' ? 'win' : 'linux')
   }
 
-  return platforms
+  return { platforms, noInstaller }
 }
 
 function printBanner(platforms) {
@@ -86,8 +89,12 @@ function printResults() {
 }
 
 async function main() {
-  const platforms = parseArgs()
+  const { platforms, noInstaller } = parseArgs()
   printBanner(platforms)
+
+  if (noInstaller) {
+    console.log('  (--no-installer: skipping installer creation)')
+  }
 
   log('Preparing dist directory...')
   fs.rmSync(DIST, { recursive: true, force: true })
@@ -105,7 +112,7 @@ async function main() {
 
   for (const platform of platforms) {
     try {
-      await builders[platform]()
+      await builders[platform]({ noInstaller })
     } catch (err) {
       console.error(`\n❌ Error building for ${platform}:`, err.message)
       if (process.env.DEBUG) {

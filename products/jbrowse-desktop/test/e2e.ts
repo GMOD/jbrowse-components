@@ -12,8 +12,8 @@ const isWindows = process.platform === 'win32'
 const APP_BINARY = resolve(
   __dirname,
   isWindows
-    ? '../dist/win-unpacked/JBrowse 2.exe'
-    : '../dist/linux-unpacked/jbrowse-desktop',
+    ? '../dist/unpacked/jbrowse-desktop-win32-x64/jbrowse-desktop.exe'
+    : '../dist/unpacked/jbrowse-desktop-linux-x64/jbrowse-desktop',
 )
 const CHROMEDRIVER_PORT = 9515
 
@@ -1111,7 +1111,9 @@ async function cleanup(): Promise<void> {
   try {
     if (isWindows) {
       execSync('taskkill /F /IM chromedriver.exe 2>nul', { stdio: 'ignore' })
-      execSync('taskkill /F /IM "JBrowse 2.exe" 2>nul', { stdio: 'ignore' })
+      execSync('taskkill /F /IM "jbrowse-desktop.exe" 2>nul', {
+        stdio: 'ignore',
+      })
     } else {
       execSync('pkill -f chromedriver || true', { stdio: 'ignore' })
       execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
@@ -1187,7 +1189,9 @@ async function main(): Promise<void> {
   const { execSync } = await import('child_process')
   try {
     if (isWindows) {
-      execSync('taskkill /F /IM "JBrowse 2.exe" 2>nul', { stdio: 'ignore' })
+      execSync('taskkill /F /IM "jbrowse-desktop.exe" 2>nul', {
+        stdio: 'ignore',
+      })
     } else {
       execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
     }
@@ -1214,7 +1218,9 @@ main().catch(async e => {
   const { execSync } = await import('child_process')
   try {
     if (isWindows) {
-      execSync('taskkill /F /IM "JBrowse 2.exe" 2>nul', { stdio: 'ignore' })
+      execSync('taskkill /F /IM "jbrowse-desktop.exe" 2>nul', {
+        stdio: 'ignore',
+      })
     } else {
       execSync('pkill -f jbrowse-desktop || true', { stdio: 'ignore' })
     }

@@ -6,8 +6,8 @@ import { packageApp } from './packager.js'
 import { notarizeMacApp, signMacApp } from './signing.js'
 import { fileSizeMB, generateLatestYml, log, run } from './utils.js'
 
-export async function buildMac() {
-  log('Building macOS DMG and ZIP...')
+export async function buildMac({ noInstaller = false } = {}) {
+  log('Building macOS package...')
 
   if (process.platform !== 'darwin') {
     throw new Error('macOS builds require running on macOS')
@@ -16,6 +16,12 @@ export async function buildMac() {
   const electronAppDir = await packageApp('darwin', 'universal')
   const appName = `${PRODUCT_NAME}.app`
   const appPath = path.join(electronAppDir, appName)
+
+  // For --no-installer mode (e.g., E2E tests), just return the unpacked app dir
+  if (noInstaller) {
+    log(`Unpacked app at: ${electronAppDir}`)
+    return electronAppDir
+  }
 
   await signMacApp(appPath)
   await notarizeMacApp(appPath)

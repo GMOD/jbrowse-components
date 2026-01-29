@@ -5,10 +5,18 @@ import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.js'
 import { packageApp } from './packager.js'
 import { ensureDir, fileSizeMB, generateLatestYml, log, run } from './utils.js'
 
-export async function buildLinux() {
-  log('Building Linux AppImage...')
+export async function buildLinux({ noInstaller = false } = {}) {
+  log('Building Linux package...')
 
   const electronAppDir = await packageApp('linux', 'x64')
+
+  // For --no-installer mode (e.g., E2E tests), just return the unpacked app dir
+  if (noInstaller) {
+    log(`Unpacked app at: ${electronAppDir}`)
+    return electronAppDir
+  }
+
+  log('Creating AppImage...')
   const appImageName = `${APP_NAME}-v${VERSION}-linux.AppImage`
   const appImagePath = path.join(DIST, appImageName)
 
@@ -22,9 +30,9 @@ export async function buildLinux() {
   fs.cpSync(electronAppDir, appDir, { recursive: true })
 
   // Rename executable for wrapper script
-  const execPath = path.join(appDir, PRODUCT_NAME)
+  const execPath = path.join(appDir, APP_NAME)
   if (fs.existsSync(execPath)) {
-    fs.renameSync(execPath, path.join(appDir, `${PRODUCT_NAME}.bin`))
+    fs.renameSync(execPath, path.join(appDir, `${APP_NAME}.bin`))
   }
 
   // Create AppRun with --no-sandbox fix
@@ -32,7 +40,7 @@ export async function buildLinux() {
     path.join(appDir, 'AppRun'),
     `#!/bin/bash
 HERE="$(dirname "$(readlink -f "\${0}")")"
-exec "\${HERE}/${PRODUCT_NAME}.bin" --no-sandbox "$@"
+exec "\${HERE}/${APP_NAME}.bin" --no-sandbox "$@"
 `,
   )
   fs.chmodSync(path.join(appDir, 'AppRun'), 0o755)

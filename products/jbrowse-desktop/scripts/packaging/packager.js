@@ -46,7 +46,8 @@ export async function packageApp(platform, arch) {
   const opts = {
     dir: BUILD,
     out: outDir,
-    name: PRODUCT_NAME,
+    name: APP_NAME,
+    executableName: APP_NAME,
     platform,
     arch,
     appVersion: VERSION,

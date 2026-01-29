@@ -6,16 +6,38 @@ import { packageApp } from './packager.js'
 import { signWindowsFile } from './signing.js'
 import { generateLatestYml, log, run, runQuiet } from './utils.js'
 
-function createNsisScript(appDir, outputExe) {
-  const iconPath = path.join(ASSETS, 'installerIcon.ico').replace(/\\/g, '\\\\')
-  const appDirEscaped = appDir.replace(/\\/g, '\\\\')
+// Convert Unix path to Windows path for Wine (e.g., /home/user -> Z:\home\user)
+function toWinePath(unixPath) {
+  if (process.platform === 'win32') {
+    return unixPath.replace(/\//g, '\\')
+  }
+  // Use winepath to convert Unix path to Windows path
+  return runQuiet(`winepath -w "${unixPath}"`).replace(/\\/g, '\\\\')
+}
+
+function createNsisScript(appDir, outputExe, useWine) {
+  let iconPath = path.join(ASSETS, 'installerIcon.ico')
+  let appDirEscaped = appDir
+  let outputExeEscaped = outputExe
+
+  if (useWine) {
+    // Convert paths to Windows format for Wine
+    iconPath = toWinePath(iconPath)
+    appDirEscaped = toWinePath(appDir)
+    outputExeEscaped = toWinePath(outputExe)
+  } else {
+    // On Windows, just escape backslashes
+    iconPath = iconPath.replace(/\\/g, '\\\\')
+    appDirEscaped = appDir.replace(/\\/g, '\\\\')
+    outputExeEscaped = outputExe.replace(/\\/g, '\\\\')
+  }
 
   return `
 !include "MUI2.nsh"
 !include "FileFunc.nsh"
 
 Name "${PRODUCT_NAME}"
-OutFile "${outputExe}"
+OutFile "${outputExeEscaped}"
 InstallDir "$PROGRAMFILES64\\${PRODUCT_NAME}"
 RequestExecutionLevel admin
 
@@ -41,16 +63,16 @@ Section "Install"
 
   ; Create Start Menu shortcut
   CreateDirectory "$SMPROGRAMS\\${PRODUCT_NAME}"
-  CreateShortcut "$SMPROGRAMS\\${PRODUCT_NAME}\\${PRODUCT_NAME}.lnk" "$INSTDIR\\${PRODUCT_NAME}.exe"
+  CreateShortcut "$SMPROGRAMS\\${PRODUCT_NAME}\\${PRODUCT_NAME}.lnk" "$INSTDIR\\${APP_NAME}.exe"
   CreateShortcut "$SMPROGRAMS\\${PRODUCT_NAME}\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"
 
   ; Create Desktop shortcut
-  CreateShortcut "$DESKTOP\\${PRODUCT_NAME}.lnk" "$INSTDIR\\${PRODUCT_NAME}.exe"
+  CreateShortcut "$DESKTOP\\${PRODUCT_NAME}.lnk" "$INSTDIR\\${APP_NAME}.exe"
 
   ; Write registry keys for Add/Remove Programs
   WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME}"
   WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "UninstallString" "$INSTDIR\\Uninstall.exe"
-  WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayIcon" "$INSTDIR\\${PRODUCT_NAME}.exe"
+  WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayIcon" "$INSTDIR\\${APP_NAME}.exe"
   WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "Publisher" "JBrowse Team"
   WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayVersion" "${VERSION}"
 
@@ -76,26 +98,51 @@ SectionEnd
 `
 }
 
+function getNsisCommand() {
+  // On Windows, use makensis directly
+  if (process.platform === 'win32') {
+    try {
+      runQuiet('makensis -VERSION')
+      return { cmd: 'makensis', useWine: false }
+    } catch {
+      return null
+    }
+  }
+  // On Linux/macOS, try Wine with NSIS
+  try {
+    // Check if NSIS is installed in Wine's Program Files
+    const wineNsis =
+      'wine "C:\\Program Files (x86)\\NSIS\\makensis.exe" /VERSION'
+    runQuiet(wineNsis)
+    return {
+      cmd: 'wine "C:\\Program Files (x86)\\NSIS\\makensis.exe"',
+      useWine: true,
+    }
+  } catch {
+    return null
+  }
+}
+
 async function createWindowsInstaller(electronAppDir) {
   const exeName = `${APP_NAME}-v${VERSION}-win.exe`
   const exePath = path.join(DIST, exeName)
 
-  // Check if makensis is available
-  let nsisAvailable = false
-  try {
-    runQuiet('makensis -VERSION')
-    nsisAvailable = true
-  } catch {
-    // NSIS not available
-  }
+  const nsis = getNsisCommand()
 
-  if (nsisAvailable) {
+  if (nsis) {
     log('Creating NSIS installer...')
 
     const scriptPath = path.join(DIST, 'installer.nsi')
-    fs.writeFileSync(scriptPath, createNsisScript(electronAppDir, exePath))
+    fs.writeFileSync(
+      scriptPath,
+      createNsisScript(electronAppDir, exePath, nsis.useWine),
+    )
 
-    run(`makensis "${scriptPath}"`)
+    // Convert script path to Windows format when using Wine
+    const scriptArg = nsis.useWine
+      ? runQuiet(`winepath -w "${scriptPath}"`)
+      : scriptPath
+    run(`${nsis.cmd} "${scriptArg}"`)
     fs.unlinkSync(scriptPath)
 
     signWindowsFile(exePath)
@@ -110,18 +157,31 @@ async function createWindowsInstaller(electronAppDir) {
     DIST,
     `${APP_NAME}-v${VERSION}-win-portable.zip`,
   )
-  run(`cd "${electronAppDir}" && zip -r "${portableZip}" .`)
+  // Use PowerShell on Windows, zip command on Linux/macOS
+  if (process.platform === 'win32') {
+    run(
+      `powershell -command "Compress-Archive -Path '${electronAppDir}\\*' -DestinationPath '${portableZip}'"`,
+    )
+  } else {
+    run(`cd "${electronAppDir}" && zip -r "${portableZip}" .`)
+  }
   log(`Created: ${path.basename(portableZip)}`)
   return portableZip
 }
 
-export async function buildWindows() {
+export async function buildWindows({ noInstaller = false } = {}) {
   log('Building Windows package...')
 
   const electronAppDir = await packageApp('win32', 'x64')
 
+  // For --no-installer mode (e.g., E2E tests), just return the unpacked app dir
+  if (noInstaller) {
+    log(`Unpacked app at: ${electronAppDir}`)
+    return electronAppDir
+  }
+
   // Sign the main executable before packaging
-  const mainExe = path.join(electronAppDir, `${PRODUCT_NAME}.exe`)
+  const mainExe = path.join(electronAppDir, `${APP_NAME}.exe`)
   if (fs.existsSync(mainExe)) {
     signWindowsFile(mainExe)
   }
