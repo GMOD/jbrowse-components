@@ -1,21 +1,22 @@
-import {
-  groupBy,
-  renderToAbstractCanvas,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { drawDensity } from '../drawDensity.ts'
+import {
+  forEachSourceFeatures,
+  getAdaptersForPerSourceRendering,
+} from '../multiRendererHelper.ts'
 import { serializeWiggleFeature } from '../util.ts'
 
 import type { MultiRenderArgsDeserialized } from '../types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiDensity(
   renderProps: MultiRenderArgsDeserialized,
-  features: Feature[],
+  pluginManager: PluginManager,
 ) {
   const {
     sources,
@@ -31,24 +32,36 @@ export async function renderMultiDensity(
   const rowHeight = height / sources.length
   const lastCheck = createStopTokenChecker(stopToken)
 
+  const adapterBySource = await getAdaptersForPerSourceRendering(
+    pluginManager,
+    renderProps,
+  )
+
   const { reducedFeatures, ...rest } = await updateStatus(
     'Rendering plot',
     statusCallback,
     () =>
-      renderToAbstractCanvas(width, height, renderProps, ctx => {
-        const groups = groupBy(features, f => f.get('source'))
+      renderToAbstractCanvas(width, height, renderProps, async ctx => {
         let feats: Feature[] = []
         ctx.save()
-        for (const source of sources) {
-          const { reducedFeatures } = drawDensity(ctx, {
-            ...renderProps,
-            features: groups[source.name] || [],
-            height: rowHeight,
-            lastCheck,
-          })
-          ctx.translate(0, rowHeight)
-          feats = feats.concat(reducedFeatures)
-        }
+
+        await forEachSourceFeatures(
+          adapterBySource,
+          sources,
+          region,
+          renderProps,
+          (source, features) => {
+            const { reducedFeatures } = drawDensity(ctx, {
+              ...renderProps,
+              features,
+              height: rowHeight,
+              lastCheck,
+            })
+            ctx.translate(0, rowHeight)
+            feats = feats.concat(reducedFeatures)
+          },
+        )
+
         ctx.restore()
         return { reducedFeatures: feats }
       }),
