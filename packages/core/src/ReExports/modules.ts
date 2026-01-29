@@ -1,5 +1,11 @@
 import * as React from 'react'
+import * as ReactIs from 'react-is'
 
+import * as emotionCache from '@emotion/cache'
+import * as emotionReact from '@emotion/react'
+import * as emotionSerialize from '@emotion/serialize'
+import * as emotionUtils from '@emotion/utils'
+import * as floatingUiReact from '@floating-ui/react'
 import * as mst from '@jbrowse/mobx-state-tree'
 import { alpha, createTheme, useTheme } from '@mui/material'
 import * as MUIStyles from '@mui/material/styles'
@@ -47,6 +53,7 @@ import * as rxjs from '../util/rxjs.ts'
 import * as trackUtils from '../util/tracks.ts'
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 import * as mstTypes from '../util/types/mst.ts'
+import jexl from '../util/jexl.ts'
 
 const libs = {
   mobx,
@@ -158,6 +165,15 @@ const libs = {
 
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
+  '@jbrowse/core/jexl': jexl,
+
+  '@floating-ui/react': floatingUiReact,
+  'react-is': ReactIs,
+
+  '@emotion/cache': emotionCache,
+  '@emotion/react': emotionReact,
+  '@emotion/serialize': emotionSerialize,
+  '@emotion/utils': emotionUtils,
 }
 
 const libsList = Object.keys(libs)
