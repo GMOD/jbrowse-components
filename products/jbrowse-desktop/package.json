@@ -107,6 +107,7 @@
     "cross-env": "^10.1.0",
     "electron": "40.0.0",
     "electron-chromedriver": "^40.1.0",
+    "esbuild": "^0.24.2",
     "selenium-webdriver": "^4.40.0"
   },
   "browserslist": [
@@ -115,7 +116,8 @@
   "build": {
     "electronVersion": "40.0.0",
     "extraMetadata": {
-      "main": "build/electron.js"
+      "main": "build/electron.js",
+      "dependencies": {}
     },
     "appId": "org.jbrowse2.app",
     "productName": "JBrowse 2",
@@ -188,8 +190,10 @@
       "artifactName": "jbrowse-desktop-v${version}-mac.${ext}"
     },
     "files": [
-      "build/**/*"
+      "build/**/*",
+      "!**/node_modules/**"
     ],
+    "npmRebuild": false,
     "publish": [
       "github"
     ],
