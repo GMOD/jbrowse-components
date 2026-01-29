@@ -44,7 +44,6 @@ const AboutWidget = observer(function AboutWidget({
       </Typography>
       <Typography variant="h6" align="center" className={classes.subtitle}>
         {version}
-        {process.env.GIT_HASH ? `+${process.env.GIT_HASH}` : ''}
       </Typography>
       <Typography align="center">
         JBrowse is a <ExternalLink href="http://gmod.org/">GMOD</ExternalLink>{' '}
