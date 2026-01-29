@@ -20,32 +20,12 @@
     "package:linux": "pnpm build && node scripts/package.js --linux",
     "package:mac": "pnpm build && node scripts/package.js --mac",
     "package:win": "pnpm build && node scripts/package.js --win",
-    "build-electron": "pnpm build && electron-builder build --windows --mac --linux",
-    "build-electron:win": "pnpm build && electron-builder build --windows",
-    "build-electron:mac": "pnpm build && electron-builder build --mac",
-    "build-electron:linux": "pnpm build && electron-builder build --linux",
-    "build-electron-unpacked": "pnpm build && electron-builder build --windows --mac --linux --dir",
-    "build-electron-unpacked:win": "pnpm build && electron-builder build --windows --dir",
-    "build-electron-unpacked:mac": "pnpm build && electron-builder build --mac --dir",
-    "build-electron-unpacked:linux": "pnpm build && electron-builder build --linux --dir",
-    "build-electron-prepackaged": "pnpm build-electron-prepackaged:win && pnpm build-electron-prepackaged:mac && pnpm build-electron-prepackaged:linux",
-    "build-electron-prepackaged:win": "electron-builder build --windows --prepackaged dist/win-unpacked",
-    "build-electron-prepackaged:mac": "electron-builder build --mac --prepackaged dist/mac/",
-    "build-electron-prepackaged:linux": "electron-builder build --linux --prepackaged dist/linux-unpacked/",
-    "build-electron-only": "electron-builder build --windows --mac --linux",
-    "build-electron-only:win": "electron-builder build --windows",
-    "build-electron-only:mac": "electron-builder build --mac",
-    "build-electron-only:linux": "electron-builder build --linux",
-    "build-electron-only-unpacked": "electron-builder build -wml --dir",
-    "build-electron-only-unpacked:win": "electron-builder build -w --dir",
-    "build-electron-only-unpacked:mac": "electron-builder build -m --dir",
-    "build-electron-only-unpacked:linux": "electron-builder build -l --dir",
     "test:e2e": "node --experimental-strip-types test/e2e.ts",
     "test:e2e:headless": "xvfb-run --auto-servernum node --experimental-strip-types test/e2e.ts --headless",
-    "test:e2e:build": "pnpm build-electron-unpacked:linux && pnpm test:e2e",
-    "test:e2e:ci": "pnpm build-electron-unpacked:linux && pnpm test:e2e:headless",
-    "test:e2e:build:win": "pnpm build-electron-unpacked:win && pnpm test:e2e",
-    "test:e2e:ci:win": "pnpm build-electron-unpacked:win && node --experimental-strip-types test/e2e.ts --headless"
+    "test:e2e:build": "pnpm package:linux && pnpm test:e2e",
+    "test:e2e:ci": "pnpm package:linux && pnpm test:e2e:headless",
+    "test:e2e:build:win": "pnpm package:win && pnpm test:e2e",
+    "test:e2e:ci:win": "pnpm package:win && node --experimental-strip-types test/e2e.ts --headless"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -107,7 +87,6 @@
     "swr": "^2.3.8"
   },
   "devDependencies": {
-    "@electron/asar": "^3.2.18",
     "@electron/notarize": "^2.5.0",
     "@electron/packager": "^18.3.5",
     "@types/selenium-webdriver": "^4.35.5",
@@ -120,95 +99,5 @@
   "browserslist": [
     "last 1 chrome version"
   ],
-  "build": {
-    "electronVersion": "40.0.0",
-    "extraMetadata": {
-      "main": "build/electron.js",
-      "dependencies": {}
-    },
-    "appId": "org.jbrowse2.app",
-    "productName": "JBrowse 2",
-    "copyright": "Copyright © 2019",
-    "fileAssociations": [
-      {
-        "ext": "jbrowse",
-        "name": "JBrowse",
-        "role": "Editor"
-      }
-    ],
-    "nsis": {
-      "perMachine": true
-    },
-    "win": {
-      "sign": "./sign.js",
-      "signingHashAlgorithms": [
-        "sha256"
-      ],
-      "publish": [
-        "github"
-      ],
-      "artifactName": "jbrowse-desktop-v${version}-win.${ext}"
-    },
-    "linux": {
-      "publish": [
-        "github"
-      ],
-      "target": [
-        {
-          "target": "AppImage"
-        }
-      ],
-      "executableName": "jbrowse-desktop",
-      "artifactName": "jbrowse-desktop-v${version}-linux.${ext}"
-    },
-    "deb": {
-      "maintainer": "colin.diesh@gmail.com"
-    },
-    "snap": {
-      "confinement": "strict",
-      "plugs": [
-        "default",
-        "removable-media"
-      ],
-      "slots": [
-        "default"
-      ]
-    },
-    "mac": {
-      "mergeASARs": false,
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "universal"
-          ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "universal"
-          ]
-        }
-      ],
-      "publish": [
-        "github"
-      ],
-      "category": "public.app-category.utilities",
-      "artifactName": "jbrowse-desktop-v${version}-mac.${ext}"
-    },
-    "files": [
-      "build/**/*",
-      "!**/node_modules/**"
-    ],
-    "npmRebuild": false,
-    "publish": [
-      "github"
-    ],
-    "directories": {
-      "buildResources": "assets/"
-    },
-    "afterSign": "scripts/notarize.js",
-    "afterPack": "./linux-sandbox-fix.js"
-  },
   "private": true
 }
