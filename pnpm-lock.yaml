@@ -1878,9 +1878,9 @@ importers:
         specifier: ^2.3.8
         version: 2.3.8(react@19.2.4)
     devDependencies:
-      '@electron/asar':
-        specifier: ^3.2.18
-        version: 3.4.1
+      '@electron/notarize':
+        specifier: ^2.5.0
+        version: 2.5.0
       '@electron/packager':
         specifier: ^18.3.5
         version: 18.4.4
