@@ -1,21 +1,19 @@
-import {
-  groupBy,
-  renderToAbstractCanvas,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { drawDensity } from '../drawDensity.ts'
+import { forEachSourceFeatures } from '../multiRendererHelper.ts'
 import { serializeWiggleFeature } from '../util.ts'
 
 import type { MultiRenderArgsDeserialized } from '../types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiDensity(
   renderProps: MultiRenderArgsDeserialized,
-  features: Feature[],
+  pluginManager: PluginManager,
 ) {
   const {
     sources,
@@ -35,20 +33,21 @@ export async function renderMultiDensity(
     'Rendering plot',
     statusCallback,
     () =>
-      renderToAbstractCanvas(width, height, renderProps, ctx => {
-        const groups = groupBy(features, f => f.get('source'))
+      renderToAbstractCanvas(width, height, renderProps, async ctx => {
         let feats: Feature[] = []
         ctx.save()
-        for (const source of sources) {
+
+        await forEachSourceFeatures(pluginManager, renderProps, (source, features) => {
           const { reducedFeatures } = drawDensity(ctx, {
             ...renderProps,
-            features: groups[source.name] || [],
+            features,
             height: rowHeight,
             lastCheck,
           })
           ctx.translate(0, rowHeight)
           feats = feats.concat(reducedFeatures)
-        }
+        })
+
         ctx.restore()
         return { reducedFeatures: feats }
       }),

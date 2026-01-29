@@ -1,30 +1,22 @@
-import {
-  groupBy,
-  renderToAbstractCanvas,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { renderToAbstractCanvas, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectTransferables } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { drawLine } from '../drawLine.ts'
+import { forEachSourceFeatures } from '../multiRendererHelper.ts'
 import { serializeWiggleFeature } from '../util.ts'
 
 import type { MultiRenderArgsDeserialized } from '../types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function renderMultiLine(
   renderProps: MultiRenderArgsDeserialized,
-  features: Feature[],
+  pluginManager: PluginManager,
 ) {
-  const {
-    sources,
-    height,
-    regions,
-    bpPerPx,
-    stopToken,
-    statusCallback = () => {},
-  } = renderProps
+  const { height, regions, bpPerPx, stopToken, statusCallback = () => {} } =
+    renderProps
 
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
@@ -34,19 +26,20 @@ export async function renderMultiLine(
     'Rendering plot',
     statusCallback,
     () =>
-      renderToAbstractCanvas(width, height, renderProps, ctx => {
-        const groups = groupBy(features, f => f.get('source'))
+      renderToAbstractCanvas(width, height, renderProps, async ctx => {
         let feats: Feature[] = []
-        for (const source of sources) {
+
+        await forEachSourceFeatures(pluginManager, renderProps, (source, features) => {
           const { reducedFeatures } = drawLine(ctx, {
             ...renderProps,
-            features: groups[source.name] || [],
+            features,
             staticColor: source.color || 'blue',
             colorCallback: () => '', // unused when staticColor is set
             lastCheck,
           })
           feats = feats.concat(reducedFeatures)
-        }
+        })
+
         return { reducedFeatures: feats }
       }),
   )
