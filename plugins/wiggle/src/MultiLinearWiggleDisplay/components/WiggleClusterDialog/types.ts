@@ -5,5 +5,6 @@ export interface ReducedModel {
   sourcesWithoutLayout?: Source[]
   layout?: Source[]
   adapterConfig: AnyConfigurationModel
-  setLayout: (arg: Source[]) => void
+  setLayout: (arg: Source[], clearTree?: boolean) => void
+  setClusterTree: (tree?: string) => void
 }

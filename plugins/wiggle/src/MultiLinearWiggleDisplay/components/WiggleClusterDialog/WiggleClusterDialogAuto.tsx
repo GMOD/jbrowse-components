@@ -123,7 +123,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                       setProgress(arg)
                     },
                   },
-                )) as { order: number[] }
+                )) as { order: number[]; tree: string }
 
                 // Preserve color and other layout customizations
                 const currentLayout = model.layout?.length
@@ -145,7 +145,9 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                       ...sourcesByName[sourceItem.name],
                     }
                   }),
+                  false,
                 )
+                model.setClusterTree(ret.tree)
               }
               handleClose()
             } catch (e) {
