@@ -22,10 +22,12 @@ export interface TreeSidebarModel {
   scrollTop: number
   showTree: boolean
   sources?: Source[]
+  subtreeFilter?: string[]
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
+  setSubtreeFilter: (names?: string[]) => void
 }
 
 export interface LegendBarModel {

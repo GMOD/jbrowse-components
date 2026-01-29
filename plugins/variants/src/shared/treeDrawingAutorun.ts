@@ -39,6 +39,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           treeAreaWidth,
           height,
           scrollTop,
+          // IMPORTANT: We must access totalHeight for MobX to track it as a dependency.
+          // Without this, the autorun won't re-run when row height changes.
+          // Do not remove - this ensures the tree redraws when row height changes.
           // eslint-disable-next-line  @typescript-eslint/no-unused-vars
           totalHeight: _totalHeight,
         } = self
@@ -59,9 +62,6 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
 
         // Translate to simulate scrolling
         ctx.translate(0, -scrollTop)
-
-        // Draw the tree (this draws the full tree, but only visible part shows)
-        // Note: accessing totalHeight ensures we redraw when row height changes
         ctx.strokeStyle = '#0008'
         ctx.lineWidth = 1
 
@@ -107,6 +107,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           height,
           scrollTop,
           sources,
+          // IMPORTANT: We must access totalHeight for MobX to track it as a dependency.
+          // Without this, the autorun won't re-run when row height changes.
+          // Do not remove - this ensures highlights redraw when row height changes.
           // eslint-disable-next-line  @typescript-eslint/no-unused-vars
           totalHeight,
         } = self
@@ -132,7 +135,6 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           ctx.translate(0, -scrollTop)
 
           // Draw highlight rectangles for descendant leaf rows
-          // Note: accessing totalHeight ensures we redraw when row height changes
           // In phased mode, each sample name may correspond to multiple rows
           // (e.g., SAMPLE1 -> SAMPLE1 HP0, SAMPLE1 HP1)
           ctx.fillStyle = 'rgba(255,165,0,0.2)'

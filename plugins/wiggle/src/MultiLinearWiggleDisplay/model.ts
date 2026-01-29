@@ -10,7 +10,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ascending } from '@mui/x-charts-vendor/d3-array'
@@ -95,6 +95,11 @@ export function stateModelFactory(
          * When undefined, defaults to true
          */
         showTreeSetting: types.maybe(types.boolean),
+        /**
+         * #property
+         * Filter to show only a subtree of samples
+         */
+        subtreeFilter: types.maybe(types.array(types.string)),
       }),
     )
     .volatile(() => ({
@@ -180,6 +185,12 @@ export function stateModelFactory(
        */
       setShowTree(arg: boolean) {
         self.showTreeSetting = arg
+      },
+      /**
+       * #action
+       */
+      setSubtreeFilter(names?: string[]) {
+        self.subtreeFilter = names ? cast(names) : undefined
       },
       /**
        * #action
@@ -342,7 +353,7 @@ export function stateModelFactory(
           self.sourcesVolatile?.map(s => [s.name, s]) || [],
         )
         const iter = self.layout.length ? self.layout : self.sourcesVolatile
-        return iter
+        let result = iter
           ?.map(s => ({
             ...sources[s.name],
             ...s,
@@ -353,6 +364,13 @@ export function stateModelFactory(
               s.color ||
               (!this.isMultiRow ? colors[i] || randomColor() : 'blue'),
           }))
+
+        // Filter to subtree if filter is active
+        if (result && self.subtreeFilter?.length) {
+          const filterSet = new Set(self.subtreeFilter)
+          result = result.filter(s => filterSet.has(s.name))
+        }
+        return result
       },
       /**
        * #getter
@@ -406,11 +424,47 @@ export function stateModelFactory(
           return undefined
         }
         const tree = fromNewick(newick)
-        return hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
+        let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
           .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
           .sort((a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
             ascending(a.data.height || 1, b.data.height || 1),
           )
+
+        // If subtree filter is active, find the matching subtree
+        if (self.subtreeFilter?.length) {
+          const filterSet = new Set(self.subtreeFilter)
+          const getLeafNames = (node: ClusterHierarchyNode): string[] => {
+            if (!node.children?.length) {
+              return [node.data.name]
+            }
+            return node.children.flatMap(child => getLeafNames(child))
+          }
+          const findSubtree = (
+            node: ClusterHierarchyNode,
+          ): ClusterHierarchyNode | undefined => {
+            const leafNames = getLeafNames(node)
+            if (
+              leafNames.length === filterSet.size &&
+              leafNames.every(name => filterSet.has(name))
+            ) {
+              return node
+            }
+            if (node.children) {
+              for (const child of node.children) {
+                const found = findSubtree(child)
+                if (found) {
+                  return found
+                }
+              }
+            }
+            return undefined
+          }
+          const subtree = findSubtree(root)
+          if (subtree) {
+            root = subtree
+          }
+        }
+        return root
       },
     }))
     .views(self => ({
@@ -613,6 +667,16 @@ export function stateModelFactory(
                           self.setShowTree(!self.showTree)
                         },
                       },
+                      ...(self.subtreeFilter?.length
+                        ? [
+                            {
+                              label: 'Clear subtree filter',
+                              onClick: () => {
+                                self.setSubtreeFilter(undefined)
+                              },
+                            },
+                          ]
+                        : []),
                     ]
                   : []),
                 ...(self.graphType
@@ -753,6 +817,7 @@ export function stateModelFactory(
         clusterTree,
         treeAreaWidth,
         showTreeSetting,
+        subtreeFilter,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -764,6 +829,7 @@ export function stateModelFactory(
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
+        ...(subtreeFilter?.length ? { subtreeFilter } : {}),
       } as typeof snap
     })
 }

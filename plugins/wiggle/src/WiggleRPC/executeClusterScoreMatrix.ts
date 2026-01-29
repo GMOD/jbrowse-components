@@ -16,8 +16,10 @@ export async function executeClusterScoreMatrix({
     pluginManager,
     args,
   })
+  const sampleLabels = Object.keys(matrix)
   const result = await clusterData({
     data: Object.values(matrix),
+    sampleLabels,
     stopToken: args.stopToken,
     onProgress: a => {
       args.statusCallback?.(a)
