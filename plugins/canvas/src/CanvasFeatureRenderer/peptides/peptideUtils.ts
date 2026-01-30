@@ -71,7 +71,7 @@ function hasCDSSubfeatures(feature: Feature) {
   return subfeatures?.some((sub: Feature) => sub.get('type') === 'CDS') ?? false
 }
 
-function findTranscriptsWithCDS(features: Map<string, Feature>): Feature[] {
+export function findTranscriptsWithCDS(features: Map<string, Feature>): Feature[] {
   const transcripts: Feature[] = []
 
   for (const feature of features.values()) {
@@ -79,11 +79,19 @@ function findTranscriptsWithCDS(features: Map<string, Feature>): Feature[] {
     const subfeatures = feature.get('subfeatures')
 
     if (type === 'gene' && subfeatures?.length) {
+      // Check for transcript children with CDS (gene->mRNA->CDS)
+      let hasTranscriptWithCDS = false
       for (const subfeature of subfeatures) {
         const subType = subfeature.get('type')
         if (isTranscriptType(subType) && hasCDSSubfeatures(subfeature)) {
           transcripts.push(subfeature)
+          hasTranscriptWithCDS = true
         }
+      }
+      // If no transcript children with CDS, check for direct CDS children
+      // (gene->CDS hierarchy)
+      if (!hasTranscriptWithCDS && hasCDSSubfeatures(feature)) {
+        transcripts.push(feature)
       }
     } else if (isTranscriptType(type) && hasCDSSubfeatures(feature)) {
       transcripts.push(feature)
