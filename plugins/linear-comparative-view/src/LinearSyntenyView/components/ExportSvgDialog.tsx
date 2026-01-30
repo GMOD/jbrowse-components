@@ -10,6 +10,9 @@ import {
   DialogContent,
   FormControlLabel,
   MenuItem,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material'
 
@@ -17,11 +20,11 @@ import TextField2 from './TextField2.tsx'
 
 import type { ExportSvgOptions } from '../types.ts'
 
-function LoadingMessage() {
+function LoadingMessage({ format }: { format: string }) {
   return (
     <div>
       <CircularProgress size={20} style={{ marginRight: 20 }} />
-      <Typography display="inline">Creating SVG</Typography>
+      <Typography display="inline">Creating {format.toUpperCase()}</Typography>
     </div>
   )
 }
@@ -42,6 +45,7 @@ export default function ExportSvgDialog({
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
   const [showGridlines, setShowGridlines] = useSvgLocal('gridlines', false)
   const [loading, setLoading] = useState(false)
+  const [format, setFormat] = useSvgLocal<'svg' | 'png'>('format', 'svg')
   const [filename, setFilename] = useSvgLocal('file', 'jbrowse.svg')
   const [trackLabels, setTrackLabels] = useSvgLocal('tracklabels', 'offset')
   const [themeName, setThemeName] = useSvgLocal(
@@ -50,20 +54,40 @@ export default function ExportSvgDialog({
   )
   const [error, setError] = useState<unknown>()
   return (
-    <Dialog open onClose={handleClose} title="Export SVG">
+    <Dialog open onClose={handleClose} title="Export image">
       <DialogContent>
         {error ? (
           <ErrorMessage error={error} />
         ) : loading ? (
-          <LoadingMessage />
+          <LoadingMessage format={format} />
         ) : null}
-        <TextField2
-          helperText="filename"
-          value={filename}
-          onChange={event => {
-            setFilename(event.target.value)
-          }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <TextField
+            helperText="filename"
+            value={filename}
+            onChange={event => {
+              setFilename(event.target.value)
+            }}
+          />
+          <ToggleButtonGroup
+            value={format}
+            exclusive
+            onChange={(_event, value: 'svg' | 'png' | null) => {
+              if (value) {
+                setFormat(value)
+                if (filename.endsWith('.svg') && value === 'png') {
+                  setFilename(filename.replace(/\.svg$/, '.png'))
+                } else if (filename.endsWith('.png') && value === 'svg') {
+                  setFilename(filename.replace(/\.png$/, '.svg'))
+                }
+              }
+            }}
+            size="small"
+          >
+            <ToggleButton value="svg">SVG</ToggleButton>
+            <ToggleButton value="png">PNG</ToggleButton>
+          </ToggleButtonGroup>
+        </div>
 
         <TextField2
           select
@@ -152,6 +176,7 @@ export default function ExportSvgDialog({
             try {
               await model.exportSvg({
                 rasterizeLayers,
+                format,
                 filename,
                 themeName,
                 trackLabels,

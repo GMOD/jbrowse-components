@@ -21,6 +21,7 @@ export interface LinearSyntenyViewInit {
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
+  format?: 'svg' | 'png'
   scale?: number
   filename?: string
   Wrapper?: React.FC<{ children: React.ReactNode }>

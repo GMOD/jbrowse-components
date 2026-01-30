@@ -1,5 +1,6 @@
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
+  format?: 'svg' | 'png'
   filename?: string
   Wrapper?: React.FC<{ children: React.ReactNode }>
   fontSize?: number
