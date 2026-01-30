@@ -64,29 +64,29 @@ export function calculateLabelPositions(
       continue
     }
 
-    // Normalize pixel positions: leftPx is always visual left
+    // Normalize pixel positions: leftPx is always visual left, rightPx is visual right
     // When region is reversed, genomic left maps to visual right (px1 > px2)
     const leftPx = px2 !== undefined ? Math.min(px1, px2) : px1
+    const rightPx = px2 !== undefined ? Math.max(px1, px2) : px1
 
-    // Calculate the label position
-    // Labels are positioned at the feature's visual left edge in viewport coords
-    const naturalPos = leftPx - offsetPx
+    // Calculate positions relative to viewport
+    const leftPos = leftPx - offsetPx
+    const rightPos = rightPx - offsetPx
 
-    // Skip labels for features that are significantly off-screen to the left
-    // This prevents multiple labels from overlapping at position 0
-    // A small negative threshold allows labels for features just barely off-screen
-    if (naturalPos < -50) {
+    // Skip labels for features entirely off-screen to the left
+    if (rightPos <= 0) {
       continue
     }
 
-    const leftPos = Math.max(0, naturalPos)
+    // Labels float to position 0 when feature extends off the left edge
+    const finalLeftPos = Math.max(0, leftPos)
     const topPos = bottom - 14 * (+!!description + +!!label)
 
     result.push({
       key,
       label,
       description: description || '',
-      leftPos,
+      leftPos: finalLeftPos,
       topPos,
     })
   }
