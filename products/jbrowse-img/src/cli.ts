@@ -22,6 +22,24 @@ const trackTypes = [
   'bedgz',
 ]
 
+const knownOptions = new Set([
+  ...trackTypes,
+  'fasta',
+  'aliases',
+  'assembly',
+  'config',
+  'session',
+  'loc',
+  'out',
+  'width',
+  'noRasterize',
+  'defaultSession',
+  'tracks',
+  'cytobands',
+  'help',
+  'version',
+])
+
 const yargsInstance = yargs(hideBin(process.argv))
   .scriptName('jb2export')
   .usage('$0 [options]')
@@ -91,6 +109,13 @@ export async function main() {
   const args = process.argv.slice(2)
   const parsed = parseArgv(args)
   const standardized = standardizeArgv(parsed, trackTypes)
+
+  // Warn about unknown options
+  for (const [key] of parsed) {
+    if (!knownOptions.has(key)) {
+      console.warn(`Warning: unknown option "--${key}"`)
+    }
+  }
 
   const opts = {
     fasta: argv.fasta,
