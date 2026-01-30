@@ -8,6 +8,8 @@ import { Menu, MenuItem, alpha } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { SIDEBAR_BACKGROUND_OPACITY } from '../constants.ts'
+
 import type { ClusterHierarchyNode, TreeSidebarModel } from './types.ts'
 
 interface MenuAnchor {
@@ -33,7 +35,7 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 0,
     left: 0,
-    background: alpha(theme.palette.background.paper, 0.8),
+    background: alpha(theme.palette.background.paper, SIDEBAR_BACKGROUND_OPACITY),
   },
 }))
 

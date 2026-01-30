@@ -484,9 +484,10 @@ export default function MultiVariantBaseModelF(
           : undefined
 
         // Filter to subtree if filter is active
+        // Use baseName for phased mode where sources have names like "SAMPLE HP0"
         if (result && self.subtreeFilter?.length) {
           const filterSet = new Set(self.subtreeFilter)
-          result = result.filter(s => filterSet.has(s.name))
+          result = result.filter(s => filterSet.has(s.baseName ?? s.name))
         }
         return result
       },
