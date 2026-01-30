@@ -1,16 +1,17 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import BlastTabularAdapter from './BlastTabularAdapter/index.ts'
-import ChainAdapterF from './ChainAdapter/index.ts'
-import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent/index.tsx'
-import DeltaAdapterF from './DeltaAdapter/index.ts'
-import GuessAdapterF from './GuessAdapter/index.ts'
-import MCScanAddTrackComponentF from './MCScanAddTrackComponent/index.tsx'
-import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter/index.ts'
-import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
-import MashMapAdapterF from './MashMapAdapter/index.ts'
-import PAFAdapterF from './PAFAdapter/index.ts'
-import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
+import AllVsAllPAFAdapterF from './AllVsAllPAFAdapter'
+import BlastTabularAdapter from './BlastTabularAdapter'
+import ChainAdapterF from './ChainAdapter'
+import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent'
+import DeltaAdapterF from './DeltaAdapter'
+import GuessAdapterF from './GuessAdapter'
+import MCScanAddTrackComponentF from './MCScanAddTrackComponent'
+import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter'
+import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
+import MashMapAdapterF from './MashMapAdapter'
+import PAFAdapterF from './PAFAdapter'
+import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -19,6 +20,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     PAFAdapterF(pluginManager)
+    AllVsAllPAFAdapterF(pluginManager)
     PairwiseIndexedPAFAdapterF(pluginManager)
     DeltaAdapterF(pluginManager)
     ChainAdapterF(pluginManager)

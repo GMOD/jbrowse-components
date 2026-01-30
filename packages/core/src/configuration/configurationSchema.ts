@@ -208,7 +208,6 @@ function makeConfigurationSchemaModel<
   completeModel = completeModel.postProcessSnapshot(snap => {
     const newSnap: SnapshotOut<typeof completeModel> = {}
     let matchesDefault = true
-    // let keyCount = 0
     for (const [key, value] of Object.entries(snap)) {
       if (matchesDefault) {
         if (typeof defaultSnap[key] === 'object' && typeof value === 'object') {
@@ -225,14 +224,10 @@ function makeConfigurationSchemaModel<
         !isEmptyObject(value) &&
         !isEmptyArray(value)
       ) {
-        // keyCount += 1
         newSnap[key] = value
       }
     }
-    if (matchesDefault) {
-      return {}
-    }
-    return newSnap
+    return matchesDefault ? {} : newSnap
   })
 
   if (options.preProcessSnapshot) {
