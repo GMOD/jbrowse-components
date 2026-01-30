@@ -1,4 +1,4 @@
-import { clamp, measureText } from '@jbrowse/core/util'
+import { measureText } from '@jbrowse/core/util'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 import type { BaseLinearDisplayModel } from '../model.ts'
@@ -80,11 +80,13 @@ export function calculateLabelPositions(
     // Use totalLayoutWidth if available to determine the effective right edge
     const effectiveRightPx =
       totalLayoutWidth !== undefined ? leftPx + totalLayoutWidth : rightPx
-    const leftPos = clamp(
-      0,
-      leftPx - offsetPx,
-      effectiveRightPx - offsetPx - labelWidth,
-    )
+
+    // Natural position is the feature's visual left edge in viewport coords
+    const naturalPos = leftPx - offsetPx
+    // Maximum position ensures label doesn't extend past feature's right edge
+    const maxPos = effectiveRightPx - offsetPx - labelWidth
+    // Position is clamped: at least 0 (viewport left), at most maxPos (but never negative)
+    const leftPos = Math.max(0, Math.min(naturalPos, maxPos))
 
     const topPos = bottom - 14 * (+!!description + +!!label)
 
