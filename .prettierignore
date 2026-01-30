@@ -19,5 +19,6 @@
 
 /.nx/workspace-data
 plugins/variants/src/d3-hierarchy2
+plugins/wiggle/src/d3-hierarchy2
 benchmarks/*
 pnpm-lock.yaml

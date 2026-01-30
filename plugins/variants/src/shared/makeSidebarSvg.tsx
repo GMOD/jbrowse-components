@@ -1,5 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 
+import RectBg from './components/RectBg.tsx'
 import SvgTree from './components/SvgTree.tsx'
 import LegendBar from '../shared/components/MultiVariantLegendBar.tsx'
 
@@ -33,7 +34,12 @@ export async function makeSidebarSvg(self: Model) {
       >
         <LegendBar model={self} orientation="left" exportSVG />
       </g>
-      {showTree ? <SvgTree model={self} /> : null}
+      {showTree && hierarchy ? (
+        <>
+          <RectBg x={0} y={0} width={treeAreaWidth} height={availableHeight} />
+          <SvgTree model={self} />
+        </>
+      ) : null}
     </g>
   )
 }

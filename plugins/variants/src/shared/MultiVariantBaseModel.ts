@@ -147,6 +147,11 @@ export default function MultiVariantBaseModelF(
          * Height reserved for elements above the main display (e.g., connecting lines in matrix view)
          */
         lineZoneHeight: types.optional(types.number, 0),
+        /**
+         * #property
+         * Filter to show only a subtree of samples
+         */
+        subtreeFilter: types.maybe(types.array(types.string)),
       }),
     )
     .volatile(() => ({
@@ -349,6 +354,12 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
+      setSubtreeFilter(names?: string[]) {
+        self.subtreeFilter = names ? cast(names) : undefined
+      },
+      /**
+       * #action
+       */
       setPhasedMode(arg: string) {
         const currentMode =
           self.renderingModeSetting ?? getConf(self, 'renderingMode')
@@ -463,7 +474,7 @@ export default function MultiVariantBaseModelF(
        * #getter
        */
       get sources() {
-        return self.sourcesVolatile
+        let result = self.sourcesVolatile
           ? getSources({
               sources: self.sourcesVolatile,
               layout: self.layout.length ? self.layout : undefined,
@@ -471,6 +482,14 @@ export default function MultiVariantBaseModelF(
               sampleInfo: self.sampleInfo,
             })
           : undefined
+
+        // Filter to subtree if filter is active
+        // Use baseName for phased mode where sources have names like "SAMPLE HP0"
+        if (result && self.subtreeFilter?.length) {
+          const filterSet = new Set(self.subtreeFilter)
+          result = result.filter(s => filterSet.has(s.baseName ?? s.name))
+        }
+        return result
       },
       /**
        * #getter
@@ -481,11 +500,47 @@ export default function MultiVariantBaseModelF(
           return undefined
         }
         const tree = fromNewick(newick)
-        return hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
+        let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
           .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
           .sort((a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
             ascending(a.data.height || 1, b.data.height || 1),
           )
+
+        // If subtree filter is active, find the matching subtree
+        if (self.subtreeFilter?.length) {
+          const filterSet = new Set(self.subtreeFilter)
+          const getLeafNames = (node: ClusterHierarchyNode): string[] => {
+            if (!node.children?.length) {
+              return [node.data.name]
+            }
+            return node.children.flatMap(child => getLeafNames(child))
+          }
+          const findSubtree = (
+            node: ClusterHierarchyNode,
+          ): ClusterHierarchyNode | undefined => {
+            const leafNames = getLeafNames(node)
+            if (
+              leafNames.length === filterSet.size &&
+              leafNames.every(name => filterSet.has(name))
+            ) {
+              return node
+            }
+            if (node.children) {
+              for (const child of node.children) {
+                const found = findSubtree(child)
+                if (found) {
+                  return found
+                }
+              }
+            }
+            return undefined
+          }
+          const subtree = findSubtree(root)
+          if (subtree) {
+            root = subtree
+          }
+        }
+        return root
       },
     }))
     .views(self => {
@@ -581,6 +636,16 @@ export default function MultiVariantBaseModelF(
                     self.setShowTree(!self.showTree)
                   },
                 },
+                ...(self.subtreeFilter?.length
+                  ? [
+                      {
+                        label: 'Clear subtree filter',
+                        onClick: () => {
+                          self.setSubtreeFilter(undefined)
+                        },
+                      },
+                    ]
+                  : []),
                 {
                   label: 'Show reference alleles',
                   helpText:
@@ -882,6 +947,7 @@ export default function MultiVariantBaseModelF(
         clusterTree,
         treeAreaWidth,
         lineZoneHeight,
+        subtreeFilter,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -906,6 +972,7 @@ export default function MultiVariantBaseModelF(
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(lineZoneHeight ? { lineZoneHeight } : {}),
+        ...(subtreeFilter?.length ? { subtreeFilter } : {}),
       } as typeof snap
     })
 }

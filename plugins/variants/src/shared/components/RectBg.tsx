@@ -1,6 +1,8 @@
 import { getFillProps } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 
+import { SIDEBAR_BACKGROUND_OPACITY } from '../constants.ts'
+
 const RectBg = ({
   x,
   y,
@@ -22,7 +24,10 @@ const RectBg = ({
       y={y}
       width={width}
       height={height}
-      {...getFillProps(color || alpha(theme.palette.background.paper, 0.8))}
+      {...getFillProps(
+        color ||
+          alpha(theme.palette.background.paper, SIDEBAR_BACKGROUND_OPACITY),
+      )}
     />
   )
 }
