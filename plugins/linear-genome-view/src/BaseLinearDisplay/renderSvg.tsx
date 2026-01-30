@@ -6,17 +6,19 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
+import CompositeMap from '@jbrowse/core/util/compositeMap'
 
 import SVGLegend from './SVGLegend.tsx'
+import { deduplicateFeatureLabels } from './components/util.ts'
 import BlockState, {
   renderBlockData,
 } from './models/serverSideRenderedBlock.ts'
+import { SvgFloatingLabels } from './models/SvgFloatingLabels.tsx'
 import { getId } from './models/util.ts'
 import { ErrorBox } from '../LinearGenomeView/SVGErrorBox.tsx'
-import { calculateLabelPositions } from './models/calculateLabelPositions.ts'
 
 import type { BaseLinearDisplayModel } from './model.ts'
-import type { ExportSvgDisplayOptions } from './types.ts'
+import type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
 
 export async function renderBaseLinearDisplaySvg(
@@ -82,12 +84,31 @@ export async function renderBaseLinearDisplaySvg(
     }),
   )
 
-  // Calculate label positions for SVG export
+  // Collect layout data from the renderings for floating labels
+  // This is needed because in standalone SVG export (e.g., jbrowse-img),
+  // the model's blockState is not populated with rendering results
+  const layoutMaps: Map<string, LayoutRecord>[] = []
+  for (const [, rendering] of renderings) {
+    const layout = rendering.layout as
+      | { getRectangles?: () => Map<string, LayoutRecord> }
+      | undefined
+    if (layout?.getRectangles) {
+      layoutMaps.push(layout.getRectangles())
+    }
+  }
+  const layoutFeatures = new CompositeMap<string, LayoutRecord>(layoutMaps)
+
+  // Calculate floating label data using the rendering results
   const { assemblyManager } = getSession(self)
-  const { offsetPx } = view
+  const { offsetPx, bpPerPx } = view
   const assemblyName = view.assemblyNames[0]
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
-  const labelData = calculateLabelPositions(self, view, assembly, offsetPx)
+  const featureLabels = deduplicateFeatureLabels(
+    layoutFeatures,
+    view,
+    assembly,
+    bpPerPx,
+  )
 
   // Create a clip path ID for the labels that covers the entire view
   const labelsClipId = getId(id, 'labels')
@@ -130,21 +151,11 @@ export async function renderBaseLinearDisplaySvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${labelsClipId})`}>
-        {labelData.map(({ key, label, description, leftPos, topPos }) => (
-          <g
-            key={`label-${key}`}
-            transform={`translate(${leftPos}, ${topPos})`}
-          >
-            <text x={0} y={11} fontSize={11} fill="currentColor">
-              {label}
-            </text>
-            {description ? (
-              <text x={0} y={25} fontSize={11} fill="blue">
-                {description}
-              </text>
-            ) : null}
-          </g>
-        ))}
+        <SvgFloatingLabels
+          featureLabels={featureLabels}
+          offsetPx={offsetPx}
+          viewWidth={width}
+        />
       </g>
       {legendItems.length > 0 ? (
         <SVGLegend

@@ -83,6 +83,16 @@ test('renders volvox alignments as snpcov', async () => {
   expect(result).toBeTruthy()
 }, 40000)
 
+test('renders volvox vcf track for svg export', async () => {
+  const result = await renderRegion({
+    fasta: fp('volvox.fa'),
+    trackList: [['vcfgz', [fp('volvox.filtered.vcf.gz')]]],
+    loc: 'ctgA:1-15000',
+  })
+  fs.writeFileSync(pa('../test/volvox-vcf-export.svg'), result)
+  expect(result).toBeTruthy()
+}, 40000)
+
 xtest('renders human large region with remote urls', async () => {
   const result = await renderRegion({
     fasta: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
