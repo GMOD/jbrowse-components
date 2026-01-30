@@ -1,6 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 
 import MultiWiggleLegendBar from './components/MultiWiggleLegendBar.tsx'
+import RectBg from './components/RectBg.tsx'
 import SvgTree from './components/SvgTree.tsx'
 
 import type { LegendBarModel } from './components/treeTypes.ts'
@@ -37,7 +38,12 @@ export async function makeSidebarSvg(self: Model) {
       >
         <MultiWiggleLegendBar model={self} orientation="left" exportSVG />
       </g>
-      {showTree && hierarchy ? <SvgTree model={self} /> : null}
+      {showTree && hierarchy ? (
+        <>
+          <RectBg x={0} y={0} width={treeAreaWidth} height={height} />
+          <SvgTree model={self} />
+        </>
+      ) : null}
     </g>
   )
 }

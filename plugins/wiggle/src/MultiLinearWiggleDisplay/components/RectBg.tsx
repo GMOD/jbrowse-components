@@ -25,7 +25,8 @@ const RectBg = ({
       width={width}
       height={height}
       {...getFillProps(
-        color || alpha(theme.palette.background.paper, SIDEBAR_BACKGROUND_OPACITY),
+        color ||
+          alpha(theme.palette.background.paper, SIDEBAR_BACKGROUND_OPACITY),
       )}
     />
   )

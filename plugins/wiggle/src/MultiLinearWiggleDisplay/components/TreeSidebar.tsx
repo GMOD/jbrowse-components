@@ -11,13 +11,13 @@ import { observer } from 'mobx-react'
 import { SIDEBAR_BACKGROUND_OPACITY } from './constants.ts'
 
 import type { ClusterHierarchyNode, TreeSidebarModel } from './treeTypes.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface MenuAnchor {
   x: number
   y: number
   names: string[]
 }
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
@@ -35,7 +35,10 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 0,
     left: 0,
-    background: alpha(theme.palette.background.paper, SIDEBAR_BACKGROUND_OPACITY),
+    background: alpha(
+      theme.palette.background.paper,
+      SIDEBAR_BACKGROUND_OPACITY,
+    ),
   },
 }))
 

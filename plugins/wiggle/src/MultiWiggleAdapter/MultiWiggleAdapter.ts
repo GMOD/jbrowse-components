@@ -18,6 +18,7 @@ import type {
 interface WiggleOptions extends BaseOptions {
   resolution?: number
   staticBlocks?: Region[]
+  sources?: { name: string }[]
 }
 
 function getFilename(uri: string) {
@@ -143,7 +144,14 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const adapters = await this.getAdapters()
+      let adapters = await this.getAdapters()
+
+      // Filter adapters if sources filter is provided (e.g., from subtree filter)
+      if (opts.sources?.length) {
+        const sourceNames = new Set(opts.sources.map(s => s.name))
+        adapters = adapters.filter(adp => sourceNames.has(adp.source))
+      }
+
       merge(
         ...adapters.map(adp => {
           const { source, dataAdapter } = adp
