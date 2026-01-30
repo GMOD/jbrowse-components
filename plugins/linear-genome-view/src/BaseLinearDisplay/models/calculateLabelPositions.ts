@@ -1,5 +1,3 @@
-import { measureText } from '@jbrowse/core/util'
-
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 import type { BaseLinearDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -38,7 +36,6 @@ export function calculateLabelPositions(
     return []
   }
 
-  const fontSize = 11
   const result: LabelData[] = []
 
   for (const [key, val] of model.layoutFeatures.entries()) {
@@ -47,7 +44,7 @@ export function calculateLabelPositions(
     }
 
     const [left, , right, bottom, feature] = val
-    const { refName, description, label, totalLayoutWidth } = feature
+    const { refName, description, label } = feature
 
     if (!label) {
       continue
@@ -67,27 +64,22 @@ export function calculateLabelPositions(
       continue
     }
 
-    // Normalize pixel positions: leftPx is always visual left, rightPx is visual right
+    // Normalize pixel positions: leftPx is always visual left
     // When region is reversed, genomic left maps to visual right (px1 > px2)
     const leftPx = px2 !== undefined ? Math.min(px1, px2) : px1
-    const rightPx = px2 !== undefined ? Math.max(px1, px2) : px1
 
-    // Cache text measurement
-    const labelWidth = getCachedMeasureText(label, fontSize)
-
-    // Calculate clamped position - this is the "floating" behavior
-    // Labels stick to the left edge (0) when features scroll off-screen
-    // Use totalLayoutWidth if available to determine the effective right edge
-    const effectiveRightPx =
-      totalLayoutWidth !== undefined ? leftPx + totalLayoutWidth : rightPx
-
-    // Natural position is the feature's visual left edge in viewport coords
+    // Calculate the label position
+    // Labels are positioned at the feature's visual left edge in viewport coords
     const naturalPos = leftPx - offsetPx
-    // Maximum position ensures label doesn't extend past feature's right edge
-    const maxPos = effectiveRightPx - offsetPx - labelWidth
-    // Position is clamped: at least 0 (viewport left), at most maxPos (but never negative)
-    const leftPos = Math.max(0, Math.min(naturalPos, maxPos))
 
+    // Skip labels for features that are significantly off-screen to the left
+    // This prevents multiple labels from overlapping at position 0
+    // A small negative threshold allows labels for features just barely off-screen
+    if (naturalPos < -50) {
+      continue
+    }
+
+    const leftPos = Math.max(0, naturalPos)
     const topPos = bottom - 14 * (+!!description + +!!label)
 
     result.push({
@@ -100,24 +92,4 @@ export function calculateLabelPositions(
   }
 
   return result
-}
-
-// Cache for text measurements to avoid re-measuring same text
-const textMeasureCache = new Map<string, number>()
-
-function getCachedMeasureText(text: string, fontSize: number): number {
-  const key = `${text}:${fontSize}`
-  let width = textMeasureCache.get(key)
-  if (width === undefined) {
-    width = measureText(text, fontSize)
-    // Keep cache size reasonable (max 500 entries)
-    if (textMeasureCache.size > 500) {
-      const firstKey = textMeasureCache.keys().next().value
-      if (firstKey) {
-        textMeasureCache.delete(firstKey)
-      }
-    }
-    textMeasureCache.set(key, width)
-  }
-  return width
 }

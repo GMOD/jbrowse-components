@@ -70,7 +70,8 @@ export function layoutFeatures({
     // leftPadding (visual left) should expand genomic end
     // rightPadding (visual right, including labels) should expand genomic start
     // In normal mode: visual left = genomic start, visual right = genomic end
-    let layoutStart, layoutEnd
+    let layoutStart
+    let layoutEnd
     if (reversed) {
       layoutStart = featureStart - rightPaddingBp
       layoutEnd = featureEnd + leftPaddingBp
