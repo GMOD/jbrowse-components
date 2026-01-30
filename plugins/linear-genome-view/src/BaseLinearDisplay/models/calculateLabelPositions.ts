@@ -1,5 +1,3 @@
-import { clamp, measureText } from '@jbrowse/core/util'
-
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 import type { BaseLinearDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -38,7 +36,6 @@ export function calculateLabelPositions(
     return []
   }
 
-  const fontSize = 11
   const result: LabelData[] = []
 
   for (const [key, val] of model.layoutFeatures.entries()) {
@@ -47,7 +44,7 @@ export function calculateLabelPositions(
     }
 
     const [left, , right, bottom, feature] = val
-    const { refName, description, label, totalLayoutWidth } = feature
+    const { refName, description, label } = feature
 
     if (!label) {
       continue
@@ -72,50 +69,27 @@ export function calculateLabelPositions(
     const leftPx = px2 !== undefined ? Math.min(px1, px2) : px1
     const rightPx = px2 !== undefined ? Math.max(px1, px2) : px1
 
-    // Cache text measurement
-    const labelWidth = getCachedMeasureText(label, fontSize)
+    // Calculate positions relative to viewport
+    const leftPos = leftPx - offsetPx
+    const rightPos = rightPx - offsetPx
 
-    // Calculate clamped position - this is the "floating" behavior
-    // Labels stick to the left edge (0) when features scroll off-screen
-    // Use totalLayoutWidth if available to determine the effective right edge
-    const effectiveRightPx =
-      totalLayoutWidth !== undefined ? leftPx + totalLayoutWidth : rightPx
-    const leftPos = clamp(
-      0,
-      leftPx - offsetPx,
-      effectiveRightPx - offsetPx - labelWidth,
-    )
+    // Skip labels for features entirely off-screen to the left
+    if (rightPos <= 0) {
+      continue
+    }
 
+    // Labels float to position 0 when feature extends off the left edge
+    const finalLeftPos = Math.max(0, leftPos)
     const topPos = bottom - 14 * (+!!description + +!!label)
 
     result.push({
       key,
       label,
       description: description || '',
-      leftPos,
+      leftPos: finalLeftPos,
       topPos,
     })
   }
 
   return result
-}
-
-// Cache for text measurements to avoid re-measuring same text
-const textMeasureCache = new Map<string, number>()
-
-function getCachedMeasureText(text: string, fontSize: number): number {
-  const key = `${text}:${fontSize}`
-  let width = textMeasureCache.get(key)
-  if (width === undefined) {
-    width = measureText(text, fontSize)
-    // Keep cache size reasonable (max 500 entries)
-    if (textMeasureCache.size > 500) {
-      const firstKey = textMeasureCache.keys().next().value
-      if (firstKey) {
-        textMeasureCache.delete(firstKey)
-      }
-    }
-    textMeasureCache.set(key, width)
-  }
-  return width
 }

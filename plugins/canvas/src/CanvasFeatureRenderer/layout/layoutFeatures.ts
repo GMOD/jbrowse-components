@@ -65,8 +65,20 @@ export function layoutFeatures({
     const rightPaddingBp =
       (totalLayoutWidth - featureLayout.width - featureLayout.leftPadding) *
       bpPerPx
-    const layoutStart = featureStart - leftPaddingBp
-    const layoutEnd = featureEnd + rightPaddingBp
+
+    // In reversed mode: visual left = genomic end, visual right = genomic start
+    // leftPadding (visual left) should expand genomic end
+    // rightPadding (visual right, including labels) should expand genomic start
+    // In normal mode: visual left = genomic start, visual right = genomic end
+    let layoutStart
+    let layoutEnd
+    if (reversed) {
+      layoutStart = featureStart - rightPaddingBp
+      layoutEnd = featureEnd + leftPaddingBp
+    } else {
+      layoutStart = featureStart - leftPaddingBp
+      layoutEnd = featureEnd + rightPaddingBp
+    }
 
     const topPx = layout.addRect(
       feature.id(),
