@@ -165,6 +165,18 @@ IMaybe<ISimpleType<number>>
 hweFilterThresholdSetting: types.maybe(types.number)
 ```
 
+#### property: callRateFilterSetting
+
+When undefined, falls back to config value Call rate filter threshold (0-1).
+Variants with fewer than this proportion of non-missing genotypes are excluded.
+
+```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
+callRateFilterSetting: types.maybe(types.number)
+```
+
 #### property: showVerticalGuidesSetting
 
 When undefined, falls back to config value Whether to show vertical guides at
@@ -211,6 +223,30 @@ to genomic distance between SNPs rather than uniform squares
 IMaybe<ISimpleType<boolean>>
 // code
 useGenomicPositionsSetting: types.maybe(types.boolean)
+```
+
+#### property: signedLDSetting
+
+When undefined, falls back to config value When true, show signed LD values (-1
+to 1) instead of absolute values
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+signedLDSetting: types.maybe(types.boolean)
+```
+
+#### property: jexlFiltersSetting
+
+When undefined, falls back to config value JEXL filter expressions to apply to
+variants
+
+```js
+// type signature
+IMaybe<IArrayType<ISimpleType<string>>>
+// code
+jexlFiltersSetting: types.maybe(types.array(types.string))
 ```
 
 ### SharedLDModel - Getters
@@ -349,6 +385,15 @@ Returns the effective HWE filter threshold, falling back to config
 any
 ```
 
+#### getter: callRateFilter
+
+Returns the effective call rate filter threshold, falling back to config
+
+```js
+// type
+any
+```
+
 #### getter: showVerticalGuides
 
 Returns the effective show vertical guides setting, falling back to config
@@ -385,6 +430,34 @@ Returns the effective use genomic positions setting, falling back to config
 any
 ```
 
+#### getter: signedLD
+
+Returns the effective signed LD setting, falling back to config
+
+```js
+// type
+any
+```
+
+#### getter: jexlFilters
+
+Returns the effective jexl filters, falling back to config
+
+```js
+// type
+any
+```
+
+#### getter: isPrecomputedLD
+
+Returns true if this display uses pre-computed LD data (PLINK, ldmat) rather
+than computing LD from VCF genotypes
+
+```js
+// type
+boolean
+```
+
 #### getter: ldCanvasHeight
 
 Effective height for the LD canvas (total height minus line zone) Note:
@@ -402,6 +475,13 @@ number
 ```js
 // type signature
 regionCannotBeRendered: () => any
+```
+
+#### method: filterMenuItems
+
+```js
+// type signature
+filterMenuItems: () => { label: string; onClick: () => void; }[]
 ```
 
 #### method: renderProps
@@ -525,6 +605,13 @@ setFitToHeight: (value: boolean) => void
 setHweFilter: (threshold: number) => void
 ```
 
+#### action: setCallRateFilter
+
+```js
+// type signature
+setCallRateFilter: (threshold: number) => void
+```
+
 #### action: setFilterStats
 
 ```js
@@ -565,4 +652,18 @@ setTickHeight: (height: number) => void
 ```js
 // type signature
 setUseGenomicPositions: (value: boolean) => void
+```
+
+#### action: setSignedLD
+
+```js
+// type signature
+setSignedLD: (value: boolean) => void
+```
+
+#### action: setJexlFilters
+
+```js
+// type signature
+setJexlFilters: (filters: string[]) => void
 ```

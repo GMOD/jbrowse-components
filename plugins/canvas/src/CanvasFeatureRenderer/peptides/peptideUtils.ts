@@ -71,7 +71,9 @@ function hasCDSSubfeatures(feature: Feature) {
   return subfeatures?.some((sub: Feature) => sub.get('type') === 'CDS') ?? false
 }
 
-export function findTranscriptsWithCDS(features: Map<string, Feature>): Feature[] {
+export function findTranscriptsWithCDS(
+  features: Map<string, Feature>,
+): Feature[] {
   const transcripts: Feature[] = []
 
   for (const feature of features.values()) {

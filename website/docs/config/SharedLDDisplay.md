@@ -144,7 +144,19 @@ to disable HWE filtering
 ```js
 hweFilterThreshold: {
         type: 'number',
-        defaultValue: 0.001,
+        defaultValue: 0,
+      }
+```
+
+#### slot: callRateFilter
+
+Call rate filter threshold (0-1). Variants with fewer than this proportion of
+non-missing genotypes are excluded. Set to 0 to disable.
+
+```js
+callRateFilter: {
+        type: 'number',
+        defaultValue: 0,
       }
 ```
 
@@ -190,6 +202,29 @@ than uniform squares
 useGenomicPositions: {
         type: 'boolean',
         defaultValue: false,
+      }
+```
+
+#### slot: signedLD
+
+When true, show signed LD values (-1 to 1) instead of absolute values (0 to 1).
+For R², this shows R (correlation) instead. For D', this preserves the sign.
+
+```js
+signedLD: {
+        type: 'boolean',
+        defaultValue: false,
+      }
+```
+
+#### slot: jexlFilters
+
+JEXL filter expressions to apply to variants (one per line, starting with jexl:)
+
+```js
+jexlFilters: {
+        type: 'stringArray',
+        defaultValue: [],
       }
 ```
 

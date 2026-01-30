@@ -79,16 +79,16 @@ any
 }
 ```
 
-#### getter: activeFilters
+### LinearVariantDisplay - Methods
+
+#### method: activeFilters
 
 Override to add MAF filter to active filters
 
 ```js
-// type
-string[]
+// type signature
+activeFilters: () => string[]
 ```
-
-### LinearVariantDisplay - Methods
 
 #### method: filterMenuItems
 

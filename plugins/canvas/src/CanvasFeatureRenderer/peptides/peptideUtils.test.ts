@@ -64,10 +64,7 @@ describe('findTranscriptsWithCDS', () => {
     const gene = createMockFeature({
       id: 'gene-1',
       type: 'gene',
-      subfeatures: [
-        mRNA,
-        createMockFeature({ type: 'CDS' }),
-      ],
+      subfeatures: [mRNA, createMockFeature({ type: 'CDS' })],
     })
 
     const features = new Map([['gene-1', gene as any]])

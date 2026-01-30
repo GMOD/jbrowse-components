@@ -478,7 +478,7 @@ number
 
 ```js
 // type
-number
+any
 ```
 
 #### getter: trackMap
@@ -639,6 +639,26 @@ MiniControlsComponent: () => React.FC<any>
 ```js
 // type signature
 HeaderComponent: () => React.FC<any>
+```
+
+#### method: getNonElidedRegionCount
+
+Count regions that are large enough to not be elided at a given bpPerPx. A
+region is elided if its width in pixels < minimumBlockWidth.
+
+```js
+// type signature
+getNonElidedRegionCount: (bpPerPx: number) => number
+```
+
+#### method: getInterRegionPaddingPx
+
+Calculate total inter-region padding pixels at a given bpPerPx. Only non-elided
+regions contribute to padding.
+
+```js
+// type signature
+getInterRegionPaddingPx: (bpPerPx: number) => number
 ```
 
 #### method: renderProps
@@ -981,13 +1001,6 @@ activateTrackSelector: () => any
 ```js
 // type signature
 horizontalScroll: (distance: number) => number
-```
-
-#### action: center
-
-```js
-// type signature
-center: () => void
 ```
 
 #### action: showAllRegions

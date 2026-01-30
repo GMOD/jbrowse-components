@@ -53,6 +53,46 @@ true
 showSidebar: true
 ```
 
+#### property: clusterTree
+
+```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
+clusterTree: types.maybe(types.string)
+```
+
+#### property: treeAreaWidth
+
+```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+treeAreaWidth: types.optional(types.number, 80)
+```
+
+#### property: showTreeSetting
+
+When undefined, defaults to true
+
+```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
+showTreeSetting: types.maybe(types.boolean)
+```
+
+#### property: subtreeFilter
+
+Filter to show only a subtree of samples
+
+```js
+// type signature
+IMaybe<IArrayType<ISimpleType<string>>>
+// code
+subtreeFilter: types.maybe(types.array(types.string))
+```
+
 ### MultiLinearWiggleDisplay - Getters
 
 #### getter: featureUnderMouse
@@ -155,6 +195,13 @@ any
 boolean
 ```
 
+#### getter: showTree
+
+```js
+// type
+boolean
+```
+
 #### getter: rowHeight
 
 ```js
@@ -170,6 +217,27 @@ boolean
 ```
 
 #### getter: useMinimalTicks
+
+```js
+// type
+any
+```
+
+#### getter: root
+
+```js
+// type
+any
+```
+
+#### getter: totalHeight
+
+```js
+// type
+number
+```
+
+#### getter: hierarchy
 
 ```js
 // type
@@ -270,7 +338,7 @@ setSourcesLoading: (str: StopToken) => void
 
 ```js
 // type signature
-setLayout: (layout: Source[]) => void
+setLayout: (layout: Source[], clearTree?: boolean) => void
 ```
 
 #### action: clearLayout
@@ -278,6 +346,55 @@ setLayout: (layout: Source[]) => void
 ```js
 // type signature
 clearLayout: () => void
+```
+
+#### action: setClusterTree
+
+```js
+// type signature
+setClusterTree: (tree?: string) => void
+```
+
+#### action: setTreeAreaWidth
+
+```js
+// type signature
+setTreeAreaWidth: (width: number) => void
+```
+
+#### action: setShowTree
+
+```js
+// type signature
+setShowTree: (arg: boolean) => void
+```
+
+#### action: setSubtreeFilter
+
+```js
+// type signature
+setSubtreeFilter: (names?: string[]) => void
+```
+
+#### action: setHoveredTreeNode
+
+```js
+// type signature
+setHoveredTreeNode: (node?: HoveredTreeNode) => void
+```
+
+#### action: setTreeCanvasRef
+
+```js
+// type signature
+setTreeCanvasRef: (ref: HTMLCanvasElement) => void
+```
+
+#### action: setMouseoverCanvasRef
+
+```js
+// type signature
+setMouseoverCanvasRef: (ref: HTMLCanvasElement) => void
 ```
 
 #### action: setSources

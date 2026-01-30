@@ -83,23 +83,16 @@ any
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: jexlFilters
+#### property: jexlFiltersSetting
 
 ```js
 // type signature
 IMaybe<IArrayType<ISimpleType<string>>>
 // code
-jexlFilters: types.maybe(types.array(types.string))
+jexlFiltersSetting: types.maybe(types.array(types.string))
 ```
 
 ### LinearFeatureDisplay - Getters
-
-#### getter: activeFilters
-
-```js
-// type
-string[]
-```
 
 #### getter: rendererTypeName
 
@@ -166,6 +159,13 @@ any
 ```
 
 ### LinearFeatureDisplay - Methods
+
+#### method: activeFilters
+
+```js
+// type signature
+activeFilters: () => string[]
+```
 
 #### method: renderProps
 

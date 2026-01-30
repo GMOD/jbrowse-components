@@ -142,6 +142,13 @@ AdapterType
 
 ### BaseTrackModel - Methods
 
+#### method: saveTrackFileFormatOptions
+
+```js
+// type signature
+saveTrackFileFormatOptions: () => { gff3: { name: string; extension: string; callback: ({ features }: { features: Feature[]; }) => string; }; genbank: { name: string; extension: string; callback: ({ features, assemblyName, session, }: { assemblyName: string; session: AbstractSessionModel; features: Feature[]; }) => Promise<...>; helpText: stri...
+```
+
 #### method: trackMenuItems
 
 ```js

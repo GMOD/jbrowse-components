@@ -39,6 +39,15 @@ Whether the display has been rendered at least once
 boolean
 ```
 
+#### getter: fullyDrawn
+
+Whether the display has completed both rendering and canvas drawing
+
+```js
+// type
+boolean
+```
+
 ### NonBlockCanvasDisplayMixin - Actions
 
 #### action: setLastDrawnOffsetPx
@@ -102,4 +111,13 @@ Set the status message displayed during loading
 ```js
 // type signature
 setStatusMessage: (msg?: string) => void
+```
+
+#### action: setCanvasDrawn
+
+Set whether the canvas has been drawn
+
+```js
+// type signature
+setCanvasDrawn: (drawn: boolean) => void
 ```

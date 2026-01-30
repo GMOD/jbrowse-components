@@ -174,6 +174,17 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 lineZoneHeight: types.optional(types.number, 0)
 ```
 
+#### property: subtreeFilter
+
+Filter to show only a subtree of samples
+
+```js
+// type signature
+IMaybe<IArrayType<ISimpleType<string>>>
+// code
+subtreeFilter: types.maybe(types.array(types.string))
+```
+
 ### MultiVariantBaseModel - Getters
 
 #### getter: renderingMode
@@ -229,11 +240,11 @@ showReferenceAlleles
 string
 ```
 
-#### getter: activeFilters
+#### getter: sourcesWithoutLayout
 
 ```js
 // type
-any
+Source[]
 ```
 
 #### getter: sources
@@ -309,6 +320,13 @@ boolean
 ```
 
 ### MultiVariantBaseModel - Methods
+
+#### method: activeFilters
+
+```js
+// type signature
+activeFilters: () => any
+```
 
 #### method: adapterProps
 
@@ -480,6 +498,13 @@ setShowSidebarLabels: (arg: boolean) => void
 ```js
 // type signature
 setShowTree: (arg: boolean) => void
+```
+
+#### action: setSubtreeFilter
+
+```js
+// type signature
+setSubtreeFilter: (names?: string[]) => void
 ```
 
 #### action: setPhasedMode
