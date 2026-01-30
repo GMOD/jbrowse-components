@@ -10,10 +10,10 @@ import CompositeMap from '@jbrowse/core/util/compositeMap'
 
 import SVGLegend from './SVGLegend.tsx'
 import { deduplicateFeatureLabels } from './components/util.ts'
+import { SvgFloatingLabels } from './models/SvgFloatingLabels.tsx'
 import BlockState, {
   renderBlockData,
 } from './models/serverSideRenderedBlock.ts'
-import { SvgFloatingLabels } from './models/SvgFloatingLabels.tsx'
 import { getId } from './models/util.ts'
 import { ErrorBox } from '../LinearGenomeView/SVGErrorBox.tsx'
 

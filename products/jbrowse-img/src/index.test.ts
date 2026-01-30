@@ -53,6 +53,7 @@ test('renders volvox with variety of args', async () => {
       ['bedgz', [fp('volvox-bed12.bed.gz')]],
     ],
     loc: 'ctgA:1000-2000',
+    noRasterize: true,
   })
   fs.writeFileSync(pa('../test/svg_from_volvox_fasta_and_bam.svg'), result)
   expect(result).toBeTruthy()
@@ -68,6 +69,7 @@ test('renders volvox with csi index', async () => {
       ],
     ],
     loc: 'ctgA:1000-2000',
+    noRasterize: true,
   })
   fs.writeFileSync(pa('../test/svg_from_volvox_fasta_and_bam_csi.svg'), result)
   expect(result).toBeTruthy()
@@ -78,6 +80,7 @@ test('renders volvox alignments as snpcov', async () => {
     fasta: fp('volvox.fa'),
     trackList: [['bam', [fp('volvox-sorted.bam'), 'snpcov', 'height:1000']]],
     loc: 'ctgA:1000-2000',
+    noRasterize: true,
   })
   fs.writeFileSync(pa('../test/volvox-snpcov.svg'), result)
   expect(result).toBeTruthy()
@@ -88,6 +91,7 @@ test('renders volvox vcf track for svg export', async () => {
     fasta: fp('volvox.fa'),
     trackList: [['vcfgz', [fp('volvox.filtered.vcf.gz')]]],
     loc: 'ctgA:1-15000',
+    noRasterize: true,
   })
   fs.writeFileSync(pa('../test/volvox-vcf-export.svg'), result)
   expect(result).toBeTruthy()
@@ -168,6 +172,7 @@ test('configtracks arg with local files', async () => {
     trackList: [['configtracks', ['volvox_sv']]],
     assembly: 'volvox',
     loc: 'ctgA:1-50,000',
+    noRasterize: true,
   })
   fs.writeFileSync(pa('../test/svg_configtracks_local.svg'), result)
   expect(result).toBeTruthy()

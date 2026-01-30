@@ -1,6 +1,6 @@
 import {
-  calculateFloatingLabelPosition,
   type FeatureLabelData,
+  calculateFloatingLabelPosition,
 } from '../components/util.ts'
 
 interface Props {
@@ -24,10 +24,10 @@ export function SvgFloatingLabels({
     const featureVisualBottom = topPx + totalFeatureHeight
     const featureRightPx = leftPx + featureWidth
 
-    for (let i = 0; i < floatingLabels.length; i++) {
-      const floatingLabel = floatingLabels[i]!
-      const { text, relativeY, color, textWidth, isOverlay } = floatingLabel
-
+    for (const [
+      i,
+      { text, relativeY, color, textWidth, isOverlay },
+    ] of floatingLabels.entries()) {
       const y = featureVisualBottom + relativeY
       const x = calculateFloatingLabelPosition(
         leftPx,
