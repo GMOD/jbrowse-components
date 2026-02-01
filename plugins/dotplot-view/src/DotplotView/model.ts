@@ -58,6 +58,7 @@ const defaultFontSize = 15
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
+  format?: 'svg' | 'png'
   filename?: string
   Wrapper?: React.FC<{ children: React.ReactNode }>
   themeName?: string
@@ -684,10 +685,44 @@ export default function stateModelFactory(pm: PluginManager) {
         const html = await renderToSvg(self as DotplotViewModel, opts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
-        saveAs(
-          new Blob([html], { type: 'image/svg+xml' }),
-          opts.filename || 'image.svg',
-        )
+
+        if (opts.format === 'png') {
+          const img = new Image()
+          const svgBlob = new Blob([html], { type: 'image/svg+xml' })
+          const url = URL.createObjectURL(svgBlob)
+          await new Promise<void>((resolve, reject) => {
+            img.onload = () => {
+              const canvas = document.createElement('canvas')
+              canvas.width = img.width
+              canvas.height = img.height
+              const ctx = canvas.getContext('2d')!
+              ctx.drawImage(img, 0, 0)
+              URL.revokeObjectURL(url)
+              canvas.toBlob(blob => {
+                if (blob) {
+                  saveAs(blob, opts.filename || 'image.png')
+                  resolve()
+                } else {
+                  reject(
+                    new Error(
+                      `Failed to create PNG. The image may be too large (${img.width}x${img.height}). Try reducing the view size or use SVG format.`,
+                    ),
+                  )
+                }
+              }, 'image/png')
+            }
+            img.onerror = () => {
+              URL.revokeObjectURL(url)
+              reject(new Error('Failed to load SVG for PNG conversion'))
+            }
+            img.src = url
+          })
+        } else {
+          saveAs(
+            new Blob([html], { type: 'image/svg+xml' }),
+            opts.filename || 'image.svg',
+          )
+        }
       },
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {
