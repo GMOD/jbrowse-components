@@ -129,7 +129,9 @@
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./util/nanoid": "./src/util/nanoid.ts",
     "./ReExports/list": "./src/ReExports/list.ts",
-    "./util/fileHandleStore": "./src/util/fileHandleStore.ts"
+    "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
+    "./util/tss-react/types": "./src/util/tss-react/types.ts",
+    "./configuration/configurationSchema": "./src/configuration/configurationSchema.ts"
   },
   "files": [
     "esm"
@@ -628,6 +630,14 @@
       "./util/fileHandleStore": {
         "types": "./esm/util/fileHandleStore.d.ts",
         "import": "./esm/util/fileHandleStore.js"
+      },
+      "./util/tss-react/types": {
+        "types": "./esm/util/tss-react/types.d.ts",
+        "import": "./esm/util/tss-react/types.js"
+      },
+      "./configuration/configurationSchema": {
+        "types": "./esm/configuration/configurationSchema.d.ts",
+        "import": "./esm/configuration/configurationSchema.js"
       }
     },
     "typesVersions": {
@@ -961,6 +971,12 @@
         ],
         "util/fileHandleStore": [
           "esm/util/fileHandleStore.d.ts"
+        ],
+        "util/tss-react/types": [
+          "esm/util/tss-react/types.d.ts"
+        ],
+        "configuration/configurationSchema": [
+          "esm/configuration/configurationSchema.d.ts"
         ]
       }
     }
