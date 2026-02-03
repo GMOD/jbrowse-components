@@ -41,45 +41,23 @@ export function createFeatureFloatingLabels({
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
 
-  if (!shouldShowLabel && !shouldShowDescription) {
-    return []
-  }
-
-  const actualFontHeight = readCachedConfig(
-    fontHeight,
-    config,
-    ['labels', 'fontSize'],
-    feature,
-  )
-
   const floatingLabels: FloatingLabelData[] = []
+  let currentY = 0
 
-  if (shouldShowLabel && shouldShowDescription) {
-    floatingLabels.push(
-      {
-        text: name,
-        relativeY: 0,
-        color: nameColor,
-        textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
-      },
-      {
-        text: description,
-        relativeY: actualFontHeight,
-        color: descriptionColor,
-        textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
-      },
-    )
-  } else if (shouldShowLabel) {
+  if (shouldShowLabel) {
     floatingLabels.push({
       text: name,
-      relativeY: 0,
+      relativeY: currentY,
       color: nameColor,
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
     })
-  } else if (shouldShowDescription) {
+    currentY += readCachedConfig(fontHeight, config, ['labels', 'fontSize'], feature)
+  }
+
+  if (shouldShowDescription) {
     floatingLabels.push({
       text: description,
-      relativeY: 0,
+      relativeY: currentY,
       color: descriptionColor,
       textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
     })

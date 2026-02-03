@@ -87,8 +87,6 @@ export function layoutFeatures({
       totalLayoutHeight + yPadding,
       feature,
       {
-        label: name,
-        description,
         refName: feature.get('refName'),
         floatingLabels,
         totalFeatureHeight: featureLayout.height,
@@ -104,8 +102,6 @@ export function layoutFeatures({
         feature,
         layout: featureLayout,
         topPx,
-        label: name,
-        description,
       })
     }
   }

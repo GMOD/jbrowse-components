@@ -25,8 +25,6 @@ export interface FloatingLabelData {
  * Used by both parent features and subfeatures.
  */
 export interface LayoutFeatureMetadata {
-  label?: string
-  description?: string
   refName: string
   floatingLabels?: FloatingLabelData[]
   totalFeatureHeight?: number
