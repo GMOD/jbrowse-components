@@ -231,7 +231,6 @@ function addChildrenRecursive({
               refName: childFeature.get('refName'),
               floatingLabels,
               totalFeatureHeight: child.height,
-              totalLayoutWidth: child.totalLayoutWidth,
               actualTopPx: topPx,
               featureWidth: child.width,
               featureStartBp: childStart,

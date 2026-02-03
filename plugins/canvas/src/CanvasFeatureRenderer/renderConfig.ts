@@ -78,6 +78,8 @@ export interface RenderConfigContext {
 
   featureHeight: CachedConfig<number>
   fontHeight: CachedConfig<number>
+  nameColor: CachedConfig<string>
+  descriptionColor: CachedConfig<string>
 
   labelAllowed: boolean
   geneGlyphMode: string
@@ -123,6 +125,12 @@ export function createRenderConfigContext(
 
     featureHeight: createCachedConfig(config, 'height', 10),
     fontHeight: createCachedConfig(config, ['labels', 'fontSize'], 12),
+    nameColor: createCachedConfig(config, ['labels', 'nameColor'], 'black'),
+    descriptionColor: createCachedConfig(
+      config,
+      ['labels', 'descriptionColor'],
+      'blue',
+    ),
 
     labelAllowed: displayMode !== 'collapse',
     heightMultiplier: getHeightMultiplier(displayMode),

@@ -33,5 +33,31 @@ describe('FloatingLabels utilities', () => {
       // maxX = 200 - 200 - 50 = -50
       expect(labelX).toBe(-50)
     })
+
+    it('uses fixed position when label is wider than feature', () => {
+      const labelX = calculateFloatingLabelPosition(
+        100, // featureLeftPx
+        150, // featureRightPx (50px wide feature)
+        80, // labelWidth (wider than feature)
+        50, // offsetPx
+      )
+      // Fixed position: featureLeftPx - offsetPx = 100 - 50 = 50
+      expect(labelX).toBe(50)
+    })
+
+    it('handles negative offsetPx (scrolled left)', () => {
+      const labelX = calculateFloatingLabelPosition(
+        50, // featureLeftPx
+        200, // featureRightPx
+        30, // labelWidth
+        -100, // offsetPx (scrolled left)
+      )
+      // viewportLeft = max(0, -100) = 0
+      // leftPx = max(50, 0) = 50
+      // naturalX = 50 - (-100) = 150
+      // maxX = 200 - (-100) - 30 = 270
+      // clamp(150, 0, 270) = 150
+      expect(labelX).toBe(150)
+    })
   })
 })

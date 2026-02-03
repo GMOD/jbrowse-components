@@ -28,7 +28,6 @@ export interface LayoutFeatureMetadata {
   refName: string
   floatingLabels?: FloatingLabelData[]
   totalFeatureHeight?: number
-  totalLayoutWidth?: number
   featureWidth?: number
   actualTopPx?: number
   /** Actual feature start in bp (not layout start which includes padding) */
@@ -44,7 +43,6 @@ export function createSubfeatureLabelMetadata(args: {
   refName: string
   floatingLabels: FloatingLabelData[]
   totalFeatureHeight: number
-  totalLayoutWidth: number
   featureWidth: number
   actualTopPx: number
   featureStartBp: number
