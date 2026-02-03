@@ -1,19 +1,28 @@
 import { lazy } from 'react'
-import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
   getSession,
+  renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
-import { cast, types, addDisposer, Instance } from '@jbrowse/mobx-state-tree'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import {
+  types,
+  addDisposer,
+  Instance,
+  flow,
+  getEnv,
+} from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, reaction } from 'mobx'
+import { reaction } from 'mobx'
 
 import type { ColorBy, FilterBy } from '../shared/types'
+
+export interface CoverageData {
+  position: number
+  depth: number
+}
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Feature } from '@jbrowse/core/util'
@@ -41,7 +50,6 @@ export interface FeatureData {
   flags: number
   mapq: number
   insertSize: number
-  mismatches?: Array<{ start: number; base: string; type: string }>
 }
 
 /**
@@ -78,7 +86,11 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        showMismatches: types.optional(types.boolean, true),
+        showCoverage: true,
+        /**
+         * #property
+         */
+        coverageHeight: 45,
       }),
     )
     .volatile(() => ({
@@ -153,10 +165,12 @@ export default function stateModelFactory(
           const view = getContainingView(self) as LGV
           // Check if view is initialized before accessing properties
           if (!view?.initialized) {
+            console.log('View not initialized yet')
             return null
           }
           const blocks = view.dynamicBlocks?.contentBlocks
           if (!blocks || blocks.length === 0) {
+            console.log('No content blocks yet')
             return null
           }
           const first = blocks[0]
@@ -167,8 +181,9 @@ export default function stateModelFactory(
             end: last.end,
             assemblyName: first.assemblyName,
           }
-        } catch {
+        } catch (e) {
           // View may not be ready yet
+          console.log('Error getting visibleRegion:', e)
           return null
         }
       },
@@ -206,6 +221,75 @@ export default function stateModelFactory(
           this.visibleRegion.start >= self.loadedRegion.start &&
           this.visibleRegion.end <= self.loadedRegion.end
         )
+      },
+
+      // Compatibility methods for LinearAlignmentsDisplay
+      get featureIdUnderMouse(): undefined {
+        return undefined
+      },
+
+      get features(): Map<string, Feature> {
+        return new Map()
+      },
+
+      get sortedBy(): undefined {
+        return undefined
+      },
+
+      /**
+       * Compute coverage from loaded features using sweep line algorithm
+       */
+      get coverageData(): { data: CoverageData[]; maxDepth: number } {
+        const features = self.webglFeatures
+        if (features.length === 0 || !self.loadedRegion) {
+          return { data: [], maxDepth: 0 }
+        }
+
+        const { start: regionStart, end: regionEnd } = self.loadedRegion
+        const regionLength = regionEnd - regionStart
+
+        // Use sweep line algorithm for efficiency
+        // Events: +1 at read start, -1 at read end
+        const events: { pos: number; delta: number }[] = []
+        for (const f of features) {
+          events.push({ pos: f.start, delta: 1 })
+          events.push({ pos: f.end, delta: -1 })
+        }
+
+        // Sort by position
+        events.sort((a, b) => a.pos - b.pos)
+
+        // Build coverage array - use binning for large regions
+        const maxBins = 10000
+        const binSize = Math.max(1, Math.ceil(regionLength / maxBins))
+        const numBins = Math.ceil(regionLength / binSize)
+
+        const bins: CoverageData[] = []
+        for (let i = 0; i < numBins; i++) {
+          bins.push({
+            position: regionStart + i * binSize,
+            depth: 0,
+          })
+        }
+
+        // Process events
+        let currentDepth = 0
+        let eventIdx = 0
+
+        for (let binIdx = 0; binIdx < numBins; binIdx++) {
+          const binEnd = regionStart + (binIdx + 1) * binSize
+
+          // Process events up to this bin's end
+          while (eventIdx < events.length && events[eventIdx].pos < binEnd) {
+            currentDepth += events[eventIdx].delta
+            eventIdx++
+          }
+
+          bins[binIdx].depth = currentDepth
+        }
+
+        const maxDepth = Math.max(1, ...bins.map(b => b.depth))
+        return { data: bins, maxDepth }
       },
     }))
     .actions(self => ({
@@ -255,22 +339,51 @@ export default function stateModelFactory(
         self.featureHeightSetting = height
       },
 
-      toggleMismatches() {
-        self.showMismatches = !self.showMismatches
+      setShowCoverage(show: boolean) {
+        self.showCoverage = show
+      },
+
+      setCoverageHeight(height: number) {
+        self.coverageHeight = height
+      },
+
+      // Compatibility methods for LinearAlignmentsDisplay
+      setConfig(_config: unknown) {
+        // No-op for now - config is managed differently in WebGL display
+      },
+
+      setFeatureDensityStatsLimit(_stats: unknown) {
+        // No-op - WebGL display doesn't use feature density stats
+      },
+
+      getFeatureByID(_blockKey: string, _id: string) {
+        return undefined
+      },
+
+      searchFeatureByID(_id: string) {
+        return undefined
       },
 
       /**
        * Fetch features for a region from the adapter
        */
-      async fetchFeatures(region: {
+      fetchFeatures: flow(function* fetchFeatures(region: {
         refName: string
         start: number
         end: number
         assemblyName?: string
       }) {
+        console.log('fetchFeatures called with region:', region)
+
+        const session = getSession(self)
+        const { pluginManager } = getEnv(self)
         const track = getContainingTrack(self)
-        const adapter = (track as any)?.adapter
-        if (!adapter) {
+        const adapterConfig = getConf(track, 'adapter')
+
+        console.log('adapterConfig:', adapterConfig)
+
+        if (!adapterConfig) {
+          console.log('No adapter config found!')
           return
         }
 
@@ -278,22 +391,34 @@ export default function stateModelFactory(
         self.error = null
 
         try {
-          const featureObservable = adapter.getFeatures({
-            refName: region.refName,
-            start: region.start,
-            end: region.end,
-            assemblyName: region.assemblyName,
-          })
+          // Rename region if needed (handles chr1 vs 1, etc.)
+          const { assemblyManager } = session
+          const { regions: renamedRegions } = yield renameRegionsIfNeeded(
+            assemblyManager,
+            {
+              regions: [region],
+              adapterConfig,
+              sessionId: session.id,
+            },
+          )
+          const renamedRegion = renamedRegions[0]
+          console.log('Renamed region:', renamedRegion)
+
+          const { dataAdapter } = yield getAdapter(
+            pluginManager,
+            session.id,
+            adapterConfig,
+          )
+
+          console.log('Got adapter:', dataAdapter)
+
+          const featureObservable = dataAdapter.getFeatures(renamedRegion)
 
           const features: FeatureData[] = []
 
-          await new Promise<void>((resolve, reject) => {
+          yield new Promise<void>((resolve, reject) => {
             featureObservable.subscribe({
               next(feature: Feature) {
-                const mismatches = feature.get('mismatches') as
-                  | Array<{ start: number; base: string; type: string }>
-                  | undefined
-
                 features.push({
                   id: feature.id(),
                   start: feature.get('start'),
@@ -304,7 +429,6 @@ export default function stateModelFactory(
                   insertSize: Math.abs(
                     feature.get('template_length') ?? 400,
                   ),
-                  mismatches: mismatches?.filter(m => m.type === 'mismatch'),
                 })
               },
               error: reject,
@@ -312,6 +436,7 @@ export default function stateModelFactory(
             })
           })
 
+          console.log(`Fetched ${features.length} features`)
           self.webglFeatures = features
           self.loadedRegion = {
             refName: region.refName,
@@ -324,7 +449,7 @@ export default function stateModelFactory(
           self.isLoading = false
           console.error('Failed to fetch features:', e)
         }
-      },
+      }),
 
       /**
        * Called when WebGL component needs more data
@@ -349,12 +474,14 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
+        console.log('WebGL display afterAttach called')
         // Fetch initial data when region becomes available
         addDisposer(
           self,
           reaction(
             () => self.visibleRegion,
             region => {
+              console.log('visibleRegion reaction fired:', region)
               if (region && !self.isWithinLoadedRegion) {
                 // Expand region by 2x on each side for buffering
                 const width = region.end - region.start
@@ -366,7 +493,7 @@ export default function stateModelFactory(
                 self.fetchFeatures(expandedRegion)
               }
             },
-            { delay: 300 },
+            { delay: 300, fireImmediately: true },
           ),
         )
 
@@ -413,10 +540,8 @@ export default function stateModelFactory(
             ],
           },
           {
-            label: 'Show mismatches',
-            type: 'checkbox' as const,
-            checked: self.showMismatches,
-            onClick: () => self.toggleMismatches(),
+            label: self.showCoverage ? 'Hide coverage' : 'Show coverage',
+            onClick: () => self.setShowCoverage(!self.showCoverage),
           },
         ]
       },

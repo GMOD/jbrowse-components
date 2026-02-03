@@ -16,6 +16,7 @@ export default function register(pluginManager: PluginManager) {
         'GPU-accelerated pileup display with smooth zoom/pan. Data is uploaded once to GPU, enabling instant navigation.',
       configSchema,
       stateModel: modelFactory(configSchema),
+      subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: BaseLinearDisplayComponent,

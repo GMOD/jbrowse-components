@@ -380,7 +380,9 @@ function stateModelFactory(
         heightPreConfig !== defaultDisplayHeight
           ? { height: heightPreConfig }
           : {}),
-        ...(lowerPanelType !== 'LinearPileupDisplay' ? { lowerPanelType } : {}),
+        ...(lowerPanelType !== 'LinearWebGLPileupDisplay'
+          ? { lowerPanelType }
+          : {}),
         ...(snpCovHeight !== defaultSnpCovHeight ? { snpCovHeight } : {}),
       } as typeof snap
     })

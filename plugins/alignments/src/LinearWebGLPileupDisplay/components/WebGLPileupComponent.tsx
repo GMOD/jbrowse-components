@@ -1,53 +1,11 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { WebGLRenderer } from './WebGLRenderer'
 
-import type { LinearWebGLPileupDisplayModel, FeatureData } from '../model'
+import type { LinearWebGLPileupDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-const useStyles = makeStyles()({
-  container: {
-    position: 'relative',
-    width: '100%',
-    overflow: 'hidden',
-  },
-  canvas: {
-    display: 'block',
-    cursor: 'grab',
-    '&:active': {
-      cursor: 'grabbing',
-    },
-  },
-  overlay: {
-    position: 'absolute',
-    bottom: 4,
-    left: 4,
-    fontSize: 10,
-    color: '#666',
-    pointerEvents: 'none',
-    fontFamily: 'monospace',
-    background: 'rgba(255,255,255,0.7)',
-    padding: '2px 4px',
-    borderRadius: 2,
-  },
-  loading: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    background: 'rgba(255,255,255,0.9)',
-    padding: '8px 16px',
-    borderRadius: 4,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-  },
-  error: {
-    color: '#c00',
-    padding: 16,
-  },
-})
 
 interface Props {
   model: LinearWebGLPileupDisplayModel
@@ -56,15 +14,18 @@ interface Props {
 const WebGLPileupComponent = observer(function WebGLPileupComponent({
   model,
 }: Props) {
-  const { classes } = useStyles()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLRenderer | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
 
-  // Local state for smooth interaction (bypasses mobx)
-  const [localDomain, setLocalDomain] = useState<[number, number] | null>(null)
-  const [localRangeY, setLocalRangeY] = useState<[number, number]>([0, 600])
+  // Local Y scroll state (not synced across canvases)
+  const rangeYRef = useRef<[number, number]>([0, 600])
   const [maxY, setMaxY] = useState(0)
+  const [rendererReady, setRendererReady] = useState(false)
+
+  // Debounce timer for data fetching
+  const pendingDataRequestRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastRequestedRegionRef = useRef<{ start: number; end: number } | null>(null)
+  const renderRAFRef = useRef<number | null>(null)
 
   // Drag state
   const dragRef = useRef({
@@ -73,7 +34,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     lastY: 0,
   })
 
-  // Get view for dimensions and current domain
+  // Get view for dimensions and position
   const view = getContainingView(model) as LinearGenomeViewModel | undefined
 
   const {
@@ -83,28 +44,111 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     featureHeight,
     featureSpacing,
     colorSchemeIndex,
-    showMismatches,
     visibleRegion,
+    showCoverage,
+    coverageHeight,
+    coverageData,
   } = model
 
-  // Dimensions - use fallback if view not ready
-  const width = view?.initialized ? view.width : 800
+  // View position - these are the source of truth, observed via mobx
+  const offsetPx = view?.offsetPx ?? 0
+  const bpPerPx = view?.bpPerPx ?? 1
+  const width = view?.initialized ? view.width : undefined
   const height = model.height
 
-  // Get domain from local state or view
-  const domain: [number, number] = localDomain ?? [
-    visibleRegion?.start ?? 0,
-    visibleRegion?.end ?? 10000,
-  ]
+  // Compute domain from view position
+  const domain: [number, number] | null =
+    visibleRegion && width !== undefined
+      ? [visibleRegion.start, visibleRegion.end]
+      : null
+
+  // Render function
+  const renderNow = useCallback(() => {
+    if (!rendererRef.current || !domain) {
+      return
+    }
+
+    rendererRef.current.render({
+      domainX: domain,
+      rangeY: rangeYRef.current,
+      colorScheme: colorSchemeIndex,
+      featureHeight,
+      featureSpacing,
+      showCoverage,
+      coverageHeight,
+    })
+  }, [domain, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight])
+
+  // Schedule a render on next animation frame
+  const scheduleRender = useCallback(() => {
+    if (renderRAFRef.current !== null) {
+      cancelAnimationFrame(renderRAFRef.current)
+    }
+    renderRAFRef.current = requestAnimationFrame(() => {
+      renderRAFRef.current = null
+      renderNow()
+    })
+  }, [renderNow])
+
+  // Check if we need more data (debounced)
+  const checkDataNeeds = useCallback(
+    (newDomain: [number, number]) => {
+      const loadedRegion = model.loadedRegion
+      if (!loadedRegion || model.isLoading) {
+        return
+      }
+
+      const buffer = (newDomain[1] - newDomain[0]) * 0.5
+      const needsData =
+        newDomain[0] - buffer < loadedRegion.start ||
+        newDomain[1] + buffer > loadedRegion.end
+
+      if (needsData) {
+        if (pendingDataRequestRef.current) {
+          clearTimeout(pendingDataRequestRef.current)
+        }
+
+        pendingDataRequestRef.current = setTimeout(() => {
+          if (model.isLoading) {
+            return
+          }
+
+          const requested = lastRequestedRegionRef.current
+          if (
+            requested &&
+            newDomain[0] >= requested.start &&
+            newDomain[1] <= requested.end
+          ) {
+            return
+          }
+
+          lastRequestedRegionRef.current = {
+            start: newDomain[0],
+            end: newDomain[1],
+          }
+
+          model.handleNeedMoreData({
+            start: newDomain[0],
+            end: newDomain[1],
+          })
+          pendingDataRequestRef.current = null
+        }, 200)
+      }
+    },
+    [model],
+  )
 
   // Initialize WebGL
   useEffect(() => {
-    if (!canvasRef.current) {
+    const canvas = canvasRef.current
+    if (!canvas) {
       return
     }
 
     try {
-      rendererRef.current = new WebGLRenderer(canvasRef.current)
+      rendererRef.current = new WebGLRenderer(canvas)
+      setRendererReady(true)
+      console.log('WebGL initialized successfully')
     } catch (e) {
       console.error('Failed to initialize WebGL:', e)
     }
@@ -112,6 +156,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     return () => {
       rendererRef.current?.destroy()
       rendererRef.current = null
+      setRendererReady(false)
     }
   }, [])
 
@@ -121,130 +166,126 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       return
     }
 
+    console.log(`Uploading ${webglFeatures.length} features`)
     const result = rendererRef.current.uploadFeatures(webglFeatures)
     setMaxY(result.maxY)
     model.setMaxY(result.maxY)
-  }, [webglFeatures, model])
+    scheduleRender()
+  }, [webglFeatures, model, scheduleRender])
 
-  // Render when state changes
+  // Upload coverage when it changes
   useEffect(() => {
-    if (!rendererRef.current) {
+    if (!rendererRef.current || !showCoverage || coverageData.data.length === 0) {
       return
     }
 
-    const bpPerPx = (domain[1] - domain[0]) / width
+    const binSize =
+      coverageData.data.length > 1
+        ? coverageData.data[1].position - coverageData.data[0].position
+        : 1
 
-    rendererRef.current.render({
-      domainX: domain,
-      rangeY: localRangeY,
-      colorScheme: colorSchemeIndex,
-      featureHeight,
-      featureSpacing,
-      showMismatches: showMismatches && bpPerPx < 10,
-    })
-  }, [
-    domain,
-    localRangeY,
-    colorSchemeIndex,
-    featureHeight,
-    featureSpacing,
-    showMismatches,
-    width,
-    webglFeatures, // Re-render when features change
-  ])
+    console.log(
+      `Uploading ${coverageData.data.length} coverage bins, maxDepth=${coverageData.maxDepth}`,
+    )
+    rendererRef.current.uploadCoverage(
+      coverageData.data,
+      coverageData.maxDepth,
+      binSize,
+    )
+    scheduleRender()
+  }, [coverageData, showCoverage, scheduleRender])
 
-  // Sync domain from view when it changes externally
+  // Re-render when view position or settings change
+  // This is the key mobx observation - when offsetPx/bpPerPx change, we re-render
   useEffect(() => {
-    if (visibleRegion && !dragRef.current.isDragging) {
-      setLocalDomain([visibleRegion.start, visibleRegion.end])
+    if (rendererReady && domain) {
+      scheduleRender()
     }
-  }, [visibleRegion?.start, visibleRegion?.end])
+  }, [rendererReady, domain, offsetPx, bpPerPx, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, scheduleRender, webglFeatures])
 
-  // Check if we need more data
-  const checkDataNeeds = useCallback(
-    (newDomain: [number, number]) => {
-      const loadedRegion = model.loadedRegion
-      if (!loadedRegion) {
-        return
+  // Reset request tracking when loaded region changes
+  useEffect(() => {
+    lastRequestedRegionRef.current = null
+  }, [model.loadedRegion])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pendingDataRequestRef.current) {
+        clearTimeout(pendingDataRequestRef.current)
       }
-
-      const buffer = (newDomain[1] - newDomain[0]) * 0.5
-      if (
-        newDomain[0] - buffer < loadedRegion.start ||
-        newDomain[1] + buffer > loadedRegion.end
-      ) {
-        model.handleNeedMoreData({
-          start: newDomain[0],
-          end: newDomain[1],
-        })
+      if (renderRAFRef.current) {
+        cancelAnimationFrame(renderRAFRef.current)
       }
-    },
-    [model],
-  )
+    }
+  }, [])
 
-  // Zoom handler
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
+  // Wheel handler - directly updates view position
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !view?.initialized) {
+      return
+    }
+
+    const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
       e.stopPropagation()
 
+      if (width === undefined) {
+        return
+      }
+
+      // Horizontal scroll (trackpad sideways) - pan
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        view.scroll(e.deltaX)
+        if (domain) {
+          checkDataNeeds(domain)
+        }
+        return
+      }
+
       if (e.shiftKey) {
-        // Vertical scroll
+        // Vertical scroll with shift - scroll Y
         const rowHeight = featureHeight + featureSpacing
         const totalHeight = maxY * rowHeight
         const panAmount = e.deltaY * 0.5
 
-        setLocalRangeY(prev => {
-          let newY: [number, number] = [
-            prev[0] + panAmount,
-            prev[1] + panAmount,
-          ]
-          // Clamp
-          if (newY[0] < 0) {
-            newY = [0, newY[1] - newY[0]]
-          }
-          if (newY[1] > totalHeight + 50) {
-            const overflow = newY[1] - totalHeight - 50
-            newY = [newY[0] - overflow, newY[1] - overflow]
-          }
-          return newY
-        })
-      } else {
-        // Horizontal zoom
-        const rect = canvasRef.current?.getBoundingClientRect()
-        if (!rect) {
-          return
+        const prev = rangeYRef.current
+        let newY: [number, number] = [
+          prev[0] + panAmount,
+          prev[1] + panAmount,
+        ]
+        if (newY[0] < 0) {
+          newY = [0, newY[1] - newY[0]]
         }
-
+        if (newY[1] > totalHeight + 50) {
+          const overflow = newY[1] - totalHeight - 50
+          newY = [newY[0] - overflow, newY[1] - overflow]
+        }
+        rangeYRef.current = newY
+        scheduleRender()
+      } else {
+        // Vertical wheel - zoom
+        const rect = canvas.getBoundingClientRect()
         const mouseX = e.clientX - rect.left
-        const frac = mouseX / width
 
+        // Use view's zoom method with the mouse position as center
         const zoomFactor = e.deltaY > 0 ? 1.15 : 1 / 1.15
+        view.zoomTo(bpPerPx * zoomFactor, mouseX)
 
-        setLocalDomain(prev => {
-          const currentDomain = prev ?? domain
-          const domainWidth = currentDomain[1] - currentDomain[0]
-          const mousePos = currentDomain[0] + domainWidth * frac
-
-          let newWidth = domainWidth * zoomFactor
-          newWidth = Math.max(50, Math.min(10000000, newWidth))
-
-          const newDomain: [number, number] = [
-            mousePos - newWidth * frac,
-            mousePos + newWidth * (1 - frac),
-          ]
-
-          // Check if we need more data
-          checkDataNeeds(newDomain)
-
-          return newDomain
-        })
+        if (domain) {
+          checkDataNeeds(domain)
+        }
       }
-    },
-    [domain, featureHeight, featureSpacing, maxY, width, checkDataNeeds],
-  )
+    }
 
-  // Pan handlers
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel)
+    }
+  }, [view, width, domain, bpPerPx, maxY, featureHeight, featureSpacing, scheduleRender, checkDataNeeds])
+
+  // Pan handlers - directly update view position
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     dragRef.current = {
       isDragging: true,
@@ -255,7 +296,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (!dragRef.current.isDragging) {
+      if (!dragRef.current.isDragging || !view?.initialized) {
         return
       }
 
@@ -264,24 +305,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       dragRef.current.lastX = e.clientX
       dragRef.current.lastY = e.clientY
 
-      // Pan X
-      setLocalDomain(prev => {
-        const currentDomain = prev ?? domain
-        const domainWidth = currentDomain[1] - currentDomain[0]
-        const bpPerPx = domainWidth / width
-        const panX = -dx * bpPerPx
+      // Pan X - directly update view
+      if (dx !== 0) {
+        view.scroll(-dx)
+      }
 
-        const newDomain: [number, number] = [
-          currentDomain[0] + panX,
-          currentDomain[1] + panX,
-        ]
-
-        checkDataNeeds(newDomain)
-        return newDomain
-      })
-
-      // Pan Y
-      setLocalRangeY(prev => {
+      // Pan Y - local state only
+      if (dy !== 0) {
+        const prev = rangeYRef.current
         const yRange = prev[1] - prev[0]
         const pxPerY = yRange / height
         const panY = dy * pxPerY
@@ -290,52 +321,90 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         if (newY[0] < 0) {
           newY = [0, newY[1] - newY[0]]
         }
-        return newY
-      })
+        rangeYRef.current = newY
+        scheduleRender()
+      }
+
+      if (domain) {
+        checkDataNeeds(domain)
+      }
     },
-    [domain, width, height, checkDataNeeds],
+    [view, height, domain, scheduleRender, checkDataNeeds],
   )
 
   const handleMouseUp = useCallback(() => {
-    if (dragRef.current.isDragging) {
-      dragRef.current.isDragging = false
-      // Optionally sync back to view
-      // view.navTo({ start: localDomain[0], end: localDomain[1] })
-    }
+    dragRef.current.isDragging = false
   }, [])
 
   const handleMouseLeave = useCallback(() => {
     dragRef.current.isDragging = false
   }, [])
 
-  // Calculate stats
-  const bpPerPx = (domain[1] - domain[0]) / width
-
   if (error) {
-    return <div className={classes.error}>Error: {error.message}</div>
+    return (
+      <div style={{ color: '#c00', padding: 16 }}>Error: {error.message}</div>
+    )
   }
 
+  const isReady = width !== undefined && domain !== null
+  const displayBpPerPx = isReady ? (domain[1] - domain[0]) / width : 0
+
   return (
-    <div ref={containerRef} className={classes.container} style={{ height }}>
+    <div style={{ position: 'relative', width: '100%', height }}>
       <canvas
         ref={canvasRef}
-        className={classes.canvas}
-        width={width}
+        width={width ?? 800}
         height={height}
-        style={{ width, height }}
-        onWheel={handleWheel}
+        style={{
+          display: 'block',
+          width: width ?? '100%',
+          height,
+          cursor: dragRef.current.isDragging ? 'grabbing' : 'grab',
+        }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
       />
 
-      {isLoading && <div className={classes.loading}>Loading features...</div>}
+      {(isLoading || !isReady) && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'rgba(255,255,255,0.9)',
+            padding: '8px 16px',
+            borderRadius: 4,
+          }}
+        >
+          {isLoading ? 'Loading features...' : 'Initializing...'}
+        </div>
+      )}
 
-      <div className={classes.overlay}>
-        {Math.round(domain[0])}-{Math.round(domain[1])} | {bpPerPx.toFixed(2)}{' '}
-        bp/px | {webglFeatures.length} reads
-      </div>
+      {isReady && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 4,
+            left: 4,
+            fontSize: 10,
+            color: '#666',
+            pointerEvents: 'none',
+            fontFamily: 'monospace',
+            background: 'rgba(255,255,255,0.7)',
+            padding: '2px 4px',
+            borderRadius: 2,
+          }}
+        >
+          {Math.round(domain[0])}-{Math.round(domain[1])} | {displayBpPerPx.toFixed(2)}{' '}
+          bp/px | {webglFeatures.length} reads
+          {showCoverage && coverageData.maxDepth > 0
+            ? ` | max depth: ${coverageData.maxDepth}`
+            : ''}
+        </div>
+      )}
     </div>
   )
 })

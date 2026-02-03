@@ -5,7 +5,7 @@
  * Data is uploaded once, then rendering only updates uniforms.
  */
 
-import type { FeatureData } from '../model'
+import type { FeatureData, CoverageData } from '../model'
 
 // Vertex shader for reads
 const READ_VERTEX_SHADER = `#version 300 es
@@ -22,6 +22,8 @@ uniform vec2 u_rangeY;
 uniform int u_colorScheme;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
+uniform float u_coverageOffset;  // pixels to offset down for coverage area
+uniform float u_canvasHeight;
 
 out vec4 v_color;
 out vec2 v_localPos;
@@ -61,13 +63,18 @@ void main() {
   float sx2 = (a_position.y - u_domainX.x) / domainWidth * 2.0 - 1.0;
   float sx = mix(sx1, sx2, localX);
 
+  // Calculate available height for pileup (below coverage)
+  float availableHeight = u_canvasHeight - u_coverageOffset;
   float yRange = u_rangeY.y - u_rangeY.x;
   float rowHeight = u_featureHeight + u_featureSpacing;
   float yTop = a_y * rowHeight;
   float yBot = yTop + u_featureHeight;
 
-  float syTop = 1.0 - (yTop - u_rangeY.x) / yRange * 2.0;
-  float syBot = 1.0 - (yBot - u_rangeY.x) / yRange * 2.0;
+  // Map to clip space, accounting for coverage offset at top
+  // Coverage takes top u_coverageOffset pixels
+  float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
+  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -95,61 +102,80 @@ void main() {
 }
 `
 
-const MISMATCH_VERTEX_SHADER = `#version 300 es
+// Coverage vertex shader - renders bars as instanced quads
+const COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
-in float a_position;
-in float a_y;
-in float a_base;
-uniform vec2 u_domainX;
-uniform vec2 u_rangeY;
-uniform float u_featureHeight;
-uniform float u_featureSpacing;
-out vec4 v_color;
 
-const vec3 baseColors[5] = vec3[5](
-  vec3(0.35, 0.75, 0.35),
-  vec3(0.35, 0.35, 0.85),
-  vec3(0.85, 0.65, 0.25),
-  vec3(0.85, 0.35, 0.35),
-  vec3(0.5, 0.5, 0.5)
-);
+in float a_position;    // genomic position (start of bin)
+in float a_depth;       // total depth
+
+uniform vec2 u_domainX;
+uniform float u_coverageHeight;  // height in pixels
+uniform float u_maxDepth;
+uniform float u_binSize;
+uniform float u_canvasHeight;
+
+out vec4 v_color;
+out vec2 v_localPos;
 
 void main() {
   int vid = gl_VertexID % 6;
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+  v_localPos = vec2(localX, localY);
 
   float domainWidth = u_domainX.y - u_domainX.x;
-  float x1 = a_position;
-  float x2 = a_position + 1.0;
-  float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float minW = 4.0 / domainWidth * 2.0;
-  if (sx2 - sx1 < minW) {
-    float mid = (sx1 + sx2) * 0.5;
-    sx1 = mid - minW * 0.5;
-    sx2 = mid + minW * 0.5;
-  }
-  float sx = mix(sx1, sx2, localX);
 
-  float yRange = u_rangeY.y - u_rangeY.x;
-  float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTop = a_y * rowHeight;
-  float yBot = yTop + u_featureHeight;
-  float syTop = 1.0 - (yTop - u_rangeY.x) / yRange * 2.0;
-  float syBot = 1.0 - (yBot - u_rangeY.x) / yRange * 2.0;
-  float sy = mix(syBot, syTop, localY);
+  // X: map genomic position to clip space
+  float x1 = (a_position - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float x2 = (a_position + u_binSize - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx = mix(x1, x2, localX);
+
+  // Y: coverage area at top of canvas
+  // Bar height proportional to depth, growing UPWARD from bottom of coverage area
+  float barHeight = (a_depth / u_maxDepth) * u_coverageHeight;
+
+  // Bottom of coverage area in clip space
+  float coverageBottom = 1.0 - (u_coverageHeight / u_canvasHeight) * 2.0;
+
+  // Bars grow upward from the bottom of the coverage area
+  float yBot = coverageBottom;
+  float yTop = coverageBottom + (barHeight / u_canvasHeight) * 2.0;
+  float sy = mix(yBot, yTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(baseColors[int(clamp(a_base, 0.0, 4.0))], 1.0);
+
+  // Always gray
+  v_color = vec4(0.65, 0.65, 0.65, 1.0);
 }
 `
 
-const SIMPLE_FRAGMENT_SHADER = `#version 300 es
+const COVERAGE_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
+in vec2 v_localPos;
 out vec4 fragColor;
-void main() { fragColor = v_color; }
+void main() {
+  fragColor = v_color;
+}
+`
+
+// Simple line shader for drawing separator
+const LINE_VERTEX_SHADER = `#version 300 es
+precision highp float;
+in vec2 a_position;
+void main() {
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}
+`
+
+const LINE_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+out vec4 fragColor;
+uniform vec4 u_color;
+void main() {
+  fragColor = u_color;
+}
 `
 
 export interface RenderState {
@@ -158,14 +184,17 @@ export interface RenderState {
   colorScheme: number
   featureHeight: number
   featureSpacing: number
-  showMismatches: boolean
+  showCoverage: boolean
+  coverageHeight: number
 }
 
 interface GPUBuffers {
   readVAO: WebGLVertexArrayObject
   readCount: number
-  mismatchVAO: WebGLVertexArrayObject | null
-  mismatchCount: number
+  coverageVAO: WebGLVertexArrayObject | null
+  coverageCount: number
+  maxDepth: number
+  binSize: number
 }
 
 export class WebGLRenderer {
@@ -173,13 +202,16 @@ export class WebGLRenderer {
   private canvas: HTMLCanvasElement
 
   private readProgram: WebGLProgram
-  private mismatchProgram: WebGLProgram
+  private coverageProgram: WebGLProgram
+  private lineProgram: WebGLProgram
 
   private buffers: GPUBuffers | null = null
   private layoutMap: Map<string, number> = new Map()
+  private lineBuffer: WebGLBuffer | null = null
 
   private readUniforms: Record<string, WebGLUniformLocation | null> = {}
-  private mismatchUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private coverageUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -198,10 +230,18 @@ export class WebGLRenderer {
       READ_VERTEX_SHADER,
       READ_FRAGMENT_SHADER,
     )
-    this.mismatchProgram = this.createProgram(
-      MISMATCH_VERTEX_SHADER,
-      SIMPLE_FRAGMENT_SHADER,
+
+    this.coverageProgram = this.createProgram(
+      COVERAGE_VERTEX_SHADER,
+      COVERAGE_FRAGMENT_SHADER,
     )
+
+    this.lineProgram = this.createProgram(LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER)
+
+    this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_color'])
+
+    // Create line buffer for separator
+    this.lineBuffer = gl.createBuffer()
 
     this.cacheUniforms(this.readProgram, this.readUniforms, [
       'u_domainX',
@@ -209,12 +249,16 @@ export class WebGLRenderer {
       'u_colorScheme',
       'u_featureHeight',
       'u_featureSpacing',
+      'u_coverageOffset',
+      'u_canvasHeight',
     ])
-    this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [
+
+    this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
       'u_domainX',
-      'u_rangeY',
-      'u_featureHeight',
-      'u_featureSpacing',
+      'u_coverageHeight',
+      'u_maxDepth',
+      'u_binSize',
+      'u_canvasHeight',
     ])
 
     gl.enable(gl.BLEND)
@@ -285,8 +329,8 @@ export class WebGLRenderer {
     // Clean up old buffers
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.readVAO)
-      if (this.buffers.mismatchVAO) {
-        gl.deleteVertexArray(this.buffers.mismatchVAO)
+      if (this.buffers.coverageVAO) {
+        gl.deleteVertexArray(this.buffers.coverageVAO)
       }
     }
 
@@ -304,8 +348,6 @@ export class WebGLRenderer {
     const mapqs = new Float32Array(features.length)
     const insertSizes = new Float32Array(features.length)
 
-    const mismatches: { pos: number; y: number; base: number }[] = []
-
     for (let i = 0; i < features.length; i++) {
       const f = features[i]
       const y = this.layoutMap.get(f.id) ?? 0
@@ -316,17 +358,6 @@ export class WebGLRenderer {
       flags[i] = f.flags
       mapqs[i] = f.mapq
       insertSizes[i] = f.insertSize
-
-      if (f.mismatches) {
-        for (const mm of f.mismatches) {
-          const baseIdx = 'ACGTN'.indexOf(mm.base?.toUpperCase() ?? 'N')
-          mismatches.push({
-            pos: f.start + mm.start,
-            y,
-            base: baseIdx >= 0 ? baseIdx : 4,
-          })
-        }
-      }
     }
 
     // Read VAO
@@ -339,40 +370,61 @@ export class WebGLRenderer {
     this.uploadBuffer(this.readProgram, 'a_insertSize', insertSizes, 1)
     gl.bindVertexArray(null)
 
-    // Mismatch VAO
-    let mismatchVAO: WebGLVertexArrayObject | null = null
-    if (mismatches.length > 0) {
-      mismatchVAO = gl.createVertexArray()!
-      gl.bindVertexArray(mismatchVAO)
-      this.uploadBuffer(
-        this.mismatchProgram,
-        'a_position',
-        new Float32Array(mismatches.map(m => m.pos)),
-        1,
-      )
-      this.uploadBuffer(
-        this.mismatchProgram,
-        'a_y',
-        new Float32Array(mismatches.map(m => m.y)),
-        1,
-      )
-      this.uploadBuffer(
-        this.mismatchProgram,
-        'a_base',
-        new Float32Array(mismatches.map(m => m.base)),
-        1,
-      )
-      gl.bindVertexArray(null)
-    }
-
     this.buffers = {
       readVAO,
       readCount: features.length,
-      mismatchVAO,
-      mismatchCount: mismatches.length,
+      coverageVAO: null,
+      coverageCount: 0,
+      maxDepth: 0,
+      binSize: 1,
     }
 
     return { maxY }
+  }
+
+  uploadCoverage(
+    coverageData: CoverageData[],
+    maxDepth: number,
+    binSize: number,
+  ) {
+    const gl = this.gl
+
+    if (!this.buffers) {
+      return
+    }
+
+    // Clean up old coverage VAO
+    if (this.buffers.coverageVAO) {
+      gl.deleteVertexArray(this.buffers.coverageVAO)
+    }
+
+    if (coverageData.length === 0) {
+      this.buffers.coverageVAO = null
+      this.buffers.coverageCount = 0
+      return
+    }
+
+    // Prepare coverage arrays
+    const positions = new Float32Array(coverageData.length)
+    const depths = new Float32Array(coverageData.length)
+
+    for (let i = 0; i < coverageData.length; i++) {
+      const d = coverageData[i]
+      positions[i] = d.position
+      depths[i] = d.depth
+    }
+
+    // Coverage VAO
+    const coverageVAO = gl.createVertexArray()!
+    gl.bindVertexArray(coverageVAO)
+    this.uploadBuffer(this.coverageProgram, 'a_position', positions, 1)
+    this.uploadBuffer(this.coverageProgram, 'a_depth', depths, 1)
+    gl.bindVertexArray(null)
+
+    this.buffers.coverageVAO = coverageVAO
+    this.buffers.coverageCount = coverageData.length
+    this.buffers.maxDepth = maxDepth
+    this.buffers.binSize = binSize
   }
 
   private uploadBuffer(
@@ -400,7 +452,10 @@ export class WebGLRenderer {
     const canvas = this.canvas
 
     // Handle resize
-    if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+    if (
+      canvas.width !== canvas.clientWidth ||
+      canvas.height !== canvas.clientHeight
+    ) {
       canvas.width = canvas.clientWidth
       canvas.height = canvas.clientHeight
     }
@@ -413,7 +468,56 @@ export class WebGLRenderer {
       return
     }
 
-    // Pass 1: Reads
+    // Draw coverage first (at top)
+    if (
+      state.showCoverage &&
+      this.buffers.coverageVAO &&
+      this.buffers.coverageCount > 0
+    ) {
+      gl.useProgram(this.coverageProgram)
+      gl.uniform2f(
+        this.coverageUniforms.u_domainX!,
+        state.domainX[0],
+        state.domainX[1],
+      )
+      gl.uniform1f(
+        this.coverageUniforms.u_coverageHeight!,
+        state.coverageHeight,
+      )
+      gl.uniform1f(this.coverageUniforms.u_maxDepth!, this.buffers.maxDepth)
+      gl.uniform1f(this.coverageUniforms.u_binSize!, this.buffers.binSize)
+      gl.uniform1f(this.coverageUniforms.u_canvasHeight!, canvas.height)
+
+      gl.bindVertexArray(this.buffers.coverageVAO)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.coverageCount)
+
+      // Draw separator line at bottom of coverage area
+      const lineY = 1.0 - (state.coverageHeight / canvas.height) * 2.0
+      gl.useProgram(this.lineProgram)
+      gl.uniform4f(this.lineUniforms.u_color!, 0.7, 0.7, 0.7, 1.0)
+
+      const lineData = new Float32Array([-1, lineY, 1, lineY])
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
+      gl.bufferData(gl.ARRAY_BUFFER, lineData, gl.DYNAMIC_DRAW)
+      const linePosLoc = gl.getAttribLocation(this.lineProgram, 'a_position')
+      gl.enableVertexAttribArray(linePosLoc)
+      gl.vertexAttribPointer(linePosLoc, 2, gl.FLOAT, false, 0, 0)
+      gl.drawArrays(gl.LINES, 0, 2)
+      gl.disableVertexAttribArray(linePosLoc)
+    }
+
+    // Draw reads
+    const coverageOffset = state.showCoverage ? state.coverageHeight : 0
+
+    // Enable scissor test to clip pileup to area below coverage
+    gl.enable(gl.SCISSOR_TEST)
+    gl.scissor(
+      0,
+      0,
+      canvas.width,
+      canvas.height - coverageOffset,
+    )
+
     gl.useProgram(this.readProgram)
     gl.uniform2f(
       this.readUniforms.u_domainX!,
@@ -428,40 +532,13 @@ export class WebGLRenderer {
     gl.uniform1i(this.readUniforms.u_colorScheme!, state.colorScheme)
     gl.uniform1f(this.readUniforms.u_featureHeight!, state.featureHeight)
     gl.uniform1f(this.readUniforms.u_featureSpacing!, state.featureSpacing)
+    gl.uniform1f(this.readUniforms.u_coverageOffset!, coverageOffset)
+    gl.uniform1f(this.readUniforms.u_canvasHeight!, canvas.height)
 
     gl.bindVertexArray(this.buffers.readVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.readCount)
 
-    // Pass 2: Mismatches
-    if (
-      state.showMismatches &&
-      this.buffers.mismatchVAO &&
-      this.buffers.mismatchCount > 0
-    ) {
-      gl.useProgram(this.mismatchProgram)
-      gl.uniform2f(
-        this.mismatchUniforms.u_domainX!,
-        state.domainX[0],
-        state.domainX[1],
-      )
-      gl.uniform2f(
-        this.mismatchUniforms.u_rangeY!,
-        state.rangeY[0],
-        state.rangeY[1],
-      )
-      gl.uniform1f(
-        this.mismatchUniforms.u_featureHeight!,
-        state.featureHeight,
-      )
-      gl.uniform1f(
-        this.mismatchUniforms.u_featureSpacing!,
-        state.featureSpacing,
-      )
-
-      gl.bindVertexArray(this.buffers.mismatchVAO)
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.mismatchCount)
-    }
-
+    gl.disable(gl.SCISSOR_TEST)
     gl.bindVertexArray(null)
   }
 
@@ -469,11 +546,15 @@ export class WebGLRenderer {
     const gl = this.gl
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.readVAO)
-      if (this.buffers.mismatchVAO) {
-        gl.deleteVertexArray(this.buffers.mismatchVAO)
+      if (this.buffers.coverageVAO) {
+        gl.deleteVertexArray(this.buffers.coverageVAO)
       }
     }
+    if (this.lineBuffer) {
+      gl.deleteBuffer(this.lineBuffer)
+    }
     gl.deleteProgram(this.readProgram)
-    gl.deleteProgram(this.mismatchProgram)
+    gl.deleteProgram(this.coverageProgram)
+    gl.deleteProgram(this.lineProgram)
   }
 }
