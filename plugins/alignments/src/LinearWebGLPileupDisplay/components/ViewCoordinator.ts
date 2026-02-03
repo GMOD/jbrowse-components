@@ -19,6 +19,10 @@ class ViewCoordinator {
   offsetPx = 0
   bpPerPx = 1
 
+  get listenerCount(): number {
+    return this.listeners.size
+  }
+
   subscribe(canvasId: string, listener: PositionListener): () => void {
     this.listeners.set(canvasId, listener)
     return () => {

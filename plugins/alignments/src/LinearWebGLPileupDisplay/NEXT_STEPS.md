@@ -7,8 +7,8 @@ The WebGL pileup display is functional and renders BAM reads as colored rectangl
 ### What's Working
 - GPU-accelerated rendering with instanced drawing
 - Color schemes: strand, MAPQ, insert size, first-of-pair
-- Smooth zoom (wheel) and pan (drag)
-- Syncs to LinearGenomeView so other tracks follow
+- **Smooth zoom (wheel) and pan (drag)** - Uses ViewCoordinator for instant sync across multiple canvases
+- Syncs to LinearGenomeView so other tracks follow (debounced to avoid stutter)
 - Data prefetching with 2x buffer
 - Refname aliasing (chr1 vs 1)
 - Works inside LinearAlignmentsDisplay composite
@@ -18,11 +18,15 @@ The WebGL pileup display is functional and renders BAM reads as colored rectangl
   - Shows strand coloring when pileup is colored by strand
   - Toggle via track menu "Show/Hide coverage"
   - Visual separator line between coverage and pileup
+- **Multi-canvas synchronization** - ViewCoordinator broadcasts position changes instantly
+- **Bounds checking** - offsetPx clamped to valid range
+- **Multi-region support** - Uses view.pxToBp() for coordinate conversion
 
 ### Key Files
 - `model.ts` - MST state model with `fetchFeatures` using `flow()`, `getAdapter()`, `renameRegionsIfNeeded()`, `coverageData` computed view
-- `components/WebGLPileupComponent.tsx` - React component, local state for smooth interaction, throttled sync to LGV, coverage upload
+- `components/WebGLPileupComponent.tsx` - React component, local refs for smooth interaction, ViewCoordinator for multi-canvas sync
 - `components/WebGLRenderer.ts` - WebGL2 with instanced rendering, shaders for read rectangles and coverage bars
+- `components/ViewCoordinator.ts` - Broadcasts position changes instantly between canvases, bypassing mobx
 
 ## Immediate Next Steps
 
@@ -75,9 +79,7 @@ const handleClick = (e: React.MouseEvent) => {
 
 ### 3. Clean Up Debug Logging
 
-Remove `console.log` statements in:
-- `model.ts`: lines ~123, 239, 251, 253, 263, 297, 308
-- `WebGLPileupComponent.tsx`: lines ~109, 126, 134
+✅ Done - Console.log statements removed from model.ts and component.
 
 ### 4. Vertical Scrollbar
 
@@ -85,10 +87,22 @@ Add a scrollbar component or integrate with existing JBrowse scrollbar. Currentl
 
 ## Architecture Notes
 
-### Why Local State + Sync Back
-The WebGL component maintains `localDomain` in React state for immediate updates during interaction. This bypasses mobx reactions which would cause lag. After interaction, it syncs back to LGV via `view.navTo()`.
+### Smooth Zoom/Pan Architecture
+The WebGL component maintains local refs (`offsetPxRef`, `bpPerPxRef`) for immediate rendering during interaction. This completely bypasses mobx reactions which would cause lag.
 
-The `syncingRef` flag prevents feedback loops - when we update the LGV, we ignore the resulting mobx reaction.
+**ViewCoordinator** handles instant synchronization between multiple WebGL canvases:
+1. When user interacts with Canvas A, it updates local refs and calls `renderImmediate()`
+2. Canvas A broadcasts position to ViewCoordinator
+3. ViewCoordinator notifies all other canvases synchronously (same JS event loop)
+4. Other canvases update their refs and call `renderImmediate()`
+5. All canvases render in the same frame
+
+**Debounced sync to mobx** (`debouncedSyncToView`) updates the view's actual position after 100ms of idle. This updates:
+- URL
+- Non-WebGL tracks
+- Other UI elements
+
+The `interactingRef` flag prevents feedback loops - when interacting, we ignore incoming mobx changes.
 
 ### Why `flow()` for fetchFeatures
 MST requires `flow()` with generator functions for async actions that modify state after `await`. Regular async/await loses the action context.

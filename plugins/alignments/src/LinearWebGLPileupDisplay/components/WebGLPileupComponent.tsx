@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
 
 import { WebGLRenderer } from './WebGLRenderer'
-import { getCoordinator } from './ViewCoordinator'
+import { getCoordinator, removeCoordinator } from './ViewCoordinator'
 
 import type { LinearWebGLPileupDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -57,20 +57,44 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   const width = view?.initialized ? view.width : undefined
   const height = model.height
-  const displayedRegions = view?.displayedRegions
+  const minOffset = view?.minOffset ?? 0
+  const maxOffset = view?.maxOffset ?? Infinity
 
-  // Compute domain from local offsetPx/bpPerPx
+  // Clamp offsetPx to valid bounds
+  const clampOffset = useCallback(
+    (offset: number): number => {
+      return Math.max(minOffset, Math.min(maxOffset, offset))
+    },
+    [minOffset, maxOffset],
+  )
+
+  // Compute domain using the view's coordinate system
+  // This properly handles multi-region views by using the view's pxToBp conversion
   const computeDomain = useCallback((): [number, number] | null => {
-    if (!displayedRegions || displayedRegions.length === 0 || width === undefined) {
+    if (!view?.initialized || width === undefined) {
       return null
     }
-    // For now, use first region - this works for single-region views
-    // Multi-region support would need more complex logic
-    const region = displayedRegions[0]
-    const start = region.start + offsetPxRef.current * bpPerPxRef.current
-    const end = start + width * bpPerPxRef.current
-    return [start, end]
-  }, [displayedRegions, width])
+    // Use the view's pxToBp method which handles multi-region coordinate conversion
+    const startBp = view.pxToBp(offsetPxRef.current)
+    const endBp = view.pxToBp(offsetPxRef.current + width)
+
+    if (!startBp || !endBp) {
+      return null
+    }
+
+    // For single-region or same-region views
+    if (startBp.refName === endBp.refName) {
+      return [startBp.coord, endBp.coord]
+    }
+
+    // For multi-region spanning views, use the visible region from the model
+    const visibleRegion = model.visibleRegion
+    if (visibleRegion) {
+      return [visibleRegion.start, visibleRegion.end]
+    }
+
+    return null
+  }, [view, width, model.visibleRegion])
 
   // Render function
   const renderNow = useCallback(() => {
@@ -137,6 +161,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
     syncTimeoutRef.current = setTimeout(() => {
       syncToView()
+      interactingRef.current = false // Reset after interaction settles
       syncTimeoutRef.current = null
     }, 100)
   }, [syncToView])
@@ -207,7 +232,13 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       bpPerPxRef.current = position.bpPerPx
       renderImmediate()
     })
-    return unsubscribe
+    return () => {
+      unsubscribe()
+      // Clean up coordinator if no listeners remain
+      if (coordinator.listenerCount === 0) {
+        removeCoordinator(viewId)
+      }
+    }
   }, [viewId, canvasId, renderImmediate])
 
   // Sync from mobx when not interacting
@@ -286,7 +317,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       // Horizontal scroll - pan
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        offsetPxRef.current += e.deltaX
+        offsetPxRef.current = clampOffset(offsetPxRef.current + e.deltaX)
         broadcast()
         renderImmediate()
         debouncedSyncToView()
@@ -327,7 +358,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         if (newBpPerPx !== oldBpPerPx) {
           // Adjust offset to keep mouse position stable
           const mouseBp = offsetPxRef.current * oldBpPerPx + mouseX * oldBpPerPx
-          offsetPxRef.current = (mouseBp - mouseX * newBpPerPx) / newBpPerPx
+          offsetPxRef.current = clampOffset((mouseBp - mouseX * newBpPerPx) / newBpPerPx)
           bpPerPxRef.current = newBpPerPx
 
           broadcast()
@@ -345,7 +376,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     return () => {
       canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [view, width, maxY, featureHeight, featureSpacing, broadcast, renderImmediate, debouncedSyncToView, checkDataNeeds])
+  }, [view, width, maxY, featureHeight, featureSpacing, broadcast, renderImmediate, debouncedSyncToView, checkDataNeeds, clampOffset])
 
   // Pan handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -369,7 +400,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       dragRef.current.lastY = e.clientY
 
       if (dx !== 0) {
-        offsetPxRef.current -= dx
+        offsetPxRef.current = clampOffset(offsetPxRef.current - dx)
         broadcast()
         renderImmediate()
         debouncedSyncToView()
@@ -389,7 +420,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         renderImmediate()
       }
     },
-    [height, broadcast, renderImmediate, debouncedSyncToView, checkDataNeeds],
+    [height, broadcast, renderImmediate, debouncedSyncToView, checkDataNeeds, clampOffset],
   )
 
   const handleMouseUp = useCallback(() => {

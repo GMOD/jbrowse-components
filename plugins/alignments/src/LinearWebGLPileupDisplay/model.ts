@@ -163,14 +163,11 @@ export default function stateModelFactory(
       get visibleRegion() {
         try {
           const view = getContainingView(self) as LGV
-          // Check if view is initialized before accessing properties
           if (!view?.initialized) {
-            console.log('View not initialized yet')
             return null
           }
           const blocks = view.dynamicBlocks?.contentBlocks
           if (!blocks || blocks.length === 0) {
-            console.log('No content blocks yet')
             return null
           }
           const first = blocks[0]
@@ -181,9 +178,7 @@ export default function stateModelFactory(
             end: last.end,
             assemblyName: first.assemblyName,
           }
-        } catch (e) {
-          // View may not be ready yet
-          console.log('Error getting visibleRegion:', e)
+        } catch {
           return null
         }
       },
@@ -373,17 +368,12 @@ export default function stateModelFactory(
         end: number
         assemblyName?: string
       }) {
-        console.log('fetchFeatures called with region:', region)
-
         const session = getSession(self)
         const { pluginManager } = getEnv(self)
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
 
-        console.log('adapterConfig:', adapterConfig)
-
         if (!adapterConfig) {
-          console.log('No adapter config found!')
           return
         }
 
@@ -391,7 +381,6 @@ export default function stateModelFactory(
         self.error = null
 
         try {
-          // Rename region if needed (handles chr1 vs 1, etc.)
           const { assemblyManager } = session
           const { regions: renamedRegions } = yield renameRegionsIfNeeded(
             assemblyManager,
@@ -402,15 +391,12 @@ export default function stateModelFactory(
             },
           )
           const renamedRegion = renamedRegions[0]
-          console.log('Renamed region:', renamedRegion)
 
           const { dataAdapter } = yield getAdapter(
             pluginManager,
             session.id,
             adapterConfig,
           )
-
-          console.log('Got adapter:', dataAdapter)
 
           const featureObservable = dataAdapter.getFeatures(renamedRegion)
 
@@ -436,7 +422,6 @@ export default function stateModelFactory(
             })
           })
 
-          console.log(`Fetched ${features.length} features`)
           self.webglFeatures = features
           self.loadedRegion = {
             refName: region.refName,
@@ -447,7 +432,6 @@ export default function stateModelFactory(
         } catch (e) {
           self.error = e as Error
           self.isLoading = false
-          console.error('Failed to fetch features:', e)
         }
       }),
 
@@ -474,14 +458,12 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
-        console.log('WebGL display afterAttach called')
         // Fetch initial data when region becomes available
         addDisposer(
           self,
           reaction(
             () => self.visibleRegion,
             region => {
-              console.log('visibleRegion reaction fired:', region)
               if (region && !self.isWithinLoadedRegion) {
                 // Expand region by 2x on each side for buffering
                 const width = region.end - region.start
