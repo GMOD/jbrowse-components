@@ -9,7 +9,10 @@ import {
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 
 import SVGLegend from './SVGLegend.tsx'
-import { deduplicateFeatureLabels } from './components/util.ts'
+import {
+  collectLayoutsFromRenderings,
+  deduplicateFeatureLabels,
+} from './components/util.ts'
 import { SvgFloatingLabels } from './models/SvgFloatingLabels.tsx'
 import BlockState, {
   renderBlockData,
@@ -87,15 +90,7 @@ export async function renderBaseLinearDisplaySvg(
   // Collect layout data from the renderings for floating labels
   // This is needed because in standalone SVG export (e.g., jbrowse-img),
   // the model's blockState is not populated with rendering results
-  const layoutMaps: Map<string, LayoutRecord>[] = []
-  for (const [, rendering] of renderings) {
-    const layout = rendering.layout as
-      | { getRectangles?: () => Map<string, LayoutRecord> }
-      | undefined
-    if (layout?.getRectangles) {
-      layoutMaps.push(layout.getRectangles())
-    }
-  }
+  const layoutMaps = collectLayoutsFromRenderings(renderings)
   const layoutFeatures = new CompositeMap<string, LayoutRecord>(layoutMaps)
 
   // Calculate floating label data using the rendering results

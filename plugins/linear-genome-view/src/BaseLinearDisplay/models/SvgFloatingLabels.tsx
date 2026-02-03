@@ -14,7 +14,6 @@ export function SvgFloatingLabels({
   offsetPx,
   viewWidth,
 }: Props) {
-  const viewportLeft = Math.max(0, offsetPx)
   const elements: React.ReactElement[] = []
 
   for (const [
@@ -34,7 +33,6 @@ export function SvgFloatingLabels({
         featureRightPx,
         textWidth,
         offsetPx,
-        viewportLeft,
       )
 
       if (x < 0 || x > viewWidth) {

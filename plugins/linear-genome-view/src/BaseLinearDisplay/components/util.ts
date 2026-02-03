@@ -11,12 +11,30 @@ interface PixelPositions {
 
 export interface FeatureLabelData {
   leftPx: number
-  rightPx: number
   topPx: number
   totalFeatureHeight: number
   floatingLabels: FloatingLabelData[]
   featureWidth: number
-  totalLayoutWidth: number
+}
+
+interface RenderingWithLayout {
+  layout?: { getRectangles?: () => Map<string, LayoutRecord> }
+}
+
+/**
+ * Extract layout maps from rendering results for floating label calculation.
+ * Each rendering may have a layout with getRectangles() that returns feature positions.
+ */
+export function collectLayoutsFromRenderings(
+  renderings: readonly (readonly [unknown, RenderingWithLayout])[],
+): Map<string, LayoutRecord>[] {
+  const layoutMaps: Map<string, LayoutRecord>[] = []
+  for (const [, rendering] of renderings) {
+    if (rendering.layout?.getRectangles) {
+      layoutMaps.push(rendering.layout.getRectangles())
+    }
+  }
+  return layoutMaps
 }
 
 /**
@@ -153,7 +171,6 @@ export function deduplicateFeatureLabels(
       totalFeatureHeight,
       actualTopPx,
       featureWidth,
-      totalLayoutWidth,
       featureStartBp,
       featureEndBp,
     } = feature
@@ -164,7 +181,6 @@ export function deduplicateFeatureLabels(
       floatingLabels.length === 0 ||
       !totalFeatureHeight ||
       featureWidth === undefined ||
-      totalLayoutWidth === undefined ||
       featureStartBp === undefined ||
       featureEndBp === undefined
     ) {
@@ -189,42 +205,15 @@ export function deduplicateFeatureLabels(
     if (!existing || positions.leftPx < existing.leftPx) {
       featureLabels.set(key, {
         leftPx: positions.leftPx,
-        rightPx: positions.rightPx,
         topPx: effectiveTopPx,
         totalFeatureHeight,
         floatingLabels,
         featureWidth,
-        totalLayoutWidth,
       })
     }
   }
 
   return featureLabels
-}
-
-/**
- * Get the left edge of the viewport in pixels.
- * When scrolled left (offsetPx < 0), viewport starts at 0.
- * When scrolled right (offsetPx > 0), viewport starts at offsetPx.
- */
-export function getViewportLeftEdge(offsetPx: number): number {
-  return Math.max(0, offsetPx)
-}
-
-/**
- * Clamp feature positions to be within the visible viewport.
- * Prevents labels from being positioned in off-screen areas.
- */
-export function clampToViewport(
-  featureLeftPx: number,
-  featureRightPx: number,
-  offsetPx: number,
-): { leftPx: number; rightPx: number } {
-  const viewportLeft = getViewportLeftEdge(offsetPx)
-  return {
-    leftPx: Math.max(featureLeftPx, viewportLeft),
-    rightPx: Math.max(featureRightPx, viewportLeft),
-  }
 }
 
 /**
@@ -240,7 +229,6 @@ export function clampToViewport(
  * @param featureRightPx - Right edge of the feature in pixels
  * @param labelWidth - Width of the label text in pixels
  * @param offsetPx - Current viewport offset in pixels
- * @param viewportLeft - Left edge of the viewport in pixels
  * @returns The x position for the label (already offset-adjusted)
  */
 export function calculateFloatingLabelPosition(
@@ -248,7 +236,6 @@ export function calculateFloatingLabelPosition(
   featureRightPx: number,
   labelWidth: number,
   offsetPx: number,
-  viewportLeft: number,
 ): number {
   const featureWidth = featureRightPx - featureLeftPx
 
@@ -258,6 +245,8 @@ export function calculateFloatingLabelPosition(
   }
 
   // Label fits within feature - apply floating logic
+  // Viewport left edge: when scrolled left (offsetPx < 0), starts at 0; otherwise at offsetPx
+  const viewportLeft = Math.max(0, offsetPx)
   const leftPx = Math.max(featureLeftPx, viewportLeft)
   const naturalX = leftPx - offsetPx
   const maxX = featureRightPx - offsetPx - labelWidth
