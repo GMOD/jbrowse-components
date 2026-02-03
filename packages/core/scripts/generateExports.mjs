@@ -13,6 +13,8 @@ const preservedExports = [
   '@jbrowse/core/util/nanoid',
   '@jbrowse/core/ReExports/list',
   '@jbrowse/core/util/fileHandleStore',
+  '@jbrowse/core/util/tss-react/types',
+  '@jbrowse/core/configuration/configurationSchema',
 ]
 
 // Scan the codebase for all @jbrowse/core imports
