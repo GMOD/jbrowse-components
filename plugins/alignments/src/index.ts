@@ -8,6 +8,7 @@ import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
 import LinearPileupDisplayF from './LinearPileupDisplay/index.ts'
+import LinearWebGLPileupDisplayF from './LinearWebGLPileupDisplay/index.ts'
 import LinearReadArcsDisplayF from './LinearReadArcsDisplay/index.ts'
 import LinearReadCloudDisplayF from './LinearReadCloudDisplay/index.ts'
 import LinearSNPCoverageDisplayF from './LinearSNPCoverageDisplay/index.ts'
@@ -28,6 +29,7 @@ export default class AlignmentsPlugin extends Plugin {
       CramAdapterF,
       BamAdapterF,
       LinearPileupDisplayF,
+      LinearWebGLPileupDisplayF,
       LinearSNPCoverageDisplayF,
       AlignmentsTrackF,
       SNPCoverageAdapterF,
@@ -54,4 +56,9 @@ export {
   linearPileupDisplayStateModelFactory,
 } from './LinearPileupDisplay/index.ts'
 export { type LinearPileupDisplayModel } from './LinearPileupDisplay/model.ts'
+export {
+  linearWebGLPileupDisplayConfigSchemaFactory,
+  linearWebGLPileupDisplayStateModelFactory,
+} from './LinearWebGLPileupDisplay/index.ts'
+export { type LinearWebGLPileupDisplayModel } from './LinearWebGLPileupDisplay/model.ts'
 export * as MismatchParser from './MismatchParser/index.ts'
