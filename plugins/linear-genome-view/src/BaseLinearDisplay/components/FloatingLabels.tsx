@@ -53,7 +53,6 @@ interface FloatingLabelProps extends BaseLabelProps {
   featureRightPx: number
   labelWidth: number
   offsetPx: number
-  viewportLeft: number
 }
 
 // Fixed labels use CSS variable for offset - position updates via CSS, not JS
@@ -98,7 +97,6 @@ function FloatingLabel({
   labelWidth,
   y,
   offsetPx,
-  viewportLeft,
   tooltip,
   labelClass,
   overlayClass,
@@ -108,7 +106,6 @@ function FloatingLabel({
     featureRightPx,
     labelWidth,
     offsetPx,
-    viewportLeft,
   )
 
   return (
@@ -140,9 +137,6 @@ const FloatingLabels = observer(function FloatingLabels({
 
   const fixedLabels: React.ReactElement[] = []
   const floatingLabels: React.ReactElement[] = []
-
-  // Calculate viewport left edge once per render instead of per label
-  const viewportLeft = Math.max(0, offsetPx)
 
   for (const [
     key,
@@ -207,7 +201,6 @@ const FloatingLabels = observer(function FloatingLabels({
             labelWidth={labelWidth}
             y={y}
             offsetPx={offsetPx}
-            viewportLeft={viewportLeft}
             tooltip={tooltip}
             labelClass={classes.label}
             overlayClass={classes.overlay}

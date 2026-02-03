@@ -2,6 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
 import { layoutFeature } from './layoutFeature.ts'
+import { readCachedConfig } from '../renderConfig.ts'
 
 import type { RenderConfigContext } from '../renderConfig.ts'
 import type { LayoutRecord } from '../types.ts'
@@ -49,12 +50,25 @@ export function layoutFeatures({
       readConfObject(config, ['labels', 'description'], { feature }) || '',
     )
 
+    const { nameColor, descriptionColor } = configContext
+    const resolvedNameColor = readCachedConfig(
+      nameColor,
+      config,
+      ['labels', 'nameColor'],
+      feature,
+    )
     const floatingLabels = createFeatureFloatingLabels({
       feature,
       config,
       configContext,
-      nameColor: 'black',
-      descriptionColor: 'blue',
+      // #f0f is the config default sentinel - use black for floating labels
+      nameColor: resolvedNameColor === '#f0f' ? 'black' : resolvedNameColor,
+      descriptionColor: readCachedConfig(
+        descriptionColor,
+        config,
+        ['labels', 'descriptionColor'],
+        feature,
+      ),
       name,
       description,
     })
@@ -87,12 +101,9 @@ export function layoutFeatures({
       totalLayoutHeight + yPadding,
       feature,
       {
-        label: name,
-        description,
         refName: feature.get('refName'),
         floatingLabels,
         totalFeatureHeight: featureLayout.height,
-        totalLayoutWidth,
         featureWidth: featureLayout.width,
         featureStartBp: featureStart,
         featureEndBp: featureEnd,
@@ -104,8 +115,6 @@ export function layoutFeatures({
         feature,
         layout: featureLayout,
         topPx,
-        label: name,
-        description,
       })
     }
   }

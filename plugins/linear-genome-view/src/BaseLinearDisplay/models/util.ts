@@ -6,19 +6,6 @@ import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-export interface RenderProps {
-  rendererType: any
-  renderArgs: Record<string, any>
-  renderProps: Record<string, any>
-  displayError: unknown
-  rpcManager: { call: (...args: unknown[]) => void }
-  cannotBeRenderedReason: string
-}
-
-export interface ErrorProps {
-  displayError: string
-}
-
 export function getDisplayStr(totalBytes: number) {
   if (Math.floor(totalBytes / 1000000) > 0) {
     return `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`

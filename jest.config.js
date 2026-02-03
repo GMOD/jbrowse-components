@@ -1,4 +1,4 @@
-export default {
+const baseConfig = {
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
@@ -15,7 +15,6 @@ export default {
     '/node_modules/.+\\.(js|jsx)$',
     '\\.module\\.(css|sass|scss)$',
   ],
-  testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/'],
   collectCoverageFrom: [
     '{packages,products,plugins}/*/src/**/*.{js,jsx,ts,tsx}',
   ],
@@ -31,8 +30,35 @@ export default {
     '<rootDir>/config/jest/messagechannel.js',
     '<rootDir>/config/jest/structuredClone.js',
   ],
-  setupFilesAfterEnv: ['<rootDir>/config/jest/fetchMockAfterEnv.js'],
   testEnvironmentOptions: { url: 'http://localhost' },
   testTimeout: 15000,
-  testEnvironment: 'jsdom',
+}
+
+export default {
+  projects: [
+    {
+      // jbrowse-img uses Node environment with native fetch (no jest-fetch-mock)
+      displayName: 'jbrowse-img',
+      testMatch: ['<rootDir>/products/jbrowse-img/**/*.test.ts'],
+      testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/'],
+      testEnvironment: 'node',
+      ...baseConfig,
+    },
+    {
+      // All other tests use jsdom with jest-fetch-mock
+      displayName: 'default',
+      testMatch: [
+        '<rootDir>/{packages,products,plugins}/**/*.test.{ts,tsx,js,jsx}',
+      ],
+      testPathIgnorePatterns: [
+        '/dist/',
+        '/cypress/',
+        '/demos/',
+        '<rootDir>/products/jbrowse-img/',
+      ],
+      testEnvironment: 'jsdom',
+      setupFilesAfterEnv: ['<rootDir>/config/jest/fetchMockAfterEnv.js'],
+      ...baseConfig,
+    },
+  ],
 }
