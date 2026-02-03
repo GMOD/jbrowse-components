@@ -76,7 +76,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   const domainRef = useRef<[number, number] | null>(null)
 
   // Initialize/sync domain from view when not interacting
-  // Uses contentBlocks which have the correct visible coordinates
+  // Uses contentBlocks and adjusts for scroll offset
   const syncDomainFromView = useCallback(() => {
     if (!view?.initialized || width === undefined) {
       return
@@ -88,9 +88,23 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
     const first = contentBlocks[0]
     const last = contentBlocks[contentBlocks.length - 1]
-    if (first.refName === last.refName) {
-      domainRef.current = [first.start, last.end]
+    if (first.refName !== last.refName) {
+      return
     }
+
+    const bpPerPx = view.bpPerPx
+    // first.offsetPx is where the block starts in pixel space
+    const blockOffsetPx = first.offsetPx ?? 0
+
+    // Calculate domain for the full canvas width
+    // When offsetPx is negative, we've scrolled left - include "virtual" negative region
+    const deltaPx = view.offsetPx - blockOffsetPx
+    const deltaBp = deltaPx * bpPerPx
+
+    const domainStart = first.start + deltaBp
+    const domainEnd = domainStart + width * bpPerPx
+
+    domainRef.current = [domainStart, domainEnd]
   }, [view, width])
 
   // Compute domain - use local ref when available, otherwise compute from contentBlocks
@@ -104,7 +118,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       return domainRef.current
     }
 
-    // Otherwise compute from contentBlocks (same as visibleRegion)
+    // Otherwise compute from contentBlocks with offset adjustment
     // @ts-ignore - dynamicBlocks access
     const contentBlocks = view.dynamicBlocks?.contentBlocks
     if (!contentBlocks || contentBlocks.length === 0) {
@@ -113,7 +127,15 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     const first = contentBlocks[0]
     const last = contentBlocks[contentBlocks.length - 1]
     if (first.refName === last.refName) {
-      const domain: [number, number] = [first.start, last.end]
+      const bpPerPx = bpPerPxRef.current
+      const blockOffsetPx = first.offsetPx ?? 0
+      // Include negative offset in domain calculation so content appears at correct position
+      const deltaPx = offsetPxRef.current - blockOffsetPx
+      const deltaBp = deltaPx * bpPerPx
+
+      const domainStart = first.start + deltaBp
+      const domainEnd = domainStart + width * bpPerPx
+      const domain: [number, number] = [domainStart, domainEnd]
       domainRef.current = domain
       return domain
     }
