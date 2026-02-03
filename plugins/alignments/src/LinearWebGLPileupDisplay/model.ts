@@ -17,11 +17,28 @@ import {
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { reaction } from 'mobx'
 
-import type { ColorBy, FilterBy } from '../shared/types'
+import type { ColorBy, FilterBy, Mismatch } from '../shared/types'
 
 export interface CoverageData {
   position: number
   depth: number
+}
+
+export interface GapData {
+  featureId: string
+  start: number
+  end: number
+}
+
+export interface MismatchData {
+  featureId: string
+  position: number
+  base: number // 0=A, 1=C, 2=G, 3=T
+}
+
+export interface InsertionData {
+  featureId: string
+  position: number
 }
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -91,11 +108,19 @@ export default function stateModelFactory(
          * #property
          */
         coverageHeight: 45,
+        /**
+         * #property
+         */
+        showMismatches: true,
       }),
     )
     .volatile(() => ({
       // Feature data loaded from adapter (named to avoid conflict with base)
       webglFeatures: [] as FeatureData[],
+      // CIGAR-derived data
+      webglGaps: [] as GapData[],
+      webglMismatches: [] as MismatchData[],
+      webglInsertions: [] as InsertionData[],
       // Region that's currently loaded in GPU
       loadedRegion: null as {
         refName: string
@@ -342,6 +367,10 @@ export default function stateModelFactory(
         self.coverageHeight = height
       },
 
+      setShowMismatches(show: boolean) {
+        self.showMismatches = show
+      },
+
       // Compatibility methods for LinearAlignmentsDisplay
       setConfig(_config: unknown) {
         // No-op for now - config is managed differently in WebGL display
@@ -401,13 +430,35 @@ export default function stateModelFactory(
           const featureObservable = dataAdapter.getFeatures(renamedRegion)
 
           const features: FeatureData[] = []
+          const gaps: GapData[] = []
+          const mismatches: MismatchData[] = []
+          const insertions: InsertionData[] = []
+
+          // Helper to convert base letter to number for shader
+          const baseToNum = (base: string): number => {
+            switch (base.toUpperCase()) {
+              case 'A':
+                return 0
+              case 'C':
+                return 1
+              case 'G':
+                return 2
+              case 'T':
+                return 3
+              default:
+                return 0
+            }
+          }
 
           yield new Promise<void>((resolve, reject) => {
             featureObservable.subscribe({
               next(feature: Feature) {
+                const featureId = feature.id()
+                const featureStart = feature.get('start')
+
                 features.push({
-                  id: feature.id(),
-                  start: feature.get('start'),
+                  id: featureId,
+                  start: featureStart,
                   end: feature.get('end'),
                   strand: feature.get('strand') ?? 1,
                   flags: feature.get('flags') ?? 0,
@@ -416,6 +467,33 @@ export default function stateModelFactory(
                     feature.get('template_length') ?? 400,
                   ),
                 })
+
+                // Extract CIGAR-derived mismatches
+                const featureMismatches = feature.get('mismatches') as
+                  | Mismatch[]
+                  | undefined
+                if (featureMismatches) {
+                  for (const mm of featureMismatches) {
+                    if (mm.type === 'deletion' || mm.type === 'skip') {
+                      gaps.push({
+                        featureId,
+                        start: featureStart + mm.start,
+                        end: featureStart + mm.start + mm.length,
+                      })
+                    } else if (mm.type === 'mismatch') {
+                      mismatches.push({
+                        featureId,
+                        position: featureStart + mm.start,
+                        base: baseToNum(mm.base),
+                      })
+                    } else if (mm.type === 'insertion') {
+                      insertions.push({
+                        featureId,
+                        position: featureStart + mm.start,
+                      })
+                    }
+                  }
+                }
               },
               error: reject,
               complete: resolve,
@@ -423,6 +501,9 @@ export default function stateModelFactory(
           })
 
           self.webglFeatures = features
+          self.webglGaps = gaps
+          self.webglMismatches = mismatches
+          self.webglInsertions = insertions
           self.loadedRegion = {
             refName: region.refName,
             start: region.start,
@@ -524,6 +605,10 @@ export default function stateModelFactory(
           {
             label: self.showCoverage ? 'Hide coverage' : 'Show coverage',
             onClick: () => self.setShowCoverage(!self.showCoverage),
+          },
+          {
+            label: self.showMismatches ? 'Hide mismatches' : 'Show mismatches',
+            onClick: () => self.setShowMismatches(!self.showMismatches),
           },
         ]
       },

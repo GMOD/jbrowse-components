@@ -23,34 +23,28 @@ The WebGL pileup display is functional and renders BAM reads as colored rectangl
 - **Multi-region support** - Uses view.pxToBp() for coordinate conversion
 
 ### Key Files
-- `model.ts` - MST state model with `fetchFeatures` using `flow()`, `getAdapter()`, `renameRegionsIfNeeded()`, `coverageData` computed view
+- `model.ts` - MST state model with `fetchFeatures` using `flow()`, `getAdapter()`, `renameRegionsIfNeeded()`, `coverageData` computed view, CIGAR data extraction (GapData, MismatchData, InsertionData)
 - `components/WebGLPileupComponent.tsx` - React component, local refs for smooth interaction, ViewCoordinator for multi-canvas sync
-- `components/WebGLRenderer.ts` - WebGL2 with instanced rendering, shaders for read rectangles and coverage bars
+- `components/WebGLRenderer.ts` - WebGL2 with instanced rendering, shaders for read rectangles, coverage bars, gaps, mismatches, and insertions
 - `components/ViewCoordinator.ts` - Broadcasts position changes instantly between canvases, bypassing mobx
 
 ## Immediate Next Steps
 
-### 1. Add CIGAR Features (Deletions/Insertions)
+### 1. ✅ CIGAR Features (Deletions/Insertions/Mismatches)
 
-Reference implementation exists in `plugins/alignments/webgl-poc/with-cigar.html`.
+Implemented! The WebGL display now renders:
+- **Gaps** (deletions/skips) - Dark rectangles drawn over read rows
+- **Mismatches** (SNPs) - Colored by base (A=green, C=blue, G=orange, T=red)
+- **Insertions** - Purple triangle markers
 
-In `model.ts`, update `fetchFeatures` to extract CIGAR data:
-```typescript
-// Inside the feature.subscribe callback, extract:
-const mismatches = feature.get('mismatches') // Array of {type, start, length, base}
-// Filter by type: 'deletion', 'insertion', 'mismatch', 'softclip'
-```
+The adapter already parses CIGAR and provides `feature.get('mismatches')`. We extract this during `fetchFeatures` and upload to GPU.
 
-In `WebGLRenderer.ts`, add:
-- Gap shader program (dark rectangles for deletions)
-- Mismatch shader program (colored squares for SNPs)
-- Insertion markers (small triangles)
+Toggle via track menu "Show/Hide mismatches".
 
-Multi-pass rendering order:
-1. Read rectangles (main pass)
-2. Gaps/deletions (dark lines over reads)
-3. Mismatches (colored by base A/C/G/T)
-4. Insertions (purple triangles)
+Visibility thresholds (to avoid clutter at zoomed-out levels):
+- Gaps: Always visible
+- Mismatches: Only when bp/px < 50
+- Insertions: Only when bp/px < 100
 
 ### 2. Add Feature Interaction (Click/Hover)
 

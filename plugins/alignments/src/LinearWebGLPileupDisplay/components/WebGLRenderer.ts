@@ -5,7 +5,7 @@
  * Data is uploaded once, then rendering only updates uniforms.
  */
 
-import type { FeatureData, CoverageData } from '../model'
+import type { FeatureData, CoverageData, GapData, MismatchData, InsertionData } from '../model'
 
 // Vertex shader for reads
 const READ_VERTEX_SHADER = `#version 300 es
@@ -178,6 +178,184 @@ void main() {
 }
 `
 
+// Gap (deletion/skip) vertex shader - dark rectangles over reads
+const GAP_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in vec2 a_position;  // start, end
+in float a_y;
+
+uniform vec2 u_domainX;
+uniform vec2 u_rangeY;
+uniform float u_featureHeight;
+uniform float u_featureSpacing;
+uniform float u_coverageOffset;
+uniform float u_canvasHeight;
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+
+  float domainWidth = u_domainX.y - u_domainX.x;
+  float sx1 = (a_position.x - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx2 = (a_position.y - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx = mix(sx1, sx2, localX);
+
+  // Gap is a thin line in the middle of the read row
+  float availableHeight = u_canvasHeight - u_coverageOffset;
+  float yRange = u_rangeY.y - u_rangeY.x;
+  float rowHeight = u_featureHeight + u_featureSpacing;
+
+  float yMid = a_y * rowHeight + u_featureHeight * 0.5;
+  float gapHeight = u_featureHeight * 0.3;
+
+  float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
+  float syTop = pileupTop - (yMid - gapHeight - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float syBot = pileupTop - (yMid + gapHeight - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float sy = mix(syBot, syTop, localY);
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+}
+`
+
+const GAP_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+out vec4 fragColor;
+void main() {
+  fragColor = vec4(0.15, 0.15, 0.15, 1.0);  // Dark for deletion
+}
+`
+
+// Mismatch vertex shader - colored rectangles for SNPs
+const MISMATCH_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in float a_position;  // Genomic position
+in float a_y;
+in float a_base;      // 0=A, 1=C, 2=G, 3=T
+
+uniform vec2 u_domainX;
+uniform vec2 u_rangeY;
+uniform float u_featureHeight;
+uniform float u_featureSpacing;
+uniform float u_coverageOffset;
+uniform float u_canvasHeight;
+
+out vec4 v_color;
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+
+  float domainWidth = u_domainX.y - u_domainX.x;
+
+  // Mismatch is 1bp wide, ensure minimum screen width
+  float x1 = a_position;
+  float x2 = a_position + 1.0;
+
+  float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+
+  // Minimum width of ~3 pixels
+  float minWidth = 6.0 / domainWidth * 2.0;
+  if (sx2 - sx1 < minWidth) {
+    float mid = (sx1 + sx2) * 0.5;
+    sx1 = mid - minWidth * 0.5;
+    sx2 = mid + minWidth * 0.5;
+  }
+
+  float sx = mix(sx1, sx2, localX);
+
+  float availableHeight = u_canvasHeight - u_coverageOffset;
+  float yRange = u_rangeY.y - u_rangeY.x;
+  float rowHeight = u_featureHeight + u_featureSpacing;
+  float yTop = a_y * rowHeight;
+  float yBot = yTop + u_featureHeight;
+
+  float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
+  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float sy = mix(syBot, syTop, localY);
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+
+  // Base colors: A=green, C=blue, G=orange, T=red
+  vec3 baseColors[4] = vec3[4](
+    vec3(0.3, 0.8, 0.3),   // A = green
+    vec3(0.3, 0.3, 0.9),   // C = blue
+    vec3(0.9, 0.7, 0.2),   // G = orange
+    vec3(0.9, 0.3, 0.3)    // T = red
+  );
+  int baseIdx = int(a_base);
+  v_color = vec4(baseColors[baseIdx], 1.0);
+}
+`
+
+const MISMATCH_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
+// Insertion vertex shader - small triangles
+const INSERTION_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in float a_position;
+in float a_y;
+
+uniform vec2 u_domainX;
+uniform vec2 u_rangeY;
+uniform float u_featureHeight;
+uniform float u_featureSpacing;
+uniform float u_coverageOffset;
+uniform float u_canvasHeight;
+
+out vec4 v_color;
+
+void main() {
+  int vid = gl_VertexID % 3;
+
+  float domainWidth = u_domainX.y - u_domainX.x;
+  float availableHeight = u_canvasHeight - u_coverageOffset;
+  float yRange = u_rangeY.y - u_rangeY.x;
+  float rowHeight = u_featureHeight + u_featureSpacing;
+
+  float cx = (a_position - u_domainX.x) / domainWidth * 2.0 - 1.0;
+
+  float yMid = a_y * rowHeight + u_featureHeight * 0.5;
+  float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
+  float cy = pileupTop - (yMid - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+
+  // Triangle size
+  float sizeX = 0.008;
+  float sizeY = 0.025;
+
+  vec2 offsets[3] = vec2[3](
+    vec2(0.0, sizeY),     // Top
+    vec2(-sizeX, -sizeY), // Bottom left
+    vec2(sizeX, -sizeY)   // Bottom right
+  );
+
+  gl_Position = vec4(cx + offsets[vid].x, cy + offsets[vid].y, 0.0, 1.0);
+  v_color = vec4(0.8, 0.2, 0.8, 1.0);  // Purple for insertions
+}
+`
+
+const INSERTION_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
 export interface RenderState {
   domainX: [number, number]
   rangeY: [number, number]
@@ -186,6 +364,7 @@ export interface RenderState {
   featureSpacing: number
   showCoverage: boolean
   coverageHeight: number
+  showMismatches: boolean
 }
 
 interface GPUBuffers {
@@ -195,6 +374,13 @@ interface GPUBuffers {
   coverageCount: number
   maxDepth: number
   binSize: number
+  // CIGAR data
+  gapVAO: WebGLVertexArrayObject | null
+  gapCount: number
+  mismatchVAO: WebGLVertexArrayObject | null
+  mismatchCount: number
+  insertionVAO: WebGLVertexArrayObject | null
+  insertionCount: number
 }
 
 export class WebGLRenderer {
@@ -204,6 +390,9 @@ export class WebGLRenderer {
   private readProgram: WebGLProgram
   private coverageProgram: WebGLProgram
   private lineProgram: WebGLProgram
+  private gapProgram: WebGLProgram
+  private mismatchProgram: WebGLProgram
+  private insertionProgram: WebGLProgram
 
   private buffers: GPUBuffers | null = null
   private layoutMap: Map<string, number> = new Map()
@@ -212,6 +401,9 @@ export class WebGLRenderer {
   private readUniforms: Record<string, WebGLUniformLocation | null> = {}
   private coverageUniforms: Record<string, WebGLUniformLocation | null> = {}
   private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private gapUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private mismatchUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private insertionUniforms: Record<string, WebGLUniformLocation | null> = {}
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -237,6 +429,9 @@ export class WebGLRenderer {
     )
 
     this.lineProgram = this.createProgram(LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER)
+    this.gapProgram = this.createProgram(GAP_VERTEX_SHADER, GAP_FRAGMENT_SHADER)
+    this.mismatchProgram = this.createProgram(MISMATCH_VERTEX_SHADER, MISMATCH_FRAGMENT_SHADER)
+    this.insertionProgram = this.createProgram(INSERTION_VERTEX_SHADER, INSERTION_FRAGMENT_SHADER)
 
     this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_color'])
 
@@ -260,6 +455,18 @@ export class WebGLRenderer {
       'u_binSize',
       'u_canvasHeight',
     ])
+
+    const cigarUniforms = [
+      'u_domainX',
+      'u_rangeY',
+      'u_featureHeight',
+      'u_featureSpacing',
+      'u_coverageOffset',
+      'u_canvasHeight',
+    ]
+    this.cacheUniforms(this.gapProgram, this.gapUniforms, cigarUniforms)
+    this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, cigarUniforms)
+    this.cacheUniforms(this.insertionProgram, this.insertionUniforms, cigarUniforms)
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -332,6 +539,15 @@ export class WebGLRenderer {
       if (this.buffers.coverageVAO) {
         gl.deleteVertexArray(this.buffers.coverageVAO)
       }
+      if (this.buffers.gapVAO) {
+        gl.deleteVertexArray(this.buffers.gapVAO)
+      }
+      if (this.buffers.mismatchVAO) {
+        gl.deleteVertexArray(this.buffers.mismatchVAO)
+      }
+      if (this.buffers.insertionVAO) {
+        gl.deleteVertexArray(this.buffers.insertionVAO)
+      }
     }
 
     if (features.length === 0) {
@@ -377,9 +593,117 @@ export class WebGLRenderer {
       coverageCount: 0,
       maxDepth: 0,
       binSize: 1,
+      gapVAO: null,
+      gapCount: 0,
+      mismatchVAO: null,
+      mismatchCount: 0,
+      insertionVAO: null,
+      insertionCount: 0,
     }
 
     return { maxY }
+  }
+
+  uploadCigarData(
+    gaps: GapData[],
+    mismatches: MismatchData[],
+    insertions: InsertionData[],
+  ) {
+    const gl = this.gl
+
+    if (!this.buffers) {
+      return
+    }
+
+    // Clean up old CIGAR VAOs
+    if (this.buffers.gapVAO) {
+      gl.deleteVertexArray(this.buffers.gapVAO)
+      this.buffers.gapVAO = null
+    }
+    if (this.buffers.mismatchVAO) {
+      gl.deleteVertexArray(this.buffers.mismatchVAO)
+      this.buffers.mismatchVAO = null
+    }
+    if (this.buffers.insertionVAO) {
+      gl.deleteVertexArray(this.buffers.insertionVAO)
+      this.buffers.insertionVAO = null
+    }
+
+    // Upload gaps
+    if (gaps.length > 0) {
+      const gapPositions = new Float32Array(gaps.length * 2)
+      const gapYs = new Float32Array(gaps.length)
+
+      for (let i = 0; i < gaps.length; i++) {
+        const g = gaps[i]
+        const y = this.layoutMap.get(g.featureId) ?? 0
+        gapPositions[i * 2] = g.start
+        gapPositions[i * 2 + 1] = g.end
+        gapYs[i] = y
+      }
+
+      const gapVAO = gl.createVertexArray()!
+      gl.bindVertexArray(gapVAO)
+      this.uploadBuffer(this.gapProgram, 'a_position', gapPositions, 2)
+      this.uploadBuffer(this.gapProgram, 'a_y', gapYs, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.gapVAO = gapVAO
+      this.buffers.gapCount = gaps.length
+    } else {
+      this.buffers.gapCount = 0
+    }
+
+    // Upload mismatches
+    if (mismatches.length > 0) {
+      const mmPositions = new Float32Array(mismatches.length)
+      const mmYs = new Float32Array(mismatches.length)
+      const mmBases = new Float32Array(mismatches.length)
+
+      for (let i = 0; i < mismatches.length; i++) {
+        const mm = mismatches[i]
+        const y = this.layoutMap.get(mm.featureId) ?? 0
+        mmPositions[i] = mm.position
+        mmYs[i] = y
+        mmBases[i] = mm.base
+      }
+
+      const mismatchVAO = gl.createVertexArray()!
+      gl.bindVertexArray(mismatchVAO)
+      this.uploadBuffer(this.mismatchProgram, 'a_position', mmPositions, 1)
+      this.uploadBuffer(this.mismatchProgram, 'a_y', mmYs, 1)
+      this.uploadBuffer(this.mismatchProgram, 'a_base', mmBases, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.mismatchVAO = mismatchVAO
+      this.buffers.mismatchCount = mismatches.length
+    } else {
+      this.buffers.mismatchCount = 0
+    }
+
+    // Upload insertions
+    if (insertions.length > 0) {
+      const insPositions = new Float32Array(insertions.length)
+      const insYs = new Float32Array(insertions.length)
+
+      for (let i = 0; i < insertions.length; i++) {
+        const ins = insertions[i]
+        const y = this.layoutMap.get(ins.featureId) ?? 0
+        insPositions[i] = ins.position
+        insYs[i] = y
+      }
+
+      const insertionVAO = gl.createVertexArray()!
+      gl.bindVertexArray(insertionVAO)
+      this.uploadBuffer(this.insertionProgram, 'a_position', insPositions, 1)
+      this.uploadBuffer(this.insertionProgram, 'a_y', insYs, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.insertionVAO = insertionVAO
+      this.buffers.insertionCount = insertions.length
+    } else {
+      this.buffers.insertionCount = 0
+    }
   }
 
   uploadCoverage(
@@ -538,6 +862,53 @@ export class WebGLRenderer {
     gl.bindVertexArray(this.buffers.readVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.readCount)
 
+    // Draw CIGAR features if enabled
+    if (state.showMismatches) {
+      const bpPerPx = (state.domainX[1] - state.domainX[0]) / canvas.width
+
+      // Draw gaps (deletions) - always visible
+      if (this.buffers.gapVAO && this.buffers.gapCount > 0) {
+        gl.useProgram(this.gapProgram)
+        gl.uniform2f(this.gapUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.gapUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
+        gl.uniform1f(this.gapUniforms.u_featureHeight!, state.featureHeight)
+        gl.uniform1f(this.gapUniforms.u_featureSpacing!, state.featureSpacing)
+        gl.uniform1f(this.gapUniforms.u_coverageOffset!, coverageOffset)
+        gl.uniform1f(this.gapUniforms.u_canvasHeight!, canvas.height)
+
+        gl.bindVertexArray(this.buffers.gapVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.gapCount)
+      }
+
+      // Draw mismatches - only when zoomed in enough (< 50 bp/px)
+      if (this.buffers.mismatchVAO && this.buffers.mismatchCount > 0 && bpPerPx < 50) {
+        gl.useProgram(this.mismatchProgram)
+        gl.uniform2f(this.mismatchUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.mismatchUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
+        gl.uniform1f(this.mismatchUniforms.u_featureHeight!, state.featureHeight)
+        gl.uniform1f(this.mismatchUniforms.u_featureSpacing!, state.featureSpacing)
+        gl.uniform1f(this.mismatchUniforms.u_coverageOffset!, coverageOffset)
+        gl.uniform1f(this.mismatchUniforms.u_canvasHeight!, canvas.height)
+
+        gl.bindVertexArray(this.buffers.mismatchVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.mismatchCount)
+      }
+
+      // Draw insertions - only when zoomed in enough (< 100 bp/px)
+      if (this.buffers.insertionVAO && this.buffers.insertionCount > 0 && bpPerPx < 100) {
+        gl.useProgram(this.insertionProgram)
+        gl.uniform2f(this.insertionUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.insertionUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
+        gl.uniform1f(this.insertionUniforms.u_featureHeight!, state.featureHeight)
+        gl.uniform1f(this.insertionUniforms.u_featureSpacing!, state.featureSpacing)
+        gl.uniform1f(this.insertionUniforms.u_coverageOffset!, coverageOffset)
+        gl.uniform1f(this.insertionUniforms.u_canvasHeight!, canvas.height)
+
+        gl.bindVertexArray(this.buffers.insertionVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.buffers.insertionCount)
+      }
+    }
+
     gl.disable(gl.SCISSOR_TEST)
     gl.bindVertexArray(null)
   }
@@ -549,6 +920,15 @@ export class WebGLRenderer {
       if (this.buffers.coverageVAO) {
         gl.deleteVertexArray(this.buffers.coverageVAO)
       }
+      if (this.buffers.gapVAO) {
+        gl.deleteVertexArray(this.buffers.gapVAO)
+      }
+      if (this.buffers.mismatchVAO) {
+        gl.deleteVertexArray(this.buffers.mismatchVAO)
+      }
+      if (this.buffers.insertionVAO) {
+        gl.deleteVertexArray(this.buffers.insertionVAO)
+      }
     }
     if (this.lineBuffer) {
       gl.deleteBuffer(this.lineBuffer)
@@ -556,5 +936,8 @@ export class WebGLRenderer {
     gl.deleteProgram(this.readProgram)
     gl.deleteProgram(this.coverageProgram)
     gl.deleteProgram(this.lineProgram)
+    gl.deleteProgram(this.gapProgram)
+    gl.deleteProgram(this.mismatchProgram)
+    gl.deleteProgram(this.insertionProgram)
   }
 }

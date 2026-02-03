@@ -45,6 +45,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   const {
     webglFeatures,
+    webglGaps,
+    webglMismatches,
+    webglInsertions,
     isLoading,
     error,
     featureHeight,
@@ -53,6 +56,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     showCoverage,
     coverageHeight,
     coverageData,
+    showMismatches,
   } = model
 
   const width = view?.initialized ? view.width : undefined
@@ -68,13 +72,33 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     [minOffset, maxOffset],
   )
 
-  // Compute domain using the view's coordinate system
-  // This properly handles multi-region views by using the view's pxToBp conversion
+  // Track domain directly for smooth zoom (bypasses view.pxToBp which uses stale bpPerPx)
+  const domainRef = useRef<[number, number] | null>(null)
+
+  // Initialize/sync domain from view when not interacting
+  const syncDomainFromView = useCallback(() => {
+    if (!view?.initialized || width === undefined) {
+      return
+    }
+    const startBp = view.pxToBp(view.offsetPx)
+    const endBp = view.pxToBp(view.offsetPx + width)
+    if (startBp && endBp && startBp.refName === endBp.refName) {
+      domainRef.current = [startBp.coord, endBp.coord]
+    }
+  }, [view, width])
+
+  // Compute domain - use local ref during interaction, otherwise compute from view
   const computeDomain = useCallback((): [number, number] | null => {
     if (!view?.initialized || width === undefined) {
       return null
     }
-    // Use the view's pxToBp method which handles multi-region coordinate conversion
+
+    // During interaction, use our tracked domain
+    if (interactingRef.current && domainRef.current) {
+      return domainRef.current
+    }
+
+    // Otherwise compute from view
     const startBp = view.pxToBp(offsetPxRef.current)
     const endBp = view.pxToBp(offsetPxRef.current + width)
 
@@ -84,7 +108,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
     // For single-region or same-region views
     if (startBp.refName === endBp.refName) {
-      return [startBp.coord, endBp.coord]
+      const domain: [number, number] = [startBp.coord, endBp.coord]
+      domainRef.current = domain
+      return domain
     }
 
     // For multi-region spanning views, use the visible region from the model
@@ -114,8 +140,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       featureSpacing,
       showCoverage,
       coverageHeight,
+      showMismatches,
     })
-  }, [computeDomain, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight])
+  }, [computeDomain, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches])
 
   // Render immediately - no RAF delay for smooth interaction
   const renderImmediate = useCallback(() => {
@@ -248,8 +275,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
     offsetPxRef.current = view.offsetPx
     bpPerPxRef.current = view.bpPerPx
+    syncDomainFromView()
     scheduleRender()
-  }, [view?.offsetPx, view?.bpPerPx, view?.initialized, scheduleRender])
+  }, [view?.offsetPx, view?.bpPerPx, view?.initialized, scheduleRender, syncDomainFromView])
 
   // Upload features
   useEffect(() => {
@@ -259,8 +287,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     const result = rendererRef.current.uploadFeatures(webglFeatures)
     setMaxY(result.maxY)
     model.setMaxY(result.maxY)
+
+    // Upload CIGAR data (gaps, mismatches, insertions)
+    rendererRef.current.uploadCigarData(webglGaps, webglMismatches, webglInsertions)
+
     scheduleRender()
-  }, [webglFeatures, model, scheduleRender])
+  }, [webglFeatures, webglGaps, webglMismatches, webglInsertions, model, scheduleRender])
 
   // Upload coverage
   useEffect(() => {
@@ -280,7 +312,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     if (rendererReady) {
       scheduleRender()
     }
-  }, [rendererReady, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, scheduleRender, webglFeatures])
+  }, [rendererReady, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches, scheduleRender, webglFeatures])
 
   // Reset data request tracking
   useEffect(() => {
@@ -315,8 +347,11 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       interactingRef.current = true
 
-      // Horizontal scroll - pan
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      const absX = Math.abs(e.deltaX)
+      const absY = Math.abs(e.deltaY)
+
+      // Horizontal scroll - pan (only if clearly horizontal, with threshold)
+      if (absX > 5 && absX > absY * 2) {
         offsetPxRef.current = clampOffset(offsetPxRef.current + e.deltaX)
         broadcast()
         renderImmediate()
@@ -325,8 +360,13 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         return
       }
 
+      // Ignore if no significant vertical movement
+      if (absY < 1) {
+        return
+      }
+
       if (e.shiftKey) {
-        // Vertical scroll
+        // Vertical scroll within pileup
         const rowHeight = featureHeight + featureSpacing
         const totalHeight = maxY * rowHeight
         const panAmount = e.deltaY * 0.5
@@ -343,32 +383,50 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         rangeYRef.current = newY
         renderImmediate()
       } else {
-        // Zoom
+        // Zoom around mouse position
+        const currentDomain = domainRef.current
+        if (!currentDomain) {
+          syncDomainFromView()
+          return
+        }
+
         const rect = canvas.getBoundingClientRect()
         const mouseX = e.clientX - rect.left
-        const zoomFactor = e.deltaY > 0 ? 1.15 : 1 / 1.15
+        const zoomFactor = e.deltaY > 0 ? 1.05 : 1 / 1.05
 
-        // Zoom around mouse position
-        const oldBpPerPx = bpPerPxRef.current
-        const newBpPerPx = Math.max(
-          view.minBpPerPx,
-          Math.min(view.maxBpPerPx, oldBpPerPx * zoomFactor)
-        )
+        // Calculate genomic position under mouse
+        const domainWidth = currentDomain[1] - currentDomain[0]
+        const mouseFraction = mouseX / width
+        const mouseBp = currentDomain[0] + domainWidth * mouseFraction
 
-        if (newBpPerPx !== oldBpPerPx) {
-          // Adjust offset to keep mouse position stable
-          const mouseBp = offsetPxRef.current * oldBpPerPx + mouseX * oldBpPerPx
-          offsetPxRef.current = clampOffset((mouseBp - mouseX * newBpPerPx) / newBpPerPx)
-          bpPerPxRef.current = newBpPerPx
+        // Calculate new domain width
+        const newDomainWidth = domainWidth * zoomFactor
+        const newBpPerPx = newDomainWidth / width
 
-          broadcast()
-          renderImmediate()
-
-          // Don't call view.zoomTo() here - it triggers mobx and causes stutter
-          // Only sync back on debounce
-          debouncedSyncToView()
-          checkDataNeeds()
+        // Check zoom limits
+        if (newBpPerPx < view.minBpPerPx || newBpPerPx > view.maxBpPerPx) {
+          return
         }
+
+        // Position new domain so mouseBp stays at same screen position
+        const newDomainStart = mouseBp - mouseFraction * newDomainWidth
+        const newDomainEnd = newDomainStart + newDomainWidth
+        domainRef.current = [newDomainStart, newDomainEnd]
+
+        // Update bpPerPx for sync
+        bpPerPxRef.current = newBpPerPx
+
+        // Back-calculate offsetPx for syncing to view (approximate)
+        // This uses the view's coordinate system for compatibility
+        const baseBp = view.pxToBp(0)
+        if (baseBp) {
+          offsetPxRef.current = clampOffset((newDomainStart - baseBp.coord) / newBpPerPx)
+        }
+
+        broadcast()
+        renderImmediate()
+        debouncedSyncToView()
+        checkDataNeeds()
       }
     }
 
@@ -376,7 +434,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     return () => {
       canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [view, width, maxY, featureHeight, featureSpacing, broadcast, renderImmediate, debouncedSyncToView, checkDataNeeds, clampOffset])
+  }, [view, width, maxY, featureHeight, featureSpacing, broadcast, renderImmediate, debouncedSyncToView, checkDataNeeds, clampOffset, syncDomainFromView])
 
   // Pan handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -499,6 +557,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           {Math.round(domain[0])}-{Math.round(domain[1])} | {displayBpPerPx.toFixed(2)} bp/px |{' '}
           {webglFeatures.length} reads
           {showCoverage && coverageData.maxDepth > 0 ? ` | max depth: ${coverageData.maxDepth}` : ''}
+          {showMismatches && (webglGaps.length > 0 || webglMismatches.length > 0)
+            ? ` | ${webglGaps.length} gaps, ${webglMismatches.length} SNPs`
+            : ''}
         </div>
       )}
     </div>
