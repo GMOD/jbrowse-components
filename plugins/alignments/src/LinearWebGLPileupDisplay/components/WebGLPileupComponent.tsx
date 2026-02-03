@@ -76,39 +76,44 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   const domainRef = useRef<[number, number] | null>(null)
 
   // Initialize/sync domain from view when not interacting
+  // Uses contentBlocks which have the correct visible coordinates
   const syncDomainFromView = useCallback(() => {
     if (!view?.initialized || width === undefined) {
       return
     }
-    const startBp = view.pxToBp(view.offsetPx)
-    const endBp = view.pxToBp(view.offsetPx + width)
-    if (startBp && endBp && startBp.refName === endBp.refName) {
-      domainRef.current = [startBp.coord, endBp.coord]
+    // @ts-ignore - dynamicBlocks access
+    const contentBlocks = view.dynamicBlocks?.contentBlocks
+    if (!contentBlocks || contentBlocks.length === 0) {
+      return
+    }
+    const first = contentBlocks[0]
+    const last = contentBlocks[contentBlocks.length - 1]
+    if (first.refName === last.refName) {
+      domainRef.current = [first.start, last.end]
     }
   }, [view, width])
 
-  // Compute domain - use local ref during interaction, otherwise compute from view
+  // Compute domain - use local ref when available, otherwise compute from contentBlocks
   const computeDomain = useCallback((): [number, number] | null => {
     if (!view?.initialized || width === undefined) {
       return null
     }
 
-    // During interaction, use our tracked domain
-    if (interactingRef.current && domainRef.current) {
+    // Use tracked domain if available (set during interaction or from broadcast)
+    if (domainRef.current) {
       return domainRef.current
     }
 
-    // Otherwise compute from view
-    const startBp = view.pxToBp(offsetPxRef.current)
-    const endBp = view.pxToBp(offsetPxRef.current + width)
-
-    if (!startBp || !endBp) {
+    // Otherwise compute from contentBlocks (same as visibleRegion)
+    // @ts-ignore - dynamicBlocks access
+    const contentBlocks = view.dynamicBlocks?.contentBlocks
+    if (!contentBlocks || contentBlocks.length === 0) {
       return null
     }
-
-    // For single-region or same-region views
-    if (startBp.refName === endBp.refName) {
-      const domain: [number, number] = [startBp.coord, endBp.coord]
+    const first = contentBlocks[0]
+    const last = contentBlocks[contentBlocks.length - 1]
+    if (first.refName === last.refName) {
+      const domain: [number, number] = [first.start, last.end]
       domainRef.current = domain
       return domain
     }
@@ -132,6 +137,19 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       return
     }
 
+    // Debug: log render domain (throttled)
+    if (!renderNow._lastLog || Date.now() - renderNow._lastLog > 1000) {
+      renderNow._lastLog = Date.now()
+      console.log('[renderNow] Rendering with domain:', {
+        domainX: domain,
+        domainWidth: domain[1] - domain[0],
+        bpPerPxRef: bpPerPxRef.current,
+        offsetPxRef: offsetPxRef.current,
+        canvasWidth: width,
+        calculatedBpPerPx: width ? (domain[1] - domain[0]) / width : 'N/A',
+      })
+    }
+
     rendererRef.current.render({
       domainX: domain,
       rangeY: rangeYRef.current,
@@ -142,7 +160,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       coverageHeight,
       showMismatches,
     })
-  }, [computeDomain, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches])
+  }, [computeDomain, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches, width]) as { (): void; _lastLog?: number }
 
   // Render immediately - no RAF delay for smooth interaction
   const renderImmediate = useCallback(() => {
@@ -169,16 +187,16 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     coordinator.broadcast({
       offsetPx: offsetPxRef.current,
       bpPerPx: bpPerPxRef.current,
+      domain: domainRef.current,
       sourceId: canvasId,
     })
   }, [viewId, canvasId])
 
-  // Sync back to mobx view (debounced)
+  // Sync back to mobx view (debounced to avoid feedback loops)
   const syncToView = useCallback(() => {
     if (!view?.initialized) {
       return
     }
-    // Sync both position and zoom level
     view.setNewView(bpPerPxRef.current, offsetPxRef.current)
   }, [view])
 
@@ -188,7 +206,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
     syncTimeoutRef.current = setTimeout(() => {
       syncToView()
-      interactingRef.current = false // Reset after interaction settles
+      interactingRef.current = false
       syncTimeoutRef.current = null
     }, 100)
   }, [syncToView])
@@ -257,6 +275,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       // Received update from another canvas - update refs and render immediately
       offsetPxRef.current = position.offsetPx
       bpPerPxRef.current = position.bpPerPx
+      // Use the domain directly from the source canvas to avoid stale bpPerPx issues
+      if (position.domain) {
+        domainRef.current = position.domain
+      }
       renderImmediate()
     })
     return () => {
@@ -284,6 +306,19 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     if (!rendererRef.current || webglFeatures.length === 0) {
       return
     }
+
+    // Debug: log feature coordinate ranges
+    const minStart = Math.min(...webglFeatures.map(f => f.start))
+    const maxEnd = Math.max(...webglFeatures.map(f => f.end))
+    console.log('[uploadFeatures] Feature coordinate range:', {
+      featureCount: webglFeatures.length,
+      minStart,
+      maxEnd,
+      span: maxEnd - minStart,
+      loadedRegion: model.loadedRegion,
+      sampleFeatures: webglFeatures.slice(0, 3).map(f => ({ id: f.id, start: f.start, end: f.end })),
+    })
+
     const result = rendererRef.current.uploadFeatures(webglFeatures)
     setMaxY(result.maxY)
     model.setMaxY(result.maxY)
@@ -352,6 +387,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       // Horizontal scroll - pan (only if clearly horizontal, with threshold)
       if (absX > 5 && absX > absY * 2) {
+        const currentDomain = domainRef.current
+        if (currentDomain) {
+          // Convert pixel delta to bp delta and shift domain
+          const deltaBp = e.deltaX * bpPerPxRef.current
+          domainRef.current = [currentDomain[0] + deltaBp, currentDomain[1] + deltaBp]
+        }
         offsetPxRef.current = clampOffset(offsetPxRef.current + e.deltaX)
         broadcast()
         renderImmediate()
@@ -458,6 +499,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       dragRef.current.lastY = e.clientY
 
       if (dx !== 0) {
+        const currentDomain = domainRef.current
+        if (currentDomain) {
+          // Dragging left (negative dx) should move view right (positive bp)
+          const deltaBp = -dx * bpPerPxRef.current
+          domainRef.current = [currentDomain[0] + deltaBp, currentDomain[1] + deltaBp]
+        }
         offsetPxRef.current = clampOffset(offsetPxRef.current - dx)
         broadcast()
         renderImmediate()

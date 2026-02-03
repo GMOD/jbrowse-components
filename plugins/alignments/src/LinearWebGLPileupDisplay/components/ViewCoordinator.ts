@@ -9,6 +9,7 @@
 export interface ViewPosition {
   offsetPx: number
   bpPerPx: number
+  domain: [number, number] | null
   sourceId: string
 }
 
