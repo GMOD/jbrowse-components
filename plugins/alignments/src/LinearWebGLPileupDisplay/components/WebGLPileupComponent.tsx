@@ -425,7 +425,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
 
     // Use zero-copy upload path from RPC worker data
+    // Positions are offsets from regionStart for Float32 precision
     rendererRef.current.uploadFromTypedArrays({
+      regionStart: rpcData.regionStart,
       readPositions: rpcData.readPositions,
       readYs: rpcData.readYs,
       readFlags: rpcData.readFlags,
@@ -469,7 +471,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       return
     }
     rendererRef.current.uploadCoverageFromTypedArrays({
-      coveragePositions: rpcData.coveragePositions,
       coverageDepths: rpcData.coverageDepths,
       coverageMaxDepth: rpcData.coverageMaxDepth,
       coverageBinSize: rpcData.coverageBinSize,

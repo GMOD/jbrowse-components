@@ -3,29 +3,75 @@
  *
  * Handles shader compilation, buffer management, and rendering.
  * Data is uploaded once, then rendering only updates uniforms.
+ *
+ * High-precision position handling inspired by genome-spy
+ * (https://github.com/genome-spy/genome-spy)
+ * Uses 12-bit split approach to preserve Float32 precision for large genomic coordinates.
+ * Positions are split into high/low parts, subtracted separately, then combined.
  */
 
 import type { FeatureData, CoverageData, SNPCoverageData, GapData, MismatchData, InsertionData } from '../model'
 
+/**
+ * High-precision GLSL functions for genomic coordinates.
+ * Inspired by genome-spy (https://github.com/genome-spy/genome-spy)
+ *
+ * The 12-bit split approach:
+ * - Split 32-bit position into high bits (multiples of 4096) and low bits (0-4095)
+ * - Each part has fewer significant digits, reducing Float32 rounding errors
+ * - Subtract domain high/low parts separately, then combine
+ * - This preserves precision even for positions like 200,000,000 bp
+ */
+const HP_GLSL_FUNCTIONS = `
+// High-precision constants (12-bit split)
+const uint HP_LOW_MASK = 0xFFFu;  // 4095 - mask for low 12 bits
+const float HP_LOW_DIVISOR = 4096.0;
+
+// Split a uint into high and low parts for precision
+// High part is multiple of 4096, low part is 0-4095
+vec2 hpSplitUint(uint value) {
+  uint lo = value & HP_LOW_MASK;
+  uint hi = value - lo;
+  return vec2(float(hi), float(lo));
+}
+
+// Calculate normalized position (0-1) from split position and domain
+// domain.xy = [domainStartHi, domainStartLo], domain.z = domainExtent
+float hpScaleLinear(vec2 splitPos, vec3 domain) {
+  float hi = splitPos.x - domain.x;  // High parts subtracted (similar magnitude)
+  float lo = splitPos.y - domain.y;  // Low parts subtracted (both 0-4095)
+  return (hi + lo) / domain.z;       // Combine and normalize
+}
+
+// Calculate clip-space X from split position and domain
+float hpToClipX(vec2 splitPos, vec3 domain) {
+  return hpScaleLinear(splitPos, domain) * 2.0 - 1.0;
+}
+`
+
 // Vertex shader for reads
 const READ_VERTEX_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
 
-in vec2 a_position;
+in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in float a_y;
 in float a_flags;
 in float a_mapq;
 in float a_insertSize;
 
-uniform vec2 u_domainX;
+uniform vec3 u_domainX;  // [domainStartHi, domainStartLo, domainExtent]
+uniform uint u_regionStart;  // Base position for converting offsets to absolute
 uniform vec2 u_rangeY;
 uniform int u_colorScheme;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
-uniform float u_coverageOffset;  // pixels to offset down for coverage area
+uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 
 out vec4 v_color;
+
+${HP_GLSL_FUNCTIONS}
 
 vec3 strandColor(float flags) {
   return vec3(0.8, 0.8, 0.8);
@@ -55,23 +101,26 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  float domainWidth = u_domainX.y - u_domainX.x;
-  float sx1 = (a_position.x - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (a_position.y - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  // Convert offsets to absolute positions, then apply high-precision 12-bit split
+  uint absStart = a_position.x + u_regionStart;
+  uint absEnd = a_position.y + u_regionStart;
+  vec2 splitStart = hpSplitUint(absStart);
+  vec2 splitEnd = hpSplitUint(absEnd);
+  float sx1 = hpToClipX(splitStart, u_domainX);
+  float sx2 = hpToClipX(splitEnd, u_domainX);
   float sx = mix(sx1, sx2, localX);
 
-  // Calculate available height for pileup (below coverage)
-  float availableHeight = u_canvasHeight - u_coverageOffset;
-  float yRange = u_rangeY.y - u_rangeY.x;
+  // Calculate Y position in pixels (constant height per row)
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTop = a_y * rowHeight;
-  float yBot = yTop + u_featureHeight;
+  float yTopPx = a_y * rowHeight - u_rangeY.x;  // subtract scroll offset
+  float yBotPx = yTopPx + u_featureHeight;
 
-  // Map to clip space, accounting for coverage offset at top
-  // Coverage takes top u_coverageOffset pixels
+  // Convert to clip space: top of pileup area is at y = pileupTop
+  // Each pixel moves down by 2.0/canvasHeight in clip space
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
-  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
-  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float pxToClip = 2.0 / u_canvasHeight;
+  float syTop = pileupTop - yTopPx * pxToClip;
+  float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -97,13 +146,13 @@ void main() {
 `
 
 // Coverage vertex shader - renders grey bars for total coverage
+// Position is computed from binIndex * binSize (offset-based from regionStart)
 const COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-in float a_position;    // genomic position (start of bin)
 in float a_depth;       // normalized depth (0-1)
 
-uniform vec2 u_visibleRange;  // visible genomic range [start, end]
+uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
 uniform float u_coverageHeight;  // height in pixels
 uniform float u_binSize;
 uniform float u_canvasHeight;
@@ -116,11 +165,12 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  float visibleWidth = u_visibleRange.y - u_visibleRange.x;
+  // Compute bin position as offset (binIndex * binSize)
+  float binOffset = float(gl_InstanceID) * u_binSize;
+  float domainWidth = u_visibleRange.y - u_visibleRange.x;
 
-  // X: map genomic position to clip space
-  float x1 = (a_position - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
-  float x2 = (a_position + u_binSize - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
+  float x1 = (binOffset - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float x2 = (binOffset + u_binSize - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
 
   // Ensure minimum width of 1 pixel
   float minWidth = 2.0 / u_canvasWidth;
@@ -152,15 +202,16 @@ void main() {
 `
 
 // SNP Coverage vertex shader - renders colored stacked bars at exact positions
+// Uses simple float offsets (relative to regionStart) - sufficient for coverage features
 const SNP_COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-in float a_position;      // exact genomic position (1bp)
+in float a_position;       // position offset from regionStart
 in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
 in float a_segmentHeight; // height of this segment (normalized 0-1)
 in float a_colorType;     // 1=A(green), 2=C(blue), 3=G(orange), 4=T(red)
 
-uniform vec2 u_visibleRange;
+uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
 uniform float u_coverageHeight;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -172,11 +223,9 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  float visibleWidth = u_visibleRange.y - u_visibleRange.x;
-
-  // X: 1bp wide bar
-  float x1 = (a_position - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
-  float x2 = (a_position + 1.0 - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
+  float domainWidth = u_visibleRange.y - u_visibleRange.x;
+  float x1 = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float x2 = (a_position + 1.0 - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
 
   // Ensure minimum width of 1 pixel
   float minWidth = 2.0 / u_canvasWidth;
@@ -238,13 +287,14 @@ void main() {
 `
 
 // Gap (deletion/skip) vertex shader - dark rectangles over reads
+// Uses simple float offsets (relative to regionStart) - sufficient for CIGAR features
 const GAP_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-in vec2 a_position;  // start, end
+in vec2 a_position;  // [start, end] as float offsets from regionStart
 in float a_y;
 
-uniform vec2 u_domainX;
+uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -261,17 +311,15 @@ void main() {
   float sx2 = (a_position.y - u_domainX.x) / domainWidth * 2.0 - 1.0;
   float sx = mix(sx1, sx2, localX);
 
-  // Gap is a thin line in the middle of the read row
-  float availableHeight = u_canvasHeight - u_coverageOffset;
-  float yRange = u_rangeY.y - u_rangeY.x;
+  // Gap is a thin line in the middle of the read row (constant pixel height)
   float rowHeight = u_featureHeight + u_featureSpacing;
-
-  float yMid = a_y * rowHeight + u_featureHeight * 0.5;
+  float yMidPx = a_y * rowHeight + u_featureHeight * 0.5 - u_rangeY.x;
   float gapHeight = u_featureHeight * 0.3;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
-  float syTop = pileupTop - (yMid - gapHeight - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
-  float syBot = pileupTop - (yMid + gapHeight - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float pxToClip = 2.0 / u_canvasHeight;
+  float syTop = pileupTop - (yMidPx - gapHeight) * pxToClip;
+  float syBot = pileupTop - (yMidPx + gapHeight) * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -287,14 +335,15 @@ void main() {
 `
 
 // Mismatch vertex shader - colored rectangles for SNPs
+// Uses simple float offsets (relative to regionStart) - sufficient for CIGAR features
 const MISMATCH_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-in float a_position;  // Genomic position
+in float a_position;   // Position offset from regionStart
 in float a_y;
 in float a_base;      // 0=A, 1=C, 2=G, 3=T
 
-uniform vec2 u_domainX;
+uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -310,13 +359,8 @@ void main() {
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
   float domainWidth = u_domainX.y - u_domainX.x;
-
-  // Mismatch is 1bp wide
-  float x1 = a_position;
-  float x2 = a_position + 1.0;
-
-  float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx1 = (a_position - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx2 = (a_position + 1.0 - u_domainX.x) / domainWidth * 2.0 - 1.0;
 
   // Ensure minimum width of 1 pixel
   float minWidth = 2.0 / u_canvasWidth;
@@ -328,15 +372,15 @@ void main() {
 
   float sx = mix(sx1, sx2, localX);
 
-  float availableHeight = u_canvasHeight - u_coverageOffset;
-  float yRange = u_rangeY.y - u_rangeY.x;
+  // Calculate Y position in pixels (constant height per row)
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTop = a_y * rowHeight;
-  float yBot = yTop + u_featureHeight;
+  float yTopPx = a_y * rowHeight - u_rangeY.x;
+  float yBotPx = yTopPx + u_featureHeight;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
-  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
-  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float pxToClip = 2.0 / u_canvasHeight;
+  float syTop = pileupTop - yTopPx * pxToClip;
+  float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -364,14 +408,15 @@ void main() {
 
 // Insertion vertex shader - vertical bars like PileupRenderer
 // Renders: main bar + top tick + bottom tick (3 rectangles = 18 vertices per insertion)
+// Uses simple float offsets (relative to regionStart) - sufficient for CIGAR features
 const INSERTION_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-in float a_position;
+in float a_position;   // Position offset from regionStart
 in float a_y;
-in float a_length;  // insertion length
+in float a_length;    // insertion length
 
-uniform vec2 u_domainX;
+uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -395,64 +440,60 @@ void main() {
   float bpPerPx = domainWidth / u_canvasWidth;
   float invBpPerPx = 1.0 / bpPerPx;
 
-  // Bar width: max 1.2px in genomic coords, min 1px
-  float barWidthBp = max(bpPerPx, min(1.2 * bpPerPx, 1.0));
-  float tickWidthBp = barWidthBp * 3.0;  // Tick marks are 3x wider
+  // Center position in clip space
+  float cxClip = (a_position - u_domainX.x) / domainWidth * 2.0 - 1.0;
 
-  float cx = a_position;
+  // Bar and tick widths in clip space (2.0 = full width)
+  float barWidthClip = max(2.0 / u_canvasWidth, min(1.2 * 2.0 / u_canvasWidth, 2.0 / domainWidth));
+  float tickWidthClip = barWidthClip * 3.0;
 
-  float availableHeight = u_canvasHeight - u_coverageOffset;
-  float yRange = u_rangeY.y - u_rangeY.x;
+  // Calculate Y position in pixels (constant height per row)
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTop = a_y * rowHeight;
-  float yBot = yTop + u_featureHeight;
+  float yTopPx = a_y * rowHeight - u_rangeY.x;
+  float yBotPx = yTopPx + u_featureHeight;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
-  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
-  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float pxToClip = 2.0 / u_canvasHeight;
+  float syTop = pileupTop - yTopPx * pxToClip;
+  float syBot = pileupTop - yBotPx * pxToClip;
 
-  float x1, x2, y1, y2;
+  float sx1, sx2, y1, y2;
 
   if (rectIdx == 0) {
     // Main vertical bar
-    x1 = cx - barWidthBp * 0.5;
-    x2 = cx + barWidthBp * 0.5;
+    sx1 = cxClip - barWidthClip * 0.5;
+    sx2 = cxClip + barWidthClip * 0.5;
     y1 = syBot;
     y2 = syTop;
   } else if (rectIdx == 1) {
     // Top tick (only show when zoomed in enough)
     if (invBpPerPx < 6.0) {
-      // Not zoomed in enough - degenerate to zero-area rect
-      x1 = cx;
-      x2 = cx;
+      sx1 = cxClip;
+      sx2 = cxClip;
       y1 = syTop;
       y2 = syTop;
     } else {
-      x1 = cx - tickWidthBp * 0.5;
-      x2 = cx + tickWidthBp * 0.5;
-      float tickHeight = 1.0 / u_canvasHeight * 2.0;  // 1px in clip space
+      sx1 = cxClip - tickWidthClip * 0.5;
+      sx2 = cxClip + tickWidthClip * 0.5;
+      float tickHeight = 1.0 / u_canvasHeight * 2.0;
       y1 = syTop;
       y2 = syTop + tickHeight;
     }
   } else {
     // Bottom tick (only show when zoomed in enough)
     if (invBpPerPx < 6.0) {
-      x1 = cx;
-      x2 = cx;
+      sx1 = cxClip;
+      sx2 = cxClip;
       y1 = syBot;
       y2 = syBot;
     } else {
-      x1 = cx - tickWidthBp * 0.5;
-      x2 = cx + tickWidthBp * 0.5;
+      sx1 = cxClip - tickWidthClip * 0.5;
+      sx2 = cxClip + tickWidthClip * 0.5;
       float tickHeight = 1.0 / u_canvasHeight * 2.0;
       y1 = syBot - tickHeight;
       y2 = syBot;
     }
   }
-
-  // Transform X to clip space
-  float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
 
   // Ensure minimum width of 1 pixel for the bar
   float minWidth = 2.0 / u_canvasWidth;
@@ -525,15 +566,15 @@ void main() {
 
   float sx = mix(sx1, sx2, localX);
 
-  float availableHeight = u_canvasHeight - u_coverageOffset;
-  float yRange = u_rangeY.y - u_rangeY.x;
+  // Calculate Y position in pixels (constant height per row)
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTop = a_y * rowHeight;
-  float yBot = yTop + u_featureHeight;
+  float yTopPx = a_y * rowHeight - u_rangeY.x;
+  float yBotPx = yTopPx + u_featureHeight;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
-  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
-  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float pxToClip = 2.0 / u_canvasHeight;
+  float syTop = pileupTop - yTopPx * pxToClip;
+  float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -596,15 +637,15 @@ void main() {
 
   float sx = mix(sx1, sx2, localX);
 
-  float availableHeight = u_canvasHeight - u_coverageOffset;
-  float yRange = u_rangeY.y - u_rangeY.x;
+  // Calculate Y position in pixels (constant height per row)
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTop = a_y * rowHeight;
-  float yBot = yTop + u_featureHeight;
+  float yTopPx = a_y * rowHeight - u_rangeY.x;
+  float yBotPx = yTopPx + u_featureHeight;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
-  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
-  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float pxToClip = 2.0 / u_canvasHeight;
+  float syTop = pileupTop - yTopPx * pxToClip;
+  float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -622,7 +663,7 @@ void main() {
 `
 
 export interface RenderState {
-  domainX: [number, number]
+  domainX: [number, number]  // absolute genomic positions
   rangeY: [number, number]
   colorScheme: number
   featureHeight: number
@@ -633,6 +674,8 @@ export interface RenderState {
 }
 
 interface GPUBuffers {
+  // Reference point for all position offsets
+  regionStart: number
   readVAO: WebGLVertexArrayObject
   readCount: number
   coverageVAO: WebGLVertexArrayObject | null
@@ -733,6 +776,7 @@ export class WebGLRenderer {
 
     this.cacheUniforms(this.readProgram, this.readUniforms, [
       'u_domainX',
+      'u_regionStart',
       'u_rangeY',
       'u_colorScheme',
       'u_featureHeight',
@@ -905,6 +949,7 @@ export class WebGLRenderer {
       coverageCount: 0,
       maxDepth: 0,
       binSize: 1,
+      regionStart: 0,
       snpCoverageVAO: null,
       snpCoverageCount: 0,
       gapVAO: null,
@@ -924,13 +969,14 @@ export class WebGLRenderer {
 
   /**
    * Upload reads from pre-computed typed arrays (from RPC worker)
-   * Zero-copy path - arrays come directly from worker via transferables
+   * Positions are offsets from regionStart for Float32 precision
    */
   uploadFromTypedArrays(data: {
-    readPositions: Float32Array
-    readYs: Float32Array
-    readFlags: Float32Array
-    readMapqs: Float32Array
+    regionStart: number
+    readPositions: Uint32Array  // offsets from regionStart
+    readYs: Uint16Array
+    readFlags: Uint16Array
+    readMapqs: Uint8Array
     readInsertSizes: Float32Array
     numReads: number
     maxY: number
@@ -968,17 +1014,19 @@ export class WebGLRenderer {
       return
     }
 
-    // Read VAO - upload pre-computed arrays directly
+    // Read VAO - use integer positions for high-precision rendering
     const readVAO = gl.createVertexArray()!
     gl.bindVertexArray(readVAO)
-    this.uploadBuffer(this.readProgram, 'a_position', data.readPositions, 2)
-    this.uploadBuffer(this.readProgram, 'a_y', data.readYs, 1)
-    this.uploadBuffer(this.readProgram, 'a_flags', data.readFlags, 1)
-    this.uploadBuffer(this.readProgram, 'a_mapq', data.readMapqs, 1)
+    // Upload positions as unsigned integers for high-precision (12-bit split in shader)
+    this.uploadUintBuffer(this.readProgram, 'a_position', data.readPositions, 2)
+    this.uploadBuffer(this.readProgram, 'a_y', new Float32Array(data.readYs), 1)
+    this.uploadBuffer(this.readProgram, 'a_flags', new Float32Array(data.readFlags), 1)
+    this.uploadBuffer(this.readProgram, 'a_mapq', new Float32Array(data.readMapqs), 1)
     this.uploadBuffer(this.readProgram, 'a_insertSize', data.readInsertSizes, 1)
     gl.bindVertexArray(null)
 
     this.buffers = {
+      regionStart: data.regionStart,
       readVAO,
       readCount: data.numReads,
       coverageVAO: null,
@@ -1002,26 +1050,27 @@ export class WebGLRenderer {
 
   /**
    * Upload CIGAR data from pre-computed typed arrays (from RPC worker)
+   * Accepts optimized integer types and converts to float for GPU
    */
   uploadCigarFromTypedArrays(data: {
-    gapPositions: Float32Array
-    gapYs: Float32Array
+    gapPositions: Uint32Array
+    gapYs: Uint16Array
     numGaps: number
-    mismatchPositions: Float32Array
-    mismatchYs: Float32Array
-    mismatchBases: Float32Array
+    mismatchPositions: Uint32Array
+    mismatchYs: Uint16Array
+    mismatchBases: Uint8Array
     numMismatches: number
-    insertionPositions: Float32Array
-    insertionYs: Float32Array
-    insertionLengths: Float32Array
+    insertionPositions: Uint32Array
+    insertionYs: Uint16Array
+    insertionLengths: Uint16Array
     numInsertions: number
-    softclipPositions: Float32Array
-    softclipYs: Float32Array
-    softclipLengths: Float32Array
+    softclipPositions: Uint32Array
+    softclipYs: Uint16Array
+    softclipLengths: Uint16Array
     numSoftclips: number
-    hardclipPositions: Float32Array
-    hardclipYs: Float32Array
-    hardclipLengths: Float32Array
+    hardclipPositions: Uint32Array
+    hardclipYs: Uint16Array
+    hardclipLengths: Uint16Array
     numHardclips: number
   }) {
     const gl = this.gl
@@ -1052,12 +1101,12 @@ export class WebGLRenderer {
       this.buffers.hardclipVAO = null
     }
 
-    // Upload gaps
+    // Upload gaps - convert Uint32Array positions to Float32Array
     if (data.numGaps > 0) {
       const gapVAO = gl.createVertexArray()!
       gl.bindVertexArray(gapVAO)
-      this.uploadBuffer(this.gapProgram, 'a_position', data.gapPositions, 2)
-      this.uploadBuffer(this.gapProgram, 'a_y', data.gapYs, 1)
+      this.uploadBuffer(this.gapProgram, 'a_position', new Float32Array(data.gapPositions), 2)
+      this.uploadBuffer(this.gapProgram, 'a_y', new Float32Array(data.gapYs), 1)
       gl.bindVertexArray(null)
 
       this.buffers.gapVAO = gapVAO
@@ -1066,13 +1115,13 @@ export class WebGLRenderer {
       this.buffers.gapCount = 0
     }
 
-    // Upload mismatches
+    // Upload mismatches - convert Uint32Array positions to Float32Array
     if (data.numMismatches > 0) {
       const mismatchVAO = gl.createVertexArray()!
       gl.bindVertexArray(mismatchVAO)
-      this.uploadBuffer(this.mismatchProgram, 'a_position', data.mismatchPositions, 1)
-      this.uploadBuffer(this.mismatchProgram, 'a_y', data.mismatchYs, 1)
-      this.uploadBuffer(this.mismatchProgram, 'a_base', data.mismatchBases, 1)
+      this.uploadBuffer(this.mismatchProgram, 'a_position', new Float32Array(data.mismatchPositions), 1)
+      this.uploadBuffer(this.mismatchProgram, 'a_y', new Float32Array(data.mismatchYs), 1)
+      this.uploadBuffer(this.mismatchProgram, 'a_base', new Float32Array(data.mismatchBases), 1)
       gl.bindVertexArray(null)
 
       this.buffers.mismatchVAO = mismatchVAO
@@ -1081,13 +1130,13 @@ export class WebGLRenderer {
       this.buffers.mismatchCount = 0
     }
 
-    // Upload insertions
+    // Upload insertions - convert Uint32Array positions to Float32Array
     if (data.numInsertions > 0) {
       const insertionVAO = gl.createVertexArray()!
       gl.bindVertexArray(insertionVAO)
-      this.uploadBuffer(this.insertionProgram, 'a_position', data.insertionPositions, 1)
-      this.uploadBuffer(this.insertionProgram, 'a_y', data.insertionYs, 1)
-      this.uploadBuffer(this.insertionProgram, 'a_length', data.insertionLengths, 1)
+      this.uploadBuffer(this.insertionProgram, 'a_position', new Float32Array(data.insertionPositions), 1)
+      this.uploadBuffer(this.insertionProgram, 'a_y', new Float32Array(data.insertionYs), 1)
+      this.uploadBuffer(this.insertionProgram, 'a_length', new Float32Array(data.insertionLengths), 1)
       gl.bindVertexArray(null)
 
       this.buffers.insertionVAO = insertionVAO
@@ -1096,13 +1145,13 @@ export class WebGLRenderer {
       this.buffers.insertionCount = 0
     }
 
-    // Upload soft clips
+    // Upload soft clips - convert Uint32Array positions to Float32Array
     if (data.numSoftclips > 0) {
       const softclipVAO = gl.createVertexArray()!
       gl.bindVertexArray(softclipVAO)
-      this.uploadBuffer(this.softclipProgram, 'a_position', data.softclipPositions, 1)
-      this.uploadBuffer(this.softclipProgram, 'a_y', data.softclipYs, 1)
-      this.uploadBuffer(this.softclipProgram, 'a_length', data.softclipLengths, 1)
+      this.uploadBuffer(this.softclipProgram, 'a_position', new Float32Array(data.softclipPositions), 1)
+      this.uploadBuffer(this.softclipProgram, 'a_y', new Float32Array(data.softclipYs), 1)
+      this.uploadBuffer(this.softclipProgram, 'a_length', new Float32Array(data.softclipLengths), 1)
       gl.bindVertexArray(null)
 
       this.buffers.softclipVAO = softclipVAO
@@ -1111,13 +1160,13 @@ export class WebGLRenderer {
       this.buffers.softclipCount = 0
     }
 
-    // Upload hard clips
+    // Upload hard clips - convert Uint32Array positions to Float32Array
     if (data.numHardclips > 0) {
       const hardclipVAO = gl.createVertexArray()!
       gl.bindVertexArray(hardclipVAO)
-      this.uploadBuffer(this.hardclipProgram, 'a_position', data.hardclipPositions, 1)
-      this.uploadBuffer(this.hardclipProgram, 'a_y', data.hardclipYs, 1)
-      this.uploadBuffer(this.hardclipProgram, 'a_length', data.hardclipLengths, 1)
+      this.uploadBuffer(this.hardclipProgram, 'a_position', new Float32Array(data.hardclipPositions), 1)
+      this.uploadBuffer(this.hardclipProgram, 'a_y', new Float32Array(data.hardclipYs), 1)
+      this.uploadBuffer(this.hardclipProgram, 'a_length', new Float32Array(data.hardclipLengths), 1)
       gl.bindVertexArray(null)
 
       this.buffers.hardclipVAO = hardclipVAO
@@ -1130,16 +1179,19 @@ export class WebGLRenderer {
   /**
    * Upload coverage data from pre-computed typed arrays (from RPC worker)
    */
+  /**
+   * Upload coverage data from pre-computed typed arrays
+   * Position is computed in shader from index * binSize (offset-based)
+   */
   uploadCoverageFromTypedArrays(data: {
-    coveragePositions: Float32Array
     coverageDepths: Float32Array
     coverageMaxDepth: number
     coverageBinSize: number
     numCoverageBins: number
-    snpPositions: Float32Array
+    snpPositions: Uint32Array  // offsets from regionStart
     snpYOffsets: Float32Array
     snpHeights: Float32Array
-    snpColorTypes: Float32Array
+    snpColorTypes: Uint8Array
     numSnpSegments: number
   }) {
     const gl = this.gl
@@ -1156,7 +1208,7 @@ export class WebGLRenderer {
       gl.deleteVertexArray(this.buffers.snpCoverageVAO)
     }
 
-    // Upload grey coverage bars
+    // Upload grey coverage bars (position computed from gl_InstanceID in shader)
     if (data.numCoverageBins > 0) {
       // Normalize depths
       const normalizedDepths = new Float32Array(data.coverageDepths.length)
@@ -1166,7 +1218,7 @@ export class WebGLRenderer {
 
       const coverageVAO = gl.createVertexArray()!
       gl.bindVertexArray(coverageVAO)
-      this.uploadBuffer(this.coverageProgram, 'a_position', data.coveragePositions, 1)
+      // No position buffer needed - computed in shader from gl_InstanceID
       this.uploadBuffer(this.coverageProgram, 'a_depth', normalizedDepths, 1)
       gl.bindVertexArray(null)
 
@@ -1174,19 +1226,20 @@ export class WebGLRenderer {
       this.buffers.coverageCount = data.numCoverageBins
       this.buffers.maxDepth = data.coverageMaxDepth
       this.buffers.binSize = data.coverageBinSize
+      // regionStart is already set from uploadFromTypedArrays
     } else {
       this.buffers.coverageVAO = null
       this.buffers.coverageCount = 0
     }
 
-    // Upload SNP coverage
+    // Upload SNP coverage - convert Uint32Array positions and Uint8Array colors to Float32 for GPU
     if (data.numSnpSegments > 0) {
       const snpCoverageVAO = gl.createVertexArray()!
       gl.bindVertexArray(snpCoverageVAO)
-      this.uploadBuffer(this.snpCoverageProgram, 'a_position', data.snpPositions, 1)
+      this.uploadBuffer(this.snpCoverageProgram, 'a_position', new Float32Array(data.snpPositions), 1)
       this.uploadBuffer(this.snpCoverageProgram, 'a_yOffset', data.snpYOffsets, 1)
       this.uploadBuffer(this.snpCoverageProgram, 'a_segmentHeight', data.snpHeights, 1)
-      this.uploadBuffer(this.snpCoverageProgram, 'a_colorType', data.snpColorTypes, 1)
+      this.uploadBuffer(this.snpCoverageProgram, 'a_colorType', new Float32Array(data.snpColorTypes), 1)
       gl.bindVertexArray(null)
 
       this.buffers.snpCoverageVAO = snpCoverageVAO
@@ -1457,6 +1510,41 @@ export class WebGLRenderer {
     gl.vertexAttribDivisor(loc, 1)
   }
 
+  /**
+   * Upload unsigned integer buffer for high-precision position attributes
+   * Uses vertexAttribIPointer to pass integers directly to shader
+   */
+  private uploadUintBuffer(
+    program: WebGLProgram,
+    attrib: string,
+    data: Uint32Array,
+    size: number,
+  ) {
+    const gl = this.gl
+    const loc = gl.getAttribLocation(program, attrib)
+    if (loc < 0) {
+      return
+    }
+
+    const buffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_INT, 0, 0)
+    gl.vertexAttribDivisor(loc, 1)
+  }
+
+  /**
+   * Split a position into high/low parts for 12-bit precision
+   * Inspired by genome-spy (https://github.com/genome-spy/genome-spy)
+   * High part is multiple of 4096, low part is 0-4095
+   */
+  private splitPosition(value: number): [number, number] {
+    const lo = value & 0xFFF  // 4095 mask
+    const hi = value - lo
+    return [hi, lo]
+  }
+
   render(state: RenderState) {
     const gl = this.gl
     const canvas = this.canvas
@@ -1478,15 +1566,28 @@ export class WebGLRenderer {
       return
     }
 
+    // Convert domainX to offsets from regionStart for CIGAR features (simple float precision)
+    const regionStart = this.buffers.regionStart
+    const domainOffset: [number, number] = [
+      state.domainX[0] - regionStart,
+      state.domainX[1] - regionStart,
+    ]
+
+    // Compute high-precision split domain for reads (12-bit split approach)
+    // Uses absolute positions - shader does the split and subtraction
+    const domainStartAbs = Math.floor(state.domainX[0])
+    const [domainStartHi, domainStartLo] = this.splitPosition(domainStartAbs)
+    const domainExtent = state.domainX[1] - state.domainX[0]
+
     // Draw coverage first (at top)
     const willDrawCoverage = state.showCoverage && this.buffers.coverageVAO && this.buffers.coverageCount > 0
     if (willDrawCoverage) {
-      // Draw grey coverage bars
+      // Draw grey coverage bars - coverage uses offset-based positions
       gl.useProgram(this.coverageProgram)
       gl.uniform2f(
         this.coverageUniforms.u_visibleRange!,
-        state.domainX[0],
-        state.domainX[1],
+        domainOffset[0],
+        domainOffset[1],
       )
       gl.uniform1f(
         this.coverageUniforms.u_coverageHeight!,
@@ -1499,13 +1600,13 @@ export class WebGLRenderer {
       gl.bindVertexArray(this.buffers.coverageVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.coverageCount)
 
-      // Draw SNP coverage on top (at exact 1bp positions)
+      // Draw SNP coverage on top (at exact 1bp positions, now as offsets)
       if (this.buffers.snpCoverageVAO && this.buffers.snpCoverageCount > 0) {
         gl.useProgram(this.snpCoverageProgram)
         gl.uniform2f(
           this.snpCoverageUniforms.u_visibleRange!,
-          state.domainX[0],
-          state.domainX[1],
+          domainOffset[0],
+          domainOffset[1],
         )
         gl.uniform1f(
           this.snpCoverageUniforms.u_coverageHeight!,
@@ -1543,11 +1644,15 @@ export class WebGLRenderer {
     )
 
     gl.useProgram(this.readProgram)
-    gl.uniform2f(
+    // Use high-precision split domain for reads (vec3: hi, lo, extent)
+    gl.uniform3f(
       this.readUniforms.u_domainX!,
-      state.domainX[0],
-      state.domainX[1],
+      domainStartHi,
+      domainStartLo,
+      domainExtent,
     )
+    // Pass regionStart so shader can convert offsets to absolute positions
+    gl.uniform1ui(this.readUniforms.u_regionStart!, regionStart)
     gl.uniform2f(
       this.readUniforms.u_rangeY!,
       state.rangeY[0],
@@ -1569,7 +1674,7 @@ export class WebGLRenderer {
       // Draw gaps (deletions) - always visible
       if (this.buffers.gapVAO && this.buffers.gapCount > 0) {
         gl.useProgram(this.gapProgram)
-        gl.uniform2f(this.gapUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.gapUniforms.u_domainX!, domainOffset[0], domainOffset[1])
         gl.uniform2f(this.gapUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
         gl.uniform1f(this.gapUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.gapUniforms.u_featureSpacing!, state.featureSpacing)
@@ -1583,7 +1688,7 @@ export class WebGLRenderer {
       // Draw mismatches - only when zoomed in enough (< 50 bp/px)
       if (this.buffers.mismatchVAO && this.buffers.mismatchCount > 0 && bpPerPx < 50) {
         gl.useProgram(this.mismatchProgram)
-        gl.uniform2f(this.mismatchUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.mismatchUniforms.u_domainX!, domainOffset[0], domainOffset[1])
         gl.uniform2f(this.mismatchUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
         gl.uniform1f(this.mismatchUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.mismatchUniforms.u_featureSpacing!, state.featureSpacing)
@@ -1599,7 +1704,7 @@ export class WebGLRenderer {
       // Each insertion is 3 rectangles (bar + 2 ticks) = 18 vertices
       if (this.buffers.insertionVAO && this.buffers.insertionCount > 0 && bpPerPx < 100) {
         gl.useProgram(this.insertionProgram)
-        gl.uniform2f(this.insertionUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.insertionUniforms.u_domainX!, domainOffset[0], domainOffset[1])
         gl.uniform2f(this.insertionUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
         gl.uniform1f(this.insertionUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.insertionUniforms.u_featureSpacing!, state.featureSpacing)
@@ -1614,7 +1719,7 @@ export class WebGLRenderer {
       // Draw soft clips - only when zoomed in enough (< 100 bp/px)
       if (this.buffers.softclipVAO && this.buffers.softclipCount > 0 && bpPerPx < 100) {
         gl.useProgram(this.softclipProgram)
-        gl.uniform2f(this.softclipUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.softclipUniforms.u_domainX!, domainOffset[0], domainOffset[1])
         gl.uniform2f(this.softclipUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
         gl.uniform1f(this.softclipUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.softclipUniforms.u_featureSpacing!, state.featureSpacing)
@@ -1629,7 +1734,7 @@ export class WebGLRenderer {
       // Draw hard clips - only when zoomed in enough (< 100 bp/px)
       if (this.buffers.hardclipVAO && this.buffers.hardclipCount > 0 && bpPerPx < 100) {
         gl.useProgram(this.hardclipProgram)
-        gl.uniform2f(this.hardclipUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.hardclipUniforms.u_domainX!, domainOffset[0], domainOffset[1])
         gl.uniform2f(this.hardclipUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
         gl.uniform1f(this.hardclipUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.hardclipUniforms.u_featureSpacing!, state.featureSpacing)

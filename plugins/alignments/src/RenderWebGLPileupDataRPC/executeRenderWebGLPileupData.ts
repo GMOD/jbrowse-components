@@ -93,10 +93,9 @@ function computeCoverage(
   features: FeatureData[],
   regionStart: number,
   regionEnd: number,
-): { positions: Float32Array; depths: Float32Array; maxDepth: number; binSize: number } {
+): { depths: Float32Array; maxDepth: number; binSize: number } {
   if (features.length === 0) {
     return {
-      positions: new Float32Array(0),
       depths: new Float32Array(0),
       maxDepth: 0,
       binSize: 1,
@@ -115,14 +114,12 @@ function computeCoverage(
   }
   events.sort((a, b) => a.pos - b.pos)
 
-  const positions = new Float32Array(numBins)
   const depths = new Float32Array(numBins)
 
   let currentDepth = 0
   let eventIdx = 0
 
   for (let binIdx = 0; binIdx < numBins; binIdx++) {
-    positions[binIdx] = regionStart + binIdx * binSize
     const binEnd = regionStart + (binIdx + 1) * binSize
     while (eventIdx < events.length && events[eventIdx].pos < binEnd) {
       currentDepth += events[eventIdx].delta
@@ -138,7 +135,7 @@ function computeCoverage(
     }
   }
 
-  return { positions, depths, maxDepth, binSize }
+  return { depths, maxDepth, binSize }
 }
 
 interface SNPCoverageEntry {
@@ -152,19 +149,20 @@ interface SNPCoverageEntry {
 function computeSNPCoverage(
   mismatches: MismatchData[],
   maxDepth: number,
+  regionStart: number,
 ): {
-  positions: Float32Array
+  positions: Uint32Array
   yOffsets: Float32Array
   heights: Float32Array
-  colorTypes: Float32Array
+  colorTypes: Uint8Array
   count: number
 } {
   if (mismatches.length === 0 || maxDepth === 0) {
     return {
-      positions: new Float32Array(0),
+      positions: new Uint32Array(0),
       yOffsets: new Float32Array(0),
       heights: new Float32Array(0),
-      colorTypes: new Float32Array(0),
+      colorTypes: new Uint8Array(0),
       count: 0,
     }
   }
@@ -221,14 +219,15 @@ function computeSNPCoverage(
     }
   }
 
-  const positions = new Float32Array(segments.length)
+  // Store positions as offsets from regionStart
+  const positions = new Uint32Array(segments.length)
   const yOffsets = new Float32Array(segments.length)
   const heights = new Float32Array(segments.length)
-  const colorTypes = new Float32Array(segments.length)
+  const colorTypes = new Uint8Array(segments.length)
 
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]
-    positions[i] = seg.position
+    positions[i] = seg.position - regionStart
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
     colorTypes[i] = seg.colorType
@@ -353,80 +352,84 @@ export async function executeRenderWebGLPileupData({
 
   checkStopToken2(stopTokenCheck)
 
+  // Use region.start as reference point - all positions stored as offsets
+  const regionStart = region.start
+
   const { maxY, readArrays, gapArrays, mismatchArrays, insertionArrays, softclipArrays, hardclipArrays } =
     await updateStatus('Computing layout', statusCallback, async () => {
       const layout = computeLayout(features)
       const numLevels = Math.max(0, ...layout.values()) + 1
 
-      const readPositions = new Float32Array(features.length * 2)
-      const readYs = new Float32Array(features.length)
-      const readFlags = new Float32Array(features.length)
-      const readMapqs = new Float32Array(features.length)
+      // Positions stored as offsets from regionStart for Float32 precision
+      const readPositions = new Uint32Array(features.length * 2)
+      const readYs = new Uint16Array(features.length)
+      const readFlags = new Uint16Array(features.length)
+      const readMapqs = new Uint8Array(features.length)
       const readInsertSizes = new Float32Array(features.length)
 
       for (let i = 0; i < features.length; i++) {
         const f = features[i]
         const y = layout.get(f.id) ?? 0
-        readPositions[i * 2] = f.start
-        readPositions[i * 2 + 1] = f.end
+        readPositions[i * 2] = f.start - regionStart
+        readPositions[i * 2 + 1] = f.end - regionStart
         readYs[i] = y
         readFlags[i] = f.flags
-        readMapqs[i] = f.mapq
+        readMapqs[i] = Math.min(255, f.mapq)
         readInsertSizes[i] = f.insertSize
       }
 
-      const gapPositions = new Float32Array(gaps.length * 2)
-      const gapYs = new Float32Array(gaps.length)
+      const gapPositions = new Uint32Array(gaps.length * 2)
+      const gapYs = new Uint16Array(gaps.length)
       for (let i = 0; i < gaps.length; i++) {
         const g = gaps[i]
         const y = layout.get(g.featureId) ?? 0
-        gapPositions[i * 2] = g.start
-        gapPositions[i * 2 + 1] = g.end
+        gapPositions[i * 2] = g.start - regionStart
+        gapPositions[i * 2 + 1] = g.end - regionStart
         gapYs[i] = y
       }
 
-      const mismatchPositions = new Float32Array(mismatches.length)
-      const mismatchYs = new Float32Array(mismatches.length)
-      const mismatchBases = new Float32Array(mismatches.length)
+      const mismatchPositions = new Uint32Array(mismatches.length)
+      const mismatchYs = new Uint16Array(mismatches.length)
+      const mismatchBases = new Uint8Array(mismatches.length)
       for (let i = 0; i < mismatches.length; i++) {
         const mm = mismatches[i]
         const y = layout.get(mm.featureId) ?? 0
-        mismatchPositions[i] = mm.position
+        mismatchPositions[i] = mm.position - regionStart
         mismatchYs[i] = y
         mismatchBases[i] = mm.base
       }
 
-      const insertionPositions = new Float32Array(insertions.length)
-      const insertionYs = new Float32Array(insertions.length)
-      const insertionLengths = new Float32Array(insertions.length)
+      const insertionPositions = new Uint32Array(insertions.length)
+      const insertionYs = new Uint16Array(insertions.length)
+      const insertionLengths = new Uint16Array(insertions.length)
       for (let i = 0; i < insertions.length; i++) {
         const ins = insertions[i]
         const y = layout.get(ins.featureId) ?? 0
-        insertionPositions[i] = ins.position
+        insertionPositions[i] = ins.position - regionStart
         insertionYs[i] = y
-        insertionLengths[i] = ins.length
+        insertionLengths[i] = Math.min(65535, ins.length)
       }
 
-      const softclipPositions = new Float32Array(softclips.length)
-      const softclipYs = new Float32Array(softclips.length)
-      const softclipLengths = new Float32Array(softclips.length)
+      const softclipPositions = new Uint32Array(softclips.length)
+      const softclipYs = new Uint16Array(softclips.length)
+      const softclipLengths = new Uint16Array(softclips.length)
       for (let i = 0; i < softclips.length; i++) {
         const sc = softclips[i]
         const y = layout.get(sc.featureId) ?? 0
-        softclipPositions[i] = sc.position
+        softclipPositions[i] = sc.position - regionStart
         softclipYs[i] = y
-        softclipLengths[i] = sc.length
+        softclipLengths[i] = Math.min(65535, sc.length)
       }
 
-      const hardclipPositions = new Float32Array(hardclips.length)
-      const hardclipYs = new Float32Array(hardclips.length)
-      const hardclipLengths = new Float32Array(hardclips.length)
+      const hardclipPositions = new Uint32Array(hardclips.length)
+      const hardclipYs = new Uint16Array(hardclips.length)
+      const hardclipLengths = new Uint16Array(hardclips.length)
       for (let i = 0; i < hardclips.length; i++) {
         const hc = hardclips[i]
         const y = layout.get(hc.featureId) ?? 0
-        hardclipPositions[i] = hc.position
+        hardclipPositions[i] = hc.position - regionStart
         hardclipYs[i] = y
-        hardclipLengths[i] = hc.length
+        hardclipLengths[i] = Math.min(65535, hc.length)
       }
 
       return {
@@ -448,9 +451,11 @@ export async function executeRenderWebGLPileupData({
 
   checkStopToken2(stopTokenCheck)
 
-  const snpCoverage = computeSNPCoverage(mismatches, coverage.maxDepth)
+  const snpCoverage = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
 
   const result: WebGLPileupDataResult = {
+    regionStart,
+
     ...readArrays,
     ...gapArrays,
     ...mismatchArrays,
@@ -458,7 +463,6 @@ export async function executeRenderWebGLPileupData({
     ...softclipArrays,
     ...hardclipArrays,
 
-    coveragePositions: coverage.positions,
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
     coverageBinSize: coverage.binSize,
@@ -475,7 +479,7 @@ export async function executeRenderWebGLPileupData({
     numInsertions: insertions.length,
     numSoftclips: softclips.length,
     numHardclips: hardclips.length,
-    numCoverageBins: coverage.positions.length,
+    numCoverageBins: coverage.depths.length,
     numSnpSegments: snpCoverage.count,
   }
 
@@ -499,7 +503,6 @@ export async function executeRenderWebGLPileupData({
     result.hardclipPositions.buffer,
     result.hardclipYs.buffer,
     result.hardclipLengths.buffer,
-    result.coveragePositions.buffer,
     result.coverageDepths.buffer,
     result.snpPositions.buffer,
     result.snpYOffsets.buffer,

@@ -16,48 +16,50 @@ export interface RenderWebGLPileupDataArgs {
 }
 
 export interface WebGLPileupDataResult {
-  // Read data
-  readPositions: Float32Array // [start, end] pairs, length = numReads * 2
-  readYs: Float32Array // pileup row for each read
-  readFlags: Float32Array
-  readMapqs: Float32Array
-  readInsertSizes: Float32Array
+  // Reference point for all positions (stored as offsets from this)
+  regionStart: number
 
-  // Gap data (deletions/skips)
-  gapPositions: Float32Array // [start, end] pairs
-  gapYs: Float32Array
+  // Read data - positions are offsets from regionStart
+  readPositions: Uint32Array  // [startOffset, endOffset] pairs
+  readYs: Uint16Array         // pileup row (0-65535 sufficient)
+  readFlags: Uint16Array      // BAM flags are 16-bit
+  readMapqs: Uint8Array       // 0-255
+  readInsertSizes: Float32Array // keep float (can be large/negative)
 
-  // Mismatch data
-  mismatchPositions: Float32Array
-  mismatchYs: Float32Array
-  mismatchBases: Float32Array // 0=A, 1=C, 2=G, 3=T
+  // Gap data (deletions/skips) - offsets from regionStart
+  gapPositions: Uint32Array   // [startOffset, endOffset] pairs
+  gapYs: Uint16Array
 
-  // Insertion data
-  insertionPositions: Float32Array
-  insertionYs: Float32Array
-  insertionLengths: Float32Array
+  // Mismatch data - offsets from regionStart
+  mismatchPositions: Uint32Array
+  mismatchYs: Uint16Array
+  mismatchBases: Uint8Array   // 0=A, 1=C, 2=G, 3=T
 
-  // Soft clip data
-  softclipPositions: Float32Array
-  softclipYs: Float32Array
-  softclipLengths: Float32Array
+  // Insertion data - offsets from regionStart
+  insertionPositions: Uint32Array
+  insertionYs: Uint16Array
+  insertionLengths: Uint16Array
 
-  // Hard clip data
-  hardclipPositions: Float32Array
-  hardclipYs: Float32Array
-  hardclipLengths: Float32Array
+  // Soft clip data - offsets from regionStart
+  softclipPositions: Uint32Array
+  softclipYs: Uint16Array
+  softclipLengths: Uint16Array
 
-  // Coverage data
-  coveragePositions: Float32Array
+  // Hard clip data - offsets from regionStart
+  hardclipPositions: Uint32Array
+  hardclipYs: Uint16Array
+  hardclipLengths: Uint16Array
+
+  // Coverage data - positions computed from regionStart + index * binSize
   coverageDepths: Float32Array
   coverageMaxDepth: number
   coverageBinSize: number
 
-  // SNP coverage data
-  snpPositions: Float32Array
-  snpYOffsets: Float32Array
-  snpHeights: Float32Array
-  snpColorTypes: Float32Array // 1=A, 2=C, 3=G, 4=T
+  // SNP coverage data - offsets from regionStart
+  snpPositions: Uint32Array
+  snpYOffsets: Float32Array   // normalized 0-1
+  snpHeights: Float32Array    // normalized 0-1
+  snpColorTypes: Uint8Array   // 1=A, 2=C, 3=G, 4=T
 
   // Layout info
   maxY: number
