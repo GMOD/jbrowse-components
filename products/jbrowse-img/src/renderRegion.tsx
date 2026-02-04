@@ -3,6 +3,7 @@ import path from 'path'
 
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
+import { renderToStaticMarkup } from 'react-dom/server'
 
 import { booleanize } from './util.ts'
 
@@ -489,6 +490,7 @@ export async function renderRegion(opts: Opts) {
 
   return renderToSvg(view, {
     rasterizeLayers: !opts.noRasterize,
+    renderToStaticMarkup,
     ...opts,
   })
 }

@@ -6,7 +6,7 @@ import {
   max,
   measureText,
   renderToAbstractCanvas,
-  renderToStaticMarkup,
+  renderToStaticMarkup as coreRenderToStaticMarkup,
   sum,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
@@ -40,6 +40,7 @@ export async function renderToSvg(
     showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
+    renderToStaticMarkup,
   } = opts
   const session = getSession(model)
   const themeVar = session.allThemes?.()[themeName]
@@ -181,7 +182,7 @@ export async function renderToSvg(
   }
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
+  return coreRenderToStaticMarkup(
     <ThemeProvider theme={theme}>
       <Wrapper>
         <svg
@@ -196,5 +197,6 @@ export async function renderToSvg(
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    renderToStaticMarkup,
   )
 }

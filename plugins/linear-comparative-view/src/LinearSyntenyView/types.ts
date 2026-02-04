@@ -34,4 +34,5 @@ export interface ExportSvgOptions {
   themeName?: string
   trackLabels?: string
   showGridlines?: boolean
+  renderToStaticMarkup?: (node: React.ReactElement) => string
 }

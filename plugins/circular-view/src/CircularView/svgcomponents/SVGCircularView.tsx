@@ -1,7 +1,11 @@
 import { Fragment } from 'react'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
+import {
+  getSession,
+  radToDeg,
+  renderToStaticMarkup as coreRenderToStaticMarkup,
+} from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
@@ -14,7 +18,11 @@ type CGV = CircularViewModel
 
 export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper = ({ children }) => children } = opts
+  const {
+    themeName = 'default',
+    Wrapper = ({ children }) => children,
+    renderToStaticMarkup,
+  } = opts
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
 
@@ -32,7 +40,7 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   const deg = radToDeg(offsetRadians)
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
+  return coreRenderToStaticMarkup(
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
         <svg
@@ -56,5 +64,6 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    renderToStaticMarkup,
   )
 }

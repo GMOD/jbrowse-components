@@ -12,6 +12,7 @@ export interface ExportSvgOptions {
   trackLabels?: string
   themeName?: string
   showGridlines?: boolean
+  renderToStaticMarkup?: (node: React.ReactElement) => string
 }
 
 export interface BreakpointSplitViewInit {

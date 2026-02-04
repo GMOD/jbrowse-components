@@ -1,5 +1,9 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
+import {
+  getSession,
+  renderToStaticMarkup as coreRenderToStaticMarkup,
+  sum,
+} from '@jbrowse/core/util'
 import {
   SVGGridlines,
   SVGRuler,
@@ -29,6 +33,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
+    renderToStaticMarkup,
   } = opts
 
   const session = getSession(model)
@@ -73,7 +78,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   )
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
+  return coreRenderToStaticMarkup(
     <ThemeProvider theme={t}>
       <Wrapper>
         <svg
@@ -165,5 +170,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    renderToStaticMarkup,
   )
 }

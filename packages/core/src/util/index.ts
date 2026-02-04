@@ -1355,12 +1355,20 @@ export function getFillProps(str: string) {
 }
 
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
-export function renderToStaticMarkup(node: React.ReactElement) {
-  const div = document.createElement('div')
-  flushSync(() => {
-    createRoot(div).render(node)
-  })
-  return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
+export function renderToStaticMarkup(
+  node: React.ReactElement,
+  customRenderer?: (node: React.ReactElement) => string,
+) {
+  const html = customRenderer
+    ? customRenderer(node)
+    : (() => {
+        const div = document.createElement('div')
+        flushSync(() => {
+          createRoot(div).render(node)
+        })
+        return div.innerHTML
+      })()
+  return html.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
 }
 
 export function isGzip(buf: Uint8Array) {

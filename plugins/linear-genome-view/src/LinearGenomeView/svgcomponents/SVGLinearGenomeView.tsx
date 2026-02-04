@@ -5,7 +5,7 @@ import {
   getSession,
   max,
   measureText,
-  renderToStaticMarkup,
+  renderToStaticMarkup as coreRenderToStaticMarkup,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ThemeProvider } from '@mui/material'
@@ -36,6 +36,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     themeName = 'default',
     showGridlines = false,
     Wrapper = ({ children }) => children,
+    renderToStaticMarkup,
   } = opts
   const session = getSession(model)
   const { allThemes } = session
@@ -79,7 +80,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const tracksHeight = totalHeight(tracks, textHeight, trackLabels)
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
+  return coreRenderToStaticMarkup(
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
         <svg
@@ -118,6 +119,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
         </svg>
       </Wrapper>
     </ThemeProvider>,
+    renderToStaticMarkup,
   )
 }
 

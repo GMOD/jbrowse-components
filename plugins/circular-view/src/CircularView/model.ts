@@ -42,6 +42,7 @@ export interface ExportSvgOptions {
   filename?: string
   Wrapper?: React.FC<{ children: React.ReactNode }>
   themeName?: string
+  renderToStaticMarkup?: (node: React.ReactElement) => string
 }
 
 /**
