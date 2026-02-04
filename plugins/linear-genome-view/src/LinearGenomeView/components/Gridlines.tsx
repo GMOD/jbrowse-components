@@ -75,41 +75,59 @@ const Gridlines = observer(function Gridlines({
       // Clear canvas
       ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 
-      // Iterate all blocks (content, elided, padding)
+      // Collect tick positions by type for batched drawing
+      const majorTicks: number[] = []
+      const minorTicks: number[] = []
+
       for (const block of dynamicBlocks) {
+        if (block.type !== 'ContentBlock') {
+          continue
+        }
+
         const blockScreenX = block.offsetPx - offsetPx - offset
+        const { start, end, reversed } = block
+        const ticks = makeTicks(start, end, bpPerPx)
 
-        if (block.type === 'ContentBlock') {
-          // Draw gridlines only for content blocks
-          const { start, end, reversed } = block
-          const ticks = makeTicks(start, end, bpPerPx)
+        for (const { type, base } of ticks) {
+          const tickPosInBlock =
+            (reversed ? end - base : base - start) / bpPerPx
+          const x = tickPosInBlock + blockScreenX
 
-          for (const { type, base } of ticks) {
-            const tickPosInBlock =
-              (reversed ? end - base : base - start) / bpPerPx
-            const x = tickPosInBlock + blockScreenX
+          // Skip ticks outside visible area
+          if (x < 0 || x > canvasWidth) {
+            continue
+          }
 
-            // Skip ticks outside visible area
-            if (x < 0 || x > canvasWidth) {
-              continue
-            }
-
-            // Set color based on tick type
-            ctx.strokeStyle =
-              type === 'major' || type === 'labeledMajor'
-                ? majorTickColor
-                : minorTickColor
-            ctx.lineWidth = 1
-
-            // Draw vertical line
-            ctx.beginPath()
-            ctx.moveTo(Math.round(x) + 0.5, 0)
-            ctx.lineTo(Math.round(x) + 0.5, canvasHeight)
-            ctx.stroke()
+          if (type === 'major' || type === 'labeledMajor') {
+            majorTicks.push(Math.round(x) + 0.5)
+          } else {
+            minorTicks.push(Math.round(x) + 0.5)
           }
         }
-        // InterRegionPaddingBlock and ElidedBlock - don't draw gridlines
-        // (they show different visual styles handled elsewhere or left empty)
+      }
+
+      // Draw all minor ticks in one batch
+      if (minorTicks.length > 0) {
+        ctx.strokeStyle = minorTickColor
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        for (const x of minorTicks) {
+          ctx.moveTo(x, 0)
+          ctx.lineTo(x, canvasHeight)
+        }
+        ctx.stroke()
+      }
+
+      // Draw all major ticks in one batch
+      if (majorTicks.length > 0) {
+        ctx.strokeStyle = majorTickColor
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        for (const x of majorTicks) {
+          ctx.moveTo(x, 0)
+          ctx.lineTo(x, canvasHeight)
+        }
+        ctx.stroke()
       }
     })
 

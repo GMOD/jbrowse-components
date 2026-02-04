@@ -29,8 +29,8 @@ interface Props {
  * The useEffect watching MobX state handles external navigation (keyboard, clicks).
  */
 
-// Debug logging - enable to diagnose performance issues
-const DEBUG = true
+// Debug logging - set to true to diagnose performance issues
+const DEBUG = false
 const log = (...args: unknown[]) => DEBUG && console.log('[WebGL]', ...args)
 const renderCountRef = { current: 0 }
 const wheelCountRef = { current: 0 }
