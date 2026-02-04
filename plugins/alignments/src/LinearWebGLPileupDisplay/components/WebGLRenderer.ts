@@ -16,8 +16,22 @@
  */
 function splitPosition(value: number): [number, number] {
   const intValue = Math.floor(value)
-  const lo = intValue & 0xFFF
+  const lo = intValue & 0xfff
   const hi = intValue - lo
+  return [hi, lo]
+}
+
+/**
+ * Split a position including fractional part for smooth scrolling.
+ * High part is multiple of 4096, low part is 0-4095 + fractional.
+ * Used for domain start to preserve sub-pixel scroll precision.
+ */
+function splitPositionWithFrac(value: number): [number, number] {
+  const intValue = Math.floor(value)
+  const frac = value - intValue
+  const loInt = intValue & 0xfff
+  const hi = intValue - loInt
+  const lo = loInt + frac
   return [hi, lo]
 }
 
@@ -813,6 +827,11 @@ void main() {
 }
 `
 
+// Debug logging for scroll behavior
+const DEBUG_SCROLL = true
+const logScroll = (...args: unknown[]) =>
+  DEBUG_SCROLL && console.log('[WebGL Scroll]', ...args)
+
 export interface RenderState {
   domainX: [number, number]  // absolute genomic positions
   rangeY: [number, number]
@@ -1510,9 +1529,20 @@ export class WebGLRenderer {
 
     // Compute high-precision split domain for reads (12-bit split approach)
     // Uses absolute positions - shader does the split and subtraction
-    const domainStartAbs = Math.floor(state.domainX[0])
-    const [domainStartHi, domainStartLo] = splitPosition(domainStartAbs)
+    // Use splitPositionWithFrac to preserve fractional scroll position for smooth scrolling
+    const [domainStartHi, domainStartLo] = splitPositionWithFrac(state.domainX[0])
     const domainExtent = state.domainX[1] - state.domainX[0]
+
+    // Compare old vs new approach
+    const [oldHi, oldLo] = splitPosition(Math.floor(state.domainX[0]))
+    const fracLost = state.domainX[0] - Math.floor(state.domainX[0])
+
+    logScroll(
+      'domainX:', state.domainX[0].toFixed(3), '-', state.domainX[1].toFixed(3),
+      '| NEW split: hi=', domainStartHi, 'lo=', domainStartLo.toFixed(3),
+      '| OLD split: hi=', oldHi, 'lo=', oldLo, '(lost frac:', fracLost.toFixed(3), ')',
+      '| extent=', domainExtent.toFixed(3),
+    )
 
     // Draw coverage first (at top)
     const willDrawCoverage = state.showCoverage && this.buffers.coverageVAO && this.buffers.coverageCount > 0
