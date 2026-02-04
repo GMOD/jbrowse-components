@@ -127,6 +127,8 @@ export default function stateModelFactory(
         start: number
         end: number
       } | null,
+      // Coverage data - cached to avoid recalculating on every render
+      coverageData: { data: [] as CoverageData[], maxDepth: 0 },
       // Loading state
       isLoading: false,
       error: null as Error | null,
@@ -184,6 +186,8 @@ export default function stateModelFactory(
 
       /**
        * Get the visible region from the parent view
+       * Uses currentDomainX if set by the WebGL component (source of truth during/after interaction)
+       * Falls back to computing from contentBlocks for initial load
        */
       get visibleRegion() {
         try {
@@ -196,11 +200,41 @@ export default function stateModelFactory(
             return null
           }
           const first = blocks[0]
+
+          // If WebGL component has set the domain directly, use that
+          // This is the source of truth during and after interaction
+          if (self.currentDomainX) {
+            return {
+              refName: first.refName,
+              start: self.currentDomainX[0],
+              end: self.currentDomainX[1],
+              assemblyName: first.assemblyName,
+            }
+          }
+
+          // Fallback: compute from contentBlocks (only used for initial load)
           const last = blocks[blocks.length - 1]
+          if (first.refName !== last.refName) {
+            return {
+              refName: first.refName,
+              start: first.start,
+              end: last.end,
+              assemblyName: first.assemblyName,
+            }
+          }
+
+          const bpPerPx = view.bpPerPx
+          const blockOffsetPx = first.offsetPx ?? 0
+          const deltaPx = view.offsetPx - blockOffsetPx
+          const deltaBp = deltaPx * bpPerPx
+
+          const viewportStart = first.start + deltaBp
+          const viewportEnd = viewportStart + view.width * bpPerPx
+
           return {
             refName: first.refName,
-            start: first.start,
-            end: last.end,
+            start: viewportStart,
+            end: viewportEnd,
             assemblyName: first.assemblyName,
           }
         } catch {
@@ -256,19 +290,31 @@ export default function stateModelFactory(
         return undefined
       },
 
+    }))
+    .actions(self => ({
+      setFeatures(features: FeatureData[]) {
+        self.webglFeatures = features
+      },
+
+      setLoadedRegion(
+        region: { refName: string; start: number; end: number } | null,
+      ) {
+        self.loadedRegion = region
+      },
+
       /**
-       * Compute coverage from loaded features using sweep line algorithm
+       * Compute and cache coverage from loaded features using sweep line algorithm
        */
-      get coverageData(): { data: CoverageData[]; maxDepth: number } {
+      computeCoverage() {
         const features = self.webglFeatures
         if (features.length === 0 || !self.loadedRegion) {
-          return { data: [], maxDepth: 0 }
+          self.coverageData = { data: [], maxDepth: 0 }
+          return
         }
 
         const { start: regionStart, end: regionEnd } = self.loadedRegion
         const regionLength = regionEnd - regionStart
 
-        // Use sweep line algorithm for efficiency
         // Events: +1 at read start, -1 at read end
         const events: { pos: number; delta: number }[] = []
         for (const f of features) {
@@ -276,7 +322,6 @@ export default function stateModelFactory(
           events.push({ pos: f.end, delta: -1 })
         }
 
-        // Sort by position
         events.sort((a, b) => a.pos - b.pos)
 
         // Build coverage array - use binning for large regions
@@ -292,35 +337,20 @@ export default function stateModelFactory(
           })
         }
 
-        // Process events
         let currentDepth = 0
         let eventIdx = 0
 
         for (let binIdx = 0; binIdx < numBins; binIdx++) {
           const binEnd = regionStart + (binIdx + 1) * binSize
-
-          // Process events up to this bin's end
           while (eventIdx < events.length && events[eventIdx].pos < binEnd) {
             currentDepth += events[eventIdx].delta
             eventIdx++
           }
-
           bins[binIdx].depth = currentDepth
         }
 
         const maxDepth = Math.max(1, ...bins.map(b => b.depth))
-        return { data: bins, maxDepth }
-      },
-    }))
-    .actions(self => ({
-      setFeatures(features: FeatureData[]) {
-        self.webglFeatures = features
-      },
-
-      setLoadedRegion(
-        region: { refName: string; start: number; end: number } | null,
-      ) {
-        self.loadedRegion = region
+        self.coverageData = { data: bins, maxDepth }
       },
 
       setLoading(loading: boolean) {
@@ -387,7 +417,8 @@ export default function stateModelFactory(
       searchFeatureByID(_id: string) {
         return undefined
       },
-
+    }))
+    .actions(self => ({
       /**
        * Fetch features for a region from the adapter
        */
@@ -509,6 +540,7 @@ export default function stateModelFactory(
             start: region.start,
             end: region.end,
           }
+          self.computeCoverage()
           self.isLoading = false
         } catch (e) {
           self.error = e as Error
@@ -553,6 +585,12 @@ export default function stateModelFactory(
                   start: Math.max(0, region.start - width * 2),
                   end: region.end + width * 2,
                 }
+                console.log('[model reaction] visibleRegion changed, loading:', {
+                  visibleRegion: { start: region.start.toFixed(0), end: region.end.toFixed(0) },
+                  expandedRegion: { start: expandedRegion.start.toFixed(0), end: expandedRegion.end.toFixed(0) },
+                  usingCurrentDomainX: !!self.currentDomainX,
+                  currentDomainX: self.currentDomainX ? [self.currentDomainX[0].toFixed(0), self.currentDomainX[1].toFixed(0)] : null,
+                })
                 self.fetchFeatures(expandedRegion)
               }
             },

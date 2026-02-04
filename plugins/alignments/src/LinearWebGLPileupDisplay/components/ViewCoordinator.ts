@@ -1,15 +1,15 @@
 /**
  * ViewCoordinator - Instant sync of view position across WebGL canvases
  *
- * Bypasses mobx for rendering to achieve smooth pan/zoom across multiple canvases.
- * Each canvas maintains local refs (offsetPx, bpPerPx) and broadcasts changes
- * instantly to other canvases in the same view.
+ * Bypasses MobX for rendering to achieve smooth pan/zoom across multiple canvases.
+ * Each canvas maintains local refs (offsetPx, bpPerPx, visibleBpRange) and broadcasts
+ * changes instantly to other canvases in the same view.
  */
 
 export interface ViewPosition {
   offsetPx: number
   bpPerPx: number
-  domain: [number, number] | null
+  visibleBpRange: [number, number] | null
   sourceId: string
 }
 
