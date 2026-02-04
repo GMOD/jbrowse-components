@@ -60,6 +60,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   // Rendering and data loading
   const renderRAFRef = useRef<number | null>(null)
+  const scheduleRenderRef = useRef<() => void>(() => {})
   const pendingDataRequestRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastRequestedRegionRef = useRef<{ start: number; end: number } | null>(null)
 
@@ -204,6 +205,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       renderNow()
     })
   }, [renderNow])
+
+  // Keep ref updated for use in effects without causing re-runs
+  scheduleRenderRef.current = scheduleRender
 
   // Broadcast to other canvases in same view
   const broadcast = useCallback(() => {
@@ -415,8 +419,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     offsetPxRef.current = view.offsetPx
     bpPerPxRef.current = view.bpPerPx
     syncVisibleBpRangeFromView()
-    scheduleRender()
-  }, [view?.offsetPx, view?.bpPerPx, view?.initialized, scheduleRender, syncVisibleBpRangeFromView])
+    scheduleRenderRef.current()
+  }, [view?.offsetPx, view?.bpPerPx, view?.initialized, syncVisibleBpRangeFromView])
 
   // Upload features to GPU
   useEffect(() => {
@@ -429,8 +433,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     model.setMaxY(result.maxY)
 
     rendererRef.current.uploadCigarData(webglGaps, webglMismatches, webglInsertions)
-    scheduleRender()
-  }, [webglFeatures, webglGaps, webglMismatches, webglInsertions, model, scheduleRender])
+    scheduleRenderRef.current()
+  }, [webglFeatures, webglGaps, webglMismatches, webglInsertions, model])
 
   // Upload coverage
   useEffect(() => {
@@ -442,15 +446,15 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         ? coverageData.data[1].position - coverageData.data[0].position
         : 1
     rendererRef.current.uploadCoverage(coverageData.data, coverageData.maxDepth, binSize)
-    scheduleRender()
-  }, [coverageData, showCoverage, scheduleRender])
+    scheduleRenderRef.current()
+  }, [coverageData, showCoverage])
 
   // Re-render on settings change
   useEffect(() => {
     if (rendererReady) {
-      scheduleRender()
+      scheduleRenderRef.current()
     }
-  }, [rendererReady, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches, scheduleRender, webglFeatures])
+  }, [rendererReady, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches, webglFeatures])
 
   // Reset data request tracking
   useEffect(() => {

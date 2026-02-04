@@ -585,12 +585,6 @@ export default function stateModelFactory(
                   start: Math.max(0, region.start - width * 2),
                   end: region.end + width * 2,
                 }
-                console.log('[model reaction] visibleRegion changed, loading:', {
-                  visibleRegion: { start: region.start.toFixed(0), end: region.end.toFixed(0) },
-                  expandedRegion: { start: expandedRegion.start.toFixed(0), end: expandedRegion.end.toFixed(0) },
-                  usingCurrentDomainX: !!self.currentDomainX,
-                  currentDomainX: self.currentDomainX ? [self.currentDomainX[0].toFixed(0), self.currentDomainX[1].toFixed(0)] : null,
-                })
                 self.fetchFeatures(expandedRegion)
               }
             },

@@ -29,8 +29,7 @@ out vec4 v_color;
 out vec2 v_localPos;
 
 vec3 strandColor(float flags) {
-  bool isReverse = mod(floor(flags / 16.0), 2.0) > 0.5;
-  return isReverse ? vec3(0.53, 0.53, 0.85) : vec3(0.85, 0.53, 0.53);
+  return vec3(0.8, 0.8, 0.8);
 }
 
 vec3 mapqColor(float mapq) {
@@ -109,11 +108,12 @@ precision highp float;
 in float a_position;    // genomic position (start of bin)
 in float a_depth;       // total depth
 
-uniform vec2 u_domainX;
+uniform vec2 u_visibleRange;  // visible genomic range [start, end]
 uniform float u_coverageHeight;  // height in pixels
 uniform float u_maxDepth;
 uniform float u_binSize;
 uniform float u_canvasHeight;
+uniform float u_canvasWidth;
 
 out vec4 v_color;
 out vec2 v_localPos;
@@ -124,29 +124,33 @@ void main() {
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
   v_localPos = vec2(localX, localY);
 
-  float domainWidth = u_domainX.y - u_domainX.x;
+  float visibleWidth = u_visibleRange.y - u_visibleRange.x;
 
   // X: map genomic position to clip space
-  float x1 = (a_position - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float x2 = (a_position + u_binSize - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float x1 = (a_position - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
+  float x2 = (a_position + u_binSize - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
+
+  // Ensure minimum width of 1 pixel (2/canvasWidth in clip space)
+  float minWidth = 2.0 / u_canvasWidth;
+  if (x2 - x1 < minWidth) {
+    float mid = (x1 + x2) * 0.5;
+    x1 = mid - minWidth * 0.5;
+    x2 = mid + minWidth * 0.5;
+  }
+
   float sx = mix(x1, x2, localX);
 
   // Y: coverage area at top of canvas
-  // Bar height proportional to depth, growing UPWARD from bottom of coverage area
   float barHeight = (a_depth / u_maxDepth) * u_coverageHeight;
-
-  // Bottom of coverage area in clip space
   float coverageBottom = 1.0 - (u_coverageHeight / u_canvasHeight) * 2.0;
-
-  // Bars grow upward from the bottom of the coverage area
   float yBot = coverageBottom;
   float yTop = coverageBottom + (barHeight / u_canvasHeight) * 2.0;
   float sy = mix(yBot, yTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // Always gray
-  v_color = vec4(0.65, 0.65, 0.65, 1.0);
+  // Light gray coverage bars
+  v_color = vec4(0.8, 0.8, 0.8, 1.0);
 }
 `
 
@@ -396,6 +400,7 @@ export class WebGLRenderer {
 
   private buffers: GPUBuffers | null = null
   private layoutMap: Map<string, number> = new Map()
+  private lineVAO: WebGLVertexArrayObject | null = null
   private lineBuffer: WebGLBuffer | null = null
 
   private readUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -435,8 +440,15 @@ export class WebGLRenderer {
 
     this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_color'])
 
-    // Create line buffer for separator
+    // Create line VAO and buffer for separator
+    this.lineVAO = gl.createVertexArray()
     this.lineBuffer = gl.createBuffer()
+    gl.bindVertexArray(this.lineVAO)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
+    const linePosLoc = gl.getAttribLocation(this.lineProgram, 'a_position')
+    gl.enableVertexAttribArray(linePosLoc)
+    gl.vertexAttribPointer(linePosLoc, 2, gl.FLOAT, false, 0, 0)
+    gl.bindVertexArray(null)
 
     this.cacheUniforms(this.readProgram, this.readUniforms, [
       'u_domainX',
@@ -449,11 +461,12 @@ export class WebGLRenderer {
     ])
 
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
-      'u_domainX',
+      'u_visibleRange',
       'u_coverageHeight',
       'u_maxDepth',
       'u_binSize',
       'u_canvasHeight',
+      'u_canvasWidth',
     ])
 
     const cigarUniforms = [
@@ -793,14 +806,11 @@ export class WebGLRenderer {
     }
 
     // Draw coverage first (at top)
-    if (
-      state.showCoverage &&
-      this.buffers.coverageVAO &&
-      this.buffers.coverageCount > 0
-    ) {
+    const willDrawCoverage = state.showCoverage && this.buffers.coverageVAO && this.buffers.coverageCount > 0
+    if (willDrawCoverage) {
       gl.useProgram(this.coverageProgram)
       gl.uniform2f(
-        this.coverageUniforms.u_domainX!,
+        this.coverageUniforms.u_visibleRange!,
         state.domainX[0],
         state.domainX[1],
       )
@@ -811,6 +821,7 @@ export class WebGLRenderer {
       gl.uniform1f(this.coverageUniforms.u_maxDepth!, this.buffers.maxDepth)
       gl.uniform1f(this.coverageUniforms.u_binSize!, this.buffers.binSize)
       gl.uniform1f(this.coverageUniforms.u_canvasHeight!, canvas.height)
+      gl.uniform1f(this.coverageUniforms.u_canvasWidth!, canvas.width)
 
       gl.bindVertexArray(this.buffers.coverageVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.coverageCount)
@@ -821,13 +832,10 @@ export class WebGLRenderer {
       gl.uniform4f(this.lineUniforms.u_color!, 0.7, 0.7, 0.7, 1.0)
 
       const lineData = new Float32Array([-1, lineY, 1, lineY])
+      gl.bindVertexArray(this.lineVAO)
       gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
       gl.bufferData(gl.ARRAY_BUFFER, lineData, gl.DYNAMIC_DRAW)
-      const linePosLoc = gl.getAttribLocation(this.lineProgram, 'a_position')
-      gl.enableVertexAttribArray(linePosLoc)
-      gl.vertexAttribPointer(linePosLoc, 2, gl.FLOAT, false, 0, 0)
       gl.drawArrays(gl.LINES, 0, 2)
-      gl.disableVertexAttribArray(linePosLoc)
     }
 
     // Draw reads
@@ -929,6 +937,9 @@ export class WebGLRenderer {
       if (this.buffers.insertionVAO) {
         gl.deleteVertexArray(this.buffers.insertionVAO)
       }
+    }
+    if (this.lineVAO) {
+      gl.deleteVertexArray(this.lineVAO)
     }
     if (this.lineBuffer) {
       gl.deleteBuffer(this.lineBuffer)
