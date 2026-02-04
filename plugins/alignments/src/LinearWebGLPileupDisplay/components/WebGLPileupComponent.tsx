@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useCallback, useState, useId } from 'react'
 import { observer } from 'mobx-react'
+import { autorun } from 'mobx'
 import { getContainingView } from '@jbrowse/core/util'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 
@@ -16,19 +17,25 @@ interface Props {
 /**
  * WebGL Pileup Component
  *
- * Architecture: Single source of truth - always use MobX view state.
+ * Architecture: Hybrid approach - MobX is source of truth, but render immediately.
  *
  * The view's offsetPx and bpPerPx are the source of truth for coordinates.
  * This ensures perfect alignment with gridlines and other components.
  *
- * During interaction, we update the view immediately (not debounced).
- * This may trigger re-renders of other components, but ensures consistency.
+ * During interaction:
+ * 1. We update MobX immediately via view.setNewView() (for gridlines, other components)
+ * 2. We render WebGL immediately with computed values (don't wait for MobX reaction)
+ *
+ * The useEffect watching MobX state handles external navigation (keyboard, clicks).
  */
 
-// Debug logging - disable for performance (console.log adds ~15-20ms per wheel event!)
-const DEBUG = false
+// Debug logging - enable to diagnose performance issues
+const DEBUG = true
 const log = (...args: unknown[]) => DEBUG && console.log('[WebGL]', ...args)
 const renderCountRef = { current: 0 }
+const wheelCountRef = { current: 0 }
+const immediateRenderCountRef = { current: 0 }
+const scheduledRenderCountRef = { current: 0 }
 
 const WebGLPileupComponent = observer(function WebGLPileupComponent({
   model,
@@ -53,6 +60,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Rendering and data loading
   const renderRAFRef = useRef<number | null>(null)
   const scheduleRenderRef = useRef<() => void>(() => {})
+  // Flag to skip effect when we triggered the update ourselves
+  const selfUpdateRef = useRef(false)
   const pendingDataRequestRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
@@ -132,21 +141,42 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     return [rangeStart, rangeEnd]
   }, [view, width])
 
-  // Render to WebGL canvas
-  const renderNow = useCallback(() => {
-    const t0 = performance.now()
-    if (!rendererRef.current || width === undefined) {
-      return
-    }
-    const visibleBpRange = getVisibleBpRange()
-    if (!visibleBpRange) {
-      return
-    }
+  // Render to WebGL canvas with explicit domain - used for immediate rendering
+  // during interaction without waiting for MobX reaction
+  const renderWithDomain = useCallback(
+    (domainX: [number, number], canvasW?: number, canvasH?: number) => {
+      immediateRenderCountRef.current++
+      const renderNum = immediateRenderCountRef.current
+      const t0 = performance.now()
+      const w = canvasW ?? width
+      const h = canvasH ?? height
+      if (!rendererRef.current || w === undefined) {
+        log('IMMEDIATE RENDER #' + renderNum + ' SKIP - no renderer or width')
+        return
+      }
 
-    rendererRef.current.render({
-      domainX: visibleBpRange,
-      rangeY: rangeYRef.current,
-      colorScheme: colorSchemeIndex,
+      const t1 = performance.now()
+      rendererRef.current.render({
+        domainX,
+        rangeY: rangeYRef.current,
+        colorScheme: colorSchemeIndex,
+        featureHeight,
+        featureSpacing,
+        showCoverage,
+        coverageHeight,
+        showMismatches,
+        showInterbaseCounts,
+        showInterbaseIndicators,
+        canvasWidth: w,
+        canvasHeight: h,
+      })
+      const t2 = performance.now()
+      log(
+        'IMMEDIATE RENDER #' + renderNum + ': setup=' + (t1 - t0).toFixed(2) + 'ms, WebGL=' + (t2 - t1).toFixed(2) + 'ms, total=' + (t2 - t0).toFixed(2) + 'ms',
+      )
+    },
+    [
+      colorSchemeIndex,
       featureHeight,
       featureSpacing,
       showCoverage,
@@ -154,36 +184,38 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       showMismatches,
       showInterbaseCounts,
       showInterbaseIndicators,
-      // Pass dimensions to avoid forced layout from reading clientWidth/clientHeight
-      canvasWidth: width,
-      canvasHeight: height,
-    })
-    log('renderNow took', (performance.now() - t0).toFixed(2) + 'ms')
-  }, [
-    getVisibleBpRange,
-    colorSchemeIndex,
-    featureHeight,
-    featureSpacing,
-    showCoverage,
-    coverageHeight,
-    showMismatches,
-    showInterbaseCounts,
-    showInterbaseIndicators,
-    width,
-    height,
-  ])
+      width,
+      height,
+    ],
+  )
+
+  // Render to WebGL canvas - reads domain from MobX view state (used by scheduled renders)
+  const renderNow = useCallback(() => {
+    const t0 = performance.now()
+    const visibleBpRange = getVisibleBpRange()
+    if (!visibleBpRange) {
+      log('renderNow (scheduled) SKIP - no visible range')
+      return
+    }
+    log('renderNow (scheduled) calling renderWithDomain, getVisibleBpRange took ' + (performance.now() - t0).toFixed(2) + 'ms')
+    renderWithDomain(visibleBpRange)
+  }, [getVisibleBpRange, renderWithDomain])
 
   const renderImmediate = useCallback(() => {
     renderNow()
   }, [renderNow])
 
   const scheduleRender = useCallback(() => {
-    log('scheduleRender called')
+    scheduledRenderCountRef.current++
+    const schedNum = scheduledRenderCountRef.current
+    log('SCHEDULE RENDER #' + schedNum + ' requested')
     if (renderRAFRef.current !== null) {
+      log('SCHEDULE RENDER #' + schedNum + ' - canceling previous RAF')
       cancelAnimationFrame(renderRAFRef.current)
     }
     renderRAFRef.current = requestAnimationFrame(() => {
       renderRAFRef.current = null
+      log('SCHEDULE RENDER #' + schedNum + ' - RAF callback firing')
       renderNow()
     })
   }, [renderNow])
@@ -268,6 +300,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Must be defined after the callbacks they reference
   const renderImmediateRef = useRef(renderImmediate)
   renderImmediateRef.current = renderImmediate
+  const renderWithDomainRef = useRef(renderWithDomain)
+  renderWithDomainRef.current = renderWithDomain
   const checkDataNeedsRef = useRef(checkDataNeeds)
   checkDataNeedsRef.current = checkDataNeeds
   const clampOffsetRef = useRef(clampOffset)
@@ -322,22 +356,64 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   }, [viewId, canvasId, renderImmediate])
 
   // Re-render when view state changes (pan/zoom from any source)
+  // Uses MobX autorun for more predictable timing than useEffect
+  // This handles external navigation (keyboard, clicks) but skips our own setNewView calls
   useEffect(() => {
-    log(
-      'EFFECT: View state change - RUN (offsetPx=' +
-        view?.offsetPx?.toFixed(2) +
-        ', bpPerPx=' +
-        view?.bpPerPx?.toFixed(4) +
-        ')',
-    )
-    if (!view?.initialized) {
+    if (!view) {
       return
     }
-    // Sync domain to model for data loading
-    syncDomainToModel()
-    // Schedule render
-    scheduleRenderRef.current()
-  }, [view?.offsetPx, view?.bpPerPx, view?.initialized, syncDomainToModel])
+
+    const dispose = autorun(() => {
+      const t0 = performance.now()
+      // Access observables to subscribe to them
+      const offsetPx = view.offsetPx
+      const bpPerPx = view.bpPerPx
+      const initialized = view.initialized
+
+      // Skip if we triggered this update ourselves (already rendered immediately)
+      if (selfUpdateRef.current) {
+        log(
+          'AUTORUN: View state change - SKIP (self-triggered, offsetPx=' +
+            offsetPx?.toFixed(2) +
+            ', bpPerPx=' +
+            bpPerPx?.toFixed(4) +
+            ')',
+        )
+        selfUpdateRef.current = false
+        return
+      }
+
+      log(
+        'AUTORUN: View state change - RUN (external, offsetPx=' +
+          offsetPx?.toFixed(2) +
+          ', bpPerPx=' +
+          bpPerPx?.toFixed(4) +
+          ')',
+      )
+
+      if (!initialized) {
+        return
+      }
+
+      // Sync domain to model for data loading
+      const visibleBpRange = getVisibleBpRangeRef.current()
+      if (visibleBpRange) {
+        model.setCurrentDomain(visibleBpRange)
+      }
+
+      // Schedule render for external navigation
+      scheduleRenderRef.current()
+      log(
+        'AUTORUN: View state change - scheduled render in',
+        (performance.now() - t0).toFixed(2) + 'ms',
+      )
+    })
+
+    return () => {
+      log('AUTORUN: View state change - DISPOSE')
+      dispose()
+    }
+  }, [view, model])
 
   // Upload features to GPU from RPC typed arrays
   useEffect(() => {
@@ -486,11 +562,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
 
     const handleWheel = (e: WheelEvent) => {
+      wheelCountRef.current++
+      const wheelNum = wheelCountRef.current
       const t0 = performance.now()
       const view = viewRef.current
       const width = widthRef.current
 
       if (!view?.initialized || width === undefined) {
+        log('WHEEL #' + wheelNum + ' SKIP - view not ready')
         return
       }
 
@@ -502,13 +581,40 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       // Horizontal scroll - pan
       if (absX > 5 && absX > absY * 2) {
+        const t1 = performance.now()
         const newOffsetPx = clampOffsetRef.current(view.offsetPx + e.deltaX)
-        view.setNewView(view.bpPerPx, newOffsetPx)
+
+        // Compute new domain for immediate rendering
+        // @ts-ignore - dynamicBlocks access
+        const contentBlocks = view.dynamicBlocks?.contentBlocks
+        if (contentBlocks?.length > 0) {
+          const first = contentBlocks[0]
+          const blockOffsetPx = first.offsetPx ?? 0
+          const deltaPx = newOffsetPx - blockOffsetPx
+          const deltaBp = deltaPx * view.bpPerPx
+          const rangeStart = first.start + deltaBp
+          const rangeEnd = rangeStart + width * view.bpPerPx
+          const t2 = performance.now()
+
+          // Render immediately with computed values
+          renderWithDomainRef.current([rangeStart, rangeEnd])
+          const t3 = performance.now()
+
+          // Update MobX asynchronously (for gridlines, other components)
+          // This prevents setNewView from blocking the wheel handler
+          const bpPerPx = view.bpPerPx
+          queueMicrotask(() => {
+            selfUpdateRef.current = true
+            view.setNewView(bpPerPx, newOffsetPx)
+          })
+          const t4 = performance.now()
+
+          log(
+            'WHEEL #' + wheelNum + ' (pan): compute=' + (t2 - t1).toFixed(2) + 'ms, render=' + (t3 - t2).toFixed(2) + 'ms, queueMicrotask=' + (t4 - t3).toFixed(2) + 'ms, total=' + (t4 - t0).toFixed(2) + 'ms',
+          )
+        }
+
         checkDataNeedsRef.current()
-        log(
-          'handleWheel (pan) took',
-          (performance.now() - t0).toFixed(2) + 'ms',
-        )
         return
       }
 
@@ -518,6 +624,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       if (e.shiftKey) {
         // Vertical scroll within pileup (Y-axis panning, not part of view state)
+        const t1 = performance.now()
         const rowHeight = featureHeightRef.current + featureSpacingRef.current
         const totalHeight = maxYRef.current * rowHeight
         const panAmount = e.deltaY * 0.5
@@ -532,11 +639,18 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           newY = [newY[0] - overflow, newY[1] - overflow]
         }
         rangeYRef.current = newY
+        const t2 = performance.now()
         renderImmediateRef.current()
+        const t3 = performance.now()
+        log(
+          'WHEEL #' + wheelNum + ' (Y-pan): compute=' + (t2 - t1).toFixed(2) + 'ms, render=' + (t3 - t2).toFixed(2) + 'ms, total=' + (t3 - t0).toFixed(2) + 'ms',
+        )
       } else {
         // Zoom around mouse position
+        const t1 = performance.now()
         const currentRange = getVisibleBpRangeRef.current()
         if (!currentRange) {
+          log('WHEEL #' + wheelNum + ' (zoom) SKIP - no current range')
           return
         }
 
@@ -546,6 +660,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         if (!rect) {
           rect = canvas.getBoundingClientRect()
           canvasRectRef.current = rect
+          log('WHEEL #' + wheelNum + ' - getBoundingClientRect called (cache miss)')
         }
         const mouseX = e.clientX - rect.left
         const factor = 1.2
@@ -562,11 +677,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
         // Check zoom limits
         if (newBpPerPx < view.minBpPerPx || newBpPerPx > view.maxBpPerPx) {
+          log('WHEEL #' + wheelNum + ' (zoom) SKIP - zoom limit reached')
           return
         }
 
         // Position new range so mouseBp stays at same screen position
         const newRangeStart = mouseBp - mouseFraction * newRangeWidth
+        const newRangeEnd = newRangeStart + newRangeWidth
+        const t2 = performance.now()
 
         // Compute new offsetPx from the new range start
         // @ts-ignore - dynamicBlocks access
@@ -577,12 +695,26 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           // assemblyOrigin is fixed - compute it from current state
           const assemblyOrigin = first.start - blockOffsetPx * view.bpPerPx
           const newOffsetPx = (newRangeStart - assemblyOrigin) / newBpPerPx
-          view.setNewView(newBpPerPx, newOffsetPx)
+
+          // Render immediately with computed values
+          renderWithDomainRef.current([newRangeStart, newRangeEnd])
+          const t3 = performance.now()
+
+          // Update MobX asynchronously (for gridlines, other components)
+          // This prevents setNewView from blocking the wheel handler
+          queueMicrotask(() => {
+            selfUpdateRef.current = true
+            view.setNewView(newBpPerPx, newOffsetPx)
+          })
+          const t4 = performance.now()
+
+          log(
+            'WHEEL #' + wheelNum + ' (zoom): compute=' + (t2 - t1).toFixed(2) + 'ms, render=' + (t3 - t2).toFixed(2) + 'ms, queueMicrotask=' + (t4 - t3).toFixed(2) + 'ms, total=' + (t4 - t0).toFixed(2) + 'ms',
+          )
         }
 
         checkDataNeedsRef.current()
       }
-      log('handleWheel took', (performance.now() - t0).toFixed(2) + 'ms')
     }
 
     canvas.addEventListener('wheel', handleWheel, { passive: false })
@@ -609,7 +741,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const view = viewRef.current
-    if (!dragRef.current.isDragging || !view) {
+    const width = widthRef.current
+    if (!dragRef.current.isDragging || !view || width === undefined) {
       return
     }
 
@@ -618,10 +751,32 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     dragRef.current.lastX = e.clientX
     dragRef.current.lastY = e.clientY
 
-    // Horizontal pan - update view directly
+    // Horizontal pan - update view and render immediately
     if (dx !== 0) {
       const newOffsetPx = clampOffsetRef.current(view.offsetPx - dx)
-      view.setNewView(view.bpPerPx, newOffsetPx)
+
+      // Compute new domain for immediate rendering
+      // @ts-ignore - dynamicBlocks access
+      const contentBlocks = view.dynamicBlocks?.contentBlocks
+      if (contentBlocks?.length > 0) {
+        const first = contentBlocks[0]
+        const blockOffsetPx = first.offsetPx ?? 0
+        const deltaPx = newOffsetPx - blockOffsetPx
+        const deltaBp = deltaPx * view.bpPerPx
+        const rangeStart = first.start + deltaBp
+        const rangeEnd = rangeStart + width * view.bpPerPx
+
+        // Render immediately with computed values
+        renderWithDomainRef.current([rangeStart, rangeEnd])
+
+        // Update MobX asynchronously (for gridlines, other components)
+        const bpPerPx = view.bpPerPx
+        queueMicrotask(() => {
+          selfUpdateRef.current = true
+          view.setNewView(bpPerPx, newOffsetPx)
+        })
+      }
+
       checkDataNeedsRef.current()
     }
 
