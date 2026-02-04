@@ -6,13 +6,28 @@
  *
  * High-precision position handling inspired by genome-spy
  * (https://github.com/genome-spy/genome-spy)
- * Uses 12-bit split approach to preserve Float32 precision for large genomic coordinates.
- * Positions are split into high/low parts, subtracted separately, then combined.
+ *
+ * The challenge: Float32 loses precision for large genomic positions (e.g., 200,000,000 bp).
+ * The solution: 12-bit split approach where positions are split into:
+ *   - High part: multiples of 4096 (captures large magnitude)
+ *   - Low part: 0-4095 + fractional (captures fine detail)
+ *
+ * In the shader, high parts are subtracted separately from low parts, then combined.
+ * This preserves precision because each subtraction involves similar-magnitude values.
+ *
+ * For smooth scrolling, the domain start must preserve fractional precision - otherwise
+ * reads appear to "stick" at integer positions and snap when crossing boundaries.
  */
 
 /**
- * Split a position into high/low parts for 12-bit precision.
- * High part is multiple of 4096, low part is 0-4095.
+ * Split an integer position into high/low parts for 12-bit precision.
+ *
+ * The 12-bit split reduces Float32 precision loss for large genomic coordinates.
+ * By splitting into high (multiples of 4096) and low (0-4095) parts, each component
+ * has fewer significant digits, so Float32 rounding errors are minimized when
+ * subtracting positions in the shader.
+ *
+ * Used for read positions which are stored as integers.
  */
 function splitPosition(value: number): [number, number] {
   const intValue = Math.floor(value)
@@ -22,9 +37,14 @@ function splitPosition(value: number): [number, number] {
 }
 
 /**
- * Split a position including fractional part for smooth scrolling.
- * High part is multiple of 4096, low part is 0-4095 + fractional.
- * Used for domain start to preserve sub-pixel scroll precision.
+ * Split a position including its fractional part for smooth scrolling.
+ *
+ * Same as splitPosition but preserves the fractional component in the low part.
+ * This is critical for the domain start position - without preserving fractional
+ * precision, scrolling appears jerky as reads "stick" at integer bp boundaries
+ * and then snap to new positions.
+ *
+ * Used for domain start which can have sub-bp scroll offsets.
  */
 function splitPositionWithFrac(value: number): [number, number] {
   const intValue = Math.floor(value)
@@ -44,6 +64,9 @@ function splitPositionWithFrac(value: number): [number, number] {
  * - Each part has fewer significant digits, reducing Float32 rounding errors
  * - Subtract domain high/low parts separately, then combine
  * - This preserves precision even for positions like 200,000,000 bp
+ *
+ * Note: domain.y (low part) may include a fractional component for smooth scrolling.
+ * Read positions are integers, but the domain start can have sub-bp precision.
  */
 const HP_GLSL_FUNCTIONS = `
 // High-precision constants (12-bit split)
@@ -827,11 +850,6 @@ void main() {
 }
 `
 
-// Debug logging for scroll behavior
-const DEBUG_SCROLL = true
-const logScroll = (...args: unknown[]) =>
-  DEBUG_SCROLL && console.log('[WebGL Scroll]', ...args)
-
 export interface RenderState {
   domainX: [number, number]  // absolute genomic positions
   rangeY: [number, number]
@@ -1527,22 +1545,11 @@ export class WebGLRenderer {
       state.domainX[1] - regionStart,
     ]
 
-    // Compute high-precision split domain for reads (12-bit split approach)
-    // Uses absolute positions - shader does the split and subtraction
-    // Use splitPositionWithFrac to preserve fractional scroll position for smooth scrolling
+    // Compute high-precision split domain for reads (12-bit split approach).
+    // Uses splitPositionWithFrac to preserve fractional scroll position - without this,
+    // reads would "stick" at integer bp positions and snap when crossing boundaries.
     const [domainStartHi, domainStartLo] = splitPositionWithFrac(state.domainX[0])
     const domainExtent = state.domainX[1] - state.domainX[0]
-
-    // Compare old vs new approach
-    const [oldHi, oldLo] = splitPosition(Math.floor(state.domainX[0]))
-    const fracLost = state.domainX[0] - Math.floor(state.domainX[0])
-
-    logScroll(
-      'domainX:', state.domainX[0].toFixed(3), '-', state.domainX[1].toFixed(3),
-      '| NEW split: hi=', domainStartHi, 'lo=', domainStartLo.toFixed(3),
-      '| OLD split: hi=', oldHi, 'lo=', oldLo, '(lost frac:', fracLost.toFixed(3), ')',
-      '| extent=', domainExtent.toFixed(3),
-    )
 
     // Draw coverage first (at top)
     const willDrawCoverage = state.showCoverage && this.buffers.coverageVAO && this.buffers.coverageCount > 0
