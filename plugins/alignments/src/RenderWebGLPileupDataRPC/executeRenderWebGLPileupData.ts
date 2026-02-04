@@ -38,6 +38,19 @@ interface MismatchData {
 interface InsertionData {
   featureId: string
   position: number
+  length: number
+}
+
+interface SoftclipData {
+  featureId: string
+  position: number
+  length: number
+}
+
+interface HardclipData {
+  featureId: string
+  position: number
+  length: number
 }
 
 function baseToNum(base: string): number {
@@ -261,7 +274,7 @@ export async function executeRenderWebGLPileupData({
 
   checkStopToken2(stopTokenCheck)
 
-  const { features, gaps, mismatches, insertions } = await updateStatus(
+  const { features, gaps, mismatches, insertions, softclips, hardclips } = await updateStatus(
     'Processing alignments',
     statusCallback,
     async () => {
@@ -271,6 +284,8 @@ export async function executeRenderWebGLPileupData({
       const gapsData: GapData[] = []
       const mismatchesData: MismatchData[] = []
       const insertionsData: InsertionData[] = []
+      const softclipsData: SoftclipData[] = []
+      const hardclipsData: HardclipData[] = []
 
       for (const feature of deduped) {
         const featureId = feature.id()
@@ -306,6 +321,19 @@ export async function executeRenderWebGLPileupData({
               insertionsData.push({
                 featureId,
                 position: featureStart + mm.start,
+                length: mm.insertlen ?? mm.length,
+              })
+            } else if (mm.type === 'softclip') {
+              softclipsData.push({
+                featureId,
+                position: featureStart + mm.start,
+                length: mm.cliplen ?? mm.length,
+              })
+            } else if (mm.type === 'hardclip') {
+              hardclipsData.push({
+                featureId,
+                position: featureStart + mm.start,
+                length: mm.cliplen ?? mm.length,
               })
             }
           }
@@ -317,13 +345,15 @@ export async function executeRenderWebGLPileupData({
         gaps: gapsData,
         mismatches: mismatchesData,
         insertions: insertionsData,
+        softclips: softclipsData,
+        hardclips: hardclipsData,
       }
     },
   )
 
   checkStopToken2(stopTokenCheck)
 
-  const { maxY, readArrays, gapArrays, mismatchArrays, insertionArrays } =
+  const { maxY, readArrays, gapArrays, mismatchArrays, insertionArrays, softclipArrays, hardclipArrays } =
     await updateStatus('Computing layout', statusCallback, async () => {
       const layout = computeLayout(features)
       const numLevels = Math.max(0, ...layout.values()) + 1
@@ -368,11 +398,35 @@ export async function executeRenderWebGLPileupData({
 
       const insertionPositions = new Float32Array(insertions.length)
       const insertionYs = new Float32Array(insertions.length)
+      const insertionLengths = new Float32Array(insertions.length)
       for (let i = 0; i < insertions.length; i++) {
         const ins = insertions[i]
         const y = layout.get(ins.featureId) ?? 0
         insertionPositions[i] = ins.position
         insertionYs[i] = y
+        insertionLengths[i] = ins.length
+      }
+
+      const softclipPositions = new Float32Array(softclips.length)
+      const softclipYs = new Float32Array(softclips.length)
+      const softclipLengths = new Float32Array(softclips.length)
+      for (let i = 0; i < softclips.length; i++) {
+        const sc = softclips[i]
+        const y = layout.get(sc.featureId) ?? 0
+        softclipPositions[i] = sc.position
+        softclipYs[i] = y
+        softclipLengths[i] = sc.length
+      }
+
+      const hardclipPositions = new Float32Array(hardclips.length)
+      const hardclipYs = new Float32Array(hardclips.length)
+      const hardclipLengths = new Float32Array(hardclips.length)
+      for (let i = 0; i < hardclips.length; i++) {
+        const hc = hardclips[i]
+        const y = layout.get(hc.featureId) ?? 0
+        hardclipPositions[i] = hc.position
+        hardclipYs[i] = y
+        hardclipLengths[i] = hc.length
       }
 
       return {
@@ -380,7 +434,9 @@ export async function executeRenderWebGLPileupData({
         readArrays: { readPositions, readYs, readFlags, readMapqs, readInsertSizes },
         gapArrays: { gapPositions, gapYs },
         mismatchArrays: { mismatchPositions, mismatchYs, mismatchBases },
-        insertionArrays: { insertionPositions, insertionYs },
+        insertionArrays: { insertionPositions, insertionYs, insertionLengths },
+        softclipArrays: { softclipPositions, softclipYs, softclipLengths },
+        hardclipArrays: { hardclipPositions, hardclipYs, hardclipLengths },
       }
     })
 
@@ -399,6 +455,8 @@ export async function executeRenderWebGLPileupData({
     ...gapArrays,
     ...mismatchArrays,
     ...insertionArrays,
+    ...softclipArrays,
+    ...hardclipArrays,
 
     coveragePositions: coverage.positions,
     coverageDepths: coverage.depths,
@@ -415,6 +473,8 @@ export async function executeRenderWebGLPileupData({
     numGaps: gaps.length,
     numMismatches: mismatches.length,
     numInsertions: insertions.length,
+    numSoftclips: softclips.length,
+    numHardclips: hardclips.length,
     numCoverageBins: coverage.positions.length,
     numSnpSegments: snpCoverage.count,
   }
@@ -432,6 +492,13 @@ export async function executeRenderWebGLPileupData({
     result.mismatchBases.buffer,
     result.insertionPositions.buffer,
     result.insertionYs.buffer,
+    result.insertionLengths.buffer,
+    result.softclipPositions.buffer,
+    result.softclipYs.buffer,
+    result.softclipLengths.buffer,
+    result.hardclipPositions.buffer,
+    result.hardclipYs.buffer,
+    result.hardclipLengths.buffer,
     result.coveragePositions.buffer,
     result.coverageDepths.buffer,
     result.snpPositions.buffer,

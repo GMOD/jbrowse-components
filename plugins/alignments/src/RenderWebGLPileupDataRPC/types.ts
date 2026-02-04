@@ -35,6 +35,17 @@ export interface WebGLPileupDataResult {
   // Insertion data
   insertionPositions: Float32Array
   insertionYs: Float32Array
+  insertionLengths: Float32Array
+
+  // Soft clip data
+  softclipPositions: Float32Array
+  softclipYs: Float32Array
+  softclipLengths: Float32Array
+
+  // Hard clip data
+  hardclipPositions: Float32Array
+  hardclipYs: Float32Array
+  hardclipLengths: Float32Array
 
   // Coverage data
   coveragePositions: Float32Array
@@ -54,6 +65,8 @@ export interface WebGLPileupDataResult {
   numGaps: number
   numMismatches: number
   numInsertions: number
+  numSoftclips: number
+  numHardclips: number
   numCoverageBins: number
   numSnpSegments: number
 }

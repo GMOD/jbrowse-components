@@ -362,12 +362,14 @@ void main() {
 }
 `
 
-// Insertion vertex shader - small triangles
+// Insertion vertex shader - vertical bars like PileupRenderer
+// Renders: main bar + top tick + bottom tick (3 rectangles = 18 vertices per insertion)
 const INSERTION_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
 in float a_position;
 in float a_y;
+in float a_length;  // insertion length
 
 uniform vec2 u_domainX;
 uniform vec2 u_rangeY;
@@ -375,39 +377,242 @@ uniform float u_featureHeight;
 uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
+uniform float u_canvasWidth;
 
 out vec4 v_color;
 
 void main() {
-  int vid = gl_VertexID % 3;
+  // Each insertion uses 18 vertices (3 rectangles x 6 vertices each)
+  // Rectangle 0: main vertical bar
+  // Rectangle 1: top horizontal tick
+  // Rectangle 2: bottom horizontal tick
+  int rectIdx = gl_VertexID / 6;
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
   float domainWidth = u_domainX.y - u_domainX.x;
+  float bpPerPx = domainWidth / u_canvasWidth;
+  float invBpPerPx = 1.0 / bpPerPx;
+
+  // Bar width: max 1.2px in genomic coords, min 1px
+  float barWidthBp = max(bpPerPx, min(1.2 * bpPerPx, 1.0));
+  float tickWidthBp = barWidthBp * 3.0;  // Tick marks are 3x wider
+
+  float cx = a_position;
+
   float availableHeight = u_canvasHeight - u_coverageOffset;
   float yRange = u_rangeY.y - u_rangeY.x;
   float rowHeight = u_featureHeight + u_featureSpacing;
+  float yTop = a_y * rowHeight;
+  float yBot = yTop + u_featureHeight;
 
-  float cx = (a_position - u_domainX.x) / domainWidth * 2.0 - 1.0;
-
-  float yMid = a_y * rowHeight + u_featureHeight * 0.5;
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
-  float cy = pileupTop - (yMid - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
 
-  // Triangle size
-  float sizeX = 0.008;
-  float sizeY = 0.025;
+  float x1, x2, y1, y2;
 
-  vec2 offsets[3] = vec2[3](
-    vec2(0.0, sizeY),     // Top
-    vec2(-sizeX, -sizeY), // Bottom left
-    vec2(sizeX, -sizeY)   // Bottom right
-  );
+  if (rectIdx == 0) {
+    // Main vertical bar
+    x1 = cx - barWidthBp * 0.5;
+    x2 = cx + barWidthBp * 0.5;
+    y1 = syBot;
+    y2 = syTop;
+  } else if (rectIdx == 1) {
+    // Top tick (only show when zoomed in enough)
+    if (invBpPerPx < 6.0) {
+      // Not zoomed in enough - degenerate to zero-area rect
+      x1 = cx;
+      x2 = cx;
+      y1 = syTop;
+      y2 = syTop;
+    } else {
+      x1 = cx - tickWidthBp * 0.5;
+      x2 = cx + tickWidthBp * 0.5;
+      float tickHeight = 1.0 / u_canvasHeight * 2.0;  // 1px in clip space
+      y1 = syTop;
+      y2 = syTop + tickHeight;
+    }
+  } else {
+    // Bottom tick (only show when zoomed in enough)
+    if (invBpPerPx < 6.0) {
+      x1 = cx;
+      x2 = cx;
+      y1 = syBot;
+      y2 = syBot;
+    } else {
+      x1 = cx - tickWidthBp * 0.5;
+      x2 = cx + tickWidthBp * 0.5;
+      float tickHeight = 1.0 / u_canvasHeight * 2.0;
+      y1 = syBot - tickHeight;
+      y2 = syBot;
+    }
+  }
 
-  gl_Position = vec4(cx + offsets[vid].x, cy + offsets[vid].y, 0.0, 1.0);
+  // Transform X to clip space
+  float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+
+  // Ensure minimum width of 1 pixel for the bar
+  float minWidth = 2.0 / u_canvasWidth;
+  if (rectIdx == 0 && sx2 - sx1 < minWidth) {
+    float mid = (sx1 + sx2) * 0.5;
+    sx1 = mid - minWidth * 0.5;
+    sx2 = mid + minWidth * 0.5;
+  }
+
+  float sx = mix(sx1, sx2, localX);
+  float sy = mix(y1, y2, localY);
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
   v_color = vec4(0.8, 0.2, 0.8, 1.0);  // Purple for insertions
 }
 `
 
 const INSERTION_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
+// Soft clip vertex shader - small colored bars
+const SOFTCLIP_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in float a_position;
+in float a_y;
+in float a_length;
+
+uniform vec2 u_domainX;
+uniform vec2 u_rangeY;
+uniform float u_featureHeight;
+uniform float u_featureSpacing;
+uniform float u_coverageOffset;
+uniform float u_canvasHeight;
+uniform float u_canvasWidth;
+
+out vec4 v_color;
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+
+  float domainWidth = u_domainX.y - u_domainX.x;
+  float bpPerPx = domainWidth / u_canvasWidth;
+
+  // Soft clip bar width
+  float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
+
+  float cx = a_position;
+  float x1 = cx - barWidthBp * 0.5;
+  float x2 = cx + barWidthBp * 0.5;
+
+  float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+
+  // Ensure minimum width
+  float minWidth = 2.0 / u_canvasWidth;
+  if (sx2 - sx1 < minWidth) {
+    float mid = (sx1 + sx2) * 0.5;
+    sx1 = mid - minWidth * 0.5;
+    sx2 = mid + minWidth * 0.5;
+  }
+
+  float sx = mix(sx1, sx2, localX);
+
+  float availableHeight = u_canvasHeight - u_coverageOffset;
+  float yRange = u_rangeY.y - u_rangeY.x;
+  float rowHeight = u_featureHeight + u_featureSpacing;
+  float yTop = a_y * rowHeight;
+  float yBot = yTop + u_featureHeight;
+
+  float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
+  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float sy = mix(syBot, syTop, localY);
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  v_color = vec4(0.6, 0.6, 0.6, 1.0);  // Grey for soft clips
+}
+`
+
+const SOFTCLIP_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
+// Hard clip vertex shader - dark bars
+const HARDCLIP_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in float a_position;
+in float a_y;
+in float a_length;
+
+uniform vec2 u_domainX;
+uniform vec2 u_rangeY;
+uniform float u_featureHeight;
+uniform float u_featureSpacing;
+uniform float u_coverageOffset;
+uniform float u_canvasHeight;
+uniform float u_canvasWidth;
+
+out vec4 v_color;
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+
+  float domainWidth = u_domainX.y - u_domainX.x;
+  float bpPerPx = domainWidth / u_canvasWidth;
+
+  // Hard clip bar width
+  float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
+
+  float cx = a_position;
+  float x1 = cx - barWidthBp * 0.5;
+  float x2 = cx + barWidthBp * 0.5;
+
+  float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+
+  // Ensure minimum width
+  float minWidth = 2.0 / u_canvasWidth;
+  if (sx2 - sx1 < minWidth) {
+    float mid = (sx1 + sx2) * 0.5;
+    sx1 = mid - minWidth * 0.5;
+    sx2 = mid + minWidth * 0.5;
+  }
+
+  float sx = mix(sx1, sx2, localX);
+
+  float availableHeight = u_canvasHeight - u_coverageOffset;
+  float yRange = u_rangeY.y - u_rangeY.x;
+  float rowHeight = u_featureHeight + u_featureSpacing;
+  float yTop = a_y * rowHeight;
+  float yBot = yTop + u_featureHeight;
+
+  float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
+  float syTop = pileupTop - (yTop - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float syBot = pileupTop - (yBot - u_rangeY.x) / yRange * (availableHeight / u_canvasHeight) * 2.0;
+  float sy = mix(syBot, syTop, localY);
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  v_color = vec4(0.3, 0.3, 0.3, 1.0);  // Dark grey for hard clips
+}
+`
+
+const HARDCLIP_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
 out vec4 fragColor;
@@ -444,6 +649,10 @@ interface GPUBuffers {
   mismatchCount: number
   insertionVAO: WebGLVertexArrayObject | null
   insertionCount: number
+  softclipVAO: WebGLVertexArrayObject | null
+  softclipCount: number
+  hardclipVAO: WebGLVertexArrayObject | null
+  hardclipCount: number
 }
 
 export class WebGLRenderer {
@@ -457,6 +666,8 @@ export class WebGLRenderer {
   private gapProgram: WebGLProgram
   private mismatchProgram: WebGLProgram
   private insertionProgram: WebGLProgram
+  private softclipProgram: WebGLProgram
+  private hardclipProgram: WebGLProgram
 
   private buffers: GPUBuffers | null = null
   private layoutMap: Map<string, number> = new Map()
@@ -470,6 +681,8 @@ export class WebGLRenderer {
   private gapUniforms: Record<string, WebGLUniformLocation | null> = {}
   private mismatchUniforms: Record<string, WebGLUniformLocation | null> = {}
   private insertionUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private softclipUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private hardclipUniforms: Record<string, WebGLUniformLocation | null> = {}
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -503,6 +716,8 @@ export class WebGLRenderer {
     this.gapProgram = this.createProgram(GAP_VERTEX_SHADER, GAP_FRAGMENT_SHADER)
     this.mismatchProgram = this.createProgram(MISMATCH_VERTEX_SHADER, MISMATCH_FRAGMENT_SHADER)
     this.insertionProgram = this.createProgram(INSERTION_VERTEX_SHADER, INSERTION_FRAGMENT_SHADER)
+    this.softclipProgram = this.createProgram(SOFTCLIP_VERTEX_SHADER, SOFTCLIP_FRAGMENT_SHADER)
+    this.hardclipProgram = this.createProgram(HARDCLIP_VERTEX_SHADER, HARDCLIP_FRAGMENT_SHADER)
 
     this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_color'])
 
@@ -549,9 +764,12 @@ export class WebGLRenderer {
       'u_coverageOffset',
       'u_canvasHeight',
     ]
+    const cigarUniformsWithWidth = [...cigarUniforms, 'u_canvasWidth']
     this.cacheUniforms(this.gapProgram, this.gapUniforms, cigarUniforms)
-    this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [...cigarUniforms, 'u_canvasWidth'])
-    this.cacheUniforms(this.insertionProgram, this.insertionUniforms, cigarUniforms)
+    this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, cigarUniformsWithWidth)
+    this.cacheUniforms(this.insertionProgram, this.insertionUniforms, cigarUniformsWithWidth)
+    this.cacheUniforms(this.softclipProgram, this.softclipUniforms, cigarUniformsWithWidth)
+    this.cacheUniforms(this.hardclipProgram, this.hardclipUniforms, cigarUniformsWithWidth)
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -636,6 +854,12 @@ export class WebGLRenderer {
       if (this.buffers.insertionVAO) {
         gl.deleteVertexArray(this.buffers.insertionVAO)
       }
+      if (this.buffers.softclipVAO) {
+        gl.deleteVertexArray(this.buffers.softclipVAO)
+      }
+      if (this.buffers.hardclipVAO) {
+        gl.deleteVertexArray(this.buffers.hardclipVAO)
+      }
     }
 
     if (features.length === 0) {
@@ -689,6 +913,10 @@ export class WebGLRenderer {
       mismatchCount: 0,
       insertionVAO: null,
       insertionCount: 0,
+      softclipVAO: null,
+      softclipCount: 0,
+      hardclipVAO: null,
+      hardclipCount: 0,
     }
 
     return { maxY }
@@ -727,6 +955,12 @@ export class WebGLRenderer {
       if (this.buffers.insertionVAO) {
         gl.deleteVertexArray(this.buffers.insertionVAO)
       }
+      if (this.buffers.softclipVAO) {
+        gl.deleteVertexArray(this.buffers.softclipVAO)
+      }
+      if (this.buffers.hardclipVAO) {
+        gl.deleteVertexArray(this.buffers.hardclipVAO)
+      }
     }
 
     if (data.numReads === 0) {
@@ -759,6 +993,10 @@ export class WebGLRenderer {
       mismatchCount: 0,
       insertionVAO: null,
       insertionCount: 0,
+      softclipVAO: null,
+      softclipCount: 0,
+      hardclipVAO: null,
+      hardclipCount: 0,
     }
   }
 
@@ -775,7 +1013,16 @@ export class WebGLRenderer {
     numMismatches: number
     insertionPositions: Float32Array
     insertionYs: Float32Array
+    insertionLengths: Float32Array
     numInsertions: number
+    softclipPositions: Float32Array
+    softclipYs: Float32Array
+    softclipLengths: Float32Array
+    numSoftclips: number
+    hardclipPositions: Float32Array
+    hardclipYs: Float32Array
+    hardclipLengths: Float32Array
+    numHardclips: number
   }) {
     const gl = this.gl
 
@@ -795,6 +1042,14 @@ export class WebGLRenderer {
     if (this.buffers.insertionVAO) {
       gl.deleteVertexArray(this.buffers.insertionVAO)
       this.buffers.insertionVAO = null
+    }
+    if (this.buffers.softclipVAO) {
+      gl.deleteVertexArray(this.buffers.softclipVAO)
+      this.buffers.softclipVAO = null
+    }
+    if (this.buffers.hardclipVAO) {
+      gl.deleteVertexArray(this.buffers.hardclipVAO)
+      this.buffers.hardclipVAO = null
     }
 
     // Upload gaps
@@ -832,12 +1087,43 @@ export class WebGLRenderer {
       gl.bindVertexArray(insertionVAO)
       this.uploadBuffer(this.insertionProgram, 'a_position', data.insertionPositions, 1)
       this.uploadBuffer(this.insertionProgram, 'a_y', data.insertionYs, 1)
+      this.uploadBuffer(this.insertionProgram, 'a_length', data.insertionLengths, 1)
       gl.bindVertexArray(null)
 
       this.buffers.insertionVAO = insertionVAO
       this.buffers.insertionCount = data.numInsertions
     } else {
       this.buffers.insertionCount = 0
+    }
+
+    // Upload soft clips
+    if (data.numSoftclips > 0) {
+      const softclipVAO = gl.createVertexArray()!
+      gl.bindVertexArray(softclipVAO)
+      this.uploadBuffer(this.softclipProgram, 'a_position', data.softclipPositions, 1)
+      this.uploadBuffer(this.softclipProgram, 'a_y', data.softclipYs, 1)
+      this.uploadBuffer(this.softclipProgram, 'a_length', data.softclipLengths, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.softclipVAO = softclipVAO
+      this.buffers.softclipCount = data.numSoftclips
+    } else {
+      this.buffers.softclipCount = 0
+    }
+
+    // Upload hard clips
+    if (data.numHardclips > 0) {
+      const hardclipVAO = gl.createVertexArray()!
+      gl.bindVertexArray(hardclipVAO)
+      this.uploadBuffer(this.hardclipProgram, 'a_position', data.hardclipPositions, 1)
+      this.uploadBuffer(this.hardclipProgram, 'a_y', data.hardclipYs, 1)
+      this.uploadBuffer(this.hardclipProgram, 'a_length', data.hardclipLengths, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.hardclipVAO = hardclipVAO
+      this.buffers.hardclipCount = data.numHardclips
+    } else {
+      this.buffers.hardclipCount = 0
     }
   }
 
@@ -1310,6 +1596,7 @@ export class WebGLRenderer {
       }
 
       // Draw insertions - only when zoomed in enough (< 100 bp/px)
+      // Each insertion is 3 rectangles (bar + 2 ticks) = 18 vertices
       if (this.buffers.insertionVAO && this.buffers.insertionCount > 0 && bpPerPx < 100) {
         gl.useProgram(this.insertionProgram)
         gl.uniform2f(this.insertionUniforms.u_domainX!, state.domainX[0], state.domainX[1])
@@ -1318,9 +1605,40 @@ export class WebGLRenderer {
         gl.uniform1f(this.insertionUniforms.u_featureSpacing!, state.featureSpacing)
         gl.uniform1f(this.insertionUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.insertionUniforms.u_canvasHeight!, canvas.height)
+        gl.uniform1f(this.insertionUniforms.u_canvasWidth!, canvas.width)
 
         gl.bindVertexArray(this.buffers.insertionVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.buffers.insertionCount)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 18, this.buffers.insertionCount)
+      }
+
+      // Draw soft clips - only when zoomed in enough (< 100 bp/px)
+      if (this.buffers.softclipVAO && this.buffers.softclipCount > 0 && bpPerPx < 100) {
+        gl.useProgram(this.softclipProgram)
+        gl.uniform2f(this.softclipUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.softclipUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
+        gl.uniform1f(this.softclipUniforms.u_featureHeight!, state.featureHeight)
+        gl.uniform1f(this.softclipUniforms.u_featureSpacing!, state.featureSpacing)
+        gl.uniform1f(this.softclipUniforms.u_coverageOffset!, coverageOffset)
+        gl.uniform1f(this.softclipUniforms.u_canvasHeight!, canvas.height)
+        gl.uniform1f(this.softclipUniforms.u_canvasWidth!, canvas.width)
+
+        gl.bindVertexArray(this.buffers.softclipVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.softclipCount)
+      }
+
+      // Draw hard clips - only when zoomed in enough (< 100 bp/px)
+      if (this.buffers.hardclipVAO && this.buffers.hardclipCount > 0 && bpPerPx < 100) {
+        gl.useProgram(this.hardclipProgram)
+        gl.uniform2f(this.hardclipUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+        gl.uniform2f(this.hardclipUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
+        gl.uniform1f(this.hardclipUniforms.u_featureHeight!, state.featureHeight)
+        gl.uniform1f(this.hardclipUniforms.u_featureSpacing!, state.featureSpacing)
+        gl.uniform1f(this.hardclipUniforms.u_coverageOffset!, coverageOffset)
+        gl.uniform1f(this.hardclipUniforms.u_canvasHeight!, canvas.height)
+        gl.uniform1f(this.hardclipUniforms.u_canvasWidth!, canvas.width)
+
+        gl.bindVertexArray(this.buffers.hardclipVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.hardclipCount)
       }
     }
 
@@ -1347,6 +1665,12 @@ export class WebGLRenderer {
       if (this.buffers.insertionVAO) {
         gl.deleteVertexArray(this.buffers.insertionVAO)
       }
+      if (this.buffers.softclipVAO) {
+        gl.deleteVertexArray(this.buffers.softclipVAO)
+      }
+      if (this.buffers.hardclipVAO) {
+        gl.deleteVertexArray(this.buffers.hardclipVAO)
+      }
     }
     if (this.lineVAO) {
       gl.deleteVertexArray(this.lineVAO)
@@ -1361,5 +1685,7 @@ export class WebGLRenderer {
     gl.deleteProgram(this.gapProgram)
     gl.deleteProgram(this.mismatchProgram)
     gl.deleteProgram(this.insertionProgram)
+    gl.deleteProgram(this.softclipProgram)
+    gl.deleteProgram(this.hardclipProgram)
   }
 }

@@ -448,7 +448,16 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       numMismatches: rpcData.numMismatches,
       insertionPositions: rpcData.insertionPositions,
       insertionYs: rpcData.insertionYs,
+      insertionLengths: rpcData.insertionLengths,
       numInsertions: rpcData.numInsertions,
+      softclipPositions: rpcData.softclipPositions,
+      softclipYs: rpcData.softclipYs,
+      softclipLengths: rpcData.softclipLengths,
+      numSoftclips: rpcData.numSoftclips,
+      hardclipPositions: rpcData.hardclipPositions,
+      hardclipYs: rpcData.hardclipYs,
+      hardclipLengths: rpcData.hardclipLengths,
+      numHardclips: rpcData.numHardclips,
     })
 
     scheduleRenderRef.current()
