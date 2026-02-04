@@ -8,6 +8,7 @@ import {
 import {
   types,
   addDisposer,
+  getSnapshot,
   Instance,
   flow,
 } from '@jbrowse/mobx-state-tree'
@@ -381,7 +382,7 @@ export default function stateModelFactory(
         assemblyName?: string
       }) {
         const session = getSession(self)
-        const { rpcManager } = session
+        const { rpcManager, assemblyManager } = session
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
 
@@ -393,12 +394,24 @@ export default function stateModelFactory(
         self.error = null
 
         try {
+          // Get the sequence adapter from the assembly (needed for CRAM files)
+          const assemblyName = region.assemblyName
+          const assembly = assemblyName
+            ? assemblyManager.get(assemblyName)
+            : undefined
+          const sequenceAdapterConfig =
+            assembly?.configuration?.sequence?.adapter
+          const sequenceAdapter = sequenceAdapterConfig
+            ? getSnapshot(sequenceAdapterConfig)
+            : undefined
+
           const result: WebGLPileupDataResult = yield rpcManager.call(
             session.id,
             'RenderWebGLPileupData',
             {
               sessionId: session.id,
               adapterConfig,
+              sequenceAdapter,
               region,
               filterBy: self.filterBy,
             },
