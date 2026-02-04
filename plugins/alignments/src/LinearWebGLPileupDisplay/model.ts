@@ -119,6 +119,16 @@ export default function stateModelFactory(
          * #property
          */
         showMismatches: true,
+        /**
+         * #property
+         * Show upside-down histogram bars for insertion/softclip/hardclip counts
+         */
+        showInterbaseCounts: true,
+        /**
+         * #property
+         * Show triangular indicators at positions with significant interbase events
+         */
+        showInterbaseIndicators: true,
       }),
     )
     .volatile(() => ({
@@ -354,6 +364,14 @@ export default function stateModelFactory(
         self.showMismatches = show
       },
 
+      setShowInterbaseCounts(show: boolean) {
+        self.showInterbaseCounts = show
+      },
+
+      setShowInterbaseIndicators(show: boolean) {
+        self.showInterbaseIndicators = show
+      },
+
       // Compatibility methods for LinearAlignmentsDisplay
       setConfig(_config: unknown) {
         // No-op for now - config is managed differently in WebGL display
@@ -524,6 +542,20 @@ export default function stateModelFactory(
           {
             label: self.showMismatches ? 'Hide mismatches' : 'Show mismatches',
             onClick: () => self.setShowMismatches(!self.showMismatches),
+          },
+          {
+            label: self.showInterbaseCounts
+              ? 'Hide interbase counts'
+              : 'Show interbase counts',
+            onClick: () =>
+              self.setShowInterbaseCounts(!self.showInterbaseCounts),
+          },
+          {
+            label: self.showInterbaseIndicators
+              ? 'Hide interbase indicators'
+              : 'Show interbase indicators',
+            onClick: () =>
+              self.setShowInterbaseIndicators(!self.showInterbaseIndicators),
           },
         ]
       },

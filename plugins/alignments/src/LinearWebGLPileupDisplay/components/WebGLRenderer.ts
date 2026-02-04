@@ -10,7 +10,16 @@
  * Positions are split into high/low parts, subtracted separately, then combined.
  */
 
-import type { FeatureData, CoverageData, SNPCoverageData, GapData, MismatchData, InsertionData } from '../model'
+/**
+ * Split a position into high/low parts for 12-bit precision.
+ * High part is multiple of 4096, low part is 0-4095.
+ */
+function splitPosition(value: number): [number, number] {
+  const intValue = Math.floor(value)
+  const lo = intValue & 0xFFF
+  const hi = intValue - lo
+  return [hi, lo]
+}
 
 /**
  * High-precision GLSL functions for genomic coordinates.
@@ -268,6 +277,135 @@ void main() {
 }
 `
 
+// Noncov (interbase) histogram vertex shader - renders colored bars DOWNWARD from top
+// For insertion/softclip/hardclip counts aggregated by position
+// Uses FIXED PIXEL WIDTH (1.2px like the original renderer) regardless of zoom
+const NONCOV_HISTOGRAM_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in float a_position;      // position offset from regionStart
+in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
+in float a_segmentHeight; // height of this segment (normalized 0-1)
+in float a_colorType;     // 1=insertion, 2=softclip, 3=hardclip
+
+uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
+uniform float u_noncovHeight; // height in pixels for noncov bars
+uniform float u_canvasHeight;
+uniform float u_canvasWidth;
+
+out vec4 v_color;
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+
+  float domainWidth = u_visibleRange.y - u_visibleRange.x;
+
+  // Center position in clip space
+  float cx = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+
+  // Fixed pixel width (1px)
+  float barWidthClip = 1.0 / u_canvasWidth * 2.0;
+  float x1 = cx - barWidthClip * 0.5;
+  float x2 = cx + barWidthClip * 0.5;
+
+  float sx = mix(x1, x2, localX);
+
+  // Y: bars grow DOWNWARD from top of canvas
+  // Top of canvas is y=1.0 in clip space
+  // segmentTop is at the top (y=1.0 - offset)
+  // segmentBot is below (y=1.0 - offset - height)
+  float segmentTop = 1.0 - (a_yOffset * u_noncovHeight / u_canvasHeight) * 2.0;
+  float segmentBot = segmentTop - (a_segmentHeight * u_noncovHeight / u_canvasHeight) * 2.0;
+  float sy = mix(segmentBot, segmentTop, localY);
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+
+  // Colors: insertion=purple, softclip=grey, hardclip=dark grey
+  int colorIdx = int(a_colorType);
+  if (colorIdx == 1) {
+    v_color = vec4(0.8, 0.2, 0.8, 1.0);      // insertion - purple
+  } else if (colorIdx == 2) {
+    v_color = vec4(0.6, 0.6, 0.6, 1.0);      // softclip - grey
+  } else {
+    v_color = vec4(0.3, 0.3, 0.3, 1.0);      // hardclip - dark grey
+  }
+}
+`
+
+const NONCOV_HISTOGRAM_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
+// Interbase indicator vertex shader - renders small triangles pointing DOWN
+// at positions with significant insertion/softclip/hardclip counts
+const INDICATOR_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in float a_position;   // position offset from regionStart
+in float a_colorType;  // 1=insertion, 2=softclip, 3=hardclip (dominant type)
+
+uniform vec2 u_visibleRange;
+uniform float u_canvasHeight;
+uniform float u_canvasWidth;
+
+out vec4 v_color;
+
+void main() {
+  // Triangle: 3 vertices per indicator
+  int vid = gl_VertexID % 3;
+
+  float domainWidth = u_visibleRange.y - u_visibleRange.x;
+  float cx = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+
+  // Triangle dimensions in clip space
+  float triangleWidth = 7.0 / u_canvasWidth * 2.0;  // 7px wide
+  float triangleHeight = 4.5 / u_canvasHeight * 2.0; // 4.5px tall
+
+  float sx, sy;
+  if (vid == 0) {
+    // Top left
+    sx = cx - triangleWidth * 0.5;
+    sy = 1.0;
+  } else if (vid == 1) {
+    // Top right
+    sx = cx + triangleWidth * 0.5;
+    sy = 1.0;
+  } else {
+    // Bottom center (point)
+    sx = cx;
+    sy = 1.0 - triangleHeight;
+  }
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+
+  // Colors: insertion=purple, softclip=grey, hardclip=dark grey
+  int colorIdx = int(a_colorType);
+  if (colorIdx == 1) {
+    v_color = vec4(0.8, 0.2, 0.8, 1.0);      // insertion - purple
+  } else if (colorIdx == 2) {
+    v_color = vec4(0.6, 0.6, 0.6, 1.0);      // softclip - grey
+  } else {
+    v_color = vec4(0.3, 0.3, 0.3, 1.0);      // hardclip - dark grey
+  }
+}
+`
+
+const INDICATOR_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
 // Simple line shader for drawing separator
 const LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -287,12 +425,13 @@ void main() {
 `
 
 // Gap (deletion/skip) vertex shader - dark rectangles over reads
-// Uses simple float offsets (relative to regionStart) - sufficient for CIGAR features
+// Uses integer attributes for compact representation
 const GAP_VERTEX_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
 
-in vec2 a_position;  // [start, end] as float offsets from regionStart
-in float a_y;
+in uvec2 a_position;  // [start, end] as uint offsets from regionStart
+in uint a_y;          // pileup row
 
 uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
 uniform vec2 u_rangeY;
@@ -307,13 +446,14 @@ void main() {
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
   float domainWidth = u_domainX.y - u_domainX.x;
-  float sx1 = (a_position.x - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (a_position.y - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx1 = (float(a_position.x) - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx2 = (float(a_position.y) - u_domainX.x) / domainWidth * 2.0 - 1.0;
   float sx = mix(sx1, sx2, localX);
 
   // Gap is a thin line in the middle of the read row (constant pixel height)
+  float y = float(a_y);
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yMidPx = a_y * rowHeight + u_featureHeight * 0.5 - u_rangeY.x;
+  float yMidPx = y * rowHeight + u_featureHeight * 0.5 - u_rangeY.x;
   float gapHeight = u_featureHeight * 0.3;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
@@ -335,13 +475,14 @@ void main() {
 `
 
 // Mismatch vertex shader - colored rectangles for SNPs
-// Uses simple float offsets (relative to regionStart) - sufficient for CIGAR features
+// Uses integer attributes for compact representation
 const MISMATCH_VERTEX_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
 
-in float a_position;   // Position offset from regionStart
-in float a_y;
-in float a_base;      // 0=A, 1=C, 2=G, 3=T
+in uint a_position;   // Position offset from regionStart
+in uint a_y;          // pileup row
+in uint a_base;       // 0=A, 1=C, 2=G, 3=T
 
 uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
 uniform vec2 u_rangeY;
@@ -358,9 +499,10 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
+  float pos = float(a_position);
   float domainWidth = u_domainX.y - u_domainX.x;
-  float sx1 = (a_position - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (a_position + 1.0 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx1 = (pos - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx2 = (pos + 1.0 - u_domainX.x) / domainWidth * 2.0 - 1.0;
 
   // Ensure minimum width of 1 pixel
   float minWidth = 2.0 / u_canvasWidth;
@@ -373,8 +515,9 @@ void main() {
   float sx = mix(sx1, sx2, localX);
 
   // Calculate Y position in pixels (constant height per row)
+  float y = float(a_y);
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTopPx = a_y * rowHeight - u_rangeY.x;
+  float yTopPx = y * rowHeight - u_rangeY.x;
   float yBotPx = yTopPx + u_featureHeight;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
@@ -392,8 +535,7 @@ void main() {
     vec3(0.9, 0.7, 0.2),   // G = orange
     vec3(0.9, 0.3, 0.3)    // T = red
   );
-  int baseIdx = int(a_base);
-  v_color = vec4(baseColors[baseIdx], 1.0);
+  v_color = vec4(baseColors[a_base], 1.0);
 }
 `
 
@@ -408,13 +550,14 @@ void main() {
 
 // Insertion vertex shader - vertical bars like PileupRenderer
 // Renders: main bar + top tick + bottom tick (3 rectangles = 18 vertices per insertion)
-// Uses simple float offsets (relative to regionStart) - sufficient for CIGAR features
+// Uses integer attributes for compact representation
 const INSERTION_VERTEX_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
 
-in float a_position;   // Position offset from regionStart
-in float a_y;
-in float a_length;    // insertion length
+in uint a_position;   // Position offset from regionStart
+in uint a_y;          // pileup row
+in uint a_length;     // insertion length (for potential future use)
 
 uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
 uniform vec2 u_rangeY;
@@ -436,20 +579,22 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
+  float pos = float(a_position);
   float domainWidth = u_domainX.y - u_domainX.x;
   float bpPerPx = domainWidth / u_canvasWidth;
   float invBpPerPx = 1.0 / bpPerPx;
 
   // Center position in clip space
-  float cxClip = (a_position - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float cxClip = (pos - u_domainX.x) / domainWidth * 2.0 - 1.0;
 
   // Bar and tick widths in clip space (2.0 = full width)
   float barWidthClip = max(2.0 / u_canvasWidth, min(1.2 * 2.0 / u_canvasWidth, 2.0 / domainWidth));
   float tickWidthClip = barWidthClip * 3.0;
 
   // Calculate Y position in pixels (constant height per row)
+  float y = float(a_y);
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTopPx = a_y * rowHeight - u_rangeY.x;
+  float yTopPx = y * rowHeight - u_rangeY.x;
   float yBotPx = yTopPx + u_featureHeight;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
@@ -521,12 +666,14 @@ void main() {
 `
 
 // Soft clip vertex shader - small colored bars
+// Uses integer attributes for compact representation
 const SOFTCLIP_VERTEX_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
 
-in float a_position;
-in float a_y;
-in float a_length;
+in uint a_position;  // Position offset from regionStart
+in uint a_y;         // pileup row
+in uint a_length;    // clip length
 
 uniform vec2 u_domainX;
 uniform vec2 u_rangeY;
@@ -543,15 +690,15 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
+  float pos = float(a_position);
   float domainWidth = u_domainX.y - u_domainX.x;
   float bpPerPx = domainWidth / u_canvasWidth;
 
   // Soft clip bar width
   float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
 
-  float cx = a_position;
-  float x1 = cx - barWidthBp * 0.5;
-  float x2 = cx + barWidthBp * 0.5;
+  float x1 = pos - barWidthBp * 0.5;
+  float x2 = pos + barWidthBp * 0.5;
 
   float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
   float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
@@ -567,8 +714,9 @@ void main() {
   float sx = mix(sx1, sx2, localX);
 
   // Calculate Y position in pixels (constant height per row)
+  float y = float(a_y);
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTopPx = a_y * rowHeight - u_rangeY.x;
+  float yTopPx = y * rowHeight - u_rangeY.x;
   float yBotPx = yTopPx + u_featureHeight;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
@@ -592,12 +740,14 @@ void main() {
 `
 
 // Hard clip vertex shader - dark bars
+// Uses integer attributes for compact representation
 const HARDCLIP_VERTEX_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
 
-in float a_position;
-in float a_y;
-in float a_length;
+in uint a_position;  // Position offset from regionStart
+in uint a_y;         // pileup row
+in uint a_length;    // clip length
 
 uniform vec2 u_domainX;
 uniform vec2 u_rangeY;
@@ -614,15 +764,15 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
+  float pos = float(a_position);
   float domainWidth = u_domainX.y - u_domainX.x;
   float bpPerPx = domainWidth / u_canvasWidth;
 
   // Hard clip bar width
   float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
 
-  float cx = a_position;
-  float x1 = cx - barWidthBp * 0.5;
-  float x2 = cx + barWidthBp * 0.5;
+  float x1 = pos - barWidthBp * 0.5;
+  float x2 = pos + barWidthBp * 0.5;
 
   float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
   float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
@@ -638,8 +788,9 @@ void main() {
   float sx = mix(sx1, sx2, localX);
 
   // Calculate Y position in pixels (constant height per row)
+  float y = float(a_y);
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yTopPx = a_y * rowHeight - u_rangeY.x;
+  float yTopPx = y * rowHeight - u_rangeY.x;
   float yBotPx = yTopPx + u_featureHeight;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
@@ -671,6 +822,8 @@ export interface RenderState {
   showCoverage: boolean
   coverageHeight: number
   showMismatches: boolean
+  showInterbaseCounts: boolean
+  showInterbaseIndicators: boolean
 }
 
 interface GPUBuffers {
@@ -685,6 +838,13 @@ interface GPUBuffers {
   // SNP coverage (exact positions)
   snpCoverageVAO: WebGLVertexArrayObject | null
   snpCoverageCount: number
+  // Noncov histogram (insertion/softclip/hardclip counts)
+  noncovHistogramVAO: WebGLVertexArrayObject | null
+  noncovHistogramCount: number
+  noncovMaxCount: number
+  // Interbase indicators (triangles)
+  indicatorVAO: WebGLVertexArrayObject | null
+  indicatorCount: number
   // CIGAR data
   gapVAO: WebGLVertexArrayObject | null
   gapCount: number
@@ -705,6 +865,8 @@ export class WebGLRenderer {
   private readProgram: WebGLProgram
   private coverageProgram: WebGLProgram
   private snpCoverageProgram: WebGLProgram
+  private noncovHistogramProgram: WebGLProgram
+  private indicatorProgram: WebGLProgram
   private lineProgram: WebGLProgram
   private gapProgram: WebGLProgram
   private mismatchProgram: WebGLProgram
@@ -713,13 +875,14 @@ export class WebGLRenderer {
   private hardclipProgram: WebGLProgram
 
   private buffers: GPUBuffers | null = null
-  private layoutMap: Map<string, number> = new Map()
   private lineVAO: WebGLVertexArrayObject | null = null
   private lineBuffer: WebGLBuffer | null = null
 
   private readUniforms: Record<string, WebGLUniformLocation | null> = {}
   private coverageUniforms: Record<string, WebGLUniformLocation | null> = {}
   private snpCoverageUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private noncovHistogramUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private indicatorUniforms: Record<string, WebGLUniformLocation | null> = {}
   private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
   private gapUniforms: Record<string, WebGLUniformLocation | null> = {}
   private mismatchUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -753,6 +916,16 @@ export class WebGLRenderer {
     this.snpCoverageProgram = this.createProgram(
       SNP_COVERAGE_VERTEX_SHADER,
       SNP_COVERAGE_FRAGMENT_SHADER,
+    )
+
+    this.noncovHistogramProgram = this.createProgram(
+      NONCOV_HISTOGRAM_VERTEX_SHADER,
+      NONCOV_HISTOGRAM_FRAGMENT_SHADER,
+    )
+
+    this.indicatorProgram = this.createProgram(
+      INDICATOR_VERTEX_SHADER,
+      INDICATOR_FRAGMENT_SHADER,
     )
 
     this.lineProgram = this.createProgram(LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER)
@@ -796,6 +969,19 @@ export class WebGLRenderer {
     this.cacheUniforms(this.snpCoverageProgram, this.snpCoverageUniforms, [
       'u_visibleRange',
       'u_coverageHeight',
+      'u_canvasHeight',
+      'u_canvasWidth',
+    ])
+
+    this.cacheUniforms(this.noncovHistogramProgram, this.noncovHistogramUniforms, [
+      'u_visibleRange',
+      'u_noncovHeight',
+      'u_canvasHeight',
+      'u_canvasWidth',
+    ])
+
+    this.cacheUniforms(this.indicatorProgram, this.indicatorUniforms, [
+      'u_visibleRange',
       'u_canvasHeight',
       'u_canvasWidth',
     ])
@@ -856,117 +1042,6 @@ export class WebGLRenderer {
     }
   }
 
-  private computeLayout(features: FeatureData[]): { maxY: number } {
-    const sorted = [...features].sort((a, b) => a.start - b.start)
-    const levels: number[] = []
-    this.layoutMap.clear()
-
-    for (const feature of sorted) {
-      let y = 0
-      for (let i = 0; i < levels.length; i++) {
-        if (levels[i] <= feature.start) {
-          y = i
-          break
-        }
-        y = i + 1
-      }
-      this.layoutMap.set(feature.id, y)
-      levels[y] = feature.end + 2
-    }
-
-    return { maxY: levels.length }
-  }
-
-  uploadFeatures(features: FeatureData[]): { maxY: number } {
-    const gl = this.gl
-
-    // Clean up old buffers
-    if (this.buffers) {
-      gl.deleteVertexArray(this.buffers.readVAO)
-      if (this.buffers.coverageVAO) {
-        gl.deleteVertexArray(this.buffers.coverageVAO)
-      }
-      if (this.buffers.snpCoverageVAO) {
-        gl.deleteVertexArray(this.buffers.snpCoverageVAO)
-      }
-      if (this.buffers.gapVAO) {
-        gl.deleteVertexArray(this.buffers.gapVAO)
-      }
-      if (this.buffers.mismatchVAO) {
-        gl.deleteVertexArray(this.buffers.mismatchVAO)
-      }
-      if (this.buffers.insertionVAO) {
-        gl.deleteVertexArray(this.buffers.insertionVAO)
-      }
-      if (this.buffers.softclipVAO) {
-        gl.deleteVertexArray(this.buffers.softclipVAO)
-      }
-      if (this.buffers.hardclipVAO) {
-        gl.deleteVertexArray(this.buffers.hardclipVAO)
-      }
-    }
-
-    if (features.length === 0) {
-      this.buffers = null
-      return { maxY: 0 }
-    }
-
-    const { maxY } = this.computeLayout(features)
-
-    // Prepare arrays
-    const positions = new Float32Array(features.length * 2)
-    const ys = new Float32Array(features.length)
-    const flags = new Float32Array(features.length)
-    const mapqs = new Float32Array(features.length)
-    const insertSizes = new Float32Array(features.length)
-
-    for (let i = 0; i < features.length; i++) {
-      const f = features[i]
-      const y = this.layoutMap.get(f.id) ?? 0
-
-      positions[i * 2] = f.start
-      positions[i * 2 + 1] = f.end
-      ys[i] = y
-      flags[i] = f.flags
-      mapqs[i] = f.mapq
-      insertSizes[i] = f.insertSize
-    }
-
-    // Read VAO
-    const readVAO = gl.createVertexArray()!
-    gl.bindVertexArray(readVAO)
-    this.uploadBuffer(this.readProgram, 'a_position', positions, 2)
-    this.uploadBuffer(this.readProgram, 'a_y', ys, 1)
-    this.uploadBuffer(this.readProgram, 'a_flags', flags, 1)
-    this.uploadBuffer(this.readProgram, 'a_mapq', mapqs, 1)
-    this.uploadBuffer(this.readProgram, 'a_insertSize', insertSizes, 1)
-    gl.bindVertexArray(null)
-
-    this.buffers = {
-      readVAO,
-      readCount: features.length,
-      coverageVAO: null,
-      coverageCount: 0,
-      maxDepth: 0,
-      binSize: 1,
-      regionStart: 0,
-      snpCoverageVAO: null,
-      snpCoverageCount: 0,
-      gapVAO: null,
-      gapCount: 0,
-      mismatchVAO: null,
-      mismatchCount: 0,
-      insertionVAO: null,
-      insertionCount: 0,
-      softclipVAO: null,
-      softclipCount: 0,
-      hardclipVAO: null,
-      hardclipCount: 0,
-    }
-
-    return { maxY }
-  }
-
   /**
    * Upload reads from pre-computed typed arrays (from RPC worker)
    * Positions are offsets from regionStart for Float32 precision
@@ -991,6 +1066,12 @@ export class WebGLRenderer {
       }
       if (this.buffers.snpCoverageVAO) {
         gl.deleteVertexArray(this.buffers.snpCoverageVAO)
+      }
+      if (this.buffers.noncovHistogramVAO) {
+        gl.deleteVertexArray(this.buffers.noncovHistogramVAO)
+      }
+      if (this.buffers.indicatorVAO) {
+        gl.deleteVertexArray(this.buffers.indicatorVAO)
       }
       if (this.buffers.gapVAO) {
         gl.deleteVertexArray(this.buffers.gapVAO)
@@ -1035,6 +1116,11 @@ export class WebGLRenderer {
       binSize: 1,
       snpCoverageVAO: null,
       snpCoverageCount: 0,
+      noncovHistogramVAO: null,
+      noncovHistogramCount: 0,
+      noncovMaxCount: 0,
+      indicatorVAO: null,
+      indicatorCount: 0,
       gapVAO: null,
       gapCount: 0,
       mismatchVAO: null,
@@ -1101,12 +1187,12 @@ export class WebGLRenderer {
       this.buffers.hardclipVAO = null
     }
 
-    // Upload gaps - convert Uint32Array positions to Float32Array
+    // Upload gaps - use integer buffers directly (no Float32 conversion)
     if (data.numGaps > 0) {
       const gapVAO = gl.createVertexArray()!
       gl.bindVertexArray(gapVAO)
-      this.uploadBuffer(this.gapProgram, 'a_position', new Float32Array(data.gapPositions), 2)
-      this.uploadBuffer(this.gapProgram, 'a_y', new Float32Array(data.gapYs), 1)
+      this.uploadUintBuffer(this.gapProgram, 'a_position', data.gapPositions, 2)
+      this.uploadUint16Buffer(this.gapProgram, 'a_y', data.gapYs, 1)
       gl.bindVertexArray(null)
 
       this.buffers.gapVAO = gapVAO
@@ -1115,13 +1201,13 @@ export class WebGLRenderer {
       this.buffers.gapCount = 0
     }
 
-    // Upload mismatches - convert Uint32Array positions to Float32Array
+    // Upload mismatches - use integer buffers directly
     if (data.numMismatches > 0) {
       const mismatchVAO = gl.createVertexArray()!
       gl.bindVertexArray(mismatchVAO)
-      this.uploadBuffer(this.mismatchProgram, 'a_position', new Float32Array(data.mismatchPositions), 1)
-      this.uploadBuffer(this.mismatchProgram, 'a_y', new Float32Array(data.mismatchYs), 1)
-      this.uploadBuffer(this.mismatchProgram, 'a_base', new Float32Array(data.mismatchBases), 1)
+      this.uploadUintBuffer(this.mismatchProgram, 'a_position', data.mismatchPositions, 1)
+      this.uploadUint16Buffer(this.mismatchProgram, 'a_y', data.mismatchYs, 1)
+      this.uploadUint8Buffer(this.mismatchProgram, 'a_base', data.mismatchBases, 1)
       gl.bindVertexArray(null)
 
       this.buffers.mismatchVAO = mismatchVAO
@@ -1130,13 +1216,13 @@ export class WebGLRenderer {
       this.buffers.mismatchCount = 0
     }
 
-    // Upload insertions - convert Uint32Array positions to Float32Array
+    // Upload insertions - use integer buffers directly
     if (data.numInsertions > 0) {
       const insertionVAO = gl.createVertexArray()!
       gl.bindVertexArray(insertionVAO)
-      this.uploadBuffer(this.insertionProgram, 'a_position', new Float32Array(data.insertionPositions), 1)
-      this.uploadBuffer(this.insertionProgram, 'a_y', new Float32Array(data.insertionYs), 1)
-      this.uploadBuffer(this.insertionProgram, 'a_length', new Float32Array(data.insertionLengths), 1)
+      this.uploadUintBuffer(this.insertionProgram, 'a_position', data.insertionPositions, 1)
+      this.uploadUint16Buffer(this.insertionProgram, 'a_y', data.insertionYs, 1)
+      this.uploadUint16Buffer(this.insertionProgram, 'a_length', data.insertionLengths, 1)
       gl.bindVertexArray(null)
 
       this.buffers.insertionVAO = insertionVAO
@@ -1145,13 +1231,13 @@ export class WebGLRenderer {
       this.buffers.insertionCount = 0
     }
 
-    // Upload soft clips - convert Uint32Array positions to Float32Array
+    // Upload soft clips - use integer buffers directly
     if (data.numSoftclips > 0) {
       const softclipVAO = gl.createVertexArray()!
       gl.bindVertexArray(softclipVAO)
-      this.uploadBuffer(this.softclipProgram, 'a_position', new Float32Array(data.softclipPositions), 1)
-      this.uploadBuffer(this.softclipProgram, 'a_y', new Float32Array(data.softclipYs), 1)
-      this.uploadBuffer(this.softclipProgram, 'a_length', new Float32Array(data.softclipLengths), 1)
+      this.uploadUintBuffer(this.softclipProgram, 'a_position', data.softclipPositions, 1)
+      this.uploadUint16Buffer(this.softclipProgram, 'a_y', data.softclipYs, 1)
+      this.uploadUint16Buffer(this.softclipProgram, 'a_length', data.softclipLengths, 1)
       gl.bindVertexArray(null)
 
       this.buffers.softclipVAO = softclipVAO
@@ -1160,13 +1246,13 @@ export class WebGLRenderer {
       this.buffers.softclipCount = 0
     }
 
-    // Upload hard clips - convert Uint32Array positions to Float32Array
+    // Upload hard clips - use integer buffers directly
     if (data.numHardclips > 0) {
       const hardclipVAO = gl.createVertexArray()!
       gl.bindVertexArray(hardclipVAO)
-      this.uploadBuffer(this.hardclipProgram, 'a_position', new Float32Array(data.hardclipPositions), 1)
-      this.uploadBuffer(this.hardclipProgram, 'a_y', new Float32Array(data.hardclipYs), 1)
-      this.uploadBuffer(this.hardclipProgram, 'a_length', new Float32Array(data.hardclipLengths), 1)
+      this.uploadUintBuffer(this.hardclipProgram, 'a_position', data.hardclipPositions, 1)
+      this.uploadUint16Buffer(this.hardclipProgram, 'a_y', data.hardclipYs, 1)
+      this.uploadUint16Buffer(this.hardclipProgram, 'a_length', data.hardclipLengths, 1)
       gl.bindVertexArray(null)
 
       this.buffers.hardclipVAO = hardclipVAO
@@ -1193,6 +1279,17 @@ export class WebGLRenderer {
     snpHeights: Float32Array
     snpColorTypes: Uint8Array
     numSnpSegments: number
+    // Noncov (interbase) coverage data
+    noncovPositions: Uint32Array
+    noncovYOffsets: Float32Array
+    noncovHeights: Float32Array
+    noncovColorTypes: Uint8Array
+    noncovMaxCount: number
+    numNoncovSegments: number
+    // Indicator data
+    indicatorPositions: Uint32Array
+    indicatorColorTypes: Uint8Array
+    numIndicators: number
   }) {
     const gl = this.gl
 
@@ -1206,6 +1303,12 @@ export class WebGLRenderer {
     }
     if (this.buffers.snpCoverageVAO) {
       gl.deleteVertexArray(this.buffers.snpCoverageVAO)
+    }
+    if (this.buffers.noncovHistogramVAO) {
+      gl.deleteVertexArray(this.buffers.noncovHistogramVAO)
+    }
+    if (this.buffers.indicatorVAO) {
+      gl.deleteVertexArray(this.buffers.indicatorVAO)
     }
 
     // Upload grey coverage bars (position computed from gl_InstanceID in shader)
@@ -1248,246 +1351,40 @@ export class WebGLRenderer {
       this.buffers.snpCoverageVAO = null
       this.buffers.snpCoverageCount = 0
     }
-  }
 
-  uploadCigarData(
-    gaps: GapData[],
-    mismatches: MismatchData[],
-    insertions: InsertionData[],
-  ) {
-    const gl = this.gl
-
-    if (!this.buffers) {
-      return
-    }
-
-    // Clean up old CIGAR VAOs
-    if (this.buffers.gapVAO) {
-      gl.deleteVertexArray(this.buffers.gapVAO)
-      this.buffers.gapVAO = null
-    }
-    if (this.buffers.mismatchVAO) {
-      gl.deleteVertexArray(this.buffers.mismatchVAO)
-      this.buffers.mismatchVAO = null
-    }
-    if (this.buffers.insertionVAO) {
-      gl.deleteVertexArray(this.buffers.insertionVAO)
-      this.buffers.insertionVAO = null
-    }
-
-    // Upload gaps
-    if (gaps.length > 0) {
-      const gapPositions = new Float32Array(gaps.length * 2)
-      const gapYs = new Float32Array(gaps.length)
-
-      for (let i = 0; i < gaps.length; i++) {
-        const g = gaps[i]
-        const y = this.layoutMap.get(g.featureId) ?? 0
-        gapPositions[i * 2] = g.start
-        gapPositions[i * 2 + 1] = g.end
-        gapYs[i] = y
-      }
-
-      const gapVAO = gl.createVertexArray()!
-      gl.bindVertexArray(gapVAO)
-      this.uploadBuffer(this.gapProgram, 'a_position', gapPositions, 2)
-      this.uploadBuffer(this.gapProgram, 'a_y', gapYs, 1)
+    // Upload noncov (interbase) histogram - insertion/softclip/hardclip counts
+    if (data.numNoncovSegments > 0) {
+      const noncovHistogramVAO = gl.createVertexArray()!
+      gl.bindVertexArray(noncovHistogramVAO)
+      this.uploadBuffer(this.noncovHistogramProgram, 'a_position', new Float32Array(data.noncovPositions), 1)
+      this.uploadBuffer(this.noncovHistogramProgram, 'a_yOffset', data.noncovYOffsets, 1)
+      this.uploadBuffer(this.noncovHistogramProgram, 'a_segmentHeight', data.noncovHeights, 1)
+      this.uploadBuffer(this.noncovHistogramProgram, 'a_colorType', new Float32Array(data.noncovColorTypes), 1)
       gl.bindVertexArray(null)
 
-      this.buffers.gapVAO = gapVAO
-      this.buffers.gapCount = gaps.length
+      this.buffers.noncovHistogramVAO = noncovHistogramVAO
+      this.buffers.noncovHistogramCount = data.numNoncovSegments
+      this.buffers.noncovMaxCount = data.noncovMaxCount
     } else {
-      this.buffers.gapCount = 0
+      this.buffers.noncovHistogramVAO = null
+      this.buffers.noncovHistogramCount = 0
+      this.buffers.noncovMaxCount = 0
     }
 
-    // Upload mismatches
-    if (mismatches.length > 0) {
-      const mmPositions = new Float32Array(mismatches.length)
-      const mmYs = new Float32Array(mismatches.length)
-      const mmBases = new Float32Array(mismatches.length)
-
-      for (let i = 0; i < mismatches.length; i++) {
-        const mm = mismatches[i]
-        const y = this.layoutMap.get(mm.featureId) ?? 0
-        mmPositions[i] = mm.position
-        mmYs[i] = y
-        mmBases[i] = mm.base
-      }
-
-      const mismatchVAO = gl.createVertexArray()!
-      gl.bindVertexArray(mismatchVAO)
-      this.uploadBuffer(this.mismatchProgram, 'a_position', mmPositions, 1)
-      this.uploadBuffer(this.mismatchProgram, 'a_y', mmYs, 1)
-      this.uploadBuffer(this.mismatchProgram, 'a_base', mmBases, 1)
+    // Upload interbase indicators - triangles at significant positions
+    if (data.numIndicators > 0) {
+      const indicatorVAO = gl.createVertexArray()!
+      gl.bindVertexArray(indicatorVAO)
+      this.uploadBuffer(this.indicatorProgram, 'a_position', new Float32Array(data.indicatorPositions), 1)
+      this.uploadBuffer(this.indicatorProgram, 'a_colorType', new Float32Array(data.indicatorColorTypes), 1)
       gl.bindVertexArray(null)
 
-      this.buffers.mismatchVAO = mismatchVAO
-      this.buffers.mismatchCount = mismatches.length
+      this.buffers.indicatorVAO = indicatorVAO
+      this.buffers.indicatorCount = data.numIndicators
     } else {
-      this.buffers.mismatchCount = 0
+      this.buffers.indicatorVAO = null
+      this.buffers.indicatorCount = 0
     }
-
-    // Upload insertions
-    if (insertions.length > 0) {
-      const insPositions = new Float32Array(insertions.length)
-      const insYs = new Float32Array(insertions.length)
-
-      for (let i = 0; i < insertions.length; i++) {
-        const ins = insertions[i]
-        const y = this.layoutMap.get(ins.featureId) ?? 0
-        insPositions[i] = ins.position
-        insYs[i] = y
-      }
-
-      const insertionVAO = gl.createVertexArray()!
-      gl.bindVertexArray(insertionVAO)
-      this.uploadBuffer(this.insertionProgram, 'a_position', insPositions, 1)
-      this.uploadBuffer(this.insertionProgram, 'a_y', insYs, 1)
-      gl.bindVertexArray(null)
-
-      this.buffers.insertionVAO = insertionVAO
-      this.buffers.insertionCount = insertions.length
-    } else {
-      this.buffers.insertionCount = 0
-    }
-  }
-
-  uploadCoverage(
-    coverageData: CoverageData[],
-    maxDepth: number,
-    binSize: number,
-  ) {
-    const gl = this.gl
-
-    if (!this.buffers) {
-      return
-    }
-
-    // Clean up old coverage VAO
-    if (this.buffers.coverageVAO) {
-      gl.deleteVertexArray(this.buffers.coverageVAO)
-    }
-
-    if (coverageData.length === 0) {
-      this.buffers.coverageVAO = null
-      this.buffers.coverageCount = 0
-      return
-    }
-
-    // Prepare arrays for grey coverage bars
-    const positions = new Float32Array(coverageData.length)
-    const depths = new Float32Array(coverageData.length)
-
-    for (let i = 0; i < coverageData.length; i++) {
-      const bin = coverageData[i]!
-      positions[i] = bin.position
-      depths[i] = bin.depth / maxDepth  // normalized
-    }
-
-    // Coverage VAO
-    const coverageVAO = gl.createVertexArray()!
-    gl.bindVertexArray(coverageVAO)
-    this.uploadBuffer(this.coverageProgram, 'a_position', positions, 1)
-    this.uploadBuffer(this.coverageProgram, 'a_depth', depths, 1)
-    gl.bindVertexArray(null)
-
-    this.buffers.coverageVAO = coverageVAO
-    this.buffers.coverageCount = coverageData.length
-    this.buffers.maxDepth = maxDepth
-    this.buffers.binSize = binSize
-  }
-
-  uploadSNPCoverage(
-    snpData: SNPCoverageData[],
-    maxDepth: number,
-  ) {
-    const gl = this.gl
-
-    if (!this.buffers) {
-      return
-    }
-
-    // Clean up old SNP coverage VAO
-    if (this.buffers.snpCoverageVAO) {
-      gl.deleteVertexArray(this.buffers.snpCoverageVAO)
-    }
-
-    if (snpData.length === 0 || maxDepth === 0) {
-      this.buffers.snpCoverageVAO = null
-      this.buffers.snpCoverageCount = 0
-      return
-    }
-
-    // Build stacked segments for SNPs at exact positions
-    const segments: { position: number; yOffset: number; height: number; colorType: number }[] = []
-
-    for (const bin of snpData) {
-      const total = bin.snpA + bin.snpC + bin.snpG + bin.snpT
-      if (total === 0) {
-        continue
-      }
-
-      let yOffset = 0
-
-      // A segment (green)
-      if (bin.snpA > 0) {
-        const height = bin.snpA / maxDepth
-        segments.push({ position: bin.position, yOffset, height, colorType: 1 })
-        yOffset += height
-      }
-
-      // C segment (blue)
-      if (bin.snpC > 0) {
-        const height = bin.snpC / maxDepth
-        segments.push({ position: bin.position, yOffset, height, colorType: 2 })
-        yOffset += height
-      }
-
-      // G segment (orange)
-      if (bin.snpG > 0) {
-        const height = bin.snpG / maxDepth
-        segments.push({ position: bin.position, yOffset, height, colorType: 3 })
-        yOffset += height
-      }
-
-      // T segment (red)
-      if (bin.snpT > 0) {
-        const height = bin.snpT / maxDepth
-        segments.push({ position: bin.position, yOffset, height, colorType: 4 })
-      }
-    }
-
-    if (segments.length === 0) {
-      this.buffers.snpCoverageVAO = null
-      this.buffers.snpCoverageCount = 0
-      return
-    }
-
-    // Prepare arrays
-    const positions = new Float32Array(segments.length)
-    const yOffsets = new Float32Array(segments.length)
-    const heights = new Float32Array(segments.length)
-    const colorTypes = new Float32Array(segments.length)
-
-    for (let i = 0; i < segments.length; i++) {
-      const seg = segments[i]!
-      positions[i] = seg.position
-      yOffsets[i] = seg.yOffset
-      heights[i] = seg.height
-      colorTypes[i] = seg.colorType
-    }
-
-    // SNP Coverage VAO
-    const snpCoverageVAO = gl.createVertexArray()!
-    gl.bindVertexArray(snpCoverageVAO)
-    this.uploadBuffer(this.snpCoverageProgram, 'a_position', positions, 1)
-    this.uploadBuffer(this.snpCoverageProgram, 'a_yOffset', yOffsets, 1)
-    this.uploadBuffer(this.snpCoverageProgram, 'a_segmentHeight', heights, 1)
-    this.uploadBuffer(this.snpCoverageProgram, 'a_colorType', colorTypes, 1)
-    gl.bindVertexArray(null)
-
-    this.buffers.snpCoverageVAO = snpCoverageVAO
-    this.buffers.snpCoverageCount = segments.length
   }
 
   private uploadBuffer(
@@ -1535,14 +1432,49 @@ export class WebGLRenderer {
   }
 
   /**
-   * Split a position into high/low parts for 12-bit precision
-   * Inspired by genome-spy (https://github.com/genome-spy/genome-spy)
-   * High part is multiple of 4096, low part is 0-4095
+   * Upload Uint16Array as unsigned short integer attribute
    */
-  private splitPosition(value: number): [number, number] {
-    const lo = value & 0xFFF  // 4095 mask
-    const hi = value - lo
-    return [hi, lo]
+  private uploadUint16Buffer(
+    program: WebGLProgram,
+    attrib: string,
+    data: Uint16Array,
+    size: number,
+  ) {
+    const gl = this.gl
+    const loc = gl.getAttribLocation(program, attrib)
+    if (loc < 0) {
+      return
+    }
+
+    const buffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_SHORT, 0, 0)
+    gl.vertexAttribDivisor(loc, 1)
+  }
+
+  /**
+   * Upload Uint8Array as unsigned byte integer attribute
+   */
+  private uploadUint8Buffer(
+    program: WebGLProgram,
+    attrib: string,
+    data: Uint8Array,
+    size: number,
+  ) {
+    const gl = this.gl
+    const loc = gl.getAttribLocation(program, attrib)
+    if (loc < 0) {
+      return
+    }
+
+    const buffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_BYTE, 0, 0)
+    gl.vertexAttribDivisor(loc, 1)
   }
 
   render(state: RenderState) {
@@ -1576,7 +1508,7 @@ export class WebGLRenderer {
     // Compute high-precision split domain for reads (12-bit split approach)
     // Uses absolute positions - shader does the split and subtraction
     const domainStartAbs = Math.floor(state.domainX[0])
-    const [domainStartHi, domainStartLo] = this.splitPosition(domainStartAbs)
+    const [domainStartHi, domainStartLo] = splitPosition(domainStartAbs)
     const domainExtent = state.domainX[1] - state.domainX[0]
 
     // Draw coverage first (at top)
@@ -1619,6 +1551,39 @@ export class WebGLRenderer {
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.snpCoverageCount)
       }
 
+      // Draw noncov (interbase) histogram - bars growing DOWN from top
+      // Height is proportional to half the coverage height (like the original renderer)
+      const noncovHeight = state.coverageHeight / 2
+      if (state.showInterbaseCounts && this.buffers.noncovHistogramVAO && this.buffers.noncovHistogramCount > 0) {
+        gl.useProgram(this.noncovHistogramProgram)
+        gl.uniform2f(
+          this.noncovHistogramUniforms.u_visibleRange!,
+          domainOffset[0],
+          domainOffset[1],
+        )
+        gl.uniform1f(this.noncovHistogramUniforms.u_noncovHeight!, noncovHeight)
+        gl.uniform1f(this.noncovHistogramUniforms.u_canvasHeight!, canvas.height)
+        gl.uniform1f(this.noncovHistogramUniforms.u_canvasWidth!, canvas.width)
+
+        gl.bindVertexArray(this.buffers.noncovHistogramVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.noncovHistogramCount)
+      }
+
+      // Draw interbase indicators - triangles at significant positions
+      if (state.showInterbaseIndicators && this.buffers.indicatorVAO && this.buffers.indicatorCount > 0) {
+        gl.useProgram(this.indicatorProgram)
+        gl.uniform2f(
+          this.indicatorUniforms.u_visibleRange!,
+          domainOffset[0],
+          domainOffset[1],
+        )
+        gl.uniform1f(this.indicatorUniforms.u_canvasHeight!, canvas.height)
+        gl.uniform1f(this.indicatorUniforms.u_canvasWidth!, canvas.width)
+
+        gl.bindVertexArray(this.buffers.indicatorVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.buffers.indicatorCount)
+      }
+
       // Draw separator line at bottom of coverage area
       const lineY = 1.0 - (state.coverageHeight / canvas.height) * 2.0
       gl.useProgram(this.lineProgram)
@@ -1651,8 +1616,8 @@ export class WebGLRenderer {
       domainStartLo,
       domainExtent,
     )
-    // Pass regionStart so shader can convert offsets to absolute positions
-    gl.uniform1ui(this.readUniforms.u_regionStart!, regionStart)
+    // Pass regionStart so shader can convert offsets to absolute positions (must be integer)
+    gl.uniform1ui(this.readUniforms.u_regionStart!, Math.floor(regionStart))
     gl.uniform2f(
       this.readUniforms.u_rangeY!,
       state.rangeY[0],
@@ -1761,6 +1726,12 @@ export class WebGLRenderer {
       if (this.buffers.snpCoverageVAO) {
         gl.deleteVertexArray(this.buffers.snpCoverageVAO)
       }
+      if (this.buffers.noncovHistogramVAO) {
+        gl.deleteVertexArray(this.buffers.noncovHistogramVAO)
+      }
+      if (this.buffers.indicatorVAO) {
+        gl.deleteVertexArray(this.buffers.indicatorVAO)
+      }
       if (this.buffers.gapVAO) {
         gl.deleteVertexArray(this.buffers.gapVAO)
       }
@@ -1786,6 +1757,8 @@ export class WebGLRenderer {
     gl.deleteProgram(this.readProgram)
     gl.deleteProgram(this.coverageProgram)
     gl.deleteProgram(this.snpCoverageProgram)
+    gl.deleteProgram(this.noncovHistogramProgram)
+    gl.deleteProgram(this.indicatorProgram)
     gl.deleteProgram(this.lineProgram)
     gl.deleteProgram(this.gapProgram)
     gl.deleteProgram(this.mismatchProgram)

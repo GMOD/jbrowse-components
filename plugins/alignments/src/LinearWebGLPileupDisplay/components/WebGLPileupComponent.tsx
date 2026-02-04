@@ -84,6 +84,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     showCoverage,
     coverageHeight,
     showMismatches,
+    showInterbaseCounts,
+    showInterbaseIndicators,
   } = model
 
   const width = view?.initialized ? view.width : undefined
@@ -185,8 +187,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       showCoverage,
       coverageHeight,
       showMismatches,
+      showInterbaseCounts,
+      showInterbaseIndicators,
     })
-  }, [getVisibleBpRange, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches])
+  }, [getVisibleBpRange, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches, showInterbaseCounts, showInterbaseIndicators])
 
   const renderImmediate = useCallback(() => {
     renderNow()
@@ -402,11 +406,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
     // Check if this is a real external change
     const bpPerPxChanged = Math.abs(view.bpPerPx - bpPerPxRef.current) > 0.001
+    const offsetPxChanged = Math.abs(view.offsetPx - offsetPxRef.current) > 1
 
     if (!bpPerPxChanged) {
-      // Just offsetPx adjustment - accept it but keep our range
-      if (Math.abs(view.offsetPx - offsetPxRef.current) > 1) {
+      // Just offsetPx adjustment - accept it and update visible range
+      if (offsetPxChanged) {
         offsetPxRef.current = view.offsetPx
+        syncVisibleBpRangeFromView()
+        scheduleRenderRef.current()
       }
       return
     }
@@ -480,6 +487,17 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       snpHeights: rpcData.snpHeights,
       snpColorTypes: rpcData.snpColorTypes,
       numSnpSegments: rpcData.numSnpSegments,
+      // Noncov (interbase) coverage data
+      noncovPositions: rpcData.noncovPositions,
+      noncovYOffsets: rpcData.noncovYOffsets,
+      noncovHeights: rpcData.noncovHeights,
+      noncovColorTypes: rpcData.noncovColorTypes,
+      noncovMaxCount: rpcData.noncovMaxCount,
+      numNoncovSegments: rpcData.numNoncovSegments,
+      // Indicator data
+      indicatorPositions: rpcData.indicatorPositions,
+      indicatorColorTypes: rpcData.indicatorColorTypes,
+      numIndicators: rpcData.numIndicators,
     })
     scheduleRenderRef.current()
   }, [rpcData, showCoverage])
@@ -489,7 +507,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     if (rendererReady) {
       scheduleRenderRef.current()
     }
-  }, [rendererReady, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches, rpcData])
+  }, [rendererReady, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches, showInterbaseCounts, showInterbaseIndicators, rpcData])
 
   // Reset data request tracking
   useEffect(() => {

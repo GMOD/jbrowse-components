@@ -146,6 +146,13 @@ interface SNPCoverageEntry {
   t: number
 }
 
+interface NoncovCoverageEntry {
+  position: number
+  insertion: number
+  softclip: number
+  hardclip: number
+}
+
 function computeSNPCoverage(
   mismatches: MismatchData[],
   maxDepth: number,
@@ -234,6 +241,161 @@ function computeSNPCoverage(
   }
 
   return { positions, yOffsets, heights, colorTypes, count: segments.length }
+}
+
+// Minimum read depth to show indicators (below this the statistical significance is low)
+const MINIMUM_INDICATOR_READ_DEPTH = 7
+// Default threshold for showing indicators (fraction of coverage)
+const INDICATOR_THRESHOLD = 0.3
+
+function computeNoncovCoverage(
+  insertions: InsertionData[],
+  softclips: SoftclipData[],
+  hardclips: HardclipData[],
+  maxDepth: number,
+  regionStart: number,
+): {
+  positions: Uint32Array
+  yOffsets: Float32Array
+  heights: Float32Array
+  colorTypes: Uint8Array
+  indicatorPositions: Uint32Array
+  indicatorColorTypes: Uint8Array
+  maxCount: number
+  segmentCount: number
+  indicatorCount: number
+} {
+  const noncovByPosition = new Map<number, NoncovCoverageEntry>()
+
+  for (const ins of insertions) {
+    let entry = noncovByPosition.get(ins.position)
+    if (!entry) {
+      entry = { position: ins.position, insertion: 0, softclip: 0, hardclip: 0 }
+      noncovByPosition.set(ins.position, entry)
+    }
+    entry.insertion++
+  }
+
+  for (const sc of softclips) {
+    let entry = noncovByPosition.get(sc.position)
+    if (!entry) {
+      entry = { position: sc.position, insertion: 0, softclip: 0, hardclip: 0 }
+      noncovByPosition.set(sc.position, entry)
+    }
+    entry.softclip++
+  }
+
+  for (const hc of hardclips) {
+    let entry = noncovByPosition.get(hc.position)
+    if (!entry) {
+      entry = { position: hc.position, insertion: 0, softclip: 0, hardclip: 0 }
+      noncovByPosition.set(hc.position, entry)
+    }
+    entry.hardclip++
+  }
+
+  if (noncovByPosition.size === 0) {
+    return {
+      positions: new Uint32Array(0),
+      yOffsets: new Float32Array(0),
+      heights: new Float32Array(0),
+      colorTypes: new Uint8Array(0),
+      indicatorPositions: new Uint32Array(0),
+      indicatorColorTypes: new Uint8Array(0),
+      maxCount: 0,
+      segmentCount: 0,
+      indicatorCount: 0,
+    }
+  }
+
+  // Find max total count for scaling
+  let maxCount = 1
+  for (const entry of noncovByPosition.values()) {
+    const total = entry.insertion + entry.softclip + entry.hardclip
+    if (total > maxCount) {
+      maxCount = total
+    }
+  }
+
+  // Build segments (stacked bars) and indicators
+  const segments: { position: number; yOffset: number; height: number; colorType: number }[] = []
+  const indicators: { position: number; colorType: number }[] = []
+
+  for (const entry of noncovByPosition.values()) {
+    const total = entry.insertion + entry.softclip + entry.hardclip
+    if (total === 0) {
+      continue
+    }
+
+    let yOffset = 0
+
+    // Order: insertion (purple), softclip (grey), hardclip (dark grey)
+    if (entry.insertion > 0) {
+      const height = entry.insertion / maxCount
+      segments.push({ position: entry.position, yOffset, height, colorType: 1 })
+      yOffset += height
+    }
+
+    if (entry.softclip > 0) {
+      const height = entry.softclip / maxCount
+      segments.push({ position: entry.position, yOffset, height, colorType: 2 })
+      yOffset += height
+    }
+
+    if (entry.hardclip > 0) {
+      const height = entry.hardclip / maxCount
+      segments.push({ position: entry.position, yOffset, height, colorType: 3 })
+    }
+
+    // Add indicator if significant
+    if (maxDepth >= MINIMUM_INDICATOR_READ_DEPTH && total > maxDepth * INDICATOR_THRESHOLD) {
+      // Determine dominant type for indicator color
+      let dominantType = 1 // insertion
+      let dominantCount = entry.insertion
+      if (entry.softclip > dominantCount) {
+        dominantType = 2
+        dominantCount = entry.softclip
+      }
+      if (entry.hardclip > dominantCount) {
+        dominantType = 3
+      }
+      indicators.push({ position: entry.position, colorType: dominantType })
+    }
+  }
+
+  const positions = new Uint32Array(segments.length)
+  const yOffsets = new Float32Array(segments.length)
+  const heights = new Float32Array(segments.length)
+  const colorTypes = new Uint8Array(segments.length)
+
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i]
+    positions[i] = seg.position - regionStart
+    yOffsets[i] = seg.yOffset
+    heights[i] = seg.height
+    colorTypes[i] = seg.colorType
+  }
+
+  const indicatorPositions = new Uint32Array(indicators.length)
+  const indicatorColorTypes = new Uint8Array(indicators.length)
+
+  for (let i = 0; i < indicators.length; i++) {
+    const ind = indicators[i]
+    indicatorPositions[i] = ind.position - regionStart
+    indicatorColorTypes[i] = ind.colorType
+  }
+
+  return {
+    positions,
+    yOffsets,
+    heights,
+    colorTypes,
+    indicatorPositions,
+    indicatorColorTypes,
+    maxCount,
+    segmentCount: segments.length,
+    indicatorCount: indicators.length,
+  }
 }
 
 export async function executeRenderWebGLPileupData({
@@ -453,6 +615,14 @@ export async function executeRenderWebGLPileupData({
 
   const snpCoverage = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
 
+  const noncovCoverage = computeNoncovCoverage(
+    insertions,
+    softclips,
+    hardclips,
+    coverage.maxDepth,
+    regionStart,
+  )
+
   const result: WebGLPileupDataResult = {
     regionStart,
 
@@ -472,6 +642,15 @@ export async function executeRenderWebGLPileupData({
     snpHeights: snpCoverage.heights,
     snpColorTypes: snpCoverage.colorTypes,
 
+    noncovPositions: noncovCoverage.positions,
+    noncovYOffsets: noncovCoverage.yOffsets,
+    noncovHeights: noncovCoverage.heights,
+    noncovColorTypes: noncovCoverage.colorTypes,
+    noncovMaxCount: noncovCoverage.maxCount,
+
+    indicatorPositions: noncovCoverage.indicatorPositions,
+    indicatorColorTypes: noncovCoverage.indicatorColorTypes,
+
     maxY,
     numReads: features.length,
     numGaps: gaps.length,
@@ -481,6 +660,8 @@ export async function executeRenderWebGLPileupData({
     numHardclips: hardclips.length,
     numCoverageBins: coverage.depths.length,
     numSnpSegments: snpCoverage.count,
+    numNoncovSegments: noncovCoverage.segmentCount,
+    numIndicators: noncovCoverage.indicatorCount,
   }
 
   const transferables: ArrayBuffer[] = [
@@ -508,6 +689,12 @@ export async function executeRenderWebGLPileupData({
     result.snpYOffsets.buffer,
     result.snpHeights.buffer,
     result.snpColorTypes.buffer,
+    result.noncovPositions.buffer,
+    result.noncovYOffsets.buffer,
+    result.noncovHeights.buffer,
+    result.noncovColorTypes.buffer,
+    result.indicatorPositions.buffer,
+    result.indicatorColorTypes.buffer,
   ]
 
   return rpcResult(result, transferables)

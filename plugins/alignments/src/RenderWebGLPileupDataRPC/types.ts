@@ -61,6 +61,18 @@ export interface WebGLPileupDataResult {
   snpHeights: Float32Array    // normalized 0-1
   snpColorTypes: Uint8Array   // 1=A, 2=C, 3=G, 4=T
 
+  // Noncov (interbase) coverage data - insertion/softclip/hardclip counts by position
+  // Bars grow downward from top of coverage area
+  noncovPositions: Uint32Array  // offsets from regionStart
+  noncovYOffsets: Float32Array  // cumulative height below this segment (normalized 0-1)
+  noncovHeights: Float32Array   // height of this segment (normalized 0-1)
+  noncovColorTypes: Uint8Array  // 1=insertion, 2=softclip, 3=hardclip
+  noncovMaxCount: number        // max total count at any position (for scaling)
+
+  // Interbase indicator data - triangles at significant positions
+  indicatorPositions: Uint32Array  // offsets from regionStart
+  indicatorColorTypes: Uint8Array  // 1=insertion, 2=softclip, 3=hardclip (dominant type)
+
   // Layout info
   maxY: number
   numReads: number
@@ -71,4 +83,6 @@ export interface WebGLPileupDataResult {
   numHardclips: number
   numCoverageBins: number
   numSnpSegments: number
+  numNoncovSegments: number
+  numIndicators: number
 }
