@@ -1,7 +1,7 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import ServerSideRendererType from './ServerSideRendererType.tsx'
+import ServerSideRendererType from './ServerSideRendererType.ts'
 import { normalizeRegion } from './util.ts'
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
@@ -16,7 +16,7 @@ import type {
   RenderReturn,
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
-} from './ServerSideRendererType.tsx'
+} from './ServerSideRendererType.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type {
   Feature,

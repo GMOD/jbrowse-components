@@ -34,7 +34,7 @@ import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRenderer
 import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType.tsx'
 import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType.ts'
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType.tsx'
-import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType.tsx'
+import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType.ts'
 import * as coreUi from '../ui/index.ts'
 import * as coreTheme from '../ui/theme.ts'
 import Base1DView from '../util/Base1DViewModel.ts'

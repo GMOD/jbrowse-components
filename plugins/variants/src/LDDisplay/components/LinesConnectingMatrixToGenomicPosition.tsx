@@ -11,6 +11,9 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import VariantLabels from './VariantLabels.tsx'
+import Wrapper from './Wrapper.tsx'
+
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -24,37 +27,6 @@ const useStyles = makeStyles()(theme => ({
     },
   },
 }))
-
-export const Wrapper = observer(function Wrapper({
-  children,
-  model,
-  exportSVG,
-  yOffset = 0,
-}: {
-  model: SharedLDModel
-  children: React.ReactNode
-  exportSVG?: boolean
-  yOffset?: number
-}) {
-  const { height } = model
-  const { width, offsetPx } = getContainingView(model) as LinearGenomeViewModel
-  const left = Math.max(0, -offsetPx)
-  return exportSVG ? (
-    <g transform={`translate(${left} ${yOffset})`}>{children}</g>
-  ) : (
-    <svg
-      style={{
-        position: 'absolute',
-        top: 0,
-        left,
-        height,
-        width,
-      }}
-    >
-      {children}
-    </svg>
-  )
-})
 
 function getGenomicX(
   view: LinearGenomeViewModel,
@@ -106,47 +78,6 @@ const LineTooltip = observer(function LineTooltip({
   ) : null
 })
 
-export const VariantLabels = observer(function VariantLabels({
-  model,
-}: {
-  model: SharedLDModel
-}) {
-  const theme = useTheme()
-  const { assemblyManager } = getSession(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const { snps, showLabels } = model
-  const { offsetPx, assemblyNames } = view
-  const assembly = assemblyManager.get(assemblyNames[0]!)
-  const offsetAdj = Math.max(offsetPx, 0)
-
-  if (!assembly || snps.length === 0 || !showLabels) {
-    return null
-  }
-
-  return (
-    <>
-      {snps.map((snp, i) => {
-        const genomicX = getGenomicX(view, assembly, snp, offsetAdj)
-        return (
-          <text
-            key={`${snp.id}-${i}`}
-            x={genomicX}
-            y={0}
-            transform={`rotate(-90, ${genomicX}, 0)`}
-            fontSize={10}
-            textAnchor="end"
-            dominantBaseline="middle"
-            fill={theme.palette.text.primary}
-            style={{ pointerEvents: 'none' }}
-          >
-            {snp.id || 'NOLABEL'}
-          </text>
-        )
-      })}
-    </>
-  )
-})
-
 const AllLines = observer(function AllLines({
   model,
   setMouseOverLine,
@@ -173,8 +104,6 @@ const AllLines = observer(function AllLines({
     <>
       {snps.map((snp, i) => {
         const genomicX = getGenomicX(view, assembly, snp, offsetAdj)
-        // Matrix position uses uniform distribution (this component is only
-        // rendered when useGenomicPositions is false)
         const matrixX = ((i + 0.5) * b0) / n
         return (
           <g
@@ -232,8 +161,6 @@ const LinesConnectingMatrixToGenomicPosition = observer(
       return null
     }
 
-    // Calculate matrix X position for highlighted line (uniform distribution,
-    // since this component is only rendered when useGenomicPositions is false)
     const highlightMatrixX = mouseOverLine
       ? ((mouseOverLine.idx + 0.5) * b0) / n
       : 0

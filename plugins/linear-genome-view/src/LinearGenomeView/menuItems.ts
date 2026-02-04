@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   getSession,
@@ -18,21 +16,16 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
+import {
+  ExportSvgDialog,
+  GetSequenceDialog,
+  ReturnToImportFormDialog,
+  SequenceSearchDialog,
+} from './LazyDialogs.ts'
+
 import type { LinearGenomeViewModel } from './model.ts'
 import type { BpOffset } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-// lazies
-const ReturnToImportFormDialog = lazy(
-  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
-)
-const SequenceSearchDialog = lazy(
-  () => import('./components/SequenceSearchDialog.tsx'),
-)
-const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
-const GetSequenceDialog = lazy(
-  () => import('./components/GetSequenceDialog.tsx'),
-)
 
 function toLocaleRounded(n: number) {
   return toLocale(Math.round(n))

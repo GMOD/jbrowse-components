@@ -86,7 +86,7 @@
     "@types/pluralize": "^0.0.33",
     "@types/pngjs": "^6.0.5",
     "@types/range-parser": "^1.2.7",
-    "@types/react": "^19.2.10",
+    "@types/react": "^19.2.11",
     "@types/react-dom": "^19.2.3",
     "@types/serve-handler": "^6.1.4",
     "@types/set-value": "^4.0.3",
