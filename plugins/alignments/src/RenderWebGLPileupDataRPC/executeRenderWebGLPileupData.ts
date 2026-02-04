@@ -226,21 +226,24 @@ function computeSNPCoverage(
     }
   }
 
-  // Store positions as offsets from regionStart
-  const positions = new Uint32Array(segments.length)
-  const yOffsets = new Float32Array(segments.length)
-  const heights = new Float32Array(segments.length)
-  const colorTypes = new Uint8Array(segments.length)
+  // Filter to only include positions at or after regionStart (avoid Uint32 underflow)
+  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
 
-  for (let i = 0; i < segments.length; i++) {
-    const seg = segments[i]
+  // Store positions as offsets from regionStart
+  const positions = new Uint32Array(filteredSegments.length)
+  const yOffsets = new Float32Array(filteredSegments.length)
+  const heights = new Float32Array(filteredSegments.length)
+  const colorTypes = new Uint8Array(filteredSegments.length)
+
+  for (let i = 0; i < filteredSegments.length; i++) {
+    const seg = filteredSegments[i]
     positions[i] = seg.position - regionStart
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
     colorTypes[i] = seg.colorType
   }
 
-  return { positions, yOffsets, heights, colorTypes, count: segments.length }
+  return { positions, yOffsets, heights, colorTypes, count: filteredSegments.length }
 }
 
 // Minimum read depth to show indicators (below this the statistical significance is low)
@@ -363,24 +366,28 @@ function computeNoncovCoverage(
     }
   }
 
-  const positions = new Uint32Array(segments.length)
-  const yOffsets = new Float32Array(segments.length)
-  const heights = new Float32Array(segments.length)
-  const colorTypes = new Uint8Array(segments.length)
+  // Filter to only include positions at or after regionStart (avoid Uint32 underflow)
+  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
+  const filteredIndicators = indicators.filter(ind => ind.position >= regionStart)
 
-  for (let i = 0; i < segments.length; i++) {
-    const seg = segments[i]
+  const positions = new Uint32Array(filteredSegments.length)
+  const yOffsets = new Float32Array(filteredSegments.length)
+  const heights = new Float32Array(filteredSegments.length)
+  const colorTypes = new Uint8Array(filteredSegments.length)
+
+  for (let i = 0; i < filteredSegments.length; i++) {
+    const seg = filteredSegments[i]
     positions[i] = seg.position - regionStart
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
     colorTypes[i] = seg.colorType
   }
 
-  const indicatorPositions = new Uint32Array(indicators.length)
-  const indicatorColorTypes = new Uint8Array(indicators.length)
+  const indicatorPositions = new Uint32Array(filteredIndicators.length)
+  const indicatorColorTypes = new Uint8Array(filteredIndicators.length)
 
-  for (let i = 0; i < indicators.length; i++) {
-    const ind = indicators[i]
+  for (let i = 0; i < filteredIndicators.length; i++) {
+    const ind = filteredIndicators[i]
     indicatorPositions[i] = ind.position - regionStart
     indicatorColorTypes[i] = ind.colorType
   }
@@ -393,8 +400,8 @@ function computeNoncovCoverage(
     indicatorPositions,
     indicatorColorTypes,
     maxCount,
-    segmentCount: segments.length,
-    indicatorCount: indicators.length,
+    segmentCount: filteredSegments.length,
+    indicatorCount: filteredIndicators.length,
   }
 }
 
@@ -532,7 +539,8 @@ export async function executeRenderWebGLPileupData({
       for (let i = 0; i < features.length; i++) {
         const f = features[i]
         const y = layout.get(f.id) ?? 0
-        readPositions[i * 2] = f.start - regionStart
+        // Clamp start to 0 to avoid Uint32 underflow for reads that start before regionStart
+        readPositions[i * 2] = Math.max(0, f.start - regionStart)
         readPositions[i * 2 + 1] = f.end - regionStart
         readYs[i] = y
         readFlags[i] = f.flags
@@ -540,54 +548,64 @@ export async function executeRenderWebGLPileupData({
         readInsertSizes[i] = f.insertSize
       }
 
-      const gapPositions = new Uint32Array(gaps.length * 2)
-      const gapYs = new Uint16Array(gaps.length)
-      for (let i = 0; i < gaps.length; i++) {
-        const g = gaps[i]
+      // Filter gaps to only include those at or after regionStart (avoid Uint32 underflow)
+      const filteredGaps = gaps.filter(g => g.start >= regionStart)
+      const gapPositions = new Uint32Array(filteredGaps.length * 2)
+      const gapYs = new Uint16Array(filteredGaps.length)
+      for (let i = 0; i < filteredGaps.length; i++) {
+        const g = filteredGaps[i]
         const y = layout.get(g.featureId) ?? 0
         gapPositions[i * 2] = g.start - regionStart
         gapPositions[i * 2 + 1] = g.end - regionStart
         gapYs[i] = y
       }
 
-      const mismatchPositions = new Uint32Array(mismatches.length)
-      const mismatchYs = new Uint16Array(mismatches.length)
-      const mismatchBases = new Uint8Array(mismatches.length)
-      for (let i = 0; i < mismatches.length; i++) {
-        const mm = mismatches[i]
+      // Filter mismatches to only include those at or after regionStart (avoid Uint32 underflow)
+      const filteredMismatches = mismatches.filter(mm => mm.position >= regionStart)
+      const mismatchPositions = new Uint32Array(filteredMismatches.length)
+      const mismatchYs = new Uint16Array(filteredMismatches.length)
+      const mismatchBases = new Uint8Array(filteredMismatches.length)
+      for (let i = 0; i < filteredMismatches.length; i++) {
+        const mm = filteredMismatches[i]
         const y = layout.get(mm.featureId) ?? 0
         mismatchPositions[i] = mm.position - regionStart
         mismatchYs[i] = y
         mismatchBases[i] = mm.base
       }
 
-      const insertionPositions = new Uint32Array(insertions.length)
-      const insertionYs = new Uint16Array(insertions.length)
-      const insertionLengths = new Uint16Array(insertions.length)
-      for (let i = 0; i < insertions.length; i++) {
-        const ins = insertions[i]
+      // Filter insertions to only include those at or after regionStart (avoid Uint32 underflow)
+      const filteredInsertions = insertions.filter(ins => ins.position >= regionStart)
+      const insertionPositions = new Uint32Array(filteredInsertions.length)
+      const insertionYs = new Uint16Array(filteredInsertions.length)
+      const insertionLengths = new Uint16Array(filteredInsertions.length)
+      for (let i = 0; i < filteredInsertions.length; i++) {
+        const ins = filteredInsertions[i]
         const y = layout.get(ins.featureId) ?? 0
         insertionPositions[i] = ins.position - regionStart
         insertionYs[i] = y
         insertionLengths[i] = Math.min(65535, ins.length)
       }
 
-      const softclipPositions = new Uint32Array(softclips.length)
-      const softclipYs = new Uint16Array(softclips.length)
-      const softclipLengths = new Uint16Array(softclips.length)
-      for (let i = 0; i < softclips.length; i++) {
-        const sc = softclips[i]
+      // Filter softclips to only include those at or after regionStart (avoid Uint32 underflow)
+      const filteredSoftclips = softclips.filter(sc => sc.position >= regionStart)
+      const softclipPositions = new Uint32Array(filteredSoftclips.length)
+      const softclipYs = new Uint16Array(filteredSoftclips.length)
+      const softclipLengths = new Uint16Array(filteredSoftclips.length)
+      for (let i = 0; i < filteredSoftclips.length; i++) {
+        const sc = filteredSoftclips[i]
         const y = layout.get(sc.featureId) ?? 0
         softclipPositions[i] = sc.position - regionStart
         softclipYs[i] = y
         softclipLengths[i] = Math.min(65535, sc.length)
       }
 
-      const hardclipPositions = new Uint32Array(hardclips.length)
-      const hardclipYs = new Uint16Array(hardclips.length)
-      const hardclipLengths = new Uint16Array(hardclips.length)
-      for (let i = 0; i < hardclips.length; i++) {
-        const hc = hardclips[i]
+      // Filter hardclips to only include those at or after regionStart (avoid Uint32 underflow)
+      const filteredHardclips = hardclips.filter(hc => hc.position >= regionStart)
+      const hardclipPositions = new Uint32Array(filteredHardclips.length)
+      const hardclipYs = new Uint16Array(filteredHardclips.length)
+      const hardclipLengths = new Uint16Array(filteredHardclips.length)
+      for (let i = 0; i < filteredHardclips.length; i++) {
+        const hc = filteredHardclips[i]
         const y = layout.get(hc.featureId) ?? 0
         hardclipPositions[i] = hc.position - regionStart
         hardclipYs[i] = y
@@ -653,11 +671,12 @@ export async function executeRenderWebGLPileupData({
 
     maxY,
     numReads: features.length,
-    numGaps: gaps.length,
-    numMismatches: mismatches.length,
-    numInsertions: insertions.length,
-    numSoftclips: softclips.length,
-    numHardclips: hardclips.length,
+    // Use actual array lengths (may be filtered to exclude positions before regionStart)
+    numGaps: gapArrays.gapPositions.length / 2,
+    numMismatches: mismatchArrays.mismatchPositions.length,
+    numInsertions: insertionArrays.insertionPositions.length,
+    numSoftclips: softclipArrays.softclipPositions.length,
+    numHardclips: hardclipArrays.hardclipPositions.length,
     numCoverageBins: coverage.depths.length,
     numSnpSegments: snpCoverage.count,
     numNoncovSegments: noncovCoverage.segmentCount,

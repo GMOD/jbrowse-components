@@ -824,6 +824,9 @@ export interface RenderState {
   showMismatches: boolean
   showInterbaseCounts: boolean
   showInterbaseIndicators: boolean
+  // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
+  canvasWidth: number
+  canvasHeight: number
 }
 
 interface GPUBuffers {
@@ -1481,16 +1484,16 @@ export class WebGLRenderer {
     const gl = this.gl
     const canvas = this.canvas
 
-    // Handle resize
-    if (
-      canvas.width !== canvas.clientWidth ||
-      canvas.height !== canvas.clientHeight
-    ) {
-      canvas.width = canvas.clientWidth
-      canvas.height = canvas.clientHeight
+    // Use passed-in dimensions to avoid forced layout from reading clientWidth/clientHeight
+    const { canvasWidth, canvasHeight } = state
+
+    // Handle resize - only update canvas buffer size if dimensions changed
+    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
     }
 
-    gl.viewport(0, 0, canvas.width, canvas.height)
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
     gl.clearColor(0.0, 0.0, 0.0, 0.0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -1526,8 +1529,8 @@ export class WebGLRenderer {
         state.coverageHeight,
       )
       gl.uniform1f(this.coverageUniforms.u_binSize!, this.buffers.binSize)
-      gl.uniform1f(this.coverageUniforms.u_canvasHeight!, canvas.height)
-      gl.uniform1f(this.coverageUniforms.u_canvasWidth!, canvas.width)
+      gl.uniform1f(this.coverageUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.coverageUniforms.u_canvasWidth!, canvasWidth)
 
       gl.bindVertexArray(this.buffers.coverageVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.coverageCount)
@@ -1544,8 +1547,8 @@ export class WebGLRenderer {
           this.snpCoverageUniforms.u_coverageHeight!,
           state.coverageHeight,
         )
-        gl.uniform1f(this.snpCoverageUniforms.u_canvasHeight!, canvas.height)
-        gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvas.width)
+        gl.uniform1f(this.snpCoverageUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvasWidth)
 
         gl.bindVertexArray(this.buffers.snpCoverageVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.snpCoverageCount)
@@ -1562,8 +1565,8 @@ export class WebGLRenderer {
           domainOffset[1],
         )
         gl.uniform1f(this.noncovHistogramUniforms.u_noncovHeight!, noncovHeight)
-        gl.uniform1f(this.noncovHistogramUniforms.u_canvasHeight!, canvas.height)
-        gl.uniform1f(this.noncovHistogramUniforms.u_canvasWidth!, canvas.width)
+        gl.uniform1f(this.noncovHistogramUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.noncovHistogramUniforms.u_canvasWidth!, canvasWidth)
 
         gl.bindVertexArray(this.buffers.noncovHistogramVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.noncovHistogramCount)
@@ -1577,15 +1580,15 @@ export class WebGLRenderer {
           domainOffset[0],
           domainOffset[1],
         )
-        gl.uniform1f(this.indicatorUniforms.u_canvasHeight!, canvas.height)
-        gl.uniform1f(this.indicatorUniforms.u_canvasWidth!, canvas.width)
+        gl.uniform1f(this.indicatorUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.indicatorUniforms.u_canvasWidth!, canvasWidth)
 
         gl.bindVertexArray(this.buffers.indicatorVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.buffers.indicatorCount)
       }
 
       // Draw separator line at bottom of coverage area
-      const lineY = 1.0 - (state.coverageHeight / canvas.height) * 2.0
+      const lineY = 1.0 - (state.coverageHeight / canvasHeight) * 2.0
       gl.useProgram(this.lineProgram)
       gl.uniform4f(this.lineUniforms.u_color!, 0.7, 0.7, 0.7, 1.0)
 
@@ -1604,8 +1607,8 @@ export class WebGLRenderer {
     gl.scissor(
       0,
       0,
-      canvas.width,
-      canvas.height - coverageOffset,
+      canvasWidth,
+      canvasHeight - coverageOffset,
     )
 
     gl.useProgram(this.readProgram)
@@ -1627,14 +1630,14 @@ export class WebGLRenderer {
     gl.uniform1f(this.readUniforms.u_featureHeight!, state.featureHeight)
     gl.uniform1f(this.readUniforms.u_featureSpacing!, state.featureSpacing)
     gl.uniform1f(this.readUniforms.u_coverageOffset!, coverageOffset)
-    gl.uniform1f(this.readUniforms.u_canvasHeight!, canvas.height)
+    gl.uniform1f(this.readUniforms.u_canvasHeight!, canvasHeight)
 
     gl.bindVertexArray(this.buffers.readVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.readCount)
 
     // Draw CIGAR features if enabled
     if (state.showMismatches) {
-      const bpPerPx = (state.domainX[1] - state.domainX[0]) / canvas.width
+      const bpPerPx = (state.domainX[1] - state.domainX[0]) / canvasWidth
 
       // Draw gaps (deletions) - always visible
       if (this.buffers.gapVAO && this.buffers.gapCount > 0) {
@@ -1644,7 +1647,7 @@ export class WebGLRenderer {
         gl.uniform1f(this.gapUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.gapUniforms.u_featureSpacing!, state.featureSpacing)
         gl.uniform1f(this.gapUniforms.u_coverageOffset!, coverageOffset)
-        gl.uniform1f(this.gapUniforms.u_canvasHeight!, canvas.height)
+        gl.uniform1f(this.gapUniforms.u_canvasHeight!, canvasHeight)
 
         gl.bindVertexArray(this.buffers.gapVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.gapCount)
@@ -1658,8 +1661,8 @@ export class WebGLRenderer {
         gl.uniform1f(this.mismatchUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.mismatchUniforms.u_featureSpacing!, state.featureSpacing)
         gl.uniform1f(this.mismatchUniforms.u_coverageOffset!, coverageOffset)
-        gl.uniform1f(this.mismatchUniforms.u_canvasHeight!, canvas.height)
-        gl.uniform1f(this.mismatchUniforms.u_canvasWidth!, canvas.width)
+        gl.uniform1f(this.mismatchUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.mismatchUniforms.u_canvasWidth!, canvasWidth)
 
         gl.bindVertexArray(this.buffers.mismatchVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.mismatchCount)
@@ -1674,8 +1677,8 @@ export class WebGLRenderer {
         gl.uniform1f(this.insertionUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.insertionUniforms.u_featureSpacing!, state.featureSpacing)
         gl.uniform1f(this.insertionUniforms.u_coverageOffset!, coverageOffset)
-        gl.uniform1f(this.insertionUniforms.u_canvasHeight!, canvas.height)
-        gl.uniform1f(this.insertionUniforms.u_canvasWidth!, canvas.width)
+        gl.uniform1f(this.insertionUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.insertionUniforms.u_canvasWidth!, canvasWidth)
 
         gl.bindVertexArray(this.buffers.insertionVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 18, this.buffers.insertionCount)
@@ -1689,8 +1692,8 @@ export class WebGLRenderer {
         gl.uniform1f(this.softclipUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.softclipUniforms.u_featureSpacing!, state.featureSpacing)
         gl.uniform1f(this.softclipUniforms.u_coverageOffset!, coverageOffset)
-        gl.uniform1f(this.softclipUniforms.u_canvasHeight!, canvas.height)
-        gl.uniform1f(this.softclipUniforms.u_canvasWidth!, canvas.width)
+        gl.uniform1f(this.softclipUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.softclipUniforms.u_canvasWidth!, canvasWidth)
 
         gl.bindVertexArray(this.buffers.softclipVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.softclipCount)
@@ -1704,8 +1707,8 @@ export class WebGLRenderer {
         gl.uniform1f(this.hardclipUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.hardclipUniforms.u_featureSpacing!, state.featureSpacing)
         gl.uniform1f(this.hardclipUniforms.u_coverageOffset!, coverageOffset)
-        gl.uniform1f(this.hardclipUniforms.u_canvasHeight!, canvas.height)
-        gl.uniform1f(this.hardclipUniforms.u_canvasWidth!, canvas.width)
+        gl.uniform1f(this.hardclipUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.hardclipUniforms.u_canvasWidth!, canvasWidth)
 
         gl.bindVertexArray(this.buffers.hardclipVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.hardclipCount)
