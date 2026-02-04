@@ -49,7 +49,7 @@ import {
   buildRubberBandMenuItems,
   buildRubberbandClickMenuItems,
   rewriteOnClicks,
-} from './menuItems.tsx'
+} from './menuItems.ts'
 import {
   calculateVisibleLocStrings,
   expandRegion,

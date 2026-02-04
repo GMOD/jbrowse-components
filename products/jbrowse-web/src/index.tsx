@@ -1,30 +1,11 @@
-import { StrictMode, Suspense, lazy } from 'react'
+import { StrictMode } from 'react'
 
 import { createRoot } from 'react-dom/client'
 
-import Loading from './components/Loading.tsx'
+import InitialLoad from './InitialLoad.tsx'
 
-const Main = lazy(() => import('./components/Loader.tsx'))
-
-const initialTimeStamp = Date.now()
-
-if (window.name.startsWith('JBrowseAuthWindow')) {
-  const parent = window.opener
-  if (parent) {
-    parent.postMessage({
-      name: window.name,
-      redirectUri: window.location.href,
-    })
-  }
-  window.close()
-}
-
-const root = createRoot(document.getElementById('root')!)
-
-root.render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Suspense fallback={<Loading />}>
-      <Main initialTimestamp={initialTimeStamp} />
-    </Suspense>
+    <InitialLoad />
   </StrictMode>,
 )

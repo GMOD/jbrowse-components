@@ -90,13 +90,7 @@ export function makeImageData({
   const { subfeatureLabels, transcriptTypes, config } = configContext
 
   for (const record of layoutRecords) {
-    const {
-      feature,
-      layout: featureLayout,
-      topPx: recordTopPx,
-      label,
-      description,
-    } = record
+    const { feature, layout: featureLayout, topPx: recordTopPx } = record
 
     // Convert local coordinates to canvas coordinates
     const featureStartBp = feature.get(region.reversed ? 'end' : 'start')
@@ -118,6 +112,12 @@ export function makeImageData({
       bottom: canvasLayout.y + canvasLayout.totalLayoutHeight,
     }
 
+    const label = String(
+      readConfObject(config, ['labels', 'name'], { feature }) || '',
+    )
+    const description = String(
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    )
     const tooltip = String(
       readConfObject(config, 'mouseover', { feature, label, description }) ||
         '',

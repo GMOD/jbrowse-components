@@ -16,7 +16,7 @@ import { ensureDir, generateAppUpdateYml, log } from './utils.js'
 export async function packageApp(platform, arch) {
   log(`Packaging for ${platform}-${arch}...`)
 
-  const packager = (await import('@electron/packager')).default
+  const { packager } = await import('@electron/packager')
 
   // Create minimal package.json for packaged app
   const appPkg = {

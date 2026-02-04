@@ -11,10 +11,9 @@ import {
 } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
-import LinesConnectingMatrixToGenomicPosition, {
-  VariantLabels,
-  Wrapper,
-} from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import VariantLabels from './components/VariantLabels.tsx'
+import Wrapper from './components/Wrapper.tsx'
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 

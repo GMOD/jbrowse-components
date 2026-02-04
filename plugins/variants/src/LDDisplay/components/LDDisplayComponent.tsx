@@ -7,10 +7,9 @@ import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
-import LinesConnectingMatrixToGenomicPosition, {
-  VariantLabels,
-  Wrapper,
-} from './LinesConnectingMatrixToGenomicPosition.tsx'
+import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
+import VariantLabels from './VariantLabels.tsx'
+import Wrapper from './Wrapper.tsx'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 
