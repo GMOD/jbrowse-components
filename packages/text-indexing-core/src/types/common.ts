@@ -7,6 +7,19 @@ import { createGunzip } from 'zlib'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
 
+async function* readWebStream(body: ReadableStream<Uint8Array>) {
+  const reader = body.getReader()
+  try {
+    let result = await reader.read()
+    while (!result.done) {
+      yield result.value
+      result = await reader.read()
+    }
+  } finally {
+    reader.releaseLock()
+  }
+}
+
 // Checks if the passed in string is a valid URL.
 // Returns a boolean.
 export function isURL(FileName: string) {
@@ -62,8 +75,7 @@ export async function getLocalOrRemoteStream({
       throw new Error(`Failed to fetch ${file}: no response body`)
     }
 
-    // @ts-expect-error ReadableStream types mismatch between lib.dom and Node
-    const nodeStream = Readable.fromWeb(body)
+    const nodeStream = Readable.from(readWebStream(body))
     nodeStream.on('data', chunk => {
       receivedBytes += chunk.length
       onUpdate(receivedBytes)

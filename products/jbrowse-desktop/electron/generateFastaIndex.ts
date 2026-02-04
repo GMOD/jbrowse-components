@@ -1,6 +1,19 @@
 import fs from 'fs'
 import { Readable } from 'stream'
 
+async function* readWebStream(body: ReadableStream<Uint8Array>) {
+  const reader = body.getReader()
+  try {
+    let result = await reader.read()
+    while (!result.done) {
+      yield result.value
+      result = await reader.read()
+    }
+  } finally {
+    reader.releaseLock()
+  }
+}
+
 export async function getFileStream(
   location: { uri: string } | { localPath: string },
 ) {
@@ -17,8 +30,7 @@ export async function getFileStream(
     if (!response.body) {
       throw new Error(`No response body for ${location.uri}`)
     }
-    // @ts-expect-error ReadableStream types mismatch between lib.dom and Node
-    return Readable.fromWeb(response.body)
+    return Readable.from(readWebStream(response.body))
   }
   throw new Error(`Unknown file handle type ${JSON.stringify(location)}`)
 }
