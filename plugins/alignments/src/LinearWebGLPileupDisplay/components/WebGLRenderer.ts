@@ -694,6 +694,223 @@ export class WebGLRenderer {
     return { maxY }
   }
 
+  /**
+   * Upload reads from pre-computed typed arrays (from RPC worker)
+   * Zero-copy path - arrays come directly from worker via transferables
+   */
+  uploadFromTypedArrays(data: {
+    readPositions: Float32Array
+    readYs: Float32Array
+    readFlags: Float32Array
+    readMapqs: Float32Array
+    readInsertSizes: Float32Array
+    numReads: number
+    maxY: number
+  }) {
+    const gl = this.gl
+
+    // Clean up old buffers
+    if (this.buffers) {
+      gl.deleteVertexArray(this.buffers.readVAO)
+      if (this.buffers.coverageVAO) {
+        gl.deleteVertexArray(this.buffers.coverageVAO)
+      }
+      if (this.buffers.snpCoverageVAO) {
+        gl.deleteVertexArray(this.buffers.snpCoverageVAO)
+      }
+      if (this.buffers.gapVAO) {
+        gl.deleteVertexArray(this.buffers.gapVAO)
+      }
+      if (this.buffers.mismatchVAO) {
+        gl.deleteVertexArray(this.buffers.mismatchVAO)
+      }
+      if (this.buffers.insertionVAO) {
+        gl.deleteVertexArray(this.buffers.insertionVAO)
+      }
+    }
+
+    if (data.numReads === 0) {
+      this.buffers = null
+      return
+    }
+
+    // Read VAO - upload pre-computed arrays directly
+    const readVAO = gl.createVertexArray()!
+    gl.bindVertexArray(readVAO)
+    this.uploadBuffer(this.readProgram, 'a_position', data.readPositions, 2)
+    this.uploadBuffer(this.readProgram, 'a_y', data.readYs, 1)
+    this.uploadBuffer(this.readProgram, 'a_flags', data.readFlags, 1)
+    this.uploadBuffer(this.readProgram, 'a_mapq', data.readMapqs, 1)
+    this.uploadBuffer(this.readProgram, 'a_insertSize', data.readInsertSizes, 1)
+    gl.bindVertexArray(null)
+
+    this.buffers = {
+      readVAO,
+      readCount: data.numReads,
+      coverageVAO: null,
+      coverageCount: 0,
+      maxDepth: 0,
+      binSize: 1,
+      snpCoverageVAO: null,
+      snpCoverageCount: 0,
+      gapVAO: null,
+      gapCount: 0,
+      mismatchVAO: null,
+      mismatchCount: 0,
+      insertionVAO: null,
+      insertionCount: 0,
+    }
+  }
+
+  /**
+   * Upload CIGAR data from pre-computed typed arrays (from RPC worker)
+   */
+  uploadCigarFromTypedArrays(data: {
+    gapPositions: Float32Array
+    gapYs: Float32Array
+    numGaps: number
+    mismatchPositions: Float32Array
+    mismatchYs: Float32Array
+    mismatchBases: Float32Array
+    numMismatches: number
+    insertionPositions: Float32Array
+    insertionYs: Float32Array
+    numInsertions: number
+  }) {
+    const gl = this.gl
+
+    if (!this.buffers) {
+      return
+    }
+
+    // Clean up old CIGAR VAOs
+    if (this.buffers.gapVAO) {
+      gl.deleteVertexArray(this.buffers.gapVAO)
+      this.buffers.gapVAO = null
+    }
+    if (this.buffers.mismatchVAO) {
+      gl.deleteVertexArray(this.buffers.mismatchVAO)
+      this.buffers.mismatchVAO = null
+    }
+    if (this.buffers.insertionVAO) {
+      gl.deleteVertexArray(this.buffers.insertionVAO)
+      this.buffers.insertionVAO = null
+    }
+
+    // Upload gaps
+    if (data.numGaps > 0) {
+      const gapVAO = gl.createVertexArray()!
+      gl.bindVertexArray(gapVAO)
+      this.uploadBuffer(this.gapProgram, 'a_position', data.gapPositions, 2)
+      this.uploadBuffer(this.gapProgram, 'a_y', data.gapYs, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.gapVAO = gapVAO
+      this.buffers.gapCount = data.numGaps
+    } else {
+      this.buffers.gapCount = 0
+    }
+
+    // Upload mismatches
+    if (data.numMismatches > 0) {
+      const mismatchVAO = gl.createVertexArray()!
+      gl.bindVertexArray(mismatchVAO)
+      this.uploadBuffer(this.mismatchProgram, 'a_position', data.mismatchPositions, 1)
+      this.uploadBuffer(this.mismatchProgram, 'a_y', data.mismatchYs, 1)
+      this.uploadBuffer(this.mismatchProgram, 'a_base', data.mismatchBases, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.mismatchVAO = mismatchVAO
+      this.buffers.mismatchCount = data.numMismatches
+    } else {
+      this.buffers.mismatchCount = 0
+    }
+
+    // Upload insertions
+    if (data.numInsertions > 0) {
+      const insertionVAO = gl.createVertexArray()!
+      gl.bindVertexArray(insertionVAO)
+      this.uploadBuffer(this.insertionProgram, 'a_position', data.insertionPositions, 1)
+      this.uploadBuffer(this.insertionProgram, 'a_y', data.insertionYs, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.insertionVAO = insertionVAO
+      this.buffers.insertionCount = data.numInsertions
+    } else {
+      this.buffers.insertionCount = 0
+    }
+  }
+
+  /**
+   * Upload coverage data from pre-computed typed arrays (from RPC worker)
+   */
+  uploadCoverageFromTypedArrays(data: {
+    coveragePositions: Float32Array
+    coverageDepths: Float32Array
+    coverageMaxDepth: number
+    coverageBinSize: number
+    numCoverageBins: number
+    snpPositions: Float32Array
+    snpYOffsets: Float32Array
+    snpHeights: Float32Array
+    snpColorTypes: Float32Array
+    numSnpSegments: number
+  }) {
+    const gl = this.gl
+
+    if (!this.buffers) {
+      return
+    }
+
+    // Clean up old coverage VAOs
+    if (this.buffers.coverageVAO) {
+      gl.deleteVertexArray(this.buffers.coverageVAO)
+    }
+    if (this.buffers.snpCoverageVAO) {
+      gl.deleteVertexArray(this.buffers.snpCoverageVAO)
+    }
+
+    // Upload grey coverage bars
+    if (data.numCoverageBins > 0) {
+      // Normalize depths
+      const normalizedDepths = new Float32Array(data.coverageDepths.length)
+      for (let i = 0; i < data.coverageDepths.length; i++) {
+        normalizedDepths[i] = data.coverageDepths[i] / data.coverageMaxDepth
+      }
+
+      const coverageVAO = gl.createVertexArray()!
+      gl.bindVertexArray(coverageVAO)
+      this.uploadBuffer(this.coverageProgram, 'a_position', data.coveragePositions, 1)
+      this.uploadBuffer(this.coverageProgram, 'a_depth', normalizedDepths, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.coverageVAO = coverageVAO
+      this.buffers.coverageCount = data.numCoverageBins
+      this.buffers.maxDepth = data.coverageMaxDepth
+      this.buffers.binSize = data.coverageBinSize
+    } else {
+      this.buffers.coverageVAO = null
+      this.buffers.coverageCount = 0
+    }
+
+    // Upload SNP coverage
+    if (data.numSnpSegments > 0) {
+      const snpCoverageVAO = gl.createVertexArray()!
+      gl.bindVertexArray(snpCoverageVAO)
+      this.uploadBuffer(this.snpCoverageProgram, 'a_position', data.snpPositions, 1)
+      this.uploadBuffer(this.snpCoverageProgram, 'a_yOffset', data.snpYOffsets, 1)
+      this.uploadBuffer(this.snpCoverageProgram, 'a_segmentHeight', data.snpHeights, 1)
+      this.uploadBuffer(this.snpCoverageProgram, 'a_colorType', data.snpColorTypes, 1)
+      gl.bindVertexArray(null)
+
+      this.buffers.snpCoverageVAO = snpCoverageVAO
+      this.buffers.snpCoverageCount = data.numSnpSegments
+    } else {
+      this.buffers.snpCoverageVAO = null
+      this.buffers.snpCoverageCount = 0
+    }
+  }
+
   uploadCigarData(
     gaps: GapData[],
     mismatches: MismatchData[],

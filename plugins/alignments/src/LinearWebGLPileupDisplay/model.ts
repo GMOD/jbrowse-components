@@ -4,20 +4,21 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
-  renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
   types,
   addDisposer,
   Instance,
   flow,
-  getEnv,
 } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { reaction } from 'mobx'
 
-import type { ColorBy, FilterBy, Mismatch } from '../shared/types'
+import type { ColorBy, FilterBy } from '../shared/types'
+import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { Feature } from '@jbrowse/core/util'
 
 export interface CoverageData {
   position: number
@@ -25,7 +26,7 @@ export interface CoverageData {
 }
 
 export interface SNPCoverageData {
-  position: number  // exact genomic position (1bp)
+  position: number
   snpA: number
   snpC: number
   snpG: number
@@ -41,16 +42,13 @@ export interface GapData {
 export interface MismatchData {
   featureId: string
   position: number
-  base: number // 0=A, 1=C, 2=G, 3=T
+  base: number
 }
 
 export interface InsertionData {
   featureId: string
   position: number
 }
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Feature } from '@jbrowse/core/util'
 
 // Lazy load the WebGL component
 const WebGLPileupComponent = lazy(
@@ -123,22 +121,14 @@ export default function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      // Feature data loaded from adapter (named to avoid conflict with base)
-      webglFeatures: [] as FeatureData[],
-      // CIGAR-derived data
-      webglGaps: [] as GapData[],
-      webglMismatches: [] as MismatchData[],
-      webglInsertions: [] as InsertionData[],
+      // Typed array data from RPC worker (zero-copy transfer)
+      rpcData: null as WebGLPileupDataResult | null,
       // Region that's currently loaded in GPU
       loadedRegion: null as {
         refName: string
         start: number
         end: number
       } | null,
-      // Coverage data - cached to avoid recalculating on every render
-      coverageData: { data: [] as CoverageData[], maxDepth: 0 },
-      // SNP coverage at exact positions
-      snpCoverageData: { data: [] as SNPCoverageData[], maxDepth: 0 },
       // Loading state
       isLoading: false,
       error: null as Error | null,
@@ -302,102 +292,17 @@ export default function stateModelFactory(
 
     }))
     .actions(self => ({
-      setFeatures(features: FeatureData[]) {
-        self.webglFeatures = features
+      setRpcData(data: WebGLPileupDataResult | null) {
+        self.rpcData = data
+        if (data) {
+          self.maxY = data.maxY
+        }
       },
 
       setLoadedRegion(
         region: { refName: string; start: number; end: number } | null,
       ) {
         self.loadedRegion = region
-      },
-
-      /**
-       * Compute and cache coverage from loaded features using sweep line algorithm
-       * Also computes SNP coverage at exact positions
-       */
-      computeCoverage() {
-        const features = self.webglFeatures
-        const mismatches = self.webglMismatches
-        if (features.length === 0 || !self.loadedRegion) {
-          self.coverageData = { data: [], maxDepth: 0 }
-          self.snpCoverageData = { data: [], maxDepth: 0 }
-          return
-        }
-
-        const { start: regionStart, end: regionEnd } = self.loadedRegion
-        const regionLength = regionEnd - regionStart
-
-        // Events: +1 at read start, -1 at read end
-        const events: { pos: number; delta: number }[] = []
-        for (const f of features) {
-          events.push({ pos: f.start, delta: 1 })
-          events.push({ pos: f.end, delta: -1 })
-        }
-
-        events.sort((a, b) => a.pos - b.pos)
-
-        // Build coverage array - use binning for large regions
-        const maxBins = 10000
-        const binSize = Math.max(1, Math.ceil(regionLength / maxBins))
-        const numBins = Math.ceil(regionLength / binSize)
-
-        const bins: CoverageData[] = []
-        for (let i = 0; i < numBins; i++) {
-          bins.push({
-            position: regionStart + i * binSize,
-            depth: 0,
-          })
-        }
-
-        let currentDepth = 0
-        let eventIdx = 0
-
-        for (let binIdx = 0; binIdx < numBins; binIdx++) {
-          const binEnd = regionStart + (binIdx + 1) * binSize
-          while (eventIdx < events.length && events[eventIdx].pos < binEnd) {
-            currentDepth += events[eventIdx].delta
-            eventIdx++
-          }
-          bins[binIdx].depth = currentDepth
-        }
-
-        const maxDepth = Math.max(1, ...bins.map(b => b.depth))
-        self.coverageData = { data: bins, maxDepth }
-
-        // Compute SNP coverage at exact positions (not binned)
-        // Group mismatches by position
-        const snpByPosition = new Map<number, { a: number; c: number; g: number; t: number }>()
-        for (const mm of mismatches) {
-          let entry = snpByPosition.get(mm.position)
-          if (!entry) {
-            entry = { a: 0, c: 0, g: 0, t: 0 }
-            snpByPosition.set(mm.position, entry)
-          }
-          if (mm.base === 0) {
-            entry.a++
-          } else if (mm.base === 1) {
-            entry.c++
-          } else if (mm.base === 2) {
-            entry.g++
-          } else if (mm.base === 3) {
-            entry.t++
-          }
-        }
-
-        // Convert to array
-        const snpData: SNPCoverageData[] = []
-        for (const [position, counts] of snpByPosition) {
-          snpData.push({
-            position,
-            snpA: counts.a,
-            snpC: counts.c,
-            snpG: counts.g,
-            snpT: counts.t,
-          })
-        }
-
-        self.snpCoverageData = { data: snpData, maxDepth }
       },
 
       setLoading(loading: boolean) {
@@ -467,7 +372,7 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       /**
-       * Fetch features for a region from the adapter
+       * Fetch features for a region using RPC worker
        */
       fetchFeatures: flow(function* fetchFeatures(region: {
         refName: string
@@ -476,7 +381,7 @@ export default function stateModelFactory(
         assemblyName?: string
       }) {
         const session = getSession(self)
-        const { pluginManager } = getEnv(self)
+        const { rpcManager } = session
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
 
@@ -488,106 +393,24 @@ export default function stateModelFactory(
         self.error = null
 
         try {
-          const { assemblyManager } = session
-          const { regions: renamedRegions } = yield renameRegionsIfNeeded(
-            assemblyManager,
+          const result: WebGLPileupDataResult = yield rpcManager.call(
+            session.id,
+            'RenderWebGLPileupData',
             {
-              regions: [region],
-              adapterConfig,
               sessionId: session.id,
+              adapterConfig,
+              region,
+              filterBy: self.filterBy,
             },
           )
-          const renamedRegion = renamedRegions[0]
 
-          const { dataAdapter } = yield getAdapter(
-            pluginManager,
-            session.id,
-            adapterConfig,
-          )
-
-          const featureObservable = dataAdapter.getFeatures(renamedRegion)
-
-          const features: FeatureData[] = []
-          const gaps: GapData[] = []
-          const mismatches: MismatchData[] = []
-          const insertions: InsertionData[] = []
-
-          // Helper to convert base letter to number for shader
-          const baseToNum = (base: string): number => {
-            switch (base.toUpperCase()) {
-              case 'A':
-                return 0
-              case 'C':
-                return 1
-              case 'G':
-                return 2
-              case 'T':
-                return 3
-              default:
-                return 0
-            }
-          }
-
-          yield new Promise<void>((resolve, reject) => {
-            featureObservable.subscribe({
-              next(feature: Feature) {
-                const featureId = feature.id()
-                const featureStart = feature.get('start')
-
-                features.push({
-                  id: featureId,
-                  start: featureStart,
-                  end: feature.get('end'),
-                  strand: feature.get('strand') ?? 1,
-                  flags: feature.get('flags') ?? 0,
-                  mapq: feature.get('score') ?? feature.get('qual') ?? 60,
-                  insertSize: Math.abs(
-                    feature.get('template_length') ?? 400,
-                  ),
-                })
-
-                // Extract CIGAR-derived mismatches
-                const featureMismatches = feature.get('mismatches') as
-                  | Mismatch[]
-                  | undefined
-                if (featureMismatches) {
-                  for (const mm of featureMismatches) {
-                    if (mm.type === 'deletion' || mm.type === 'skip') {
-                      gaps.push({
-                        featureId,
-                        start: featureStart + mm.start,
-                        end: featureStart + mm.start + mm.length,
-                      })
-                    } else if (mm.type === 'mismatch') {
-                      mismatches.push({
-                        featureId,
-                        position: featureStart + mm.start,
-                        base: baseToNum(mm.base),
-                      })
-                    } else if (mm.type === 'insertion') {
-                      insertions.push({
-                        featureId,
-                        position: featureStart + mm.start,
-                      })
-                    }
-                  }
-                }
-              },
-              error: reject,
-              complete: resolve,
-            })
-          })
-
-          self.webglFeatures = features
-          self.webglGaps = gaps
-          self.webglMismatches = mismatches
-          self.webglInsertions = insertions
+          self.rpcData = result
+          self.maxY = result.maxY
           self.loadedRegion = {
             refName: region.refName,
             start: region.start,
             end: region.end,
           }
-          self.computeCoverage()
           self.isLoading = false
         } catch (e) {
           self.error = e as Error

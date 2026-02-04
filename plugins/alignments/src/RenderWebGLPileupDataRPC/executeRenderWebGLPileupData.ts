@@ -1,0 +1,444 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { dedupe, updateStatus } from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
+import type { RenderWebGLPileupDataArgs, WebGLPileupDataResult } from './types'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+import type { Mismatch } from '../shared/types'
+
+interface FeatureData {
+  id: string
+  start: number
+  end: number
+  flags: number
+  mapq: number
+  insertSize: number
+}
+
+interface GapData {
+  featureId: string
+  start: number
+  end: number
+}
+
+interface MismatchData {
+  featureId: string
+  position: number
+  base: number
+}
+
+interface InsertionData {
+  featureId: string
+  position: number
+}
+
+function baseToNum(base: string): number {
+  switch (base.toUpperCase()) {
+    case 'A':
+      return 0
+    case 'C':
+      return 1
+    case 'G':
+      return 2
+    case 'T':
+      return 3
+    default:
+      return 0
+  }
+}
+
+function computeLayout(features: FeatureData[]): Map<string, number> {
+  const sorted = [...features].sort((a, b) => a.start - b.start)
+  const levels: number[] = []
+  const layoutMap = new Map<string, number>()
+
+  for (const feature of sorted) {
+    let y = 0
+    for (let i = 0; i < levels.length; i++) {
+      if (levels[i] <= feature.start) {
+        y = i
+        break
+      }
+      y = i + 1
+    }
+    layoutMap.set(feature.id, y)
+    levels[y] = feature.end + 2
+  }
+
+  return layoutMap
+}
+
+function computeCoverage(
+  features: FeatureData[],
+  regionStart: number,
+  regionEnd: number,
+): { positions: Float32Array; depths: Float32Array; maxDepth: number; binSize: number } {
+  if (features.length === 0) {
+    return {
+      positions: new Float32Array(0),
+      depths: new Float32Array(0),
+      maxDepth: 0,
+      binSize: 1,
+    }
+  }
+
+  const regionLength = regionEnd - regionStart
+  const maxBins = 10000
+  const binSize = Math.max(1, Math.ceil(regionLength / maxBins))
+  const numBins = Math.ceil(regionLength / binSize)
+
+  const events: { pos: number; delta: number }[] = []
+  for (const f of features) {
+    events.push({ pos: f.start, delta: 1 })
+    events.push({ pos: f.end, delta: -1 })
+  }
+  events.sort((a, b) => a.pos - b.pos)
+
+  const positions = new Float32Array(numBins)
+  const depths = new Float32Array(numBins)
+
+  let currentDepth = 0
+  let eventIdx = 0
+
+  for (let binIdx = 0; binIdx < numBins; binIdx++) {
+    positions[binIdx] = regionStart + binIdx * binSize
+    const binEnd = regionStart + (binIdx + 1) * binSize
+    while (eventIdx < events.length && events[eventIdx].pos < binEnd) {
+      currentDepth += events[eventIdx].delta
+      eventIdx++
+    }
+    depths[binIdx] = currentDepth
+  }
+
+  let maxDepth = 1
+  for (let i = 0; i < depths.length; i++) {
+    if (depths[i] > maxDepth) {
+      maxDepth = depths[i]
+    }
+  }
+
+  return { positions, depths, maxDepth, binSize }
+}
+
+interface SNPCoverageEntry {
+  position: number
+  a: number
+  c: number
+  g: number
+  t: number
+}
+
+function computeSNPCoverage(
+  mismatches: MismatchData[],
+  maxDepth: number,
+): {
+  positions: Float32Array
+  yOffsets: Float32Array
+  heights: Float32Array
+  colorTypes: Float32Array
+  count: number
+} {
+  if (mismatches.length === 0 || maxDepth === 0) {
+    return {
+      positions: new Float32Array(0),
+      yOffsets: new Float32Array(0),
+      heights: new Float32Array(0),
+      colorTypes: new Float32Array(0),
+      count: 0,
+    }
+  }
+
+  const snpByPosition = new Map<number, SNPCoverageEntry>()
+  for (const mm of mismatches) {
+    let entry = snpByPosition.get(mm.position)
+    if (!entry) {
+      entry = { position: mm.position, a: 0, c: 0, g: 0, t: 0 }
+      snpByPosition.set(mm.position, entry)
+    }
+    if (mm.base === 0) {
+      entry.a++
+    } else if (mm.base === 1) {
+      entry.c++
+    } else if (mm.base === 2) {
+      entry.g++
+    } else if (mm.base === 3) {
+      entry.t++
+    }
+  }
+
+  const segments: { position: number; yOffset: number; height: number; colorType: number }[] = []
+
+  for (const entry of snpByPosition.values()) {
+    const total = entry.a + entry.c + entry.g + entry.t
+    if (total === 0) {
+      continue
+    }
+
+    let yOffset = 0
+
+    if (entry.a > 0) {
+      const height = entry.a / maxDepth
+      segments.push({ position: entry.position, yOffset, height, colorType: 1 })
+      yOffset += height
+    }
+
+    if (entry.c > 0) {
+      const height = entry.c / maxDepth
+      segments.push({ position: entry.position, yOffset, height, colorType: 2 })
+      yOffset += height
+    }
+
+    if (entry.g > 0) {
+      const height = entry.g / maxDepth
+      segments.push({ position: entry.position, yOffset, height, colorType: 3 })
+      yOffset += height
+    }
+
+    if (entry.t > 0) {
+      const height = entry.t / maxDepth
+      segments.push({ position: entry.position, yOffset, height, colorType: 4 })
+    }
+  }
+
+  const positions = new Float32Array(segments.length)
+  const yOffsets = new Float32Array(segments.length)
+  const heights = new Float32Array(segments.length)
+  const colorTypes = new Float32Array(segments.length)
+
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i]
+    positions[i] = seg.position
+    yOffsets[i] = seg.yOffset
+    heights[i] = seg.height
+    colorTypes[i] = seg.colorType
+  }
+
+  return { positions, yOffsets, heights, colorTypes, count: segments.length }
+}
+
+export async function executeRenderWebGLPileupData({
+  pluginManager,
+  args,
+}: {
+  pluginManager: PluginManager
+  args: RenderWebGLPileupDataArgs
+}): Promise<WebGLPileupDataResult> {
+  const {
+    sessionId,
+    adapterConfig,
+    sequenceAdapter,
+    region,
+    statusCallback = () => {},
+    stopToken,
+  } = args
+
+  const stopTokenCheck = createStopTokenChecker(stopToken)
+
+  const dataAdapter = (
+    await getAdapter(pluginManager, sessionId, adapterConfig)
+  ).dataAdapter as BaseFeatureDataAdapter
+
+  if (sequenceAdapter && !dataAdapter.sequenceAdapterConfig) {
+    dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
+  }
+
+  const featuresArray = await updateStatus(
+    'Fetching alignments',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        dataAdapter.getFeatures(region, args).pipe(toArray()),
+      ),
+  )
+
+  checkStopToken2(stopTokenCheck)
+
+  const { features, gaps, mismatches, insertions } = await updateStatus(
+    'Processing alignments',
+    statusCallback,
+    async () => {
+      const deduped = dedupe(featuresArray, (f: Feature) => f.id())
+
+      const featuresData: FeatureData[] = []
+      const gapsData: GapData[] = []
+      const mismatchesData: MismatchData[] = []
+      const insertionsData: InsertionData[] = []
+
+      for (const feature of deduped) {
+        const featureId = feature.id()
+        const featureStart = feature.get('start')
+
+        featuresData.push({
+          id: featureId,
+          start: featureStart,
+          end: feature.get('end'),
+          flags: feature.get('flags') ?? 0,
+          mapq: feature.get('score') ?? feature.get('qual') ?? 60,
+          insertSize: Math.abs(feature.get('template_length') ?? 400),
+        })
+
+        const featureMismatches = feature.get('mismatches') as
+          | Mismatch[]
+          | undefined
+        if (featureMismatches) {
+          for (const mm of featureMismatches) {
+            if (mm.type === 'deletion' || mm.type === 'skip') {
+              gapsData.push({
+                featureId,
+                start: featureStart + mm.start,
+                end: featureStart + mm.start + mm.length,
+              })
+            } else if (mm.type === 'mismatch') {
+              mismatchesData.push({
+                featureId,
+                position: featureStart + mm.start,
+                base: baseToNum(mm.base),
+              })
+            } else if (mm.type === 'insertion') {
+              insertionsData.push({
+                featureId,
+                position: featureStart + mm.start,
+              })
+            }
+          }
+        }
+      }
+
+      return {
+        features: featuresData,
+        gaps: gapsData,
+        mismatches: mismatchesData,
+        insertions: insertionsData,
+      }
+    },
+  )
+
+  checkStopToken2(stopTokenCheck)
+
+  const { maxY, readArrays, gapArrays, mismatchArrays, insertionArrays } =
+    await updateStatus('Computing layout', statusCallback, async () => {
+      const layout = computeLayout(features)
+      const numLevels = Math.max(0, ...layout.values()) + 1
+
+      const readPositions = new Float32Array(features.length * 2)
+      const readYs = new Float32Array(features.length)
+      const readFlags = new Float32Array(features.length)
+      const readMapqs = new Float32Array(features.length)
+      const readInsertSizes = new Float32Array(features.length)
+
+      for (let i = 0; i < features.length; i++) {
+        const f = features[i]
+        const y = layout.get(f.id) ?? 0
+        readPositions[i * 2] = f.start
+        readPositions[i * 2 + 1] = f.end
+        readYs[i] = y
+        readFlags[i] = f.flags
+        readMapqs[i] = f.mapq
+        readInsertSizes[i] = f.insertSize
+      }
+
+      const gapPositions = new Float32Array(gaps.length * 2)
+      const gapYs = new Float32Array(gaps.length)
+      for (let i = 0; i < gaps.length; i++) {
+        const g = gaps[i]
+        const y = layout.get(g.featureId) ?? 0
+        gapPositions[i * 2] = g.start
+        gapPositions[i * 2 + 1] = g.end
+        gapYs[i] = y
+      }
+
+      const mismatchPositions = new Float32Array(mismatches.length)
+      const mismatchYs = new Float32Array(mismatches.length)
+      const mismatchBases = new Float32Array(mismatches.length)
+      for (let i = 0; i < mismatches.length; i++) {
+        const mm = mismatches[i]
+        const y = layout.get(mm.featureId) ?? 0
+        mismatchPositions[i] = mm.position
+        mismatchYs[i] = y
+        mismatchBases[i] = mm.base
+      }
+
+      const insertionPositions = new Float32Array(insertions.length)
+      const insertionYs = new Float32Array(insertions.length)
+      for (let i = 0; i < insertions.length; i++) {
+        const ins = insertions[i]
+        const y = layout.get(ins.featureId) ?? 0
+        insertionPositions[i] = ins.position
+        insertionYs[i] = y
+      }
+
+      return {
+        maxY: numLevels,
+        readArrays: { readPositions, readYs, readFlags, readMapqs, readInsertSizes },
+        gapArrays: { gapPositions, gapYs },
+        mismatchArrays: { mismatchPositions, mismatchYs, mismatchBases },
+        insertionArrays: { insertionPositions, insertionYs },
+      }
+    })
+
+  checkStopToken2(stopTokenCheck)
+
+  const coverage = await updateStatus('Computing coverage', statusCallback, async () =>
+    computeCoverage(features, region.start, region.end),
+  )
+
+  checkStopToken2(stopTokenCheck)
+
+  const snpCoverage = computeSNPCoverage(mismatches, coverage.maxDepth)
+
+  const result: WebGLPileupDataResult = {
+    ...readArrays,
+    ...gapArrays,
+    ...mismatchArrays,
+    ...insertionArrays,
+
+    coveragePositions: coverage.positions,
+    coverageDepths: coverage.depths,
+    coverageMaxDepth: coverage.maxDepth,
+    coverageBinSize: coverage.binSize,
+
+    snpPositions: snpCoverage.positions,
+    snpYOffsets: snpCoverage.yOffsets,
+    snpHeights: snpCoverage.heights,
+    snpColorTypes: snpCoverage.colorTypes,
+
+    maxY,
+    numReads: features.length,
+    numGaps: gaps.length,
+    numMismatches: mismatches.length,
+    numInsertions: insertions.length,
+    numCoverageBins: coverage.positions.length,
+    numSnpSegments: snpCoverage.count,
+  }
+
+  const transferables: ArrayBuffer[] = [
+    result.readPositions.buffer,
+    result.readYs.buffer,
+    result.readFlags.buffer,
+    result.readMapqs.buffer,
+    result.readInsertSizes.buffer,
+    result.gapPositions.buffer,
+    result.gapYs.buffer,
+    result.mismatchPositions.buffer,
+    result.mismatchYs.buffer,
+    result.mismatchBases.buffer,
+    result.insertionPositions.buffer,
+    result.insertionYs.buffer,
+    result.coveragePositions.buffer,
+    result.coverageDepths.buffer,
+    result.snpPositions.buffer,
+    result.snpYOffsets.buffer,
+    result.snpHeights.buffer,
+    result.snpColorTypes.buffer,
+  ]
+
+  return rpcResult(result, transferables)
+}

@@ -75,10 +75,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   const viewId = view?.id
 
   const {
-    webglFeatures,
-    webglGaps,
-    webglMismatches,
-    webglInsertions,
+    rpcData,
     isLoading,
     error,
     featureHeight,
@@ -86,8 +83,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     colorSchemeIndex,
     showCoverage,
     coverageHeight,
-    coverageData,
-    snpCoverageData,
     showMismatches,
   } = model
 
@@ -423,40 +418,68 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     scheduleRenderRef.current()
   }, [view?.offsetPx, view?.bpPerPx, view?.initialized, syncVisibleBpRangeFromView])
 
-  // Upload features to GPU
+  // Upload features to GPU from RPC typed arrays
   useEffect(() => {
-    if (!rendererRef.current || webglFeatures.length === 0) {
+    if (!rendererRef.current || !rpcData || rpcData.numReads === 0) {
       return
     }
 
-    const result = rendererRef.current.uploadFeatures(webglFeatures)
-    setMaxY(result.maxY)
-    model.setMaxY(result.maxY)
+    // Use zero-copy upload path from RPC worker data
+    rendererRef.current.uploadFromTypedArrays({
+      readPositions: rpcData.readPositions,
+      readYs: rpcData.readYs,
+      readFlags: rpcData.readFlags,
+      readMapqs: rpcData.readMapqs,
+      readInsertSizes: rpcData.readInsertSizes,
+      numReads: rpcData.numReads,
+      maxY: rpcData.maxY,
+    })
+    setMaxY(rpcData.maxY)
+    model.setMaxY(rpcData.maxY)
 
-    rendererRef.current.uploadCigarData(webglGaps, webglMismatches, webglInsertions)
+    // Upload CIGAR data
+    rendererRef.current.uploadCigarFromTypedArrays({
+      gapPositions: rpcData.gapPositions,
+      gapYs: rpcData.gapYs,
+      numGaps: rpcData.numGaps,
+      mismatchPositions: rpcData.mismatchPositions,
+      mismatchYs: rpcData.mismatchYs,
+      mismatchBases: rpcData.mismatchBases,
+      numMismatches: rpcData.numMismatches,
+      insertionPositions: rpcData.insertionPositions,
+      insertionYs: rpcData.insertionYs,
+      numInsertions: rpcData.numInsertions,
+    })
+
     scheduleRenderRef.current()
-  }, [webglFeatures, webglGaps, webglMismatches, webglInsertions, model])
+  }, [rpcData, model])
 
-  // Upload coverage
+  // Upload coverage from RPC typed arrays
   useEffect(() => {
-    if (!rendererRef.current || !showCoverage) {
+    if (!rendererRef.current || !showCoverage || !rpcData) {
       return
     }
-    const binSize =
-      coverageData.data.length > 1
-        ? coverageData.data[1].position - coverageData.data[0].position
-        : 1
-    rendererRef.current.uploadCoverage(coverageData.data, coverageData.maxDepth, binSize)
-    rendererRef.current.uploadSNPCoverage(snpCoverageData.data, snpCoverageData.maxDepth)
+    rendererRef.current.uploadCoverageFromTypedArrays({
+      coveragePositions: rpcData.coveragePositions,
+      coverageDepths: rpcData.coverageDepths,
+      coverageMaxDepth: rpcData.coverageMaxDepth,
+      coverageBinSize: rpcData.coverageBinSize,
+      numCoverageBins: rpcData.numCoverageBins,
+      snpPositions: rpcData.snpPositions,
+      snpYOffsets: rpcData.snpYOffsets,
+      snpHeights: rpcData.snpHeights,
+      snpColorTypes: rpcData.snpColorTypes,
+      numSnpSegments: rpcData.numSnpSegments,
+    })
     scheduleRenderRef.current()
-  }, [coverageData, snpCoverageData, showCoverage])
+  }, [rpcData, showCoverage])
 
   // Re-render on settings change
   useEffect(() => {
     if (rendererReady) {
       scheduleRenderRef.current()
     }
-  }, [rendererReady, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches, webglFeatures])
+  }, [rendererReady, colorSchemeIndex, featureHeight, featureSpacing, showCoverage, coverageHeight, showMismatches, rpcData])
 
   // Reset data request tracking
   useEffect(() => {

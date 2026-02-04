@@ -16,6 +16,7 @@ import PileupRPCMethodsF from './PileupRPC/index.ts'
 import PileupRendererF from './PileupRenderer/index.ts'
 import LinearReadArcsDisplayRPCMethodsF from './RenderLinearReadArcsDisplayRPC/index.ts'
 import LinearReadCloudDisplayRPCMethodsF from './RenderLinearReadCloudDisplayRPC/index.ts'
+import WebGLPileupDataRPCMethodsF from './RenderWebGLPileupDataRPC/index.ts'
 import SNPCoverageAdapterF from './SNPCoverageAdapter/index.ts'
 import SNPCoverageRendererF from './SNPCoverageRenderer/index.ts'
 
@@ -38,6 +39,7 @@ export default class AlignmentsPlugin extends Plugin {
       PileupRPCMethodsF,
       LinearReadArcsDisplayRPCMethodsF,
       LinearReadCloudDisplayRPCMethodsF,
+      WebGLPileupDataRPCMethodsF,
       SNPCoverageRendererF,
       LinearReadArcsDisplayF,
       LinearReadCloudDisplayF,
