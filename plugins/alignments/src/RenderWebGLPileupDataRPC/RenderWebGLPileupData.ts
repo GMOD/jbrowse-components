@@ -40,9 +40,8 @@ export default class RenderWebGLPileupData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLPileupData } = await import(
-      './executeRenderWebGLPileupData.ts'
-    )
+    const { executeRenderWebGLPileupData } =
+      await import('./executeRenderWebGLPileupData.ts')
     return executeRenderWebGLPileupData({
       pluginManager: this.pluginManager,
       args: args as unknown as RenderWebGLPileupDataArgs,

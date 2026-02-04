@@ -1,25 +1,21 @@
 import { lazy } from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import {
-  types,
-  addDisposer,
-  getSnapshot,
-  Instance,
-  flow,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, flow, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { reaction } from 'mobx'
 
-import type { ColorBy, FilterBy } from '../shared/types'
 import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
+import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Feature } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface CoverageData {
   position: number
@@ -300,7 +296,6 @@ export default function stateModelFactory(
       get sortedBy(): undefined {
         return undefined
       },
-
     }))
     .actions(self => ({
       setRpcData(data: WebGLPileupDataResult | null) {
@@ -565,6 +560,5 @@ export default function stateModelFactory(
 export type LinearWebGLPileupDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearWebGLPileupDisplayModel = Instance<
-  LinearWebGLPileupDisplayStateModel
->
+export type LinearWebGLPileupDisplayModel =
+  Instance<LinearWebGLPileupDisplayStateModel>

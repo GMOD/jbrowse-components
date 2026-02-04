@@ -223,14 +223,14 @@ export interface FeatureData {
   flags: number
   mapq: number
   insertSize: number
-  mismatches?: Array<{ start: number; base: string }>
-  deletions?: Array<{ start: number; length: number }>
+  mismatches?: { start: number; base: string }[]
+  deletions?: { start: number; length: number }[]
 }
 
 export interface RenderState {
-  domainX: [number, number]  // Visible genomic range
-  rangeY: [number, number]   // Visible Y range (pixels)
-  colorScheme: number        // 0=strand, 1=mapq, 2=insertSize, 3=firstOfPair
+  domainX: [number, number] // Visible genomic range
+  rangeY: [number, number] // Visible Y range (pixels)
+  colorScheme: number // 0=strand, 1=mapq, 2=insertSize, 3=firstOfPair
   featureHeight: number
   featureSpacing: number
   showMismatches: boolean
@@ -256,7 +256,7 @@ export class WebGLRenderer {
 
   // Current GPU data
   private buffers: GPUBuffers | null = null
-  private layoutMap: Map<string, number> = new Map()
+  private layoutMap = new Map<string, number>()
 
   // Cached uniform locations
   private readUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -277,20 +277,39 @@ export class WebGLRenderer {
     this.gl = gl
 
     // Create shader programs
-    this.readProgram = this.createProgram(READ_VERTEX_SHADER, READ_FRAGMENT_SHADER)
-    this.mismatchProgram = this.createProgram(MISMATCH_VERTEX_SHADER, SIMPLE_FRAGMENT_SHADER)
-    this.deletionProgram = this.createProgram(DELETION_VERTEX_SHADER, DELETION_FRAGMENT_SHADER)
+    this.readProgram = this.createProgram(
+      READ_VERTEX_SHADER,
+      READ_FRAGMENT_SHADER,
+    )
+    this.mismatchProgram = this.createProgram(
+      MISMATCH_VERTEX_SHADER,
+      SIMPLE_FRAGMENT_SHADER,
+    )
+    this.deletionProgram = this.createProgram(
+      DELETION_VERTEX_SHADER,
+      DELETION_FRAGMENT_SHADER,
+    )
 
     // Cache uniform locations
     this.cacheUniforms(this.readProgram, this.readUniforms, [
-      'u_domainX', 'u_rangeY', 'u_canvasSize', 'u_colorScheme',
-      'u_featureHeight', 'u_featureSpacing'
+      'u_domainX',
+      'u_rangeY',
+      'u_canvasSize',
+      'u_colorScheme',
+      'u_featureHeight',
+      'u_featureSpacing',
     ])
     this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [
-      'u_domainX', 'u_rangeY', 'u_featureHeight', 'u_featureSpacing'
+      'u_domainX',
+      'u_rangeY',
+      'u_featureHeight',
+      'u_featureSpacing',
     ])
     this.cacheUniforms(this.deletionProgram, this.deletionUniforms, [
-      'u_domainX', 'u_rangeY', 'u_featureHeight', 'u_featureSpacing'
+      'u_domainX',
+      'u_rangeY',
+      'u_featureHeight',
+      'u_featureSpacing',
     ])
 
     // Enable blending for transparency
@@ -313,7 +332,7 @@ export class WebGLRenderer {
 
   private createProgram(vsSource: string, fsSource: string): WebGLProgram {
     const gl = this.gl
-    const program = gl.createProgram()!
+    const program = gl.createProgram()
     gl.attachShader(program, this.createShader(gl.VERTEX_SHADER, vsSource))
     gl.attachShader(program, this.createShader(gl.FRAGMENT_SHADER, fsSource))
     gl.linkProgram(program)
@@ -328,7 +347,7 @@ export class WebGLRenderer {
   private cacheUniforms(
     program: WebGLProgram,
     cache: Record<string, WebGLUniformLocation | null>,
-    names: string[]
+    names: string[],
   ) {
     for (const name of names) {
       cache[name] = this.gl.getUniformLocation(program, name)
@@ -345,8 +364,8 @@ export class WebGLRenderer {
 
     for (const feature of sorted) {
       let y = 0
-      for (let i = 0; i < levels.length; i++) {
-        if (levels[i] <= feature.start) {
+      for (const [i, level] of levels.entries()) {
+        if (level <= feature.start) {
           y = i
           break
         }
@@ -368,8 +387,12 @@ export class WebGLRenderer {
     // Clean up old buffers
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.readVAO)
-      if (this.buffers.mismatchVAO) gl.deleteVertexArray(this.buffers.mismatchVAO)
-      if (this.buffers.deletionVAO) gl.deleteVertexArray(this.buffers.deletionVAO)
+      if (this.buffers.mismatchVAO) {
+        gl.deleteVertexArray(this.buffers.mismatchVAO)
+      }
+      if (this.buffers.deletionVAO) {
+        gl.deleteVertexArray(this.buffers.deletionVAO)
+      }
     }
 
     // Compute layout
@@ -386,8 +409,7 @@ export class WebGLRenderer {
     const mismatches: { pos: number; y: number; base: number }[] = []
     const deletions: { x1: number; x2: number; y: number }[] = []
 
-    for (let i = 0; i < features.length; i++) {
-      const f = features[i]
+    for (const [i, f] of features.entries()) {
       const y = this.layoutMap.get(f.id) ?? 0
 
       positions[i * 2] = f.start
@@ -404,7 +426,7 @@ export class WebGLRenderer {
           mismatches.push({
             pos: f.start + mm.start,
             y,
-            base: baseIdx >= 0 ? baseIdx : 4,
+            base: baseIdx !== -1 ? baseIdx : 4,
           })
         }
       }
@@ -422,7 +444,7 @@ export class WebGLRenderer {
     }
 
     // Create read VAO
-    const readVAO = gl.createVertexArray()!
+    const readVAO = gl.createVertexArray()
     gl.bindVertexArray(readVAO)
     this.uploadBuffer(this.readProgram, 'a_position', positions, 2)
     this.uploadBuffer(this.readProgram, 'a_y', yCoords, 1)
@@ -440,19 +462,19 @@ export class WebGLRenderer {
         this.mismatchProgram,
         'a_position',
         new Float32Array(mismatches.map(m => m.pos)),
-        1
+        1,
       )
       this.uploadBuffer(
         this.mismatchProgram,
         'a_y',
         new Float32Array(mismatches.map(m => m.y)),
-        1
+        1,
       )
       this.uploadBuffer(
         this.mismatchProgram,
         'a_base',
         new Float32Array(mismatches.map(m => m.base)),
-        1
+        1,
       )
       gl.bindVertexArray(null)
     }
@@ -464,10 +486,10 @@ export class WebGLRenderer {
       gl.bindVertexArray(deletionVAO)
       const delPositions = new Float32Array(deletions.length * 2)
       const delYs = new Float32Array(deletions.length)
-      for (let i = 0; i < deletions.length; i++) {
-        delPositions[i * 2] = deletions[i].x1
-        delPositions[i * 2 + 1] = deletions[i].x2
-        delYs[i] = deletions[i].y
+      for (const [i, deletion] of deletions.entries()) {
+        delPositions[i * 2] = deletion.x1
+        delPositions[i * 2 + 1] = deletion.x2
+        delYs[i] = deletion.y
       }
       this.uploadBuffer(this.deletionProgram, 'a_position', delPositions, 2)
       this.uploadBuffer(this.deletionProgram, 'a_y', delYs, 1)
@@ -490,11 +512,13 @@ export class WebGLRenderer {
     program: WebGLProgram,
     attrib: string,
     data: Float32Array,
-    size: number
+    size: number,
   ) {
     const gl = this.gl
     const loc = gl.getAttribLocation(program, attrib)
-    if (loc < 0) return
+    if (loc < 0) {
+      return
+    }
 
     const buffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
@@ -512,22 +536,31 @@ export class WebGLRenderer {
 
     // Update canvas size if needed
     const canvas = this.canvas as HTMLCanvasElement
-    if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+    if (
+      canvas.width !== canvas.clientWidth ||
+      canvas.height !== canvas.clientHeight
+    ) {
       canvas.width = canvas.clientWidth
       canvas.height = canvas.clientHeight
     }
 
     gl.viewport(0, 0, canvas.width, canvas.height)
-    gl.clearColor(0.96, 0.96, 0.96, 1.0)
+    gl.clearColor(0.96, 0.96, 0.96, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    if (!this.buffers || this.buffers.readCount === 0) return
+    if (!this.buffers || this.buffers.readCount === 0) {
+      return
+    }
 
     const bpPerPx = (state.domainX[1] - state.domainX[0]) / canvas.width
 
     // === Pass 1: Reads ===
     gl.useProgram(this.readProgram)
-    gl.uniform2f(this.readUniforms.u_domainX!, state.domainX[0], state.domainX[1])
+    gl.uniform2f(
+      this.readUniforms.u_domainX!,
+      state.domainX[0],
+      state.domainX[1],
+    )
     gl.uniform2f(this.readUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
     gl.uniform2f(this.readUniforms.u_canvasSize!, canvas.width, canvas.height)
     gl.uniform1i(this.readUniforms.u_colorScheme!, state.colorScheme)
@@ -540,10 +573,21 @@ export class WebGLRenderer {
     // === Pass 2: Deletions ===
     if (this.buffers.deletionVAO && this.buffers.deletionCount > 0) {
       gl.useProgram(this.deletionProgram)
-      gl.uniform2f(this.deletionUniforms.u_domainX!, state.domainX[0], state.domainX[1])
-      gl.uniform2f(this.deletionUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
+      gl.uniform2f(
+        this.deletionUniforms.u_domainX!,
+        state.domainX[0],
+        state.domainX[1],
+      )
+      gl.uniform2f(
+        this.deletionUniforms.u_rangeY!,
+        state.rangeY[0],
+        state.rangeY[1],
+      )
       gl.uniform1f(this.deletionUniforms.u_featureHeight!, state.featureHeight)
-      gl.uniform1f(this.deletionUniforms.u_featureSpacing!, state.featureSpacing)
+      gl.uniform1f(
+        this.deletionUniforms.u_featureSpacing!,
+        state.featureSpacing,
+      )
 
       gl.bindVertexArray(this.buffers.deletionVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.deletionCount)
@@ -557,10 +601,21 @@ export class WebGLRenderer {
       this.buffers.mismatchCount > 0
     ) {
       gl.useProgram(this.mismatchProgram)
-      gl.uniform2f(this.mismatchUniforms.u_domainX!, state.domainX[0], state.domainX[1])
-      gl.uniform2f(this.mismatchUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
+      gl.uniform2f(
+        this.mismatchUniforms.u_domainX!,
+        state.domainX[0],
+        state.domainX[1],
+      )
+      gl.uniform2f(
+        this.mismatchUniforms.u_rangeY!,
+        state.rangeY[0],
+        state.rangeY[1],
+      )
       gl.uniform1f(this.mismatchUniforms.u_featureHeight!, state.featureHeight)
-      gl.uniform1f(this.mismatchUniforms.u_featureSpacing!, state.featureSpacing)
+      gl.uniform1f(
+        this.mismatchUniforms.u_featureSpacing!,
+        state.featureSpacing,
+      )
 
       gl.bindVertexArray(this.buffers.mismatchVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.mismatchCount)
@@ -576,8 +631,12 @@ export class WebGLRenderer {
     const gl = this.gl
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.readVAO)
-      if (this.buffers.mismatchVAO) gl.deleteVertexArray(this.buffers.mismatchVAO)
-      if (this.buffers.deletionVAO) gl.deleteVertexArray(this.buffers.deletionVAO)
+      if (this.buffers.mismatchVAO) {
+        gl.deleteVertexArray(this.buffers.mismatchVAO)
+      }
+      if (this.buffers.deletionVAO) {
+        gl.deleteVertexArray(this.buffers.deletionVAO)
+      }
     }
     gl.deleteProgram(this.readProgram)
     gl.deleteProgram(this.mismatchProgram)

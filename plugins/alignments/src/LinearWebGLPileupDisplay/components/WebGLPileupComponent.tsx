@@ -1,11 +1,12 @@
-import { useRef, useEffect, useCallback, useState, useId } from 'react'
-import { observer } from 'mobx-react'
-import { autorun } from 'mobx'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
 import useMeasure from '@jbrowse/core/util/useMeasure'
+import { autorun } from 'mobx'
+import { observer } from 'mobx-react'
 
-import { WebGLRenderer } from './WebGLRenderer'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator'
+import { WebGLRenderer } from './WebGLRenderer'
 
 import type { LinearWebGLPileupDisplayModel } from '../model'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -41,7 +42,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   model,
 }: Props) {
   renderCountRef.current++
-  log('RENDER #' + renderCountRef.current)
+  log(`RENDER #${renderCountRef.current}`)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLRenderer | null>(null)
@@ -149,7 +150,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       const t0 = performance.now()
       const w = canvasW ?? width
       if (!rendererRef.current || w === undefined) {
-        log('IMMEDIATE RENDER #' + renderNum + ' SKIP - no renderer or width')
+        log(`IMMEDIATE RENDER #${renderNum} SKIP - no renderer or width`)
         return
       }
 
@@ -170,7 +171,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       })
       const t2 = performance.now()
       log(
-        'IMMEDIATE RENDER #' + renderNum + ': setup=' + (t1 - t0).toFixed(2) + 'ms, WebGL=' + (t2 - t1).toFixed(2) + 'ms, total=' + (t2 - t0).toFixed(2) + 'ms',
+        `IMMEDIATE RENDER #${renderNum}: setup=${(t1 - t0).toFixed(2)}ms, WebGL=${(t2 - t1).toFixed(2)}ms, total=${(t2 - t0).toFixed(2)}ms`,
       )
     },
     [
@@ -195,21 +196,23 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       log('renderNow (scheduled) SKIP - no visible range')
       return
     }
-    log('renderNow (scheduled) calling renderWithDomain, getVisibleBpRange took ' + (performance.now() - t0).toFixed(2) + 'ms')
+    log(
+      `renderNow (scheduled) calling renderWithDomain, getVisibleBpRange took ${(performance.now() - t0).toFixed(2)}ms`,
+    )
     renderWithDomain(visibleBpRange)
   }, [getVisibleBpRange, renderWithDomain])
 
   const scheduleRender = useCallback(() => {
     scheduledRenderCountRef.current++
     const schedNum = scheduledRenderCountRef.current
-    log('SCHEDULE RENDER #' + schedNum + ' requested')
+    log(`SCHEDULE RENDER #${schedNum} requested`)
     if (renderRAFRef.current !== null) {
-      log('SCHEDULE RENDER #' + schedNum + ' - canceling previous RAF')
+      log(`SCHEDULE RENDER #${schedNum} - canceling previous RAF`)
       cancelAnimationFrame(renderRAFRef.current)
     }
     renderRAFRef.current = requestAnimationFrame(() => {
       renderRAFRef.current = null
-      log('SCHEDULE RENDER #' + schedNum + ' - RAF callback firing')
+      log(`SCHEDULE RENDER #${schedNum} - RAF callback firing`)
       renderNow()
     })
   }, [renderNow])
@@ -307,7 +310,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Subscribe to coordinator for cross-canvas sync
   // When another canvas in the same view updates, re-render
   useEffect(() => {
-    log('EFFECT: Coordinator subscribe - RUN (viewId=' + viewId + ')')
+    log(`EFFECT: Coordinator subscribe - RUN (viewId=${viewId})`)
     if (!viewId) {
       return
     }
@@ -343,22 +346,18 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       // Skip if we triggered this update ourselves (already rendered immediately)
       if (selfUpdateRef.current) {
         log(
-          'AUTORUN: View state change - SKIP (self-triggered, offsetPx=' +
-            offsetPx?.toFixed(2) +
-            ', bpPerPx=' +
-            bpPerPx?.toFixed(4) +
-            ')',
+          `AUTORUN: View state change - SKIP (self-triggered, offsetPx=${offsetPx?.toFixed(
+            2,
+          )}, bpPerPx=${bpPerPx?.toFixed(4)})`,
         )
         selfUpdateRef.current = false
         return
       }
 
       log(
-        'AUTORUN: View state change - RUN (external, offsetPx=' +
-          offsetPx?.toFixed(2) +
-          ', bpPerPx=' +
-          bpPerPx?.toFixed(4) +
-          ')',
+        `AUTORUN: View state change - RUN (external, offsetPx=${offsetPx?.toFixed(
+          2,
+        )}, bpPerPx=${bpPerPx?.toFixed(4)})`,
       )
 
       if (!initialized) {
@@ -375,7 +374,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       renderNowRef.current()
       log(
         'AUTORUN: View state change - rendered in',
-        (performance.now() - t0).toFixed(2) + 'ms',
+        `${(performance.now() - t0).toFixed(2)}ms`,
       )
     })
 
@@ -483,7 +482,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   // Re-render when container dimensions change (from ResizeObserver)
   useEffect(() => {
-    log('EFFECT: Dimensions change - RUN (width=' + measuredDims.width + ')')
+    log(`EFFECT: Dimensions change - RUN (width=${measuredDims.width})`)
     if (rendererReady && measuredDims.width !== undefined) {
       scheduleRenderRef.current()
     }
@@ -539,7 +538,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       const width = widthRef.current
 
       if (!view?.initialized || width === undefined) {
-        log('WHEEL #' + wheelNum + ' SKIP - view not ready')
+        log(`WHEEL #${wheelNum} SKIP - view not ready`)
         return
       }
 
@@ -576,7 +575,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           const t4 = performance.now()
 
           log(
-            'WHEEL #' + wheelNum + ' (pan): compute=' + (t2 - t1).toFixed(2) + 'ms, render=' + (t3 - t2).toFixed(2) + 'ms, setNewView=' + (t4 - t3).toFixed(2) + 'ms, total=' + (t4 - t0).toFixed(2) + 'ms',
+            `WHEEL #${wheelNum} (pan): compute=${(t2 - t1).toFixed(2)}ms, render=${(t3 - t2).toFixed(2)}ms, setNewView=${(t4 - t3).toFixed(2)}ms, total=${(t4 - t0).toFixed(2)}ms`,
           )
         }
 
@@ -609,14 +608,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         renderNowRef.current()
         const t3 = performance.now()
         log(
-          'WHEEL #' + wheelNum + ' (Y-pan): compute=' + (t2 - t1).toFixed(2) + 'ms, render=' + (t3 - t2).toFixed(2) + 'ms, total=' + (t3 - t0).toFixed(2) + 'ms',
+          `WHEEL #${wheelNum} (Y-pan): compute=${(t2 - t1).toFixed(2)}ms, render=${(t3 - t2).toFixed(2)}ms, total=${(t3 - t0).toFixed(2)}ms`,
         )
       } else {
         // Zoom around mouse position
         const t1 = performance.now()
         const currentRange = getVisibleBpRangeRef.current()
         if (!currentRange) {
-          log('WHEEL #' + wheelNum + ' (zoom) SKIP - no current range')
+          log(`WHEEL #${wheelNum} (zoom) SKIP - no current range`)
           return
         }
 
@@ -626,7 +625,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         if (!rect) {
           rect = canvas.getBoundingClientRect()
           canvasRectRef.current = rect
-          log('WHEEL #' + wheelNum + ' - getBoundingClientRect called (cache miss)')
+          log(`WHEEL #${wheelNum} - getBoundingClientRect called (cache miss)`)
         }
         const mouseX = e.clientX - rect.left
         const factor = 1.2
@@ -643,7 +642,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
         // Check zoom limits
         if (newBpPerPx < view.minBpPerPx || newBpPerPx > view.maxBpPerPx) {
-          log('WHEEL #' + wheelNum + ' (zoom) SKIP - zoom limit reached')
+          log(`WHEEL #${wheelNum} (zoom) SKIP - zoom limit reached`)
           return
         }
 
@@ -672,7 +671,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           const t4 = performance.now()
 
           log(
-            'WHEEL #' + wheelNum + ' (zoom): compute=' + (t2 - t1).toFixed(2) + 'ms, render=' + (t3 - t2).toFixed(2) + 'ms, setNewView=' + (t4 - t3).toFixed(2) + 'ms, total=' + (t4 - t0).toFixed(2) + 'ms',
+            `WHEEL #${wheelNum} (zoom): compute=${(t2 - t1).toFixed(2)}ms, render=${(t3 - t2).toFixed(2)}ms, setNewView=${(t4 - t3).toFixed(2)}ms, total=${(t4 - t0).toFixed(2)}ms`,
           )
         }
 

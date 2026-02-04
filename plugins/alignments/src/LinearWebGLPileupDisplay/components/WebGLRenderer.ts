@@ -851,7 +851,7 @@ void main() {
 `
 
 export interface RenderState {
-  domainX: [number, number]  // absolute genomic positions
+  domainX: [number, number] // absolute genomic positions
   rangeY: [number, number]
   colorScheme: number
   featureHeight: number
@@ -921,7 +921,8 @@ export class WebGLRenderer {
   private readUniforms: Record<string, WebGLUniformLocation | null> = {}
   private coverageUniforms: Record<string, WebGLUniformLocation | null> = {}
   private snpCoverageUniforms: Record<string, WebGLUniformLocation | null> = {}
-  private noncovHistogramUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private noncovHistogramUniforms: Record<string, WebGLUniformLocation | null> =
+    {}
   private indicatorUniforms: Record<string, WebGLUniformLocation | null> = {}
   private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
   private gapUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -968,12 +969,27 @@ export class WebGLRenderer {
       INDICATOR_FRAGMENT_SHADER,
     )
 
-    this.lineProgram = this.createProgram(LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER)
+    this.lineProgram = this.createProgram(
+      LINE_VERTEX_SHADER,
+      LINE_FRAGMENT_SHADER,
+    )
     this.gapProgram = this.createProgram(GAP_VERTEX_SHADER, GAP_FRAGMENT_SHADER)
-    this.mismatchProgram = this.createProgram(MISMATCH_VERTEX_SHADER, MISMATCH_FRAGMENT_SHADER)
-    this.insertionProgram = this.createProgram(INSERTION_VERTEX_SHADER, INSERTION_FRAGMENT_SHADER)
-    this.softclipProgram = this.createProgram(SOFTCLIP_VERTEX_SHADER, SOFTCLIP_FRAGMENT_SHADER)
-    this.hardclipProgram = this.createProgram(HARDCLIP_VERTEX_SHADER, HARDCLIP_FRAGMENT_SHADER)
+    this.mismatchProgram = this.createProgram(
+      MISMATCH_VERTEX_SHADER,
+      MISMATCH_FRAGMENT_SHADER,
+    )
+    this.insertionProgram = this.createProgram(
+      INSERTION_VERTEX_SHADER,
+      INSERTION_FRAGMENT_SHADER,
+    )
+    this.softclipProgram = this.createProgram(
+      SOFTCLIP_VERTEX_SHADER,
+      SOFTCLIP_FRAGMENT_SHADER,
+    )
+    this.hardclipProgram = this.createProgram(
+      HARDCLIP_VERTEX_SHADER,
+      HARDCLIP_FRAGMENT_SHADER,
+    )
 
     this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_color'])
 
@@ -1013,12 +1029,11 @@ export class WebGLRenderer {
       'u_canvasWidth',
     ])
 
-    this.cacheUniforms(this.noncovHistogramProgram, this.noncovHistogramUniforms, [
-      'u_visibleRange',
-      'u_noncovHeight',
-      'u_canvasHeight',
-      'u_canvasWidth',
-    ])
+    this.cacheUniforms(
+      this.noncovHistogramProgram,
+      this.noncovHistogramUniforms,
+      ['u_visibleRange', 'u_noncovHeight', 'u_canvasHeight', 'u_canvasWidth'],
+    )
 
     this.cacheUniforms(this.indicatorProgram, this.indicatorUniforms, [
       'u_visibleRange',
@@ -1036,10 +1051,26 @@ export class WebGLRenderer {
     ]
     const cigarUniformsWithWidth = [...cigarUniforms, 'u_canvasWidth']
     this.cacheUniforms(this.gapProgram, this.gapUniforms, cigarUniforms)
-    this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, cigarUniformsWithWidth)
-    this.cacheUniforms(this.insertionProgram, this.insertionUniforms, cigarUniformsWithWidth)
-    this.cacheUniforms(this.softclipProgram, this.softclipUniforms, cigarUniformsWithWidth)
-    this.cacheUniforms(this.hardclipProgram, this.hardclipUniforms, cigarUniformsWithWidth)
+    this.cacheUniforms(
+      this.mismatchProgram,
+      this.mismatchUniforms,
+      cigarUniformsWithWidth,
+    )
+    this.cacheUniforms(
+      this.insertionProgram,
+      this.insertionUniforms,
+      cigarUniformsWithWidth,
+    )
+    this.cacheUniforms(
+      this.softclipProgram,
+      this.softclipUniforms,
+      cigarUniformsWithWidth,
+    )
+    this.cacheUniforms(
+      this.hardclipProgram,
+      this.hardclipUniforms,
+      cigarUniformsWithWidth,
+    )
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -1060,7 +1091,7 @@ export class WebGLRenderer {
 
   private createProgram(vsSource: string, fsSource: string): WebGLProgram {
     const gl = this.gl
-    const program = gl.createProgram()!
+    const program = gl.createProgram()
     gl.attachShader(program, this.createShader(gl.VERTEX_SHADER, vsSource))
     gl.attachShader(program, this.createShader(gl.FRAGMENT_SHADER, fsSource))
     gl.linkProgram(program)
@@ -1088,7 +1119,7 @@ export class WebGLRenderer {
    */
   uploadFromTypedArrays(data: {
     regionStart: number
-    readPositions: Uint32Array  // offsets from regionStart
+    readPositions: Uint32Array // offsets from regionStart
     readYs: Uint16Array
     readFlags: Uint16Array
     readMapqs: Uint8Array
@@ -1136,13 +1167,23 @@ export class WebGLRenderer {
     }
 
     // Read VAO - use integer positions for high-precision rendering
-    const readVAO = gl.createVertexArray()!
+    const readVAO = gl.createVertexArray()
     gl.bindVertexArray(readVAO)
     // Upload positions as unsigned integers for high-precision (12-bit split in shader)
     this.uploadUintBuffer(this.readProgram, 'a_position', data.readPositions, 2)
     this.uploadBuffer(this.readProgram, 'a_y', new Float32Array(data.readYs), 1)
-    this.uploadBuffer(this.readProgram, 'a_flags', new Float32Array(data.readFlags), 1)
-    this.uploadBuffer(this.readProgram, 'a_mapq', new Float32Array(data.readMapqs), 1)
+    this.uploadBuffer(
+      this.readProgram,
+      'a_flags',
+      new Float32Array(data.readFlags),
+      1,
+    )
+    this.uploadBuffer(
+      this.readProgram,
+      'a_mapq',
+      new Float32Array(data.readMapqs),
+      1,
+    )
     this.uploadBuffer(this.readProgram, 'a_insertSize', data.readInsertSizes, 1)
     gl.bindVertexArray(null)
 
@@ -1229,7 +1270,7 @@ export class WebGLRenderer {
 
     // Upload gaps - use integer buffers directly (no Float32 conversion)
     if (data.numGaps > 0) {
-      const gapVAO = gl.createVertexArray()!
+      const gapVAO = gl.createVertexArray()
       gl.bindVertexArray(gapVAO)
       this.uploadUintBuffer(this.gapProgram, 'a_position', data.gapPositions, 2)
       this.uploadUint16Buffer(this.gapProgram, 'a_y', data.gapYs, 1)
@@ -1243,11 +1284,21 @@ export class WebGLRenderer {
 
     // Upload mismatches - use integer buffers directly
     if (data.numMismatches > 0) {
-      const mismatchVAO = gl.createVertexArray()!
+      const mismatchVAO = gl.createVertexArray()
       gl.bindVertexArray(mismatchVAO)
-      this.uploadUintBuffer(this.mismatchProgram, 'a_position', data.mismatchPositions, 1)
+      this.uploadUintBuffer(
+        this.mismatchProgram,
+        'a_position',
+        data.mismatchPositions,
+        1,
+      )
       this.uploadUint16Buffer(this.mismatchProgram, 'a_y', data.mismatchYs, 1)
-      this.uploadUint8Buffer(this.mismatchProgram, 'a_base', data.mismatchBases, 1)
+      this.uploadUint8Buffer(
+        this.mismatchProgram,
+        'a_base',
+        data.mismatchBases,
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.mismatchVAO = mismatchVAO
@@ -1258,11 +1309,21 @@ export class WebGLRenderer {
 
     // Upload insertions - use integer buffers directly
     if (data.numInsertions > 0) {
-      const insertionVAO = gl.createVertexArray()!
+      const insertionVAO = gl.createVertexArray()
       gl.bindVertexArray(insertionVAO)
-      this.uploadUintBuffer(this.insertionProgram, 'a_position', data.insertionPositions, 1)
+      this.uploadUintBuffer(
+        this.insertionProgram,
+        'a_position',
+        data.insertionPositions,
+        1,
+      )
       this.uploadUint16Buffer(this.insertionProgram, 'a_y', data.insertionYs, 1)
-      this.uploadUint16Buffer(this.insertionProgram, 'a_length', data.insertionLengths, 1)
+      this.uploadUint16Buffer(
+        this.insertionProgram,
+        'a_length',
+        data.insertionLengths,
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.insertionVAO = insertionVAO
@@ -1273,11 +1334,21 @@ export class WebGLRenderer {
 
     // Upload soft clips - use integer buffers directly
     if (data.numSoftclips > 0) {
-      const softclipVAO = gl.createVertexArray()!
+      const softclipVAO = gl.createVertexArray()
       gl.bindVertexArray(softclipVAO)
-      this.uploadUintBuffer(this.softclipProgram, 'a_position', data.softclipPositions, 1)
+      this.uploadUintBuffer(
+        this.softclipProgram,
+        'a_position',
+        data.softclipPositions,
+        1,
+      )
       this.uploadUint16Buffer(this.softclipProgram, 'a_y', data.softclipYs, 1)
-      this.uploadUint16Buffer(this.softclipProgram, 'a_length', data.softclipLengths, 1)
+      this.uploadUint16Buffer(
+        this.softclipProgram,
+        'a_length',
+        data.softclipLengths,
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.softclipVAO = softclipVAO
@@ -1288,11 +1359,21 @@ export class WebGLRenderer {
 
     // Upload hard clips - use integer buffers directly
     if (data.numHardclips > 0) {
-      const hardclipVAO = gl.createVertexArray()!
+      const hardclipVAO = gl.createVertexArray()
       gl.bindVertexArray(hardclipVAO)
-      this.uploadUintBuffer(this.hardclipProgram, 'a_position', data.hardclipPositions, 1)
+      this.uploadUintBuffer(
+        this.hardclipProgram,
+        'a_position',
+        data.hardclipPositions,
+        1,
+      )
       this.uploadUint16Buffer(this.hardclipProgram, 'a_y', data.hardclipYs, 1)
-      this.uploadUint16Buffer(this.hardclipProgram, 'a_length', data.hardclipLengths, 1)
+      this.uploadUint16Buffer(
+        this.hardclipProgram,
+        'a_length',
+        data.hardclipLengths,
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.hardclipVAO = hardclipVAO
@@ -1314,7 +1395,7 @@ export class WebGLRenderer {
     coverageMaxDepth: number
     coverageBinSize: number
     numCoverageBins: number
-    snpPositions: Uint32Array  // offsets from regionStart
+    snpPositions: Uint32Array // offsets from regionStart
     snpYOffsets: Float32Array
     snpHeights: Float32Array
     snpColorTypes: Uint8Array
@@ -1359,7 +1440,7 @@ export class WebGLRenderer {
         normalizedDepths[i] = data.coverageDepths[i] / data.coverageMaxDepth
       }
 
-      const coverageVAO = gl.createVertexArray()!
+      const coverageVAO = gl.createVertexArray()
       gl.bindVertexArray(coverageVAO)
       // No position buffer needed - computed in shader from gl_InstanceID
       this.uploadBuffer(this.coverageProgram, 'a_depth', normalizedDepths, 1)
@@ -1377,12 +1458,32 @@ export class WebGLRenderer {
 
     // Upload SNP coverage - convert Uint32Array positions and Uint8Array colors to Float32 for GPU
     if (data.numSnpSegments > 0) {
-      const snpCoverageVAO = gl.createVertexArray()!
+      const snpCoverageVAO = gl.createVertexArray()
       gl.bindVertexArray(snpCoverageVAO)
-      this.uploadBuffer(this.snpCoverageProgram, 'a_position', new Float32Array(data.snpPositions), 1)
-      this.uploadBuffer(this.snpCoverageProgram, 'a_yOffset', data.snpYOffsets, 1)
-      this.uploadBuffer(this.snpCoverageProgram, 'a_segmentHeight', data.snpHeights, 1)
-      this.uploadBuffer(this.snpCoverageProgram, 'a_colorType', new Float32Array(data.snpColorTypes), 1)
+      this.uploadBuffer(
+        this.snpCoverageProgram,
+        'a_position',
+        new Float32Array(data.snpPositions),
+        1,
+      )
+      this.uploadBuffer(
+        this.snpCoverageProgram,
+        'a_yOffset',
+        data.snpYOffsets,
+        1,
+      )
+      this.uploadBuffer(
+        this.snpCoverageProgram,
+        'a_segmentHeight',
+        data.snpHeights,
+        1,
+      )
+      this.uploadBuffer(
+        this.snpCoverageProgram,
+        'a_colorType',
+        new Float32Array(data.snpColorTypes),
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.snpCoverageVAO = snpCoverageVAO
@@ -1394,12 +1495,32 @@ export class WebGLRenderer {
 
     // Upload noncov (interbase) histogram - insertion/softclip/hardclip counts
     if (data.numNoncovSegments > 0) {
-      const noncovHistogramVAO = gl.createVertexArray()!
+      const noncovHistogramVAO = gl.createVertexArray()
       gl.bindVertexArray(noncovHistogramVAO)
-      this.uploadBuffer(this.noncovHistogramProgram, 'a_position', new Float32Array(data.noncovPositions), 1)
-      this.uploadBuffer(this.noncovHistogramProgram, 'a_yOffset', data.noncovYOffsets, 1)
-      this.uploadBuffer(this.noncovHistogramProgram, 'a_segmentHeight', data.noncovHeights, 1)
-      this.uploadBuffer(this.noncovHistogramProgram, 'a_colorType', new Float32Array(data.noncovColorTypes), 1)
+      this.uploadBuffer(
+        this.noncovHistogramProgram,
+        'a_position',
+        new Float32Array(data.noncovPositions),
+        1,
+      )
+      this.uploadBuffer(
+        this.noncovHistogramProgram,
+        'a_yOffset',
+        data.noncovYOffsets,
+        1,
+      )
+      this.uploadBuffer(
+        this.noncovHistogramProgram,
+        'a_segmentHeight',
+        data.noncovHeights,
+        1,
+      )
+      this.uploadBuffer(
+        this.noncovHistogramProgram,
+        'a_colorType',
+        new Float32Array(data.noncovColorTypes),
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.noncovHistogramVAO = noncovHistogramVAO
@@ -1413,10 +1534,20 @@ export class WebGLRenderer {
 
     // Upload interbase indicators - triangles at significant positions
     if (data.numIndicators > 0) {
-      const indicatorVAO = gl.createVertexArray()!
+      const indicatorVAO = gl.createVertexArray()
       gl.bindVertexArray(indicatorVAO)
-      this.uploadBuffer(this.indicatorProgram, 'a_position', new Float32Array(data.indicatorPositions), 1)
-      this.uploadBuffer(this.indicatorProgram, 'a_colorType', new Float32Array(data.indicatorColorTypes), 1)
+      this.uploadBuffer(
+        this.indicatorProgram,
+        'a_position',
+        new Float32Array(data.indicatorPositions),
+        1,
+      )
+      this.uploadBuffer(
+        this.indicatorProgram,
+        'a_colorType',
+        new Float32Array(data.indicatorColorTypes),
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.indicatorVAO = indicatorVAO
@@ -1531,7 +1662,7 @@ export class WebGLRenderer {
     }
 
     gl.viewport(0, 0, canvasWidth, canvasHeight)
-    gl.clearColor(0.0, 0.0, 0.0, 0.0)
+    gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (!this.buffers || this.buffers.readCount === 0) {
@@ -1548,11 +1679,16 @@ export class WebGLRenderer {
     // Compute high-precision split domain for reads (12-bit split approach).
     // Uses splitPositionWithFrac to preserve fractional scroll position - without this,
     // reads would "stick" at integer bp positions and snap when crossing boundaries.
-    const [domainStartHi, domainStartLo] = splitPositionWithFrac(state.domainX[0])
+    const [domainStartHi, domainStartLo] = splitPositionWithFrac(
+      state.domainX[0],
+    )
     const domainExtent = state.domainX[1] - state.domainX[0]
 
     // Draw coverage first (at top)
-    const willDrawCoverage = state.showCoverage && this.buffers.coverageVAO && this.buffers.coverageCount > 0
+    const willDrawCoverage =
+      state.showCoverage &&
+      this.buffers.coverageVAO &&
+      this.buffers.coverageCount > 0
     if (willDrawCoverage) {
       // Draw grey coverage bars - coverage uses offset-based positions
       gl.useProgram(this.coverageProgram)
@@ -1588,13 +1724,22 @@ export class WebGLRenderer {
         gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvasWidth)
 
         gl.bindVertexArray(this.buffers.snpCoverageVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.snpCoverageCount)
+        gl.drawArraysInstanced(
+          gl.TRIANGLES,
+          0,
+          6,
+          this.buffers.snpCoverageCount,
+        )
       }
 
       // Draw noncov (interbase) histogram - bars growing DOWN from top
       // Height is proportional to half the coverage height (like the original renderer)
       const noncovHeight = state.coverageHeight / 2
-      if (state.showInterbaseCounts && this.buffers.noncovHistogramVAO && this.buffers.noncovHistogramCount > 0) {
+      if (
+        state.showInterbaseCounts &&
+        this.buffers.noncovHistogramVAO &&
+        this.buffers.noncovHistogramCount > 0
+      ) {
         gl.useProgram(this.noncovHistogramProgram)
         gl.uniform2f(
           this.noncovHistogramUniforms.u_visibleRange!,
@@ -1606,11 +1751,20 @@ export class WebGLRenderer {
         gl.uniform1f(this.noncovHistogramUniforms.u_canvasWidth!, canvasWidth)
 
         gl.bindVertexArray(this.buffers.noncovHistogramVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.noncovHistogramCount)
+        gl.drawArraysInstanced(
+          gl.TRIANGLES,
+          0,
+          6,
+          this.buffers.noncovHistogramCount,
+        )
       }
 
       // Draw interbase indicators - triangles at significant positions
-      if (state.showInterbaseIndicators && this.buffers.indicatorVAO && this.buffers.indicatorCount > 0) {
+      if (
+        state.showInterbaseIndicators &&
+        this.buffers.indicatorVAO &&
+        this.buffers.indicatorCount > 0
+      ) {
         gl.useProgram(this.indicatorProgram)
         gl.uniform2f(
           this.indicatorUniforms.u_visibleRange!,
@@ -1625,9 +1779,9 @@ export class WebGLRenderer {
       }
 
       // Draw separator line at bottom of coverage area
-      const lineY = 1.0 - (state.coverageHeight / canvasHeight) * 2.0
+      const lineY = 1 - (state.coverageHeight / canvasHeight) * 2
       gl.useProgram(this.lineProgram)
-      gl.uniform4f(this.lineUniforms.u_color!, 0.7, 0.7, 0.7, 1.0)
+      gl.uniform4f(this.lineUniforms.u_color!, 0.7, 0.7, 0.7, 1)
 
       const lineData = new Float32Array([-1, lineY, 1, lineY])
       gl.bindVertexArray(this.lineVAO)
@@ -1641,12 +1795,7 @@ export class WebGLRenderer {
 
     // Enable scissor test to clip pileup to area below coverage
     gl.enable(gl.SCISSOR_TEST)
-    gl.scissor(
-      0,
-      0,
-      canvasWidth,
-      canvasHeight - coverageOffset,
-    )
+    gl.scissor(0, 0, canvasWidth, canvasHeight - coverageOffset)
 
     gl.useProgram(this.readProgram)
     // Use high-precision split domain for reads (vec3: hi, lo, extent)
@@ -1658,11 +1807,7 @@ export class WebGLRenderer {
     )
     // Pass regionStart so shader can convert offsets to absolute positions (must be integer)
     gl.uniform1ui(this.readUniforms.u_regionStart!, Math.floor(regionStart))
-    gl.uniform2f(
-      this.readUniforms.u_rangeY!,
-      state.rangeY[0],
-      state.rangeY[1],
-    )
+    gl.uniform2f(this.readUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
     gl.uniform1i(this.readUniforms.u_colorScheme!, state.colorScheme)
     gl.uniform1f(this.readUniforms.u_featureHeight!, state.featureHeight)
     gl.uniform1f(this.readUniforms.u_featureSpacing!, state.featureSpacing)
@@ -1679,8 +1824,16 @@ export class WebGLRenderer {
       // Draw gaps (deletions) - always visible
       if (this.buffers.gapVAO && this.buffers.gapCount > 0) {
         gl.useProgram(this.gapProgram)
-        gl.uniform2f(this.gapUniforms.u_domainX!, domainOffset[0], domainOffset[1])
-        gl.uniform2f(this.gapUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
+        gl.uniform2f(
+          this.gapUniforms.u_domainX!,
+          domainOffset[0],
+          domainOffset[1],
+        )
+        gl.uniform2f(
+          this.gapUniforms.u_rangeY!,
+          state.rangeY[0],
+          state.rangeY[1],
+        )
         gl.uniform1f(this.gapUniforms.u_featureHeight!, state.featureHeight)
         gl.uniform1f(this.gapUniforms.u_featureSpacing!, state.featureSpacing)
         gl.uniform1f(this.gapUniforms.u_coverageOffset!, coverageOffset)
@@ -1691,12 +1844,30 @@ export class WebGLRenderer {
       }
 
       // Draw mismatches - only when zoomed in enough (< 50 bp/px)
-      if (this.buffers.mismatchVAO && this.buffers.mismatchCount > 0 && bpPerPx < 50) {
+      if (
+        this.buffers.mismatchVAO &&
+        this.buffers.mismatchCount > 0 &&
+        bpPerPx < 50
+      ) {
         gl.useProgram(this.mismatchProgram)
-        gl.uniform2f(this.mismatchUniforms.u_domainX!, domainOffset[0], domainOffset[1])
-        gl.uniform2f(this.mismatchUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
-        gl.uniform1f(this.mismatchUniforms.u_featureHeight!, state.featureHeight)
-        gl.uniform1f(this.mismatchUniforms.u_featureSpacing!, state.featureSpacing)
+        gl.uniform2f(
+          this.mismatchUniforms.u_domainX!,
+          domainOffset[0],
+          domainOffset[1],
+        )
+        gl.uniform2f(
+          this.mismatchUniforms.u_rangeY!,
+          state.rangeY[0],
+          state.rangeY[1],
+        )
+        gl.uniform1f(
+          this.mismatchUniforms.u_featureHeight!,
+          state.featureHeight,
+        )
+        gl.uniform1f(
+          this.mismatchUniforms.u_featureSpacing!,
+          state.featureSpacing,
+        )
         gl.uniform1f(this.mismatchUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.mismatchUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.mismatchUniforms.u_canvasWidth!, canvasWidth)
@@ -1707,12 +1878,30 @@ export class WebGLRenderer {
 
       // Draw insertions - only when zoomed in enough (< 100 bp/px)
       // Each insertion is 3 rectangles (bar + 2 ticks) = 18 vertices
-      if (this.buffers.insertionVAO && this.buffers.insertionCount > 0 && bpPerPx < 100) {
+      if (
+        this.buffers.insertionVAO &&
+        this.buffers.insertionCount > 0 &&
+        bpPerPx < 100
+      ) {
         gl.useProgram(this.insertionProgram)
-        gl.uniform2f(this.insertionUniforms.u_domainX!, domainOffset[0], domainOffset[1])
-        gl.uniform2f(this.insertionUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
-        gl.uniform1f(this.insertionUniforms.u_featureHeight!, state.featureHeight)
-        gl.uniform1f(this.insertionUniforms.u_featureSpacing!, state.featureSpacing)
+        gl.uniform2f(
+          this.insertionUniforms.u_domainX!,
+          domainOffset[0],
+          domainOffset[1],
+        )
+        gl.uniform2f(
+          this.insertionUniforms.u_rangeY!,
+          state.rangeY[0],
+          state.rangeY[1],
+        )
+        gl.uniform1f(
+          this.insertionUniforms.u_featureHeight!,
+          state.featureHeight,
+        )
+        gl.uniform1f(
+          this.insertionUniforms.u_featureSpacing!,
+          state.featureSpacing,
+        )
         gl.uniform1f(this.insertionUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.insertionUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.insertionUniforms.u_canvasWidth!, canvasWidth)
@@ -1722,12 +1911,30 @@ export class WebGLRenderer {
       }
 
       // Draw soft clips - only when zoomed in enough (< 100 bp/px)
-      if (this.buffers.softclipVAO && this.buffers.softclipCount > 0 && bpPerPx < 100) {
+      if (
+        this.buffers.softclipVAO &&
+        this.buffers.softclipCount > 0 &&
+        bpPerPx < 100
+      ) {
         gl.useProgram(this.softclipProgram)
-        gl.uniform2f(this.softclipUniforms.u_domainX!, domainOffset[0], domainOffset[1])
-        gl.uniform2f(this.softclipUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
-        gl.uniform1f(this.softclipUniforms.u_featureHeight!, state.featureHeight)
-        gl.uniform1f(this.softclipUniforms.u_featureSpacing!, state.featureSpacing)
+        gl.uniform2f(
+          this.softclipUniforms.u_domainX!,
+          domainOffset[0],
+          domainOffset[1],
+        )
+        gl.uniform2f(
+          this.softclipUniforms.u_rangeY!,
+          state.rangeY[0],
+          state.rangeY[1],
+        )
+        gl.uniform1f(
+          this.softclipUniforms.u_featureHeight!,
+          state.featureHeight,
+        )
+        gl.uniform1f(
+          this.softclipUniforms.u_featureSpacing!,
+          state.featureSpacing,
+        )
         gl.uniform1f(this.softclipUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.softclipUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.softclipUniforms.u_canvasWidth!, canvasWidth)
@@ -1737,12 +1944,30 @@ export class WebGLRenderer {
       }
 
       // Draw hard clips - only when zoomed in enough (< 100 bp/px)
-      if (this.buffers.hardclipVAO && this.buffers.hardclipCount > 0 && bpPerPx < 100) {
+      if (
+        this.buffers.hardclipVAO &&
+        this.buffers.hardclipCount > 0 &&
+        bpPerPx < 100
+      ) {
         gl.useProgram(this.hardclipProgram)
-        gl.uniform2f(this.hardclipUniforms.u_domainX!, domainOffset[0], domainOffset[1])
-        gl.uniform2f(this.hardclipUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
-        gl.uniform1f(this.hardclipUniforms.u_featureHeight!, state.featureHeight)
-        gl.uniform1f(this.hardclipUniforms.u_featureSpacing!, state.featureSpacing)
+        gl.uniform2f(
+          this.hardclipUniforms.u_domainX!,
+          domainOffset[0],
+          domainOffset[1],
+        )
+        gl.uniform2f(
+          this.hardclipUniforms.u_rangeY!,
+          state.rangeY[0],
+          state.rangeY[1],
+        )
+        gl.uniform1f(
+          this.hardclipUniforms.u_featureHeight!,
+          state.featureHeight,
+        )
+        gl.uniform1f(
+          this.hardclipUniforms.u_featureSpacing!,
+          state.featureSpacing,
+        )
         gl.uniform1f(this.hardclipUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.hardclipUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.hardclipUniforms.u_canvasWidth!, canvasWidth)

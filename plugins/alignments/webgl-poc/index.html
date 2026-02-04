@@ -1,555 +1,617 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>WebGL Pileup Renderer POC</title>
-  <style>
-    body { margin: 0; background: #1a1a1a; color: #fff; font-family: monospace; }
-    #container { display: flex; flex-direction: column; height: 100vh; }
-    #controls { padding: 10px; background: #2a2a2a; display: flex; gap: 20px; align-items: center; }
-    #info { padding: 10px; background: #2a2a2a; font-size: 12px; }
-    canvas { flex: 1; }
-    label { display: flex; align-items: center; gap: 5px; }
-    select, input { background: #3a3a3a; color: #fff; border: 1px solid #555; padding: 4px; }
-  </style>
-</head>
-<body>
-  <div id="container">
-    <div id="controls">
-      <label>Color by:
-        <select id="colorScheme">
-          <option value="0">Strand</option>
-          <option value="1">MAPQ</option>
-          <option value="2">Insert Size</option>
-        </select>
-      </label>
-      <label>Reads: <input type="range" id="readCount" min="1000" max="100000" value="10000" step="1000"></label>
-      <span id="readCountLabel">10000</span>
-      <button id="regenerate">Regenerate Data</button>
-      <span>Scroll: zoom | Drag: pan | Shift+Scroll: vertical pan</span>
-    </div>
-    <canvas id="canvas"></canvas>
-    <div id="info">
-      <span id="stats"></span>
-    </div>
-  </div>
-
-<script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
-precision highp float;
-
-// Per-vertex attributes (uploaded once)
-in vec2 a_position;      // x1, x2 encoded as x, y
-in float a_y;            // Y position from pileup layout
-in float a_strand;       // 0 = forward, 1 = reverse
-in float a_mapq;         // Mapping quality 0-60
-in float a_insertSize;   // Insert size (for coloring)
-
-// Uniforms (updated on zoom/pan/settings change)
-uniform vec2 u_domainX;      // [startBp, endBp] - genomic range
-uniform vec2 u_rangeY;       // [minY, maxY] - visible Y range (for vertical scroll)
-uniform vec2 u_resolution;   // Canvas size in pixels
-uniform int u_colorScheme;   // 0=strand, 1=mapq, 2=insertSize
-uniform float u_readHeight;  // Height of each read in pixels
-
-// Outputs to fragment shader
-out vec4 v_color;
-out vec2 v_localPos;  // Position within the read rectangle [0,1]
-
-// Color palettes
-vec3 strandColor(float strand) {
-  return strand < 0.5
-    ? vec3(0.7, 0.5, 0.5)   // Forward: salmon
-    : vec3(0.5, 0.5, 0.8);  // Reverse: blue
-}
-
-vec3 mapqColor(float mapq) {
-  float t = clamp(mapq / 60.0, 0.0, 1.0);
-  // Low MAPQ = red, high MAPQ = blue
-  return mix(vec3(0.9, 0.3, 0.3), vec3(0.3, 0.5, 0.9), t);
-}
-
-vec3 insertSizeColor(float insertSize) {
-  // Normal insert size (~300-500) = gray, outliers = colored
-  float normal = 400.0;
-  float deviation = abs(insertSize - normal) / normal;
-  if (insertSize < normal) {
-    // Small insert = red
-    return mix(vec3(0.5, 0.5, 0.5), vec3(0.9, 0.2, 0.2), clamp(deviation, 0.0, 1.0));
-  } else {
-    // Large insert = blue
-    return mix(vec3(0.5, 0.5, 0.5), vec3(0.2, 0.4, 0.9), clamp(deviation, 0.0, 1.0));
-  }
-}
-
-void main() {
-  // Decode x1, x2 from position attribute
-  float x1 = a_position.x;
-  float x2 = a_position.y;
-
-  // Determine which corner of the quad we're rendering
-  // gl_VertexID % 6 gives us: 0,1,2,3,4,5 for the two triangles
-  int vertexInQuad = gl_VertexID % 6;
-
-  // Map vertex ID to corner: 0=BL, 1=BR, 2=TL, 3=TL, 4=BR, 5=TR
-  // Triangle 1: BL, BR, TL (0,1,2)
-  // Triangle 2: TL, BR, TR (3,4,5)
-  float localX, localY;
-  if (vertexInQuad == 0) { localX = 0.0; localY = 0.0; }
-  else if (vertexInQuad == 1) { localX = 1.0; localY = 0.0; }
-  else if (vertexInQuad == 2) { localX = 0.0; localY = 1.0; }
-  else if (vertexInQuad == 3) { localX = 0.0; localY = 1.0; }
-  else if (vertexInQuad == 4) { localX = 1.0; localY = 0.0; }
-  else { localX = 1.0; localY = 1.0; }
-
-  v_localPos = vec2(localX, localY);
-
-  // Transform genomic X coordinates to screen space
-  float domainWidth = u_domainX.y - u_domainX.x;
-  float screenX1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float screenX2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float screenX = mix(screenX1, screenX2, localX);
-
-  // Transform Y coordinate to screen space
-  float yRange = u_rangeY.y - u_rangeY.x;
-  float readTop = a_y;
-  float readBottom = a_y + 1.0;  // Each read is 1 unit tall in layout space
-
-  // Convert to normalized device coordinates
-  float screenYTop = 1.0 - (readTop - u_rangeY.x) / yRange * 2.0;
-  float screenYBottom = 1.0 - (readBottom - u_rangeY.x) / yRange * 2.0;
-  float screenY = mix(screenYBottom, screenYTop, localY);
-
-  gl_Position = vec4(screenX, screenY, 0.0, 1.0);
-
-  // Compute color based on scheme
-  vec3 color;
-  if (u_colorScheme == 0) {
-    color = strandColor(a_strand);
-  } else if (u_colorScheme == 1) {
-    color = mapqColor(a_mapq);
-  } else {
-    color = insertSizeColor(a_insertSize);
-  }
-
-  v_color = vec4(color, 1.0);
-}
-</script>
-
-<script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
-precision highp float;
-
-in vec4 v_color;
-in vec2 v_localPos;
-
-out vec4 fragColor;
-
-void main() {
-  // Simple rectangle with slight border
-  float borderWidth = 0.05;
-  float alpha = 1.0;
-
-  // Darken edges slightly for visual separation
-  if (v_localPos.x < borderWidth || v_localPos.x > 1.0 - borderWidth ||
-      v_localPos.y < borderWidth || v_localPos.y > 1.0 - borderWidth) {
-    alpha = 0.7;
-  }
-
-  fragColor = vec4(v_color.rgb * alpha, v_color.a);
-}
-</script>
-
-<script>
-// ============ WebGL Setup ============
-const canvas = document.getElementById('canvas');
-const gl = canvas.getContext('webgl2', { antialias: true });
-
-if (!gl) {
-  alert('WebGL2 not supported');
-  throw new Error('WebGL2 not supported');
-}
-
-function createShader(gl, type, source) {
-  const shader = gl.createShader(type);
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.error('Shader compile error:', gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
-    return null;
-  }
-  return shader;
-}
-
-function createProgram(gl, vertexShader, fragmentShader) {
-  const program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.error('Program link error:', gl.getProgramInfoLog(program));
-    gl.deleteProgram(program);
-    return null;
-  }
-  return program;
-}
-
-const vertexShaderSource = document.getElementById('vertex-shader').textContent;
-const fragmentShaderSource = document.getElementById('fragment-shader').textContent;
-
-const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-const program = createProgram(gl, vertexShader, fragmentShader);
-
-// Get attribute and uniform locations
-const attribs = {
-  position: gl.getAttribLocation(program, 'a_position'),
-  y: gl.getAttribLocation(program, 'a_y'),
-  strand: gl.getAttribLocation(program, 'a_strand'),
-  mapq: gl.getAttribLocation(program, 'a_mapq'),
-  insertSize: gl.getAttribLocation(program, 'a_insertSize'),
-};
-
-const uniforms = {
-  domainX: gl.getUniformLocation(program, 'u_domainX'),
-  rangeY: gl.getUniformLocation(program, 'u_rangeY'),
-  resolution: gl.getUniformLocation(program, 'u_resolution'),
-  colorScheme: gl.getUniformLocation(program, 'u_colorScheme'),
-  readHeight: gl.getUniformLocation(program, 'u_readHeight'),
-};
-
-// ============ Data Generation ============
-let readCount = 10000;
-let genomicStart = 0;
-let genomicEnd = 50000;
-let reads = [];
-let gpuBuffers = null;
-
-// Simple pileup layout algorithm
-function computePileupLayout(reads) {
-  // Sort by start position
-  const sorted = [...reads].sort((a, b) => a.start - b.start);
-
-  // Track end positions for each Y level
-  const levels = [];
-
-  for (const read of sorted) {
-    // Find first level where this read fits
-    let y = 0;
-    for (let i = 0; i < levels.length; i++) {
-      if (levels[i] <= read.start) {
-        y = i;
-        break;
+  <head>
+    <title>WebGL Pileup Renderer POC</title>
+    <style>
+      body {
+        margin: 0;
+        background: #1a1a1a;
+        color: #fff;
+        font-family: monospace;
       }
-      y = i + 1;
-    }
+      #container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+      #controls {
+        padding: 10px;
+        background: #2a2a2a;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+      #info {
+        padding: 10px;
+        background: #2a2a2a;
+        font-size: 12px;
+      }
+      canvas {
+        flex: 1;
+      }
+      label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      select,
+      input {
+        background: #3a3a3a;
+        color: #fff;
+        border: 1px solid #555;
+        padding: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="controls">
+        <label
+          >Color by:
+          <select id="colorScheme">
+            <option value="0">Strand</option>
+            <option value="1">MAPQ</option>
+            <option value="2">Insert Size</option>
+          </select>
+        </label>
+        <label
+          >Reads:
+          <input
+            type="range"
+            id="readCount"
+            min="1000"
+            max="100000"
+            value="10000"
+            step="1000"
+        /></label>
+        <span id="readCountLabel">10000</span>
+        <button id="regenerate">Regenerate Data</button>
+        <span>Scroll: zoom | Drag: pan | Shift+Scroll: vertical pan</span>
+      </div>
+      <canvas id="canvas"></canvas>
+      <div id="info">
+        <span id="stats"></span>
+      </div>
+    </div>
 
-    // Assign Y and update level end
-    read.y = y;
-    levels[y] = read.end + 2; // +2 for spacing
-  }
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      precision highp float;
 
-  return Math.max(...levels.map((_, i) => i)) + 1;
-}
+      // Per-vertex attributes (uploaded once)
+      in vec2 a_position;      // x1, x2 encoded as x, y
+      in float a_y;            // Y position from pileup layout
+      in float a_strand;       // 0 = forward, 1 = reverse
+      in float a_mapq;         // Mapping quality 0-60
+      in float a_insertSize;   // Insert size (for coloring)
 
-function generateReads(count) {
-  reads = [];
-  const regionSize = genomicEnd - genomicStart;
+      // Uniforms (updated on zoom/pan/settings change)
+      uniform vec2 u_domainX;      // [startBp, endBp] - genomic range
+      uniform vec2 u_rangeY;       // [minY, maxY] - visible Y range (for vertical scroll)
+      uniform vec2 u_resolution;   // Canvas size in pixels
+      uniform int u_colorScheme;   // 0=strand, 1=mapq, 2=insertSize
+      uniform float u_readHeight;  // Height of each read in pixels
 
-  for (let i = 0; i < count; i++) {
-    const readLength = 100 + Math.random() * 100; // 100-200bp
-    const start = genomicStart + Math.random() * (regionSize - readLength);
-    const end = start + readLength;
+      // Outputs to fragment shader
+      out vec4 v_color;
+      out vec2 v_localPos;  // Position within the read rectangle [0,1]
 
-    reads.push({
-      start,
-      end,
-      strand: Math.random() > 0.5 ? 1 : 0,
-      mapq: Math.floor(Math.random() * 61), // 0-60
-      insertSize: 200 + Math.random() * 400, // 200-600
-      y: 0, // Will be computed
-    });
-  }
+      // Color palettes
+      vec3 strandColor(float strand) {
+        return strand < 0.5
+          ? vec3(0.7, 0.5, 0.5)   // Forward: salmon
+          : vec3(0.5, 0.5, 0.8);  // Reverse: blue
+      }
 
-  const maxY = computePileupLayout(reads);
-  return maxY;
-}
+      vec3 mapqColor(float mapq) {
+        float t = clamp(mapq / 60.0, 0.0, 1.0);
+        // Low MAPQ = red, high MAPQ = blue
+        return mix(vec3(0.9, 0.3, 0.3), vec3(0.3, 0.5, 0.9), t);
+      }
 
-function uploadToGPU() {
-  // Create arrays for GPU upload
-  const positions = new Float32Array(reads.length * 2); // x1, x2 per read
-  const yCoords = new Float32Array(reads.length);
-  const strands = new Float32Array(reads.length);
-  const mapqs = new Float32Array(reads.length);
-  const insertSizes = new Float32Array(reads.length);
+      vec3 insertSizeColor(float insertSize) {
+        // Normal insert size (~300-500) = gray, outliers = colored
+        float normal = 400.0;
+        float deviation = abs(insertSize - normal) / normal;
+        if (insertSize < normal) {
+          // Small insert = red
+          return mix(vec3(0.5, 0.5, 0.5), vec3(0.9, 0.2, 0.2), clamp(deviation, 0.0, 1.0));
+        } else {
+          // Large insert = blue
+          return mix(vec3(0.5, 0.5, 0.5), vec3(0.2, 0.4, 0.9), clamp(deviation, 0.0, 1.0));
+        }
+      }
 
-  for (let i = 0; i < reads.length; i++) {
-    const r = reads[i];
-    positions[i * 2] = r.start;
-    positions[i * 2 + 1] = r.end;
-    yCoords[i] = r.y;
-    strands[i] = r.strand;
-    mapqs[i] = r.mapq;
-    insertSizes[i] = r.insertSize;
-  }
+      void main() {
+        // Decode x1, x2 from position attribute
+        float x1 = a_position.x;
+        float x2 = a_position.y;
 
-  // Clean up old buffers
-  if (gpuBuffers) {
-    gl.deleteBuffer(gpuBuffers.position);
-    gl.deleteBuffer(gpuBuffers.y);
-    gl.deleteBuffer(gpuBuffers.strand);
-    gl.deleteBuffer(gpuBuffers.mapq);
-    gl.deleteBuffer(gpuBuffers.insertSize);
-    gl.deleteVertexArray(gpuBuffers.vao);
-  }
+        // Determine which corner of the quad we're rendering
+        // gl_VertexID % 6 gives us: 0,1,2,3,4,5 for the two triangles
+        int vertexInQuad = gl_VertexID % 6;
 
-  // Create VAO
-  const vao = gl.createVertexArray();
-  gl.bindVertexArray(vao);
+        // Map vertex ID to corner: 0=BL, 1=BR, 2=TL, 3=TL, 4=BR, 5=TR
+        // Triangle 1: BL, BR, TL (0,1,2)
+        // Triangle 2: TL, BR, TR (3,4,5)
+        float localX, localY;
+        if (vertexInQuad == 0) { localX = 0.0; localY = 0.0; }
+        else if (vertexInQuad == 1) { localX = 1.0; localY = 0.0; }
+        else if (vertexInQuad == 2) { localX = 0.0; localY = 1.0; }
+        else if (vertexInQuad == 3) { localX = 0.0; localY = 1.0; }
+        else if (vertexInQuad == 4) { localX = 1.0; localY = 0.0; }
+        else { localX = 1.0; localY = 1.0; }
 
-  // Position buffer (x1, x2)
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(attribs.position);
-  gl.vertexAttribPointer(attribs.position, 2, gl.FLOAT, false, 0, 0);
-  gl.vertexAttribDivisor(attribs.position, 1); // Instanced
+        v_localPos = vec2(localX, localY);
 
-  // Y buffer
-  const yBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, yBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, yCoords, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(attribs.y);
-  gl.vertexAttribPointer(attribs.y, 1, gl.FLOAT, false, 0, 0);
-  gl.vertexAttribDivisor(attribs.y, 1);
+        // Transform genomic X coordinates to screen space
+        float domainWidth = u_domainX.y - u_domainX.x;
+        float screenX1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+        float screenX2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+        float screenX = mix(screenX1, screenX2, localX);
 
-  // Strand buffer
-  const strandBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, strandBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, strands, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(attribs.strand);
-  gl.vertexAttribPointer(attribs.strand, 1, gl.FLOAT, false, 0, 0);
-  gl.vertexAttribDivisor(attribs.strand, 1);
+        // Transform Y coordinate to screen space
+        float yRange = u_rangeY.y - u_rangeY.x;
+        float readTop = a_y;
+        float readBottom = a_y + 1.0;  // Each read is 1 unit tall in layout space
 
-  // MAPQ buffer
-  const mapqBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, mapqBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, mapqs, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(attribs.mapq);
-  gl.vertexAttribPointer(attribs.mapq, 1, gl.FLOAT, false, 0, 0);
-  gl.vertexAttribDivisor(attribs.mapq, 1);
+        // Convert to normalized device coordinates
+        float screenYTop = 1.0 - (readTop - u_rangeY.x) / yRange * 2.0;
+        float screenYBottom = 1.0 - (readBottom - u_rangeY.x) / yRange * 2.0;
+        float screenY = mix(screenYBottom, screenYTop, localY);
 
-  // Insert size buffer
-  const insertSizeBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, insertSizeBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, insertSizes, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(attribs.insertSize);
-  gl.vertexAttribPointer(attribs.insertSize, 1, gl.FLOAT, false, 0, 0);
-  gl.vertexAttribDivisor(attribs.insertSize, 1);
+        gl_Position = vec4(screenX, screenY, 0.0, 1.0);
 
-  gl.bindVertexArray(null);
+        // Compute color based on scheme
+        vec3 color;
+        if (u_colorScheme == 0) {
+          color = strandColor(a_strand);
+        } else if (u_colorScheme == 1) {
+          color = mapqColor(a_mapq);
+        } else {
+          color = insertSizeColor(a_insertSize);
+        }
 
-  gpuBuffers = {
-    vao,
-    position: positionBuffer,
-    y: yBuffer,
-    strand: strandBuffer,
-    mapq: mapqBuffer,
-    insertSize: insertSizeBuffer,
-    count: reads.length,
-  };
+        v_color = vec4(color, 1.0);
+      }
+    </script>
 
-  console.log(`Uploaded ${reads.length} reads to GPU`);
-}
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
 
-// ============ View State ============
-let viewState = {
-  domainX: [0, 50000],      // Visible genomic range
-  rangeY: [0, 100],         // Visible Y range (pileup rows)
-  colorScheme: 0,
-};
+      in vec4 v_color;
+      in vec2 v_localPos;
 
-let maxY = 100;
+      out vec4 fragColor;
 
-// ============ Rendering ============
-function render() {
-  // Resize canvas to match display size
-  const displayWidth = canvas.clientWidth;
-  const displayHeight = canvas.clientHeight;
+      void main() {
+        // Simple rectangle with slight border
+        float borderWidth = 0.05;
+        float alpha = 1.0;
 
-  if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-    canvas.width = displayWidth;
-    canvas.height = displayHeight;
-  }
+        // Darken edges slightly for visual separation
+        if (v_localPos.x < borderWidth || v_localPos.x > 1.0 - borderWidth ||
+            v_localPos.y < borderWidth || v_localPos.y > 1.0 - borderWidth) {
+          alpha = 0.7;
+        }
 
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(0.1, 0.1, 0.1, 1.0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
+        fragColor = vec4(v_color.rgb * alpha, v_color.a);
+      }
+    </script>
 
-  if (!gpuBuffers) return;
+    <script>
+      // ============ WebGL Setup ============
+      const canvas = document.getElementById('canvas')
+      const gl = canvas.getContext('webgl2', { antialias: true })
 
-  gl.useProgram(program);
+      if (!gl) {
+        alert('WebGL2 not supported')
+        throw new Error('WebGL2 not supported')
+      }
 
-  // Set uniforms (this is all that changes during zoom/pan!)
-  gl.uniform2f(uniforms.domainX, viewState.domainX[0], viewState.domainX[1]);
-  gl.uniform2f(uniforms.rangeY, viewState.rangeY[0], viewState.rangeY[1]);
-  gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
-  gl.uniform1i(uniforms.colorScheme, viewState.colorScheme);
-  gl.uniform1f(uniforms.readHeight, 10);
+      function createShader(gl, type, source) {
+        const shader = gl.createShader(type)
+        gl.shaderSource(shader, source)
+        gl.compileShader(shader)
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          console.error('Shader compile error:', gl.getShaderInfoLog(shader))
+          gl.deleteShader(shader)
+          return null
+        }
+        return shader
+      }
 
-  // Draw all reads with instanced rendering
-  gl.bindVertexArray(gpuBuffers.vao);
-  gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, gpuBuffers.count);
-  gl.bindVertexArray(null);
+      function createProgram(gl, vertexShader, fragmentShader) {
+        const program = gl.createProgram()
+        gl.attachShader(program, vertexShader)
+        gl.attachShader(program, fragmentShader)
+        gl.linkProgram(program)
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+          console.error('Program link error:', gl.getProgramInfoLog(program))
+          gl.deleteProgram(program)
+          return null
+        }
+        return program
+      }
 
-  // Update stats
-  const bpPerPx = (viewState.domainX[1] - viewState.domainX[0]) / canvas.width;
-  document.getElementById('stats').textContent =
-    `Domain: ${Math.round(viewState.domainX[0])}-${Math.round(viewState.domainX[1])} | ` +
-    `bp/px: ${bpPerPx.toFixed(2)} | ` +
-    `Y range: ${viewState.rangeY[0].toFixed(0)}-${viewState.rangeY[1].toFixed(0)} | ` +
-    `Reads: ${gpuBuffers.count} | ` +
-    `GPU buffers: ${(gpuBuffers.count * 6 * 4 / 1024).toFixed(1)} KB`;
-}
+      const vertexShaderSource =
+        document.getElementById('vertex-shader').textContent
+      const fragmentShaderSource =
+        document.getElementById('fragment-shader').textContent
 
-// ============ Interaction ============
-let isDragging = false;
-let lastMouseX = 0;
-let lastMouseY = 0;
+      const vertexShader = createShader(
+        gl,
+        gl.VERTEX_SHADER,
+        vertexShaderSource,
+      )
+      const fragmentShader = createShader(
+        gl,
+        gl.FRAGMENT_SHADER,
+        fragmentShaderSource,
+      )
+      const program = createProgram(gl, vertexShader, fragmentShader)
 
-canvas.addEventListener('mousedown', (e) => {
-  isDragging = true;
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
-});
+      // Get attribute and uniform locations
+      const attribs = {
+        position: gl.getAttribLocation(program, 'a_position'),
+        y: gl.getAttribLocation(program, 'a_y'),
+        strand: gl.getAttribLocation(program, 'a_strand'),
+        mapq: gl.getAttribLocation(program, 'a_mapq'),
+        insertSize: gl.getAttribLocation(program, 'a_insertSize'),
+      }
 
-canvas.addEventListener('mouseup', () => {
-  isDragging = false;
-});
+      const uniforms = {
+        domainX: gl.getUniformLocation(program, 'u_domainX'),
+        rangeY: gl.getUniformLocation(program, 'u_rangeY'),
+        resolution: gl.getUniformLocation(program, 'u_resolution'),
+        colorScheme: gl.getUniformLocation(program, 'u_colorScheme'),
+        readHeight: gl.getUniformLocation(program, 'u_readHeight'),
+      }
 
-canvas.addEventListener('mouseleave', () => {
-  isDragging = false;
-});
+      // ============ Data Generation ============
+      let readCount = 10000
+      let genomicStart = 0
+      let genomicEnd = 50000
+      let reads = []
+      let gpuBuffers = null
 
-canvas.addEventListener('mousemove', (e) => {
-  if (!isDragging) return;
+      // Simple pileup layout algorithm
+      function computePileupLayout(reads) {
+        // Sort by start position
+        const sorted = [...reads].sort((a, b) => a.start - b.start)
 
-  const dx = e.clientX - lastMouseX;
-  const dy = e.clientY - lastMouseY;
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
+        // Track end positions for each Y level
+        const levels = []
 
-  // Pan in X (genomic coordinates)
-  const domainWidth = viewState.domainX[1] - viewState.domainX[0];
-  const bpPerPx = domainWidth / canvas.width;
-  const panX = -dx * bpPerPx;
+        for (const read of sorted) {
+          // Find first level where this read fits
+          let y = 0
+          for (let i = 0; i < levels.length; i++) {
+            if (levels[i] <= read.start) {
+              y = i
+              break
+            }
+            y = i + 1
+          }
 
-  viewState.domainX[0] += panX;
-  viewState.domainX[1] += panX;
+          // Assign Y and update level end
+          read.y = y
+          levels[y] = read.end + 2 // +2 for spacing
+        }
 
-  // Pan in Y
-  const yRange = viewState.rangeY[1] - viewState.rangeY[0];
-  const yPerPx = yRange / canvas.height;
-  const panY = dy * yPerPx;
+        return Math.max(...levels.map((_, i) => i)) + 1
+      }
 
-  viewState.rangeY[0] += panY;
-  viewState.rangeY[1] += panY;
+      function generateReads(count) {
+        reads = []
+        const regionSize = genomicEnd - genomicStart
 
-  // Clamp Y
-  if (viewState.rangeY[0] < 0) {
-    viewState.rangeY[1] -= viewState.rangeY[0];
-    viewState.rangeY[0] = 0;
-  }
+        for (let i = 0; i < count; i++) {
+          const readLength = 100 + Math.random() * 100 // 100-200bp
+          const start = genomicStart + Math.random() * (regionSize - readLength)
+          const end = start + readLength
 
-  render();
-});
+          reads.push({
+            start,
+            end,
+            strand: Math.random() > 0.5 ? 1 : 0,
+            mapq: Math.floor(Math.random() * 61), // 0-60
+            insertSize: 200 + Math.random() * 400, // 200-600
+            y: 0, // Will be computed
+          })
+        }
 
-canvas.addEventListener('wheel', (e) => {
-  e.preventDefault();
+        const maxY = computePileupLayout(reads)
+        return maxY
+      }
 
-  if (e.shiftKey) {
-    // Vertical scroll
-    const yRange = viewState.rangeY[1] - viewState.rangeY[0];
-    const panY = e.deltaY * 0.1;
-    viewState.rangeY[0] += panY;
-    viewState.rangeY[1] += panY;
+      function uploadToGPU() {
+        // Create arrays for GPU upload
+        const positions = new Float32Array(reads.length * 2) // x1, x2 per read
+        const yCoords = new Float32Array(reads.length)
+        const strands = new Float32Array(reads.length)
+        const mapqs = new Float32Array(reads.length)
+        const insertSizes = new Float32Array(reads.length)
 
-    if (viewState.rangeY[0] < 0) {
-      viewState.rangeY[1] -= viewState.rangeY[0];
-      viewState.rangeY[0] = 0;
-    }
-  } else {
-    // Zoom
-    const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
+        for (let i = 0; i < reads.length; i++) {
+          const r = reads[i]
+          positions[i * 2] = r.start
+          positions[i * 2 + 1] = r.end
+          yCoords[i] = r.y
+          strands[i] = r.strand
+          mapqs[i] = r.mapq
+          insertSizes[i] = r.insertSize
+        }
 
-    // Zoom centered on mouse position
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseFraction = mouseX / canvas.width;
+        // Clean up old buffers
+        if (gpuBuffers) {
+          gl.deleteBuffer(gpuBuffers.position)
+          gl.deleteBuffer(gpuBuffers.y)
+          gl.deleteBuffer(gpuBuffers.strand)
+          gl.deleteBuffer(gpuBuffers.mapq)
+          gl.deleteBuffer(gpuBuffers.insertSize)
+          gl.deleteVertexArray(gpuBuffers.vao)
+        }
 
-    const domainWidth = viewState.domainX[1] - viewState.domainX[0];
-    const mouseGenomicPos = viewState.domainX[0] + domainWidth * mouseFraction;
+        // Create VAO
+        const vao = gl.createVertexArray()
+        gl.bindVertexArray(vao)
 
-    const newWidth = domainWidth * zoomFactor;
+        // Position buffer (x1, x2)
+        const positionBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW)
+        gl.enableVertexAttribArray(attribs.position)
+        gl.vertexAttribPointer(attribs.position, 2, gl.FLOAT, false, 0, 0)
+        gl.vertexAttribDivisor(attribs.position, 1) // Instanced
 
-    // Clamp zoom
-    const minWidth = 100;     // Minimum 100bp visible
-    const maxWidth = 1000000; // Maximum 1Mbp visible
-    const clampedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+        // Y buffer
+        const yBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, yBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, yCoords, gl.STATIC_DRAW)
+        gl.enableVertexAttribArray(attribs.y)
+        gl.vertexAttribPointer(attribs.y, 1, gl.FLOAT, false, 0, 0)
+        gl.vertexAttribDivisor(attribs.y, 1)
 
-    viewState.domainX[0] = mouseGenomicPos - clampedWidth * mouseFraction;
-    viewState.domainX[1] = mouseGenomicPos + clampedWidth * (1 - mouseFraction);
-  }
+        // Strand buffer
+        const strandBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, strandBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, strands, gl.STATIC_DRAW)
+        gl.enableVertexAttribArray(attribs.strand)
+        gl.vertexAttribPointer(attribs.strand, 1, gl.FLOAT, false, 0, 0)
+        gl.vertexAttribDivisor(attribs.strand, 1)
 
-  render();
-});
+        // MAPQ buffer
+        const mapqBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, mapqBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, mapqs, gl.STATIC_DRAW)
+        gl.enableVertexAttribArray(attribs.mapq)
+        gl.vertexAttribPointer(attribs.mapq, 1, gl.FLOAT, false, 0, 0)
+        gl.vertexAttribDivisor(attribs.mapq, 1)
 
-// ============ Controls ============
-document.getElementById('colorScheme').addEventListener('change', (e) => {
-  viewState.colorScheme = parseInt(e.target.value);
-  render(); // Just re-render, no data changes!
-});
+        // Insert size buffer
+        const insertSizeBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, insertSizeBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, insertSizes, gl.STATIC_DRAW)
+        gl.enableVertexAttribArray(attribs.insertSize)
+        gl.vertexAttribPointer(attribs.insertSize, 1, gl.FLOAT, false, 0, 0)
+        gl.vertexAttribDivisor(attribs.insertSize, 1)
 
-document.getElementById('readCount').addEventListener('input', (e) => {
-  readCount = parseInt(e.target.value);
-  document.getElementById('readCountLabel').textContent = readCount;
-});
+        gl.bindVertexArray(null)
 
-document.getElementById('regenerate').addEventListener('click', () => {
-  const start = performance.now();
-  maxY = generateReads(readCount);
-  const genTime = performance.now() - start;
+        gpuBuffers = {
+          vao,
+          position: positionBuffer,
+          y: yBuffer,
+          strand: strandBuffer,
+          mapq: mapqBuffer,
+          insertSize: insertSizeBuffer,
+          count: reads.length,
+        }
 
-  const uploadStart = performance.now();
-  uploadToGPU();
-  const uploadTime = performance.now() - uploadStart;
+        console.log(`Uploaded ${reads.length} reads to GPU`)
+      }
 
-  viewState.rangeY = [0, Math.min(maxY + 5, 200)];
-  viewState.domainX = [genomicStart, genomicEnd];
+      // ============ View State ============
+      let viewState = {
+        domainX: [0, 50000], // Visible genomic range
+        rangeY: [0, 100], // Visible Y range (pileup rows)
+        colorScheme: 0,
+      }
 
-  console.log(`Generated ${readCount} reads in ${genTime.toFixed(1)}ms, uploaded in ${uploadTime.toFixed(1)}ms`);
-  render();
-});
+      let maxY = 100
 
-// ============ Animation Loop ============
-function animate() {
-  requestAnimationFrame(animate);
-  // render() is called on demand, not every frame
-}
+      // ============ Rendering ============
+      function render() {
+        // Resize canvas to match display size
+        const displayWidth = canvas.clientWidth
+        const displayHeight = canvas.clientHeight
 
-// ============ Initialize ============
-function init() {
-  maxY = generateReads(readCount);
-  uploadToGPU();
-  viewState.rangeY = [0, Math.min(maxY + 5, 200)];
-  render();
-  animate();
-}
+        if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+          canvas.width = displayWidth
+          canvas.height = displayHeight
+        }
 
-init();
+        gl.viewport(0, 0, canvas.width, canvas.height)
+        gl.clearColor(0.1, 0.1, 0.1, 1.0)
+        gl.clear(gl.COLOR_BUFFER_BIT)
 
-// Handle resize
-window.addEventListener('resize', () => {
-  render();
-});
-</script>
-</body>
+        if (!gpuBuffers) return
+
+        gl.useProgram(program)
+
+        // Set uniforms (this is all that changes during zoom/pan!)
+        gl.uniform2f(
+          uniforms.domainX,
+          viewState.domainX[0],
+          viewState.domainX[1],
+        )
+        gl.uniform2f(uniforms.rangeY, viewState.rangeY[0], viewState.rangeY[1])
+        gl.uniform2f(uniforms.resolution, canvas.width, canvas.height)
+        gl.uniform1i(uniforms.colorScheme, viewState.colorScheme)
+        gl.uniform1f(uniforms.readHeight, 10)
+
+        // Draw all reads with instanced rendering
+        gl.bindVertexArray(gpuBuffers.vao)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, gpuBuffers.count)
+        gl.bindVertexArray(null)
+
+        // Update stats
+        const bpPerPx =
+          (viewState.domainX[1] - viewState.domainX[0]) / canvas.width
+        document.getElementById('stats').textContent =
+          `Domain: ${Math.round(viewState.domainX[0])}-${Math.round(viewState.domainX[1])} | ` +
+          `bp/px: ${bpPerPx.toFixed(2)} | ` +
+          `Y range: ${viewState.rangeY[0].toFixed(0)}-${viewState.rangeY[1].toFixed(0)} | ` +
+          `Reads: ${gpuBuffers.count} | ` +
+          `GPU buffers: ${((gpuBuffers.count * 6 * 4) / 1024).toFixed(1)} KB`
+      }
+
+      // ============ Interaction ============
+      let isDragging = false
+      let lastMouseX = 0
+      let lastMouseY = 0
+
+      canvas.addEventListener('mousedown', e => {
+        isDragging = true
+        lastMouseX = e.clientX
+        lastMouseY = e.clientY
+      })
+
+      canvas.addEventListener('mouseup', () => {
+        isDragging = false
+      })
+
+      canvas.addEventListener('mouseleave', () => {
+        isDragging = false
+      })
+
+      canvas.addEventListener('mousemove', e => {
+        if (!isDragging) return
+
+        const dx = e.clientX - lastMouseX
+        const dy = e.clientY - lastMouseY
+        lastMouseX = e.clientX
+        lastMouseY = e.clientY
+
+        // Pan in X (genomic coordinates)
+        const domainWidth = viewState.domainX[1] - viewState.domainX[0]
+        const bpPerPx = domainWidth / canvas.width
+        const panX = -dx * bpPerPx
+
+        viewState.domainX[0] += panX
+        viewState.domainX[1] += panX
+
+        // Pan in Y
+        const yRange = viewState.rangeY[1] - viewState.rangeY[0]
+        const yPerPx = yRange / canvas.height
+        const panY = dy * yPerPx
+
+        viewState.rangeY[0] += panY
+        viewState.rangeY[1] += panY
+
+        // Clamp Y
+        if (viewState.rangeY[0] < 0) {
+          viewState.rangeY[1] -= viewState.rangeY[0]
+          viewState.rangeY[0] = 0
+        }
+
+        render()
+      })
+
+      canvas.addEventListener('wheel', e => {
+        e.preventDefault()
+
+        if (e.shiftKey) {
+          // Vertical scroll
+          const yRange = viewState.rangeY[1] - viewState.rangeY[0]
+          const panY = e.deltaY * 0.1
+          viewState.rangeY[0] += panY
+          viewState.rangeY[1] += panY
+
+          if (viewState.rangeY[0] < 0) {
+            viewState.rangeY[1] -= viewState.rangeY[0]
+            viewState.rangeY[0] = 0
+          }
+        } else {
+          // Zoom
+          const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9
+
+          // Zoom centered on mouse position
+          const rect = canvas.getBoundingClientRect()
+          const mouseX = e.clientX - rect.left
+          const mouseFraction = mouseX / canvas.width
+
+          const domainWidth = viewState.domainX[1] - viewState.domainX[0]
+          const mouseGenomicPos =
+            viewState.domainX[0] + domainWidth * mouseFraction
+
+          const newWidth = domainWidth * zoomFactor
+
+          // Clamp zoom
+          const minWidth = 100 // Minimum 100bp visible
+          const maxWidth = 1000000 // Maximum 1Mbp visible
+          const clampedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth))
+
+          viewState.domainX[0] = mouseGenomicPos - clampedWidth * mouseFraction
+          viewState.domainX[1] =
+            mouseGenomicPos + clampedWidth * (1 - mouseFraction)
+        }
+
+        render()
+      })
+
+      // ============ Controls ============
+      document.getElementById('colorScheme').addEventListener('change', e => {
+        viewState.colorScheme = parseInt(e.target.value)
+        render() // Just re-render, no data changes!
+      })
+
+      document.getElementById('readCount').addEventListener('input', e => {
+        readCount = parseInt(e.target.value)
+        document.getElementById('readCountLabel').textContent = readCount
+      })
+
+      document.getElementById('regenerate').addEventListener('click', () => {
+        const start = performance.now()
+        maxY = generateReads(readCount)
+        const genTime = performance.now() - start
+
+        const uploadStart = performance.now()
+        uploadToGPU()
+        const uploadTime = performance.now() - uploadStart
+
+        viewState.rangeY = [0, Math.min(maxY + 5, 200)]
+        viewState.domainX = [genomicStart, genomicEnd]
+
+        console.log(
+          `Generated ${readCount} reads in ${genTime.toFixed(1)}ms, uploaded in ${uploadTime.toFixed(1)}ms`,
+        )
+        render()
+      })
+
+      // ============ Animation Loop ============
+      function animate() {
+        requestAnimationFrame(animate)
+        // render() is called on demand, not every frame
+      }
+
+      // ============ Initialize ============
+      function init() {
+        maxY = generateReads(readCount)
+        uploadToGPU()
+        viewState.rangeY = [0, Math.min(maxY + 5, 200)]
+        render()
+        animate()
+      }
+
+      init()
+
+      // Handle resize
+      window.addEventListener('resize', () => {
+        render()
+      })
+    </script>
+  </body>
 </html>

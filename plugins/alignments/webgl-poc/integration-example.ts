@@ -11,17 +11,18 @@
  * 4. Register via plugin system
  */
 
-import PluginManager from '@jbrowse/core/PluginManager'
-import BoxRendererType, {
-  RenderArgsDeserialized,
-} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { Feature } from '@jbrowse/core/util'
-import {
-  readConfObject,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
 import { lazy } from 'react'
+
+import {
+  AnyConfigurationSchemaType,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import { types } from 'mobx-state-tree'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import type { Feature } from '@jbrowse/core/util'
 
 // ============================================================================
 // CONFIGURATION SCHEMA
@@ -217,9 +218,7 @@ interface LayoutResult {
 }
 
 function computePileupLayout(features: Feature[]): LayoutResult {
-  const sorted = [...features].sort(
-    (a, b) => a.get('start') - b.get('start'),
-  )
+  const sorted = [...features].sort((a, b) => a.get('start') - b.get('start'))
 
   const levels: number[] = []
   const yPositions = new Map<string, number>()
@@ -229,8 +228,8 @@ function computePileupLayout(features: Feature[]): LayoutResult {
     const end = feature.get('end')
 
     let y = 0
-    for (let i = 0; i < levels.length; i++) {
-      if (levels[i] <= start) {
+    for (const [i, level] of levels.entries()) {
+      if (level <= start) {
         y = i
         break
       }
@@ -272,7 +271,7 @@ function createProgram(
   vs: string,
   fs: string,
 ): WebGLProgram {
-  const program = gl.createProgram()!
+  const program = gl.createProgram()
   gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vs))
   gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fs))
   gl.linkProgram(program)
@@ -361,8 +360,7 @@ async function renderWebGL(opts: RenderOptions): Promise<RenderOutput> {
   // Collect mismatches for second pass
   const mismatches: { pos: number; y: number; base: number }[] = []
 
-  for (let i = 0; i < features.length; i++) {
-    const f = features[i]
+  for (const [i, f] of features.entries()) {
     const start = f.get('start')
     const end = f.get('end')
     const y = layout.yPositions.get(f.id()) ?? 0
@@ -384,7 +382,7 @@ async function renderWebGL(opts: RenderOptions): Promise<RenderOutput> {
             mismatches.push({
               pos: start + m.start,
               y,
-              base: base >= 0 ? base : 4,
+              base: base !== -1 ? base : 4,
             })
           }
         }
@@ -398,7 +396,9 @@ async function renderWebGL(opts: RenderOptions): Promise<RenderOutput> {
 
   function uploadBuffer(data: Float32Array, attrib: string, size: number) {
     const loc = gl.getAttribLocation(readProgram, attrib)
-    if (loc < 0) return
+    if (loc < 0) {
+      return
+    }
     const buf = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, buf)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
@@ -415,7 +415,7 @@ async function renderWebGL(opts: RenderOptions): Promise<RenderOutput> {
 
   // Render reads
   gl.viewport(0, 0, canvas.width, canvas.height)
-  gl.clearColor(0.96, 0.96, 0.96, 1.0)
+  gl.clearColor(0.96, 0.96, 0.96, 1)
   gl.clear(gl.COLOR_BUFFER_BIT)
 
   gl.useProgram(readProgram)
@@ -424,18 +424,12 @@ async function renderWebGL(opts: RenderOptions): Promise<RenderOutput> {
     region.start,
     region.end,
   )
-  gl.uniform1f(
-    gl.getUniformLocation(readProgram, 'u_canvasHeight'),
-    height,
-  )
+  gl.uniform1f(gl.getUniformLocation(readProgram, 'u_canvasHeight'), height)
   gl.uniform1f(
     gl.getUniformLocation(readProgram, 'u_featureHeight'),
     featureHeight,
   )
-  gl.uniform1i(
-    gl.getUniformLocation(readProgram, 'u_colorScheme'),
-    colorScheme,
-  )
+  gl.uniform1i(gl.getUniformLocation(readProgram, 'u_colorScheme'), colorScheme)
 
   gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, features.length)
 
@@ -456,7 +450,9 @@ async function renderWebGL(opts: RenderOptions): Promise<RenderOutput> {
 
     function uploadMM(data: Float32Array, attrib: string) {
       const loc = gl.getAttribLocation(mmProgram, attrib)
-      if (loc < 0) return
+      if (loc < 0) {
+        return
+      }
       const buf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, buf)
       gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
@@ -475,18 +471,12 @@ async function renderWebGL(opts: RenderOptions): Promise<RenderOutput> {
       region.start,
       region.end,
     )
-    gl.uniform1f(
-      gl.getUniformLocation(mmProgram, 'u_canvasHeight'),
-      height,
-    )
+    gl.uniform1f(gl.getUniformLocation(mmProgram, 'u_canvasHeight'), height)
     gl.uniform1f(
       gl.getUniformLocation(mmProgram, 'u_featureHeight'),
       featureHeight,
     )
-    gl.uniform1f(
-      gl.getUniformLocation(mmProgram, 'u_bpPerPx'),
-      bpPerPx,
-    )
+    gl.uniform1f(gl.getUniformLocation(mmProgram, 'u_bpPerPx'), bpPerPx)
 
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, mismatches.length)
   }
@@ -571,9 +561,7 @@ export function register(pluginManager: PluginManager) {
     return new WebGLPileupRenderer({
       name: 'WebGLPileupRenderer',
       displayName: 'WebGL Pileup renderer',
-      ReactComponent: lazy(
-        () => import('@jbrowse/core/ui/PrerenderedCanvas'),
-      ),
+      ReactComponent: lazy(() => import('@jbrowse/core/ui/PrerenderedCanvas')),
       configSchema: configSchema(pluginManager),
       pluginManager,
     })

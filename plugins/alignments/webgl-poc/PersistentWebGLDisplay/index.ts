@@ -26,11 +26,11 @@ export type { FeatureData, RenderState } from './WebGLRenderer'
 
 export { WebGLPileupRendering } from './WebGLPileupRendering'
 export type {
-  WebGLPileupRenderingProps,
   WebGLPileupRenderingHandle,
+  WebGLPileupRenderingProps,
 } from './WebGLPileupRendering'
 
-export { stateModelFactory, configSchemaFactory, ColorScheme } from './model'
+export { ColorScheme, configSchemaFactory, stateModelFactory } from './model'
 export type { WebGLPileupDisplayModel } from './model'
 
 /**
@@ -51,7 +51,7 @@ export type { WebGLPileupDisplayModel } from './model'
  * ```
  */
 export function registerWebGLPileupDisplay(pluginManager: any) {
-  const { stateModelFactory, configSchemaFactory } = require('./model')
+  const { configSchemaFactory, stateModelFactory } = require('./model')
   const { WebGLPileupRendering } = require('./WebGLPileupRendering')
 
   const configSchema = configSchemaFactory(pluginManager)

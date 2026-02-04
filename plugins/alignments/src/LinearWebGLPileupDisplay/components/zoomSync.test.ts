@@ -43,12 +43,14 @@ function getContentBlocks(viewState: ViewState): ContentBlock[] {
   // Simulate: blockOffsetPx is calculated based on some internal logic
   // For simplicity, let's say it's proportional to bpPerPx
   const blockOffsetPx = 1000 / viewState.bpPerPx
-  return [{
-    start: 50000,
-    end: 150000,
-    offsetPx: blockOffsetPx,
-    refName: 'chr1',
-  }]
+  return [
+    {
+      start: 50000,
+      end: 150000,
+      offsetPx: blockOffsetPx,
+      refName: 'chr1',
+    },
+  ]
 }
 
 // ============================================================
@@ -84,7 +86,7 @@ function zoomAtPosition(
   mouseX: number,
   width: number,
   zoomIn: boolean,
-  zoomFactor: number = 1.05,
+  zoomFactor = 1.05,
 ): { domain: [number, number]; bpPerPx: number } {
   const domainWidth = currentDomain[1] - currentDomain[0]
   const mouseFraction = mouseX / width
@@ -127,7 +129,9 @@ class ComponentSimulator {
   // Simulate wheel zoom
   zoom(mouseX: number, zoomIn: boolean): void {
     const { domainRef, bpPerPxRef } = this.componentState
-    if (!domainRef) return
+    if (!domainRef) {
+      return
+    }
 
     this.componentState.interactingRef = true
 
@@ -139,8 +143,10 @@ class ComponentSimulator {
     )
 
     // Check zoom limits
-    if (result.bpPerPx < this.viewState.minBpPerPx ||
-        result.bpPerPx > this.viewState.maxBpPerPx) {
+    if (
+      result.bpPerPx < this.viewState.minBpPerPx ||
+      result.bpPerPx > this.viewState.maxBpPerPx
+    ) {
       console.log('  [zoom] Hit limit, not changing')
       return
     }
@@ -194,15 +200,23 @@ class ComponentSimulator {
       // The view seems to recalculate offsetPx entirely based on new contentBlocks
       const oldOffsetPx = this.viewState.offsetPx
       this.viewState.offsetPx = newContentBlocks[0].offsetPx // Reset to block start!
-      console.log('  [view] AGGRESSIVE adjustment:', oldOffsetPx.toFixed(1),
-                  '→', this.viewState.offsetPx.toFixed(1),
-                  `(diff: ${(this.viewState.offsetPx - oldOffsetPx).toFixed(1)})`)
+      console.log(
+        '  [view] AGGRESSIVE adjustment:',
+        oldOffsetPx.toFixed(1),
+        '→',
+        this.viewState.offsetPx.toFixed(1),
+        `(diff: ${(this.viewState.offsetPx - oldOffsetPx).toFixed(1)})`,
+      )
     } else {
       // Mild adjustment
       const adjustment = (newContentBlocks[0].offsetPx - 1000 / 10) * 0.5
       this.viewState.offsetPx += adjustment
-      console.log('  [view] Adjusted offsetPx by', adjustment.toFixed(1),
-                  '→', this.viewState.offsetPx.toFixed(1))
+      console.log(
+        '  [view] Adjusted offsetPx by',
+        adjustment.toFixed(1),
+        '→',
+        this.viewState.offsetPx.toFixed(1),
+      )
     }
   }
 
@@ -213,8 +227,10 @@ class ComponentSimulator {
       return
     }
 
-    const bpPerPxMatch = Math.abs(this.viewState.bpPerPx - this.componentState.bpPerPxRef) < 0.001
-    const offsetMatch = Math.abs(this.viewState.offsetPx - this.componentState.offsetPxRef) < 5
+    const bpPerPxMatch =
+      Math.abs(this.viewState.bpPerPx - this.componentState.bpPerPxRef) < 0.001
+    const offsetMatch =
+      Math.abs(this.viewState.offsetPx - this.componentState.offsetPxRef) < 5
 
     if (bpPerPxMatch && offsetMatch) {
       console.log('  [syncFromView] Skipped - values match')
@@ -227,9 +243,15 @@ class ComponentSimulator {
     this.componentState.bpPerPxRef = this.viewState.bpPerPx
 
     const contentBlocks = getContentBlocks(this.viewState)
-    this.componentState.domainRef = computeDomainFromView(this.viewState, contentBlocks)
+    this.componentState.domainRef = computeDomainFromView(
+      this.viewState,
+      contentBlocks,
+    )
 
-    console.log('  [syncFromView] New domain:', this.componentState.domainRef.map(d => Math.round(d)))
+    console.log(
+      '  [syncFromView] New domain:',
+      this.componentState.domainRef.map(d => Math.round(d)),
+    )
   }
 
   // Simulate the syncFromView effect (FIXED VERSION)
@@ -239,8 +261,10 @@ class ComponentSimulator {
       return
     }
 
-    const bpPerPxMatch = Math.abs(this.viewState.bpPerPx - this.componentState.bpPerPxRef) < 0.001
-    const offsetMatch = Math.abs(this.viewState.offsetPx - this.componentState.offsetPxRef) < 5
+    const bpPerPxMatch =
+      Math.abs(this.viewState.bpPerPx - this.componentState.bpPerPxRef) < 0.001
+    const offsetMatch =
+      Math.abs(this.viewState.offsetPx - this.componentState.offsetPxRef) < 5
 
     if (bpPerPxMatch && offsetMatch) {
       console.log('  [syncFromView] Skipped - values match')
@@ -260,7 +284,10 @@ class ComponentSimulator {
     this.componentState.bpPerPxRef = this.viewState.bpPerPx
 
     const contentBlocks = getContentBlocks(this.viewState)
-    this.componentState.domainRef = computeDomainFromView(this.viewState, contentBlocks)
+    this.componentState.domainRef = computeDomainFromView(
+      this.viewState,
+      contentBlocks,
+    )
   }
 
   getDomain(): [number, number] | null {
@@ -269,7 +296,9 @@ class ComponentSimulator {
 
   getMouseBp(mouseX: number): number {
     const domain = this.componentState.domainRef
-    if (!domain) return 0
+    if (!domain) {
+      return 0
+    }
     const fraction = mouseX / this.viewState.width
     return domain[0] + (domain[1] - domain[0]) * fraction
   }
@@ -279,7 +308,12 @@ class ComponentSimulator {
 // TESTS
 // ============================================================
 
-function assertEqual(actual: number, expected: number, epsilon: number, message: string): boolean {
+function assertEqual(
+  actual: number,
+  expected: number,
+  epsilon: number,
+  message: string,
+): boolean {
   const diff = Math.abs(actual - expected)
   if (diff > epsilon) {
     console.error(`❌ FAIL: ${message}`)
@@ -290,9 +324,9 @@ function assertEqual(actual: number, expected: number, epsilon: number, message:
   return true
 }
 
-console.log('\n' + '='.repeat(60))
+console.log(`\n${'='.repeat(60)}`)
 console.log('TEST: Zoom out with BUGGY syncFromView')
-console.log('='.repeat(60) + '\n')
+console.log(`${'='.repeat(60)}\n`)
 
 {
   const sim = new ComponentSimulator({
@@ -306,7 +340,10 @@ console.log('='.repeat(60) + '\n')
   const mouseX = 500 // center
   const initialMouseBp = sim.getMouseBp(mouseX)
   console.log('Initial state:')
-  console.log('  Domain:', sim.getDomain()?.map(d => Math.round(d)))
+  console.log(
+    '  Domain:',
+    sim.getDomain()?.map(d => Math.round(d)),
+  )
   console.log('  MouseBp at center:', Math.round(initialMouseBp))
 
   console.log('\nZooming out 3 times...')
@@ -319,19 +356,27 @@ console.log('='.repeat(60) + '\n')
 
   const finalMouseBp = sim.getMouseBp(mouseX)
   console.log('\nFinal state:')
-  console.log('  Domain:', sim.getDomain()?.map(d => Math.round(d)))
+  console.log(
+    '  Domain:',
+    sim.getDomain()?.map(d => Math.round(d)),
+  )
   console.log('  MouseBp at center:', Math.round(finalMouseBp))
   console.log('  DRIFT:', Math.round(finalMouseBp - initialMouseBp), 'bp')
 
-  const passed = assertEqual(finalMouseBp, initialMouseBp, 100, 'Mouse position preserved (buggy)')
+  const passed = assertEqual(
+    finalMouseBp,
+    initialMouseBp,
+    100,
+    'Mouse position preserved (buggy)',
+  )
   if (!passed) {
     console.log('\n⚠️  The buggy version causes significant drift!')
   }
 }
 
-console.log('\n' + '='.repeat(60))
+console.log(`\n${'='.repeat(60)}`)
 console.log('TEST: Zoom out with FIXED syncFromView')
-console.log('='.repeat(60) + '\n')
+console.log(`${'='.repeat(60)}\n`)
 
 {
   const sim = new ComponentSimulator({
@@ -345,7 +390,10 @@ console.log('='.repeat(60) + '\n')
   const mouseX = 500
   const initialMouseBp = sim.getMouseBp(mouseX)
   console.log('Initial state:')
-  console.log('  Domain:', sim.getDomain()?.map(d => Math.round(d)))
+  console.log(
+    '  Domain:',
+    sim.getDomain()?.map(d => Math.round(d)),
+  )
   console.log('  MouseBp at center:', Math.round(initialMouseBp))
 
   console.log('\nZooming out 3 times...')
@@ -358,16 +406,24 @@ console.log('='.repeat(60) + '\n')
 
   const finalMouseBp = sim.getMouseBp(mouseX)
   console.log('\nFinal state:')
-  console.log('  Domain:', sim.getDomain()?.map(d => Math.round(d)))
+  console.log(
+    '  Domain:',
+    sim.getDomain()?.map(d => Math.round(d)),
+  )
   console.log('  MouseBp at center:', Math.round(finalMouseBp))
   console.log('  DRIFT:', Math.round(finalMouseBp - initialMouseBp), 'bp')
 
-  assertEqual(finalMouseBp, initialMouseBp, 1, 'Mouse position preserved (fixed)')
+  assertEqual(
+    finalMouseBp,
+    initialMouseBp,
+    1,
+    'Mouse position preserved (fixed)',
+  )
 }
 
-console.log('\n' + '='.repeat(60))
+console.log(`\n${'='.repeat(60)}`)
 console.log('TEST: External navigation should update domain')
-console.log('='.repeat(60) + '\n')
+console.log(`${'='.repeat(60)}\n`)
 
 {
   const sim = new ComponentSimulator({
@@ -378,7 +434,10 @@ console.log('='.repeat(60) + '\n')
     maxBpPerPx: 100,
   })
 
-  console.log('Initial domain:', sim.getDomain()?.map(d => Math.round(d)))
+  console.log(
+    'Initial domain:',
+    sim.getDomain()?.map(d => Math.round(d)),
+  )
 
   // Simulate external navigation (user clicks on overview, etc)
   console.log('\nSimulating external navigation...')
@@ -387,7 +446,10 @@ console.log('='.repeat(60) + '\n')
 
   sim.syncFromViewFixed()
 
-  console.log('After external nav domain:', sim.getDomain()?.map(d => Math.round(d)))
+  console.log(
+    'After external nav domain:',
+    sim.getDomain()?.map(d => Math.round(d)),
+  )
 
   // Domain should have changed
   const domain = sim.getDomain()
@@ -398,9 +460,9 @@ console.log('='.repeat(60) + '\n')
   }
 }
 
-console.log('\n' + '='.repeat(60))
+console.log(`\n${'='.repeat(60)}`)
 console.log('TEST: Rapid zoom should not accumulate drift')
-console.log('='.repeat(60) + '\n')
+console.log(`${'='.repeat(60)}\n`)
 
 {
   const sim = new ComponentSimulator({
@@ -432,12 +494,17 @@ console.log('='.repeat(60) + '\n')
   console.log('Final mouseBp at x=300:', Math.round(finalMouseBp))
   console.log('Drift:', Math.round(finalMouseBp - initialMouseBp), 'bp')
 
-  assertEqual(finalMouseBp, initialMouseBp, 10, 'No drift after zoom out/in cycle')
+  assertEqual(
+    finalMouseBp,
+    initialMouseBp,
+    10,
+    'No drift after zoom out/in cycle',
+  )
 }
 
-console.log('\n' + '='.repeat(60))
+console.log(`\n${'='.repeat(60)}`)
 console.log('TEST: Aggressive view adjustment (like real app)')
-console.log('='.repeat(60) + '\n')
+console.log(`${'='.repeat(60)}\n`)
 
 {
   // This simulates what we see in the real app logs:
@@ -468,7 +535,10 @@ console.log('='.repeat(60) + '\n')
   const mouseX = 500
   const initialMouseBp = sim.getMouseBp(mouseX)
   console.log('Initial state:')
-  console.log('  Domain:', sim.getDomain()?.map(d => Math.round(d)))
+  console.log(
+    '  Domain:',
+    sim.getDomain()?.map(d => Math.round(d)),
+  )
   console.log('  MouseBp at center:', Math.round(initialMouseBp))
 
   console.log('\nZooming out with BUGGY sync...')
@@ -481,7 +551,10 @@ console.log('='.repeat(60) + '\n')
 
   let finalMouseBp = sim.getMouseBp(mouseX)
   console.log('\nFinal state (BUGGY):')
-  console.log('  Domain:', sim.getDomain()?.map(d => Math.round(d)))
+  console.log(
+    '  Domain:',
+    sim.getDomain()?.map(d => Math.round(d)),
+  )
   console.log('  MouseBp at center:', Math.round(finalMouseBp))
   console.log('  DRIFT:', Math.round(finalMouseBp - initialMouseBp), 'bp')
 
@@ -508,7 +581,10 @@ console.log('='.repeat(60) + '\n')
 
   finalMouseBp = sim2.getMouseBp(mouseX)
   console.log('\nFinal state (FIXED):')
-  console.log('  Domain:', sim2.getDomain()?.map(d => Math.round(d)))
+  console.log(
+    '  Domain:',
+    sim2.getDomain()?.map(d => Math.round(d)),
+  )
   console.log('  MouseBp at center:', Math.round(finalMouseBp))
   console.log('  DRIFT:', Math.round(finalMouseBp - initialMouseBp), 'bp')
 
@@ -519,7 +595,9 @@ console.log('='.repeat(60) + '\n')
   console.log('Fixed drift:', Math.round(fixedDrift), 'bp')
 
   if (buggyDrift > 100 && fixedDrift < 10) {
-    console.log('✅ PASS: Fixed version eliminates drift from aggressive view adjustment')
+    console.log(
+      '✅ PASS: Fixed version eliminates drift from aggressive view adjustment',
+    )
   } else if (fixedDrift < 10) {
     console.log('✅ PASS: Fixed version has minimal drift')
   } else {
@@ -527,9 +605,9 @@ console.log('='.repeat(60) + '\n')
   }
 }
 
-console.log('\n' + '='.repeat(60))
+console.log(`\n${'='.repeat(60)}`)
 console.log('TEST: Changing contentBlocks during zoom (real app behavior)')
-console.log('='.repeat(60) + '\n')
+console.log(`${'='.repeat(60)}\n`)
 
 {
   // This simulates what we see in the real logs:
@@ -583,7 +661,8 @@ console.log('='.repeat(60) + '\n')
 
       // BUG: Uses current (changing) contentBlocks
       const blocks = this.getContentBlocks()
-      this.offsetPxRef = blocks.blockOffsetPx + (newDomainStart - blocks.firstStart) / newBpPerPx
+      this.offsetPxRef =
+        blocks.blockOffsetPx + (newDomainStart - blocks.firstStart) / newBpPerPx
     }
 
     // FIXED: Caches contentBlocks at start of zoom session
@@ -612,13 +691,16 @@ console.log('='.repeat(60) + '\n')
         console.log('  Cached zoom base:', this.zoomBaseRef)
       }
 
-      this.offsetPxRef = this.zoomBaseRef.blockOffsetPx +
+      this.offsetPxRef =
+        this.zoomBaseRef.blockOffsetPx +
         (newDomainStart - this.zoomBaseRef.firstStart) / newBpPerPx
     }
 
     getMouseBp(mouseX: number): number {
       const fraction = mouseX / this.width
-      return this.domainRef[0] + (this.domainRef[1] - this.domainRef[0]) * fraction
+      return (
+        this.domainRef[0] + (this.domainRef[1] - this.domainRef[0]) * fraction
+      )
     }
   }
 
@@ -633,12 +715,18 @@ console.log('='.repeat(60) + '\n')
   for (let i = 0; i < 30; i++) {
     simBuggy.zoomBuggy(mouseX)
     if (i === 9 || i === 19 || i === 29) {
-      console.log(`  After zoom ${i + 1}: domain=[${simBuggy.domainRef.map(d => Math.round(d))}], mouseBp=${Math.round(simBuggy.getMouseBp(mouseX))}`)
+      console.log(
+        `  After zoom ${i + 1}: domain=[${simBuggy.domainRef.map(d => Math.round(d))}], mouseBp=${Math.round(simBuggy.getMouseBp(mouseX))}`,
+      )
     }
   }
   const finalMouseBpBuggy = simBuggy.getMouseBp(mouseX)
   console.log('  Final mouseBp:', Math.round(finalMouseBpBuggy))
-  console.log('  DRIFT:', Math.round(finalMouseBpBuggy - initialMouseBpBuggy), 'bp')
+  console.log(
+    '  DRIFT:',
+    Math.round(finalMouseBpBuggy - initialMouseBpBuggy),
+    'bp',
+  )
 
   // Test fixed version
   console.log('\nFIXED version (caches contentBlocks):')
@@ -649,24 +737,40 @@ console.log('='.repeat(60) + '\n')
   for (let i = 0; i < 30; i++) {
     simFixed.zoomFixed(mouseX)
     if (i === 9 || i === 19 || i === 29) {
-      console.log(`  After zoom ${i + 1}: domain=[${simFixed.domainRef.map(d => Math.round(d))}], mouseBp=${Math.round(simFixed.getMouseBp(mouseX))}`)
+      console.log(
+        `  After zoom ${i + 1}: domain=[${simFixed.domainRef.map(d => Math.round(d))}], mouseBp=${Math.round(simFixed.getMouseBp(mouseX))}`,
+      )
     }
   }
   const finalMouseBpFixed = simFixed.getMouseBp(mouseX)
   console.log('  Final mouseBp:', Math.round(finalMouseBpFixed))
-  console.log('  DRIFT:', Math.round(finalMouseBpFixed - initialMouseBpFixed), 'bp')
+  console.log(
+    '  DRIFT:',
+    Math.round(finalMouseBpFixed - initialMouseBpFixed),
+    'bp',
+  )
 
   console.log('\n--- COMPARISON ---')
-  console.log('Buggy drift:', Math.round(Math.abs(finalMouseBpBuggy - initialMouseBpBuggy)), 'bp')
-  console.log('Fixed drift:', Math.round(Math.abs(finalMouseBpFixed - initialMouseBpFixed)), 'bp')
+  console.log(
+    'Buggy drift:',
+    Math.round(Math.abs(finalMouseBpBuggy - initialMouseBpBuggy)),
+    'bp',
+  )
+  console.log(
+    'Fixed drift:',
+    Math.round(Math.abs(finalMouseBpFixed - initialMouseBpFixed)),
+    'bp',
+  )
 
   if (Math.abs(finalMouseBpFixed - initialMouseBpFixed) < 1) {
-    console.log('✅ PASS: Fixed version has no drift even with changing contentBlocks')
+    console.log(
+      '✅ PASS: Fixed version has no drift even with changing contentBlocks',
+    )
   } else {
     console.log('❌ FAIL: Fixed version still has drift')
   }
 }
 
-console.log('\n' + '='.repeat(60))
+console.log(`\n${'='.repeat(60)}`)
 console.log('All tests completed')
-console.log('='.repeat(60) + '\n')
+console.log(`${'='.repeat(60)}\n`)

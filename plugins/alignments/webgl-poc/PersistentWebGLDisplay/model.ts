@@ -13,13 +13,15 @@
  * - View changes update WebGL uniforms directly, not through re-render
  */
 
-import { types, Instance, getParent, addDisposer, cast } from 'mobx-state-tree'
-import { autorun, reaction } from 'mobx'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { FeatureData } from './WebGLRenderer'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { autorun, reaction } from 'mobx'
+import { addDisposer, cast, getParent, types } from 'mobx-state-tree'
+
+import type { FeatureData } from './WebGLRenderer'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { Instance } from 'mobx-state-tree'
 
 // Simplified config schema
 export function configSchemaFactory(pluginManager: any) {
@@ -63,7 +65,11 @@ export function stateModelFactory(
     .volatile(() => ({
       // Feature data
       features: [] as FeatureData[],
-      loadedRegion: null as { refName: string; start: number; end: number } | null,
+      loadedRegion: null as {
+        refName: string
+        start: number
+        end: number
+      } | null,
       isLoading: false,
       error: null as Error | null,
 
@@ -83,9 +89,13 @@ export function stateModelFactory(
        */
       get visibleDomain(): [number, number] {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view) return [0, 10000]
+        if (!view) {
+          return [0, 10000]
+        }
         const region = view.dynamicBlocks?.contentBlocks?.[0]
-        if (!region) return [0, 10000]
+        if (!region) {
+          return [0, 10000]
+        }
         return [region.start, region.end]
       },
 
@@ -102,7 +112,9 @@ export function stateModelFactory(
        * Check if current view is within the loaded data range
        */
       get isWithinLoadedRegion(): boolean {
-        if (!self.loadedRegion) return false
+        if (!self.loadedRegion) {
+          return false
+        }
         const [start, end] = this.visibleDomain
         return (
           self.loadedRegion.refName === this.visibleRefName &&
@@ -151,7 +163,9 @@ export function stateModelFactory(
         self.features = features
       },
 
-      setLoadedRegion(region: { refName: string; start: number; end: number } | null) {
+      setLoadedRegion(
+        region: { refName: string; start: number; end: number } | null,
+      ) {
         self.loadedRegion = region
       },
 
@@ -166,9 +180,15 @@ export function stateModelFactory(
       /**
        * Fetch features for a region
        */
-      async fetchFeatures(region: { refName: string; start: number; end: number }) {
+      async fetchFeatures(region: {
+        refName: string
+        start: number
+        end: number
+      }) {
         const fetchKey = `${region.refName}:${region.start}-${region.end}`
-        if (fetchKey === self.lastFetchKey) return
+        if (fetchKey === self.lastFetchKey) {
+          return
+        }
         self.lastFetchKey = fetchKey
 
         self.isLoading = true
@@ -205,9 +225,10 @@ export function stateModelFactory(
                   mapq: feature.get('score') ?? feature.get('qual') ?? 60,
                   insertSize: Math.abs(feature.get('template_length') ?? 400),
                   mismatches: feature.get('mismatches'),
-                  deletions: feature.get('mismatches')?.filter(
-                    (m: any) => m.type === 'deletion'
-                  ).map((m: any) => ({ start: m.start, length: m.length })),
+                  deletions: feature
+                    .get('mismatches')
+                    ?.filter((m: any) => m.type === 'deletion')
+                    .map((m: any) => ({ start: m.start, length: m.length })),
                 })
               },
               error: reject,
@@ -230,7 +251,9 @@ export function stateModelFactory(
        */
       handleNeedMoreData(region: { start: number; end: number }) {
         const refName = self.visibleRefName
-        if (!refName) return
+        if (!refName) {
+          return
+        }
 
         this.fetchFeatures({
           refName,

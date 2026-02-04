@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'

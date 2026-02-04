@@ -17,9 +17,10 @@
  * architectural changes to keep WebGL context alive on main thread.
  */
 
-import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { Feature } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
+import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+
+import type { Feature } from '@jbrowse/core/util'
 
 // Types for the render arguments
 interface WebGLRenderArgs {
@@ -170,9 +171,7 @@ function computeLayout(
   features: Feature[],
   bpPerPx: number,
 ): Map<string, number> {
-  const sorted = [...features].sort(
-    (a, b) => a.get('start') - b.get('start'),
-  )
+  const sorted = [...features].sort((a, b) => a.get('start') - b.get('start'))
   const levels: number[] = []
   const layoutMap = new Map<string, number>()
 
@@ -182,8 +181,8 @@ function computeLayout(
 
     // Find first available level
     let y = 0
-    for (let i = 0; i < levels.length; i++) {
-      if (levels[i] <= start) {
+    for (const [i, level] of levels.entries()) {
+      if (level <= start) {
         y = i
         break
       }
@@ -260,7 +259,11 @@ export async function renderWithWebGL(
   }
 
   // Create shader program
-  const program = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+  const program = createProgram(
+    gl,
+    VERTEX_SHADER_SOURCE,
+    FRAGMENT_SHADER_SOURCE,
+  )
   if (!program) {
     throw new Error('Failed to create WebGL program')
   }
@@ -287,8 +290,7 @@ export async function renderWithWebGL(
   const strands = new Float32Array(featureArray.length)
   const mapqs = new Float32Array(featureArray.length)
 
-  for (let i = 0; i < featureArray.length; i++) {
-    const f = featureArray[i]
+  for (const [i, f] of featureArray.entries()) {
     positions[i * 2] = f.get('start')
     positions[i * 2 + 1] = f.get('end')
     yCoords[i] = layoutMap.get(f.id()) ?? 0
@@ -318,7 +320,7 @@ export async function renderWithWebGL(
 
   // Set up rendering
   gl.viewport(0, 0, canvas.width, canvas.height)
-  gl.clearColor(0.95, 0.95, 0.95, 1.0) // Light gray background
+  gl.clearColor(0.95, 0.95, 0.95, 1) // Light gray background
   gl.clear(gl.COLOR_BUFFER_BIT)
 
   gl.useProgram(program)

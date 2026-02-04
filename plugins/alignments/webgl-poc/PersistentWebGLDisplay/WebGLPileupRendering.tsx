@@ -9,14 +9,17 @@
  */
 
 import React, {
-  useRef,
-  useEffect,
-  useCallback,
-  useState,
   forwardRef,
+  useCallback,
+  useEffect,
   useImperativeHandle,
+  useRef,
+  useState,
 } from 'react'
-import { WebGLRenderer, FeatureData, RenderState } from './WebGLRenderer'
+
+import { WebGLRenderer } from './WebGLRenderer'
+
+import type { FeatureData, RenderState } from './WebGLRenderer'
 
 export interface WebGLPileupRenderingProps {
   // Initial view state
@@ -88,7 +91,9 @@ export const WebGLPileupRendering = forwardRef<
 
   // Initialize WebGL
   useEffect(() => {
-    if (!canvasRef.current) return
+    if (!canvasRef.current) {
+      return
+    }
 
     try {
       rendererRef.current = new WebGLRenderer(canvasRef.current)
@@ -104,7 +109,9 @@ export const WebGLPileupRendering = forwardRef<
 
   // Upload features when they change
   useEffect(() => {
-    if (!rendererRef.current || features.length === 0) return
+    if (!rendererRef.current || features.length === 0) {
+      return
+    }
 
     const { maxY: newMaxY } = rendererRef.current.uploadFeatures(features)
     setMaxY(newMaxY)
@@ -115,7 +122,9 @@ export const WebGLPileupRendering = forwardRef<
 
   // Re-render when view state changes
   useEffect(() => {
-    if (!rendererRef.current) return
+    if (!rendererRef.current) {
+      return
+    }
     rendererRef.current.render(viewState)
   }, [viewState])
 
@@ -132,7 +141,9 @@ export const WebGLPileupRendering = forwardRef<
   // Check if we need more data
   const checkDataNeeds = useCallback(
     (domainX: [number, number]) => {
-      if (!loadedRegion || !onNeedMoreData) return
+      if (!loadedRegion || !onNeedMoreData) {
+        return
+      }
 
       const bufferRatio = 0.2
       const visibleWidth = domainX[1] - domainX[0]
@@ -162,7 +173,9 @@ export const WebGLPileupRendering = forwardRef<
       e.preventDefault()
 
       const canvas = canvasRef.current
-      if (!canvas) return
+      if (!canvas) {
+        return
+      }
 
       if (e.shiftKey) {
         // Vertical scroll
@@ -230,10 +243,14 @@ export const WebGLPileupRendering = forwardRef<
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (!dragRef.current.isDragging) return
+      if (!dragRef.current.isDragging) {
+        return
+      }
 
       const canvas = canvasRef.current
-      if (!canvas) return
+      if (!canvas) {
+        return
+      }
 
       const dx = e.clientX - dragRef.current.lastX
       const dy = e.clientY - dragRef.current.lastY
@@ -254,7 +271,7 @@ export const WebGLPileupRendering = forwardRef<
           prev.domainX[1] + panX,
         ]
 
-        let newRangeY: [number, number] = [
+        const newRangeY: [number, number] = [
           prev.rangeY[0] + panY,
           prev.rangeY[1] + panY,
         ]
@@ -329,8 +346,7 @@ export const WebGLPileupRendering = forwardRef<
         }}
       >
         {Math.round(viewState.domainX[0])}-{Math.round(viewState.domainX[1])} |
-        {bpPerPx.toFixed(2)} bp/px |
-        {features.length} reads
+        {bpPerPx.toFixed(2)} bp/px |{features.length} reads
       </div>
     </div>
   )
