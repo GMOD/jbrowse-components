@@ -112,8 +112,15 @@ export function makeImageData({
       bottom: canvasLayout.y + canvasLayout.totalLayoutHeight,
     }
 
+    const label = String(
+      readConfObject(config, ['labels', 'name'], { feature }) || '',
+    )
+    const description = String(
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    )
     const tooltip = String(
-      readConfObject(config, 'mouseover', { feature }) || '',
+      readConfObject(config, 'mouseover', { feature, label, description }) ||
+        '',
     )
 
     coords.push(bounds.left, bounds.top, bounds.right, bounds.bottom)

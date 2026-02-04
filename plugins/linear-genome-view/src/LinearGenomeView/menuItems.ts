@@ -21,7 +21,7 @@ import {
   GetSequenceDialog,
   ReturnToImportFormDialog,
   SequenceSearchDialog,
-} from './LazyDialogs.ts'
+} from './lazyDialogs.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { BpOffset } from './types.ts'

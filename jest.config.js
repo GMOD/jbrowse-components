@@ -37,6 +37,13 @@ const baseConfig = {
 export default {
   projects: [
     {
+      // Root-level integration test
+      displayName: 'integration',
+      testMatch: ['<rootDir>/integration.test.js'],
+      testEnvironment: 'node',
+      ...baseConfig,
+    },
+    {
       // jbrowse-img uses Node environment with native fetch (no jest-fetch-mock)
       displayName: 'jbrowse-img',
       testMatch: ['<rootDir>/products/jbrowse-img/**/*.test.ts'],

@@ -91,8 +91,8 @@
     "swr": "^2.4.0"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.5.0",
-    "@electron/packager": "^18.4.4",
+    "@electron/notarize": "^3.1.1",
+    "@electron/packager": "^19.0.2",
     "@types/selenium-webdriver": "^4.35.5",
     "cross-env": "^10.1.0",
     "electron": "40.1.0",
