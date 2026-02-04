@@ -164,7 +164,7 @@
     "@mui/material": "^7.3.7",
     "@mui/system": "^7.3.7",
     "@mui/types": "^7.4.10",
-    "@mui/x-data-grid": "^8.26.0",
+    "@mui/x-data-grid": "^8.27.0",
     "@types/file-saver-es": "^2.0.3",
     "canvas-sequencer-ts": "^3.1.3",
     "canvas2svg": "^1.0.16",
