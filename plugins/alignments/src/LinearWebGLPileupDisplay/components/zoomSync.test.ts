@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Comprehensive tests for zoom + sync logic
  * Run with: node --experimental-strip-types zoomSync.test.ts
@@ -10,6 +11,9 @@
  * 5. syncFromView effect runs
  * 6. We need to preserve the correct domain
  */
+
+// Make this a module to avoid duplicate function declarations with zoomLogic.test.ts
+export const _moduleMarker = true
 
 // ============================================================
 // STATE SIMULATION
@@ -28,6 +32,7 @@ interface ViewState {
   width: number
   minBpPerPx: number
   maxBpPerPx: number
+  contentBlocks?: ContentBlock[]
 }
 
 interface ComponentState {
@@ -61,7 +66,7 @@ function computeDomainFromView(
   viewState: ViewState,
   contentBlocks: ContentBlock[],
 ): [number, number] {
-  const first = contentBlocks[0]
+  const first = contentBlocks[0]!
   const blockOffsetPx = first.offsetPx
   const deltaPx = viewState.offsetPx - blockOffsetPx
   const deltaBp = deltaPx * viewState.bpPerPx
@@ -75,7 +80,7 @@ function computeOffsetPxFromDomain(
   bpPerPx: number,
   contentBlocks: ContentBlock[],
 ): number {
-  const first = contentBlocks[0]
+  const first = contentBlocks[0]!
   const blockOffsetPx = first.offsetPx
   const domainStart = domain[0]
   return blockOffsetPx + (domainStart - first.start) / bpPerPx
@@ -128,7 +133,7 @@ class ComponentSimulator {
 
   // Simulate wheel zoom
   zoom(mouseX: number, zoomIn: boolean): void {
-    const { domainRef, bpPerPxRef } = this.componentState
+    const { domainRef } = this.componentState
     if (!domainRef) {
       return
     }
@@ -199,7 +204,7 @@ class ComponentSimulator {
       // From logs: 2416 → 1307 (diff of ~1100)
       // The view seems to recalculate offsetPx entirely based on new contentBlocks
       const oldOffsetPx = this.viewState.offsetPx
-      this.viewState.offsetPx = newContentBlocks[0].offsetPx // Reset to block start!
+      this.viewState.offsetPx = newContentBlocks[0]!.offsetPx // Reset to block start!
       console.log(
         '  [view] AGGRESSIVE adjustment:',
         oldOffsetPx.toFixed(1),
@@ -209,7 +214,7 @@ class ComponentSimulator {
       )
     } else {
       // Mild adjustment
-      const adjustment = (newContentBlocks[0].offsetPx - 1000 / 10) * 0.5
+      const adjustment = (newContentBlocks[0]!.offsetPx - 1000 / 10) * 0.5
       this.viewState.offsetPx += adjustment
       console.log(
         '  [view] Adjusted offsetPx by',

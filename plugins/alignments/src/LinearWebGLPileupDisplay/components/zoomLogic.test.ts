@@ -1,7 +1,11 @@
+/* eslint-disable no-console */
 /**
  * Test file for zoom/sync logic
  * Run with: node --experimental-strip-types zoomLogic.test.ts
  */
+
+// Make this a module to avoid duplicate function declarations with zoomSync.test.ts
+export const _moduleMarker = true
 
 // ============================================================
 // EXTRACTED PURE FUNCTIONS (same logic as in component)
@@ -18,6 +22,8 @@ interface ViewState {
   offsetPx: number
   bpPerPx: number
   width: number
+  minBpPerPx: number
+  maxBpPerPx: number
   contentBlocks: ContentBlock[]
 }
 
@@ -25,7 +31,7 @@ interface ViewState {
  * Compute domain from view state (same as syncDomainFromView)
  */
 function computeDomainFromView(view: ViewState): [number, number] {
-  const first = view.contentBlocks[0]
+  const first = view.contentBlocks[0]!
   const blockOffsetPx = first.offsetPx
   const deltaPx = view.offsetPx - blockOffsetPx
   const deltaBp = deltaPx * view.bpPerPx
@@ -42,7 +48,7 @@ function computeOffsetPxFromDomain(
   bpPerPx: number,
   contentBlocks: ContentBlock[],
 ): number {
-  const first = contentBlocks[0]
+  const first = contentBlocks[0]!
   const blockOffsetPx = first.offsetPx
   const domainStart = domain[0]
   // Inverse: domainStart = first.start + (offsetPx - blockOffsetPx) * bpPerPx
@@ -82,13 +88,6 @@ function zoomAtPosition(
 // TESTS
 // ============================================================
 
-function assert(condition: boolean, message: string) {
-  if (!condition) {
-    console.error(`❌ FAIL: ${message}`)
-    process.exit(1)
-  }
-  console.log(`✅ PASS: ${message}`)
-}
 
 function assertClose(a: number, b: number, epsilon: number, message: string) {
   const diff = Math.abs(a - b)
@@ -108,6 +107,8 @@ console.log('\n=== Test 1: Domain <-> OffsetPx round-trip ===\n')
     offsetPx: 200,
     bpPerPx: 10,
     width: 1000,
+    minBpPerPx: 0.01,
+    maxBpPerPx: 1000,
     contentBlocks,
   }
 
@@ -172,6 +173,8 @@ console.log('\n=== Test 3: Zoom then sync round-trip ===\n')
     offsetPx: 200,
     bpPerPx: initialBpPerPx,
     width,
+    minBpPerPx: 0.01,
+    maxBpPerPx: 1000,
     contentBlocks,
   }
   const initialDomain = computeDomainFromView(initialView)
@@ -196,6 +199,8 @@ console.log('\n=== Test 3: Zoom then sync round-trip ===\n')
     offsetPx: newOffsetPx,
     bpPerPx: zoomResult.bpPerPx,
     width,
+    minBpPerPx: 0.01,
+    maxBpPerPx: 1000,
     contentBlocks,
   }
 
@@ -219,9 +224,6 @@ console.log('\n=== Test 3: Zoom then sync round-trip ===\n')
 
 console.log('\n=== Test 4: Multiple zoom steps ===\n')
 {
-  const contentBlocks: ContentBlock[] = [
-    { start: 50000, end: 60000, offsetPx: 100, refName: 'chr1' },
-  ]
   const width = 1000
 
   let domain: [number, number] = [50000, 60000]
@@ -268,6 +270,8 @@ console.log('\n=== Test 5: Zoom + sync with contentBlock.offsetPx = 0 ===\n')
     offsetPx: 500,
     bpPerPx: 10,
     width,
+    minBpPerPx: 0.01,
+    maxBpPerPx: 1000,
     contentBlocks,
   }
 
@@ -292,6 +296,8 @@ console.log('\n=== Test 5: Zoom + sync with contentBlock.offsetPx = 0 ===\n')
     offsetPx: newOffsetPx,
     bpPerPx: zoomResult.bpPerPx,
     width,
+    minBpPerPx: 0.01,
+    maxBpPerPx: 1000,
     contentBlocks,
   }
   const recoveredDomain = computeDomainFromView(afterSyncView)
@@ -329,6 +335,8 @@ console.log(
     offsetPx: 200,
     bpPerPx: 10,
     width,
+    minBpPerPx: 0.01,
+    maxBpPerPx: 1000,
     contentBlocks: contentBlocksBefore,
   }
 
@@ -359,6 +367,8 @@ console.log(
     offsetPx: newOffsetPx,
     bpPerPx: zoomResult.bpPerPx,
     width,
+    minBpPerPx: 0.01,
+    maxBpPerPx: 1000,
     contentBlocks: contentBlocksAfter, // Using CHANGED blocks
   }
 
@@ -389,7 +399,6 @@ console.log('\n=== Test 7: Correct approach - domain as source of truth ===\n')
   // Simulate state
   let domainRef: [number, number] = [50000, 60000]
   let bpPerPxRef = 10
-  let offsetPxRef = 0 // doesn't matter for rendering
 
   // Content blocks (will change when bpPerPx changes)
   function getContentBlocks(bpPerPx: number): ContentBlock[] {
@@ -418,12 +427,9 @@ console.log('\n=== Test 7: Correct approach - domain as source of truth ===\n')
     bpPerPxRef = zoomResult.bpPerPx
 
     // 2. Calculate offsetPx for view sync (using current content blocks)
+    // We compute it but don't use it - demonstrating domain is source of truth
     const contentBlocks = getContentBlocks(bpPerPxRef)
-    offsetPxRef = computeOffsetPxFromDomain(
-      domainRef,
-      bpPerPxRef,
-      contentBlocks,
-    )
+    computeOffsetPxFromDomain(domainRef, bpPerPxRef, contentBlocks)
 
     // 3. Simulate: view.setNewView(bpPerPxRef, offsetPxRef)
     //    This would trigger view to update contentBlocks...
@@ -487,14 +493,14 @@ console.log('\n=== Test 8: Zoom OUT behavior ===\n')
     })
 
     // Check if domain goes outside contentBlock bounds
-    if (domain[0] < contentBlocks[0].start) {
+    if (domain[0] < contentBlocks[0]!.start) {
       console.log(
-        `  ⚠️ Domain start ${domain[0].toFixed(0)} < contentBlock start ${contentBlocks[0].start}`,
+        `  ⚠️ Domain start ${domain[0].toFixed(0)} < contentBlock start ${contentBlocks[0]!.start}`,
       )
     }
-    if (domain[1] > contentBlocks[0].end) {
+    if (domain[1] > contentBlocks[0]!.end) {
       console.log(
-        `  ⚠️ Domain end ${domain[1].toFixed(0)} > contentBlock end ${contentBlocks[0].end}`,
+        `  ⚠️ Domain end ${domain[1].toFixed(0)} > contentBlock end ${contentBlocks[0]!.end}`,
       )
     }
 
@@ -523,7 +529,7 @@ console.log('\n=== Test 9: Zoom OUT with negative offsetPx ===\n')
     'Initial: domain',
     domain,
     'blockOffsetPx',
-    contentBlocks[0].offsetPx,
+    contentBlocks[0]!.offsetPx,
   )
 
   // Zoom out - domain will expand to include region BEFORE contentBlock.start
@@ -539,8 +545,8 @@ console.log('\n=== Test 9: Zoom OUT with negative offsetPx ===\n')
       `Zoom out ${i + 1}: domain=[${domain[0].toFixed(0)}, ${domain[1].toFixed(0)}], offsetPx=${offsetPx.toFixed(1)}`,
     )
 
-    if (domain[0] < contentBlocks[0].start) {
-      const deltaBp = domain[0] - contentBlocks[0].start
+    if (domain[0] < contentBlocks[0]!.start) {
+      const deltaBp = domain[0] - contentBlocks[0]!.start
       console.log(
         `  Domain extends ${Math.abs(deltaBp).toFixed(0)}bp before contentBlock.start`,
       )

@@ -5,11 +5,31 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { getCoordinator, removeCoordinator } from './ViewCoordinator'
-import { WebGLRenderer } from './WebGLRenderer'
+import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
+import { WebGLRenderer } from './WebGLRenderer.ts'
 
-import type { LinearWebGLPileupDisplayModel } from '../model'
+import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+interface LinearWebGLPileupDisplayModel {
+  height: number
+  rpcData: WebGLPileupDataResult | null
+  loadedRegion: { refName: string; start: number; end: number } | null
+  isLoading: boolean
+  error: Error | null
+  featureHeight: number
+  featureSpacing: number
+  colorSchemeIndex: number
+  showCoverage: boolean
+  coverageHeight: number
+  showMismatches: boolean
+  showInterbaseCounts: boolean
+  showInterbaseIndicators: boolean
+  maxY: number
+  setMaxY: (y: number) => void
+  setCurrentDomain: (domain: [number, number]) => void
+  handleNeedMoreData: (region: { start: number; end: number }) => void
+}
 
 interface Props {
   model: LinearWebGLPileupDisplayModel
@@ -32,6 +52,7 @@ interface Props {
 
 // Debug logging - set to true to diagnose performance issues
 const DEBUG = false
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-console, @typescript-eslint/no-confusing-void-expression
 const log = (...args: unknown[]) => DEBUG && console.log('[WebGL]', ...args)
 const renderCountRef = { current: 0 }
 const wheelCountRef = { current: 0 }
@@ -117,14 +138,16 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       return null
     }
 
-    // @ts-ignore - dynamicBlocks access
-    const contentBlocks = view.dynamicBlocks?.contentBlocks
+    const dynamicBlocks = (view as Record<string, unknown>).dynamicBlocks
+    const contentBlocks = dynamicBlocks?.contentBlocks as
+      | { refName: string; start: number; end: number; offsetPx?: number }[]
+      | undefined
     if (!contentBlocks || contentBlocks.length === 0) {
       return null
     }
     const first = contentBlocks[0]
     const last = contentBlocks[contentBlocks.length - 1]
-    if (first.refName !== last.refName) {
+    if (!first || !last || first.refName !== last.refName) {
       // Multi-ref view - not supported yet
       return null
     }
@@ -554,10 +577,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const newOffsetPx = clampOffsetRef.current(view.offsetPx + e.deltaX)
 
         // Compute new domain for immediate rendering
-        // @ts-ignore - dynamicBlocks access
-        const contentBlocks = view.dynamicBlocks?.contentBlocks
-        if (contentBlocks?.length > 0) {
-          const first = contentBlocks[0]
+        const contentBlocks = (view as Record<string, unknown>).dynamicBlocks
+          ?.contentBlocks as
+          | { refName: string; start: number; end: number; offsetPx?: number }[]
+          | undefined
+        const first = contentBlocks?.[0]
+        if (first) {
           const blockOffsetPx = first.offsetPx ?? 0
           const deltaPx = newOffsetPx - blockOffsetPx
           const deltaBp = deltaPx * view.bpPerPx
@@ -652,10 +677,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const t2 = performance.now()
 
         // Compute new offsetPx from the new range start
-        // @ts-ignore - dynamicBlocks access
-        const contentBlocks = view.dynamicBlocks?.contentBlocks
-        if (contentBlocks?.length > 0) {
-          const first = contentBlocks[0]
+        const contentBlocks = (view as Record<string, unknown>).dynamicBlocks
+          ?.contentBlocks as
+          | { refName: string; start: number; end: number; offsetPx?: number }[]
+          | undefined
+        const first = contentBlocks?.[0]
+        if (first) {
           const blockOffsetPx = first.offsetPx ?? 0
           // assemblyOrigin is fixed - compute it from current state
           const assemblyOrigin = first.start - blockOffsetPx * view.bpPerPx
@@ -717,10 +744,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       const newOffsetPx = clampOffsetRef.current(view.offsetPx - dx)
 
       // Compute new domain for immediate rendering
-      // @ts-ignore - dynamicBlocks access
-      const contentBlocks = view.dynamicBlocks?.contentBlocks
-      if (contentBlocks?.length > 0) {
-        const first = contentBlocks[0]
+      const contentBlocks = (view as Record<string, unknown>).dynamicBlocks
+        ?.contentBlocks as
+        | { refName: string; start: number; end: number; offsetPx?: number }[]
+        | undefined
+      const first = contentBlocks?.[0]
+      if (first) {
         const blockOffsetPx = first.offsetPx ?? 0
         const deltaPx = newOffsetPx - blockOffsetPx
         const deltaBp = deltaPx * view.bpPerPx

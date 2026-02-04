@@ -20,23 +20,6 @@
  */
 
 /**
- * Split an integer position into high/low parts for 12-bit precision.
- *
- * The 12-bit split reduces Float32 precision loss for large genomic coordinates.
- * By splitting into high (multiples of 4096) and low (0-4095) parts, each component
- * has fewer significant digits, so Float32 rounding errors are minimized when
- * subtracting positions in the shader.
- *
- * Used for read positions which are stored as integers.
- */
-function splitPosition(value: number): [number, number] {
-  const intValue = Math.floor(value)
-  const lo = intValue & 0xfff
-  const hi = intValue - lo
-  return [hi, lo]
-}
-
-/**
  * Split a position including its fractional part for smooth scrolling.
  *
  * Same as splitPosition but preserves the fractional component in the low part.
@@ -1437,7 +1420,7 @@ export class WebGLRenderer {
       // Normalize depths
       const normalizedDepths = new Float32Array(data.coverageDepths.length)
       for (let i = 0; i < data.coverageDepths.length; i++) {
-        normalizedDepths[i] = data.coverageDepths[i] / data.coverageMaxDepth
+        normalizedDepths[i] = (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
       }
 
       const coverageVAO = gl.createVertexArray()

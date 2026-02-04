@@ -1,8 +1,8 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
-import configSchemaFactory from './configSchema'
-import modelFactory from './model'
+import configSchemaFactory from './configSchema.ts'
+import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -24,6 +24,6 @@ export default function register(pluginManager: PluginManager) {
   })
 }
 
-export { default as linearWebGLPileupDisplayStateModelFactory } from './model'
-export { default as linearWebGLPileupDisplayConfigSchemaFactory } from './configSchema'
-export type { LinearWebGLPileupDisplayModel } from './model'
+export { default as linearWebGLPileupDisplayStateModelFactory } from './model.ts'
+export { default as linearWebGLPileupDisplayConfigSchemaFactory } from './configSchema.ts'
+export type { LinearWebGLPileupDisplayModel } from './model.ts'

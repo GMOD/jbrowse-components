@@ -49,7 +49,7 @@ export interface InsertionData {
 
 // Lazy load the WebGL component
 const WebGLPileupComponent = lazy(
-  () => import('./components/WebGLPileupComponent'),
+  () => import('./components/WebGLPileupComponent.tsx'),
 )
 
 type LGV = LinearGenomeViewModel
