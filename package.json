@@ -81,7 +81,6 @@
     "@types/json-parse-better-errors": "^1.0.3",
     "@types/lodash.merge": "^4.6.9",
     "@types/node": "^20.19.30",
-    "@types/node-fetch": "^2.6.13",
     "@types/offscreencanvas": "^2019.7.3",
     "@types/pluralize": "^0.0.33",
     "@types/pngjs": "^6.0.5",

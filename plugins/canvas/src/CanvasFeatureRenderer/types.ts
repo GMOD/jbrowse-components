@@ -70,6 +70,8 @@ export interface LayoutRecord {
   feature: Feature
   layout: FeatureLayout
   topPx: number
+  label?: string
+  description?: string
 }
 
 export interface FlatbushItem {

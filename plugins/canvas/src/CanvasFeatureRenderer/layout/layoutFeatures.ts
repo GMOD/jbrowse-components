@@ -115,6 +115,8 @@ export function layoutFeatures({
         feature,
         layout: featureLayout,
         topPx,
+        label: name,
+        description,
       })
     }
   }
