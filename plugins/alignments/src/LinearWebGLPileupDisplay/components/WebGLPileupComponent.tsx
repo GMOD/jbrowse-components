@@ -87,6 +87,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     showCoverage,
     coverageHeight,
     coverageData,
+    snpCoverageData,
     showMismatches,
   } = model
 
@@ -438,7 +439,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   // Upload coverage
   useEffect(() => {
-    if (!rendererRef.current || !showCoverage || coverageData.data.length === 0) {
+    if (!rendererRef.current || !showCoverage) {
       return
     }
     const binSize =
@@ -446,8 +447,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         ? coverageData.data[1].position - coverageData.data[0].position
         : 1
     rendererRef.current.uploadCoverage(coverageData.data, coverageData.maxDepth, binSize)
+    rendererRef.current.uploadSNPCoverage(snpCoverageData.data, snpCoverageData.maxDepth)
     scheduleRenderRef.current()
-  }, [coverageData, showCoverage])
+  }, [coverageData, snpCoverageData, showCoverage])
 
   // Re-render on settings change
   useEffect(() => {
@@ -644,7 +646,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   const visibleBpRange = getVisibleBpRange()
   const isReady = width !== undefined && visibleBpRange !== null
-  const displayBpPerPx = bpPerPxRef.current
 
   return (
     <div style={{ position: 'relative', width: '100%', height }}>
@@ -680,29 +681,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         </div>
       )}
 
-      {isReady && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 4,
-            left: 4,
-            fontSize: 10,
-            color: '#666',
-            pointerEvents: 'none',
-            fontFamily: 'monospace',
-            background: 'rgba(255,255,255,0.7)',
-            padding: '2px 4px',
-            borderRadius: 2,
-          }}
-        >
-          {Math.round(visibleBpRange[0])}-{Math.round(visibleBpRange[1])} | {displayBpPerPx.toFixed(2)} bp/px |{' '}
-          {webglFeatures.length} reads
-          {showCoverage && coverageData.maxDepth > 0 ? ` | max depth: ${coverageData.maxDepth}` : ''}
-          {showMismatches && (webglGaps.length > 0 || webglMismatches.length > 0)
-            ? ` | ${webglGaps.length} gaps, ${webglMismatches.length} SNPs`
-            : ''}
-        </div>
-      )}
     </div>
   )
 })

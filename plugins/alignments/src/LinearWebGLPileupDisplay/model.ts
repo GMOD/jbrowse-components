@@ -24,6 +24,14 @@ export interface CoverageData {
   depth: number
 }
 
+export interface SNPCoverageData {
+  position: number  // exact genomic position (1bp)
+  snpA: number
+  snpC: number
+  snpG: number
+  snpT: number
+}
+
 export interface GapData {
   featureId: string
   start: number
@@ -129,6 +137,8 @@ export default function stateModelFactory(
       } | null,
       // Coverage data - cached to avoid recalculating on every render
       coverageData: { data: [] as CoverageData[], maxDepth: 0 },
+      // SNP coverage at exact positions
+      snpCoverageData: { data: [] as SNPCoverageData[], maxDepth: 0 },
       // Loading state
       isLoading: false,
       error: null as Error | null,
@@ -304,11 +314,14 @@ export default function stateModelFactory(
 
       /**
        * Compute and cache coverage from loaded features using sweep line algorithm
+       * Also computes SNP coverage at exact positions
        */
       computeCoverage() {
         const features = self.webglFeatures
+        const mismatches = self.webglMismatches
         if (features.length === 0 || !self.loadedRegion) {
           self.coverageData = { data: [], maxDepth: 0 }
+          self.snpCoverageData = { data: [], maxDepth: 0 }
           return
         }
 
@@ -351,6 +364,40 @@ export default function stateModelFactory(
 
         const maxDepth = Math.max(1, ...bins.map(b => b.depth))
         self.coverageData = { data: bins, maxDepth }
+
+        // Compute SNP coverage at exact positions (not binned)
+        // Group mismatches by position
+        const snpByPosition = new Map<number, { a: number; c: number; g: number; t: number }>()
+        for (const mm of mismatches) {
+          let entry = snpByPosition.get(mm.position)
+          if (!entry) {
+            entry = { a: 0, c: 0, g: 0, t: 0 }
+            snpByPosition.set(mm.position, entry)
+          }
+          if (mm.base === 0) {
+            entry.a++
+          } else if (mm.base === 1) {
+            entry.c++
+          } else if (mm.base === 2) {
+            entry.g++
+          } else if (mm.base === 3) {
+            entry.t++
+          }
+        }
+
+        // Convert to array
+        const snpData: SNPCoverageData[] = []
+        for (const [position, counts] of snpByPosition) {
+          snpData.push({
+            position,
+            snpA: counts.a,
+            snpC: counts.c,
+            snpG: counts.g,
+            snpT: counts.t,
+          })
+        }
+
+        self.snpCoverageData = { data: snpData, maxDepth }
       },
 
       setLoading(loading: boolean) {

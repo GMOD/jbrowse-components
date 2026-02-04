@@ -5,7 +5,7 @@
  * Data is uploaded once, then rendering only updates uniforms.
  */
 
-import type { FeatureData, CoverageData, GapData, MismatchData, InsertionData } from '../model'
+import type { FeatureData, CoverageData, SNPCoverageData, GapData, MismatchData, InsertionData } from '../model'
 
 // Vertex shader for reads
 const READ_VERTEX_SHADER = `#version 300 es
@@ -26,7 +26,6 @@ uniform float u_coverageOffset;  // pixels to offset down for coverage area
 uniform float u_canvasHeight;
 
 out vec4 v_color;
-out vec2 v_localPos;
 
 vec3 strandColor(float flags) {
   return vec3(0.8, 0.8, 0.8);
@@ -55,7 +54,6 @@ void main() {
   int vid = gl_VertexID % 6;
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
-  v_localPos = vec2(localX, localY);
 
   float domainWidth = u_domainX.y - u_domainX.x;
   float sx1 = (a_position.x - u_domainX.x) / domainWidth * 2.0 - 1.0;
@@ -92,37 +90,31 @@ void main() {
 const READ_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
-in vec2 v_localPos;
 out vec4 fragColor;
 void main() {
-  float border = 0.06;
-  float darken = (v_localPos.y < border || v_localPos.y > 1.0 - border) ? 0.7 : 1.0;
-  fragColor = vec4(v_color.rgb * darken, v_color.a);
+  fragColor = v_color;
 }
 `
 
-// Coverage vertex shader - renders bars as instanced quads
+// Coverage vertex shader - renders grey bars for total coverage
 const COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
 in float a_position;    // genomic position (start of bin)
-in float a_depth;       // total depth
+in float a_depth;       // normalized depth (0-1)
 
 uniform vec2 u_visibleRange;  // visible genomic range [start, end]
 uniform float u_coverageHeight;  // height in pixels
-uniform float u_maxDepth;
 uniform float u_binSize;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
 out vec4 v_color;
-out vec2 v_localPos;
 
 void main() {
   int vid = gl_VertexID % 6;
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
-  v_localPos = vec2(localX, localY);
 
   float visibleWidth = u_visibleRange.y - u_visibleRange.x;
 
@@ -130,7 +122,7 @@ void main() {
   float x1 = (a_position - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
   float x2 = (a_position + u_binSize - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
 
-  // Ensure minimum width of 1 pixel (2/canvasWidth in clip space)
+  // Ensure minimum width of 1 pixel
   float minWidth = 2.0 / u_canvasWidth;
   if (x2 - x1 < minWidth) {
     float mid = (x1 + x2) * 0.5;
@@ -141,23 +133,86 @@ void main() {
   float sx = mix(x1, x2, localX);
 
   // Y: coverage area at top of canvas
-  float barHeight = (a_depth / u_maxDepth) * u_coverageHeight;
   float coverageBottom = 1.0 - (u_coverageHeight / u_canvasHeight) * 2.0;
-  float yBot = coverageBottom;
-  float yTop = coverageBottom + (barHeight / u_canvasHeight) * 2.0;
-  float sy = mix(yBot, yTop, localY);
+  float barTop = coverageBottom + (a_depth * u_coverageHeight / u_canvasHeight) * 2.0;
+  float sy = mix(coverageBottom, barTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-
-  // Light gray coverage bars
-  v_color = vec4(0.8, 0.8, 0.8, 1.0);
+  v_color = vec4(0.8, 0.8, 0.8, 1.0);  // light grey
 }
 `
 
 const COVERAGE_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
-in vec2 v_localPos;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
+// SNP Coverage vertex shader - renders colored stacked bars at exact positions
+const SNP_COVERAGE_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in float a_position;      // exact genomic position (1bp)
+in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
+in float a_segmentHeight; // height of this segment (normalized 0-1)
+in float a_colorType;     // 1=A(green), 2=C(blue), 3=G(orange), 4=T(red)
+
+uniform vec2 u_visibleRange;
+uniform float u_coverageHeight;
+uniform float u_canvasHeight;
+uniform float u_canvasWidth;
+
+out vec4 v_color;
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+
+  float visibleWidth = u_visibleRange.y - u_visibleRange.x;
+
+  // X: 1bp wide bar
+  float x1 = (a_position - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
+  float x2 = (a_position + 1.0 - u_visibleRange.x) / visibleWidth * 2.0 - 1.0;
+
+  // Ensure minimum width of 1 pixel
+  float minWidth = 2.0 / u_canvasWidth;
+  if (x2 - x1 < minWidth) {
+    float mid = (x1 + x2) * 0.5;
+    x1 = mid - minWidth * 0.5;
+    x2 = mid + minWidth * 0.5;
+  }
+
+  float sx = mix(x1, x2, localX);
+
+  // Y: stacked from bottom of coverage area
+  float coverageBottom = 1.0 - (u_coverageHeight / u_canvasHeight) * 2.0;
+  float segmentBot = coverageBottom + (a_yOffset * u_coverageHeight / u_canvasHeight) * 2.0;
+  float segmentTop = segmentBot + (a_segmentHeight * u_coverageHeight / u_canvasHeight) * 2.0;
+  float sy = mix(segmentBot, segmentTop, localY);
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+
+  // Colors: A=green, C=blue, G=orange, T=red
+  int colorIdx = int(a_colorType);
+  if (colorIdx == 1) {
+    v_color = vec4(0.3, 0.8, 0.3, 1.0);      // A - green
+  } else if (colorIdx == 2) {
+    v_color = vec4(0.3, 0.3, 0.9, 1.0);      // C - blue
+  } else if (colorIdx == 3) {
+    v_color = vec4(0.9, 0.7, 0.2, 1.0);      // G - orange
+  } else {
+    v_color = vec4(0.9, 0.3, 0.3, 1.0);      // T - red
+  }
+}
+`
+
+const SNP_COVERAGE_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
 out vec4 fragColor;
 void main() {
   fragColor = v_color;
@@ -245,6 +300,7 @@ uniform float u_featureHeight;
 uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
+uniform float u_canvasWidth;
 
 out vec4 v_color;
 
@@ -255,15 +311,15 @@ void main() {
 
   float domainWidth = u_domainX.y - u_domainX.x;
 
-  // Mismatch is 1bp wide, ensure minimum screen width
+  // Mismatch is 1bp wide
   float x1 = a_position;
   float x2 = a_position + 1.0;
 
   float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
   float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
 
-  // Minimum width of ~3 pixels
-  float minWidth = 6.0 / domainWidth * 2.0;
+  // Ensure minimum width of 1 pixel
+  float minWidth = 2.0 / u_canvasWidth;
   if (sx2 - sx1 < minWidth) {
     float mid = (sx1 + sx2) * 0.5;
     sx1 = mid - minWidth * 0.5;
@@ -378,6 +434,9 @@ interface GPUBuffers {
   coverageCount: number
   maxDepth: number
   binSize: number
+  // SNP coverage (exact positions)
+  snpCoverageVAO: WebGLVertexArrayObject | null
+  snpCoverageCount: number
   // CIGAR data
   gapVAO: WebGLVertexArrayObject | null
   gapCount: number
@@ -393,6 +452,7 @@ export class WebGLRenderer {
 
   private readProgram: WebGLProgram
   private coverageProgram: WebGLProgram
+  private snpCoverageProgram: WebGLProgram
   private lineProgram: WebGLProgram
   private gapProgram: WebGLProgram
   private mismatchProgram: WebGLProgram
@@ -405,6 +465,7 @@ export class WebGLRenderer {
 
   private readUniforms: Record<string, WebGLUniformLocation | null> = {}
   private coverageUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private snpCoverageUniforms: Record<string, WebGLUniformLocation | null> = {}
   private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
   private gapUniforms: Record<string, WebGLUniformLocation | null> = {}
   private mismatchUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -431,6 +492,11 @@ export class WebGLRenderer {
     this.coverageProgram = this.createProgram(
       COVERAGE_VERTEX_SHADER,
       COVERAGE_FRAGMENT_SHADER,
+    )
+
+    this.snpCoverageProgram = this.createProgram(
+      SNP_COVERAGE_VERTEX_SHADER,
+      SNP_COVERAGE_FRAGMENT_SHADER,
     )
 
     this.lineProgram = this.createProgram(LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER)
@@ -463,8 +529,14 @@ export class WebGLRenderer {
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
       'u_visibleRange',
       'u_coverageHeight',
-      'u_maxDepth',
       'u_binSize',
+      'u_canvasHeight',
+      'u_canvasWidth',
+    ])
+
+    this.cacheUniforms(this.snpCoverageProgram, this.snpCoverageUniforms, [
+      'u_visibleRange',
+      'u_coverageHeight',
       'u_canvasHeight',
       'u_canvasWidth',
     ])
@@ -478,7 +550,7 @@ export class WebGLRenderer {
       'u_canvasHeight',
     ]
     this.cacheUniforms(this.gapProgram, this.gapUniforms, cigarUniforms)
-    this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, cigarUniforms)
+    this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [...cigarUniforms, 'u_canvasWidth'])
     this.cacheUniforms(this.insertionProgram, this.insertionUniforms, cigarUniforms)
 
     gl.enable(gl.BLEND)
@@ -552,6 +624,9 @@ export class WebGLRenderer {
       if (this.buffers.coverageVAO) {
         gl.deleteVertexArray(this.buffers.coverageVAO)
       }
+      if (this.buffers.snpCoverageVAO) {
+        gl.deleteVertexArray(this.buffers.snpCoverageVAO)
+      }
       if (this.buffers.gapVAO) {
         gl.deleteVertexArray(this.buffers.gapVAO)
       }
@@ -606,6 +681,8 @@ export class WebGLRenderer {
       coverageCount: 0,
       maxDepth: 0,
       binSize: 1,
+      snpCoverageVAO: null,
+      snpCoverageCount: 0,
       gapVAO: null,
       gapCount: 0,
       mismatchVAO: null,
@@ -741,14 +818,14 @@ export class WebGLRenderer {
       return
     }
 
-    // Prepare coverage arrays
+    // Prepare arrays for grey coverage bars
     const positions = new Float32Array(coverageData.length)
     const depths = new Float32Array(coverageData.length)
 
     for (let i = 0; i < coverageData.length; i++) {
-      const d = coverageData[i]
-      positions[i] = d.position
-      depths[i] = d.depth
+      const bin = coverageData[i]!
+      positions[i] = bin.position
+      depths[i] = bin.depth / maxDepth  // normalized
     }
 
     // Coverage VAO
@@ -762,6 +839,99 @@ export class WebGLRenderer {
     this.buffers.coverageCount = coverageData.length
     this.buffers.maxDepth = maxDepth
     this.buffers.binSize = binSize
+  }
+
+  uploadSNPCoverage(
+    snpData: SNPCoverageData[],
+    maxDepth: number,
+  ) {
+    const gl = this.gl
+
+    if (!this.buffers) {
+      return
+    }
+
+    // Clean up old SNP coverage VAO
+    if (this.buffers.snpCoverageVAO) {
+      gl.deleteVertexArray(this.buffers.snpCoverageVAO)
+    }
+
+    if (snpData.length === 0 || maxDepth === 0) {
+      this.buffers.snpCoverageVAO = null
+      this.buffers.snpCoverageCount = 0
+      return
+    }
+
+    // Build stacked segments for SNPs at exact positions
+    const segments: { position: number; yOffset: number; height: number; colorType: number }[] = []
+
+    for (const bin of snpData) {
+      const total = bin.snpA + bin.snpC + bin.snpG + bin.snpT
+      if (total === 0) {
+        continue
+      }
+
+      let yOffset = 0
+
+      // A segment (green)
+      if (bin.snpA > 0) {
+        const height = bin.snpA / maxDepth
+        segments.push({ position: bin.position, yOffset, height, colorType: 1 })
+        yOffset += height
+      }
+
+      // C segment (blue)
+      if (bin.snpC > 0) {
+        const height = bin.snpC / maxDepth
+        segments.push({ position: bin.position, yOffset, height, colorType: 2 })
+        yOffset += height
+      }
+
+      // G segment (orange)
+      if (bin.snpG > 0) {
+        const height = bin.snpG / maxDepth
+        segments.push({ position: bin.position, yOffset, height, colorType: 3 })
+        yOffset += height
+      }
+
+      // T segment (red)
+      if (bin.snpT > 0) {
+        const height = bin.snpT / maxDepth
+        segments.push({ position: bin.position, yOffset, height, colorType: 4 })
+      }
+    }
+
+    if (segments.length === 0) {
+      this.buffers.snpCoverageVAO = null
+      this.buffers.snpCoverageCount = 0
+      return
+    }
+
+    // Prepare arrays
+    const positions = new Float32Array(segments.length)
+    const yOffsets = new Float32Array(segments.length)
+    const heights = new Float32Array(segments.length)
+    const colorTypes = new Float32Array(segments.length)
+
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i]!
+      positions[i] = seg.position
+      yOffsets[i] = seg.yOffset
+      heights[i] = seg.height
+      colorTypes[i] = seg.colorType
+    }
+
+    // SNP Coverage VAO
+    const snpCoverageVAO = gl.createVertexArray()!
+    gl.bindVertexArray(snpCoverageVAO)
+    this.uploadBuffer(this.snpCoverageProgram, 'a_position', positions, 1)
+    this.uploadBuffer(this.snpCoverageProgram, 'a_yOffset', yOffsets, 1)
+    this.uploadBuffer(this.snpCoverageProgram, 'a_segmentHeight', heights, 1)
+    this.uploadBuffer(this.snpCoverageProgram, 'a_colorType', colorTypes, 1)
+    gl.bindVertexArray(null)
+
+    this.buffers.snpCoverageVAO = snpCoverageVAO
+    this.buffers.snpCoverageCount = segments.length
   }
 
   private uploadBuffer(
@@ -798,7 +968,7 @@ export class WebGLRenderer {
     }
 
     gl.viewport(0, 0, canvas.width, canvas.height)
-    gl.clearColor(0.96, 0.96, 0.96, 1.0)
+    gl.clearColor(0.0, 0.0, 0.0, 0.0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (!this.buffers || this.buffers.readCount === 0) {
@@ -808,6 +978,7 @@ export class WebGLRenderer {
     // Draw coverage first (at top)
     const willDrawCoverage = state.showCoverage && this.buffers.coverageVAO && this.buffers.coverageCount > 0
     if (willDrawCoverage) {
+      // Draw grey coverage bars
       gl.useProgram(this.coverageProgram)
       gl.uniform2f(
         this.coverageUniforms.u_visibleRange!,
@@ -818,13 +989,31 @@ export class WebGLRenderer {
         this.coverageUniforms.u_coverageHeight!,
         state.coverageHeight,
       )
-      gl.uniform1f(this.coverageUniforms.u_maxDepth!, this.buffers.maxDepth)
       gl.uniform1f(this.coverageUniforms.u_binSize!, this.buffers.binSize)
       gl.uniform1f(this.coverageUniforms.u_canvasHeight!, canvas.height)
       gl.uniform1f(this.coverageUniforms.u_canvasWidth!, canvas.width)
 
       gl.bindVertexArray(this.buffers.coverageVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.coverageCount)
+
+      // Draw SNP coverage on top (at exact 1bp positions)
+      if (this.buffers.snpCoverageVAO && this.buffers.snpCoverageCount > 0) {
+        gl.useProgram(this.snpCoverageProgram)
+        gl.uniform2f(
+          this.snpCoverageUniforms.u_visibleRange!,
+          state.domainX[0],
+          state.domainX[1],
+        )
+        gl.uniform1f(
+          this.snpCoverageUniforms.u_coverageHeight!,
+          state.coverageHeight,
+        )
+        gl.uniform1f(this.snpCoverageUniforms.u_canvasHeight!, canvas.height)
+        gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvas.width)
+
+        gl.bindVertexArray(this.buffers.snpCoverageVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.snpCoverageCount)
+      }
 
       // Draw separator line at bottom of coverage area
       const lineY = 1.0 - (state.coverageHeight / canvas.height) * 2.0
@@ -897,6 +1086,7 @@ export class WebGLRenderer {
         gl.uniform1f(this.mismatchUniforms.u_featureSpacing!, state.featureSpacing)
         gl.uniform1f(this.mismatchUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.mismatchUniforms.u_canvasHeight!, canvas.height)
+        gl.uniform1f(this.mismatchUniforms.u_canvasWidth!, canvas.width)
 
         gl.bindVertexArray(this.buffers.mismatchVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.mismatchCount)
@@ -928,6 +1118,9 @@ export class WebGLRenderer {
       if (this.buffers.coverageVAO) {
         gl.deleteVertexArray(this.buffers.coverageVAO)
       }
+      if (this.buffers.snpCoverageVAO) {
+        gl.deleteVertexArray(this.buffers.snpCoverageVAO)
+      }
       if (this.buffers.gapVAO) {
         gl.deleteVertexArray(this.buffers.gapVAO)
       }
@@ -946,6 +1139,7 @@ export class WebGLRenderer {
     }
     gl.deleteProgram(this.readProgram)
     gl.deleteProgram(this.coverageProgram)
+    gl.deleteProgram(this.snpCoverageProgram)
     gl.deleteProgram(this.lineProgram)
     gl.deleteProgram(this.gapProgram)
     gl.deleteProgram(this.mismatchProgram)
