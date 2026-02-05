@@ -709,12 +709,15 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   }, [model, model.rpcData])
 
   // Compute floating label positions
+  // Need to include view.bpPerPx and view.offsetPx in deps so labels update on pan/zoom
+  const bpPerPx = view?.bpPerPx
+  const viewOffsetPx = view?.offsetPx
+
   const floatingLabelElements = useMemo(() => {
-    if (!rpcData?.floatingLabelsData || !view?.initialized || !width) {
+    if (!rpcData?.floatingLabelsData || !view?.initialized || !width || !bpPerPx) {
       return null
     }
 
-    const bpPerPx = view.bpPerPx
     const regionStart = rpcData.regionStart
     const visibleRange = getVisibleBpRange()
     if (!visibleRange) {
@@ -775,11 +778,11 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
-  }, [rpcData, view, width, getVisibleBpRange, scrollY])
+  }, [rpcData, view, width, bpPerPx, viewOffsetPx, getVisibleBpRange, scrollY])
 
   // Compute highlight overlays for hovered and selected features
   const highlightOverlays = useMemo(() => {
-    if (!rpcData || !view?.initialized || !width) {
+    if (!rpcData || !view?.initialized || !width || !bpPerPx) {
       return null
     }
 
@@ -788,7 +791,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       return null
     }
 
-    const bpPerPx = view.bpPerPx
     const overlays: React.ReactElement[] = []
 
     const addOverlay = (
@@ -839,7 +841,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return overlays.length > 0 ? overlays : null
-  }, [rpcData, view, width, getVisibleBpRange, scrollY, hoveredFeature, model.selectedFeatureId])
+  }, [rpcData, view, width, bpPerPx, viewOffsetPx, getVisibleBpRange, scrollY, hoveredFeature, model.selectedFeatureId])
 
   if (error) {
     return (
