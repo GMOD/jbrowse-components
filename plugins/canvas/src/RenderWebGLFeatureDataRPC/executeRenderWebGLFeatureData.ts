@@ -698,7 +698,7 @@ export async function executeRenderWebGLFeatureData({
       featureIndex.add(item.startBp, item.topPx, item.endBp, item.bottomPx)
     }
     featureIndex.finish()
-    flatbushData = featureIndex.data
+    flatbushData = featureIndex.data as ArrayBuffer
   }
 
   if (subfeatureInfos.length > 0) {
@@ -707,7 +707,7 @@ export async function executeRenderWebGLFeatureData({
       subfeatureIndex.add(item.startBp, item.topPx, item.endBp, item.bottomPx)
     }
     subfeatureIndex.finish()
-    subfeatureFlatbushData = subfeatureIndex.data
+    subfeatureFlatbushData = subfeatureIndex.data as ArrayBuffer
   }
 
   // Convert to TypedArrays
@@ -812,5 +812,6 @@ export async function executeRenderWebGLFeatureData({
     numArrows: result.numArrows,
     maxY: result.maxY,
   })
-  return rpcResult(result, transferables)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return rpcResult(result, transferables) as any
 }

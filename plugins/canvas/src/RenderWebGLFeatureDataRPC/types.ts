@@ -9,6 +9,7 @@ export interface RenderWebGLFeatureDataArgs {
     start: number
     end: number
     assemblyName?: string
+    reversed?: boolean
   }
   bpPerPx: number
 }

@@ -787,7 +787,7 @@ export class WebGLFeatureRenderer {
 
     for (let i = 0; i < lineData.count; i++) {
       const direction = lineData.directions[i]
-      if (direction === 0) {
+      if (direction === undefined || direction === 0) {
         continue
       }
 

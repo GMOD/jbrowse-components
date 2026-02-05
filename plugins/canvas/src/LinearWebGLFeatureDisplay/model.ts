@@ -200,7 +200,8 @@ export default function stateModelFactory(
       },
 
       setFeatureIdUnderMouse(featureId: string | null) {
-        self.featureIdUnderMouse = featureId
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(self as any).featureIdUnderMouse = featureId
       },
 
       selectFeature(featureInfo: FlatbushItem) {
