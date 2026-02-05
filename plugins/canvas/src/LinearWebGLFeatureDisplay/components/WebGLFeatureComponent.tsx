@@ -780,9 +780,11 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           labelX = featureLeftPx
         } else {
           // Float within feature bounds, clamped to viewport
+          // Label should stay visible (not go off left edge of viewport)
+          // but also not extend past the feature's right edge
           const minX = Math.max(0, featureLeftPx)
-          const maxX = Math.min(width - labelWidth, featureRightPx - labelWidth)
-          labelX = Math.max(minX, Math.min(maxX, 0))
+          const maxX = featureRightPx - labelWidth
+          labelX = Math.min(Math.max(minX, 0), maxX)
         }
 
         elements.push(

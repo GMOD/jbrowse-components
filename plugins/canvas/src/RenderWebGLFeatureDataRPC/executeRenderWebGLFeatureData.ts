@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { dedupe, updateStatus } from '@jbrowse/core/util'
+import { dedupe, measureText, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
@@ -611,23 +611,32 @@ export async function executeRenderWebGLFeatureData({
         const featureDescription = String(feature.get('description') || '')
         const fontSize = mockConfig.labels.fontSize
         let labelHeight = 0
+        let maxLabelWidth = 0
         if (featureName && mockConfig.showLabels) {
           labelHeight += fontSize
+          maxLabelWidth = Math.max(maxLabelWidth, measureText(featureName, 11))
         }
         if (featureDescription && mockConfig.showDescriptions) {
           labelHeight += fontSize
+          maxLabelWidth = Math.max(
+            maxLabelWidth,
+            measureText(featureDescription, 11),
+          )
+        }
+
+        // Extend layout bounds to account for label width
+        // Labels are positioned at the feature's left edge and extend rightward
+        const featureWidthPx = (featureEnd - featureStart) / bpPerPx
+        if (maxLabelWidth > featureWidthPx) {
+          const extraLabelWidthBp = (maxLabelWidth - featureWidthPx) * bpPerPx
+          if (reversed) {
+            layoutStart -= extraLabelWidthBp
+          } else {
+            layoutEnd += extraLabelWidthBp
+          }
         }
 
         const layoutHeight = featureLayout.height + labelHeight + yPadding
-        // Debug layout heights
-        if (records.length < 5) {
-          console.log('Layout debug:', {
-            featureId: feature.id(),
-            featureHeight: featureLayout.height,
-            labelHeight,
-            layoutHeightWithPadding: layoutHeight,
-          })
-        }
         const topPx = layout.addRect(
           feature.id(),
           layoutStart,
