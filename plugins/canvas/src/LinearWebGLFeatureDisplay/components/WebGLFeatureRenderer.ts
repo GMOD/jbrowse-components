@@ -385,6 +385,7 @@ export class WebGLFeatureRenderer {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     const gl = canvas.getContext('webgl2', {
+      alpha: true,
       antialias: true,
       premultipliedAlpha: false,
       preserveDrawingBuffer: true,
@@ -677,7 +678,7 @@ export class WebGLFeatureRenderer {
     }
 
     gl.viewport(0, 0, canvasWidth, canvasHeight)
-    gl.clearColor(0.98, 0.98, 0.98, 1.0)
+    gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (!this.buffers || this.buffers.rectCount === 0) {

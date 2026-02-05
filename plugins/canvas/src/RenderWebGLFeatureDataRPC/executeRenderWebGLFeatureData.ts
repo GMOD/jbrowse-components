@@ -210,6 +210,15 @@ function collectRenderData(
       const transcriptEnd = transcriptFeature.get('end')
       const transcriptStrand = (transcriptFeature.get('strand') as number) || 0
 
+      // Get parent/transcript names for tooltips
+      const parentName = String(
+        parentFeature.get('name') || parentFeature.get('id') || '',
+      )
+      const transcriptName = String(
+        transcriptFeature.get('name') || transcriptFeature.get('id') || '',
+      )
+      const isNestedTranscript = transcriptFeature.id() !== parentFeature.id()
+
       const transcriptStrokeColor = getStrokeColor({
         feature: transcriptFeature,
         config: config as any,
@@ -262,6 +271,16 @@ function collectRenderData(
           type: childIsUTR ? 1 : 0,
         })
 
+        // Build tooltip with parent info (gene first, then transcript, then subfeature)
+        let tooltipParts: string[] = []
+        if (parentName) {
+          tooltipParts.push(`Gene: ${parentName}`)
+        }
+        if (isNestedTranscript && transcriptName) {
+          tooltipParts.push(`Transcript: ${transcriptName}`)
+        }
+        tooltipParts.push(`${childType}: ${childStart.toLocaleString()}-${childEnd.toLocaleString()}`)
+
         // Add subfeature info for hit detection
         subfeatureInfos.push({
           featureId: childFeature.id(),
@@ -272,9 +291,34 @@ function collectRenderData(
           topPx: childTopPx,
           bottomPx: childTopPx + childHeight,
           displayLabel: childType,
-          tooltip: `${childType}: ${childStart.toLocaleString()}-${childEnd.toLocaleString()}`,
+          tooltip: tooltipParts.join('\n'),
         })
       }
+
+      // Add transcript-level hit detection entry (spans entire transcript area)
+      // Added after children so exon/CDS hits take priority
+      let transcriptTooltipParts: string[] = []
+      if (parentName) {
+        transcriptTooltipParts.push(`Gene: ${parentName}`)
+      }
+      if (transcriptName) {
+        transcriptTooltipParts.push(`Transcript: ${transcriptName}`)
+      }
+      transcriptTooltipParts.push(
+        `${transcriptFeature.get('type') || 'transcript'}: ${transcriptStart.toLocaleString()}-${transcriptEnd.toLocaleString()}`,
+      )
+
+      subfeatureInfos.push({
+        featureId: transcriptFeature.id(),
+        parentFeatureId: parentFeature.id(),
+        type: transcriptFeature.get('type') || 'transcript',
+        startBp: transcriptStart,
+        endBp: transcriptEnd,
+        topPx: transcriptTopPx,
+        bottomPx: transcriptTopPx + transcriptLayout.height,
+        displayLabel: transcriptName || 'transcript',
+        tooltip: transcriptTooltipParts.join('\n'),
+      })
 
       // Add strand arrow for transcript
       if (transcriptStrand !== 0) {
@@ -341,6 +385,13 @@ function collectRenderData(
             type: childIsUTR ? 1 : 0,
           })
 
+          // Build tooltip with parent info (gene first, then subfeature)
+          let tooltipParts: string[] = []
+          if (name) {
+            tooltipParts.push(`Gene: ${name}`)
+          }
+          tooltipParts.push(`${childType}: ${childStart.toLocaleString()}-${childEnd.toLocaleString()}`)
+
           // Add subfeature info for hit detection
           subfeatureInfos.push({
             featureId: childFeature.id(),
@@ -351,7 +402,7 @@ function collectRenderData(
             topPx: childTopPx,
             bottomPx: childTopPx + childHeight,
             displayLabel: childType,
-            tooltip: `${childType}: ${childStart.toLocaleString()}-${childEnd.toLocaleString()}`,
+            tooltip: tooltipParts.join('\n'),
           })
         }
       }
