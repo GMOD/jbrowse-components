@@ -31,11 +31,80 @@ export const YSCALEBAR_LABEL_OFFSET = 5
 export const LONG_INSERTION_MIN_LENGTH = 10
 export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15 // min pixels to show text box
 
+// Insertion type classification - must match shader logic in WebGLRenderer.ts
+export type InsertionType = 'large' | 'long' | 'small'
+
+/**
+ * Classify an insertion based on its length and current zoom level.
+ * - 'large': length >= 10bp AND wide enough to show text (>= 15px)
+ * - 'long': length >= 10bp but too zoomed out for text
+ * - 'small': length < 10bp
+ */
+export function getInsertionType(length: number, pxPerBp: number): InsertionType {
+  const isLongInsertion = length >= LONG_INSERTION_MIN_LENGTH
+  if (isLongInsertion) {
+    const insertionWidthPx = length * pxPerBp
+    if (insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
+      return 'large'
+    }
+    return 'long'
+  }
+  return 'small'
+}
+
+/**
+ * Calculate the pixel width needed to display a number as text.
+ * Must match the textWidthForNumber function in the insertion vertex shader.
+ */
+export function textWidthForNumber(num: number): number {
+  const charWidth = 6
+  const padding = 10
+  if (num < 10) {
+    return charWidth + padding
+  }
+  if (num < 100) {
+    return charWidth * 2 + padding
+  }
+  if (num < 1000) {
+    return charWidth * 3 + padding
+  }
+  if (num < 10000) {
+    return charWidth * 4 + padding
+  }
+  return charWidth * 5 + padding
+}
+
+/**
+ * Get the rectangle width in pixels for an insertion marker.
+ * Must match the shader logic in WebGLRenderer.ts.
+ */
+export function getInsertionRectWidthPx(length: number, pxPerBp: number): number {
+  const type = getInsertionType(length, pxPerBp)
+  if (type === 'large') {
+    return textWidthForNumber(length)
+  }
+  if (type === 'long') {
+    return 2 // small solid rectangle
+  }
+  return Math.min(pxPerBp, 1) // thin bar, subpixel when zoomed out
+}
+
 interface Region {
   refName: string
   start: number
   end: number
   assemblyName?: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getSequenceAdapter(session: any, region: Region) {
+  const assembly = region.assemblyName
+    ? session.assemblyManager.get(region.assemblyName)
+    : undefined
+  const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+  return sequenceAdapterConfig
+    ? getSnapshot(sequenceAdapterConfig)
+    : undefined
 }
 
 const WebGLPileupComponent = lazy(
@@ -460,19 +529,24 @@ export default function stateModelFactory(
         try {
           const track = getContainingTrack(self)
           const adapterConfig = getConf(track, 'adapter')
-          const region = self.loadedRegion
-          if (!region) {
+          const loadedRegion = self.loadedRegion
+          if (!loadedRegion) {
             return
           }
-          const assemblyName = region.assemblyName
-          const assembly = assemblyName
-            ? session.assemblyManager.get(assemblyName)
-            : undefined
-          const sequenceAdapterConfig =
-            assembly?.configuration?.sequence?.adapter
-          const sequenceAdapter = sequenceAdapterConfig
-            ? getSnapshot(sequenceAdapterConfig)
-            : undefined
+
+          // Use the feature's known position from typed arrays to narrow the
+          // query region, avoiding a full re-fetch of the entire loaded region
+          const info = self.getFeatureInfoById(featureId)
+          const region = info
+            ? {
+                refName: loadedRegion.refName,
+                start: info.start,
+                end: info.end,
+                assemblyName: loadedRegion.assemblyName,
+              }
+            : loadedRegion
+
+          const sequenceAdapter = getSequenceAdapter(session, region)
 
           const { feature } = (await rpcManager.call(
             session.id ?? '',
@@ -509,7 +583,7 @@ export default function stateModelFactory(
     .actions(self => {
       async function fetchFeaturesImpl(region: Region) {
         const session = getSession(self)
-        const { rpcManager, assemblyManager } = session
+        const { rpcManager } = session
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
 
@@ -521,16 +595,7 @@ export default function stateModelFactory(
         self.setError(null)
 
         try {
-          // Get the sequence adapter from the assembly (needed for CRAM files)
-          const assemblyName = region.assemblyName
-          const assembly = assemblyName
-            ? assemblyManager.get(assemblyName)
-            : undefined
-          const sequenceAdapterConfig =
-            assembly?.configuration?.sequence?.adapter
-          const sequenceAdapter = sequenceAdapterConfig
-            ? getSnapshot(sequenceAdapterConfig)
-            : undefined
+          const sequenceAdapter = getSequenceAdapter(session, region)
 
           const result = (await rpcManager.call(
             session.id ?? '',

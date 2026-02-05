@@ -2202,9 +2202,7 @@ export class WebGLRenderer {
 
     // Draw CIGAR features if enabled
     if (state.showMismatches) {
-      const bpPerPx = (state.domainX[1] - state.domainX[0]) / canvasWidth
-
-      // Draw gaps (deletions) - always visible
+      // Draw gaps (deletions)
       if (this.buffers.gapVAO && this.buffers.gapCount > 0) {
         gl.useProgram(this.gapProgram)
         gl.uniform2f(
@@ -2238,12 +2236,8 @@ export class WebGLRenderer {
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.gapCount)
       }
 
-      // Draw mismatches - only when zoomed in enough (< 50 bp/px)
-      if (
-        this.buffers.mismatchVAO &&
-        this.buffers.mismatchCount > 0 &&
-        bpPerPx < 50
-      ) {
+      // Draw mismatches
+      if (this.buffers.mismatchVAO && this.buffers.mismatchCount > 0) {
         gl.useProgram(this.mismatchProgram)
         gl.uniform2f(
           this.mismatchUniforms.u_domainX!,
@@ -2276,13 +2270,9 @@ export class WebGLRenderer {
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.mismatchCount)
       }
 
-      // Draw insertions - only when zoomed in enough (< 100 bp/px)
+      // Draw insertions
       // Each insertion is 3 rectangles (bar + 2 ticks) = 18 vertices
-      if (
-        this.buffers.insertionVAO &&
-        this.buffers.insertionCount > 0 &&
-        bpPerPx < 100
-      ) {
+      if (this.buffers.insertionVAO && this.buffers.insertionCount > 0) {
         gl.useProgram(this.insertionProgram)
         gl.uniform2f(
           this.insertionUniforms.u_domainX!,
@@ -2315,12 +2305,8 @@ export class WebGLRenderer {
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 18, this.buffers.insertionCount)
       }
 
-      // Draw soft clips - only when zoomed in enough (< 100 bp/px)
-      if (
-        this.buffers.softclipVAO &&
-        this.buffers.softclipCount > 0 &&
-        bpPerPx < 100
-      ) {
+      // Draw soft clips
+      if (this.buffers.softclipVAO && this.buffers.softclipCount > 0) {
         gl.useProgram(this.softclipProgram)
         gl.uniform2f(
           this.softclipUniforms.u_domainX!,
@@ -2353,12 +2339,8 @@ export class WebGLRenderer {
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.softclipCount)
       }
 
-      // Draw hard clips - only when zoomed in enough (< 100 bp/px)
-      if (
-        this.buffers.hardclipVAO &&
-        this.buffers.hardclipCount > 0 &&
-        bpPerPx < 100
-      ) {
+      // Draw hard clips
+      if (this.buffers.hardclipVAO && this.buffers.hardclipCount > 0) {
         gl.useProgram(this.hardclipProgram)
         gl.uniform2f(
           this.hardclipUniforms.u_domainX!,
