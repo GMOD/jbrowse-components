@@ -426,7 +426,11 @@ export class WebGLFeatureRenderer {
       'u_canvasHeight',
       'u_scrollY',
     ])
-    this.cacheUniforms(this.chevronProgram, this.chevronUniforms, commonUniforms)
+    this.cacheUniforms(
+      this.chevronProgram,
+      this.chevronUniforms,
+      commonUniforms,
+    )
     this.cacheUniforms(this.arrowProgram, this.arrowUniforms, commonUniforms)
 
     gl.enable(gl.BLEND)
@@ -526,7 +530,12 @@ export class WebGLFeatureRenderer {
     if (data.numLines > 0) {
       lineVAO = gl.createVertexArray()!
       gl.bindVertexArray(lineVAO)
-      this.uploadUintBuffer(this.lineProgram, 'a_position', data.linePositions, 2)
+      this.uploadUintBuffer(
+        this.lineProgram,
+        'a_position',
+        data.linePositions,
+        2,
+      )
       this.uploadFloatBuffer(this.lineProgram, 'a_y', data.lineYs, 1)
       this.uploadColorBuffer(this.lineProgram, 'a_color', data.lineColors)
       gl.bindVertexArray(null)
@@ -558,7 +567,12 @@ export class WebGLFeatureRenderer {
         new Float32Array(data.arrowDirections),
         1,
       )
-      this.uploadFloatBuffer(this.arrowProgram, 'a_height', data.arrowHeights, 1)
+      this.uploadFloatBuffer(
+        this.arrowProgram,
+        'a_height',
+        data.arrowHeights,
+        1,
+      )
       this.uploadColorBuffer(this.arrowProgram, 'a_color', data.arrowColors)
       gl.bindVertexArray(null)
     }
@@ -667,7 +681,9 @@ export class WebGLFeatureRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (!this.buffers || this.buffers.rectCount === 0) {
-      console.log('WebGLFeatureRenderer.render: No buffers or no rects, returning early')
+      console.log(
+        'WebGLFeatureRenderer.render: No buffers or no rects, returning early',
+      )
       return
     }
 
@@ -792,7 +808,10 @@ export class WebGLFeatureRenderer {
       }
 
       // Calculate number of chevrons that fit
-      const numChevrons = Math.max(1, Math.floor(lineWidthPx / CHEVRON_PIXEL_SPACING))
+      const numChevrons = Math.max(
+        1,
+        Math.floor(lineWidthPx / CHEVRON_PIXEL_SPACING),
+      )
       const bpSpacing = (endBp - startBp) / (numChevrons + 1)
 
       for (let j = 1; j <= numChevrons; j++) {
@@ -817,15 +836,29 @@ export class WebGLFeatureRenderer {
     // Create and upload chevron buffers
     this.chevronVAO = gl.createVertexArray()!
     gl.bindVertexArray(this.chevronVAO)
-    this.uploadUintBuffer(this.chevronProgram, 'a_x', new Uint32Array(chevronXs), 1)
-    this.uploadFloatBuffer(this.chevronProgram, 'a_y', new Float32Array(chevronYs), 1)
+    this.uploadUintBuffer(
+      this.chevronProgram,
+      'a_x',
+      new Uint32Array(chevronXs),
+      1,
+    )
+    this.uploadFloatBuffer(
+      this.chevronProgram,
+      'a_y',
+      new Float32Array(chevronYs),
+      1,
+    )
     this.uploadFloatBuffer(
       this.chevronProgram,
       'a_direction',
       new Float32Array(chevronDirections),
       1,
     )
-    this.uploadColorBuffer(this.chevronProgram, 'a_color', new Uint32Array(chevronColors))
+    this.uploadColorBuffer(
+      this.chevronProgram,
+      'a_color',
+      new Uint32Array(chevronColors),
+    )
     gl.bindVertexArray(null)
 
     this.chevronCount = chevronXs.length

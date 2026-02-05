@@ -714,7 +714,12 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const viewOffsetPx = view?.offsetPx
 
   const floatingLabelElements = useMemo(() => {
-    if (!rpcData?.floatingLabelsData || !view?.initialized || !width || !bpPerPx) {
+    if (
+      !rpcData?.floatingLabelsData ||
+      !view?.initialized ||
+      !width ||
+      !bpPerPx
+    ) {
       return null
     }
 
@@ -740,11 +745,32 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       const featureLeftPx = (featureStartBp - visibleRange[0]) / bpPerPx
       const featureRightPx = (featureEndBp - visibleRange[0]) / bpPerPx
       const featureWidth = featureRightPx - featureLeftPx
-      const topY = labelData.topY - scrollY
+
+      // Get the actual feature visual bounds from flatbush items
+      const flatbushItem = rpcData.flatbushItems.find(
+        f => f.featureId === featureId,
+      )
+      const featureBottomPx = flatbushItem
+        ? flatbushItem.bottomPx
+        : labelData.topY + labelData.featureHeight
+
+      // Debug first few labels
+      if (elements.length < 3) {
+        console.log('Label debug:', {
+          featureId,
+          flatbushTopPx: flatbushItem?.topPx,
+          flatbushBottomPx: flatbushItem?.bottomPx,
+          labelDataTopY: labelData.topY,
+          labelDataFeatureHeight: labelData.featureHeight,
+          calculatedBottom: labelData.topY + labelData.featureHeight,
+          scrollY,
+        })
+      }
 
       for (const [i, label] of labelData.floatingLabels.entries()) {
         const { text, relativeY, color } = label
-        const labelY = topY + labelData.featureHeight + relativeY
+        const labelPadding = 2 // Small gap between feature and label
+        const labelY = featureBottomPx - scrollY + relativeY + labelPadding
         const labelWidth = measureText(text, 11)
 
         // Calculate floating position (clamped to feature bounds and viewport)
@@ -793,18 +819,17 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     const overlays: React.ReactElement[] = []
 
-    const addOverlay = (
-      featureId: string,
-      color: string,
-      key: string,
-    ) => {
+    const addOverlay = (featureId: string, color: string, key: string) => {
       const feature = rpcData.flatbushItems.find(f => f.featureId === featureId)
       if (!feature) {
         return
       }
 
       // Check if feature is in visible range
-      if (feature.endBp < visibleRange[0] || feature.startBp > visibleRange[1]) {
+      if (
+        feature.endBp < visibleRange[0] ||
+        feature.startBp > visibleRange[1]
+      ) {
         return
       }
 
@@ -836,12 +861,25 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     // Add selection highlight (blue tint)
-    if (model.selectedFeatureId && model.selectedFeatureId !== hoveredFeature?.featureId) {
+    if (
+      model.selectedFeatureId &&
+      model.selectedFeatureId !== hoveredFeature?.featureId
+    ) {
       addOverlay(model.selectedFeatureId, 'rgba(0, 100, 255, 0.2)', 'selected')
     }
 
     return overlays.length > 0 ? overlays : null
-  }, [rpcData, view, width, bpPerPx, viewOffsetPx, getVisibleBpRange, scrollY, hoveredFeature, model.selectedFeatureId])
+  }, [
+    rpcData,
+    view,
+    width,
+    bpPerPx,
+    viewOffsetPx,
+    getVisibleBpRange,
+    scrollY,
+    hoveredFeature,
+    model.selectedFeatureId,
+  ])
 
   if (error) {
     return (

@@ -48,6 +48,7 @@ export default function stateModelFactory(
     .volatile(() => ({
       rpcData: null as WebGLFeatureDataResult | null,
       loadedRegion: null as Region | null,
+      layoutBpPerPx: null as number | null, // bpPerPx used for current layout
       isLoading: false,
       error: null as Error | null,
       currentDomainX: null as [number, number] | null,
@@ -129,6 +130,23 @@ export default function stateModelFactory(
         )
       },
 
+      get needsLayoutRefresh(): boolean {
+        if (!self.layoutBpPerPx) {
+          return false
+        }
+        try {
+          const view = getContainingView(self) as LGV
+          if (!view.initialized) {
+            return false
+          }
+          // Re-layout if zoom changed by more than 2x in either direction
+          const ratio = view.bpPerPx / self.layoutBpPerPx
+          return ratio > 2 || ratio < 0.5
+        } catch {
+          return false
+        }
+      },
+
       getFeatureById(featureId: string): FlatbushItem | undefined {
         return self.rpcData?.flatbushItems.find(f => f.featureId === featureId)
       },
@@ -143,6 +161,10 @@ export default function stateModelFactory(
 
       setLoadedRegion(region: Region | null) {
         self.loadedRegion = region
+      },
+
+      setLayoutBpPerPx(bpPerPx: number) {
+        self.layoutBpPerPx = bpPerPx
       },
 
       setLoading(loading: boolean) {
@@ -202,7 +224,7 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => {
-      async function fetchFeaturesImpl(region: Region) {
+      async function fetchFeaturesImpl(region: Region, bpPerPx: number) {
         const session = getSession(self)
         const { rpcManager } = session
         const track = getContainingTrack(self)
@@ -217,7 +239,10 @@ export default function stateModelFactory(
 
         try {
           const rendererConfig = getConf(self, 'renderer')
-          console.log('LinearWebGLFeatureDisplay: Calling RPC', { region })
+          console.log('LinearWebGLFeatureDisplay: Calling RPC', {
+            region,
+            bpPerPx,
+          })
           const result = (await rpcManager.call(
             session.id ?? '',
             'RenderWebGLFeatureData',
@@ -226,6 +251,7 @@ export default function stateModelFactory(
               adapterConfig,
               rendererConfig,
               region,
+              bpPerPx,
             },
           )) as WebGLFeatureDataResult
 
@@ -239,6 +265,7 @@ export default function stateModelFactory(
             start: region.start,
             end: region.end,
           })
+          self.setLayoutBpPerPx(bpPerPx)
           self.setLoading(false)
         } catch (e) {
           self.setError(e instanceof Error ? e : new Error(String(e)))
@@ -247,8 +274,8 @@ export default function stateModelFactory(
       }
 
       return {
-        fetchFeatures(region: Region) {
-          fetchFeaturesImpl(region).catch(e => {
+        fetchFeatures(region: Region, bpPerPx: number) {
+          fetchFeaturesImpl(region, bpPerPx).catch(e => {
             console.error('Failed to fetch features:', e)
           })
         },
@@ -259,6 +286,9 @@ export default function stateModelFactory(
             return
           }
 
+          const view = getContainingView(self) as LGV
+          const bpPerPx = view?.bpPerPx ?? 1
+
           const width = requestedRegion.end - requestedRegion.start
           const expandedRegion = {
             refName: visibleRegion.refName,
@@ -267,30 +297,57 @@ export default function stateModelFactory(
             assemblyName: visibleRegion.assemblyName,
           }
 
-          fetchFeaturesImpl(expandedRegion).catch(e => {
+          fetchFeaturesImpl(expandedRegion, bpPerPx).catch(e => {
             console.error('Failed to fetch features:', e)
           })
         },
 
         afterAttach() {
+          // React to region changes (panning)
           addDisposer(
             self,
             reaction(
               () => self.visibleRegion,
               region => {
                 if (region && !self.isWithinLoadedRegion) {
+                  const view = getContainingView(self) as LGV
+                  const bpPerPx = view?.bpPerPx ?? 1
                   const width = region.end - region.start
                   const expandedRegion = {
                     ...region,
                     start: Math.max(0, region.start - width * 2),
                     end: region.end + width * 2,
                   }
-                  fetchFeaturesImpl(expandedRegion).catch(e => {
+                  fetchFeaturesImpl(expandedRegion, bpPerPx).catch(e => {
                     console.error('Failed to fetch features:', e)
                   })
                 }
               },
               { delay: 300, fireImmediately: true },
+            ),
+          )
+
+          // React to zoom changes (re-layout when zoom changes significantly)
+          addDisposer(
+            self,
+            reaction(
+              () => {
+                try {
+                  const view = getContainingView(self) as LGV
+                  return view?.initialized ? view.bpPerPx : null
+                } catch {
+                  return null
+                }
+              },
+              bpPerPx => {
+                if (bpPerPx && self.needsLayoutRefresh && self.loadedRegion) {
+                  const region = self.loadedRegion
+                  fetchFeaturesImpl(region, bpPerPx).catch(e => {
+                    console.error('Failed to refresh layout:', e)
+                  })
+                }
+              },
+              { delay: 500 }, // Debounce zoom changes
             ),
           )
         },

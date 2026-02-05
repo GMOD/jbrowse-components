@@ -12,7 +12,11 @@ import { toArray } from 'rxjs/operators'
 
 import { createFeatureFloatingLabels } from '../CanvasFeatureRenderer/floatingLabels.ts'
 import { layoutFeature } from '../CanvasFeatureRenderer/layout/layoutFeature.ts'
-import { getBoxColor, getStrokeColor, isUTR } from '../CanvasFeatureRenderer/util.ts'
+import {
+  getBoxColor,
+  getStrokeColor,
+  isUTR,
+} from '../CanvasFeatureRenderer/util.ts'
 
 import type { RenderConfigContext } from '../CanvasFeatureRenderer/renderConfig.ts'
 
@@ -260,8 +264,7 @@ function collectRenderData(
       // Add strand arrow
       if (strand !== 0) {
         const effectiveStrand = reversed ? -strand : strand
-        const arrowX =
-          effectiveStrand === 1 ? featureEnd : featureStart
+        const arrowX = effectiveStrand === 1 ? featureEnd : featureStart
         arrows.push({
           x: arrowX - regionStart,
           y: topPx + layout.height / 2,
@@ -293,8 +296,7 @@ function collectRenderData(
       const isTopLevel = !feature.parent?.()
       if (isTopLevel && strand !== 0) {
         const effectiveStrand = reversed ? -strand : strand
-        const arrowX =
-          effectiveStrand === 1 ? featureEnd : featureStart
+        const arrowX = effectiveStrand === 1 ? featureEnd : featureStart
         arrows.push({
           x: arrowX - regionStart,
           y: topPx + layout.height / 2,
@@ -330,6 +332,7 @@ export async function executeRenderWebGLFeatureData({
     adapterConfig,
     rendererConfig,
     region,
+    bpPerPx: requestedBpPerPx,
     statusCallback = () => {},
     stopToken,
   } = args as RenderWebGLFeatureDataArgs & {
@@ -360,7 +363,7 @@ export async function executeRenderWebGLFeatureData({
   checkStopToken2(stopTokenCheck)
 
   const regionStart = region.start
-  const bpPerPx = 1 // We'll store positions in bp, not pixels
+  const bpPerPx = requestedBpPerPx || 1 // Use actual zoom level for layout
 
   // Create a mock theme for color calculations
   const mockTheme = {
@@ -419,7 +422,10 @@ export async function executeRenderWebGLFeatureData({
     featureHeight: { value: mockConfig.height, isCallback: false },
     fontHeight: { value: mockConfig.labels.fontSize, isCallback: false },
     nameColor: { value: mockConfig.labels.nameColor, isCallback: false },
-    descriptionColor: { value: mockConfig.labels.descriptionColor, isCallback: false },
+    descriptionColor: {
+      value: mockConfig.labels.descriptionColor,
+      isCallback: false,
+    },
     labelAllowed: mockConfig.displayMode !== 'collapse',
     heightMultiplier: mockConfig.displayMode === 'compact' ? 0.5 : 1,
   }
@@ -465,11 +471,35 @@ export async function executeRenderWebGLFeatureData({
           layoutEnd = featureEnd + rightPaddingBp
         }
 
+        // Manually add space for labels since the config callback system isn't available
+        const featureName = String(
+          feature.get('name') || feature.get('id') || '',
+        )
+        const featureDescription = String(feature.get('description') || '')
+        const fontSize = mockConfig.labels.fontSize
+        let labelHeight = 0
+        if (featureName && mockConfig.showLabels) {
+          labelHeight += fontSize
+        }
+        if (featureDescription && mockConfig.showDescriptions) {
+          labelHeight += fontSize
+        }
+
+        const layoutHeight = featureLayout.height + labelHeight + yPadding
+        // Debug layout heights
+        if (records.length < 5) {
+          console.log('Layout debug:', {
+            featureId: feature.id(),
+            featureHeight: featureLayout.height,
+            labelHeight,
+            layoutHeightWithPadding: layoutHeight,
+          })
+        }
         const topPx = layout.addRect(
           feature.id(),
           layoutStart,
           layoutEnd,
-          featureLayout.totalLayoutHeight + yPadding,
+          layoutHeight,
           feature,
         )
 

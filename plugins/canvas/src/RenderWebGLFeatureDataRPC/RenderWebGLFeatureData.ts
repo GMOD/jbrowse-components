@@ -55,9 +55,8 @@ export default class RenderWebGLFeatureData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLFeatureData } = await import(
-      './executeRenderWebGLFeatureData.ts'
-    )
+    const { executeRenderWebGLFeatureData } =
+      await import('./executeRenderWebGLFeatureData.ts')
     return executeRenderWebGLFeatureData({
       pluginManager: this.pluginManager,
       args: args as unknown as RenderWebGLFeatureDataArgs,

@@ -10,6 +10,7 @@ export interface RenderWebGLFeatureDataArgs {
     end: number
     assemblyName?: string
   }
+  bpPerPx: number
 }
 
 export interface WebGLFeatureDataResult {
