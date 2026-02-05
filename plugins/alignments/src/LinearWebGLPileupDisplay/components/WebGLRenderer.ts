@@ -1993,7 +1993,11 @@ export class WebGLRenderer {
       const endOffset = this.buffers.readPositions[idx * 2 + 1]
       const y = this.buffers.readYs[idx]
 
-      if (startOffset !== undefined && endOffset !== undefined && y !== undefined) {
+      if (
+        startOffset !== undefined &&
+        endOffset !== undefined &&
+        y !== undefined
+      ) {
         // Convert to absolute positions
         const absStart = startOffset + regionStart
         const absEnd = endOffset + regionStart
@@ -2001,11 +2005,11 @@ export class WebGLRenderer {
         // Convert to clip-space X using high-precision split
         const splitStart = [
           Math.floor(absStart) - (Math.floor(absStart) & 0xfff),
-          (Math.floor(absStart) & 0xfff),
+          Math.floor(absStart) & 0xfff,
         ]
         const splitEnd = [
           Math.floor(absEnd) - (Math.floor(absEnd) & 0xfff),
-          (Math.floor(absEnd) & 0xfff),
+          Math.floor(absEnd) & 0xfff,
         ]
 
         const sx1 =
@@ -2030,14 +2034,19 @@ export class WebGLRenderer {
 
         // Draw rectangle outline
         gl.useProgram(this.lineProgram)
-        gl.uniform4f(this.lineUniforms.u_color!, 0.0, 0.0, 0.0, 1.0) // Black outline
+        gl.uniform4f(this.lineUniforms.u_color!, 0, 0, 0, 1) // Black outline
 
         const outlineData = new Float32Array([
-          sx1, syTop,
-          sx2, syTop,
-          sx2, syBot,
-          sx1, syBot,
-          sx1, syTop, // Close the loop
+          sx1,
+          syTop,
+          sx2,
+          syTop,
+          sx2,
+          syBot,
+          sx1,
+          syBot,
+          sx1,
+          syTop, // Close the loop
         ])
         gl.bindVertexArray(this.lineVAO)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)

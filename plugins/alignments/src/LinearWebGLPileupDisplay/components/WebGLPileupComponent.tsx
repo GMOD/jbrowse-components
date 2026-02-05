@@ -177,7 +177,18 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       return null
     }
 
-    const dynamicBlocks = (view as unknown as { dynamicBlocks?: { contentBlocks?: { refName: string; start: number; end: number; offsetPx?: number }[] } }).dynamicBlocks
+    const dynamicBlocks = (
+      view as unknown as {
+        dynamicBlocks?: {
+          contentBlocks?: {
+            refName: string
+            start: number
+            end: number
+            offsetPx?: number
+          }[]
+        }
+      }
+    ).dynamicBlocks
     const contentBlocks = dynamicBlocks?.contentBlocks as
       | { refName: string; start: number; end: number; offsetPx?: number }[]
       | undefined
@@ -618,8 +629,18 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const newOffsetPx = clampOffsetRef.current(view.offsetPx + e.deltaX)
 
         // Compute new domain for immediate rendering
-        const contentBlocks = (view as unknown as { dynamicBlocks?: { contentBlocks?: { refName: string; start: number; end: number; offsetPx?: number }[] } }).dynamicBlocks
-          ?.contentBlocks as
+        const contentBlocks = (
+          view as unknown as {
+            dynamicBlocks?: {
+              contentBlocks?: {
+                refName: string
+                start: number
+                end: number
+                offsetPx?: number
+              }[]
+            }
+          }
+        ).dynamicBlocks?.contentBlocks as
           | { refName: string; start: number; end: number; offsetPx?: number }[]
           | undefined
         const first = contentBlocks?.[0]
@@ -718,8 +739,18 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const t2 = performance.now()
 
         // Compute new offsetPx from the new range start
-        const contentBlocks = (view as unknown as { dynamicBlocks?: { contentBlocks?: { refName: string; start: number; end: number; offsetPx?: number }[] } }).dynamicBlocks
-          ?.contentBlocks as
+        const contentBlocks = (
+          view as unknown as {
+            dynamicBlocks?: {
+              contentBlocks?: {
+                refName: string
+                start: number
+                end: number
+                offsetPx?: number
+              }[]
+            }
+          }
+        ).dynamicBlocks?.contentBlocks as
           | { refName: string; start: number; end: number; offsetPx?: number }[]
           | undefined
         const first = contentBlocks?.[0]
@@ -785,8 +816,18 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       const newOffsetPx = clampOffsetRef.current(view.offsetPx - dx)
 
       // Compute new domain for immediate rendering
-      const contentBlocks = (view as unknown as { dynamicBlocks?: { contentBlocks?: { refName: string; start: number; end: number; offsetPx?: number }[] } }).dynamicBlocks
-        ?.contentBlocks as
+      const contentBlocks = (
+        view as unknown as {
+          dynamicBlocks?: {
+            contentBlocks?: {
+              refName: string
+              start: number
+              end: number
+              offsetPx?: number
+            }[]
+          }
+        }
+      ).dynamicBlocks?.contentBlocks as
         | { refName: string; start: number; end: number; offsetPx?: number }[]
         | undefined
       const first = contentBlocks?.[0]
@@ -932,10 +973,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         return undefined
       }
 
-      // Hit tolerance in bp (adjusted for zoom level)
+      // Hit tolerance for interbase features (insertions, hardclips)
       const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
 
-      // Check mismatches (1bp wide)
+      // Check mismatches first (1bp features covering [pos, pos+1))
       const {
         mismatchPositions,
         mismatchYs,
@@ -961,13 +1002,15 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       } = rpcData
 
       // Check mismatches first (they're visually prominent)
+      // Mismatches are 1bp features - use floor to determine which base mouse is over
+      const mouseBaseOffset = Math.floor(posOffset)
       for (let i = 0; i < numMismatches; i++) {
         const y = mismatchYs[i]
         if (y !== row) {
           continue
         }
         const pos = mismatchPositions[i]
-        if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
+        if (pos !== undefined && mouseBaseOffset === pos) {
           const baseCode = mismatchBases[i]
           const bases = ['A', 'C', 'G', 'T']
           return {
@@ -1103,11 +1146,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
             tooltipText = `SNP: ${cigarHit.base} at ${pos}`
             break
           case 'insertion':
-            if (cigarHit.sequence) {
-              tooltipText = `Insertion (${cigarHit.length}bp): ${cigarHit.sequence} at ${pos}`
-            } else {
-              tooltipText = `Insertion (${cigarHit.length}bp) at ${pos}`
-            }
+            tooltipText = cigarHit.sequence
+              ? `Insertion (${cigarHit.length}bp): ${cigarHit.sequence} at ${pos}`
+              : `Insertion (${cigarHit.length}bp) at ${pos}`
             break
           case 'deletion':
             tooltipText = `Deletion (${cigarHit.length}bp) at ${pos}`

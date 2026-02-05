@@ -177,7 +177,7 @@ export default function stateModelFactory(
 
           // Fallback: compute from contentBlocks (only used for initial load)
           const last = blocks[blocks.length - 1]
-          if (!last || first.refName !== last.refName) {
+          if (first.refName !== last?.refName) {
             return {
               refName: first.refName,
               start: first.start,
@@ -247,7 +247,7 @@ export default function stateModelFactory(
     .views(self => ({
       getFeatureInfoById(featureId: string) {
         const { rpcData, loadedRegion } = self
-        if (!rpcData || !rpcData.readIds) {
+        if (!rpcData?.readIds) {
           return undefined
         }
         const idx = rpcData.readIds.indexOf(featureId)
@@ -559,44 +559,57 @@ export default function stateModelFactory(
             subMenu: [
               {
                 label: 'Strand',
-                onClick: () => self.setColorScheme({ type: 'strand' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'strand' })
+                },
               },
               {
                 label: 'Mapping quality',
-                onClick: () => self.setColorScheme({ type: 'mappingQuality' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'mappingQuality' })
+                },
               },
               {
                 label: 'Insert size',
-                onClick: () => self.setColorScheme({ type: 'insertSize' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'insertSize' })
+                },
               },
               {
                 label: 'First of pair strand',
-                onClick: () =>
-                  self.setColorScheme({ type: 'firstOfPairStrand' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'firstOfPairStrand' })
+                },
               },
             ],
           },
           {
             label: self.showCoverage ? 'Hide coverage' : 'Show coverage',
-            onClick: () => self.setShowCoverage(!self.showCoverage),
+            onClick: () => {
+              self.setShowCoverage(!self.showCoverage)
+            },
           },
           {
             label: self.showMismatches ? 'Hide mismatches' : 'Show mismatches',
-            onClick: () => self.setShowMismatches(!self.showMismatches),
+            onClick: () => {
+              self.setShowMismatches(!self.showMismatches)
+            },
           },
           {
             label: self.showInterbaseCounts
               ? 'Hide interbase counts'
               : 'Show interbase counts',
-            onClick: () =>
-              self.setShowInterbaseCounts(!self.showInterbaseCounts),
+            onClick: () => {
+              self.setShowInterbaseCounts(!self.showInterbaseCounts)
+            },
           },
           {
             label: self.showInterbaseIndicators
               ? 'Hide interbase indicators'
               : 'Show interbase indicators',
-            onClick: () =>
-              self.setShowInterbaseIndicators(!self.showInterbaseIndicators),
+            onClick: () => {
+              self.setShowInterbaseIndicators(!self.showInterbaseIndicators)
+            },
           },
         ]
       },
