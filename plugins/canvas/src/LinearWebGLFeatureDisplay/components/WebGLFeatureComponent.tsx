@@ -8,6 +8,8 @@ import { observer } from 'mobx-react'
 
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
 
+console.log('WebGLFeatureComponent module loaded')
+
 import type {
   FlatbushItem,
   FloatingLabelsDataMap,
@@ -23,9 +25,15 @@ interface LinearWebGLFeatureDisplayModel {
   isLoading: boolean
   error: Error | null
   maxY: number
+  selectedFeatureId: string | undefined // from base class computed
+  featureIdUnderMouse: string | null
   setMaxY: (y: number) => void
   setCurrentDomain: (domain: [number, number]) => void
   handleNeedMoreData: (region: { start: number; end: number }) => void
+  setFeatureIdUnderMouse: (featureId: string | null) => void
+  selectFeature: (featureInfo: FlatbushItem) => void
+  showContextMenuForFeature: (featureInfo: FlatbushItem) => void
+  getFeatureById: (featureId: string) => FlatbushItem | undefined
 }
 
 interface TooltipState {
@@ -132,6 +140,12 @@ function performHitDetection(
 const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   model,
 }: Props) {
+  console.log('WebGLFeatureComponent: Rendering', {
+    height: model.height,
+    hasRpcData: !!model.rpcData,
+    isLoading: model.isLoading,
+    hasError: !!model.error,
+  })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLFeatureRenderer | null>(null)
   const [measureRef, measuredDims] = useMeasure()
@@ -325,26 +339,31 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     const dispose = autorun(() => {
-      // Access observables to subscribe
-      const _offsetPx = view.offsetPx
-      const _bpPerPx = view.bpPerPx
-      const initialized = view.initialized
+      try {
+        // Access observables to subscribe
+        const _offsetPx = view.offsetPx
+        const _bpPerPx = view.bpPerPx
+        const initialized = view.initialized
 
-      if (selfUpdateRef.current) {
-        selfUpdateRef.current = false
-        return
+        if (selfUpdateRef.current) {
+          selfUpdateRef.current = false
+          return
+        }
+
+        if (!initialized) {
+          return
+        }
+
+        const visibleBpRange = getVisibleBpRangeRef.current()
+        if (visibleBpRange) {
+          model.setCurrentDomain(visibleBpRange)
+        }
+
+        renderNowRef.current()
+      } catch (e) {
+        // Model may have been detached from state tree
+        console.warn('Autorun error (model may be detached):', e)
       }
-
-      if (!initialized) {
-        return
-      }
-
-      const visibleBpRange = getVisibleBpRangeRef.current()
-      if (visibleBpRange) {
-        model.setCurrentDomain(visibleBpRange)
-      }
-
-      renderNowRef.current()
     })
 
     return () => {
@@ -354,7 +373,13 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   // Upload features to GPU from RPC typed arrays
   useEffect(() => {
+    console.log('WebGLFeatureComponent: Upload effect running', {
+      hasRenderer: !!rendererRef.current,
+      hasRpcData: !!rpcData,
+      numRects: rpcData?.numRects ?? 0,
+    })
     if (!rendererRef.current || !rpcData || rpcData.numRects === 0) {
+      console.log('WebGLFeatureComponent: Skipping upload - no renderer/data')
       return
     }
 
@@ -368,12 +393,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       linePositions: rpcData.linePositions,
       lineYs: rpcData.lineYs,
       lineColors: rpcData.lineColors,
+      lineDirections: rpcData.lineDirections,
       numLines: rpcData.numLines,
-      chevronXs: rpcData.chevronXs,
-      chevronYs: rpcData.chevronYs,
-      chevronDirections: rpcData.chevronDirections,
-      chevronColors: rpcData.chevronColors,
-      numChevrons: rpcData.numChevrons,
       arrowXs: rpcData.arrowXs,
       arrowYs: rpcData.arrowYs,
       arrowDirections: rpcData.arrowDirections,
@@ -598,6 +619,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           text: subfeature.tooltip ?? subfeature.type,
         })
         setHoveredFeature(feature)
+        model.setFeatureIdUnderMouse(feature?.featureId ?? null)
       } else if (feature) {
         const rect = canvas.getBoundingClientRect()
         setTooltip({
@@ -606,15 +628,18 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           text: feature.tooltip,
         })
         setHoveredFeature(feature)
+        model.setFeatureIdUnderMouse(feature.featureId)
       } else {
         setTooltip(null)
         setHoveredFeature(null)
+        model.setFeatureIdUnderMouse(null)
       }
     }
 
     const handleMouseLeave = () => {
       setTooltip(null)
       setHoveredFeature(null)
+      model.setFeatureIdUnderMouse(null)
     }
 
     const handleClick = (e: MouseEvent) => {
@@ -639,11 +664,12 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
 
       if (feature) {
-        console.log('Clicked feature:', feature.featureId, feature)
+        model.selectFeature(feature)
       }
     }
 
     const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault()
       const rpcData = model.rpcData
       if (!rpcData) {
         return
@@ -665,7 +691,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
 
       if (feature) {
-        console.log('Context menu for feature:', feature.featureId, feature)
+        model.selectFeature(feature)
+        model.showContextMenuForFeature(feature)
       }
     }
 
@@ -679,7 +706,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       canvas.removeEventListener('click', handleClick)
       canvas.removeEventListener('contextmenu', handleContextMenu)
     }
-  }, [model.rpcData])
+  }, [model, model.rpcData])
 
   // Compute floating label positions
   const floatingLabelElements = useMemo(() => {
@@ -750,6 +777,70 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     return elements.length > 0 ? elements : null
   }, [rpcData, view, width, getVisibleBpRange, scrollY])
 
+  // Compute highlight overlays for hovered and selected features
+  const highlightOverlays = useMemo(() => {
+    if (!rpcData || !view?.initialized || !width) {
+      return null
+    }
+
+    const visibleRange = getVisibleBpRange()
+    if (!visibleRange) {
+      return null
+    }
+
+    const bpPerPx = view.bpPerPx
+    const overlays: React.ReactElement[] = []
+
+    const addOverlay = (
+      featureId: string,
+      color: string,
+      key: string,
+    ) => {
+      const feature = rpcData.flatbushItems.find(f => f.featureId === featureId)
+      if (!feature) {
+        return
+      }
+
+      // Check if feature is in visible range
+      if (feature.endBp < visibleRange[0] || feature.startBp > visibleRange[1]) {
+        return
+      }
+
+      const leftPx = (feature.startBp - visibleRange[0]) / bpPerPx
+      const rightPx = (feature.endBp - visibleRange[0]) / bpPerPx
+      const featureWidth = rightPx - leftPx
+      const topPx = feature.topPx - scrollY
+      const heightPx = feature.bottomPx - feature.topPx
+
+      overlays.push(
+        <div
+          key={key}
+          style={{
+            position: 'absolute',
+            left: leftPx,
+            top: topPx,
+            width: featureWidth,
+            height: heightPx,
+            backgroundColor: color,
+            pointerEvents: 'none',
+          }}
+        />,
+      )
+    }
+
+    // Add hover highlight (darker shade)
+    if (hoveredFeature) {
+      addOverlay(hoveredFeature.featureId, 'rgba(0, 0, 0, 0.15)', 'hover')
+    }
+
+    // Add selection highlight (blue tint)
+    if (model.selectedFeatureId && model.selectedFeatureId !== hoveredFeature?.featureId) {
+      addOverlay(model.selectedFeatureId, 'rgba(0, 100, 255, 0.2)', 'selected')
+    }
+
+    return overlays.length > 0 ? overlays : null
+  }, [rpcData, view, width, getVisibleBpRange, scrollY, hoveredFeature, model.selectedFeatureId])
+
   if (error) {
     return (
       <div style={{ color: '#c00', padding: 16 }}>Error: {error.message}</div>
@@ -775,6 +866,23 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           cursor: hoveredFeature ? 'pointer' : 'default',
         }}
       />
+
+      {/* Feature highlight overlays */}
+      {highlightOverlays && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            overflow: 'hidden',
+          }}
+        >
+          {highlightOverlays}
+        </div>
+      )}
 
       {/* Floating labels overlay */}
       {floatingLabelElements && (

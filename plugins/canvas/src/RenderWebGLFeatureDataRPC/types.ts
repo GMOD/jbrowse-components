@@ -23,18 +23,12 @@ export interface WebGLFeatureDataResult {
   rectTypes: Uint8Array
   numRects: number
 
-  // Connecting lines (introns)
+  // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
   lineYs: Float32Array
   lineColors: Uint32Array
+  lineDirections: Int8Array // strand direction: -1, 0, or 1
   numLines: number
-
-  // Chevrons (strand indicators on introns)
-  chevronXs: Uint32Array
-  chevronYs: Float32Array
-  chevronDirections: Int8Array
-  chevronColors: Uint32Array
-  numChevrons: number
 
   // Strand arrows (at feature ends)
   arrowXs: Uint32Array

@@ -1,7 +1,10 @@
 import { lazy } from 'react'
 
+console.log('LinearWebGLFeatureDisplay model module loaded')
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
+  SimpleFeature,
   getContainingTrack,
   getContainingView,
   getSession,
@@ -10,7 +13,10 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { reaction } from 'mobx'
 
-import type { WebGLFeatureDataResult } from '../RenderWebGLFeatureDataRPC/types.ts'
+import type {
+  FlatbushItem,
+  WebGLFeatureDataResult,
+} from '../RenderWebGLFeatureDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -44,10 +50,9 @@ export default function stateModelFactory(
       loadedRegion: null as Region | null,
       isLoading: false,
       error: null as Error | null,
-      webglRef: null as unknown,
       currentDomainX: null as [number, number] | null,
-      currentRangeY: [0, 600] as [number, number],
       maxY: 0,
+      featureIdUnderMouse: null as string | null,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -123,6 +128,10 @@ export default function stateModelFactory(
           visibleRegion.end <= self.loadedRegion.end
         )
       },
+
+      getFeatureById(featureId: string): FlatbushItem | undefined {
+        return self.rpcData?.flatbushItems.find(f => f.featureId === featureId)
+      },
     }))
     .actions(self => ({
       setRpcData(data: WebGLFeatureDataResult | null) {
@@ -144,10 +153,6 @@ export default function stateModelFactory(
         self.error = error
       },
 
-      setWebGLRef(ref: unknown) {
-        self.webglRef = ref
-      },
-
       setMaxY(y: number) {
         self.maxY = y
       },
@@ -156,8 +161,44 @@ export default function stateModelFactory(
         self.currentDomainX = domainX
       },
 
-      setCurrentRangeY(rangeY: [number, number]) {
-        self.currentRangeY = rangeY
+      setFeatureIdUnderMouse(featureId: string | null) {
+        self.featureIdUnderMouse = featureId
+      },
+
+      selectFeature(featureInfo: FlatbushItem) {
+        // Use the session's selection mechanism (same as base class)
+        const feature = new SimpleFeature({
+          id: featureInfo.featureId,
+          data: {
+            uniqueId: featureInfo.featureId,
+            type: featureInfo.type,
+            start: featureInfo.startBp,
+            end: featureInfo.endBp,
+            name: featureInfo.name,
+            strand: featureInfo.strand,
+          },
+        })
+        getSession(self).setSelection(feature)
+      },
+
+      clearSelection() {
+        getSession(self).clearSelection()
+      },
+
+      showContextMenuForFeature(featureInfo: FlatbushItem) {
+        // Create a SimpleFeature from the FlatbushItem for the context menu
+        const feature = new SimpleFeature({
+          id: featureInfo.featureId,
+          data: {
+            uniqueId: featureInfo.featureId,
+            type: featureInfo.type,
+            start: featureInfo.startBp,
+            end: featureInfo.endBp,
+            name: featureInfo.name,
+            strand: featureInfo.strand,
+          },
+        })
+        self.setContextMenuFeature(feature)
       },
     }))
     .actions(self => {
@@ -176,6 +217,7 @@ export default function stateModelFactory(
 
         try {
           const rendererConfig = getConf(self, 'renderer')
+          console.log('LinearWebGLFeatureDisplay: Calling RPC', { region })
           const result = (await rpcManager.call(
             session.id ?? '',
             'RenderWebGLFeatureData',
@@ -187,6 +229,10 @@ export default function stateModelFactory(
             },
           )) as WebGLFeatureDataResult
 
+          console.log('LinearWebGLFeatureDisplay: RPC result received', {
+            numRects: result.numRects,
+            numLines: result.numLines,
+          })
           self.setRpcData(result)
           self.setLoadedRegion({
             refName: region.refName,

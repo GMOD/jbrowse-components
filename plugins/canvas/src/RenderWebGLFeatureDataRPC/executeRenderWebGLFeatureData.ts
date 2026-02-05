@@ -19,7 +19,7 @@ import type { RenderConfigContext } from '../CanvasFeatureRenderer/renderConfig.
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { FeatureLayout, LayoutRecord } from '../CanvasFeatureRenderer/types.ts'
+import type { LayoutRecord } from '../CanvasFeatureRenderer/types.ts'
 import type {
   FeatureLabelData,
   FlatbushItem,
@@ -43,13 +43,7 @@ interface LineData {
   endOffset: number
   y: number
   color: number
-}
-
-interface ChevronData {
-  x: number
-  y: number
-  direction: number
-  color: number
+  direction: number // strand direction: -1, 0, or 1
 }
 
 interface ArrowData {
@@ -61,7 +55,6 @@ interface ArrowData {
 }
 
 const UTR_HEIGHT_FRACTION = 0.65
-const CHEVRON_SPACING = 25
 
 function colorToUint32(colorStr: string): number {
   // Parse CSS color to RGBA packed as uint32
@@ -117,7 +110,6 @@ function collectRenderData(
 ): {
   rects: RectData[]
   lines: LineData[]
-  chevrons: ChevronData[]
   arrows: ArrowData[]
   floatingLabelsData: FloatingLabelsDataMap
   flatbushItems: FlatbushItem[]
@@ -126,7 +118,6 @@ function collectRenderData(
 } {
   const rects: RectData[] = []
   const lines: LineData[] = []
-  const chevrons: ChevronData[] = []
   const arrows: ArrowData[] = []
   const floatingLabelsData: FloatingLabelsDataMap = {}
   const flatbushItems: FlatbushItem[] = []
@@ -209,30 +200,15 @@ function collectRenderData(
       layout.glyphType === 'ProcessedTranscript' ||
       layout.glyphType === 'Segments'
     ) {
-      // Draw connecting line for the full span
+      // Draw connecting line for the full span (with strand direction for dynamic chevron generation)
+      const effectiveStrand = reversed ? -strand : strand
       lines.push({
         startOffset: featureStart - regionStart,
         endOffset: featureEnd - regionStart,
         y: topPx + layout.height / 2,
         color: strokeUint,
+        direction: effectiveStrand,
       })
-
-      // Add chevrons for strand direction
-      if (strand !== 0) {
-        const featureWidth = (featureEnd - featureStart) / bpPerPx
-        const numChevrons = Math.floor(featureWidth / CHEVRON_SPACING)
-        for (let i = 1; i <= numChevrons; i++) {
-          const chevronFraction = i / (numChevrons + 1)
-          const chevronBp =
-            featureStart + (featureEnd - featureStart) * chevronFraction
-          chevrons.push({
-            x: chevronBp - regionStart,
-            y: topPx + layout.height / 2,
-            direction: reversed ? -strand : strand,
-            color: strokeUint,
-          })
-        }
-      }
 
       // Draw children (exons, CDS, UTRs)
       for (const childLayout of layout.children) {
@@ -333,7 +309,6 @@ function collectRenderData(
   return {
     rects,
     lines,
-    chevrons,
     arrows,
     floatingLabelsData,
     flatbushItems,
@@ -349,6 +324,7 @@ export async function executeRenderWebGLFeatureData({
   pluginManager: PluginManager
   args: RenderWebGLFeatureDataArgs
 }): Promise<WebGLFeatureDataResult> {
+  console.log('executeRenderWebGLFeatureData: Starting', args.region)
   const {
     sessionId,
     adapterConfig,
@@ -385,9 +361,6 @@ export async function executeRenderWebGLFeatureData({
 
   const regionStart = region.start
   const bpPerPx = 1 // We'll store positions in bp, not pixels
-
-  console.log('WebGL RPC: fetched', featuresArray.length, 'features for region', region)
-  console.log('WebGL RPC: rendererConfig received:', rendererConfig)
 
   // Create a mock theme for color calculations
   const mockTheme = {
@@ -521,7 +494,6 @@ export async function executeRenderWebGLFeatureData({
   const {
     rects,
     lines,
-    chevrons,
     arrows,
     floatingLabelsData,
     flatbushItems,
@@ -579,24 +551,14 @@ export async function executeRenderWebGLFeatureData({
   const linePositions = new Uint32Array(lines.length * 2)
   const lineYs = new Float32Array(lines.length)
   const lineColors = new Uint32Array(lines.length)
+  const lineDirections = new Int8Array(lines.length)
 
   for (const [i, line] of lines.entries()) {
     linePositions[i * 2] = Math.max(0, line.startOffset)
     linePositions[i * 2 + 1] = line.endOffset
     lineYs[i] = line.y
     lineColors[i] = line.color
-  }
-
-  const chevronXs = new Uint32Array(chevrons.length)
-  const chevronYs = new Float32Array(chevrons.length)
-  const chevronDirections = new Int8Array(chevrons.length)
-  const chevronColors = new Uint32Array(chevrons.length)
-
-  for (const [i, chevron] of chevrons.entries()) {
-    chevronXs[i] = Math.max(0, chevron.x)
-    chevronYs[i] = chevron.y
-    chevronDirections[i] = chevron.direction
-    chevronColors[i] = chevron.color
+    lineDirections[i] = line.direction
   }
 
   const arrowXs = new Uint32Array(arrows.length)
@@ -626,13 +588,8 @@ export async function executeRenderWebGLFeatureData({
     linePositions,
     lineYs,
     lineColors,
+    lineDirections,
     numLines: lines.length,
-
-    chevronXs,
-    chevronYs,
-    chevronDirections,
-    chevronColors,
-    numChevrons: chevrons.length,
 
     arrowXs,
     arrowYs,
@@ -661,10 +618,7 @@ export async function executeRenderWebGLFeatureData({
     result.linePositions.buffer,
     result.lineYs.buffer,
     result.lineColors.buffer,
-    result.chevronXs.buffer,
-    result.chevronYs.buffer,
-    result.chevronDirections.buffer,
-    result.chevronColors.buffer,
+    result.lineDirections.buffer,
     result.arrowXs.buffer,
     result.arrowYs.buffer,
     result.arrowDirections.buffer,
@@ -674,5 +628,11 @@ export async function executeRenderWebGLFeatureData({
     result.subfeatureFlatbushData,
   ] as ArrayBuffer[]
 
+  console.log('executeRenderWebGLFeatureData: Complete', {
+    numRects: result.numRects,
+    numLines: result.numLines,
+    numArrows: result.numArrows,
+    maxY: result.maxY,
+  })
   return rpcResult(result, transferables)
 }
