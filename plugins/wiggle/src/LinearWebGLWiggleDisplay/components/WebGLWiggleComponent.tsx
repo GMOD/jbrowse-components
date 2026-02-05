@@ -7,6 +7,8 @@ import { parseColor } from '../../shared/webglUtils.ts'
 import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
 import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
 
+import type { RenderingType } from './WebGLWiggleRenderer.ts'
+
 import type { LinearWebGLWiggleDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -88,6 +90,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         useBicolor,
         canvasWidth: width,
         canvasHeight: height,
+        renderingType: model.renderingType as RenderingType,
       })
     },
     [model, view],
@@ -147,6 +150,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         useBicolor,
         canvasWidth: width,
         canvasHeight: height,
+        renderingType: model.renderingType as RenderingType,
       })
     })
 
@@ -161,6 +165,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     model.height,
     model.color,
     model.scaleType,
+    model.renderingType,
     model.visibleRegion,
     model.domain,
     view.initialized,

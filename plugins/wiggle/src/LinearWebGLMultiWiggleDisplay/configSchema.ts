@@ -27,7 +27,11 @@ export default ConfigurationSchema(
     },
     defaultRendering: {
       type: 'stringEnum',
-      model: types.enumeration('Rendering', ['multirowxy', 'multirowdensity']),
+      model: types.enumeration('Rendering', [
+        'multirowxy',
+        'multirowdensity',
+        'multirowline',
+      ]),
       defaultValue: 'multirowxy',
       description: 'Default rendering type',
     },

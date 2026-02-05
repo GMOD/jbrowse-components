@@ -7,7 +7,10 @@ import { parseColor } from '../../shared/webglUtils.ts'
 import { useWebGLViewInteraction } from '../../LinearWebGLWiggleDisplay/components/useWebGLViewInteraction.ts'
 import { WebGLMultiWiggleRenderer } from './WebGLMultiWiggleRenderer.ts'
 
-import type { SourceRenderData } from './WebGLMultiWiggleRenderer.ts'
+import type {
+  MultiRenderingType,
+  SourceRenderData,
+} from './WebGLMultiWiggleRenderer.ts'
 import type { LinearWebGLMultiWiggleDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -89,6 +92,7 @@ const WebGLMultiWiggleComponent = observer(
           canvasWidth: width,
           canvasHeight: height,
           rowPadding: ROW_PADDING,
+          renderingType: model.renderingType as MultiRenderingType,
         })
       },
       [model, view],
@@ -141,6 +145,7 @@ const WebGLMultiWiggleComponent = observer(
           canvasWidth: width,
           canvasHeight: height,
           rowPadding: ROW_PADDING,
+          renderingType: model.renderingType as MultiRenderingType,
         })
       })
 
@@ -154,6 +159,7 @@ const WebGLMultiWiggleComponent = observer(
       model.rpcData,
       model.height,
       model.scaleType,
+      model.renderingType,
       model.visibleRegion,
       model.domain,
       view.initialized,

@@ -41,6 +41,7 @@ export default function stateModelFactory(
         scaleTypeSetting: types.maybe(types.string),
         minScoreSetting: types.maybe(types.number),
         maxScoreSetting: types.maybe(types.number),
+        renderingTypeSetting: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -77,6 +78,10 @@ export default function stateModelFactory(
 
       get scaleType() {
         return self.scaleTypeSetting ?? getConf(self, 'scaleType')
+      },
+
+      get renderingType() {
+        return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
       },
 
       get minScoreConfig() {
@@ -197,6 +202,10 @@ export default function stateModelFactory(
       setMaxScore(val?: number) {
         self.maxScoreSetting = val
       },
+
+      setRenderingType(type: string) {
+        self.renderingTypeSetting = type
+      },
     }))
     .actions(self => {
       async function fetchFeaturesImpl(region: Region) {
@@ -271,6 +280,29 @@ export default function stateModelFactory(
       trackMenuItems() {
         return [
           {
+            label: 'Rendering type',
+            subMenu: [
+              {
+                label: 'XY plot',
+                type: 'radio',
+                checked: self.renderingType === 'xyplot',
+                onClick: () => self.setRenderingType('xyplot'),
+              },
+              {
+                label: 'Density',
+                type: 'radio',
+                checked: self.renderingType === 'density',
+                onClick: () => self.setRenderingType('density'),
+              },
+              {
+                label: 'Line',
+                type: 'radio',
+                checked: self.renderingType === 'line',
+                onClick: () => self.setRenderingType('line'),
+              },
+            ],
+          },
+          {
             label: 'Scale type',
             subMenu: [
               {
@@ -295,14 +327,21 @@ export default function stateModelFactory(
       if (!snap) {
         return snap
       }
-      const { colorSetting, scaleTypeSetting, minScoreSetting, maxScoreSetting, ...rest } =
-        snap as Omit<typeof snap, symbol>
+      const {
+        colorSetting,
+        scaleTypeSetting,
+        minScoreSetting,
+        maxScoreSetting,
+        renderingTypeSetting,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         ...(colorSetting !== undefined ? { colorSetting } : {}),
         ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
+        ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
       } as typeof snap
     })
 }

@@ -5,7 +5,8 @@ export default ConfigurationSchema(
   'LinearWebGLWiggleDisplay',
   {
     defaultRendering: {
-      type: 'string',
+      type: 'stringEnum',
+      model: types.enumeration('Rendering type', ['xyplot', 'density', 'line']),
       defaultValue: 'xyplot',
       description: 'Default rendering type',
     },

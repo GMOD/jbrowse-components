@@ -45,6 +45,7 @@ export default function stateModelFactory(
         scaleTypeSetting: types.maybe(types.string),
         minScoreSetting: types.maybe(types.number),
         maxScoreSetting: types.maybe(types.number),
+        renderingTypeSetting: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -66,6 +67,10 @@ export default function stateModelFactory(
 
       get scaleType() {
         return self.scaleTypeSetting ?? getConf(self, 'scaleType')
+      },
+
+      get renderingType() {
+        return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
       },
 
       get minScoreConfig() {
@@ -190,6 +195,10 @@ export default function stateModelFactory(
       setMaxScore(val?: number) {
         self.maxScoreSetting = val
       },
+
+      setRenderingType(type: string) {
+        self.renderingTypeSetting = type
+      },
     }))
     .actions(self => {
       async function fetchFeaturesImpl(region: Region) {
@@ -266,6 +275,29 @@ export default function stateModelFactory(
       trackMenuItems() {
         return [
           {
+            label: 'Rendering type',
+            subMenu: [
+              {
+                label: 'Multi-row XY plot',
+                type: 'radio',
+                checked: self.renderingType === 'multirowxy',
+                onClick: () => self.setRenderingType('multirowxy'),
+              },
+              {
+                label: 'Multi-row density',
+                type: 'radio',
+                checked: self.renderingType === 'multirowdensity',
+                onClick: () => self.setRenderingType('multirowdensity'),
+              },
+              {
+                label: 'Multi-row line',
+                type: 'radio',
+                checked: self.renderingType === 'multirowline',
+                onClick: () => self.setRenderingType('multirowline'),
+              },
+            ],
+          },
+          {
             label: 'Scale type',
             subMenu: [
               {
@@ -290,13 +322,19 @@ export default function stateModelFactory(
       if (!snap) {
         return snap
       }
-      const { scaleTypeSetting, minScoreSetting, maxScoreSetting, ...rest } =
-        snap as Omit<typeof snap, symbol>
+      const {
+        scaleTypeSetting,
+        minScoreSetting,
+        maxScoreSetting,
+        renderingTypeSetting,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
+        ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
       } as typeof snap
     })
 }
