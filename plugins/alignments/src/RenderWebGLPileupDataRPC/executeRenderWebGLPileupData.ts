@@ -120,9 +120,11 @@ function computeCoverage(
 
   for (let binIdx = 0; binIdx < numBins; binIdx++) {
     const binEnd = regionStart + (binIdx + 1) * binSize
-    while (eventIdx < events.length && events[eventIdx].pos < binEnd) {
-      currentDepth += events[eventIdx].delta
+    let event = events[eventIdx]
+    while (event && event.pos < binEnd) {
+      currentDepth += event.delta
       eventIdx++
+      event = events[eventIdx]
     }
     depths[binIdx] = currentDepth
   }
@@ -428,7 +430,7 @@ export async function executeRenderWebGLPileupData({
 }: {
   pluginManager: PluginManager
   args: RenderWebGLPileupDataArgs
-}): Promise<WebGLPileupDataResult> {
+}) {
   const {
     sessionId,
     adapterConfig,
@@ -448,10 +450,18 @@ export async function executeRenderWebGLPileupData({
     dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
   }
 
+  const regionWithAssembly = {
+    ...region,
+    assemblyName: region.assemblyName ?? '',
+  }
+
   const featuresArray = await updateStatus(
     'Fetching alignments',
     statusCallback,
-    () => firstValueFrom(dataAdapter.getFeatures(region, args).pipe(toArray())),
+    () =>
+      firstValueFrom(
+        dataAdapter.getFeatures(regionWithAssembly, args).pipe(toArray()),
+      ),
   )
 
   checkStopToken2(stopTokenCheck)
@@ -712,7 +722,7 @@ export async function executeRenderWebGLPileupData({
     numIndicators: noncovCoverage.indicatorCount,
   }
 
-  const transferables: ArrayBuffer[] = [
+  const transferables = [
     result.readPositions.buffer,
     result.readYs.buffer,
     result.readFlags.buffer,
@@ -743,7 +753,7 @@ export async function executeRenderWebGLPileupData({
     result.noncovColorTypes.buffer,
     result.indicatorPositions.buffer,
     result.indicatorColorTypes.buffer,
-  ]
+  ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)
 }

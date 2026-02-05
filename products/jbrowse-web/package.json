@@ -13,6 +13,7 @@
   "scripts": {
     "start": "NODE_ENV=development node scripts/start.js",
     "build": "NODE_ENV=production node scripts/build.js",
+    "build:profile": "NODE_ENV=production PROFILING=true node scripts/build.js",
     "prebuild": "rimraf build",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "prepack": "pnpm build",

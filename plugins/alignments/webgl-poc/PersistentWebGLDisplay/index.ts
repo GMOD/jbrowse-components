@@ -21,6 +21,11 @@
  * - demo.html: Standalone demo for testing
  */
 
+import { configSchemaFactory, stateModelFactory } from './model.ts'
+import { WebGLPileupRendering } from './WebGLPileupRendering.tsx'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
 export { WebGLRenderer } from './WebGLRenderer.ts'
 export type { FeatureData, RenderState } from './WebGLRenderer.ts'
 
@@ -50,10 +55,7 @@ export type { WebGLPileupDisplayModel } from './model.ts'
  * }
  * ```
  */
-export async function registerWebGLPileupDisplay(pluginManager: any) {
-  const { configSchemaFactory, stateModelFactory } = await import('./model.ts')
-  const { WebGLPileupRendering } = await import('./WebGLPileupRendering.tsx')
-
+export function registerWebGLPileupDisplay(pluginManager: PluginManager) {
   const configSchema = configSchemaFactory(pluginManager)
   const stateModel = stateModelFactory(pluginManager, configSchema)
 

@@ -10,7 +10,6 @@ export function useWheelScroll(
   model: {
     bpPerPx: number
     zoomTo: (arg: number, arg2?: number) => void
-    setScaleFactor: (arg: number) => void
     horizontalScroll: (arg: number) => void
   },
 ) {
@@ -47,16 +46,10 @@ export function useWheelScroll(
                 : 150
               : 75
         zoomDelta.current += event.deltaY / normalizer
-        model.setScaleFactor(
-          zoomDelta.current < 0
-            ? 1 - zoomDelta.current
-            : 1 / (1 + zoomDelta.current),
-        )
         if (timeout.current) {
           clearTimeout(timeout.current)
         }
         timeout.current = setTimeout(() => {
-          model.setScaleFactor(1)
           model.zoomTo(
             zoomDelta.current > 0
               ? model.bpPerPx * (1 + zoomDelta.current)

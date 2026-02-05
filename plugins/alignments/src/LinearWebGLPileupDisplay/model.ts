@@ -6,7 +6,7 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import { addDisposer, flow, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { reaction } from 'mobx'
 
@@ -17,60 +17,25 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export interface CoverageData {
-  position: number
-  depth: number
-}
+type LGV = LinearGenomeViewModel
 
-export interface SNPCoverageData {
-  position: number
-  snpA: number
-  snpC: number
-  snpG: number
-  snpT: number
-}
-
-export interface GapData {
-  featureId: string
+interface Region {
+  refName: string
   start: number
   end: number
+  assemblyName?: string
 }
 
-export interface MismatchData {
-  featureId: string
-  position: number
-  base: number
-}
-
-export interface InsertionData {
-  featureId: string
-  position: number
-}
-
-// Lazy load the WebGL component
 const WebGLPileupComponent = lazy(
   () => import('./components/WebGLPileupComponent.tsx'),
 )
 
-type LGV = LinearGenomeViewModel
-
-// Color scheme constants
 export const ColorScheme = {
   strand: 0,
   mappingQuality: 1,
   insertSize: 2,
   firstOfPairStrand: 3,
 } as const
-
-export interface FeatureData {
-  id: string
-  start: number
-  end: number
-  strand: number
-  flags: number
-  mapq: number
-  insertSize: number
-}
 
 /**
  * State model factory for WebGL Pileup Display
@@ -80,9 +45,8 @@ export default function stateModelFactory(
 ) {
   return types
     .compose(
-      'LinearWebGLPileupDisplay',
       BaseLinearDisplay,
-      types.model({
+      types.model('LinearWebGLPileupDisplay', {
         /**
          * #property
          */
@@ -128,23 +92,13 @@ export default function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      // Typed array data from RPC worker (zero-copy transfer)
       rpcData: null as WebGLPileupDataResult | null,
-      // Region that's currently loaded in GPU
-      loadedRegion: null as {
-        refName: string
-        start: number
-        end: number
-      } | null,
-      // Loading state
+      loadedRegion: null as Region | null,
       isLoading: false,
       error: null as Error | null,
-      // Reference to WebGL component for imperative updates
-      webglRef: null as any,
-      // Current view domain (managed directly for smooth zoom)
+      webglRef: null as unknown,
       currentDomainX: null as [number, number] | null,
       currentRangeY: [0, 600] as [number, number],
-      // Layout info
       maxY: 0,
     }))
     .views(self => ({
@@ -153,14 +107,6 @@ export default function stateModelFactory(
        */
       get DisplayMessageComponent() {
         return WebGLPileupComponent
-      },
-
-      /**
-       * Override rendererType to prevent lookup errors
-       * We don't use a renderer - we render directly with WebGL
-       */
-      get rendererType(): undefined {
-        return undefined
       },
 
       /**
@@ -203,10 +149,10 @@ export default function stateModelFactory(
             return null
           }
           const blocks = view.dynamicBlocks.contentBlocks
-          if (blocks.length === 0) {
+          const first = blocks[0]
+          if (!first) {
             return null
           }
-          const first = blocks[0]
 
           // If WebGL component has set the domain directly, use that
           // This is the source of truth during and after interaction
@@ -221,11 +167,11 @@ export default function stateModelFactory(
 
           // Fallback: compute from contentBlocks (only used for initial load)
           const last = blocks[blocks.length - 1]
-          if (first.refName !== last.refName) {
+          if (!last || first.refName !== last.refName) {
             return {
               refName: first.refName,
               start: first.start,
-              end: last.end,
+              end: first.end,
               assemblyName: first.assemblyName,
             }
           }
@@ -270,26 +216,25 @@ export default function stateModelFactory(
        * Check if current view is within loaded data region
        */
       get isWithinLoadedRegion(): boolean {
-        if (!self.loadedRegion || !this.visibleRegion) {
+        const visibleRegion = this.visibleRegion
+        if (!self.loadedRegion || !visibleRegion) {
           return false
         }
         return (
-          self.loadedRegion.refName === this.visibleRegion.refName &&
-          this.visibleRegion.start >= self.loadedRegion.start &&
-          this.visibleRegion.end <= self.loadedRegion.end
+          self.loadedRegion.refName === visibleRegion.refName &&
+          visibleRegion.start >= self.loadedRegion.start &&
+          visibleRegion.end <= self.loadedRegion.end
         )
       },
 
-      // Compatibility methods for LinearAlignmentsDisplay
-      get featureIdUnderMouse(): undefined {
+      // Stubs required by LinearAlignmentsDisplay
+      get featureIdUnderMouse() {
         return undefined
       },
-
       get features(): Map<string, Feature> {
         return new Map()
       },
-
-      get sortedBy(): undefined {
+      get sortedBy() {
         return undefined
       },
     }))
@@ -301,9 +246,7 @@ export default function stateModelFactory(
         }
       },
 
-      setLoadedRegion(
-        region: { refName: string; start: number; end: number } | null,
-      ) {
+      setLoadedRegion(region: Region | null) {
         self.loadedRegion = region
       },
 
@@ -315,7 +258,7 @@ export default function stateModelFactory(
         self.error = error
       },
 
-      setWebGLRef(ref: any) {
+      setWebGLRef(ref: unknown) {
         self.webglRef = ref
       },
 
@@ -363,14 +306,9 @@ export default function stateModelFactory(
         self.showInterbaseIndicators = show
       },
 
-      // Compatibility methods for LinearAlignmentsDisplay
-      setConfig(_config: unknown) {
-        // No-op for now - config is managed differently in WebGL display
-      },
-
-      setFeatureDensityStatsLimit(_stats: unknown) {
-        // No-op - WebGL display doesn't use feature density stats
-      },
+      // Stubs required by LinearAlignmentsDisplay
+      setConfig(_config: unknown) {},
+      setFeatureDensityStatsLimit(_stats: unknown) {},
 
       getFeatureByID(_blockKey: string, _id: string) {
         return undefined
@@ -380,16 +318,8 @@ export default function stateModelFactory(
         return undefined
       },
     }))
-    .actions(self => ({
-      /**
-       * Fetch features for a region using RPC worker
-       */
-      fetchFeatures: flow(function* fetchFeatures(region: {
-        refName: string
-        start: number
-        end: number
-        assemblyName?: string
-      }) {
+    .actions(self => {
+      async function fetchFeaturesImpl(region: Region) {
         const session = getSession(self)
         const { rpcManager, assemblyManager } = session
         const track = getContainingTrack(self)
@@ -399,8 +329,8 @@ export default function stateModelFactory(
           return
         }
 
-        self.isLoading = true
-        self.error = null
+        self.setLoading(true)
+        self.setError(null)
 
         try {
           // Get the sequence adapter from the assembly (needed for CRAM files)
@@ -414,8 +344,8 @@ export default function stateModelFactory(
             ? getSnapshot(sequenceAdapterConfig)
             : undefined
 
-          const result: WebGLPileupDataResult = yield rpcManager.call(
-            session.id,
+          const result = (await rpcManager.call(
+            session.id ?? '',
             'RenderWebGLPileupData',
             {
               sessionId: session.id,
@@ -424,82 +354,93 @@ export default function stateModelFactory(
               region,
               filterBy: self.filterBy,
             },
-          )
+          )) as WebGLPileupDataResult
 
-          self.rpcData = result
-          self.maxY = result.maxY
-          self.loadedRegion = {
+          self.setRpcData(result)
+          self.setLoadedRegion({
             refName: region.refName,
             start: region.start,
             end: region.end,
-          }
-          self.isLoading = false
+          })
+          self.setLoading(false)
         } catch (e) {
-          self.error = e as Error
-          self.isLoading = false
+          self.setError(e instanceof Error ? e : new Error(String(e)))
+          self.setLoading(false)
         }
-      }),
+      }
 
-      /**
-       * Called when WebGL component needs more data
-       */
-      handleNeedMoreData(requestedRegion: { start: number; end: number }) {
-        const visibleRegion = self.visibleRegion
-        if (!visibleRegion) {
-          return
-        }
+      return {
+        fetchFeatures(region: Region) {
+          fetchFeaturesImpl(region).catch(e => {
+            console.error('Failed to fetch features:', e)
+          })
+        },
 
-        // Expand the requested region
-        const width = requestedRegion.end - requestedRegion.start
-        const expandedRegion = {
-          refName: visibleRegion.refName,
-          start: Math.max(0, requestedRegion.start - width),
-          end: requestedRegion.end + width,
-          assemblyName: visibleRegion.assemblyName,
-        }
+        /**
+         * Called when WebGL component needs more data
+         */
+        handleNeedMoreData(requestedRegion: { start: number; end: number }) {
+          const visibleRegion = self.visibleRegion
+          if (!visibleRegion) {
+            return
+          }
 
-        this.fetchFeatures(expandedRegion).catch(e => {
-          console.error('Failed to fetch features:', e)
-        })
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        // Fetch initial data when region becomes available
-        addDisposer(
-          self,
-          reaction(
-            () => self.visibleRegion,
-            region => {
-              if (region && !self.isWithinLoadedRegion) {
-                // Expand region by 2x on each side for buffering
-                const width = region.end - region.start
-                const expandedRegion = {
-                  ...region,
-                  start: Math.max(0, region.start - width * 2),
-                  end: region.end + width * 2,
+          // Expand the requested region
+          const width = requestedRegion.end - requestedRegion.start
+          const expandedRegion = {
+            refName: visibleRegion.refName,
+            start: Math.max(0, requestedRegion.start - width),
+            end: requestedRegion.end + width,
+            assemblyName: visibleRegion.assemblyName,
+          }
+
+          fetchFeaturesImpl(expandedRegion).catch(e => {
+            console.error('Failed to fetch features:', e)
+          })
+        },
+
+        afterAttach() {
+          // Fetch initial data when region becomes available
+          addDisposer(
+            self,
+            reaction(
+              () => self.visibleRegion,
+              region => {
+                if (region && !self.isWithinLoadedRegion) {
+                  // Expand region by 2x on each side for buffering
+                  const width = region.end - region.start
+                  const expandedRegion = {
+                    ...region,
+                    start: Math.max(0, region.start - width * 2),
+                    end: region.end + width * 2,
+                  }
+                  fetchFeaturesImpl(expandedRegion).catch(e => {
+                    console.error('Failed to fetch features:', e)
+                  })
                 }
-                self.fetchFeatures(expandedRegion)
-              }
-            },
-            { delay: 300, fireImmediately: true },
-          ),
-        )
+              },
+              { delay: 300, fireImmediately: true },
+            ),
+          )
 
-        // Re-fetch when filter changes
-        addDisposer(
-          self,
-          reaction(
-            () => self.filterBy,
-            () => {
-              if (self.visibleRegion) {
-                self.fetchFeatures(self.visibleRegion)
-              }
-            },
-          ),
-        )
-      },
-    }))
+          // Re-fetch when filter changes
+          addDisposer(
+            self,
+            reaction(
+              () => self.filterBy,
+              () => {
+                const visibleRegion = self.visibleRegion
+                if (visibleRegion) {
+                  fetchFeaturesImpl(visibleRegion).catch(e => {
+                    console.error('Failed to fetch features:', e)
+                  })
+                }
+              },
+            ),
+          )
+        },
+      }
+    })
     .views(self => ({
       /**
        * Track menu items

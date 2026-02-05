@@ -17,15 +17,30 @@ export default class RenderWebGLPileupData extends RpcMethodType {
 
     const { region, sessionId, adapterConfig } = args
 
+    const regionWithAssembly = {
+      ...region,
+      assemblyName: region.assemblyName ?? '',
+    }
+
     const result = await renameRegionsIfNeeded(assemblyManager, {
       sessionId,
       adapterConfig,
-      regions: [region],
+      regions: [regionWithAssembly],
     })
+
+    const renamedRegion = result.regions[0]
+    if (!renamedRegion) {
+      return args
+    }
 
     return {
       ...args,
-      region: result.regions[0],
+      region: {
+        refName: renamedRegion.refName,
+        start: renamedRegion.start,
+        end: renamedRegion.end,
+        assemblyName: renamedRegion.assemblyName,
+      },
     }
   }
 

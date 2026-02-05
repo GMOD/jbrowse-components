@@ -115,10 +115,7 @@ export const WebGLPileupRendering = forwardRef<
 
     const { maxY: newMaxY } = rendererRef.current.uploadFeatures(features)
     setMaxY(newMaxY)
-
-    // Render with current view state
-    rendererRef.current.render(viewState)
-  }, [features, viewState])
+  }, [features])
 
   // Re-render when view state changes
   useEffect(() => {

@@ -31,7 +31,7 @@ interface LinearWebGLPileupDisplayModel {
   handleNeedMoreData: (region: { start: number; end: number }) => void
 }
 
-interface Props {
+export interface Props {
   model: LinearWebGLPileupDisplayModel
 }
 
@@ -138,7 +138,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       return null
     }
 
-    const dynamicBlocks = (view as Record<string, unknown>).dynamicBlocks
+    const dynamicBlocks = (view as unknown as { dynamicBlocks?: { contentBlocks?: { refName: string; start: number; end: number; offsetPx?: number }[] } }).dynamicBlocks
     const contentBlocks = dynamicBlocks?.contentBlocks as
       | { refName: string; start: number; end: number; offsetPx?: number }[]
       | undefined
@@ -577,7 +577,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const newOffsetPx = clampOffsetRef.current(view.offsetPx + e.deltaX)
 
         // Compute new domain for immediate rendering
-        const contentBlocks = (view as Record<string, unknown>).dynamicBlocks
+        const contentBlocks = (view as unknown as { dynamicBlocks?: { contentBlocks?: { refName: string; start: number; end: number; offsetPx?: number }[] } }).dynamicBlocks
           ?.contentBlocks as
           | { refName: string; start: number; end: number; offsetPx?: number }[]
           | undefined
@@ -677,7 +677,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const t2 = performance.now()
 
         // Compute new offsetPx from the new range start
-        const contentBlocks = (view as Record<string, unknown>).dynamicBlocks
+        const contentBlocks = (view as unknown as { dynamicBlocks?: { contentBlocks?: { refName: string; start: number; end: number; offsetPx?: number }[] } }).dynamicBlocks
           ?.contentBlocks as
           | { refName: string; start: number; end: number; offsetPx?: number }[]
           | undefined
@@ -744,7 +744,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       const newOffsetPx = clampOffsetRef.current(view.offsetPx - dx)
 
       // Compute new domain for immediate rendering
-      const contentBlocks = (view as Record<string, unknown>).dynamicBlocks
+      const contentBlocks = (view as unknown as { dynamicBlocks?: { contentBlocks?: { refName: string; start: number; end: number; offsetPx?: number }[] } }).dynamicBlocks
         ?.contentBlocks as
         | { refName: string; start: number; end: number; offsetPx?: number }[]
         | undefined
