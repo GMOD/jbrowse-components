@@ -199,11 +199,11 @@ export default function stateModelFactory(
       get visibleRegion() {
         try {
           const view = getContainingView(self) as LGV
-          if (!view?.initialized) {
+          if (!view.initialized) {
             return null
           }
-          const blocks = view.dynamicBlocks?.contentBlocks
-          if (!blocks || blocks.length === 0) {
+          const blocks = view.dynamicBlocks.contentBlocks
+          if (blocks.length === 0) {
             return null
           }
           const first = blocks[0]
@@ -231,7 +231,7 @@ export default function stateModelFactory(
           }
 
           const bpPerPx = view.bpPerPx
-          const blockOffsetPx = first.offsetPx ?? 0
+          const blockOffsetPx = first.offsetPx
           const deltaPx = view.offsetPx - blockOffsetPx
           const deltaBp = deltaPx * bpPerPx
 
@@ -254,9 +254,6 @@ export default function stateModelFactory(
        */
       get colorSchemeIndex(): number {
         const colorBy = this.colorBy
-        if (!colorBy) {
-          return ColorScheme.strand
-        }
         switch (colorBy.type) {
           case 'mappingQuality':
             return ColorScheme.mappingQuality
@@ -264,7 +261,6 @@ export default function stateModelFactory(
             return ColorScheme.insertSize
           case 'firstOfPairStrand':
             return ColorScheme.firstOfPairStrand
-          case 'strand':
           default:
             return ColorScheme.strand
         }
@@ -462,7 +458,9 @@ export default function stateModelFactory(
           assemblyName: visibleRegion.assemblyName,
         }
 
-        this.fetchFeatures(expandedRegion)
+        this.fetchFeatures(expandedRegion).catch(e => {
+          console.error('Failed to fetch features:', e)
+        })
       },
     }))
     .actions(self => ({

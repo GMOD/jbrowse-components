@@ -260,16 +260,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       volatileError: undefined as unknown,
-
-      /**
-       * #volatile
-       */
-      scaleFactor: 1,
-      /**
-       * #volatile
-       * target bpPerPx during zoom animation, used for immediate UI feedback
-       */
-      targetBpPerPx: undefined as number | undefined,
       /**
        * #volatile
        */
@@ -1146,20 +1136,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       */
-      setScaleFactor(factor: number) {
-        self.scaleFactor = factor
-      },
-
-      /**
-       * #action
-       */
-      setTargetBpPerPx(target: number | undefined) {
-        self.targetBpPerPx = target
-      },
-
-      /**
-       * #action
        * this "clears the view" and makes the view return to the import form
        */
       clearView() {
@@ -1262,44 +1238,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
       function zoom(targetBpPerPx: number) {
         cancelLastAnimation()
 
-        // Calculate the zoom factor the caller intended (e.g., 2 for zoom out, 0.5 for zoom in)
-        const intendedFactor = targetBpPerPx / self.bpPerPx
-
-        // Apply that factor to the pending target (if mid-animation) or current bpPerPx
-        // This allows rapid clicks to accumulate
-        const effectiveBase = self.targetBpPerPx ?? self.bpPerPx
-        let effectiveTarget = effectiveBase * intendedFactor
-
         // Clamp to zoom limits
-        effectiveTarget = Math.max(
+        const effectiveTarget = Math.max(
           self.minBpPerPx,
-          Math.min(self.maxBpPerPx, effectiveTarget),
+          Math.min(self.maxBpPerPx, targetBpPerPx),
         )
 
-        const currentTarget = self.targetBpPerPx ?? self.bpPerPx
-
         // If already at limit (or effectively no change), do nothing
-        if (effectiveTarget === currentTarget) {
+        if (effectiveTarget === self.bpPerPx) {
           return
         }
 
-        // Set target immediately for UI feedback
-        self.setTargetBpPerPx(effectiveTarget)
-
-        // Calculate target scale factor relative to committed bpPerPx
-        // Don't update bpPerPx until animation completes - keeps blocks stable
-        const targetScaleFactor = self.bpPerPx / effectiveTarget
-
-        // Animate from current scaleFactor to target (smooth continuation on rapid clicks)
+        // Animate bpPerPx directly from current to target
         const [animate, cancelAnimation] = springAnimate(
-          self.scaleFactor,
-          targetScaleFactor,
-          self.setScaleFactor,
-          () => {
-            self.zoomTo(effectiveTarget)
-            self.setScaleFactor(1)
-            self.setTargetBpPerPx(undefined)
-          },
+          self.bpPerPx,
+          effectiveTarget,
+          self.zoomTo,
+          undefined,
           0,
           1000,
           50,
@@ -1430,23 +1385,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * effective bpPerPx accounting for pending zoom target
          */
         get effectiveBpPerPx() {
-          return self.targetBpPerPx ?? self.bpPerPx
+          return self.bpPerPx
         },
 
         /**
          * #getter
-         * total bp based on effective bpPerPx (updates immediately on zoom click)
          */
         get effectiveTotalBp() {
-          return this.effectiveBpPerPx * self.width
+          return self.bpPerPx * self.width
         },
 
         /**
          * #getter
-         * display string for effective total bp (updates immediately on zoom click)
          */
         get effectiveTotalBpDisplayStr() {
           return getBpDisplayStr(this.effectiveTotalBp)

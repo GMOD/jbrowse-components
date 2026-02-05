@@ -17,7 +17,7 @@ import React, {
   useState,
 } from 'react'
 
-import { WebGLRenderer } from './WebGLRenderer'
+import { WebGLRenderer } from './WebGLRenderer.ts'
 
 import type { FeatureData, RenderState } from './WebGLRenderer'
 
@@ -82,9 +82,9 @@ export const WebGLPileupRendering = forwardRef<
   // Track layout height
   const [maxY, setMaxY] = useState(0)
 
-  // Drag state
+  // Drag state - use state for cursor to avoid reading ref during render
+  const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef({
-    isDragging: false,
     lastX: 0,
     lastY: 0,
   })
@@ -118,7 +118,7 @@ export const WebGLPileupRendering = forwardRef<
 
     // Render with current view state
     rendererRef.current.render(viewState)
-  }, [features])
+  }, [features, viewState])
 
   // Re-render when view state changes
   useEffect(() => {
@@ -234,8 +234,8 @@ export const WebGLPileupRendering = forwardRef<
 
   // Pan handlers (drag)
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true)
     dragRef.current = {
-      isDragging: true,
       lastX: e.clientX,
       lastY: e.clientY,
     }
@@ -243,7 +243,7 @@ export const WebGLPileupRendering = forwardRef<
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (!dragRef.current.isDragging) {
+      if (!isDragging) {
         return
       }
 
@@ -289,15 +289,15 @@ export const WebGLPileupRendering = forwardRef<
         return { ...prev, domainX: newDomainX, rangeY: newRangeY }
       })
     },
-    [onViewChange, checkDataNeeds],
+    [isDragging, onViewChange, checkDataNeeds],
   )
 
   const handleMouseUp = useCallback(() => {
-    dragRef.current.isDragging = false
+    setIsDragging(false)
   }, [])
 
   const handleMouseLeave = useCallback(() => {
-    dragRef.current.isDragging = false
+    setIsDragging(false)
   }, [])
 
   // Expose imperative methods
@@ -325,7 +325,7 @@ export const WebGLPileupRendering = forwardRef<
         style={{
           width: '100%',
           height: '100%',
-          cursor: dragRef.current.isDragging ? 'grabbing' : 'grab',
+          cursor: isDragging ? 'grabbing' : 'grab',
         }}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}

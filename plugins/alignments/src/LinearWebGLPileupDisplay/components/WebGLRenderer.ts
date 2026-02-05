@@ -1420,7 +1420,8 @@ export class WebGLRenderer {
       // Normalize depths
       const normalizedDepths = new Float32Array(data.coverageDepths.length)
       for (let i = 0; i < data.coverageDepths.length; i++) {
-        normalizedDepths[i] = (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
+        normalizedDepths[i] =
+          (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
       }
 
       const coverageVAO = gl.createVertexArray()

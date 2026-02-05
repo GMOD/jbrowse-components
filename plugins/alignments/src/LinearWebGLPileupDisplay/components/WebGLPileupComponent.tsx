@@ -147,7 +147,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
     const first = contentBlocks[0]
     const last = contentBlocks[contentBlocks.length - 1]
-    if (!first || !last || first.refName !== last.refName) {
+    if (!first || first.refName !== last?.refName) {
       // Multi-ref view - not supported yet
       return null
     }
@@ -369,18 +369,18 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       // Skip if we triggered this update ourselves (already rendered immediately)
       if (selfUpdateRef.current) {
         log(
-          `AUTORUN: View state change - SKIP (self-triggered, offsetPx=${offsetPx?.toFixed(
+          `AUTORUN: View state change - SKIP (self-triggered, offsetPx=${offsetPx.toFixed(
             2,
-          )}, bpPerPx=${bpPerPx?.toFixed(4)})`,
+          )}, bpPerPx=${bpPerPx.toFixed(4)})`,
         )
         selfUpdateRef.current = false
         return
       }
 
       log(
-        `AUTORUN: View state change - RUN (external, offsetPx=${offsetPx?.toFixed(
+        `AUTORUN: View state change - RUN (external, offsetPx=${offsetPx.toFixed(
           2,
-        )}, bpPerPx=${bpPerPx?.toFixed(4)})`,
+        )}, bpPerPx=${bpPerPx.toFixed(4)})`,
       )
 
       if (!initialized) {

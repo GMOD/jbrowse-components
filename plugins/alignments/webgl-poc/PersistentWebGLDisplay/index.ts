@@ -21,17 +21,17 @@
  * - demo.html: Standalone demo for testing
  */
 
-export { WebGLRenderer } from './WebGLRenderer'
-export type { FeatureData, RenderState } from './WebGLRenderer'
+export { WebGLRenderer } from './WebGLRenderer.ts'
+export type { FeatureData, RenderState } from './WebGLRenderer.ts'
 
-export { WebGLPileupRendering } from './WebGLPileupRendering'
+export { WebGLPileupRendering } from './WebGLPileupRendering.tsx'
 export type {
   WebGLPileupRenderingHandle,
   WebGLPileupRenderingProps,
-} from './WebGLPileupRendering'
+} from './WebGLPileupRendering.tsx'
 
-export { ColorScheme, configSchemaFactory, stateModelFactory } from './model'
-export type { WebGLPileupDisplayModel } from './model'
+export { ColorScheme, configSchemaFactory, stateModelFactory } from './model.ts'
+export type { WebGLPileupDisplayModel } from './model.ts'
 
 /**
  * Register the WebGL pileup display with JBrowse
@@ -50,9 +50,9 @@ export type { WebGLPileupDisplayModel } from './model'
  * }
  * ```
  */
-export function registerWebGLPileupDisplay(pluginManager: any) {
-  const { configSchemaFactory, stateModelFactory } = require('./model')
-  const { WebGLPileupRendering } = require('./WebGLPileupRendering')
+export async function registerWebGLPileupDisplay(pluginManager: any) {
+  const { configSchemaFactory, stateModelFactory } = await import('./model.ts')
+  const { WebGLPileupRendering } = await import('./WebGLPileupRendering.tsx')
 
   const configSchema = configSchemaFactory(pluginManager)
   const stateModel = stateModelFactory(pluginManager, configSchema)

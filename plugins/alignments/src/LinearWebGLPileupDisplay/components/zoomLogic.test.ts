@@ -88,7 +88,6 @@ function zoomAtPosition(
 // TESTS
 // ============================================================
 
-
 function assertClose(a: number, b: number, epsilon: number, message: string) {
   const diff = Math.abs(a - b)
   if (diff > epsilon) {

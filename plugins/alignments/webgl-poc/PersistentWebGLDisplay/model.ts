@@ -15,8 +15,8 @@
 
 import { getContainingView } from '@jbrowse/core/util'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, reaction } from 'mobx'
-import { addDisposer, cast, getParent, types } from 'mobx-state-tree'
+import { reaction } from 'mobx'
+import { addDisposer, getParent, types } from 'mobx-state-tree'
 
 import type { FeatureData } from './WebGLRenderer'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -89,10 +89,7 @@ export function stateModelFactory(
        */
       get visibleDomain(): [number, number] {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view) {
-          return [0, 10000]
-        }
-        const region = view.dynamicBlocks?.contentBlocks?.[0]
+        const region = view.dynamicBlocks.contentBlocks[0]
         if (!region) {
           return [0, 10000]
         }
@@ -104,7 +101,7 @@ export function stateModelFactory(
        */
       get visibleRefName(): string {
         const view = getContainingView(self) as LinearGenomeViewModel
-        const region = view?.dynamicBlocks?.contentBlocks?.[0]
+        const region = view.dynamicBlocks.contentBlocks[0]
         return region?.refName ?? ''
       },
 
@@ -259,6 +256,8 @@ export function stateModelFactory(
           refName,
           start: region.start,
           end: region.end,
+        }).catch(e => {
+          console.error('Failed to fetch features:', e)
         })
       },
 
@@ -275,7 +274,9 @@ export function stateModelFactory(
             ({ refName, isWithin }) => {
               // Only fetch if we're outside the loaded region
               if (!isWithin && refName) {
-                this.fetchFeatures(self.fetchRegion)
+                this.fetchFeatures(self.fetchRegion).catch(e => {
+                  console.error('Failed to fetch features:', e)
+                })
               }
             },
             {
@@ -286,7 +287,7 @@ export function stateModelFactory(
         )
       },
     }))
-    .views(self => ({
+    .views(() => ({
       /**
        * Custom rendering component (not using standard block rendering)
        */

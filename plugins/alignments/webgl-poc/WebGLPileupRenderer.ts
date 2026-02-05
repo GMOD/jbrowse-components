@@ -18,7 +18,6 @@
  */
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -148,10 +147,7 @@ function createProgram(
     return null
   }
 
-  const program = gl.createProgram()
-  if (!program) {
-    return null
-  }
+  const program = gl.createProgram()!
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
@@ -169,7 +165,7 @@ function createProgram(
  */
 function computeLayout(
   features: Feature[],
-  bpPerPx: number,
+  _bpPerPx: number,
 ): Map<string, number> {
   const sorted = [...features].sort((a, b) => a.get('start') - b.get('start'))
   const levels: number[] = []

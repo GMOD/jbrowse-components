@@ -501,19 +501,20 @@ export async function executeRenderWebGLPileupData({
               insertionsData.push({
                 featureId,
                 position: featureStart + mm.start,
-                length: mm.insertlen ?? mm.length,
+                length: mm.insertlen,
               })
             } else if (mm.type === 'softclip') {
               softclipsData.push({
                 featureId,
                 position: featureStart + mm.start,
-                length: mm.cliplen ?? mm.length,
+                length: mm.cliplen,
               })
-            } else if (mm.type === 'hardclip') {
+            } else {
+              // hardclip
               hardclipsData.push({
                 featureId,
                 position: featureStart + mm.start,
-                length: mm.cliplen ?? mm.length,
+                length: mm.cliplen,
               })
             }
           }

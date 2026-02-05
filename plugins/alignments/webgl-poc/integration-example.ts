@@ -13,10 +13,7 @@
 
 import { lazy } from 'react'
 
-import {
-  AnyConfigurationSchemaType,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { types } from 'mobx-state-tree'
 
