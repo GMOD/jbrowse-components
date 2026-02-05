@@ -34,10 +34,12 @@ const WebGLPileupComponent = lazy(
 const WebGLTooltip = lazy(() => import('./components/WebGLTooltip.tsx'))
 
 export const ColorScheme = {
-  strand: 0,
-  mappingQuality: 1,
-  insertSize: 2,
-  firstOfPairStrand: 3,
+  normal: 0,
+  strand: 1,
+  mappingQuality: 2,
+  insertSize: 3,
+  firstOfPairStrand: 4,
+  pairOrientation: 5,
 } as const
 
 /**
@@ -211,14 +213,21 @@ export default function stateModelFactory(
       get colorSchemeIndex(): number {
         const colorBy = this.colorBy
         switch (colorBy.type) {
+          case 'normal':
+            return ColorScheme.normal
+          case 'strand':
+            return ColorScheme.strand
           case 'mappingQuality':
             return ColorScheme.mappingQuality
           case 'insertSize':
             return ColorScheme.insertSize
           case 'firstOfPairStrand':
+          case 'stranded':
             return ColorScheme.firstOfPairStrand
+          case 'pairOrientation':
+            return ColorScheme.pairOrientation
           default:
-            return ColorScheme.strand
+            return ColorScheme.normal
         }
       },
 
@@ -558,6 +567,12 @@ export default function stateModelFactory(
             label: 'Color by...',
             subMenu: [
               {
+                label: 'Normal',
+                onClick: () => {
+                  self.setColorScheme({ type: 'normal' })
+                },
+              },
+              {
                 label: 'Strand',
                 onClick: () => {
                   self.setColorScheme({ type: 'strand' })
@@ -579,6 +594,12 @@ export default function stateModelFactory(
                 label: 'First of pair strand',
                 onClick: () => {
                   self.setColorScheme({ type: 'firstOfPairStrand' })
+                },
+              },
+              {
+                label: 'Pair orientation',
+                onClick: () => {
+                  self.setColorScheme({ type: 'pairOrientation' })
                 },
               },
             ],

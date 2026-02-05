@@ -21,6 +21,8 @@ interface FeatureData {
   flags: number
   mapq: number
   insertSize: number
+  pairOrientation: number // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
+  strand: number // -1=reverse, 0=unknown, 1=forward
 }
 
 interface GapData {
@@ -66,6 +68,36 @@ function baseToNum(base: string): number {
       return 3
     default:
       return 0
+  }
+}
+
+// Pair orientation encoding for shader
+// Based on orientationTypes from util.ts - maps pair_orientation strings to integers
+// Supports 'fr' orientation type (most common for Illumina)
+function pairOrientationToNum(pairOrientation: string | undefined): number {
+  if (!pairOrientation) {
+    return 0 // unknown
+  }
+  // For 'fr' orientation type (standard Illumina):
+  // F1R2, F2R1 -> LR (normal)
+  // R1F2, R2F1 -> RL
+  // F1F2, F2F1 -> RR (actually FF)
+  // R1R2, R2R1 -> LL (actually RR)
+  switch (pairOrientation) {
+    case 'F1R2':
+    case 'F2R1':
+      return 1 // LR - normal
+    case 'R1F2':
+    case 'R2F1':
+      return 2 // RL
+    case 'F1F2':
+    case 'F2F1':
+      return 3 // RR (FF orientation)
+    case 'R1R2':
+    case 'R2R1':
+      return 4 // LL (RR orientation)
+    default:
+      return 0 // unknown
   }
 }
 
@@ -482,6 +514,7 @@ export async function executeRenderWebGLPileupData({
         const featureId = feature.id()
         const featureStart = feature.get('start')
 
+        const strand = feature.get('strand')
         featuresData.push({
           id: featureId,
           start: featureStart,
@@ -489,6 +522,8 @@ export async function executeRenderWebGLPileupData({
           flags: feature.get('flags') ?? 0,
           mapq: feature.get('score') ?? feature.get('qual') ?? 60,
           insertSize: Math.abs(feature.get('template_length') ?? 400),
+          pairOrientation: pairOrientationToNum(feature.get('pair_orientation')),
+          strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
         })
 
         const featureMismatches = feature.get('mismatches') as
@@ -571,6 +606,8 @@ export async function executeRenderWebGLPileupData({
     const readFlags = new Uint16Array(features.length)
     const readMapqs = new Uint8Array(features.length)
     const readInsertSizes = new Float32Array(features.length)
+    const readPairOrientations = new Uint8Array(features.length)
+    const readStrands = new Int8Array(features.length)
     const readIds: string[] = []
 
     for (const [i, f] of features.entries()) {
@@ -582,6 +619,8 @@ export async function executeRenderWebGLPileupData({
       readFlags[i] = f.flags
       readMapqs[i] = Math.min(255, f.mapq)
       readInsertSizes[i] = f.insertSize
+      readPairOrientations[i] = f.pairOrientation
+      readStrands[i] = f.strand
       readIds.push(f.id)
     }
 
@@ -658,6 +697,8 @@ export async function executeRenderWebGLPileupData({
         readFlags,
         readMapqs,
         readInsertSizes,
+        readPairOrientations,
+        readStrands,
         readIds,
       },
       gapArrays: { gapPositions, gapYs },
@@ -745,6 +786,8 @@ export async function executeRenderWebGLPileupData({
     result.readFlags.buffer,
     result.readMapqs.buffer,
     result.readInsertSizes.buffer,
+    result.readPairOrientations.buffer,
+    result.readStrands.buffer,
     result.gapPositions.buffer,
     result.gapYs.buffer,
     result.mismatchPositions.buffer,

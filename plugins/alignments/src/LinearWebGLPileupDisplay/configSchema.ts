@@ -27,7 +27,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       },
       colorBy: {
         type: 'frozen',
-        defaultValue: { type: 'strand' },
+        defaultValue: { type: 'normal' },
         description: 'Color scheme for reads',
       },
       filterBy: {

@@ -88,6 +88,8 @@ in float a_y;
 in float a_flags;
 in float a_mapq;
 in float a_insertSize;
+in float a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
+in float a_strand;           // -1=reverse, 0=unknown, 1=forward
 
 uniform vec3 u_domainX;  // [domainStartHi, domainStartLo, domainExtent]
 uniform uint u_regionStart;  // Base position for converting offsets to absolute
@@ -103,15 +105,28 @@ out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
 
-vec3 strandColor(float flags) {
-  return vec3(0.8, 0.8, 0.8);
+// Color scheme 0: normal - grey base color
+vec3 normalColor() {
+  return vec3(0.75, 0.75, 0.75);  // light grey
 }
 
+// Color scheme 1: strand - red for forward, blue for reverse
+vec3 strandColor(float strand) {
+  if (strand > 0.5) {
+    return vec3(0.93, 0.55, 0.55);  // #EC8B8B - forward/red
+  } else if (strand < -0.5) {
+    return vec3(0.56, 0.56, 0.85);  // #8F8FD8 - reverse/blue
+  }
+  return vec3(0.75, 0.75, 0.75);  // grey for unknown
+}
+
+// Color scheme 2: mapping quality - red (low) to blue (high)
 vec3 mapqColor(float mapq) {
   float t = clamp(mapq / 60.0, 0.0, 1.0);
   return mix(vec3(0.85, 0.35, 0.35), vec3(0.35, 0.45, 0.85), t);
 }
 
+// Color scheme 3: insert size - hue based on deviation from normal
 vec3 insertSizeColor(float insertSize) {
   float normal = 400.0;
   float dev = abs(insertSize - normal) / normal;
@@ -121,9 +136,25 @@ vec3 insertSizeColor(float insertSize) {
   return mix(vec3(0.55), vec3(0.25, 0.35, 0.85), clamp(dev, 0.0, 1.0));
 }
 
+// Color scheme 4: first-of-pair strand
 vec3 firstOfPairColor(float flags) {
   bool isFirst = mod(floor(flags / 64.0), 2.0) > 0.5;
   return isFirst ? vec3(0.85, 0.53, 0.53) : vec3(0.53, 0.53, 0.85);
+}
+
+// Color scheme 5: pair orientation - LR/RL/RR/LL
+vec3 pairOrientationColor(float pairOrientation) {
+  int po = int(pairOrientation);
+  if (po == 1) {
+    return vec3(0.75, 0.75, 0.75);  // LR - normal (grey)
+  } else if (po == 2) {
+    return vec3(0.1, 0.8, 0.8);     // RL - teal
+  } else if (po == 3) {
+    return vec3(0.1, 0.8, 0.1);     // RR (FF) - green
+  } else if (po == 4) {
+    return vec3(0.1, 0.1, 0.8);     // LL (RR) - blue
+  }
+  return vec3(0.75, 0.75, 0.75);    // unknown - grey
 }
 
 void main() {
@@ -156,10 +187,12 @@ void main() {
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
   vec3 color;
-  if (u_colorScheme == 0) color = strandColor(a_flags);
-  else if (u_colorScheme == 1) color = mapqColor(a_mapq);
-  else if (u_colorScheme == 2) color = insertSizeColor(a_insertSize);
-  else if (u_colorScheme == 3) color = firstOfPairColor(a_flags);
+  if (u_colorScheme == 0) color = normalColor();
+  else if (u_colorScheme == 1) color = strandColor(a_strand);
+  else if (u_colorScheme == 2) color = mapqColor(a_mapq);
+  else if (u_colorScheme == 3) color = insertSizeColor(a_insertSize);
+  else if (u_colorScheme == 4) color = firstOfPairColor(a_flags);
+  else if (u_colorScheme == 5) color = pairOrientationColor(a_pairOrientation);
   else color = vec3(0.6);
 
   // Darken highlighted feature
@@ -1121,6 +1154,8 @@ export class WebGLRenderer {
     readFlags: Uint16Array
     readMapqs: Uint8Array
     readInsertSizes: Float32Array
+    readPairOrientations: Uint8Array
+    readStrands: Int8Array
     numReads: number
     maxY: number
   }) {
@@ -1182,6 +1217,18 @@ export class WebGLRenderer {
       1,
     )
     this.uploadBuffer(this.readProgram, 'a_insertSize', data.readInsertSizes, 1)
+    this.uploadBuffer(
+      this.readProgram,
+      'a_pairOrientation',
+      new Float32Array(data.readPairOrientations),
+      1,
+    )
+    this.uploadBuffer(
+      this.readProgram,
+      'a_strand',
+      new Float32Array(data.readStrands),
+      1,
+    )
     gl.bindVertexArray(null)
 
     this.buffers = {
