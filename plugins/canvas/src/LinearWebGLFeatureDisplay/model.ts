@@ -434,6 +434,19 @@ export default function stateModelFactory(
         ]
       },
     }))
+    .postProcessSnapshot(snap => {
+      const { trackShowLabels, trackShowDescriptions, ...rest } = snap as {
+        trackShowLabels?: boolean
+        trackShowDescriptions?: boolean
+        [key: string]: unknown
+      }
+      return {
+        ...rest,
+        // Only persist if explicitly set (not undefined)
+        ...(trackShowLabels !== undefined && { trackShowLabels }),
+        ...(trackShowDescriptions !== undefined && { trackShowDescriptions }),
+      }
+    })
 }
 
 export type LinearWebGLFeatureDisplayStateModel = ReturnType<
