@@ -107,7 +107,8 @@ export async function renderSvg(
 
     const x = (snpStart - viewStart) / bpPerPx
     const w = Math.max(1 / bpPerPx, 1)
-    const barY = coverageHeight - offset - (yOffset + segHeight) * effectiveHeight
+    const barY =
+      coverageHeight - offset - (yOffset + segHeight) * effectiveHeight
     const barH = segHeight * effectiveHeight
 
     const baseName = baseNames[colorType - 1]

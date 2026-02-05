@@ -5,12 +5,12 @@ import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
 import DensityRendererF from './DensityRenderer/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
 import LinePlotRendererF from './LinePlotRenderer/index.ts'
+import LinearWebGLMultiWiggleDisplayF from './LinearWebGLMultiWiggleDisplay/index.ts'
+import LinearWebGLWiggleDisplayF from './LinearWebGLWiggleDisplay/index.ts'
 import LinearWiggleDisplayF, {
   ReactComponent as LinearWiggleDisplayReactComponent,
   modelFactory as linearWiggleDisplayModelFactory,
 } from './LinearWiggleDisplay/index.ts'
-import LinearWebGLMultiWiggleDisplayF from './LinearWebGLMultiWiggleDisplay/index.ts'
-import LinearWebGLWiggleDisplayF from './LinearWebGLWiggleDisplay/index.ts'
 import MultiDensityRendererF from './MultiDensityRenderer/index.ts'
 import MultiLineRendererF from './MultiLineRenderer/index.ts'
 import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay/index.ts'

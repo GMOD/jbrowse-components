@@ -459,11 +459,11 @@ void main() {
 
   float sx = mix(x1, x2, localX);
 
-  // Y: bars grow DOWNWARD from top of canvas
+  // Y: bars grow DOWNWARD from top of canvas, below indicator triangles
   // Top of canvas is y=1.0 in clip space
-  // segmentTop is at the top (y=1.0 - offset)
-  // segmentBot is below (y=1.0 - offset - height)
-  float segmentTop = 1.0 - (a_yOffset * u_noncovHeight / u_canvasHeight) * 2.0;
+  // Offset by indicator triangle height (4.5px) so bars appear directly below triangles
+  float indicatorOffsetClip = 4.5 / u_canvasHeight * 2.0;
+  float segmentTop = 1.0 - indicatorOffsetClip - (a_yOffset * u_noncovHeight / u_canvasHeight) * 2.0;
   float segmentBot = segmentTop - (a_segmentHeight * u_noncovHeight / u_canvasHeight) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
@@ -492,6 +492,7 @@ void main() {
 
 // Interbase indicator vertex shader - renders small triangles pointing DOWN
 // at positions with significant insertion/softclip/hardclip counts
+// Positioned at the very top of the coverage area
 const INDICATOR_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
@@ -1080,20 +1081,20 @@ export const defaultColorPalette: ColorPalette = {
   colorRevStrand: [0.561, 0.561, 0.847], // #8F8FD8
   colorNostrand: [0.784, 0.784, 0.784], // #c8c8c8
   colorPairLR: [0.827, 0.827, 0.827], // lightgrey (#d3d3d3)
-  colorPairRL: [0.0, 0.502, 0.502], // teal
+  colorPairRL: [0, 0.502, 0.502], // teal
   colorPairRR: [0.227, 0.227, 0.616], // #3a3a9d
-  colorPairLL: [0.0, 0.502, 0.0], // green
+  colorPairLL: [0, 0.502, 0], // green
   // Base colors (MUI theme)
   colorBaseA: [0.298, 0.686, 0.314], // green (#4caf50)
   colorBaseC: [0.129, 0.588, 0.953], // blue (#2196f3)
-  colorBaseG: [1.0, 0.596, 0.0], // orange (#ff9800)
+  colorBaseG: [1, 0.596, 0], // orange (#ff9800)
   colorBaseT: [0.957, 0.263, 0.212], // red (#f44336)
   // Indel/clip colors (theme)
-  colorInsertion: [0.502, 0.0, 0.502], // purple (#800080)
+  colorInsertion: [0.502, 0, 0.502], // purple (#800080)
   colorDeletion: [0.502, 0.502, 0.502], // grey (#808080)
   colorSkip: [0.592, 0.722, 0.788], // teal/blue (#97b8c9)
-  colorSoftclip: [0.0, 0.0, 1.0], // blue (#00f)
-  colorHardclip: [1.0, 0.0, 0.0], // red (#f00)
+  colorSoftclip: [0, 0, 1], // blue (#00f)
+  colorHardclip: [1, 0, 0], // red (#f00)
   // Coverage color
   colorCoverage: [0.8, 0.8, 0.8], // light grey (#cccccc)
 }
@@ -2077,8 +2078,8 @@ export class WebGLRenderer {
       }
 
       // Draw noncov (interbase) histogram - bars growing DOWN from top
-      // Height is proportional to half the coverage height (like the original renderer)
-      const noncovHeight = state.coverageHeight / 2
+      // Height is 1/4 of coverage height to keep it compact
+      const noncovHeight = state.coverageHeight / 4
       if (
         state.showInterbaseCounts &&
         this.buffers.noncovHistogramVAO &&
@@ -2116,7 +2117,7 @@ export class WebGLRenderer {
         )
       }
 
-      // Draw interbase indicators - triangles at significant positions
+      // Draw interbase indicators - triangles at top of coverage area
       if (
         state.showInterbaseIndicators &&
         this.buffers.indicatorVAO &&

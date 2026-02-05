@@ -348,8 +348,8 @@ export class WebGLMultiWiggleRenderer {
     const allPrevScores = new Float32Array(totalFeatures)
 
     let offset = 0
-    for (let rowIndex = 0; rowIndex < sources.length; rowIndex++) {
-      const source = sources[rowIndex]!
+    for (const [rowIndex, source_] of sources.entries()) {
+      const source = source_
       for (let i = 0; i < source.numFeatures; i++) {
         allPositions[(offset + i) * 2] = source.featurePositions[i * 2]!
         allPositions[(offset + i) * 2 + 1] = source.featurePositions[i * 2 + 1]!
@@ -366,7 +366,7 @@ export class WebGLMultiWiggleRenderer {
     }
 
     // Create VAO for xyplot and density
-    const featureVAO = gl.createVertexArray()!
+    const featureVAO = gl.createVertexArray()
     gl.bindVertexArray(featureVAO)
 
     this.uploadUintBuffer(this.xyplotProgram, 'a_position', allPositions, 2)
@@ -377,7 +377,7 @@ export class WebGLMultiWiggleRenderer {
     gl.bindVertexArray(null)
 
     // Create VAO for line rendering (needs previous score)
-    const lineVAO = gl.createVertexArray()!
+    const lineVAO = gl.createVertexArray()
     gl.bindVertexArray(lineVAO)
 
     this.uploadUintBuffer(this.lineProgram, 'a_position', allPositions, 2)

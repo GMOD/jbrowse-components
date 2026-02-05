@@ -85,7 +85,7 @@ export function parseColor(color: string): [number, number, number] {
       return [r, g, b]
     }
   }
-  const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+  const rgbMatch = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(color)
   if (rgbMatch) {
     return [
       parseInt(rgbMatch[1], 10) / 255,
@@ -124,7 +124,7 @@ export function createProgram(
   vsSource: string,
   fsSource: string,
 ): WebGLProgram {
-  const program = gl.createProgram()!
+  const program = gl.createProgram()
   gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vsSource))
   gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fsSource))
   gl.linkProgram(program)

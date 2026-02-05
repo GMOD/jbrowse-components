@@ -8,9 +8,14 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { addDisposer, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { reaction } from 'mobx'
 
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
@@ -40,7 +45,10 @@ export type InsertionType = 'large' | 'long' | 'small'
  * - 'long': length >= 10bp but too zoomed out for text
  * - 'small': length < 10bp
  */
-export function getInsertionType(length: number, pxPerBp: number): InsertionType {
+export function getInsertionType(
+  length: number,
+  pxPerBp: number,
+): InsertionType {
   const isLongInsertion = length >= LONG_INSERTION_MIN_LENGTH
   if (isLongInsertion) {
     const insertionWidthPx = length * pxPerBp
@@ -78,7 +86,10 @@ export function textWidthForNumber(num: number): number {
  * Get the rectangle width in pixels for an insertion marker.
  * Must match the shader logic in WebGLRenderer.ts.
  */
-export function getInsertionRectWidthPx(length: number, pxPerBp: number): number {
+export function getInsertionRectWidthPx(
+  length: number,
+  pxPerBp: number,
+): number {
   const type = getInsertionType(length, pxPerBp)
   if (type === 'large') {
     return textWidthForNumber(length)
@@ -96,15 +107,12 @@ interface Region {
   assemblyName?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getSequenceAdapter(session: any, region: Region) {
   const assembly = region.assemblyName
     ? session.assemblyManager.get(region.assemblyName)
     : undefined
   const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
-  return sequenceAdapterConfig
-    ? getSnapshot(sequenceAdapterConfig)
-    : undefined
+  return sequenceAdapterConfig ? getSnapshot(sequenceAdapterConfig) : undefined
 }
 
 const WebGLPileupComponent = lazy(

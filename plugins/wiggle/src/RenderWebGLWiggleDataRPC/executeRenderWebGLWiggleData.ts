@@ -14,9 +14,9 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type { WebGLWiggleDataResult } from './types.ts'
-import type { Region } from '@jbrowse/core/util'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region } from '@jbrowse/core/util'
 
 interface ExecuteParams {
   pluginManager: PluginManager

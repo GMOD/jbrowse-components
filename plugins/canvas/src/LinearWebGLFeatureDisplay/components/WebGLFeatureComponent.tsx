@@ -451,14 +451,13 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         return
       }
 
-      e.preventDefault()
-      e.stopPropagation()
-
       const absX = Math.abs(e.deltaX)
       const absY = Math.abs(e.deltaY)
 
       // Horizontal pan
       if (absX > 5 && absX > absY * 2) {
+        e.preventDefault()
+        e.stopPropagation()
         const newOffsetPx = view.offsetPx + e.deltaX
 
         const dynamicBlocks = (
@@ -496,13 +495,17 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
       // Vertical scroll (Y-axis panning)
       if (e.shiftKey) {
+        e.preventDefault()
+        e.stopPropagation()
         const panAmount = e.deltaY * 0.5
         const newScrollY = Math.max(0, scrollYRef.current + panAmount)
         scrollYRef.current = newScrollY
         // Update state to trigger floating labels re-render
         setScrollY(newScrollY)
         renderNowRef.current()
-      } else {
+      } else if (view.scrollZoom || e.ctrlKey || e.metaKey) {
+        e.preventDefault()
+        e.stopPropagation()
         // Zoom
         const currentRange = getVisibleBpRangeRef.current()
         if (!currentRange) {
@@ -746,7 +749,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     const elements: React.ReactElement[] = []
 
     for (const [featureId, labelData] of Object.entries(
-      rpcData.floatingLabelsData as FloatingLabelsDataMap,
+      rpcData.floatingLabelsData,
     )) {
       const featureStartBp = labelData.minX + regionStart
       const featureEndBp = labelData.maxX + regionStart
@@ -900,7 +903,11 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       addSubfeatureOverlay(hoveredSubfeature, 'rgba(0, 0, 0, 0.15)', 'hover')
     } else if (hoveredFeature) {
       // Hovering over gene but not a specific transcript - highlight the gene
-      addFeatureOverlay(hoveredFeature.featureId, 'rgba(0, 0, 0, 0.15)', 'hover')
+      addFeatureOverlay(
+        hoveredFeature.featureId,
+        'rgba(0, 0, 0, 0.15)',
+        'hover',
+      )
     }
 
     // Add selection highlight (blue tint)

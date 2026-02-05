@@ -1,9 +1,12 @@
 import { forwardRef, isValidElement } from 'react'
 
-import { toLocale } from '@jbrowse/core/util'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
+
+import { getInterbaseTypeLabel } from '../../SNPCoverageRenderer/types.ts'
 
 import type { CoverageTooltipBin } from '../../RenderWebGLPileupDataRPC/types'
 import type { Feature } from '@jbrowse/core/util'
@@ -14,7 +17,7 @@ const useStyles = makeStyles()(theme => ({
     border: 'none',
     width: 1,
     height: '100%',
-    top: 0,
+    top: YSCALEBAR_LABEL_OFFSET,
     cursor: 'default',
     position: 'absolute',
     pointerEvents: 'none',
@@ -26,6 +29,14 @@ const useStyles = makeStyles()(theme => ({
 
 function pct(n: number, total = 1) {
   return `${((n / (total || 1)) * 100).toFixed(1)}%`
+}
+
+function formatLocation(refName?: string, position?: number) {
+  if (position === undefined) {
+    return refName || ''
+  }
+  const pos = toLocale(position + 1)
+  return refName ? `${refName}:${pos}` : pos
 }
 
 interface TooltipProps {
@@ -46,15 +57,76 @@ const SimpleTooltipContents = forwardRef<HTMLDivElement, TooltipProps>(
   },
 )
 
-// Coverage tooltip contents similar to LinearSNPCoverageDisplay
+// Interbase tooltip - matches LinearSNPCoverageDisplay/components/TooltipContents InterbaseTooltip
+function InterbaseTooltip({
+  type,
+  count,
+  total,
+  minLen,
+  maxLen,
+  avgLen,
+  topSeq,
+  location,
+  tdClass,
+  reactRef,
+}: {
+  type: string
+  count: number
+  total: number
+  minLen: number
+  maxLen: number
+  avgLen: number
+  topSeq?: string
+  location: string
+  tdClass: string
+  reactRef: React.Ref<HTMLDivElement>
+}) {
+  const sizeStr =
+    minLen === maxLen
+      ? `${minLen}bp`
+      : `${minLen}-${maxLen}bp (avg ${avgLen.toFixed(1)}bp)`
+
+  return (
+    <div ref={reactRef}>
+      <table>
+        <caption>{location}</caption>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Count</th>
+            <th>% of Reads</th>
+            <th>Size</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{getInterbaseTypeLabel(type)}</td>
+            <td className={tdClass}>{count}</td>
+            <td>{pct(count, total)}</td>
+            <td>{sizeStr}</td>
+          </tr>
+          {topSeq ? (
+            <tr>
+              <td colSpan={4}>
+                Most common sequence:{' '}
+                {topSeq.length > 20 ? `${topSeq.slice(0, 20)}...` : topSeq}
+              </td>
+            </tr>
+          ) : null}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// Coverage tooltip - matches LinearSNPCoverageDisplay/components/TooltipContents BinTooltip structure
 const CoverageTooltipContents = forwardRef<
   HTMLDivElement,
   { bin: CoverageTooltipBin; refName?: string }
 >(function CoverageTooltipContents2({ bin, refName }, ref) {
+  const { classes } = useStyles()
   const { position, depth, snps, delskips, interbase } = bin
-  const location = refName
-    ? `${refName}:${toLocale(position + 1)}`
-    : toLocale(position + 1)
+  const location = formatLocation(refName, position)
 
   const snpEntries = Object.entries(snps)
   const delskipEntries = Object.entries(delskips ?? {})
@@ -66,30 +138,30 @@ const CoverageTooltipContents = forwardRef<
         <caption>{location}</caption>
         <thead>
           <tr>
-            <th>Type</th>
-            <th>Count</th>
+            <th />
+            <th>Base</th>
+            <th># of Reads</th>
             <th>% of Reads</th>
             <th>Strands</th>
-            <th>Size</th>
           </tr>
         </thead>
         <tbody>
           <tr>
+            <td />
             <td>Total</td>
             <td>{depth}</td>
-            <td />
             <td />
             <td />
           </tr>
           {snpEntries.map(([base, data]) => (
             <tr key={base}>
-              <td>{base}</td>
-              <td>{data.count}</td>
+              <td />
+              <td>{base.toUpperCase()}</td>
+              <td className={classes.td}>{data.count}</td>
               <td>{pct(data.count, depth)}</td>
               <td>
                 {data.fwd}(+) {data.rev}(-)
               </td>
-              <td />
             </tr>
           ))}
           {delskipEntries.map(([type, data]) => {
@@ -97,50 +169,37 @@ const CoverageTooltipContents = forwardRef<
             const sizeStr =
               data.minLen === data.maxLen
                 ? `${data.minLen}bp`
-                : `${data.minLen}-${data.maxLen}bp (avg ${data.avgLen.toFixed(1)}bp)`
+                : `${data.minLen}-${data.maxLen}bp`
             return (
               <tr key={type}>
-                <td>{typeLabel}</td>
-                <td>{data.count}</td>
+                <td />
+                <td>
+                  {typeLabel} ({sizeStr})
+                </td>
+                <td className={classes.td}>{data.count}</td>
                 <td>{pct(data.count, depth)}</td>
                 <td />
-                <td>{sizeStr}</td>
               </tr>
             )
           })}
           {interbaseEntries.map(([type, data]) => {
-            const typeLabel =
-              type === 'insertion'
-                ? 'Insertion'
-                : type === 'softclip'
-                  ? 'Soft clip'
-                  : 'Hard clip'
+            const typeLabel = getInterbaseTypeLabel(type)
             const sizeStr =
               data.minLen === data.maxLen
                 ? `${data.minLen}bp`
-                : `${data.minLen}-${data.maxLen}bp (avg ${data.avgLen.toFixed(1)}bp)`
+                : `${data.minLen}-${data.maxLen}bp`
             return (
               <tr key={type}>
-                <td>{typeLabel}</td>
-                <td>{data.count}</td>
+                <td />
+                <td>
+                  {typeLabel} ({sizeStr})
+                </td>
+                <td className={classes.td}>{data.count}</td>
                 <td>{pct(data.count, depth)}</td>
                 <td />
-                <td>{sizeStr}</td>
               </tr>
             )
           })}
-          {interbaseEntries.map(([type, data]) =>
-            data.topSeq ? (
-              <tr key={`${type}-seq`}>
-                <td colSpan={5}>
-                  Most common sequence:{' '}
-                  {data.topSeq.length > 20
-                    ? `${data.topSeq.slice(0, 20)}...`
-                    : data.topSeq}
-                </td>
-              </tr>
-            ) : null,
-          )}
         </tbody>
       </table>
     </div>
@@ -158,6 +217,7 @@ interface CoverageTooltipData {
 
 interface IndicatorTooltipData {
   type: 'indicator'
+  indicatorType: string // 'insertion', 'softclip', 'hardclip'
   bin: CoverageTooltipBin
   refName?: string
 }
@@ -196,7 +256,7 @@ const WebGLTooltip = observer(function WebGLTooltip({
     coverageHeight,
   } = model
   const { classes } = useStyles()
-  const x = clientMouseCoord[0] + 15
+  const x = clientMouseCoord[0] + 5
   const y = clientMouseCoord[1]
 
   // Try to parse structured tooltip data
@@ -210,11 +270,53 @@ const WebGLTooltip = observer(function WebGLTooltip({
     }
   }
 
-  // Coverage or indicator tooltip with flag-style display (vertical line indicator)
+  // Indicator tooltip - show focused interbase item
   if (
     tooltipData &&
     typeof tooltipData === 'object' &&
-    (tooltipData.type === 'coverage' || tooltipData.type === 'indicator')
+    tooltipData.type === 'indicator'
+  ) {
+    const { indicatorType, bin, refName } = tooltipData
+    const interbaseData = bin.interbase[indicatorType]
+    if (interbaseData) {
+      const location = formatLocation(refName, bin.position)
+      return (
+        <>
+          <BaseTooltip clientPoint={{ x, y }}>
+            <InterbaseTooltip
+              type={indicatorType}
+              count={interbaseData.count}
+              total={bin.depth}
+              minLen={interbaseData.minLen}
+              maxLen={interbaseData.maxLen}
+              avgLen={interbaseData.avgLen}
+              topSeq={interbaseData.topSeq}
+              location={location}
+              tdClass={classes.td}
+              reactRef={null}
+            />
+          </BaseTooltip>
+          {offsetMouseCoord && (
+            <div
+              className={classes.hoverVertical}
+              style={{
+                left: offsetMouseCoord[0],
+                height: showCoverage
+                  ? coverageHeight - YSCALEBAR_LABEL_OFFSET * 2
+                  : (height ?? 100),
+              }}
+            />
+          )}
+        </>
+      )
+    }
+  }
+
+  // Coverage tooltip with flag-style display (vertical line indicator)
+  if (
+    tooltipData &&
+    typeof tooltipData === 'object' &&
+    tooltipData.type === 'coverage'
   ) {
     return (
       <>
@@ -229,7 +331,9 @@ const WebGLTooltip = observer(function WebGLTooltip({
             className={classes.hoverVertical}
             style={{
               left: offsetMouseCoord[0],
-              height: showCoverage ? coverageHeight : height ?? 100,
+              height: showCoverage
+                ? coverageHeight - YSCALEBAR_LABEL_OFFSET * 2
+                : (height ?? 100),
             }}
           />
         )}

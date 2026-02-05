@@ -223,6 +223,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         showTrackOutlines: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showTrackOutlines', true),
         ),
+
+        /**
+         * #property
+         * enable scroll-to-zoom on WebGL tracks
+         */
+        scrollZoom: types.optional(types.boolean, () =>
+          localStorageGetBoolean('lgv-scrollZoom', false),
+        ),
         /**
          * #property
          * this is a non-serialized property that can be used for loading the
@@ -743,6 +751,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowTrackOutlines(arg: boolean) {
         self.showTrackOutlines = arg
+      },
+      /**
+       * #action
+       */
+      setScrollZoom(flag: boolean) {
+        self.scrollZoom = flag
       },
       /**
        * #action
@@ -1865,6 +1879,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         trackLabels,
         colorByCDS,
         showTrackOutlines,
+        scrollZoom,
         ...rest
       } = snap as Omit<typeof snap, symbol>
 
@@ -1885,6 +1900,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
+        ...(scrollZoom ? { scrollZoom } : {}),
       } as typeof snap
     })
 }

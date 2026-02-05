@@ -77,15 +77,14 @@ export function useWebGLViewInteraction({
         return
       }
 
-      e.preventDefault()
-      e.stopPropagation()
-
       const width = view.dynamicBlocks.totalWidthPx
       const absX = Math.abs(e.deltaX)
       const absY = Math.abs(e.deltaY)
 
       // Horizontal scroll - pan
       if (absX > 5 && absX > absY * 2) {
+        e.preventDefault()
+        e.stopPropagation()
         const newOffsetPx = Math.max(
           view.minOffset,
           Math.min(view.maxOffset, view.offsetPx + e.deltaX),
@@ -109,6 +108,12 @@ export function useWebGLViewInteraction({
       if (absY < 1) {
         return
       }
+
+      if (!view.scrollZoom && !e.ctrlKey && !e.metaKey) {
+        return
+      }
+      e.preventDefault()
+      e.stopPropagation()
 
       // Zoom around mouse position
       const currentRange = getVisibleBpRangeRef.current()

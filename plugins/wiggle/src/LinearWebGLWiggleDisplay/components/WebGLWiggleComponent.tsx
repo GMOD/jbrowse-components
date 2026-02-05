@@ -8,13 +8,12 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
+import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
-import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
-import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
 
 import type { RenderingType } from './WebGLWiggleRenderer.ts'
-
 import type { LinearWebGLWiggleDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

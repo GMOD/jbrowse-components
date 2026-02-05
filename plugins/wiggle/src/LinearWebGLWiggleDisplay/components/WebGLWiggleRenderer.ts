@@ -345,7 +345,7 @@ export class WebGLWiggleRenderer {
     this.featureScores = data.featureScores
 
     // Create VAO for xyplot and density (same structure)
-    const featureVAO = gl.createVertexArray()!
+    const featureVAO = gl.createVertexArray()
     gl.bindVertexArray(featureVAO)
 
     this.uploadUintBuffer(
@@ -359,7 +359,7 @@ export class WebGLWiggleRenderer {
     gl.bindVertexArray(null)
 
     // Create VAO for line rendering (needs previous score)
-    const lineVAO = gl.createVertexArray()!
+    const lineVAO = gl.createVertexArray()
     gl.bindVertexArray(lineVAO)
 
     this.uploadUintBuffer(

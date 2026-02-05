@@ -118,7 +118,7 @@ export default function stateModelFactory(
           }
 
           const last = blocks[blocks.length - 1]
-          if (!last || first.refName !== last.refName) {
+          if (first.refName !== last?.refName) {
             return {
               refName: first.refName,
               start: first.start,
@@ -339,19 +339,25 @@ export default function stateModelFactory(
                 label: 'Multi-row XY plot',
                 type: 'radio',
                 checked: self.renderingType === 'multirowxy',
-                onClick: () => self.setRenderingType('multirowxy'),
+                onClick: () => {
+                  self.setRenderingType('multirowxy')
+                },
               },
               {
                 label: 'Multi-row density',
                 type: 'radio',
                 checked: self.renderingType === 'multirowdensity',
-                onClick: () => self.setRenderingType('multirowdensity'),
+                onClick: () => {
+                  self.setRenderingType('multirowdensity')
+                },
               },
               {
                 label: 'Multi-row line',
                 type: 'radio',
                 checked: self.renderingType === 'multirowline',
-                onClick: () => self.setRenderingType('multirowline'),
+                onClick: () => {
+                  self.setRenderingType('multirowline')
+                },
               },
             ],
           },
@@ -363,13 +369,17 @@ export default function stateModelFactory(
                 label: 'Linear scale',
                 type: 'radio',
                 checked: self.scaleType === 'linear',
-                onClick: () => self.setScaleType('linear'),
+                onClick: () => {
+                  self.setScaleType('linear')
+                },
               },
               {
                 label: 'Log scale',
                 type: 'radio',
                 checked: self.scaleType === 'log',
-                onClick: () => self.setScaleType('log'),
+                onClick: () => {
+                  self.setScaleType('log')
+                },
               },
               {
                 label: 'Set min/max score',

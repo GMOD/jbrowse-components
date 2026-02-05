@@ -13,7 +13,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { reaction } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { getNiceDomain, getScale, YSCALEBAR_LABEL_OFFSET } from '../util.ts'
+import { YSCALEBAR_LABEL_OFFSET, getNiceDomain, getScale } from '../util.ts'
 
 import type { WebGLWiggleDataResult } from '../RenderWebGLWiggleDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -135,7 +135,7 @@ export default function stateModelFactory(
           }
 
           const last = blocks[blocks.length - 1]
-          if (!last || first.refName !== last.refName) {
+          if (first.refName !== last?.refName) {
             return {
               refName: first.refName,
               start: first.start,
@@ -339,19 +339,25 @@ export default function stateModelFactory(
                 label: 'XY plot',
                 type: 'radio',
                 checked: self.renderingType === 'xyplot',
-                onClick: () => self.setRenderingType('xyplot'),
+                onClick: () => {
+                  self.setRenderingType('xyplot')
+                },
               },
               {
                 label: 'Density',
                 type: 'radio',
                 checked: self.renderingType === 'density',
-                onClick: () => self.setRenderingType('density'),
+                onClick: () => {
+                  self.setRenderingType('density')
+                },
               },
               {
                 label: 'Line',
                 type: 'radio',
                 checked: self.renderingType === 'line',
-                onClick: () => self.setRenderingType('line'),
+                onClick: () => {
+                  self.setRenderingType('line')
+                },
               },
             ],
           },
@@ -363,13 +369,17 @@ export default function stateModelFactory(
                 label: 'Linear scale',
                 type: 'radio',
                 checked: self.scaleType === 'linear',
-                onClick: () => self.setScaleType('linear'),
+                onClick: () => {
+                  self.setScaleType('linear')
+                },
               },
               {
                 label: 'Log scale',
                 type: 'radio',
                 checked: self.scaleType === 'log',
-                onClick: () => self.setScaleType('log'),
+                onClick: () => {
+                  self.setScaleType('log')
+                },
               },
               {
                 label: 'Set min/max score',

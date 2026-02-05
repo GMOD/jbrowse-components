@@ -453,7 +453,7 @@ export class WebGLFeatureRenderer {
 
   private createProgram(vsSource: string, fsSource: string): WebGLProgram {
     const gl = this.gl
-    const program = gl.createProgram()!
+    const program = gl.createProgram()
     gl.attachShader(program, this.createShader(gl.VERTEX_SHADER, vsSource))
     gl.attachShader(program, this.createShader(gl.FRAGMENT_SHADER, fsSource))
     gl.linkProgram(program)
@@ -518,7 +518,7 @@ export class WebGLFeatureRenderer {
     }
 
     // Upload rectangles
-    const rectVAO = gl.createVertexArray()!
+    const rectVAO = gl.createVertexArray()
     gl.bindVertexArray(rectVAO)
     this.uploadUintBuffer(this.rectProgram, 'a_position', data.rectPositions, 2)
     this.uploadFloatBuffer(this.rectProgram, 'a_y', data.rectYs, 1)
@@ -543,17 +543,16 @@ export class WebGLFeatureRenderer {
     }
 
     // Store line data for dynamic chevron generation at render time
-    if (data.numLines > 0) {
-      this.lineData = {
-        positions: data.linePositions,
-        ys: data.lineYs,
-        colors: data.lineColors,
-        directions: data.lineDirections,
-        count: data.numLines,
-      }
-    } else {
-      this.lineData = null
-    }
+    this.lineData =
+      data.numLines > 0
+        ? {
+            positions: data.linePositions,
+            ys: data.lineYs,
+            colors: data.lineColors,
+            directions: data.lineDirections,
+            count: data.numLines,
+          }
+        : null
 
     // Upload arrows
     let arrowVAO: WebGLVertexArrayObject | null = null
@@ -642,8 +641,8 @@ export class WebGLFeatureRenderer {
 
     // Convert packed uint32 colors to uvec4
     const colors = new Uint8Array(data.length * 4)
-    for (let i = 0; i < data.length; i++) {
-      const c = data[i]!
+    for (const [i, datum] of data.entries()) {
+      const c = datum
       colors[i * 4] = c & 0xff
       colors[i * 4 + 1] = (c >> 8) & 0xff
       colors[i * 4 + 2] = (c >> 16) & 0xff

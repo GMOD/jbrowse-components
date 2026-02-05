@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 console.log('LinearWebGLFeatureDisplay model module loaded')
 
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   SimpleFeature,
@@ -13,6 +12,7 @@ import {
 } from '@jbrowse/core/util'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { reaction } from 'mobx'
 
 import type {
@@ -94,9 +94,7 @@ export default function stateModelFactory(
       },
 
       get showLabels(): boolean {
-        return (
-          self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
-        )
+        return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
       },
 
       get showDescriptions(): boolean {
@@ -128,7 +126,7 @@ export default function stateModelFactory(
           }
 
           const last = blocks[blocks.length - 1]
-          if (!last || first.refName !== last.refName) {
+          if (first.refName !== last?.refName) {
             return {
               refName: first.refName,
               start: first.start,
@@ -229,7 +227,6 @@ export default function stateModelFactory(
       },
 
       setFeatureIdUnderMouse(featureId: string | null) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(self as any).featureIdUnderMouse = featureId
       },
 
@@ -485,7 +482,10 @@ export default function stateModelFactory(
                   const view = getContainingView(self) as LGV
                   const bpPerPx = view?.bpPerPx ?? 1
                   fetchFeaturesImpl(self.loadedRegion, bpPerPx).catch(e => {
-                    console.error('Failed to refresh after label settings change:', e)
+                    console.error(
+                      'Failed to refresh after label settings change:',
+                      e,
+                    )
                   })
                 }
               },

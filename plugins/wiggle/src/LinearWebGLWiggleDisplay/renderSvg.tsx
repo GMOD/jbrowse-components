@@ -1,7 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 
 import YScaleBar from '../shared/YScaleBar.tsx'
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util.ts'
+import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
 import type { LinearWebGLWiggleDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

@@ -64,13 +64,8 @@ export default class WebGLGetFeatureDetails extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const {
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
-      region,
-      featureId,
-    } = args as unknown as WebGLGetFeatureDetailsArgs
+    const { sessionId, adapterConfig, sequenceAdapter, region, featureId } =
+      args as unknown as WebGLGetFeatureDetailsArgs
 
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)

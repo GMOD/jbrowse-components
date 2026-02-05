@@ -8,10 +8,10 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { WebGLMultiWiggleRenderer } from './WebGLMultiWiggleRenderer.ts'
+import { useWebGLViewInteraction } from '../../LinearWebGLWiggleDisplay/components/useWebGLViewInteraction.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
-import { useWebGLViewInteraction } from '../../LinearWebGLWiggleDisplay/components/useWebGLViewInteraction.ts'
-import { WebGLMultiWiggleRenderer } from './WebGLMultiWiggleRenderer.ts'
 
 import type {
   MultiRenderingType,
@@ -41,7 +41,13 @@ const ScoreLegend = observer(function ScoreLegend({
   const xpos = canvasWidth - len - 60
   return (
     <>
-      <rect x={xpos - 3} y={0} width={len + 6} height={16} fill="rgba(255,255,255,0.8)" />
+      <rect
+        x={xpos - 3}
+        y={0}
+        width={len + 6}
+        height={16}
+        fill="rgba(255,255,255,0.8)"
+      />
       <text y={12} x={xpos} fontSize={12}>
         {legend}
       </text>

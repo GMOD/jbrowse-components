@@ -148,9 +148,18 @@ function computeCoverage(
   }
 
   const regionLength = regionEnd - regionStart
-  const maxBins = 10000
-  const binSize = Math.max(1, Math.ceil(regionLength / maxBins))
-  const numBins = Math.ceil(regionLength / binSize)
+  // Always use per-base coverage (binSize=1) for accurate display at all zoom levels.
+  //
+  // NOTE: Adaptive binning could be implemented here for performance with large regions:
+  //   const maxBins = 10000
+  //   const binSize = Math.max(1, Math.ceil(regionLength / maxBins))
+  // However, this requires tracking binSize in the model's isWithinLoadedRegion check
+  // to refetch at higher resolution when zooming in. The model would need to compare
+  // current view width against loaded data's binSize and trigger refetch when the
+  // view is small enough to benefit from binSize=1 (roughly visibleWidth < 2000bp
+  // given the 2x expansion buffer on each side during fetch).
+  const binSize = 1
+  const numBins = regionLength
 
   const events: { pos: number; delta: number }[] = []
   for (const f of features) {
@@ -533,7 +542,9 @@ export async function executeRenderWebGLPileupData({
           flags: feature.get('flags') ?? 0,
           mapq: feature.get('score') ?? feature.get('qual') ?? 60,
           insertSize: Math.abs(feature.get('template_length') ?? 400),
-          pairOrientation: pairOrientationToNum(feature.get('pair_orientation')),
+          pairOrientation: pairOrientationToNum(
+            feature.get('pair_orientation'),
+          ),
           strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
         })
 
@@ -720,7 +731,12 @@ export async function executeRenderWebGLPileupData({
         readIds,
       },
       gapArrays: { gapPositions, gapYs, gapLengths, gapTypes },
-      mismatchArrays: { mismatchPositions, mismatchYs, mismatchBases, mismatchStrands },
+      mismatchArrays: {
+        mismatchPositions,
+        mismatchYs,
+        mismatchBases,
+        mismatchStrands,
+      },
       insertionArrays: {
         insertionPositions,
         insertionYs,

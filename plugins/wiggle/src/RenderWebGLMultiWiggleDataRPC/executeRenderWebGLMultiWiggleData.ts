@@ -17,9 +17,9 @@ import type {
   WebGLMultiWiggleDataResult,
   WebGLMultiWiggleSourceData,
 } from './types.ts'
-import type { Region } from '@jbrowse/core/util'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region } from '@jbrowse/core/util'
 
 interface SourceInfo {
   name: string
@@ -102,8 +102,8 @@ export async function executeRenderWebGLMultiWiggleData({
     '#17becf',
   ]
 
-  for (let i = 0; i < sourceNames.length; i++) {
-    const sourceName = sourceNames[i]!
+  for (const [i, sourceName_] of sourceNames.entries()) {
+    const sourceName = sourceName_
     const features = featuresBySource.get(sourceName) || []
     const sourceInfo = sourcesList.find(s => s.name === sourceName)
     const color = sourceInfo?.color || defaultColors[i % defaultColors.length]!
@@ -114,8 +114,8 @@ export async function executeRenderWebGLMultiWiggleData({
     let scoreMin = Number.POSITIVE_INFINITY
     let scoreMax = Number.NEGATIVE_INFINITY
 
-    for (let j = 0; j < features.length; j++) {
-      const feature = features[j]!
+    for (const [j, feature_] of features.entries()) {
+      const feature = feature_
       const start = feature.get('start')
       const end = feature.get('end')
       const score = feature.get('score') ?? 0

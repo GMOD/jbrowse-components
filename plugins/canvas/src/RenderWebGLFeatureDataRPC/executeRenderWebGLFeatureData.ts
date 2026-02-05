@@ -12,12 +12,12 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, measureText, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -29,12 +29,6 @@ import {
   isUTR,
 } from '../CanvasFeatureRenderer/util.ts'
 
-import type { RenderConfigContext } from '../CanvasFeatureRenderer/renderConfig.ts'
-
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
-import type { LayoutRecord } from '../CanvasFeatureRenderer/types.ts'
 import type {
   FeatureLabelData,
   FlatbushItem,
@@ -43,6 +37,11 @@ import type {
   SubfeatureInfo,
   WebGLFeatureDataResult,
 } from './types.ts'
+import type { RenderConfigContext } from '../CanvasFeatureRenderer/renderConfig.ts'
+import type { LayoutRecord } from '../CanvasFeatureRenderer/types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
 
 interface RectData {
   startOffset: number
@@ -91,8 +90,8 @@ function colorToUint32(colorStr: string): number {
     }
   }
   if (colorStr.startsWith('rgb')) {
-    const match = colorStr.match(
-      /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/,
+    const match = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(
+      colorStr,
     )
     if (match) {
       const r = parseInt(match[1]!, 10)
@@ -297,7 +296,7 @@ function collectRenderData(
 
       // Add transcript-level hit detection entry (spans entire transcript area)
       // Added after children so exon/CDS hits take priority
-      let transcriptTooltipParts: string[] = []
+      const transcriptTooltipParts: string[] = []
       if (parentName) {
         transcriptTooltipParts.push(`Gene: ${parentName}`)
       }
@@ -323,8 +322,7 @@ function collectRenderData(
       // Add strand arrow for transcript
       if (transcriptStrand !== 0) {
         const effectiveStrand = reversed ? -transcriptStrand : transcriptStrand
-        const arrowX =
-          effectiveStrand === 1 ? transcriptEnd : transcriptStart
+        const arrowX = effectiveStrand === 1 ? transcriptEnd : transcriptStart
         arrows.push({
           x: arrowX - regionStart,
           y: transcriptTopPx + transcriptLayout.height / 2,
@@ -519,7 +517,7 @@ export async function executeRenderWebGLFeatureData({
       fontSize: 12,
     },
     // Merge any values from the passed config
-    ...(rendererConfig as Record<string, unknown>),
+    ...rendererConfig,
   }
 
   // Create default config context for WebGL rendering
@@ -796,6 +794,6 @@ export async function executeRenderWebGLFeatureData({
     numArrows: result.numArrows,
     maxY: result.maxY,
   })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return rpcResult(result, transferables) as any
 }

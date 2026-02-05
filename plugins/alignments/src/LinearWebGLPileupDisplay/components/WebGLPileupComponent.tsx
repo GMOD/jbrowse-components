@@ -45,12 +45,12 @@ function parseColorToRGB(color: string): RGBColor {
   }
   const namedColors: Record<string, RGBColor> = {
     lightgrey: [0.827, 0.827, 0.827],
-    teal: [0.0, 0.502, 0.502],
-    green: [0.0, 0.502, 0.0],
+    teal: [0, 0.502, 0.502],
+    green: [0, 0.502, 0],
     grey: [0.502, 0.502, 0.502],
-    blue: [0.0, 0.0, 1.0],
-    red: [1.0, 0.0, 0.0],
-    purple: [0.502, 0.0, 0.502],
+    blue: [0, 0, 1],
+    red: [1, 0, 0],
+    purple: [0.502, 0, 0.502],
   }
   const lower = color.toLowerCase()
   return namedColors[lower] ?? [0.5, 0.5, 0.5]
@@ -259,10 +259,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   const theme = useTheme()
 
   // Build color palette from theme (memoized to avoid unnecessary recalculations)
-  const colorPalette = useMemo(
-    () => buildColorPaletteFromTheme(theme),
-    [theme],
-  )
+  const colorPalette = useMemo(() => buildColorPaletteFromTheme(theme), [theme])
 
   const contrastMap = useMemo(() => getContrastBaseMap(theme), [theme])
 
@@ -748,14 +745,13 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         return
       }
 
-      e.preventDefault()
-      e.stopPropagation()
-
       const absX = Math.abs(e.deltaX)
       const absY = Math.abs(e.deltaY)
 
       // Horizontal scroll - pan
       if (absX > 5 && absX > absY * 2) {
+        e.preventDefault()
+        e.stopPropagation()
         const t1 = performance.now()
         const newOffsetPx = clampOffsetRef.current(view.offsetPx + e.deltaX)
 
@@ -806,6 +802,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       }
 
       if (e.shiftKey) {
+        e.preventDefault()
+        e.stopPropagation()
         // Vertical scroll within pileup (Y-axis panning, not part of view state)
         const t1 = performance.now()
         const rowHeight = featureHeightRef.current + featureSpacingRef.current
@@ -828,7 +826,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         log(
           `WHEEL #${wheelNum} (Y-pan): compute=${(t2 - t1).toFixed(2)}ms, render=${(t3 - t2).toFixed(2)}ms, total=${(t3 - t0).toFixed(2)}ms`,
         )
-      } else {
+      } else if (view.scrollZoom || e.ctrlKey || e.metaKey) {
+        e.preventDefault()
+        e.stopPropagation()
         // Zoom around mouse position
         const t1 = performance.now()
         const currentRange = getVisibleBpRangeRef.current()
@@ -1449,7 +1449,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
               ) {
                 const typeName = noncovNames[noncovColorType - 1]!
                 const count = Math.round(height * rpcData.noncovMaxCount)
-                counts[typeName]! += count
+                counts[typeName] += count
               }
             }
           }
@@ -1505,6 +1505,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           // Use structured tooltip data
           const tooltipData = JSON.stringify({
             type: 'indicator',
+            indicatorType: indicatorHit.indicatorType,
             bin: tooltipBin,
             refName,
           })
@@ -1837,7 +1838,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           return
         }
         const deltaY = moveEvent.clientY - resizeDragRef.current.startY
-        const newHeight = Math.max(20, resizeDragRef.current.startHeight + deltaY)
+        const newHeight = Math.max(
+          20,
+          resizeDragRef.current.startHeight + deltaY,
+        )
         model.setCoverageHeight(newHeight)
       }
 
@@ -1996,12 +2000,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
 
     // Process soft clips
-    const {
-      softclipPositions,
-      softclipYs,
-      softclipLengths,
-      numSoftclips,
-    } = rpcData
+    const { softclipPositions, softclipYs, softclipLengths, numSoftclips } =
+      rpcData
     if (softclipPositions && softclipYs && softclipLengths && canRenderText) {
       for (let i = 0; i < numSoftclips; i++) {
         const posOffset = softclipPositions[i]!
@@ -2033,12 +2033,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
 
     // Process hard clips
-    const {
-      hardclipPositions,
-      hardclipYs,
-      hardclipLengths,
-      numHardclips,
-    } = rpcData
+    const { hardclipPositions, hardclipYs, hardclipLengths, numHardclips } =
+      rpcData
     if (hardclipPositions && hardclipYs && hardclipLengths && canRenderText) {
       for (let i = 0; i < numHardclips; i++) {
         const posOffset = hardclipPositions[i]!
@@ -2072,12 +2068,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     // Process mismatches - show base letter when zoomed in enough
     const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
       rpcData
-    if (
-      mismatchPositions &&
-      mismatchYs &&
-      mismatchBases &&
-      canRenderText
-    ) {
+    if (mismatchPositions && mismatchYs && mismatchBases && canRenderText) {
       for (let i = 0; i < numMismatches; i++) {
         const posOffset = mismatchPositions[i]!
         const baseCode = mismatchBases[i]!
@@ -2187,7 +2178,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
             }
             return (
               <text
-                // eslint-disable-next-line react/no-array-index-key
                 key={`${label.type}-${i}`}
                 x={label.x}
                 y={label.y}
@@ -2225,8 +2215,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       {showCoverage ? (
         <div
           onMouseDown={handleResizeMouseDown}
-          onMouseEnter={() => setResizeHandleHovered(true)}
-          onMouseLeave={() => setResizeHandleHovered(false)}
+          onMouseEnter={() => {
+            setResizeHandleHovered(true)
+          }}
+          onMouseLeave={() => {
+            setResizeHandleHovered(false)
+          }}
           style={{
             position: 'absolute',
             top: coverageHeight - 3,
