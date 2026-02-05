@@ -18,7 +18,7 @@ type LGV = LinearGenomeViewModel
 
 interface RenderResult {
   imageData?: ImageBitmap
-  flatbush?: ArrayBufferLike
+  flatbush?: ArrayBuffer
   items?: LDFlatbushItem[]
   ldData?: {
     snps: LDMatrixResult['snps']

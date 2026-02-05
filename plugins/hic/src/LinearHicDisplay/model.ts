@@ -82,7 +82,7 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      flatbush: undefined as ArrayBufferLike | undefined,
+      flatbush: undefined as ArrayBuffer | undefined,
       /**
        * #volatile
        */
@@ -166,7 +166,7 @@ export default function stateModelFactory(
        * #action
        */
       setFlatbushData(
-        flatbush: ArrayBufferLike | undefined,
+        flatbush: ArrayBuffer | undefined,
         items: HicFlatbushItem[],
         maxScore: number,
         yScalar: number,

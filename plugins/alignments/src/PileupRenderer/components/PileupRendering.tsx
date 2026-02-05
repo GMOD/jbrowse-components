@@ -32,7 +32,7 @@ const PileupRendering = observer(function PileupRendering(props: {
   colorBy?: ColorBy
   filterBy?: FilterBy
   items: FlatbushItem[]
-  flatbush: ArrayBufferLike
+  flatbush: ArrayBuffer
   featureNames?: Record<string, string>
 }) {
   const {

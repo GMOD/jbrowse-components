@@ -126,6 +126,7 @@ function computeLayout(features: FeatureData[]): Map<string, number> {
 
 function computeCoverage(
   features: FeatureData[],
+  gaps: GapData[],
   regionStart: number,
   regionEnd: number,
 ): { depths: Float32Array; maxDepth: number; binSize: number } {
@@ -145,6 +146,9 @@ function computeCoverage(
   const events: { pos: number; delta: number }[] = []
   for (const f of features) {
     events.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+  }
+  for (const g of gaps) {
+    events.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
   }
   events.sort((a, b) => a.pos - b.pos)
 
@@ -725,7 +729,7 @@ export async function executeRenderWebGLPileupData({
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,
-    async () => computeCoverage(features, region.start, region.end),
+    async () => computeCoverage(features, gaps, region.start, region.end),
   )
 
   checkStopToken2(stopTokenCheck)

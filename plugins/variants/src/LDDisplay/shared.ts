@@ -153,7 +153,7 @@ export default function sharedModelFactory(
       /**
        * #volatile
        */
-      flatbush: undefined as ArrayBufferLike | undefined,
+      flatbush: undefined as ArrayBuffer | undefined,
       /**
        * #volatile
        */
@@ -197,7 +197,7 @@ export default function sharedModelFactory(
        * #action
        */
       setFlatbushData(
-        flatbush: ArrayBufferLike | undefined,
+        flatbush: ArrayBuffer | undefined,
         items: LDFlatbushItem[],
         snps: LDMatrixResult['snps'],
         maxScore: number,

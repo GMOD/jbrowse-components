@@ -17,7 +17,7 @@ type LGV = LinearGenomeViewModel
 
 interface RenderResult {
   imageData?: ImageBitmap
-  flatbush?: ArrayBufferLike
+  flatbush?: ArrayBuffer
   items?: HicFlatbushItem[]
   maxScore?: number
   yScalar?: number

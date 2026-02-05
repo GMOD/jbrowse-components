@@ -698,7 +698,7 @@ export async function executeRenderWebGLFeatureData({
       featureIndex.add(item.startBp, item.topPx, item.endBp, item.bottomPx)
     }
     featureIndex.finish()
-    flatbushData = featureIndex.data as ArrayBuffer
+    flatbushData = featureIndex.data
   }
 
   if (subfeatureInfos.length > 0) {
@@ -707,7 +707,7 @@ export async function executeRenderWebGLFeatureData({
       subfeatureIndex.add(item.startBp, item.topPx, item.endBp, item.bottomPx)
     }
     subfeatureIndex.finish()
-    subfeatureFlatbushData = subfeatureIndex.data as ArrayBuffer
+    subfeatureFlatbushData = subfeatureIndex.data
   }
 
   // Convert to TypedArrays
