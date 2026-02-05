@@ -286,6 +286,7 @@ in float a_depth;       // normalized depth (0-1)
 
 uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
 uniform float u_coverageHeight;  // height in pixels
+uniform float u_coverageYOffset; // padding at top/bottom for scalebar labels
 uniform float u_binSize;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -317,9 +318,11 @@ void main() {
 
   float sx = mix(x1, x2, localX);
 
-  // Y: coverage area at top of canvas
-  float coverageBottom = 1.0 - (u_coverageHeight / u_canvasHeight) * 2.0;
-  float barTop = coverageBottom + (a_depth * u_coverageHeight / u_canvasHeight) * 2.0;
+  // Y: coverage area at top of canvas with offset padding
+  // Effective drawing area is from offset to coverageHeight-offset
+  float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
+  float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
+  float barTop = coverageBottom + (a_depth * effectiveHeight / u_canvasHeight) * 2.0;
   float sy = mix(coverageBottom, barTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -348,6 +351,7 @@ in float a_colorType;     // 1=A(green), 2=C(blue), 3=G(orange), 4=T(red)
 
 uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
 uniform float u_coverageHeight;
+uniform float u_coverageYOffset; // padding at top/bottom for scalebar labels
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
@@ -378,10 +382,11 @@ void main() {
 
   float sx = mix(x1, x2, localX);
 
-  // Y: stacked from bottom of coverage area
-  float coverageBottom = 1.0 - (u_coverageHeight / u_canvasHeight) * 2.0;
-  float segmentBot = coverageBottom + (a_yOffset * u_coverageHeight / u_canvasHeight) * 2.0;
-  float segmentTop = segmentBot + (a_segmentHeight * u_coverageHeight / u_canvasHeight) * 2.0;
+  // Y: stacked from bottom of coverage area with offset padding
+  float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
+  float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
+  float segmentBot = coverageBottom + (a_yOffset * effectiveHeight / u_canvasHeight) * 2.0;
+  float segmentTop = segmentBot + (a_segmentHeight * effectiveHeight / u_canvasHeight) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -1022,6 +1027,7 @@ export interface RenderState {
   featureSpacing: number
   showCoverage: boolean
   coverageHeight: number
+  coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
   showMismatches: boolean
   showInterbaseCounts: boolean
   showInterbaseIndicators: boolean
@@ -1199,6 +1205,7 @@ export class WebGLRenderer {
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
       'u_visibleRange',
       'u_coverageHeight',
+      'u_coverageYOffset',
       'u_binSize',
       'u_canvasHeight',
       'u_canvasWidth',
@@ -1222,6 +1229,7 @@ export class WebGLRenderer {
     this.cacheUniforms(this.snpCoverageProgram, this.snpCoverageUniforms, [
       'u_visibleRange',
       'u_coverageHeight',
+      'u_coverageYOffset',
       'u_canvasHeight',
       'u_canvasWidth',
       ...baseColorUniforms,
@@ -1926,6 +1934,10 @@ export class WebGLRenderer {
         this.coverageUniforms.u_coverageHeight!,
         state.coverageHeight,
       )
+      gl.uniform1f(
+        this.coverageUniforms.u_coverageYOffset!,
+        state.coverageYOffset,
+      )
       gl.uniform1f(this.coverageUniforms.u_binSize!, this.buffers.binSize)
       gl.uniform1f(this.coverageUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.coverageUniforms.u_canvasWidth!, canvasWidth)
@@ -1949,6 +1961,10 @@ export class WebGLRenderer {
         gl.uniform1f(
           this.snpCoverageUniforms.u_coverageHeight!,
           state.coverageHeight,
+        )
+        gl.uniform1f(
+          this.snpCoverageUniforms.u_coverageYOffset!,
+          state.coverageYOffset,
         )
         gl.uniform1f(this.snpCoverageUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvasWidth)

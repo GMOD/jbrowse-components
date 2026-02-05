@@ -7,9 +7,11 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { fillColor } from '../../shared/color.ts'
+import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
 
+import type { CoverageTicks } from './CoverageYScaleBar.tsx'
 import type { ColorPalette, RGBColor } from './WebGLRenderer.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -129,8 +131,10 @@ interface LinearWebGLPileupDisplayModel {
   showInterbaseIndicators: boolean
   maxY: number
   featureIdUnderMouse: string | undefined
+  coverageTicks?: CoverageTicks
   setMaxY: (y: number) => void
   setCurrentDomain: (domain: [number, number]) => void
+  setCoverageHeight: (height: number) => void
   handleNeedMoreData: (region: { start: number; end: number }) => void
   setFeatureIdUnderMouse: (id: string | undefined) => void
   setMouseoverExtraInformation: (info: string | undefined) => void
@@ -161,6 +165,9 @@ export interface Props {
 const DEBUG = false
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-console, @typescript-eslint/no-confusing-void-expression
 const log = (...args: unknown[]) => DEBUG && console.log('[WebGL]', ...args)
+
+// Offset for coverage Y scalebar labels (matches wiggle's YSCALEBAR_LABEL_OFFSET)
+const COVERAGE_Y_OFFSET = 5
 const renderCountRef = { current: 0 }
 const wheelCountRef = { current: 0 }
 const immediateRenderCountRef = { current: 0 }
@@ -205,10 +212,17 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     null,
   )
 
-  // Drag state
+  // Drag state for panning
   const dragRef = useRef({
     isDragging: false,
     lastX: 0,
+  })
+
+  // Drag state for coverage height resize
+  const resizeDragRef = useRef({
+    isDragging: false,
+    startY: 0,
+    startHeight: 0,
   })
 
   // Cache canvas bounding rect to avoid forced layout on every wheel event
@@ -320,6 +334,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         featureSpacing,
         showCoverage,
         coverageHeight,
+        coverageYOffset: COVERAGE_Y_OFFSET,
         showMismatches,
         showInterbaseCounts,
         showInterbaseIndicators,
@@ -1694,6 +1709,38 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     [hitTestFeature, model],
   )
 
+  // Coverage height resize handlers
+  const handleResizeMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      resizeDragRef.current = {
+        isDragging: true,
+        startY: e.clientY,
+        startHeight: coverageHeight,
+      }
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        if (!resizeDragRef.current.isDragging) {
+          return
+        }
+        const deltaY = moveEvent.clientY - resizeDragRef.current.startY
+        const newHeight = Math.max(20, resizeDragRef.current.startHeight + deltaY)
+        model.setCoverageHeight(newHeight)
+      }
+
+      const handleMouseUp = () => {
+        resizeDragRef.current.isDragging = false
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    },
+    [coverageHeight, model],
+  )
+
   if (error) {
     return (
       <div style={{ color: '#c00', padding: 16 }}>Error: {error.message}</div>
@@ -1726,6 +1773,51 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         onClick={handleClick}
         onContextMenu={handleContextMenu}
       />
+
+      {model.coverageTicks ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+            height: model.coverageTicks.height,
+            width: 50,
+          }}
+        >
+          <g transform="translate(45, 0)">
+            <CoverageYScaleBar model={model} orientation="left" />
+          </g>
+        </svg>
+      ) : null}
+
+      {showCoverage ? (
+        <div
+          onMouseDown={handleResizeMouseDown}
+          style={{
+            position: 'absolute',
+            top: coverageHeight - 3,
+            left: 0,
+            right: 0,
+            height: 6,
+            cursor: 'row-resize',
+            background: 'transparent',
+            zIndex: 10,
+          }}
+          title="Drag to resize coverage track"
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: 2,
+              left: 0,
+              right: 0,
+              height: 2,
+              background: theme.palette.divider,
+            }}
+          />
+        </div>
+      ) : null}
 
       {(isLoading || !isReady) && (
         <div

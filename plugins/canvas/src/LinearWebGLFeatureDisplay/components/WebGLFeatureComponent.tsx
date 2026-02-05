@@ -31,7 +31,10 @@ interface LinearWebGLFeatureDisplayModel {
   setCurrentDomain: (domain: [number, number]) => void
   handleNeedMoreData: (region: { start: number; end: number }) => void
   setFeatureIdUnderMouse: (featureId: string | null) => void
-  selectFeature: (featureInfo: FlatbushItem) => void
+  selectFeatureById: (
+    featureInfo: FlatbushItem,
+    subfeatureInfo?: SubfeatureInfo,
+  ) => void
   showContextMenuForFeature: (featureInfo: FlatbushItem) => void
   getFeatureById: (featureId: string) => FlatbushItem | undefined
 }
@@ -653,7 +656,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         return
       }
 
-      const { feature } = performHitDetection(
+      const { feature, subfeature } = performHitDetection(
         flatbushCacheRef.current,
         rpcData.flatbushData,
         rpcData.flatbushItems,
@@ -664,7 +667,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
 
       if (feature) {
-        model.selectFeature(feature)
+        model.selectFeatureById(feature, subfeature ?? undefined)
       }
     }
 
@@ -691,7 +694,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
 
       if (feature) {
-        model.selectFeature(feature)
         model.showContextMenuForFeature(feature)
       }
     }

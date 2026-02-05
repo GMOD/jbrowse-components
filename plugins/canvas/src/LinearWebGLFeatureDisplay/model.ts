@@ -9,20 +9,42 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
+  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { reaction } from 'mobx'
 
 import type {
   FlatbushItem,
+  SubfeatureInfo,
   WebGLFeatureDataResult,
 } from '../RenderWebGLFeatureDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+function findSubfeatureById(
+  feature: Feature,
+  targetId: string,
+): Feature | undefined {
+  const subfeatures = feature.get('subfeatures')
+  if (subfeatures) {
+    for (const sub of subfeatures) {
+      if (sub.id() === targetId) {
+        return sub
+      }
+      const found = findSubfeatureById(sub, targetId)
+      if (found) {
+        return found
+      }
+    }
+  }
+  return undefined
+}
 
 interface Region {
   refName: string
@@ -166,6 +188,13 @@ export default function stateModelFactory(
       getFeatureById(featureId: string): FlatbushItem | undefined {
         return self.rpcData?.flatbushItems.find(f => f.featureId === featureId)
       },
+
+      get featureWidgetType() {
+        return {
+          type: 'BaseFeatureWidget',
+          id: 'baseFeature',
+        }
+      },
     }))
     .actions(self => ({
       setRpcData(data: WebGLFeatureDataResult | null) {
@@ -204,20 +233,21 @@ export default function stateModelFactory(
         ;(self as any).featureIdUnderMouse = featureId
       },
 
-      selectFeature(featureInfo: FlatbushItem) {
-        // Use the session's selection mechanism (same as base class)
-        const feature = new SimpleFeature({
-          id: featureInfo.featureId,
-          data: {
-            uniqueId: featureInfo.featureId,
-            type: featureInfo.type,
-            start: featureInfo.startBp,
-            end: featureInfo.endBp,
-            name: featureInfo.name,
-            strand: featureInfo.strand,
-          },
-        })
-        getSession(self).setSelection(feature)
+      selectFeature(feature: Feature) {
+        const session = getSession(self)
+        session.setSelection(feature)
+        if (isSessionModelWithWidgets(session)) {
+          const track = getContainingTrack(self)
+          const view = getContainingView(self)
+          const { type, id } = self.featureWidgetType
+          session.showWidget(
+            session.addWidget(type, id, {
+              featureData: feature.toJSON(),
+              view,
+              track,
+            }),
+          )
+        }
       },
 
       clearSelection() {
@@ -247,6 +277,64 @@ export default function stateModelFactory(
         })
         self.setContextMenuFeature(feature)
       },
+    }))
+    .actions(self => ({
+      selectFeatureById: flow(function* (
+        featureInfo: FlatbushItem,
+        subfeatureInfo?: SubfeatureInfo,
+      ) {
+        const session = getSession(self)
+        const { rpcManager } = session
+        const track = getContainingTrack(self)
+        const adapterConfig = getConf(track, 'adapter')
+
+        if (!self.loadedRegion) {
+          return
+        }
+
+        // If clicking on a subfeature, we need to fetch the parent feature
+        const featureIdToFetch = subfeatureInfo
+          ? subfeatureInfo.parentFeatureId
+          : featureInfo.featureId
+
+        try {
+          const result = (yield rpcManager.call(
+            session.id ?? '',
+            'GetWebGLFeatureDetails',
+            {
+              sessionId: session.id,
+              adapterConfig,
+              featureId: featureIdToFetch,
+              region: self.loadedRegion,
+            },
+          )) as { feature: Record<string, unknown> | undefined }
+
+          if (result.feature && isAlive(self)) {
+            const parentFeature = new SimpleFeature(
+              result.feature as Parameters<typeof SimpleFeature.fromJSON>[0],
+            )
+
+            // If we clicked on a subfeature, find it within the parent
+            if (subfeatureInfo) {
+              const subfeature = findSubfeatureById(
+                parentFeature,
+                subfeatureInfo.featureId,
+              )
+              if (subfeature) {
+                self.selectFeature(subfeature)
+              } else {
+                // Fallback to parent if subfeature not found
+                self.selectFeature(parentFeature)
+              }
+            } else {
+              self.selectFeature(parentFeature)
+            }
+          }
+        } catch (e) {
+          console.error('Failed to fetch feature details:', e)
+          session.notifyError(`${e}`, e)
+        }
+      }),
     }))
     .actions(self => {
       async function fetchFeaturesImpl(region: Region, bpPerPx: number) {

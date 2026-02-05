@@ -8,9 +8,11 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { reaction } from 'mobx'
 
+import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
 import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -254,6 +256,33 @@ export default function stateModelFactory(
       },
       get sortedBy() {
         return undefined
+      },
+
+      get coverageTicks(): CoverageTicks | undefined {
+        if (!self.showCoverage || !self.rpcData) {
+          return undefined
+        }
+        const maxDepth = self.rpcData.coverageMaxDepth
+        if (maxDepth === 0) {
+          return undefined
+        }
+        const height = self.coverageHeight
+        // Add offset so tick labels at top/bottom don't get clipped
+        const offset = 5
+        const scale = scaleLinear()
+          .domain([0, maxDepth])
+          .range([height - offset, offset])
+          .nice()
+
+        // Use minimal ticks (just min/max) when height is small
+        const niceDomain = scale.domain()
+        const tickValues = height < 70 ? niceDomain : scale.ticks(4)
+        const ticks = tickValues.map(value => ({
+          value,
+          y: scale(value),
+        }))
+
+        return { ticks, height, maxDepth }
       },
     }))
     .views(self => ({

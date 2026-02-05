@@ -147,6 +147,7 @@ function computeCoverage(
   for (const f of features) {
     events.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
   }
+  console.log('computeCoverage gaps count:', gaps.length)
   for (const g of gaps) {
     events.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
   }
