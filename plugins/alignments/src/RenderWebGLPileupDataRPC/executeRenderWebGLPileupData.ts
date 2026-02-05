@@ -564,6 +564,7 @@ export async function executeRenderWebGLPileupData({
     const readFlags = new Uint16Array(features.length)
     const readMapqs = new Uint8Array(features.length)
     const readInsertSizes = new Float32Array(features.length)
+    const readIds: string[] = []
 
     for (const [i, f] of features.entries()) {
       const y = layout.get(f.id) ?? 0
@@ -574,6 +575,7 @@ export async function executeRenderWebGLPileupData({
       readFlags[i] = f.flags
       readMapqs[i] = Math.min(255, f.mapq)
       readInsertSizes[i] = f.insertSize
+      readIds.push(f.id)
     }
 
     // Filter gaps to only include those at or after regionStart (avoid Uint32 underflow)
@@ -647,6 +649,7 @@ export async function executeRenderWebGLPileupData({
         readFlags,
         readMapqs,
         readInsertSizes,
+        readIds,
       },
       gapArrays: { gapPositions, gapYs },
       mismatchArrays: { mismatchPositions, mismatchYs, mismatchBases },

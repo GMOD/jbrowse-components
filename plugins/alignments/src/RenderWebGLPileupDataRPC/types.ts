@@ -25,6 +25,7 @@ export interface WebGLPileupDataResult {
   readFlags: Uint16Array // BAM flags are 16-bit
   readMapqs: Uint8Array // 0-255
   readInsertSizes: Float32Array // keep float (can be large/negative)
+  readIds: string[] // feature IDs for hit testing
 
   // Gap data (deletions/skips) - offsets from regionStart
   gapPositions: Uint32Array // [startOffset, endOffset] pairs

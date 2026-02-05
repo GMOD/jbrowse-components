@@ -26,9 +26,11 @@ interface LinearWebGLPileupDisplayModel {
   showInterbaseCounts: boolean
   showInterbaseIndicators: boolean
   maxY: number
+  featureIdUnderMouse: string | undefined
   setMaxY: (y: number) => void
   setCurrentDomain: (domain: [number, number]) => void
   handleNeedMoreData: (region: { start: number; end: number }) => void
+  setFeatureIdUnderMouse: (id: string | undefined) => void
 }
 
 export interface Props {
@@ -774,7 +776,128 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   const handleMouseLeave = useCallback(() => {
     dragRef.current.isDragging = false
-  }, [])
+    model.setFeatureIdUnderMouse(undefined)
+  }, [model])
+
+  // Hit test to find feature at given canvas coordinates
+  const hitTestFeature = useCallback(
+    (canvasX: number, canvasY: number): string | undefined => {
+      const view = viewRef.current
+      const w = widthRef.current
+      if (!view?.initialized || w === undefined || !rpcData) {
+        return undefined
+      }
+
+      const visibleBpRange = getVisibleBpRangeRef.current()
+      if (!visibleBpRange) {
+        return undefined
+      }
+
+      // Convert canvas X to genomic coordinate
+      const bpPerPx = (visibleBpRange[1] - visibleBpRange[0]) / w
+      const genomicPos = visibleBpRange[0] + canvasX * bpPerPx
+
+      // Convert genomic position to offset from regionStart
+      const posOffset = genomicPos - rpcData.regionStart
+
+      // Convert canvas Y to row number (accounting for Y scroll)
+      const rowHeight = featureHeight + featureSpacing
+      const scrolledY = canvasY + rangeYRef.current[0]
+      // Adjust for coverage height if shown
+      const adjustedY = showCoverage ? scrolledY - coverageHeight : scrolledY
+      if (adjustedY < 0) {
+        return undefined
+      }
+      const row = Math.floor(adjustedY / rowHeight)
+
+      // Also check if we're within the feature height (not in spacing)
+      const yWithinRow = adjustedY - row * rowHeight
+      if (yWithinRow > featureHeight) {
+        return undefined
+      }
+
+      // Search through reads to find one at this position
+      // Only check reads that are in the target row for efficiency
+      const { readPositions, readYs, readIds, numReads } = rpcData
+      if (!readIds) {
+        return undefined
+      }
+      for (let i = 0; i < numReads; i++) {
+        const y = readYs[i]
+        if (y !== row) {
+          continue
+        }
+
+        const startOffset = readPositions[i * 2]
+        const endOffset = readPositions[i * 2 + 1]
+        if (
+          startOffset !== undefined &&
+          endOffset !== undefined &&
+          posOffset >= startOffset &&
+          posOffset <= endOffset
+        ) {
+          return readIds[i]
+        }
+      }
+
+      return undefined
+    },
+    [rpcData, featureHeight, featureSpacing, showCoverage, coverageHeight],
+  )
+
+  const handleCanvasMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      // If dragging, handle pan instead of hover
+      if (dragRef.current.isDragging) {
+        handleMouseMove(e)
+        return
+      }
+
+      const canvas = canvasRef.current
+      if (!canvas) {
+        return
+      }
+
+      let rect = canvasRectRef.current
+      if (!rect) {
+        rect = canvas.getBoundingClientRect()
+        canvasRectRef.current = rect
+      }
+
+      const canvasX = e.clientX - rect.left
+      const canvasY = e.clientY - rect.top
+
+      const featureId = hitTestFeature(canvasX, canvasY)
+      model.setFeatureIdUnderMouse(featureId)
+    },
+    [hitTestFeature, model, handleMouseMove],
+  )
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const canvas = canvasRef.current
+      if (!canvas) {
+        return
+      }
+
+      let rect = canvasRectRef.current
+      if (!rect) {
+        rect = canvas.getBoundingClientRect()
+        canvasRectRef.current = rect
+      }
+
+      const canvasX = e.clientX - rect.left
+      const canvasY = e.clientY - rect.top
+
+      const featureId = hitTestFeature(canvasX, canvasY)
+      if (featureId) {
+        // Set as the feature under mouse (this will be used by context menu / tooltip systems)
+        model.setFeatureIdUnderMouse(featureId)
+        console.log('Clicked feature:', featureId)
+      }
+    },
+    [hitTestFeature, model],
+  )
 
   if (error) {
     return (
@@ -798,11 +921,13 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           display: 'block',
           width: width ?? '100%',
           height,
+          cursor: model.featureIdUnderMouse ? 'pointer' : 'default',
         }}
         onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
+        onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       />
 
       {(isLoading || !isReady) && (

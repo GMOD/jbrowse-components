@@ -100,6 +100,7 @@ export default function stateModelFactory(
       currentDomainX: null as [number, number] | null,
       currentRangeY: [0, 600] as [number, number],
       maxY: 0,
+      featureIdUnderMouseVolatile: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -227,9 +228,8 @@ export default function stateModelFactory(
         )
       },
 
-      // Stubs required by LinearAlignmentsDisplay
       get featureIdUnderMouse() {
-        return undefined
+        return self.featureIdUnderMouseVolatile
       },
       get features(): Map<string, Feature> {
         return new Map()
@@ -304,6 +304,10 @@ export default function stateModelFactory(
 
       setShowInterbaseIndicators(show: boolean) {
         self.showInterbaseIndicators = show
+      },
+
+      setFeatureIdUnderMouse(id: string | undefined) {
+        self.featureIdUnderMouseVolatile = id
       },
 
       // Stubs required by LinearAlignmentsDisplay
