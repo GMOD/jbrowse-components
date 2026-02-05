@@ -15,6 +15,35 @@ export interface RenderWebGLPileupDataArgs {
   stopToken?: string
 }
 
+// Detailed tooltip data for a coverage position (SNPs + interbase)
+export interface CoverageTooltipBin {
+  position: number // absolute genomic position
+  depth: number // total reads at this position
+  // SNP data: base -> { count, fwd, rev }
+  snps: Record<string, { count: number; fwd: number; rev: number }>
+  // Deletion/skip data: type -> { count, minLen, maxLen, avgLen }
+  delskips: Record<
+    string,
+    {
+      count: number
+      minLen: number
+      maxLen: number
+      avgLen: number
+    }
+  >
+  // Interbase data: type -> { count, minLen, maxLen, avgLen, topSeq }
+  interbase: Record<
+    string,
+    {
+      count: number
+      minLen: number
+      maxLen: number
+      avgLen: number
+      topSeq?: string
+    }
+  >
+}
+
 export interface WebGLPileupDataResult {
   // Reference point for all positions (stored as offsets from this)
   regionStart: number
@@ -37,6 +66,7 @@ export interface WebGLPileupDataResult {
   mismatchPositions: Uint32Array
   mismatchYs: Uint16Array
   mismatchBases: Uint8Array // 0=A, 1=C, 2=G, 3=T
+  mismatchStrands: Int8Array // -1=reverse, 1=forward (for tooltip strand counts)
 
   // Insertion data - offsets from regionStart
   insertionPositions: Uint32Array
@@ -76,6 +106,10 @@ export interface WebGLPileupDataResult {
   // Interbase indicator data - triangles at significant positions
   indicatorPositions: Uint32Array // offsets from regionStart
   indicatorColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip (dominant type)
+
+  // Tooltip data - detailed info for positions with SNPs or interbase events
+  // Record from position offset to tooltip bin data
+  tooltipData: Record<number, CoverageTooltipBin>
 
   // Layout info
   maxY: number

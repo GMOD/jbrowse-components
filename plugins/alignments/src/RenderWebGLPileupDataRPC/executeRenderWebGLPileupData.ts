@@ -29,12 +29,14 @@ interface GapData {
   featureId: string
   start: number
   end: number
+  type: 'deletion' | 'skip' // distinguish between deletions and intron skips
 }
 
 interface MismatchData {
   featureId: string
   position: number
   base: number
+  strand: number // -1=reverse, 1=forward
 }
 
 interface InsertionData {
@@ -536,12 +538,14 @@ export async function executeRenderWebGLPileupData({
                 featureId,
                 start: featureStart + mm.start,
                 end: featureStart + mm.start + mm.length,
+                type: mm.type,
               })
             } else if (mm.type === 'mismatch') {
               mismatchesData.push({
                 featureId,
                 position: featureStart + mm.start,
                 base: baseToNum(mm.base),
+                strand: strand === -1 ? -1 : 1,
               })
             } else if (mm.type === 'insertion') {
               insertionsData.push({
@@ -642,11 +646,13 @@ export async function executeRenderWebGLPileupData({
     const mismatchPositions = new Uint32Array(filteredMismatches.length)
     const mismatchYs = new Uint16Array(filteredMismatches.length)
     const mismatchBases = new Uint8Array(filteredMismatches.length)
+    const mismatchStrands = new Int8Array(filteredMismatches.length)
     for (const [i, mm] of filteredMismatches.entries()) {
       const y = layout.get(mm.featureId) ?? 0
       mismatchPositions[i] = mm.position - regionStart
       mismatchYs[i] = y
       mismatchBases[i] = mm.base
+      mismatchStrands[i] = mm.strand
     }
 
     // Filter insertions to only include those at or after regionStart (avoid Uint32 underflow)
@@ -702,7 +708,7 @@ export async function executeRenderWebGLPileupData({
         readIds,
       },
       gapArrays: { gapPositions, gapYs },
-      mismatchArrays: { mismatchPositions, mismatchYs, mismatchBases },
+      mismatchArrays: { mismatchPositions, mismatchYs, mismatchBases, mismatchStrands },
       insertionArrays: {
         insertionPositions,
         insertionYs,
@@ -738,6 +744,259 @@ export async function executeRenderWebGLPileupData({
     regionStart,
   )
 
+  // Build tooltip data for positions with SNPs or interbase events
+  const tooltipData = new Map<
+    number,
+    {
+      position: number
+      depth: number
+      snps: Record<string, { count: number; fwd: number; rev: number }>
+      delskips: Record<
+        string,
+        { count: number; minLen: number; maxLen: number; avgLen: number }
+      >
+      interbase: Record<
+        string,
+        {
+          count: number
+          minLen: number
+          maxLen: number
+          avgLen: number
+          topSeq?: string
+        }
+      >
+    }
+  >()
+
+  // Process mismatches for SNP tooltip data
+  const baseNames = ['A', 'C', 'G', 'T']
+  for (const mm of mismatches) {
+    if (mm.position < regionStart) {
+      continue
+    }
+    const posOffset = mm.position - regionStart
+    let bin = tooltipData.get(posOffset)
+    if (!bin) {
+      // Find depth at this position from coverage bins
+      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const depth = coverage.depths[binIdx] ?? 0
+      bin = {
+        position: mm.position,
+        depth,
+        snps: {},
+        delskips: {},
+        interbase: {},
+      }
+      tooltipData.set(posOffset, bin)
+    }
+    const baseName = baseNames[mm.base] ?? 'N'
+    if (!bin.snps[baseName]) {
+      bin.snps[baseName] = { count: 0, fwd: 0, rev: 0 }
+    }
+    bin.snps[baseName].count++
+    if (mm.strand === 1) {
+      bin.snps[baseName].fwd++
+    } else {
+      bin.snps[baseName].rev++
+    }
+  }
+
+  // Process insertions for interbase tooltip data
+  const insertionsByPos = new Map<
+    number,
+    { lengths: number[]; sequences: string[] }
+  >()
+  for (const ins of insertions) {
+    if (ins.position < regionStart) {
+      continue
+    }
+    const posOffset = ins.position - regionStart
+    let data = insertionsByPos.get(posOffset)
+    if (!data) {
+      data = { lengths: [], sequences: [] }
+      insertionsByPos.set(posOffset, data)
+    }
+    data.lengths.push(ins.length)
+    if (ins.sequence) {
+      data.sequences.push(ins.sequence)
+    }
+  }
+
+  for (const [posOffset, data] of insertionsByPos) {
+    let bin = tooltipData.get(posOffset)
+    if (!bin) {
+      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const depth = coverage.depths[binIdx] ?? 0
+      bin = {
+        position: regionStart + posOffset,
+        depth,
+        snps: {},
+        delskips: {},
+        interbase: {},
+      }
+      tooltipData.set(posOffset, bin)
+    }
+    const minLen = Math.min(...data.lengths)
+    const maxLen = Math.max(...data.lengths)
+    const avgLen = data.lengths.reduce((a, b) => a + b, 0) / data.lengths.length
+    // Find most common sequence
+    let topSeq: string | undefined
+    if (data.sequences.length > 0) {
+      const seqCounts = new Map<string, number>()
+      for (const seq of data.sequences) {
+        seqCounts.set(seq, (seqCounts.get(seq) ?? 0) + 1)
+      }
+      let maxCount = 0
+      for (const [seq, count] of seqCounts) {
+        if (count > maxCount) {
+          maxCount = count
+          topSeq = seq
+        }
+      }
+    }
+    bin.interbase.insertion = {
+      count: data.lengths.length,
+      minLen,
+      maxLen,
+      avgLen,
+      topSeq,
+    }
+  }
+
+  // Process deletions and skips for tooltip data
+  // Deletions and skips span multiple positions, so we add counts to each position they cover
+  const deletionsByPos = new Map<number, number[]>()
+  const skipsByPos = new Map<number, number[]>()
+  for (const gap of gaps) {
+    if (gap.end < regionStart) {
+      continue
+    }
+    const startOffset = Math.max(0, gap.start - regionStart)
+    const endOffset = gap.end - regionStart
+    const length = gap.end - gap.start
+    const targetMap = gap.type === 'deletion' ? deletionsByPos : skipsByPos
+
+    // Add to each position the gap covers
+    for (let pos = startOffset; pos < endOffset; pos++) {
+      let lengths = targetMap.get(pos)
+      if (!lengths) {
+        lengths = []
+        targetMap.set(pos, lengths)
+      }
+      lengths.push(length)
+    }
+  }
+
+  for (const [posOffset, lengths] of deletionsByPos) {
+    let bin = tooltipData.get(posOffset)
+    if (!bin) {
+      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const depth = coverage.depths[binIdx] ?? 0
+      bin = {
+        position: regionStart + posOffset,
+        depth,
+        snps: {},
+        delskips: {},
+        interbase: {},
+      }
+      tooltipData.set(posOffset, bin)
+    }
+    const minLen = Math.min(...lengths)
+    const maxLen = Math.max(...lengths)
+    const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
+    bin.delskips.deletion = { count: lengths.length, minLen, maxLen, avgLen }
+  }
+
+  for (const [posOffset, lengths] of skipsByPos) {
+    let bin = tooltipData.get(posOffset)
+    if (!bin) {
+      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const depth = coverage.depths[binIdx] ?? 0
+      bin = {
+        position: regionStart + posOffset,
+        depth,
+        snps: {},
+        delskips: {},
+        interbase: {},
+      }
+      tooltipData.set(posOffset, bin)
+    }
+    const minLen = Math.min(...lengths)
+    const maxLen = Math.max(...lengths)
+    const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
+    bin.delskips.skip = { count: lengths.length, minLen, maxLen, avgLen }
+  }
+
+  // Process softclips for interbase tooltip data
+  const softclipsByPos = new Map<number, number[]>()
+  for (const sc of softclips) {
+    if (sc.position < regionStart) {
+      continue
+    }
+    const posOffset = sc.position - regionStart
+    let lengths = softclipsByPos.get(posOffset)
+    if (!lengths) {
+      lengths = []
+      softclipsByPos.set(posOffset, lengths)
+    }
+    lengths.push(sc.length)
+  }
+
+  for (const [posOffset, lengths] of softclipsByPos) {
+    let bin = tooltipData.get(posOffset)
+    if (!bin) {
+      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const depth = coverage.depths[binIdx] ?? 0
+      bin = {
+        position: regionStart + posOffset,
+        depth,
+        snps: {},
+        delskips: {},
+        interbase: {},
+      }
+      tooltipData.set(posOffset, bin)
+    }
+    const minLen = Math.min(...lengths)
+    const maxLen = Math.max(...lengths)
+    const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
+    bin.interbase.softclip = { count: lengths.length, minLen, maxLen, avgLen }
+  }
+
+  // Process hardclips for interbase tooltip data
+  const hardclipsByPos = new Map<number, number[]>()
+  for (const hc of hardclips) {
+    if (hc.position < regionStart) {
+      continue
+    }
+    const posOffset = hc.position - regionStart
+    let lengths = hardclipsByPos.get(posOffset)
+    if (!lengths) {
+      lengths = []
+      hardclipsByPos.set(posOffset, lengths)
+    }
+    lengths.push(hc.length)
+  }
+
+  for (const [posOffset, lengths] of hardclipsByPos) {
+    let bin = tooltipData.get(posOffset)
+    if (!bin) {
+      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const depth = coverage.depths[binIdx] ?? 0
+      bin = {
+        position: regionStart + posOffset,
+        depth,
+        snps: {},
+        delskips: {},
+        interbase: {},
+      }
+      tooltipData.set(posOffset, bin)
+    }
+    const minLen = Math.min(...lengths)
+    const maxLen = Math.max(...lengths)
+    const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
+    bin.interbase.hardclip = { count: lengths.length, minLen, maxLen, avgLen }
+  }
+
   const result: WebGLPileupDataResult = {
     regionStart,
 
@@ -766,6 +1025,9 @@ export async function executeRenderWebGLPileupData({
     indicatorPositions: noncovCoverage.indicatorPositions,
     indicatorColorTypes: noncovCoverage.indicatorColorTypes,
 
+    // Convert Map to plain object for RPC serialization
+    tooltipData: Object.fromEntries(tooltipData),
+
     maxY,
     numReads: features.length,
     // Use actual array lengths (may be filtered to exclude positions before regionStart)
@@ -793,6 +1055,7 @@ export async function executeRenderWebGLPileupData({
     result.mismatchPositions.buffer,
     result.mismatchYs.buffer,
     result.mismatchBases.buffer,
+    result.mismatchStrands.buffer,
     result.insertionPositions.buffer,
     result.insertionYs.buffer,
     result.insertionLengths.buffer,

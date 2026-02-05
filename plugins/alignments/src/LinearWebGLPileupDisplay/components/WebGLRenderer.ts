@@ -101,60 +101,123 @@ uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform int u_highlightedIndex;  // Feature index to highlight (-1 = none)
 
+// Color uniforms - these match shared/color.ts and theme colors
+uniform vec3 u_colorFwdStrand;    // #EC8B8B
+uniform vec3 u_colorRevStrand;    // #8F8FD8
+uniform vec3 u_colorNostrand;     // #c8c8c8 (lightgrey)
+uniform vec3 u_colorPairLR;       // lightgrey
+uniform vec3 u_colorPairRL;       // teal
+uniform vec3 u_colorPairRR;       // #3a3a9d (dark blue)
+uniform vec3 u_colorPairLL;       // green
+
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
 
-// Color scheme 0: normal - grey base color
+// Color scheme 0: normal - grey base color (matches PileupRenderer default)
 vec3 normalColor() {
-  return vec3(0.75, 0.75, 0.75);  // light grey
+  return u_colorNostrand;
 }
 
 // Color scheme 1: strand - red for forward, blue for reverse
+// Matches colorByStrand in colorBy.ts
 vec3 strandColor(float strand) {
   if (strand > 0.5) {
-    return vec3(0.93, 0.55, 0.55);  // #EC8B8B - forward/red
+    return u_colorFwdStrand;  // forward
   } else if (strand < -0.5) {
-    return vec3(0.56, 0.56, 0.85);  // #8F8FD8 - reverse/blue
+    return u_colorRevStrand;  // reverse
   }
-  return vec3(0.75, 0.75, 0.75);  // grey for unknown
+  return u_colorNostrand;  // unknown
 }
 
-// Color scheme 2: mapping quality - red (low) to blue (high)
+// Color scheme 2: mapping quality - HSL based on MAPQ score
+// Matches colorByMappingQuality: hsl(score, 50%, 50%)
 vec3 mapqColor(float mapq) {
-  float t = clamp(mapq / 60.0, 0.0, 1.0);
-  return mix(vec3(0.85, 0.35, 0.35), vec3(0.35, 0.45, 0.85), t);
+  // Convert HSL to RGB where H = mapq (0-255 mapped to 0-360), S=0.5, L=0.5
+  float h = mapq / 360.0;  // MAPQ typically 0-60, but can be higher
+  float s = 0.5;
+  float l = 0.5;
+
+  // HSL to RGB conversion
+  float c = (1.0 - abs(2.0 * l - 1.0)) * s;
+  float hp = h * 6.0;
+  float x = c * (1.0 - abs(mod(hp, 2.0) - 1.0));
+  float m = l - c / 2.0;
+
+  vec3 rgb;
+  if (hp < 1.0) rgb = vec3(c, x, 0.0);
+  else if (hp < 2.0) rgb = vec3(x, c, 0.0);
+  else if (hp < 3.0) rgb = vec3(0.0, c, x);
+  else if (hp < 4.0) rgb = vec3(0.0, x, c);
+  else if (hp < 5.0) rgb = vec3(x, 0.0, c);
+  else rgb = vec3(c, 0.0, x);
+
+  return rgb + m;
 }
 
-// Color scheme 3: insert size - hue based on deviation from normal
+// Color scheme 3: insert size - HSL based on template_length/10
+// Matches colorByInsertSize: hsl(abs(template_length)/10, 50%, 50%)
 vec3 insertSizeColor(float insertSize) {
-  float normal = 400.0;
-  float dev = abs(insertSize - normal) / normal;
-  if (insertSize < normal) {
-    return mix(vec3(0.55), vec3(0.85, 0.25, 0.25), clamp(dev * 2.0, 0.0, 1.0));
-  }
-  return mix(vec3(0.55), vec3(0.25, 0.35, 0.85), clamp(dev, 0.0, 1.0));
+  float h = insertSize / 10.0 / 360.0;  // template_length/10 as hue
+  float s = 0.5;
+  float l = 0.5;
+
+  // HSL to RGB conversion
+  float c = (1.0 - abs(2.0 * l - 1.0)) * s;
+  float hp = h * 6.0;
+  float x = c * (1.0 - abs(mod(hp, 2.0) - 1.0));
+  float m = l - c / 2.0;
+
+  vec3 rgb;
+  if (hp < 1.0) rgb = vec3(c, x, 0.0);
+  else if (hp < 2.0) rgb = vec3(x, c, 0.0);
+  else if (hp < 3.0) rgb = vec3(0.0, c, x);
+  else if (hp < 4.0) rgb = vec3(0.0, x, c);
+  else if (hp < 5.0) rgb = vec3(x, 0.0, c);
+  else rgb = vec3(c, 0.0, x);
+
+  return rgb + m;
 }
 
-// Color scheme 4: first-of-pair strand
-vec3 firstOfPairColor(float flags) {
-  bool isFirst = mod(floor(flags / 64.0), 2.0) > 0.5;
-  return isFirst ? vec3(0.85, 0.53, 0.53) : vec3(0.53, 0.53, 0.85);
+// Color scheme 4: first-of-pair strand (stranded RNA-seq simplified)
+// Uses strand colors based on first-of-pair flag
+vec3 firstOfPairColor(float flags, float strand) {
+  bool isFirst = mod(floor(flags / 64.0), 2.0) > 0.5;  // flag 64 = first of pair
+  float effectiveStrand = isFirst ? strand : -strand;
+  if (effectiveStrand > 0.5) {
+    return u_colorFwdStrand;
+  } else if (effectiveStrand < -0.5) {
+    return u_colorRevStrand;
+  }
+  return u_colorNostrand;
 }
 
 // Color scheme 5: pair orientation - LR/RL/RR/LL
+// Matches colorByOrientation using fillColor values
 vec3 pairOrientationColor(float pairOrientation) {
   int po = int(pairOrientation);
   if (po == 1) {
-    return vec3(0.75, 0.75, 0.75);  // LR - normal (grey)
+    return u_colorPairLR;   // LR - normal (lightgrey)
   } else if (po == 2) {
-    return vec3(0.1, 0.8, 0.8);     // RL - teal
+    return u_colorPairRL;   // RL - teal
   } else if (po == 3) {
-    return vec3(0.1, 0.8, 0.1);     // RR (FF) - green
+    return u_colorPairRR;   // RR (FF) - #3a3a9d (dark blue)
   } else if (po == 4) {
-    return vec3(0.1, 0.1, 0.8);     // LL (RR) - blue
+    return u_colorPairLL;   // LL (RR) - green
   }
-  return vec3(0.75, 0.75, 0.75);    // unknown - grey
+  return u_colorNostrand;   // unknown - grey
+}
+
+// Color scheme 6: insert size AND orientation combined
+// Priority: abnormal orientation first, then insert size coloring
+vec3 insertSizeAndOrientationColor(float insertSize, float pairOrientation) {
+  int po = int(pairOrientation);
+  // First check orientation - if not LR (normal), use orientation color
+  if (po == 2) return u_colorPairRL;   // RL - teal
+  if (po == 3) return u_colorPairRR;   // RR - dark blue
+  if (po == 4) return u_colorPairLL;   // LL - green
+  // For LR orientation or unknown, fall back to insert size coloring
+  return insertSizeColor(insertSize);
 }
 
 void main() {
@@ -191,8 +254,9 @@ void main() {
   else if (u_colorScheme == 1) color = strandColor(a_strand);
   else if (u_colorScheme == 2) color = mapqColor(a_mapq);
   else if (u_colorScheme == 3) color = insertSizeColor(a_insertSize);
-  else if (u_colorScheme == 4) color = firstOfPairColor(a_flags);
+  else if (u_colorScheme == 4) color = firstOfPairColor(a_flags, a_strand);
   else if (u_colorScheme == 5) color = pairOrientationColor(a_pairOrientation);
+  else if (u_colorScheme == 6) color = insertSizeAndOrientationColor(a_insertSize, a_pairOrientation);
   else color = vec3(0.6);
 
   // Darken highlighted feature
@@ -226,6 +290,9 @@ uniform float u_binSize;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
+// Coverage bar color (typically light grey)
+uniform vec3 u_colorCoverage;
+
 out vec4 v_color;
 
 void main() {
@@ -256,7 +323,7 @@ void main() {
   float sy = mix(coverageBottom, barTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(0.8, 0.8, 0.8, 1.0);  // light grey
+  v_color = vec4(u_colorCoverage, 1.0);
 }
 `
 
@@ -283,6 +350,12 @@ uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
 uniform float u_coverageHeight;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+
+// Base color uniforms from theme
+uniform vec3 u_colorBaseA;
+uniform vec3 u_colorBaseC;
+uniform vec3 u_colorBaseG;
+uniform vec3 u_colorBaseT;
 
 out vec4 v_color;
 
@@ -313,16 +386,16 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // Colors: A=green, C=blue, G=orange, T=red
+  // Colors: A=green, C=blue, G=orange, T=red (from theme uniforms)
   int colorIdx = int(a_colorType);
   if (colorIdx == 1) {
-    v_color = vec4(0.3, 0.8, 0.3, 1.0);      // A - green
+    v_color = vec4(u_colorBaseA, 1.0);
   } else if (colorIdx == 2) {
-    v_color = vec4(0.3, 0.3, 0.9, 1.0);      // C - blue
+    v_color = vec4(u_colorBaseC, 1.0);
   } else if (colorIdx == 3) {
-    v_color = vec4(0.9, 0.7, 0.2, 1.0);      // G - orange
+    v_color = vec4(u_colorBaseG, 1.0);
   } else {
-    v_color = vec4(0.9, 0.3, 0.3, 1.0);      // T - red
+    v_color = vec4(u_colorBaseT, 1.0);
   }
 }
 `
@@ -351,6 +424,11 @@ uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
 uniform float u_noncovHeight; // height in pixels for noncov bars
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+
+// Indel/clip color uniforms from theme
+uniform vec3 u_colorInsertion;
+uniform vec3 u_colorSoftclip;
+uniform vec3 u_colorHardclip;
 
 out vec4 v_color;
 
@@ -381,14 +459,14 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // Colors: insertion=purple, softclip=grey, hardclip=dark grey
+  // Colors from theme uniforms
   int colorIdx = int(a_colorType);
   if (colorIdx == 1) {
-    v_color = vec4(0.8, 0.2, 0.8, 1.0);      // insertion - purple
+    v_color = vec4(u_colorInsertion, 1.0);
   } else if (colorIdx == 2) {
-    v_color = vec4(0.6, 0.6, 0.6, 1.0);      // softclip - grey
+    v_color = vec4(u_colorSoftclip, 1.0);
   } else {
-    v_color = vec4(0.3, 0.3, 0.3, 1.0);      // hardclip - dark grey
+    v_color = vec4(u_colorHardclip, 1.0);
   }
 }
 `
@@ -413,6 +491,11 @@ in float a_colorType;  // 1=insertion, 2=softclip, 3=hardclip (dominant type)
 uniform vec2 u_visibleRange;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+
+// Indel/clip color uniforms from theme
+uniform vec3 u_colorInsertion;
+uniform vec3 u_colorSoftclip;
+uniform vec3 u_colorHardclip;
 
 out vec4 v_color;
 
@@ -444,14 +527,14 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // Colors: insertion=purple, softclip=grey, hardclip=dark grey
+  // Colors from theme uniforms
   int colorIdx = int(a_colorType);
   if (colorIdx == 1) {
-    v_color = vec4(0.8, 0.2, 0.8, 1.0);      // insertion - purple
+    v_color = vec4(u_colorInsertion, 1.0);
   } else if (colorIdx == 2) {
-    v_color = vec4(0.6, 0.6, 0.6, 1.0);      // softclip - grey
+    v_color = vec4(u_colorSoftclip, 1.0);
   } else {
-    v_color = vec4(0.3, 0.3, 0.3, 1.0);      // hardclip - dark grey
+    v_color = vec4(u_colorHardclip, 1.0);
   }
 }
 `
@@ -551,6 +634,12 @@ uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
+// Base color uniforms from theme
+uniform vec3 u_colorBaseA;
+uniform vec3 u_colorBaseC;
+uniform vec3 u_colorBaseG;
+uniform vec3 u_colorBaseT;
+
 out vec4 v_color;
 
 void main() {
@@ -587,13 +676,8 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // Base colors: A=green, C=blue, G=orange, T=red
-  vec3 baseColors[4] = vec3[4](
-    vec3(0.3, 0.8, 0.3),   // A = green
-    vec3(0.3, 0.3, 0.9),   // C = blue
-    vec3(0.9, 0.7, 0.2),   // G = orange
-    vec3(0.9, 0.3, 0.3)    // T = red
-  );
+  // Base colors from theme uniforms
+  vec3 baseColors[4] = vec3[4](u_colorBaseA, u_colorBaseC, u_colorBaseG, u_colorBaseT);
   v_color = vec4(baseColors[a_base], 1.0);
 }
 `
@@ -625,6 +709,9 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+
+// Insertion color uniform from theme
+uniform vec3 u_colorInsertion;
 
 out vec4 v_color;
 
@@ -711,7 +798,7 @@ void main() {
   float sy = mix(y1, y2, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(0.8, 0.2, 0.8, 1.0);  // Purple for insertions
+  v_color = vec4(u_colorInsertion, 1.0);
 }
 `
 
@@ -741,6 +828,9 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+
+// Softclip color uniform from theme
+uniform vec3 u_colorSoftclip;
 
 out vec4 v_color;
 
@@ -785,7 +875,7 @@ void main() {
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(0.6, 0.6, 0.6, 1.0);  // Grey for soft clips
+  v_color = vec4(u_colorSoftclip, 1.0);
 }
 `
 
@@ -798,7 +888,7 @@ void main() {
 }
 `
 
-// Hard clip vertex shader - dark bars
+// Hard clip vertex shader - colored bars
 // Uses integer attributes for compact representation
 const HARDCLIP_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -815,6 +905,9 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+
+// Hardclip color uniform from theme
+uniform vec3 u_colorHardclip;
 
 out vec4 v_color;
 
@@ -859,7 +952,7 @@ void main() {
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(0.3, 0.3, 0.3, 1.0);  // Dark grey for hard clips
+  v_color = vec4(u_colorHardclip, 1.0);
 }
 `
 
@@ -871,6 +964,55 @@ void main() {
   fragColor = v_color;
 }
 `
+
+// RGB color as [r, g, b] where each is 0-1
+export type RGBColor = [number, number, number]
+
+// Color palette for the renderer - matches shared/color.ts and theme
+export interface ColorPalette {
+  // Read/alignment colors from shared/color.ts
+  colorFwdStrand: RGBColor // #EC8B8B
+  colorRevStrand: RGBColor // #8F8FD8
+  colorNostrand: RGBColor // #c8c8c8
+  colorPairLR: RGBColor // lightgrey
+  colorPairRL: RGBColor // teal
+  colorPairRR: RGBColor // #3a3a9d
+  colorPairLL: RGBColor // green
+  // Theme colors for bases (A, C, G, T)
+  colorBaseA: RGBColor // green (#4caf50)
+  colorBaseC: RGBColor // blue (#2196f3)
+  colorBaseG: RGBColor // orange (#ff9800)
+  colorBaseT: RGBColor // red (#f44336)
+  // Theme colors for indels/clips
+  colorInsertion: RGBColor // purple (#800080)
+  colorSoftclip: RGBColor // blue (#00f)
+  colorHardclip: RGBColor // red (#f00)
+  // Coverage color
+  colorCoverage: RGBColor // light grey
+}
+
+// Default colors matching shared/color.ts fillColor values and theme
+export const defaultColorPalette: ColorPalette = {
+  // Read colors
+  colorFwdStrand: [0.925, 0.545, 0.545], // #EC8B8B
+  colorRevStrand: [0.561, 0.561, 0.847], // #8F8FD8
+  colorNostrand: [0.784, 0.784, 0.784], // #c8c8c8
+  colorPairLR: [0.827, 0.827, 0.827], // lightgrey (#d3d3d3)
+  colorPairRL: [0.0, 0.502, 0.502], // teal
+  colorPairRR: [0.227, 0.227, 0.616], // #3a3a9d
+  colorPairLL: [0.0, 0.502, 0.0], // green
+  // Base colors (MUI theme)
+  colorBaseA: [0.298, 0.686, 0.314], // green (#4caf50)
+  colorBaseC: [0.129, 0.588, 0.953], // blue (#2196f3)
+  colorBaseG: [1.0, 0.596, 0.0], // orange (#ff9800)
+  colorBaseT: [0.957, 0.263, 0.212], // red (#f44336)
+  // Indel/clip colors (theme)
+  colorInsertion: [0.502, 0.0, 0.502], // purple (#800080)
+  colorSoftclip: [0.0, 0.0, 1.0], // blue (#00f)
+  colorHardclip: [1.0, 0.0, 0.0], // red (#f00)
+  // Coverage color
+  colorCoverage: [0.8, 0.8, 0.8], // light grey (#cccccc)
+}
 
 export interface RenderState {
   domainX: [number, number] // absolute genomic positions
@@ -890,6 +1032,8 @@ export interface RenderState {
   highlightedFeatureIndex: number
   // Selected feature for outline (-1 means no selection)
   selectedFeatureIndex: number
+  // Optional color palette - uses defaultColorPalette if not provided
+  colors?: Partial<ColorPalette>
 }
 
 interface GPUBuffers {
@@ -1042,6 +1186,14 @@ export class WebGLRenderer {
       'u_coverageOffset',
       'u_canvasHeight',
       'u_highlightedIndex',
+      // Color uniforms
+      'u_colorFwdStrand',
+      'u_colorRevStrand',
+      'u_colorNostrand',
+      'u_colorPairLR',
+      'u_colorPairRL',
+      'u_colorPairRR',
+      'u_colorPairLL',
     ])
 
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
@@ -1050,25 +1202,48 @@ export class WebGLRenderer {
       'u_binSize',
       'u_canvasHeight',
       'u_canvasWidth',
+      'u_colorCoverage',
     ])
+
+    // Base color uniforms for SNP/mismatch shaders
+    const baseColorUniforms = [
+      'u_colorBaseA',
+      'u_colorBaseC',
+      'u_colorBaseG',
+      'u_colorBaseT',
+    ]
+    // Indel/clip color uniforms
+    const indelColorUniforms = [
+      'u_colorInsertion',
+      'u_colorSoftclip',
+      'u_colorHardclip',
+    ]
 
     this.cacheUniforms(this.snpCoverageProgram, this.snpCoverageUniforms, [
       'u_visibleRange',
       'u_coverageHeight',
       'u_canvasHeight',
       'u_canvasWidth',
+      ...baseColorUniforms,
     ])
 
     this.cacheUniforms(
       this.noncovHistogramProgram,
       this.noncovHistogramUniforms,
-      ['u_visibleRange', 'u_noncovHeight', 'u_canvasHeight', 'u_canvasWidth'],
+      [
+        'u_visibleRange',
+        'u_noncovHeight',
+        'u_canvasHeight',
+        'u_canvasWidth',
+        ...indelColorUniforms,
+      ],
     )
 
     this.cacheUniforms(this.indicatorProgram, this.indicatorUniforms, [
       'u_visibleRange',
       'u_canvasHeight',
       'u_canvasWidth',
+      ...indelColorUniforms,
     ])
 
     const cigarUniforms = [
@@ -1084,22 +1259,22 @@ export class WebGLRenderer {
     this.cacheUniforms(
       this.mismatchProgram,
       this.mismatchUniforms,
-      cigarUniformsWithWidth,
+      [...cigarUniformsWithWidth, ...baseColorUniforms],
     )
     this.cacheUniforms(
       this.insertionProgram,
       this.insertionUniforms,
-      cigarUniformsWithWidth,
+      [...cigarUniformsWithWidth, 'u_colorInsertion'],
     )
     this.cacheUniforms(
       this.softclipProgram,
       this.softclipUniforms,
-      cigarUniformsWithWidth,
+      [...cigarUniformsWithWidth, 'u_colorSoftclip'],
     )
     this.cacheUniforms(
       this.hardclipProgram,
       this.hardclipUniforms,
-      cigarUniformsWithWidth,
+      [...cigarUniformsWithWidth, 'u_colorHardclip'],
     )
 
     gl.enable(gl.BLEND)
@@ -1723,6 +1898,9 @@ export class WebGLRenderer {
       state.domainX[1] - regionStart,
     ]
 
+    // Get color palette - used by multiple shaders
+    const colors = { ...defaultColorPalette, ...state.colors }
+
     // Compute high-precision split domain for reads (12-bit split approach).
     // Uses splitPositionWithFrac to preserve fractional scroll position - without this,
     // reads would "stick" at integer bp positions and snap when crossing boundaries.
@@ -1751,6 +1929,11 @@ export class WebGLRenderer {
       gl.uniform1f(this.coverageUniforms.u_binSize!, this.buffers.binSize)
       gl.uniform1f(this.coverageUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.coverageUniforms.u_canvasWidth!, canvasWidth)
+      // Coverage color uniform from theme
+      gl.uniform3f(
+        this.coverageUniforms.u_colorCoverage!,
+        ...colors.colorCoverage,
+      )
 
       gl.bindVertexArray(this.buffers.coverageVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.coverageCount)
@@ -1769,6 +1952,11 @@ export class WebGLRenderer {
         )
         gl.uniform1f(this.snpCoverageUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvasWidth)
+        // Base color uniforms from theme
+        gl.uniform3f(this.snpCoverageUniforms.u_colorBaseA!, ...colors.colorBaseA)
+        gl.uniform3f(this.snpCoverageUniforms.u_colorBaseC!, ...colors.colorBaseC)
+        gl.uniform3f(this.snpCoverageUniforms.u_colorBaseG!, ...colors.colorBaseG)
+        gl.uniform3f(this.snpCoverageUniforms.u_colorBaseT!, ...colors.colorBaseT)
 
         gl.bindVertexArray(this.buffers.snpCoverageVAO)
         gl.drawArraysInstanced(
@@ -1796,6 +1984,19 @@ export class WebGLRenderer {
         gl.uniform1f(this.noncovHistogramUniforms.u_noncovHeight!, noncovHeight)
         gl.uniform1f(this.noncovHistogramUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.noncovHistogramUniforms.u_canvasWidth!, canvasWidth)
+        // Indel/clip color uniforms from theme
+        gl.uniform3f(
+          this.noncovHistogramUniforms.u_colorInsertion!,
+          ...colors.colorInsertion,
+        )
+        gl.uniform3f(
+          this.noncovHistogramUniforms.u_colorSoftclip!,
+          ...colors.colorSoftclip,
+        )
+        gl.uniform3f(
+          this.noncovHistogramUniforms.u_colorHardclip!,
+          ...colors.colorHardclip,
+        )
 
         gl.bindVertexArray(this.buffers.noncovHistogramVAO)
         gl.drawArraysInstanced(
@@ -1820,6 +2021,19 @@ export class WebGLRenderer {
         )
         gl.uniform1f(this.indicatorUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.indicatorUniforms.u_canvasWidth!, canvasWidth)
+        // Indel/clip color uniforms from theme
+        gl.uniform3f(
+          this.indicatorUniforms.u_colorInsertion!,
+          ...colors.colorInsertion,
+        )
+        gl.uniform3f(
+          this.indicatorUniforms.u_colorSoftclip!,
+          ...colors.colorSoftclip,
+        )
+        gl.uniform3f(
+          this.indicatorUniforms.u_colorHardclip!,
+          ...colors.colorHardclip,
+        )
 
         gl.bindVertexArray(this.buffers.indicatorVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.buffers.indicatorCount)
@@ -1864,6 +2078,15 @@ export class WebGLRenderer {
       this.readUniforms.u_highlightedIndex!,
       state.highlightedFeatureIndex,
     )
+
+    // Set color uniforms for read shapes
+    gl.uniform3f(this.readUniforms.u_colorFwdStrand!, ...colors.colorFwdStrand)
+    gl.uniform3f(this.readUniforms.u_colorRevStrand!, ...colors.colorRevStrand)
+    gl.uniform3f(this.readUniforms.u_colorNostrand!, ...colors.colorNostrand)
+    gl.uniform3f(this.readUniforms.u_colorPairLR!, ...colors.colorPairLR)
+    gl.uniform3f(this.readUniforms.u_colorPairRL!, ...colors.colorPairRL)
+    gl.uniform3f(this.readUniforms.u_colorPairRR!, ...colors.colorPairRR)
+    gl.uniform3f(this.readUniforms.u_colorPairLL!, ...colors.colorPairLL)
 
     gl.bindVertexArray(this.buffers.readVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.readCount)
@@ -1922,6 +2145,11 @@ export class WebGLRenderer {
         gl.uniform1f(this.mismatchUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.mismatchUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.mismatchUniforms.u_canvasWidth!, canvasWidth)
+        // Base color uniforms from theme
+        gl.uniform3f(this.mismatchUniforms.u_colorBaseA!, ...colors.colorBaseA)
+        gl.uniform3f(this.mismatchUniforms.u_colorBaseC!, ...colors.colorBaseC)
+        gl.uniform3f(this.mismatchUniforms.u_colorBaseG!, ...colors.colorBaseG)
+        gl.uniform3f(this.mismatchUniforms.u_colorBaseT!, ...colors.colorBaseT)
 
         gl.bindVertexArray(this.buffers.mismatchVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.mismatchCount)
@@ -1956,6 +2184,11 @@ export class WebGLRenderer {
         gl.uniform1f(this.insertionUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.insertionUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.insertionUniforms.u_canvasWidth!, canvasWidth)
+        // Insertion color uniform from theme
+        gl.uniform3f(
+          this.insertionUniforms.u_colorInsertion!,
+          ...colors.colorInsertion,
+        )
 
         gl.bindVertexArray(this.buffers.insertionVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 18, this.buffers.insertionCount)
@@ -1989,6 +2222,11 @@ export class WebGLRenderer {
         gl.uniform1f(this.softclipUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.softclipUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.softclipUniforms.u_canvasWidth!, canvasWidth)
+        // Softclip color uniform from theme
+        gl.uniform3f(
+          this.softclipUniforms.u_colorSoftclip!,
+          ...colors.colorSoftclip,
+        )
 
         gl.bindVertexArray(this.buffers.softclipVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.softclipCount)
@@ -2022,6 +2260,11 @@ export class WebGLRenderer {
         gl.uniform1f(this.hardclipUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.hardclipUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.hardclipUniforms.u_canvasWidth!, canvasWidth)
+        // Hardclip color uniform from theme
+        gl.uniform3f(
+          this.hardclipUniforms.u_colorHardclip!,
+          ...colors.colorHardclip,
+        )
 
         gl.bindVertexArray(this.buffers.hardclipVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.hardclipCount)

@@ -40,6 +40,7 @@ export const ColorScheme = {
   insertSize: 3,
   firstOfPairStrand: 4,
   pairOrientation: 5,
+  insertSizeAndOrientation: 6,
 } as const
 
 /**
@@ -226,6 +227,8 @@ export default function stateModelFactory(
             return ColorScheme.firstOfPairStrand
           case 'pairOrientation':
             return ColorScheme.pairOrientation
+          case 'insertSizeAndOrientation':
+            return ColorScheme.insertSizeAndOrientation
           default:
             return ColorScheme.normal
         }
@@ -600,6 +603,12 @@ export default function stateModelFactory(
                 label: 'Pair orientation',
                 onClick: () => {
                   self.setColorScheme({ type: 'pairOrientation' })
+                },
+              },
+              {
+                label: 'Insert size and orientation',
+                onClick: () => {
+                  self.setColorScheme({ type: 'insertSizeAndOrientation' })
                 },
               },
             ],

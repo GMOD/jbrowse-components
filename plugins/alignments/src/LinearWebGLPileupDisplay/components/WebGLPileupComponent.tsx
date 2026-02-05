@@ -1,15 +1,74 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import useMeasure from '@jbrowse/core/util/useMeasure'
+import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { fillColor } from '../../shared/color.ts'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
 
+import type { ColorPalette, RGBColor } from './WebGLRenderer.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { Theme } from '@mui/material'
+
+/**
+ * Parse a CSS color string to RGB values (0-1 range)
+ */
+function parseColorToRGB(color: string): RGBColor {
+  if (color.startsWith('#')) {
+    let hex = color.slice(1)
+    if (hex.length === 3) {
+      hex = hex[0]! + hex[0]! + hex[1]! + hex[1]! + hex[2]! + hex[2]!
+    }
+    const r = parseInt(hex.slice(0, 2), 16) / 255
+    const g = parseInt(hex.slice(2, 4), 16) / 255
+    const b = parseInt(hex.slice(4, 6), 16) / 255
+    return [r, g, b]
+  }
+  const namedColors: Record<string, RGBColor> = {
+    lightgrey: [0.827, 0.827, 0.827],
+    teal: [0.0, 0.502, 0.502],
+    green: [0.0, 0.502, 0.0],
+    grey: [0.502, 0.502, 0.502],
+    blue: [0.0, 0.0, 1.0],
+    red: [1.0, 0.0, 0.0],
+    purple: [0.502, 0.0, 0.502],
+  }
+  const lower = color.toLowerCase()
+  return namedColors[lower] ?? [0.5, 0.5, 0.5]
+}
+
+/**
+ * Build a ColorPalette from the MUI theme
+ */
+function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
+  const { palette } = theme
+  return {
+    // Read/alignment colors from shared/color.ts
+    colorFwdStrand: parseColorToRGB(fillColor.color_fwd_strand),
+    colorRevStrand: parseColorToRGB(fillColor.color_rev_strand),
+    colorNostrand: parseColorToRGB(fillColor.color_nostrand),
+    colorPairLR: parseColorToRGB(fillColor.color_pair_lr),
+    colorPairRL: parseColorToRGB(fillColor.color_pair_rl),
+    colorPairRR: parseColorToRGB(fillColor.color_pair_rr),
+    colorPairLL: parseColorToRGB(fillColor.color_pair_ll),
+    // Base colors from theme
+    colorBaseA: parseColorToRGB(palette.bases.A.main),
+    colorBaseC: parseColorToRGB(palette.bases.C.main),
+    colorBaseG: parseColorToRGB(palette.bases.G.main),
+    colorBaseT: parseColorToRGB(palette.bases.T.main),
+    // Indel/clip colors from theme
+    colorInsertion: parseColorToRGB(palette.insertion),
+    colorSoftclip: parseColorToRGB(palette.softclip),
+    colorHardclip: parseColorToRGB(palette.hardclip),
+    // Coverage color (light grey)
+    colorCoverage: [0.8, 0.8, 0.8],
+  }
+}
 
 interface FeatureInfo {
   id: string
@@ -36,6 +95,22 @@ interface CigarHitResult {
   length?: number
   base?: string // for mismatches
   sequence?: string // for insertions
+}
+
+// Types for coverage area hit testing
+export interface CoverageHitResult {
+  type: 'coverage'
+  position: number // genomic position
+  depth: number
+  snps: { base: string; count: number }[] // SNP counts at this position
+}
+
+// Types for indicator hit testing
+export interface IndicatorHitResult {
+  type: 'indicator'
+  position: number // genomic position
+  indicatorType: 'insertion' | 'softclip' | 'hardclip'
+  counts: { insertion: number; softclip: number; hardclip: number }
 }
 
 interface LinearWebGLPileupDisplayModel {
@@ -142,6 +217,15 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   const view = getContainingView(model) as LinearGenomeViewModel | undefined
   const viewId = view?.id
 
+  // Get theme for dynamic colors
+  const theme = useTheme()
+
+  // Build color palette from theme (memoized to avoid unnecessary recalculations)
+  const colorPalette = useMemo(
+    () => buildColorPaletteFromTheme(theme),
+    [theme],
+  )
+
   const {
     rpcData,
     isLoading,
@@ -243,6 +327,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         canvasHeight: height,
         highlightedFeatureIndex: highlightedFeatureIndexRef.current,
         selectedFeatureIndex: selectedFeatureIndexRef.current,
+        colors: colorPalette,
       })
       const t2 = performance.now()
       log(
@@ -251,6 +336,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     },
     [
       colorSchemeIndex,
+      colorPalette,
       featureHeight,
       featureSpacing,
       showCoverage,
@@ -547,6 +633,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   }, [
     rendererReady,
     colorSchemeIndex,
+    colorPalette,
     featureHeight,
     featureSpacing,
     showCoverage,
@@ -1013,7 +1100,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         }
         const pos = mismatchPositions[i]
         if (pos !== undefined && mouseBaseOffset === pos) {
-          const baseCode = mismatchBases[i]
+          const baseCode = mismatchBases[i]!
           const bases = ['A', 'C', 'G', 'T']
           return {
             type: 'mismatch',
@@ -1113,6 +1200,222 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     [rpcData, featureHeight, featureSpacing, showCoverage, coverageHeight],
   )
 
+  // Hit test for coverage area (grey bars + SNP segments)
+  const hitTestCoverage = useCallback(
+    (canvasX: number, canvasY: number): CoverageHitResult | undefined => {
+      const view = viewRef.current
+      const w = widthRef.current
+      if (
+        !view?.initialized ||
+        w === undefined ||
+        !rpcData ||
+        !showCoverage ||
+        canvasY > coverageHeight
+      ) {
+        return undefined
+      }
+
+      const visibleBpRange = getVisibleBpRangeRef.current()
+      if (!visibleBpRange) {
+        return undefined
+      }
+
+      // Convert canvas X to genomic coordinate
+      const bpPerPx = (visibleBpRange[1] - visibleBpRange[0]) / w
+      const genomicPos = visibleBpRange[0] + canvasX * bpPerPx
+
+      // Convert genomic position to offset from regionStart
+      const posOffset = genomicPos - rpcData.regionStart
+
+      // Find coverage bin for this position
+      const { coverageDepths, coverageBinSize, coverageMaxDepth, regionStart } =
+        rpcData
+      const binIndex = Math.floor(posOffset / coverageBinSize)
+      if (binIndex < 0 || binIndex >= coverageDepths.length) {
+        return undefined
+      }
+
+      const depth = coverageDepths[binIndex]
+      if (depth === undefined || depth === 0) {
+        return undefined
+      }
+
+      // Collect SNPs at this position
+      const snps: { base: string; count: number }[] = []
+      const baseNames = ['A', 'C', 'G', 'T']
+      const snpCounts: Record<string, number> = { A: 0, C: 0, G: 0, T: 0 }
+
+      // Look for SNP segments at this position
+      const {
+        snpPositions,
+        snpHeights,
+        snpColorTypes,
+        numSnpSegments,
+        noncovPositions,
+        noncovHeights,
+        noncovColorTypes,
+        numNoncovSegments,
+      } = rpcData
+
+      // Integer position for exact matching
+      const intPosOffset = Math.floor(posOffset)
+
+      for (let i = 0; i < numSnpSegments; i++) {
+        const snpPos = snpPositions[i]
+        if (snpPos === intPosOffset) {
+          const colorType = snpColorTypes[i]
+          const height = snpHeights[i]
+          if (
+            colorType !== undefined &&
+            height !== undefined &&
+            colorType >= 1 &&
+            colorType <= 4
+          ) {
+            const baseName = baseNames[colorType - 1]!
+            // Convert normalized height back to count
+            const count = Math.round(height * coverageMaxDepth)
+            snpCounts[baseName]! += count
+          }
+        }
+      }
+
+      for (const [base, count] of Object.entries(snpCounts)) {
+        if (count > 0) {
+          snps.push({ base, count })
+        }
+      }
+
+      // Also collect noncov (interbase) data at this position
+      const noncovCounts: Record<string, number> = {
+        insertion: 0,
+        softclip: 0,
+        hardclip: 0,
+      }
+      const noncovNames = ['insertion', 'softclip', 'hardclip']
+
+      for (let i = 0; i < numNoncovSegments; i++) {
+        const noncovPos = noncovPositions[i]
+        if (noncovPos === intPosOffset) {
+          const colorType = noncovColorTypes[i]
+          const height = noncovHeights[i]
+          if (
+            colorType !== undefined &&
+            height !== undefined &&
+            colorType >= 1 &&
+            colorType <= 3
+          ) {
+            const typeName = noncovNames[colorType - 1]!
+            // Convert normalized height back to count using noncovMaxCount
+            const count = Math.round(height * rpcData.noncovMaxCount)
+            noncovCounts[typeName]! += count
+          }
+        }
+      }
+
+      // Add noncov items to snps array with different formatting
+      for (const [type, count] of Object.entries(noncovCounts)) {
+        if (count > 0) {
+          snps.push({ base: type, count })
+        }
+      }
+
+      return {
+        type: 'coverage',
+        position: regionStart + binIndex * coverageBinSize,
+        depth,
+        snps,
+      }
+    },
+    [rpcData, showCoverage, coverageHeight],
+  )
+
+  // Hit test for interbase indicators (triangles at top)
+  const hitTestIndicator = useCallback(
+    (canvasX: number, canvasY: number): IndicatorHitResult | undefined => {
+      const view = viewRef.current
+      const w = widthRef.current
+      // Indicators are at the very top (within first ~5px)
+      // Only hit test if indicators are being shown
+      if (
+        !view?.initialized ||
+        w === undefined ||
+        !rpcData ||
+        !showCoverage ||
+        !showInterbaseIndicators ||
+        canvasY > 5
+      ) {
+        return undefined
+      }
+
+      const visibleBpRange = getVisibleBpRangeRef.current()
+      if (!visibleBpRange) {
+        return undefined
+      }
+
+      // Convert canvas X to genomic coordinate
+      const bpPerPx = (visibleBpRange[1] - visibleBpRange[0]) / w
+      const genomicPos = visibleBpRange[0] + canvasX * bpPerPx
+
+      // Convert genomic position to offset from regionStart
+      const posOffset = genomicPos - rpcData.regionStart
+
+      // Hit tolerance for indicators (7px triangle width)
+      const hitToleranceBp = Math.max(1, bpPerPx * 5)
+
+      const {
+        indicatorPositions,
+        indicatorColorTypes,
+        numIndicators,
+        noncovPositions,
+        noncovHeights,
+        noncovColorTypes,
+        numNoncovSegments,
+        regionStart,
+      } = rpcData
+
+      for (let i = 0; i < numIndicators; i++) {
+        const pos = indicatorPositions[i]
+        if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
+          const colorType = indicatorColorTypes[i]
+          const types = ['insertion', 'softclip', 'hardclip'] as const
+          const indicatorType = types[(colorType ?? 1) - 1] ?? 'insertion'
+
+          // Collect counts for all interbase types at this position
+          const counts = { insertion: 0, softclip: 0, hardclip: 0 }
+          const noncovNames = ['insertion', 'softclip', 'hardclip'] as const
+
+          for (let j = 0; j < numNoncovSegments; j++) {
+            const noncovPos = noncovPositions[j]
+            if (noncovPos === pos) {
+              const noncovColorType = noncovColorTypes[j]
+              const height = noncovHeights[j]
+              if (
+                noncovColorType !== undefined &&
+                height !== undefined &&
+                noncovColorType >= 1 &&
+                noncovColorType <= 3
+              ) {
+                const typeName = noncovNames[noncovColorType - 1]!
+                const count = Math.round(height * rpcData.noncovMaxCount)
+                counts[typeName]! += count
+              }
+            }
+          }
+
+          return {
+            type: 'indicator',
+            position: regionStart + pos,
+            indicatorType,
+            counts,
+          }
+        }
+      }
+
+      return undefined
+    },
+    [rpcData, showCoverage, showInterbaseIndicators],
+  )
+
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent) => {
       // If dragging, handle pan instead of hover
@@ -1135,7 +1438,123 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       const canvasX = e.clientX - rect.left
       const canvasY = e.clientY - rect.top
 
-      // Check for CIGAR items first (they're drawn on top of reads)
+      // Check for indicator hits first (triangles at top of coverage)
+      const indicatorHit = hitTestIndicator(canvasX, canvasY)
+      if (indicatorHit) {
+        setOverCigarItem(true)
+        model.setFeatureIdUnderMouse(undefined)
+
+        // Look up detailed tooltip data from rpcData
+        const posOffset = indicatorHit.position - (rpcData?.regionStart ?? 0)
+        const tooltipBin = rpcData?.tooltipData?.[posOffset]
+        const refName = model.loadedRegion?.refName
+
+        if (tooltipBin) {
+          // Use structured tooltip data
+          const tooltipData = JSON.stringify({
+            type: 'indicator',
+            bin: tooltipBin,
+            refName,
+          })
+          model.setMouseoverExtraInformation(tooltipData)
+        } else {
+          // Fallback to simple tooltip
+          const pos = indicatorHit.position.toLocaleString()
+          const { counts } = indicatorHit
+          const total = counts.insertion + counts.softclip + counts.hardclip
+          const parts: string[] = []
+          if (counts.insertion > 0) {
+            parts.push(`Insertions: ${counts.insertion}`)
+          }
+          if (counts.softclip > 0) {
+            parts.push(`Soft clips: ${counts.softclip}`)
+          }
+          if (counts.hardclip > 0) {
+            parts.push(`Hard clips: ${counts.hardclip}`)
+          }
+          const tooltipText = `<b>Interbase events at ${pos}</b><br>Total: ${total}<br>${parts.join('<br>')}`
+          model.setMouseoverExtraInformation(tooltipText)
+        }
+
+        // Clear highlight
+        if (highlightedFeatureIndexRef.current !== -1) {
+          highlightedFeatureIndexRef.current = -1
+          renderNowRef.current()
+        }
+        return
+      }
+
+      // Check for coverage area hits (grey bars + SNP segments)
+      const coverageHit = hitTestCoverage(canvasX, canvasY)
+      if (coverageHit) {
+        setOverCigarItem(true)
+        model.setFeatureIdUnderMouse(undefined)
+
+        // Look up detailed tooltip data from rpcData
+        const posOffset = coverageHit.position - (rpcData?.regionStart ?? 0)
+        // For coverage, check nearby positions in tooltipData (within 1bp)
+        let tooltipBin = rpcData?.tooltipData?.[posOffset]
+        if (!tooltipBin) {
+          // Check adjacent positions
+          tooltipBin =
+            rpcData?.tooltipData?.[posOffset - 1] ||
+            rpcData?.tooltipData?.[posOffset + 1]
+        }
+        const refName = model.loadedRegion?.refName
+
+        if (tooltipBin || coverageHit.depth > 0) {
+          // Build tooltip bin data - use detailed data if available, otherwise use basic coverage info
+          const bin = tooltipBin ?? {
+            position: coverageHit.position,
+            depth: coverageHit.depth,
+            snps: {},
+            delskips: {},
+            interbase: {},
+          }
+          // If no tooltipBin but we have basic SNP data from hit test, include it
+          if (!tooltipBin && coverageHit.snps.length > 0) {
+            for (const snp of coverageHit.snps) {
+              if (
+                snp.base === 'A' ||
+                snp.base === 'C' ||
+                snp.base === 'G' ||
+                snp.base === 'T'
+              ) {
+                bin.snps[snp.base] = { count: snp.count, fwd: 0, rev: 0 }
+              } else if (
+                snp.base === 'insertion' ||
+                snp.base === 'softclip' ||
+                snp.base === 'hardclip'
+              ) {
+                bin.interbase[snp.base] = {
+                  count: snp.count,
+                  minLen: 0,
+                  maxLen: 0,
+                  avgLen: 0,
+                }
+              }
+            }
+          }
+
+          const tooltipData = JSON.stringify({
+            type: 'coverage',
+            bin,
+            refName,
+          })
+          model.setMouseoverExtraInformation(tooltipData)
+        } else {
+          model.setMouseoverExtraInformation(undefined)
+        }
+
+        // Clear highlight
+        if (highlightedFeatureIndexRef.current !== -1) {
+          highlightedFeatureIndexRef.current = -1
+          renderNowRef.current()
+        }
+        return
+      }
+
+      // Check for CIGAR items (they're drawn on top of reads)
       const cigarHit = hitTestCigarItem(canvasX, canvasY)
       if (cigarHit) {
         setOverCigarItem(true)
@@ -1176,7 +1595,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         return
       }
 
-      // Not over a CIGAR item
+      // Not over a CIGAR item or coverage
       setOverCigarItem(false)
 
       // Fall back to feature hit testing
@@ -1205,7 +1624,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         model.setMouseoverExtraInformation(undefined)
       }
     },
-    [hitTestFeature, hitTestCigarItem, model, handleMouseMove],
+    [
+      hitTestFeature,
+      hitTestCigarItem,
+      hitTestCoverage,
+      hitTestIndicator,
+      model,
+      handleMouseMove,
+    ],
   )
 
   const handleClick = useCallback(
