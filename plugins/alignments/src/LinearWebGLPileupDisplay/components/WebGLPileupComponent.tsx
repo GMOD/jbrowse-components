@@ -109,6 +109,15 @@ interface CigarHitResult {
   sequence?: string // for insertions
 }
 
+const CIGAR_TYPE_LABELS: Record<string, string> = {
+  mismatch: 'SNP/Mismatch',
+  insertion: 'Insertion',
+  deletion: 'Deletion',
+  skip: 'Skip (Intron)',
+  softclip: 'Soft Clip',
+  hardclip: 'Hard Clip',
+}
+
 // Types for coverage area hit testing
 export interface CoverageHitResult {
   type: 'coverage'
@@ -1129,12 +1138,11 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const pos = mismatchPositions[i]
         if (pos !== undefined && mouseBaseOffset === pos) {
           const baseCode = mismatchBases[i]!
-          const bases = ['A', 'C', 'G', 'T']
           return {
             type: 'mismatch',
             index: i,
             position: regionStart + pos,
-            base: bases[baseCode] ?? '?',
+            base: String.fromCharCode(baseCode),
           }
         }
       }
@@ -1702,18 +1710,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         // Open widget with CIGAR item details
         const session = getSession(model)
         if (isSessionModelWithWidgets(session)) {
-          const typeLabels: Record<string, string> = {
-            mismatch: 'SNP/Mismatch',
-            insertion: 'Insertion',
-            deletion: 'Deletion',
-            skip: 'Skip (Intron)',
-            softclip: 'Soft Clip',
-            hardclip: 'Hard Clip',
-          }
-
           const featureData: Record<string, unknown> = {
             uniqueId: `${cigarHit.type}-${refName}-${cigarHit.position}`,
-            name: typeLabels[cigarHit.type] ?? cigarHit.type,
+            name: CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type,
             type: cigarHit.type,
             refName,
             start: cigarHit.position,
@@ -2057,7 +2056,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     // Process mismatches - show base letter when zoomed in enough
     const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
       rpcData
-    const baseNames = ['A', 'C', 'G', 'T']
     if (
       mismatchPositions &&
       mismatchYs &&
@@ -2091,7 +2089,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           type: 'mismatch',
           x: xPx,
           y: yPx,
-          text: baseNames[baseCode] ?? '?',
+          text: String.fromCharCode(baseCode),
           width: endPx - startPx,
         })
       }

@@ -69,19 +69,8 @@ interface HardclipData {
   length: number
 }
 
-function baseToNum(base: string): number {
-  switch (base.toUpperCase()) {
-    case 'A':
-      return 0
-    case 'C':
-      return 1
-    case 'G':
-      return 2
-    case 'T':
-      return 3
-    default:
-      return 0
-  }
+function baseToAscii(base: string): number {
+  return base.toUpperCase().charCodeAt(0)
 }
 
 // Pair orientation encoding for shader
@@ -563,7 +552,7 @@ export async function executeRenderWebGLPileupData({
               mismatchesData.push({
                 featureId,
                 position: featureStart + mm.start,
-                base: baseToNum(mm.base),
+                base: baseToAscii(mm.base),
                 strand: strand === -1 ? -1 : 1,
               })
             } else if (mm.type === 'insertion') {

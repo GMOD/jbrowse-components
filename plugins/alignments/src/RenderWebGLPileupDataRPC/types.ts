@@ -77,14 +77,14 @@ export interface WebGLPileupDataResult {
   // Mismatch data - offsets from regionStart
   mismatchPositions: Uint32Array
   mismatchYs: Uint16Array
-  mismatchBases: Uint8Array // 0=A, 1=C, 2=G, 3=T
+  mismatchBases: Uint8Array // ASCII character code (e.g. 65='A', 67='C', 71='G', 84='T')
   mismatchStrands: Int8Array // -1=reverse, 1=forward (for tooltip strand counts)
 
   // Insertion data - offsets from regionStart
   insertionPositions: Uint32Array
   insertionYs: Uint16Array
   insertionLengths: Uint16Array
-  insertionSequences: string[] // insertion sequences (short ones only, empty string if unavailable)
+  insertionSequences: string[] // insertion sequences (empty string if unavailable)
 
   // Soft clip data - offsets from regionStart
   softclipPositions: Uint32Array

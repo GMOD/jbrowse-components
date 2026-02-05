@@ -639,7 +639,7 @@ precision highp int;
 
 in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
-in uint a_base;       // 0=A, 1=C, 2=G, 3=T
+in uint a_base;       // ASCII character code (65='A', 67='C', 71='G', 84='T', etc.)
 
 uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
 uniform vec2 u_rangeY;
@@ -691,9 +691,20 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // Base colors from theme uniforms
-  vec3 baseColors[4] = vec3[4](u_colorBaseA, u_colorBaseC, u_colorBaseG, u_colorBaseT);
-  v_color = vec4(baseColors[a_base], 1.0);
+  // Map ASCII code to base color
+  vec3 color;
+  if (a_base == 65u || a_base == 97u) { // 'A' or 'a'
+    color = u_colorBaseA;
+  } else if (a_base == 67u || a_base == 99u) { // 'C' or 'c'
+    color = u_colorBaseC;
+  } else if (a_base == 71u || a_base == 103u) { // 'G' or 'g'
+    color = u_colorBaseG;
+  } else if (a_base == 84u || a_base == 116u) { // 'T' or 't'
+    color = u_colorBaseT;
+  } else {
+    color = vec3(0.5, 0.5, 0.5); // grey for unknown bases (N, etc.)
+  }
+  v_color = vec4(color, 1.0);
 }
 `
 
