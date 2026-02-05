@@ -11,6 +11,33 @@ import { WebGLRenderer } from './WebGLRenderer.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+interface FeatureInfo {
+  id: string
+  start: number
+  end: number
+  flags: number | undefined
+  mapq: number | undefined
+  strand: string
+  refName: string
+}
+
+// Types for CIGAR item hit testing
+type CigarItemType =
+  | 'mismatch'
+  | 'insertion'
+  | 'deletion'
+  | 'softclip'
+  | 'hardclip'
+
+interface CigarHitResult {
+  type: CigarItemType
+  index: number
+  position: number // genomic position
+  length?: number
+  base?: string // for mismatches
+  sequence?: string // for insertions
+}
+
 interface LinearWebGLPileupDisplayModel {
   height: number
   rpcData: WebGLPileupDataResult | null
@@ -31,6 +58,9 @@ interface LinearWebGLPileupDisplayModel {
   setCurrentDomain: (domain: [number, number]) => void
   handleNeedMoreData: (region: { start: number; end: number }) => void
   setFeatureIdUnderMouse: (id: string | undefined) => void
+  setMouseoverExtraInformation: (info: string | undefined) => void
+  selectFeatureById: (featureId: string) => void
+  getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
 }
 
 export interface Props {
@@ -77,6 +107,13 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   // Y-axis scroll state (not part of view)
   const rangeYRef = useRef<[number, number]>([0, 600])
+
+  // Feature highlighting - use ref to avoid re-renders on mouse move
+  const highlightedFeatureIndexRef = useRef<number>(-1)
+  // Selected feature for outline
+  const selectedFeatureIndexRef = useRef<number>(-1)
+  // Track if over a CIGAR item for cursor
+  const [overCigarItem, setOverCigarItem] = useState(false)
 
   const [maxY, setMaxY] = useState(0)
   const [rendererReady, setRendererReady] = useState(false)
@@ -193,6 +230,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         showInterbaseIndicators,
         canvasWidth: w,
         canvasHeight: height,
+        highlightedFeatureIndex: highlightedFeatureIndexRef.current,
+        selectedFeatureIndex: selectedFeatureIndexRef.current,
       })
       const t2 = performance.now()
       log(
@@ -777,11 +816,22 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   const handleMouseLeave = useCallback(() => {
     dragRef.current.isDragging = false
     model.setFeatureIdUnderMouse(undefined)
+    model.setMouseoverExtraInformation(undefined)
+    setOverCigarItem(false)
+    // Clear highlight and re-render
+    if (highlightedFeatureIndexRef.current !== -1) {
+      highlightedFeatureIndexRef.current = -1
+      renderNowRef.current()
+    }
   }, [model])
 
   // Hit test to find feature at given canvas coordinates
+  // Returns { id, index } or undefined
   const hitTestFeature = useCallback(
-    (canvasX: number, canvasY: number): string | undefined => {
+    (
+      canvasX: number,
+      canvasY: number,
+    ): { id: string; index: number } | undefined => {
       const view = viewRef.current
       const w = widthRef.current
       if (!view?.initialized || w === undefined || !rpcData) {
@@ -836,7 +886,180 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           posOffset >= startOffset &&
           posOffset <= endOffset
         ) {
-          return readIds[i]
+          return { id: readIds[i]!, index: i }
+        }
+      }
+
+      return undefined
+    },
+    [rpcData, featureHeight, featureSpacing, showCoverage, coverageHeight],
+  )
+
+  // Hit test for CIGAR items (mismatches, insertions, gaps, clips)
+  const hitTestCigarItem = useCallback(
+    (canvasX: number, canvasY: number): CigarHitResult | undefined => {
+      const view = viewRef.current
+      const w = widthRef.current
+      if (!view?.initialized || w === undefined || !rpcData) {
+        return undefined
+      }
+
+      const visibleBpRange = getVisibleBpRangeRef.current()
+      if (!visibleBpRange) {
+        return undefined
+      }
+
+      // Convert canvas X to genomic coordinate
+      const bpPerPx = (visibleBpRange[1] - visibleBpRange[0]) / w
+      const genomicPos = visibleBpRange[0] + canvasX * bpPerPx
+
+      // Convert genomic position to offset from regionStart
+      const posOffset = genomicPos - rpcData.regionStart
+
+      // Convert canvas Y to row number (accounting for Y scroll)
+      const rowHeight = featureHeight + featureSpacing
+      const scrolledY = canvasY + rangeYRef.current[0]
+      // Adjust for coverage height if shown
+      const adjustedY = showCoverage ? scrolledY - coverageHeight : scrolledY
+      if (adjustedY < 0) {
+        return undefined
+      }
+      const row = Math.floor(adjustedY / rowHeight)
+
+      // Check if within feature height
+      const yWithinRow = adjustedY - row * rowHeight
+      if (yWithinRow > featureHeight) {
+        return undefined
+      }
+
+      // Hit tolerance in bp (adjusted for zoom level)
+      const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
+
+      // Check mismatches (1bp wide)
+      const {
+        mismatchPositions,
+        mismatchYs,
+        mismatchBases,
+        numMismatches,
+        insertionPositions,
+        insertionYs,
+        insertionLengths,
+        insertionSequences,
+        numInsertions,
+        gapPositions,
+        gapYs,
+        numGaps,
+        softclipPositions,
+        softclipYs,
+        softclipLengths,
+        numSoftclips,
+        hardclipPositions,
+        hardclipYs,
+        hardclipLengths,
+        numHardclips,
+        regionStart,
+      } = rpcData
+
+      // Check mismatches first (they're visually prominent)
+      for (let i = 0; i < numMismatches; i++) {
+        const y = mismatchYs[i]
+        if (y !== row) {
+          continue
+        }
+        const pos = mismatchPositions[i]
+        if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
+          const baseCode = mismatchBases[i]
+          const bases = ['A', 'C', 'G', 'T']
+          return {
+            type: 'mismatch',
+            index: i,
+            position: regionStart + pos,
+            base: bases[baseCode] ?? '?',
+          }
+        }
+      }
+
+      // Check insertions (rendered as markers at interbase positions)
+      for (let i = 0; i < numInsertions; i++) {
+        const y = insertionYs[i]
+        if (y !== row) {
+          continue
+        }
+        const pos = insertionPositions[i]
+        if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
+          return {
+            type: 'insertion',
+            index: i,
+            position: regionStart + pos,
+            length: insertionLengths[i],
+            sequence: insertionSequences?.[i] || undefined,
+          }
+        }
+      }
+
+      // Check gaps (deletions/skips - have start and end)
+      for (let i = 0; i < numGaps; i++) {
+        const y = gapYs[i]
+        if (y !== row) {
+          continue
+        }
+        const startPos = gapPositions[i * 2]
+        const endPos = gapPositions[i * 2 + 1]
+        if (
+          startPos !== undefined &&
+          endPos !== undefined &&
+          posOffset >= startPos &&
+          posOffset <= endPos
+        ) {
+          return {
+            type: 'deletion',
+            index: i,
+            position: regionStart + startPos,
+            length: endPos - startPos,
+          }
+        }
+      }
+
+      // Check softclips
+      for (let i = 0; i < numSoftclips; i++) {
+        const y = softclipYs[i]
+        if (y !== row) {
+          continue
+        }
+        const pos = softclipPositions[i]
+        const len = softclipLengths[i]
+        // Softclips are rendered as blocks starting at their position
+        if (
+          pos !== undefined &&
+          len !== undefined &&
+          posOffset >= pos &&
+          posOffset <= pos + len
+        ) {
+          return {
+            type: 'softclip',
+            index: i,
+            position: regionStart + pos,
+            length: len,
+          }
+        }
+      }
+
+      // Check hardclips
+      for (let i = 0; i < numHardclips; i++) {
+        const y = hardclipYs[i]
+        if (y !== row) {
+          continue
+        }
+        const pos = hardclipPositions[i]
+        const len = hardclipLengths[i]
+        // Hardclips are rendered as markers at their position
+        if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
+          return {
+            type: 'hardclip',
+            index: i,
+            position: regionStart + pos,
+            length: len,
+          }
         }
       }
 
@@ -867,10 +1090,79 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       const canvasX = e.clientX - rect.left
       const canvasY = e.clientY - rect.top
 
-      const featureId = hitTestFeature(canvasX, canvasY)
+      // Check for CIGAR items first (they're drawn on top of reads)
+      const cigarHit = hitTestCigarItem(canvasX, canvasY)
+      if (cigarHit) {
+        setOverCigarItem(true)
+
+        // Format CIGAR item tooltip
+        const pos = cigarHit.position.toLocaleString()
+        let tooltipText: string
+        switch (cigarHit.type) {
+          case 'mismatch':
+            tooltipText = `SNP: ${cigarHit.base} at ${pos}`
+            break
+          case 'insertion':
+            if (cigarHit.sequence) {
+              tooltipText = `Insertion (${cigarHit.length}bp): ${cigarHit.sequence} at ${pos}`
+            } else {
+              tooltipText = `Insertion (${cigarHit.length}bp) at ${pos}`
+            }
+            break
+          case 'deletion':
+            tooltipText = `Deletion (${cigarHit.length}bp) at ${pos}`
+            break
+          case 'softclip':
+            tooltipText = `Soft clip (${cigarHit.length}bp) at ${pos}`
+            break
+          case 'hardclip':
+            tooltipText = `Hard clip (${cigarHit.length}bp) at ${pos}`
+            break
+        }
+        model.setMouseoverExtraInformation(tooltipText)
+
+        // Still do feature hit test to keep highlight on underlying read
+        const hit = hitTestFeature(canvasX, canvasY)
+        const featureId = hit?.id
+        const featureIndex = hit?.index ?? -1
+        model.setFeatureIdUnderMouse(featureId)
+        if (highlightedFeatureIndexRef.current !== featureIndex) {
+          highlightedFeatureIndexRef.current = featureIndex
+          renderNowRef.current()
+        }
+        return
+      }
+
+      // Not over a CIGAR item
+      setOverCigarItem(false)
+
+      // Fall back to feature hit testing
+      const hit = hitTestFeature(canvasX, canvasY)
+      const featureId = hit?.id
+      const featureIndex = hit?.index ?? -1
+
       model.setFeatureIdUnderMouse(featureId)
+
+      // Update highlight and re-render if changed
+      if (highlightedFeatureIndexRef.current !== featureIndex) {
+        highlightedFeatureIndexRef.current = featureIndex
+        renderNowRef.current()
+      }
+
+      // Set tooltip info
+      if (featureId) {
+        const info = model.getFeatureInfoById(featureId)
+        if (info) {
+          const tooltipText = `${info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()} (${info.strand})`
+          model.setMouseoverExtraInformation(tooltipText)
+        } else {
+          model.setMouseoverExtraInformation(undefined)
+        }
+      } else {
+        model.setMouseoverExtraInformation(undefined)
+      }
     },
-    [hitTestFeature, model, handleMouseMove],
+    [hitTestFeature, hitTestCigarItem, model, handleMouseMove],
   )
 
   const handleClick = useCallback(
@@ -889,11 +1181,45 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       const canvasX = e.clientX - rect.left
       const canvasY = e.clientY - rect.top
 
-      const featureId = hitTestFeature(canvasX, canvasY)
-      if (featureId) {
-        // Set as the feature under mouse (this will be used by context menu / tooltip systems)
-        model.setFeatureIdUnderMouse(featureId)
-        console.log('Clicked feature:', featureId)
+      const hit = hitTestFeature(canvasX, canvasY)
+      if (hit) {
+        // Set selected feature for outline
+        selectedFeatureIndexRef.current = hit.index
+        renderNowRef.current()
+        model.selectFeatureById(hit.id)
+      } else {
+        // Clear selection if clicking on empty space
+        if (selectedFeatureIndexRef.current !== -1) {
+          selectedFeatureIndexRef.current = -1
+          renderNowRef.current()
+        }
+      }
+    },
+    [hitTestFeature, model],
+  )
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      const canvas = canvasRef.current
+      if (!canvas) {
+        return
+      }
+
+      let rect = canvasRectRef.current
+      if (!rect) {
+        rect = canvas.getBoundingClientRect()
+        canvasRectRef.current = rect
+      }
+
+      const canvasX = e.clientX - rect.left
+      const canvasY = e.clientY - rect.top
+
+      const hit = hitTestFeature(canvasX, canvasY)
+      if (hit) {
+        e.preventDefault()
+        // For now, open feature widget on right-click (same as left-click)
+        // TODO: implement proper context menu
+        model.selectFeatureById(hit.id)
       }
     },
     [hitTestFeature, model],
@@ -921,13 +1247,15 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           display: 'block',
           width: width ?? '100%',
           height,
-          cursor: model.featureIdUnderMouse ? 'pointer' : 'default',
+          cursor:
+            model.featureIdUnderMouse || overCigarItem ? 'pointer' : 'default',
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
       />
 
       {(isLoading || !isReady) && (

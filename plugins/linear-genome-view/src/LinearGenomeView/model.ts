@@ -1793,6 +1793,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get visibleRegions() {
         return self.dynamicBlocks.contentBlocks
       },
+
+      /**
+       * #getter
+       * Returns visible regions with integer bp coordinates suitable for data fetching.
+       * Uses floor(start) and ceil(end) to ensure complete coverage of visible bases.
+       * Note: dynamicBlocks.contentBlocks can have fractional start/end values.
+       */
+      get visibleRegionsBp() {
+        return self.dynamicBlocks.contentBlocks.map(block => ({
+          assemblyName: block.assemblyName,
+          refName: block.refName,
+          start: Math.floor(block.start),
+          end: Math.ceil(block.end),
+          reversed: block.reversed,
+        }))
+      },
     }))
     .views(self => ({
       /**

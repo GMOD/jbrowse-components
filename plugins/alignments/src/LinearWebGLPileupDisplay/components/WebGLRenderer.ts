@@ -97,6 +97,7 @@ uniform float u_featureHeight;
 uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
+uniform int u_highlightedIndex;  // Feature index to highlight (-1 = none)
 
 out vec4 v_color;
 
@@ -160,6 +161,11 @@ void main() {
   else if (u_colorScheme == 2) color = insertSizeColor(a_insertSize);
   else if (u_colorScheme == 3) color = firstOfPairColor(a_flags);
   else color = vec3(0.6);
+
+  // Darken highlighted feature
+  if (u_highlightedIndex >= 0 && gl_InstanceID == u_highlightedIndex) {
+    color = color * 0.7;
+  }
 
   v_color = vec4(color, 1.0);
 }
@@ -847,6 +853,10 @@ export interface RenderState {
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
   canvasWidth: number
   canvasHeight: number
+  // Feature highlighting (-1 means no highlight)
+  highlightedFeatureIndex: number
+  // Selected feature for outline (-1 means no selection)
+  selectedFeatureIndex: number
 }
 
 interface GPUBuffers {
@@ -854,6 +864,9 @@ interface GPUBuffers {
   regionStart: number
   readVAO: WebGLVertexArrayObject
   readCount: number
+  // CPU-side copies for selection outline drawing
+  readPositions: Uint32Array
+  readYs: Uint16Array
   coverageVAO: WebGLVertexArrayObject | null
   coverageCount: number
   maxDepth: number
@@ -995,6 +1008,7 @@ export class WebGLRenderer {
       'u_featureSpacing',
       'u_coverageOffset',
       'u_canvasHeight',
+      'u_highlightedIndex',
     ])
 
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
@@ -1174,6 +1188,8 @@ export class WebGLRenderer {
       regionStart: data.regionStart,
       readVAO,
       readCount: data.numReads,
+      readPositions: data.readPositions,
+      readYs: data.readYs,
       coverageVAO: null,
       coverageCount: 0,
       maxDepth: 0,
@@ -1797,6 +1813,10 @@ export class WebGLRenderer {
     gl.uniform1f(this.readUniforms.u_featureSpacing!, state.featureSpacing)
     gl.uniform1f(this.readUniforms.u_coverageOffset!, coverageOffset)
     gl.uniform1f(this.readUniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform1i(
+      this.readUniforms.u_highlightedIndex!,
+      state.highlightedFeatureIndex,
+    )
 
     gl.bindVertexArray(this.buffers.readVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.readCount)
@@ -1962,6 +1982,70 @@ export class WebGLRenderer {
     }
 
     gl.disable(gl.SCISSOR_TEST)
+
+    // Draw selection outline if a feature is selected
+    if (
+      state.selectedFeatureIndex >= 0 &&
+      state.selectedFeatureIndex < this.buffers.readCount
+    ) {
+      const idx = state.selectedFeatureIndex
+      const startOffset = this.buffers.readPositions[idx * 2]
+      const endOffset = this.buffers.readPositions[idx * 2 + 1]
+      const y = this.buffers.readYs[idx]
+
+      if (startOffset !== undefined && endOffset !== undefined && y !== undefined) {
+        // Convert to absolute positions
+        const absStart = startOffset + regionStart
+        const absEnd = endOffset + regionStart
+
+        // Convert to clip-space X using high-precision split
+        const splitStart = [
+          Math.floor(absStart) - (Math.floor(absStart) & 0xfff),
+          (Math.floor(absStart) & 0xfff),
+        ]
+        const splitEnd = [
+          Math.floor(absEnd) - (Math.floor(absEnd) & 0xfff),
+          (Math.floor(absEnd) & 0xfff),
+        ]
+
+        const sx1 =
+          ((splitStart[0]! - domainStartHi + splitStart[1]! - domainStartLo) /
+            domainExtent) *
+            2 -
+          1
+        const sx2 =
+          ((splitEnd[0]! - domainStartHi + splitEnd[1]! - domainStartLo) /
+            domainExtent) *
+            2 -
+          1
+
+        // Convert Y to clip-space
+        const rowHeight = state.featureHeight + state.featureSpacing
+        const yTopPx = y * rowHeight - state.rangeY[0]
+        const yBotPx = yTopPx + state.featureHeight
+        const pileupTop = 1 - (coverageOffset / canvasHeight) * 2
+        const pxToClip = 2 / canvasHeight
+        const syTop = pileupTop - yTopPx * pxToClip
+        const syBot = pileupTop - yBotPx * pxToClip
+
+        // Draw rectangle outline
+        gl.useProgram(this.lineProgram)
+        gl.uniform4f(this.lineUniforms.u_color!, 0.0, 0.0, 0.0, 1.0) // Black outline
+
+        const outlineData = new Float32Array([
+          sx1, syTop,
+          sx2, syTop,
+          sx2, syBot,
+          sx1, syBot,
+          sx1, syTop, // Close the loop
+        ])
+        gl.bindVertexArray(this.lineVAO)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, outlineData, gl.DYNAMIC_DRAW)
+        gl.drawArrays(gl.LINE_STRIP, 0, 5)
+      }
+    }
+
     gl.bindVertexArray(null)
   }
 

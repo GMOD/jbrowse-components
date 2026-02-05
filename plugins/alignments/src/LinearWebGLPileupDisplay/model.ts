@@ -5,6 +5,7 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
+  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
@@ -29,6 +30,8 @@ interface Region {
 const WebGLPileupComponent = lazy(
   () => import('./components/WebGLPileupComponent.tsx'),
 )
+
+const WebGLTooltip = lazy(() => import('./components/WebGLTooltip.tsx'))
 
 export const ColorScheme = {
   strand: 0,
@@ -100,7 +103,6 @@ export default function stateModelFactory(
       currentDomainX: null as [number, number] | null,
       currentRangeY: [0, 600] as [number, number],
       maxY: 0,
-      featureIdUnderMouseVolatile: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -108,6 +110,13 @@ export default function stateModelFactory(
        */
       get DisplayMessageComponent() {
         return WebGLPileupComponent
+      },
+
+      /**
+       * Custom tooltip that prioritizes mouseoverExtraInformation for CIGAR items
+       */
+      get TooltipComponent() {
+        return WebGLTooltip
       },
 
       /**
@@ -228,14 +237,81 @@ export default function stateModelFactory(
         )
       },
 
-      get featureIdUnderMouse() {
-        return self.featureIdUnderMouseVolatile
-      },
       get features(): Map<string, Feature> {
         return new Map()
       },
       get sortedBy() {
         return undefined
+      },
+    }))
+    .views(self => ({
+      getFeatureInfoById(featureId: string) {
+        const { rpcData, loadedRegion } = self
+        if (!rpcData || !rpcData.readIds) {
+          return undefined
+        }
+        const idx = rpcData.readIds.indexOf(featureId)
+        if (idx === -1) {
+          return undefined
+        }
+        const startOffset = rpcData.readPositions[idx * 2]
+        const endOffset = rpcData.readPositions[idx * 2 + 1]
+        if (startOffset === undefined || endOffset === undefined) {
+          return undefined
+        }
+        const start = rpcData.regionStart + startOffset
+        const end = rpcData.regionStart + endOffset
+        const flags = rpcData.readFlags[idx]
+        const mapq = rpcData.readMapqs[idx]
+        const strand = flags !== undefined && flags & 16 ? '-' : '+'
+        const refName = loadedRegion?.refName ?? ''
+        return {
+          id: featureId,
+          start,
+          end,
+          flags,
+          mapq,
+          strand,
+          refName,
+        }
+      },
+    }))
+    .views(self => ({
+      get featureUnderMouse() {
+        const featId = self.featureIdUnderMouse
+        if (!featId) {
+          return undefined
+        }
+        const info = self.getFeatureInfoById(featId)
+        if (!info) {
+          return undefined
+        }
+        // Return a minimal Feature-like object for tooltip support
+        return {
+          id: () => info.id,
+          get: (key: string) => {
+            switch (key) {
+              case 'name':
+              case 'id':
+                return info.id
+              case 'start':
+                return info.start
+              case 'end':
+                return info.end
+              case 'refName':
+                return info.refName
+              case 'strand':
+                return info.strand === '-' ? -1 : 1
+              case 'flags':
+                return info.flags
+              case 'score':
+              case 'MAPQ':
+                return info.mapq
+              default:
+                return undefined
+            }
+          },
+        } as Feature
       },
     }))
     .actions(self => ({
@@ -306,10 +382,6 @@ export default function stateModelFactory(
         self.showInterbaseIndicators = show
       },
 
-      setFeatureIdUnderMouse(id: string | undefined) {
-        self.featureIdUnderMouseVolatile = id
-      },
-
       // Stubs required by LinearAlignmentsDisplay
       setConfig(_config: unknown) {},
       setFeatureDensityStatsLimit(_stats: unknown) {},
@@ -320,6 +392,37 @@ export default function stateModelFactory(
 
       searchFeatureByID(_id: string) {
         return undefined
+      },
+
+      selectFeatureById(featureId: string) {
+        const info = self.getFeatureInfoById(featureId)
+        if (!info) {
+          return
+        }
+        const session = getSession(self)
+        if (isSessionModelWithWidgets(session)) {
+          const featureData = {
+            uniqueId: info.id,
+            name: info.id,
+            refName: info.refName,
+            start: info.start,
+            end: info.end,
+            strand: info.strand === '-' ? -1 : 1,
+            flags: info.flags,
+            MAPQ: info.mapq,
+            type: 'read',
+          }
+          const featureWidget = session.addWidget(
+            'BaseFeatureWidget',
+            'baseFeature',
+            {
+              featureData,
+              view: getContainingView(self),
+              track: getContainingTrack(self),
+            },
+          )
+          session.showWidget(featureWidget)
+        }
       },
     }))
     .actions(self => {

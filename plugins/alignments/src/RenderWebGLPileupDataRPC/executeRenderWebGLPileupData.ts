@@ -39,6 +39,7 @@ interface InsertionData {
   featureId: string
   position: number
   length: number
+  sequence?: string
 }
 
 interface SoftclipData {
@@ -512,6 +513,11 @@ export async function executeRenderWebGLPileupData({
                 featureId,
                 position: featureStart + mm.start,
                 length: mm.insertlen,
+                // Only store short sequences to minimize data
+                sequence:
+                  mm.insertedBases && mm.insertedBases.length <= 20
+                    ? mm.insertedBases
+                    : undefined,
               })
             } else if (mm.type === 'softclip') {
               softclipsData.push({
@@ -544,7 +550,8 @@ export async function executeRenderWebGLPileupData({
   checkStopToken2(stopTokenCheck)
 
   // Use region.start as reference point - all positions stored as offsets
-  const regionStart = region.start
+  // Floor to ensure integer offsets (region.start can be fractional from view calculations)
+  const regionStart = Math.floor(region.start)
 
   const {
     maxY,
@@ -610,11 +617,13 @@ export async function executeRenderWebGLPileupData({
     const insertionPositions = new Uint32Array(filteredInsertions.length)
     const insertionYs = new Uint16Array(filteredInsertions.length)
     const insertionLengths = new Uint16Array(filteredInsertions.length)
+    const insertionSequences: string[] = []
     for (const [i, ins] of filteredInsertions.entries()) {
       const y = layout.get(ins.featureId) ?? 0
       insertionPositions[i] = ins.position - regionStart
       insertionYs[i] = y
       insertionLengths[i] = Math.min(65535, ins.length)
+      insertionSequences.push(ins.sequence ?? '')
     }
 
     // Filter softclips to only include those at or after regionStart (avoid Uint32 underflow)
@@ -653,7 +662,12 @@ export async function executeRenderWebGLPileupData({
       },
       gapArrays: { gapPositions, gapYs },
       mismatchArrays: { mismatchPositions, mismatchYs, mismatchBases },
-      insertionArrays: { insertionPositions, insertionYs, insertionLengths },
+      insertionArrays: {
+        insertionPositions,
+        insertionYs,
+        insertionLengths,
+        insertionSequences,
+      },
       softclipArrays: { softclipPositions, softclipYs, softclipLengths },
       hardclipArrays: { hardclipPositions, hardclipYs, hardclipLengths },
     }

@@ -40,6 +40,7 @@ export interface WebGLPileupDataResult {
   insertionPositions: Uint32Array
   insertionYs: Uint16Array
   insertionLengths: Uint16Array
+  insertionSequences: string[] // insertion sequences (short ones only, empty string if unavailable)
 
   // Soft clip data - offsets from regionStart
   softclipPositions: Uint32Array
