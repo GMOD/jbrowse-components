@@ -12,7 +12,7 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 import { reaction } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util.ts'
+import { getNiceDomain, getScale } from '../util.ts'
 
 import type { WebGLMultiWiggleDataResult } from '../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -132,13 +132,11 @@ export default function stateModelFactory(
           const deltaPx = view.offsetPx - blockOffsetPx
           const deltaBp = deltaPx * bpPerPx
 
-          // Calculate actual canvas width (accounting for sidebar)
+          // Canvas spans full width - labels overlay it with transparency
           const totalWidthPx = Math.round(view.dynamicBlocks.totalWidthPx)
-          const hasSidebar = self.rpcData && self.rpcData.sources.length > 1
-          const canvasWidthPx = hasSidebar ? totalWidthPx - 100 : totalWidthPx
 
           const viewportStart = first.start + deltaBp
-          const viewportEnd = viewportStart + canvasWidthPx * bpPerPx
+          const viewportEnd = viewportStart + totalWidthPx * bpPerPx
 
           return {
             refName: first.refName,
@@ -168,32 +166,53 @@ export default function stateModelFactory(
           return undefined
         }
         const { scoreMin, scoreMax } = self.rpcData
-        const min = this.minScoreConfig ?? scoreMin
-        const max = this.maxScoreConfig ?? scoreMax
-        return [min, max]
+        const { scaleType } = self
+
+        // Use getNiceDomain to snap to 0 for linear scale (matches MultiLinearWiggleDisplay)
+        return getNiceDomain({
+          domain: [scoreMin, scoreMax],
+          bounds: [this.minScoreConfig, this.maxScoreConfig],
+          scaleType,
+        })
       },
 
       get numSources() {
         return self.rpcData?.sources.length ?? 0
       },
 
+      get rowHeight() {
+        const numSources = this.numSources
+        if (numSources === 0) {
+          return self.height
+        }
+        // Account for padding between rows (ROW_PADDING = 2)
+        const totalPadding = 2 * (numSources - 1)
+        return (self.height - totalPadding) / numSources
+      },
+
+      get rowHeightTooSmallForScalebar() {
+        return this.rowHeight < 70
+      },
+
       get ticks() {
-        const { scaleType, height } = self
+        const { scaleType } = self
         const domain = this.domain
+        const rowHeight = this.rowHeight
         if (!domain) {
           return undefined
         }
         const minimalTicks = getConf(self, 'minimalTicks')
+        // For multi-row displays, use no offset (range goes from rowHeight to 0)
         const ticks = axisPropsFromTickScale(
           getScale({
             scaleType,
             domain,
-            range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
+            range: [rowHeight, 0],
             inverted: false,
           }),
           4,
         )
-        return height < 100 || minimalTicks
+        return rowHeight < 100 || minimalTicks
           ? { ...ticks, values: domain }
           : ticks
       },

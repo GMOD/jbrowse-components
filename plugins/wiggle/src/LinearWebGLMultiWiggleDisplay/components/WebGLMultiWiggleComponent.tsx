@@ -24,6 +24,31 @@ type LGV = LinearGenomeViewModel
 
 const ROW_PADDING = 2
 
+// Compact score legend for when rows are too small for full scalebars
+const ScoreLegend = observer(function ScoreLegend({
+  model,
+  canvasWidth,
+}: {
+  model: LinearWebGLMultiWiggleDisplayModel
+  canvasWidth: number
+}) {
+  const { ticks, scaleType } = model
+  if (!ticks) {
+    return null
+  }
+  const legend = `[${ticks.values[0]?.toFixed(0)}-${ticks.values[1]?.toFixed(0)}]${scaleType === 'log' ? ' (log)' : ''}`
+  const len = measureText(legend, 12)
+  const xpos = canvasWidth - len - 60
+  return (
+    <>
+      <rect x={xpos - 3} y={0} width={len + 6} height={16} fill="rgba(255,255,255,0.8)" />
+      <text y={12} x={xpos} fontSize={12}>
+        {legend}
+      </text>
+    </>
+  )
+})
+
 const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   model,
 }: {
@@ -88,15 +113,13 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         return
       }
       const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
-      const hasSidebar = model.rpcData && model.rpcData.sources.length > 1
-      const actualCanvasWidth = hasSidebar ? totalWidth - 100 : totalWidth
       const height = model.height
 
       renderer.render({
         domainX,
         domainY: domain,
         scaleType: model.scaleType as 'linear' | 'log',
-        canvasWidth: actualCanvasWidth,
+        canvasWidth: totalWidth,
         canvasHeight: height,
         rowPadding: ROW_PADDING,
         renderingType: model.renderingType as MultiRenderingType,
@@ -141,8 +164,6 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     }
 
     const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
-    const hasSidebar = model.rpcData && model.rpcData.sources.length > 1
-    const actualCanvasWidth = hasSidebar ? totalWidth - 100 : totalWidth
     const height = model.height
 
     // Use RAF for smooth rendering but only render once per state change
@@ -151,7 +172,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         domainX: [visibleRegion.start, visibleRegion.end],
         domainY: domain,
         scaleType: model.scaleType as 'linear' | 'log',
-        canvasWidth: actualCanvasWidth,
+        canvasWidth: totalWidth,
         canvasHeight: height,
         rowPadding: ROW_PADDING,
         renderingType: model.renderingType as MultiRenderingType,
@@ -176,9 +197,6 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   ])
 
   const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
-  const hasSidebar = model.rpcData && model.rpcData.sources.length > 1
-  const sidebarWidth = hasSidebar ? 100 : 0
-  const canvasWidth = totalWidth - sidebarWidth
   const height = model.height
   const { trackLabels } = view
   const track = getContainingTrack(model)
@@ -199,102 +217,122 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     )
   }
 
-  // Render source labels on the left
   const numSources = model.numSources
   const rowHeight =
     numSources > 0
       ? (height - ROW_PADDING * (numSources - 1)) / numSources
       : height
 
+  // Calculate label width based on source names
+  const labelWidth = model.rpcData
+    ? Math.max(...model.rpcData.sources.map(s => measureText(s.name, 10))) + 10
+    : 0
+
   return (
-    <div style={{ position: 'relative', width: totalWidth, height, display: 'flex' }}>
-      {/* Source labels sidebar */}
-      {hasSidebar ? (
+    <div style={{ position: 'relative', width: totalWidth, height }}>
+      {/* Canvas spans full width */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          width: totalWidth,
+          height,
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          cursor: isDragging ? 'grabbing' : 'grab',
+        }}
+        width={totalWidth}
+        height={height}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+      />
+
+      {/* SVG overlay for labels and scalebars */}
+      <svg
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          pointerEvents: 'none',
+          height,
+          width: totalWidth,
+        }}
+      >
+        {/* Source labels with semi-transparent background */}
+        {model.rpcData && model.rpcData.sources.length > 1 ? (
+          <>
+            {model.rpcData.sources.map((source, idx) => {
+              const y = rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)
+              const boxHeight = Math.min(20, rowHeight)
+              return (
+                <g key={source.name}>
+                  {/* Semi-transparent background */}
+                  <rect
+                    x={0}
+                    y={y}
+                    width={labelWidth}
+                    height={boxHeight}
+                    fill="rgba(255,255,255,0.8)"
+                  />
+                  {/* Label text */}
+                  <text
+                    x={4}
+                    y={y + boxHeight / 2 + 3}
+                    fontSize={10}
+                    fill="black"
+                  >
+                    {source.name}
+                  </text>
+                </g>
+              )
+            })}
+          </>
+        ) : null}
+
+        {/* Y scalebars */}
+        {model.ticks ? (
+          <g
+            transform={`translate(${
+              trackLabels === 'overlapping'
+                ? measureText(getConf(track, 'name'), 12.8) + 50
+                : 50
+            } 0)`}
+          >
+            {model.rowHeightTooSmallForScalebar ? (
+              <ScoreLegend model={model} canvasWidth={totalWidth} />
+            ) : (
+              Array.from({ length: numSources }).map((_, idx) => (
+                <g
+                  transform={`translate(0 ${rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)})`}
+                  key={`scalebar-${idx}`}
+                >
+                  <YScaleBar model={model} />
+                </g>
+              ))
+            )}
+          </g>
+        ) : null}
+      </svg>
+
+      {model.isLoading ? (
         <div
           style={{
-            width: sidebarWidth,
-            height,
-            overflow: 'hidden',
-            flexShrink: 0,
-            fontSize: 10,
-          }}
-        >
-          {model.rpcData.sources.map((source, idx) => (
-            <div
-              key={source.name}
-              style={{
-                height: rowHeight,
-                marginBottom: idx < numSources - 1 ? ROW_PADDING : 0,
-                display: 'flex',
-                alignItems: 'center',
-                paddingLeft: 4,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                borderLeft: `3px solid ${source.color}`,
-              }}
-              title={source.name}
-            >
-              {source.name}
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      {/* Canvas - use explicit width instead of flex to ensure correct sizing */}
-      <div style={{ position: 'relative', width: canvasWidth, height }}>
-        <canvas
-          ref={canvasRef}
-          style={{
-            width: canvasWidth,
-            height,
             position: 'absolute',
             left: 0,
             top: 0,
-            cursor: isDragging ? 'grabbing' : 'grab',
+            width: '100%',
+            height,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(255,255,255,0.7)',
           }}
-          width={canvasWidth}
-          height={height}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
-        />
-        {model.ticks ? (
-          <svg
-            style={{
-              position: 'absolute',
-              top: 0,
-              left:
-                trackLabels === 'overlapping'
-                  ? measureText(getConf(track, 'name'), 12.8) + 100
-                  : 50,
-              pointerEvents: 'none',
-              height,
-              width: 50,
-            }}
-          >
-            <YScaleBar model={model} />
-          </svg>
-        ) : null}
-        {model.isLoading ? (
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: '100%',
-              height,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(255,255,255,0.7)',
-            }}
-          >
-            Loading...
-          </div>
-        ) : null}
-      </div>
+        >
+          Loading...
+        </div>
+      ) : null}
     </div>
   )
 })

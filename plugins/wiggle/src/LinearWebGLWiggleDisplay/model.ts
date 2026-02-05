@@ -13,7 +13,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { reaction } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util.ts'
+import { getNiceDomain, getScale, YSCALEBAR_LABEL_OFFSET } from '../util.ts'
 
 import type { WebGLWiggleDataResult } from '../RenderWebGLWiggleDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -180,9 +180,14 @@ export default function stateModelFactory(
           return undefined
         }
         const { scoreMin, scoreMax } = self.rpcData
-        const min = this.minScoreConfig ?? scoreMin
-        const max = this.maxScoreConfig ?? scoreMax
-        return [min, max]
+        const { scaleType } = self
+
+        // Use getNiceDomain to snap to 0 for linear scale (matches standard wiggle displays)
+        return getNiceDomain({
+          domain: [scoreMin, scoreMax],
+          bounds: [this.minScoreConfig, this.maxScoreConfig],
+          scaleType,
+        })
       },
 
       get ticks() {
