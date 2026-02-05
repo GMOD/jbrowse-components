@@ -199,23 +199,37 @@ function collectRenderData(
       strand: strand || undefined,
     })
 
-    // Process layout based on glyph type
-    if (
-      layout.glyphType === 'ProcessedTranscript' ||
-      layout.glyphType === 'Segments'
-    ) {
-      // Draw connecting line for the full span (with strand direction for dynamic chevron generation)
-      const effectiveStrand = reversed ? -strand : strand
+    // Helper to process a transcript-like layout (ProcessedTranscript or Segments)
+    const processTranscriptLayout = (
+      transcriptLayout: typeof layout,
+      transcriptTopPx: number,
+      parentFeature: typeof feature,
+    ) => {
+      const transcriptFeature = transcriptLayout.feature
+      const transcriptStart = transcriptFeature.get('start')
+      const transcriptEnd = transcriptFeature.get('end')
+      const transcriptStrand = (transcriptFeature.get('strand') as number) || 0
+
+      const transcriptStrokeColor = getStrokeColor({
+        feature: transcriptFeature,
+        config: config as any,
+        configContext,
+        theme: theme as any,
+      })
+      const transcriptStrokeUint = colorToUint32(transcriptStrokeColor)
+
+      // Draw connecting line for the transcript span
+      const effectiveStrand = reversed ? -transcriptStrand : transcriptStrand
       lines.push({
-        startOffset: featureStart - regionStart,
-        endOffset: featureEnd - regionStart,
-        y: topPx + layout.height / 2,
-        color: strokeUint,
+        startOffset: transcriptStart - regionStart,
+        endOffset: transcriptEnd - regionStart,
+        y: transcriptTopPx + transcriptLayout.height / 2,
+        color: transcriptStrokeUint,
         direction: effectiveStrand,
       })
 
       // Draw children (exons, CDS, UTRs)
-      for (const childLayout of layout.children) {
+      for (const childLayout of transcriptLayout.children) {
         const childFeature = childLayout.feature
         const childStart = childFeature.get('start')
         const childEnd = childFeature.get('end')
@@ -231,11 +245,12 @@ function collectRenderData(
         })
         const childColorUint = colorToUint32(childColor)
 
-        let childTopPx = topPx
+        let childTopPx = transcriptTopPx
         let childHeight = childLayout.height
         if (childIsUTR) {
-          childTopPx += ((1 - UTR_HEIGHT_FRACTION) / 2) * layout.height
-          childHeight = layout.height * UTR_HEIGHT_FRACTION
+          childTopPx +=
+            ((1 - UTR_HEIGHT_FRACTION) / 2) * transcriptLayout.height
+          childHeight = transcriptLayout.height * UTR_HEIGHT_FRACTION
         }
 
         rects.push({
@@ -250,7 +265,7 @@ function collectRenderData(
         // Add subfeature info for hit detection
         subfeatureInfos.push({
           featureId: childFeature.id(),
-          parentFeatureId: feature.id(),
+          parentFeatureId: parentFeature.id(),
           type: childType,
           startBp: childStart,
           endBp: childEnd,
@@ -261,17 +276,84 @@ function collectRenderData(
         })
       }
 
-      // Add strand arrow
-      if (strand !== 0) {
-        const effectiveStrand = reversed ? -strand : strand
-        const arrowX = effectiveStrand === 1 ? featureEnd : featureStart
+      // Add strand arrow for transcript
+      if (transcriptStrand !== 0) {
+        const effectiveStrand = reversed ? -transcriptStrand : transcriptStrand
+        const arrowX =
+          effectiveStrand === 1 ? transcriptEnd : transcriptStart
         arrows.push({
           x: arrowX - regionStart,
-          y: topPx + layout.height / 2,
+          y: transcriptTopPx + transcriptLayout.height / 2,
           direction: effectiveStrand,
-          height: layout.height,
-          color: strokeUint,
+          height: transcriptLayout.height,
+          color: transcriptStrokeUint,
         })
+      }
+    }
+
+    // Process layout based on glyph type
+    if (
+      layout.glyphType === 'ProcessedTranscript' ||
+      layout.glyphType === 'Segments'
+    ) {
+      processTranscriptLayout(layout, topPx, feature)
+    } else if (layout.glyphType === 'Subfeatures') {
+      // Gene-like feature with nested transcript children
+      // Process each child transcript
+      for (const childLayout of layout.children) {
+        if (
+          childLayout.glyphType === 'ProcessedTranscript' ||
+          childLayout.glyphType === 'Segments'
+        ) {
+          // Child is a transcript - process it with its relative position
+          const childTopPx = topPx + childLayout.y
+          processTranscriptLayout(childLayout, childTopPx, feature)
+        } else {
+          // Child is a simple feature - draw as box
+          const childFeature = childLayout.feature
+          const childStart = childFeature.get('start')
+          const childEnd = childFeature.get('end')
+          const childIsUTR = isUTR(childFeature)
+          const childType = childFeature.get('type') || 'feature'
+
+          const childColor = getBoxColor({
+            feature: childFeature,
+            config: config as any,
+            configContext,
+            colorByCDS: false,
+            theme: theme as any,
+          })
+          const childColorUint = colorToUint32(childColor)
+
+          let childTopPx = topPx + childLayout.y
+          let childHeight = childLayout.height
+          if (childIsUTR) {
+            childTopPx += ((1 - UTR_HEIGHT_FRACTION) / 2) * childLayout.height
+            childHeight = childLayout.height * UTR_HEIGHT_FRACTION
+          }
+
+          rects.push({
+            startOffset: childStart - regionStart,
+            endOffset: childEnd - regionStart,
+            y: childTopPx,
+            height: childHeight,
+            color: childColorUint,
+            type: childIsUTR ? 1 : 0,
+          })
+
+          // Add subfeature info for hit detection
+          subfeatureInfos.push({
+            featureId: childFeature.id(),
+            parentFeatureId: feature.id(),
+            type: childType,
+            startBp: childStart,
+            endBp: childEnd,
+            topPx: childTopPx,
+            bottomPx: childTopPx + childHeight,
+            displayLabel: childType,
+            tooltip: `${childType}: ${childStart.toLocaleString()}-${childEnd.toLocaleString()}`,
+          })
+        }
       }
     } else {
       // Simple box feature
