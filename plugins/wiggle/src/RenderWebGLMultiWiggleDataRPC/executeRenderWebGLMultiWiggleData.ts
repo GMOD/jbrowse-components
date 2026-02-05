@@ -50,7 +50,7 @@ export async function executeRenderWebGLMultiWiggleData({
     dataAdapter.getFeatures(region).pipe(toArray()),
   )
 
-  const regionStart = region.start
+  const regionStart = Math.floor(region.start)
 
   // Group features by source
   const featuresBySource = new Map<string, typeof featuresArray>()

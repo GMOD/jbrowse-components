@@ -87,14 +87,16 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       if (!domain) {
         return
       }
-      const width = Math.round(view.dynamicBlocks.totalWidthPx)
+      const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+      const hasSidebar = model.rpcData && model.rpcData.sources.length > 1
+      const actualCanvasWidth = hasSidebar ? totalWidth - 100 : totalWidth
       const height = model.height
 
       renderer.render({
         domainX,
         domainY: domain,
         scaleType: model.scaleType as 'linear' | 'log',
-        canvasWidth: width,
+        canvasWidth: actualCanvasWidth,
         canvasHeight: height,
         rowPadding: ROW_PADDING,
         renderingType: model.renderingType as MultiRenderingType,
@@ -138,7 +140,9 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       return
     }
 
-    const width = Math.round(view.dynamicBlocks.totalWidthPx)
+    const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+    const hasSidebar = model.rpcData && model.rpcData.sources.length > 1
+    const actualCanvasWidth = hasSidebar ? totalWidth - 100 : totalWidth
     const height = model.height
 
     // Use RAF for smooth rendering but only render once per state change
@@ -147,7 +151,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         domainX: [visibleRegion.start, visibleRegion.end],
         domainY: domain,
         scaleType: model.scaleType as 'linear' | 'log',
-        canvasWidth: width,
+        canvasWidth: actualCanvasWidth,
         canvasHeight: height,
         rowPadding: ROW_PADDING,
         renderingType: model.renderingType as MultiRenderingType,
@@ -171,14 +175,17 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     view.dynamicBlocks.totalWidthPx,
   ])
 
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+  const hasSidebar = model.rpcData && model.rpcData.sources.length > 1
+  const sidebarWidth = hasSidebar ? 100 : 0
+  const canvasWidth = totalWidth - sidebarWidth
   const height = model.height
   const { trackLabels } = view
   const track = getContainingTrack(model)
 
   if (error) {
     return (
-      <div style={{ width, height, color: 'red', padding: 10 }}>
+      <div style={{ width: totalWidth, height, color: 'red', padding: 10 }}>
         WebGL Error: {error}
       </div>
     )
@@ -186,7 +193,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 
   if (model.error) {
     return (
-      <div style={{ width, height, color: 'red', padding: 10 }}>
+      <div style={{ width: totalWidth, height, color: 'red', padding: 10 }}>
         Error: {model.error.message}
       </div>
     )
@@ -200,12 +207,12 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       : height
 
   return (
-    <div style={{ position: 'relative', width, height, display: 'flex' }}>
+    <div style={{ position: 'relative', width: totalWidth, height, display: 'flex' }}>
       {/* Source labels sidebar */}
-      {model.rpcData && model.rpcData.sources.length > 1 ? (
+      {hasSidebar ? (
         <div
           style={{
-            width: 100,
+            width: sidebarWidth,
             height,
             overflow: 'hidden',
             flexShrink: 0,
@@ -234,26 +241,19 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         </div>
       ) : null}
 
-      {/* Canvas */}
-      <div style={{ position: 'relative', flex: 1, height }}>
+      {/* Canvas - use explicit width instead of flex to ensure correct sizing */}
+      <div style={{ position: 'relative', width: canvasWidth, height }}>
         <canvas
           ref={canvasRef}
           style={{
-            width:
-              model.rpcData && model.rpcData.sources.length > 1
-                ? width - 100
-                : width,
+            width: canvasWidth,
             height,
             position: 'absolute',
             left: 0,
             top: 0,
             cursor: isDragging ? 'grabbing' : 'grab',
           }}
-          width={
-            model.rpcData && model.rpcData.sources.length > 1
-              ? width - 100
-              : width
-          }
+          width={canvasWidth}
           height={height}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}

@@ -32,7 +32,7 @@ export async function executeRenderWebGLWiggleData({
     dataAdapter.getFeatures(region).pipe(toArray()),
   )
 
-  const regionStart = region.start
+  const regionStart = Math.floor(region.start)
 
   // Allocate typed arrays
   const featurePositions = new Uint32Array(featuresArray.length * 2)

@@ -132,8 +132,13 @@ export default function stateModelFactory(
           const deltaPx = view.offsetPx - blockOffsetPx
           const deltaBp = deltaPx * bpPerPx
 
+          // Calculate actual canvas width (accounting for sidebar)
+          const totalWidthPx = Math.round(view.dynamicBlocks.totalWidthPx)
+          const hasSidebar = self.rpcData && self.rpcData.sources.length > 1
+          const canvasWidthPx = hasSidebar ? totalWidthPx - 100 : totalWidthPx
+
           const viewportStart = first.start + deltaBp
-          const viewportEnd = viewportStart + view.width * bpPerPx
+          const viewportEnd = viewportStart + canvasWidthPx * bpPerPx
 
           return {
             refName: first.refName,
