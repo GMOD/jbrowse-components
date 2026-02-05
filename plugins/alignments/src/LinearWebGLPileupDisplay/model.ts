@@ -2,12 +2,13 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
+  SimpleFeature,
   getContainingTrack,
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { reaction } from 'mobx'
@@ -24,6 +25,11 @@ type LGV = LinearGenomeViewModel
 
 // Offset for Y scalebar labels (same as wiggle plugin)
 export const YSCALEBAR_LABEL_OFFSET = 5
+
+// Insertion rendering thresholds (shared between WebGL shader and component)
+// Long insertions (>=10bp) show text box when zoomed in, small rectangle when zoomed out
+export const LONG_INSERTION_MIN_LENGTH = 10
+export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15 // min pixels to show text box
 
 interface Region {
   refName: string
@@ -448,34 +454,55 @@ export default function stateModelFactory(
         return undefined
       },
 
-      selectFeatureById(featureId: string) {
-        const info = self.getFeatureInfoById(featureId)
-        if (!info) {
-          return
-        }
+      async selectFeatureById(featureId: string) {
         const session = getSession(self)
-        if (isSessionModelWithWidgets(session)) {
-          const featureData = {
-            uniqueId: info.id,
-            name: info.id,
-            refName: info.refName,
-            start: info.start,
-            end: info.end,
-            strand: info.strand === '-' ? -1 : 1,
-            flags: info.flags,
-            MAPQ: info.mapq,
-            type: 'read',
+        const { rpcManager } = session
+        try {
+          const track = getContainingTrack(self)
+          const adapterConfig = getConf(track, 'adapter')
+          const region = self.loadedRegion
+          if (!region) {
+            return
           }
-          const featureWidget = session.addWidget(
-            'BaseFeatureWidget',
-            'baseFeature',
+          const assemblyName = region.assemblyName
+          const assembly = assemblyName
+            ? session.assemblyManager.get(assemblyName)
+            : undefined
+          const sequenceAdapterConfig =
+            assembly?.configuration?.sequence?.adapter
+          const sequenceAdapter = sequenceAdapterConfig
+            ? getSnapshot(sequenceAdapterConfig)
+            : undefined
+
+          const { feature } = (await rpcManager.call(
+            session.id ?? '',
+            'WebGLGetFeatureDetails',
             {
-              featureData,
-              view: getContainingView(self),
-              track: getContainingTrack(self),
+              sessionId: session.id,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+              featureId,
             },
-          )
-          session.showWidget(featureWidget)
+          )) as { feature: Record<string, unknown> | undefined }
+
+          if (isAlive(self) && feature && isSessionModelWithWidgets(session)) {
+            const feat = new SimpleFeature(feature)
+            const featureWidget = session.addWidget(
+              'AlignmentsFeatureWidget',
+              'alignmentFeature',
+              {
+                featureData: feat.toJSON(),
+                view: getContainingView(self),
+                track: getContainingTrack(self),
+              },
+            )
+            session.showWidget(featureWidget)
+            session.setSelection(feat)
+          }
+        } catch (e) {
+          console.error(e)
+          session.notifyError(`${e}`, e)
         }
       },
     }))
@@ -522,6 +549,7 @@ export default function stateModelFactory(
             refName: region.refName,
             start: region.start,
             end: region.end,
+            assemblyName: region.assemblyName,
           })
           self.setLoading(false)
         } catch (e) {

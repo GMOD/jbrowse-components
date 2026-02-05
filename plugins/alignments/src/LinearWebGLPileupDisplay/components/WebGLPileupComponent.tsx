@@ -13,7 +13,11 @@ import { observer } from 'mobx-react'
 
 import { fillColor } from '../../shared/color.ts'
 import { getContrastBaseMap } from '../../shared/util.ts'
-import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
+import {
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  YSCALEBAR_LABEL_OFFSET,
+} from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
@@ -107,6 +111,26 @@ interface CigarHitResult {
   length?: number
   base?: string // for mismatches
   sequence?: string // for insertions
+}
+
+// Match the textWidthForNumber function from the insertion vertex shader
+// Returns the pixel width needed to display the insertion length as a text label
+function textWidthForNumber(num: number): number {
+  const charWidth = 6
+  const padding = 10
+  if (num < 10) {
+    return charWidth + padding
+  }
+  if (num < 100) {
+    return charWidth * 2 + padding
+  }
+  if (num < 1000) {
+    return charWidth * 3 + padding
+  }
+  if (num < 10000) {
+    return charWidth * 4 + padding
+  }
+  return charWidth * 5 + padding
 }
 
 const CIGAR_TYPE_LABELS: Record<string, string> = {
@@ -1148,19 +1172,37 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       }
 
       // Check insertions (rendered as markers at interbase positions)
+      // Large insertions (>=LONG_INSERTION_MIN_LENGTH bp) are rendered as wider rectangles when zoomed in
       for (let i = 0; i < numInsertions; i++) {
         const y = insertionYs[i]
         if (y !== row) {
           continue
         }
         const pos = insertionPositions[i]
-        if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
-          return {
-            type: 'insertion',
-            index: i,
-            position: regionStart + pos,
-            length: insertionLengths[i],
-            sequence: insertionSequences?.[i] || undefined,
+        if (pos !== undefined) {
+          const len = insertionLengths[i] ?? 0
+          const isLongInsertion = len >= LONG_INSERTION_MIN_LENGTH
+          const insertionWidthPx = len / bpPerPx
+          const isLargeInsertion =
+            isLongInsertion && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
+          // Match the shader: large insertions use textWidthForNumber for the
+          // rectangle width, long-but-zoomed-out use 2px, small use pxPerBp
+          let rectHalfWidthBp: number
+          if (isLargeInsertion) {
+            rectHalfWidthBp = (textWidthForNumber(len) / 2) * bpPerPx
+          } else if (isLongInsertion) {
+            rectHalfWidthBp = bpPerPx
+          } else {
+            rectHalfWidthBp = Math.max(0.5, bpPerPx * 3)
+          }
+          if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
+            return {
+              type: 'insertion',
+              index: i,
+              position: regionStart + pos,
+              length: len,
+              sequence: insertionSequences?.[i] || undefined,
+            }
           }
         }
       }
@@ -1957,9 +1999,16 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           continue
         }
 
-        // Large insertions (>=10bp) show just the number in a wide box
+        // Adaptive threshold: show text when insertion is long enough and wide enough in pixels
+        // Uses shared constants from model.ts (must match shader in WebGLRenderer.ts)
+        const insertionWidthPx = length * pxPerBp
+        const canShowInsertionText =
+          length >= LONG_INSERTION_MIN_LENGTH &&
+          insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
+
+        // Large insertions show the number when zoomed in enough
         // Small insertions show "(length)" when zoomed in enough
-        if (length >= 10) {
+        if (canShowInsertionText) {
           labels.push({
             type: 'insertion',
             x: xPx,
@@ -1967,7 +2016,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
             text: String(length),
             width: 0,
           })
-        } else if (canRenderText) {
+        } else if (length < LONG_INSERTION_MIN_LENGTH && canRenderText) {
           labels.push({
             type: 'insertion',
             x: xPx + 3,

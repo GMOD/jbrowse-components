@@ -19,6 +19,11 @@
  * reads appear to "stick" at integer positions and snap when crossing boundaries.
  */
 
+import {
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+} from '../model.ts'
+
 /**
  * Split a position including its fractional part for smooth scrolling.
  *
@@ -719,7 +724,8 @@ void main() {
 
 // Insertion vertex shader - vertical bars like PileupRenderer
 // For small insertions: renders I-shape (main bar + top tick + bottom tick)
-// For large insertions (>=10bp): renders wider rectangle to contain text label
+// For large insertions (>=LONG_INSERTION_MIN_LENGTH bp): renders wider rectangle to contain text label
+// Thresholds imported from model.ts for consistency with component
 // Uses integer attributes for compact representation
 const INSERTION_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -776,22 +782,33 @@ void main() {
   // Center position in clip space
   float cxClip = (pos - u_domainX.x) / domainWidth * 2.0 - 1.0;
 
-  // Determine if this is a large insertion (>=10bp) that should show text
-  bool isLargeInsertion = a_length >= 10u && pxPerBp >= 0.1;
+  // Adaptive large insertion rendering:
+  // - When zoomed in enough to read text: show wide box for text label
+  // - When zoomed out: show small solid rectangle
+  // Threshold based on insertion width in pixels (length * pxPerBp)
+  // Uses constants from model.ts: LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX
+  bool isLongInsertion = a_length >= ${LONG_INSERTION_MIN_LENGTH}u;
+  float insertionWidthPx = len * pxPerBp;
+  bool canShowText = insertionWidthPx >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0;
+  bool isLargeInsertion = isLongInsertion && canShowText;
 
   // Calculate rectangle width in pixels
   float rectWidthPx;
   if (isLargeInsertion) {
     // Wide rectangle to contain text label
     rectWidthPx = textWidthForNumber(a_length);
+  } else if (isLongInsertion) {
+    // Long insertion but zoomed out - show small solid rectangle (2px)
+    rectWidthPx = 2.0;
   } else {
-    // Thin 1px bar
-    rectWidthPx = 1.0;
+    // Small insertion - thin bar, subpixel when zoomed out
+    // Clamp to max 1px so it doesn't become wide when zoomed in
+    rectWidthPx = min(pxPerBp, 1.0);
   }
 
   // Convert pixel width to clip space
   float onePixelClip = 2.0 / u_canvasWidth;
-  float rectWidthClip = isLargeInsertion ? rectWidthPx * 2.0 / u_canvasWidth : onePixelClip;
+  float rectWidthClip = rectWidthPx * 2.0 / u_canvasWidth;
   // Serifs: 3px wide, 1px tall lines
   float tickWidthClip = onePixelClip * 3.0;
 
@@ -815,8 +832,8 @@ void main() {
     y1 = syBot;
     y2 = syTop;
   } else if (rectIdx == 1) {
-    // Top tick (hide for large insertions, show when zoomed in enough for small)
-    if (isLargeInsertion || pxPerBp < 0.5) {
+    // Top tick (only for small insertions when zoomed in)
+    if (isLongInsertion || pxPerBp < 0.5) {
       // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
@@ -830,8 +847,8 @@ void main() {
       y2 = syTop + tickHeight;
     }
   } else {
-    // Bottom tick (hide for large insertions, show when zoomed in enough for small)
-    if (isLargeInsertion || pxPerBp < 0.5) {
+    // Bottom tick (only for small insertions when zoomed in)
+    if (isLongInsertion || pxPerBp < 0.5) {
       // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
@@ -846,12 +863,15 @@ void main() {
     }
   }
 
-  // Ensure minimum width of 1 pixel for the bar
-  float minWidth = 2.0 / u_canvasWidth;
-  if (rectIdx == 0 && sx2 - sx1 < minWidth) {
-    float mid = (sx1 + sx2) * 0.5;
-    sx1 = mid - minWidth * 0.5;
-    sx2 = mid + minWidth * 0.5;
+  // Ensure minimum width for long insertions (>=10bp) so they stay visible
+  // Small insertions can be subpixel and vanish when zoomed out
+  if (isLongInsertion && rectIdx == 0) {
+    float minWidth = 2.0 / u_canvasWidth;
+    if (sx2 - sx1 < minWidth) {
+      float mid = (sx1 + sx2) * 0.5;
+      sx1 = mid - minWidth * 0.5;
+      sx2 = mid + minWidth * 0.5;
+    }
   }
 
   float sx = mix(sx1, sx2, localX);

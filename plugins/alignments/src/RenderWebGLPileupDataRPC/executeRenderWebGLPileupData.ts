@@ -225,13 +225,14 @@ function computeSNPCoverage(
       entry = { position: mm.position, a: 0, c: 0, g: 0, t: 0 }
       snpByPosition.set(mm.position, entry)
     }
-    if (mm.base === 0) {
+    // mm.base is ASCII code: 65='A', 67='C', 71='G', 84='T'
+    if (mm.base === 65) {
       entry.a++
-    } else if (mm.base === 1) {
+    } else if (mm.base === 67) {
       entry.c++
-    } else if (mm.base === 2) {
+    } else if (mm.base === 71) {
       entry.g++
-    } else if (mm.base === 3) {
+    } else if (mm.base === 84) {
       entry.t++
     }
   }
@@ -780,7 +781,6 @@ export async function executeRenderWebGLPileupData({
   >()
 
   // Process mismatches for SNP tooltip data
-  const baseNames = ['A', 'C', 'G', 'T']
   for (const mm of mismatches) {
     if (mm.position < regionStart) {
       continue
@@ -800,7 +800,8 @@ export async function executeRenderWebGLPileupData({
       }
       tooltipData.set(posOffset, bin)
     }
-    const baseName = baseNames[mm.base] ?? 'N'
+    // mm.base is ASCII code, convert to character
+    const baseName = String.fromCharCode(mm.base)
     if (!bin.snps[baseName]) {
       bin.snps[baseName] = { count: 0, fwd: 0, rev: 0 }
     }
