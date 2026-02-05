@@ -6,6 +6,7 @@
 
 import {
   HP_GLSL_FUNCTIONS,
+  SCORE_GLSL_FUNCTIONS,
   cacheUniforms,
   createProgram,
   splitPositionWithFrac,
@@ -33,29 +34,7 @@ uniform int u_useBicolor;   // 0 = single color, 1 = bicolor
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
-
-float scoreToY(float score, vec2 domainY, float canvasHeight, int scaleType) {
-  float minScore = domainY.x;
-  float maxScore = domainY.y;
-
-  float normalizedScore;
-  if (scaleType == 1) {
-    // Log scale
-    float logMin = log2(max(minScore, 1.0));
-    float logMax = log2(max(maxScore, 1.0));
-    float logScore = log2(max(score, 1.0));
-    normalizedScore = (logScore - logMin) / (logMax - logMin);
-  } else {
-    // Linear scale
-    normalizedScore = (score - minScore) / (maxScore - minScore);
-  }
-
-  // Clamp to 0-1
-  normalizedScore = clamp(normalizedScore, 0.0, 1.0);
-
-  // Convert to pixel position (0 at top, height at bottom)
-  return (1.0 - normalizedScore) * canvasHeight;
-}
+${SCORE_GLSL_FUNCTIONS}
 
 void main() {
   int vid = gl_VertexID % 6;
@@ -71,12 +50,12 @@ void main() {
   float sx = mix(sx1, sx2, localX);
 
   // Y position based on score
-  float scoreY = scoreToY(a_score, u_domainY, u_canvasHeight, u_scaleType);
+  float scoreYPos = scoreToY(a_score, u_domainY, u_canvasHeight, u_scaleType);
   float originY = scoreToY(0.0, u_domainY, u_canvasHeight, u_scaleType);
 
   // For filled bars, draw from origin (0) to score
-  float yTop = min(scoreY, originY);
-  float yBot = max(scoreY, originY);
+  float yTop = min(scoreYPos, originY);
+  float yBot = max(scoreYPos, originY);
 
   // Convert to clip space
   float pxToClip = 2.0 / u_canvasHeight;
@@ -119,25 +98,7 @@ uniform int u_useBicolor;   // 0 = gradient, 1 = bicolor
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
-
-float normalizeScore(float score, vec2 domainY, int scaleType) {
-  float minScore = domainY.x;
-  float maxScore = domainY.y;
-
-  float normalizedScore;
-  if (scaleType == 1) {
-    // Log scale
-    float logMin = log2(max(minScore, 1.0));
-    float logMax = log2(max(maxScore, 1.0));
-    float logScore = log2(max(score, 1.0));
-    normalizedScore = (logScore - logMin) / (logMax - logMin);
-  } else {
-    // Linear scale
-    normalizedScore = (score - minScore) / (maxScore - minScore);
-  }
-
-  return clamp(normalizedScore, 0.0, 1.0);
-}
+${SCORE_GLSL_FUNCTIONS}
 
 void main() {
   int vid = gl_VertexID % 6;
@@ -153,23 +114,22 @@ void main() {
   float sx = mix(sx1, sx2, localX);
 
   // Density fills the full height
-  float pxToClip = 2.0 / u_canvasHeight;
   float sy = mix(-1.0, 1.0, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
   // Color based on normalized score
-  float normalizedScore = normalizeScore(a_score, u_domainY, u_scaleType);
+  float normScore = normalizeScore(a_score, u_domainY, u_scaleType);
 
   vec3 color;
   if (u_useBicolor == 1) {
     // Bicolor mode: two distinct colors based on pivot
     float normalizedPivot = normalizeScore(u_bicolorPivot, u_domainY, u_scaleType);
-    color = normalizedScore < normalizedPivot ? u_negColor : u_posColor;
+    color = normScore < normalizedPivot ? u_negColor : u_posColor;
   } else {
     // Gradient mode: interpolate from low (gray/white) to high (posColor)
     vec3 lowColor = vec3(0.93, 0.93, 0.93); // #eee
-    color = mix(lowColor, u_posColor, normalizedScore);
+    color = mix(lowColor, u_posColor, normScore);
   }
 
   v_color = vec4(color, 1.0);
@@ -199,26 +159,7 @@ uniform int u_useBicolor;   // 0 = single color, 1 = bicolor
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
-
-float scoreToY(float score, vec2 domainY, float canvasHeight, int scaleType) {
-  float minScore = domainY.x;
-  float maxScore = domainY.y;
-
-  float normalizedScore;
-  if (scaleType == 1) {
-    // Log scale
-    float logMin = log2(max(minScore, 1.0));
-    float logMax = log2(max(maxScore, 1.0));
-    float logScore = log2(max(score, 1.0));
-    normalizedScore = (logScore - logMin) / (logMax - logMin);
-  } else {
-    // Linear scale
-    normalizedScore = (score - minScore) / (maxScore - minScore);
-  }
-
-  normalizedScore = clamp(normalizedScore, 0.0, 1.0);
-  return (1.0 - normalizedScore) * canvasHeight;
-}
+${SCORE_GLSL_FUNCTIONS}
 
 void main() {
   // Line rendering uses 6 vertices per feature to draw a step pattern:
@@ -233,11 +174,11 @@ void main() {
   float sx1 = hpToClipX(splitStart, u_domainX);
   float sx2 = hpToClipX(splitEnd, u_domainX);
 
-  float scoreY = scoreToY(a_score, u_domainY, u_canvasHeight, u_scaleType);
+  float scoreYPos = scoreToY(a_score, u_domainY, u_canvasHeight, u_scaleType);
   float prevScoreY = scoreToY(a_prevScore, u_domainY, u_canvasHeight, u_scaleType);
 
   float pxToClip = 2.0 / u_canvasHeight;
-  float clipScoreY = 1.0 - scoreY * pxToClip;
+  float clipScoreY = 1.0 - scoreYPos * pxToClip;
   float clipPrevScoreY = 1.0 - prevScoreY * pxToClip;
 
   float sx;
@@ -530,11 +471,13 @@ export class WebGLWiggleRenderer {
     }
 
     gl.useProgram(program)
-    gl.uniform3f(uniforms.u_domainX!, domainStartHi, domainStartLo, domainExtent)
-    gl.uniform1ui(
-      uniforms.u_regionStart!,
-      Math.floor(this.buffers.regionStart),
+    gl.uniform3f(
+      uniforms.u_domainX!,
+      domainStartHi,
+      domainStartLo,
+      domainExtent,
     )
+    gl.uniform1ui(uniforms.u_regionStart!, Math.floor(this.buffers.regionStart))
     gl.uniform1f(uniforms.u_canvasHeight!, canvasHeight)
     gl.uniform2f(uniforms.u_domainY!, state.domainY[0], state.domainY[1])
     gl.uniform1i(uniforms.u_scaleType!, state.scaleType === 'log' ? 1 : 0)

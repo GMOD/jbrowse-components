@@ -8,7 +8,12 @@ import {
 } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import EqualizerIcon from '@mui/icons-material/Equalizer'
+import PaletteIcon from '@mui/icons-material/Palette'
 import { reaction } from 'mobx'
+
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util.ts'
 
 import type { WebGLWiggleDataResult } from '../RenderWebGLWiggleDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -27,6 +32,10 @@ interface Region {
 const WebGLWiggleComponent = lazy(
   () => import('./components/WebGLWiggleComponent.tsx'),
 )
+const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
+const SetColorDialog = lazy(
+  () => import('../LinearWiggleDisplay/components/SetColorDialog.tsx'),
+)
 
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -38,6 +47,8 @@ export default function stateModelFactory(
         type: types.literal('LinearWebGLWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
         colorSetting: types.maybe(types.string),
+        posColorSetting: types.maybe(types.string),
+        negColorSetting: types.maybe(types.string),
         scaleTypeSetting: types.maybe(types.string),
         minScoreSetting: types.maybe(types.number),
         maxScoreSetting: types.maybe(types.number),
@@ -65,11 +76,11 @@ export default function stateModelFactory(
       },
 
       get posColor() {
-        return getConf(self, 'posColor')
+        return self.posColorSetting ?? getConf(self, 'posColor')
       },
 
       get negColor() {
-        return getConf(self, 'negColor')
+        return self.negColorSetting ?? getConf(self, 'negColor')
       },
 
       get bicolorPivot() {
@@ -84,13 +95,21 @@ export default function stateModelFactory(
         return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
       },
 
+      get minScore() {
+        return self.minScoreSetting ?? getConf(self, 'minScore')
+      },
+
+      get maxScore() {
+        return self.maxScoreSetting ?? getConf(self, 'maxScore')
+      },
+
       get minScoreConfig() {
-        const val = self.minScoreSetting ?? getConf(self, 'minScore')
+        const val = this.minScore
         return val === Number.MIN_VALUE ? undefined : val
       },
 
       get maxScoreConfig() {
-        const val = self.maxScoreSetting ?? getConf(self, 'maxScore')
+        const val = this.maxScore
         return val === Number.MAX_VALUE ? undefined : val
       },
 
@@ -165,6 +184,27 @@ export default function stateModelFactory(
         const max = this.maxScoreConfig ?? scoreMax
         return [min, max]
       },
+
+      get ticks() {
+        const { scaleType, height } = self
+        const domain = this.domain
+        if (!domain) {
+          return undefined
+        }
+        const minimalTicks = getConf(self, 'minimalTicks')
+        const ticks = axisPropsFromTickScale(
+          getScale({
+            scaleType,
+            domain,
+            range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
+            inverted: false,
+          }),
+          4,
+        )
+        return height < 100 || minimalTicks
+          ? { ...ticks, values: domain }
+          : ticks
+      },
     }))
     .actions(self => ({
       setRpcData(data: WebGLWiggleDataResult | null) {
@@ -187,8 +227,16 @@ export default function stateModelFactory(
         self.currentDomainX = domainX
       },
 
-      setColor(color: string) {
+      setColor(color?: string) {
         self.colorSetting = color
+      },
+
+      setPosColor(color?: string) {
+        self.posColorSetting = color
+      },
+
+      setNegColor(color?: string) {
+        self.negColorSetting = color
       },
 
       setScaleType(scaleType: string) {
@@ -303,23 +351,59 @@ export default function stateModelFactory(
             ],
           },
           {
-            label: 'Scale type',
+            label: 'Score',
+            icon: EqualizerIcon,
             subMenu: [
               {
-                label: 'Linear',
+                label: 'Linear scale',
                 type: 'radio',
                 checked: self.scaleType === 'linear',
                 onClick: () => self.setScaleType('linear'),
               },
               {
-                label: 'Log',
+                label: 'Log scale',
                 type: 'radio',
                 checked: self.scaleType === 'log',
                 onClick: () => self.setScaleType('log'),
               },
+              {
+                label: 'Set min/max score',
+                onClick: () => {
+                  getSession(self).queueDialog(handleClose => [
+                    SetMinMaxDialog,
+                    {
+                      model: self,
+                      handleClose,
+                    },
+                  ])
+                },
+              },
             ],
           },
+          {
+            label: 'Color',
+            icon: PaletteIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SetColorDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
         ]
+      },
+    }))
+    .actions(self => ({
+      async renderSvg() {
+        console.log('model renderSvg action called')
+        const { renderSvg } = await import('./renderSvg.tsx')
+        console.log('model renderSvg import complete')
+        const result = await renderSvg(self)
+        console.log('model renderSvg function complete')
+        return result
       },
     }))
     .postProcessSnapshot(snap => {
@@ -329,6 +413,8 @@ export default function stateModelFactory(
       }
       const {
         colorSetting,
+        posColorSetting,
+        negColorSetting,
         scaleTypeSetting,
         minScoreSetting,
         maxScoreSetting,
@@ -338,6 +424,8 @@ export default function stateModelFactory(
       return {
         ...rest,
         ...(colorSetting !== undefined ? { colorSetting } : {}),
+        ...(posColorSetting !== undefined ? { posColorSetting } : {}),
+        ...(negColorSetting !== undefined ? { negColorSetting } : {}),
         ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),

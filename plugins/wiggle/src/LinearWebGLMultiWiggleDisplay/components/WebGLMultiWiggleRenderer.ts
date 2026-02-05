@@ -6,10 +6,23 @@
 
 import {
   HP_GLSL_FUNCTIONS,
+  SCORE_GLSL_FUNCTIONS,
   cacheUniforms,
   createProgram,
   splitPositionWithFrac,
 } from '../../shared/webglUtils.ts'
+
+// Common row calculation GLSL - used by all multi-wiggle shaders
+const ROW_GLSL_FUNCTIONS = `
+float getRowHeight(float canvasHeight, float numRows, float rowPadding) {
+  float totalPadding = rowPadding * (numRows - 1.0);
+  return (canvasHeight - totalPadding) / numRows;
+}
+
+float getRowTop(float rowIndex, float rowHeight, float rowPadding) {
+  return rowIndex * (rowHeight + rowPadding);
+}
+`
 
 // Vertex shader for multi-wiggle XY plot (bars)
 const MULTI_XYPLOT_VERTEX_SHADER = `#version 300 es
@@ -32,29 +45,8 @@ uniform float u_rowPadding; // padding between rows in pixels
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
-
-float scoreToY(float score, vec2 domainY, float rowHeight, int scaleType) {
-  float minScore = domainY.x;
-  float maxScore = domainY.y;
-
-  float normalizedScore;
-  if (scaleType == 1) {
-    // Log scale
-    float logMin = log2(max(minScore, 1.0));
-    float logMax = log2(max(maxScore, 1.0));
-    float logScore = log2(max(score, 1.0));
-    normalizedScore = (logScore - logMin) / (logMax - logMin);
-  } else {
-    // Linear scale
-    normalizedScore = (score - minScore) / (maxScore - minScore);
-  }
-
-  // Clamp to 0-1
-  normalizedScore = clamp(normalizedScore, 0.0, 1.0);
-
-  // Convert to pixel position within row (0 at top, rowHeight at bottom)
-  return (1.0 - normalizedScore) * rowHeight;
-}
+${SCORE_GLSL_FUNCTIONS}
+${ROW_GLSL_FUNCTIONS}
 
 void main() {
   int vid = gl_VertexID % 6;
@@ -70,17 +62,16 @@ void main() {
   float sx = mix(sx1, sx2, localX);
 
   // Calculate row dimensions
-  float totalPadding = u_rowPadding * (u_numRows - 1.0);
-  float rowHeight = (u_canvasHeight - totalPadding) / u_numRows;
-  float rowTop = a_rowIndex * (rowHeight + u_rowPadding);
+  float rowHeight = getRowHeight(u_canvasHeight, u_numRows, u_rowPadding);
+  float rowTop = getRowTop(a_rowIndex, rowHeight, u_rowPadding);
 
   // Y position based on score within the row
-  float scoreY = scoreToY(a_score, u_domainY, rowHeight, u_scaleType);
+  float scoreYPos = scoreToY(a_score, u_domainY, rowHeight, u_scaleType);
   float originY = scoreToY(0.0, u_domainY, rowHeight, u_scaleType);
 
   // For filled bars, draw from origin (0) to score
-  float yTop = min(scoreY, originY);
-  float yBot = max(scoreY, originY);
+  float yTop = min(scoreYPos, originY);
+  float yBot = max(scoreYPos, originY);
 
   // Add row offset
   yTop += rowTop;
@@ -118,25 +109,8 @@ uniform float u_rowPadding; // padding between rows in pixels
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
-
-float normalizeScore(float score, vec2 domainY, int scaleType) {
-  float minScore = domainY.x;
-  float maxScore = domainY.y;
-
-  float normalizedScore;
-  if (scaleType == 1) {
-    // Log scale
-    float logMin = log2(max(minScore, 1.0));
-    float logMax = log2(max(maxScore, 1.0));
-    float logScore = log2(max(score, 1.0));
-    normalizedScore = (logScore - logMin) / (logMax - logMin);
-  } else {
-    // Linear scale
-    normalizedScore = (score - minScore) / (maxScore - minScore);
-  }
-
-  return clamp(normalizedScore, 0.0, 1.0);
-}
+${SCORE_GLSL_FUNCTIONS}
+${ROW_GLSL_FUNCTIONS}
 
 void main() {
   int vid = gl_VertexID % 6;
@@ -152,9 +126,8 @@ void main() {
   float sx = mix(sx1, sx2, localX);
 
   // Calculate row dimensions
-  float totalPadding = u_rowPadding * (u_numRows - 1.0);
-  float rowHeight = (u_canvasHeight - totalPadding) / u_numRows;
-  float rowTop = a_rowIndex * (rowHeight + u_rowPadding);
+  float rowHeight = getRowHeight(u_canvasHeight, u_numRows, u_rowPadding);
+  float rowTop = getRowTop(a_rowIndex, rowHeight, u_rowPadding);
   float rowBot = rowTop + rowHeight;
 
   // Density fills the full row height
@@ -166,9 +139,9 @@ void main() {
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
   // Color based on normalized score - interpolate from gray to source color
-  float normalizedScore = normalizeScore(a_score, u_domainY, u_scaleType);
+  float normScore = normalizeScore(a_score, u_domainY, u_scaleType);
   vec3 lowColor = vec3(0.93, 0.93, 0.93); // #eee
-  vec3 color = mix(lowColor, a_color, normalizedScore);
+  vec3 color = mix(lowColor, a_color, normScore);
 
   v_color = vec4(color, 1.0);
 }
@@ -196,26 +169,8 @@ uniform float u_rowPadding; // padding between rows in pixels
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
-
-float scoreToY(float score, vec2 domainY, float rowHeight, int scaleType) {
-  float minScore = domainY.x;
-  float maxScore = domainY.y;
-
-  float normalizedScore;
-  if (scaleType == 1) {
-    // Log scale
-    float logMin = log2(max(minScore, 1.0));
-    float logMax = log2(max(maxScore, 1.0));
-    float logScore = log2(max(score, 1.0));
-    normalizedScore = (logScore - logMin) / (logMax - logMin);
-  } else {
-    // Linear scale
-    normalizedScore = (score - minScore) / (maxScore - minScore);
-  }
-
-  normalizedScore = clamp(normalizedScore, 0.0, 1.0);
-  return (1.0 - normalizedScore) * rowHeight;
-}
+${SCORE_GLSL_FUNCTIONS}
+${ROW_GLSL_FUNCTIONS}
 
 void main() {
   int vid = gl_VertexID % 6;
@@ -228,15 +183,14 @@ void main() {
   float sx2 = hpToClipX(splitEnd, u_domainX);
 
   // Calculate row dimensions
-  float totalPadding = u_rowPadding * (u_numRows - 1.0);
-  float rowHeight = (u_canvasHeight - totalPadding) / u_numRows;
-  float rowTop = a_rowIndex * (rowHeight + u_rowPadding);
+  float rowHeight = getRowHeight(u_canvasHeight, u_numRows, u_rowPadding);
+  float rowTop = getRowTop(a_rowIndex, rowHeight, u_rowPadding);
 
-  float scoreY = scoreToY(a_score, u_domainY, rowHeight, u_scaleType) + rowTop;
+  float scoreYPos = scoreToY(a_score, u_domainY, rowHeight, u_scaleType) + rowTop;
   float prevScoreY = scoreToY(a_prevScore, u_domainY, rowHeight, u_scaleType) + rowTop;
 
   float pxToClip = 2.0 / u_canvasHeight;
-  float clipScoreY = 1.0 - scoreY * pxToClip;
+  float clipScoreY = 1.0 - scoreYPos * pxToClip;
   float clipPrevScoreY = 1.0 - prevScoreY * pxToClip;
 
   float sx;
@@ -277,7 +231,10 @@ void main() {
 }
 `
 
-export type MultiRenderingType = 'multirowxy' | 'multirowdensity' | 'multirowline'
+export type MultiRenderingType =
+  | 'multirowxy'
+  | 'multirowdensity'
+  | 'multirowline'
 
 export interface SourceRenderData {
   featurePositions: Uint32Array
@@ -529,10 +486,7 @@ export class WebGLMultiWiggleRenderer {
       domainStartLo,
       domainExtent,
     )
-    gl.uniform1ui(
-      uniforms.u_regionStart!,
-      Math.floor(this.buffers.regionStart),
-    )
+    gl.uniform1ui(uniforms.u_regionStart!, Math.floor(this.buffers.regionStart))
     gl.uniform1f(uniforms.u_canvasHeight!, canvasHeight)
     gl.uniform2f(uniforms.u_domainY!, state.domainY[0], state.domainY[1])
     gl.uniform1i(uniforms.u_scaleType!, state.scaleType === 'log' ? 1 : 0)
@@ -544,12 +498,7 @@ export class WebGLMultiWiggleRenderer {
     if (renderingType === 'multirowline') {
       gl.drawArraysInstanced(gl.LINES, 0, 6, this.buffers.totalFeatureCount)
     } else {
-      gl.drawArraysInstanced(
-        gl.TRIANGLES,
-        0,
-        6,
-        this.buffers.totalFeatureCount,
-      )
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.totalFeatureCount)
     }
 
     gl.bindVertexArray(null)

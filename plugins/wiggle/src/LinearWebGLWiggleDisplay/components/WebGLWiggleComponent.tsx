@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import {
+  getContainingTrack,
+  getContainingView,
+  measureText,
+} from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
 import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
@@ -174,6 +180,8 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
 
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const height = model.height
+  const { trackLabels } = view
+  const track = getContainingTrack(model)
 
   if (error) {
     return (
@@ -210,6 +218,23 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
       />
+      {model.ticks ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left:
+              trackLabels === 'overlapping'
+                ? measureText(getConf(track, 'name'), 12.8) + 100
+                : 50,
+            pointerEvents: 'none',
+            height,
+            width: 50,
+          }}
+        >
+          <YScaleBar model={model} />
+        </svg>
+      ) : null}
       {model.isLoading ? (
         <div
           style={{

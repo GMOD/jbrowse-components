@@ -24,6 +24,34 @@ float hpToClipX(vec2 splitPos, vec3 domain) {
 }
 `
 
+// Common score normalization functions for wiggle shaders
+export const SCORE_GLSL_FUNCTIONS = `
+float normalizeScore(float score, vec2 domainY, int scaleType) {
+  float minScore = domainY.x;
+  float maxScore = domainY.y;
+
+  float normalizedScore;
+  if (scaleType == 1) {
+    // Log scale
+    float logMin = log2(max(minScore, 1.0));
+    float logMax = log2(max(maxScore, 1.0));
+    float logScore = log2(max(score, 1.0));
+    normalizedScore = (logScore - logMin) / (logMax - logMin);
+  } else {
+    // Linear scale
+    normalizedScore = (score - minScore) / (maxScore - minScore);
+  }
+
+  return clamp(normalizedScore, 0.0, 1.0);
+}
+
+float scoreToY(float score, vec2 domainY, float height, int scaleType) {
+  float normalizedScore = normalizeScore(score, domainY, scaleType);
+  // Convert to pixel position (0 at top, height at bottom)
+  return (1.0 - normalizedScore) * height;
+}
+`
+
 /**
  * Split a position value into high and low parts for high-precision shader math.
  * This prevents floating-point precision loss when dealing with large genomic coordinates.

@@ -6,7 +6,9 @@ import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default function LinearWebGLWiggleDisplayF(pluginManager: PluginManager) {
+export default function LinearWebGLWiggleDisplayF(
+  pluginManager: PluginManager,
+) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory
     return new DisplayType({

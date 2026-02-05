@@ -8,7 +8,11 @@ import {
 } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import EqualizerIcon from '@mui/icons-material/Equalizer'
 import { reaction } from 'mobx'
+
+import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
+import { getScale, YSCALEBAR_LABEL_OFFSET } from '../util.ts'
 
 import type { WebGLMultiWiggleDataResult } from '../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -32,6 +36,7 @@ interface SourceInfo {
 const WebGLMultiWiggleComponent = lazy(
   () => import('./components/WebGLMultiWiggleComponent.tsx'),
 )
+const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
 
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -73,13 +78,21 @@ export default function stateModelFactory(
         return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
       },
 
+      get minScore() {
+        return self.minScoreSetting ?? getConf(self, 'minScore')
+      },
+
+      get maxScore() {
+        return self.maxScoreSetting ?? getConf(self, 'maxScore')
+      },
+
       get minScoreConfig() {
-        const val = self.minScoreSetting ?? getConf(self, 'minScore')
+        const val = this.minScore
         return val === Number.MIN_VALUE ? undefined : val
       },
 
       get maxScoreConfig() {
-        const val = self.maxScoreSetting ?? getConf(self, 'maxScore')
+        const val = this.maxScore
         return val === Number.MAX_VALUE ? undefined : val
       },
 
@@ -157,6 +170,27 @@ export default function stateModelFactory(
 
       get numSources() {
         return self.rpcData?.sources.length ?? 0
+      },
+
+      get ticks() {
+        const { scaleType, height } = self
+        const domain = this.domain
+        if (!domain) {
+          return undefined
+        }
+        const minimalTicks = getConf(self, 'minimalTicks')
+        const ticks = axisPropsFromTickScale(
+          getScale({
+            scaleType,
+            domain,
+            range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
+            inverted: false,
+          }),
+          4,
+        )
+        return height < 100 || minimalTicks
+          ? { ...ticks, values: domain }
+          : ticks
       },
     }))
     .actions(self => ({
@@ -298,23 +332,46 @@ export default function stateModelFactory(
             ],
           },
           {
-            label: 'Scale type',
+            label: 'Score',
+            icon: EqualizerIcon,
             subMenu: [
               {
-                label: 'Linear',
+                label: 'Linear scale',
                 type: 'radio',
                 checked: self.scaleType === 'linear',
                 onClick: () => self.setScaleType('linear'),
               },
               {
-                label: 'Log',
+                label: 'Log scale',
                 type: 'radio',
                 checked: self.scaleType === 'log',
                 onClick: () => self.setScaleType('log'),
               },
+              {
+                label: 'Set min/max score',
+                onClick: () => {
+                  getSession(self).queueDialog(handleClose => [
+                    SetMinMaxDialog,
+                    {
+                      model: self,
+                      handleClose,
+                    },
+                  ])
+                },
+              },
             ],
           },
         ]
+      },
+    }))
+    .actions(self => ({
+      async renderSvg() {
+        console.log('multi model renderSvg action called')
+        const { renderSvg } = await import('./renderSvg.tsx')
+        console.log('multi model renderSvg import complete')
+        const result = await renderSvg(self)
+        console.log('multi model renderSvg function complete')
+        return result
       },
     }))
     .postProcessSnapshot(snap => {

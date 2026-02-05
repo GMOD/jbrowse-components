@@ -37,9 +37,8 @@ export default class RenderWebGLWiggleData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLWiggleData } = await import(
-      './executeRenderWebGLWiggleData.ts'
-    )
+    const { executeRenderWebGLWiggleData } =
+      await import('./executeRenderWebGLWiggleData.ts')
     return executeRenderWebGLWiggleData({
       pluginManager: this.pluginManager,
       args: args as unknown as RenderWebGLWiggleDataArgs,
