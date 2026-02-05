@@ -12,6 +12,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { fillColor } from '../../shared/color.ts'
+import { getContrastBaseMap } from '../../shared/util.ts'
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
@@ -72,6 +73,7 @@ function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     // Indel/clip colors from theme
     colorInsertion: parseColorToRGB(palette.insertion),
     colorDeletion: parseColorToRGB(palette.deletion),
+    colorSkip: parseColorToRGB(palette.skip),
     colorSoftclip: parseColorToRGB(palette.softclip),
     colorHardclip: parseColorToRGB(palette.hardclip),
     // Coverage color (light grey)
@@ -94,6 +96,7 @@ type CigarItemType =
   | 'mismatch'
   | 'insertion'
   | 'deletion'
+  | 'skip'
   | 'softclip'
   | 'hardclip'
 
@@ -246,6 +249,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     () => buildColorPaletteFromTheme(theme),
     [theme],
   )
+
+  const contrastMap = useMemo(() => getContrastBaseMap(theme), [theme])
 
   const {
     rpcData,
@@ -594,6 +599,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     rendererRef.current.uploadCigarFromTypedArrays({
       gapPositions: rpcData.gapPositions,
       gapYs: rpcData.gapYs,
+      gapTypes: rpcData.gapTypes,
       numGaps: rpcData.numGaps,
       mismatchPositions: rpcData.mismatchPositions,
       mismatchYs: rpcData.mismatchYs,
@@ -1152,6 +1158,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       }
 
       // Check gaps (deletions/skips - have start and end)
+      const { gapTypes } = rpcData
       for (let i = 0; i < numGaps; i++) {
         const y = gapYs[i]
         if (y !== row) {
@@ -1165,8 +1172,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           posOffset >= startPos &&
           posOffset <= endPos
         ) {
+          // gapTypes: 0 = deletion, 1 = skip
+          const gapType = gapTypes?.[i]
           return {
-            type: 'deletion',
+            type: gapType === 1 ? 'skip' : 'deletion',
             index: i,
             position: regionStart + startPos,
             length: endPos - startPos,
@@ -1589,12 +1598,17 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
             tooltipText = `SNP: ${cigarHit.base} at ${pos}`
             break
           case 'insertion':
-            tooltipText = cigarHit.sequence
-              ? `Insertion (${cigarHit.length}bp): ${cigarHit.sequence} at ${pos}`
-              : `Insertion (${cigarHit.length}bp) at ${pos}`
+            // Only show sequence in tooltip if it's short (<=20bp)
+            tooltipText =
+              cigarHit.sequence && cigarHit.sequence.length <= 20
+                ? `Insertion (${cigarHit.length}bp): ${cigarHit.sequence} at ${pos}`
+                : `Insertion (${cigarHit.length}bp) at ${pos}`
             break
           case 'deletion':
             tooltipText = `Deletion (${cigarHit.length}bp) at ${pos}`
+            break
+          case 'skip':
+            tooltipText = `Skip/Intron (${cigarHit.length}bp) at ${pos}`
             break
           case 'softclip':
             tooltipText = `Soft clip (${cigarHit.length}bp) at ${pos}`
@@ -1692,6 +1706,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
             mismatch: 'SNP/Mismatch',
             insertion: 'Insertion',
             deletion: 'Deletion',
+            skip: 'Skip (Intron)',
             softclip: 'Soft Clip',
             hardclip: 'Hard Clip',
           }
@@ -1720,6 +1735,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           } else if (cigarHit.type === 'deletion') {
             featureData.length = cigarHit.length
             featureData.description = `${cigarHit.length}bp deletion`
+          } else if (cigarHit.type === 'skip') {
+            featureData.length = cigarHit.length
+            featureData.description = `${cigarHit.length}bp skip (intron)`
           } else if (cigarHit.type === 'softclip') {
             featureData.length = cigarHit.length
             featureData.description = `${cigarHit.length}bp soft clip`
@@ -1826,10 +1844,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Get visible range for label computation (triggers re-render on view change)
   const labelBpRange = getVisibleBpRange()
 
-  // Compute visible deletion and insertion labels
+  // Compute visible deletion, insertion, softclip, hardclip, and mismatch labels
   const visibleLabels = useMemo(() => {
     const labels: {
-      type: 'deletion' | 'insertion'
+      type: 'deletion' | 'insertion' | 'softclip' | 'hardclip' | 'mismatch'
       x: number
       y: number
       text: string
@@ -1848,6 +1866,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     const bpRange = labelBpRange
 
     const bpPerPx = (bpRange[1] - bpRange[0]) / width
+    const pxPerBp = 1 / bpPerPx
+    const charWidth = 6.5
+    const canRenderText = pxPerBp >= charWidth
     const rowHeight = featureHeight + featureSpacing
     const rangeY = rangeYRef.current
     const pileupYOffset = showCoverage ? coverageHeight : 0
@@ -1908,7 +1929,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       }
     }
 
-    // Process insertions - only show labels for large insertions (>=10bp)
+    // Process insertions
     const { insertionPositions, insertionYs, insertionLengths, numInsertions } =
       rpcData
     if (insertionPositions && insertionYs && insertionLengths) {
@@ -1916,11 +1937,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const posOffset = insertionPositions[i]!
         const length = insertionLengths[i]!
         const y = insertionYs[i]!
-
-        // Only show labels for large insertions (>=10bp)
-        if (length < 10) {
-          continue
-        }
 
         // Convert to genomic coordinate
         const pos = regionStart + posOffset
@@ -1942,12 +1958,141 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           continue
         }
 
+        // Large insertions (>=10bp) show just the number in a wide box
+        // Small insertions show "(length)" when zoomed in enough
+        if (length >= 10) {
+          labels.push({
+            type: 'insertion',
+            x: xPx,
+            y: yPx,
+            text: String(length),
+            width: 0,
+          })
+        } else if (canRenderText) {
+          labels.push({
+            type: 'insertion',
+            x: xPx + 3,
+            y: yPx,
+            text: `(${length})`,
+            width: 0,
+          })
+        }
+      }
+    }
+
+    // Process soft clips
+    const {
+      softclipPositions,
+      softclipYs,
+      softclipLengths,
+      numSoftclips,
+    } = rpcData
+    if (softclipPositions && softclipYs && softclipLengths && canRenderText) {
+      for (let i = 0; i < numSoftclips; i++) {
+        const posOffset = softclipPositions[i]!
+        const length = softclipLengths[i]!
+        const y = softclipYs[i]!
+
+        const pos = regionStart + posOffset
+
+        if (pos < bpRange[0] || pos > bpRange[1]) {
+          continue
+        }
+
+        const xPx = (pos - bpRange[0]) / bpPerPx
+        const yPx =
+          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+
+        if (yPx < pileupYOffset || yPx > height) {
+          continue
+        }
+
         labels.push({
-          type: 'insertion',
+          type: 'softclip',
           x: xPx,
           y: yPx,
-          text: String(length),
-          width: 0, // Insertions are point features
+          text: `(S${length})`,
+          width: 0,
+        })
+      }
+    }
+
+    // Process hard clips
+    const {
+      hardclipPositions,
+      hardclipYs,
+      hardclipLengths,
+      numHardclips,
+    } = rpcData
+    if (hardclipPositions && hardclipYs && hardclipLengths && canRenderText) {
+      for (let i = 0; i < numHardclips; i++) {
+        const posOffset = hardclipPositions[i]!
+        const length = hardclipLengths[i]!
+        const y = hardclipYs[i]!
+
+        const pos = regionStart + posOffset
+
+        if (pos < bpRange[0] || pos > bpRange[1]) {
+          continue
+        }
+
+        const xPx = (pos - bpRange[0]) / bpPerPx
+        const yPx =
+          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+
+        if (yPx < pileupYOffset || yPx > height) {
+          continue
+        }
+
+        labels.push({
+          type: 'hardclip',
+          x: xPx,
+          y: yPx,
+          text: `(H${length})`,
+          width: 0,
+        })
+      }
+    }
+
+    // Process mismatches - show base letter when zoomed in enough
+    const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
+      rpcData
+    const baseNames = ['A', 'C', 'G', 'T']
+    if (
+      mismatchPositions &&
+      mismatchYs &&
+      mismatchBases &&
+      canRenderText
+    ) {
+      for (let i = 0; i < numMismatches; i++) {
+        const posOffset = mismatchPositions[i]!
+        const baseCode = mismatchBases[i]!
+        const y = mismatchYs[i]!
+
+        const pos = regionStart + posOffset
+
+        if (pos < bpRange[0] || pos + 1 > bpRange[1]) {
+          continue
+        }
+
+        // Center text in the 1bp mismatch rectangle
+        const startPx = (pos - bpRange[0]) / bpPerPx
+        const endPx = (pos + 1 - bpRange[0]) / bpPerPx
+        const xPx = (startPx + endPx) / 2
+
+        const yPx =
+          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+
+        if (yPx < pileupYOffset || yPx > height) {
+          continue
+        }
+
+        labels.push({
+          type: 'mismatch',
+          x: xPx,
+          y: yPx,
+          text: baseNames[baseCode] ?? '?',
+          width: endPx - startPx,
         })
       }
     }
@@ -2009,22 +2154,40 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
             overflow: 'hidden',
           }}
         >
-          {visibleLabels.map((label, i) => (
-            <text
-              // eslint-disable-next-line react/no-array-index-key
-              key={`${label.type}-${i}`}
-              x={label.x}
-              y={label.y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={10}
-              fontFamily="sans-serif"
-              fontWeight="bold"
-              fill={label.type === 'deletion' ? '#000' : '#fff'}
-            >
-              {label.text}
-            </text>
-          ))}
+          {visibleLabels.map((label, i) => {
+            const isSmallInterbase =
+              (label.type === 'insertion' ||
+                label.type === 'softclip' ||
+                label.type === 'hardclip') &&
+              label.text.startsWith('(')
+            const interbaseColorMap: Record<string, string> = {
+              insertion: '#800080',
+              softclip: '#0000ff',
+              hardclip: '#ff0000',
+            }
+            let fillColor = '#fff'
+            if (isSmallInterbase) {
+              fillColor = interbaseColorMap[label.type] ?? '#800080'
+            } else if (label.type === 'mismatch') {
+              fillColor = contrastMap[label.text] ?? '#fff'
+            }
+            return (
+              <text
+                // eslint-disable-next-line react/no-array-index-key
+                key={`${label.type}-${i}`}
+                x={label.x}
+                y={label.y}
+                textAnchor={isSmallInterbase ? 'start' : 'middle'}
+                dominantBaseline="central"
+                fontSize={label.type === 'mismatch' ? 9 : 10}
+                fontFamily="sans-serif"
+                fontWeight="bold"
+                fill={fillColor}
+              >
+                {label.text}
+              </text>
+            )
+          })}
         </svg>
       ) : null}
 

@@ -571,11 +571,7 @@ export async function executeRenderWebGLPileupData({
                 featureId,
                 position: featureStart + mm.start,
                 length: mm.insertlen,
-                // Only store short sequences to minimize data
-                sequence:
-                  mm.insertedBases && mm.insertedBases.length <= 20
-                    ? mm.insertedBases
-                    : undefined,
+                sequence: mm.insertedBases,
               })
             } else if (mm.type === 'softclip') {
               softclipsData.push({

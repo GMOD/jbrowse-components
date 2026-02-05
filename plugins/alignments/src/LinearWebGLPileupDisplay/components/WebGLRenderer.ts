@@ -571,7 +571,8 @@ void main() {
 }
 `
 
-// Gap (deletion/skip) vertex shader - grey rectangles over reads
+// Gap (deletion/skip) vertex shader - colored rectangles over reads
+// Deletions are grey (#808080), skips are teal/blue (#97b8c9)
 // Uses integer attributes for compact representation
 const GAP_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -579,6 +580,7 @@ precision highp int;
 
 in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in uint a_y;          // pileup row
+in uint a_type;       // 0=deletion, 1=skip
 
 uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
 uniform vec2 u_rangeY;
@@ -586,6 +588,10 @@ uniform float u_featureHeight;
 uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
+uniform vec3 u_colorDeletion;
+uniform vec3 u_colorSkip;
+
+out vec4 v_color;
 
 void main() {
   int vid = gl_VertexID % 6;
@@ -610,15 +616,18 @@ void main() {
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
+
+  // Select color based on gap type
+  v_color = a_type == 0u ? vec4(u_colorDeletion, 1.0) : vec4(u_colorSkip, 1.0);
 }
 `
 
 const GAP_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
-uniform vec3 u_colorDeletion;
+in vec4 v_color;
 out vec4 fragColor;
 void main() {
-  fragColor = vec4(u_colorDeletion, 1.0);  // Grey for deletion (#808080)
+  fragColor = v_color;
 }
 `
 
@@ -765,13 +774,15 @@ void main() {
     // Wide rectangle to contain text label
     rectWidthPx = textWidthForNumber(a_length);
   } else {
-    // Thin bar (1-2 pixels)
-    rectWidthPx = max(1.0, min(1.2, pxPerBp));
+    // Thin 1px bar
+    rectWidthPx = 1.0;
   }
 
   // Convert pixel width to clip space
-  float rectWidthClip = rectWidthPx * 2.0 / u_canvasWidth;
-  float tickWidthClip = rectWidthClip * 1.5;
+  float onePixelClip = 2.0 / u_canvasWidth;
+  float rectWidthClip = isLargeInsertion ? rectWidthPx * 2.0 / u_canvasWidth : onePixelClip;
+  // Serifs: 3px wide, 1px tall lines
+  float tickWidthClip = onePixelClip * 3.0;
 
   // Calculate Y position in pixels (constant height per row)
   float y = float(a_y);
@@ -793,8 +804,8 @@ void main() {
     y1 = syBot;
     y2 = syTop;
   } else if (rectIdx == 1) {
-    // Top tick (hide for large insertions, only show when zoomed in for small)
-    if (isLargeInsertion || pxPerBp < 6.0) {
+    // Top tick (hide for large insertions, show when zoomed in enough for small)
+    if (isLargeInsertion || pxPerBp < 0.5) {
       // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
@@ -808,8 +819,8 @@ void main() {
       y2 = syTop + tickHeight;
     }
   } else {
-    // Bottom tick (hide for large insertions, only show when zoomed in for small)
-    if (isLargeInsertion || pxPerBp < 6.0) {
+    // Bottom tick (hide for large insertions, show when zoomed in enough for small)
+    if (isLargeInsertion || pxPerBp < 0.5) {
       // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
@@ -1024,6 +1035,7 @@ export interface ColorPalette {
   // Theme colors for indels/clips
   colorInsertion: RGBColor // purple (#800080)
   colorDeletion: RGBColor // grey (#808080)
+  colorSkip: RGBColor // teal/blue (#97b8c9)
   colorSoftclip: RGBColor // blue (#00f)
   colorHardclip: RGBColor // red (#f00)
   // Coverage color
@@ -1048,6 +1060,7 @@ export const defaultColorPalette: ColorPalette = {
   // Indel/clip colors (theme)
   colorInsertion: [0.502, 0.0, 0.502], // purple (#800080)
   colorDeletion: [0.502, 0.502, 0.502], // grey (#808080)
+  colorSkip: [0.592, 0.722, 0.788], // teal/blue (#97b8c9)
   colorSoftclip: [0.0, 0.0, 1.0], // blue (#00f)
   colorHardclip: [1.0, 0.0, 0.0], // red (#f00)
   // Coverage color
@@ -1301,27 +1314,24 @@ export class WebGLRenderer {
     this.cacheUniforms(this.gapProgram, this.gapUniforms, [
       ...cigarUniforms,
       'u_colorDeletion',
+      'u_colorSkip',
     ])
-    this.cacheUniforms(
-      this.mismatchProgram,
-      this.mismatchUniforms,
-      [...cigarUniformsWithWidth, ...baseColorUniforms],
-    )
-    this.cacheUniforms(
-      this.insertionProgram,
-      this.insertionUniforms,
-      [...cigarUniformsWithWidth, 'u_colorInsertion'],
-    )
-    this.cacheUniforms(
-      this.softclipProgram,
-      this.softclipUniforms,
-      [...cigarUniformsWithWidth, 'u_colorSoftclip'],
-    )
-    this.cacheUniforms(
-      this.hardclipProgram,
-      this.hardclipUniforms,
-      [...cigarUniformsWithWidth, 'u_colorHardclip'],
-    )
+    this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [
+      ...cigarUniformsWithWidth,
+      ...baseColorUniforms,
+    ])
+    this.cacheUniforms(this.insertionProgram, this.insertionUniforms, [
+      ...cigarUniformsWithWidth,
+      'u_colorInsertion',
+    ])
+    this.cacheUniforms(this.softclipProgram, this.softclipUniforms, [
+      ...cigarUniformsWithWidth,
+      'u_colorSoftclip',
+    ])
+    this.cacheUniforms(this.hardclipProgram, this.hardclipUniforms, [
+      ...cigarUniformsWithWidth,
+      'u_colorHardclip',
+    ])
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -1489,6 +1499,7 @@ export class WebGLRenderer {
   uploadCigarFromTypedArrays(data: {
     gapPositions: Uint32Array
     gapYs: Uint16Array
+    gapTypes: Uint8Array
     numGaps: number
     mismatchPositions: Uint32Array
     mismatchYs: Uint16Array
@@ -1541,6 +1552,7 @@ export class WebGLRenderer {
       gl.bindVertexArray(gapVAO)
       this.uploadUintBuffer(this.gapProgram, 'a_position', data.gapPositions, 2)
       this.uploadUint16Buffer(this.gapProgram, 'a_y', data.gapYs, 1)
+      this.uploadUint8Buffer(this.gapProgram, 'a_type', data.gapTypes, 1)
       gl.bindVertexArray(null)
 
       this.buffers.gapVAO = gapVAO
@@ -2007,10 +2019,22 @@ export class WebGLRenderer {
         gl.uniform1f(this.snpCoverageUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvasWidth)
         // Base color uniforms from theme
-        gl.uniform3f(this.snpCoverageUniforms.u_colorBaseA!, ...colors.colorBaseA)
-        gl.uniform3f(this.snpCoverageUniforms.u_colorBaseC!, ...colors.colorBaseC)
-        gl.uniform3f(this.snpCoverageUniforms.u_colorBaseG!, ...colors.colorBaseG)
-        gl.uniform3f(this.snpCoverageUniforms.u_colorBaseT!, ...colors.colorBaseT)
+        gl.uniform3f(
+          this.snpCoverageUniforms.u_colorBaseA!,
+          ...colors.colorBaseA,
+        )
+        gl.uniform3f(
+          this.snpCoverageUniforms.u_colorBaseC!,
+          ...colors.colorBaseC,
+        )
+        gl.uniform3f(
+          this.snpCoverageUniforms.u_colorBaseG!,
+          ...colors.colorBaseG,
+        )
+        gl.uniform3f(
+          this.snpCoverageUniforms.u_colorBaseT!,
+          ...colors.colorBaseT,
+        )
 
         gl.bindVertexArray(this.buffers.snpCoverageVAO)
         gl.drawArraysInstanced(
@@ -2171,6 +2195,12 @@ export class WebGLRenderer {
           colors.colorDeletion[0],
           colors.colorDeletion[1],
           colors.colorDeletion[2],
+        )
+        gl.uniform3f(
+          this.gapUniforms.u_colorSkip!,
+          colors.colorSkip[0],
+          colors.colorSkip[1],
+          colors.colorSkip[2],
         )
 
         gl.bindVertexArray(this.buffers.gapVAO)
