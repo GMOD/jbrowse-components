@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { fillColor } from '../../shared/color.ts'
+import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
@@ -65,6 +71,7 @@ function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorBaseT: parseColorToRGB(palette.bases.T.main),
     // Indel/clip colors from theme
     colorInsertion: parseColorToRGB(palette.insertion),
+    colorDeletion: parseColorToRGB(palette.deletion),
     colorSoftclip: parseColorToRGB(palette.softclip),
     colorHardclip: parseColorToRGB(palette.hardclip),
     // Coverage color (light grey)
@@ -166,8 +173,6 @@ const DEBUG = false
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-console, @typescript-eslint/no-confusing-void-expression
 const log = (...args: unknown[]) => DEBUG && console.log('[WebGL]', ...args)
 
-// Offset for coverage Y scalebar labels (matches wiggle's YSCALEBAR_LABEL_OFFSET)
-const COVERAGE_Y_OFFSET = 5
 const renderCountRef = { current: 0 }
 const wheelCountRef = { current: 0 }
 const immediateRenderCountRef = { current: 0 }
@@ -196,6 +201,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   const selectedFeatureIndexRef = useRef<number>(-1)
   // Track if over a CIGAR item for cursor
   const [overCigarItem, setOverCigarItem] = useState(false)
+  // Track hover state for resize handle
+  const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
 
   const [maxY, setMaxY] = useState(0)
   const [rendererReady, setRendererReady] = useState(false)
@@ -334,7 +341,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         featureSpacing,
         showCoverage,
         coverageHeight,
-        coverageYOffset: COVERAGE_Y_OFFSET,
+        coverageYOffset: YSCALEBAR_LABEL_OFFSET,
         showMismatches,
         showInterbaseCounts,
         showInterbaseIndicators,
@@ -1665,6 +1672,81 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       const canvasX = e.clientX - rect.left
       const canvasY = e.clientY - rect.top
 
+      // Check for CIGAR item clicks first (they're on top)
+      const cigarHit = hitTestCigarItem(canvasX, canvasY)
+      if (cigarHit) {
+        // Also get the feature hit to find the read ID
+        const featureHit = hitTestFeature(canvasX, canvasY)
+        const refName = model.loadedRegion?.refName ?? ''
+
+        // Set selected feature for outline
+        if (featureHit) {
+          selectedFeatureIndexRef.current = featureHit.index
+          renderNowRef.current()
+        }
+
+        // Open widget with CIGAR item details
+        const session = getSession(model)
+        if (isSessionModelWithWidgets(session)) {
+          const typeLabels: Record<string, string> = {
+            mismatch: 'SNP/Mismatch',
+            insertion: 'Insertion',
+            deletion: 'Deletion',
+            softclip: 'Soft Clip',
+            hardclip: 'Hard Clip',
+          }
+
+          const featureData: Record<string, unknown> = {
+            uniqueId: `${cigarHit.type}-${refName}-${cigarHit.position}`,
+            name: typeLabels[cigarHit.type] ?? cigarHit.type,
+            type: cigarHit.type,
+            refName,
+            start: cigarHit.position,
+            end: cigarHit.position + (cigarHit.length ?? 1),
+          }
+
+          // Add type-specific fields
+          if (cigarHit.type === 'mismatch' && cigarHit.base) {
+            featureData.base = cigarHit.base
+            featureData.description = `${cigarHit.base} at ${refName}:${cigarHit.position.toLocaleString()}`
+          } else if (cigarHit.type === 'insertion') {
+            featureData.length = cigarHit.length
+            if (cigarHit.sequence) {
+              featureData.sequence = cigarHit.sequence
+              featureData.description = `${cigarHit.length}bp insertion: ${cigarHit.sequence}`
+            } else {
+              featureData.description = `${cigarHit.length}bp insertion`
+            }
+          } else if (cigarHit.type === 'deletion') {
+            featureData.length = cigarHit.length
+            featureData.description = `${cigarHit.length}bp deletion`
+          } else if (cigarHit.type === 'softclip') {
+            featureData.length = cigarHit.length
+            featureData.description = `${cigarHit.length}bp soft clip`
+          } else if (cigarHit.type === 'hardclip') {
+            featureData.length = cigarHit.length
+            featureData.description = `${cigarHit.length}bp hard clip`
+          }
+
+          // Include read ID if available
+          if (featureHit?.id) {
+            featureData.readId = featureHit.id
+          }
+
+          const featureWidget = session.addWidget(
+            'BaseFeatureWidget',
+            'baseFeature',
+            {
+              featureData,
+              view: getContainingView(model),
+              track: getContainingTrack(model),
+            },
+          )
+          session.showWidget(featureWidget)
+        }
+        return
+      }
+
       const hit = hitTestFeature(canvasX, canvasY)
       if (hit) {
         // Set selected feature for outline
@@ -1679,7 +1761,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         }
       }
     },
-    [hitTestFeature, model],
+    [hitTestFeature, hitTestCigarItem, model],
   )
 
   const handleContextMenu = useCallback(
@@ -1741,14 +1823,155 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     [coverageHeight, model],
   )
 
+  // Get visible range for label computation (triggers re-render on view change)
+  const labelBpRange = getVisibleBpRange()
+
+  // Compute visible deletion and insertion labels
+  const visibleLabels = useMemo(() => {
+    const labels: {
+      type: 'deletion' | 'insertion'
+      x: number
+      y: number
+      text: string
+      width: number
+    }[] = []
+
+    if (
+      !rpcData ||
+      !labelBpRange ||
+      width === undefined ||
+      !showMismatches // Only show labels when mismatches are shown
+    ) {
+      return labels
+    }
+
+    const bpRange = labelBpRange
+
+    const bpPerPx = (bpRange[1] - bpRange[0]) / width
+    const rowHeight = featureHeight + featureSpacing
+    const rangeY = rangeYRef.current
+    const pileupYOffset = showCoverage ? coverageHeight : 0
+
+    // Minimum pixel width needed to show a label (about 15px for short numbers like "5")
+    const minLabelWidth = 15
+
+    // Process deletions (gaps)
+    const { gapPositions, gapYs, gapLengths, gapTypes, numGaps, regionStart } =
+      rpcData
+    if (gapPositions && gapYs && gapLengths && gapTypes) {
+      for (let i = 0; i < numGaps; i++) {
+        // Only show labels for deletions (type 0), not skips (type 1)
+        if (gapTypes[i] !== 0) {
+          continue
+        }
+
+        const startOffset = gapPositions[i * 2]!
+        const endOffset = gapPositions[i * 2 + 1]!
+        const length = gapLengths[i]!
+        const y = gapYs[i]!
+
+        // Convert to genomic coordinates
+        const gapStart = regionStart + startOffset
+        const gapEnd = regionStart + endOffset
+
+        // Check if visible
+        if (gapEnd < bpRange[0] || gapStart > bpRange[1]) {
+          continue
+        }
+
+        // Calculate pixel positions
+        const startPx = (gapStart - bpRange[0]) / bpPerPx
+        const endPx = (gapEnd - bpRange[0]) / bpPerPx
+        const widthPx = endPx - startPx
+
+        // Only show label if wide enough
+        if (widthPx < minLabelWidth) {
+          continue
+        }
+
+        // Calculate Y position (center of feature)
+        const yPx =
+          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+
+        // Skip if out of view vertically
+        if (yPx < pileupYOffset || yPx > height) {
+          continue
+        }
+
+        labels.push({
+          type: 'deletion',
+          x: (startPx + endPx) / 2,
+          y: yPx,
+          text: String(length),
+          width: widthPx,
+        })
+      }
+    }
+
+    // Process insertions - only show labels for large insertions (>=10bp)
+    const { insertionPositions, insertionYs, insertionLengths, numInsertions } =
+      rpcData
+    if (insertionPositions && insertionYs && insertionLengths) {
+      for (let i = 0; i < numInsertions; i++) {
+        const posOffset = insertionPositions[i]!
+        const length = insertionLengths[i]!
+        const y = insertionYs[i]!
+
+        // Only show labels for large insertions (>=10bp)
+        if (length < 10) {
+          continue
+        }
+
+        // Convert to genomic coordinate
+        const pos = regionStart + posOffset
+
+        // Check if visible
+        if (pos < bpRange[0] || pos > bpRange[1]) {
+          continue
+        }
+
+        // Calculate pixel position
+        const xPx = (pos - bpRange[0]) / bpPerPx
+
+        // Calculate Y position (centered in feature)
+        const yPx =
+          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+
+        // Skip if out of view vertically
+        if (yPx < pileupYOffset || yPx > height) {
+          continue
+        }
+
+        labels.push({
+          type: 'insertion',
+          x: xPx,
+          y: yPx,
+          text: String(length),
+          width: 0, // Insertions are point features
+        })
+      }
+    }
+
+    return labels
+  }, [
+    rpcData,
+    labelBpRange,
+    width,
+    height,
+    featureHeight,
+    featureSpacing,
+    showMismatches,
+    showCoverage,
+    coverageHeight,
+  ])
+
   if (error) {
     return (
       <div style={{ color: '#c00', padding: 16 }}>Error: {error.message}</div>
     )
   }
 
-  const visibleBpRange = getVisibleBpRange()
-  const isReady = width !== undefined && visibleBpRange !== null
+  const isReady = width !== undefined && labelBpRange !== null
 
   return (
     <div
@@ -1774,6 +1997,37 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         onContextMenu={handleContextMenu}
       />
 
+      {visibleLabels.length > 0 ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: width ?? '100%',
+            height,
+            pointerEvents: 'none',
+            overflow: 'hidden',
+          }}
+        >
+          {visibleLabels.map((label, i) => (
+            <text
+              // eslint-disable-next-line react/no-array-index-key
+              key={`${label.type}-${i}`}
+              x={label.x}
+              y={label.y}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize={10}
+              fontFamily="sans-serif"
+              fontWeight="bold"
+              fill={label.type === 'deletion' ? '#000' : '#fff'}
+            >
+              {label.text}
+            </text>
+          ))}
+        </svg>
+      ) : null}
+
       {model.coverageTicks ? (
         <svg
           style={{
@@ -1794,6 +2048,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       {showCoverage ? (
         <div
           onMouseDown={handleResizeMouseDown}
+          onMouseEnter={() => setResizeHandleHovered(true)}
+          onMouseLeave={() => setResizeHandleHovered(false)}
           style={{
             position: 'absolute',
             top: coverageHeight - 3,
@@ -1814,6 +2070,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
               right: 0,
               height: 2,
               background: theme.palette.divider,
+              opacity: resizeHandleHovered ? 0.5 : 0,
+              transition: 'opacity 0.15s ease',
             }}
           />
         </div>

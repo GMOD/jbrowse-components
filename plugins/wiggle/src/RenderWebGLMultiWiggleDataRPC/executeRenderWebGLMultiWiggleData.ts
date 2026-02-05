@@ -1,3 +1,14 @@
+/**
+ * WebGL Multi-Wiggle Data RPC Executor
+ *
+ * COORDINATE SYSTEM REQUIREMENT:
+ * All position data in this module uses integer coordinates. View region bounds
+ * (region.start, region.end) can be fractional from scrolling/zooming, so we
+ * convert to integers: regionStart = floor(region.start). All positions are then
+ * stored as integer offsets from regionStart. This ensures consistent alignment
+ * between data points and rendered features.
+ */
+
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -50,6 +61,8 @@ export async function executeRenderWebGLMultiWiggleData({
     dataAdapter.getFeatures(region).pipe(toArray()),
   )
 
+  // Genomic positions are integers, but region bounds from the view can be fractional.
+  // Use floor to get integer reference point for storing position offsets.
   const regionStart = Math.floor(region.start)
 
   // Group features by source

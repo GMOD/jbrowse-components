@@ -1,3 +1,12 @@
+/**
+ * WebGL Pileup Data RPC Types
+ *
+ * COORDINATE SYSTEM REQUIREMENT:
+ * regionStart must be an integer (use Math.floor of view region start).
+ * All position arrays store integer offsets from regionStart.
+ * This is critical for alignment between coverage, gaps, and rendered features.
+ */
+
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export interface RenderWebGLPileupDataArgs {
@@ -45,7 +54,8 @@ export interface CoverageTooltipBin {
 }
 
 export interface WebGLPileupDataResult {
-  // Reference point for all positions (stored as offsets from this)
+  // Integer reference point for all positions (floor of view region start).
+  // All position data in this result is stored as integer offsets from regionStart.
   regionStart: number
 
   // Read data - positions are offsets from regionStart
@@ -61,6 +71,8 @@ export interface WebGLPileupDataResult {
   // Gap data (deletions/skips) - offsets from regionStart
   gapPositions: Uint32Array // [startOffset, endOffset] pairs
   gapYs: Uint16Array
+  gapLengths: Uint16Array // length of each gap in bp
+  gapTypes: Uint8Array // 0=deletion, 1=skip
 
   // Mismatch data - offsets from regionStart
   mismatchPositions: Uint32Array

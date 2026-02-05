@@ -571,7 +571,7 @@ void main() {
 }
 `
 
-// Gap (deletion/skip) vertex shader - dark rectangles over reads
+// Gap (deletion/skip) vertex shader - grey rectangles over reads
 // Uses integer attributes for compact representation
 const GAP_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -597,16 +597,16 @@ void main() {
   float sx2 = (float(a_position.y) - u_domainX.x) / domainWidth * 2.0 - 1.0;
   float sx = mix(sx1, sx2, localX);
 
-  // Gap is a thin line in the middle of the read row (constant pixel height)
+  // Gap fills the full feature height (like normal renderer)
   float y = float(a_y);
   float rowHeight = u_featureHeight + u_featureSpacing;
-  float yMidPx = y * rowHeight + u_featureHeight * 0.5 - u_rangeY.x;
-  float gapHeight = u_featureHeight * 0.3;
+  float yTopPx = y * rowHeight - u_rangeY.x;
+  float yBotPx = yTopPx + u_featureHeight;
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
   float pxToClip = 2.0 / u_canvasHeight;
-  float syTop = pileupTop - (yMidPx - gapHeight) * pxToClip;
-  float syBot = pileupTop - (yMidPx + gapHeight) * pxToClip;
+  float syTop = pileupTop - yTopPx * pxToClip;
+  float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -615,9 +615,10 @@ void main() {
 
 const GAP_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
+uniform vec3 u_colorDeletion;
 out vec4 fragColor;
 void main() {
-  fragColor = vec4(0.15, 0.15, 0.15, 1.0);  // Dark for deletion
+  fragColor = vec4(u_colorDeletion, 1.0);  // Grey for deletion (#808080)
 }
 `
 
@@ -697,7 +698,8 @@ void main() {
 `
 
 // Insertion vertex shader - vertical bars like PileupRenderer
-// Renders: main bar + top tick + bottom tick (3 rectangles = 18 vertices per insertion)
+// For small insertions: renders I-shape (main bar + top tick + bottom tick)
+// For large insertions (>=10bp): renders wider rectangle to contain text label
 // Uses integer attributes for compact representation
 const INSERTION_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -705,7 +707,7 @@ precision highp int;
 
 in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
-in uint a_length;     // insertion length (for potential future use)
+in uint a_length;     // insertion length
 
 uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
 uniform vec2 u_rangeY;
@@ -720,27 +722,56 @@ uniform vec3 u_colorInsertion;
 
 out vec4 v_color;
 
+// Approximate text width in pixels for a number
+// Returns width needed to display the number as text
+float textWidthForNumber(uint num) {
+  // Approximate character widths: ~6px per digit
+  // Plus padding of 5px on each side = 10px total
+  float charWidth = 6.0;
+  float padding = 10.0;
+
+  if (num < 10u) return charWidth + padding;        // 1 digit
+  if (num < 100u) return charWidth * 2.0 + padding; // 2 digits
+  if (num < 1000u) return charWidth * 3.0 + padding; // 3 digits
+  if (num < 10000u) return charWidth * 4.0 + padding; // 4 digits
+  return charWidth * 5.0 + padding; // 5+ digits
+}
+
 void main() {
   // Each insertion uses 18 vertices (3 rectangles x 6 vertices each)
-  // Rectangle 0: main vertical bar
-  // Rectangle 1: top horizontal tick
-  // Rectangle 2: bottom horizontal tick
+  // Rectangle 0: main vertical bar (or wide box for large insertions)
+  // Rectangle 1: top horizontal tick (hidden for large insertions)
+  // Rectangle 2: bottom horizontal tick (hidden for large insertions)
   int rectIdx = gl_VertexID / 6;
   int vid = gl_VertexID % 6;
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
   float pos = float(a_position);
+  float len = float(a_length);
   float domainWidth = u_domainX.y - u_domainX.x;
   float bpPerPx = domainWidth / u_canvasWidth;
-  float invBpPerPx = 1.0 / bpPerPx;
+  float pxPerBp = 1.0 / bpPerPx;
 
   // Center position in clip space
   float cxClip = (pos - u_domainX.x) / domainWidth * 2.0 - 1.0;
 
-  // Bar and tick widths in clip space (2.0 = full width)
-  float barWidthClip = max(2.0 / u_canvasWidth, min(1.2 * 2.0 / u_canvasWidth, 2.0 / domainWidth));
-  float tickWidthClip = barWidthClip * 3.0;
+  // Determine if this is a large insertion (>=10bp) that should show text
+  bool isLargeInsertion = a_length >= 10u && pxPerBp >= 0.1;
+
+  // Calculate rectangle width in pixels
+  float rectWidthPx;
+  if (isLargeInsertion) {
+    // Wide rectangle to contain text label
+    rectWidthPx = textWidthForNumber(a_length);
+  } else {
+    // Thin bar (1-2 pixels)
+    rectWidthPx = max(1.0, min(1.2, pxPerBp));
+  }
+
+  // Convert pixel width to clip space
+  float rectWidthClip = rectWidthPx * 2.0 / u_canvasWidth;
+  float tickWidthClip = rectWidthClip * 1.5;
 
   // Calculate Y position in pixels (constant height per row)
   float y = float(a_y);
@@ -756,14 +787,15 @@ void main() {
   float sx1, sx2, y1, y2;
 
   if (rectIdx == 0) {
-    // Main vertical bar
-    sx1 = cxClip - barWidthClip * 0.5;
-    sx2 = cxClip + barWidthClip * 0.5;
+    // Main rectangle (thin bar for small, wide box for large)
+    sx1 = cxClip - rectWidthClip * 0.5;
+    sx2 = cxClip + rectWidthClip * 0.5;
     y1 = syBot;
     y2 = syTop;
   } else if (rectIdx == 1) {
-    // Top tick (only show when zoomed in enough)
-    if (invBpPerPx < 6.0) {
+    // Top tick (hide for large insertions, only show when zoomed in for small)
+    if (isLargeInsertion || pxPerBp < 6.0) {
+      // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
       y1 = syTop;
@@ -776,8 +808,9 @@ void main() {
       y2 = syTop + tickHeight;
     }
   } else {
-    // Bottom tick (only show when zoomed in enough)
-    if (invBpPerPx < 6.0) {
+    // Bottom tick (hide for large insertions, only show when zoomed in for small)
+    if (isLargeInsertion || pxPerBp < 6.0) {
+      // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
       y1 = syBot;
@@ -990,6 +1023,7 @@ export interface ColorPalette {
   colorBaseT: RGBColor // red (#f44336)
   // Theme colors for indels/clips
   colorInsertion: RGBColor // purple (#800080)
+  colorDeletion: RGBColor // grey (#808080)
   colorSoftclip: RGBColor // blue (#00f)
   colorHardclip: RGBColor // red (#f00)
   // Coverage color
@@ -1013,6 +1047,7 @@ export const defaultColorPalette: ColorPalette = {
   colorBaseT: [0.957, 0.263, 0.212], // red (#f44336)
   // Indel/clip colors (theme)
   colorInsertion: [0.502, 0.0, 0.502], // purple (#800080)
+  colorDeletion: [0.502, 0.502, 0.502], // grey (#808080)
   colorSoftclip: [0.0, 0.0, 1.0], // blue (#00f)
   colorHardclip: [1.0, 0.0, 0.0], // red (#f00)
   // Coverage color
@@ -1263,7 +1298,10 @@ export class WebGLRenderer {
       'u_canvasHeight',
     ]
     const cigarUniformsWithWidth = [...cigarUniforms, 'u_canvasWidth']
-    this.cacheUniforms(this.gapProgram, this.gapUniforms, cigarUniforms)
+    this.cacheUniforms(this.gapProgram, this.gapUniforms, [
+      ...cigarUniforms,
+      'u_colorDeletion',
+    ])
     this.cacheUniforms(
       this.mismatchProgram,
       this.mismatchUniforms,
@@ -2128,6 +2166,12 @@ export class WebGLRenderer {
         gl.uniform1f(this.gapUniforms.u_featureSpacing!, state.featureSpacing)
         gl.uniform1f(this.gapUniforms.u_coverageOffset!, coverageOffset)
         gl.uniform1f(this.gapUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform3f(
+          this.gapUniforms.u_colorDeletion!,
+          colors.colorDeletion[0],
+          colors.colorDeletion[1],
+          colors.colorDeletion[2],
+        )
 
         gl.bindVertexArray(this.buffers.gapVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.gapCount)

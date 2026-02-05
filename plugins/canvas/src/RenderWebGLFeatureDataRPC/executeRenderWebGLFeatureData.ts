@@ -1,3 +1,14 @@
+/**
+ * WebGL Feature Data RPC Executor
+ *
+ * COORDINATE SYSTEM REQUIREMENT:
+ * All position data in this module uses integer coordinates. View region bounds
+ * (region.start, region.end) can be fractional from scrolling/zooming, so we
+ * convert to integers: regionStart = floor(region.start). All positions are then
+ * stored as integer offsets from regionStart. This ensures consistent alignment
+ * between feature rectangles, lines, and hit detection.
+ */
+
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, measureText, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -103,8 +114,12 @@ function colorToUint32(colorStr: string): number {
   return namedColors[colorStr.toLowerCase()] ?? 0xff808080
 }
 
+interface LayoutRecordWithLabels extends LayoutRecord {
+  totalHeightWithLabels?: number
+}
+
 function collectRenderData(
-  layoutRecords: LayoutRecord[],
+  layoutRecords: LayoutRecordWithLabels[],
   regionStart: number,
   bpPerPx: number,
   config: unknown,
@@ -129,7 +144,7 @@ function collectRenderData(
   let maxY = 0
 
   for (const record of layoutRecords) {
-    const { feature, layout, topPx } = record
+    const { feature, layout, topPx, totalHeightWithLabels } = record
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
     const strand = (feature.get('strand') as number) || 0
@@ -190,13 +205,15 @@ function collectRenderData(
       : `${featureType}: ${featureStart.toLocaleString()}-${featureEnd.toLocaleString()}`
 
     // Add to flatbush items for hit detection
+    // Use totalHeightWithLabels to include label area in hit box
+    const hitBoxHeight = totalHeightWithLabels ?? layout.totalLayoutHeight
     flatbushItems.push({
       featureId: feature.id(),
       type: featureType,
       startBp: featureStart,
       endBp: featureEnd,
       topPx,
-      bottomPx: topPx + layout.totalLayoutHeight,
+      bottomPx: topPx + hitBoxHeight,
       tooltip,
       name: name || undefined,
       strand: strand || undefined,
@@ -274,28 +291,8 @@ function collectRenderData(
           type: childIsUTR ? 1 : 0,
         })
 
-        // Build tooltip with parent info (gene first, then transcript, then subfeature)
-        let tooltipParts: string[] = []
-        if (parentName) {
-          tooltipParts.push(`Gene: ${parentName}`)
-        }
-        if (isNestedTranscript && transcriptName) {
-          tooltipParts.push(`Transcript: ${transcriptName}`)
-        }
-        tooltipParts.push(`${childType}: ${childStart.toLocaleString()}-${childEnd.toLocaleString()}`)
-
-        // Add subfeature info for hit detection
-        subfeatureInfos.push({
-          featureId: childFeature.id(),
-          parentFeatureId: parentFeature.id(),
-          type: childType,
-          startBp: childStart,
-          endBp: childEnd,
-          topPx: childTopPx,
-          bottomPx: childTopPx + childHeight,
-          displayLabel: childType,
-          tooltip: tooltipParts.join('\n'),
-        })
+        // Note: We don't add exon/CDS/UTR to subfeatureInfos for hit detection
+        // Only transcript and gene level features are clickable
       }
 
       // Add transcript-level hit detection entry (spans entire transcript area)
@@ -388,25 +385,8 @@ function collectRenderData(
             type: childIsUTR ? 1 : 0,
           })
 
-          // Build tooltip with parent info (gene first, then subfeature)
-          let tooltipParts: string[] = []
-          if (name) {
-            tooltipParts.push(`Gene: ${name}`)
-          }
-          tooltipParts.push(`${childType}: ${childStart.toLocaleString()}-${childEnd.toLocaleString()}`)
-
-          // Add subfeature info for hit detection
-          subfeatureInfos.push({
-            featureId: childFeature.id(),
-            parentFeatureId: feature.id(),
-            type: childType,
-            startBp: childStart,
-            endBp: childEnd,
-            topPx: childTopPx,
-            bottomPx: childTopPx + childHeight,
-            displayLabel: childType,
-            tooltip: tooltipParts.join('\n'),
-          })
+          // Note: We don't add simple child features to subfeatureInfos
+          // Only transcript and gene level features are clickable
         }
       }
     } else {
@@ -498,7 +478,9 @@ export async function executeRenderWebGLFeatureData({
 
   checkStopToken2(stopTokenCheck)
 
-  const regionStart = region.start
+  // Genomic positions are integers, but region bounds from the view can be fractional.
+  // Use floor to get integer reference point for storing position offsets.
+  const regionStart = Math.floor(region.start)
   const bpPerPx = requestedBpPerPx || 1 // Use actual zoom level for layout
 
   // Create a mock theme for color calculations
@@ -656,6 +638,8 @@ export async function executeRenderWebGLFeatureData({
             feature,
             layout: featureLayout,
             topPx,
+            // Include the full height with labels for hit detection
+            totalHeightWithLabels: layoutHeight,
           })
         }
       }

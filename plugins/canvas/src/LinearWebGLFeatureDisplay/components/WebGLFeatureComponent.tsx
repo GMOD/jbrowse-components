@@ -157,6 +157,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const [hoveredFeature, setHoveredFeature] = useState<FlatbushItem | null>(
     null,
   )
+  const [hoveredSubfeature, setHoveredSubfeature] =
+    useState<SubfeatureInfo | null>(null)
   const [scrollY, setScrollY] = useState(0)
   const flatbushCacheRef = useRef<FlatbushCache>({
     featureIndex: null,
@@ -595,12 +597,16 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       const rpcData = model.rpcData
       if (!rpcData) {
         setTooltip(null)
+        setHoveredFeature(null)
+        setHoveredSubfeature(null)
         return
       }
 
       const pos = getMouseBpAndY(e)
       if (!pos) {
         setTooltip(null)
+        setHoveredFeature(null)
+        setHoveredSubfeature(null)
         return
       }
 
@@ -615,6 +621,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
 
       if (subfeature) {
+        // Hovering over a transcript - show transcript tooltip, highlight transcript only
         const rect = canvas.getBoundingClientRect()
         setTooltip({
           x: e.clientX - rect.left + 10,
@@ -622,8 +629,10 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           text: subfeature.tooltip ?? subfeature.type,
         })
         setHoveredFeature(feature)
+        setHoveredSubfeature(subfeature)
         model.setFeatureIdUnderMouse(feature?.featureId ?? null)
       } else if (feature) {
+        // Hovering over gene (but not a specific transcript) - show gene tooltip, highlight gene
         const rect = canvas.getBoundingClientRect()
         setTooltip({
           x: e.clientX - rect.left + 10,
@@ -631,10 +640,12 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           text: feature.tooltip,
         })
         setHoveredFeature(feature)
+        setHoveredSubfeature(null)
         model.setFeatureIdUnderMouse(feature.featureId)
       } else {
         setTooltip(null)
         setHoveredFeature(null)
+        setHoveredSubfeature(null)
         model.setFeatureIdUnderMouse(null)
       }
     }
@@ -642,6 +653,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     const handleMouseLeave = () => {
       setTooltip(null)
       setHoveredFeature(null)
+      setHoveredSubfeature(null)
       model.setFeatureIdUnderMouse(null)
     }
 
@@ -748,26 +760,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       const featureRightPx = (featureEndBp - visibleRange[0]) / bpPerPx
       const featureWidth = featureRightPx - featureLeftPx
 
-      // Get the actual feature visual bounds from flatbush items
-      const flatbushItem = rpcData.flatbushItems.find(
-        f => f.featureId === featureId,
-      )
-      const featureBottomPx = flatbushItem
-        ? flatbushItem.bottomPx
-        : labelData.topY + labelData.featureHeight
-
-      // Debug first few labels
-      if (elements.length < 3) {
-        console.log('Label debug:', {
-          featureId,
-          flatbushTopPx: flatbushItem?.topPx,
-          flatbushBottomPx: flatbushItem?.bottomPx,
-          labelDataTopY: labelData.topY,
-          labelDataFeatureHeight: labelData.featureHeight,
-          calculatedBottom: labelData.topY + labelData.featureHeight,
-          scrollY,
-        })
-      }
+      // Use labelData for visual positioning (not flatbushItem which includes hit box padding)
+      const featureBottomPx = labelData.topY + labelData.featureHeight
 
       for (const [i, label] of labelData.floatingLabels.entries()) {
         const { text, relativeY, color } = label
@@ -823,7 +817,12 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     const overlays: React.ReactElement[] = []
 
-    const addOverlay = (featureId: string, color: string, key: string) => {
+    // Helper to add overlay for a gene (top-level feature)
+    const addFeatureOverlay = (
+      featureId: string,
+      color: string,
+      key: string,
+    ) => {
       const feature = rpcData.flatbushItems.find(f => f.featureId === featureId)
       if (!feature) {
         return
@@ -859,17 +858,62 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
     }
 
-    // Add hover highlight (darker shade)
-    if (hoveredFeature) {
-      addOverlay(hoveredFeature.featureId, 'rgba(0, 0, 0, 0.15)', 'hover')
+    // Helper to add overlay for a subfeature (transcript)
+    const addSubfeatureOverlay = (
+      subfeature: SubfeatureInfo,
+      color: string,
+      key: string,
+    ) => {
+      // Check if subfeature is in visible range
+      if (
+        subfeature.endBp < visibleRange[0] ||
+        subfeature.startBp > visibleRange[1]
+      ) {
+        return
+      }
+
+      const leftPx = (subfeature.startBp - visibleRange[0]) / bpPerPx
+      const rightPx = (subfeature.endBp - visibleRange[0]) / bpPerPx
+      const featureWidth = rightPx - leftPx
+      const topPx = subfeature.topPx - scrollY
+      const heightPx = subfeature.bottomPx - subfeature.topPx
+
+      overlays.push(
+        <div
+          key={key}
+          style={{
+            position: 'absolute',
+            left: leftPx,
+            top: topPx,
+            width: featureWidth,
+            height: heightPx,
+            backgroundColor: color,
+            pointerEvents: 'none',
+          }}
+        />,
+      )
+    }
+
+    // Add hover highlight
+    if (hoveredSubfeature) {
+      // Hovering over a transcript - highlight just the transcript
+      addSubfeatureOverlay(hoveredSubfeature, 'rgba(0, 0, 0, 0.15)', 'hover')
+    } else if (hoveredFeature) {
+      // Hovering over gene but not a specific transcript - highlight the gene
+      addFeatureOverlay(hoveredFeature.featureId, 'rgba(0, 0, 0, 0.15)', 'hover')
     }
 
     // Add selection highlight (blue tint)
     if (
       model.selectedFeatureId &&
-      model.selectedFeatureId !== hoveredFeature?.featureId
+      model.selectedFeatureId !== hoveredFeature?.featureId &&
+      model.selectedFeatureId !== hoveredSubfeature?.featureId
     ) {
-      addOverlay(model.selectedFeatureId, 'rgba(0, 100, 255, 0.2)', 'selected')
+      addFeatureOverlay(
+        model.selectedFeatureId,
+        'rgba(0, 100, 255, 0.2)',
+        'selected',
+      )
     }
 
     return overlays.length > 0 ? overlays : null
@@ -882,6 +926,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     getVisibleBpRange,
     scrollY,
     hoveredFeature,
+    hoveredSubfeature,
     model.selectedFeatureId,
   ])
 

@@ -22,6 +22,9 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+// Offset for Y scalebar labels (same as wiggle plugin)
+export const YSCALEBAR_LABEL_OFFSET = 5
+
 interface Region {
   refName: string
   start: number
@@ -268,10 +271,9 @@ export default function stateModelFactory(
         }
         const height = self.coverageHeight
         // Add offset so tick labels at top/bottom don't get clipped
-        const offset = 5
         const scale = scaleLinear()
           .domain([0, maxDepth])
-          .range([height - offset, offset])
+          .range([height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET])
           .nice()
 
         // Use minimal ticks (just min/max) when height is small
@@ -381,6 +383,17 @@ export default function stateModelFactory(
 
       setMaxY(y: number) {
         self.maxY = y
+        // Auto-resize height based on content
+        const rowHeight = self.featureHeight + self.featureSpacing
+        const pileupHeight = y * rowHeight
+        const totalHeight =
+          (self.showCoverage ? self.coverageHeight : 0) + pileupHeight + 10
+        // Clamp to maxHeight and ensure a minimum height
+        const clampedHeight = Math.min(
+          Math.max(totalHeight, 100),
+          self.maxHeight,
+        )
+        self.setHeight(clampedHeight)
       },
 
       setCurrentDomain(domainX: [number, number]) {
@@ -671,6 +684,12 @@ export default function stateModelFactory(
             },
           },
         ]
+      },
+    }))
+    .actions(self => ({
+      async renderSvg() {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self)
       },
     }))
 }

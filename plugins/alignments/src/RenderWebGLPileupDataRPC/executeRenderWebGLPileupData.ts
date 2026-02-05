@@ -1,3 +1,14 @@
+/**
+ * WebGL Pileup Data RPC Executor
+ *
+ * COORDINATE SYSTEM REQUIREMENT:
+ * All position data in this module uses integer coordinates. View region bounds
+ * (region.start, region.end) can be fractional from scrolling/zooming, so we
+ * convert to integers: regionStart = floor(region.start), regionEnd = ceil(region.end).
+ * All positions are then stored as integer offsets from regionStart. This ensures
+ * consistent alignment between coverage bins, gap positions, and rendered features.
+ */
+
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -124,6 +135,15 @@ function computeLayout(features: FeatureData[]): Map<string, number> {
   return layoutMap
 }
 
+/**
+ * Compute coverage depth across a region, accounting for deletions/skips.
+ *
+ * @param features - Array of reads with absolute integer start/end positions
+ * @param gaps - Array of deletions/skips with absolute integer start/end positions
+ * @param regionStart - Integer start position (use Math.floor of view region)
+ * @param regionEnd - Integer end position (use Math.ceil of view region)
+ * @returns Coverage depths per bin, with bin[i] representing position regionStart + i*binSize
+ */
 function computeCoverage(
   features: FeatureData[],
   gaps: GapData[],
@@ -147,7 +167,6 @@ function computeCoverage(
   for (const f of features) {
     events.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
   }
-  console.log('computeCoverage gaps count:', gaps.length)
   for (const g of gaps) {
     events.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
   }
@@ -156,27 +175,22 @@ function computeCoverage(
   const depths = new Float32Array(numBins)
 
   let currentDepth = 0
+  let maxDepth = 0
   let eventIdx = 0
 
   for (let binIdx = 0; binIdx < numBins; binIdx++) {
     const binEnd = regionStart + (binIdx + 1) * binSize
-    let event = events[eventIdx]
-    while (event && event.pos < binEnd) {
-      currentDepth += event.delta
+    while (eventIdx < events.length && events[eventIdx]!.pos < binEnd) {
+      currentDepth += events[eventIdx]!.delta
       eventIdx++
-      event = events[eventIdx]
     }
     depths[binIdx] = currentDepth
-  }
-
-  let maxDepth = 1
-  for (const depth of depths) {
-    if (depth > maxDepth) {
-      maxDepth = depth
+    if (currentDepth > maxDepth) {
+      maxDepth = currentDepth
     }
   }
 
-  return { depths, maxDepth, binSize }
+  return { depths, maxDepth: maxDepth || 1, binSize }
 }
 
 interface SNPCoverageEntry {
@@ -593,9 +607,12 @@ export async function executeRenderWebGLPileupData({
 
   checkStopToken2(stopTokenCheck)
 
-  // Use region.start as reference point - all positions stored as offsets
-  // Floor to ensure integer offsets (region.start can be fractional from view calculations)
+  // Genomic positions are integers, but region bounds from the view can be fractional.
+  // Define integer bounds: floor for start (include first partially visible position),
+  // ceil for end (include last partially visible position).
+  // All position offsets throughout this function use regionStart as the reference point.
   const regionStart = Math.floor(region.start)
+  const regionEnd = Math.ceil(region.end)
 
   const {
     maxY,
@@ -637,11 +654,15 @@ export async function executeRenderWebGLPileupData({
     const filteredGaps = gaps.filter(g => g.start >= regionStart)
     const gapPositions = new Uint32Array(filteredGaps.length * 2)
     const gapYs = new Uint16Array(filteredGaps.length)
+    const gapLengths = new Uint16Array(filteredGaps.length)
+    const gapTypes = new Uint8Array(filteredGaps.length)
     for (const [i, g] of filteredGaps.entries()) {
       const y = layout.get(g.featureId) ?? 0
       gapPositions[i * 2] = g.start - regionStart
       gapPositions[i * 2 + 1] = g.end - regionStart
       gapYs[i] = y
+      gapLengths[i] = Math.min(65535, g.end - g.start)
+      gapTypes[i] = g.type === 'deletion' ? 0 : 1
     }
 
     // Filter mismatches to only include those at or after regionStart (avoid Uint32 underflow)
@@ -712,7 +733,7 @@ export async function executeRenderWebGLPileupData({
         readStrands,
         readIds,
       },
-      gapArrays: { gapPositions, gapYs },
+      gapArrays: { gapPositions, gapYs, gapLengths, gapTypes },
       mismatchArrays: { mismatchPositions, mismatchYs, mismatchBases, mismatchStrands },
       insertionArrays: {
         insertionPositions,
@@ -730,7 +751,7 @@ export async function executeRenderWebGLPileupData({
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,
-    async () => computeCoverage(features, gaps, region.start, region.end),
+    async () => computeCoverage(features, gaps, regionStart, regionEnd),
   )
 
   checkStopToken2(stopTokenCheck)
@@ -1057,6 +1078,8 @@ export async function executeRenderWebGLPileupData({
     result.readStrands.buffer,
     result.gapPositions.buffer,
     result.gapYs.buffer,
+    result.gapLengths.buffer,
+    result.gapTypes.buffer,
     result.mismatchPositions.buffer,
     result.mismatchYs.buffer,
     result.mismatchBases.buffer,
