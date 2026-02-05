@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 console.log('LinearWebGLFeatureDisplay model module loaded')
 
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   SimpleFeature,
@@ -43,6 +44,8 @@ export default function stateModelFactory(
       types.model('LinearWebGLFeatureDisplay', {
         type: types.literal('LinearWebGLFeatureDisplay'),
         configuration: ConfigurationReference(configSchema),
+        trackShowLabels: types.maybe(types.boolean),
+        trackShowDescriptions: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -66,6 +69,19 @@ export default function stateModelFactory(
 
       get maxHeight(): number {
         return getConf(self, 'maxHeight') ?? 1200
+      },
+
+      get showLabels(): boolean {
+        return (
+          self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
+        )
+      },
+
+      get showDescriptions(): boolean {
+        return (
+          self.trackShowDescriptions ??
+          getConf(self, ['renderer', 'showDescriptions'])
+        )
       },
 
       get visibleRegion() {
@@ -207,6 +223,14 @@ export default function stateModelFactory(
         getSession(self).clearSelection()
       },
 
+      toggleShowLabels() {
+        self.trackShowLabels = !self.showLabels
+      },
+
+      toggleShowDescriptions() {
+        self.trackShowDescriptions = !self.showDescriptions
+      },
+
       showContextMenuForFeature(featureInfo: FlatbushItem) {
         // Create a SimpleFeature from the FlatbushItem for the context menu
         const feature = new SimpleFeature({
@@ -238,10 +262,18 @@ export default function stateModelFactory(
         self.setError(null)
 
         try {
-          const rendererConfig = getConf(self, 'renderer')
+          const baseRendererConfig = getConf(self, 'renderer') || {}
+          // Merge track-level overrides for showLabels and showDescriptions
+          const rendererConfig = {
+            ...baseRendererConfig,
+            showLabels: self.showLabels,
+            showDescriptions: self.showDescriptions,
+          }
           console.log('LinearWebGLFeatureDisplay: Calling RPC', {
             region,
             bpPerPx,
+            showLabels: rendererConfig.showLabels,
+            showDescriptions: rendererConfig.showDescriptions,
           })
           const result = (await rpcManager.call(
             session.id ?? '',
@@ -350,12 +382,56 @@ export default function stateModelFactory(
               { delay: 500 }, // Debounce zoom changes
             ),
           )
+
+          // React to label/description setting changes
+          addDisposer(
+            self,
+            reaction(
+              () => ({
+                showLabels: self.showLabels,
+                showDescriptions: self.showDescriptions,
+              }),
+              () => {
+                if (self.loadedRegion) {
+                  const view = getContainingView(self) as LGV
+                  const bpPerPx = view?.bpPerPx ?? 1
+                  fetchFeaturesImpl(self.loadedRegion, bpPerPx).catch(e => {
+                    console.error('Failed to refresh after label settings change:', e)
+                  })
+                }
+              },
+              { delay: 100 },
+            ),
+          )
         },
       }
     })
     .views(self => ({
       trackMenuItems() {
-        return []
+        return [
+          {
+            label: 'Show...',
+            icon: VisibilityIcon,
+            subMenu: [
+              {
+                label: 'Show labels',
+                type: 'checkbox',
+                checked: self.showLabels,
+                onClick: () => {
+                  self.toggleShowLabels()
+                },
+              },
+              {
+                label: 'Show descriptions',
+                type: 'checkbox',
+                checked: self.showDescriptions,
+                onClick: () => {
+                  self.toggleShowDescriptions()
+                },
+              },
+            ],
+          },
+        ]
       },
     }))
 }

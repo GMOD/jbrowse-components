@@ -156,8 +156,11 @@ function collectRenderData(
     const strokeUint = colorToUint32(strokeColor)
 
     // Collect floating labels
+    // Match the JEXL expressions from config schema for name and description
     const name = String(feature.get('name') || feature.get('id') || '')
-    const description = String(feature.get('description') || '')
+    const description = String(
+      feature.get('note') || feature.get('description') || '',
+    )
     const floatingLabels = createFeatureFloatingLabels({
       feature,
       config: config as any,
@@ -605,10 +608,13 @@ export async function executeRenderWebGLFeatureData({
         }
 
         // Manually add space for labels since the config callback system isn't available
+        // Match the JEXL expressions from config schema
         const featureName = String(
           feature.get('name') || feature.get('id') || '',
         )
-        const featureDescription = String(feature.get('description') || '')
+        const featureDescription = String(
+          feature.get('note') || feature.get('description') || '',
+        )
         const fontSize = mockConfig.labels.fontSize
         let labelHeight = 0
         let maxLabelWidth = 0
