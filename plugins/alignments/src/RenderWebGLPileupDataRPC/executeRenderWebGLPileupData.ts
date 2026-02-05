@@ -127,6 +127,10 @@ function computeLayout(features: FeatureData[]): Map<string, number> {
 /**
  * Compute coverage depth across a region, accounting for deletions/skips.
  *
+ * Coverage extends to the maximum feature end position to ensure reads that
+ * extend beyond the requested region still have coverage computed for their
+ * full extent (so grey bars appear under the full read extent).
+ *
  * @param features - Array of reads with absolute integer start/end positions
  * @param gaps - Array of deletions/skips with absolute integer start/end positions
  * @param regionStart - Integer start position (use Math.floor of view region)
@@ -138,16 +142,42 @@ function computeCoverage(
   gaps: GapData[],
   regionStart: number,
   regionEnd: number,
-): { depths: Float32Array; maxDepth: number; binSize: number } {
+): {
+  depths: Float32Array
+  maxDepth: number
+  binSize: number
+  startOffset: number
+} {
   if (features.length === 0) {
     return {
       depths: new Float32Array(0),
       maxDepth: 0,
       binSize: 1,
+      startOffset: 0,
     }
   }
 
-  const regionLength = regionEnd - regionStart
+  // Extend region to cover the extent of features, but limit to 3x the
+  // requested region size to avoid pathological cases (e.g., reads spanning
+  // entire genomes could create massive coverage arrays)
+  const requestedLength = regionEnd - regionStart
+  const maxExtension = requestedLength // Allow 1x extension on each side (3x total)
+  let actualStart = regionStart
+  let actualEnd = regionEnd
+  for (const f of features) {
+    if (f.start < actualStart && f.start >= regionStart - maxExtension) {
+      actualStart = f.start
+    }
+    if (f.end > actualEnd && f.end <= regionEnd + maxExtension) {
+      actualEnd = f.end
+    }
+  }
+
+  // startOffset is the offset from regionStart where coverage bins begin
+  // (negative if features extend before regionStart)
+  const startOffset = actualStart - regionStart
+
+  const regionLength = actualEnd - actualStart
   // Always use per-base coverage (binSize=1) for accurate display at all zoom levels.
   //
   // NOTE: Adaptive binning could be implemented here for performance with large regions:
@@ -177,7 +207,8 @@ function computeCoverage(
   let eventIdx = 0
 
   for (let binIdx = 0; binIdx < numBins; binIdx++) {
-    const binEnd = regionStart + (binIdx + 1) * binSize
+    // Use actualStart (not regionStart) since bins cover [actualStart, actualEnd)
+    const binEnd = actualStart + (binIdx + 1) * binSize
     while (eventIdx < events.length && events[eventIdx]!.pos < binEnd) {
       currentDepth += events[eventIdx]!.delta
       eventIdx++
@@ -188,7 +219,7 @@ function computeCoverage(
     }
   }
 
-  return { depths, maxDepth: maxDepth || 1, binSize }
+  return { depths, maxDepth: maxDepth || 1, binSize, startOffset }
 }
 
 interface SNPCoverageEntry {
@@ -1038,6 +1069,7 @@ export async function executeRenderWebGLPileupData({
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
     coverageBinSize: coverage.binSize,
+    coverageStartOffset: coverage.startOffset,
 
     snpPositions: snpCoverage.positions,
     snpYOffsets: snpCoverage.yOffsets,

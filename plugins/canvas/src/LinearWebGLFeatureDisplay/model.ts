@@ -1,7 +1,5 @@
 import { lazy } from 'react'
 
-console.log('LinearWebGLFeatureDisplay model module loaded')
-
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   SimpleFeature,
@@ -355,12 +353,6 @@ export default function stateModelFactory(
             showLabels: self.showLabels,
             showDescriptions: self.showDescriptions,
           }
-          console.log('LinearWebGLFeatureDisplay: Calling RPC', {
-            region,
-            bpPerPx,
-            showLabels: rendererConfig.showLabels,
-            showDescriptions: rendererConfig.showDescriptions,
-          })
           const result = (await rpcManager.call(
             session.id ?? '',
             'RenderWebGLFeatureData',
@@ -373,10 +365,6 @@ export default function stateModelFactory(
             },
           )) as WebGLFeatureDataResult
 
-          console.log('LinearWebGLFeatureDisplay: RPC result received', {
-            numRects: result.numRects,
-            numLines: result.numLines,
-          })
           self.setRpcData(result)
           self.setLoadedRegion({
             refName: region.refName,

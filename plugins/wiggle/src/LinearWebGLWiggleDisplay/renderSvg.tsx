@@ -11,7 +11,6 @@ type LGV = LinearGenomeViewModel
 export async function renderSvg(
   model: LinearWebGLWiggleDisplayModel,
 ): Promise<React.ReactNode> {
-  console.log('renderSvg: start')
   const view = getContainingView(model) as LGV
   const { offsetPx } = view
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
@@ -29,13 +28,7 @@ export async function renderSvg(
     visibleRegion,
   } = model
 
-  console.log('renderSvg: got model properties', {
-    renderingType,
-    numFeatures: rpcData?.numFeatures,
-  })
-
   if (!rpcData || !domain || !visibleRegion) {
-    console.log('renderSvg: early return - missing data')
     return null
   }
 
@@ -55,8 +48,6 @@ export async function renderSvg(
   })
 
   let content = ''
-
-  console.log('renderSvg: starting loop, numFeatures:', numFeatures)
 
   if (renderingType === 'line') {
     let pathData = ''
@@ -117,8 +108,6 @@ export async function renderSvg(
     }
   }
 
-  console.log('renderSvg: loop complete, content length:', content.length)
-
   const result = (
     <>
       <g dangerouslySetInnerHTML={{ __html: content }} />
@@ -130,6 +119,5 @@ export async function renderSvg(
     </>
   )
 
-  console.log('renderSvg: done')
   return result
 }

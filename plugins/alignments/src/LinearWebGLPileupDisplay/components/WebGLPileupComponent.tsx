@@ -185,22 +185,9 @@ export interface Props {
  * The useEffect watching MobX state handles external navigation (keyboard, clicks).
  */
 
-// Debug logging - set to true to diagnose performance issues
-const DEBUG = false
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-console, @typescript-eslint/no-confusing-void-expression
-const log = (...args: unknown[]) => DEBUG && console.log('[WebGL]', ...args)
-
-const renderCountRef = { current: 0 }
-const wheelCountRef = { current: 0 }
-const immediateRenderCountRef = { current: 0 }
-const scheduledRenderCountRef = { current: 0 }
-
 const WebGLPileupComponent = observer(function WebGLPileupComponent({
   model,
 }: Props) {
-  renderCountRef.current++
-  log(`RENDER #${renderCountRef.current}`)
-
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLRenderer | null>(null)
   const canvasId = useId()
@@ -339,16 +326,11 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // during interaction without waiting for MobX reaction
   const renderWithDomain = useCallback(
     (domainX: [number, number], canvasW?: number) => {
-      immediateRenderCountRef.current++
-      const renderNum = immediateRenderCountRef.current
-      const t0 = performance.now()
       const w = canvasW ?? width
       if (!rendererRef.current || w === undefined) {
-        log(`IMMEDIATE RENDER #${renderNum} SKIP - no renderer or width`)
         return
       }
 
-      const t1 = performance.now()
       rendererRef.current.render({
         domainX,
         rangeY: rangeYRef.current,
@@ -367,10 +349,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         selectedFeatureIndex: selectedFeatureIndexRef.current,
         colors: colorPalette,
       })
-      const t2 = performance.now()
-      log(
-        `IMMEDIATE RENDER #${renderNum}: setup=${(t1 - t0).toFixed(2)}ms, WebGL=${(t2 - t1).toFixed(2)}ms, total=${(t2 - t0).toFixed(2)}ms`,
-      )
     },
     [
       colorSchemeIndex,
@@ -389,29 +367,19 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   // Render to WebGL canvas - reads domain from MobX view state (used by scheduled renders)
   const renderNow = useCallback(() => {
-    const t0 = performance.now()
     const visibleBpRange = getVisibleBpRange()
     if (!visibleBpRange) {
-      log('renderNow (scheduled) SKIP - no visible range')
       return
     }
-    log(
-      `renderNow (scheduled) calling renderWithDomain, getVisibleBpRange took ${(performance.now() - t0).toFixed(2)}ms`,
-    )
     renderWithDomain(visibleBpRange)
   }, [getVisibleBpRange, renderWithDomain])
 
   const scheduleRender = useCallback(() => {
-    scheduledRenderCountRef.current++
-    const schedNum = scheduledRenderCountRef.current
-    log(`SCHEDULE RENDER #${schedNum} requested`)
     if (renderRAFRef.current !== null) {
-      log(`SCHEDULE RENDER #${schedNum} - canceling previous RAF`)
       cancelAnimationFrame(renderRAFRef.current)
     }
     renderRAFRef.current = requestAnimationFrame(() => {
       renderRAFRef.current = null
-      log(`SCHEDULE RENDER #${schedNum} - RAF callback firing`)
       renderNow()
     })
   }, [renderNow])
@@ -487,7 +455,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   // Initialize WebGL
   useEffect(() => {
-    log('EFFECT: Initialize WebGL - RUN')
     const canvas = canvasRef.current
     if (!canvas) {
       return
@@ -499,7 +466,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       console.error('Failed to initialize WebGL:', e)
     }
     return () => {
-      log('EFFECT: Initialize WebGL - CLEANUP')
       rendererRef.current?.destroy()
       rendererRef.current = null
       setRendererReady(false)
@@ -509,7 +475,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Subscribe to coordinator for cross-canvas sync
   // When another canvas in the same view updates, re-render
   useEffect(() => {
-    log(`EFFECT: Coordinator subscribe - RUN (viewId=${viewId})`)
     if (!viewId) {
       return
     }
@@ -519,7 +484,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       renderNow()
     })
     return () => {
-      log('EFFECT: Coordinator subscribe - CLEANUP')
       unsubscribe()
       if (coordinator.listenerCount === 0) {
         removeCoordinator(viewId)
@@ -536,28 +500,16 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
 
     const dispose = autorun(() => {
-      const t0 = performance.now()
       // Access observables to subscribe to them
-      const offsetPx = view.offsetPx
-      const bpPerPx = view.bpPerPx
+      const _offsetPx = view.offsetPx
+      const _bpPerPx = view.bpPerPx
       const initialized = view.initialized
 
       // Skip if we triggered this update ourselves (already rendered immediately)
       if (selfUpdateRef.current) {
-        log(
-          `AUTORUN: View state change - SKIP (self-triggered, offsetPx=${offsetPx.toFixed(
-            2,
-          )}, bpPerPx=${bpPerPx.toFixed(4)})`,
-        )
         selfUpdateRef.current = false
         return
       }
-
-      log(
-        `AUTORUN: View state change - RUN (external, offsetPx=${offsetPx.toFixed(
-          2,
-        )}, bpPerPx=${bpPerPx.toFixed(4)})`,
-      )
 
       if (!initialized) {
         return
@@ -571,27 +523,26 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       // Render immediately for external navigation
       renderNowRef.current()
-      log(
-        'AUTORUN: View state change - rendered in',
-        `${(performance.now() - t0).toFixed(2)}ms`,
-      )
     })
 
     return () => {
-      log('AUTORUN: View state change - DISPOSE')
       dispose()
     }
   }, [view, model])
 
-  // Upload features to GPU from RPC typed arrays
+  // Upload all data to GPU from RPC typed arrays atomically
+  // Read data, CIGAR data, and coverage/SNP data must be uploaded together
+  // to prevent race conditions during rapid scrolling where coverage
+  // rectangles could be rendered with stale SNP data (or vice versa)
   useEffect(() => {
     if (!rendererRef.current || !rpcData || rpcData.numReads === 0) {
       return
     }
 
-    // Use zero-copy upload path from RPC worker data
-    // Positions are offsets from regionStart for Float32 precision
-    rendererRef.current.uploadFromTypedArrays({
+    const renderer = rendererRef.current
+
+    // Upload read data
+    renderer.uploadFromTypedArrays({
       regionStart: rpcData.regionStart,
       readPositions: rpcData.readPositions,
       readYs: rpcData.readYs,
@@ -607,7 +558,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     model.setMaxY(rpcData.maxY)
 
     // Upload CIGAR data
-    rendererRef.current.uploadCigarFromTypedArrays({
+    renderer.uploadCigarFromTypedArrays({
       gapPositions: rpcData.gapPositions,
       gapYs: rpcData.gapYs,
       gapTypes: rpcData.gapTypes,
@@ -630,42 +581,37 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       numHardclips: rpcData.numHardclips,
     })
 
-    scheduleRenderRef.current()
-  }, [rpcData, model])
-
-  // Upload coverage from RPC typed arrays
-  useEffect(() => {
-    if (!rendererRef.current || !showCoverage || !rpcData) {
-      return
+    // Upload coverage/SNP data in the same effect
+    if (showCoverage) {
+      renderer.uploadCoverageFromTypedArrays({
+        coverageDepths: rpcData.coverageDepths,
+        coverageMaxDepth: rpcData.coverageMaxDepth,
+        coverageBinSize: rpcData.coverageBinSize,
+        coverageStartOffset: rpcData.coverageStartOffset,
+        numCoverageBins: rpcData.numCoverageBins,
+        snpPositions: rpcData.snpPositions,
+        snpYOffsets: rpcData.snpYOffsets,
+        snpHeights: rpcData.snpHeights,
+        snpColorTypes: rpcData.snpColorTypes,
+        numSnpSegments: rpcData.numSnpSegments,
+        noncovPositions: rpcData.noncovPositions,
+        noncovYOffsets: rpcData.noncovYOffsets,
+        noncovHeights: rpcData.noncovHeights,
+        noncovColorTypes: rpcData.noncovColorTypes,
+        noncovMaxCount: rpcData.noncovMaxCount,
+        numNoncovSegments: rpcData.numNoncovSegments,
+        indicatorPositions: rpcData.indicatorPositions,
+        indicatorColorTypes: rpcData.indicatorColorTypes,
+        numIndicators: rpcData.numIndicators,
+      })
     }
-    rendererRef.current.uploadCoverageFromTypedArrays({
-      coverageDepths: rpcData.coverageDepths,
-      coverageMaxDepth: rpcData.coverageMaxDepth,
-      coverageBinSize: rpcData.coverageBinSize,
-      numCoverageBins: rpcData.numCoverageBins,
-      snpPositions: rpcData.snpPositions,
-      snpYOffsets: rpcData.snpYOffsets,
-      snpHeights: rpcData.snpHeights,
-      snpColorTypes: rpcData.snpColorTypes,
-      numSnpSegments: rpcData.numSnpSegments,
-      // Noncov (interbase) coverage data
-      noncovPositions: rpcData.noncovPositions,
-      noncovYOffsets: rpcData.noncovYOffsets,
-      noncovHeights: rpcData.noncovHeights,
-      noncovColorTypes: rpcData.noncovColorTypes,
-      noncovMaxCount: rpcData.noncovMaxCount,
-      numNoncovSegments: rpcData.numNoncovSegments,
-      // Indicator data
-      indicatorPositions: rpcData.indicatorPositions,
-      indicatorColorTypes: rpcData.indicatorColorTypes,
-      numIndicators: rpcData.numIndicators,
-    })
+
     scheduleRenderRef.current()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rpcData, showCoverage])
 
   // Re-render on settings change
   useEffect(() => {
-    log('EFFECT: Settings change - RUN')
     if (rendererReady) {
       scheduleRenderRef.current()
     }
@@ -685,7 +631,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   // Re-render when container dimensions change (from ResizeObserver)
   useEffect(() => {
-    log(`EFFECT: Dimensions change - RUN (width=${measuredDims.width})`)
     if (rendererReady && measuredDims.width !== undefined) {
       scheduleRenderRef.current()
     }
@@ -710,7 +655,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   // Invalidate cached rect when container resizes
   useEffect(() => {
-    log('EFFECT: Invalidate rect - RUN')
     canvasRectRef.current = null
   }, [measuredDims.width, measuredDims.height])
 
@@ -726,22 +670,16 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Updates view state directly - this is the single source of truth
   // Effect runs once on mount - all values accessed via refs
   useEffect(() => {
-    log('EFFECT: Wheel handler - RUN')
     const canvas = canvasRef.current
     if (!canvas) {
-      log('EFFECT: Wheel handler - SKIP (no canvas)')
       return
     }
 
     const handleWheel = (e: WheelEvent) => {
-      wheelCountRef.current++
-      const wheelNum = wheelCountRef.current
-      const t0 = performance.now()
       const view = viewRef.current
       const width = widthRef.current
 
       if (!view?.initialized || width === undefined) {
-        log(`WHEEL #${wheelNum} SKIP - view not ready`)
         return
       }
 
@@ -752,7 +690,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       if (absX > 5 && absX > absY * 2) {
         e.preventDefault()
         e.stopPropagation()
-        const t1 = performance.now()
         const newOffsetPx = clampOffsetRef.current(view.offsetPx + e.deltaX)
 
         // Compute new domain for immediate rendering
@@ -777,20 +714,13 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           const deltaBp = deltaPx * view.bpPerPx
           const rangeStart = first.start + deltaBp
           const rangeEnd = rangeStart + width * view.bpPerPx
-          const t2 = performance.now()
 
           // Render immediately with computed values
           renderWithDomainRef.current([rangeStart, rangeEnd])
-          const t3 = performance.now()
 
           // Update MobX (for gridlines, other components)
           selfUpdateRef.current = true
           view.setNewView(view.bpPerPx, newOffsetPx)
-          const t4 = performance.now()
-
-          log(
-            `WHEEL #${wheelNum} (pan): compute=${(t2 - t1).toFixed(2)}ms, render=${(t3 - t2).toFixed(2)}ms, setNewView=${(t4 - t3).toFixed(2)}ms, total=${(t4 - t0).toFixed(2)}ms`,
-          )
         }
 
         checkDataNeedsRef.current()
@@ -805,7 +735,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         e.preventDefault()
         e.stopPropagation()
         // Vertical scroll within pileup (Y-axis panning, not part of view state)
-        const t1 = performance.now()
         const rowHeight = featureHeightRef.current + featureSpacingRef.current
         const totalHeight = maxYRef.current * rowHeight
         const panAmount = e.deltaY * 0.5
@@ -820,20 +749,13 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           newY = [newY[0] - overflow, newY[1] - overflow]
         }
         rangeYRef.current = newY
-        const t2 = performance.now()
         renderNowRef.current()
-        const t3 = performance.now()
-        log(
-          `WHEEL #${wheelNum} (Y-pan): compute=${(t2 - t1).toFixed(2)}ms, render=${(t3 - t2).toFixed(2)}ms, total=${(t3 - t0).toFixed(2)}ms`,
-        )
       } else if (view.scrollZoom || e.ctrlKey || e.metaKey) {
         e.preventDefault()
         e.stopPropagation()
         // Zoom around mouse position
-        const t1 = performance.now()
         const currentRange = getVisibleBpRangeRef.current()
         if (!currentRange) {
-          log(`WHEEL #${wheelNum} (zoom) SKIP - no current range`)
           return
         }
 
@@ -843,7 +765,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         if (!rect) {
           rect = canvas.getBoundingClientRect()
           canvasRectRef.current = rect
-          log(`WHEEL #${wheelNum} - getBoundingClientRect called (cache miss)`)
         }
         const mouseX = e.clientX - rect.left
         const factor = 1.2
@@ -860,14 +781,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
         // Check zoom limits
         if (newBpPerPx < view.minBpPerPx || newBpPerPx > view.maxBpPerPx) {
-          log(`WHEEL #${wheelNum} (zoom) SKIP - zoom limit reached`)
           return
         }
 
         // Position new range so mouseBp stays at same screen position
         const newRangeStart = mouseBp - mouseFraction * newRangeWidth
         const newRangeEnd = newRangeStart + newRangeWidth
-        const t2 = performance.now()
 
         // Compute new offsetPx from the new range start
         const contentBlocks = (
@@ -893,16 +812,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
           // Render immediately with computed values
           renderWithDomainRef.current([newRangeStart, newRangeEnd])
-          const t3 = performance.now()
 
           // Update MobX (for gridlines, other components)
           selfUpdateRef.current = true
           view.setNewView(newBpPerPx, newOffsetPx)
-          const t4 = performance.now()
-
-          log(
-            `WHEEL #${wheelNum} (zoom): compute=${(t2 - t1).toFixed(2)}ms, render=${(t3 - t2).toFixed(2)}ms, setNewView=${(t4 - t3).toFixed(2)}ms, total=${(t4 - t0).toFixed(2)}ms`,
-          )
         }
 
         checkDataNeedsRef.current()
@@ -911,7 +824,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
     canvas.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
-      log('EFFECT: Wheel handler - CLEANUP')
       canvas.removeEventListener('wheel', handleWheel)
     }
     // All values accessed via refs - effect only runs once on mount

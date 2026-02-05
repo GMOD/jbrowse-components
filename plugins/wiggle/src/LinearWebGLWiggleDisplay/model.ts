@@ -413,12 +413,8 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       async renderSvg() {
-        console.log('model renderSvg action called')
         const { renderSvg } = await import('./renderSvg.tsx')
-        console.log('model renderSvg import complete')
-        const result = await renderSvg(self)
-        console.log('model renderSvg function complete')
-        return result
+        return renderSvg(self)
       },
     }))
     .postProcessSnapshot(snap => {

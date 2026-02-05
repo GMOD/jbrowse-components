@@ -13,7 +13,6 @@ const ROW_PADDING = 2
 export async function renderSvg(
   model: LinearWebGLMultiWiggleDisplayModel,
 ): Promise<React.ReactNode> {
-  console.log('renderSvg multi: start')
   const view = getContainingView(model) as LGV
   const { offsetPx } = view
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
@@ -28,13 +27,7 @@ export async function renderSvg(
     visibleRegion,
   } = model
 
-  console.log('renderSvg multi: got model properties', {
-    renderingType,
-    numSources,
-  })
-
   if (!rpcData || !domain || !visibleRegion || numSources === 0) {
-    console.log('renderSvg multi: early return - missing data')
     return null
   }
 
@@ -54,21 +47,10 @@ export async function renderSvg(
 
   let content = ''
 
-  console.log(
-    'renderSvg multi: starting loop, numSources:',
-    rpcData.sources.length,
-  )
-
   for (let sourceIdx = 0; sourceIdx < rpcData.sources.length; sourceIdx++) {
     const source = rpcData.sources[sourceIdx]!
     const { featurePositions, featureScores, numFeatures, color } = source
     const rowY = sourceIdx * (rowHeight + ROW_PADDING)
-    console.log(
-      'renderSvg multi: processing source',
-      sourceIdx,
-      'numFeatures:',
-      numFeatures,
-    )
 
     if (renderingType === 'multirowline') {
       let pathData = ''
@@ -126,8 +108,6 @@ export async function renderSvg(
     }
   }
 
-  console.log('renderSvg multi: loop complete, content length:', content.length)
-
   const result = (
     <>
       <g dangerouslySetInnerHTML={{ __html: content }} />
@@ -139,6 +119,5 @@ export async function renderSvg(
     </>
   )
 
-  console.log('renderSvg multi: done')
   return result
 }

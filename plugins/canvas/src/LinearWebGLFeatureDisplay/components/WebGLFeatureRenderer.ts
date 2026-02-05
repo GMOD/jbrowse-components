@@ -10,8 +10,6 @@
  * Uses high-precision 12-bit split coordinates (same approach as pileup renderer).
  */
 
-console.log('WebGLFeatureRenderer module loaded')
-
 function splitPositionWithFrac(value: number): [number, number] {
   const intValue = Math.floor(value)
   const frac = value - intValue
@@ -494,12 +492,6 @@ export class WebGLFeatureRenderer {
     arrowColors: Uint32Array
     numArrows: number
   }) {
-    console.log('WebGLFeatureRenderer.uploadFromTypedArrays called:', {
-      regionStart: data.regionStart,
-      numRects: data.numRects,
-      numLines: data.numLines,
-      numArrows: data.numArrows,
-    })
     const gl = this.gl
 
     // Clean up old buffers
@@ -662,15 +654,6 @@ export class WebGLFeatureRenderer {
     const canvas = this.canvas
     const { canvasWidth, canvasHeight, domainX, scrollY } = state
 
-    console.log('WebGLFeatureRenderer.render called:', {
-      canvasWidth,
-      canvasHeight,
-      domainX,
-      scrollY,
-      hasBuffers: !!this.buffers,
-      rectCount: this.buffers?.rectCount ?? 0,
-    })
-
     if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
       canvas.width = canvasWidth
       canvas.height = canvasHeight
@@ -681,9 +664,6 @@ export class WebGLFeatureRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (!this.buffers || this.buffers.rectCount === 0) {
-      console.log(
-        'WebGLFeatureRenderer.render: No buffers or no rects, returning early',
-      )
       return
     }
 

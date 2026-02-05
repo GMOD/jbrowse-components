@@ -96,10 +96,12 @@ export interface WebGLPileupDataResult {
   hardclipYs: Uint16Array
   hardclipLengths: Uint16Array
 
-  // Coverage data - positions computed from regionStart + index * binSize
+  // Coverage data - positions computed from regionStart + coverageStartOffset + index * binSize
+  // Coverage may extend beyond the requested region to cover full feature extents
   coverageDepths: Float32Array
   coverageMaxDepth: number
   coverageBinSize: number
+  coverageStartOffset: number // offset from regionStart where coverage begins (can be negative)
 
   // SNP coverage data - offsets from regionStart
   snpPositions: Uint32Array

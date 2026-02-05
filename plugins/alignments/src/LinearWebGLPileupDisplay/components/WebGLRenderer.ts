@@ -283,10 +283,11 @@ void main() {
 `
 
 // Coverage vertex shader - renders grey bars for total coverage
-// Position is computed from binIndex * binSize (offset-based from regionStart)
+// Uses explicit position attribute for consistent positioning with other coverage elements
 const COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
+in float a_position;    // position offset from regionStart
 in float a_depth;       // normalized depth (0-1)
 
 uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
@@ -306,12 +307,11 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  // Compute bin position as offset (binIndex * binSize)
-  float binOffset = float(gl_InstanceID) * u_binSize;
+  // Use explicit position (offset from regionStart)
   float domainWidth = u_visibleRange.y - u_visibleRange.x;
 
-  float x1 = (binOffset - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
-  float x2 = (binOffset + u_binSize - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float x1 = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float x2 = (a_position + u_binSize - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
 
   // Ensure minimum width of 1 pixel
   float minWidth = 2.0 / u_canvasWidth;
@@ -1699,12 +1699,13 @@ export class WebGLRenderer {
    */
   /**
    * Upload coverage data from pre-computed typed arrays
-   * Position is computed in shader from index * binSize (offset-based)
+   * Positions are offsets from regionStart
    */
   uploadCoverageFromTypedArrays(data: {
     coverageDepths: Float32Array
     coverageMaxDepth: number
     coverageBinSize: number
+    coverageStartOffset: number // offset from regionStart where coverage begins
     numCoverageBins: number
     snpPositions: Uint32Array // offsets from regionStart
     snpYOffsets: Float32Array
@@ -1743,8 +1744,16 @@ export class WebGLRenderer {
       gl.deleteVertexArray(this.buffers.indicatorVAO)
     }
 
-    // Upload grey coverage bars (position computed from gl_InstanceID in shader)
+    // Upload grey coverage bars with explicit positions
     if (data.numCoverageBins > 0) {
+      // Generate position array (offsets from regionStart)
+      // coverageStartOffset indicates where coverage begins relative to regionStart
+      // (can be negative if features extend before regionStart)
+      const positions = new Float32Array(data.numCoverageBins)
+      for (let i = 0; i < data.numCoverageBins; i++) {
+        positions[i] = data.coverageStartOffset + i * data.coverageBinSize
+      }
+
       // Normalize depths
       const normalizedDepths = new Float32Array(data.coverageDepths.length)
       for (let i = 0; i < data.coverageDepths.length; i++) {
@@ -1754,7 +1763,7 @@ export class WebGLRenderer {
 
       const coverageVAO = gl.createVertexArray()
       gl.bindVertexArray(coverageVAO)
-      // No position buffer needed - computed in shader from gl_InstanceID
+      this.uploadBuffer(this.coverageProgram, 'a_position', positions, 1)
       this.uploadBuffer(this.coverageProgram, 'a_depth', normalizedDepths, 1)
       gl.bindVertexArray(null)
 
@@ -1762,7 +1771,6 @@ export class WebGLRenderer {
       this.buffers.coverageCount = data.numCoverageBins
       this.buffers.maxDepth = data.coverageMaxDepth
       this.buffers.binSize = data.coverageBinSize
-      // regionStart is already set from uploadFromTypedArrays
     } else {
       this.buffers.coverageVAO = null
       this.buffers.coverageCount = 0

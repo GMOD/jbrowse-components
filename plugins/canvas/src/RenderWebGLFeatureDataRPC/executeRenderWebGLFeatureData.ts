@@ -440,7 +440,6 @@ export async function executeRenderWebGLFeatureData({
   pluginManager: PluginManager
   args: RenderWebGLFeatureDataArgs
 }): Promise<WebGLFeatureDataResult> {
-  console.log('executeRenderWebGLFeatureData: Starting', args.region)
   const {
     sessionId,
     adapterConfig,
@@ -787,13 +786,6 @@ export async function executeRenderWebGLFeatureData({
     result.flatbushData,
     result.subfeatureFlatbushData,
   ] as ArrayBuffer[]
-
-  console.log('executeRenderWebGLFeatureData: Complete', {
-    numRects: result.numRects,
-    numLines: result.numLines,
-    numArrows: result.numArrows,
-    maxY: result.maxY,
-  })
 
   return rpcResult(result, transferables) as any
 }

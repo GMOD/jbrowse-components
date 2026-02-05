@@ -8,8 +8,6 @@ import { observer } from 'mobx-react'
 
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
 
-console.log('WebGLFeatureComponent module loaded')
-
 import type {
   FlatbushItem,
   FloatingLabelsDataMap,
@@ -143,12 +141,6 @@ function performHitDetection(
 const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   model,
 }: Props) {
-  console.log('WebGLFeatureComponent: Rendering', {
-    height: model.height,
-    hasRpcData: !!model.rpcData,
-    isLoading: model.isLoading,
-    hasError: !!model.error,
-  })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLFeatureRenderer | null>(null)
   const [measureRef, measuredDims] = useMeasure()
@@ -365,9 +357,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         }
 
         renderNowRef.current()
-      } catch (e) {
+      } catch {
         // Model may have been detached from state tree
-        console.warn('Autorun error (model may be detached):', e)
       }
     })
 
@@ -378,13 +369,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   // Upload features to GPU from RPC typed arrays
   useEffect(() => {
-    console.log('WebGLFeatureComponent: Upload effect running', {
-      hasRenderer: !!rendererRef.current,
-      hasRpcData: !!rpcData,
-      numRects: rpcData?.numRects ?? 0,
-    })
     if (!rendererRef.current || !rpcData || rpcData.numRects === 0) {
-      console.log('WebGLFeatureComponent: Skipping upload - no renderer/data')
       return
     }
 
