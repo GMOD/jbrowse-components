@@ -11,11 +11,15 @@ import LinearPileupDisplayF from './LinearPileupDisplay/index.ts'
 import LinearReadArcsDisplayF from './LinearReadArcsDisplay/index.ts'
 import LinearReadCloudDisplayF from './LinearReadCloudDisplay/index.ts'
 import LinearSNPCoverageDisplayF from './LinearSNPCoverageDisplay/index.ts'
+import LinearWebGLArcsDisplayF from './LinearWebGLArcsDisplay/index.ts'
+import LinearWebGLCloudDisplayF from './LinearWebGLCloudDisplay/index.ts'
 import LinearWebGLPileupDisplayF from './LinearWebGLPileupDisplay/index.ts'
 import PileupRPCMethodsF from './PileupRPC/index.ts'
 import PileupRendererF from './PileupRenderer/index.ts'
 import LinearReadArcsDisplayRPCMethodsF from './RenderLinearReadArcsDisplayRPC/index.ts'
 import LinearReadCloudDisplayRPCMethodsF from './RenderLinearReadCloudDisplayRPC/index.ts'
+import WebGLArcsDataRPCMethodsF from './RenderWebGLArcsDataRPC/index.ts'
+import WebGLCloudDataRPCMethodsF from './RenderWebGLCloudDataRPC/index.ts'
 import WebGLPileupDataRPCMethodsF from './RenderWebGLPileupDataRPC/index.ts'
 import SNPCoverageAdapterF from './SNPCoverageAdapter/index.ts'
 import SNPCoverageRendererF from './SNPCoverageRenderer/index.ts'
@@ -31,6 +35,8 @@ export default class AlignmentsPlugin extends Plugin {
       BamAdapterF,
       LinearPileupDisplayF,
       LinearWebGLPileupDisplayF,
+      LinearWebGLArcsDisplayF,
+      LinearWebGLCloudDisplayF,
       LinearSNPCoverageDisplayF,
       AlignmentsTrackF,
       SNPCoverageAdapterF,
@@ -40,6 +46,8 @@ export default class AlignmentsPlugin extends Plugin {
       LinearReadArcsDisplayRPCMethodsF,
       LinearReadCloudDisplayRPCMethodsF,
       WebGLPileupDataRPCMethodsF,
+      WebGLArcsDataRPCMethodsF,
+      WebGLCloudDataRPCMethodsF,
       SNPCoverageRendererF,
       LinearReadArcsDisplayF,
       LinearReadCloudDisplayF,
@@ -59,4 +67,6 @@ export {
 } from './LinearPileupDisplay/index.ts'
 export type { LinearPileupDisplayModel } from './LinearPileupDisplay/model.ts'
 export type { LinearWebGLPileupDisplayModel } from './LinearWebGLPileupDisplay/model.ts'
+export type { LinearWebGLArcsDisplayModel } from './LinearWebGLArcsDisplay/model.ts'
+export type { LinearWebGLCloudDisplayModel } from './LinearWebGLCloudDisplay/model.ts'
 export * as MismatchParser from './MismatchParser/index.ts'
