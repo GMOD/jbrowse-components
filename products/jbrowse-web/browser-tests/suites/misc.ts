@@ -44,10 +44,9 @@ const suite: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await page.waitForSelector(
-          '[data-testid^="prerendered_canvas"]',
-          { timeout: 60000 },
-        )
+        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
+          timeout: 60000,
+        })
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
@@ -71,10 +70,9 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector(
-          '[data-testid^="display-gff3tabix_genes"]',
-          { timeout: 60000 },
-        )
+        await page.waitForSelector('[data-testid^="display-gff3tabix_genes"]', {
+          timeout: 60000,
+        })
         await waitForLoadingToComplete(page)
         await delay(2000)
         await canvasSnapshot(

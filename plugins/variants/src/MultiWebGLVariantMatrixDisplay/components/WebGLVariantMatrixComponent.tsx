@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -36,9 +36,7 @@ const WebGLVariantMatrixComponent = observer(
       try {
         rendererRef.current = new WebGLVariantMatrixRenderer(canvas)
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : 'WebGL initialization failed',
-        )
+        setError(e instanceof Error ? e.message : 'WebGL initialization failed')
       }
       return () => {
         if (rafRef.current) {
@@ -54,6 +52,7 @@ const WebGLVariantMatrixComponent = observer(
       const renderer = rendererRef.current
       const cellData = model.webglCellData
       if (!renderer || !cellData) {
+        cellDataRef.current = null
         return
       }
       cellDataRef.current = cellData
@@ -100,6 +99,99 @@ const WebGLVariantMatrixComponent = observer(
       view.dynamicBlocks.totalWidthPx,
     ])
 
+    const lastHoveredRef = useRef<string | undefined>(undefined)
+
+    const getFeatureUnderMouse = useCallback(
+      (eventClientX: number, eventClientY: number) => {
+        const cellData = cellDataRef.current
+        const sources = model.sources
+        if (!cellData || !sources?.length || cellData.numFeatures === 0) {
+          return undefined
+        }
+        const w = Math.round(view.dynamicBlocks.totalWidthPx)
+        const rect = canvasRef.current?.getBoundingClientRect()
+        if (!rect) {
+          return undefined
+        }
+        const mouseX = eventClientX - rect.left
+        const mouseY = eventClientY - rect.top
+
+        const featureIdx = Math.floor((mouseX / w) * cellData.numFeatures)
+        const rowIdx = Math.floor((mouseY + model.scrollTop) / model.rowHeight)
+        const source = sources[rowIdx]
+        const feature = cellData.featureData[featureIdx]
+        if (source && feature) {
+          const sampleName = source.baseName ?? source.name
+          const genotype = feature.genotypes[sampleName]
+          if (genotype) {
+            const alleles = makeSimpleAltString(
+              genotype,
+              feature.ref,
+              feature.alt,
+            )
+            return {
+              genotype,
+              alleles,
+              featureName: feature.name,
+              description:
+                feature.alt.length >= 3
+                  ? 'multiple ALT alleles'
+                  : feature.description,
+              length: getBpDisplayStr(feature.length),
+              name: source.name,
+              featureId: feature.featureId,
+            }
+          }
+        }
+        return undefined
+      },
+      [model, view],
+    )
+
+    const handleMouseMove = useCallback(
+      (e: React.MouseEvent) => {
+        const result = getFeatureUnderMouse(e.clientX, e.clientY)
+        const key = result
+          ? `${result.name}:${result.genotype}:${result.featureId}`
+          : undefined
+        if (key !== lastHoveredRef.current) {
+          lastHoveredRef.current = key
+          if (result) {
+            const { featureId, ...tooltip } = result
+            model.setHoveredGenotype(tooltip)
+          } else {
+            model.setHoveredGenotype(undefined)
+          }
+        }
+      },
+      [getFeatureUnderMouse, model],
+    )
+
+    const handleMouseLeave = useCallback(() => {
+      if (lastHoveredRef.current !== undefined) {
+        lastHoveredRef.current = undefined
+        model.setHoveredGenotype(undefined)
+      }
+    }, [model])
+
+    const handleClick = useCallback(
+      (e: React.MouseEvent) => {
+        const cellData = cellDataRef.current
+        const features = model.featuresVolatile
+        if (!cellData || !features || cellData.numFeatures === 0) {
+          return
+        }
+        const result = getFeatureUnderMouse(e.clientX, e.clientY)
+        if (result) {
+          const feature = features.find(f => f.id() === result.featureId)
+          if (feature) {
+            model.selectFeature(feature)
+          }
+        }
+      },
+      [getFeatureUnderMouse, model],
+    )
+
     const width = Math.round(view.dynamicBlocks.totalWidthPx)
     const height = model.availableHeight
 
@@ -126,74 +218,9 @@ const WebGLVariantMatrixComponent = observer(
           }}
           width={width}
           height={height}
-          onMouseMove={event => {
-            const cellData = cellDataRef.current
-            const sources = model.sources
-            if (!cellData || !sources?.length || cellData.numFeatures === 0) {
-              return
-            }
-            const rect = event.currentTarget.getBoundingClientRect()
-            const mouseX = event.clientX - rect.left
-            const mouseY = event.clientY - rect.top
-
-            const featureIdx = Math.floor(
-              (mouseX / width) * cellData.numFeatures,
-            )
-            const rowIdx = Math.floor(
-              (mouseY + model.scrollTop) / model.rowHeight,
-            )
-            const source = sources[rowIdx]
-            const feature = cellData.featureData[featureIdx]
-            if (source && feature) {
-              const sampleName = source.baseName ?? source.name
-              const genotype = feature.genotypes[sampleName]
-              if (genotype) {
-                const alleles = makeSimpleAltString(
-                  genotype,
-                  feature.ref,
-                  feature.alt,
-                )
-                model.setHoveredGenotype({
-                  genotype,
-                  alleles,
-                  featureName: feature.name,
-                  description:
-                    feature.alt.length >= 3
-                      ? 'multiple ALT alleles'
-                      : feature.description,
-                  length: getBpDisplayStr(feature.length),
-                  name: source.name,
-                })
-              } else {
-                model.setHoveredGenotype(undefined)
-              }
-            } else {
-              model.setHoveredGenotype(undefined)
-            }
-          }}
-          onMouseLeave={() => {
-            model.setHoveredGenotype(undefined)
-          }}
-          onClick={event => {
-            const cellData = cellDataRef.current
-            const features = model.featuresVolatile
-            if (!cellData || !features || cellData.numFeatures === 0) {
-              return
-            }
-            const rect = event.currentTarget.getBoundingClientRect()
-            const mouseX = event.clientX - rect.left
-
-            const featureIdx = Math.floor(
-              (mouseX / width) * cellData.numFeatures,
-            )
-            const fd = cellData.featureData[featureIdx]
-            if (fd) {
-              const feature = features.find(f => f.id() === fd.featureId)
-              if (feature) {
-                model.selectFeature(feature)
-              }
-            }
-          }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onClick={handleClick}
         />
         {!model.webglCellData || model.regionTooLarge ? (
           <LoadingOverlay model={model} />

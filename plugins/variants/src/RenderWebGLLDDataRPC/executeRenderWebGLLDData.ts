@@ -59,53 +59,49 @@ export async function executeRenderWebGLLDData({
     adapterConfig,
     regions,
     bpPerPx,
-    ldMetric = 'r2',
-    minorAlleleFrequencyFilter = 0.01,
-    lengthCutoffFilter = Number.MAX_SAFE_INTEGER,
-    hweFilterThreshold = 0.001,
-    callRateFilter = 0,
-    jexlFilters = [],
-    signedLD = false,
-    useGenomicPositions = false,
-    fitToHeight = false,
+    ldMetric,
+    minorAlleleFrequencyFilter,
+    lengthCutoffFilter,
+    hweFilterThreshold,
+    callRateFilter,
+    jexlFilters,
+    signedLD,
+    useGenomicPositions,
+    fitToHeight,
     displayHeight,
   } = args
 
   // Get LD data from adapter
   let ldData: LDMatrixResult | null
   const adapterType = adapterConfig.type as string | undefined
-  if (
-    adapterType === 'PlinkLDAdapter' ||
-    adapterType === 'PlinkLDTabixAdapter' ||
-    adapterType === 'LdmatAdapter'
-  ) {
-    ldData = await getLDMatrixFromPlink({
-      pluginManager,
-      args: {
-        regions,
-        sessionId,
-        adapterConfig,
-        ldMetric,
-      },
-    })
-  } else {
-    ldData = await getLDMatrix({
-      pluginManager,
-      args: {
-        regions,
-        sessionId,
-        adapterConfig,
-        bpPerPx,
-        ldMetric,
-        minorAlleleFrequencyFilter,
-        lengthCutoffFilter,
-        hweFilterThreshold,
-        callRateFilter,
-        jexlFilters,
-        signedLD,
-      },
-    })
-  }
+  ldData = await (adapterType === 'PlinkLDAdapter' ||
+  adapterType === 'PlinkLDTabixAdapter' ||
+  adapterType === 'LdmatAdapter'
+    ? getLDMatrixFromPlink({
+        pluginManager,
+        args: {
+          regions,
+          sessionId,
+          adapterConfig,
+          ldMetric,
+        },
+      })
+    : getLDMatrix({
+        pluginManager,
+        args: {
+          regions,
+          sessionId,
+          adapterConfig,
+          bpPerPx,
+          ldMetric,
+          minorAlleleFrequencyFilter,
+          lengthCutoffFilter,
+          hweFilterThreshold,
+          callRateFilter,
+          jexlFilters,
+          signedLD,
+        },
+      }))
 
   if (!ldData || ldData.snps.length === 0) {
     return {
@@ -206,8 +202,8 @@ export async function executeRenderWebGLLDData({
       flatbush.add(
         flatbushCoords[k]!,
         flatbushCoords[k + 1]!,
-        flatbushCoords[k + 2]!,
-        flatbushCoords[k + 3]!,
+        flatbushCoords[k + 2],
+        flatbushCoords[k + 3],
       )
     }
   } else {

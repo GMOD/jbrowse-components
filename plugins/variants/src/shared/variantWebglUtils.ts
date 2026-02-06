@@ -82,9 +82,7 @@ export function cacheUniforms(
   return cache
 }
 
-export function colorToRGBA(
-  color: string,
-): [number, number, number, number] {
+export function colorToRGBA(color: string): [number, number, number, number] {
   const c = colord(color)
   const { r, g, b, a } = c.toRgb()
   return [r, g, b, Math.round(a * 255)]

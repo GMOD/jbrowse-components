@@ -13,17 +13,17 @@ import {
   toCoreFeat,
   toCoreFeatBasic,
 } from '../shared/arcUtils.ts'
-import { orientationTypes } from '../util.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import { SAM_FLAG_MATE_UNMAPPED } from '../shared/samFlags.ts'
 import { hasPairedReads } from '../shared/util.ts'
+import { orientationTypes } from '../util.ts'
 
 import type { WebGLArcsDataResult } from './types.ts'
 import type { CoreFeat } from '../shared/arcUtils.ts'
 import type { ChainStats, ColorBy } from '../shared/types.ts'
-import type { Feature, Region } from '@jbrowse/core/util'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 interface ExecuteParams {
   pluginManager: PluginManager
@@ -108,9 +108,11 @@ function getColorType(
 
   if (hasPaired) {
     if (colorByType === 'insertSizeAndOrientation') {
-      return getOrientationColorIndex(k1.pair_orientation)
-        ?? getInsertSizeColorIndex(k1, stats)
-        ?? 0
+      return (
+        getOrientationColorIndex(k1.pair_orientation) ??
+        getInsertSizeColorIndex(k1, stats) ??
+        0
+      )
     }
     if (colorByType === 'orientation') {
       return getOrientationColorIndex(k1.pair_orientation) ?? 0
@@ -125,7 +127,10 @@ function getColorType(
   }
 
   // Long-read coloring
-  if (colorByType === 'orientation' || colorByType === 'insertSizeAndOrientation') {
+  if (
+    colorByType === 'orientation' ||
+    colorByType === 'insertSizeAndOrientation'
+  ) {
     if (s1 === -1 && s2 === 1) {
       return 7 // navy
     }

@@ -1,7 +1,4 @@
-import {
-  cacheUniforms,
-  createProgram,
-} from '../../shared/variantWebglUtils.ts'
+import { cacheUniforms, createProgram } from '../../shared/variantWebglUtils.ts'
 
 const VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -110,7 +107,7 @@ export class WebGLVariantMatrixRenderer {
       return
     }
 
-    const vao = gl.createVertexArray()!
+    const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
 
     // a_featureIndex (float)
@@ -195,7 +192,11 @@ export class WebGLVariantMatrixRenderer {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    if (!this.buffers || this.buffers.cellCount === 0 || state.numFeatures === 0) {
+    if (
+      !this.buffers ||
+      this.buffers.cellCount === 0 ||
+      state.numFeatures === 0
+    ) {
       return
     }
 

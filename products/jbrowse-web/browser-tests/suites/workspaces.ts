@@ -199,9 +199,7 @@ const suite: TestSuite = {
           throw new Error(`Expected 2 dockview groups, got ${groups.length}`)
         }
 
-        const viewContainers = await page.$$(
-          '[data-testid^="view-container-"]',
-        )
+        const viewContainers = await page.$$('[data-testid^="view-container-"]')
         if (viewContainers.length !== 2) {
           throw new Error(
             `Expected 2 view containers, got ${viewContainers.length}`,

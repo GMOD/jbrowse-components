@@ -52,11 +52,23 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
     const renderer = rendererRef.current
     const data = model.rpcData
     if (!renderer || !data) {
-      console.log('[WebGLArcs] upload skipped: renderer=', !!renderer, 'data=', !!data)
+      console.log(
+        '[WebGLArcs] upload skipped: renderer=',
+        !!renderer,
+        'data=',
+        !!data,
+      )
       return
     }
 
-    console.log('[WebGLArcs] uploading data: numArcs=', data.numArcs, 'numLines=', data.numLines, 'regionStart=', data.regionStart)
+    console.log(
+      '[WebGLArcs] uploading data: numArcs=',
+      data.numArcs,
+      'numLines=',
+      data.numLines,
+      'regionStart=',
+      data.regionStart,
+    )
     renderer.uploadFromTypedArrays({
       regionStart: data.regionStart,
       arcX1: data.arcX1,
@@ -75,7 +87,12 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !view.initialized) {
-      console.log('[WebGLArcs] render loop skipped: renderer=', !!renderer, 'initialized=', view.initialized)
+      console.log(
+        '[WebGLArcs] render loop skipped: renderer=',
+        !!renderer,
+        'initialized=',
+        view.initialized,
+      )
       return
     }
 
@@ -100,7 +117,16 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
       const height = model.height
 
       if (frameCount === 0) {
-        console.log('[WebGLArcs] first render frame: domain=', visibleRegion.start, '-', visibleRegion.end, 'size=', width, 'x', height)
+        console.log(
+          '[WebGLArcs] first render frame: domain=',
+          visibleRegion.start,
+          '-',
+          visibleRegion.end,
+          'size=',
+          width,
+          'x',
+          height,
+        )
       }
       frameCount++
 
@@ -118,7 +144,11 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
     renderFrame()
 
     return () => {
-      console.log('[WebGLArcs] stopping render loop after', frameCount, 'frames')
+      console.log(
+        '[WebGLArcs] stopping render loop after',
+        frameCount,
+        'frames',
+      )
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
       }

@@ -683,8 +683,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           const newOffsetPx = (newRangeStart - assemblyOrigin) / newBpPerPx
           view.setNewView(newBpPerPx, newOffsetPx)
         }
-
-
       }
     }
 

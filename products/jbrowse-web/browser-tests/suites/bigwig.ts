@@ -76,10 +76,9 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector(
-          '[data-testid^="prerendered_canvas"]',
-          { timeout: 60000 },
-        )
+        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
+          timeout: 60000,
+        })
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
@@ -103,10 +102,9 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector(
-          '[data-testid^="prerendered_canvas"]',
-          { timeout: 60000 },
-        )
+        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
+          timeout: 60000,
+        })
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
@@ -130,10 +128,9 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector(
-          '[data-testid^="prerendered_canvas"]',
-          { timeout: 60000 },
-        )
+        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
+          timeout: 60000,
+        })
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(

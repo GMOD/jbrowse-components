@@ -189,7 +189,6 @@
         }
         return snap
       })
-
     }
 
     configure(pluginManager) {

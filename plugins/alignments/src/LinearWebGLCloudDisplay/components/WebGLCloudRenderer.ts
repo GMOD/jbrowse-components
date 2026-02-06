@@ -238,7 +238,7 @@ export class WebGLCloudRenderer {
       return
     }
 
-    const chainVAO = gl.createVertexArray()!
+    const chainVAO = gl.createVertexArray()
     gl.bindVertexArray(chainVAO)
 
     this.uploadUintBuffer(

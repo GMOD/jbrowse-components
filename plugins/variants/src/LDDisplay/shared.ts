@@ -12,8 +12,8 @@ import {
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
-import type { WebGLLDDataResult } from '../RenderWebGLLDDataRPC/types.ts'
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
+import type { WebGLLDDataResult } from '../RenderWebGLLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -614,58 +614,58 @@ export default function sharedModelFactory(
       },
     }))
     .views(self => ({
-        /**
-         * #method
-         */
-        filterMenuItems() {
-          // Filter settings only available for VCF-computed LD, not pre-computed
-          if (self.isPrecomputedLD) {
-            return []
-          }
-          return [
-            {
-              label: 'LD-specific filters...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  LDFilterDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
+      /**
+       * #method
+       */
+      filterMenuItems() {
+        // Filter settings only available for VCF-computed LD, not pre-computed
+        if (self.isPrecomputedLD) {
+          return []
+        }
+        return [
+          {
+            label: 'LD-specific filters...',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                LDFilterDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
             },
-            {
-              label: 'General JEXL filters...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  AddFiltersDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
+          },
+          {
+            label: 'General JEXL filters...',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                AddFiltersDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
             },
-          ]
-        },
-        renderProps() {
-          return { notReady: true }
-        },
-        /**
-         * #method
-         */
-        legendItems(): LegendItem[] {
-          const metric = self.ldMetric === 'dprime' ? "D'" : 'R²'
-          const range = self.signedLD ? '-1 to 1' : '0 to 1'
-          return [{ label: `${metric}: ${range}` }]
-        },
-        /**
-         * #method
-         */
-        svgLegendWidth(): number {
-          return self.showLegend ? 140 : 0
-        },
+          },
+        ]
+      },
+      renderProps() {
+        return { notReady: true }
+      },
+      /**
+       * #method
+       */
+      legendItems(): LegendItem[] {
+        const metric = self.ldMetric === 'dprime' ? "D'" : 'R²'
+        const range = self.signedLD ? '-1 to 1' : '0 to 1'
+        return [{ label: `${metric}: ${range}` }]
+      },
+      /**
+       * #method
+       */
+      svgLegendWidth(): number {
+        return self.showLegend ? 140 : 0
+      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self

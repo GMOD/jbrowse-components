@@ -7,11 +7,11 @@ import { launch } from 'puppeteer'
 
 import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
 import { buildPath, startServer } from './server.ts'
-import { setUpdateSnapshots } from './snapshot.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
+import { setUpdateSnapshots } from './snapshot.ts'
 
-import type { Browser, Page } from 'puppeteer'
 import type { TestSuite } from './types.ts'
+import type { Browser, Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const volvoxDataPath = path.resolve(__dirname, '../test_data/volvox')
@@ -30,7 +30,10 @@ setUpdateSnapshots(updateSnapshots)
 
 async function discoverSuites(): Promise<TestSuite[]> {
   const suitesDir = path.resolve(__dirname, 'suites')
-  const files = fs.readdirSync(suitesDir).filter(f => f.endsWith('.ts')).sort()
+  const files = fs
+    .readdirSync(suitesDir)
+    .filter(f => f.endsWith('.ts'))
+    .sort()
   const suites: TestSuite[] = []
 
   for (const file of files) {

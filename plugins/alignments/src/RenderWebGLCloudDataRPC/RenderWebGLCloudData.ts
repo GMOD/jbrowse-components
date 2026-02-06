@@ -40,9 +40,8 @@ export default class RenderWebGLCloudData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLCloudData } = await import(
-      './executeRenderWebGLCloudData.ts'
-    )
+    const { executeRenderWebGLCloudData } =
+      await import('./executeRenderWebGLCloudData.ts')
     return executeRenderWebGLCloudData({
       pluginManager: this.pluginManager,
       args: args as unknown as RenderWebGLCloudDataArgs,

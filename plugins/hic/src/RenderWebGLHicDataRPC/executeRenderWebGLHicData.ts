@@ -110,8 +110,8 @@ export async function executeRenderWebGLHicData({
   const items: HicFlatbushItem[] = []
   const flatbushCoords: number[] = []
 
-  for (let i = 0; i < features.length; i++) {
-    const { bin1, bin2, counts, region1Idx, region2Idx } = features[i]!
+  for (const [i, feature] of features.entries()) {
+    const { bin1, bin2, counts, region1Idx, region2Idx } = feature
 
     const x = (bin1 + (regionCombinedOffsets[region1Idx] ?? 0)) * w
     const y = (bin2 + (regionCombinedOffsets[region2Idx] ?? 0)) * w
@@ -129,8 +129,8 @@ export async function executeRenderWebGLHicData({
     flatbush.add(
       flatbushCoords[i]!,
       flatbushCoords[i + 1]!,
-      flatbushCoords[i + 2]!,
-      flatbushCoords[i + 3]!,
+      flatbushCoords[i + 2],
+      flatbushCoords[i + 3],
     )
   }
   flatbush.finish()

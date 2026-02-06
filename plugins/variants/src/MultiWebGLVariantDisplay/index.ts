@@ -23,9 +23,7 @@ export default function MultiWebGLVariantDisplayF(
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(
         () =>
-          import(
-            '../MultiLinearVariantDisplay/components/VariantDisplayComponent.tsx'
-          ),
+          import('../MultiLinearVariantDisplay/components/VariantDisplayComponent.tsx'),
       ),
     })
   })

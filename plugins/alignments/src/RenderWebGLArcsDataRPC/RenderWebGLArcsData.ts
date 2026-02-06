@@ -44,9 +44,8 @@ export default class RenderWebGLArcsData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLArcsData } = await import(
-      './executeRenderWebGLArcsData.ts'
-    )
+    const { executeRenderWebGLArcsData } =
+      await import('./executeRenderWebGLArcsData.ts')
     return executeRenderWebGLArcsData({
       pluginManager: this.pluginManager,
       args: args as unknown as RenderWebGLArcsDataArgs,

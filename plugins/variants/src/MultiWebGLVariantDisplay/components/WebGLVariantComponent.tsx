@@ -110,6 +110,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     const renderer = rendererRef.current
     const cellData = model.webglCellData
     if (!renderer || !cellData) {
+      cellDataRef.current = null
       return
     }
     cellDataRef.current = cellData
@@ -183,11 +184,8 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       const bpPerPx = (domain[1] - domain[0]) / w
       const bpPadding = MIN_HIT_TARGET_PX * bpPerPx
 
-      const genomicPos =
-        domain[0] + (mouseX / w) * (domain[1] - domain[0])
-      const rowIdx = Math.floor(
-        (mouseY + model.scrollTop) / model.rowHeight,
-      )
+      const genomicPos = domain[0] + (mouseX / w) * (domain[1] - domain[0])
+      const rowIdx = Math.floor((mouseY + model.scrollTop) / model.rowHeight)
       const source = sources[rowIdx]
       if (!source) {
         return undefined

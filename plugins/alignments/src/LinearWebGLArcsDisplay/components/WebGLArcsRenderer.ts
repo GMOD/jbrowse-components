@@ -331,9 +331,9 @@ export class WebGLArcsRenderer {
       const t = i / CURVE_SEGMENTS
       const base = i * 4
       templateData[base + 0] = t
-      templateData[base + 1] = 1.0
+      templateData[base + 1] = 1
       templateData[base + 2] = t
-      templateData[base + 3] = -1.0
+      templateData[base + 3] = -1
     }
     this.templateBuffer = gl.createBuffer()!
     gl.bindBuffer(gl.ARRAY_BUFFER, this.templateBuffer)
@@ -448,7 +448,7 @@ export class WebGLArcsRenderer {
 
       // Per-instance: a_x1
       const x1Loc = gl.getAttribLocation(this.arcProgram, 'a_x1')
-      const x1Buf = gl.createBuffer()!
+      const x1Buf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, x1Buf)
       gl.bufferData(gl.ARRAY_BUFFER, data.arcX1, gl.STATIC_DRAW)
       gl.enableVertexAttribArray(x1Loc)
@@ -458,7 +458,7 @@ export class WebGLArcsRenderer {
 
       // Per-instance: a_x2
       const x2Loc = gl.getAttribLocation(this.arcProgram, 'a_x2')
-      const x2Buf = gl.createBuffer()!
+      const x2Buf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, x2Buf)
       gl.bufferData(gl.ARRAY_BUFFER, data.arcX2, gl.STATIC_DRAW)
       gl.enableVertexAttribArray(x2Loc)
@@ -468,7 +468,7 @@ export class WebGLArcsRenderer {
 
       // Per-instance: a_colorType
       const colorLoc = gl.getAttribLocation(this.arcProgram, 'a_colorType')
-      const colorBuf = gl.createBuffer()!
+      const colorBuf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf)
       gl.bufferData(gl.ARRAY_BUFFER, data.arcColorTypes, gl.STATIC_DRAW)
       gl.enableVertexAttribArray(colorLoc)
@@ -482,7 +482,7 @@ export class WebGLArcsRenderer {
       for (let i = 0; i < data.arcIsArc.length; i++) {
         isArcFloat[i] = data.arcIsArc[i]!
       }
-      const isArcBuf = gl.createBuffer()!
+      const isArcBuf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, isArcBuf)
       gl.bufferData(gl.ARRAY_BUFFER, isArcFloat, gl.STATIC_DRAW)
       gl.enableVertexAttribArray(isArcLoc)
@@ -500,23 +500,20 @@ export class WebGLArcsRenderer {
       gl.bindVertexArray(this.lineVAO)
 
       const linePosLoc = gl.getAttribLocation(this.lineProgram, 'a_position')
-      const linePosBuffer = gl.createBuffer()!
+      const linePosBuffer = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, linePosBuffer)
       gl.bufferData(gl.ARRAY_BUFFER, data.linePositions, gl.STATIC_DRAW)
       gl.enableVertexAttribArray(linePosLoc)
       gl.vertexAttribIPointer(linePosLoc, 1, gl.UNSIGNED_INT, 0, 0)
 
       const lineYLoc = gl.getAttribLocation(this.lineProgram, 'a_y')
-      const lineYBuffer = gl.createBuffer()!
+      const lineYBuffer = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, lineYBuffer)
       gl.bufferData(gl.ARRAY_BUFFER, data.lineYs, gl.STATIC_DRAW)
       gl.enableVertexAttribArray(lineYLoc)
       gl.vertexAttribPointer(lineYLoc, 1, gl.FLOAT, false, 0, 0)
 
-      const lineColorLoc = gl.getAttribLocation(
-        this.lineProgram,
-        'a_colorType',
-      )
+      const lineColorLoc = gl.getAttribLocation(this.lineProgram, 'a_colorType')
       lineBuffer = gl.createBuffer()!
       gl.bindBuffer(gl.ARRAY_BUFFER, lineBuffer)
       gl.bufferData(gl.ARRAY_BUFFER, data.lineColorTypes, gl.STATIC_DRAW)
@@ -597,12 +594,7 @@ export class WebGLArcsRenderer {
 
       for (let i = 0; i < NUM_LINE_COLORS; i++) {
         const c = lineColorPalette[i]!
-        gl.uniform3f(
-          this.lineUniforms[`u_lineColors[${i}]`]!,
-          c[0],
-          c[1],
-          c[2],
-        )
+        gl.uniform3f(this.lineUniforms[`u_lineColors[${i}]`]!, c[0], c[1], c[2])
       }
 
       gl.lineWidth(lineWidth)

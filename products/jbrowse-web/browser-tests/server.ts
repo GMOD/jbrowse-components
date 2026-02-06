@@ -8,7 +8,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export const buildPath = path.resolve(__dirname, '../build')
 export const testDataPath = path.resolve(__dirname, '..')
-export const extraTestDataPath = path.resolve(__dirname, '../../..', 'extra_test_data')
+export const extraTestDataPath = path.resolve(
+  __dirname,
+  '../../..',
+  'extra_test_data',
+)
 
 export function startServer(port: number): Promise<http.Server> {
   return new Promise((resolve, reject) => {

@@ -160,7 +160,7 @@ export class WebGLVariantRenderer {
       return
     }
 
-    const vao = gl.createVertexArray()!
+    const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
 
     // a_position (uvec2) - start/end offsets

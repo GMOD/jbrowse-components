@@ -16,10 +16,7 @@ import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './VariantLabels.tsx'
-import {
-  WebGLLDRenderer,
-  generateLDColorRamp,
-} from './WebGLLDRenderer.ts'
+import { WebGLLDRenderer, generateLDColorRamp } from './WebGLLDRenderer.ts'
 import Wrapper from './Wrapper.tsx'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
@@ -320,7 +317,9 @@ const LDCanvas = observer(function LDCanvas({
       return
     }
 
-    renderer.uploadColorRamp(generateLDColorRamp(rpcData.metric, rpcData.signedLD))
+    renderer.uploadColorRamp(
+      generateLDColorRamp(rpcData.metric, rpcData.signedLD),
+    )
   }, [rpcData])
 
   // Re-render on every view change (zoom/scroll) - cheap, just uniforms + draw
@@ -380,7 +379,14 @@ const LDCanvas = observer(function LDCanvas({
         setHoveredItem(undefined)
       }
     },
-    [flatbushIndex, flatbushItems, yScalar, lineZoneHeight, viewScale, viewOffsetX],
+    [
+      flatbushIndex,
+      flatbushItems,
+      yScalar,
+      lineZoneHeight,
+      viewScale,
+      viewOffsetX,
+    ],
   )
 
   const onMouseLeave = useCallback(() => {

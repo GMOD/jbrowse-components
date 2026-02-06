@@ -64,9 +64,7 @@ void main() {
 
 // Color ramp generation functions matching the d3 interpolateRgbBasis in makeImageData.ts
 
-function interpolateStops(
-  stops: [number, number, number][],
-): Uint8Array {
+function interpolateStops(stops: [number, number, number][]): Uint8Array {
   const data = new Uint8Array(256 * 4)
   for (let i = 0; i < 256; i++) {
     const t = i / 255
@@ -264,19 +262,19 @@ export class WebGLLDRenderer {
     const quadIndices = new Uint16Array([0, 1, 2, 0, 2, 3])
 
     const quadPosLoc = gl.getAttribLocation(this.program, 'a_quadPos')
-    const quadBuffer = gl.createBuffer()!
+    const quadBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, quadVertices, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(quadPosLoc)
     gl.vertexAttribPointer(quadPosLoc, 2, gl.FLOAT, false, 0, 0)
 
-    const indexBuffer = gl.createBuffer()!
+    const indexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, quadIndices, gl.STATIC_DRAW)
 
     // Per-instance position buffer
     const posLoc = gl.getAttribLocation(this.program, 'a_position')
-    const posBuffer = gl.createBuffer()!
+    const posBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, data.positions, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(posLoc)
@@ -285,7 +283,7 @@ export class WebGLLDRenderer {
 
     // Per-instance cell size buffer
     const cellSizeLoc = gl.getAttribLocation(this.program, 'a_cellSize')
-    const cellSizeBuffer = gl.createBuffer()!
+    const cellSizeBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, cellSizeBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, data.cellSizes, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(cellSizeLoc)
@@ -294,14 +292,20 @@ export class WebGLLDRenderer {
 
     // Per-instance LD value buffer
     const ldValLoc = gl.getAttribLocation(this.program, 'a_ldValue')
-    const ldValBuffer = gl.createBuffer()!
+    const ldValBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, ldValBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, data.ldValues, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(ldValLoc)
     gl.vertexAttribPointer(ldValLoc, 1, gl.FLOAT, false, 0, 0)
     gl.vertexAttribDivisor(ldValLoc, 1)
 
-    this.buffers = [quadBuffer, indexBuffer, posBuffer, cellSizeBuffer, ldValBuffer]
+    this.buffers = [
+      quadBuffer,
+      indexBuffer,
+      posBuffer,
+      cellSizeBuffer,
+      ldValBuffer,
+    ]
     gl.bindVertexArray(null)
     this.instanceCount = data.numCells
   }
@@ -332,8 +336,14 @@ export class WebGLLDRenderer {
 
   render(state: LDRenderState) {
     const gl = this.gl
-    const { canvasWidth, canvasHeight, yScalar, signedLD, viewScale, viewOffsetX } =
-      state
+    const {
+      canvasWidth,
+      canvasHeight,
+      yScalar,
+      signedLD,
+      viewScale,
+      viewOffsetX,
+    } = state
 
     if (
       this.canvas.width !== canvasWidth ||

@@ -49,9 +49,8 @@ export default class RenderWebGLLDData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLLDData } = await import(
-      './executeRenderWebGLLDData.ts'
-    )
+    const { executeRenderWebGLLDData } =
+      await import('./executeRenderWebGLLDData.ts')
     return executeRenderWebGLLDData({
       pluginManager: this.pluginManager,
       args: args as unknown as RenderWebGLLDDataArgs,

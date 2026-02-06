@@ -43,10 +43,7 @@ function compareImages(
     expectedImg.width !== actualImg.width ||
     expectedImg.height !== actualImg.height
   ) {
-    fs.writeFileSync(
-      path.join(snapshotsDir, `${name}.diff.png`),
-      actualBuffer,
-    )
+    fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), actualBuffer)
     return {
       passed: false,
       message: `Snapshot size differs: expected ${expectedImg.width}x${expectedImg.height}, got ${actualImg.width}x${actualImg.height}`,
@@ -72,10 +69,7 @@ function compareImages(
     return { passed: true, message: 'Snapshot matches' }
   }
 
-  fs.writeFileSync(
-    path.join(snapshotsDir, `${name}.diff.png`),
-    actualBuffer,
-  )
+  fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), actualBuffer)
   fs.writeFileSync(
     path.join(snapshotsDir, `${name}.diff-visual.png`),
     PNG.sync.write(diffImg),

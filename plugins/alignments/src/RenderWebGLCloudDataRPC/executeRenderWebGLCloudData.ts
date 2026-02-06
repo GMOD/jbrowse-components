@@ -9,9 +9,9 @@ import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 
 import type { WebGLCloudDataResult } from './types.ts'
 import type { ChainStats } from '../shared/types.ts'
-import type { Feature, Region } from '@jbrowse/core/util'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 interface ExecuteParams {
   pluginManager: PluginManager

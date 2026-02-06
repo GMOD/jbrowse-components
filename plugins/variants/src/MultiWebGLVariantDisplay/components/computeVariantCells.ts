@@ -74,7 +74,8 @@ function getPhasedColor(
 ) {
   const allele = +alleles[HP]!
   if (allele) {
-    const c = PS !== undefined ? `hsl(${+PS % 255}, 50%, 50%)` : set1[allele - 1]
+    const c =
+      PS !== undefined ? `hsl(${+PS % 255}, 50%, 50%)` : set1[allele - 1]
     return c || UNPHASED_COLOR
   }
   return drawReference ? REFERENCE_COLOR : undefined
@@ -120,7 +121,7 @@ export function computeVariantCells({
   // find region start from features
   let regionStart = Number.MAX_SAFE_INTEGER
   for (const { feature } of mafs) {
-    const s = feature.get('start') as number
+    const s = feature.get('start')
     if (s < regionStart) {
       regionStart = s
     }
@@ -135,8 +136,8 @@ export function computeVariantCells({
   if (renderingMode === 'phased') {
     for (const { feature } of mafs) {
       const featureId = feature.id()
-      const start = feature.get('start') as number
-      const end = feature.get('end') as number
+      const start = feature.get('start')
+      const end = feature.get('end')
       const featureType = (feature.get('type') as string) || ''
       const featureStrand = feature.get('strand') as number | undefined
       const bpLen = end - start
@@ -166,8 +167,8 @@ export function computeVariantCells({
       })
       const renderedGenotypes = {} as Record<string, string>
 
-      for (let j = 0; j < sources.length; j++) {
-        const source = sources[j]!
+      for (const [j, source_] of sources.entries()) {
+        const source = source_
         const { name, HP, baseName } = source
         const sampleName = baseName ?? name
         const genotype = samp[sampleName]
@@ -225,8 +226,8 @@ export function computeVariantCells({
     // alleleCount mode
     for (const { mostFrequentAlt, feature } of mafs) {
       const featureId = feature.id()
-      const start = feature.get('start') as number
-      const end = feature.get('end') as number
+      const start = feature.get('start')
+      const end = feature.get('end')
       const featureType = (feature.get('type') as string) || ''
       const featureStrand = feature.get('strand') as number | undefined
       const bpLen = end - start
@@ -256,8 +257,8 @@ export function computeVariantCells({
       })
       const renderedGenotypes = {} as Record<string, string>
 
-      for (let j = 0; j < sources.length; j++) {
-        const { name } = sources[j]!
+      for (const [j, source] of sources.entries()) {
+        const { name } = source
         const genotype = samp[name]
         if (genotype) {
           const c = getAlleleColor(

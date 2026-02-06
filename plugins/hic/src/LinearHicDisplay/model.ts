@@ -8,8 +8,8 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import type { WebGLHicDataResult } from '../RenderWebGLHicDataRPC/types.ts'
 import type { HicFlatbushItem } from '../HicRenderer/types.ts'
+import type { WebGLHicDataResult } from '../RenderWebGLHicDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {

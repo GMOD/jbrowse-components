@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, reducePrecision } from '@jbrowse/core/util'
@@ -12,10 +6,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
-import {
-  WebGLHicRenderer,
-  generateColorRamp,
-} from './WebGLHicRenderer.ts'
+import { WebGLHicRenderer, generateColorRamp } from './WebGLHicRenderer.ts'
 import HicColorLegend from '../../HicRenderer/components/HicColorLegend.tsx'
 
 import type { HicFlatbushItem } from '../../HicRenderer/types.ts'

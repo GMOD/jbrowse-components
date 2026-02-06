@@ -243,19 +243,19 @@ export class WebGLHicRenderer {
     const quadIndices = new Uint16Array([0, 1, 2, 0, 2, 3])
 
     const quadPosLoc = gl.getAttribLocation(this.program, 'a_quadPos')
-    const quadBuffer = gl.createBuffer()!
+    const quadBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, quadVertices, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(quadPosLoc)
     gl.vertexAttribPointer(quadPosLoc, 2, gl.FLOAT, false, 0, 0)
 
-    const indexBuffer = gl.createBuffer()!
+    const indexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, quadIndices, gl.STATIC_DRAW)
 
     // Per-instance position buffer
     const posLoc = gl.getAttribLocation(this.program, 'a_position')
-    const posBuffer = gl.createBuffer()!
+    const posBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, data.positions, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(posLoc)
@@ -264,7 +264,7 @@ export class WebGLHicRenderer {
 
     // Per-instance count buffer
     const countLoc = gl.getAttribLocation(this.program, 'a_count')
-    const countBuffer = gl.createBuffer()!
+    const countBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, countBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, data.counts, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(countLoc)

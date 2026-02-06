@@ -99,7 +99,7 @@ export default function stateModelFactory(
           }
 
           const last = blocks[blocks.length - 1]
-          if (!last || first.refName !== last.refName) {
+          if (first.refName !== last?.refName) {
             return {
               refName: first.refName,
               start: first.start,
@@ -288,12 +288,15 @@ export default function stateModelFactory(
             subMenu: [
               {
                 label: 'Insert size and orientation',
-                onClick: () =>
-                  self.setColorScheme({ type: 'insertSizeAndOrientation' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'insertSizeAndOrientation' })
+                },
               },
               {
                 label: 'Strand',
-                onClick: () => self.setColorScheme({ type: 'strand' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'strand' })
+                },
               },
             ],
           },

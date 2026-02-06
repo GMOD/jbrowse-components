@@ -10,9 +10,8 @@ export class MultiVariantGetWebGLCellData extends RpcMethodTypeWithFiltersAndRen
       args,
       rpcDriverClassName,
     )
-    const { executeWebGLVariantCellData } = await import(
-      './executeWebGLVariantCellData.ts'
-    )
+    const { executeWebGLVariantCellData } =
+      await import('./executeWebGLVariantCellData.ts')
     return executeWebGLVariantCellData({
       pluginManager: this.pluginManager,
       args: deserializedArgs as unknown as GetWebGLCellDataArgs,

@@ -674,8 +674,7 @@ export default function stateModelFactory(
                 const { loadedRegion } = self
                 const buffer = (region.end - region.start) * 0.5
                 const needsData =
-                  !loadedRegion ||
-                  loadedRegion.refName !== region.refName ||
+                  loadedRegion?.refName !== region.refName ||
                   region.start - buffer < loadedRegion.start ||
                   region.end + buffer > loadedRegion.end
 

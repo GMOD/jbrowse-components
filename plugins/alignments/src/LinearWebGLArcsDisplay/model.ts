@@ -95,7 +95,7 @@ export default function stateModelFactory(
           }
 
           const last = blocks[blocks.length - 1]
-          if (!last || first.refName !== last.refName) {
+          if (first.refName !== last?.refName) {
             return {
               refName: first.refName,
               start: first.start,
@@ -201,7 +201,13 @@ export default function stateModelFactory(
             ? getSnapshot(sequenceAdapterConfig)
             : undefined
 
-          console.log('[WebGLArcs model] fetching region:', region.refName, region.start, '-', region.end)
+          console.log(
+            '[WebGLArcs model] fetching region:',
+            region.refName,
+            region.start,
+            '-',
+            region.end,
+          )
           const result = (await rpcManager.call(
             session.id ?? '',
             'RenderWebGLArcsData',
@@ -218,7 +224,12 @@ export default function stateModelFactory(
             },
           )) as WebGLArcsDataResult
 
-          console.log('[WebGLArcs model] got RPC result: numArcs=', result.numArcs, 'numLines=', result.numLines)
+          console.log(
+            '[WebGLArcs model] got RPC result: numArcs=',
+            result.numArcs,
+            'numLines=',
+            result.numLines,
+          )
           self.setRpcData(result)
           self.setLoadedRegion({
             refName: region.refName,
@@ -264,7 +275,12 @@ export default function stateModelFactory(
           addDisposer(
             self,
             reaction(
-              () => [self.filterBy, self.colorBy, self.drawInter, self.drawLongRange],
+              () => [
+                self.filterBy,
+                self.colorBy,
+                self.drawInter,
+                self.drawLongRange,
+              ],
               () => {
                 const visibleRegion = self.visibleRegion
                 if (visibleRegion) {
@@ -286,20 +302,27 @@ export default function stateModelFactory(
             subMenu: [
               {
                 label: 'Insert size and orientation',
-                onClick: () =>
-                  self.setColorScheme({ type: 'insertSizeAndOrientation' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'insertSizeAndOrientation' })
+                },
               },
               {
                 label: 'Orientation only',
-                onClick: () => self.setColorScheme({ type: 'orientation' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'orientation' })
+                },
               },
               {
                 label: 'Insert size only',
-                onClick: () => self.setColorScheme({ type: 'insertSize' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'insertSize' })
+                },
               },
               {
                 label: 'Gradient',
-                onClick: () => self.setColorScheme({ type: 'gradient' }),
+                onClick: () => {
+                  self.setColorScheme({ type: 'gradient' })
+                },
               },
             ],
           },
@@ -308,15 +331,21 @@ export default function stateModelFactory(
             subMenu: [
               {
                 label: 'Thin',
-                onClick: () => self.setLineWidth(1),
+                onClick: () => {
+                  self.setLineWidth(1)
+                },
               },
               {
                 label: 'Bold',
-                onClick: () => self.setLineWidth(2),
+                onClick: () => {
+                  self.setLineWidth(2)
+                },
               },
               {
                 label: 'Extra bold',
-                onClick: () => self.setLineWidth(5),
+                onClick: () => {
+                  self.setLineWidth(5)
+                },
               },
             ],
           },
@@ -327,13 +356,17 @@ export default function stateModelFactory(
                 label: 'Inter-chromosomal connections',
                 type: 'checkbox',
                 checked: self.drawInter,
-                onClick: () => self.setDrawInter(!self.drawInter),
+                onClick: () => {
+                  self.setDrawInter(!self.drawInter)
+                },
               },
               {
                 label: 'Long range connections',
                 type: 'checkbox',
                 checked: self.drawLongRange,
-                onClick: () => self.setDrawLongRange(!self.drawLongRange),
+                onClick: () => {
+                  self.setDrawLongRange(!self.drawLongRange)
+                },
               },
             ],
           },
