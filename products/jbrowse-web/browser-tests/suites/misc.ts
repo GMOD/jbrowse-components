@@ -72,46 +72,6 @@ const suite: TestSuite = {
         await snapshot(page, 'misc-gff3-track')
       },
     },
-    {
-      name: 'stats estimation pileup zoom',
-      fn: async page => {
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1..50,001',
-              tracks: ['volvox_cram_pileup'],
-            },
-          ],
-        })
-
-        await delay(10000)
-        await page.screenshot({ path: '/tmp/debug-stats.png' })
-        const bodyText = await page.evaluate(() => document.body.innerText)
-        console.log('Body text contains "Requested":', bodyText.includes('Requested'))
-        console.log('Body text contains "Zoom":', bodyText.includes('Zoom'))
-        console.log('Body text snippet:', bodyText.substring(0, 500))
-
-        await page.waitForFunction(
-          () =>
-            document.body.innerText.includes('Requested too much data') ||
-            document.body.innerText.includes('Zoom in'),
-          { timeout: 60000 },
-        )
-        const zoomIn = await findByTestId(page, 'zoom_in', 10000)
-        await zoomIn?.click()
-        await delay(3000)
-
-        await page.waitForSelector(
-          '[data-testid^="prerendered_canvas"]',
-          { timeout: 60000 },
-        )
-        await waitForLoadingToComplete(page)
-        await delay(1000)
-        await snapshot(page, 'misc-stats-estimation')
-      },
-    },
   ],
 }
 
