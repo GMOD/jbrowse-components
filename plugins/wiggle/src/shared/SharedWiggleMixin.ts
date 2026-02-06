@@ -378,13 +378,23 @@ export default function SharedWiggleMixin(
          * #getter
          */
         get domain() {
-          const { stats, scaleType, minScore, maxScore } = self
+          const { stats, scaleType, minScore, maxScore, rendererConfig } = self
           if (!stats) {
             return undefined
           }
 
+          const { summaryScoreMode } = rendererConfig
+          const useMeanStats =
+            summaryScoreMode === 'mean' || summaryScoreMode === 'avg'
+          const domainMin = useMeanStats
+            ? (stats.scoreMeanMin ?? stats.scoreMin)
+            : stats.scoreMin
+          const domainMax = useMeanStats
+            ? (stats.scoreMeanMax ?? stats.scoreMax)
+            : stats.scoreMax
+
           const ret = getNiceDomain({
-            domain: [stats.scoreMin, stats.scoreMax],
+            domain: [domainMin, domainMax],
             bounds: [minScore, maxScore],
             scaleType,
           })

@@ -41,6 +41,8 @@ function computeStatsFromView(
 
   let scoreMin = Number.MAX_VALUE
   let scoreMax = Number.MIN_VALUE
+  let scoreMeanMin = Number.MAX_VALUE
+  let scoreMeanMax = Number.MIN_VALUE
   let scoreSum = 0
   let scoreSumSquares = 0
   let featureCount = 0
@@ -60,6 +62,8 @@ function computeStatsFromView(
 
     scoreMin = Math.min(scoreMin, min)
     scoreMax = Math.max(scoreMax, max)
+    scoreMeanMin = Math.min(scoreMeanMin, score)
+    scoreMeanMax = Math.max(scoreMeanMax, score)
     scoreSum += score
     scoreSumSquares += score * score
     featureCount++
@@ -87,6 +91,8 @@ function computeStatsFromView(
   return {
     scoreMin,
     scoreMax,
+    scoreMeanMin,
+    scoreMeanMax,
     scoreSum,
     scoreSumSquares,
     scoreMean,
