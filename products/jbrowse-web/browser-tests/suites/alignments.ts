@@ -6,7 +6,7 @@ import {
   openTrack,
   waitForLoadingToComplete,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -36,7 +36,12 @@ const suite: TestSuite = {
         await openTrack(page, 'volvox_alignments')
         await findByTestId(page, 'Blockset-pileup', 60000)
         await waitForLoadingToComplete(page)
-        await snapshot(page, 'alignments-bam')
+        await delay(1000)
+        await canvasSnapshot(
+          page,
+          'alignments-bam-canvas',
+          '[data-testid="Blockset-pileup"] canvas',
+        )
       },
     },
     {
@@ -55,7 +60,12 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'cloud-canvas', 60000)
         await waitForLoadingToComplete(page)
-        await snapshot(page, 'alignments-volvox-sv')
+        await delay(1000)
+        await canvasSnapshot(
+          page,
+          'alignments-volvox-sv-canvas',
+          '[data-testid="cloud-canvas"]',
+        )
       },
     },
     {
@@ -75,7 +85,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'Blockset-pileup', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'alignments-pileup-coverage')
+        await canvasSnapshot(
+          page,
+          'alignments-pileup-coverage-canvas',
+          '[data-testid="Blockset-pileup"] canvas',
+        )
       },
     },
   ],

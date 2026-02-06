@@ -5,7 +5,7 @@ import {
   navigateWithSessionSpec,
   waitForLoadingToComplete,
 } from '../helpers.ts'
-import { canvasSnapshot, snapshot } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -50,7 +50,11 @@ const suite: TestSuite = {
         )
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'misc-ncbi-alias')
+        await canvasSnapshot(
+          page,
+          'misc-ncbi-alias-canvas',
+          '[data-testid^="prerendered_canvas"]',
+        )
       },
     },
     {
@@ -73,7 +77,11 @@ const suite: TestSuite = {
         )
         await waitForLoadingToComplete(page)
         await delay(2000)
-        await snapshot(page, 'misc-gff3-track')
+        await canvasSnapshot(
+          page,
+          'misc-gff3-track-canvas',
+          '[data-testid^="display-gff3tabix_genes"] canvas',
+        )
       },
     },
   ],

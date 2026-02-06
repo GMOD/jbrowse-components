@@ -5,7 +5,7 @@ import {
   navigateWithSessionSpec,
   waitForLoadingToComplete,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -38,7 +38,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'cloud-canvas', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'session-spec-display-snapshot-type')
+        await canvasSnapshot(
+          page,
+          'session-spec-display-snapshot-canvas',
+          '[data-testid="cloud-canvas"]',
+        )
       },
     },
     {
@@ -59,7 +63,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'canvas-feature-overlay', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'session-spec-jexl')
+        await canvasSnapshot(
+          page,
+          'session-spec-jexl-canvas',
+          '[data-testid^="prerendered_canvas"]',
+        )
       },
     },
   ],

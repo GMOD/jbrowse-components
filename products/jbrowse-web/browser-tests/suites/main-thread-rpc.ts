@@ -1,11 +1,12 @@
 import {
+  delay,
   findByTestId,
   findByText,
   navigateToApp,
   openTrack,
   waitForLoadingToComplete,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -45,7 +46,12 @@ const suite: TestSuite = {
         await openTrack(page, 'volvox_sv')
         await findByTestId(page, 'Blockset-pileup', 60000)
         await waitForLoadingToComplete(page)
-        await snapshot(page, 'main-thread-rpc-bam')
+        await delay(1000)
+        await canvasSnapshot(
+          page,
+          'main-thread-rpc-bam-canvas',
+          '[data-testid="Blockset-pileup"] canvas',
+        )
       },
     },
   ],

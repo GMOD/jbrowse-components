@@ -3,7 +3,7 @@ import {
   navigateWithSessionSpec,
   waitForLoadingToComplete,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -30,7 +30,11 @@ const suite: TestSuite = {
         )
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'variants-assembly-aliases')
+        await canvasSnapshot(
+          page,
+          'variants-assembly-aliases-canvas',
+          '[data-testid^="prerendered_canvas"]',
+        )
       },
     },
   ],
