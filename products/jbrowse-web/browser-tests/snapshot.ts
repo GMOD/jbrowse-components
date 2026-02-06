@@ -80,6 +80,27 @@ export async function capturePageSnapshot(page: Page, name: string) {
 }
 
 export async function snapshot(page: Page, name: string) {
+  // Wait for any "Loading" text to clear from track rendering containers
+  // before capturing the snapshot to avoid flakiness
+  try {
+    await page.waitForFunction(
+      () => {
+        const containers = document.querySelectorAll(
+          '[data-testid^="trackRenderingContainer"]',
+        )
+        for (const c of containers) {
+          if (c.textContent?.includes('Loading')) {
+            return false
+          }
+        }
+        return true
+      },
+      { timeout: 10000 },
+    )
+  } catch {
+    // proceed with snapshot even if loading text is still present
+  }
+
   const result = await capturePageSnapshot(page, name)
   if (!result.passed) {
     throw new Error(result.message)
