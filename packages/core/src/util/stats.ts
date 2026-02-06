@@ -12,6 +12,8 @@ export interface UnrectifiedQuantitativeStats {
   scoreSumSquares: number
   featureCount: number
   basesCovered: number
+  scoreMeanMin?: number
+  scoreMeanMax?: number
 }
 
 // What adapters return (without view-specific context)
@@ -95,35 +97,48 @@ export async function scoresToStats(
   const seed = {
     scoreMin: Number.MAX_VALUE,
     scoreMax: Number.MIN_VALUE,
+    scoreMeanMin: Number.MAX_VALUE,
+    scoreMeanMax: Number.MIN_VALUE,
     scoreSum: 0,
     scoreSumSquares: 0,
     featureCount: 0,
   }
   let found = false
 
-  const { scoreMin, scoreMax, scoreSum, scoreSumSquares, featureCount } =
-    await firstValueFrom(
-      feats.pipe(
-        reduce((acc, f) => {
-          const s = f.get('score')
-          const summary = f.get('summary')
-          const { scoreMax, scoreMin } = acc
-          acc.scoreMax = Math.max(scoreMax, summary ? f.get('maxScore') : s)
-          acc.scoreMin = Math.min(scoreMin, summary ? f.get('minScore') : s)
-          acc.scoreSum += s
-          acc.scoreSumSquares += s * s
-          acc.featureCount += 1
-          found = true
+  const {
+    scoreMin,
+    scoreMax,
+    scoreMeanMin,
+    scoreMeanMax,
+    scoreSum,
+    scoreSumSquares,
+    featureCount,
+  } = await firstValueFrom(
+    feats.pipe(
+      reduce((acc, f) => {
+        const s = f.get('score')
+        const summary = f.get('summary')
+        const { scoreMax, scoreMin } = acc
+        acc.scoreMax = Math.max(scoreMax, summary ? f.get('maxScore') : s)
+        acc.scoreMin = Math.min(scoreMin, summary ? f.get('minScore') : s)
+        acc.scoreMeanMin = Math.min(acc.scoreMeanMin, s)
+        acc.scoreMeanMax = Math.max(acc.scoreMeanMax, s)
+        acc.scoreSum += s
+        acc.scoreSumSquares += s * s
+        acc.featureCount += 1
+        found = true
 
-          return acc
-        }, seed),
-      ),
-    )
+        return acc
+      }, seed),
+    ),
+  )
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return found
     ? rectifyStats({
         scoreMax,
         scoreMin,
+        scoreMeanMin,
+        scoreMeanMax,
         scoreSum,
         scoreSumSquares,
         featureCount,
