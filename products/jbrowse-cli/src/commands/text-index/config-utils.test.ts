@@ -24,6 +24,8 @@ describe('parseCommaSeparatedString', () => {
   })
 })
 
+jest.spyOn(console, 'log').mockImplementation(() => {})
+
 describe('getTrackConfigs', () => {
   const mockConfig: Config = {
     assemblies: [{ name: 'test_assembly' } as Assembly],
