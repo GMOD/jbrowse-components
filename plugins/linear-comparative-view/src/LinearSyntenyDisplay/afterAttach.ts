@@ -15,9 +15,7 @@ type LSV = LinearSyntenyViewModel
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastGeometryKey = ''
   let lastRenderer: unknown = null
-  let lastOffsets: number[] = []
   let edgeTimer: ReturnType<typeof setTimeout> | null = null
-
   addDisposer(
     self,
     autorun(
@@ -74,37 +72,19 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
 
         const offsets = view.views.map(v => v.offsetPx)
+        const o0 = offsets[level]!
+        const o1 = offsets[level + 1]!
 
-        // Skip expensive edge AA pass during scroll for performance.
-        // Only the offset changed → pure scroll → skip edges and schedule
-        // a full render after scrolling settles.
-        const offsetsChanged =
-          offsets[level] !== lastOffsets[level] ||
-          offsets[level + 1] !== lastOffsets[level + 1]
-        const skipEdges = offsetsChanged && !geometryChanged
-        lastOffsets = offsets
+        // Skip edges during scroll for performance, debounce a full
+        // re-render with edges once scrolling stops
+        self.webglRenderer.render(o0, o1, height, true)
 
-        self.webglRenderer.render(
-          offsets[level]!,
-          offsets[level + 1]!,
-          height,
-          skipEdges,
-        )
-
-        // Re-render with edges after scrolling stops
-        if (skipEdges) {
-          if (edgeTimer) {
-            clearTimeout(edgeTimer)
-          }
-          edgeTimer = setTimeout(() => {
-            self.webglRenderer?.render(
-              offsets[level]!,
-              offsets[level + 1]!,
-              height,
-            )
-            edgeTimer = null
-          }, 150)
+        if (edgeTimer) {
+          clearTimeout(edgeTimer)
         }
+        edgeTimer = setTimeout(() => {
+          self.webglRenderer?.render(o0, o1, height, false)
+        }, 150)
       },
       {
         name: 'SyntenyDraw',

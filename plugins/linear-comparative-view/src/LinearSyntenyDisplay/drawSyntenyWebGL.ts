@@ -8,6 +8,7 @@ import type { FeatPos } from './model.ts'
 
 // Number of segments for bezier ribbon tessellation
 const CURVE_SEGMENTS = 32
+const EDGE_CURVE_SEGMENTS = 8
 
 function cssColorToNormalized(color: string): [number, number, number, number] {
   const { r, g, b, a } = colord(color).toRgb()
@@ -39,6 +40,8 @@ uniform vec2 u_resolution;
 uniform float u_height;
 uniform float u_offset0;
 uniform float u_offset1;
+uniform float u_visibleLeft;
+uniform float u_visibleRight;
 
 // Outputs
 out vec4 v_color;
@@ -78,6 +81,17 @@ vec2 evalEdge(float t, float topX, float bottomX, float isCurve) {
 }
 
 void main() {
+  // Viewport culling: skip off-screen instances
+  float screenMinX = min(min(a_x1, a_x2) - u_offset0, min(a_x3, a_x4) - u_offset1);
+  float screenMaxX = max(max(a_x1, a_x2) - u_offset0, max(a_x3, a_x4) - u_offset1);
+  if (screenMaxX < u_visibleLeft || screenMinX > u_visibleRight) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    v_color = vec4(0.0);
+    v_dist = 0.0;
+    v_featureId = 0.0;
+    return;
+  }
+
   // Determine which edge based on a_side
   float topX = mix(a_x1, a_x2, step(0.0, a_side));
   float bottomX = mix(a_x4, a_x3, step(0.0, a_side));
@@ -85,7 +99,7 @@ void main() {
   vec2 pos = evalEdge(a_t, topX, bottomX, a_isCurve);
 
   // Compute tangent via finite differences for extrusion
-  float eps = 1.0 / float(${CURVE_SEGMENTS});
+  float eps = 1.0 / float(${EDGE_CURVE_SEGMENTS});
   float t0 = max(a_t - eps * 0.5, 0.0);
   float t1 = min(a_t + eps * 0.5, 1.0);
   vec2 p0 = evalEdge(t0, topX, bottomX, a_isCurve);
@@ -323,7 +337,7 @@ export class SyntenyWebGLRenderer {
       this.edgePickingProgram = createProgram(gl, VERTEX_SHADER, PICKING_FRAGMENT_SHADER)
 
       // Cache uniform locations for all programs
-      const uniformNames = ['u_resolution', 'u_height', 'u_offset0', 'u_offset1']
+      const uniformNames = ['u_resolution', 'u_height', 'u_offset0', 'u_offset1', 'u_visibleLeft', 'u_visibleRight']
       for (const program of [this.fillProgram, this.fillPickingProgram, this.edgeProgram, this.edgePickingProgram]) {
         const locs: Record<string, WebGLUniformLocation | null> = {}
         for (const name of uniformNames) {
@@ -334,10 +348,10 @@ export class SyntenyWebGLRenderer {
 
       // Create template buffer for edge ribbon
       // For each t value along the curve, two vertices: side=+1 and side=-1
-      const numVertices = (CURVE_SEGMENTS + 1) * 2
+      const numVertices = (EDGE_CURVE_SEGMENTS + 1) * 2
       const templateData = new Float32Array(numVertices * 2)
-      for (let i = 0; i <= CURVE_SEGMENTS; i++) {
-        const t = i / CURVE_SEGMENTS
+      for (let i = 0; i <= EDGE_CURVE_SEGMENTS; i++) {
+        const t = i / EDGE_CURVE_SEGMENTS
         const base = i * 4
         templateData[base + 0] = t
         templateData[base + 1] = 1
@@ -749,7 +763,7 @@ export class SyntenyWebGLRenderer {
       gl.drawArrays(gl.TRIANGLES, 0, this.fillVertexCount)
     }
 
-    // Draw AA edges on top (skip during fast scroll for performance)
+    // Draw AA edges on top (skipped during scroll for performance)
     if (!skipEdges && this.edgeVao && this.edgeInstanceCount > 0) {
       gl.useProgram(this.edgeProgram)
       gl.bindVertexArray(this.edgeVao)
@@ -757,7 +771,7 @@ export class SyntenyWebGLRenderer {
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
-        (CURVE_SEGMENTS + 1) * 2,
+        (EDGE_CURVE_SEGMENTS + 1) * 2,
         this.edgeInstanceCount,
       )
     }
@@ -801,7 +815,7 @@ export class SyntenyWebGLRenderer {
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
-        (CURVE_SEGMENTS + 1) * 2,
+        (EDGE_CURVE_SEGMENTS + 1) * 2,
         this.edgeInstanceCount,
       )
     }
@@ -828,6 +842,10 @@ export class SyntenyWebGLRenderer {
     gl.uniform1f(locs.u_height!, height)
     gl.uniform1f(locs.u_offset0!, offset0)
     gl.uniform1f(locs.u_offset1!, offset1)
+    if (locs.u_visibleLeft) {
+      gl.uniform1f(locs.u_visibleLeft, -100)
+      gl.uniform1f(locs.u_visibleRight!, this.width + 100)
+    }
   }
 
   pick(x: number, y: number) {
