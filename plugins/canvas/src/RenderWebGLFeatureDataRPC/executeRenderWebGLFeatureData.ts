@@ -236,8 +236,6 @@ function collectRenderData(
       const transcriptName = String(
         transcriptFeature.get('name') || transcriptFeature.get('id') || '',
       )
-      const isNestedTranscript = transcriptFeature.id() !== parentFeature.id()
-
       const transcriptStrokeColor = getStrokeColor({
         feature: transcriptFeature,
         config: config as any,
@@ -262,7 +260,6 @@ function collectRenderData(
         const childStart = childFeature.get('start')
         const childEnd = childFeature.get('end')
         const childIsUTR = isUTR(childFeature)
-        const childType = childFeature.get('type') || 'exon'
 
         const childColor = getBoxColor({
           feature: childFeature,
@@ -356,7 +353,6 @@ function collectRenderData(
           const childStart = childFeature.get('start')
           const childEnd = childFeature.get('end')
           const childIsUTR = isUTR(childFeature)
-          const childType = childFeature.get('type') || 'feature'
 
           const childColor = getBoxColor({
             feature: childFeature,

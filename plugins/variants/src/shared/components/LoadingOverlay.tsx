@@ -66,13 +66,13 @@ const LoadingOverlay = observer(function LoadingOverlay({
     )
   }
 
-  const message = statusMessage
-    ? statusMessage
-    : !sources
+  const message =
+    statusMessage ||
+    (!sources
       ? 'Loading samples'
       : !featuresReady
         ? 'Loading features'
-        : 'Computing display data'
+        : 'Computing display data')
   return (
     <div className={classes.overlay}>
       <LoadingEllipses message={message} />

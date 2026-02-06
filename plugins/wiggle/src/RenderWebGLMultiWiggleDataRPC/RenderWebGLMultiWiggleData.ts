@@ -23,7 +23,7 @@ export default class RenderWebGLMultiWiggleData extends RpcMethodType {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
-    if (assemblyManager && typedArgs.region) {
+    if (assemblyManager) {
       const result = await renameRegionsIfNeeded(assemblyManager, {
         sessionId: typedArgs.sessionId,
         adapterConfig: typedArgs.adapterConfig,

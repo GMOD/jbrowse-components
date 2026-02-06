@@ -195,9 +195,7 @@ export class WebGLVariantRenderer {
       return
     }
     const buffer = gl.createBuffer()
-    if (buffer) {
-      this.glBuffers.push(buffer)
-    }
+    this.glBuffers.push(buffer)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -212,9 +210,7 @@ export class WebGLVariantRenderer {
       return
     }
     const buffer = gl.createBuffer()
-    if (buffer) {
-      this.glBuffers.push(buffer)
-    }
+    this.glBuffers.push(buffer)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)

@@ -155,6 +155,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     model.rowHeight,
     model.scrollTop,
     model.sources,
+    view,
     view.initialized,
     view.bpPerPx,
     view.offsetPx,

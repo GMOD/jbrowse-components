@@ -381,7 +381,7 @@ export default function stateModelFactory(
 
       return {
         fetchFeatures(region: Region, bpPerPx: number) {
-          fetchFeaturesImpl(region, bpPerPx).catch(e => {
+          fetchFeaturesImpl(region, bpPerPx).catch((e: unknown) => {
             console.error('Failed to fetch features:', e)
           })
         },
@@ -393,7 +393,7 @@ export default function stateModelFactory(
           }
 
           const view = getContainingView(self) as LGV
-          const bpPerPx = view?.bpPerPx ?? 1
+          const bpPerPx = view.bpPerPx
 
           const width = requestedRegion.end - requestedRegion.start
           const expandedRegion = {
@@ -403,7 +403,7 @@ export default function stateModelFactory(
             assemblyName: visibleRegion.assemblyName,
           }
 
-          fetchFeaturesImpl(expandedRegion, bpPerPx).catch(e => {
+          fetchFeaturesImpl(expandedRegion, bpPerPx).catch((e: unknown) => {
             console.error('Failed to fetch features:', e)
           })
         },
@@ -417,16 +417,18 @@ export default function stateModelFactory(
               region => {
                 if (region && !self.isWithinLoadedRegion) {
                   const view = getContainingView(self) as LGV
-                  const bpPerPx = view?.bpPerPx ?? 1
+                  const bpPerPx = view.bpPerPx
                   const width = region.end - region.start
                   const expandedRegion = {
                     ...region,
                     start: Math.max(0, region.start - width * 2),
                     end: region.end + width * 2,
                   }
-                  fetchFeaturesImpl(expandedRegion, bpPerPx).catch(e => {
-                    console.error('Failed to fetch features:', e)
-                  })
+                  fetchFeaturesImpl(expandedRegion, bpPerPx).catch(
+                    (e: unknown) => {
+                      console.error('Failed to fetch features:', e)
+                    },
+                  )
                 }
               },
               { delay: 300, fireImmediately: true },
@@ -440,7 +442,7 @@ export default function stateModelFactory(
               () => {
                 try {
                   const view = getContainingView(self) as LGV
-                  return view?.initialized ? view.bpPerPx : null
+                  return view.initialized ? view.bpPerPx : null
                 } catch {
                   return null
                 }
@@ -448,7 +450,7 @@ export default function stateModelFactory(
               bpPerPx => {
                 if (bpPerPx && self.needsLayoutRefresh && self.loadedRegion) {
                   const region = self.loadedRegion
-                  fetchFeaturesImpl(region, bpPerPx).catch(e => {
+                  fetchFeaturesImpl(region, bpPerPx).catch((e: unknown) => {
                     console.error('Failed to refresh layout:', e)
                   })
                 }
@@ -468,13 +470,15 @@ export default function stateModelFactory(
               () => {
                 if (self.loadedRegion) {
                   const view = getContainingView(self) as LGV
-                  const bpPerPx = view?.bpPerPx ?? 1
-                  fetchFeaturesImpl(self.loadedRegion, bpPerPx).catch(e => {
-                    console.error(
-                      'Failed to refresh after label settings change:',
-                      e,
-                    )
-                  })
+                  const bpPerPx = view.bpPerPx
+                  fetchFeaturesImpl(self.loadedRegion, bpPerPx).catch(
+                    (e: unknown) => {
+                      console.error(
+                        'Failed to refresh after label settings change:',
+                        e,
+                      )
+                    },
+                  )
                 }
               },
               { delay: 100 },

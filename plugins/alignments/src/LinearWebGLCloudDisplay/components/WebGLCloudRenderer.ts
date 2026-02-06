@@ -196,7 +196,7 @@ export class WebGLCloudRenderer {
     const gl = this.gl
     const vs = this.createShader(gl.VERTEX_SHADER, vsSource)
     const fs = this.createShader(gl.FRAGMENT_SHADER, fsSource)
-    const program = gl.createProgram()!
+    const program = gl.createProgram()
     gl.attachShader(program, vs)
     gl.attachShader(program, fs)
     gl.linkProgram(program)
@@ -283,9 +283,7 @@ export class WebGLCloudRenderer {
     }
 
     const buffer = gl.createBuffer()
-    if (buffer) {
-      this.glBuffers.push(buffer)
-    }
+    this.glBuffers.push(buffer)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -306,9 +304,7 @@ export class WebGLCloudRenderer {
     }
 
     const buffer = gl.createBuffer()
-    if (buffer) {
-      this.glBuffers.push(buffer)
-    }
+    this.glBuffers.push(buffer)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)

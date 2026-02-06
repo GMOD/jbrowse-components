@@ -11,6 +11,7 @@ import { startBasicAuthServer, startOAuthServer } from './servers.ts'
 import { setUpdateSnapshots } from './snapshot.ts'
 
 import type { TestSuite } from './types.ts'
+import type { Server } from 'http'
 import type { Browser, Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -123,8 +124,8 @@ async function main() {
   const server = await startServer(PORT)
 
   let browser: Browser | undefined
-  let oauthServer: import('http').Server | undefined
-  let basicAuthServer: import('http').Server | undefined
+  let oauthServer: Server | undefined
+  let basicAuthServer: Server | undefined
 
   try {
     if (runAuthTests) {

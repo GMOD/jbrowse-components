@@ -10,7 +10,6 @@ import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
 
 import type {
   FlatbushItem,
-  FloatingLabelsDataMap,
   SubfeatureInfo,
   WebGLFeatureDataResult,
 } from '../../RenderWebGLFeatureDataRPC/types.ts'
@@ -338,9 +337,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     const dispose = autorun(() => {
       try {
         // Access observables to subscribe
-        const _offsetPx = view.offsetPx
-        const _bpPerPx = view.bpPerPx
-        const initialized = view.initialized
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
 
         if (selfUpdateRef.current) {
           selfUpdateRef.current = false
@@ -713,7 +711,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   // Compute floating label positions
   // Need to include view.bpPerPx and view.offsetPx in deps so labels update on pan/zoom
   const bpPerPx = view?.bpPerPx
-  const viewOffsetPx = view?.offsetPx
 
   const floatingLabelElements = useMemo(() => {
     if (
@@ -790,7 +787,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
-  }, [rpcData, view, width, bpPerPx, viewOffsetPx, getVisibleBpRange, scrollY])
+  }, [rpcData, view, width, bpPerPx, getVisibleBpRange, scrollY])
 
   // Compute highlight overlays for hovered and selected features
   const highlightOverlays = useMemo(() => {
@@ -914,7 +911,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     view,
     width,
     bpPerPx,
-    viewOffsetPx,
     getVisibleBpRange,
     scrollY,
     hoveredFeature,

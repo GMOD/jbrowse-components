@@ -26,19 +26,16 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
-      console.log('[WebGLArcs] init effect: no canvas')
       return
     }
 
     try {
-      console.log('[WebGLArcs] creating renderer')
       rendererRef.current = new WebGLArcsRenderer(canvas)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'WebGL initialization failed')
     }
 
     return () => {
-      console.log('[WebGLArcs] destroying renderer')
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
       }
@@ -52,23 +49,9 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
     const renderer = rendererRef.current
     const data = model.rpcData
     if (!renderer || !data) {
-      console.log(
-        '[WebGLArcs] upload skipped: renderer=',
-        !!renderer,
-        'data=',
-        !!data,
-      )
       return
     }
 
-    console.log(
-      '[WebGLArcs] uploading data: numArcs=',
-      data.numArcs,
-      'numLines=',
-      data.numLines,
-      'regionStart=',
-      data.regionStart,
-    )
     renderer.uploadFromTypedArrays({
       regionStart: data.regionStart,
       arcX1: data.arcX1,
@@ -87,16 +70,9 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !view.initialized) {
-      console.log(
-        '[WebGLArcs] render loop skipped: renderer=',
-        !!renderer,
-        'initialized=',
-        view.initialized,
-      )
       return
     }
 
-    let frameCount = 0
     function renderFrame() {
       if (!renderer) {
         return
@@ -116,20 +92,6 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
       const width = Math.round(view.dynamicBlocks.totalWidthPx)
       const height = model.height
 
-      if (frameCount === 0) {
-        console.log(
-          '[WebGLArcs] first render frame: domain=',
-          visibleRegion.start,
-          '-',
-          visibleRegion.end,
-          'size=',
-          width,
-          'x',
-          height,
-        )
-      }
-      frameCount++
-
       renderer.render({
         domainX: [visibleRegion.start, visibleRegion.end],
         lineWidth: model.lineWidth,
@@ -140,15 +102,9 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
       rafRef.current = requestAnimationFrame(renderFrame)
     }
 
-    console.log('[WebGLArcs] starting render loop')
     renderFrame()
 
     return () => {
-      console.log(
-        '[WebGLArcs] stopping render loop after',
-        frameCount,
-        'frames',
-      )
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
       }

@@ -29,7 +29,7 @@ export default class RenderWebGLLDData extends RpcMethodType {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
-    if (assemblyManager && typedArgs.regions?.length) {
+    if (assemblyManager && typedArgs.regions.length) {
       const result = await renameRegionsIfNeeded(assemblyManager, {
         sessionId: typedArgs.sessionId,
         adapterConfig: typedArgs.adapterConfig,

@@ -217,7 +217,7 @@ export class WebGLLDRenderer {
     const gl = this.gl
     const vs = this.createShader(gl.VERTEX_SHADER, vsSource)
     const fs = this.createShader(gl.FRAGMENT_SHADER, fsSource)
-    const program = gl.createProgram()!
+    const program = gl.createProgram()
     gl.attachShader(program, vs)
     gl.attachShader(program, fs)
     gl.linkProgram(program)

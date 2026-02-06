@@ -129,7 +129,7 @@ const CoverageTooltipContents = forwardRef<
   const location = formatLocation(refName, position)
 
   const snpEntries = Object.entries(snps)
-  const delskipEntries = Object.entries(delskips ?? {})
+  const delskipEntries = Object.entries(delskips)
   const interbaseEntries = Object.entries(interbase)
 
   return (

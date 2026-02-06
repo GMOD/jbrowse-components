@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -25,6 +25,7 @@ export function useWebGLViewInteraction({
 }: UseWebGLViewInteractionProps) {
   const canvasRectRef = useRef<DOMRect | null>(null)
   const dragRef = useRef({ isDragging: false, lastX: 0 })
+  const [isDragging, setIsDragging] = useState(false)
 
   // Get visible bp range from view state
   const getVisibleBpRange = useCallback((): [number, number] | null => {
@@ -33,7 +34,7 @@ export function useWebGLViewInteraction({
     }
     const width = view.dynamicBlocks.totalWidthPx
     const contentBlocks = view.dynamicBlocks.contentBlocks
-    if (!contentBlocks || contentBlocks.length === 0) {
+    if (contentBlocks.length === 0) {
       return null
     }
     const first = contentBlocks[0]
@@ -53,11 +54,14 @@ export function useWebGLViewInteraction({
 
   // Refs for values used in wheel handler
   const onRenderRef = useRef(onRender)
-  onRenderRef.current = onRender
   const getVisibleBpRangeRef = useRef(getVisibleBpRange)
-  getVisibleBpRangeRef.current = getVisibleBpRange
   const viewRef = useRef(view)
-  viewRef.current = view
+
+  useEffect(() => {
+    onRenderRef.current = onRender
+    getVisibleBpRangeRef.current = getVisibleBpRange
+    viewRef.current = view
+  })
 
   // Invalidate cached rect when view changes
   useEffect(() => {
@@ -67,9 +71,6 @@ export function useWebGLViewInteraction({
   // Wheel handler for zoom and pan
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
 
     const handleWheel = (e: WheelEvent) => {
       const view = viewRef.current
@@ -91,7 +92,7 @@ export function useWebGLViewInteraction({
         )
 
         const contentBlocks = view.dynamicBlocks.contentBlocks
-        const first = contentBlocks?.[0]
+        const first = contentBlocks[0]
         if (first) {
           const blockOffsetPx = first.offsetPx
           const deltaPx = newOffsetPx - blockOffsetPx
@@ -145,7 +146,7 @@ export function useWebGLViewInteraction({
       const newRangeEnd = newRangeStart + newRangeWidth
 
       const contentBlocks = view.dynamicBlocks.contentBlocks
-      const first = contentBlocks?.[0]
+      const first = contentBlocks[0]
       if (first) {
         const blockOffsetPx = first.offsetPx
         const assemblyOrigin = first.start - blockOffsetPx * view.bpPerPx
@@ -166,6 +167,7 @@ export function useWebGLViewInteraction({
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     dragRef.current = { isDragging: true, lastX: e.clientX }
+    setIsDragging(true)
   }, [])
 
   const handleMouseMove = useCallback(
@@ -186,7 +188,7 @@ export function useWebGLViewInteraction({
         )
 
         const contentBlocks = view.dynamicBlocks.contentBlocks
-        const first = contentBlocks?.[0]
+        const first = contentBlocks[0]
         if (first) {
           const blockOffsetPx = first.offsetPx
           const deltaPx = newOffsetPx - blockOffsetPx
@@ -204,10 +206,12 @@ export function useWebGLViewInteraction({
 
   const handleMouseUp = useCallback(() => {
     dragRef.current.isDragging = false
+    setIsDragging(false)
   }, [])
 
   const handleMouseLeave = useCallback(() => {
     dragRef.current.isDragging = false
+    setIsDragging(false)
   }, [])
 
   return {
@@ -215,7 +219,7 @@ export function useWebGLViewInteraction({
     handleMouseMove,
     handleMouseUp,
     handleMouseLeave,
-    isDragging: dragRef.current.isDragging,
+    isDragging,
     getVisibleBpRange,
   }
 }

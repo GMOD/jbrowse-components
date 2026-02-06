@@ -5,7 +5,7 @@ import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 
 import type { WebGLLDDataResult } from './types.ts'
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
-import type { LDMatrixResult, LDMetric } from '../VariantRPC/getLDMatrix.ts'
+import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -71,10 +71,8 @@ export async function executeRenderWebGLLDData({
     displayHeight,
   } = args
 
-  // Get LD data from adapter
-  let ldData: LDMatrixResult | null
   const adapterType = adapterConfig.type as string | undefined
-  ldData = await (adapterType === 'PlinkLDAdapter' ||
+  const ldData = await (adapterType === 'PlinkLDAdapter' ||
   adapterType === 'PlinkLDTabixAdapter' ||
   adapterType === 'LdmatAdapter'
     ? getLDMatrixFromPlink({
@@ -103,10 +101,10 @@ export async function executeRenderWebGLLDData({
         },
       }))
 
-  if (!ldData || ldData.snps.length === 0) {
+  if (ldData.snps.length === 0) {
     return {
       ...emptyResult(signedLD, ldMetric),
-      filterStats: ldData?.filterStats,
+      filterStats: ldData.filterStats,
     }
   }
 
@@ -225,11 +223,9 @@ export async function executeRenderWebGLLDData({
     items,
     snps: ldData.snps,
     filterStats: ldData.filterStats,
-    recombination: ldData.recombination
-      ? {
-          values: Array.from(ldData.recombination.values),
-          positions: ldData.recombination.positions,
-        }
-      : undefined,
+    recombination: {
+      values: Array.from(ldData.recombination.values),
+      positions: ldData.recombination.positions,
+    },
   }
 }

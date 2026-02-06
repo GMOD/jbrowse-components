@@ -18,7 +18,6 @@ import {
   YSCALEBAR_LABEL_OFFSET,
   getInsertionRectWidthPx,
   getInsertionType,
-  textWidthForNumber,
 } from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
@@ -320,6 +319,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       })
     },
     [
+      model,
       colorSchemeIndex,
       colorPalette,
       featureHeight,
@@ -417,18 +417,19 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
 
     const dispose = autorun(() => {
-      // Track view observables - autorun re-runs when these change
-      const _offsetPx = view.offsetPx
-      const _bpPerPx = view.bpPerPx
-      if (!view.initialized) {
+      // Access view/model observables to track them - autorun re-runs when these change
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
+      if (!initialized) {
         return
       }
 
-      // Track model properties that affect rendering - autorun
-      // re-runs when these change (e.g. Y scroll, highlighting)
-      const _rangeY = model.currentRangeY
-      const _highlighted = model.highlightedFeatureIndex
-      const _selected = model.selectedFeatureIndex
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const {
+        currentRangeY: _ry,
+        highlightedFeatureIndex: _hi,
+        selectedFeatureIndex: _si,
+      } = model
 
       // Sync domain to model for data-loading reaction
       const visibleBpRange = getVisibleBpRangeRef.current()
@@ -690,8 +691,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     return () => {
       canvas.removeEventListener('wheel', handleWheel)
     }
-    // All values accessed via refs - effect only runs once on mount
-  }, [])
+  }, [model])
 
   // Pan handlers - update view state directly
   // Use refs to avoid recreating callbacks on each render
@@ -783,9 +783,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       // Search through reads to find one at this position
       // Only check reads that are in the target row for efficiency
       const { readPositions, readYs, readIds, numReads } = rpcData
-      if (!readIds) {
-        return undefined
-      }
       for (let i = 0; i < numReads; i++) {
         const y = readYs[i]
         if (y !== row) {
@@ -806,7 +803,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       return undefined
     },
-    [rpcData, featureHeight, featureSpacing, showCoverage, coverageHeight],
+    [
+      rpcData,
+      featureHeight,
+      featureSpacing,
+      showCoverage,
+      coverageHeight,
+      model,
+    ],
   )
 
   // Hit test for CIGAR items (mismatches, insertions, gaps, clips)
@@ -914,7 +918,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
               index: i,
               position: regionStart + pos,
               length: len,
-              sequence: insertionSequences?.[i] || undefined,
+              sequence: insertionSequences[i] || undefined,
             }
           }
         }
@@ -936,7 +940,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           posOffset <= endPos
         ) {
           // gapTypes: 0 = deletion, 1 = skip
-          const gapType = gapTypes?.[i]
+          const gapType = gapTypes[i]
           return {
             type: gapType === 1 ? 'skip' : 'deletion',
             index: i,
@@ -991,7 +995,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       return undefined
     },
-    [rpcData, featureHeight, featureSpacing, showCoverage, coverageHeight],
+    [
+      rpcData,
+      featureHeight,
+      featureSpacing,
+      showCoverage,
+      coverageHeight,
+      model,
+    ],
   )
 
   // Hit test for coverage area (grey bars + SNP segments)
@@ -1240,7 +1251,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
         // Look up detailed tooltip data from rpcData
         const posOffset = indicatorHit.position - (rpcData?.regionStart ?? 0)
-        const tooltipBin = rpcData?.tooltipData?.[posOffset]
+        const tooltipBin = rpcData?.tooltipData[posOffset]
         const refName = model.loadedRegion?.refName
 
         if (tooltipBin) {
@@ -1286,12 +1297,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         // Look up detailed tooltip data from rpcData
         const posOffset = coverageHit.position - (rpcData?.regionStart ?? 0)
         // For coverage, check nearby positions in tooltipData (within 1bp)
-        let tooltipBin = rpcData?.tooltipData?.[posOffset]
+        let tooltipBin = rpcData?.tooltipData[posOffset]
         if (!tooltipBin) {
           // Check adjacent positions
           tooltipBin =
-            rpcData?.tooltipData?.[posOffset - 1] ||
-            rpcData?.tooltipData?.[posOffset + 1]
+            rpcData?.tooltipData[posOffset - 1] ||
+            rpcData?.tooltipData[posOffset + 1]
         }
         const refName = model.loadedRegion?.refName
 
@@ -1424,6 +1435,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       hitTestIndicator,
       model,
       handleMouseMove,
+      rpcData,
     ],
   )
 
@@ -1624,114 +1636,108 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     // Process deletions (gaps)
     const { gapPositions, gapYs, gapLengths, gapTypes, numGaps, regionStart } =
       rpcData
-    if (gapPositions && gapYs && gapLengths && gapTypes) {
-      for (let i = 0; i < numGaps; i++) {
-        // Only show labels for deletions (type 0), not skips (type 1)
-        if (gapTypes[i] !== 0) {
-          continue
-        }
-
-        const startOffset = gapPositions[i * 2]!
-        const endOffset = gapPositions[i * 2 + 1]!
-        const length = gapLengths[i]!
-        const y = gapYs[i]!
-
-        // Convert to genomic coordinates
-        const gapStart = regionStart + startOffset
-        const gapEnd = regionStart + endOffset
-
-        // Check if visible
-        if (gapEnd < bpRange[0] || gapStart > bpRange[1]) {
-          continue
-        }
-
-        // Calculate pixel positions
-        const startPx = (gapStart - bpRange[0]) / bpPerPx
-        const endPx = (gapEnd - bpRange[0]) / bpPerPx
-        const widthPx = endPx - startPx
-
-        // Only show label if wide enough
-        if (widthPx < minLabelWidth) {
-          continue
-        }
-
-        // Calculate Y position (center of feature)
-        const yPx =
-          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
-
-        // Skip if out of view vertically
-        if (yPx < pileupYOffset || yPx > height) {
-          continue
-        }
-
-        labels.push({
-          type: 'deletion',
-          x: (startPx + endPx) / 2,
-          y: yPx,
-          text: String(length),
-          width: widthPx,
-        })
+    for (let i = 0; i < numGaps; i++) {
+      // Only show labels for deletions (type 0), not skips (type 1)
+      if (gapTypes[i] !== 0) {
+        continue
       }
+
+      const startOffset = gapPositions[i * 2]!
+      const endOffset = gapPositions[i * 2 + 1]!
+      const length = gapLengths[i]!
+      const y = gapYs[i]!
+
+      // Convert to genomic coordinates
+      const gapStart = regionStart + startOffset
+      const gapEnd = regionStart + endOffset
+
+      // Check if visible
+      if (gapEnd < bpRange[0] || gapStart > bpRange[1]) {
+        continue
+      }
+
+      // Calculate pixel positions
+      const startPx = (gapStart - bpRange[0]) / bpPerPx
+      const endPx = (gapEnd - bpRange[0]) / bpPerPx
+      const widthPx = endPx - startPx
+
+      // Only show label if wide enough
+      if (widthPx < minLabelWidth) {
+        continue
+      }
+
+      // Calculate Y position (center of feature)
+      const yPx = y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+
+      // Skip if out of view vertically
+      if (yPx < pileupYOffset || yPx > height) {
+        continue
+      }
+
+      labels.push({
+        type: 'deletion',
+        x: (startPx + endPx) / 2,
+        y: yPx,
+        text: String(length),
+        width: widthPx,
+      })
     }
 
     // Process insertions
     const { insertionPositions, insertionYs, insertionLengths, numInsertions } =
       rpcData
-    if (insertionPositions && insertionYs && insertionLengths) {
-      for (let i = 0; i < numInsertions; i++) {
-        const posOffset = insertionPositions[i]!
-        const length = insertionLengths[i]!
-        const y = insertionYs[i]!
+    for (let i = 0; i < numInsertions; i++) {
+      const posOffset = insertionPositions[i]!
+      const length = insertionLengths[i]!
+      const y = insertionYs[i]!
 
-        // Convert to genomic coordinate
-        const pos = regionStart + posOffset
+      // Convert to genomic coordinate
+      const pos = regionStart + posOffset
 
-        // Check if visible
-        if (pos < bpRange[0] || pos > bpRange[1]) {
-          continue
-        }
+      // Check if visible
+      if (pos < bpRange[0] || pos > bpRange[1]) {
+        continue
+      }
 
-        // Calculate pixel position
-        const xPx = (pos - bpRange[0]) / bpPerPx
+      // Calculate pixel position
+      const xPx = (pos - bpRange[0]) / bpPerPx
 
-        // Calculate Y position (centered in feature)
-        const yPx =
-          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+      // Calculate Y position (centered in feature)
+      const yPx = y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
 
-        // Skip if out of view vertically
-        if (yPx < pileupYOffset || yPx > height) {
-          continue
-        }
+      // Skip if out of view vertically
+      if (yPx < pileupYOffset || yPx > height) {
+        continue
+      }
 
-        // Use helper to classify insertion type (matches shader logic)
-        const insertionType = getInsertionType(length, pxPerBp)
+      // Use helper to classify insertion type (matches shader logic)
+      const insertionType = getInsertionType(length, pxPerBp)
 
-        // Large insertions show the number centered on the box
-        // Small insertions show "(length)" offset to the right when zoomed in
-        if (insertionType === 'large') {
-          labels.push({
-            type: 'insertion',
-            x: xPx,
-            y: yPx,
-            text: String(length),
-            width: 0,
-          })
-        } else if (insertionType === 'small' && canRenderText) {
-          labels.push({
-            type: 'insertion',
-            x: xPx + 3,
-            y: yPx,
-            text: `(${length})`,
-            width: 0,
-          })
-        }
+      // Large insertions show the number centered on the box
+      // Small insertions show "(length)" offset to the right when zoomed in
+      if (insertionType === 'large') {
+        labels.push({
+          type: 'insertion',
+          x: xPx,
+          y: yPx,
+          text: String(length),
+          width: 0,
+        })
+      } else if (insertionType === 'small' && canRenderText) {
+        labels.push({
+          type: 'insertion',
+          x: xPx + 3,
+          y: yPx,
+          text: `(${length})`,
+          width: 0,
+        })
       }
     }
 
     // Process soft clips
     const { softclipPositions, softclipYs, softclipLengths, numSoftclips } =
       rpcData
-    if (softclipPositions && softclipYs && softclipLengths && canRenderText) {
+    if (canRenderText) {
       for (let i = 0; i < numSoftclips; i++) {
         const posOffset = softclipPositions[i]!
         const length = softclipLengths[i]!
@@ -1764,7 +1770,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     // Process hard clips
     const { hardclipPositions, hardclipYs, hardclipLengths, numHardclips } =
       rpcData
-    if (hardclipPositions && hardclipYs && hardclipLengths && canRenderText) {
+    if (canRenderText) {
       for (let i = 0; i < numHardclips; i++) {
         const posOffset = hardclipPositions[i]!
         const length = hardclipLengths[i]!
@@ -1797,7 +1803,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     // Process mismatches - show base letter when zoomed in enough
     const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
       rpcData
-    if (mismatchPositions && mismatchYs && mismatchBases && canRenderText) {
+    if (canRenderText) {
       for (let i = 0; i < numMismatches; i++) {
         const posOffset = mismatchPositions[i]!
         const baseCode = mismatchBases[i]!
@@ -1842,6 +1848,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     showMismatches,
     showCoverage,
     coverageHeight,
+    model,
   ])
 
   if (error) {

@@ -201,13 +201,6 @@ export default function stateModelFactory(
             ? getSnapshot(sequenceAdapterConfig)
             : undefined
 
-          console.log(
-            '[WebGLArcs model] fetching region:',
-            region.refName,
-            region.start,
-            '-',
-            region.end,
-          )
           const result = (await rpcManager.call(
             session.id ?? '',
             'RenderWebGLArcsData',
@@ -224,12 +217,6 @@ export default function stateModelFactory(
             },
           )) as WebGLArcsDataResult
 
-          console.log(
-            '[WebGLArcs model] got RPC result: numArcs=',
-            result.numArcs,
-            'numLines=',
-            result.numLines,
-          )
           self.setRpcData(result)
           self.setLoadedRegion({
             refName: region.refName,
@@ -245,7 +232,7 @@ export default function stateModelFactory(
 
       return {
         fetchFeatures(region: Region) {
-          fetchFeaturesImpl(region).catch(e => {
+          fetchFeaturesImpl(region).catch((e: unknown) => {
             console.error('Failed to fetch features:', e)
           })
         },
@@ -263,7 +250,7 @@ export default function stateModelFactory(
                     start: Math.max(0, region.start - width * 2),
                     end: region.end + width * 2,
                   }
-                  fetchFeaturesImpl(expandedRegion).catch(e => {
+                  fetchFeaturesImpl(expandedRegion).catch((e: unknown) => {
                     console.error('Failed to fetch features:', e)
                   })
                 }
@@ -284,7 +271,7 @@ export default function stateModelFactory(
               () => {
                 const visibleRegion = self.visibleRegion
                 if (visibleRegion) {
-                  fetchFeaturesImpl(visibleRegion).catch(e => {
+                  fetchFeaturesImpl(visibleRegion).catch((e: unknown) => {
                     console.error('Failed to fetch features:', e)
                   })
                 }

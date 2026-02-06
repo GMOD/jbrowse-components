@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { Buffer } from 'node:buffer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -95,7 +96,7 @@ export async function snapshot(page: Page, name: string, threshold = 0.1) {
           '[data-testid^="view-container-"]',
         )
         for (const c of containers) {
-          if (c.textContent?.includes('Loading')) {
+          if (c.textContent.includes('Loading')) {
             return false
           }
         }
