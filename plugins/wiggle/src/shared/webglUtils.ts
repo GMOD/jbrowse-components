@@ -1,6 +1,4 @@
-/**
- * Shared WebGL utilities for wiggle displays
- */
+import { colord } from '@jbrowse/core/util/colord'
 
 // High-precision GLSL functions for genomic coordinates
 // Splits large integers into high/low parts to maintain precision in shaders
@@ -65,36 +63,16 @@ export function splitPositionWithFrac(value: number): [number, number] {
   return [hi, lo]
 }
 
-/**
- * Parse a CSS color string to RGB values normalized to 0-1 range.
- * Supports hex (#rgb, #rrggbb) and rgb/rgba formats.
- */
+const parseColorCache = new Map<string, [number, number, number]>()
+
 export function parseColor(color: string): [number, number, number] {
-  if (color.startsWith('#')) {
-    const hex = color.slice(1)
-    if (hex.length === 3) {
-      const r = parseInt(hex[0] + hex[0], 16) / 255
-      const g = parseInt(hex[1] + hex[1], 16) / 255
-      const b = parseInt(hex[2] + hex[2], 16) / 255
-      return [r, g, b]
-    }
-    if (hex.length === 6) {
-      const r = parseInt(hex.slice(0, 2), 16) / 255
-      const g = parseInt(hex.slice(2, 4), 16) / 255
-      const b = parseInt(hex.slice(4, 6), 16) / 255
-      return [r, g, b]
-    }
+  let result = parseColorCache.get(color)
+  if (!result) {
+    const { r, g, b } = colord(color).toRgb()
+    result = [r / 255, g / 255, b / 255]
+    parseColorCache.set(color, result)
   }
-  const rgbMatch = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(color)
-  if (rgbMatch) {
-    return [
-      parseInt(rgbMatch[1], 10) / 255,
-      parseInt(rgbMatch[2], 10) / 255,
-      parseInt(rgbMatch[3], 10) / 255,
-    ]
-  }
-  // Default to blue
-  return [0, 0.4, 0.8]
+  return result
 }
 
 /**

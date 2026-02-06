@@ -4,6 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel.ts'
 
+import type { VariantCellData } from './components/computeVariantCells.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -20,6 +21,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         type: types.literal('MultiWebGLVariantDisplay'),
       }),
     )
+    .volatile(() => ({
+      webglCellData: undefined as VariantCellData | undefined,
+    }))
     .views(() => ({
       get DisplayMessageComponent() {
         return WebGLVariantComponent
@@ -33,8 +37,16 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           id: 'variantFeature',
         }
       },
+      get webglCellDataMode() {
+        return 'regular' as const
+      },
       renderProps() {
         return { notReady: true }
+      },
+    }))
+    .actions(self => ({
+      setWebGLCellData(data: unknown) {
+        self.webglCellData = data as VariantCellData | undefined
       },
     }))
 }

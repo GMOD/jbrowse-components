@@ -18,11 +18,20 @@ interface FeatureInfo {
   featureId: string
   start: number
   end: number
-  alt: unknown
-  ref: unknown
-  name: unknown
-  description: unknown
+  alt: string[]
+  ref: string
+  name: string
+  description: string
   length: number
+}
+
+export interface FeatureGenotypeInfo {
+  alt: string[]
+  ref: string
+  name: string
+  description: string
+  length: number
+  genotypes: Record<string, string>
 }
 
 export interface VariantCellData {
@@ -33,10 +42,7 @@ export interface VariantCellData {
   cellShapeTypes: Uint8Array
   numCells: number
   featureList: FeatureInfo[]
-  featureGenotypeMap: Record<
-    string,
-    { alt: unknown; ref: unknown; name: unknown; description: unknown; length: number }
-  >
+  featureGenotypeMap: Record<string, FeatureGenotypeInfo>
 }
 
 function getShapeType(featureType: string, featureStrand?: number) {
@@ -124,10 +130,7 @@ export function computeVariantCells({
   }
 
   const featureList: FeatureInfo[] = []
-  const featureGenotypeMap = {} as Record<
-    string,
-    { alt: unknown; ref: unknown; name: unknown; description: unknown; length: number }
-  >
+  const featureGenotypeMap = {} as Record<string, FeatureGenotypeInfo>
 
   if (renderingMode === 'phased') {
     for (const { feature } of mafs) {
@@ -146,22 +149,28 @@ export function computeVariantCells({
         genotypesCache.set(featureId, samp)
       }
 
+      const alt = feature.get('ALT') as string[]
+      const ref = feature.get('REF') as string
+      const featureName = feature.get('name') as string
+      const description = feature.get('description') as string
+
       featureList.push({
         featureId,
         start,
         end,
-        alt: feature.get('ALT'),
-        ref: feature.get('REF'),
-        name: feature.get('name'),
-        description: feature.get('description'),
+        alt,
+        ref,
+        name: featureName,
+        description,
         length: bpLen,
       })
       featureGenotypeMap[featureId] = {
-        alt: feature.get('ALT'),
-        ref: feature.get('REF'),
-        name: feature.get('name'),
-        description: feature.get('description'),
+        alt,
+        ref,
+        name: featureName,
+        description,
         length: bpLen,
+        genotypes: samp,
       }
 
       for (let j = 0; j < sources.length; j++) {
@@ -226,22 +235,28 @@ export function computeVariantCells({
         genotypesCache.set(featureId, samp)
       }
 
+      const alt = feature.get('ALT') as string[]
+      const ref = feature.get('REF') as string
+      const featureName = feature.get('name') as string
+      const description = feature.get('description') as string
+
       featureList.push({
         featureId,
         start,
         end,
-        alt: feature.get('ALT'),
-        ref: feature.get('REF'),
-        name: feature.get('name'),
-        description: feature.get('description'),
+        alt,
+        ref,
+        name: featureName,
+        description,
         length: bpLen,
       })
       featureGenotypeMap[featureId] = {
-        alt: feature.get('ALT'),
-        ref: feature.get('REF'),
-        name: feature.get('name'),
-        description: feature.get('description'),
+        alt,
+        ref,
+        name: featureName,
+        description,
         length: bpLen,
+        genotypes: samp,
       }
 
       for (let j = 0; j < sources.length; j++) {

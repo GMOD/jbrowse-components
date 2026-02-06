@@ -6,6 +6,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
@@ -29,31 +30,9 @@ import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
 
-/**
- * Parse a CSS color string to RGB values (0-1 range)
- */
 function parseColorToRGB(color: string): RGBColor {
-  if (color.startsWith('#')) {
-    let hex = color.slice(1)
-    if (hex.length === 3) {
-      hex = hex[0]! + hex[0]! + hex[1]! + hex[1]! + hex[2]! + hex[2]!
-    }
-    const r = parseInt(hex.slice(0, 2), 16) / 255
-    const g = parseInt(hex.slice(2, 4), 16) / 255
-    const b = parseInt(hex.slice(4, 6), 16) / 255
-    return [r, g, b]
-  }
-  const namedColors: Record<string, RGBColor> = {
-    lightgrey: [0.827, 0.827, 0.827],
-    teal: [0, 0.502, 0.502],
-    green: [0, 0.502, 0],
-    grey: [0.502, 0.502, 0.502],
-    blue: [0, 0, 1],
-    red: [1, 0, 0],
-    purple: [0.502, 0, 0.502],
-  }
-  const lower = color.toLowerCase()
-  return namedColors[lower] ?? [0.5, 0.5, 0.5]
+  const { r, g, b } = colord(color).toRgb()
+  return [r / 255, g / 255, b / 255]
 }
 
 /**

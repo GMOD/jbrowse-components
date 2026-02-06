@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { computeVariantCells } from './computeVariantCells.ts'
 import { WebGLVariantRenderer } from './WebGLVariantRenderer.ts'
+import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 
 import type { VariantCellData } from './computeVariantCells.ts'
 import type { MultiWebGLVariantDisplayModel } from '../model.ts'
@@ -75,37 +75,16 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     }
   }, [])
 
-  // Compute cell data and upload when features/settings change
+  // Upload pre-computed cell data from worker when it arrives
   useEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer) {
+    const cellData = model.webglCellData
+    if (!renderer || !cellData) {
       return
     }
-    const features = model.featuresVolatile
-    const sources = model.sources
-    if (!features || !sources?.length) {
-      return
-    }
-
-    const cellData = computeVariantCells({
-      features,
-      sources,
-      renderingMode: model.renderingMode,
-      minorAlleleFrequencyFilter: model.minorAlleleFrequencyFilter,
-      lengthCutoffFilter: model.lengthCutoffFilter,
-      referenceDrawingMode: model.referenceDrawingMode,
-    })
-
     cellDataRef.current = cellData
     renderer.uploadCellData(cellData)
-  }, [
-    model.featuresVolatile,
-    model.sources,
-    model.renderingMode,
-    model.minorAlleleFrequencyFilter,
-    model.lengthCutoffFilter,
-    model.referenceDrawingMode,
-  ])
+  }, [model.webglCellData])
 
   // Render when view state changes
   useEffect(() => {
@@ -155,7 +134,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     }
   }, [
     model,
-    model.featuresVolatile,
+    model.webglCellData,
     model.availableHeight,
     model.rowHeight,
     model.scrollTop,
@@ -234,10 +213,28 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
           if (hits.length > 0) {
             const hit = hits[0]!
             const info = cellData.featureGenotypeMap[hit.featureId]
-            model.setHoveredGenotype({
-              genotype: `${source.name}: ${JSON.stringify(info)}`,
-              name: source.name,
-            })
+            if (info) {
+              const sampleName = source.baseName ?? source.name
+              const genotype = info.genotypes[sampleName]
+              if (genotype) {
+                const alleles = makeSimpleAltString(genotype, info.ref, info.alt)
+                model.setHoveredGenotype({
+                  genotype,
+                  alleles,
+                  featureName: info.name,
+                  description:
+                    info.alt.length >= 3
+                      ? 'multiple ALT alleles'
+                      : info.description,
+                  length: getBpDisplayStr(info.length),
+                  name: source.name,
+                })
+              } else {
+                model.setHoveredGenotype(undefined)
+              }
+            } else {
+              model.setHoveredGenotype(undefined)
+            }
           } else {
             model.setHoveredGenotype(undefined)
           }

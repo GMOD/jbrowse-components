@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { computeVariantMatrixCells } from './computeVariantMatrixCells.ts'
 import { WebGLVariantMatrixRenderer } from './WebGLVariantMatrixRenderer.ts'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
@@ -48,35 +47,16 @@ const WebGLVariantMatrixComponent = observer(
       }
     }, [])
 
-    // Compute cell data and upload when features/settings change
+    // Upload pre-computed cell data from worker when it arrives
     useEffect(() => {
       const renderer = rendererRef.current
-      if (!renderer) {
+      const cellData = model.webglCellData
+      if (!renderer || !cellData) {
         return
       }
-      const features = model.featuresVolatile
-      const sources = model.sources
-      if (!features || !sources?.length) {
-        return
-      }
-
-      const cellData = computeVariantMatrixCells({
-        features,
-        sources,
-        renderingMode: model.renderingMode,
-        minorAlleleFrequencyFilter: model.minorAlleleFrequencyFilter,
-        lengthCutoffFilter: model.lengthCutoffFilter,
-      })
-
       cellDataRef.current = cellData
       renderer.uploadCellData(cellData)
-    }, [
-      model.featuresVolatile,
-      model.sources,
-      model.renderingMode,
-      model.minorAlleleFrequencyFilter,
-      model.lengthCutoffFilter,
-    ])
+    }, [model.webglCellData])
 
     // Render when scroll/size changes
     useEffect(() => {
@@ -109,7 +89,7 @@ const WebGLVariantMatrixComponent = observer(
       }
     }, [
       model,
-      model.featuresVolatile,
+      model.webglCellData,
       model.availableHeight,
       model.rowHeight,
       model.scrollTop,

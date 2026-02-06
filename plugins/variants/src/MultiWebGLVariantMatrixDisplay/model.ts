@@ -5,6 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel.ts'
 
+import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -24,6 +25,9 @@ export default function stateModelFactory(
         lineZoneHeight: types.optional(types.number, 20),
       }),
     )
+    .volatile(() => ({
+      webglCellData: undefined as MatrixCellData | undefined,
+    }))
     .views(() => ({
       get DisplayMessageComponent() {
         return WebGLVariantMatrixComponent
@@ -43,11 +47,17 @@ export default function stateModelFactory(
           id: 'variantFeature',
         }
       },
+      get webglCellDataMode() {
+        return 'matrix' as const
+      },
       renderProps() {
         return { notReady: true }
       },
     }))
     .actions(self => ({
+      setWebGLCellData(data: unknown) {
+        self.webglCellData = data as MatrixCellData | undefined
+      },
       setLineZoneHeight(n: number) {
         self.lineZoneHeight = clamp(n, 10, 1000)
         return self.lineZoneHeight

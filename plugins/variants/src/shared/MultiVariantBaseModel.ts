@@ -193,7 +193,7 @@ export default function MultiVariantBaseModelF(
        * #volatile
        */
       hoveredGenotype: undefined as
-        | { genotype: string; name: string }
+        | (Record<string, unknown> & { genotype: string; name: string })
         | undefined,
       /**
        * #volatile
@@ -235,7 +235,9 @@ export default function MultiVariantBaseModelF(
       /**
        * #action
        */
-      setHoveredGenotype(arg?: { genotype: string; name: string }) {
+      setHoveredGenotype(
+        arg?: Record<string, unknown> & { genotype: string; name: string },
+      ) {
         self.hoveredGenotype = arg
       },
       /**

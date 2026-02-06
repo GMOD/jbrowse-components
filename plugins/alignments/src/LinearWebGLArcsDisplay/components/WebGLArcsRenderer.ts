@@ -16,12 +16,8 @@ const NUM_ARC_COLORS = 8
 const NUM_LINE_COLORS = 2
 
 function cssColorToRgb(color: string): [number, number, number] {
-  const hex = colord(color).toHex()
-  return [
-    parseInt(hex.slice(1, 3), 16) / 255,
-    parseInt(hex.slice(3, 5), 16) / 255,
-    parseInt(hex.slice(5, 7), 16) / 255,
-  ]
+  const { r, g, b } = colord(color).toRgb()
+  return [r / 255, g / 255, b / 255]
 }
 
 // Arc color types (indices match getColorType in executeRenderWebGLArcsData.ts):
