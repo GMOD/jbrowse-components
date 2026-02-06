@@ -156,10 +156,15 @@ interface LinearWebGLPileupDisplayModel {
   maxY: number
   featureIdUnderMouse: string | undefined
   coverageTicks?: CoverageTicks
+  currentRangeY: [number, number]
+  highlightedFeatureIndex: number
+  selectedFeatureIndex: number
   setMaxY: (y: number) => void
   setCurrentDomain: (domain: [number, number]) => void
+  setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
-  handleNeedMoreData: (region: { start: number; end: number }) => void
+  setHighlightedFeatureIndex: (index: number) => void
+  setSelectedFeatureIndex: (index: number) => void
   setFeatureIdUnderMouse: (id: string | undefined) => void
   setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (featureId: string) => void
@@ -196,13 +201,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // This avoids forced layout from reading clientWidth/clientHeight
   const [measureRef, measuredDims] = useMeasure()
 
-  // Y-axis scroll state (not part of view)
-  const rangeYRef = useRef<[number, number]>([0, 600])
-
-  // Feature highlighting - use ref to avoid re-renders on mouse move
-  const highlightedFeatureIndexRef = useRef<number>(-1)
-  // Selected feature for outline
-  const selectedFeatureIndexRef = useRef<number>(-1)
   // Track if over a CIGAR item for cursor
   const [overCigarItem, setOverCigarItem] = useState(false)
   // Track hover state for resize handle
@@ -214,12 +212,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Rendering and data loading
   const renderRAFRef = useRef<number | null>(null)
   const scheduleRenderRef = useRef<() => void>(() => {})
-  const pendingDataRequestRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  )
-  const lastRequestedRegionRef = useRef<{ start: number; end: number } | null>(
-    null,
-  )
 
   // Drag state for panning
   const dragRef = useRef({
@@ -331,7 +323,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       rendererRef.current.render({
         domainX,
-        rangeY: rangeYRef.current,
+        rangeY: model.currentRangeY,
         colorScheme: colorSchemeIndex,
         featureHeight,
         featureSpacing,
@@ -343,8 +335,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         showInterbaseIndicators,
         canvasWidth: w,
         canvasHeight: height,
-        highlightedFeatureIndex: highlightedFeatureIndexRef.current,
-        selectedFeatureIndex: selectedFeatureIndexRef.current,
+        highlightedFeatureIndex: model.highlightedFeatureIndex,
+        selectedFeatureIndex: model.selectedFeatureIndex,
         colors: colorPalette,
       })
     },
@@ -385,61 +377,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Keep refs updated for use in event handlers without causing effect re-runs
   scheduleRenderRef.current = scheduleRender
 
-  // Check if more data needs to be loaded
-  const checkDataNeeds = useCallback(() => {
-    const visibleBpRange = getVisibleBpRange()
-    if (!visibleBpRange) {
-      return
-    }
-    const loadedRegion = model.loadedRegion
-    if (!loadedRegion || model.isLoading) {
-      return
-    }
-
-    const buffer = (visibleBpRange[1] - visibleBpRange[0]) * 0.5
-    const needsData =
-      visibleBpRange[0] - buffer < loadedRegion.start ||
-      visibleBpRange[1] + buffer > loadedRegion.end
-
-    if (needsData) {
-      if (pendingDataRequestRef.current) {
-        clearTimeout(pendingDataRequestRef.current)
-      }
-      pendingDataRequestRef.current = setTimeout(() => {
-        if (model.isLoading) {
-          return
-        }
-        const currentRange = getVisibleBpRange()
-        if (!currentRange) {
-          return
-        }
-        const requested = lastRequestedRegionRef.current
-        if (
-          requested &&
-          currentRange[0] >= requested.start &&
-          currentRange[1] <= requested.end
-        ) {
-          return
-        }
-        lastRequestedRegionRef.current = {
-          start: currentRange[0],
-          end: currentRange[1],
-        }
-        model.handleNeedMoreData({
-          start: currentRange[0],
-          end: currentRange[1],
-        })
-        pendingDataRequestRef.current = null
-      }, 200)
-    }
-  }, [getVisibleBpRange, model])
-
   // Refs for callbacks and values used in wheel/mouse handlers - prevents effect churn
   // Must be defined after the callbacks they reference
   const renderNowRef = useRef(renderNow)
   renderNowRef.current = renderNow
-  const checkDataNeedsRef = useRef(checkDataNeeds)
-  checkDataNeedsRef.current = checkDataNeeds
   const clampOffsetRef = useRef(clampOffset)
   clampOffsetRef.current = clampOffset
   const getVisibleBpRangeRef = useRef(getVisibleBpRange)
@@ -503,6 +444,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       if (!view.initialized) {
         return
       }
+
+      // Track model properties that affect rendering - autorun
+      // re-runs when these change (e.g. Y scroll, highlighting)
+      const _rangeY = model.currentRangeY
+      const _highlighted = model.highlightedFeatureIndex
+      const _selected = model.selectedFeatureIndex
 
       // Sync domain to model for data-loading reaction
       const visibleBpRange = getVisibleBpRangeRef.current()
@@ -624,17 +571,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     }
   }, [rendererReady, measuredDims.width, measuredDims.height])
 
-  // Reset data request tracking
-  useEffect(() => {
-    lastRequestedRegionRef.current = null
-  }, [model.loadedRegion])
-
   // Cleanup
   useEffect(() => {
     return () => {
-      if (pendingDataRequestRef.current) {
-        clearTimeout(pendingDataRequestRef.current)
-      }
       if (renderRAFRef.current) {
         cancelAnimationFrame(renderRAFRef.current)
       }
@@ -680,7 +619,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         e.stopPropagation()
         const newOffsetPx = clampOffsetRef.current(view.offsetPx + e.deltaX)
         view.setNewView(view.bpPerPx, newOffsetPx)
-        checkDataNeedsRef.current()
+
         return
       }
 
@@ -696,7 +635,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const totalHeight = maxYRef.current * rowHeight
         const panAmount = e.deltaY * 0.5
 
-        const prev = rangeYRef.current
+        const prev = model.currentRangeY
         let newY: [number, number] = [prev[0] + panAmount, prev[1] + panAmount]
         if (newY[0] < 0) {
           newY = [0, newY[1] - newY[0]]
@@ -705,8 +644,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           const overflow = newY[1] - totalHeight - 50
           newY = [newY[0] - overflow, newY[1] - overflow]
         }
-        rangeYRef.current = newY
-        renderNowRef.current()
+        model.setCurrentRangeY(newY)
       } else if (view.scrollZoom || e.ctrlKey || e.metaKey) {
         e.preventDefault()
         e.stopPropagation()
@@ -767,7 +705,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           view.setNewView(newBpPerPx, newOffsetPx)
         }
 
-        checkDataNeedsRef.current()
+
       }
     }
 
@@ -807,7 +745,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     if (dx !== 0) {
       const newOffsetPx = clampOffsetRef.current(view.offsetPx - dx)
       view.setNewView(view.bpPerPx, newOffsetPx)
-      checkDataNeedsRef.current()
     }
   }, [])
 
@@ -820,10 +757,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     model.setFeatureIdUnderMouse(undefined)
     model.setMouseoverExtraInformation(undefined)
     setOverCigarItem(false)
-    // Clear highlight and re-render
-    if (highlightedFeatureIndexRef.current !== -1) {
-      highlightedFeatureIndexRef.current = -1
-      renderNowRef.current()
+    if (model.highlightedFeatureIndex !== -1) {
+      model.setHighlightedFeatureIndex(-1)
     }
   }, [model])
 
@@ -854,7 +789,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       // Convert canvas Y to row number (accounting for Y scroll)
       const rowHeight = featureHeight + featureSpacing
-      const scrolledY = canvasY + rangeYRef.current[0]
+      const scrolledY = canvasY + model.currentRangeY[0]
       // Adjust for coverage height if shown
       const adjustedY = showCoverage ? scrolledY - coverageHeight : scrolledY
       if (adjustedY < 0) {
@@ -920,7 +855,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       // Convert canvas Y to row number (accounting for Y scroll)
       const rowHeight = featureHeight + featureSpacing
-      const scrolledY = canvasY + rangeYRef.current[0]
+      const scrolledY = canvasY + model.currentRangeY[0]
       // Adjust for coverage height if shown
       const adjustedY = showCoverage ? scrolledY - coverageHeight : scrolledY
       if (adjustedY < 0) {
@@ -1359,10 +1294,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           model.setMouseoverExtraInformation(tooltipText)
         }
 
-        // Clear highlight
-        if (highlightedFeatureIndexRef.current !== -1) {
-          highlightedFeatureIndexRef.current = -1
-          renderNowRef.current()
+        if (model.highlightedFeatureIndex !== -1) {
+          model.setHighlightedFeatureIndex(-1)
         }
         return
       }
@@ -1429,10 +1362,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           model.setMouseoverExtraInformation(undefined)
         }
 
-        // Clear highlight
-        if (highlightedFeatureIndexRef.current !== -1) {
-          highlightedFeatureIndexRef.current = -1
-          renderNowRef.current()
+        if (model.highlightedFeatureIndex !== -1) {
+          model.setHighlightedFeatureIndex(-1)
         }
         return
       }
@@ -1476,9 +1407,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const featureId = hit?.id
         const featureIndex = hit?.index ?? -1
         model.setFeatureIdUnderMouse(featureId)
-        if (highlightedFeatureIndexRef.current !== featureIndex) {
-          highlightedFeatureIndexRef.current = featureIndex
-          renderNowRef.current()
+        if (model.highlightedFeatureIndex !== featureIndex) {
+          model.setHighlightedFeatureIndex(featureIndex)
         }
         return
       }
@@ -1493,10 +1423,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       model.setFeatureIdUnderMouse(featureId)
 
-      // Update highlight and re-render if changed
-      if (highlightedFeatureIndexRef.current !== featureIndex) {
-        highlightedFeatureIndexRef.current = featureIndex
-        renderNowRef.current()
+      if (model.highlightedFeatureIndex !== featureIndex) {
+        model.setHighlightedFeatureIndex(featureIndex)
       }
 
       // Set tooltip info
@@ -1545,10 +1473,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const featureHit = hitTestFeature(canvasX, canvasY)
         const refName = model.loadedRegion?.refName ?? ''
 
-        // Set selected feature for outline
         if (featureHit) {
-          selectedFeatureIndexRef.current = featureHit.index
-          renderNowRef.current()
+          model.setSelectedFeatureIndex(featureHit.index)
         }
 
         // Open widget with CIGAR item details
@@ -1610,15 +1536,11 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
       const hit = hitTestFeature(canvasX, canvasY)
       if (hit) {
-        // Set selected feature for outline
-        selectedFeatureIndexRef.current = hit.index
-        renderNowRef.current()
+        model.setSelectedFeatureIndex(hit.index)
         model.selectFeatureById(hit.id)
       } else {
-        // Clear selection if clicking on empty space
-        if (selectedFeatureIndexRef.current !== -1) {
-          selectedFeatureIndexRef.current = -1
-          renderNowRef.current()
+        if (model.selectedFeatureIndex !== -1) {
+          model.setSelectedFeatureIndex(-1)
         }
       }
     },
@@ -1716,7 +1638,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     const charWidth = 6.5
     const canRenderText = pxPerBp >= charWidth
     const rowHeight = featureHeight + featureSpacing
-    const rangeY = rangeYRef.current
+    const rangeY = model.currentRangeY
     const pileupYOffset = showCoverage ? coverageHeight : 0
 
     // Minimum pixel width needed to show a label (about 15px for short numbers like "5")

@@ -46,11 +46,11 @@ const suite: TestSuite = {
         })
 
         await page.waitForSelector(
-          '[data-testid^="prerendered_canvas"]',
+          '[data-testid^="trackRenderingContainer"]',
           { timeout: 60000 },
         )
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await delay(3000)
         await snapshot(page, 'bigwig-multibigwig-xyplot')
       },
     },

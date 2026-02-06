@@ -194,6 +194,8 @@ export default function stateModelFactory(
       currentDomainX: null as [number, number] | null,
       currentRangeY: [0, 600] as [number, number],
       maxY: 0,
+      highlightedFeatureIndex: -1,
+      selectedFeatureIndex: -1,
     }))
     .views(self => ({
       /**
@@ -487,6 +489,14 @@ export default function stateModelFactory(
         self.currentRangeY = rangeY
       },
 
+      setHighlightedFeatureIndex(index: number) {
+        self.highlightedFeatureIndex = index
+      },
+
+      setSelectedFeatureIndex(index: number) {
+        self.selectedFeatureIndex = index
+      },
+
       setColorScheme(colorBy: ColorBy) {
         self.colorBySetting = colorBy
       },
@@ -649,38 +659,27 @@ export default function stateModelFactory(
           })
         },
 
-        /**
-         * Called when WebGL component needs more data
-         */
-        handleNeedMoreData(requestedRegion: { start: number; end: number }) {
-          const visibleRegion = self.visibleRegion
-          if (!visibleRegion) {
-            return
-          }
-
-          // Expand the requested region
-          const width = requestedRegion.end - requestedRegion.start
-          const expandedRegion = {
-            refName: visibleRegion.refName,
-            start: Math.max(0, requestedRegion.start - width),
-            end: requestedRegion.end + width,
-            assemblyName: visibleRegion.assemblyName,
-          }
-
-          fetchFeaturesImpl(expandedRegion).catch(e => {
-            console.error('Failed to fetch features:', e)
-          })
-        },
-
         afterAttach() {
-          // Fetch initial data when region becomes available
+          // Fetch data when the visible region approaches the edge of
+          // loaded data.  Uses a 50% viewport buffer so we prefetch
+          // before the user actually scrolls past the loaded boundary.
           addDisposer(
             self,
             reaction(
               () => self.visibleRegion,
               region => {
-                if (region && !self.isWithinLoadedRegion) {
-                  // Expand region by 2x on each side for buffering
+                if (!region) {
+                  return
+                }
+                const { loadedRegion } = self
+                const buffer = (region.end - region.start) * 0.5
+                const needsData =
+                  !loadedRegion ||
+                  loadedRegion.refName !== region.refName ||
+                  region.start - buffer < loadedRegion.start ||
+                  region.end + buffer > loadedRegion.end
+
+                if (needsData) {
                   const width = region.end - region.start
                   const expandedRegion = {
                     ...region,
