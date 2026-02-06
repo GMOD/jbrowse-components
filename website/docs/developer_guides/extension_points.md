@@ -476,6 +476,44 @@ Allows rendering a custom component as a child of the LinearGenomeView's
 "TracksContainer". Used to render highlights for example with a div of height
 100% over the TracksContainer
 
+### LinearGenomeView-searchResultSelected
+
+type: async
+
+- `args` - `undefined`
+- `props` - an object of the type below
+
+```typescript
+interface props {
+  session: AbstractSessionModel
+  result: BaseResult // the search result that was selected
+  model: LinearGenomeViewModel // the linear genome view model
+  assemblyName: string // the assembly name
+}
+```
+
+Called when a search result is selected in the LinearGenomeView search box. This
+fires after navigation has occurred (if the result has a location). Useful for
+plugins that want to take additional action when a search result is selected,
+such as selecting a corresponding feature in a track.
+
+Example: selecting a feature in a custom track when a search result is chosen
+
+```typescript
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+
+pluginManager.addToExtensionPoint(
+  'LinearGenomeView-searchResultSelected',
+  (_, { session, result, model, assemblyName }) => {
+    const trackId = result.getTrackId()
+    if (trackId === 'my_custom_track') {
+      // perform custom action, e.g. select the feature in the track
+    }
+    return _
+  },
+)
+```
+
 ### DotplotView-ImportFormSyntenyOptions
 
 type: synchronous
