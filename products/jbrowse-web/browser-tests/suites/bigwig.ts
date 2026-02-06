@@ -4,7 +4,7 @@ import {
   navigateWithSessionSpec,
   waitForLoadingToComplete,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -28,7 +28,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'wiggle-rendering-test', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'bigwig-gc-content')
+        await canvasSnapshot(
+          page,
+          'bigwig-gc-content-canvas',
+          '[data-testid="wiggle-rendering-test"] canvas',
+        )
       },
     },
     {
@@ -46,12 +50,16 @@ const suite: TestSuite = {
         })
 
         await page.waitForSelector(
-          '[data-testid^="trackRenderingContainer"]',
+          '[data-testid^="trackRenderingContainer"] canvas',
           { timeout: 60000 },
         )
         await waitForLoadingToComplete(page)
         await delay(3000)
-        await snapshot(page, 'bigwig-multibigwig-xyplot')
+        await canvasSnapshot(
+          page,
+          'bigwig-multibigwig-xyplot-canvas',
+          '[data-testid^="trackRenderingContainer"] canvas',
+        )
       },
     },
     {
@@ -74,7 +82,11 @@ const suite: TestSuite = {
         )
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'bigwig-multibigwig-multirowxy')
+        await canvasSnapshot(
+          page,
+          'bigwig-multibigwig-multirowxy-canvas',
+          '[data-testid^="prerendered_canvas"]',
+        )
       },
     },
     {
@@ -97,7 +109,11 @@ const suite: TestSuite = {
         )
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'bigwig-multibigwig-multirowdensity')
+        await canvasSnapshot(
+          page,
+          'bigwig-multibigwig-multirowdensity-canvas',
+          '[data-testid^="prerendered_canvas"]',
+        )
       },
     },
     {
@@ -120,7 +136,11 @@ const suite: TestSuite = {
         )
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'bigwig-multibigwig-multirowline')
+        await canvasSnapshot(
+          page,
+          'bigwig-multibigwig-multirowline-canvas',
+          '[data-testid^="prerendered_canvas"]',
+        )
       },
     },
   ],

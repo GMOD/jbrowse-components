@@ -4,7 +4,7 @@ import {
   findByTestId,
   waitForLoadingToComplete,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -22,7 +22,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'prerendered_canvas_done', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'dotplot-default')
+        await canvasSnapshot(
+          page,
+          'dotplot-default-canvas',
+          '[data-testid="prerendered_canvas_done"]',
+        )
       },
     },
   ],

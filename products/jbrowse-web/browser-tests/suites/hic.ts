@@ -5,7 +5,7 @@ import {
   openTrack,
   waitForLoadingToComplete,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -24,7 +24,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'hic_canvas_done', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
-        await snapshot(page, 'hic-rendering')
+        await canvasSnapshot(
+          page,
+          'hic-rendering-canvas',
+          '[data-testid="hic_canvas_done"]',
+        )
       },
     },
   ],

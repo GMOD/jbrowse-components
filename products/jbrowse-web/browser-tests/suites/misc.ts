@@ -5,7 +5,7 @@ import {
   navigateWithSessionSpec,
   waitForLoadingToComplete,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { canvasSnapshot, snapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -29,7 +29,11 @@ const suite: TestSuite = {
         await findByTestId(page, 'Blockset-pileup', 60000)
         await waitForLoadingToComplete(page)
         await delay(2000)
-        await snapshot(page, 'misc-snpcoverage')
+        await canvasSnapshot(
+          page,
+          'misc-snpcoverage-canvas',
+          '[data-testid="Blockset-pileup"] canvas',
+        )
       },
     },
     {
