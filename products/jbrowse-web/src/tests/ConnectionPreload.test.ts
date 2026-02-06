@@ -325,4 +325,50 @@ describe('preLoadConnectionTracks', () => {
 
     connType.fetchTracks = originalFetchTracks
   })
+
+  it('calls onStatus callback with connection name', async () => {
+    const { pluginManager } = setupRootModel()
+
+    const mockTracks = [{ type: 'FeatureTrack', trackId: 'tr1' }]
+    const connType = pluginManager.getConnectionType('JB2TrackHubConnection')!
+    const originalFetchTracks = connType.fetchTracks
+    connType.fetchTracks = jest.fn().mockResolvedValue(mockTracks)
+
+    const onStatus = jest.fn()
+
+    const sessionSnapshot = {
+      name: 'testSession',
+      connectionInstances: [
+        {
+          type: 'JB2TrackHubConnection',
+          name: 'My Hub',
+          configuration: 'conn1',
+        },
+      ],
+    }
+    const configSnapshot = {
+      connections: [
+        {
+          type: 'JB2TrackHubConnection',
+          connectionId: 'conn1',
+          name: 'My Hub',
+          configJsonLocation: {
+            uri: 'http://example.com/config.json',
+            locationType: 'UriLocation',
+          },
+        },
+      ],
+    }
+
+    await preLoadConnectionTracks(
+      sessionSnapshot,
+      configSnapshot,
+      pluginManager,
+      onStatus,
+    )
+
+    expect(onStatus).toHaveBeenCalledWith('Loading connection "My Hub"...')
+
+    connType.fetchTracks = originalFetchTracks
+  })
 })

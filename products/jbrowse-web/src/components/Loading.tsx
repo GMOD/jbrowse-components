@@ -1,17 +1,21 @@
-import { CircularProgress } from '@mui/material'
+import { CircularProgress, Typography } from '@mui/material'
 
-export default function Loading() {
+export default function Loading({ message }: { message?: string }) {
   return (
-    <CircularProgress
-      disableShrink
+    <div
       style={{
         position: 'fixed',
         top: '50%',
         left: '50%',
-        marginTop: -25,
-        marginLeft: -25,
+        transform: 'translate(-50%, -50%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 16,
       }}
-      size={50}
-    />
+    >
+      <CircularProgress disableShrink size={50} />
+      {message ? <Typography>{message}</Typography> : null}
+    </div>
   )
 }

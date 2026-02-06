@@ -17,6 +17,7 @@ export async function preLoadConnectionTracks(
   sessionSnapshot: Record<string, unknown>,
   configSnapshot: Record<string, unknown>,
   pluginManager: PluginManager,
+  onStatus?: (message: string) => void,
 ) {
   const connectionInstances = sessionSnapshot.connectionInstances as
     | Record<string, unknown>[]
@@ -50,12 +51,15 @@ export async function preLoadConnectionTracks(
         return connInstance
       }
 
+      const name = connInstance.name as string
+      onStatus?.(`Loading connection "${name}"...`)
+
       try {
         const tracks = await connectionType.fetchTracks(config)
         return { ...connInstance, tracks }
       } catch (e) {
         console.error(
-          `Failed to pre-load tracks for connection ${connInstance.name}:`,
+          `Failed to pre-load tracks for connection ${name}:`,
           e,
         )
         return connInstance
@@ -72,6 +76,7 @@ export async function createPluginManager(
     configSnapshot: Record<string, unknown>,
     sessionSnapshot: Record<string, unknown>,
   ) => void,
+  onStatus?: (message: string) => void,
 ) {
   // it is ready when a session has loaded and when there is no config error
   //
@@ -167,6 +172,7 @@ export async function createPluginManager(
           sessionSnapshot,
           model.configSnapshot,
           pluginManager,
+          onStatus,
         )
         rootModel.setSession(enrichedSnapshot)
       } else if (hubSpec) {

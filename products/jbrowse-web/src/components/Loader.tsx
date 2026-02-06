@@ -148,28 +148,41 @@ const Renderer = observer(function Renderer({
   )
   const { configError, ready, sessionTriaged } = loader
   const [error, setError] = useState<unknown>()
+  const [loadingMessage, setLoadingMessage] = useState<string>()
 
   useEffect(() => {
     // Skip destroy in Jest since it interferes with test cleanup
     const isJest = typeof jest !== 'undefined'
+    let cancelled = false
     if (ready) {
       ;(async () => {
         try {
           if (pluginManager.current?.rootModel && !isJest) {
             destroy(pluginManager.current.rootModel)
           }
-          pluginManager.current = await createPluginManager(
+          const pm = await createPluginManager(
             loader,
             reloadPluginManager,
+            msg => {
+              if (!cancelled) {
+                setLoadingMessage(msg)
+              }
+            },
           )
-          setPluginManagerCreated(true)
+          if (!cancelled) {
+            pluginManager.current = pm
+            setPluginManagerCreated(true)
+          }
         } catch (e) {
-          console.error(e)
-          setError(e)
+          if (!cancelled) {
+            console.error(e)
+            setError(e)
+          }
         }
       })()
     }
     return () => {
+      cancelled = true
       if (pluginManager.current?.rootModel && !isJest) {
         const rootModel = pluginManager.current.rootModel
         const session = rootModel.session
@@ -201,7 +214,7 @@ const Renderer = observer(function Renderer({
   } else if (pluginManagerCreated && pluginManager.current) {
     return <JBrowse pluginManager={pluginManager.current} />
   } else {
-    return <Loading />
+    return <Loading message={loadingMessage} />
   }
 })
 
