@@ -153,16 +153,21 @@ const Renderer = observer(function Renderer({
     // Skip destroy in Jest since it interferes with test cleanup
     const isJest = typeof jest !== 'undefined'
     if (ready) {
-      try {
-        if (pluginManager.current?.rootModel && !isJest) {
-          destroy(pluginManager.current.rootModel)
+      ;(async () => {
+        try {
+          if (pluginManager.current?.rootModel && !isJest) {
+            destroy(pluginManager.current.rootModel)
+          }
+          pluginManager.current = await createPluginManager(
+            loader,
+            reloadPluginManager,
+          )
+          setPluginManagerCreated(true)
+        } catch (e) {
+          console.error(e)
+          setError(e)
         }
-        pluginManager.current = createPluginManager(loader, reloadPluginManager)
-        setPluginManagerCreated(true)
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
+      })()
     }
     return () => {
       if (pluginManager.current?.rootModel && !isJest) {

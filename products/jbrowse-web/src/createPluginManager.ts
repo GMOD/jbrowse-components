@@ -13,7 +13,60 @@ import sessionModelFactory from './sessionModel/index.ts'
 
 import type { SessionLoaderModel } from './SessionLoader.ts'
 
-export function createPluginManager(
+async function preLoadConnectionTracks(
+  sessionSnapshot: Record<string, unknown>,
+  configSnapshot: Record<string, unknown>,
+  pluginManager: PluginManager,
+) {
+  const connectionInstances = sessionSnapshot.connectionInstances as
+    | Record<string, unknown>[]
+    | undefined
+  if (!connectionInstances?.length) {
+    return sessionSnapshot
+  }
+
+  const allConnections = [
+    ...((configSnapshot.connections as Record<string, unknown>[]) ?? []),
+    ...((sessionSnapshot.sessionConnections as Record<string, unknown>[]) ??
+      []),
+  ]
+
+  const enrichedInstances = await Promise.all(
+    connectionInstances.map(async connInstance => {
+      const configRef = connInstance.configuration
+      const configId =
+        typeof configRef === 'string'
+          ? configRef
+          : (configRef as Record<string, unknown> | undefined)?.connectionId
+      const config = allConnections.find(c => c.connectionId === configId)
+      if (!config) {
+        return connInstance
+      }
+
+      const connectionType = pluginManager.getConnectionType(
+        connInstance.type as string,
+      )
+      if (!connectionType?.fetchTracks) {
+        return connInstance
+      }
+
+      try {
+        const tracks = await connectionType.fetchTracks(config)
+        return { ...connInstance, tracks }
+      } catch (e) {
+        console.error(
+          `Failed to pre-load tracks for connection ${connInstance.name}:`,
+          e,
+        )
+        return connInstance
+      }
+    }),
+  )
+
+  return { ...sessionSnapshot, connectionInstances: enrichedInstances }
+}
+
+export async function createPluginManager(
   model: SessionLoaderModel,
   reloadPluginManagerCallback: (
     configSnapshot: Record<string, unknown>,
@@ -110,7 +163,12 @@ export function createPluginManager(
               err,
             )
           })
-        rootModel.setSession(sessionSnapshot)
+        const enrichedSnapshot = await preLoadConnectionTracks(
+          sessionSnapshot,
+          model.configSnapshot,
+          pluginManager,
+        )
+        rootModel.setSession(enrichedSnapshot)
       } else if (hubSpec) {
         afterInitializedCb = () =>
           // @ts-expect-error

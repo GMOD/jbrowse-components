@@ -15,6 +15,10 @@ export default class ConnectionType extends PluggableElementBase {
 
   configEditorComponent?: AnyReactComponentType
 
+  fetchTracks?: (
+    config: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>[]>
+
   constructor(stuff: {
     name: string
     stateModel: IAnyModelType
@@ -23,6 +27,9 @@ export default class ConnectionType extends PluggableElementBase {
     description: string
     configEditorComponent?: AnyReactComponentType
     url: string
+    fetchTracks?: (
+      config: Record<string, unknown>,
+    ) => Promise<Record<string, unknown>[]>
   }) {
     super(stuff)
     this.stateModel = stuff.stateModel
@@ -30,5 +37,6 @@ export default class ConnectionType extends PluggableElementBase {
     this.description = stuff.description
     this.url = stuff.url
     this.configEditorComponent = stuff.configEditorComponent
+    this.fetchTracks = stuff.fetchTracks
   }
 }
