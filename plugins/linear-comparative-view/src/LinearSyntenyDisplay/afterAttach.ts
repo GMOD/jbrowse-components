@@ -32,6 +32,7 @@ type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastGeometryKey = ''
+  let lastRenderer: unknown = null
 
   addDisposer(
     self,
@@ -54,16 +55,34 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         // WebGL rendering path
         if (view.useWebGL && self.webglRenderer && self.webglInitialized) {
+          // Reset geometry key when renderer changes (e.g. React StrictMode
+          // re-creates the renderer)
+          if (self.webglRenderer !== lastRenderer) {
+            lastGeometryKey = ''
+            lastRenderer = self.webglRenderer
+          }
+
           const geometryKey = `${featPositions.length}-${colorBy}-${alpha}-${view.drawCurves}-${view.drawCIGAR}-${view.drawCIGARMatchesOnly}-${view.drawLocationMarkers}`
 
+          // Always resize in case dimensions changed
+          self.webglRenderer.resize(width, height)
+
           if (geometryKey !== lastGeometryKey) {
+            console.log('[WebGL Synteny] Building geometry', {
+              featureCount: featPositions.length,
+              colorBy,
+              alpha,
+              width,
+              height,
+              geometryKey,
+            })
             const colorFn = createColorFunction(colorBy, alpha)
             const bpPerPxs = view.views.map(v => v.bpPerPx)
-            self.webglRenderer.resize(width, height)
             self.webglRenderer.buildGeometry(
               featPositions,
               level,
               alpha,
+              colorBy,
               colorFn,
               view.drawCurves,
               view.drawCIGAR,
@@ -71,6 +90,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               bpPerPxs,
               view.drawLocationMarkers,
             )
+            console.log('[WebGL Synteny] Geometry built', {
+              hasGeometry: self.webglRenderer.hasGeometry(),
+            })
             lastGeometryKey = geometryKey
           }
 

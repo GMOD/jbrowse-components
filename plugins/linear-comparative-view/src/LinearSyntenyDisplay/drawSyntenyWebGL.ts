@@ -1,12 +1,7 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
-import {
-  colorSchemes,
-  getQueryColor,
-  lineLimit,
-  oobLimit,
-} from './drawSyntenyUtils.ts'
+import { colorSchemes } from './drawSyntenyUtils.ts'
 
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { FeatPos } from './model.ts'
@@ -134,8 +129,10 @@ void main() {
   float halfWidth = 0.5;
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
-  float alpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
-  fragColor = vec4(v_color.rgb, v_color.a * alpha);
+  float edgeAlpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
+  float finalAlpha = v_color.a * edgeAlpha;
+  // Output premultiplied alpha for correct canvas compositing
+  fragColor = vec4(v_color.rgb * finalAlpha, finalAlpha);
 }
 `
 
@@ -195,7 +192,8 @@ in vec4 v_color;
 out vec4 outColor;
 
 void main() {
-  outColor = v_color;
+  // Output premultiplied alpha for correct canvas compositing
+  outColor = vec4(v_color.rgb * v_color.a, v_color.a);
 }
 `
 
@@ -295,7 +293,7 @@ export class SyntenyWebGLRenderer {
     const gl = canvas.getContext('webgl2', {
       antialias: true,
       alpha: true,
-      premultipliedAlpha: false,
+      premultipliedAlpha: true,
     })
 
     if (!gl) {
@@ -308,6 +306,15 @@ export class SyntenyWebGLRenderer {
     this.devicePixelRatio = canvas.width / (canvas.clientWidth || canvas.width)
     this.width = canvas.clientWidth || canvas.width
     this.height = canvas.clientHeight || canvas.height
+    console.log('[WebGL Synteny] init', {
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+      clientWidth: canvas.clientWidth,
+      clientHeight: canvas.clientHeight,
+      cssWidth: this.width,
+      cssHeight: this.height,
+      dpr: this.devicePixelRatio,
+    })
 
     try {
       // Create fill programs
@@ -523,6 +530,7 @@ export class SyntenyWebGLRenderer {
     featPositions: FeatPos[],
     level: number,
     alpha: number,
+    colorBy: string,
     colorFn: (f: FeatPos, index: number) => [number, number, number, number],
     drawCurves: boolean,
     drawCIGAR: boolean,
@@ -617,7 +625,7 @@ export class SyntenyWebGLRenderer {
               continue
             }
 
-            const [cr, cg, cb, ca] = getCigarColor(letter, colorFn, feat, i, alpha)
+            const [cr, cg, cb, ca] = getCigarColor(letter, colorBy, colorFn, feat, i, alpha)
             addTrapezoid(
               fillPosX, fillPosY, fillRows, fillColors, fillFeatureIds,
               px1, cx1, cx2, px2, cr, cg, cb, ca, featureId, segments, drawCurves,
@@ -704,17 +712,28 @@ export class SyntenyWebGLRenderer {
 
   render(offset0: number, offset1: number, height: number) {
     if (!this.gl || !this.canvas) {
+      console.log('[WebGL Synteny] render skipped - no gl or canvas')
       return
     }
     const gl = this.gl
     const canvasWidth = this.canvas.width
     const canvasHeight = this.canvas.height
+    console.log('[WebGL Synteny] render', {
+      offset0,
+      offset1,
+      height,
+      canvasWidth,
+      canvasHeight,
+      resolution: [this.width, this.height],
+      fillVertexCount: this.fillVertexCount,
+      edgeInstanceCount: this.edgeInstanceCount,
+    })
 
     gl.viewport(0, 0, canvasWidth, canvasHeight)
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
     // Draw fills
     if (this.fillVao && this.fillVertexCount > 0) {
@@ -866,6 +885,7 @@ export class SyntenyWebGLRenderer {
 // Helper: get color for a CIGAR operation
 function getCigarColor(
   letter: string,
+  colorBy: string,
   colorFn: (f: FeatPos, index: number) => [number, number, number, number],
   feat: FeatPos,
   index: number,
@@ -877,9 +897,7 @@ function getCigarColor(
     return colorFn(feat, index)
   }
 
-  // Use CIGAR-specific colors from colorSchemes
-  const strand = feat.f.get('strand') as number
-  const scheme = strand === -1 || strand === 1
+  const scheme = colorBy === 'strand'
     ? colorSchemes.strand
     : colorSchemes.default
   const cigarColors = scheme.cigarColors

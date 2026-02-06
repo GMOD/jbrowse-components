@@ -1,3 +1,4 @@
+import type React from 'react'
 import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
@@ -123,12 +124,15 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         }
       }
     }
-    mainSyntenyCanvasRefp.current?.addEventListener('wheel', onWheel)
+    const target = view.useWebGL
+      ? webglCanvasRef.current
+      : mainSyntenyCanvasRefp.current
+    target?.addEventListener('wheel', onWheel)
     return () => {
-      mainSyntenyCanvasRefp.current?.removeEventListener('wheel', onWheel)
+      target?.removeEventListener('wheel', onWheel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, height, width])
+  }, [model, height, width, view.useWebGL])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const clickMapCanvasRef = useCallback(
@@ -151,6 +155,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (view.useWebGL && webglCanvasRef.current) {
+      console.log('[WebGL Synteny] useEffect: creating renderer', { width, height })
       const renderer = new SyntenyWebGLRenderer()
       const success = renderer.init(webglCanvasRef.current)
       model.setWebGLRenderer(renderer)
