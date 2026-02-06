@@ -24,7 +24,10 @@ import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -576,10 +579,16 @@ export default function stateModelFactory(
               region,
               featureId,
             },
-          )) as { feature: Record<string, unknown> | undefined }
+          )) as {
+            feature:
+              | (Record<string, unknown> & { uniqueId: string })
+              | undefined
+          }
 
           if (isAlive(self) && feature && isSessionModelWithWidgets(session)) {
-            const feat = new SimpleFeature(feature)
+            const feat = new SimpleFeature(
+              feature as ConstructorParameters<typeof SimpleFeature>[0],
+            )
             const featureWidget = session.addWidget(
               'AlignmentsFeatureWidget',
               'alignmentFeature',
@@ -797,9 +806,9 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      async renderSvg() {
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self)
+        return renderSvg(self, opts)
       },
     }))
 }

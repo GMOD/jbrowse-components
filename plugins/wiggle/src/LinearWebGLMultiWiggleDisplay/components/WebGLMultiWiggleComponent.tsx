@@ -17,10 +17,25 @@ import type {
   MultiRenderingType,
   SourceRenderData,
 } from './WebGLMultiWiggleRenderer.ts'
-import type { LinearWebGLMultiWiggleDisplayModel } from '../model.ts'
+import type { WebGLMultiWiggleDataResult } from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
+import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+export interface MultiWiggleDisplayModel {
+  rpcData: WebGLMultiWiggleDataResult | null
+  visibleRegion: { start: number; end: number } | null
+  height: number
+  domain: [number, number] | undefined
+  scaleType: string
+  renderingType: string
+  numSources: number
+  rowHeightTooSmallForScalebar: boolean
+  ticks?: ReturnType<typeof axisPropsFromTickScale>
+  error: Error | null
+  isLoading: boolean
+}
 
 const ROW_PADDING = 2
 
@@ -29,7 +44,7 @@ const ScoreLegend = observer(function ScoreLegend({
   model,
   canvasWidth,
 }: {
-  model: LinearWebGLMultiWiggleDisplayModel
+  model: MultiWiggleDisplayModel
   canvasWidth: number
 }) {
   const { ticks, scaleType } = model
@@ -58,11 +73,11 @@ const ScoreLegend = observer(function ScoreLegend({
 const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   model,
 }: {
-  model: LinearWebGLMultiWiggleDisplayModel
+  model: MultiWiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLMultiWiggleRenderer | null>(null)
-  const rafRef = useRef<number>()
+  const rafRef = useRef<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
   const view = getContainingView(model) as LGV

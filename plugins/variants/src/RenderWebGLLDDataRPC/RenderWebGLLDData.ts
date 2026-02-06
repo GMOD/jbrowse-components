@@ -1,14 +1,16 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
+import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 
 interface RenderWebGLLDDataArgs {
   sessionId: string
-  adapterConfig: Record<string, unknown>
+  adapterConfig: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
-  ldMetric: string
+  ldMetric: LDMetric
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
   hweFilterThreshold: number

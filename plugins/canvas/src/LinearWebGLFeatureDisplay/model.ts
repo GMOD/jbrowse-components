@@ -516,17 +516,16 @@ export default function stateModelFactory(
       },
     }))
     .postProcessSnapshot(snap => {
-      const { trackShowLabels, trackShowDescriptions, ...rest } = snap as {
-        trackShowLabels?: boolean
-        trackShowDescriptions?: boolean
-        [key: string]: unknown
-      }
+      const { trackShowLabels, trackShowDescriptions, ...rest } = snap as Omit<
+        typeof snap,
+        symbol
+      >
       return {
         ...rest,
         // Only persist if explicitly set (not undefined)
         ...(trackShowLabels !== undefined && { trackShowLabels }),
         ...(trackShowDescriptions !== undefined && { trackShowDescriptions }),
-      }
+      } as typeof snap
     })
 }
 

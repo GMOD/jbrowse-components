@@ -5,19 +5,29 @@ import { observer } from 'mobx-react'
 
 import { WebGLCloudRenderer } from './WebGLCloudRenderer.ts'
 
-import type { LinearWebGLCloudDisplayModel } from '../model.ts'
+import type { WebGLCloudDataResult } from '../../RenderWebGLCloudDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+export interface CloudDisplayModel {
+  rpcData: WebGLCloudDataResult | null
+  visibleRegion: { start: number; end: number } | null
+  height: number
+  featureHeight: number
+  colorSchemeIndex: number
+  error: Error | null
+  isLoading: boolean
+}
+
 const WebGLCloudComponent = observer(function WebGLCloudComponent({
   model,
 }: {
-  model: LinearWebGLCloudDisplayModel
+  model: CloudDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLCloudRenderer | null>(null)
-  const rafRef = useRef<number>()
+  const rafRef = useRef<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
   const view = getContainingView(model) as LGV

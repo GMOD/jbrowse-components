@@ -14,19 +14,36 @@ import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
 import type { RenderingType } from './WebGLWiggleRenderer.ts'
-import type { LinearWebGLWiggleDisplayModel } from '../model.ts'
+import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
+import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+export interface WiggleDisplayModel {
+  rpcData: WebGLWiggleDataResult | null
+  visibleRegion: { start: number; end: number } | null
+  height: number
+  domain: [number, number] | undefined
+  scaleType: string
+  color: string
+  posColor: string
+  negColor: string
+  bicolorPivot: number
+  renderingType: string
+  ticks?: ReturnType<typeof axisPropsFromTickScale>
+  error: Error | null
+  isLoading: boolean
+}
+
 const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   model,
 }: {
-  model: LinearWebGLWiggleDisplayModel
+  model: WiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLWiggleRenderer | null>(null)
-  const rafRef = useRef<number>()
+  const rafRef = useRef<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
   const view = getContainingView(model) as LGV

@@ -8,20 +8,36 @@ import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
-import type { MultiWebGLVariantMatrixDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+export interface VariantMatrixDisplayModel {
+  webglCellData: MatrixCellData | undefined
+  availableHeight: number
+  rowHeight: number
+  scrollTop: number
+  sources: { name: string; baseName?: string }[] | undefined
+  featuresVolatile: { id(): string }[] | undefined
+  referenceDrawingMode: string
+  regionTooLarge: boolean
+  regionTooLargeReason: string
+  featuresReady: boolean
+  statusMessage?: string
+  setFeatureDensityStatsLimit: (s?: unknown) => void
+  setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
+  selectFeature: (feature: { id(): string }) => void
+}
 
 const WebGLVariantMatrixComponent = observer(
   function WebGLVariantMatrixComponent({
     model,
   }: {
-    model: MultiWebGLVariantMatrixDisplayModel
+    model: VariantMatrixDisplayModel
   }) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const rendererRef = useRef<WebGLVariantMatrixRenderer | null>(null)
-    const rafRef = useRef<number>()
+    const rafRef = useRef<number | undefined>(undefined)
     const cellDataRef = useRef<MatrixCellData | null>(null)
     const [error, setError] = useState<string | null>(null)
 

@@ -8,8 +8,24 @@ import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
 
 import type { VariantCellData } from './computeVariantCells.ts'
-import type { MultiWebGLVariantDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+export interface VariantDisplayModel {
+  webglCellData: VariantCellData | undefined
+  availableHeight: number
+  rowHeight: number
+  scrollTop: number
+  sources: { name: string; baseName?: string }[] | undefined
+  featuresVolatile: { id(): string }[] | undefined
+  referenceDrawingMode: string
+  regionTooLarge: boolean
+  regionTooLargeReason: string
+  featuresReady: boolean
+  statusMessage?: string
+  setFeatureDensityStatsLimit: (s?: unknown) => void
+  setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
+  selectFeature: (feature: { id(): string }) => void
+}
 
 type LGV = LinearGenomeViewModel
 
@@ -75,11 +91,11 @@ function getDomain(view: LGV) {
 const WebGLVariantComponent = observer(function WebGLVariantComponent({
   model,
 }: {
-  model: MultiWebGLVariantDisplayModel
+  model: VariantDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLVariantRenderer | null>(null)
-  const rafRef = useRef<number>()
+  const rafRef = useRef<number | undefined>(undefined)
   const cellDataRef = useRef<VariantCellData | null>(null)
   const [error, setError] = useState<string | null>(null)
 

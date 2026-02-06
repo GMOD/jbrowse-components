@@ -5,19 +5,28 @@ import { observer } from 'mobx-react'
 
 import { WebGLArcsRenderer } from './WebGLArcsRenderer.ts'
 
-import type { LinearWebGLArcsDisplayModel } from '../model.ts'
+import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+export interface ArcsDisplayModel {
+  rpcData: WebGLArcsDataResult | null
+  visibleRegion: { start: number; end: number } | null
+  height: number
+  lineWidth: number
+  error: Error | null
+  isLoading: boolean
+}
+
 const WebGLArcsComponent = observer(function WebGLArcsComponent({
   model,
 }: {
-  model: LinearWebGLArcsDisplayModel
+  model: ArcsDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLArcsRenderer | null>(null)
-  const rafRef = useRef<number>()
+  const rafRef = useRef<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
   const view = getContainingView(model) as LGV

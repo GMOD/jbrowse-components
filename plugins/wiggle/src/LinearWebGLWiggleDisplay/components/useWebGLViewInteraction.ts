@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface UseWebGLViewInteractionProps {
-  canvasRef: React.RefObject<HTMLCanvasElement>
+  canvasRef: React.RefObject<HTMLCanvasElement | null>
   view: LinearGenomeViewModel | undefined
   onRender: (domainX: [number, number]) => void
 }
@@ -71,6 +71,9 @@ export function useWebGLViewInteraction({
   // Wheel handler for zoom and pan
   useEffect(() => {
     const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
 
     const handleWheel = (e: WheelEvent) => {
       const view = viewRef.current

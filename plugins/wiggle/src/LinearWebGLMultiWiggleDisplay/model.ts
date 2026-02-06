@@ -17,7 +17,10 @@ import { getNiceDomain, getScale } from '../util.ts'
 import type { WebGLMultiWiggleDataResult } from '../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -166,7 +169,7 @@ export default function stateModelFactory(
           return undefined
         }
         const { scoreMin, scoreMax } = self.rpcData
-        const { scaleType } = self
+        const scaleType = this.scaleType
 
         // Use getNiceDomain to snap to 0 for linear scale (matches MultiLinearWiggleDisplay)
         return getNiceDomain({
@@ -195,7 +198,7 @@ export default function stateModelFactory(
       },
 
       get ticks() {
-        const { scaleType } = self
+        const scaleType = this.scaleType
         const domain = this.domain
         const rowHeight = this.rowHeight
         if (!domain) {
@@ -399,9 +402,9 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      async renderSvg() {
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self)
+        return renderSvg(self, opts)
       },
     }))
     .postProcessSnapshot(snap => {

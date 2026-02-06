@@ -4,7 +4,10 @@ import YScaleBar from '../shared/YScaleBar.tsx'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
 import type { LinearWebGLMultiWiggleDisplayModel } from './model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -12,6 +15,7 @@ const ROW_PADDING = 2
 
 export async function renderSvg(
   model: LinearWebGLMultiWiggleDisplayModel,
+  _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
   const { offsetPx } = view

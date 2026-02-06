@@ -424,10 +424,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         return
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         currentRangeY: _ry,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         highlightedFeatureIndex: _hi,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         selectedFeatureIndex: _si,
       } = model
 

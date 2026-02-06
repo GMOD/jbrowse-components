@@ -6,7 +6,10 @@ import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import { YSCALEBAR_LABEL_OFFSET } from './model.ts'
 
 import type { LinearWebGLPileupDisplayModel } from './model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -20,6 +23,7 @@ const BASE_COLORS: Record<string, string> = {
 
 export async function renderSvg(
   model: LinearWebGLPileupDisplayModel,
+  _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
   const { offsetPx } = view

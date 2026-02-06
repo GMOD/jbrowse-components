@@ -552,7 +552,7 @@ export async function executeRenderWebGLFeatureData({
       const reversed = region.reversed ?? false
       const yPadding = 5
 
-      const records: LayoutRecord[] = []
+      const records: LayoutRecordWithLabels[] = []
 
       for (const feature of features.values()) {
         const featureLayout = layoutFeature({
