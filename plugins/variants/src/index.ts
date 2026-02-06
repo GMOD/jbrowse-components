@@ -12,6 +12,7 @@ import MultiWebGLVariantMatrixDisplayF from './MultiWebGLVariantMatrixDisplay/in
 import LinearVariantMatrixRendererF from './MultiLinearVariantMatrixRenderer/index.ts'
 import MultiVariantRendererF from './MultiLinearVariantRenderer/index.ts'
 import PlinkLDAdapterF from './PlinkLDAdapter/index.ts'
+import WebGLLDDataRPCMethodsF from './RenderWebGLLDDataRPC/index.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer/index.ts'
 import VariantFeatureWidgetF from './VariantFeatureWidget/index.ts'
@@ -55,6 +56,7 @@ export default class VariantsPlugin extends Plugin {
     LinearVariantMatrixRendererF(pluginManager)
     StructuralVariantChordRendererF(pluginManager)
     ChordVariantDisplayF(pluginManager)
+    WebGLLDDataRPCMethodsF(pluginManager)
 
     pluginManager.addRpcMethod(() => new MultiVariantGetSources(pluginManager))
     pluginManager.addRpcMethod(

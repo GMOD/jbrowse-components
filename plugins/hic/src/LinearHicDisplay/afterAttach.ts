@@ -6,24 +6,13 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { drawCanvasImageData } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, untracked } from 'mobx'
 
 import type { LinearHicDisplayModel } from './model.ts'
-import type { HicFlatbushItem } from '../HicRenderer/types.ts'
+import type { WebGLHicDataResult } from '../RenderWebGLHicDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-interface RenderResult {
-  imageData?: ImageBitmap
-  flatbush?: ArrayBuffer
-  items?: HicFlatbushItem[]
-  maxScore?: number
-  yScalar?: number
-  width: number
-  height: number
-}
 
 export function doAfterAttach(self: LinearHicDisplayModel) {
   // Fetch available normalizations
@@ -59,7 +48,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
     }
 
     const { adapterConfig } = self
-    const renderProps = self.renderProps()
 
     try {
       const session = getSession(self)
@@ -74,19 +62,20 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
       const stopToken = createStopToken()
       self.setRenderingStopToken(stopToken)
       self.setLoading(true)
-      self.setCanvasDrawn(false)
 
       const result = (await rpcManager.call(
         rpcSessionId,
-        'CoreRender',
+        'RenderWebGLHicData',
         {
           sessionId: rpcSessionId,
-          rendererType: 'HicRenderer',
-          regions: [...regions],
           adapterConfig,
+          regions: [...regions],
           bpPerPx,
+          resolution: self.resolution,
+          normalization: self.activeNormalization,
+          displayHeight: self.mode === 'adjust' ? self.height : undefined,
+          mode: self.mode,
           stopToken,
-          ...renderProps,
         },
         {
           statusCallback: (msg: string) => {
@@ -95,19 +84,16 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
             }
           },
         },
-      )) as RenderResult
+      )) as WebGLHicDataResult
 
-      if (result.imageData) {
-        self.setRenderingImageData(result.imageData)
-        self.setLastDrawnOffsetPx(view.offsetPx)
-        self.setLastDrawnBpPerPx(view.bpPerPx)
-      }
-      // Store flatbush data for mouseover
+      self.setRpcData(result)
+      self.setLastDrawnOffsetPx(view.offsetPx)
+      self.setLastDrawnBpPerPx(view.bpPerPx)
       self.setFlatbushData(
         result.flatbush,
-        result.items ?? [],
-        result.maxScore ?? 0,
-        result.yScalar ?? 1,
+        result.items,
+        result.maxScore,
+        result.yScalar,
       )
     } catch (error) {
       if (!isAbortException(error)) {
@@ -139,7 +125,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         const regions = dynamicBlocks.contentBlocks
 
         /* eslint-disable @typescript-eslint/no-unused-expressions */
-        // access these to trigger autorun on changes
         self.resolution
         self.useLogScale
         self.colorScheme
@@ -158,28 +143,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
       {
         delay: 1000,
         name: 'LinearHicDisplayRender',
-      },
-    ),
-  )
-
-  addDisposer(
-    self,
-    autorun(
-      () => {
-        if (self.isMinimized) {
-          return
-        }
-        const view = getContainingView(self) as LGV
-        if (!view.initialized) {
-          return
-        }
-        const success = drawCanvasImageData(self.ref, self.renderingImageData)
-        if (isAlive(self)) {
-          self.setCanvasDrawn(success)
-        }
-      },
-      {
-        name: 'LinearHicDisplayCanvas',
       },
     ),
   )

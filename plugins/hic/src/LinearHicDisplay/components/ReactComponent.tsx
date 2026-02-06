@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, reducePrecision } from '@jbrowse/core/util'
@@ -6,6 +6,10 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
+import {
+  WebGLHicRenderer,
+  generateColorRamp,
+} from './WebGLHicRenderer.ts'
 import HicColorLegend from '../../HicRenderer/components/HicColorLegend.tsx'
 
 import type { HicFlatbushItem } from '../../HicRenderer/types.ts'
@@ -66,11 +70,6 @@ function Crosshairs({
   )
 }
 
-/**
- * Transform screen coordinates to the unrotated coordinate space.
- * The canvas is rotated by -45 degrees, so we apply the inverse rotation (+45 degrees).
- * Also accounts for the yScalar transformation.
- */
 function screenToUnrotated(
   screenX: number,
   screenY: number,
@@ -91,7 +90,7 @@ const HicCanvas = observer(function HicCanvas({
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const {
     height,
-    fullyDrawn,
+    rpcData,
     flatbush,
     flatbushItems,
     yScalar,
@@ -102,32 +101,80 @@ const HicCanvas = observer(function HicCanvas({
     lastDrawnOffsetPx,
   } = model
 
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const rendererRef = useRef<WebGLHicRenderer | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<HicFlatbushItem>()
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>()
-  const [localMousePos, setLocalMousePos] = useState<{ x: number; y: number }>()
+  const [mousePosition, setMousePosition] = useState<{
+    x: number
+    y: number
+  }>()
+  const [localMousePos, setLocalMousePos] = useState<{
+    x: number
+    y: number
+  }>()
+  const [glError, setGlError] = useState<string>()
 
-  // When offsetPx >= 0: use scroll offset for smooth scrolling between renders
-  // When offsetPx < 0: use boundary offset to prevent content going past left edge
   const canvasOffset =
     view.offsetPx >= 0
       ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
       : Math.max(0, -view.offsetPx)
 
-  // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(
     () => (flatbush ? Flatbush.from(flatbush) : null),
     [flatbush],
   )
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const cb = useCallback(
-    (ref: HTMLCanvasElement) => {
-      model.setRef(ref)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, width, height],
-  )
+  // Initialize WebGL renderer
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+
+    try {
+      rendererRef.current = new WebGLHicRenderer(canvas)
+    } catch (e) {
+      setGlError(e instanceof Error ? e.message : 'WebGL initialization failed')
+    }
+
+    return () => {
+      rendererRef.current?.destroy()
+      rendererRef.current = null
+    }
+  }, [])
+
+  // Upload data when rpcData changes
+  useEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !rpcData) {
+      return
+    }
+
+    renderer.uploadData({
+      positions: rpcData.positions,
+      counts: rpcData.counts,
+      numContacts: rpcData.numContacts,
+    })
+  }, [rpcData])
+
+  // Render when data, colorScheme, useLogScale, or dimensions change
+  useEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !rpcData) {
+      return
+    }
+
+    renderer.uploadColorRamp(generateColorRamp(colorScheme))
+    renderer.render({
+      binWidth: rpcData.binWidth,
+      yScalar: rpcData.yScalar,
+      canvasWidth: width,
+      canvasHeight: height,
+      maxScore: rpcData.maxScore,
+      useLogScale,
+    })
+  }, [rpcData, width, height, colorScheme, useLogScale])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
@@ -145,10 +192,8 @@ const HicCanvas = observer(function HicCanvas({
       setMousePosition({ x: event.clientX, y: event.clientY })
       setLocalMousePos({ x: screenX, y: screenY })
 
-      // Transform screen coordinates to unrotated space for Flatbush query
       const { x, y } = screenToUnrotated(screenX, screenY, yScalar)
 
-      // Query Flatbush with a small region around the transformed point
       const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
 
       if (results.length > 0) {
@@ -167,6 +212,12 @@ const HicCanvas = observer(function HicCanvas({
     setLocalMousePos(undefined)
   }, [])
 
+  if (glError) {
+    return (
+      <div style={{ color: 'red', padding: 10 }}>WebGL Error: {glError}</div>
+    )
+  }
+
   return (
     <div
       ref={containerRef}
@@ -181,16 +232,16 @@ const HicCanvas = observer(function HicCanvas({
       onMouseLeave={onMouseLeave}
     >
       <canvas
-        data-testid={`hic_canvas${fullyDrawn ? '_done' : ''}`}
-        ref={cb}
+        data-testid={`hic_canvas${rpcData ? '_done' : ''}`}
+        ref={canvasRef}
         style={{
           width,
           height,
           position: 'absolute',
           left: canvasOffset,
         }}
-        width={width * 2}
-        height={height * 2}
+        width={width}
+        height={height}
       />
       {hoveredItem && localMousePos ? (
         <Crosshairs
