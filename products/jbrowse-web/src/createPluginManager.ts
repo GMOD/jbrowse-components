@@ -13,7 +13,7 @@ import sessionModelFactory from './sessionModel/index.ts'
 
 import type { SessionLoaderModel } from './SessionLoader.ts'
 
-async function preLoadConnectionTracks(
+export async function preLoadConnectionTracks(
   sessionSnapshot: Record<string, unknown>,
   configSnapshot: Record<string, unknown>,
   pluginManager: PluginManager,
