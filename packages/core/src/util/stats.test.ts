@@ -1,8 +1,8 @@
 import { from } from 'rxjs'
 
-import { aggregateQuantitativeStats } from '../data_adapters/BaseAdapter/stats.ts'
 import SimpleFeature from './simpleFeature.ts'
 import { calcStdFromSums, rectifyStats, scoresToStats } from './stats.ts'
+import { aggregateQuantitativeStats } from '../data_adapters/BaseAdapter/stats.ts'
 
 import type { UnrectifiedQuantitativeStats } from './stats.ts'
 
