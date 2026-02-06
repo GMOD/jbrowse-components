@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { WebGLVariantMatrixRenderer } from './WebGLVariantMatrixRenderer.ts'
+import { makeSimpleAltString } from '../../VcfFeature/util.ts'
+import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
 import type { MultiWebGLVariantMatrixDisplayModel } from '../model.ts'
@@ -119,6 +121,8 @@ const WebGLVariantMatrixComponent = observer(
             position: 'absolute',
             left: 0,
             top: 0,
+            backgroundColor:
+              model.referenceDrawingMode === 'skip' ? '#ccc' : undefined,
           }}
           width={width}
           height={height}
@@ -141,10 +145,28 @@ const WebGLVariantMatrixComponent = observer(
             const source = sources[rowIdx]
             const feature = cellData.featureData[featureIdx]
             if (source && feature) {
-              model.setHoveredGenotype({
-                genotype: `${source.name}: ${feature.name || feature.ref}>${feature.alt?.join(',')}`,
-                name: source.name,
-              })
+              const sampleName = source.baseName ?? source.name
+              const genotype = feature.genotypes[sampleName]
+              if (genotype) {
+                const alleles = makeSimpleAltString(
+                  genotype,
+                  feature.ref,
+                  feature.alt,
+                )
+                model.setHoveredGenotype({
+                  genotype,
+                  alleles,
+                  featureName: feature.name,
+                  description:
+                    feature.alt.length >= 3
+                      ? 'multiple ALT alleles'
+                      : feature.description,
+                  length: getBpDisplayStr(feature.length),
+                  name: source.name,
+                })
+              } else {
+                model.setHoveredGenotype(undefined)
+              }
             } else {
               model.setHoveredGenotype(undefined)
             }
@@ -173,6 +195,9 @@ const WebGLVariantMatrixComponent = observer(
             }
           }}
         />
+        {!model.webglCellData || model.regionTooLarge ? (
+          <LoadingOverlay model={model} />
+        ) : null}
       </div>
     )
   },

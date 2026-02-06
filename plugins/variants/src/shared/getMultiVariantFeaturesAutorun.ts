@@ -88,7 +88,6 @@ export function getMultiVariantFeaturesAutorun(self: {
             }
           }
         } catch (e) {
-          console.error(e)
           if (!isAbortException(e) && isAlive(self)) {
             getSession(self).notifyError(`${e}`, e)
           }

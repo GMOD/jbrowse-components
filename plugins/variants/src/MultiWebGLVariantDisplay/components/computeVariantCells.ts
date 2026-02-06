@@ -164,14 +164,7 @@ export function computeVariantCells({
         description,
         length: bpLen,
       })
-      featureGenotypeMap[featureId] = {
-        alt,
-        ref,
-        name: featureName,
-        description,
-        length: bpLen,
-        genotypes: samp,
-      }
+      const renderedGenotypes = {} as Record<string, string>
 
       for (let j = 0; j < sources.length; j++) {
         const source = sources[j]!
@@ -200,6 +193,7 @@ export function computeVariantCells({
               colors[idx * 4 + 3] = rgba[3]
               shapeTypes[idx] = shape
               cellCount++
+              renderedGenotypes[name] = genotype
             }
           } else {
             // unphased - draw black
@@ -213,8 +207,18 @@ export function computeVariantCells({
             colors[idx * 4 + 3] = 255
             shapeTypes[idx] = shape
             cellCount++
+            renderedGenotypes[name] = genotype
           }
         }
+      }
+
+      featureGenotypeMap[featureId] = {
+        alt,
+        ref,
+        name: featureName,
+        description,
+        length: bpLen,
+        genotypes: renderedGenotypes,
       }
     }
   } else {
@@ -250,14 +254,7 @@ export function computeVariantCells({
         description,
         length: bpLen,
       })
-      featureGenotypeMap[featureId] = {
-        alt,
-        ref,
-        name: featureName,
-        description,
-        length: bpLen,
-        genotypes: samp,
-      }
+      const renderedGenotypes = {} as Record<string, string>
 
       for (let j = 0; j < sources.length; j++) {
         const { name } = sources[j]!
@@ -285,8 +282,18 @@ export function computeVariantCells({
             colors[idx * 4 + 3] = rgba[3]
             shapeTypes[idx] = shape
             cellCount++
+            renderedGenotypes[name] = genotype
           }
         }
+      }
+
+      featureGenotypeMap[featureId] = {
+        alt,
+        ref,
+        name: featureName,
+        description,
+        length: bpLen,
+        genotypes: renderedGenotypes,
       }
     }
   }

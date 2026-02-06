@@ -15,6 +15,7 @@ interface FeatureData {
   description: string
   length: number
   featureId: string
+  genotypes: Record<string, string>
 }
 
 export interface MatrixCellData {
@@ -94,20 +95,29 @@ export function computeVariantMatrixCells({
         feature.get('FORMAT') as string | undefined
       )?.includes('PS')
 
-      featureData.push({
-        alt: feature.get('ALT') as string[],
-        ref: feature.get('REF') as string,
-        name: feature.get('name') as string,
-        description: feature.get('description') as string,
-        length: feature.get('end') - feature.get('start'),
-        featureId,
-      })
-
       if (hasPhaseSet) {
         const samp = feature.get('samples') as Record<
           string,
           Record<string, string[]>
         >
+        // build genotypes record from samples GT field
+        const genotypes = {} as Record<string, string>
+        for (const [sampleName, sampleData] of Object.entries(samp)) {
+          const gt = sampleData.GT?.[0]
+          if (gt) {
+            genotypes[sampleName] = gt
+          }
+        }
+        featureData.push({
+          alt: feature.get('ALT') as string[],
+          ref: feature.get('REF') as string,
+          name: feature.get('name') as string,
+          description: feature.get('description') as string,
+          length: feature.get('end') - feature.get('start'),
+          featureId,
+          genotypes,
+        })
+
         for (let j = 0; j < sources.length; j++) {
           const source = sources[j]!
           const { name, HP, baseName } = source
@@ -154,6 +164,15 @@ export function computeVariantMatrixCells({
           samp = feature.get('genotypes') as Record<string, string>
           genotypesCache.set(featureId, samp)
         }
+        featureData.push({
+          alt: feature.get('ALT') as string[],
+          ref: feature.get('REF') as string,
+          name: feature.get('name') as string,
+          description: feature.get('description') as string,
+          length: feature.get('end') - feature.get('start'),
+          featureId,
+          genotypes: samp,
+        })
         for (let j = 0; j < sources.length; j++) {
           const source = sources[j]!
           const { name, HP, baseName } = source
@@ -201,20 +220,28 @@ export function computeVariantMatrixCells({
         feature.get('FORMAT') as string | undefined
       )?.includes('PS')
 
-      featureData.push({
-        alt: feature.get('ALT') as string[],
-        ref: feature.get('REF') as string,
-        name: feature.get('name') as string,
-        description: feature.get('description') as string,
-        length: feature.get('end') - feature.get('start'),
-        featureId,
-      })
-
       if (hasPhaseSet) {
         const samp = feature.get('samples') as Record<
           string,
           Record<string, string[]>
         >
+        const genotypes = {} as Record<string, string>
+        for (const [sampleName, sampleData] of Object.entries(samp)) {
+          const gt = sampleData.GT?.[0]
+          if (gt) {
+            genotypes[sampleName] = gt
+          }
+        }
+        featureData.push({
+          alt: feature.get('ALT') as string[],
+          ref: feature.get('REF') as string,
+          name: feature.get('name') as string,
+          description: feature.get('description') as string,
+          length: feature.get('end') - feature.get('start'),
+          featureId,
+          genotypes,
+        })
+
         for (let j = 0; j < sources.length; j++) {
           const source = sources[j]!
           const sampleName = source.baseName ?? source.name
@@ -249,6 +276,15 @@ export function computeVariantMatrixCells({
           samp = feature.get('genotypes') as Record<string, string>
           genotypesCache.set(featureId, samp)
         }
+        featureData.push({
+          alt: feature.get('ALT') as string[],
+          ref: feature.get('REF') as string,
+          name: feature.get('name') as string,
+          description: feature.get('description') as string,
+          length: feature.get('end') - feature.get('start'),
+          featureId,
+          genotypes: samp,
+        })
         for (let j = 0; j < sources.length; j++) {
           const source = sources[j]!
           const sampleName = source.baseName ?? source.name

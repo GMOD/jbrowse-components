@@ -25,7 +25,7 @@ export function getWebGLVariantCellDataAutorun(self: {
   webglCellDataMode: 'regular' | 'matrix'
   setError: (error: unknown) => void
   setWebGLCellData: (data: unknown) => void
-  setStatusMessage: (str: string) => void
+  setStatusMessage: (str?: string) => void
 }) {
   addDisposer(
     self,
@@ -79,10 +79,10 @@ export function getWebGLVariantCellDataAutorun(self: {
             )
             if (isAlive(self)) {
               self.setWebGLCellData(result)
+              self.setStatusMessage(undefined)
             }
           }
         } catch (e) {
-          console.error(e)
           if (!isAbortException(e) && isAlive(self)) {
             getSession(self).notifyError(`${e}`, e)
           }

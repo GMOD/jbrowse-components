@@ -15,11 +15,20 @@ const useStyles = makeStyles()(theme => ({
     fontFamily: theme.typography.fontFamily,
     padding: '4px 8px',
     fontSize: theme.typography.fontSize,
-    maxWidth: 300,
+    maxWidth: 400,
     wordWrap: 'break-word',
     zIndex: 100000,
   },
-  row: {
+  table: {
+    borderCollapse: 'collapse',
+  },
+  keyCell: {
+    whiteSpace: 'nowrap',
+    paddingRight: 8,
+    fontWeight: 'bold',
+    verticalAlign: 'top',
+  },
+  valueCell: {
     whiteSpace: 'nowrap',
   },
   colorBox: {
@@ -27,6 +36,12 @@ const useStyles = makeStyles()(theme => ({
     height: 10,
     display: 'inline-block',
     marginRight: 4,
+    verticalAlign: 'middle',
+  },
+  header: {
+    whiteSpace: 'nowrap',
+    paddingBottom: 2,
+    textAlign: 'center',
   },
 }))
 
@@ -53,20 +68,29 @@ const MultiVariantTooltip = memo(function MultiVariantTooltip({
         className={classes.tooltip}
         style={{ transform: `translate(${x + 10}px, ${y + 10}px)` }}
       >
-        {source.color ? (
-          <div
-            className={classes.colorBox}
-            style={{ backgroundColor: source.color }}
-          />
+        {source.name ? (
+          <div className={classes.header}>
+            {source.color ? (
+              <div
+                className={classes.colorBox}
+                style={{ backgroundColor: source.color }}
+              />
+            ) : null}
+            <b>{source.name}</b>
+          </div>
         ) : null}
-        {source.name ? <div className={classes.row}>{source.name}</div> : null}
-        {Object.entries(source).map(([key, value]) =>
-          !EXCLUDE_KEYS.has(key) && value !== undefined ? (
-            <div key={key} className={classes.row}>
-              {key}: {String(value)}
-            </div>
-          ) : null,
-        )}
+        <table className={classes.table}>
+          <tbody>
+            {Object.entries(source).map(([key, value]) =>
+              !EXCLUDE_KEYS.has(key) && value !== undefined ? (
+                <tr key={key}>
+                  <td className={classes.keyCell}>{key}</td>
+                  <td className={classes.valueCell}>{String(value)}</td>
+                </tr>
+              ) : null,
+            )}
+          </tbody>
+        </table>
       </div>
     </Portal>
   )
