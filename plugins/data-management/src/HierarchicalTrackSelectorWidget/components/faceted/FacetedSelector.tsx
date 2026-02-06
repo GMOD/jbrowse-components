@@ -34,6 +34,41 @@ const useStyles = makeStyles()({
   },
 })
 
+function HighlightText({
+  text,
+  query,
+  className,
+}: {
+  text: string
+  query: string
+  className?: string
+}) {
+  if (!query || !text) {
+    return <span className={className}>{text}</span>
+  }
+  const lowerText = text.toLowerCase()
+  const lowerQuery = query.toLowerCase()
+  const parts: React.ReactNode[] = []
+  let lastIndex = 0
+  let idx = lowerText.indexOf(lowerQuery, lastIndex)
+  while (idx !== -1) {
+    if (idx > lastIndex) {
+      parts.push(text.slice(lastIndex, idx))
+    }
+    parts.push(
+      <mark key={idx} style={{ background: '#FFEB3B' }}>
+        {text.slice(idx, idx + query.length)}
+      </mark>,
+    )
+    lastIndex = idx + query.length
+    idx = lowerText.indexOf(lowerQuery, lastIndex)
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex))
+  }
+  return <span className={className}>{parts}</span>
+}
+
 const frac = 0.75
 
 const FacetedSelector = observer(function FacetedSelector({
@@ -47,6 +82,7 @@ const FacetedSelector = observer(function FacetedSelector({
     rows,
     panelWidth,
     showFilters,
+    filterText,
     filteredNonMetadataKeys,
     filteredMetadataKeys,
   } = faceted
@@ -72,7 +108,11 @@ const FacetedSelector = observer(function FacetedSelector({
         renderCell: params => {
           const val = params.value
           return val ? (
-            <SanitizedHTML className={classes.cell} html={val} />
+            <HighlightText
+              className={classes.cell}
+              text={val}
+              query={filterText}
+            />
           ) : (
             ''
           )
@@ -89,7 +129,11 @@ const FacetedSelector = observer(function FacetedSelector({
         renderCell: params => {
           const val = params.value
           return val ? (
-            <SanitizedHTML className={classes.cell} html={val} />
+            <HighlightText
+              className={classes.cell}
+              text={val}
+              query={filterText}
+            />
           ) : (
             ''
           )

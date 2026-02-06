@@ -135,7 +135,13 @@ export default function SharedWiggleMixin(
         },
         statsRegion?: string,
       ) {
-        const { currStatsBpPerPx, scoreMin, scoreMax, scoreMeanMin, scoreMeanMax } = stats
+        const {
+          currStatsBpPerPx,
+          scoreMin,
+          scoreMax,
+          scoreMeanMin,
+          scoreMeanMax,
+        } = stats
         const EPSILON = 0.000001
         if (
           !self.stats ||
