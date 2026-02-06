@@ -146,6 +146,7 @@ export class WebGLCloudRenderer {
   private canvas: HTMLCanvasElement
   private chainProgram: WebGLProgram
   private buffers: GPUBuffers | null = null
+  private glBuffers: WebGLBuffer[] = []
   private chainUniforms: Record<string, WebGLUniformLocation | null> = {}
 
   constructor(canvas: HTMLCanvasElement) {
@@ -225,12 +226,9 @@ export class WebGLCloudRenderer {
   }) {
     const gl = this.gl
 
-    if (this.buffers) {
-      gl.deleteVertexArray(this.buffers.chainVAO)
-    }
+    this.deleteBuffers()
 
     if (data.numChains === 0) {
-      this.buffers = null
       return
     }
 
@@ -279,6 +277,9 @@ export class WebGLCloudRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -299,6 +300,9 @@ export class WebGLCloudRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -349,11 +353,20 @@ export class WebGLCloudRenderer {
     gl.bindVertexArray(null)
   }
 
-  destroy() {
+  private deleteBuffers() {
     const gl = this.gl
+    for (const buf of this.glBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.glBuffers = []
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.chainVAO)
+      this.buffers = null
     }
-    gl.deleteProgram(this.chainProgram)
+  }
+
+  destroy() {
+    this.deleteBuffers()
+    this.gl.deleteProgram(this.chainProgram)
   }
 }

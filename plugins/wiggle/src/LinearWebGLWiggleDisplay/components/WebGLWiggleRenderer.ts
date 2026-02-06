@@ -264,6 +264,7 @@ export class WebGLWiggleRenderer {
   private densityProgram: WebGLProgram
   private lineProgram: WebGLProgram
   private buffers: GPUBuffers | null = null
+  private glBuffers: WebGLBuffer[] = []
   private xyplotUniforms: Record<string, WebGLUniformLocation | null> = {}
   private densityUniforms: Record<string, WebGLUniformLocation | null> = {}
   private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -328,15 +329,9 @@ export class WebGLWiggleRenderer {
   }) {
     const gl = this.gl
 
-    if (this.buffers) {
-      gl.deleteVertexArray(this.buffers.featureVAO)
-      if (this.buffers.lineVAO) {
-        gl.deleteVertexArray(this.buffers.lineVAO)
-      }
-    }
+    this.deleteBuffers()
 
     if (data.numFeatures === 0) {
-      this.buffers = null
       this.featureScores = null
       return
     }
@@ -401,6 +396,9 @@ export class WebGLWiggleRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -421,6 +419,9 @@ export class WebGLWiggleRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -515,14 +516,24 @@ export class WebGLWiggleRenderer {
     gl.bindVertexArray(null)
   }
 
-  destroy() {
+  private deleteBuffers() {
     const gl = this.gl
+    for (const buf of this.glBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.glBuffers = []
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.featureVAO)
       if (this.buffers.lineVAO) {
         gl.deleteVertexArray(this.buffers.lineVAO)
       }
+      this.buffers = null
     }
+  }
+
+  destroy() {
+    this.deleteBuffers()
+    const gl = this.gl
     gl.deleteProgram(this.xyplotProgram)
     gl.deleteProgram(this.densityProgram)
     gl.deleteProgram(this.lineProgram)

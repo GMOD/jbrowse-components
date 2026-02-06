@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, reducePrecision } from '@jbrowse/core/util'
@@ -40,14 +46,12 @@ function Crosshairs({
   x,
   y,
   yScalar,
-  left,
   width,
   height,
 }: {
   x: number
   y: number
   yScalar: number
-  left: number
   width: number
   height: number
 }) {
@@ -56,7 +60,7 @@ function Crosshairs({
     <svg
       style={{
         position: 'absolute',
-        left,
+        left: 0,
         top: 0,
         width,
         height,
@@ -99,6 +103,7 @@ const HicCanvas = observer(function HicCanvas({
     colorScheme,
     useLogScale,
     lastDrawnOffsetPx,
+    lastDrawnBpPerPx,
   } = model
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -115,10 +120,13 @@ const HicCanvas = observer(function HicCanvas({
   }>()
   const [glError, setGlError] = useState<string>()
 
-  const canvasOffset =
-    view.offsetPx >= 0
-      ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
-      : Math.max(0, -view.offsetPx)
+  // Compute view transform for smooth zoom/scroll
+  const viewScale =
+    lastDrawnBpPerPx !== undefined ? lastDrawnBpPerPx / view.bpPerPx : 1
+  const viewOffsetX =
+    lastDrawnOffsetPx !== undefined
+      ? lastDrawnOffsetPx * viewScale - view.offsetPx
+      : 0
 
   const flatbushIndex = useMemo(
     () => (flatbush ? Flatbush.from(flatbush) : null),
@@ -126,7 +134,7 @@ const HicCanvas = observer(function HicCanvas({
   )
 
   // Initialize WebGL renderer
-  useEffect(() => {
+  useLayoutEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
       return
@@ -145,7 +153,7 @@ const HicCanvas = observer(function HicCanvas({
   }, [])
 
   // Upload data when rpcData changes
-  useEffect(() => {
+  useLayoutEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !rpcData) {
       return
@@ -158,14 +166,24 @@ const HicCanvas = observer(function HicCanvas({
     })
   }, [rpcData])
 
-  // Render when data, colorScheme, useLogScale, or dimensions change
-  useEffect(() => {
+  // Upload color ramp when colorScheme changes
+  useLayoutEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !rpcData) {
       return
     }
 
     renderer.uploadColorRamp(generateColorRamp(colorScheme))
+  }, [rpcData, colorScheme])
+
+  // Re-render on every view change (zoom/scroll) - this is cheap,
+  // just updating uniforms and issuing a draw call
+  useLayoutEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !rpcData) {
+      return
+    }
+
     renderer.render({
       binWidth: rpcData.binWidth,
       yScalar: rpcData.yScalar,
@@ -173,8 +191,10 @@ const HicCanvas = observer(function HicCanvas({
       canvasHeight: height,
       maxScore: rpcData.maxScore,
       useLogScale,
+      viewScale,
+      viewOffsetX,
     })
-  }, [rpcData, width, height, colorScheme, useLogScale])
+  }, [rpcData, width, height, useLogScale, viewScale, viewOffsetX])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
@@ -185,14 +205,17 @@ const HicCanvas = observer(function HicCanvas({
       }
 
       const rect = containerRef.current.getBoundingClientRect()
-      const mouseCanvasOffset = canvasOffset
-      const screenX = event.clientX - rect.left - mouseCanvasOffset
-      const screenY = event.clientY - rect.top
+      const mouseX = event.clientX - rect.left
+      const mouseY = event.clientY - rect.top
 
       setMousePosition({ x: event.clientX, y: event.clientY })
-      setLocalMousePos({ x: screenX, y: screenY })
+      setLocalMousePos({ x: mouseX, y: mouseY })
 
-      const { x, y } = screenToUnrotated(screenX, screenY, yScalar)
+      // Reverse the shader transform to get data-space screen coordinates
+      const dataScreenX = (mouseX - viewOffsetX) / viewScale
+      const dataScreenY = mouseY / viewScale
+
+      const { x, y } = screenToUnrotated(dataScreenX, dataScreenY, yScalar)
 
       const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
 
@@ -203,7 +226,7 @@ const HicCanvas = observer(function HicCanvas({
         setHoveredItem(undefined)
       }
     },
-    [flatbushIndex, flatbushItems, yScalar, canvasOffset],
+    [flatbushIndex, flatbushItems, yScalar, viewScale, viewOffsetX],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -238,7 +261,7 @@ const HicCanvas = observer(function HicCanvas({
           width,
           height,
           position: 'absolute',
-          left: canvasOffset,
+          left: 0,
         }}
         width={width}
         height={height}
@@ -248,7 +271,6 @@ const HicCanvas = observer(function HicCanvas({
           x={localMousePos.x}
           y={localMousePos.y}
           yScalar={yScalar}
-          left={canvasOffset}
           width={width}
           height={height}
         />

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView } from '@jbrowse/core/util'
@@ -70,7 +77,8 @@ function Crosshairs({
   snps,
   regionStart,
   bpPerPx,
-  canvasOffset,
+  viewScale,
+  viewOffsetX,
 }: {
   hoveredItem: LDFlatbushItem
   cellWidth: number
@@ -85,14 +93,18 @@ function Crosshairs({
   snps: { start: number }[]
   regionStart: number
   bpPerPx: number
-  canvasOffset: number
+  viewScale: number
+  viewOffsetX: number
 }) {
   const { i, j } = hoveredItem
 
   const toScreen = (x: number, y: number) => {
     const rx = (x + y) / SQRT2
     const ry = (y - x) / SQRT2
-    return { x: rx, y: ry * yScalar + lineZoneHeight }
+    return {
+      x: rx * viewScale + viewOffsetX,
+      y: ry * viewScale * yScalar + lineZoneHeight,
+    }
   }
 
   let hoveredCenter: { x: number; y: number }
@@ -141,7 +153,7 @@ function Crosshairs({
     <svg
       style={{
         position: 'absolute',
-        left: canvasOffset,
+        left: 0,
         top: 0,
         width,
         height,
@@ -234,12 +246,16 @@ const LDCanvas = observer(function LDCanvas({
       ? (hoveredItem.snp1.start - region.start) / bpPerPx
       : undefined
 
-  const canvasOffset =
-    view.offsetPx >= 0
-      ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
-      : Math.max(0, -view.offsetPx)
+  // Compute view transform for smooth zoom/scroll
+  const viewScale =
+    model.lastDrawnBpPerPx !== undefined
+      ? model.lastDrawnBpPerPx / view.bpPerPx
+      : 1
+  const viewOffsetX =
+    lastDrawnOffsetPx !== undefined
+      ? lastDrawnOffsetPx * viewScale - view.offsetPx
+      : 0
 
-  const guideOffset = canvasOffset
   useEffect(() => {
     if (
       genomicX1 !== undefined &&
@@ -247,8 +263,8 @@ const LDCanvas = observer(function LDCanvas({
       model.showVerticalGuides
     ) {
       view.setVolatileGuides([
-        { xPos: genomicX1 + guideOffset },
-        { xPos: genomicX2 + guideOffset },
+        { xPos: genomicX1 + viewOffsetX },
+        { xPos: genomicX2 + viewOffsetX },
       ])
     } else {
       view.setVolatileGuides([])
@@ -256,7 +272,7 @@ const LDCanvas = observer(function LDCanvas({
     return () => {
       view.setVolatileGuides([])
     }
-  }, [genomicX1, genomicX2, model.showVerticalGuides, view, guideOffset])
+  }, [genomicX1, genomicX2, model.showVerticalGuides, view, viewOffsetX])
 
   const flatbushIndex = useMemo(
     () => (flatbush ? Flatbush.from(flatbush) : null),
@@ -264,7 +280,7 @@ const LDCanvas = observer(function LDCanvas({
   )
 
   // Initialize WebGL renderer
-  useEffect(() => {
+  useLayoutEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
       return
@@ -283,7 +299,7 @@ const LDCanvas = observer(function LDCanvas({
   }, [])
 
   // Upload data when rpcData changes
-  useEffect(() => {
+  useLayoutEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !rpcData) {
       return
@@ -297,21 +313,32 @@ const LDCanvas = observer(function LDCanvas({
     })
   }, [rpcData])
 
-  // Render when data, metric, signedLD, or dimensions change
-  useEffect(() => {
+  // Upload color ramp when data changes
+  useLayoutEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !rpcData) {
       return
     }
 
     renderer.uploadColorRamp(generateLDColorRamp(rpcData.metric, rpcData.signedLD))
+  }, [rpcData])
+
+  // Re-render on every view change (zoom/scroll) - cheap, just uniforms + draw
+  useLayoutEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !rpcData) {
+      return
+    }
+
     renderer.render({
       yScalar: rpcData.yScalar,
       canvasWidth: width,
       canvasHeight: canvasOnlyHeight,
       signedLD: rpcData.signedLD,
+      viewScale,
+      viewOffsetX,
     })
-  }, [rpcData, width, canvasOnlyHeight])
+  }, [rpcData, width, canvasOnlyHeight, viewScale, viewOffsetX])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
@@ -323,20 +350,23 @@ const LDCanvas = observer(function LDCanvas({
       }
 
       const rect = container.getBoundingClientRect()
-      const mouseCanvasOffset = canvasOffset
-      const screenX = event.clientX - rect.left - mouseCanvasOffset
-      const screenY = event.clientY - rect.top
+      const mouseX = event.clientX - rect.left
+      const mouseY = event.clientY - rect.top
 
       setMousePosition({ x: event.clientX, y: event.clientY })
 
-      if (screenY < lineZoneHeight) {
+      if (mouseY < lineZoneHeight) {
         setHoveredItem(undefined)
         return
       }
 
+      // Reverse the shader transform to get data-space screen coordinates
+      const dataScreenX = (mouseX - viewOffsetX) / viewScale
+      const dataScreenY = (mouseY - lineZoneHeight) / viewScale + lineZoneHeight
+
       const { x, y } = screenToUnrotated(
-        screenX,
-        screenY,
+        dataScreenX,
+        dataScreenY,
         yScalar,
         lineZoneHeight,
       )
@@ -350,7 +380,7 @@ const LDCanvas = observer(function LDCanvas({
         setHoveredItem(undefined)
       }
     },
-    [flatbushIndex, flatbushItems, yScalar, lineZoneHeight, canvasOffset],
+    [flatbushIndex, flatbushItems, yScalar, lineZoneHeight, viewScale, viewOffsetX],
   )
 
   const onMouseLeave = useCallback(() => {
@@ -384,7 +414,7 @@ const LDCanvas = observer(function LDCanvas({
           width,
           height: canvasOnlyHeight,
           position: 'absolute',
-          left: canvasOffset,
+          left: 0,
           top: lineZoneHeight,
         }}
         width={width}
@@ -406,7 +436,8 @@ const LDCanvas = observer(function LDCanvas({
           snps={snps}
           regionStart={region?.start ?? 0}
           bpPerPx={bpPerPx}
-          canvasOffset={canvasOffset}
+          viewScale={viewScale}
+          viewOffsetX={viewOffsetX}
         />
       ) : null}
 
@@ -433,7 +464,7 @@ const LDCanvas = observer(function LDCanvas({
         <div
           style={{
             position: 'absolute',
-            left: canvasOffset,
+            left: 0,
             top: lineZoneHeight / 2,
             width,
             height: lineZoneHeight / 2,

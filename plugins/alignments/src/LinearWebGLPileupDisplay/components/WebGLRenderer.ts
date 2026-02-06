@@ -1174,6 +1174,7 @@ export class WebGLRenderer {
   private hardclipProgram: WebGLProgram
 
   private buffers: GPUBuffers | null = null
+  private glBuffers: WebGLBuffer[] = []
   private lineVAO: WebGLVertexArrayObject | null = null
   private lineBuffer: WebGLBuffer | null = null
 
@@ -1424,6 +1425,10 @@ export class WebGLRenderer {
   }) {
     const gl = this.gl
 
+    for (const buf of this.glBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.glBuffers = []
     // Clean up old buffers
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.readVAO)
@@ -1891,6 +1896,9 @@ export class WebGLRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -1915,6 +1923,9 @@ export class WebGLRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -1938,6 +1949,9 @@ export class WebGLRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -1961,6 +1975,9 @@ export class WebGLRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -2462,6 +2479,10 @@ export class WebGLRenderer {
 
   destroy() {
     const gl = this.gl
+    for (const buf of this.glBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.glBuffers = []
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.readVAO)
       if (this.buffers.coverageVAO) {

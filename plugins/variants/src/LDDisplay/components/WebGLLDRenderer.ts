@@ -11,6 +11,8 @@ in float a_ldValue;
 
 uniform float u_yScalar;
 uniform vec2 u_canvasSize;
+uniform float u_viewScale;
+uniform float u_viewOffsetX;
 
 out float v_ldValue;
 
@@ -21,6 +23,10 @@ void main() {
   float c = 0.7071067811865476;
   float rx = (pos.x + pos.y) * c;
   float ry = (-pos.x + pos.y) * c;
+
+  // Apply view scale (zoom) and offset (scroll)
+  rx = rx * u_viewScale + u_viewOffsetX;
+  ry = ry * u_viewScale;
 
   ry *= u_yScalar;
 
@@ -156,6 +162,8 @@ export interface LDRenderState {
   canvasWidth: number
   canvasHeight: number
   signedLD: boolean
+  viewScale: number
+  viewOffsetX: number
 }
 
 export class WebGLLDRenderer {
@@ -163,6 +171,7 @@ export class WebGLLDRenderer {
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
   private vao: WebGLVertexArrayObject | null = null
+  private buffers: WebGLBuffer[] = []
   private instanceCount = 0
   private uniforms: Record<string, WebGLUniformLocation | null> = {}
   private colorRampTexture: WebGLTexture | null = null
@@ -185,6 +194,8 @@ export class WebGLLDRenderer {
       'u_canvasSize',
       'u_signedLD',
       'u_colorRamp',
+      'u_viewScale',
+      'u_viewOffsetX',
     ])
 
     gl.enable(gl.BLEND)
@@ -232,10 +243,7 @@ export class WebGLLDRenderer {
   }) {
     const gl = this.gl
 
-    if (this.vao) {
-      gl.deleteVertexArray(this.vao)
-      this.vao = null
-    }
+    this.deleteBuffers()
 
     if (data.numCells === 0) {
       this.instanceCount = 0
@@ -287,6 +295,7 @@ export class WebGLLDRenderer {
     gl.vertexAttribPointer(ldValLoc, 1, gl.FLOAT, false, 0, 0)
     gl.vertexAttribDivisor(ldValLoc, 1)
 
+    this.buffers = [quadBuffer, indexBuffer, posBuffer, cellSizeBuffer, ldValBuffer]
     gl.bindVertexArray(null)
     this.instanceCount = data.numCells
   }
@@ -317,7 +326,8 @@ export class WebGLLDRenderer {
 
   render(state: LDRenderState) {
     const gl = this.gl
-    const { canvasWidth, canvasHeight, yScalar, signedLD } = state
+    const { canvasWidth, canvasHeight, yScalar, signedLD, viewScale, viewOffsetX } =
+      state
 
     if (
       this.canvas.width !== canvasWidth ||
@@ -340,6 +350,8 @@ export class WebGLLDRenderer {
     gl.uniform1f(this.uniforms.u_yScalar!, yScalar)
     gl.uniform2f(this.uniforms.u_canvasSize!, canvasWidth, canvasHeight)
     gl.uniform1i(this.uniforms.u_signedLD!, signedLD ? 1 : 0)
+    gl.uniform1f(this.uniforms.u_viewScale!, viewScale)
+    gl.uniform1f(this.uniforms.u_viewOffsetX!, viewOffsetX)
 
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, this.colorRampTexture)
@@ -356,11 +368,21 @@ export class WebGLLDRenderer {
     gl.bindVertexArray(null)
   }
 
-  destroy() {
+  private deleteBuffers() {
     const gl = this.gl
+    for (const buf of this.buffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.buffers = []
     if (this.vao) {
       gl.deleteVertexArray(this.vao)
+      this.vao = null
     }
+  }
+
+  destroy() {
+    this.deleteBuffers()
+    const gl = this.gl
     if (this.colorRampTexture) {
       gl.deleteTexture(this.colorRampTexture)
     }

@@ -268,6 +268,7 @@ export class WebGLMultiWiggleRenderer {
   private densityProgram: WebGLProgram
   private lineProgram: WebGLProgram
   private buffers: GPUBuffers | null = null
+  private glBuffers: WebGLBuffer[] = []
   private xyplotUniforms: Record<string, WebGLUniformLocation | null> = {}
   private densityUniforms: Record<string, WebGLUniformLocation | null> = {}
   private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -322,12 +323,7 @@ export class WebGLMultiWiggleRenderer {
   uploadFromSources(regionStart: number, sources: SourceRenderData[]) {
     const gl = this.gl
 
-    if (this.buffers) {
-      gl.deleteVertexArray(this.buffers.featureVAO)
-      if (this.buffers.lineVAO) {
-        gl.deleteVertexArray(this.buffers.lineVAO)
-      }
-    }
+    this.deleteBuffers()
 
     // Calculate total features across all sources
     let totalFeatures = 0
@@ -410,6 +406,9 @@ export class WebGLMultiWiggleRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -430,6 +429,9 @@ export class WebGLMultiWiggleRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -504,14 +506,24 @@ export class WebGLMultiWiggleRenderer {
     gl.bindVertexArray(null)
   }
 
-  destroy() {
+  private deleteBuffers() {
     const gl = this.gl
+    for (const buf of this.glBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.glBuffers = []
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.featureVAO)
       if (this.buffers.lineVAO) {
         gl.deleteVertexArray(this.buffers.lineVAO)
       }
+      this.buffers = null
     }
+  }
+
+  destroy() {
+    this.deleteBuffers()
+    const gl = this.gl
     gl.deleteProgram(this.xyplotProgram)
     gl.deleteProgram(this.densityProgram)
     gl.deleteProgram(this.lineProgram)

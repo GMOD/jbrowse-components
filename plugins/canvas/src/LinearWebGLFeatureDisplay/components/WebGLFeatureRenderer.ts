@@ -374,6 +374,9 @@ export class WebGLFeatureRenderer {
   private lineData: LineDataForChevrons | null = null
   private chevronVAO: WebGLVertexArrayObject | null = null
   private chevronCount = 0
+  private glBuffers: WebGLBuffer[] = []
+  private chevronGlBuffers: WebGLBuffer[] = []
+  private _bufferTarget: WebGLBuffer[] = []
 
   private rectUniforms: Record<string, WebGLUniformLocation | null> = {}
   private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -494,20 +497,9 @@ export class WebGLFeatureRenderer {
   }) {
     const gl = this.gl
 
-    // Clean up old buffers
-    if (this.buffers) {
-      gl.deleteVertexArray(this.buffers.rectVAO)
-      if (this.buffers.lineVAO) {
-        gl.deleteVertexArray(this.buffers.lineVAO)
-      }
-      if (this.buffers.arrowVAO) {
-        gl.deleteVertexArray(this.buffers.arrowVAO)
-      }
-    }
-    if (this.chevronVAO) {
-      gl.deleteVertexArray(this.chevronVAO)
-      this.chevronVAO = null
-    }
+    this.deleteMainBuffers()
+    this.deleteChevronBuffers()
+    this._bufferTarget = []
 
     // Upload rectangles
     const rectVAO = gl.createVertexArray()
@@ -578,6 +570,7 @@ export class WebGLFeatureRenderer {
       arrowVAO,
       arrowCount: data.numArrows,
     }
+    this.glBuffers = this._bufferTarget
   }
 
   private uploadFloatBuffer(
@@ -593,6 +586,9 @@ export class WebGLFeatureRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this._bufferTarget.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -613,6 +609,9 @@ export class WebGLFeatureRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this._bufferTarget.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -642,6 +641,9 @@ export class WebGLFeatureRenderer {
     }
 
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this._bufferTarget.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -808,10 +810,8 @@ export class WebGLFeatureRenderer {
       return
     }
 
-    // Clean up previous chevron VAO
-    if (this.chevronVAO) {
-      gl.deleteVertexArray(this.chevronVAO)
-    }
+    this.deleteChevronBuffers()
+    this._bufferTarget = []
 
     // Create and upload chevron buffers
     this.chevronVAO = gl.createVertexArray()!
@@ -842,6 +842,7 @@ export class WebGLFeatureRenderer {
     gl.bindVertexArray(null)
 
     this.chevronCount = chevronXs.length
+    this.chevronGlBuffers = this._bufferTarget
 
     // Draw chevrons
     gl.useProgram(this.chevronProgram)
@@ -860,8 +861,12 @@ export class WebGLFeatureRenderer {
     gl.drawArraysInstanced(gl.LINES, 0, 4, this.chevronCount)
   }
 
-  destroy() {
+  private deleteMainBuffers() {
     const gl = this.gl
+    for (const buf of this.glBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.glBuffers = []
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.rectVAO)
       if (this.buffers.lineVAO) {
@@ -870,10 +875,26 @@ export class WebGLFeatureRenderer {
       if (this.buffers.arrowVAO) {
         gl.deleteVertexArray(this.buffers.arrowVAO)
       }
+      this.buffers = null
     }
+  }
+
+  private deleteChevronBuffers() {
+    const gl = this.gl
+    for (const buf of this.chevronGlBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.chevronGlBuffers = []
     if (this.chevronVAO) {
       gl.deleteVertexArray(this.chevronVAO)
+      this.chevronVAO = null
     }
+  }
+
+  destroy() {
+    this.deleteMainBuffers()
+    this.deleteChevronBuffers()
+    const gl = this.gl
     gl.deleteProgram(this.rectProgram)
     gl.deleteProgram(this.lineProgram)
     gl.deleteProgram(this.chevronProgram)

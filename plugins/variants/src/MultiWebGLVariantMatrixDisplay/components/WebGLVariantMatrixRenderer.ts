@@ -68,6 +68,7 @@ export class WebGLVariantMatrixRenderer {
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
   private buffers: GPUBuffers | null = null
+  private glBuffers: WebGLBuffer[] = []
   private uniforms: Record<string, WebGLUniformLocation | null> = {}
 
   constructor(canvas: HTMLCanvasElement) {
@@ -103,12 +104,9 @@ export class WebGLVariantMatrixRenderer {
   }) {
     const gl = this.gl
 
-    if (this.buffers) {
-      gl.deleteVertexArray(this.buffers.vao)
-    }
+    this.deleteBuffers()
 
     if (data.numCells === 0) {
-      this.buffers = null
       return
     }
 
@@ -139,6 +137,9 @@ export class WebGLVariantMatrixRenderer {
       return
     }
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -153,6 +154,9 @@ export class WebGLVariantMatrixRenderer {
       return
     }
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -167,6 +171,9 @@ export class WebGLVariantMatrixRenderer {
       return
     }
     const buffer = gl.createBuffer()
+    if (buffer) {
+      this.glBuffers.push(buffer)
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
@@ -203,11 +210,20 @@ export class WebGLVariantMatrixRenderer {
     gl.bindVertexArray(null)
   }
 
-  destroy() {
+  private deleteBuffers() {
     const gl = this.gl
+    for (const buf of this.glBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.glBuffers = []
     if (this.buffers) {
       gl.deleteVertexArray(this.buffers.vao)
+      this.buffers = null
     }
-    gl.deleteProgram(this.program)
+  }
+
+  destroy() {
+    this.deleteBuffers()
+    this.gl.deleteProgram(this.program)
   }
 }

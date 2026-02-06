@@ -11,6 +11,8 @@ in float a_count;
 uniform float u_binWidth;
 uniform float u_yScalar;
 uniform vec2 u_canvasSize;
+uniform float u_viewScale;
+uniform float u_viewOffsetX;
 
 out float v_count;
 
@@ -18,12 +20,13 @@ void main() {
   vec2 pos = a_position + a_quadPos * u_binWidth;
 
   // Rotate -45 degrees
-  // cos(-pi/4) = sqrt(2)/2, sin(-pi/4) = -sqrt(2)/2
-  // x' = x*cos + y*(-sin) = (x + y) * sqrt(2)/2
-  // y' = x*sin + y*cos    = (-x + y) * sqrt(2)/2
   float c = 0.7071067811865476;
   float rx = (pos.x + pos.y) * c;
   float ry = (-pos.x + pos.y) * c;
+
+  // Apply view scale (zoom) and offset (scroll)
+  rx = rx * u_viewScale + u_viewOffsetX;
+  ry = ry * u_viewScale;
 
   ry *= u_yScalar;
 
@@ -137,6 +140,8 @@ export interface HicRenderState {
   canvasHeight: number
   maxScore: number
   useLogScale: boolean
+  viewScale: number
+  viewOffsetX: number
 }
 
 export class WebGLHicRenderer {
@@ -144,6 +149,7 @@ export class WebGLHicRenderer {
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
   private vao: WebGLVertexArrayObject | null = null
+  private buffers: WebGLBuffer[] = []
   private instanceCount = 0
   private uniforms: Record<string, WebGLUniformLocation | null> = {}
   private colorRampTexture: WebGLTexture | null = null
@@ -168,6 +174,8 @@ export class WebGLHicRenderer {
       'u_maxScore',
       'u_useLogScale',
       'u_colorRamp',
+      'u_viewScale',
+      'u_viewOffsetX',
     ])
 
     gl.enable(gl.BLEND)
@@ -214,10 +222,7 @@ export class WebGLHicRenderer {
   }) {
     const gl = this.gl
 
-    if (this.vao) {
-      gl.deleteVertexArray(this.vao)
-      this.vao = null
-    }
+    this.deleteBuffers()
 
     if (data.numContacts === 0) {
       this.instanceCount = 0
@@ -260,6 +265,7 @@ export class WebGLHicRenderer {
     gl.vertexAttribPointer(countLoc, 1, gl.FLOAT, false, 0, 0)
     gl.vertexAttribDivisor(countLoc, 1)
 
+    this.buffers = [quadBuffer, indexBuffer, posBuffer, countBuffer]
     gl.bindVertexArray(null)
     this.instanceCount = data.numContacts
   }
@@ -290,8 +296,16 @@ export class WebGLHicRenderer {
 
   render(state: HicRenderState) {
     const gl = this.gl
-    const { canvasWidth, canvasHeight, binWidth, yScalar, maxScore, useLogScale } =
-      state
+    const {
+      canvasWidth,
+      canvasHeight,
+      binWidth,
+      yScalar,
+      maxScore,
+      useLogScale,
+      viewScale,
+      viewOffsetX,
+    } = state
 
     if (
       this.canvas.width !== canvasWidth ||
@@ -316,6 +330,8 @@ export class WebGLHicRenderer {
     gl.uniform2f(this.uniforms.u_canvasSize!, canvasWidth, canvasHeight)
     gl.uniform1f(this.uniforms.u_maxScore!, maxScore)
     gl.uniform1i(this.uniforms.u_useLogScale!, useLogScale ? 1 : 0)
+    gl.uniform1f(this.uniforms.u_viewScale!, viewScale)
+    gl.uniform1f(this.uniforms.u_viewOffsetX!, viewOffsetX)
 
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, this.colorRampTexture)
@@ -332,11 +348,21 @@ export class WebGLHicRenderer {
     gl.bindVertexArray(null)
   }
 
-  destroy() {
+  private deleteBuffers() {
     const gl = this.gl
+    for (const buf of this.buffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.buffers = []
     if (this.vao) {
       gl.deleteVertexArray(this.vao)
+      this.vao = null
     }
+  }
+
+  destroy() {
+    this.deleteBuffers()
+    const gl = this.gl
     if (this.colorRampTexture) {
       gl.deleteTexture(this.colorRampTexture)
     }
