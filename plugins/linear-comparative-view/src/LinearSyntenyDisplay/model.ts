@@ -4,6 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory.ts'
 
+import type { SyntenyWebGLRenderer } from './drawSyntenyWebGL.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -112,6 +113,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * currently mouseover'd CIGAR subfeature
        */
       cigarMouseoverId: -1,
+
+      /**
+       * #volatile
+       */
+      webglRenderer: null as SyntenyWebGLRenderer | null,
+
+      /**
+       * #volatile
+       */
+      webglInitialized: false,
     }))
     .actions(self => ({
       /**
@@ -179,6 +190,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setColorBy(value: string) {
         self.colorBy = value
+      },
+      /**
+       * #action
+       */
+      setWebGLRenderer(renderer: SyntenyWebGLRenderer | null) {
+        self.webglRenderer = renderer
+      },
+      /**
+       * #action
+       */
+      setWebGLInitialized(value: boolean) {
+        self.webglInitialized = value
       },
     }))
 

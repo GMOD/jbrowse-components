@@ -9,6 +9,7 @@ import {
   drawMouseoverClickMap,
   drawRef,
 } from './drawSynteny.ts'
+import { createColorFunction } from './drawSyntenyWebGL.ts'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
@@ -30,6 +31,8 @@ interface FeatPos {
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
+  let lastGeometryKey = ''
+
   addDisposer(
     self,
     autorun(
@@ -45,22 +48,47 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
+        const { alpha, colorBy, featPositions, level } = self
+        const height = self.height
+        const width = view.width
+
+        // WebGL rendering path
+        if (view.useWebGL && self.webglRenderer && self.webglInitialized) {
+          const geometryKey = `${featPositions.length}-${colorBy}-${alpha}-${view.drawCurves}-${view.drawCIGAR}-${view.drawCIGARMatchesOnly}-${view.drawLocationMarkers}`
+
+          if (geometryKey !== lastGeometryKey) {
+            const colorFn = createColorFunction(colorBy, alpha)
+            const bpPerPxs = view.views.map(v => v.bpPerPx)
+            self.webglRenderer.resize(width, height)
+            self.webglRenderer.buildGeometry(
+              featPositions,
+              level,
+              alpha,
+              colorFn,
+              view.drawCurves,
+              view.drawCIGAR,
+              view.drawCIGARMatchesOnly,
+              bpPerPxs,
+              view.drawLocationMarkers,
+            )
+            lastGeometryKey = geometryKey
+          }
+
+          const offsets = view.views.map(v => v.offsetPx)
+          self.webglRenderer.render(offsets[level]!, offsets[level + 1]!, height)
+          self.webglRenderer.renderPicking(offsets[level]!, offsets[level + 1]!, height)
+          return
+        }
+
+        // Canvas 2D rendering path
         const ctx1 = self.mainCanvas?.getContext('2d')
         const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
         if (!ctx1 || !ctx3) {
           return
         }
 
-        // Access alpha to make autorun react to alpha changes
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { alpha } = self
-        const height = self.height
-        const width = view.width
         ctx1.clearRect(0, 0, width, height)
-
-        // Draw main canvas immediately
         drawRef(self, ctx1)
-
         drawCigarClickMap(self, ctx3)
       },
       { name: 'SyntenyDraw' },
