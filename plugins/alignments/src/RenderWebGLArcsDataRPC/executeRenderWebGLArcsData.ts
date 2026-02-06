@@ -13,7 +13,7 @@ import {
   toCoreFeat,
   toCoreFeatBasic,
 } from '../shared/arcUtils.ts'
-import { PairType, getPairedType } from '../shared/color.ts'
+import { orientationTypes } from '../util.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import { SAM_FLAG_MATE_UNMAPPED } from '../shared/samFlags.ts'
 import { hasPairedReads } from '../shared/util.ts'
@@ -49,6 +49,48 @@ interface ChainData {
   stats?: ChainStats
 }
 
+// Color indices matching the palette in WebGLArcsRenderer.ts:
+//   0 = proper pair (lightgrey)
+//   1 = long insert (red)
+//   2 = short insert (pink)
+//   3 = inter-chrom (purple)
+//   4 = LL orientation (green)
+//   5 = RR orientation (#3a3a9d)
+//   6 = RL orientation (teal)
+//   7 = long-read rev-fwd (navy)
+//   8 = gradient (computed in shader)
+
+function getOrientationColorIndex(pair_orientation?: string) {
+  const r = orientationTypes.fr[pair_orientation || '']
+  if (!r || r === 'LR') {
+    return undefined
+  }
+  switch (r) {
+    case 'RR':
+      return 5
+    case 'RL':
+      return 6
+    default:
+      return 4 // LL
+  }
+}
+
+function getInsertSizeColorIndex(k1: CoreFeat, stats?: ChainStats) {
+  if (k1.refName !== k1.next_ref) {
+    return 3 // inter-chrom
+  }
+  if (stats) {
+    const tlen = Math.abs(k1.tlen || 0)
+    if (tlen > stats.upper) {
+      return 1 // long insert
+    }
+    if (tlen < stats.lower) {
+      return 2 // short insert
+    }
+  }
+  return undefined
+}
+
 function getColorType(
   k1: CoreFeat,
   s1: number,
@@ -60,49 +102,24 @@ function getColorType(
   longRange?: boolean,
   drawArcInsteadOfBezier?: boolean,
 ): number {
-  // Long range arcs drawn as actual arcs are red (type 1)
   if (longRange && drawArcInsteadOfBezier) {
     return 1 // red
   }
 
   if (hasPaired) {
-    const pairType = getPairedType({
-      type: 'insertSizeAndOrientation',
-      f: {
-        refName: k1.refName,
-        next_ref: k1.next_ref,
-        pair_orientation: k1.pair_orientation,
-        tlen: k1.tlen,
-        flags: 0,
-      },
-      stats,
-    })
-
-    if (
-      colorByType === 'insertSizeAndOrientation' ||
-      colorByType === 'insertSize'
-    ) {
-      switch (pairType) {
-        case PairType.LONG_INSERT:
-          return 1 // red
-        case PairType.SHORT_INSERT:
-          return 2 // blue
-        case PairType.INTER_CHROM:
-          return 3 // purple
-        case PairType.ABNORMAL_ORIENTATION:
-          return 4 // green
-        default:
-          return 0 // grey
-      }
+    if (colorByType === 'insertSizeAndOrientation') {
+      return getOrientationColorIndex(k1.pair_orientation)
+        ?? getInsertSizeColorIndex(k1, stats)
+        ?? 0
     }
     if (colorByType === 'orientation') {
-      if (pairType === PairType.ABNORMAL_ORIENTATION) {
-        return 4
-      }
-      return 0
+      return getOrientationColorIndex(k1.pair_orientation) ?? 0
+    }
+    if (colorByType === 'insertSize') {
+      return getInsertSizeColorIndex(k1, stats) ?? 0
     }
     if (colorByType === 'gradient') {
-      return 5 // gradient
+      return 8
     }
     return 0
   }
@@ -110,7 +127,7 @@ function getColorType(
   // Long-read coloring
   if (colorByType === 'orientation' || colorByType === 'insertSizeAndOrientation') {
     if (s1 === -1 && s2 === 1) {
-      return 4 // navy -> using green
+      return 7 // navy
     }
     if (s1 === 1 && s2 === -1) {
       return 4 // green
@@ -118,7 +135,7 @@ function getColorType(
     return 0
   }
   if (colorByType === 'gradient') {
-    return 5
+    return 8
   }
   return 0
 }

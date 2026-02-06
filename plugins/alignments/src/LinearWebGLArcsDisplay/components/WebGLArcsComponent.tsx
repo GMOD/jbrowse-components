@@ -109,7 +109,6 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
         lineWidth: model.lineWidth,
         canvasWidth: width,
         canvasHeight: height,
-        dpr: window.devicePixelRatio || 1,
       })
 
       rafRef.current = requestAnimationFrame(renderFrame)
@@ -140,6 +139,8 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
           left: 0,
           top: 0,
         }}
+        width={Math.round(width * (window.devicePixelRatio || 1))}
+        height={Math.round(height * (window.devicePixelRatio || 1))}
       />
       {error ? (
         <div style={{ color: 'red', padding: 10, position: 'absolute' }}>

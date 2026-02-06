@@ -2,7 +2,9 @@
  * WebGL Renderer for arcs display using instanced rendering.
  *
  * Each arc is one instance. A shared template buffer provides the `t` parameter
- * (0..1) and the vertex shader computes the curve point (bezier or semicircle).
+ * (0..1) and a `side` parameter (-1 or +1). The vertex shader computes the
+ * curve point, extrudes perpendicular to the tangent to form a ribbon, and the
+ * fragment shader applies analytical anti-aliasing via smoothstep + fwidth.
  */
 
 import { colord } from '@jbrowse/core/util/colord'
@@ -10,7 +12,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import { fillColor } from '../../shared/color.ts'
 
 const CURVE_SEGMENTS = 64
-const NUM_ARC_COLORS = 5
+const NUM_ARC_COLORS = 8
 const NUM_LINE_COLORS = 2
 
 function cssColorToRgb(color: string): [number, number, number] {
@@ -23,18 +25,24 @@ function cssColorToRgb(color: string): [number, number, number] {
 }
 
 // Arc color types (indices match getColorType in executeRenderWebGLArcsData.ts):
-//   0 = proper pair (grey)
+//   0 = proper pair (lightgrey)
 //   1 = long insert (red)
 //   2 = short insert (pink)
 //   3 = inter-chrom (purple)
-//   4 = abnormal orientation (green)
-//   5 = gradient (computed in shader)
+//   4 = LL orientation (green)
+//   5 = RR orientation (#3a3a9d)
+//   6 = RL orientation (teal)
+//   7 = long-read rev-fwd (navy)
+//   8 = gradient (computed in shader)
 const arcColorPalette = [
   cssColorToRgb(fillColor.color_pair_lr),
   cssColorToRgb(fillColor.color_longinsert),
   cssColorToRgb(fillColor.color_shortinsert),
   cssColorToRgb(fillColor.color_interchrom),
   cssColorToRgb(fillColor.color_pair_ll),
+  cssColorToRgb(fillColor.color_pair_rr),
+  cssColorToRgb(fillColor.color_pair_rl),
+  cssColorToRgb(fillColor.color_longread_rev_fwd),
 ]
 
 // Line color types:
@@ -45,12 +53,13 @@ const lineColorPalette = [
   cssColorToRgb(fillColor.color_longinsert),
 ]
 
-// Vertex shader — computes curve points per-instance
+// Vertex shader — computes curve points per-instance, extrudes into ribbon
 const ARC_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
 // Per-vertex (from template buffer, shared across all instances)
-in float a_t;  // 0.0 to 1.0
+in float a_t;     // 0.0 to 1.0
+in float a_side;  // -1.0 or +1.0
 
 // Per-instance attributes
 in float a_x1;        // start x offset from regionStart
@@ -62,10 +71,12 @@ uniform float u_domainStartOffset; // domainStart - regionStart
 uniform float u_domainExtent;      // domainEnd - domainStart
 uniform float u_canvasWidth;
 uniform float u_canvasHeight;
+uniform float u_lineWidthPx;
 uniform float u_gradientHue;
 uniform vec3 u_colors[${NUM_ARC_COLORS}];
 
 out vec4 v_color;
+out float v_dist;
 
 const float PI = 3.14159265359;
 
@@ -91,40 +102,64 @@ vec3 getColor(float colorType) {
   return rgb + m;
 }
 
-void main() {
+// Evaluate curve at parameter t, returns position in screen pixel space
+vec2 evalCurve(float t) {
   float radius = (a_x2 - a_x1) / 2.0;
   float absrad = abs(radius);
   float cx = a_x1 + radius;
-
-  // Convert bp-space radius to pixel-space for height scaling
-  // This matches the old canvas behavior where radius was in pixels
   float pxPerBp = u_canvasWidth / u_domainExtent;
   float absradPx = absrad * pxPerBp;
   float destY = min(u_canvasHeight, absradPx);
 
-  float x, y;
+  float x_bp, y_px;
 
   if (a_isArc > 0.5) {
-    // Semicircle — scale y by destY/absradPx so height matches destY
-    float angle = a_t * PI;
-    x = cx + cos(angle) * radius;
+    float angle = t * PI;
+    x_bp = cx + cos(angle) * radius;
     float rawY = sin(angle) * absradPx;
-    y = (absradPx > 0.0) ? rawY * (destY / absradPx) : 0.0;
+    y_px = (absradPx > 0.0) ? rawY * (destY / absradPx) : 0.0;
   } else {
-    // Cubic bezier: P0=(x1,0), P1=(x1,destY), P2=(x2,destY), P3=(x2,0)
-    float mt = 1.0 - a_t;
+    float mt = 1.0 - t;
     float mt2 = mt * mt;
     float mt3 = mt2 * mt;
-    float t2 = a_t * a_t;
-    float t3 = t2 * a_t;
-    x = mt3 * a_x1 + 3.0 * mt2 * a_t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
-    y = 3.0 * mt2 * a_t * destY + 3.0 * mt * t2 * destY;
+    float t2 = t * t;
+    float t3 = t2 * t;
+    x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
+    y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
   }
 
-  float clipX = ((x - u_domainStartOffset) / u_domainExtent) * 2.0 - 1.0;
-  // y is now in pixel space, map to clip space
-  float clipY = 1.0 - (y / u_canvasHeight) * 2.0;
+  float screenX = (x_bp - u_domainStartOffset) * pxPerBp;
+  return vec2(screenX, y_px);
+}
+
+void main() {
+  vec2 pos = evalCurve(a_t);
+
+  // Compute tangent via finite differences
+  float eps = 1.0 / ${CURVE_SEGMENTS}.0;
+  float t0 = max(a_t - eps * 0.5, 0.0);
+  float t1 = min(a_t + eps * 0.5, 1.0);
+  vec2 p0 = evalCurve(t0);
+  vec2 p1 = evalCurve(t1);
+  vec2 tangent = p1 - p0;
+  float tangentLen = length(tangent);
+
+  vec2 normal;
+  if (tangentLen > 0.001) {
+    tangent /= tangentLen;
+    normal = vec2(-tangent.y, tangent.x);
+  } else {
+    normal = vec2(0.0, 1.0);
+  }
+
+  float halfWidth = u_lineWidthPx * 0.5 + 0.5;
+  pos += normal * halfWidth * a_side;
+
+  float clipX = (pos.x / u_canvasWidth) * 2.0 - 1.0;
+  float clipY = 1.0 - (pos.y / u_canvasHeight) * 2.0;
+
   gl_Position = vec4(clipX, clipY, 0.0, 1.0);
+  v_dist = a_side * halfWidth;
   v_color = vec4(getColor(a_colorType), 1.0);
 }
 `
@@ -132,9 +167,15 @@ void main() {
 const ARC_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
+in float v_dist;
+uniform float u_lineWidthPx;
 out vec4 fragColor;
 void main() {
-  fragColor = v_color;
+  float halfWidth = u_lineWidthPx * 0.5;
+  float d = abs(v_dist);
+  float aa = fwidth(v_dist);
+  float alpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
+  fragColor = vec4(v_color.rgb, v_color.a * alpha);
 }
 `
 
@@ -217,7 +258,6 @@ export interface ArcsRenderState {
   lineWidth: number
   canvasWidth: number
   canvasHeight: number
-  dpr: number
 }
 
 interface GPUBuffers {
@@ -265,6 +305,7 @@ export class WebGLArcsRenderer {
       'u_domainExtent',
       'u_canvasWidth',
       'u_canvasHeight',
+      'u_lineWidthPx',
       'u_gradientHue',
     ])
     for (let i = 0; i < NUM_ARC_COLORS; i++) {
@@ -286,14 +327,21 @@ export class WebGLArcsRenderer {
       )
     }
 
-    // Create template buffer with t values 0/N, 1/N, ..., N/N
-    const tValues = new Float32Array(CURVE_SEGMENTS + 1)
+    // Create template buffer with interleaved (t, side) pairs for triangle strip
+    // For each t value, two vertices: one at side=+1, one at side=-1
+    const numVertices = (CURVE_SEGMENTS + 1) * 2
+    const templateData = new Float32Array(numVertices * 2)
     for (let i = 0; i <= CURVE_SEGMENTS; i++) {
-      tValues[i] = i / CURVE_SEGMENTS
+      const t = i / CURVE_SEGMENTS
+      const base = i * 4
+      templateData[base + 0] = t
+      templateData[base + 1] = 1.0
+      templateData[base + 2] = t
+      templateData[base + 3] = -1.0
     }
     this.templateBuffer = gl.createBuffer()!
     gl.bindBuffer(gl.ARRAY_BUFFER, this.templateBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, tValues, gl.STATIC_DRAW)
+    gl.bufferData(gl.ARRAY_BUFFER, templateData, gl.STATIC_DRAW)
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -382,12 +430,19 @@ export class WebGLArcsRenderer {
       this.arcVAO = gl.createVertexArray()!
       gl.bindVertexArray(this.arcVAO)
 
+      const stride = 2 * 4 // 2 floats * 4 bytes each
+
       // Per-vertex: template t values (shared, not instanced)
       const tLoc = gl.getAttribLocation(this.arcProgram, 'a_t')
       gl.bindBuffer(gl.ARRAY_BUFFER, this.templateBuffer)
       gl.enableVertexAttribArray(tLoc)
-      gl.vertexAttribPointer(tLoc, 1, gl.FLOAT, false, 0, 0)
-      // divisor=0 means per-vertex (default)
+      gl.vertexAttribPointer(tLoc, 1, gl.FLOAT, false, stride, 0)
+
+      // Per-vertex: side (-1 or +1)
+      const sideLoc = gl.getAttribLocation(this.arcProgram, 'a_side')
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.templateBuffer)
+      gl.enableVertexAttribArray(sideLoc)
+      gl.vertexAttribPointer(sideLoc, 1, gl.FLOAT, false, stride, 4)
 
       // Per-instance: a_x1
       const x1Loc = gl.getAttribLocation(this.arcProgram, 'a_x1')
@@ -479,18 +534,9 @@ export class WebGLArcsRenderer {
 
   render(state: ArcsRenderState) {
     const gl = this.gl
-    const canvas = this.canvas
-    const { canvasWidth, canvasHeight, lineWidth, dpr } = state
+    const { canvasWidth, canvasHeight, lineWidth } = state
 
-    const bufferWidth = Math.round(canvasWidth * dpr)
-    const bufferHeight = Math.round(canvasHeight * dpr)
-
-    if (canvas.width !== bufferWidth || canvas.height !== bufferHeight) {
-      canvas.width = bufferWidth
-      canvas.height = bufferHeight
-    }
-
-    gl.viewport(0, 0, bufferWidth, bufferHeight)
+    gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -498,9 +544,7 @@ export class WebGLArcsRenderer {
       return
     }
 
-    gl.lineWidth(lineWidth)
-
-    // Draw arcs using instanced rendering
+    // Draw arcs using instanced triangle strip rendering
     if (this.arcVAO && this.buffers.numArcs > 0) {
       gl.useProgram(this.arcProgram)
 
@@ -511,6 +555,7 @@ export class WebGLArcsRenderer {
       gl.uniform1f(this.arcUniforms.u_domainExtent!, domainExtent)
       gl.uniform1f(this.arcUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform1f(this.arcUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.arcUniforms.u_lineWidthPx!, lineWidth)
       gl.uniform1f(this.arcUniforms.u_gradientHue!, 0)
 
       for (let i = 0; i < NUM_ARC_COLORS; i++) {
@@ -520,9 +565,9 @@ export class WebGLArcsRenderer {
 
       gl.bindVertexArray(this.arcVAO)
       gl.drawArraysInstanced(
-        gl.LINE_STRIP,
+        gl.TRIANGLE_STRIP,
         0,
-        CURVE_SEGMENTS + 1,
+        (CURVE_SEGMENTS + 1) * 2,
         this.buffers.numArcs,
       )
     }
@@ -558,6 +603,7 @@ export class WebGLArcsRenderer {
         )
       }
 
+      gl.lineWidth(lineWidth)
       gl.bindVertexArray(this.lineVAO)
       gl.drawArrays(gl.LINES, 0, this.buffers.lineCount * 2)
     }

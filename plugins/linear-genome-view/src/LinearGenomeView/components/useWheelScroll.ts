@@ -64,7 +64,10 @@ export function useWheelScroll(
           ctrlZoomDelta.current = 0
           samples = []
         }, 300)
-      } else if (model.scrollZoom) {
+      } else if (
+        model.scrollZoom &&
+        Math.abs(event.deltaY) > Math.abs(event.deltaX)
+      ) {
         event.preventDefault()
         // scrollZoom mode: apply zoom immediately per rAF for smooth updates
         const factor = 1 + Math.abs(event.deltaY) / 200
