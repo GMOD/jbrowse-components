@@ -35,6 +35,20 @@ const Gridlines = observer(function Gridlines({
     if (!canvas) {
       return
     }
+    const parent = canvas.parentElement
+
+    // Cache height via ResizeObserver to avoid forced reflow in autorun.
+    // Reading clientHeight inside the autorun would force a synchronous
+    // layout on every scroll frame.
+    let cachedHeight = parent?.clientHeight || 600
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        cachedHeight = entry.contentRect.height
+      }
+    })
+    if (parent) {
+      resizeObserver.observe(parent)
+    }
 
     // Use autorun to update canvas outside React lifecycle
     const dispose = autorun(() => {
@@ -51,7 +65,7 @@ const Gridlines = observer(function Gridlines({
 
       // Handle retina displays
       const dpr = window.devicePixelRatio || 1
-      const height = canvas.parentElement?.clientHeight || 600
+      const height = cachedHeight
 
       // Set canvas size accounting for device pixel ratio
       const canvasWidth = width
@@ -133,6 +147,7 @@ const Gridlines = observer(function Gridlines({
 
     return () => {
       dispose()
+      resizeObserver.disconnect()
     }
   }, [model, offset, majorTickColor, minorTickColor])
 

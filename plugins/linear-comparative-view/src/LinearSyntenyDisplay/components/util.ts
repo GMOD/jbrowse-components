@@ -14,6 +14,7 @@ import { MAX_COLOR_RANGE, getId } from '../drawSynteny.ts'
 
 import type { LinearSyntenyDisplayModel } from '../model.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { MutableRefObject } from 'react'
 
 interface Pos {
   offsetPx: number
@@ -226,6 +227,7 @@ export function drawBezierBox(
 export function getFeatureAtClick(
   event: React.MouseEvent,
   model: LinearSyntenyDisplayModel,
+  canvasRectRef?: MutableRefObject<DOMRect | null>,
 ) {
   const { clickMapCanvas, numFeats, featPositions } = model
   if (!clickMapCanvas) {
@@ -235,7 +237,14 @@ export function getFeatureAtClick(
   if (!ctx) {
     return undefined
   }
-  const rect = clickMapCanvas.getBoundingClientRect()
+  let rect = canvasRectRef?.current
+  if (!rect) {
+    console.log('[SyntenyUtil] canvasRectRef cache miss (getFeatureAtClick)')
+    rect = clickMapCanvas.getBoundingClientRect()
+    if (canvasRectRef) {
+      canvasRectRef.current = rect
+    }
+  }
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
   const [r, g, b] = ctx.getImageData(x, y, 1, 1).data
@@ -247,8 +256,9 @@ export function getFeatureAtClick(
 export function onSynClick(
   event: React.MouseEvent,
   model: LinearSyntenyDisplayModel,
+  canvasRectRef?: MutableRefObject<DOMRect | null>,
 ) {
-  const feat = getFeatureAtClick(event, model)
+  const feat = getFeatureAtClick(event, model, canvasRectRef)
   if (feat) {
     const { f } = feat
     model.setClickId(f.id())
@@ -273,9 +283,10 @@ export function onSynContextClick(
   event: React.MouseEvent,
   model: LinearSyntenyDisplayModel,
   setAnchorEl: (arg: ClickCoord) => void,
+  canvasRectRef?: MutableRefObject<DOMRect | null>,
 ) {
   event.preventDefault()
-  const feat = getFeatureAtClick(event, model)
+  const feat = getFeatureAtClick(event, model, canvasRectRef)
   if (feat) {
     model.setClickId(feat.f.id())
     setAnchorEl({

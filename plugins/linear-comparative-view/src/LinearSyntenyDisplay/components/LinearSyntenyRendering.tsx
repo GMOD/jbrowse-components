@@ -54,6 +54,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const width = view.width
   const delta = useRef(0)
   const scheduled = useRef(false)
+  const canvasRectRef = useRef<DOMRect | null>(null)
   const timeout = useRef<Timer>(null)
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
@@ -63,6 +64,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const [currY, setCurrY] = useState<number>()
   const mainSyntenyCanvasRefp = useRef<HTMLCanvasElement>(null)
   const webglCanvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    console.log('[SyntenyRendering] Invalidating canvasRectRef cache (height/width changed)', { height, width })
+    canvasRectRef.current = null
+  }, [height, width])
 
   // these useCallbacks avoid new refs from being created on any mouseover,
   // etc.
@@ -100,7 +106,8 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
                 ? v.bpPerPx * (1 + delta.current)
                 : v.bpPerPx / (1 - delta.current),
               event.clientX -
-                (mainSyntenyCanvasRefp.current?.getBoundingClientRect().left ||
+                (canvasRectRef.current?.left ??
+                  mainSyntenyCanvasRefp.current?.getBoundingClientRect().left ??
                   0),
             )
           }
@@ -212,7 +219,12 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       if (!canvas) {
         return
       }
-      const rect = canvas.getBoundingClientRect()
+      let rect = canvasRectRef.current
+      if (!rect) {
+        console.log('[SyntenyRendering] canvasRectRef cache miss (mousemove)')
+        rect = canvas.getBoundingClientRect()
+        canvasRectRef.current = rect
+      }
       const x = clientX - rect.left
       const y = clientY - rect.top
       setCurrX(clientX)
@@ -295,7 +307,12 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         if (view.useWebGL && model.webglRenderer && model.webglInitialized) {
           const canvas = webglCanvasRef.current
           if (canvas) {
-            const rect = canvas.getBoundingClientRect()
+            let rect = canvasRectRef.current
+            if (!rect) {
+              console.log('[SyntenyRendering] canvasRectRef cache miss (mouseup)')
+              rect = canvas.getBoundingClientRect()
+              canvasRectRef.current = rect
+            }
             const x = evt.clientX - rect.left
             const y = evt.clientY - rect.top
             const feat = handleWebGLPick(x, y)
@@ -304,7 +321,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
             }
           }
         } else {
-          onSynClick(evt, model)
+          onSynClick(evt, model, canvasRectRef)
         }
       }
     },
@@ -317,7 +334,12 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         evt.preventDefault()
         const canvas = webglCanvasRef.current
         if (canvas) {
-          const rect = canvas.getBoundingClientRect()
+          let rect = canvasRectRef.current
+          if (!rect) {
+            console.log('[SyntenyRendering] canvasRectRef cache miss (contextmenu)')
+            rect = canvas.getBoundingClientRect()
+            canvasRectRef.current = rect
+          }
           const x = evt.clientX - rect.left
           const y = evt.clientY - rect.top
           const feat = handleWebGLPick(x, y)
@@ -331,7 +353,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
           }
         }
       } else {
-        onSynContextClick(evt, model, setAnchorEl)
+        onSynContextClick(evt, model, setAnchorEl, canvasRectRef)
       }
     },
     [view.useWebGL, model, handleWebGLPick],

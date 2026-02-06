@@ -15,6 +15,8 @@ type LSV = LinearSyntenyViewModel
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastGeometryKey = ''
   let lastRenderer: unknown = null
+  let lastOffsets: number[] = []
+  let edgeTimer: ReturnType<typeof setTimeout> | null = null
 
   addDisposer(
     self,
@@ -51,6 +53,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Always resize in case dimensions changed
         self.webglRenderer.resize(width, height)
 
+        let geometryChanged = false
         if (geometryKey !== lastGeometryKey) {
           const colorFn = createColorFunction(colorBy, alpha)
           const bpPerPxs = view.views.map(v => v.bpPerPx)
@@ -67,17 +70,49 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             view.drawLocationMarkers,
           )
           lastGeometryKey = geometryKey
+          geometryChanged = true
         }
 
         const offsets = view.views.map(v => v.offsetPx)
-        self.webglRenderer.render(offsets[level]!, offsets[level + 1]!, height)
-        self.webglRenderer.renderPicking(
+
+        // Skip expensive edge AA pass during scroll for performance.
+        // Only the offset changed → pure scroll → skip edges and schedule
+        // a full render after scrolling settles.
+        const offsetsChanged =
+          offsets[level] !== lastOffsets[level] ||
+          offsets[level + 1] !== lastOffsets[level + 1]
+        const skipEdges = offsetsChanged && !geometryChanged
+        lastOffsets = offsets
+
+        self.webglRenderer.render(
           offsets[level]!,
           offsets[level + 1]!,
           height,
+          skipEdges,
         )
+
+        // Re-render with edges after scrolling stops
+        if (skipEdges) {
+          if (edgeTimer) {
+            clearTimeout(edgeTimer)
+          }
+          edgeTimer = setTimeout(() => {
+            self.webglRenderer?.render(
+              offsets[level]!,
+              offsets[level + 1]!,
+              height,
+            )
+            edgeTimer = null
+          }, 150)
+        }
       },
-      { name: 'SyntenyDraw' },
+      {
+        name: 'SyntenyDraw',
+        // Defer re-runs to next animation frame so GL commands don't block
+        // the browser compositor in the same frame as the MobX transaction.
+        // Introduces 1-frame visual lag which is acceptable.
+        scheduler: run => requestAnimationFrame(run),
+      },
     ),
   )
 

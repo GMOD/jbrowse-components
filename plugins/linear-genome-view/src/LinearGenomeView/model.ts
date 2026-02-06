@@ -1324,6 +1324,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let currentBlockKeys: string | undefined
+      let coverageLeftPx = 0
+      let coverageRightPx = 0
+      let prevBpPerPx: number | undefined
+      let prevWidth: number | undefined
+      let prevRegionsLen: number | undefined
+      let fastPathHits = 0
+      let fullComputations = 0
       return {
         /**
          * #getter
@@ -1334,6 +1341,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * blocks to render their data for the region represented by the block
          */
         get staticBlocks() {
+          const { offsetPx, bpPerPx, width, displayedRegions } = self
+
+          // Fast path: if only offsetPx changed and viewport is still within
+          // the coverage range of existing blocks, skip the expensive
+          // calculateStaticBlocks call entirely
+          if (
+            currentlyCalculatedStaticBlocks !== undefined &&
+            bpPerPx === prevBpPerPx &&
+            width === prevWidth &&
+            displayedRegions.length === prevRegionsLen &&
+            offsetPx >= coverageLeftPx &&
+            offsetPx + width <= coverageRightPx
+          ) {
+            fastPathHits++
+            if (fastPathHits % 100 === 0) {
+              console.log(
+                `[staticBlocks] fast-path hits: ${fastPathHits}, full computations: ${fullComputations}`,
+              )
+            }
+            return currentlyCalculatedStaticBlocks
+          }
+
+          fullComputations++
+          console.log(
+            `[staticBlocks] full computation #${fullComputations} (fast-path hits so far: ${fastPathHits})`,
+          )
           const newBlocks = calculateStaticBlocks(self)
           const newKeys = newBlocks.blocks.map(b => b.key).join(',')
           if (
@@ -1342,10 +1375,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ) {
             currentlyCalculatedStaticBlocks = newBlocks
             currentBlockKeys = newKeys
-            return currentlyCalculatedStaticBlocks
-          } else {
-            return currentlyCalculatedStaticBlocks
           }
+
+          // Update coverage range from the block extent
+          const allBlocks = currentlyCalculatedStaticBlocks.blocks
+          if (allBlocks.length > 0) {
+            const last = allBlocks[allBlocks.length - 1]!
+            coverageLeftPx = allBlocks[0]!.offsetPx
+            coverageRightPx = last.offsetPx + last.widthPx
+          }
+
+          prevBpPerPx = bpPerPx
+          prevWidth = width
+          prevRegionsLen = displayedRegions.length
+          return currentlyCalculatedStaticBlocks
         },
         /**
          * #getter

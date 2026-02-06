@@ -285,6 +285,13 @@ export class SyntenyWebGLRenderer {
   // Picking framebuffer
   private pickingFramebuffer: WebGLFramebuffer | null = null
   private pickingTexture: WebGLTexture | null = null
+  private pickingDirty = true
+  private lastOffset0 = 0
+  private lastOffset1 = 0
+  private lastHeight = 0
+
+  // Cached uniform locations per program
+  private uniformCache = new Map<WebGLProgram, Record<string, WebGLUniformLocation | null>>()
 
   // All allocated buffers for cleanup
   private allocatedBuffers: WebGLBuffer[] = []
@@ -315,6 +322,16 @@ export class SyntenyWebGLRenderer {
       this.edgeProgram = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER)
       this.edgePickingProgram = createProgram(gl, VERTEX_SHADER, PICKING_FRAGMENT_SHADER)
 
+      // Cache uniform locations for all programs
+      const uniformNames = ['u_resolution', 'u_height', 'u_offset0', 'u_offset1']
+      for (const program of [this.fillProgram, this.fillPickingProgram, this.edgeProgram, this.edgePickingProgram]) {
+        const locs: Record<string, WebGLUniformLocation | null> = {}
+        for (const name of uniformNames) {
+          locs[name] = gl.getUniformLocation(program, name)
+        }
+        this.uniformCache.set(program, locs)
+      }
+
       // Create template buffer for edge ribbon
       // For each t value along the curve, two vertices: side=+1 and side=-1
       const numVertices = (CURVE_SEGMENTS + 1) * 2
@@ -335,6 +352,12 @@ export class SyntenyWebGLRenderer {
       this.pickingFramebuffer = gl.createFramebuffer()!
       this.pickingTexture = gl.createTexture()!
       this.resizePickingBuffer(canvas.width, canvas.height)
+
+      // Set initial GL state for rendering
+      gl.viewport(0, 0, canvas.width, canvas.height)
+      gl.clearColor(0, 0, 0, 0)
+      gl.enable(gl.BLEND)
+      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
       return true
     } catch (e) {
@@ -374,10 +397,20 @@ export class SyntenyWebGLRenderer {
     if (!this.canvas || !this.gl) {
       return
     }
+    if (this.width === width && this.height === height) {
+      return
+    }
+    const gl = this.gl
     this.devicePixelRatio = this.canvas.width / width
     this.width = width
     this.height = height
     this.resizePickingBuffer(this.canvas.width, this.canvas.height)
+
+    // Set viewport/blend once on resize rather than every frame
+    gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+    gl.clearColor(0, 0, 0, 0)
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
   }
 
   private cleanupGeometry() {
@@ -700,33 +733,27 @@ export class SyntenyWebGLRenderer {
     }
   }
 
-  render(offset0: number, offset1: number, height: number) {
+  render(offset0: number, offset1: number, height: number, skipEdges = false) {
     if (!this.gl || !this.canvas) {
       return
     }
     const gl = this.gl
-    const canvasWidth = this.canvas.width
-    const canvasHeight = this.canvas.height
 
-    gl.viewport(0, 0, canvasWidth, canvasHeight)
-    gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
-    gl.enable(gl.BLEND)
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
     // Draw fills
     if (this.fillVao && this.fillVertexCount > 0) {
       gl.useProgram(this.fillProgram)
       gl.bindVertexArray(this.fillVao)
-      this.setFillUniforms(gl, this.fillProgram!, offset0, offset1, height)
+      this.setUniforms(gl, this.fillProgram!, offset0, offset1, height)
       gl.drawArrays(gl.TRIANGLES, 0, this.fillVertexCount)
     }
 
-    // Draw AA edges on top
-    if (this.edgeVao && this.edgeInstanceCount > 0) {
+    // Draw AA edges on top (skip during fast scroll for performance)
+    if (!skipEdges && this.edgeVao && this.edgeInstanceCount > 0) {
       gl.useProgram(this.edgeProgram)
       gl.bindVertexArray(this.edgeVao)
-      this.setEdgeUniforms(gl, this.edgeProgram!, offset0, offset1, height)
+      this.setUniforms(gl, this.edgeProgram!, offset0, offset1, height)
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
@@ -736,6 +763,12 @@ export class SyntenyWebGLRenderer {
     }
 
     gl.bindVertexArray(null)
+
+    // Mark picking buffer as needing update (deferred until pick() is called)
+    this.lastOffset0 = offset0
+    this.lastOffset1 = offset1
+    this.lastHeight = height
+    this.pickingDirty = true
   }
 
   renderPicking(offset0: number, offset1: number, height: number) {
@@ -756,7 +789,7 @@ export class SyntenyWebGLRenderer {
     if (this.fillPickingVao && this.fillVertexCount > 0) {
       gl.useProgram(this.fillPickingProgram)
       gl.bindVertexArray(this.fillPickingVao)
-      this.setFillUniforms(gl, this.fillPickingProgram!, offset0, offset1, height)
+      this.setUniforms(gl, this.fillPickingProgram!, offset0, offset1, height)
       gl.drawArrays(gl.TRIANGLES, 0, this.fillVertexCount)
     }
 
@@ -764,7 +797,7 @@ export class SyntenyWebGLRenderer {
     if (this.edgePickingVao && this.edgeInstanceCount > 0) {
       gl.useProgram(this.edgePickingProgram)
       gl.bindVertexArray(this.edgePickingVao)
-      this.setEdgeUniforms(gl, this.edgePickingProgram!, offset0, offset1, height)
+      this.setUniforms(gl, this.edgePickingProgram!, offset0, offset1, height)
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
@@ -775,38 +808,39 @@ export class SyntenyWebGLRenderer {
 
     gl.bindVertexArray(null)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+    // Restore state that render() expects to be set
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.clearColor(0, 0, 0, 0)
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
   }
 
-  private setFillUniforms(
+  private setUniforms(
     gl: WebGL2RenderingContext,
     program: WebGLProgram,
     offset0: number,
     offset1: number,
     height: number,
   ) {
-    gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'), this.width, this.height)
-    gl.uniform1f(gl.getUniformLocation(program, 'u_height'), height)
-    gl.uniform1f(gl.getUniformLocation(program, 'u_offset0'), offset0)
-    gl.uniform1f(gl.getUniformLocation(program, 'u_offset1'), offset1)
-  }
-
-  private setEdgeUniforms(
-    gl: WebGL2RenderingContext,
-    program: WebGLProgram,
-    offset0: number,
-    offset1: number,
-    height: number,
-  ) {
-    gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'), this.width, this.height)
-    gl.uniform1f(gl.getUniformLocation(program, 'u_height'), height)
-    gl.uniform1f(gl.getUniformLocation(program, 'u_offset0'), offset0)
-    gl.uniform1f(gl.getUniformLocation(program, 'u_offset1'), offset1)
+    const locs = this.uniformCache.get(program)!
+    gl.uniform2f(locs.u_resolution!, this.width, this.height)
+    gl.uniform1f(locs.u_height!, height)
+    gl.uniform1f(locs.u_offset0!, offset0)
+    gl.uniform1f(locs.u_offset1!, offset1)
   }
 
   pick(x: number, y: number) {
     if (!this.gl || !this.canvas) {
       return -1
     }
+
+    // Lazily render picking buffer only when needed
+    if (this.pickingDirty) {
+      this.renderPicking(this.lastOffset0, this.lastOffset1, this.lastHeight)
+      this.pickingDirty = false
+    }
+
     const gl = this.gl
     const dpr = this.devicePixelRatio
     const canvasX = Math.floor(x * dpr)
