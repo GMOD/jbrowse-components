@@ -306,16 +306,6 @@ export class SyntenyWebGLRenderer {
     this.devicePixelRatio = canvas.width / (canvas.clientWidth || canvas.width)
     this.width = canvas.clientWidth || canvas.width
     this.height = canvas.clientHeight || canvas.height
-    console.log('[WebGL Synteny] init', {
-      canvasWidth: canvas.width,
-      canvasHeight: canvas.height,
-      clientWidth: canvas.clientWidth,
-      clientHeight: canvas.clientHeight,
-      cssWidth: this.width,
-      cssHeight: this.height,
-      dpr: this.devicePixelRatio,
-    })
-
     try {
       // Create fill programs
       this.fillProgram = createProgram(gl, FILL_VERTEX_SHADER, FILL_FRAGMENT_SHADER)
@@ -712,22 +702,11 @@ export class SyntenyWebGLRenderer {
 
   render(offset0: number, offset1: number, height: number) {
     if (!this.gl || !this.canvas) {
-      console.log('[WebGL Synteny] render skipped - no gl or canvas')
       return
     }
     const gl = this.gl
     const canvasWidth = this.canvas.width
     const canvasHeight = this.canvas.height
-    console.log('[WebGL Synteny] render', {
-      offset0,
-      offset1,
-      height,
-      canvasWidth,
-      canvasHeight,
-      resolution: [this.width, this.height],
-      fillVertexCount: this.fillVertexCount,
-      edgeInstanceCount: this.edgeInstanceCount,
-    })
 
     gl.viewport(0, 0, canvasWidth, canvasHeight)
     gl.clearColor(0, 0, 0, 0)

@@ -8,6 +8,7 @@ import LinearComparativeDisplayF from './LinearComparativeDisplay/index.ts'
 import LinearComparativeViewF from './LinearComparativeView/index.ts'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay/index.ts'
+import { SyntenyGetWebGLGeometry } from './LinearSyntenyRPC/SyntenyGetWebGLGeometry.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
 import LinearSyntenyViewHelperF from './LinearSyntenyViewHelper/index.tsx'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
@@ -33,6 +34,9 @@ export default class LinearComparativeViewPlugin extends Plugin {
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
     LinearReadVsRefMenuItemF(pluginManager)
+    pluginManager.addRpcMethod(
+      () => new SyntenyGetWebGLGeometry(pluginManager),
+    )
   }
 
   configure(pluginManager: PluginManager) {

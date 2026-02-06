@@ -155,7 +155,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (view.useWebGL && webglCanvasRef.current) {
-      console.log('[WebGL Synteny] useEffect: creating renderer', { width, height })
       const renderer = new SyntenyWebGLRenderer()
       const success = renderer.init(webglCanvasRef.current)
       model.setWebGLRenderer(renderer)
