@@ -1,11 +1,10 @@
 export interface WebGLArcsDataResult {
   regionStart: number
-  // Arc data - tessellated bezier curves as line strips
-  arcPositions: Uint32Array // x positions as offsets from regionStart
-  arcYs: Float32Array // y positions
+  // Arc data - compact per-arc records (curve computed on GPU)
+  arcX1: Float32Array // start x offset from regionStart
+  arcX2: Float32Array // end x offset from regionStart
   arcColorTypes: Float32Array // color types
-  arcOffsets: number[] // start index for each arc
-  arcLengths: number[] // vertex count for each arc
+  arcIsArc: Uint8Array // 1=semicircle, 0=bezier
   numArcs: number
   // Vertical lines for inter-chromosomal and long-range connections
   linePositions: Uint32Array // x positions (2 per line for start/end)

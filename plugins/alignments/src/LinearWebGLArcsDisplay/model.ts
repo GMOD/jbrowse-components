@@ -201,6 +201,7 @@ export default function stateModelFactory(
             ? getSnapshot(sequenceAdapterConfig)
             : undefined
 
+          console.log('[WebGLArcs model] fetching region:', region.refName, region.start, '-', region.end)
           const result = (await rpcManager.call(
             session.id ?? '',
             'RenderWebGLArcsData',
@@ -217,6 +218,7 @@ export default function stateModelFactory(
             },
           )) as WebGLArcsDataResult
 
+          console.log('[WebGLArcs model] got RPC result: numArcs=', result.numArcs, 'numLines=', result.numLines)
           self.setRpcData(result)
           self.setLoadedRegion({
             refName: region.refName,

@@ -108,22 +108,6 @@ const WebGLCloudComponent = observer(function WebGLCloudComponent({
     }
   }, [model, view.initialized, view.dynamicBlocks.totalWidthPx, model.height])
 
-  if (error) {
-    return <div style={{ color: 'red', padding: 10 }}>WebGL Error: {error}</div>
-  }
-
-  if (model.isLoading) {
-    return <div style={{ padding: 10 }}>Loading...</div>
-  }
-
-  if (model.error) {
-    return (
-      <div style={{ color: 'red', padding: 10 }}>
-        Error: {model.error.message}
-      </div>
-    )
-  }
-
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const height = model.height
 
@@ -141,6 +125,17 @@ const WebGLCloudComponent = observer(function WebGLCloudComponent({
         width={width}
         height={height}
       />
+      {error ? (
+        <div style={{ color: 'red', padding: 10, position: 'absolute' }}>
+          WebGL Error: {error}
+        </div>
+      ) : model.error ? (
+        <div style={{ color: 'red', padding: 10, position: 'absolute' }}>
+          Error: {model.error.message}
+        </div>
+      ) : model.isLoading ? (
+        <div style={{ padding: 10, position: 'absolute' }}>Loading...</div>
+      ) : null}
     </div>
   )
 })

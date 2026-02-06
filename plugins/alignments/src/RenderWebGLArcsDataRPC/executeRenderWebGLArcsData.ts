@@ -43,7 +43,6 @@ interface ExecuteParams {
 // Arc rendering thresholds
 const ARC_VS_BEZIER_THRESHOLD = 10_000
 const VERTICAL_LINE_THRESHOLD = 100_000
-const CURVE_SEGMENTS = 20 // Number of segments for bezier curve tessellation
 
 interface ChainData {
   chains: Feature[][]
@@ -142,63 +141,6 @@ function getArcEndpoint(
       : feat.end
 }
 
-// Tessellate a bezier curve into line segments
-function tessellateBeizer(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  destY: number,
-  segments: number,
-): { xs: number[]; ys: number[] } {
-  const xs: number[] = []
-  const ys: number[] = []
-
-  // Control points for cubic bezier: start at top, curve down to destY, back to top
-  const cp1x = x1
-  const cp1y = destY
-  const cp2x = x2
-  const cp2y = destY
-
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments
-    const t2 = t * t
-    const t3 = t2 * t
-    const mt = 1 - t
-    const mt2 = mt * mt
-    const mt3 = mt2 * mt
-
-    // Cubic bezier formula
-    const x = mt3 * x1 + 3 * mt2 * t * cp1x + 3 * mt * t2 * cp2x + t3 * x2
-    const y = mt3 * y1 + 3 * mt2 * t * cp1y + 3 * mt * t2 * cp2y + t3 * y2
-
-    xs.push(x)
-    ys.push(y)
-  }
-
-  return { xs, ys }
-}
-
-// Tessellate an actual arc (semicircle)
-function tessellateArc(
-  centerX: number,
-  radius: number,
-  segments: number,
-): { xs: number[]; ys: number[] } {
-  const xs: number[] = []
-  const ys: number[] = []
-
-  for (let i = 0; i <= segments; i++) {
-    const angle = (i / segments) * Math.PI
-    const x = centerX + Math.cos(angle) * radius
-    const y = Math.sin(angle) * Math.abs(radius)
-    xs.push(x)
-    ys.push(y)
-  }
-
-  return { xs, ys }
-}
-
 export async function executeRenderWebGLArcsData({
   pluginManager,
   args,
@@ -259,20 +201,11 @@ export async function executeRenderWebGLArcsData({
   const regionStart = region.start
   const colorByType = colorBy.type || 'insertSizeAndOrientation'
 
-  // Collect arc and line data
-  const arcData: {
-    positions: number[]
-    ys: number[]
-    colorTypes: number[]
-    offsets: number[]
-    lengths: number[]
-  } = {
-    positions: [],
-    ys: [],
-    colorTypes: [],
-    offsets: [],
-    lengths: [],
-  }
+  // Collect compact per-arc data (curve computed on GPU)
+  const arcX1s: number[] = []
+  const arcX2s: number[] = []
+  const arcColorTypes: number[] = []
+  const arcIsArcs: number[] = []
 
   const lineData: {
     positions: number[]
@@ -320,15 +253,11 @@ export async function executeRenderWebGLArcsData({
     )
 
     if (absrad < 1) {
-      // Very small - draw as simple line
-      const x1Offset = p1 - regionStart
-      const x2Offset = p2 - regionStart
-      const startIdx = arcData.positions.length
-      arcData.positions.push(x1Offset, x2Offset)
-      arcData.ys.push(0, 0)
-      arcData.colorTypes.push(colorType, colorType)
-      arcData.offsets.push(startIdx)
-      arcData.lengths.push(2)
+      // Very small - still send as arc record (will render as tiny curve)
+      arcX1s.push(p1 - regionStart)
+      arcX2s.push(p2 - regionStart)
+      arcColorTypes.push(colorType)
+      arcIsArcs.push(0)
     } else if (longRange && absrad > VERTICAL_LINE_THRESHOLD) {
       // Very large - draw vertical lines
       if (drawLongRange) {
@@ -342,36 +271,17 @@ export async function executeRenderWebGLArcsData({
         lineData.colorTypes.push(1, 1) // red
       }
     } else if (longRange && drawArcInsteadOfBezier) {
-      // Large arc - use actual arc
-      const centerX = p1 + radius
-      const { xs, ys } = tessellateArc(centerX - regionStart, absrad, CURVE_SEGMENTS)
-      const startIdx = arcData.positions.length
-      for (let i = 0; i < xs.length; i++) {
-        arcData.positions.push(Math.floor(xs[i]!))
-        arcData.ys.push(ys[i]!)
-        arcData.colorTypes.push(colorType)
-      }
-      arcData.offsets.push(startIdx)
-      arcData.lengths.push(xs.length)
+      // Large arc - use semicircle (isArc=1)
+      arcX1s.push(p1 - regionStart)
+      arcX2s.push(p2 - regionStart)
+      arcColorTypes.push(colorType)
+      arcIsArcs.push(1)
     } else {
-      // Normal bezier curve
-      const destY = Math.min(height, absrad)
-      const { xs, ys } = tessellateBeizer(
-        p1 - regionStart,
-        0,
-        p2 - regionStart,
-        0,
-        destY,
-        CURVE_SEGMENTS,
-      )
-      const startIdx = arcData.positions.length
-      for (let i = 0; i < xs.length; i++) {
-        arcData.positions.push(Math.floor(xs[i]!))
-        arcData.ys.push(ys[i]!)
-        arcData.colorTypes.push(colorType)
-      }
-      arcData.offsets.push(startIdx)
-      arcData.lengths.push(xs.length)
+      // Normal bezier curve (isArc=0)
+      arcX1s.push(p1 - regionStart)
+      arcX2s.push(p2 - regionStart)
+      arcColorTypes.push(colorType)
+      arcIsArcs.push(0)
     }
   }
 
@@ -429,12 +339,11 @@ export async function executeRenderWebGLArcsData({
 
   return {
     regionStart,
-    arcPositions: new Uint32Array(arcData.positions),
-    arcYs: new Float32Array(arcData.ys),
-    arcColorTypes: new Float32Array(arcData.colorTypes),
-    arcOffsets: arcData.offsets,
-    arcLengths: arcData.lengths,
-    numArcs: arcData.offsets.length,
+    arcX1: new Float32Array(arcX1s),
+    arcX2: new Float32Array(arcX2s),
+    arcColorTypes: new Float32Array(arcColorTypes),
+    arcIsArc: new Uint8Array(arcIsArcs),
+    numArcs: arcX1s.length,
     linePositions: new Uint32Array(lineData.positions),
     lineYs: new Float32Array(lineData.ys),
     lineColorTypes: new Float32Array(lineData.colorTypes),

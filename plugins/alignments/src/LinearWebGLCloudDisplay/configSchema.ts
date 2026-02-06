@@ -1,23 +1,31 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
-export default ConfigurationSchema(
-  'LinearWebGLCloudDisplay',
-  {
-    featureHeight: {
-      type: 'number',
-      defaultValue: 7,
-      description: 'Height of each feature in pixels',
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+export default function configSchemaFactory(pluginManager: PluginManager) {
+  return ConfigurationSchema(
+    'LinearWebGLCloudDisplay',
+    {
+      featureHeight: {
+        type: 'number',
+        defaultValue: 7,
+        description: 'Height of each feature in pixels',
+      },
+      colorBy: {
+        type: 'frozen',
+        defaultValue: { type: 'insertSizeAndOrientation' },
+        description: 'Color scheme for reads',
+      },
+      filterBy: {
+        type: 'frozen',
+        defaultValue: {},
+        description: 'Filters for reads',
+      },
     },
-    colorBy: {
-      type: 'frozen',
-      defaultValue: { type: 'insertSizeAndOrientation' },
-      description: 'Color scheme for reads',
+    {
+      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      explicitlyTyped: true,
     },
-    filterBy: {
-      type: 'frozen',
-      defaultValue: {},
-      description: 'Filters for reads',
-    },
-  },
-  { explicitlyTyped: true },
-)
+  )
+}

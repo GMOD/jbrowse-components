@@ -9,15 +9,20 @@ export function useWheelScroll(
   ref: React.RefObject<HTMLDivElement | null>,
   model: {
     bpPerPx: number
+    scrollZoom?: boolean
     zoomTo: (arg: number, arg2?: number) => void
     horizontalScroll: (arg: number) => void
   },
 ) {
-  const zoomDelta = useRef(0)
+  const ctrlZoomDelta = useRef(0)
   const scrollDelta = useRef(0)
   const timeout = useRef<Timer>(null)
   const rafId = useRef(0)
   const scheduled = useRef(false)
+  const scrollZoomDelta = useRef(1)
+  const zoomScheduled = useRef(false)
+  const zoomRafId = useRef(0)
+  const lastZoomClientX = useRef(0)
 
   useEffect(() => {
     let samples = [] as number[]
@@ -45,20 +50,41 @@ export function useWheelScroll(
                 ? 500
                 : 150
               : 75
-        zoomDelta.current += event.deltaY / normalizer
+        ctrlZoomDelta.current += event.deltaY / normalizer
         if (timeout.current) {
           clearTimeout(timeout.current)
         }
         timeout.current = setTimeout(() => {
           model.zoomTo(
-            zoomDelta.current > 0
-              ? model.bpPerPx * (1 + zoomDelta.current)
-              : model.bpPerPx / (1 - zoomDelta.current),
+            ctrlZoomDelta.current > 0
+              ? model.bpPerPx * (1 + ctrlZoomDelta.current)
+              : model.bpPerPx / (1 - ctrlZoomDelta.current),
             event.clientX - (curr?.getBoundingClientRect().left || 0),
           )
-          zoomDelta.current = 0
+          ctrlZoomDelta.current = 0
           samples = []
         }, 300)
+      } else if (model.scrollZoom) {
+        event.preventDefault()
+        // scrollZoom mode: apply zoom immediately per rAF for smooth updates
+        const factor = 1 + Math.abs(event.deltaY) / 200
+        const zoomFactor = event.deltaY > 0 ? factor : 1 / factor
+        scrollZoomDelta.current *= zoomFactor
+        lastZoomClientX.current = event.clientX
+        if (!zoomScheduled.current) {
+          zoomScheduled.current = true
+          const baseBpPerPx = model.bpPerPx
+          zoomRafId.current = window.requestAnimationFrame(() => {
+            const newBpPerPx = baseBpPerPx * scrollZoomDelta.current
+            model.zoomTo(
+              newBpPerPx,
+              lastZoomClientX.current -
+                (curr?.getBoundingClientRect().left || 0),
+            )
+            scrollZoomDelta.current = 1
+            zoomScheduled.current = false
+          })
+        }
       } else {
         // this is needed to stop the event from triggering "back button
         // action" on MacOSX etc.  but is a heuristic to avoid preventing the
@@ -88,6 +114,9 @@ export function useWheelScroll(
         }
         if (rafId.current) {
           cancelAnimationFrame(rafId.current)
+        }
+        if (zoomRafId.current) {
+          cancelAnimationFrame(zoomRafId.current)
         }
       }
     }
