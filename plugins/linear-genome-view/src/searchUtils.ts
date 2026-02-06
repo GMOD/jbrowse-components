@@ -1,5 +1,5 @@
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { dedupe, getSession } from '@jbrowse/core/util'
+import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 
 import type { LinearGenomeViewModel } from './LinearGenomeView/index.ts'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -24,6 +24,13 @@ export async function navToOption({
       model.showTrack(trackId)
     }
   }
+  const session = getSession(model)
+  const { pluginManager } = getEnv(session)
+  await pluginManager.evaluateAsyncExtensionPoint(
+    'LinearGenomeView-searchResultSelected',
+    undefined,
+    { session, result: option, model, assemblyName },
+  )
 }
 
 // gets a string as input, or use stored option results from previous query,
