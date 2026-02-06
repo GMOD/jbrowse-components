@@ -4,6 +4,8 @@ import {
   restoreFileHandlesFromSnapshot,
   setPendingFileHandleIds,
 } from '@jbrowse/core/util/tracks'
+import { isAlive } from '@jbrowse/mobx-state-tree'
+import { when } from 'mobx'
 
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
@@ -13,12 +15,32 @@ import sessionModelFactory from './sessionModel/index.ts'
 
 import type { SessionLoaderModel } from './SessionLoader.ts'
 
-export function createPluginManager(
+export async function waitForConnectionsLoaded(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  session: any,
+  onStatus?: (message: string) => void,
+) {
+  const connections = [...session.connectionInstances]
+  if (connections.length === 0) {
+    return
+  }
+
+  await Promise.all(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    connections.map((conn: any) => {
+      onStatus?.(`Loading connection "${conn.name}"...`)
+      return when(() => !isAlive(conn) || conn.tracks.length > 0)
+    }),
+  )
+}
+
+export async function createPluginManager(
   model: SessionLoaderModel,
   reloadPluginManagerCallback: (
     configSnapshot: Record<string, unknown>,
     sessionSnapshot: Record<string, unknown>,
   ) => void,
+  onStatus?: (message: string) => void,
 ) {
   // it is ready when a session has loaded and when there is no config error
   //
@@ -110,7 +132,30 @@ export function createPluginManager(
               err,
             )
           })
-        rootModel.setSession(sessionSnapshot)
+
+        const { views, ...sessionWithoutViews } = sessionSnapshot
+        const hasConnections = (
+          sessionWithoutViews.connectionInstances as unknown[] | undefined
+        )?.length
+
+        if (hasConnections) {
+          // Set session without views first. Connection instances are created
+          // and afterAttach fires connect() to fetch tracks.
+          rootModel.setSession({ ...sessionWithoutViews, views: [] })
+
+          // Wait for all connections to load tracks (or fail/break)
+          await waitForConnectionsLoaded(rootModel.session, onStatus)
+
+          // Now restore views — track config references can resolve
+          if (views && Array.isArray(views)) {
+            for (const view of views) {
+              // @ts-expect-error
+              rootModel.session.addView(view.type, view)
+            }
+          }
+        } else {
+          rootModel.setSession(sessionSnapshot)
+        }
       } else if (hubSpec) {
         afterInitializedCb = () =>
           // @ts-expect-error

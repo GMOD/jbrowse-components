@@ -128,11 +128,17 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         return snap
       }
       const { connectionInstances, ...rest } = snap as Omit<typeof snap, symbol>
+      if (!connectionInstances?.length) {
+        return rest as typeof snap
+      }
       return {
         ...rest,
-        // mst types wrong, nullish needed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(connectionInstances?.length ? { connectionInstances } : {}),
+        // Strip tracks from each connection instance to reduce session size.
+        // Tracks are re-fetched on session load via afterAttach → connect().
+        connectionInstances: connectionInstances.map(
+          // @ts-expect-error
+          ({ tracks, ...conn }) => conn,
+        ),
       } as typeof snap
     })
 }
