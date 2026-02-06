@@ -52,10 +52,16 @@ export function createProgram(
   vsSource: string,
   fsSource: string,
 ) {
+  const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
+  const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
   const program = gl.createProgram()!
-  gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vsSource))
-  gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fsSource))
+  gl.attachShader(program, vs)
+  gl.attachShader(program, fs)
   gl.linkProgram(program)
+  gl.detachShader(program, vs)
+  gl.detachShader(program, fs)
+  gl.deleteShader(vs)
+  gl.deleteShader(fs)
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     const info = gl.getProgramInfoLog(program)
     gl.deleteProgram(program)
