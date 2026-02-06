@@ -1,17 +1,20 @@
 /* eslint-disable no-console */
 import fs from 'fs'
-import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import pixelmatch from 'pixelmatch'
-import { PNG } from 'pngjs'
-import { type Browser, type Page, launch } from 'puppeteer'
-import handler from 'serve-handler'
+import { launch } from 'puppeteer'
 
+import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
+import { buildPath, startServer } from './server.ts'
+import { setUpdateSnapshots } from './snapshot.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
 
+import type { Browser, Page } from 'puppeteer'
+import type { TestSuite } from './types.ts'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const volvoxDataPath = path.resolve(__dirname, '../test_data/volvox')
 
 const args = process.argv.slice(2)
 const headed = args.includes('--headed')
@@ -19,861 +22,50 @@ const slowMoArg = args.find(a => a.startsWith('--slow-mo='))
 const slowMo = slowMoArg ? parseInt(slowMoArg.split('=')[1]!, 10) : 0
 const updateSnapshots =
   args.includes('--update-snapshots') || args.includes('-u')
-
-const snapshotsDir = path.resolve(__dirname, '__snapshots__')
-const buildPath = path.resolve(__dirname, '../build')
-const testDataPath = path.resolve(__dirname, '..')
-const volvoxDataPath = path.resolve(__dirname, '../test_data/volvox')
-const PORT = 3333
-const OAUTH_PORT = 3030
-const BASICAUTH_PORT = 3040
 const runAuthTests = args.includes('--auth')
+const filterArg = args.find(a => a.startsWith('--filter='))
+const filter = filterArg ? filterArg.split('=')[1]!.toLowerCase() : ''
 
-// Helpers
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+setUpdateSnapshots(updateSnapshots)
 
-async function findByTestId(page: Page, testId: string, timeout = 30000) {
-  return page.waitForSelector(`[data-testid="${testId}"]`, {
-    timeout,
-    visible: true,
-  })
-}
+async function discoverSuites(): Promise<TestSuite[]> {
+  const suitesDir = path.resolve(__dirname, 'suites')
+  const files = fs.readdirSync(suitesDir).filter(f => f.endsWith('.ts')).sort()
+  const suites: TestSuite[] = []
 
-async function findByText(page: Page, text: string | RegExp, timeout = 30000) {
-  const searchText = typeof text === 'string' ? text : text.source
-  return page.waitForSelector(`::-p-text(${searchText})`, {
-    timeout,
-    visible: true,
-  })
-}
-
-async function waitForLoadingToComplete(page: Page, timeout = 30000) {
-  await page.waitForFunction(
-    () =>
-      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
-    { timeout },
-  )
-}
-
-async function capturePageSnapshot(page: Page, name: string) {
-  if (!fs.existsSync(snapshotsDir)) {
-    fs.mkdirSync(snapshotsDir, { recursive: true })
-  }
-
-  const screenshot = await page.screenshot({ fullPage: true })
-  const snapshotPath = path.join(snapshotsDir, `${name}.png`)
-
-  if (updateSnapshots || !fs.existsSync(snapshotPath)) {
-    fs.writeFileSync(snapshotPath, screenshot)
-    return {
-      passed: true,
-      message: updateSnapshots ? 'Snapshot updated' : 'Snapshot created',
+  for (const file of files) {
+    const mod = await import(path.join(suitesDir, file))
+    const exported = mod.default
+    if (Array.isArray(exported)) {
+      for (const s of exported) {
+        suites.push(s)
+      }
+    } else {
+      suites.push(exported)
     }
   }
 
-  const expectedBuffer = fs.readFileSync(snapshotPath)
-  const expectedImg = PNG.sync.read(expectedBuffer)
-  // @ts-expect-error Uint8Array works at runtime
-  const actualImg = PNG.sync.read(screenshot)
-
-  if (
-    expectedImg.width !== actualImg.width ||
-    expectedImg.height !== actualImg.height
-  ) {
-    fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
-    return {
-      passed: false,
-      message: `Snapshot size differs: expected ${expectedImg.width}x${expectedImg.height}, got ${actualImg.width}x${actualImg.height}`,
-    }
-  }
-
-  const { width, height } = expectedImg
-  const diffImg = new PNG({ width, height })
-
-  const numDiffPixels = pixelmatch(
-    expectedImg.data,
-    actualImg.data,
-    diffImg.data,
-    width,
-    height,
-    { threshold: 0.1 },
-  )
-
-  const totalPixels = width * height
-  const diffPercent = numDiffPixels / totalPixels
-  const threshold = 0.05
-
-  if (diffPercent <= threshold) {
-    return { passed: true, message: 'Snapshot matches' }
-  }
-
-  fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
-  fs.writeFileSync(
-    path.join(snapshotsDir, `${name}.diff-visual.png`),
-    PNG.sync.write(diffImg),
-  )
-  return {
-    passed: false,
-    message: `Snapshot differs by ${(diffPercent * 100).toFixed(2)}% (threshold: ${threshold * 100}%)`,
-  }
+  return suites
 }
 
-// Server
-function startServer(port: number): Promise<http.Server> {
-  return new Promise((resolve, reject) => {
-    const server = http.createServer((req, res) => {
-      const url = req.url || '/'
-      const publicPath = url.startsWith('/test_data/')
-        ? testDataPath
-        : buildPath
-      return handler(req, res, {
-        public: publicPath,
-        headers: [
-          {
-            source: '**/*',
-            headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
-          },
-        ],
-      })
-    })
-    server.on('error', reject)
-    server.listen(port, () => {
-      resolve(server)
-    })
-  })
-}
-
-// Test helpers
-async function navigateToApp(
+async function runTests(
   page: Page,
-  config = 'test_data/volvox/config.json',
-  sessionName = 'Test Session',
+  browser: Browser,
+  suites: TestSuite[],
+  includeAuth: boolean,
 ) {
-  await page.goto(
-    `http://localhost:${PORT}/?config=${config}&sessionName=${encodeURIComponent(sessionName)}`,
-    {
-      waitUntil: 'networkidle0',
-      timeout: 60000,
-    },
-  )
-  await findByText(page, 'ctgA')
-}
-
-async function openTrack(page: Page, trackId: string) {
-  const trackLabel = await findByTestId(
-    page,
-    `htsTrackLabel-Tracks,${trackId}`,
-    10000,
-  )
-  await trackLabel?.click()
-}
-
-async function snapshot(page: Page, name: string) {
-  const result = await capturePageSnapshot(page, name)
-  if (!result.passed) {
-    throw new Error(result.message)
-  }
-}
-
-async function handleOAuthLogin(browser: Browser) {
-  // Wait for OAuth popup to appear
-  const target = await browser.waitForTarget(
-    t => t.url().includes('localhost:3030/oauth'),
-    { timeout: 15000 },
-  )
-  const popup = await target.page()
-  if (!popup) {
-    throw new Error('Could not get OAuth popup page')
-  }
-  // Wait for the form to be ready
-  await popup.waitForSelector('input[type="submit"]', { timeout: 10000 })
-  // Small delay to ensure page is fully loaded
-  await delay(500)
-  const submitBtn = await popup.$('input[type="submit"]')
-  await submitBtn?.click()
-  // Wait for popup to close after successful auth
-  await delay(2000)
-}
-
-async function handleBasicAuthLogin(page: Page) {
-  const dialog = await findByTestId(page, 'login-httpbasic', 10000)
-  if (!dialog) {
-    throw new Error('BasicAuth login dialog not found')
-  }
-
-  const usernameInput = await findByTestId(
-    page,
-    'login-httpbasic-username',
-    10000,
-  )
-  const passwordInput = await findByTestId(
-    page,
-    'login-httpbasic-password',
-    10000,
-  )
-  await usernameInput?.type('admin')
-  await passwordInput?.type('password')
-
-  const submitBtn = await findByText(page, 'Submit', 10000)
-  await submitBtn?.click()
-  await delay(500)
-}
-
-async function clearStorageAndNavigate(
-  page: Page,
-  config: string,
-  sessionName = 'Test Session',
-) {
-  await page.goto(`http://localhost:${PORT}/`)
-  await page.evaluate(() => {
-    localStorage.clear()
-    sessionStorage.clear()
-  })
-  await navigateToApp(page, config, sessionName)
-}
-
-async function waitForDisplay(page: Page, trackId: string, timeout = 60000) {
-  await page.waitForSelector(`[data-testid^="display-${trackId}"]`, { timeout })
-}
-
-async function waitForWorkspacesReady(page: Page) {
-  await page.waitForSelector('.dockview-theme-light, .dockview-theme-dark', {
-    timeout: 10000,
-  })
-  await page.waitForSelector('[data-testid^="view-container-"]', {
-    timeout: 10000,
-  })
-  await page.waitForSelector('input[placeholder="Search for location"]', {
-    timeout: 10000,
-  })
-  await waitForLoadingToComplete(page)
-  await delay(1000)
-}
-
-async function copyView(page: Page) {
-  const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
-  await viewMenu?.click()
-  await delay(300)
-  const viewOptions = await findByText(page, 'View options', 10000)
-  await viewOptions?.click()
-  await delay(300)
-  const copyViewBtn = await findByText(page, 'Copy view', 10000)
-  await copyViewBtn?.click()
-  await delay(1000)
-}
-
-async function clickViewMenuOption(
-  page: Page,
-  optionText: string,
-  viewIndex = 0,
-) {
-  const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
-  await viewMenus[viewIndex]?.click()
-  await delay(300)
-  const viewOptions = await findByText(page, 'View options', 10000)
-  await viewOptions?.click()
-  await delay(300)
-  const option = await findByText(page, optionText, 10000)
-  await option?.click()
-}
-
-async function setupWorkspacesViaMoveToTab(page: Page) {
-  await copyView(page)
-  await clickViewMenuOption(page, 'Move to new tab', 0)
-  await waitForWorkspacesReady(page)
-}
-
-// Test suites
-interface TestSuite {
-  name: string
-  tests: {
-    name: string
-    fn: (page: Page, browser?: Browser) => Promise<void>
-  }[]
-  requiresAuth?: boolean
-}
-
-const testSuites: TestSuite[] = [
-  {
-    name: 'Session Spec URL Parameters',
-    tests: [
-      {
-        name: 'displaySnapshot type opens track with specific display type',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:1-10000',
-                tracks: [
-                  {
-                    trackId: 'volvox_sv_cram',
-                    displaySnapshot: {
-                      type: 'LinearReadCloudDisplay',
-                    },
-                  },
-                ],
-              },
-            ],
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          await findByText(page, 'ctgA')
-          // The UMD plugin adds LinearReadCloudDisplay with drawCloud:true for _sv tracks
-          await findByTestId(page, 'cloud-canvas', 60000)
-          await waitForLoadingToComplete(page)
-          await delay(1000)
-          await snapshot(page, 'session-spec-display-snapshot-type')
-        },
-      },
-      {
-        name: 'jexl',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:2,707..8,600',
-                tracks: ['volvox_test_vcf_jexl'],
-              },
-            ],
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-          await findByTestId(page, 'canvas-feature-overlay', 60000)
-          await waitForLoadingToComplete(page)
-          await delay(1000)
-          await snapshot(page, 'session-spec-jexl')
-        },
-      },
-    ],
-  },
-  {
-    name: 'Workspaces',
-    tests: [
-      {
-        name: 'can add Linear genome view from menu with workspaces enabled',
-        fn: async page => {
-          await navigateToApp(page)
-
-          // Enable workspaces via Tools menu
-          const toolsMenu = await findByText(page, 'Tools', 10000)
-          await toolsMenu?.click()
-          await delay(300)
-          const useWorkspacesCheckbox = await findByText(
-            page,
-            'Use workspaces',
-            10000,
-          )
-          await useWorkspacesCheckbox?.click()
-          await delay(500)
-
-          // Count views before adding
-          const searchInputsBefore = await page.$$(
-            'input[placeholder="Search for location"]',
-          )
-          const viewCountBefore = searchInputsBefore.length
-
-          // Click Add menu and then Linear genome view
-          const addMenu = await findByText(page, 'Add', 10000)
-          await addMenu?.click()
-          await delay(300)
-          const linearGenomeViewOption = await findByText(
-            page,
-            'Linear genome view',
-            10000,
-          )
-          await linearGenomeViewOption?.click()
-
-          // Wait for new view to appear by polling for increased view count
-          const timeout = 10000
-          const start = Date.now()
-          let viewCountAfter = viewCountBefore
-          while (Date.now() - start < timeout) {
-            const searchInputsAfter = await page.$$(
-              'input[placeholder="Search for location"]',
-            )
-            viewCountAfter = searchInputsAfter.length
-            if (viewCountAfter > viewCountBefore) {
-              break
-            }
-            await delay(200)
-          }
-
-          if (viewCountAfter <= viewCountBefore) {
-            throw new Error(
-              `New Linear genome view was not added. Views before: ${viewCountBefore}, after: ${viewCountAfter}`,
-            )
-          }
-
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'workspaces-add-view')
-        },
-      },
-      {
-        name: 'move to new tab enables workspaces',
-        fn: async page => {
-          await navigateToApp(page)
-          await setupWorkspacesViaMoveToTab(page)
-          await snapshot(page, 'workspaces-new-tab')
-        },
-      },
-      {
-        name: 'move to split right enables workspaces',
-        fn: async page => {
-          await navigateToApp(page)
-          await copyView(page)
-          await clickViewMenuOption(page, 'Move to split view', 0)
-          await waitForWorkspacesReady(page)
-          await snapshot(page, 'workspaces-split-view')
-        },
-      },
-      {
-        name: 'copy view creates second view',
-        fn: async page => {
-          await navigateToApp(page)
-          await copyView(page)
-          const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
-          if (viewMenus.length !== 2) {
-            throw new Error(`Expected 2 views, got ${viewMenus.length}`)
-          }
-        },
-      },
-      {
-        name: 'layout URL param creates workspaces with horizontal split',
-        fn: async page => {
-          // Create a session spec with 3 views and nested layout
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:1-5000',
-              },
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:5000-10000',
-              },
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgB:1-5000',
-              },
-            ],
-            // Horizontal split: left panel has views 0 and 1 stacked, right panel has view 2
-            layout: {
-              direction: 'horizontal',
-              children: [{ views: [0, 1] }, { views: [2] }],
-            },
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          // Wait for dockview to render
-          await page.waitForSelector(
-            '.dockview-theme-light, .dockview-theme-dark',
-            { timeout: 10000 },
-          )
-          await delay(2000)
-
-          // With a horizontal split, we should have 2 dockview groups
-          const groups = await page.$$('.dv-groupview')
-          if (groups.length < 2) {
-            throw new Error(
-              `Expected at least 2 dockview groups for horizontal split, got ${groups.length}`,
-            )
-          }
-
-          // Should have 3 total view containers (2 in left panel, 1 in right)
-          let viewContainers: Awaited<ReturnType<typeof page.$$>> = []
-          for (let i = 0; i < 20; i++) {
-            viewContainers = await page.$$('[data-testid^="view-container-"]')
-            if (viewContainers.length >= 3) {
-              break
-            }
-            await delay(500)
-          }
-
-          if (viewContainers.length < 3) {
-            throw new Error(
-              `Expected 3 view containers total, got ${viewContainers.length}`,
-            )
-          }
-
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'workspaces-layout-url-param')
-        },
-      },
-      {
-        name: 'layout URL param with custom sizes',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:1-5000',
-              },
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgB:1-5000',
-              },
-            ],
-            // 70/30 horizontal split
-            layout: {
-              direction: 'horizontal',
-              children: [
-                { views: [0], size: 70 },
-                { views: [1], size: 30 },
-              ],
-            },
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          // Wait for dockview to render
-          await page.waitForSelector(
-            '.dockview-theme-light, .dockview-theme-dark',
-            { timeout: 10000 },
-          )
-          await delay(2000)
-
-          // Should have 2 dockview groups
-          const groups = await page.$$('.dv-groupview')
-          if (groups.length < 2) {
-            throw new Error(`Expected 2 dockview groups, got ${groups.length}`)
-          }
-
-          // Should have 2 view containers
-          const viewContainers = await page.$$(
-            '[data-testid^="view-container-"]',
-          )
-          if (viewContainers.length !== 2) {
-            throw new Error(
-              `Expected 2 view containers, got ${viewContainers.length}`,
-            )
-          }
-
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'workspaces-layout-custom-sizes')
-        },
-      },
-      {
-        name: 'multiple views in workspace - move up and down',
-        fn: async page => {
-          await navigateToApp(page)
-          await setupWorkspacesViaMoveToTab(page)
-
-          // Copy view again to have multiple views in one panel
-          await copyView(page)
-
-          // Get the order of view containers before moving
-          const getViewOrder = () =>
-            page.evaluate(() => {
-              const containers = document.querySelectorAll(
-                '[data-testid^="view-container-"]',
-              )
-              return [...containers].map(c => (c as HTMLElement).dataset.testid)
-            })
-
-          const orderBefore = await getViewOrder()
-          if (orderBefore.length < 2) {
-            throw new Error(
-              `Expected at least 2 view containers, got ${orderBefore.length}`,
-            )
-          }
-
-          // Now try to move first view down
-          await clickViewMenuOption(page, 'Move view down', 0)
-          await delay(500)
-
-          // Verify the order actually changed
-          const orderAfter = await getViewOrder()
-          if (
-            orderBefore[0] === orderAfter[0] &&
-            orderBefore[1] === orderAfter[1]
-          ) {
-            throw new Error(
-              `View order did not change after move down. Before: ${orderBefore.join(', ')}. After: ${orderAfter.join(', ')}`,
-            )
-          }
-        },
-      },
-    ],
-  },
-  {
-    name: 'BasicLinearGenomeView',
-    tests: [
-      {
-        name: 'loads the application',
-        fn: async page => {
-          await navigateToApp(page)
-          await findByText(page, 'Help', 10000)
-        },
-      },
-      {
-        name: 'opens track selector and loads a track',
-        fn: async page => {
-          await navigateToApp(page)
-          await openTrack(page, 'volvox_refseq')
-          await findByTestId(
-            page,
-            'display-volvox_refseq-LinearReferenceSequenceDisplay',
-          )
-        },
-      },
-      {
-        name: 'can zoom in and out',
-        fn: async page => {
-          await navigateToApp(page)
-          const zoomIn = await findByTestId(page, 'zoom_in', 10000)
-          await zoomIn?.click()
-          await delay(500)
-          const zoomOut = await findByTestId(page, 'zoom_out', 10000)
-          await zoomOut?.click()
-        },
-      },
-      {
-        name: 'can access About dialog',
-        fn: async page => {
-          await navigateToApp(page)
-          const helpButton = await findByText(page, 'Help', 10000)
-          await helpButton?.click()
-          await delay(300)
-          const aboutMenuItem = await findByText(page, 'About', 10000)
-          await aboutMenuItem?.click()
-          await findByText(page, /The Evolutionary Software Foundation/i, 10000)
-        },
-      },
-      {
-        name: 'can search for a location',
-        fn: async page => {
-          await navigateToApp(page)
-          const searchInput = await page.waitForSelector(
-            'input[placeholder="Search for location"]',
-            { timeout: 30000 },
-          )
-          await searchInput?.click()
-          await searchInput?.type('ctgA:1000..2000')
-          await page.keyboard.press('Enter')
-          await delay(1000)
-        },
-      },
-    ],
-  },
-  {
-    name: 'Alignments Track',
-    tests: [
-      {
-        name: 'loads BAM track',
-        fn: async page => {
-          await navigateToApp(page)
-          await openTrack(page, 'volvox_alignments')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-        },
-      },
-      {
-        name: 'loads CRAM track',
-        fn: async page => {
-          await navigateToApp(page)
-          await openTrack(page, 'volvox_cram_alignments')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-        },
-      },
-      {
-        name: 'BAM track screenshot',
-        fn: async page => {
-          await navigateToApp(page)
-          await openTrack(page, 'volvox_alignments')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'alignments-bam')
-        },
-      },
-      {
-        name: 'volvox_sv track screenshot',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:2,707..48,600',
-                tracks: ['volvox_sv'],
-              },
-            ],
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          // The UMD plugin adds LinearReadCloudDisplay with drawCloud:true for _sv tracks
-          await findByTestId(page, 'cloud-canvas', 60000)
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'alignments-volvox-sv')
-        },
-      },
-    ],
-  },
-  {
-    name: 'MainThreadRPC',
-    tests: [
-      {
-        name: 'loads with main thread RPC',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await findByText(page, 'Help', 10000)
-        },
-      },
-      {
-        name: 'loads BAM track with main thread RPC',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await openTrack(page, 'volvox_sv')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-        },
-      },
-      {
-        name: 'loads GFF3 track with main thread RPC',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await openTrack(page, 'gff3tabix_genes')
-          await findByTestId(
-            page,
-            'display-gff3tabix_genes-LinearBasicDisplay',
-            60000,
-          )
-        },
-      },
-      {
-        name: 'main thread RPC BAM screenshot',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await openTrack(page, 'volvox_sv')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'main-thread-rpc-bam')
-        },
-      },
-    ],
-  },
-  {
-    name: 'Authentication (WebWorker RPC)',
-    requiresAuth: true,
-    tests: [
-      {
-        name: 'loads with auth config',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_auth.json')
-          await findByText(page, 'Help', 10000)
-        },
-      },
-      {
-        name: 'loads OAuth BigWig track after login',
-        fn: async (page, browser) => {
-          await navigateToApp(page, 'test_data/volvox/config_auth.json')
-          await openTrack(page, 'oauth_bigwig')
-          await handleOAuthLogin(browser!)
-          await waitForDisplay(page, 'oauth_bigwig')
-        },
-      },
-      {
-        name: 'loads BasicAuth BigWig track after login',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_auth.json')
-          await openTrack(page, 'basicauth_bigwig')
-          await handleBasicAuthLogin(page)
-          await waitForDisplay(page, 'basicauth_bigwig')
-        },
-      },
-    ],
-  },
-  {
-    name: 'Authentication (MainThread RPC)',
-    requiresAuth: true,
-    tests: [
-      {
-        name: 'loads with main thread auth config',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_auth_main.json')
-          await findByText(page, 'Help', 10000)
-        },
-      },
-      {
-        name: 'loads OAuth BigWig track after login (main thread)',
-        fn: async (page, browser) => {
-          await clearStorageAndNavigate(
-            page,
-            'test_data/volvox/config_auth_main.json',
-          )
-          await openTrack(page, 'oauth_bigwig')
-          await handleOAuthLogin(browser!)
-          await waitForDisplay(page, 'oauth_bigwig')
-        },
-      },
-      {
-        name: 'loads BasicAuth BigWig track after login (main thread)',
-        fn: async page => {
-          await clearStorageAndNavigate(
-            page,
-            'test_data/volvox/config_auth_main.json',
-          )
-          await openTrack(page, 'basicauth_bigwig')
-          await handleBasicAuthLogin(page)
-          await waitForDisplay(page, 'basicauth_bigwig')
-        },
-      },
-    ],
-  },
-  {
-    name: 'Custom URL Loading',
-    tests: [
-      {
-        name: 'loads specific config and snapshots',
-        fn: async page => {
-          const url = `http://localhost:${PORT}/?config=test_data%2Fconfig_demo.json&session=share-XyL52LPDoO&password=861E4`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-          await waitForLoadingToComplete(page)
-          await delay(1000) // Add a small delay for rendering stability
-          await snapshot(page, 'methylation_snapshot')
-        },
-      },
-      {
-        name: 'loads specific config and snapshots (breakpoint split view)',
-        fn: async page => {
-          const url = `http://localhost:${PORT}/?config=test_data%2Fconfig_demo.json&session=share-pjaAq1hNxB&password=Z9teR`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-          await waitForLoadingToComplete(page)
-          await delay(1000) // Add a small delay for rendering stability
-          await snapshot(page, 'breakpoint_split_view_snapshot')
-        },
-      },
-    ],
-  },
-]
-
-// Runner
-async function runTests(page: Page, browser: Browser, includeAuth: boolean) {
   let passed = 0
   let failed = 0
 
-  const suitesToRun = testSuites.filter(
-    suite => !suite.requiresAuth || includeAuth,
-  )
+  const suitesToRun = suites.filter(suite => {
+    if (suite.requiresAuth && !includeAuth) {
+      return false
+    }
+    if (filter && !suite.name.toLowerCase().includes(filter)) {
+      return false
+    }
+    return true
+  })
 
   for (const suite of suitesToRun) {
     console.log(`\n  ${suite.name}`)
@@ -883,7 +75,6 @@ async function runTests(page: Page, browser: Browser, includeAuth: boolean) {
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       try {
-        // Clear storage between tests to prevent state leaking
         await page.goto(`http://localhost:${PORT}/test_data/volvox/config.json`)
         await page.evaluate(() => {
           localStorage.clear()
@@ -929,8 +120,8 @@ async function main() {
   const server = await startServer(PORT)
 
   let browser: Browser | undefined
-  let oauthServer: http.Server | undefined
-  let basicAuthServer: http.Server | undefined
+  let oauthServer: import('http').Server | undefined
+  let basicAuthServer: import('http').Server | undefined
 
   try {
     if (runAuthTests) {
@@ -945,6 +136,10 @@ async function main() {
         dataPath: volvoxDataPath,
       })
     }
+
+    console.log('Discovering test suites...')
+    const suites = await discoverSuites()
+    console.log(`Found ${suites.length} test suites`)
 
     console.log(`Launching browser (headed: ${headed})...`)
     browser = await launch({
@@ -971,7 +166,15 @@ async function main() {
     if (runAuthTests) {
       console.log('(including auth tests)')
     }
-    const { passed, failed } = await runTests(page, browser, runAuthTests)
+    if (filter) {
+      console.log(`(filtering by: ${filter})`)
+    }
+    const { passed, failed } = await runTests(
+      page,
+      browser,
+      suites,
+      runAuthTests,
+    )
 
     console.log(`\n${'─'.repeat(50)}`)
     console.log(`  Tests: ${passed} passed, ${failed} failed`)

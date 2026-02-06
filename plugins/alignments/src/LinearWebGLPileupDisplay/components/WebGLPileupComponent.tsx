@@ -214,8 +214,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Rendering and data loading
   const renderRAFRef = useRef<number | null>(null)
   const scheduleRenderRef = useRef<() => void>(() => {})
-  // Flag to skip effect when we triggered the update ourselves
-  const selfUpdateRef = useRef(false)
   const pendingDataRequestRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
@@ -440,8 +438,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   // Must be defined after the callbacks they reference
   const renderNowRef = useRef(renderNow)
   renderNowRef.current = renderNow
-  const renderWithDomainRef = useRef(renderWithDomain)
-  renderWithDomainRef.current = renderWithDomain
   const checkDataNeedsRef = useRef(checkDataNeeds)
   checkDataNeedsRef.current = checkDataNeeds
   const clampOffsetRef = useRef(clampOffset)
@@ -492,36 +488,28 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   }, [viewId, canvasId, renderNow])
 
   // Re-render when view state changes (pan/zoom from any source)
-  // Uses MobX autorun for more predictable timing than useEffect
-  // This handles external navigation (keyboard, clicks) but skips our own setNewView calls
+  // Like LinearSyntenyView, the autorun fires whenever view observables
+  // change and renders directly. Event handlers just call view.setNewView()
+  // and the autorun handles both domain sync and rendering.
   useEffect(() => {
     if (!view) {
       return
     }
 
     const dispose = autorun(() => {
-      // Access observables to subscribe to them
+      // Track view observables - autorun re-runs when these change
       const _offsetPx = view.offsetPx
       const _bpPerPx = view.bpPerPx
-      const initialized = view.initialized
-
-      // Skip if we triggered this update ourselves (already rendered immediately)
-      if (selfUpdateRef.current) {
-        selfUpdateRef.current = false
+      if (!view.initialized) {
         return
       }
 
-      if (!initialized) {
-        return
-      }
-
-      // Sync domain to model for data loading
+      // Sync domain to model for data-loading reaction
       const visibleBpRange = getVisibleBpRangeRef.current()
       if (visibleBpRange) {
         model.setCurrentDomain(visibleBpRange)
       }
 
-      // Render immediately for external navigation
       renderNowRef.current()
     })
 
@@ -691,38 +679,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         e.preventDefault()
         e.stopPropagation()
         const newOffsetPx = clampOffsetRef.current(view.offsetPx + e.deltaX)
-
-        // Compute new domain for immediate rendering
-        const contentBlocks = (
-          view as unknown as {
-            dynamicBlocks?: {
-              contentBlocks?: {
-                refName: string
-                start: number
-                end: number
-                offsetPx?: number
-              }[]
-            }
-          }
-        ).dynamicBlocks?.contentBlocks as
-          | { refName: string; start: number; end: number; offsetPx?: number }[]
-          | undefined
-        const first = contentBlocks?.[0]
-        if (first) {
-          const blockOffsetPx = first.offsetPx ?? 0
-          const deltaPx = newOffsetPx - blockOffsetPx
-          const deltaBp = deltaPx * view.bpPerPx
-          const rangeStart = first.start + deltaBp
-          const rangeEnd = rangeStart + width * view.bpPerPx
-
-          // Render immediately with computed values
-          renderWithDomainRef.current([rangeStart, rangeEnd])
-
-          // Update MobX (for gridlines, other components)
-          selfUpdateRef.current = true
-          view.setNewView(view.bpPerPx, newOffsetPx)
-        }
-
+        view.setNewView(view.bpPerPx, newOffsetPx)
         checkDataNeedsRef.current()
         return
       }
@@ -786,7 +743,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
         // Position new range so mouseBp stays at same screen position
         const newRangeStart = mouseBp - mouseFraction * newRangeWidth
-        const newRangeEnd = newRangeStart + newRangeWidth
 
         // Compute new offsetPx from the new range start
         const contentBlocks = (
@@ -806,15 +762,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         const first = contentBlocks?.[0]
         if (first) {
           const blockOffsetPx = first.offsetPx ?? 0
-          // assemblyOrigin is fixed - compute it from current state
           const assemblyOrigin = first.start - blockOffsetPx * view.bpPerPx
           const newOffsetPx = (newRangeStart - assemblyOrigin) / newBpPerPx
-
-          // Render immediately with computed values
-          renderWithDomainRef.current([newRangeStart, newRangeEnd])
-
-          // Update MobX (for gridlines, other components)
-          selfUpdateRef.current = true
           view.setNewView(newBpPerPx, newOffsetPx)
         }
 
@@ -854,41 +803,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     const dx = e.clientX - dragRef.current.lastX
     dragRef.current.lastX = e.clientX
 
-    // Horizontal pan - update view and render immediately
+    // Horizontal pan - update view state, autorun handles rendering
     if (dx !== 0) {
       const newOffsetPx = clampOffsetRef.current(view.offsetPx - dx)
-
-      // Compute new domain for immediate rendering
-      const contentBlocks = (
-        view as unknown as {
-          dynamicBlocks?: {
-            contentBlocks?: {
-              refName: string
-              start: number
-              end: number
-              offsetPx?: number
-            }[]
-          }
-        }
-      ).dynamicBlocks?.contentBlocks as
-        | { refName: string; start: number; end: number; offsetPx?: number }[]
-        | undefined
-      const first = contentBlocks?.[0]
-      if (first) {
-        const blockOffsetPx = first.offsetPx ?? 0
-        const deltaPx = newOffsetPx - blockOffsetPx
-        const deltaBp = deltaPx * view.bpPerPx
-        const rangeStart = first.start + deltaBp
-        const rangeEnd = rangeStart + width * view.bpPerPx
-
-        // Render immediately with computed values
-        renderWithDomainRef.current([rangeStart, rangeEnd])
-
-        // Update MobX (for gridlines, other components)
-        selfUpdateRef.current = true
-        view.setNewView(view.bpPerPx, newOffsetPx)
-      }
-
+      view.setNewView(view.bpPerPx, newOffsetPx)
       checkDataNeedsRef.current()
     }
   }, [])

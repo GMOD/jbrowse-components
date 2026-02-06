@@ -589,6 +589,8 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => {
+      let fetchGeneration = 0
+
       async function fetchFeaturesImpl(region: Region) {
         const session = getSession(self)
         const { rpcManager } = session
@@ -599,6 +601,7 @@ export default function stateModelFactory(
           return
         }
 
+        const thisGeneration = ++fetchGeneration
         self.setLoading(true)
         self.setError(null)
 
@@ -617,6 +620,11 @@ export default function stateModelFactory(
             },
           )) as WebGLPileupDataResult
 
+          // Discard stale responses from older requests
+          if (thisGeneration !== fetchGeneration) {
+            return
+          }
+
           self.setRpcData(result)
           self.setLoadedRegion({
             refName: region.refName,
@@ -626,6 +634,9 @@ export default function stateModelFactory(
           })
           self.setLoading(false)
         } catch (e) {
+          if (thisGeneration !== fetchGeneration) {
+            return
+          }
           self.setError(e instanceof Error ? e : new Error(String(e)))
           self.setLoading(false)
         }
