@@ -34,9 +34,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
     LinearReadVsRefMenuItemF(pluginManager)
-    pluginManager.addRpcMethod(
-      () => new SyntenyGetWebGLGeometry(pluginManager),
-    )
+    pluginManager.addRpcMethod(() => new SyntenyGetWebGLGeometry(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {

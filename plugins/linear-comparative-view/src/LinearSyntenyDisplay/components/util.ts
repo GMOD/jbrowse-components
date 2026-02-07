@@ -1,4 +1,5 @@
 import type React from 'react'
+import type { MutableRefObject } from 'react'
 
 import {
   assembleLocString,
@@ -14,7 +15,6 @@ import { MAX_COLOR_RANGE, getId } from '../drawSynteny.ts'
 
 import type { LinearSyntenyDisplayModel } from '../model.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { MutableRefObject } from 'react'
 
 interface Pos {
   offsetPx: number
@@ -249,7 +249,7 @@ export function getFeatureAtClick(
   const y = event.clientY - rect.top
   const [r, g, b] = ctx.getImageData(x, y, 1, 1).data
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
-  const id = getId(r!, g!, b!, unitMultiplier)
+  const id = getId(r, g, b, unitMultiplier)
   return featPositions[id]
 }
 

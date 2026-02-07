@@ -92,7 +92,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             <Slider
               value={sliderValue}
               onChange={(_, value) => {
-                const v = typeof value === 'number' ? value : value[0]!
+                const v = typeof value === 'number' ? value : value[0]
                 const newAlpha = sliderToAlpha(v)
                 for (const level of levels) {
                   for (const track of level.tracks) {
@@ -118,7 +118,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             <Slider
               value={minLengthValue}
               onChange={(_, val) => {
-                setMinLengthValue(val as number)
+                setMinLengthValue(val)
               }}
               onChangeCommitted={() => {
                 const newMinLength = Math.round(2 ** (minLengthValue / 100))
@@ -135,9 +135,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
               min={0}
               max={Math.log2(1000000) * 100}
               valueLabelDisplay="auto"
-              valueLabelFormat={val =>
-                toLocale(Math.round(2 ** (val / 100)))
-              }
+              valueLabelFormat={val => toLocale(Math.round(2 ** (val / 100)))}
               size="small"
               slots={{ valueLabel: SliderTooltip }}
             />
@@ -156,7 +154,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
               <Slider
                 value={view.maxOffScreenDrawPx}
                 onChange={(_, val) => {
-                  view.setMaxOffScreenDrawPx(val as number)
+                  view.setMaxOffScreenDrawPx(val)
                 }}
                 min={0}
                 max={10000}

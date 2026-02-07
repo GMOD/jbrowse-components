@@ -88,9 +88,7 @@ export function useWheelScroll(
           zoomRafId.current = window.requestAnimationFrame(() => {
             const d = scrollZoomDelta.current
             model.zoomTo(
-              d > 0
-                ? model.bpPerPx * (1 + d)
-                : model.bpPerPx / (1 - d),
+              d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
               lastZoomClientX.current -
                 (curr?.getBoundingClientRect().left || 0),
             )

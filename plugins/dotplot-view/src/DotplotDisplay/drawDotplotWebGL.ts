@@ -156,10 +156,8 @@ function decomposeCigar(
     }
   }
 
-  const pxPerBpH =
-    totalBpH > 0 ? Math.abs(hRange) / totalBpH : 1 / hBpPerPx
-  const pxPerBpV =
-    totalBpV > 0 ? Math.abs(vRange) / totalBpV : 1 / vBpPerPx
+  const pxPerBpH = totalBpH > 0 ? Math.abs(hRange) / totalBpH : 1 / hBpPerPx
+  const pxPerBpV = totalBpV > 0 ? Math.abs(vRange) / totalBpV : 1 / vBpPerPx
   const hDir = hRange >= 0 ? 1 : -1
   const vDir = vRange >= 0 ? 1 : -1
 
@@ -194,12 +192,7 @@ function decomposeCigar(
   }
 }
 
-function ensureMinExtent(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-) {
+function ensureMinExtent(x1: number, y1: number, x2: number, y2: number) {
   const dx = x2 - x1
   const dy = y2 - y1
   const lineLen = Math.sqrt(dx * dx + dy * dy)
@@ -321,7 +314,7 @@ export class DotplotWebGLRenderer {
   }
 
   private createBuffer(gl: WebGL2RenderingContext, data: Float32Array) {
-    const buf = gl.createBuffer()!
+    const buf = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, buf)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     this.allocatedBuffers.push(buf)
@@ -349,13 +342,17 @@ export class DotplotWebGLRenderer {
       colors: [],
     }
 
-    for (let i = 0; i < featPositions.length; i++) {
-      const feat = featPositions[i]!
+    for (const [i, featPosition] of featPositions.entries()) {
+      const feat = featPosition
       const { p11, p12, p21, p22, cigar } = feat
 
       const featureWidth = Math.max(Math.abs(p12 - p11), Math.abs(p22 - p21))
 
-      if (cigar.length >= 2 && drawCigar && featureWidth >= MIN_CIGAR_PX_WIDTH) {
+      if (
+        cigar.length >= 2 &&
+        drawCigar &&
+        featureWidth >= MIN_CIGAR_PX_WIDTH
+      ) {
         decomposeCigar(feat, i, colorFn, hBpPerPx, vBpPerPx, out)
       } else {
         const [cr, cg, cb, ca] = colorFn(feat, i)
@@ -379,7 +376,7 @@ export class DotplotWebGLRenderer {
     const y2Buf = this.createBuffer(gl, new Float32Array(out.y2s))
     const colorBuf = this.createBuffer(gl, new Float32Array(out.colors))
 
-    const vao = gl.createVertexArray()!
+    const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
 
     const program = this.program!

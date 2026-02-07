@@ -7,8 +7,8 @@ import { autorun, reaction } from 'mobx'
 import { createColorFunction } from './drawSyntenyWebGL.ts'
 
 import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyRPC/executeSyntenyWebGLGeometry.ts'
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 type LSV = LinearSyntenyViewModel
@@ -38,7 +38,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        const { alpha, colorBy, featPositions, level, minAlignmentLength } = self
+        const { alpha, colorBy, featPositions, level, minAlignmentLength } =
+          self
         const height = self.height
         const width = view.width
 
@@ -66,9 +67,16 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           lastFeatPositions = featPositions
           const colorFn = createColorFunction(colorBy, alpha)
           self.webglRenderer.buildGeometry(
-            featPositions, level, alpha, colorBy, colorFn,
-            view.drawCurves, view.drawCIGAR, view.drawCIGARMatchesOnly,
-            featPositionsBpPerPxs, view.drawLocationMarkers,
+            featPositions,
+            level,
+            alpha,
+            colorBy,
+            colorFn,
+            view.drawCurves,
+            view.drawCIGAR,
+            view.drawCIGARMatchesOnly,
+            featPositionsBpPerPxs,
+            view.drawLocationMarkers,
           )
         }
 
@@ -81,13 +89,31 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         // Skip edges during scroll for performance, debounce a full
         // re-render with edges once scrolling stops
-        self.webglRenderer.render(o0, o1, height, bpPerPx0, bpPerPx1, true, maxOffScreenPx, minAlignmentLength)
+        self.webglRenderer.render(
+          o0,
+          o1,
+          height,
+          bpPerPx0,
+          bpPerPx1,
+          true,
+          maxOffScreenPx,
+          minAlignmentLength,
+        )
 
         if (edgeTimer) {
           clearTimeout(edgeTimer)
         }
         edgeTimer = setTimeout(() => {
-          self.webglRenderer?.render(o0, o1, height, bpPerPx0, bpPerPx1, false, maxOffScreenPx, minAlignmentLength)
+          self.webglRenderer?.render(
+            o0,
+            o1,
+            height,
+            bpPerPx0,
+            bpPerPx1,
+            false,
+            maxOffScreenPx,
+            minAlignmentLength,
+          )
         }, 150)
       },
       {
@@ -188,10 +214,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             })
             // Pre-parse and cache CIGAR strings on the main thread
             // instead of round-tripping them through RPC
-            cachedCigarsByFeatureId.set(
-              id,
-              MismatchParser.parseCigar(cigarStr),
-            )
+            cachedCigarsByFeatureId.set(id, MismatchParser.parseCigar(cigarStr))
           }
         }
 

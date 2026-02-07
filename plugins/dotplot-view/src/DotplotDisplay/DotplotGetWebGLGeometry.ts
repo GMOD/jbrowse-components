@@ -19,9 +19,8 @@ export class DotplotGetWebGLGeometry extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { executeDotplotWebGLGeometry } = await import(
-      './executeDotplotWebGLGeometry.ts'
-    )
+    const { executeDotplotWebGLGeometry } =
+      await import('./executeDotplotWebGLGeometry.ts')
     return executeDotplotWebGLGeometry(deserializedArgs)
   }
 }

@@ -34,8 +34,8 @@ export function executeSyntenyWebGLGeometry({
   const featureIds: string[] = []
 
   let validCount = 0
-  for (let i = 0; i < features.length; i++) {
-    const f = features[i]!
+  for (const feature of features) {
+    const f = feature
     let f1s = f.start
     let f1e = f.end
     const f2s = f.mateStart

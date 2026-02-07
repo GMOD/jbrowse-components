@@ -29,9 +29,8 @@ export class SyntenyGetWebGLGeometry extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { executeSyntenyWebGLGeometry } = await import(
-      './executeSyntenyWebGLGeometry.ts'
-    )
+    const { executeSyntenyWebGLGeometry } =
+      await import('./executeSyntenyWebGLGeometry.ts')
     return executeSyntenyWebGLGeometry(deserializedArgs)
   }
 }

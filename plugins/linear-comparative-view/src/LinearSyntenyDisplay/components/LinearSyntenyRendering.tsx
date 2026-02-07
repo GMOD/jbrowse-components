@@ -79,8 +79,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       event.preventDefault()
       const doZoom =
         event.ctrlKey ||
-        (view.scrollZoom &&
-          Math.abs(event.deltaY) > Math.abs(event.deltaX))
+        (view.scrollZoom && Math.abs(event.deltaY) > Math.abs(event.deltaX))
       if (doZoom) {
         zoomDelta.current += event.deltaY / 500
         lastZoomClientX.current = event.clientX
@@ -91,9 +90,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
             transaction(() => {
               for (const v of view.views) {
                 v.zoomTo(
-                  d > 0
-                    ? v.bpPerPx * (1 + d)
-                    : v.bpPerPx / (1 - d),
+                  d > 0 ? v.bpPerPx * (1 + d) : v.bpPerPx / (1 - d),
                   lastZoomClientX.current -
                     (canvasRectRef.current?.left ??
                       webglCanvasRef.current?.getBoundingClientRect().left ??
@@ -146,7 +143,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       }
     }
     return undefined
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, width, height])
 
   const handleWebGLPick = useCallback(
@@ -245,16 +241,12 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
               const containingView = getContainingView(model)
               const track = getContainingTrack(model)
               session.showWidget(
-                session.addWidget(
-                  'SyntenyFeatureWidget',
-                  'syntenyFeature',
-                  {
-                    view: containingView,
-                    track,
-                    featureData: f.toJSON(),
-                    level: model.level,
-                  },
-                ),
+                session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
+                  view: containingView,
+                  track,
+                  featureData: f.toJSON(),
+                  level: model.level,
+                }),
               )
             }
           }

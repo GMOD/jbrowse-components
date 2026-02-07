@@ -12,7 +12,7 @@ import { autorun, reaction } from 'mobx'
 import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
 
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
-import type { DotplotFeatureData, DotplotFeatPos } from './types.ts'
+import type { DotplotFeatPos, DotplotFeatureData } from './types.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -64,15 +64,11 @@ export function doAfterAttach(self: DotplotDisplayModel) {
       }
       const { rpcManager } = getSession(self)
       const { adapterConfig, regions, sessionId } = args
-      const rawFeatures = (await rpcManager.call(
+      const rawFeatures = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+        regions,
         sessionId,
-        'CoreGetFeatures',
-        {
-          regions,
-          sessionId,
-          adapterConfig,
-        },
-      )) as Feature[]
+        adapterConfig,
+      })) as Feature[]
       return { features: dedupe(rawFeatures, f => f.id()) }
     },
     {

@@ -13,10 +13,10 @@ const SEGMENTS = 32
 // precision on the GPU. hi = Math.fround(value), lo = value - hi.
 function splitHiLo(values: number[]) {
   const result = new Float32Array(values.length * 2)
-  for (let i = 0; i < values.length; i++) {
-    const hi = Math.fround(values[i]!)
+  for (const [i, value] of values.entries()) {
+    const hi = Math.fround(value)
     result[i * 2] = hi
-    result[i * 2 + 1] = values[i]! - hi
+    result[i * 2 + 1] = value - hi
   }
   return result
 }
@@ -267,7 +267,6 @@ void main() {
 }
 `
 
-
 function createShader(
   gl: WebGL2RenderingContext,
   type: number,
@@ -363,7 +362,10 @@ export class SyntenyWebGLRenderer {
   private geometryBpPerPx1 = 1
 
   // Cached uniform locations per program
-  private uniformCache = new Map<WebGLProgram, Record<string, WebGLUniformLocation | null>>()
+  private uniformCache = new Map<
+    WebGLProgram,
+    Record<string, WebGLUniformLocation | null>
+  >()
 
   // All allocated buffers for cleanup
   private allocatedBuffers: WebGLBuffer[] = []
@@ -387,14 +389,44 @@ export class SyntenyWebGLRenderer {
     this.width = canvas.clientWidth || canvas.width
     this.height = canvas.clientHeight || canvas.height
     try {
-      this.fillProgram = createProgram(gl, FILL_VERTEX_SHADER, FILL_FRAGMENT_SHADER)
-      this.fillPickingProgram = createProgram(gl, FILL_VERTEX_SHADER, PICKING_FRAGMENT_SHADER)
-      this.edgeProgram = createProgram(gl, EDGE_VERTEX_SHADER, EDGE_FRAGMENT_SHADER)
-      this.edgePickingProgram = createProgram(gl, EDGE_VERTEX_SHADER, PICKING_FRAGMENT_SHADER)
+      this.fillProgram = createProgram(
+        gl,
+        FILL_VERTEX_SHADER,
+        FILL_FRAGMENT_SHADER,
+      )
+      this.fillPickingProgram = createProgram(
+        gl,
+        FILL_VERTEX_SHADER,
+        PICKING_FRAGMENT_SHADER,
+      )
+      this.edgeProgram = createProgram(
+        gl,
+        EDGE_VERTEX_SHADER,
+        EDGE_FRAGMENT_SHADER,
+      )
+      this.edgePickingProgram = createProgram(
+        gl,
+        EDGE_VERTEX_SHADER,
+        PICKING_FRAGMENT_SHADER,
+      )
 
       // Cache uniform locations for all programs
-      const uniformNames = ['u_resolution', 'u_height', 'u_adjOff0', 'u_adjOff1', 'u_scale0', 'u_scale1', 'u_maxOffScreenPx', 'u_minAlignmentLength']
-      for (const program of [this.fillProgram, this.fillPickingProgram, this.edgeProgram, this.edgePickingProgram]) {
+      const uniformNames = [
+        'u_resolution',
+        'u_height',
+        'u_adjOff0',
+        'u_adjOff1',
+        'u_scale0',
+        'u_scale1',
+        'u_maxOffScreenPx',
+        'u_minAlignmentLength',
+      ]
+      for (const program of [
+        this.fillProgram,
+        this.fillPickingProgram,
+        this.edgeProgram,
+        this.edgePickingProgram,
+      ]) {
         const locs: Record<string, WebGLUniformLocation | null> = {}
         for (const name of uniformNames) {
           locs[name] = gl.getUniformLocation(program, name)
@@ -409,13 +441,19 @@ export class SyntenyWebGLRenderer {
         const t1 = (s + 1) / SEGMENTS
         const base = s * 12
         // Triangle 1: left@t0, right@t0, left@t1
-        fillTemplateData[base + 0] = t0; fillTemplateData[base + 1] = 0
-        fillTemplateData[base + 2] = t0; fillTemplateData[base + 3] = 1
-        fillTemplateData[base + 4] = t1; fillTemplateData[base + 5] = 0
+        fillTemplateData[base + 0] = t0
+        fillTemplateData[base + 1] = 0
+        fillTemplateData[base + 2] = t0
+        fillTemplateData[base + 3] = 1
+        fillTemplateData[base + 4] = t1
+        fillTemplateData[base + 5] = 0
         // Triangle 2: left@t1, right@t0, right@t1
-        fillTemplateData[base + 6] = t1; fillTemplateData[base + 7] = 0
-        fillTemplateData[base + 8] = t0; fillTemplateData[base + 9] = 1
-        fillTemplateData[base + 10] = t1; fillTemplateData[base + 11] = 1
+        fillTemplateData[base + 6] = t1
+        fillTemplateData[base + 7] = 0
+        fillTemplateData[base + 8] = t0
+        fillTemplateData[base + 9] = 1
+        fillTemplateData[base + 10] = t1
+        fillTemplateData[base + 11] = 1
       }
       this.fillTemplateBuffer = gl.createBuffer()!
       gl.bindBuffer(gl.ARRAY_BUFFER, this.fillTemplateBuffer)
@@ -525,7 +563,7 @@ export class SyntenyWebGLRenderer {
   }
 
   private createBuffer(gl: WebGL2RenderingContext, data: Float32Array) {
-    const buf = gl.createBuffer()!
+    const buf = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, buf)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     this.allocatedBuffers.push(buf)
@@ -545,7 +583,7 @@ export class SyntenyWebGLRenderer {
     isCurveBuf: WebGLBuffer,
     queryTotalLengthBuf: WebGLBuffer,
   ) {
-    const vao = gl.createVertexArray()!
+    const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
 
     // Per-vertex template (t and side)
@@ -665,8 +703,8 @@ export class SyntenyWebGLRenderer {
 
     // Pass 1: non-CIGAR features + CIGAR features too thin to decompose
     // (these get edge rendering which keeps thin features visible)
-    for (let i = 0; i < featPositions.length; i++) {
-      const feat = featPositions[i]!
+    for (const [i, featPosition] of featPositions.entries()) {
+      const feat = featPosition
       const { p11, p12, p21, p22, f, cigar } = feat
       if (cigar.length > 0 && drawCIGAR) {
         const featureWidth = Math.max(
@@ -697,9 +735,21 @@ export class SyntenyWebGLRenderer {
 
       if (drawLocationMarkers) {
         addLocationMarkerInstances(
-          x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
+          x1s,
+          x2s,
+          x3s,
+          x4s,
+          colors,
+          featureIds,
+          isCurves,
           queryTotalLengthArr,
-          x11, x12, x22, x21, featureId, isCurve, qtl,
+          x11,
+          x12,
+          x22,
+          x21,
+          featureId,
+          isCurve,
+          qtl,
         )
       }
     }
@@ -709,8 +759,8 @@ export class SyntenyWebGLRenderer {
 
     // Pass 2: CIGAR features wide enough to decompose (no edge rendering to
     // avoid boundary artifacts). Thin features were already drawn in Pass 1.
-    for (let i = 0; i < featPositions.length; i++) {
-      const feat = featPositions[i]!
+    for (const [i, featPosition] of featPositions.entries()) {
+      const feat = featPosition
       const { p11, p12, p21, p22, f, cigar } = feat
       if (!(cigar.length > 0 && drawCIGAR)) {
         continue
@@ -753,12 +803,14 @@ export class SyntenyWebGLRenderer {
           totalBpView1 += len
         }
       }
-      const pxPerBp0 = totalBpView0 > 0
-        ? Math.abs(k2 - k1) / totalBpView0
-        : fallbackBpPerPxInv0
-      const pxPerBp1 = totalBpView1 > 0
-        ? Math.abs(x22 - x21) / totalBpView1
-        : fallbackBpPerPxInv1
+      const pxPerBp0 =
+        totalBpView0 > 0
+          ? Math.abs(k2 - k1) / totalBpView0
+          : fallbackBpPerPxInv0
+      const pxPerBp1 =
+        totalBpView1 > 0
+          ? Math.abs(x22 - x21) / totalBpView1
+          : fallbackBpPerPxInv1
 
       let cx1 = k1
       let cx2 = s1 === -1 ? x22 : x21
@@ -798,11 +850,7 @@ export class SyntenyWebGLRenderer {
         }
 
         const isNotLast = j < cigar.length - 2
-        if (
-          Math.abs(cx1 - px1) <= 1 &&
-          Math.abs(cx2 - px2) <= 1 &&
-          isNotLast
-        ) {
+        if (Math.abs(cx1 - px1) <= 1 && Math.abs(cx2 - px2) <= 1 && isNotLast) {
           continuingFlag = true
         } else {
           const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
@@ -812,7 +860,14 @@ export class SyntenyWebGLRenderer {
             continue
           }
 
-          const [cr, cg, cb, ca] = getCigarColor(letter, colorBy, colorFn, feat, i, alpha)
+          const [cr, cg, cb, ca] = getCigarColor(
+            letter,
+            colorBy,
+            colorFn,
+            feat,
+            i,
+            alpha,
+          )
           x1s.push(px1)
           x2s.push(cx1)
           x3s.push(cx2)
@@ -824,9 +879,21 @@ export class SyntenyWebGLRenderer {
 
           if (drawLocationMarkers) {
             addLocationMarkerInstances(
-              x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
+              x1s,
+              x2s,
+              x3s,
+              x4s,
+              colors,
+              featureIds,
+              isCurves,
               queryTotalLengthArr,
-              px1, cx1, cx2, px2, featureId, isCurve, qtl,
+              px1,
+              cx1,
+              cx2,
+              px2,
+              featureId,
+              isCurve,
+              qtl,
             )
           }
         }
@@ -843,28 +910,76 @@ export class SyntenyWebGLRenderer {
       const colorBuf = this.createBuffer(gl, new Float32Array(colors))
       const featureIdBuf = this.createBuffer(gl, new Float32Array(featureIds))
       const isCurveBuf = this.createBuffer(gl, new Float32Array(isCurves))
-      const queryTotalLengthBuf = this.createBuffer(gl, new Float32Array(queryTotalLengthArr))
+      const queryTotalLengthBuf = this.createBuffer(
+        gl,
+        new Float32Array(queryTotalLengthArr),
+      )
 
       this.fillVao = this.setupInstancedVao(
-        gl, this.fillProgram!, this.fillTemplateBuffer!,
-        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf, queryTotalLengthBuf,
+        gl,
+        this.fillProgram!,
+        this.fillTemplateBuffer!,
+        x1Buf,
+        x2Buf,
+        x3Buf,
+        x4Buf,
+        colorBuf,
+        featureIdBuf,
+        isCurveBuf,
+        queryTotalLengthBuf,
       )
       this.fillPickingVao = this.setupInstancedVao(
-        gl, this.fillPickingProgram!, this.fillTemplateBuffer!,
-        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf, queryTotalLengthBuf,
+        gl,
+        this.fillPickingProgram!,
+        this.fillTemplateBuffer!,
+        x1Buf,
+        x2Buf,
+        x3Buf,
+        x4Buf,
+        colorBuf,
+        featureIdBuf,
+        isCurveBuf,
+        queryTotalLengthBuf,
       )
       this.edgeVao = this.setupInstancedVao(
-        gl, this.edgeProgram!, this.edgeTemplateBuffer!,
-        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf, queryTotalLengthBuf,
+        gl,
+        this.edgeProgram!,
+        this.edgeTemplateBuffer!,
+        x1Buf,
+        x2Buf,
+        x3Buf,
+        x4Buf,
+        colorBuf,
+        featureIdBuf,
+        isCurveBuf,
+        queryTotalLengthBuf,
       )
       this.edgePickingVao = this.setupInstancedVao(
-        gl, this.edgePickingProgram!, this.edgeTemplateBuffer!,
-        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf, queryTotalLengthBuf,
+        gl,
+        this.edgePickingProgram!,
+        this.edgeTemplateBuffer!,
+        x1Buf,
+        x2Buf,
+        x3Buf,
+        x4Buf,
+        colorBuf,
+        featureIdBuf,
+        isCurveBuf,
+        queryTotalLengthBuf,
       )
     }
   }
 
-  render(offset0: number, offset1: number, height: number, curBpPerPx0: number, curBpPerPx1: number, skipEdges = false, maxOffScreenPx = 300, minAlignmentLength = 0) {
+  render(
+    offset0: number,
+    offset1: number,
+    height: number,
+    curBpPerPx0: number,
+    curBpPerPx1: number,
+    skipEdges = false,
+    maxOffScreenPx = 300,
+    minAlignmentLength = 0,
+  ) {
     if (!this.gl || !this.canvas) {
       return
     }
@@ -887,8 +1002,25 @@ export class SyntenyWebGLRenderer {
     if (this.fillVao && this.instanceCount > 0) {
       gl.useProgram(this.fillProgram)
       gl.bindVertexArray(this.fillVao)
-      this.setUniforms(gl, this.fillProgram!, height, adjOff0Hi, adjOff0Lo, adjOff1Hi, adjOff1Lo, scale0, scale1, maxOffScreenPx, minAlignmentLength)
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTICES_PER_INSTANCE, this.instanceCount)
+      this.setUniforms(
+        gl,
+        this.fillProgram!,
+        height,
+        adjOff0Hi,
+        adjOff0Lo,
+        adjOff1Hi,
+        adjOff1Lo,
+        scale0,
+        scale1,
+        maxOffScreenPx,
+        minAlignmentLength,
+      )
+      gl.drawArraysInstanced(
+        gl.TRIANGLES,
+        0,
+        FILL_VERTICES_PER_INSTANCE,
+        this.instanceCount,
+      )
     }
 
     // Draw AA edges on top (skipped during scroll for performance)
@@ -896,7 +1028,19 @@ export class SyntenyWebGLRenderer {
     if (!skipEdges && this.edgeVao && this.nonCigarInstanceCount > 0) {
       gl.useProgram(this.edgeProgram)
       gl.bindVertexArray(this.edgeVao)
-      this.setUniforms(gl, this.edgeProgram!, height, adjOff0Hi, adjOff0Lo, adjOff1Hi, adjOff1Lo, scale0, scale1, maxOffScreenPx, minAlignmentLength)
+      this.setUniforms(
+        gl,
+        this.edgeProgram!,
+        height,
+        adjOff0Hi,
+        adjOff0Lo,
+        adjOff1Hi,
+        adjOff1Lo,
+        scale0,
+        scale1,
+        maxOffScreenPx,
+        minAlignmentLength,
+      )
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
@@ -919,7 +1063,17 @@ export class SyntenyWebGLRenderer {
     this.pickingDirty = true
   }
 
-  renderPicking(height: number, adjOff0Hi: number, adjOff0Lo: number, adjOff1Hi: number, adjOff1Lo: number, scale0: number, scale1: number, maxOffScreenPx: number, minAlignmentLength: number) {
+  renderPicking(
+    height: number,
+    adjOff0Hi: number,
+    adjOff0Lo: number,
+    adjOff1Hi: number,
+    adjOff1Lo: number,
+    scale0: number,
+    scale1: number,
+    maxOffScreenPx: number,
+    minAlignmentLength: number,
+  ) {
     if (!this.gl || !this.canvas) {
       return
     }
@@ -937,15 +1091,44 @@ export class SyntenyWebGLRenderer {
     if (this.fillPickingVao && this.instanceCount > 0) {
       gl.useProgram(this.fillPickingProgram)
       gl.bindVertexArray(this.fillPickingVao)
-      this.setUniforms(gl, this.fillPickingProgram!, height, adjOff0Hi, adjOff0Lo, adjOff1Hi, adjOff1Lo, scale0, scale1, maxOffScreenPx, minAlignmentLength)
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTICES_PER_INSTANCE, this.instanceCount)
+      this.setUniforms(
+        gl,
+        this.fillPickingProgram!,
+        height,
+        adjOff0Hi,
+        adjOff0Lo,
+        adjOff1Hi,
+        adjOff1Lo,
+        scale0,
+        scale1,
+        maxOffScreenPx,
+        minAlignmentLength,
+      )
+      gl.drawArraysInstanced(
+        gl.TRIANGLES,
+        0,
+        FILL_VERTICES_PER_INSTANCE,
+        this.instanceCount,
+      )
     }
 
     // Draw edges for picking (instanced) - only non-CIGAR instances
     if (this.edgePickingVao && this.nonCigarInstanceCount > 0) {
       gl.useProgram(this.edgePickingProgram)
       gl.bindVertexArray(this.edgePickingVao)
-      this.setUniforms(gl, this.edgePickingProgram!, height, adjOff0Hi, adjOff0Lo, adjOff1Hi, adjOff1Lo, scale0, scale1, maxOffScreenPx, minAlignmentLength)
+      this.setUniforms(
+        gl,
+        this.edgePickingProgram!,
+        height,
+        adjOff0Hi,
+        adjOff0Lo,
+        adjOff1Hi,
+        adjOff1Lo,
+        scale0,
+        scale1,
+        maxOffScreenPx,
+        minAlignmentLength,
+      )
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
@@ -998,7 +1181,17 @@ export class SyntenyWebGLRenderer {
     }
 
     if (this.pickingDirty) {
-      this.renderPicking(this.lastHeight, this.lastAdjOff0Hi, this.lastAdjOff0Lo, this.lastAdjOff1Hi, this.lastAdjOff1Lo, this.lastScale0, this.lastScale1, this.lastMaxOffScreenPx, this.lastMinAlignmentLength)
+      this.renderPicking(
+        this.lastHeight,
+        this.lastAdjOff0Hi,
+        this.lastAdjOff0Lo,
+        this.lastAdjOff1Hi,
+        this.lastAdjOff1Lo,
+        this.lastScale0,
+        this.lastScale1,
+        this.lastMaxOffScreenPx,
+        this.lastMinAlignmentLength,
+      )
       this.pickingDirty = false
     }
 
@@ -1009,7 +1202,15 @@ export class SyntenyWebGLRenderer {
     const canvasHeight = this.canvas.height
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFramebuffer)
-    gl.readPixels(canvasX, canvasHeight - canvasY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.pickingPixel)
+    gl.readPixels(
+      canvasX,
+      canvasHeight - canvasY,
+      1,
+      1,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      this.pickingPixel,
+    )
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
     const [r, g, b] = this.pickingPixel
@@ -1067,15 +1268,15 @@ function getCigarColor(
   index: number,
   alpha: number,
 ): [number, number, number, number] {
-  const isInsertionOrDeletion = letter === 'I' || letter === 'D' || letter === 'N'
+  const isInsertionOrDeletion =
+    letter === 'I' || letter === 'D' || letter === 'N'
 
   if (!isInsertionOrDeletion) {
     return colorFn(feat, index)
   }
 
-  const scheme = colorBy === 'strand'
-    ? colorSchemes.strand
-    : colorSchemes.default
+  const scheme =
+    colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
   const cigarColors = scheme.cigarColors
   const color = cigarColors[letter as keyof typeof cigarColors]
   if (color) {
@@ -1159,19 +1360,18 @@ export function createColorFunction(
   if (colorBy === 'strand') {
     return (f: FeatPos) => {
       const strand = f.f.get('strand')
-      return strand === -1
-        ? [0, 0, 1, alpha]
-        : [1, 0, 0, alpha]
+      return strand === -1 ? [0, 0, 1, alpha] : [1, 0, 0, alpha]
     }
   }
 
   if (colorBy === 'query') {
     const colorCache = new Map<string, [number, number, number, number]>()
     return (f: FeatPos) => {
-      const name = (f.f.get('refName') as string) || ''
+      const name = f.f.get('refName') || ''
       if (!colorCache.has(name)) {
         const hash = hashString(name)
-        const [r, g, b] = category10Normalized[hash % category10Normalized.length]!
+        const [r, g, b] =
+          category10Normalized[hash % category10Normalized.length]!
         colorCache.set(name, [r, g, b, alpha])
       }
       return colorCache.get(name)!

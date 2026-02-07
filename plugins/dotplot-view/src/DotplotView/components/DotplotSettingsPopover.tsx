@@ -86,7 +86,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
             <Slider
               value={sliderValue}
               onChange={(_, value) => {
-                const v = typeof value === 'number' ? value : value[0]!
+                const v = typeof value === 'number' ? value : value[0]
                 const newAlpha = sliderToAlpha(v)
                 for (const track of model.tracks) {
                   for (const display of track.displays) {
@@ -110,7 +110,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
             <Slider
               value={minLengthValue}
               onChange={(_, val) => {
-                setMinLengthValue(val as number)
+                setMinLengthValue(val)
               }}
               onChangeCommitted={() => {
                 const newMinLength = Math.round(2 ** (minLengthValue / 100))
@@ -125,9 +125,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
               min={0}
               max={Math.log2(1000000) * 100}
               valueLabelDisplay="auto"
-              valueLabelFormat={val =>
-                toLocale(Math.round(2 ** (val / 100)))
-              }
+              valueLabelFormat={val => toLocale(Math.round(2 ** (val / 100)))}
               size="small"
               slots={{ valueLabel: SliderTooltip }}
             />

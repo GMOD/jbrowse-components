@@ -33,7 +33,6 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
       }
     }
     return undefined
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model])
 
   const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1

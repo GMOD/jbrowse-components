@@ -53,7 +53,7 @@ export function createDotplotColorFunction(
   if (colorBy === 'query') {
     const colorCache = new Map<string, RGBA>()
     return (f: DotplotFeatPos) => {
-      const name = (f.f.get('refName') as string) || ''
+      const name = f.f.get('refName') || ''
       let color = colorCache.get(name)
       if (!color) {
         const hash = hashString(name)

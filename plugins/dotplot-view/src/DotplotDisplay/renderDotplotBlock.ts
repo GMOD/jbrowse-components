@@ -51,4 +51,3 @@ export function renderBlockData(self: IAnyStateTreeNode) {
   }
   return undefined
 }
-
