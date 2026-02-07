@@ -113,9 +113,7 @@ const Gridlines = observer(function Gridlines({
   const { staticBlocks, offsetPx } = model
   const offsetLeft = staticBlocks.offsetPx - offsetPx
   return (
-    <div
-      className={classes.verticalGuidesZoomContainer}
-    >
+    <div className={classes.verticalGuidesZoomContainer}>
       <div
         className={classes.verticalGuidesContainer}
         style={{

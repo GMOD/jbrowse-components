@@ -160,10 +160,7 @@ function stateModelFactory(pluginManager: PluginManager) {
             if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
               // doesn't link showTrack/hideTrack, doesn't make sense in
               // synteny views most time
-              const syncActions = [
-                'horizontalScroll',
-                'zoomTo',
-              ]
+              const syncActions = ['horizontalScroll', 'zoomTo']
 
               if (self.linkViews && syncActions.includes(rawCall.name)) {
                 const sourcePath = getPath(rawCall.context)

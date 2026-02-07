@@ -1,101 +1,11 @@
-import type React from 'react'
-import type { RefObject } from 'react'
+import { assembleLocString, toLocale } from '@jbrowse/core/util'
 
-import {
-  assembleLocString,
-  doesIntersect2,
-  getContainingTrack,
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-  toLocale,
-} from '@jbrowse/core/util'
-
-import { MAX_COLOR_RANGE, getId } from '../drawSynteny.ts'
-
-import type { LinearSyntenyDisplayModel } from '../model.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-interface Pos {
-  offsetPx: number
-}
 
 export interface ClickCoord {
   clientX: number
   clientY: number
   feature: { f: Feature }
-}
-
-interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
-  f: Feature
-  cigar: string[]
-}
-
-export function drawMatchSimple({
-  feature,
-  ctx,
-  offsets,
-  level,
-  cb,
-  height,
-  drawCurves,
-  oobLimit,
-  viewWidth,
-  hideTiny,
-}: {
-  feature: FeatPos
-  ctx: CanvasRenderingContext2D
-  offsets: number[]
-  level: number
-  oobLimit: number
-  viewWidth: number
-  cb: (ctx: CanvasRenderingContext2D) => void
-  height: number
-  drawCurves?: boolean
-  hideTiny?: boolean
-}) {
-  const { p11, p12, p21, p22 } = feature
-
-  const x11 = p11.offsetPx - offsets[level]!
-  const x12 = p12.offsetPx - offsets[level]!
-  const x21 = p21.offsetPx - offsets[level + 1]!
-  const x22 = p22.offsetPx - offsets[level + 1]!
-
-  const l1 = Math.abs(x12 - x11)
-  const l2 = Math.abs(x22 - x21)
-  const y1 = 0
-  const y2 = height
-  const mid = (y2 - y1) / 2
-  const minX = Math.min(x21, x22)
-  const maxX = Math.max(x21, x22)
-
-  if (!doesIntersect2(minX, maxX, -oobLimit, viewWidth + oobLimit)) {
-    return
-  }
-
-  // drawing a line if the results are thin: drawing a line results in much
-  // less pixellation than filling in a thin polygon
-  if (l1 <= 1 && l2 <= 1) {
-    // hideTiny can be used to avoid drawing mouseover for thin lines in this
-    // case
-    if (!hideTiny) {
-      ctx.beginPath()
-      ctx.moveTo(x11, y1)
-      if (drawCurves) {
-        ctx.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-      } else {
-        ctx.lineTo(x21, y2)
-      }
-      ctx.stroke()
-    }
-  } else {
-    draw(ctx, x11, x12, y1, x22, x21, y2, mid, drawCurves)
-    cb(ctx)
-  }
 }
 
 export function draw(
@@ -222,80 +132,6 @@ export function drawBezierBox(
   ctx.lineTo(x4, y2)
   ctx.bezierCurveTo(x4, mid, x1, mid, x1, y1)
   ctx.closePath()
-}
-
-export function getFeatureAtClick(
-  event: React.MouseEvent,
-  model: LinearSyntenyDisplayModel,
-  canvasRectRef?: RefObject<DOMRect | null>,
-) {
-  const { numFeats, featPositions } = model
-  const clickMapCanvas = (model as any).clickMapCanvas as HTMLCanvasElement | undefined
-  if (!clickMapCanvas) {
-    return undefined
-  }
-  const ctx = clickMapCanvas.getContext('2d')
-  if (!ctx) {
-    return undefined
-  }
-  let rect = canvasRectRef?.current ?? null
-  if (!rect) {
-    console.warn('[SyntenyUtil] canvasRectRef cache miss (getFeatureAtClick)')
-    rect = clickMapCanvas.getBoundingClientRect()
-    if (canvasRectRef) {
-      canvasRectRef.current = rect
-    }
-  }
-  const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-  const data = ctx.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
-  const id = getId(data[0]!, data[1]!, data[2]!, unitMultiplier)
-  return featPositions[id]
-}
-
-export function onSynClick(
-  event: React.MouseEvent,
-  model: LinearSyntenyDisplayModel,
-  canvasRectRef?: RefObject<DOMRect | null>,
-) {
-  const feat = getFeatureAtClick(event, model, canvasRectRef)
-  if (feat) {
-    const { f } = feat
-    model.setClickId(f.id())
-    const session = getSession(model)
-    if (isSessionModelWithWidgets(session)) {
-      const view = getContainingView(model)
-      const track = getContainingTrack(model)
-      session.showWidget(
-        session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-          view,
-          track,
-          featureData: f.toJSON(),
-          level: model.level,
-        }),
-      )
-    }
-  }
-  return feat
-}
-
-export function onSynContextClick(
-  event: React.MouseEvent,
-  model: LinearSyntenyDisplayModel,
-  setAnchorEl: (arg: ClickCoord) => void,
-  canvasRectRef?: RefObject<DOMRect | null>,
-) {
-  event.preventDefault()
-  const feat = getFeatureAtClick(event, model, canvasRectRef)
-  if (feat) {
-    model.setClickId(feat.f.id())
-    setAnchorEl({
-      clientX: event.clientX,
-      clientY: event.clientY,
-      feature: feat,
-    })
-  }
 }
 
 export function getTooltip({

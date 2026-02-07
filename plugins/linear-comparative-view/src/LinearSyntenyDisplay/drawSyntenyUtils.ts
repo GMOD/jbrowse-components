@@ -1,22 +1,9 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
-export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
-
 export const lineLimit = 3
 
 export const oobLimit = 1600
-
-export function makeColor(idx: number) {
-  const r = Math.floor(idx / (255 * 255)) % 255
-  const g = Math.floor(idx / 255) % 255
-  const b = idx % 255
-  return `rgb(${r},${g},${b})`
-}
-
-export function getId(r: number, g: number, b: number, unitMultiplier: number) {
-  return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
-}
 
 // Simple hash function to generate consistent colors for query names
 function hashString(str: string) {

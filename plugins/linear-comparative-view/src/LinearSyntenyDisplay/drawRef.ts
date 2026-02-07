@@ -1,25 +1,11 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 
-import {
-  draw,
-  drawLocationMarkers,
-  drawMatchSimple,
-} from './components/util.ts'
-import {
-  MAX_COLOR_RANGE,
-  lineLimit,
-  makeColor,
-  oobLimit,
-} from './drawSyntenyUtils.ts'
+import { draw, drawLocationMarkers } from './components/util.ts'
+import { lineLimit, oobLimit } from './drawSyntenyUtils.ts'
 
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
-
-// Constant callback for click map fill - avoids creating new function each iteration
-const fillCb = (ctx: CanvasRenderingContext2D) => {
-  ctx.fill()
-}
 
 export function drawRef(
   model: LinearSyntenyDisplayModel,
@@ -45,7 +31,6 @@ export function drawRef(
   const offsetsL0 = offsets[level]!
   const offsetsL1 = offsets[level + 1]!
 
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
   const y1 = 0
   const y2 = height
   const mid = (y2 - y1) / 2
@@ -60,18 +45,10 @@ export function drawRef(
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
 
-  // Get click map context once
-  const clickMapCtx = (model as any).clickMapCanvas?.getContext('2d') as CanvasRenderingContext2D | undefined
-  if (clickMapCtx) {
-    clickMapCtx.imageSmoothingEnabled = false
-    clickMapCtx.clearRect(0, 0, width, height)
-  }
-
   mainCanvas.fillStyle = colorMapWithAlpha.M
   mainCanvas.strokeStyle = colorMapWithAlpha.M
 
-  // Single loop over features - draw main canvas and click map together
-  for (const [i, featPosition] of featPositions.entries()) {
+  for (const featPosition of featPositions) {
     const feature = featPosition
     const { p11, p12, p21, p22, f, cigar } = feature
 
@@ -276,25 +253,6 @@ export function drawRef(
           mainCanvas.fillStyle = colorMapWithAlpha.M
         }
       }
-    }
-
-    // Draw to click map (for all visible features, not just thick ones)
-    if (clickMapCtx) {
-      const idx = i * unitMultiplier + 1
-      clickMapCtx.fillStyle = makeColor(idx)
-
-      drawMatchSimple({
-        cb: fillCb,
-        feature,
-        ctx: clickMapCtx,
-        drawCurves,
-        level,
-        offsets,
-        oobLimit,
-        viewWidth: view.width,
-        hideTiny: true,
-        height,
-      })
     }
   }
 }
