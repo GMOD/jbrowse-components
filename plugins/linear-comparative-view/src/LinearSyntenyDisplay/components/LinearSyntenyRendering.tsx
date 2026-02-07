@@ -60,7 +60,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const webglCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    console.log('[SyntenyRendering] Invalidating canvasRectRef cache (height/width changed)', { height, width })
     canvasRectRef.current = null
   }, [height, width])
 
@@ -127,23 +126,12 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   // Initialize/dispose WebGL renderer
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
-    console.log('[SyntenyWebGL] useEffect: init check', {
-      hasCanvas: !!webglCanvasRef.current,
-      width,
-      height,
-    })
     if (webglCanvasRef.current) {
-      console.log('[SyntenyWebGL] useEffect: creating SyntenyWebGLRenderer')
       const renderer = new SyntenyWebGLRenderer()
       const success = renderer.init(webglCanvasRef.current)
-      console.log('[SyntenyWebGL] useEffect: renderer.init result =', success)
       model.setWebGLRenderer(renderer)
       model.setWebGLInitialized(success)
-      if (!success) {
-        console.warn('[Synteny] WebGL initialization failed')
-      }
       return () => {
-        console.log('[SyntenyWebGL] useEffect: disposing renderer')
         renderer.dispose()
         model.setWebGLRenderer(null)
         model.setWebGLInitialized(false)

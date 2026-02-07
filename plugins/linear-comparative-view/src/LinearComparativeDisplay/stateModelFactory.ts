@@ -73,6 +73,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return getParent<{ height: number; level: number }>(self, 4).height
         },
         /**
+         * #getter
+         * comparative displays don't have a track minimize UI so this is
+         * always false
+         */
+        get isMinimized() {
+          return false
+        },
+        /**
          * #method
          */
         renderProps() {

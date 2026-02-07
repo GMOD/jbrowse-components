@@ -6,36 +6,30 @@ import { colorSchemes } from './drawSyntenyUtils.ts'
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { FeatPos } from './model.ts'
 
-// Number of segments for bezier ribbon tessellation
-const CURVE_SEGMENTS = 32
-const EDGE_CURVE_SEGMENTS = 8
+// Number of segments for bezier tessellation (fill and edge passes)
+const SEGMENTS = 32
 
 function cssColorToNormalized(color: string): [number, number, number, number] {
   const { r, g, b, a } = colord(color).toRgb()
   return [r / 255, g / 255, b / 255, a]
 }
 
-// Vertex shader for synteny ribbons using ribbon extrusion approach
-// Geometry is stored in "offset pixels" (pre-computed from bp coordinates)
-// Transforms (scroll offsets) are applied via uniforms on the GPU
-// Each synteny feature is drawn as a ribbon along its left and right edges
-const VERTEX_SHADER = `#version 300 es
+// Instanced fill vertex shader - evaluates bezier on GPU
+// a_side = 0.0 (left edge) or 1.0 (right edge) from fill template
+const FILL_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-// Per-vertex (from template buffer, shared across all instances)
-in float a_t;     // 0.0 to 1.0 parameter along the curve
-in float a_side;  // -1.0 (left edge) or +1.0 (right edge)
+in float a_t;
+in float a_side;
 
-// Per-instance attributes
-in float a_x1;        // Left edge top X in offsetPx
-in float a_x2;        // Right edge top X in offsetPx
-in float a_x3;        // Right edge bottom X in offsetPx
-in float a_x4;        // Left edge bottom X in offsetPx
-in vec4 a_color;      // RGBA color (normalized 0-1)
-in float a_featureId; // Feature ID for picking
-in float a_isCurve;   // 0 = straight, 1 = bezier curve
+in float a_x1;
+in float a_x2;
+in float a_x3;
+in float a_x4;
+in vec4 a_color;
+in float a_featureId;
+in float a_isCurve;
 
-// Uniforms for transforms
 uniform vec2 u_resolution;
 uniform float u_height;
 uniform float u_offset0;
@@ -43,114 +37,58 @@ uniform float u_offset1;
 uniform float u_visibleLeft;
 uniform float u_visibleRight;
 
-// Outputs
 out vec4 v_color;
-out float v_dist;
 flat out float v_featureId;
 
-// Evaluate position along the left or right edge at parameter t
-// For straight: linear interpolation
-// For curved: bezier interpolation with control points at midpoint Y
-vec2 evalEdge(float t, float topX, float bottomX, float isCurve) {
-  float offset0 = u_offset0;
-  float offset1 = u_offset1;
-
-  if (isCurve > 0.5) {
-    // Cubic bezier: P0=(topX, 0), P1=(topX, mid), P2=(bottomX, mid), P3=(bottomX, height)
-    float mt = 1.0 - t;
-    float mt2 = mt * mt;
-    float mt3 = mt2 * mt;
-    float t2 = t * t;
-    float t3 = t2 * t;
-    float mid = u_height * 0.5;
-
-    float x = mt3 * topX + 3.0 * mt2 * t * topX + 3.0 * mt * t2 * bottomX + t3 * bottomX;
-    float y = mt3 * 0.0 + 3.0 * mt2 * t * mid + 3.0 * mt * t2 * mid + t3 * u_height;
-
-    // Interpolate offset based on y position
-    float yFrac = y / u_height;
-    float offset = mix(offset0, offset1, yFrac);
-    return vec2(x - offset, y);
-  }
-
-  // Straight line
-  float y = t * u_height;
-  float x = mix(topX, bottomX, t);
-  float offset = mix(offset0, offset1, t);
-  return vec2(x - offset, y);
-}
-
 void main() {
-  // Viewport culling: skip off-screen instances
   float screenMinX = min(min(a_x1, a_x2) - u_offset0, min(a_x3, a_x4) - u_offset1);
   float screenMaxX = max(max(a_x1, a_x2) - u_offset0, max(a_x3, a_x4) - u_offset1);
   if (screenMaxX < u_visibleLeft || screenMinX > u_visibleRight) {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     v_color = vec4(0.0);
-    v_dist = 0.0;
     v_featureId = 0.0;
     return;
   }
 
-  // Determine which edge based on a_side
-  float topX = mix(a_x1, a_x2, step(0.0, a_side));
-  float bottomX = mix(a_x4, a_x3, step(0.0, a_side));
+  float topX = mix(a_x1, a_x2, a_side);
+  float bottomX = mix(a_x4, a_x3, a_side);
+  float screenTopX = topX - u_offset0;
+  float screenBottomX = bottomX - u_offset1;
 
-  vec2 pos = evalEdge(a_t, topX, bottomX, a_isCurve);
-
-  // Compute tangent via finite differences for extrusion
-  float eps = 1.0 / float(${EDGE_CURVE_SEGMENTS});
-  float t0 = max(a_t - eps * 0.5, 0.0);
-  float t1 = min(a_t + eps * 0.5, 1.0);
-  vec2 p0 = evalEdge(t0, topX, bottomX, a_isCurve);
-  vec2 p1 = evalEdge(t1, topX, bottomX, a_isCurve);
-  vec2 tangent = p1 - p0;
-  float tangentLen = length(tangent);
-
-  vec2 normal;
-  if (tangentLen > 0.001) {
-    tangent /= tangentLen;
-    normal = vec2(-tangent.y, tangent.x);
+  float x, y;
+  if (a_isCurve > 0.5) {
+    float mt = 1.0 - a_t;
+    float mt2 = mt * mt;
+    float mt3 = mt2 * mt;
+    float t2 = a_t * a_t;
+    float t3 = t2 * a_t;
+    float mid = u_height * 0.5;
+    x = mt3 * screenTopX + 3.0 * mt2 * a_t * screenTopX + 3.0 * mt * t2 * screenBottomX + t3 * screenBottomX;
+    y = 3.0 * mt2 * a_t * mid + 3.0 * mt * t2 * mid + t3 * u_height;
   } else {
-    normal = vec2(0.0, 1.0);
+    x = mix(screenTopX, screenBottomX, a_t);
+    y = a_t * u_height;
   }
 
-  // Extrude outward by half line width + AA margin
-  // The 0.5 extra pixel is the anti-aliasing margin
-  float halfWidth = 0.5 + 0.5;
-  pos += normal * halfWidth * a_side;
-
-  // Convert from pixel coordinates to clip space
-  vec2 clipSpace = (pos / u_resolution) * 2.0 - 1.0;
+  vec2 clipSpace = (vec2(x, y) / u_resolution) * 2.0 - 1.0;
   gl_Position = vec4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
-
-  v_dist = a_side * halfWidth;
   v_color = a_color;
   v_featureId = a_featureId;
 }
 `
 
-// Fragment shader with analytical anti-aliasing via smoothstep + fwidth
-const FRAGMENT_SHADER = `#version 300 es
+const FILL_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
 in vec4 v_color;
-in float v_dist;
 
-out vec4 fragColor;
+out vec4 outColor;
 
 void main() {
-  float halfWidth = 0.5;
-  float d = abs(v_dist);
-  float aa = fwidth(v_dist);
-  float edgeAlpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
-  float finalAlpha = v_color.a * edgeAlpha;
-  // Output premultiplied alpha for correct canvas compositing
-  fragColor = vec4(v_color.rgb * finalAlpha, finalAlpha);
+  outColor = vec4(v_color.rgb * v_color.a, v_color.a);
 }
 `
 
-// Fragment shader for picking - encodes feature ID as color
 const PICKING_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
@@ -167,65 +105,115 @@ void main() {
 }
 `
 
-// Vertex shader for filled trapezoid/bezier regions (the ribbon fill)
-const FILL_VERTEX_SHADER = `#version 300 es
+// Edge vertex shader - evaluates bezier on GPU with ribbon extrusion for AA
+// a_side = -1.0 or +1.0 from edge template
+const EDGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-in float a_position_x;
-in float a_position_y;
-in float a_row;
+in float a_t;
+in float a_side;
+
+in float a_x1;
+in float a_x2;
+in float a_x3;
+in float a_x4;
 in vec4 a_color;
 in float a_featureId;
+in float a_isCurve;
 
 uniform vec2 u_resolution;
 uniform float u_height;
 uniform float u_offset0;
 uniform float u_offset1;
+uniform float u_visibleLeft;
+uniform float u_visibleRight;
 
 out vec4 v_color;
+out float v_dist;
 flat out float v_featureId;
 
-void main() {
-  float offset = mix(u_offset0, u_offset1, a_row);
-  float x = a_position_x - offset;
-  float y = a_position_y * u_height;
+vec2 evalEdge(float t, float topX, float bottomX, float isCurve) {
+  float screenTopX = topX - u_offset0;
+  float screenBottomX = bottomX - u_offset1;
 
-  vec2 clipSpace = (vec2(x, y) / u_resolution) * 2.0 - 1.0;
+  if (isCurve > 0.5) {
+    float mt = 1.0 - t;
+    float mt2 = mt * mt;
+    float mt3 = mt2 * mt;
+    float t2 = t * t;
+    float t3 = t2 * t;
+    float mid = u_height * 0.5;
+    float x = mt3 * screenTopX + 3.0 * mt2 * t * screenTopX + 3.0 * mt * t2 * screenBottomX + t3 * screenBottomX;
+    float y = 3.0 * mt2 * t * mid + 3.0 * mt * t2 * mid + t3 * u_height;
+    return vec2(x, y);
+  }
+
+  float y = t * u_height;
+  float x = mix(screenTopX, screenBottomX, t);
+  return vec2(x, y);
+}
+
+void main() {
+  float screenMinX = min(min(a_x1, a_x2) - u_offset0, min(a_x3, a_x4) - u_offset1);
+  float screenMaxX = max(max(a_x1, a_x2) - u_offset0, max(a_x3, a_x4) - u_offset1);
+  if (screenMaxX < u_visibleLeft || screenMinX > u_visibleRight) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    v_color = vec4(0.0);
+    v_dist = 0.0;
+    v_featureId = 0.0;
+    return;
+  }
+
+  float topX = mix(a_x1, a_x2, step(0.0, a_side));
+  float bottomX = mix(a_x4, a_x3, step(0.0, a_side));
+
+  vec2 pos = evalEdge(a_t, topX, bottomX, a_isCurve);
+
+  float eps = 1.0 / float(${SEGMENTS});
+  float t0 = max(a_t - eps * 0.5, 0.0);
+  float t1 = min(a_t + eps * 0.5, 1.0);
+  vec2 p0 = evalEdge(t0, topX, bottomX, a_isCurve);
+  vec2 p1 = evalEdge(t1, topX, bottomX, a_isCurve);
+  vec2 tangent = p1 - p0;
+  float tangentLen = length(tangent);
+
+  vec2 normal;
+  if (tangentLen > 0.001) {
+    tangent /= tangentLen;
+    normal = vec2(-tangent.y, tangent.x);
+  } else {
+    normal = vec2(0.0, 1.0);
+  }
+
+  pos += normal * a_side;
+
+  vec2 clipSpace = (pos / u_resolution) * 2.0 - 1.0;
   gl_Position = vec4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
 
+  v_dist = a_side;
   v_color = a_color;
   v_featureId = a_featureId;
 }
 `
 
-const FILL_FRAGMENT_SHADER = `#version 300 es
+const EDGE_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
 in vec4 v_color;
+in float v_dist;
 
-out vec4 outColor;
+out vec4 fragColor;
 
 void main() {
-  // Output premultiplied alpha for correct canvas compositing
-  outColor = vec4(v_color.rgb * v_color.a, v_color.a);
+  float halfWidth = 0.5;
+  float d = abs(v_dist);
+  float aa = fwidth(v_dist);
+  float edgeAlpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
+  float finalAlpha = v_color.a * edgeAlpha;
+  fragColor = vec4(v_color.rgb * finalAlpha, finalAlpha);
 }
 `
 
-const FILL_PICKING_FRAGMENT_SHADER = `#version 300 es
-precision highp float;
-
-flat in float v_featureId;
-
-out vec4 outColor;
-
-void main() {
-  float id = v_featureId;
-  float r = mod(id, 256.0) / 255.0;
-  float g = mod(floor(id / 256.0), 256.0) / 255.0;
-  float b = mod(floor(id / 65536.0), 256.0) / 255.0;
-  outColor = vec4(r, g, b, 1.0);
-}
-`
 
 function createShader(
   gl: WebGL2RenderingContext,
@@ -274,6 +262,10 @@ function createProgram(
   return program
 }
 
+// Number of template vertices per instance
+const FILL_VERTICES_PER_INSTANCE = SEGMENTS * 6
+const EDGE_VERTICES_PER_INSTANCE = (SEGMENTS + 1) * 2
+
 export class SyntenyWebGLRenderer {
   private gl: WebGL2RenderingContext | null = null
   private canvas: HTMLCanvasElement | null = null
@@ -281,20 +273,22 @@ export class SyntenyWebGLRenderer {
   private height = 0
   private devicePixelRatio = 1
 
-  // Fill programs (for filled trapezoids/bezier regions)
+  // Programs
   private fillProgram: WebGLProgram | null = null
   private fillPickingProgram: WebGLProgram | null = null
-  private fillVao: WebGLVertexArrayObject | null = null
-  private fillPickingVao: WebGLVertexArrayObject | null = null
-  private fillVertexCount = 0
-
-  // Edge programs (for anti-aliased edges using ribbon extrusion)
   private edgeProgram: WebGLProgram | null = null
   private edgePickingProgram: WebGLProgram | null = null
+
+  // VAOs (all share the same instance buffers)
+  private fillVao: WebGLVertexArrayObject | null = null
+  private fillPickingVao: WebGLVertexArrayObject | null = null
   private edgeVao: WebGLVertexArrayObject | null = null
   private edgePickingVao: WebGLVertexArrayObject | null = null
-  private edgeInstanceCount = 0
-  private templateBuffer: WebGLBuffer | null = null
+  private instanceCount = 0
+
+  // Template buffers
+  private fillTemplateBuffer: WebGLBuffer | null = null
+  private edgeTemplateBuffer: WebGLBuffer | null = null
 
   // Picking framebuffer
   private pickingFramebuffer: WebGLFramebuffer | null = null
@@ -309,14 +303,9 @@ export class SyntenyWebGLRenderer {
 
   // All allocated buffers for cleanup
   private allocatedBuffers: WebGLBuffer[] = []
+  private pickingPixel = new Uint8Array(4)
 
   init(canvas: HTMLCanvasElement) {
-    console.log('[SyntenyWebGL] init() called', {
-      canvasWidth: canvas.width,
-      canvasHeight: canvas.height,
-      clientWidth: canvas.clientWidth,
-      clientHeight: canvas.clientHeight,
-    })
     const gl = canvas.getContext('webgl2', {
       antialias: true,
       alpha: true,
@@ -333,19 +322,11 @@ export class SyntenyWebGLRenderer {
     this.devicePixelRatio = canvas.width / (canvas.clientWidth || canvas.width)
     this.width = canvas.clientWidth || canvas.width
     this.height = canvas.clientHeight || canvas.height
-    console.log('[SyntenyWebGL] init() context acquired', {
-      devicePixelRatio: this.devicePixelRatio,
-      width: this.width,
-      height: this.height,
-    })
     try {
-      // Create fill programs
       this.fillProgram = createProgram(gl, FILL_VERTEX_SHADER, FILL_FRAGMENT_SHADER)
-      this.fillPickingProgram = createProgram(gl, FILL_VERTEX_SHADER, FILL_PICKING_FRAGMENT_SHADER)
-
-      // Create edge programs (ribbon extrusion with AA)
-      this.edgeProgram = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER)
-      this.edgePickingProgram = createProgram(gl, VERTEX_SHADER, PICKING_FRAGMENT_SHADER)
+      this.fillPickingProgram = createProgram(gl, FILL_VERTEX_SHADER, PICKING_FRAGMENT_SHADER)
+      this.edgeProgram = createProgram(gl, EDGE_VERTEX_SHADER, EDGE_FRAGMENT_SHADER)
+      this.edgePickingProgram = createProgram(gl, EDGE_VERTEX_SHADER, PICKING_FRAGMENT_SHADER)
 
       // Cache uniform locations for all programs
       const uniformNames = ['u_resolution', 'u_height', 'u_offset0', 'u_offset1', 'u_visibleLeft', 'u_visibleRight']
@@ -357,28 +338,45 @@ export class SyntenyWebGLRenderer {
         this.uniformCache.set(program, locs)
       }
 
-      // Create template buffer for edge ribbon
-      // For each t value along the curve, two vertices: side=+1 and side=-1
-      const numVertices = (EDGE_CURVE_SEGMENTS + 1) * 2
-      const templateData = new Float32Array(numVertices * 2)
-      for (let i = 0; i <= EDGE_CURVE_SEGMENTS; i++) {
-        const t = i / EDGE_CURVE_SEGMENTS
-        const base = i * 4
-        templateData[base + 0] = t
-        templateData[base + 1] = 1
-        templateData[base + 2] = t
-        templateData[base + 3] = -1
+      // Fill template: TRIANGLES with a_side = 0 (left) or 1 (right)
+      const fillTemplateData = new Float32Array(FILL_VERTICES_PER_INSTANCE * 2)
+      for (let s = 0; s < SEGMENTS; s++) {
+        const t0 = s / SEGMENTS
+        const t1 = (s + 1) / SEGMENTS
+        const base = s * 12
+        // Triangle 1: left@t0, right@t0, left@t1
+        fillTemplateData[base + 0] = t0; fillTemplateData[base + 1] = 0
+        fillTemplateData[base + 2] = t0; fillTemplateData[base + 3] = 1
+        fillTemplateData[base + 4] = t1; fillTemplateData[base + 5] = 0
+        // Triangle 2: left@t1, right@t0, right@t1
+        fillTemplateData[base + 6] = t1; fillTemplateData[base + 7] = 0
+        fillTemplateData[base + 8] = t0; fillTemplateData[base + 9] = 1
+        fillTemplateData[base + 10] = t1; fillTemplateData[base + 11] = 1
       }
-      this.templateBuffer = gl.createBuffer()!
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.templateBuffer)
-      gl.bufferData(gl.ARRAY_BUFFER, templateData, gl.STATIC_DRAW)
+      this.fillTemplateBuffer = gl.createBuffer()!
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.fillTemplateBuffer)
+      gl.bufferData(gl.ARRAY_BUFFER, fillTemplateData, gl.STATIC_DRAW)
 
-      // Create picking framebuffer
+      // Edge template: TRIANGLE_STRIP with a_side = -1 or +1
+      const edgeTemplateData = new Float32Array(EDGE_VERTICES_PER_INSTANCE * 2)
+      for (let i = 0; i <= SEGMENTS; i++) {
+        const t = i / SEGMENTS
+        const base = i * 4
+        edgeTemplateData[base + 0] = t
+        edgeTemplateData[base + 1] = 1
+        edgeTemplateData[base + 2] = t
+        edgeTemplateData[base + 3] = -1
+      }
+      this.edgeTemplateBuffer = gl.createBuffer()!
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeTemplateBuffer)
+      gl.bufferData(gl.ARRAY_BUFFER, edgeTemplateData, gl.STATIC_DRAW)
+
+      // Picking framebuffer
       this.pickingFramebuffer = gl.createFramebuffer()!
       this.pickingTexture = gl.createTexture()!
       this.resizePickingBuffer(canvas.width, canvas.height)
 
-      // Set initial GL state for rendering
+      // Set initial GL state
       gl.viewport(0, 0, canvas.width, canvas.height)
       gl.clearColor(0, 0, 0, 0)
       gl.enable(gl.BLEND)
@@ -425,18 +423,12 @@ export class SyntenyWebGLRenderer {
     if (this.width === width && this.height === height) {
       return
     }
-    console.log('[SyntenyWebGL] resize()', { width, height, prevWidth: this.width, prevHeight: this.height })
     const gl = this.gl
     this.devicePixelRatio = this.canvas.width / width
     this.width = width
     this.height = height
     this.resizePickingBuffer(this.canvas.width, this.canvas.height)
-
-    // Set viewport/blend once on resize rather than every frame
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-    gl.clearColor(0, 0, 0, 0)
-    gl.enable(gl.BLEND)
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
   }
 
   private cleanupGeometry() {
@@ -464,8 +456,7 @@ export class SyntenyWebGLRenderer {
       gl.deleteBuffer(buf)
     }
     this.allocatedBuffers = []
-    this.fillVertexCount = 0
-    this.edgeInstanceCount = 0
+    this.instanceCount = 0
   }
 
   private createBuffer(gl: WebGL2RenderingContext, data: Float32Array) {
@@ -476,50 +467,10 @@ export class SyntenyWebGLRenderer {
     return buf
   }
 
-  private setupFillVao(
+  private setupInstancedVao(
     gl: WebGL2RenderingContext,
     program: WebGLProgram,
-    positionXBuf: WebGLBuffer,
-    positionYBuf: WebGLBuffer,
-    rowBuf: WebGLBuffer,
-    colorBuf: WebGLBuffer,
-    featureIdBuf: WebGLBuffer,
-  ) {
-    const vao = gl.createVertexArray()!
-    gl.bindVertexArray(vao)
-
-    const posXLoc = gl.getAttribLocation(program, 'a_position_x')
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionXBuf)
-    gl.enableVertexAttribArray(posXLoc)
-    gl.vertexAttribPointer(posXLoc, 1, gl.FLOAT, false, 0, 0)
-
-    const posYLoc = gl.getAttribLocation(program, 'a_position_y')
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionYBuf)
-    gl.enableVertexAttribArray(posYLoc)
-    gl.vertexAttribPointer(posYLoc, 1, gl.FLOAT, false, 0, 0)
-
-    const rowLoc = gl.getAttribLocation(program, 'a_row')
-    gl.bindBuffer(gl.ARRAY_BUFFER, rowBuf)
-    gl.enableVertexAttribArray(rowLoc)
-    gl.vertexAttribPointer(rowLoc, 1, gl.FLOAT, false, 0, 0)
-
-    const colorLoc = gl.getAttribLocation(program, 'a_color')
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf)
-    gl.enableVertexAttribArray(colorLoc)
-    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0)
-
-    const featureIdLoc = gl.getAttribLocation(program, 'a_featureId')
-    gl.bindBuffer(gl.ARRAY_BUFFER, featureIdBuf)
-    gl.enableVertexAttribArray(featureIdLoc)
-    gl.vertexAttribPointer(featureIdLoc, 1, gl.FLOAT, false, 0, 0)
-
-    gl.bindVertexArray(null)
-    return vao
-  }
-
-  private setupEdgeVao(
-    gl: WebGL2RenderingContext,
-    program: WebGLProgram,
+    templateBuffer: WebGLBuffer,
     x1Buf: WebGLBuffer,
     x2Buf: WebGLBuffer,
     x3Buf: WebGLBuffer,
@@ -534,12 +485,12 @@ export class SyntenyWebGLRenderer {
     // Per-vertex template (t and side)
     const stride = 2 * 4
     const tLoc = gl.getAttribLocation(program, 'a_t')
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.templateBuffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, templateBuffer)
     gl.enableVertexAttribArray(tLoc)
     gl.vertexAttribPointer(tLoc, 1, gl.FLOAT, false, stride, 0)
 
     const sideLoc = gl.getAttribLocation(program, 'a_side')
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.templateBuffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, templateBuffer)
     gl.enableVertexAttribArray(sideLoc)
     gl.vertexAttribPointer(sideLoc, 1, gl.FLOAT, false, stride, 4)
 
@@ -587,39 +538,22 @@ export class SyntenyWebGLRenderer {
     bpPerPxs: number[],
     drawLocationMarkers: boolean,
   ) {
-    console.log('[SyntenyWebGL] buildGeometry() called', {
-      featCount: featPositions.length,
-      level,
-      alpha,
-      colorBy,
-      drawCurves,
-      drawCIGAR,
-      bpPerPxs,
-      hasGL: !!this.gl,
-    })
     if (!this.gl) {
       return
     }
     const gl = this.gl
     this.cleanupGeometry()
 
-    // Build fill geometry (triangulated trapezoids/bezier regions)
-    const fillPosX: number[] = []
-    const fillPosY: number[] = []
-    const fillRows: number[] = []
-    const fillColors: number[] = []
-    const fillFeatureIds: number[] = []
+    // Instance data arrays (shared by fill and edge passes)
+    const x1s: number[] = []
+    const x2s: number[] = []
+    const x3s: number[] = []
+    const x4s: number[] = []
+    const colors: number[] = []
+    const featureIds: number[] = []
+    const isCurves: number[] = []
 
-    // Build edge instances (for AA edges along left and right borders)
-    const edgeX1: number[] = []
-    const edgeX2: number[] = []
-    const edgeX3: number[] = []
-    const edgeX4: number[] = []
-    const edgeColors: number[] = []
-    const edgeFeatureIds: number[] = []
-    const edgeIsCurve: number[] = []
-
-    const segments = drawCurves ? CURVE_SEGMENTS : 1
+    const isCurve = drawCurves ? 1 : 0
     const bpPerPx0 = bpPerPxs[level]!
     const bpPerPx1 = bpPerPxs[level + 1]!
     const bpPerPxInv0 = 1 / bpPerPx0
@@ -685,142 +619,102 @@ export class SyntenyWebGLRenderer {
             }
 
             const [cr, cg, cb, ca] = getCigarColor(letter, colorBy, colorFn, feat, i, alpha)
-            addTrapezoid(
-              fillPosX, fillPosY, fillRows, fillColors, fillFeatureIds,
-              px1, cx1, cx2, px2, cr, cg, cb, ca, featureId, segments, drawCurves,
-            )
-
-            // Add edge instances for AA
-            edgeX1.push(px1)
-            edgeX2.push(cx1)
-            edgeX3.push(cx2)
-            edgeX4.push(px2)
-            edgeColors.push(cr, cg, cb, ca)
-            edgeFeatureIds.push(featureId)
-            edgeIsCurve.push(drawCurves ? 1 : 0)
+            x1s.push(px1)
+            x2s.push(cx1)
+            x3s.push(cx2)
+            x4s.push(px2)
+            colors.push(cr, cg, cb, ca)
+            featureIds.push(featureId)
+            isCurves.push(isCurve)
 
             if (drawLocationMarkers) {
-              addLocationMarkerGeometry(
-                fillPosX, fillPosY, fillRows, fillColors, fillFeatureIds,
-                px1, cx1, cx2, px2, featureId, segments, drawCurves, bpPerPx0, bpPerPx1,
+              addLocationMarkerInstances(
+                x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
+                px1, cx1, cx2, px2, featureId, isCurve,
               )
             }
           }
         }
       } else {
         const [cr, cg, cb, ca] = colorFn(feat, i)
-        addTrapezoid(
-          fillPosX, fillPosY, fillRows, fillColors, fillFeatureIds,
-          x11, x12, x22, x21, cr, cg, cb, ca, featureId, segments, drawCurves,
-        )
-
-        // Add edge instances for AA
-        edgeX1.push(x11)
-        edgeX2.push(x12)
-        edgeX3.push(x22)
-        edgeX4.push(x21)
-        edgeColors.push(cr, cg, cb, ca)
-        edgeFeatureIds.push(featureId)
-        edgeIsCurve.push(drawCurves ? 1 : 0)
+        x1s.push(x11)
+        x2s.push(x12)
+        x3s.push(x22)
+        x4s.push(x21)
+        colors.push(cr, cg, cb, ca)
+        featureIds.push(featureId)
+        isCurves.push(isCurve)
 
         if (drawLocationMarkers) {
-          addLocationMarkerGeometry(
-            fillPosX, fillPosY, fillRows, fillColors, fillFeatureIds,
-            x11, x12, x22, x21, featureId, segments, drawCurves, bpPerPx0, bpPerPx1,
+          addLocationMarkerInstances(
+            x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
+            x11, x12, x22, x21, featureId, isCurve,
           )
         }
       }
     }
 
-    // Upload fill geometry
-    this.fillVertexCount = fillPosX.length
-    console.log('[SyntenyWebGL] buildGeometry() results', {
-      fillVertexCount: fillPosX.length,
-      edgeInstanceCount: edgeX1.length,
-      sampleFillPosX: fillPosX.slice(0, 6),
-      sampleFillPosY: fillPosY.slice(0, 6),
-      sampleFillColors: fillColors.slice(0, 4),
-    })
-    if (this.fillVertexCount > 0) {
-      const positionXBuf = this.createBuffer(gl, new Float32Array(fillPosX))
-      const positionYBuf = this.createBuffer(gl, new Float32Array(fillPosY))
-      const rowBuf = this.createBuffer(gl, new Float32Array(fillRows))
-      const colorBuf = this.createBuffer(gl, new Float32Array(fillColors))
-      const featureIdBuf = this.createBuffer(gl, new Float32Array(fillFeatureIds))
+    // Upload instance buffers (shared by all 4 VAOs)
+    this.instanceCount = x1s.length
+    if (this.instanceCount > 0) {
+      const x1Buf = this.createBuffer(gl, new Float32Array(x1s))
+      const x2Buf = this.createBuffer(gl, new Float32Array(x2s))
+      const x3Buf = this.createBuffer(gl, new Float32Array(x3s))
+      const x4Buf = this.createBuffer(gl, new Float32Array(x4s))
+      const colorBuf = this.createBuffer(gl, new Float32Array(colors))
+      const featureIdBuf = this.createBuffer(gl, new Float32Array(featureIds))
+      const isCurveBuf = this.createBuffer(gl, new Float32Array(isCurves))
 
-      this.fillVao = this.setupFillVao(
-        gl, this.fillProgram!, positionXBuf, positionYBuf, rowBuf, colorBuf, featureIdBuf,
+      this.fillVao = this.setupInstancedVao(
+        gl, this.fillProgram!, this.fillTemplateBuffer!,
+        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
       )
-      this.fillPickingVao = this.setupFillVao(
-        gl, this.fillPickingProgram!, positionXBuf, positionYBuf, rowBuf, colorBuf, featureIdBuf,
+      this.fillPickingVao = this.setupInstancedVao(
+        gl, this.fillPickingProgram!, this.fillTemplateBuffer!,
+        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
       )
-    }
-
-    // Upload edge instances
-    this.edgeInstanceCount = edgeX1.length
-    if (this.edgeInstanceCount > 0) {
-      const x1Buf = this.createBuffer(gl, new Float32Array(edgeX1))
-      const x2Buf = this.createBuffer(gl, new Float32Array(edgeX2))
-      const x3Buf = this.createBuffer(gl, new Float32Array(edgeX3))
-      const x4Buf = this.createBuffer(gl, new Float32Array(edgeX4))
-      const colorBuf = this.createBuffer(gl, new Float32Array(edgeColors))
-      const featureIdBuf = this.createBuffer(gl, new Float32Array(edgeFeatureIds))
-      const isCurveBuf = this.createBuffer(gl, new Float32Array(edgeIsCurve))
-
-      this.edgeVao = this.setupEdgeVao(
-        gl, this.edgeProgram!, x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
+      this.edgeVao = this.setupInstancedVao(
+        gl, this.edgeProgram!, this.edgeTemplateBuffer!,
+        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
       )
-      this.edgePickingVao = this.setupEdgeVao(
-        gl, this.edgePickingProgram!, x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
+      this.edgePickingVao = this.setupInstancedVao(
+        gl, this.edgePickingProgram!, this.edgeTemplateBuffer!,
+        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
       )
     }
   }
 
   render(offset0: number, offset1: number, height: number, skipEdges = false) {
     if (!this.gl || !this.canvas) {
-      console.log('[SyntenyWebGL] render(): no gl or canvas')
       return
     }
     const gl = this.gl
-    console.log('[SyntenyWebGL] render()', {
-      offset0,
-      offset1,
-      height,
-      skipEdges,
-      fillVertexCount: this.fillVertexCount,
-      edgeInstanceCount: this.edgeInstanceCount,
-      canvasWidth: this.canvas.width,
-      canvasHeight: this.canvas.height,
-      width: this.width,
-      height2: this.height,
-    })
 
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    // Draw fills
-    if (this.fillVao && this.fillVertexCount > 0) {
+    // Draw fills (instanced)
+    if (this.fillVao && this.instanceCount > 0) {
       gl.useProgram(this.fillProgram)
       gl.bindVertexArray(this.fillVao)
       this.setUniforms(gl, this.fillProgram!, offset0, offset1, height)
-      gl.drawArrays(gl.TRIANGLES, 0, this.fillVertexCount)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTICES_PER_INSTANCE, this.instanceCount)
     }
 
     // Draw AA edges on top (skipped during scroll for performance)
-    if (!skipEdges && this.edgeVao && this.edgeInstanceCount > 0) {
+    if (!skipEdges && this.edgeVao && this.instanceCount > 0) {
       gl.useProgram(this.edgeProgram)
       gl.bindVertexArray(this.edgeVao)
       this.setUniforms(gl, this.edgeProgram!, offset0, offset1, height)
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
-        (EDGE_CURVE_SEGMENTS + 1) * 2,
-        this.edgeInstanceCount,
+        EDGE_VERTICES_PER_INSTANCE,
+        this.instanceCount,
       )
     }
 
     gl.bindVertexArray(null)
 
-    // Mark picking buffer as needing update (deferred until pick() is called)
     this.lastOffset0 = offset0
     this.lastOffset1 = offset1
     this.lastHeight = height
@@ -841,31 +735,31 @@ export class SyntenyWebGLRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT)
     gl.disable(gl.BLEND)
 
-    // Draw fills for picking
-    if (this.fillPickingVao && this.fillVertexCount > 0) {
+    // Draw fills for picking (instanced)
+    if (this.fillPickingVao && this.instanceCount > 0) {
       gl.useProgram(this.fillPickingProgram)
       gl.bindVertexArray(this.fillPickingVao)
       this.setUniforms(gl, this.fillPickingProgram!, offset0, offset1, height)
-      gl.drawArrays(gl.TRIANGLES, 0, this.fillVertexCount)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTICES_PER_INSTANCE, this.instanceCount)
     }
 
-    // Draw edges for picking
-    if (this.edgePickingVao && this.edgeInstanceCount > 0) {
+    // Draw edges for picking (instanced)
+    if (this.edgePickingVao && this.instanceCount > 0) {
       gl.useProgram(this.edgePickingProgram)
       gl.bindVertexArray(this.edgePickingVao)
       this.setUniforms(gl, this.edgePickingProgram!, offset0, offset1, height)
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
-        (EDGE_CURVE_SEGMENTS + 1) * 2,
-        this.edgeInstanceCount,
+        EDGE_VERTICES_PER_INSTANCE,
+        this.instanceCount,
       )
     }
 
     gl.bindVertexArray(null)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    // Restore state that render() expects to be set
+    // Restore state
     gl.viewport(0, 0, canvasWidth, canvasHeight)
     gl.clearColor(0, 0, 0, 0)
     gl.enable(gl.BLEND)
@@ -895,7 +789,6 @@ export class SyntenyWebGLRenderer {
       return -1
     }
 
-    // Lazily render picking buffer only when needed
     if (this.pickingDirty) {
       this.renderPicking(this.lastOffset0, this.lastOffset1, this.lastHeight)
       this.pickingDirty = false
@@ -908,11 +801,10 @@ export class SyntenyWebGLRenderer {
     const canvasHeight = this.canvas.height
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFramebuffer)
-    const pixel = new Uint8Array(4)
-    gl.readPixels(canvasX, canvasHeight - canvasY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel)
+    gl.readPixels(canvasX, canvasHeight - canvasY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, this.pickingPixel)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    const [r, g, b] = pixel
+    const [r, g, b] = this.pickingPixel
     if (r === 0 && g === 0 && b === 0) {
       return -1
     }
@@ -920,7 +812,7 @@ export class SyntenyWebGLRenderer {
   }
 
   hasGeometry() {
-    return this.fillVertexCount > 0 || this.edgeInstanceCount > 0
+    return this.instanceCount > 0
   }
 
   dispose() {
@@ -941,8 +833,11 @@ export class SyntenyWebGLRenderer {
     if (this.edgePickingProgram) {
       gl.deleteProgram(this.edgePickingProgram)
     }
-    if (this.templateBuffer) {
-      gl.deleteBuffer(this.templateBuffer)
+    if (this.fillTemplateBuffer) {
+      gl.deleteBuffer(this.fillTemplateBuffer)
+    }
+    if (this.edgeTemplateBuffer) {
+      gl.deleteBuffer(this.edgeTemplateBuffer)
     }
     if (this.pickingFramebuffer) {
       gl.deleteFramebuffer(this.pickingFramebuffer)
@@ -982,107 +877,21 @@ function getCigarColor(
   return colorFn(feat, index)
 }
 
-// Add a trapezoid (or bezier ribbon) to the fill geometry arrays
-function addTrapezoid(
-  posX: number[],
-  posY: number[],
-  rows: number[],
+// Push location marker instances (thin semi-transparent lines across large blocks)
+function addLocationMarkerInstances(
+  x1s: number[],
+  x2s: number[],
+  x3s: number[],
+  x4s: number[],
   colors: number[],
   featureIds: number[],
-  topLeft: number,
-  topRight: number,
-  bottomRight: number,
-  bottomLeft: number,
-  r: number,
-  g: number,
-  b: number,
-  a: number,
-  featureId: number,
-  segments: number,
-  drawCurves: boolean,
-) {
-  if (drawCurves) {
-    // Tessellate bezier curves into triangle strips
-    for (let s = 0; s < segments; s++) {
-      const t0 = s / segments
-      const t1 = (s + 1) / segments
-
-      // Bezier interpolation coefficients for t0
-      const t0_2 = t0 * t0
-      const t0_3 = t0_2 * t0
-      const mt0 = 1 - t0
-      const mt0_2 = mt0 * mt0
-      const mt0_3 = mt0_2 * mt0
-
-      // Bezier interpolation coefficients for t1
-      const t1_2 = t1 * t1
-      const t1_3 = t1_2 * t1
-      const mt1 = 1 - t1
-      const mt1_2 = mt1 * mt1
-      const mt1_3 = mt1_2 * mt1
-
-      // Left edge: bezier from topLeft(y=0) through mid to bottomLeft(y=1)
-      // Control points: P0=(topLeft,0), P1=(topLeft,0.5), P2=(bottomLeft,0.5), P3=(bottomLeft,1)
-      const lx0 = mt0_3 * topLeft + 3 * mt0_2 * t0 * topLeft + 3 * mt0 * t0_2 * bottomLeft + t0_3 * bottomLeft
-      const ly0 = mt0_3 * 0 + 3 * mt0_2 * t0 * 0.5 + 3 * mt0 * t0_2 * 0.5 + t0_3 * 1
-
-      const lx1 = mt1_3 * topLeft + 3 * mt1_2 * t1 * topLeft + 3 * mt1 * t1_2 * bottomLeft + t1_3 * bottomLeft
-      const ly1 = mt1_3 * 0 + 3 * mt1_2 * t1 * 0.5 + 3 * mt1 * t1_2 * 0.5 + t1_3 * 1
-
-      // Right edge: bezier from topRight(y=0) through mid to bottomRight(y=1)
-      const rx0 = mt0_3 * topRight + 3 * mt0_2 * t0 * topRight + 3 * mt0 * t0_2 * bottomRight + t0_3 * bottomRight
-      const rx1 = mt1_3 * topRight + 3 * mt1_2 * t1 * topRight + 3 * mt1 * t1_2 * bottomRight + t1_3 * bottomRight
-
-      const row0 = t0
-      const row1 = t1
-
-      // Two triangles per segment
-      posX.push(lx0, rx0, lx1)
-      posY.push(ly0, ly0, ly1)
-      rows.push(row0, row0, row1)
-
-      posX.push(lx1, rx0, rx1)
-      posY.push(ly1, ly0, ly1)
-      rows.push(row1, row0, row1)
-
-      for (let v = 0; v < 6; v++) {
-        colors.push(r, g, b, a)
-        featureIds.push(featureId)
-      }
-    }
-  } else {
-    // Simple straight trapezoid - 2 triangles
-    posX.push(topLeft, topRight, bottomRight)
-    posY.push(0, 0, 1)
-    rows.push(0, 0, 1)
-
-    posX.push(topLeft, bottomRight, bottomLeft)
-    posY.push(0, 1, 1)
-    rows.push(0, 1, 1)
-
-    for (let v = 0; v < 6; v++) {
-      colors.push(r, g, b, a)
-      featureIds.push(featureId)
-    }
-  }
-}
-
-// Add location marker geometry (thin semi-transparent lines across large blocks)
-function addLocationMarkerGeometry(
-  posX: number[],
-  posY: number[],
-  rows: number[],
-  colors: number[],
-  featureIds: number[],
+  isCurves: number[],
   topLeft: number,
   topRight: number,
   bottomRight: number,
   bottomLeft: number,
   featureId: number,
-  segments: number,
-  drawCurves: boolean,
-  bpPerPx0: number,
-  bpPerPx1: number,
+  isCurve: number,
 ) {
   const width1 = Math.abs(topRight - topLeft)
   const width2 = Math.abs(bottomRight - bottomLeft)
@@ -1098,25 +907,20 @@ function addLocationMarkerGeometry(
     Math.floor(averageWidth / targetPixelSpacing) + 1,
   )
 
-  // Semi-transparent dark lines
-  const mr = 0
-  const mg = 0
-  const mb = 0
-  const ma = 0.25
-  const lineHalfWidth = 0.25 // Very thin
+  const lineHalfWidth = 0.25
 
   for (let step = 0; step < numMarkers; step++) {
     const t = step / numMarkers
     const markerTopX = topLeft + (topRight - topLeft) * t
     const markerBottomX = bottomLeft + (bottomRight - bottomLeft) * t
 
-    // Draw each marker as a thin trapezoid
-    addTrapezoid(
-      posX, posY, rows, colors, featureIds,
-      markerTopX - lineHalfWidth, markerTopX + lineHalfWidth,
-      markerBottomX + lineHalfWidth, markerBottomX - lineHalfWidth,
-      mr, mg, mb, ma, featureId, segments, drawCurves,
-    )
+    x1s.push(markerTopX - lineHalfWidth)
+    x2s.push(markerTopX + lineHalfWidth)
+    x3s.push(markerBottomX + lineHalfWidth)
+    x4s.push(markerBottomX - lineHalfWidth)
+    colors.push(0, 0, 0, 0.25)
+    featureIds.push(featureId)
+    isCurves.push(isCurve)
   }
 }
 
@@ -1144,7 +948,6 @@ export function createColorFunction(
   if (colorBy === 'strand') {
     return (f: FeatPos) => {
       const strand = f.f.get('strand')
-      // Red for positive, blue for negative - matching Canvas 2D
       return strand === -1
         ? [0, 0, 1, alpha]
         : [1, 0, 0, alpha]
