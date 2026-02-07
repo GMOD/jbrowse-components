@@ -1,21 +1,24 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
+  ReactRendering,
   getContainingView,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { doAfterAttach } from './afterAttach.ts'
+import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent.tsx'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock.ts'
 
-import type { DotplotWebGLRenderer } from './drawDotplotWebGL.ts'
-import type { FeatPos } from './types.ts'
-import type { DotplotViewModel } from '../DotplotView/model.ts'
+import type {
+  DotplotViewModel,
+  ExportSvgOptions,
+} from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel DotplotDisplay
@@ -45,7 +48,40 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         .volatile(() => ({
           /**
            * #volatile
-           * alpha transparency value for rendering (0-1)
+           */
+          stopToken: undefined as StopToken | undefined,
+          /**
+           * #volatile
+           */
+          warnings: [] as { message: string; effect: string }[],
+          /**
+           * #volatile
+           */
+          filled: false,
+          /**
+           * #volatile
+           */
+          data: undefined as any,
+          /**
+           * #volatile
+           */
+          reactElement: undefined as React.ReactElement | undefined,
+          /**
+           * #volatile
+           */
+          message: undefined as string | undefined,
+          /**
+           * #volatile
+           */
+          renderingComponent: undefined as any,
+          /**
+           * #volatile
+           */
+          ReactComponent2:
+            ServerSideRenderedBlockContent as unknown as React.FC<any>,
+          /**
+           * #volatile
+           * alpha transparency value for synteny drawing (0-1)
            */
           alpha: 1,
           /**
@@ -53,34 +89,16 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * minimum alignment length to display (in bp)
            */
           minAlignmentLength: 0,
-          /**
-           * #volatile
-           * data loaded from adapter (used for WebGL rendering)
-           */
-          data: undefined as any,
-          /**
-           * #volatile
-           * WebGL renderer instance
-           */
-          webglRenderer: null as DotplotWebGLRenderer | null,
-          /**
-           * #volatile
-           * flag indicating if WebGL renderer is initialized
-           */
-          webglInitialized: false,
-          /**
-           * #volatile
-           * computed feature positions for WebGL rendering
-           */
-          featPositions: [] as FeatPos[],
-          /**
-           * #volatile
-           * currently mouseover'd feature ID
-           */
-          mouseoverId: undefined as string | undefined,
         })),
     )
     .views(self => ({
+      get shouldDisplay() {
+        const { vview, hview } = getContainingView(self) as DotplotViewModel
+        return (
+          vview.bpPerPx === self.data.bpPerPxY &&
+          hview.bpPerPx === self.data.bpPerPxX
+        )
+      },
       /**
        * #getter
        */
@@ -98,7 +116,102 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
       },
     }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      async renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
+        const props = renderBlockData(self)
+        if (!props) {
+          return null
+        }
+
+        const { rendererType, rpcManager, renderProps, renderingProps } = props
+        const rendering = await rendererType.renderInClient(rpcManager, {
+          ...renderProps,
+          renderingProps,
+          exportSVG: opts,
+          theme: opts.theme || renderProps.theme,
+        })
+        const { hview, vview } = getContainingView(self) as DotplotViewModel
+        const offX = -hview.offsetPx + rendering.offsetX
+        const offY = -vview.offsetPx + rendering.offsetY
+        return (
+          <g transform={`translate(${offX} ${-offY})`}>
+            <ReactRendering rendering={rendering} />
+          </g>
+        )
+      },
+    }))
     .actions(self => ({
+      afterAttach() {
+        makeAbortableReaction(
+          self,
+          () => renderBlockData(self),
+          blockData => renderBlockEffect(blockData),
+          {
+            name: `${self.type} ${self.id} rendering`,
+            delay: 500,
+            fireImmediately: true,
+          },
+          this.setLoading,
+          this.setRendered,
+          this.setError,
+        )
+      },
+      /**
+       * #action
+       */
+      setLoading(stopToken?: StopToken) {
+        self.filled = false
+        self.message = undefined
+        self.reactElement = undefined
+        self.data = undefined
+        self.error = undefined
+        self.renderingComponent = undefined
+        self.stopToken = stopToken
+      },
+      /**
+       * #action
+       */
+      setMessage(messageText: string) {
+        self.message = messageText
+      },
+      /**
+       * #action
+       */
+      setRendered(args?: {
+        data: any
+        reactElement: React.ReactElement
+        renderingComponent: React.Component
+      }) {
+        if (args === undefined) {
+          return
+        }
+        const { data, reactElement, renderingComponent } = args
+        self.warnings = data.warnings
+        self.filled = true
+        self.message = undefined
+        self.reactElement = reactElement
+        self.data = data
+        self.error = undefined
+        self.renderingComponent = renderingComponent
+        self.stopToken = undefined
+      },
+      /**
+       * #action
+       */
+      setError(error: unknown) {
+        console.error(error)
+        // the rendering failed for some reason
+        self.filled = false
+        self.message = undefined
+        self.reactElement = undefined
+        self.data = undefined
+        self.error = error
+        self.renderingComponent = undefined
+        self.stopToken = undefined
+      },
       /**
        * #action
        */
@@ -117,85 +230,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setColorBy(value: string) {
         self.colorBy = value
       },
-      /**
-       * #action
-       */
-      setWebGLRenderer(renderer: DotplotWebGLRenderer | null) {
-        self.webglRenderer = renderer
-      },
-      /**
-       * #action
-       */
-      setWebGLInitialized(value: boolean) {
-        self.webglInitialized = value
-      },
-      /**
-       * #action
-       */
-      setFeatPositions(positions: FeatPos[]) {
-        self.featPositions = positions
-      },
-      /**
-       * #action
-       */
-      setMouseoverId(id?: string) {
-        self.mouseoverId = id
-      },
-      /**
-       * #action
-       */
-      setData(value: any) {
-        self.data = value
-        console.log('setData: data loaded, features.length=', value?.features?.length)
-      },
-      /**
-       * #action
-       */
-      setLoading() {
-        self.data = undefined
-      },
-      /**
-       * #action
-       */
-      setRendered(args?: {
-        data: any
-      }) {
-        if (args) {
-          self.data = args.data
-          console.log('setRendered: data set, data keys:', Object.keys(args.data || {}))
-          console.log('setRendered: data=', args.data)
-        }
-      },
-      /**
-       * #action
-       */
-      setError(error: unknown) {
-        console.error('Data loading error:', error)
-        self.data = undefined
-      },
-      afterAttach() {
-        console.log('afterAttach: setting up data loading and WebGL rendering')
-        makeAbortableReaction(
-          self,
-          () => renderBlockData(self),
-          blockData => {
-            console.log('renderBlockEffect: loading data')
-            return renderBlockEffect(blockData)
-          },
-          {
-            name: `${self.type} ${self.id} rendering`,
-            delay: 500,
-            fireImmediately: true,
-          },
-          this.setLoading,
-          this.setRendered,
-          this.setError,
-        )
-        doAfterAttach(self)
-      },
     }))
 }
 
 export type DotplotDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type DotplotDisplay = Instance<DotplotDisplayStateModel>
 export type DotplotDisplayModel = Instance<DotplotDisplayStateModel>
