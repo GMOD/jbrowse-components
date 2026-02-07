@@ -6,6 +6,16 @@ import type { ViewSnap } from '@jbrowse/core/util'
 export class SyntenyGetWebGLGeometry extends RpcMethodType {
   name = 'SyntenyGetWebGLGeometry'
 
+  // Skip the expensive augmentLocationObjects deep-walk. This RPC only
+  // passes plain feature data and minimal view snapshots, no file
+  // locations that need auth augmentation or blob mapping.
+  async serializeArguments(
+    args: Record<string, unknown>,
+    _rpcDriverClassName: string,
+  ) {
+    return args
+  }
+
   async execute(
     args: {
       features: SyntenyFeatureData[]

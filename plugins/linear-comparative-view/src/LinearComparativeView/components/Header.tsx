@@ -10,6 +10,7 @@ import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
+import MaxOffScreenSlider from './MaxOffScreenSlider.tsx'
 import MinLengthSlider from './MinLengthSlider.tsx'
 import OpacitySlider from './OpacitySlider.tsx'
 
@@ -112,6 +113,7 @@ const Header = observer(function Header({
           <ColorBySelector model={model} />
           <OpacitySlider model={model} />
           <MinLengthSlider model={model} />
+          <MaxOffScreenSlider model={model} />
         </>
       ) : null}
 

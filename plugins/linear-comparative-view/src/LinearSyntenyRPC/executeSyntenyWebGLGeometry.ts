@@ -12,7 +12,6 @@ export interface SyntenyFeatureData {
   mateStart: number
   mateEnd: number
   strand: number
-  cigar?: string
 }
 
 export function executeSyntenyWebGLGeometry({
@@ -33,7 +32,6 @@ export function executeSyntenyWebGLGeometry({
   const p21Array = new Float32Array(count)
   const p22Array = new Float32Array(count)
   const featureIds: string[] = []
-  const cigars: string[] = []
 
   let validCount = 0
   for (let i = 0; i < features.length; i++) {
@@ -66,7 +64,6 @@ export function executeSyntenyWebGLGeometry({
     p21Array[validCount] = p21.offsetPx
     p22Array[validCount] = p22.offsetPx
     featureIds.push(f.id)
-    cigars.push(f.cigar ?? '')
     validCount++
   }
 
@@ -76,7 +73,6 @@ export function executeSyntenyWebGLGeometry({
     p21_offsetPx: p21Array.slice(0, validCount),
     p22_offsetPx: p22Array.slice(0, validCount),
     featureIds,
-    cigars,
   }
 
   return rpcResult(result, [

@@ -1,6 +1,6 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 
@@ -9,6 +9,7 @@ import { createColorFunction } from './drawSyntenyWebGL.ts'
 import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyRPC/executeSyntenyWebGLGeometry.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 type LSV = LinearSyntenyViewModel
 
@@ -56,6 +57,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           geometryKey !== lastGeometryKey ||
           featPositions !== lastFeatPositions
         ) {
+          console.log('[syntenyDrawAutorun] buildGeometry triggered', {
+            keyChanged: geometryKey !== lastGeometryKey,
+            refChanged: featPositions !== lastFeatPositions,
+            geometryKey,
+            lastGeometryKey,
+            featPositionsLen: featPositions.length,
+          })
           const colorFn = createColorFunction(colorBy, alpha)
           const bpPerPxs = view.views.map(v => v.bpPerPx)
           self.webglRenderer.buildGeometry(
@@ -98,6 +106,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     ),
   )
 
+  // Cache for serialized features - only re-serialize when the features
+  // array reference changes, avoiding repeated getCanonicalRefName calls
+  // on every bpPerPx change
+  let cachedFeatureRef: readonly Feature[] | undefined
+  let cachedSerializedFeatures: SyntenyFeatureData[] = []
+  // Cache for parsed CIGARs keyed by feature id
+  let cachedCigarsByFeatureId = new Map<string, string[]>()
+
   // Compute feat positions on the worker via RPC. Uses a reaction so that
   // positions are only recomputed when bpPerPx or displayedRegions change.
   addDisposer(
@@ -132,43 +148,63 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const { assemblyManager, rpcManager } = getSession(self)
         const view = getContainingView(self) as LSV
         const sessionId = getRpcSessionId(self)
-        const viewSnaps = view.views.map(view => ({
-          ...getSnapshot(view),
-          width: view.width,
+
+        // Only send the fields bpToPx actually needs, instead of the
+        // entire MST view snapshot which is huge and expensive to
+        // deep-clone in filterArgs/serializeArguments
+        const viewSnaps = view.views.map(v => ({
+          bpPerPx: v.bpPerPx,
+          offsetPx: v.offsetPx,
+          displayedRegions: v.displayedRegions,
           staticBlocks: {
-            contentBlocks: view.staticBlocks.contentBlocks,
-            blocks: view.staticBlocks.blocks,
+            contentBlocks: v.staticBlocks.contentBlocks,
+            blocks: v.staticBlocks.blocks,
           },
-          interRegionPaddingWidth: view.interRegionPaddingWidth,
-          minimumBlockWidth: view.minimumBlockWidth,
+          interRegionPaddingWidth: v.interRegionPaddingWidth,
+          minimumBlockWidth: v.minimumBlockWidth,
+          width: v.width,
         }))
 
+        // Cache serialized features - only rebuild when the features
+        // reference changes. This avoids repeated getCanonicalRefName
+        // and feature.get() calls on every bpPerPx change.
         const feats = self.features || []
-        const serializedFeatures = [] as SyntenyFeatureData[]
-        for (const f of feats) {
-          const mate = f.get('mate')
-          const a1 = assemblyManager.get(f.get('assemblyName'))
-          const a2 = assemblyManager.get(mate.assemblyName)
-          const r1 = f.get('refName')
-          const r2 = mate.refName
-          serializedFeatures.push({
-            id: f.id(),
-            refName1: a1?.getCanonicalRefName(r1) || r1,
-            refName2: a2?.getCanonicalRefName(r2) || r2,
-            start: f.get('start'),
-            end: f.get('end'),
-            mateStart: mate.start,
-            mateEnd: mate.end,
-            strand: f.get('strand'),
-            cigar: f.get('CIGAR') as string | undefined,
-          })
+        if (feats !== cachedFeatureRef) {
+          cachedFeatureRef = feats
+          cachedSerializedFeatures = []
+          cachedCigarsByFeatureId = new Map()
+          for (const f of feats) {
+            const mate = f.get('mate')
+            const a1 = assemblyManager.get(f.get('assemblyName'))
+            const a2 = assemblyManager.get(mate.assemblyName)
+            const r1 = f.get('refName')
+            const r2 = mate.refName
+            const id = f.id()
+            const cigarStr = f.get('CIGAR') as string | undefined
+            cachedSerializedFeatures.push({
+              id,
+              refName1: a1?.getCanonicalRefName(r1) || r1,
+              refName2: a2?.getCanonicalRefName(r2) || r2,
+              start: f.get('start'),
+              end: f.get('end'),
+              mateStart: mate.start,
+              mateEnd: mate.end,
+              strand: f.get('strand'),
+            })
+            // Pre-parse and cache CIGAR strings on the main thread
+            // instead of round-tripping them through RPC
+            cachedCigarsByFeatureId.set(
+              id,
+              MismatchParser.parseCigar(cigarStr),
+            )
+          }
         }
 
         const result = (await rpcManager.call(
           sessionId,
           'SyntenyGetWebGLGeometry',
           {
-            features: serializedFeatures,
+            features: cachedSerializedFeatures,
             viewSnaps,
             level,
             sessionId,
@@ -179,13 +215,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           p21_offsetPx: Float32Array
           p22_offsetPx: Float32Array
           featureIds: string[]
-          cigars: string[]
         }
 
         const featureMap = new Map(feats.map(f => [f.id(), f]))
         const map = [] as FeatPos[]
         for (let i = 0; i < result.featureIds.length; i++) {
-          const f = featureMap.get(result.featureIds[i]!)
+          const fid = result.featureIds[i]!
+          const f = featureMap.get(fid)
           if (!f) {
             continue
           }
@@ -195,12 +231,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             p21: { offsetPx: result.p21_offsetPx[i]! },
             p22: { offsetPx: result.p22_offsetPx[i]! },
             f,
-            cigar: MismatchParser.parseCigar(result.cigars[i]),
+            cigar: cachedCigarsByFeatureId.get(fid) || [],
           })
         }
         self.setFeatPositions(map)
       },
-      { fireImmediately: true },
+      { fireImmediately: true, delay: 300 },
     ),
   )
 }

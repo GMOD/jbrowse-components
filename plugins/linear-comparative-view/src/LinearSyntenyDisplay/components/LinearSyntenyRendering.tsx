@@ -84,17 +84,19 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
           clearTimeout(timeout.current)
         }
         timeout.current = setTimeout(() => {
-          for (const v of view.views) {
-            v.zoomTo(
-              delta.current > 0
-                ? v.bpPerPx * (1 + delta.current)
-                : v.bpPerPx / (1 - delta.current),
-              event.clientX -
-                (canvasRectRef.current?.left ??
-                  webglCanvasRef.current?.getBoundingClientRect().left ??
-                  0),
-            )
-          }
+          transaction(() => {
+            for (const v of view.views) {
+              v.zoomTo(
+                delta.current > 0
+                  ? v.bpPerPx * (1 + delta.current)
+                  : v.bpPerPx / (1 - delta.current),
+                event.clientX -
+                  (canvasRectRef.current?.left ??
+                    webglCanvasRef.current?.getBoundingClientRect().left ??
+                    0),
+              )
+            }
+          })
           delta.current = 0
         }, 300)
       } else {
