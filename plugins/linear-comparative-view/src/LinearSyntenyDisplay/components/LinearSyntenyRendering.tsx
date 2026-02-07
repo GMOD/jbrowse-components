@@ -21,8 +21,6 @@ import type { LinearSyntenyDisplayModel } from '../model.ts'
 
 const SyntenyTooltip = lazy(() => import('./SyntenyTooltip.tsx'))
 
-type Timer = ReturnType<typeof setTimeout>
-
 const useStyles = makeStyles()({
   rel: {
     position: 'relative',
@@ -47,10 +45,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const xOffset = useRef(0)
   const view = getContainingView(model) as LinearSyntenyViewModel
   const width = view.width
-  const delta = useRef(0)
   const scheduled = useRef(false)
+  const zoomDelta = useRef(0)
+  const zoomScheduled = useRef(false)
+  const lastZoomClientX = useRef(0)
   const canvasRectRef = useRef<DOMRect | null>(null)
-  const timeout = useRef<Timer>(null)
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
   const [currX, setCurrX] = useState<number>()
@@ -78,27 +77,34 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   useEffect(() => {
     function onWheel(event: WheelEvent) {
       event.preventDefault()
-      if (event.ctrlKey) {
-        delta.current += event.deltaY / 500
-        if (timeout.current) {
-          clearTimeout(timeout.current)
-        }
-        timeout.current = setTimeout(() => {
-          transaction(() => {
-            for (const v of view.views) {
-              v.zoomTo(
-                delta.current > 0
-                  ? v.bpPerPx * (1 + delta.current)
-                  : v.bpPerPx / (1 - delta.current),
-                event.clientX -
-                  (canvasRectRef.current?.left ??
-                    webglCanvasRef.current?.getBoundingClientRect().left ??
-                    0),
-              )
-            }
+      const doZoom =
+        event.ctrlKey ||
+        (view.scrollZoom &&
+          Math.abs(event.deltaY) > Math.abs(event.deltaX))
+      if (doZoom) {
+        zoomDelta.current += event.deltaY / 500
+        lastZoomClientX.current = event.clientX
+        if (!zoomScheduled.current) {
+          zoomScheduled.current = true
+          window.requestAnimationFrame(() => {
+            const d = zoomDelta.current
+            transaction(() => {
+              for (const v of view.views) {
+                v.zoomTo(
+                  d > 0
+                    ? v.bpPerPx * (1 + d)
+                    : v.bpPerPx / (1 - d),
+                  lastZoomClientX.current -
+                    (canvasRectRef.current?.left ??
+                      webglCanvasRef.current?.getBoundingClientRect().left ??
+                      0),
+                )
+              }
+            })
+            zoomDelta.current = 0
+            zoomScheduled.current = false
           })
-          delta.current = 0
-        }, 300)
+        }
       } else {
         if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
           xOffset.current += event.deltaX / 2
@@ -118,7 +124,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       }
     }
     const target = webglCanvasRef.current
-    target?.addEventListener('wheel', onWheel)
+    target?.addEventListener('wheel', onWheel, { passive: false })
     return () => {
       target?.removeEventListener('wheel', onWheel)
     }

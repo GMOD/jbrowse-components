@@ -27,10 +27,10 @@ export function executeSyntenyWebGLGeometry({
   const v2 = viewSnaps[level + 1]!
 
   const count = features.length
-  const p11Array = new Float32Array(count)
-  const p12Array = new Float32Array(count)
-  const p21Array = new Float32Array(count)
-  const p22Array = new Float32Array(count)
+  const p11Array = new Float64Array(count)
+  const p12Array = new Float64Array(count)
+  const p21Array = new Float64Array(count)
+  const p22Array = new Float64Array(count)
   const featureIds: string[] = []
 
   let validCount = 0

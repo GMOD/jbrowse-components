@@ -5,20 +5,33 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
-import { FormGroup } from '@mui/material'
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
+import { FormGroup, ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
-import MaxOffScreenSlider from './MaxOffScreenSlider.tsx'
-import MinLengthSlider from './MinLengthSlider.tsx'
-import OpacitySlider from './OpacitySlider.tsx'
+import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
+  header: {
+    flexWrap: 'nowrap',
+    alignItems: 'center',
+  },
   inline: {
     display: 'inline-flex',
+  },
+  searchBoxContainer: {
+    display: 'flex',
+    overflow: 'hidden',
+    minWidth: 0,
+  },
+  toggleButton: {
+    height: 44,
+    border: 'none',
+    textTransform: 'none',
   },
 })
 
@@ -36,7 +49,7 @@ const Header = observer(function Header({
   const hasDisplays = levels[0]?.tracks[0]?.displays[0]
 
   return (
-    <FormGroup row>
+    <FormGroup row className={classes.header}>
       <CascadingMenuButton
         menuItems={[
           {
@@ -73,22 +86,8 @@ const Header = observer(function Header({
             })),
           },
           ...model.headerMenuItems(),
-        ]}
-      >
-        <MoreVertIcon />
-      </CascadingMenuButton>
-      <CascadingMenuButton
-        menuItems={[
           {
-            label: 'Show search boxes',
-            type: 'checkbox',
-            checked: showSearchBoxes,
-            onClick: () => {
-              setShowSearchBoxes(!showSearchBoxes)
-            },
-          },
-          {
-            label: 'Orientation - Side-by-side',
+            label: 'Search box orientation - Side-by-side',
             type: 'radio',
             checked: sideBySide,
             onClick: () => {
@@ -96,7 +95,7 @@ const Header = observer(function Header({
             },
           },
           {
-            label: 'Orientation - Vertical',
+            label: 'Search box orientation - Vertical',
             type: 'radio',
             checked: !sideBySide,
             onClick: () => {
@@ -105,20 +104,44 @@ const Header = observer(function Header({
           },
         ]}
       >
-        <SearchIcon />
+        <MoreVertIcon />
       </CascadingMenuButton>
+      <ToggleButton
+        value="search"
+        selected={showSearchBoxes}
+        onChange={() => {
+          setShowSearchBoxes(!showSearchBoxes)
+        }}
+        title="Toggle search boxes"
+        className={classes.toggleButton}
+        size="small"
+      >
+        <SearchIcon />
+      </ToggleButton>
+      <ToggleButton
+        value="scrollZoom"
+        selected={model.scrollZoom}
+        onChange={() => {
+          model.setScrollZoom(!model.scrollZoom)
+        }}
+        title="Toggle scroll zoom"
+        className={classes.toggleButton}
+        size="small"
+      >
+        <ZoomInMapIcon />
+      </ToggleButton>
 
       {hasDisplays && showDynamicControls ? (
         <>
           <ColorBySelector model={model} />
-          <OpacitySlider model={model} />
-          <MinLengthSlider model={model} />
-          <MaxOffScreenSlider model={model} />
+          <SyntenySettingsPopover model={model} />
         </>
       ) : null}
 
       {showSearchBoxes ? (
-        <span className={sideBySide ? classes.inline : undefined}>
+        <span
+          className={`${classes.searchBoxContainer} ${sideBySide ? classes.inline : ''}`}
+        >
           {views.map(view => (
             <HeaderSearchBoxes key={view.id} view={view} />
           ))}

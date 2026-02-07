@@ -9,10 +9,31 @@ import type { FeatPos } from './model.ts'
 // Number of segments for bezier tessellation (fill and edge passes)
 const SEGMENTS = 32
 
+// Split Float64 values into interleaved (hi, lo) Float32 pairs for HP
+// precision on the GPU. hi = Math.fround(value), lo = value - hi.
+function splitHiLo(values: number[]) {
+  const result = new Float32Array(values.length * 2)
+  for (let i = 0; i < values.length; i++) {
+    const hi = Math.fround(values[i]!)
+    result[i * 2] = hi
+    result[i * 2 + 1] = values[i]! - hi
+  }
+  return result
+}
+
 function cssColorToNormalized(color: string): [number, number, number, number] {
   const { r, g, b, a } = colord(color).toRgb()
   return [r / 255, g / 255, b / 255, a]
 }
+
+// HP (high-precision) subtraction: positions stored as (hi, lo) Float32 pairs
+// where hi = Math.fround(value), lo = value - hi. Subtraction before scaling
+// preserves precision for large offsetPx values during zoom.
+const HP_SUBTRACT = `
+float hpDiff(vec2 a, vec2 b) {
+  return (a.x - b.x) + (a.y - b.y);
+}
+`
 
 // Instanced fill vertex shader - evaluates bezier on GPU
 // a_side = 0.0 (left edge) or 1.0 (right edge) from fill template
@@ -22,30 +43,43 @@ precision highp float;
 in float a_t;
 in float a_side;
 
-in float a_x1;
-in float a_x2;
-in float a_x3;
-in float a_x4;
+in vec2 a_x1;
+in vec2 a_x2;
+in vec2 a_x3;
+in vec2 a_x4;
 in vec4 a_color;
 in float a_featureId;
 in float a_isCurve;
+in float a_queryTotalLength;
 
 uniform vec2 u_resolution;
 uniform float u_height;
-uniform float u_offset0;
-uniform float u_offset1;
+uniform vec2 u_adjOff0;
+uniform vec2 u_adjOff1;
 uniform float u_scale0;
 uniform float u_scale1;
 uniform float u_maxOffScreenPx;
+uniform float u_minAlignmentLength;
 
 out vec4 v_color;
 flat out float v_featureId;
 
+${HP_SUBTRACT}
+
 void main() {
-  float topMinX = min(a_x1, a_x2) * u_scale0 - u_offset0;
-  float topMaxX = max(a_x1, a_x2) * u_scale0 - u_offset0;
-  float botMinX = min(a_x3, a_x4) * u_scale1 - u_offset1;
-  float botMaxX = max(a_x3, a_x4) * u_scale1 - u_offset1;
+  // Min alignment length filter (uniform-only, no geometry rebuild needed)
+  if (u_minAlignmentLength > 0.0 && a_queryTotalLength < u_minAlignmentLength) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    v_color = vec4(0.0);
+    v_featureId = 0.0;
+    return;
+  }
+
+  // Approximate culling using hi parts only (error << maxOffScreenPx margin)
+  float topMinX = (min(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0;
+  float topMaxX = (max(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0;
+  float botMinX = (min(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1;
+  float botMaxX = (max(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1;
   if (topMaxX < -u_maxOffScreenPx || topMinX > u_resolution.x + u_maxOffScreenPx ||
       botMaxX < -u_maxOffScreenPx || botMinX > u_resolution.x + u_maxOffScreenPx) {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -54,10 +88,10 @@ void main() {
     return;
   }
 
-  float topX = mix(a_x1, a_x2, a_side);
-  float bottomX = mix(a_x4, a_x3, a_side);
-  float screenTopX = topX * u_scale0 - u_offset0;
-  float screenBottomX = bottomX * u_scale1 - u_offset1;
+  vec2 topXHP = mix(a_x1, a_x2, a_side);
+  vec2 bottomXHP = mix(a_x4, a_x3, a_side);
+  float screenTopX = hpDiff(topXHP, u_adjOff0) * u_scale0;
+  float screenBottomX = hpDiff(bottomXHP, u_adjOff1) * u_scale1;
 
   float x, y;
   if (a_isCurve > 0.5) {
@@ -117,30 +151,31 @@ precision highp float;
 in float a_t;
 in float a_side;
 
-in float a_x1;
-in float a_x2;
-in float a_x3;
-in float a_x4;
+in vec2 a_x1;
+in vec2 a_x2;
+in vec2 a_x3;
+in vec2 a_x4;
 in vec4 a_color;
 in float a_featureId;
 in float a_isCurve;
+in float a_queryTotalLength;
 
 uniform vec2 u_resolution;
 uniform float u_height;
-uniform float u_offset0;
-uniform float u_offset1;
+uniform vec2 u_adjOff0;
+uniform vec2 u_adjOff1;
 uniform float u_scale0;
 uniform float u_scale1;
 uniform float u_maxOffScreenPx;
+uniform float u_minAlignmentLength;
 
 out vec4 v_color;
 out float v_dist;
 flat out float v_featureId;
 
-vec2 evalEdge(float t, float topX, float bottomX, float isCurve) {
-  float screenTopX = topX * u_scale0 - u_offset0;
-  float screenBottomX = bottomX * u_scale1 - u_offset1;
+${HP_SUBTRACT}
 
+vec2 evalEdge(float t, float screenTopX, float screenBottomX, float isCurve) {
   if (isCurve > 0.5) {
     float mt = 1.0 - t;
     float mt2 = mt * mt;
@@ -159,10 +194,18 @@ vec2 evalEdge(float t, float topX, float bottomX, float isCurve) {
 }
 
 void main() {
-  float topMinX = min(a_x1, a_x2) * u_scale0 - u_offset0;
-  float topMaxX = max(a_x1, a_x2) * u_scale0 - u_offset0;
-  float botMinX = min(a_x3, a_x4) * u_scale1 - u_offset1;
-  float botMaxX = max(a_x3, a_x4) * u_scale1 - u_offset1;
+  if (u_minAlignmentLength > 0.0 && a_queryTotalLength < u_minAlignmentLength) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    v_color = vec4(0.0);
+    v_dist = 0.0;
+    v_featureId = 0.0;
+    return;
+  }
+
+  float topMinX = (min(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0;
+  float topMaxX = (max(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0;
+  float botMinX = (min(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1;
+  float botMaxX = (max(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1;
   if (topMaxX < -u_maxOffScreenPx || topMinX > u_resolution.x + u_maxOffScreenPx ||
       botMaxX < -u_maxOffScreenPx || botMinX > u_resolution.x + u_maxOffScreenPx) {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -172,16 +215,18 @@ void main() {
     return;
   }
 
-  float topX = mix(a_x1, a_x2, step(0.0, a_side));
-  float bottomX = mix(a_x4, a_x3, step(0.0, a_side));
+  vec2 topXHP = mix(a_x1, a_x2, step(0.0, a_side));
+  vec2 bottomXHP = mix(a_x4, a_x3, step(0.0, a_side));
+  float screenTopX = hpDiff(topXHP, u_adjOff0) * u_scale0;
+  float screenBottomX = hpDiff(bottomXHP, u_adjOff1) * u_scale1;
 
-  vec2 pos = evalEdge(a_t, topX, bottomX, a_isCurve);
+  vec2 pos = evalEdge(a_t, screenTopX, screenBottomX, a_isCurve);
 
   float eps = 1.0 / float(${SEGMENTS});
   float t0 = max(a_t - eps * 0.5, 0.0);
   float t1 = min(a_t + eps * 0.5, 1.0);
-  vec2 p0 = evalEdge(t0, topX, bottomX, a_isCurve);
-  vec2 p1 = evalEdge(t1, topX, bottomX, a_isCurve);
+  vec2 p0 = evalEdge(t0, screenTopX, screenBottomX, a_isCurve);
+  vec2 p1 = evalEdge(t1, screenTopX, screenBottomX, a_isCurve);
   vec2 tangent = p1 - p0;
   float tangentLen = length(tangent);
 
@@ -303,12 +348,15 @@ export class SyntenyWebGLRenderer {
   private pickingFramebuffer: WebGLFramebuffer | null = null
   private pickingTexture: WebGLTexture | null = null
   private pickingDirty = true
-  private lastOffset0 = 0
-  private lastOffset1 = 0
   private lastHeight = 0
+  private lastAdjOff0Hi = 0
+  private lastAdjOff0Lo = 0
+  private lastAdjOff1Hi = 0
+  private lastAdjOff1Lo = 0
   private lastScale0 = 1
   private lastScale1 = 1
   private lastMaxOffScreenPx = 300
+  private lastMinAlignmentLength = 0
 
   // bpPerPx used when geometry was built, for zoom-correction scaling
   private geometryBpPerPx0 = 1
@@ -345,7 +393,7 @@ export class SyntenyWebGLRenderer {
       this.edgePickingProgram = createProgram(gl, EDGE_VERTEX_SHADER, PICKING_FRAGMENT_SHADER)
 
       // Cache uniform locations for all programs
-      const uniformNames = ['u_resolution', 'u_height', 'u_offset0', 'u_offset1', 'u_scale0', 'u_scale1', 'u_maxOffScreenPx']
+      const uniformNames = ['u_resolution', 'u_height', 'u_adjOff0', 'u_adjOff1', 'u_scale0', 'u_scale1', 'u_maxOffScreenPx', 'u_minAlignmentLength']
       for (const program of [this.fillProgram, this.fillPickingProgram, this.edgeProgram, this.edgePickingProgram]) {
         const locs: Record<string, WebGLUniformLocation | null> = {}
         for (const name of uniformNames) {
@@ -495,6 +543,7 @@ export class SyntenyWebGLRenderer {
     colorBuf: WebGLBuffer,
     featureIdBuf: WebGLBuffer,
     isCurveBuf: WebGLBuffer,
+    queryTotalLengthBuf: WebGLBuffer,
   ) {
     const vao = gl.createVertexArray()!
     gl.bindVertexArray(vao)
@@ -511,16 +560,30 @@ export class SyntenyWebGLRenderer {
     gl.enableVertexAttribArray(sideLoc)
     gl.vertexAttribPointer(sideLoc, 1, gl.FLOAT, false, stride, 4)
 
-    // Per-instance attributes
-    const attrs: [string, WebGLBuffer][] = [
+    // Per-instance position attributes (vec2: hi/lo for HP precision)
+    const posAttrs: [string, WebGLBuffer][] = [
       ['a_x1', x1Buf],
       ['a_x2', x2Buf],
       ['a_x3', x3Buf],
       ['a_x4', x4Buf],
+    ]
+    for (const [name, buf] of posAttrs) {
+      const loc = gl.getAttribLocation(program, name)
+      if (loc >= 0) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf)
+        gl.enableVertexAttribArray(loc)
+        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+        gl.vertexAttribDivisor(loc, 1)
+      }
+    }
+
+    // Per-instance scalar attributes
+    const scalarAttrs: [string, WebGLBuffer][] = [
       ['a_featureId', featureIdBuf],
       ['a_isCurve', isCurveBuf],
+      ['a_queryTotalLength', queryTotalLengthBuf],
     ]
-    for (const [name, buf] of attrs) {
+    for (const [name, buf] of scalarAttrs) {
       const loc = gl.getAttribLocation(program, name)
       if (loc >= 0) {
         gl.bindBuffer(gl.ARRAY_BUFFER, buf)
@@ -571,6 +634,15 @@ export class SyntenyWebGLRenderer {
     this.geometryBpPerPx0 = bpPerPxs[level]!
     this.geometryBpPerPx1 = bpPerPxs[level + 1]!
 
+    // Compute query total alignment lengths for GPU-side filtering
+    const queryTotalLengths = new Map<string, number>()
+    for (const { f } of featPositions) {
+      const queryName = f.get('name') || f.get('id') || f.id()
+      const alignmentLength = Math.abs(f.get('end') - f.get('start'))
+      const current = queryTotalLengths.get(queryName) || 0
+      queryTotalLengths.set(queryName, current + alignmentLength)
+    }
+
     // Instance data arrays (shared by fill and edge passes)
     // Non-CIGAR instances come first so edge pass can skip CIGAR segments
     const x1s: number[] = []
@@ -580,6 +652,7 @@ export class SyntenyWebGLRenderer {
     const colors: number[] = []
     const featureIds: number[] = []
     const isCurves: number[] = []
+    const queryTotalLengthArr: number[] = []
 
     const isCurve = drawCurves ? 1 : 0
     const fallbackBpPerPxInv0 = 1 / bpPerPxs[level]!
@@ -609,6 +682,8 @@ export class SyntenyWebGLRenderer {
       const x21 = p21.offsetPx
       const x22 = p22.offsetPx
       const featureId = i + 1
+      const queryName = f.get('name') || f.get('id') || f.id()
+      const qtl = queryTotalLengths.get(queryName) || 0
 
       const [cr, cg, cb, ca] = colorFn(feat, i)
       x1s.push(x11)
@@ -618,11 +693,13 @@ export class SyntenyWebGLRenderer {
       colors.push(cr, cg, cb, ca)
       featureIds.push(featureId)
       isCurves.push(isCurve)
+      queryTotalLengthArr.push(qtl)
 
       if (drawLocationMarkers) {
         addLocationMarkerInstances(
           x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
-          x11, x12, x22, x21, featureId, isCurve,
+          queryTotalLengthArr,
+          x11, x12, x22, x21, featureId, isCurve, qtl,
         )
       }
     }
@@ -651,6 +728,8 @@ export class SyntenyWebGLRenderer {
       const x22 = p22.offsetPx
       const strand = f.get('strand') as number
       const featureId = i + 1
+      const queryName = f.get('name') || f.get('id') || f.id()
+      const qtl = queryTotalLengths.get(queryName) || 0
 
       const s1 = strand
       const k1 = s1 === -1 ? x12 : x11
@@ -741,11 +820,13 @@ export class SyntenyWebGLRenderer {
           colors.push(cr, cg, cb, ca)
           featureIds.push(featureId)
           isCurves.push(isCurve)
+          queryTotalLengthArr.push(qtl)
 
           if (drawLocationMarkers) {
             addLocationMarkerInstances(
               x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
-              px1, cx1, cx2, px2, featureId, isCurve,
+              queryTotalLengthArr,
+              px1, cx1, cx2, px2, featureId, isCurve, qtl,
             )
           }
         }
@@ -755,34 +836,35 @@ export class SyntenyWebGLRenderer {
     // Upload instance buffers (shared by all 4 VAOs)
     this.instanceCount = x1s.length
     if (this.instanceCount > 0) {
-      const x1Buf = this.createBuffer(gl, new Float32Array(x1s))
-      const x2Buf = this.createBuffer(gl, new Float32Array(x2s))
-      const x3Buf = this.createBuffer(gl, new Float32Array(x3s))
-      const x4Buf = this.createBuffer(gl, new Float32Array(x4s))
+      const x1Buf = this.createBuffer(gl, splitHiLo(x1s))
+      const x2Buf = this.createBuffer(gl, splitHiLo(x2s))
+      const x3Buf = this.createBuffer(gl, splitHiLo(x3s))
+      const x4Buf = this.createBuffer(gl, splitHiLo(x4s))
       const colorBuf = this.createBuffer(gl, new Float32Array(colors))
       const featureIdBuf = this.createBuffer(gl, new Float32Array(featureIds))
       const isCurveBuf = this.createBuffer(gl, new Float32Array(isCurves))
+      const queryTotalLengthBuf = this.createBuffer(gl, new Float32Array(queryTotalLengthArr))
 
       this.fillVao = this.setupInstancedVao(
         gl, this.fillProgram!, this.fillTemplateBuffer!,
-        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
+        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf, queryTotalLengthBuf,
       )
       this.fillPickingVao = this.setupInstancedVao(
         gl, this.fillPickingProgram!, this.fillTemplateBuffer!,
-        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
+        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf, queryTotalLengthBuf,
       )
       this.edgeVao = this.setupInstancedVao(
         gl, this.edgeProgram!, this.edgeTemplateBuffer!,
-        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
+        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf, queryTotalLengthBuf,
       )
       this.edgePickingVao = this.setupInstancedVao(
         gl, this.edgePickingProgram!, this.edgeTemplateBuffer!,
-        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf,
+        x1Buf, x2Buf, x3Buf, x4Buf, colorBuf, featureIdBuf, isCurveBuf, queryTotalLengthBuf,
       )
     }
   }
 
-  render(offset0: number, offset1: number, height: number, curBpPerPx0: number, curBpPerPx1: number, skipEdges = false, maxOffScreenPx = 300) {
+  render(offset0: number, offset1: number, height: number, curBpPerPx0: number, curBpPerPx1: number, skipEdges = false, maxOffScreenPx = 300, minAlignmentLength = 0) {
     if (!this.gl || !this.canvas) {
       return
     }
@@ -790,13 +872,22 @@ export class SyntenyWebGLRenderer {
     const scale0 = this.geometryBpPerPx0 / curBpPerPx0
     const scale1 = this.geometryBpPerPx1 / curBpPerPx1
 
+    // Compute adjusted offsets at Float64, then split into hi/lo for the
+    // shader's HP subtraction: screenX = (pos - adjOff) * scale
+    const adjOff0 = offset0 / scale0
+    const adjOff1 = offset1 / scale1
+    const adjOff0Hi = Math.fround(adjOff0)
+    const adjOff0Lo = adjOff0 - adjOff0Hi
+    const adjOff1Hi = Math.fround(adjOff1)
+    const adjOff1Lo = adjOff1 - adjOff1Hi
+
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     // Draw fills (instanced)
     if (this.fillVao && this.instanceCount > 0) {
       gl.useProgram(this.fillProgram)
       gl.bindVertexArray(this.fillVao)
-      this.setUniforms(gl, this.fillProgram!, offset0, offset1, height, scale0, scale1, maxOffScreenPx)
+      this.setUniforms(gl, this.fillProgram!, height, adjOff0Hi, adjOff0Lo, adjOff1Hi, adjOff1Lo, scale0, scale1, maxOffScreenPx, minAlignmentLength)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTICES_PER_INSTANCE, this.instanceCount)
     }
 
@@ -805,7 +896,7 @@ export class SyntenyWebGLRenderer {
     if (!skipEdges && this.edgeVao && this.nonCigarInstanceCount > 0) {
       gl.useProgram(this.edgeProgram)
       gl.bindVertexArray(this.edgeVao)
-      this.setUniforms(gl, this.edgeProgram!, offset0, offset1, height, scale0, scale1, maxOffScreenPx)
+      this.setUniforms(gl, this.edgeProgram!, height, adjOff0Hi, adjOff0Lo, adjOff1Hi, adjOff1Lo, scale0, scale1, maxOffScreenPx, minAlignmentLength)
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
@@ -816,16 +907,19 @@ export class SyntenyWebGLRenderer {
 
     gl.bindVertexArray(null)
 
-    this.lastOffset0 = offset0
-    this.lastOffset1 = offset1
     this.lastHeight = height
+    this.lastAdjOff0Hi = adjOff0Hi
+    this.lastAdjOff0Lo = adjOff0Lo
+    this.lastAdjOff1Hi = adjOff1Hi
+    this.lastAdjOff1Lo = adjOff1Lo
     this.lastScale0 = scale0
     this.lastScale1 = scale1
     this.lastMaxOffScreenPx = maxOffScreenPx
+    this.lastMinAlignmentLength = minAlignmentLength
     this.pickingDirty = true
   }
 
-  renderPicking(offset0: number, offset1: number, height: number, scale0: number, scale1: number, maxOffScreenPx: number) {
+  renderPicking(height: number, adjOff0Hi: number, adjOff0Lo: number, adjOff1Hi: number, adjOff1Lo: number, scale0: number, scale1: number, maxOffScreenPx: number, minAlignmentLength: number) {
     if (!this.gl || !this.canvas) {
       return
     }
@@ -843,7 +937,7 @@ export class SyntenyWebGLRenderer {
     if (this.fillPickingVao && this.instanceCount > 0) {
       gl.useProgram(this.fillPickingProgram)
       gl.bindVertexArray(this.fillPickingVao)
-      this.setUniforms(gl, this.fillPickingProgram!, offset0, offset1, height, scale0, scale1, maxOffScreenPx)
+      this.setUniforms(gl, this.fillPickingProgram!, height, adjOff0Hi, adjOff0Lo, adjOff1Hi, adjOff1Lo, scale0, scale1, maxOffScreenPx, minAlignmentLength)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTICES_PER_INSTANCE, this.instanceCount)
     }
 
@@ -851,7 +945,7 @@ export class SyntenyWebGLRenderer {
     if (this.edgePickingVao && this.nonCigarInstanceCount > 0) {
       gl.useProgram(this.edgePickingProgram)
       gl.bindVertexArray(this.edgePickingVao)
-      this.setUniforms(gl, this.edgePickingProgram!, offset0, offset1, height, scale0, scale1, maxOffScreenPx)
+      this.setUniforms(gl, this.edgePickingProgram!, height, adjOff0Hi, adjOff0Lo, adjOff1Hi, adjOff1Lo, scale0, scale1, maxOffScreenPx, minAlignmentLength)
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
@@ -873,22 +967,28 @@ export class SyntenyWebGLRenderer {
   private setUniforms(
     gl: WebGL2RenderingContext,
     program: WebGLProgram,
-    offset0: number,
-    offset1: number,
     height: number,
+    adjOff0Hi: number,
+    adjOff0Lo: number,
+    adjOff1Hi: number,
+    adjOff1Lo: number,
     scale0: number,
     scale1: number,
     maxOffScreenPx: number,
+    minAlignmentLength: number,
   ) {
     const locs = this.uniformCache.get(program)!
     gl.uniform2f(locs.u_resolution!, this.width, this.height)
     gl.uniform1f(locs.u_height!, height)
-    gl.uniform1f(locs.u_offset0!, offset0)
-    gl.uniform1f(locs.u_offset1!, offset1)
+    gl.uniform2f(locs.u_adjOff0!, adjOff0Hi, adjOff0Lo)
+    gl.uniform2f(locs.u_adjOff1!, adjOff1Hi, adjOff1Lo)
     gl.uniform1f(locs.u_scale0!, scale0)
     gl.uniform1f(locs.u_scale1!, scale1)
     if (locs.u_maxOffScreenPx) {
       gl.uniform1f(locs.u_maxOffScreenPx, maxOffScreenPx)
+    }
+    if (locs.u_minAlignmentLength) {
+      gl.uniform1f(locs.u_minAlignmentLength, minAlignmentLength)
     }
   }
 
@@ -898,7 +998,7 @@ export class SyntenyWebGLRenderer {
     }
 
     if (this.pickingDirty) {
-      this.renderPicking(this.lastOffset0, this.lastOffset1, this.lastHeight, this.lastScale0, this.lastScale1, this.lastMaxOffScreenPx)
+      this.renderPicking(this.lastHeight, this.lastAdjOff0Hi, this.lastAdjOff0Lo, this.lastAdjOff1Hi, this.lastAdjOff1Lo, this.lastScale0, this.lastScale1, this.lastMaxOffScreenPx, this.lastMinAlignmentLength)
       this.pickingDirty = false
     }
 
@@ -994,12 +1094,14 @@ function addLocationMarkerInstances(
   colors: number[],
   featureIds: number[],
   isCurves: number[],
+  queryTotalLengthArr: number[],
   topLeft: number,
   topRight: number,
   bottomRight: number,
   bottomLeft: number,
   featureId: number,
   isCurve: number,
+  queryTotalLength: number,
 ) {
   const width1 = Math.abs(topRight - topLeft)
   const width2 = Math.abs(bottomRight - bottomLeft)
@@ -1029,6 +1131,7 @@ function addLocationMarkerInstances(
     colors.push(0, 0, 0, 0.25)
     featureIds.push(featureId)
     isCurves.push(isCurve)
+    queryTotalLengthArr.push(queryTotalLength)
   }
 }
 

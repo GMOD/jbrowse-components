@@ -18,6 +18,38 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastFeatPositions: FeatPos[] = []
   let lastRenderer: unknown = null
   let edgeTimer: ReturnType<typeof setTimeout> | null = null
+  let buildTimer: ReturnType<typeof setTimeout> | null = null
+  // bpPerPx values at which featPositions were computed (by the RPC).
+  // buildGeometry uses these as the "reference" so the shader's scale
+  // compensation (geometryBpPerPx / currentBpPerPx) is correct.
+  let featPositionsBpPerPxs: number[] = []
+
+  // Runs buildGeometry with the latest model/view values.
+  // Defined outside the autorun so it reads fresh values at call time
+  // rather than stale closure captures.
+  function runBuildGeometry() {
+    if (!self.webglRenderer || !self.webglInitialized) {
+      return
+    }
+    const view = getContainingView(self) as LinearSyntenyViewModel
+    const { alpha, colorBy, featPositions, level } = self
+    const colorFn = createColorFunction(colorBy, alpha)
+    self.webglRenderer.buildGeometry(
+      featPositions, level, alpha, colorBy, colorFn,
+      view.drawCurves, view.drawCIGAR, view.drawCIGARMatchesOnly,
+      featPositionsBpPerPxs, view.drawLocationMarkers,
+    )
+    // Re-render with the new geometry
+    const o0 = view.views[level]!.offsetPx
+    const o1 = view.views[level + 1]!.offsetPx
+    const bpPerPx0 = view.views[level]!.bpPerPx
+    const bpPerPx1 = view.views[level + 1]!.bpPerPx
+    self.webglRenderer.render(
+      o0, o1, self.height, bpPerPx0, bpPerPx1, false,
+      view.maxOffScreenDrawPx, self.minAlignmentLength,
+    )
+  }
+
   addDisposer(
     self,
     autorun(
@@ -33,7 +65,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        const { alpha, colorBy, featPositions, level } = self
+        const { alpha, colorBy, featPositions, level, minAlignmentLength } = self
         const height = self.height
         const width = view.width
 
@@ -57,29 +89,27 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           geometryKey !== lastGeometryKey ||
           featPositions !== lastFeatPositions
         ) {
-          console.log('[syntenyDrawAutorun] buildGeometry triggered', {
-            keyChanged: geometryKey !== lastGeometryKey,
-            refChanged: featPositions !== lastFeatPositions,
-            geometryKey,
-            lastGeometryKey,
-            featPositionsLen: featPositions.length,
-          })
-          const colorFn = createColorFunction(colorBy, alpha)
-          const bpPerPxs = view.views.map(v => v.bpPerPx)
-          self.webglRenderer.buildGeometry(
-            featPositions,
-            level,
-            alpha,
-            colorBy,
-            colorFn,
-            view.drawCurves,
-            view.drawCIGAR,
-            view.drawCIGARMatchesOnly,
-            bpPerPxs,
-            view.drawLocationMarkers,
-          )
+          const settingsChanged = geometryKey !== lastGeometryKey
           lastGeometryKey = geometryKey
           lastFeatPositions = featPositions
+
+          if (settingsChanged || !self.webglRenderer.hasGeometry()) {
+            // Settings change or first build: immediate
+            const colorFn = createColorFunction(colorBy, alpha)
+            self.webglRenderer.buildGeometry(
+              featPositions, level, alpha, colorBy, colorFn,
+              view.drawCurves, view.drawCIGAR, view.drawCIGARMatchesOnly,
+              featPositionsBpPerPxs, view.drawLocationMarkers,
+            )
+          } else {
+            // Position-only change (zoom): debounce. The shader's scale
+            // compensation (u_scale0/u_scale1) keeps rendering smooth
+            // with the existing geometry in the meantime.
+            if (buildTimer) {
+              clearTimeout(buildTimer)
+            }
+            buildTimer = setTimeout(runBuildGeometry, 300)
+          }
         }
 
         const o0 = view.views[level]!.offsetPx
@@ -91,13 +121,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         // Skip edges during scroll for performance, debounce a full
         // re-render with edges once scrolling stops
-        self.webglRenderer.render(o0, o1, height, bpPerPx0, bpPerPx1, true, maxOffScreenPx)
+        self.webglRenderer.render(o0, o1, height, bpPerPx0, bpPerPx1, true, maxOffScreenPx, minAlignmentLength)
 
         if (edgeTimer) {
           clearTimeout(edgeTimer)
         }
         edgeTimer = setTimeout(() => {
-          self.webglRenderer?.render(o0, o1, height, bpPerPx0, bpPerPx1, false, maxOffScreenPx)
+          self.webglRenderer?.render(o0, o1, height, bpPerPx0, bpPerPx1, false, maxOffScreenPx, minAlignmentLength)
         }, 150)
       },
       {
@@ -114,8 +144,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   // Cache for parsed CIGARs keyed by feature id
   let cachedCigarsByFeatureId = new Map<string, string[]>()
 
-  // Compute feat positions on the worker via RPC. Uses a reaction so that
-  // positions are only recomputed when bpPerPx or displayedRegions change.
+  // Compute feat positions on the worker via RPC. Tracks
+  // displayedRegions, features, and bpPerPx. The shader's HP scale
+  // compensation keeps rendering smooth during zoom; this reaction
+  // fires after zoom stops (delay: 300) to correct inter-region
+  // padding which is fixed-pixel and doesn't scale with bpPerPx.
   addDisposer(
     self,
     reaction(
@@ -125,13 +158,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }
         const view = getContainingView(self) as LSV
         return {
-          bpPerPx: view.views.map(v => v.bpPerPx),
-
           // stringifying 'deeply' accesses the displayed regions, see
           // issue #3456
           displayedRegions: JSON.stringify(
             view.views.map(v => v.displayedRegions),
           ),
+          bpPerPx: view.views.map(v => v.bpPerPx).join(','),
           features: self.features,
           initialized:
             view.initialized &&
@@ -140,7 +172,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             ),
         }
       },
-      async ({ initialized }) => {
+      async ({ initialized, features }) => {
         if (!initialized) {
           return
         }
@@ -168,7 +200,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Cache serialized features - only rebuild when the features
         // reference changes. This avoids repeated getCanonicalRefName
         // and feature.get() calls on every bpPerPx change.
-        const feats = self.features || []
+        const feats = features ?? self.features
+        if (!feats) {
+          return
+        }
         if (feats !== cachedFeatureRef) {
           cachedFeatureRef = feats
           cachedSerializedFeatures = []
@@ -210,10 +245,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             sessionId,
           },
         )) as {
-          p11_offsetPx: Float32Array
-          p12_offsetPx: Float32Array
-          p21_offsetPx: Float32Array
-          p22_offsetPx: Float32Array
+          p11_offsetPx: Float64Array
+          p12_offsetPx: Float64Array
+          p21_offsetPx: Float64Array
+          p22_offsetPx: Float64Array
           featureIds: string[]
         }
 
@@ -234,6 +269,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             cigar: cachedCigarsByFeatureId.get(fid) || [],
           })
         }
+        featPositionsBpPerPxs = viewSnaps.map(v => v.bpPerPx)
         self.setFeatPositions(map)
       },
       { fireImmediately: true, delay: 300 },

@@ -67,6 +67,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
+        scrollZoom: false,
+        /**
+         * #property
+         */
         showDynamicControls: true,
         /**
          * #property
@@ -240,6 +244,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setScrollZoom(arg: boolean) {
+        self.scrollZoom = arg
+        for (const v of self.views) {
+          v.setScrollZoom(arg)
+        }
+      },
+      /**
+       * #action
+       */
       setShowDynamicControls(arg: boolean) {
         self.showDynamicControls = arg
       },
@@ -394,6 +407,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         showIntraviewLinks,
         linkViews,
         interactiveOverlay,
+        scrollZoom,
         showDynamicControls,
         viewTrackConfigs,
         ...rest
@@ -404,6 +418,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
         ...(linkViews ? { linkViews } : {}),
         ...(interactiveOverlay ? { interactiveOverlay } : {}),
+        ...(scrollZoom ? { scrollZoom } : {}),
         ...(!showDynamicControls ? { showDynamicControls } : {}),
         ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
       } as typeof snap
