@@ -309,7 +309,7 @@ export interface DrawFeatsResult {
   featuresForFlatbush: FlatbushEntry[]
   layoutHeight?: number
   cloudMaxDistance?: number
-  mismatchFlatbush: ArrayBufferLike
+  mismatchFlatbush: ArrayBuffer
   mismatchItems: FlatbushItem[]
 }
 

@@ -316,6 +316,19 @@ export function renderBlockData(
     }
 
     const renderProps = display.renderProps()
+
+    // Check notReady early, before trying to access rendererType
+    // This allows displays that don't use server-side rendering (e.g., WebGL)
+    // to bypass block rendering by returning { notReady: true } and undefined
+    // rendererType
+    if (renderProps.notReady || !rendererType) {
+      return {
+        renderProps,
+        cannotBeRenderedReason: undefined,
+        displayError: error,
+      }
+    }
+
     const renderingProps = display.renderingProps?.() as
       | Record<string, unknown>
       | undefined

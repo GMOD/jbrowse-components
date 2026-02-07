@@ -13,12 +13,15 @@
   "scripts": {
     "start": "NODE_ENV=development node scripts/start.js",
     "build": "NODE_ENV=production node scripts/build.js",
+    "build:profile": "NODE_ENV=production PROFILING=true node scripts/build.js",
     "prebuild": "rimraf build",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "prepack": "pnpm build",
+    "build:fast": "GENERATE_SOURCEMAP=false NO_MINIMIZE=true NODE_ENV=production node scripts/build.js",
     "test:browser": "node --experimental-strip-types browser-tests/runner.ts",
     "test:browser:headed": "node --experimental-strip-types browser-tests/runner.ts --headed",
-    "test:browser:update": "node --experimental-strip-types browser-tests/runner.ts --update-snapshots"
+    "test:browser:update": "node --experimental-strip-types browser-tests/runner.ts --update-snapshots",
+    "test:browser:ci": "GENERATE_SOURCEMAP=false NO_MINIMIZE=true NODE_ENV=production node scripts/build.js && node --experimental-strip-types browser-tests/runner.ts"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.2.9",

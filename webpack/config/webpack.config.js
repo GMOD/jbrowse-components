@@ -16,6 +16,7 @@ import InterpolateHtmlPlugin from '../react-dev-utils/InterpolateHtmlPlugin.js'
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false'
+const shouldProfile = process.env.PROFILING === 'true'
 
 function getWorkspaces(fromDir) {
   const cwd = fromDir || process.cwd()
@@ -83,6 +84,14 @@ export default function webpackBuilder() {
         modules.additionalModulePaths || [],
       ),
       extensions: moduleFileExtensions.map(ext => `.${ext}`),
+      alias: {
+        // Use profiling builds of react-dom for React DevTools Profiler
+        // In React 19, alias react-dom/client to react-dom/profiling
+        // (not react-dom itself, as profiling depends on base react-dom)
+        ...(isEnvProduction && shouldProfile
+          ? { 'react-dom/client': 'react-dom/profiling' }
+          : {}),
+      },
       plugins: [],
     },
     module: {

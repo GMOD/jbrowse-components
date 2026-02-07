@@ -18,6 +18,7 @@ export interface Colord {
   alpha(): number
   alpha(value: number): Colord
   toHex(): string
+  toRgb(): RGBA
   toRgbString(): string
   toHsl(): HSLA
   toHslString(): string
@@ -236,6 +237,10 @@ function createColord(rgba: RGBA): Colord {
         return `#${toHex2(r)}${toHex2(g)}${toHex2(b)}${toHex2(a * 255)}`
       }
       return `#${toHex2(r)}${toHex2(g)}${toHex2(b)}`
+    },
+
+    toRgb(): RGBA {
+      return rgba
     },
 
     toRgbString(): string {

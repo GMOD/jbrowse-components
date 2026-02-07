@@ -27,3 +27,10 @@ export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
 export interface GetLDMatrixArgs extends BaseVariantRpcArgs {
   ldMetric?: 'r2' | 'dprime'
 }
+
+export interface GetWebGLCellDataArgs extends BaseVariantRpcArgs {
+  sources: Source[]
+  renderingMode: string
+  referenceDrawingMode?: string
+  mode: 'regular' | 'matrix'
+}

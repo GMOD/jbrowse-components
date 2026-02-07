@@ -17,9 +17,9 @@ const CanvasFeatureRendering = observer(function CanvasFeatureRendering(props: {
   regions: Region[]
   bpPerPx: number
   items: FlatbushItem[]
-  flatbush: ArrayBufferLike
+  flatbush: ArrayBuffer
   subfeatureInfos?: SubfeatureInfo[]
-  subfeatureFlatbush?: ArrayBufferLike
+  subfeatureFlatbush?: ArrayBuffer
   onContextMenu?: (e: React.MouseEvent) => void
 }) {
   const {

@@ -9,7 +9,10 @@ import MultiLinearVariantDisplayF from './MultiLinearVariantDisplay/index.ts'
 import LinearVariantMatrixDisplayF from './MultiLinearVariantMatrixDisplay/index.ts'
 import LinearVariantMatrixRendererF from './MultiLinearVariantMatrixRenderer/index.ts'
 import MultiVariantRendererF from './MultiLinearVariantRenderer/index.ts'
+import MultiWebGLVariantDisplayF from './MultiWebGLVariantDisplay/index.ts'
+import MultiWebGLVariantMatrixDisplayF from './MultiWebGLVariantMatrixDisplay/index.ts'
 import PlinkLDAdapterF from './PlinkLDAdapter/index.ts'
+import WebGLLDDataRPCMethodsF from './RenderWebGLLDDataRPC/index.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer/index.ts'
 import VariantFeatureWidgetF from './VariantFeatureWidget/index.ts'
@@ -18,6 +21,7 @@ import { MultiVariantGetFeatureDetails } from './VariantRPC/MultiVariantGetFeatu
 import { MultiVariantGetGenotypeMatrix } from './VariantRPC/MultiVariantGetGenotypeMatrix.ts'
 import { MultiVariantGetSimplifiedFeatures } from './VariantRPC/MultiVariantGetSimplifiedFeatures.ts'
 import { MultiVariantGetSources } from './VariantRPC/MultiVariantGetSources.ts'
+import { MultiVariantGetWebGLCellData } from './VariantRPC/MultiVariantGetWebGLCellData.ts'
 import VariantTrackF from './VariantTrack/index.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import ExtensionPointsF from './VcfExtensionPoints/index.ts'
@@ -45,12 +49,15 @@ export default class VariantsPlugin extends Plugin {
     LinearVariantDisplayF(pluginManager)
     LinearVariantMatrixDisplayF(pluginManager)
     MultiLinearVariantDisplayF(pluginManager)
+    MultiWebGLVariantDisplayF(pluginManager)
+    MultiWebGLVariantMatrixDisplayF(pluginManager)
     LDDisplayF(pluginManager)
     LDRendererF(pluginManager)
     MultiVariantRendererF(pluginManager)
     LinearVariantMatrixRendererF(pluginManager)
     StructuralVariantChordRendererF(pluginManager)
     ChordVariantDisplayF(pluginManager)
+    WebGLLDDataRPCMethodsF(pluginManager)
 
     pluginManager.addRpcMethod(() => new MultiVariantGetSources(pluginManager))
     pluginManager.addRpcMethod(
@@ -64,6 +71,9 @@ export default class VariantsPlugin extends Plugin {
     )
     pluginManager.addRpcMethod(
       () => new MultiVariantGetFeatureDetails(pluginManager),
+    )
+    pluginManager.addRpcMethod(
+      () => new MultiVariantGetWebGLCellData(pluginManager),
     )
   }
 

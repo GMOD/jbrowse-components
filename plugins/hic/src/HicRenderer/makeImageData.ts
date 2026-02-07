@@ -23,7 +23,7 @@ import type { RenderArgs as ServerSideRenderArgs } from '@jbrowse/core/pluggable
 import type { Region } from '@jbrowse/core/util/types'
 
 export interface MakeImageDataResult {
-  flatbush: ArrayBufferLike
+  flatbush: ArrayBuffer
   items: HicFlatbushItem[]
   maxScore: number
   w: number

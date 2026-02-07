@@ -3,22 +3,53 @@ import { useEffect, useRef } from 'react'
 
 import { sum } from '@jbrowse/core/util'
 
-type Timer = ReturnType<typeof setTimeout>
+interface GenomeViewModel {
+  bpPerPx: number
+  scrollZoom?: boolean
+  zoomTo: (bpPerPx: number, clientX?: number) => void
+  horizontalScroll: (delta: number) => void
+}
+
+const SCROLL_ZOOM_FACTOR_DIVISOR = 500
+
+// Ctrl+wheel normalizer thresholds for detecting pinch-to-zoom vs wheel scroll
+const NORMALIZER_PINCH_THRESHOLD = 6
+const NORMALIZER_PINCH_VALUE = 25
+const NORMALIZER_MID_THRESHOLD = 30
+const NORMALIZER_MID_VALUE = 75
+const NORMALIZER_HIGH_THRESHOLD = 150
+const NORMALIZER_HIGH_VALUE = 150
+const NORMALIZER_VERY_HIGH_VALUE = 500
+
+function getNormalizer(averageDeltaY: number): number {
+  if (averageDeltaY < NORMALIZER_PINCH_THRESHOLD) {
+    return NORMALIZER_PINCH_VALUE
+  } else if (averageDeltaY > NORMALIZER_MID_THRESHOLD) {
+    return averageDeltaY > NORMALIZER_HIGH_THRESHOLD
+      ? NORMALIZER_VERY_HIGH_VALUE
+      : NORMALIZER_HIGH_VALUE
+  } else {
+    return NORMALIZER_MID_VALUE
+  }
+}
 
 export function useWheelScroll(
   ref: React.RefObject<HTMLDivElement | null>,
-  model: {
-    bpPerPx: number
-    zoomTo: (arg: number, arg2?: number) => void
-    setScaleFactor: (arg: number) => void
-    horizontalScroll: (arg: number) => void
-  },
+  model: GenomeViewModel,
 ) {
-  const zoomDelta = useRef(0)
+  // Ctrl+wheel zoom state
+  const ctrlZoomDelta = useRef(0)
+
+  // Horizontal scroll state
   const scrollDelta = useRef(0)
-  const timeout = useRef<Timer>(null)
   const rafId = useRef(0)
   const scheduled = useRef(false)
+
+  // Scroll-zoom state
+  const scrollZoomDelta = useRef(0)
+  const zoomScheduled = useRef(false)
+  const zoomRafId = useRef(0)
+  const lastZoomClientX = useRef(0)
 
   useEffect(() => {
     let samples = [] as number[]
@@ -29,43 +60,42 @@ export function useWheelScroll(
     function onWheel(event: WheelEvent) {
       if (event.ctrlKey) {
         event.preventDefault()
-        // there is no way to truly detect this, but it attempts to dynamically
-        // toggle between normalization scheme depending on strength of deltaY,
-        // particular due to the fact that this code path is triggered for both
-        // normal ctrl+wheel scroll and pinch to zoom. for these two cases
-        // - true wheel scroll has larger deltaY
-        // - pinch-to-zoom has much smaller deltaY
-        // though there is variation depending on platform
+        // Dynamically detect pinch-to-zoom vs wheel scroll by examining deltaY magnitude.
+        // This is needed because pinch-to-zoom has smaller deltaY than wheel scroll.
         samples.push(event.deltaY)
         const averageDeltaY = Math.abs(sum(samples)) / samples.length
-        const normalizer =
-          averageDeltaY < 6
-            ? 25
-            : averageDeltaY > 30
-              ? averageDeltaY > 150
-                ? 500
-                : 150
-              : 75
-        zoomDelta.current += event.deltaY / normalizer
-        model.setScaleFactor(
-          zoomDelta.current < 0
-            ? 1 - zoomDelta.current
-            : 1 / (1 + zoomDelta.current),
+        const normalizer = getNormalizer(averageDeltaY)
+        ctrlZoomDelta.current += event.deltaY / normalizer
+
+        // Apply zoom immediately without debouncing
+        model.zoomTo(
+          ctrlZoomDelta.current > 0
+            ? model.bpPerPx * (1 + ctrlZoomDelta.current)
+            : model.bpPerPx / (1 - ctrlZoomDelta.current),
+          event.clientX - (curr?.getBoundingClientRect().left || 0),
         )
-        if (timeout.current) {
-          clearTimeout(timeout.current)
+        ctrlZoomDelta.current = 0
+        samples = []
+      } else if (
+        model.scrollZoom &&
+        Math.abs(event.deltaY) > Math.abs(event.deltaX)
+      ) {
+        event.preventDefault()
+        scrollZoomDelta.current += event.deltaY / SCROLL_ZOOM_FACTOR_DIVISOR
+        lastZoomClientX.current = event.clientX
+        if (!zoomScheduled.current) {
+          zoomScheduled.current = true
+          zoomRafId.current = window.requestAnimationFrame(() => {
+            const d = scrollZoomDelta.current
+            model.zoomTo(
+              d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
+              lastZoomClientX.current -
+                (curr?.getBoundingClientRect().left || 0),
+            )
+            scrollZoomDelta.current = 0
+            zoomScheduled.current = false
+          })
         }
-        timeout.current = setTimeout(() => {
-          model.setScaleFactor(1)
-          model.zoomTo(
-            zoomDelta.current > 0
-              ? model.bpPerPx * (1 + zoomDelta.current)
-              : model.bpPerPx / (1 - zoomDelta.current),
-            event.clientX - (curr?.getBoundingClientRect().left || 0),
-          )
-          zoomDelta.current = 0
-          samples = []
-        }, 300)
       } else {
         // this is needed to stop the event from triggering "back button
         // action" on MacOSX etc.  but is a heuristic to avoid preventing the
@@ -90,11 +120,11 @@ export function useWheelScroll(
       curr.addEventListener('wheel', onWheel, { passive: false })
       return () => {
         curr.removeEventListener('wheel', onWheel)
-        if (timeout.current) {
-          clearTimeout(timeout.current)
-        }
         if (rafId.current) {
           cancelAnimationFrame(rafId.current)
+        }
+        if (zoomRafId.current) {
+          cancelAnimationFrame(zoomRafId.current)
         }
       }
     }

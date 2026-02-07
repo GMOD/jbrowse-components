@@ -1,15 +1,15 @@
 import type React from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   FeatureDensityMixin,
-  NonBlockCanvasDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import type { HicFlatbushItem } from '../HicRenderer/types.ts'
+import type { WebGLHicDataResult } from '../RenderWebGLHicDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -20,12 +20,11 @@ import type {
 /**
  * #stateModel LinearHicDisplay
  * #category display
- * Non-block-based Hi-C display that renders to a single canvas
+ * Hi-C display that renders contact matrix using WebGL
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
  * - [FeatureDensityMixin](../featuredensitymixin)
- * - [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -38,7 +37,6 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       FeatureDensityMixin(),
-      NonBlockCanvasDisplayMixin(),
       types.model({
         /**
          * #property
@@ -78,11 +76,35 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
+      rpcData: null as WebGLHicDataResult | null,
+      /**
+       * #volatile
+       */
+      loading: false,
+      /**
+       * #volatile
+       */
+      statusMessage: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      lastDrawnOffsetPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
+      lastDrawnBpPerPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
+      renderingStopToken: undefined as string | undefined,
+      /**
+       * #volatile
+       */
       availableNormalizations: undefined as string[] | undefined,
       /**
        * #volatile
        */
-      flatbush: undefined as ArrayBufferLike | undefined,
+      flatbush: undefined as ArrayBuffer | undefined,
       /**
        * #volatile
        */
@@ -103,70 +125,57 @@ export default function stateModelFactory(
       get rendererTypeName() {
         return 'HicRenderer'
       },
-
-      get rendererConfig() {
-        return {
-          ...getConf(self, 'renderer'),
-          ...(self.colorScheme
-            ? { color: 'jexl:interpolate(count,scale)' }
-            : {}),
-        }
+      get drawn() {
+        return !!self.rpcData
+      },
+      get fullyDrawn() {
+        return !!self.rpcData
       },
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        renderProps() {
-          return {
-            ...superRenderProps(),
-            config: self.rendererConfig,
-            resolution: self.resolution,
-            useLogScale: self.useLogScale,
-            colorScheme: self.colorScheme,
-            normalization: self.activeNormalization,
-            displayHeight: self.mode === 'adjust' ? self.height : undefined,
-          }
-        },
+    .views(self => ({
+      renderProps() {
+        return { notReady: true }
+      },
 
-        /**
-         * #method
-         * Returns legend items for the Hi-C color scale
-         */
-        legendItems(): LegendItem[] {
-          const colorScheme = self.colorScheme ?? 'juicebox'
-          const displayMax = self.useLogScale
-            ? self.maxScore
-            : Math.round(self.maxScore / 20)
-          const minLabel = self.useLogScale ? '1' : '0'
-          const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
+      /**
+       * #method
+       * Returns legend items for the Hi-C color scale
+       */
+      legendItems(): LegendItem[] {
+        const colorScheme = self.colorScheme ?? 'juicebox'
+        const displayMax = self.useLogScale
+          ? self.maxScore
+          : Math.round(self.maxScore / 20)
+        const minLabel = self.useLogScale ? '1' : '0'
+        const maxLabel = `${displayMax.toLocaleString()}${self.useLogScale ? ' (log)' : ''}`
 
-          return [
-            {
-              label: `${minLabel} - ${maxLabel} (${colorScheme})`,
-            },
-          ]
-        },
+        return [
+          {
+            label: `${minLabel} - ${maxLabel} (${colorScheme})`,
+          },
+        ]
+      },
 
-        /**
-         * #method
-         * Returns the width needed for the SVG legend if showLegend is enabled.
-         */
-        svgLegendWidth(): number {
-          // Hi-C legend is a fixed width gradient bar (120px + margin)
-          // Only show when we have data (maxScore > 0)
-          return self.showLegend && self.maxScore > 0 ? 140 : 0
-        },
-      }
-    })
+      /**
+       * #method
+       * Returns the width needed for the SVG legend if showLegend is enabled.
+       */
+      svgLegendWidth(): number {
+        return self.showLegend && self.maxScore > 0 ? 140 : 0
+      },
+    }))
     .actions(self => ({
       /**
        * #action
        */
+      setRpcData(data: WebGLHicDataResult | null) {
+        self.rpcData = data
+      },
+      /**
+       * #action
+       */
       setFlatbushData(
-        flatbush: ArrayBufferLike | undefined,
+        flatbush: ArrayBuffer | undefined,
         items: HicFlatbushItem[],
         maxScore: number,
         yScalar: number,
@@ -175,6 +184,36 @@ export default function stateModelFactory(
         self.flatbushItems = items
         self.maxScore = maxScore
         self.yScalar = yScalar
+      },
+      /**
+       * #action
+       */
+      setLoading(loading: boolean) {
+        self.loading = loading
+      },
+      /**
+       * #action
+       */
+      setStatusMessage(msg?: string) {
+        self.statusMessage = msg
+      },
+      /**
+       * #action
+       */
+      setLastDrawnOffsetPx(px: number) {
+        self.lastDrawnOffsetPx = px
+      },
+      /**
+       * #action
+       */
+      setLastDrawnBpPerPx(bpPerPx: number) {
+        self.lastDrawnBpPerPx = bpPerPx
+      },
+      /**
+       * #action
+       */
+      setRenderingStopToken(token?: string) {
+        self.renderingStopToken = token
       },
       /**
        * #action

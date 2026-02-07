@@ -5,6 +5,8 @@ import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
 import DensityRendererF from './DensityRenderer/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
 import LinePlotRendererF from './LinePlotRenderer/index.ts'
+import LinearWebGLMultiWiggleDisplayF from './LinearWebGLMultiWiggleDisplay/index.ts'
+import LinearWebGLWiggleDisplayF from './LinearWebGLWiggleDisplay/index.ts'
 import LinearWiggleDisplayF, {
   ReactComponent as LinearWiggleDisplayReactComponent,
   modelFactory as linearWiggleDisplayModelFactory,
@@ -19,6 +21,8 @@ import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow/index.ts'
 import MultiXYPlotRendererF from './MultiXYPlotRenderer/index.ts'
 import QuantitativeTrackF from './QuantitativeTrack/index.ts'
+import RenderWebGLMultiWiggleDataRPCF from './RenderWebGLMultiWiggleDataRPC/index.ts'
+import RenderWebGLWiggleDataRPCF from './RenderWebGLWiggleDataRPC/index.ts'
 import {
   MultiWiggleClusterScoreMatrix,
   MultiWiggleGetScoreMatrix,
@@ -43,7 +47,9 @@ export default class WigglePlugin extends Plugin {
     BigWigAdapterF(pm)
     QuantitativeTrackF(pm)
     MultiQuantitativeTrackF(pm)
+    LinearWebGLWiggleDisplayF(pm)
     LinearWiggleDisplayF(pm)
+    LinearWebGLMultiWiggleDisplayF(pm)
     MultiLinearWiggleDisplayF(pm)
     LinePlotRendererF(pm)
     XYPlotRendererF(pm)
@@ -56,6 +62,8 @@ export default class WigglePlugin extends Plugin {
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
     GuessAdapterF(pm)
+    RenderWebGLWiggleDataRPCF(pm)
+    RenderWebGLMultiWiggleDataRPCF(pm)
 
     pm.addRpcMethod(() => new WiggleGetGlobalQuantitativeStats(pm))
     pm.addRpcMethod(() => new WiggleGetMultiRegionQuantitativeStats(pm))

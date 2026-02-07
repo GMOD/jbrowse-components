@@ -53,6 +53,7 @@
     "**/webpack.config.js",
     "**/website",
     "**/auth_test_utils",
+    "**/webgl-poc",
     "products/jbrowse-desktop/test"
   ]
 }

@@ -57,7 +57,6 @@ export function getMultiVariantSourcesAutorun(self: {
           }
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {
-            console.error(e)
             getSession(self).notifyError(`${e}`, e)
           }
         }

@@ -53,6 +53,6 @@ export function LinearAlignmentsDisplayMixin(
     /**
      * #property
      */
-    lowerPanelType: 'LinearPileupDisplay',
+    lowerPanelType: 'LinearWebGLPileupDisplay',
   })
 }

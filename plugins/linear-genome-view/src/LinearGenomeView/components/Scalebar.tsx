@@ -17,9 +17,6 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
     position: 'relative',
   },
-  zoomContainer: {
-    position: 'relative',
-  },
   scalebar: {
     position: 'absolute',
     display: 'flex',
@@ -33,6 +30,9 @@ interface ScalebarProps {
   className?: string
 }
 
+// Thin wrapper that re-renders on scroll to update the transform.
+// Children (ScalebarCoordinateLabels, ScalebarRefNameLabels) are separate
+// observers that only re-render when their own tracked observables change.
 const Scalebar = observer(function Scalebar({
   model,
   style,
@@ -40,8 +40,12 @@ const Scalebar = observer(function Scalebar({
   ...other
 }: ScalebarProps) {
   const { classes } = useStyles()
-  const { scaleFactor, staticBlocks, offsetPx } = model
+  const { staticBlocks, offsetPx } = model
   const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
+  // console.log('[Scalebar] render', {
+  //   numBlocks: staticBlocks.blocks.length,
+  //   totalWidthPx: staticBlocks.totalWidthPx,
+  // })
 
   return (
     <Paper
@@ -54,20 +58,13 @@ const Scalebar = observer(function Scalebar({
       {/* offset 1px for left track border */}
       <Gridlines model={model} offset={1} />
       <div
-        className={classes.zoomContainer}
+        className={classes.scalebar}
         style={{
-          transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
+          transform: `translateX(${offsetLeft - 1}px)`,
+          width: staticBlocks.totalWidthPx,
         }}
       >
-        <div
-          className={classes.scalebar}
-          style={{
-            transform: `translateX(${offsetLeft - 1}px)`,
-            width: staticBlocks.totalWidthPx,
-          }}
-        >
-          <ScalebarCoordinateLabels model={model} />
-        </div>
+        <ScalebarCoordinateLabels model={model} />
       </div>
       <ScalebarRefNameLabels model={model} />
     </Paper>
