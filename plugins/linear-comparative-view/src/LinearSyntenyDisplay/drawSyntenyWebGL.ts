@@ -556,8 +556,13 @@ export class SyntenyWebGLRenderer {
     const gl = this.gl
     this.cleanupGeometry()
 
-    // Store bpPerPx used for this geometry so we can scale correctly
-    // if the view zooms before new geometry arrives from RPC
+    // Store bpPerPx used for this geometry so we can scale correctly if
+    // the view zooms before new geometry arrives from RPC. Without this,
+    // the old geometry (in old pixel coords) rendered with new offsets
+    // causes a visible glitch. The shader multiplies positions by
+    // geometryBpPerPx/currentBpPerPx to compensate. Note: inter-region
+    // padding doesn't scale with bpPerPx, so positions near region
+    // boundaries may be slightly off until the RPC returns fresh geometry
     this.geometryBpPerPx0 = bpPerPxs[level]!
     this.geometryBpPerPx1 = bpPerPxs[level + 1]!
 
@@ -575,12 +580,24 @@ export class SyntenyWebGLRenderer {
     const fallbackBpPerPxInv0 = 1 / bpPerPxs[level]!
     const fallbackBpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
-    // Pass 1: non-CIGAR features (these get edge rendering)
+    // Minimum pixel width for meaningful CIGAR decomposition. Features thinner
+    // than this are drawn as single instances with edge rendering instead of
+    // being decomposed into invisible sub-pixel CIGAR segments.
+    const minCigarPxWidth = 4
+
+    // Pass 1: non-CIGAR features + CIGAR features too thin to decompose
+    // (these get edge rendering which keeps thin features visible)
     for (let i = 0; i < featPositions.length; i++) {
       const feat = featPositions[i]!
       const { p11, p12, p21, p22, f, cigar } = feat
       if (cigar.length > 0 && drawCIGAR) {
-        continue
+        const featureWidth = Math.max(
+          Math.abs(p12.offsetPx - p11.offsetPx),
+          Math.abs(p22.offsetPx - p21.offsetPx),
+        )
+        if (featureWidth >= minCigarPxWidth) {
+          continue
+        }
       }
       const x11 = p11.offsetPx
       const x12 = p12.offsetPx
@@ -608,11 +625,19 @@ export class SyntenyWebGLRenderer {
     // Edge pass only draws up to this count (skips CIGAR segments)
     this.nonCigarInstanceCount = x1s.length
 
-    // Pass 2: CIGAR features (no edge rendering to avoid boundary artifacts)
+    // Pass 2: CIGAR features wide enough to decompose (no edge rendering to
+    // avoid boundary artifacts). Thin features were already drawn in Pass 1.
     for (let i = 0; i < featPositions.length; i++) {
       const feat = featPositions[i]!
       const { p11, p12, p21, p22, f, cigar } = feat
       if (!(cigar.length > 0 && drawCIGAR)) {
+        continue
+      }
+      const featureWidth = Math.max(
+        Math.abs(p12.offsetPx - p11.offsetPx),
+        Math.abs(p22.offsetPx - p21.offsetPx),
+      )
+      if (featureWidth < minCigarPxWidth) {
         continue
       }
       const x11 = p11.offsetPx

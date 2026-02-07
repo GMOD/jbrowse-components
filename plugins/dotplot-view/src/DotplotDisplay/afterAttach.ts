@@ -38,16 +38,41 @@ export function doAfterAttach(self: DotplotDisplayModel) {
       }
       const { rpcManager } = getSession(self)
       const { adapterConfig, regions, sessionId } = args
-      return {
-        features: dedupe(
-          (await rpcManager.call(sessionId, 'CoreGetFeatures', {
-            regions,
-            sessionId,
-            adapterConfig,
-          })) as Feature[],
-          f => f.id(),
-        ),
+      const rawFeatures = (await rpcManager.call(
+        sessionId,
+        'CoreGetFeatures',
+        {
+          regions,
+          sessionId,
+          adapterConfig,
+        },
+      )) as Feature[]
+      const features = dedupe(rawFeatures, f => f.id())
+      console.log(
+        '[DotplotWebGL] Reaction 1: fetched',
+        features.length,
+        'features (raw:',
+        rawFeatures.length,
+        ') from',
+        regions.length,
+        'regions',
+      )
+      if (features.length > 0) {
+        const f0 = features[0]!
+        console.log(
+          '[DotplotWebGL] Sample feature:',
+          f0.get('refName'),
+          f0.get('start'),
+          '-',
+          f0.get('end'),
+          'assemblyName:',
+          f0.get('assemblyName'),
+          'mate:',
+          f0.get('mate')?.refName,
+          f0.get('mate')?.assemblyName,
+        )
       }
+      return { features }
     },
     {
       name: `${self.type} ${self.id} feature loading`,
@@ -125,6 +150,34 @@ export function doAfterAttach(self: DotplotDisplayModel) {
             cigar: f.get('CIGAR') as string | undefined,
           })
         }
+        if (serializedFeatures.length > 0) {
+          const s0 = serializedFeatures[0]!
+          console.log(
+            '[DotplotWebGL] Reaction 2: serialized',
+            serializedFeatures.length,
+            'features. Sample: refName=',
+            s0.refName,
+            'mateRefName=',
+            s0.mateRefName,
+          )
+          console.log(
+            '[DotplotWebGL] hView displayedRegions:',
+            hViewSnap.displayedRegions.length,
+            'regions, sample refName=',
+            hViewSnap.displayedRegions[0]?.refName,
+          )
+          console.log(
+            '[DotplotWebGL] vView displayedRegions:',
+            vViewSnap.displayedRegions.length,
+            'regions, sample refName=',
+            vViewSnap.displayedRegions[0]?.refName,
+          )
+          console.log(
+            '[DotplotWebGL] hView staticBlocks:',
+            hViewSnap.staticBlocks.contentBlocks.length,
+            'contentBlocks',
+          )
+        }
 
         const result = (await rpcManager.call(
           sessionId,
@@ -144,6 +197,12 @@ export function doAfterAttach(self: DotplotDisplayModel) {
           cigars: string[]
         }
 
+        console.log(
+          '[DotplotWebGL] Reaction 2: RPC returned',
+          result.featureIds.length,
+          'features',
+        )
+
         const featureMap = new Map(self.features.map(f => [f.id(), f]))
         const positions: DotplotFeatPos[] = []
         for (let i = 0; i < result.featureIds.length; i++) {
@@ -159,6 +218,24 @@ export function doAfterAttach(self: DotplotDisplayModel) {
             f,
             cigar: MismatchParser.parseCigar(result.cigars[i]),
           })
+        }
+        console.log(
+          '[DotplotWebGL] Reaction 2: reconstructed',
+          positions.length,
+          'positions',
+        )
+        if (positions.length > 0) {
+          const p0 = positions[0]!
+          console.log(
+            '[DotplotWebGL] Sample position: p11=',
+            p0.p11.offsetPx,
+            'p12=',
+            p0.p12.offsetPx,
+            'p21=',
+            p0.p21.offsetPx,
+            'p22=',
+            p0.p22.offsetPx,
+          )
         }
         self.setFeatPositions(positions)
       },
