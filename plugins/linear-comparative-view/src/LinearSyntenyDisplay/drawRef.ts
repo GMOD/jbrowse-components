@@ -61,7 +61,7 @@ export function drawRef(
   const bpPerPxInv1 = 1 / bpPerPx1
 
   // Get click map context once
-  const clickMapCtx = model.clickMapCanvas?.getContext('2d')
+  const clickMapCtx = (model as any).clickMapCanvas?.getContext('2d') as CanvasRenderingContext2D | undefined
   if (clickMapCtx) {
     clickMapCtx.imageSmoothingEnabled = false
     clickMapCtx.clearRect(0, 0, width, height)

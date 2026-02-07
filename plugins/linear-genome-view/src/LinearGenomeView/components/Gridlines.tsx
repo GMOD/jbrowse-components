@@ -110,14 +110,11 @@ const Gridlines = observer(function Gridlines({
   offset?: number
 }) {
   const { classes } = useStyles()
-  const { staticBlocks, scaleFactor, offsetPx } = model
+  const { staticBlocks, offsetPx } = model
   const offsetLeft = staticBlocks.offsetPx - offsetPx
   return (
     <div
       className={classes.verticalGuidesZoomContainer}
-      style={{
-        transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
-      }}
     >
       <div
         className={classes.verticalGuidesContainer}

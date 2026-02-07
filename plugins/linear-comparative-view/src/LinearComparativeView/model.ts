@@ -163,7 +163,6 @@ function stateModelFactory(pluginManager: PluginManager) {
               const syncActions = [
                 'horizontalScroll',
                 'zoomTo',
-                'setScaleFactor',
               ]
 
               if (self.linkViews && syncActions.includes(rawCall.name)) {

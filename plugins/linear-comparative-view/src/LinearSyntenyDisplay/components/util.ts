@@ -229,7 +229,8 @@ export function getFeatureAtClick(
   model: LinearSyntenyDisplayModel,
   canvasRectRef?: RefObject<DOMRect | null>,
 ) {
-  const { clickMapCanvas, numFeats, featPositions } = model
+  const { numFeats, featPositions } = model
+  const clickMapCanvas = (model as any).clickMapCanvas as HTMLCanvasElement | undefined
   if (!clickMapCanvas) {
     return undefined
   }
@@ -237,7 +238,7 @@ export function getFeatureAtClick(
   if (!ctx) {
     return undefined
   }
-  let rect = canvasRectRef?.current
+  let rect = canvasRectRef?.current ?? null
   if (!rect) {
     console.warn('[SyntenyUtil] canvasRectRef cache miss (getFeatureAtClick)')
     rect = clickMapCanvas.getBoundingClientRect()
@@ -247,9 +248,9 @@ export function getFeatureAtClick(
   }
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
-  const [r, g, b] = ctx.getImageData(x, y, 1, 1).data
+  const data = ctx.getImageData(x, y, 1, 1).data
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
-  const id = getId(r, g, b, unitMultiplier)
+  const id = getId(data[0]!, data[1]!, data[2]!, unitMultiplier)
   return featPositions[id]
 }
 

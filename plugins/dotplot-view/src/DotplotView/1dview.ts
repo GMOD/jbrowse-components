@@ -1,7 +1,6 @@
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { getParent } from '@jbrowse/mobx-state-tree'
-import { observable } from 'mobx'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -12,7 +11,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const Dotplot1DView = Base1DView.extend(self => {
-  const scaleFactor = observable.box(1)
   return {
     views: {
       /**
@@ -21,13 +19,6 @@ const Dotplot1DView = Base1DView.extend(self => {
        */
       get dynamicBlocks() {
         return calculateDynamicBlocks(self, false, false)
-      },
-      /**
-       * #getter
-       */
-
-      get scaleFactor() {
-        return scaleFactor.get()
       },
 
       /**
@@ -75,13 +66,6 @@ const Dotplot1DView = Base1DView.extend(self => {
       },
     },
     actions: {
-      /**
-       * #action
-       */
-      setScaleFactor(n: number) {
-        scaleFactor.set(n)
-      },
-
       /**
        * #action
        */

@@ -42,7 +42,7 @@ function serializeFeatures(
   return serialized
 }
 
-export function doAfterAttach(self: DotplotDisplayModel) {
+export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
   // Reaction 1: Fetch features via CoreGetFeatures RPC
   makeAbortableReaction(
     self,

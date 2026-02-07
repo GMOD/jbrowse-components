@@ -3,7 +3,6 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import { colorSchemes } from './drawSyntenyUtils.ts'
 
-import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { FeatPos } from './model.ts'
 
 // Number of segments for bezier tessellation (fill and edge passes)
@@ -294,7 +293,7 @@ function createProgram(
 ) {
   const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
   const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
-  const program = gl.createProgram()!
+  const program = gl.createProgram()
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
@@ -790,7 +789,7 @@ export class SyntenyWebGLRenderer {
       let totalBpView1 = 0
       for (let j = 0; j < cigar.length; j += 2) {
         const len = +cigar[j]!
-        const op = cigar[j + 1]
+        const op = cigar[j + 1]!
         if (op === 'M' || op === '=' || op === 'X') {
           totalBpView0 += len
           totalBpView1 += len
@@ -817,7 +816,7 @@ export class SyntenyWebGLRenderer {
 
       for (let j = 0; j < cigar.length; j += 2) {
         const len = +cigar[j]!
-        const op = cigar[j + 1]
+        const op = cigar[j + 1]!
 
         if (!continuingFlag) {
           px1 = cx1

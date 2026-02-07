@@ -127,18 +127,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self)
-          } catch (e) {
-            console.error(e)
-            self.setError(e)
-          }
-        })()
-      },
       /**
        * #action
        */
@@ -203,6 +191,20 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setColorBy(value: string) {
         self.colorBy = value
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./afterAttach.ts')
+            doAfterAttach(self)
+          } catch (e) {
+            console.error(e)
+            self.setError(e)
+          }
+        })()
       },
     }))
 }

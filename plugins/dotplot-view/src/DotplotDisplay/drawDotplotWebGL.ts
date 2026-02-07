@@ -94,7 +94,7 @@ function createProgram(
 ) {
   const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
   const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
-  const program = gl.createProgram()!
+  const program = gl.createProgram()
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
