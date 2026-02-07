@@ -15,6 +15,7 @@ import { makeStyles } from '../../../util/tss-react/index.ts'
 import { useFeatureSequence } from '../../../util/useFeatureSequence.ts'
 import SequencePanel from '../SequencePanel.tsx'
 
+import type { SequenceFeatureDetailsModel } from '../model.ts'
 import type { BaseFeatureWidgetModel } from '../../stateModelFactory.ts'
 
 const useStyles = makeStyles()({
@@ -26,13 +27,14 @@ const useStyles = makeStyles()({
 const SequenceDialog = observer(function SequenceDialog({
   handleClose,
   model,
+  sequenceFeatureDetails,
   feature,
 }: {
   handleClose: () => void
   feature: SimpleFeatureSerialized
   model: BaseFeatureWidgetModel
+  sequenceFeatureDetails: SequenceFeatureDetailsModel
 }) {
-  const { sequenceFeatureDetails } = model
   const { upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
