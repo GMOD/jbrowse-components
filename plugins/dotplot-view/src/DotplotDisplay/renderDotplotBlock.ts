@@ -52,21 +52,3 @@ export function renderBlockData(self: IAnyStateTreeNode) {
   return undefined
 }
 
-export async function renderBlockEffect(
-  props?: ReturnType<typeof renderBlockData>,
-) {
-  if (!props) {
-    return
-  }
-
-  const { rendererType, rpcManager, renderProps, renderingProps } = props
-  const { reactElement, ...data } = await rendererType.renderInClient(
-    rpcManager,
-    { ...renderProps, renderingProps },
-  )
-  return {
-    reactElement,
-    data,
-    renderingComponent: rendererType.ReactComponent,
-  }
-}

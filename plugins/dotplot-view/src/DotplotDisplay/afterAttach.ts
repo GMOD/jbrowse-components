@@ -16,6 +16,32 @@ import type { DotplotFeatureData, DotplotFeatPos } from './types.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+function serializeFeatures(
+  features: Feature[],
+  assemblyManager: { get: (name: string) => any },
+) {
+  const serialized: DotplotFeatureData[] = []
+  for (const f of features) {
+    const mate = f.get('mate')
+    const refName = f.get('refName')
+    const mateRefName = mate.refName
+    const a1 = assemblyManager.get(f.get('assemblyName'))
+    const a2 = assemblyManager.get(mate.assemblyName)
+    serialized.push({
+      id: f.id(),
+      refName: a1?.getCanonicalRefName(refName) || refName,
+      mateRefName: a2?.getCanonicalRefName(mateRefName) || mateRefName,
+      start: f.get('start'),
+      end: f.get('end'),
+      mateStart: mate.start,
+      mateEnd: mate.end,
+      strand: f.get('strand') || 1,
+      cigar: f.get('CIGAR') as string | undefined,
+    })
+  }
+  return serialized
+}
+
 export function doAfterAttach(self: DotplotDisplayModel) {
   // Reaction 1: Fetch features via CoreGetFeatures RPC
   makeAbortableReaction(
@@ -47,32 +73,7 @@ export function doAfterAttach(self: DotplotDisplayModel) {
           adapterConfig,
         },
       )) as Feature[]
-      const features = dedupe(rawFeatures, f => f.id())
-      console.log(
-        '[DotplotWebGL] Reaction 1: fetched',
-        features.length,
-        'features (raw:',
-        rawFeatures.length,
-        ') from',
-        regions.length,
-        'regions',
-      )
-      if (features.length > 0) {
-        const f0 = features[0]!
-        console.log(
-          '[DotplotWebGL] Sample feature:',
-          f0.get('refName'),
-          f0.get('start'),
-          '-',
-          f0.get('end'),
-          'assemblyName:',
-          f0.get('assemblyName'),
-          'mate:',
-          f0.get('mate')?.refName,
-          f0.get('mate')?.assemblyName,
-        )
-      }
-      return { features }
+      return { features: dedupe(rawFeatures, f => f.id()) }
     },
     {
       name: `${self.type} ${self.id} feature loading`,
@@ -84,20 +85,28 @@ export function doAfterAttach(self: DotplotDisplayModel) {
     self.setError,
   )
 
-  // Reaction 2: Compute feat positions on the worker via RPC
+  // Reaction 2: Compute feat positions on the worker via RPC.
+  // Cached serialized features avoid re-serialization on zoom-only changes.
+  let cachedFeatures: Feature[] | undefined
+  let cachedSerialized: DotplotFeatureData[] = []
+
   addDisposer(
     self,
     reaction(
       () => {
-        const view = getContainingView(self) as DotplotViewModel
-        return {
-          bpPerPx: [view.hview.bpPerPx, view.vview.bpPerPx],
-          displayedRegions: JSON.stringify([
-            view.hview.displayedRegions,
-            view.vview.displayedRegions,
-          ]),
-          features: self.features,
-          initialized: view.initialized,
+        try {
+          const view = getContainingView(self) as DotplotViewModel
+          return {
+            bpPerPx: [view.hview.bpPerPx, view.vview.bpPerPx],
+            displayedRegions: JSON.stringify([
+              view.hview.displayedRegions,
+              view.vview.displayedRegions,
+            ]),
+            features: self.features,
+            initialized: view.initialized,
+          }
+        } catch {
+          return { initialized: false as const }
         }
       },
       async ({ initialized }) => {
@@ -108,6 +117,12 @@ export function doAfterAttach(self: DotplotDisplayModel) {
         const view = getContainingView(self) as DotplotViewModel
         const sessionId = getRpcSessionId(self)
         const { hview, vview } = view
+
+        // Capture bpPerPx at this moment — the RPC will compute positions
+        // at this zoom level. We store it alongside the positions so the
+        // draw autorun can compute the correct scale factor.
+        const snapshotBpPerPxH = hview.bpPerPx
+        const snapshotBpPerPxV = vview.bpPerPx
 
         const hViewSnap = {
           ...getSnapshot(hview),
@@ -131,59 +146,17 @@ export function doAfterAttach(self: DotplotDisplayModel) {
           minimumBlockWidth: vview.minimumBlockWidth,
         }
 
-        const serializedFeatures: DotplotFeatureData[] = []
-        for (const f of self.features) {
-          const mate = f.get('mate')
-          const refName = f.get('refName')
-          const mateRefName = mate.refName
-          const a1 = assemblyManager.get(f.get('assemblyName'))
-          const a2 = assemblyManager.get(mate.assemblyName)
-          serializedFeatures.push({
-            id: f.id(),
-            refName: a1?.getCanonicalRefName(refName) || refName,
-            mateRefName: a2?.getCanonicalRefName(mateRefName) || mateRefName,
-            start: f.get('start'),
-            end: f.get('end'),
-            mateStart: mate.start,
-            mateEnd: mate.end,
-            strand: f.get('strand') || 1,
-            cigar: f.get('CIGAR') as string | undefined,
-          })
-        }
-        if (serializedFeatures.length > 0) {
-          const s0 = serializedFeatures[0]!
-          console.log(
-            '[DotplotWebGL] Reaction 2: serialized',
-            serializedFeatures.length,
-            'features. Sample: refName=',
-            s0.refName,
-            'mateRefName=',
-            s0.mateRefName,
-          )
-          console.log(
-            '[DotplotWebGL] hView displayedRegions:',
-            hViewSnap.displayedRegions.length,
-            'regions, sample refName=',
-            hViewSnap.displayedRegions[0]?.refName,
-          )
-          console.log(
-            '[DotplotWebGL] vView displayedRegions:',
-            vViewSnap.displayedRegions.length,
-            'regions, sample refName=',
-            vViewSnap.displayedRegions[0]?.refName,
-          )
-          console.log(
-            '[DotplotWebGL] hView staticBlocks:',
-            hViewSnap.staticBlocks.contentBlocks.length,
-            'contentBlocks',
-          )
+        // Only re-serialize when features actually change
+        if (self.features !== cachedFeatures) {
+          cachedFeatures = self.features
+          cachedSerialized = serializeFeatures(self.features, assemblyManager)
         }
 
         const result = (await rpcManager.call(
           sessionId,
           'DotplotGetWebGLGeometry',
           {
-            features: serializedFeatures,
+            features: cachedSerialized,
             hViewSnap,
             vViewSnap,
             sessionId,
@@ -197,49 +170,24 @@ export function doAfterAttach(self: DotplotDisplayModel) {
           cigars: string[]
         }
 
-        console.log(
-          '[DotplotWebGL] Reaction 2: RPC returned',
-          result.featureIds.length,
-          'features',
-        )
-
         const featureMap = new Map(self.features.map(f => [f.id(), f]))
         const positions: DotplotFeatPos[] = []
         for (let i = 0; i < result.featureIds.length; i++) {
           const f = featureMap.get(result.featureIds[i]!)
-          if (!f) {
-            continue
+          if (f) {
+            positions.push({
+              p11: result.p11_offsetPx[i]!,
+              p12: result.p12_offsetPx[i]!,
+              p21: result.p21_offsetPx[i]!,
+              p22: result.p22_offsetPx[i]!,
+              f,
+              cigar: MismatchParser.parseCigar(result.cigars[i]),
+            })
           }
-          positions.push({
-            p11: { offsetPx: result.p11_offsetPx[i]! },
-            p12: { offsetPx: result.p12_offsetPx[i]! },
-            p21: { offsetPx: result.p21_offsetPx[i]! },
-            p22: { offsetPx: result.p22_offsetPx[i]! },
-            f,
-            cigar: MismatchParser.parseCigar(result.cigars[i]),
-          })
         }
-        console.log(
-          '[DotplotWebGL] Reaction 2: reconstructed',
-          positions.length,
-          'positions',
-        )
-        if (positions.length > 0) {
-          const p0 = positions[0]!
-          console.log(
-            '[DotplotWebGL] Sample position: p11=',
-            p0.p11.offsetPx,
-            'p12=',
-            p0.p12.offsetPx,
-            'p21=',
-            p0.p21.offsetPx,
-            'p22=',
-            p0.p22.offsetPx,
-          )
-        }
-        self.setFeatPositions(positions)
+        self.setFeatPositions(positions, snapshotBpPerPxH, snapshotBpPerPxV)
       },
-      { fireImmediately: true },
+      { fireImmediately: true, delay: 300 },
     ),
   )
 
@@ -252,13 +200,29 @@ export function doAfterAttach(self: DotplotDisplayModel) {
     self,
     autorun(
       function dotplotDrawAutorun() {
-        const view = getContainingView(self) as DotplotViewModel
+        let view: DotplotViewModel
+        try {
+          view = getContainingView(self) as DotplotViewModel
+        } catch {
+          return
+        }
         if (!view.initialized) {
           return
         }
 
-        const { alpha, colorBy, featPositions, minAlignmentLength } = self
+        const {
+          alpha,
+          colorBy,
+          featPositions,
+          featPositionsBpPerPxH,
+          featPositionsBpPerPxV,
+          minAlignmentLength,
+        } = self
         const { viewWidth, viewHeight, hview, vview, drawCigar } = view
+
+        // Always read bpPerPx so MobX tracks it and reruns on zoom
+        const hBpPerPx = hview.bpPerPx
+        const vBpPerPx = vview.bpPerPx
 
         if (!self.webglRenderer || !self.webglInitialized) {
           return
@@ -294,14 +258,29 @@ export function doAfterAttach(self: DotplotDisplayModel) {
             filteredPositions,
             colorFn,
             drawCigar,
-            hview.bpPerPx,
-            vview.bpPerPx,
+            hBpPerPx,
+            vBpPerPx,
           )
           lastGeometryKey = geometryKey
           lastFeatPositions = filteredPositions
         }
 
-        self.webglRenderer.render(hview.offsetPx, vview.offsetPx, 2)
+        // Scale factors: ratio of the bpPerPx at which Reaction 2 computed
+        // the positions to the current bpPerPx. During zoom (before new
+        // geometry arrives from the RPC), this stretches/shrinks the existing
+        // geometry to match the new zoom level.
+        const scaleX =
+          featPositionsBpPerPxH > 0 ? featPositionsBpPerPxH / hBpPerPx : 1
+        const scaleY =
+          featPositionsBpPerPxV > 0 ? featPositionsBpPerPxV / vBpPerPx : 1
+
+        self.webglRenderer.render(
+          hview.offsetPx,
+          vview.offsetPx,
+          2,
+          scaleX,
+          scaleY,
+        )
       },
       {
         name: 'DotplotDraw',

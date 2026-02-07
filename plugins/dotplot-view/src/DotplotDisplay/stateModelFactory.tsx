@@ -69,6 +69,16 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * minimum alignment length to display (in bp)
            */
           minAlignmentLength: 0,
+          /**
+           * #volatile
+           * bpPerPx at which featPositions were computed (h-axis)
+           */
+          featPositionsBpPerPxH: 0,
+          /**
+           * #volatile
+           * bpPerPx at which featPositions were computed (v-axis)
+           */
+          featPositionsBpPerPxV: 0,
         })),
     )
     .views(self => ({
@@ -148,8 +158,14 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setFeatPositions(positions: DotplotFeatPos[]) {
+      setFeatPositions(
+        positions: DotplotFeatPos[],
+        bpPerPxH: number,
+        bpPerPxV: number,
+      ) {
         self.featPositions = positions
+        self.featPositionsBpPerPxH = bpPerPxH
+        self.featPositionsBpPerPxV = bpPerPxV
       },
       /**
        * #action

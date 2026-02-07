@@ -3,11 +3,9 @@ import type { DotplotFeatPos } from './types.ts'
 const LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-// per-vertex template attributes
 in float a_t;
 in float a_side;
 
-// per-instance attributes
 in float a_x1;
 in float a_y1;
 in float a_x2;
@@ -18,22 +16,23 @@ uniform vec2 u_resolution;
 uniform float u_offsetX;
 uniform float u_offsetY;
 uniform float u_lineWidth;
+uniform float u_scaleX;
+uniform float u_scaleY;
 
 out vec4 v_color;
 out float v_dist;
 
 void main() {
-  // Apply scroll offsets to get viewport-relative positions
-  float sx1 = a_x1 - u_offsetX;
-  float sy1 = u_resolution.y - (a_y1 - u_offsetY);
-  float sx2 = a_x2 - u_offsetX;
-  float sy2 = u_resolution.y - (a_y2 - u_offsetY);
+  // Scale geometry from reference zoom level to current zoom level,
+  // then apply scroll offsets to get viewport-relative positions
+  float sx1 = a_x1 * u_scaleX - u_offsetX;
+  float sy1 = u_resolution.y - (a_y1 * u_scaleY - u_offsetY);
+  float sx2 = a_x2 * u_scaleX - u_offsetX;
+  float sy2 = u_resolution.y - (a_y2 * u_scaleY - u_offsetY);
 
-  // Interpolate along the line
   float x = mix(sx1, sx2, a_t);
   float y = mix(sy1, sy2, a_t);
 
-  // Compute perpendicular for ribbon extrusion
   vec2 dir = vec2(sx2 - sx1, sy2 - sy1);
   float len = length(dir);
   vec2 normal;
@@ -45,7 +44,6 @@ void main() {
   }
 
   vec2 pos = vec2(x, y) + normal * a_side * u_lineWidth * 0.5;
-
   vec2 clipSpace = (pos / u_resolution) * 2.0 - 1.0;
   gl_Position = vec4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
   v_color = a_color;
@@ -81,7 +79,6 @@ function createShader(
   }
   gl.shaderSource(shader, source)
   gl.compileShader(shader)
-
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     const info = gl.getShaderInfoLog(shader)
     gl.deleteShader(shader)
@@ -108,7 +105,6 @@ function createProgram(
   gl.detachShader(program, fs)
   gl.deleteShader(vs)
   gl.deleteShader(fs)
-
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     const info = gl.getProgramInfoLog(program)
     gl.deleteProgram(program)
@@ -117,9 +113,123 @@ function createProgram(
   return program
 }
 
-// 6 vertices per line instance (2 triangles forming a quad)
-// a_t goes 0->1 along the line, a_side is -1 or +1 for extrusion
+interface LineSegments {
+  x1s: number[]
+  y1s: number[]
+  x2s: number[]
+  y2s: number[]
+  colors: number[]
+}
+
+// Minimum pixel width for meaningful CIGAR decomposition
+const MIN_CIGAR_PX_WIDTH = 4
+
+type ColorFn = (
+  f: DotplotFeatPos,
+  index: number,
+) => [number, number, number, number]
+
+function decomposeCigar(
+  feat: DotplotFeatPos,
+  index: number,
+  colorFn: ColorFn,
+  hBpPerPx: number,
+  vBpPerPx: number,
+  out: LineSegments,
+) {
+  const { p11, p12, p21, p22, cigar } = feat
+  const hRange = p12 - p11
+  const vRange = p22 - p21
+
+  let totalBpH = 0
+  let totalBpV = 0
+  for (let j = 0; j < cigar.length; j += 2) {
+    const len = +cigar[j]!
+    const op = cigar[j + 1]
+    if (op === 'M' || op === '=' || op === 'X') {
+      totalBpH += len
+      totalBpV += len
+    } else if (op === 'D' || op === 'N') {
+      totalBpH += len
+    } else if (op === 'I') {
+      totalBpV += len
+    }
+  }
+
+  const pxPerBpH =
+    totalBpH > 0 ? Math.abs(hRange) / totalBpH : 1 / hBpPerPx
+  const pxPerBpV =
+    totalBpV > 0 ? Math.abs(vRange) / totalBpV : 1 / vBpPerPx
+  const hDir = hRange >= 0 ? 1 : -1
+  const vDir = vRange >= 0 ? 1 : -1
+
+  let cx = p11
+  let cy = p21
+  let segStartX = cx
+  let segStartY = cy
+
+  for (let j = 0; j < cigar.length; j += 2) {
+    const len = +cigar[j]!
+    const op = cigar[j + 1]!
+
+    if (op === 'M' || op === '=' || op === 'X') {
+      cx += len * pxPerBpH * hDir
+      cy += len * pxPerBpV * vDir
+    } else if (op === 'D' || op === 'N') {
+      cx += len * pxPerBpH * hDir
+    } else if (op === 'I') {
+      cy += len * pxPerBpV * vDir
+    }
+
+    if (Math.abs(cx - segStartX) > 0.5 || Math.abs(cy - segStartY) > 0.5) {
+      const [cr, cg, cb, ca] = colorFn(feat, index)
+      out.x1s.push(segStartX)
+      out.y1s.push(segStartY)
+      out.x2s.push(cx)
+      out.y2s.push(cy)
+      out.colors.push(cr, cg, cb, ca)
+      segStartX = cx
+      segStartY = cy
+    }
+  }
+}
+
+function ensureMinExtent(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+) {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const lineLen = Math.sqrt(dx * dx + dy * dy)
+  if (lineLen >= 1) {
+    return { x1, y1, x2, y2 }
+  }
+  const mx = (x1 + x2) / 2
+  const my = (y1 + y2) / 2
+  if (lineLen > 0.001) {
+    const scale = 0.5 / lineLen
+    return {
+      x1: mx - dx * scale,
+      y1: my - dy * scale,
+      x2: mx + dx * scale,
+      y2: my + dy * scale,
+    }
+  }
+  return { x1: mx - 0.5, y1: my, x2: mx + 0.5, y2: my }
+}
+
 const VERTICES_PER_INSTANCE = 6
+
+const UNIFORM_NAMES = [
+  'u_resolution',
+  'u_offsetX',
+  'u_offsetY',
+  'u_lineWidth',
+  'u_scaleX',
+  'u_scaleY',
+]
 
 export class DotplotWebGLRenderer {
   private gl: WebGL2RenderingContext | null = null
@@ -156,24 +266,12 @@ export class DotplotWebGLRenderer {
     try {
       this.program = createProgram(gl, LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER)
 
-      // Cache uniform locations
-      const uniformNames = [
-        'u_resolution',
-        'u_offsetX',
-        'u_offsetY',
-        'u_lineWidth',
-      ]
-      for (const name of uniformNames) {
+      for (const name of UNIFORM_NAMES) {
         this.uniformLocs[name] = gl.getUniformLocation(this.program, name)
       }
 
-      // Template buffer: 6 vertices forming a quad (2 triangles)
-      // Each vertex has (t, side)
       const templateData = new Float32Array([
-        // Triangle 1: start-left, start-right, end-left
-        0, -1, 0, 1, 1, -1,
-        // Triangle 2: end-left, start-right, end-right
-        1, -1, 0, 1, 1, 1,
+        0, -1, 0, 1, 1, -1, 1, -1, 0, 1, 1, 1,
       ])
       this.templateBuffer = gl.createBuffer()!
       gl.bindBuffer(gl.ARRAY_BUFFER, this.templateBuffer)
@@ -200,6 +298,9 @@ export class DotplotWebGLRenderer {
     }
     this.width = width
     this.height = height
+    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
+    this.canvas.width = width * dpr
+    this.canvas.height = height * dpr
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
   }
 
@@ -229,7 +330,7 @@ export class DotplotWebGLRenderer {
 
   buildGeometry(
     featPositions: DotplotFeatPos[],
-    colorFn: (f: DotplotFeatPos, index: number) => [number, number, number, number],
+    colorFn: ColorFn,
     drawCigar: boolean,
     hBpPerPx: number,
     vBpPerPx: number,
@@ -240,108 +341,50 @@ export class DotplotWebGLRenderer {
     const gl = this.gl
     this.cleanupGeometry()
 
-    const x1s: number[] = []
-    const y1s: number[] = []
-    const x2s: number[] = []
-    const y2s: number[] = []
-    const colors: number[] = []
+    const out: LineSegments = {
+      x1s: [],
+      y1s: [],
+      x2s: [],
+      y2s: [],
+      colors: [],
+    }
 
     for (let i = 0; i < featPositions.length; i++) {
       const feat = featPositions[i]!
       const { p11, p12, p21, p22, cigar } = feat
 
-      if (cigar.length > 0 && drawCigar) {
-        // Decompose CIGAR into segments
-        const strand = feat.f.get('strand') as number || 1
-        const hStart = p11.offsetPx
-        const hEnd = p12.offsetPx
-        const vStart = p21.offsetPx
-        const vEnd = p22.offsetPx
+      const featureWidth = Math.max(Math.abs(p12 - p11), Math.abs(p22 - p21))
 
-        const hRange = hEnd - hStart
-        const vRange = vEnd - vStart
-
-        let totalBpH = 0
-        let totalBpV = 0
-        for (let j = 0; j < cigar.length; j += 2) {
-          const len = +cigar[j]!
-          const op = cigar[j + 1]
-          if (op === 'M' || op === '=' || op === 'X') {
-            totalBpH += len
-            totalBpV += len
-          } else if (op === 'D' || op === 'N') {
-            totalBpH += len
-          } else if (op === 'I') {
-            totalBpV += len
-          }
-        }
-
-        const pxPerBpH = totalBpH > 0 ? Math.abs(hRange) / totalBpH : 1 / hBpPerPx
-        const pxPerBpV = totalBpV > 0 ? Math.abs(vRange) / totalBpV : 1 / vBpPerPx
-        const hDir = hRange >= 0 ? 1 : -1
-        const vDir = vRange >= 0 ? 1 : -1
-
-        let cx = hStart
-        let cy = vStart
-        let segStartX = cx
-        let segStartY = cy
-
-        for (let j = 0; j < cigar.length; j += 2) {
-          const len = +cigar[j]!
-          const op = cigar[j + 1]!
-
-          if (op === 'M' || op === '=' || op === 'X') {
-            cx += len * pxPerBpH * hDir
-            cy += len * pxPerBpV * vDir
-          } else if (op === 'D' || op === 'N') {
-            cx += len * pxPerBpH * hDir
-          } else if (op === 'I') {
-            cy += len * pxPerBpV * vDir
-          }
-
-          if (
-            Math.abs(cx - segStartX) > 0.5 ||
-            Math.abs(cy - segStartY) > 0.5
-          ) {
-            const [cr, cg, cb, ca] = colorFn(feat, i)
-            x1s.push(segStartX)
-            y1s.push(segStartY)
-            x2s.push(cx)
-            y2s.push(cy)
-            colors.push(cr, cg, cb, ca)
-            segStartX = cx
-            segStartY = cy
-          }
-        }
+      if (cigar.length >= 2 && drawCigar && featureWidth >= MIN_CIGAR_PX_WIDTH) {
+        decomposeCigar(feat, i, colorFn, hBpPerPx, vBpPerPx, out)
       } else {
         const [cr, cg, cb, ca] = colorFn(feat, i)
-        x1s.push(p11.offsetPx)
-        y1s.push(p21.offsetPx)
-        x2s.push(p12.offsetPx)
-        y2s.push(p22.offsetPx)
-        colors.push(cr, cg, cb, ca)
+        const { x1, y1, x2, y2 } = ensureMinExtent(p11, p21, p12, p22)
+        out.x1s.push(x1)
+        out.y1s.push(y1)
+        out.x2s.push(x2)
+        out.y2s.push(y2)
+        out.colors.push(cr, cg, cb, ca)
       }
     }
 
-    this.instanceCount = x1s.length
+    this.instanceCount = out.x1s.length
     if (this.instanceCount === 0) {
       return
     }
 
-    const x1Buf = this.createBuffer(gl, new Float32Array(x1s))
-    const y1Buf = this.createBuffer(gl, new Float32Array(y1s))
-    const x2Buf = this.createBuffer(gl, new Float32Array(x2s))
-    const y2Buf = this.createBuffer(gl, new Float32Array(y2s))
-    const colorBuf = this.createBuffer(gl, new Float32Array(colors))
+    const x1Buf = this.createBuffer(gl, new Float32Array(out.x1s))
+    const y1Buf = this.createBuffer(gl, new Float32Array(out.y1s))
+    const x2Buf = this.createBuffer(gl, new Float32Array(out.x2s))
+    const y2Buf = this.createBuffer(gl, new Float32Array(out.y2s))
+    const colorBuf = this.createBuffer(gl, new Float32Array(out.colors))
 
-    // Build VAO
     const vao = gl.createVertexArray()!
     gl.bindVertexArray(vao)
 
     const program = this.program!
     const stride = 2 * 4
 
-    // Per-vertex template attributes
     const tLoc = gl.getAttribLocation(program, 'a_t')
     gl.bindBuffer(gl.ARRAY_BUFFER, this.templateBuffer)
     gl.enableVertexAttribArray(tLoc)
@@ -352,7 +395,6 @@ export class DotplotWebGLRenderer {
     gl.enableVertexAttribArray(sideLoc)
     gl.vertexAttribPointer(sideLoc, 1, gl.FLOAT, false, stride, 4)
 
-    // Per-instance attributes
     const instanceAttrs: [string, WebGLBuffer][] = [
       ['a_x1', x1Buf],
       ['a_y1', y1Buf],
@@ -369,7 +411,6 @@ export class DotplotWebGLRenderer {
       }
     }
 
-    // Color is vec4 per instance
     const colorLoc = gl.getAttribLocation(program, 'a_color')
     if (colorLoc >= 0) {
       gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf)
@@ -382,7 +423,13 @@ export class DotplotWebGLRenderer {
     this.vao = vao
   }
 
-  render(offsetX: number, offsetY: number, lineWidth: number) {
+  render(
+    offsetX: number,
+    offsetY: number,
+    lineWidth: number,
+    scaleX = 1,
+    scaleY = 1,
+  ) {
     if (!this.gl || !this.canvas) {
       return
     }
@@ -398,6 +445,8 @@ export class DotplotWebGLRenderer {
       gl.uniform1f(this.uniformLocs.u_offsetX!, offsetX)
       gl.uniform1f(this.uniformLocs.u_offsetY!, offsetY)
       gl.uniform1f(this.uniformLocs.u_lineWidth!, lineWidth)
+      gl.uniform1f(this.uniformLocs.u_scaleX!, scaleX)
+      gl.uniform1f(this.uniformLocs.u_scaleY!, scaleY)
 
       gl.drawArraysInstanced(
         gl.TRIANGLES,

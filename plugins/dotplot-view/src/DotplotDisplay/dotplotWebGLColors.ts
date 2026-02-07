@@ -3,6 +3,8 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import type { DotplotFeatPos } from './types.ts'
 
+type RGBA = [number, number, number, number]
+
 function hashString(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -18,66 +20,65 @@ const category10Normalized = category10.map(hex => {
   return [r / 255, g / 255, b / 255] as [number, number, number]
 })
 
+function hslColor(hue: number, alpha: number): RGBA {
+  const { r, g, b } = colord(`hsl(${hue}, 100%, 40%)`).toRgb()
+  return [r / 255, g / 255, b / 255, alpha]
+}
+
+function hslColorFn(
+  featureField: string,
+  hueScale: number,
+  alpha: number,
+): (f: DotplotFeatPos) => RGBA {
+  const defaultColor: RGBA = [1, 0, 0, alpha]
+  return (f: DotplotFeatPos) => {
+    const val = f.f.get(featureField) as number | undefined
+    if (val !== undefined) {
+      return hslColor(val * hueScale, alpha)
+    }
+    return defaultColor
+  }
+}
+
 export function createDotplotColorFunction(
   colorBy: string,
   alpha: number,
-): (f: DotplotFeatPos, index: number) => [number, number, number, number] {
+): (f: DotplotFeatPos, index: number) => RGBA {
   if (colorBy === 'strand') {
-    return (f: DotplotFeatPos) => {
-      const strand = f.f.get('strand')
-      return strand === -1 ? [0, 0, 1, alpha] : [1, 0, 0, alpha]
-    }
+    const neg: RGBA = [0, 0, 1, alpha]
+    const pos: RGBA = [1, 0, 0, alpha]
+    return (f: DotplotFeatPos) => (f.f.get('strand') === -1 ? neg : pos)
   }
 
   if (colorBy === 'query') {
-    const colorCache = new Map<string, [number, number, number, number]>()
+    const colorCache = new Map<string, RGBA>()
     return (f: DotplotFeatPos) => {
       const name = (f.f.get('refName') as string) || ''
-      if (!colorCache.has(name)) {
+      let color = colorCache.get(name)
+      if (!color) {
         const hash = hashString(name)
         const [r, g, b] =
           category10Normalized[hash % category10Normalized.length]!
-        colorCache.set(name, [r, g, b, alpha])
+        color = [r, g, b, alpha]
+        colorCache.set(name, color)
       }
-      return colorCache.get(name)!
+      return color
     }
   }
 
   if (colorBy === 'identity') {
-    return (f: DotplotFeatPos) => {
-      const identity = f.f.get('identity') as number | undefined
-      if (identity !== undefined) {
-        // HSL-based: higher identity = more green, lower = more red
-        const hue = identity * 120
-        const { r, g, b } = colord(`hsl(${hue}, 100%, 40%)`).toRgb()
-        return [r / 255, g / 255, b / 255, alpha]
-      }
-      return [1, 0, 0, alpha]
-    }
+    return hslColorFn('identity', 120, alpha)
   }
 
   if (colorBy === 'meanQueryIdentity') {
-    return (f: DotplotFeatPos) => {
-      const score = f.f.get('meanScore') as number | undefined
-      if (score !== undefined) {
-        const { r, g, b } = colord(`hsl(${score * 200}, 100%, 40%)`).toRgb()
-        return [r / 255, g / 255, b / 255, alpha]
-      }
-      return [1, 0, 0, alpha]
-    }
+    return hslColorFn('meanScore', 200, alpha)
   }
 
   if (colorBy === 'mappingQuality') {
-    return (f: DotplotFeatPos) => {
-      const qual = f.f.get('mappingQual') as number | undefined
-      if (qual !== undefined) {
-        const { r, g, b } = colord(`hsl(${qual}, 100%, 40%)`).toRgb()
-        return [r / 255, g / 255, b / 255, alpha]
-      }
-      return [1, 0, 0, alpha]
-    }
+    return hslColorFn('mappingQual', 1, alpha)
   }
 
   // Default: red
-  return () => [1, 0, 0, alpha]
+  const defaultColor: RGBA = [1, 0, 0, alpha]
+  return () => defaultColor
 }

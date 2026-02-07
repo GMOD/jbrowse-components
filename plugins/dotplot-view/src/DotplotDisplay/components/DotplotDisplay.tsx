@@ -18,8 +18,8 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
   const { viewWidth, viewHeight } = view
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  // Initialize/dispose WebGL renderer
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // Initialize/dispose WebGL renderer — only on mount/unmount.
+  // Dimension changes are handled by renderer.resize() in the draw autorun.
   useEffect(() => {
     if (canvasRef.current) {
       const renderer = new DotplotWebGLRenderer()
@@ -34,7 +34,9 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
     }
     return undefined
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, viewWidth, viewHeight])
+  }, [model])
+
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
 
   if (model.error) {
     return <ErrorMessage error={model.error} />
@@ -45,8 +47,8 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
       <canvas
         ref={canvasRef}
         data-testid="dotplot_webgl_canvas"
-        width={viewWidth * 2}
-        height={viewHeight * 2}
+        width={viewWidth * dpr}
+        height={viewHeight * dpr}
         style={{
           width: viewWidth,
           height: viewHeight,
