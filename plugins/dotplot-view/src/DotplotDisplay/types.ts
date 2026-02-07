@@ -10,7 +10,6 @@ export interface FeatPos {
   x2: Pos
   y2: Pos
   f: Feature
-  cigar: string[]
 }
 
 export interface DotplotWebGLGeometryData {

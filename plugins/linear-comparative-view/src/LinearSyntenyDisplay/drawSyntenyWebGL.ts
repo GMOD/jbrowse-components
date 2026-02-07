@@ -285,6 +285,7 @@ export class SyntenyWebGLRenderer {
   private edgeVao: WebGLVertexArrayObject | null = null
   private edgePickingVao: WebGLVertexArrayObject | null = null
   private instanceCount = 0
+  private nonCigarInstanceCount = 0
 
   // Template buffers
   private fillTemplateBuffer: WebGLBuffer | null = null
@@ -457,6 +458,7 @@ export class SyntenyWebGLRenderer {
     }
     this.allocatedBuffers = []
     this.instanceCount = 0
+    this.nonCigarInstanceCount = 0
   }
 
   private createBuffer(gl: WebGL2RenderingContext, data: Float32Array) {
@@ -545,6 +547,7 @@ export class SyntenyWebGLRenderer {
     this.cleanupGeometry()
 
     // Instance data arrays (shared by fill and edge passes)
+    // Non-CIGAR instances come first so edge pass can skip CIGAR segments
     const x1s: number[] = []
     const x2s: number[] = []
     const x3s: number[] = []
@@ -554,14 +557,49 @@ export class SyntenyWebGLRenderer {
     const isCurves: number[] = []
 
     const isCurve = drawCurves ? 1 : 0
-    const bpPerPx0 = bpPerPxs[level]!
-    const bpPerPx1 = bpPerPxs[level + 1]!
-    const bpPerPxInv0 = 1 / bpPerPx0
-    const bpPerPxInv1 = 1 / bpPerPx1
+    const fallbackBpPerPxInv0 = 1 / bpPerPxs[level]!
+    const fallbackBpPerPxInv1 = 1 / bpPerPxs[level + 1]!
 
+    // Pass 1: non-CIGAR features (these get edge rendering)
     for (let i = 0; i < featPositions.length; i++) {
       const feat = featPositions[i]!
       const { p11, p12, p21, p22, f, cigar } = feat
+      if (cigar.length > 0 && drawCIGAR) {
+        continue
+      }
+      const x11 = p11.offsetPx
+      const x12 = p12.offsetPx
+      const x21 = p21.offsetPx
+      const x22 = p22.offsetPx
+      const featureId = i + 1
+
+      const [cr, cg, cb, ca] = colorFn(feat, i)
+      x1s.push(x11)
+      x2s.push(x12)
+      x3s.push(x22)
+      x4s.push(x21)
+      colors.push(cr, cg, cb, ca)
+      featureIds.push(featureId)
+      isCurves.push(isCurve)
+
+      if (drawLocationMarkers) {
+        addLocationMarkerInstances(
+          x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
+          x11, x12, x22, x21, featureId, isCurve,
+        )
+      }
+    }
+
+    // Edge pass only draws up to this count (skips CIGAR segments)
+    this.nonCigarInstanceCount = x1s.length
+
+    // Pass 2: CIGAR features (no edge rendering to avoid boundary artifacts)
+    for (let i = 0; i < featPositions.length; i++) {
+      const feat = featPositions[i]!
+      const { p11, p12, p21, p22, f, cigar } = feat
+      if (!(cigar.length > 0 && drawCIGAR)) {
+        continue
+      }
       const x11 = p11.offsetPx
       const x12 = p12.offsetPx
       const x21 = p21.offsetPx
@@ -569,87 +607,92 @@ export class SyntenyWebGLRenderer {
       const strand = f.get('strand') as number
       const featureId = i + 1
 
-      if (cigar.length > 0 && drawCIGAR) {
-        const s1 = strand
-        const k1 = s1 === -1 ? x12 : x11
-        const k2 = s1 === -1 ? x11 : x12
-        const rev1 = k1 < k2 ? 1 : -1
-        const rev2 = (x21 < x22 ? 1 : -1) * s1
+      const s1 = strand
+      const k1 = s1 === -1 ? x12 : x11
+      const k2 = s1 === -1 ? x11 : x12
+      const rev1 = k1 < k2 ? 1 : -1
+      const rev2 = (x21 < x22 ? 1 : -1) * s1
 
-        let cx1 = k1
-        let cx2 = s1 === -1 ? x22 : x21
-        let continuingFlag = false
-        let px1 = 0
-        let px2 = 0
-
-        for (let j = 0; j < cigar.length; j += 2) {
-          const len = +cigar[j]!
-          const op = cigar[j + 1] as keyof typeof defaultCigarColors
-
-          if (!continuingFlag) {
-            px1 = cx1
-            px2 = cx2
-          }
-
-          const d1 = len * bpPerPxInv0
-          const d2 = len * bpPerPxInv1
-
-          if (op === 'M' || op === '=' || op === 'X') {
-            cx1 += d1 * rev1
-            cx2 += d2 * rev2
-          } else if (op === 'D' || op === 'N') {
-            cx1 += d1 * rev1
-          } else if (op === 'I') {
-            cx2 += d2 * rev2
-          }
-
-          const isNotLast = j < cigar.length - 2
-          if (
-            Math.abs(cx1 - px1) <= 1 &&
-            Math.abs(cx2 - px2) <= 1 &&
-            isNotLast
-          ) {
-            continuingFlag = true
-          } else {
-            const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
-            continuingFlag = false
-
-            if (drawCIGARMatchesOnly && letter !== 'M') {
-              continue
-            }
-
-            const [cr, cg, cb, ca] = getCigarColor(letter, colorBy, colorFn, feat, i, alpha)
-            x1s.push(px1)
-            x2s.push(cx1)
-            x3s.push(cx2)
-            x4s.push(px2)
-            colors.push(cr, cg, cb, ca)
-            featureIds.push(featureId)
-            isCurves.push(isCurve)
-
-            if (drawLocationMarkers) {
-              addLocationMarkerInstances(
-                x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
-                px1, cx1, cx2, px2, featureId, isCurve,
-              )
-            }
-          }
+      // Zoom-relative: derive per-feature px/bp from actual pixel positions
+      // so CIGAR segments tile perfectly at any zoom level
+      let totalBpView0 = 0
+      let totalBpView1 = 0
+      for (let j = 0; j < cigar.length; j += 2) {
+        const len = +cigar[j]!
+        const op = cigar[j + 1]
+        if (op === 'M' || op === '=' || op === 'X') {
+          totalBpView0 += len
+          totalBpView1 += len
+        } else if (op === 'D' || op === 'N') {
+          totalBpView0 += len
+        } else if (op === 'I') {
+          totalBpView1 += len
         }
-      } else {
-        const [cr, cg, cb, ca] = colorFn(feat, i)
-        x1s.push(x11)
-        x2s.push(x12)
-        x3s.push(x22)
-        x4s.push(x21)
-        colors.push(cr, cg, cb, ca)
-        featureIds.push(featureId)
-        isCurves.push(isCurve)
+      }
+      const pxPerBp0 = totalBpView0 > 0
+        ? Math.abs(k2 - k1) / totalBpView0
+        : fallbackBpPerPxInv0
+      const pxPerBp1 = totalBpView1 > 0
+        ? Math.abs(x22 - x21) / totalBpView1
+        : fallbackBpPerPxInv1
 
-        if (drawLocationMarkers) {
-          addLocationMarkerInstances(
-            x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
-            x11, x12, x22, x21, featureId, isCurve,
-          )
+      let cx1 = k1
+      let cx2 = s1 === -1 ? x22 : x21
+      let continuingFlag = false
+      let px1 = 0
+      let px2 = 0
+
+      for (let j = 0; j < cigar.length; j += 2) {
+        const len = +cigar[j]!
+        const op = cigar[j + 1] as keyof typeof defaultCigarColors
+
+        if (!continuingFlag) {
+          px1 = cx1
+          px2 = cx2
+        }
+
+        const d1 = len * pxPerBp0
+        const d2 = len * pxPerBp1
+
+        if (op === 'M' || op === '=' || op === 'X') {
+          cx1 += d1 * rev1
+          cx2 += d2 * rev2
+        } else if (op === 'D' || op === 'N') {
+          cx1 += d1 * rev1
+        } else if (op === 'I') {
+          cx2 += d2 * rev2
+        }
+
+        const isNotLast = j < cigar.length - 2
+        if (
+          Math.abs(cx1 - px1) <= 1 &&
+          Math.abs(cx2 - px2) <= 1 &&
+          isNotLast
+        ) {
+          continuingFlag = true
+        } else {
+          const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
+          continuingFlag = false
+
+          if (drawCIGARMatchesOnly && letter !== 'M') {
+            continue
+          }
+
+          const [cr, cg, cb, ca] = getCigarColor(letter, colorBy, colorFn, feat, i, alpha)
+          x1s.push(px1)
+          x2s.push(cx1)
+          x3s.push(cx2)
+          x4s.push(px2)
+          colors.push(cr, cg, cb, ca)
+          featureIds.push(featureId)
+          isCurves.push(isCurve)
+
+          if (drawLocationMarkers) {
+            addLocationMarkerInstances(
+              x1s, x2s, x3s, x4s, colors, featureIds, isCurves,
+              px1, cx1, cx2, px2, featureId, isCurve,
+            )
+          }
         }
       }
     }
@@ -701,7 +744,8 @@ export class SyntenyWebGLRenderer {
     }
 
     // Draw AA edges on top (skipped during scroll for performance)
-    if (!skipEdges && this.edgeVao && this.instanceCount > 0) {
+    // Only draw edges for non-CIGAR instances to avoid boundary artifacts
+    if (!skipEdges && this.edgeVao && this.nonCigarInstanceCount > 0) {
       gl.useProgram(this.edgeProgram)
       gl.bindVertexArray(this.edgeVao)
       this.setUniforms(gl, this.edgeProgram!, offset0, offset1, height)
@@ -709,7 +753,7 @@ export class SyntenyWebGLRenderer {
         gl.TRIANGLE_STRIP,
         0,
         EDGE_VERTICES_PER_INSTANCE,
-        this.instanceCount,
+        this.nonCigarInstanceCount,
       )
     }
 
@@ -743,8 +787,8 @@ export class SyntenyWebGLRenderer {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTICES_PER_INSTANCE, this.instanceCount)
     }
 
-    // Draw edges for picking (instanced)
-    if (this.edgePickingVao && this.instanceCount > 0) {
+    // Draw edges for picking (instanced) - only non-CIGAR instances
+    if (this.edgePickingVao && this.nonCigarInstanceCount > 0) {
       gl.useProgram(this.edgePickingProgram)
       gl.bindVertexArray(this.edgePickingVao)
       this.setUniforms(gl, this.edgePickingProgram!, offset0, offset1, height)
@@ -752,7 +796,7 @@ export class SyntenyWebGLRenderer {
         gl.TRIANGLE_STRIP,
         0,
         EDGE_VERTICES_PER_INSTANCE,
-        this.instanceCount,
+        this.nonCigarInstanceCount,
       )
     }
 

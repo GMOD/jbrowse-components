@@ -14,6 +14,7 @@ type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastGeometryKey = ''
+  let lastFeatPositions: FeatPos[] = []
   let lastRenderer: unknown = null
   let edgeTimer: ReturnType<typeof setTimeout> | null = null
   addDisposer(
@@ -51,7 +52,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Always resize in case dimensions changed
         self.webglRenderer.resize(width, height)
 
-        if (geometryKey !== lastGeometryKey) {
+        if (geometryKey !== lastGeometryKey || featPositions !== lastFeatPositions) {
           const colorFn = createColorFunction(colorBy, alpha)
           const bpPerPxs = view.views.map(v => v.bpPerPx)
           self.webglRenderer.buildGeometry(
@@ -67,6 +68,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             view.drawLocationMarkers,
           )
           lastGeometryKey = geometryKey
+          lastFeatPositions = featPositions
         }
 
         const o0 = view.views[level]!.offsetPx

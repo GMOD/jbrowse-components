@@ -8,7 +8,33 @@ import { createColorFunction } from './dotplotWebGLColors.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { DotplotDisplay as DotplotDisplayModel } from './stateModelFactory.tsx'
 
+async function fetchFeaturesFromAdapter(self: DotplotDisplayModel) {
+  console.log('fetchFeaturesFromAdapter: fetching features')
+  const view = getContainingView(self) as DotplotViewModel
+  const { rpcManager, assemblyManager } = getSession(self)
+  const sessionId = getRpcSessionId(self)
+
+  try {
+    const result = await rpcManager.call(
+      sessionId,
+      'CoreGetFeatures',
+      {
+        adapterConfig: self.adapterConfig,
+        sessionId,
+        regions: view.hview.displayedRegions,
+        assemblyName: view.assemblyNames?.[0],
+      },
+    )
+    console.log('fetchFeaturesFromAdapter: got', result?.length || 0, 'features')
+    return result || []
+  } catch (e) {
+    console.error('fetchFeaturesFromAdapter: error:', e)
+    return []
+  }
+}
+
 export function doAfterAttach(self: DotplotDisplayModel) {
+  console.log('doAfterAttach: called')
   let lastGeometryKey = ''
   let lastRenderer: unknown = null
   let edgeTimer: ReturnType<typeof setTimeout> | null = null
@@ -17,12 +43,15 @@ export function doAfterAttach(self: DotplotDisplayModel) {
     self,
     autorun(
       function dotplotDrawAutorun() {
+        console.log('dotplotDrawAutorun: executing')
         if (self.isMinimized) {
+          console.log('dotplotDrawAutorun: minimized, returning')
           return
         }
 
         const view = getContainingView(self) as DotplotViewModel
         if (!view.initialized) {
+          console.log('dotplotDrawAutorun: view not initialized, returning')
           return
         }
 
@@ -30,12 +59,22 @@ export function doAfterAttach(self: DotplotDisplayModel) {
           !view.hview.displayedRegions.length ||
           !view.vview.displayedRegions.length
         ) {
+          console.log('dotplotDrawAutorun: no displayed regions, returning')
           return
         }
 
         const { alpha, colorBy, featPositions } = self
+        console.log('dotplotDrawAutorun: state', {
+          alpha,
+          colorBy,
+          featPositions: featPositions.length,
+        })
 
         if (!self.webglRenderer || !self.webglInitialized) {
+          console.log('dotplotDrawAutorun: renderer not ready', {
+            renderer: !!self.webglRenderer,
+            initialized: self.webglInitialized,
+          })
           return
         }
 
@@ -46,7 +85,8 @@ export function doAfterAttach(self: DotplotDisplayModel) {
 
         const geometryKey = `${featPositions.length}-${colorBy}-${alpha}`
 
-        self.webglRenderer.resize(view.width, view.height)
+        // Use viewWidth/viewHeight (plot area only) not full view width/height
+        self.webglRenderer.resize(view.viewWidth, view.viewHeight)
 
         if (geometryKey !== lastGeometryKey) {
           const colorFn = createColorFunction(colorBy, alpha)
@@ -56,17 +96,19 @@ export function doAfterAttach(self: DotplotDisplayModel) {
           lastGeometryKey = geometryKey
         }
 
+        // offsetPx is the scroll offset within the view
         const offsetX = view.hview.offsetPx
         const offsetY = view.vview.offsetPx
+        console.log('dotplotDrawAutorun: rendering with scroll offset', {
+          offsetX,
+          offsetY,
+          viewWidth: view.viewWidth,
+          viewHeight: view.viewHeight,
+          hBpPerPx: view.hview.bpPerPx,
+          vBpPerPx: view.vview.bpPerPx,
+        })
 
-        self.webglRenderer.render(offsetX, offsetY, true)
-
-        if (edgeTimer) {
-          clearTimeout(edgeTimer)
-        }
-        edgeTimer = setTimeout(() => {
-          self.webglRenderer?.render(offsetX, offsetY, false)
-        }, 150)
+        self.webglRenderer.render(offsetX, offsetY)
       },
       {
         name: 'DotplotDraw',
@@ -88,26 +130,38 @@ export function doAfterAttach(self: DotplotDisplayModel) {
           vBpPerPx: view.vview.bpPerPx,
           hDisplayedRegions: JSON.stringify(view.hview.displayedRegions),
           vDisplayedRegions: JSON.stringify(view.vview.displayedRegions),
-          features: view.hview.features,
           initialized: view.initialized,
           alpha: self.alpha,
           minAlignmentLength: self.minAlignmentLength,
         }
       },
       async () => {
+        console.log('geometry reaction: executing')
         const view = getContainingView(self) as DotplotViewModel
         if (!view.initialized) {
+          console.log('geometry reaction: view not initialized')
           return
         }
 
-        const features = view.hview.features || []
+        // Try to get features from view first, then fetch from adapter
+        let features = view.hview.features || []
+        console.log('geometry reaction: hview.features.length=', features.length)
+
         if (features.length === 0) {
+          console.log('geometry reaction: fetching features from adapter')
+          features = await fetchFeaturesFromAdapter(self)
+        }
+
+        console.log('geometry reaction: using features.length=', features.length)
+        if (features.length === 0) {
+          console.log('geometry reaction: no features found, clearing positions')
           self.setFeatPositions([])
           return
         }
 
         const { rpcManager } = getSession(self)
         const sessionId = getRpcSessionId(self)
+        console.log('geometry reaction: sessionId=', sessionId)
         const hViewSnap = {
           ...getSnapshot(view.hview),
           staticBlocks: {
@@ -139,6 +193,7 @@ export function doAfterAttach(self: DotplotDisplayModel) {
           strand: f.get('strand') ?? 1,
           cigar: f.get('CIGAR') ?? '',
         }))
+        console.log('geometry reaction: calling RPC with', serializedFeatures.length, 'features')
 
         try {
           const result = await rpcManager.call(
@@ -152,6 +207,14 @@ export function doAfterAttach(self: DotplotDisplayModel) {
               minAlignmentLength: self.minAlignmentLength,
             },
           )
+          console.log('geometry reaction: RPC returned', result.featureIds.length, 'valid features')
+
+          console.log('geometry reaction: RPC result:', result)
+          if (!result || !result.featureIds) {
+            console.error('geometry reaction: invalid RPC result, expected featureIds')
+            self.setFeatPositions([])
+            return
+          }
 
           const featPositions = []
           for (let i = 0; i < result.featureIds.length; i++) {
@@ -165,14 +228,14 @@ export function doAfterAttach(self: DotplotDisplayModel) {
                 y1: { offsetPx: result.y1_offsetPx[i] },
                 y2: { offsetPx: result.y2_offsetPx[i] },
                 f: feat,
-                cigar: result.cigars[i] ? result.cigars[i].split(/(\d+)/).filter(Boolean) : [],
               })
             }
           }
 
+          console.log('geometry reaction: set', featPositions.length, 'feature positions')
           self.setFeatPositions(featPositions)
         } catch (e) {
-          console.error('Error computing WebGL geometry:', e)
+          console.error('geometry reaction: error computing WebGL geometry:', e)
           self.setFeatPositions([])
         }
       },
