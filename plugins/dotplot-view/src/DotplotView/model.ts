@@ -139,6 +139,11 @@ export default function stateModelFactory(pm: PluginManager) {
         drawCigar: true,
         /**
          * #property
+         * use WebGL rendering for better performance with many features
+         */
+        useWebGL: types.optional(types.boolean, false),
+        /**
+         * #property
          */
         hview: types.optional(DotplotHView, {}),
         /**
@@ -221,6 +226,12 @@ export default function stateModelFactory(pm: PluginManager) {
        */
       setImportFormSyntenyTrack(arg: number, val: ImportFormSyntenyTrack) {
         self.importFormSyntenyTrackSelections[arg] = val
+      },
+      /**
+       * #action
+       */
+      setUseWebGL(value: boolean) {
+        self.useWebGL = value
       },
     }))
     .views(self => ({

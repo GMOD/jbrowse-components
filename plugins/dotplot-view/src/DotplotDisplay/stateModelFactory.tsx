@@ -8,9 +8,12 @@ import {
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { doAfterAttach } from './afterAttach.ts'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent.tsx'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock.ts'
 
+import type { DotplotWebGLRenderer } from './drawDotplotWebGL.ts'
+import type { FeatPos } from './types.ts'
 import type {
   DotplotViewModel,
   ExportSvgOptions,
@@ -89,6 +92,26 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * minimum alignment length to display (in bp)
            */
           minAlignmentLength: 0,
+          /**
+           * #volatile
+           * WebGL renderer instance
+           */
+          webglRenderer: null as DotplotWebGLRenderer | null,
+          /**
+           * #volatile
+           * flag indicating if WebGL renderer is initialized
+           */
+          webglInitialized: false,
+          /**
+           * #volatile
+           * computed feature positions for WebGL rendering
+           */
+          featPositions: [] as FeatPos[],
+          /**
+           * #volatile
+           * currently mouseover'd feature ID
+           */
+          mouseoverId: undefined as string | undefined,
         })),
     )
     .views(self => ({
@@ -144,21 +167,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        makeAbortableReaction(
-          self,
-          () => renderBlockData(self),
-          blockData => renderBlockEffect(blockData),
-          {
-            name: `${self.type} ${self.id} rendering`,
-            delay: 500,
-            fireImmediately: true,
-          },
-          this.setLoading,
-          this.setRendered,
-          this.setError,
-        )
-      },
       /**
        * #action
        */
@@ -230,8 +238,54 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setColorBy(value: string) {
         self.colorBy = value
       },
+      /**
+       * #action
+       */
+      setWebGLRenderer(renderer: DotplotWebGLRenderer | null) {
+        self.webglRenderer = renderer
+      },
+      /**
+       * #action
+       */
+      setWebGLInitialized(value: boolean) {
+        self.webglInitialized = value
+      },
+      /**
+       * #action
+       */
+      setFeatPositions(positions: FeatPos[]) {
+        self.featPositions = positions
+      },
+      /**
+       * #action
+       */
+      setMouseoverId(id?: string) {
+        self.mouseoverId = id
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        makeAbortableReaction(
+          self,
+          () => renderBlockData(self),
+          blockData => renderBlockEffect(blockData),
+          {
+            name: `${self.type} ${self.id} rendering`,
+            delay: 500,
+            fireImmediately: true,
+          },
+          this.setLoading,
+          this.setRendered,
+          this.setError,
+        )
+        const view = getContainingView(self) as DotplotViewModel
+        if (view.useWebGL) {
+          doAfterAttach(self)
+        }
+      },
     }))
 }
 
 export type DotplotDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type DotplotDisplay = Instance<DotplotDisplayStateModel>
 export type DotplotDisplayModel = Instance<DotplotDisplayStateModel>
