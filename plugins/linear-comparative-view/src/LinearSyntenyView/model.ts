@@ -59,6 +59,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers: false,
         /**
          * #property
+         * maximum number of pixels off screen before a synteny line is culled
+         */
+        maxOffScreenDrawPx: 300,
+        /**
+         * #property
          * used for initializing the view from a session snapshot
          * example:
          * ```json
@@ -147,6 +152,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setDrawLocationMarkers(arg: boolean) {
         self.drawLocationMarkers = arg
+      },
+      /**
+       * #action
+       */
+      setMaxOffScreenDrawPx(arg: number) {
+        self.maxOffScreenDrawPx = arg
       },
       /**
        * #action
@@ -465,6 +476,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawCIGARMatchesOnly,
         drawCurves,
         drawLocationMarkers,
+        maxOffScreenDrawPx,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -473,6 +485,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(drawCIGARMatchesOnly ? { drawCIGARMatchesOnly } : {}),
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
+        ...(maxOffScreenDrawPx !== 300 ? { maxOffScreenDrawPx } : {}),
       } as typeof snap
     })
 }

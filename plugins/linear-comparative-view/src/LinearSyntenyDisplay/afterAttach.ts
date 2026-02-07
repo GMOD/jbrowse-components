@@ -79,15 +79,17 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const bpPerPx0 = view.views[level]!.bpPerPx
         const bpPerPx1 = view.views[level + 1]!.bpPerPx
 
+        const maxOffScreenPx = view.maxOffScreenDrawPx
+
         // Skip edges during scroll for performance, debounce a full
         // re-render with edges once scrolling stops
-        self.webglRenderer.render(o0, o1, height, bpPerPx0, bpPerPx1, true)
+        self.webglRenderer.render(o0, o1, height, bpPerPx0, bpPerPx1, true, maxOffScreenPx)
 
         if (edgeTimer) {
           clearTimeout(edgeTimer)
         }
         edgeTimer = setTimeout(() => {
-          self.webglRenderer?.render(o0, o1, height, bpPerPx0, bpPerPx1, false)
+          self.webglRenderer?.render(o0, o1, height, bpPerPx0, bpPerPx1, false, maxOffScreenPx)
         }, 150)
       },
       {
