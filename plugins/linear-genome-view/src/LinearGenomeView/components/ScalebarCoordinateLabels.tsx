@@ -47,7 +47,7 @@ const ContentBlockLabels = memo(
     block: ContentBlock
     bpPerPx: number
   }) {
-    console.log('[ContentBlockLabels] render', block.key)
+    // console.log('[ContentBlockLabels] render', block.key)
     const { classes } = useStyles()
     const ticks = makeTicks(block.start, block.end, bpPerPx, true, false)
 
@@ -81,7 +81,7 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
 }: {
   model: LGV
 }) {
-  console.log('[ScalebarCoordinateLabels] render')
+  // console.log('[ScalebarCoordinateLabels] render')
   const { classes, cx } = useStyles()
   const { staticBlocks, bpPerPx } = model
 

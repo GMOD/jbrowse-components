@@ -486,58 +486,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         // Update state to trigger floating labels re-render
         setScrollY(newScrollY)
         renderNowRef.current()
-      } else if (view.scrollZoom || e.ctrlKey || e.metaKey) {
-        e.preventDefault()
-        e.stopPropagation()
-        // Zoom
-        const currentRange = getVisibleBpRangeRef.current()
-        if (!currentRange) {
-          return
-        }
-
-        const rect = canvas.getBoundingClientRect()
-        const mouseX = e.clientX - rect.left
-        const factor = 1.2
-        const zoomFactor = e.deltaY > 0 ? factor : 1 / factor
-
-        const rangeWidth = currentRange[1] - currentRange[0]
-        const mouseFraction = mouseX / width
-        const mouseBp = currentRange[0] + rangeWidth * mouseFraction
-
-        const newRangeWidth = rangeWidth * zoomFactor
-        const newBpPerPx = newRangeWidth / width
-
-        if (newBpPerPx < view.minBpPerPx || newBpPerPx > view.maxBpPerPx) {
-          return
-        }
-
-        const newRangeStart = mouseBp - mouseFraction * newRangeWidth
-        const newRangeEnd = newRangeStart + newRangeWidth
-
-        const dynamicBlocks = (
-          view as unknown as {
-            dynamicBlocks?: {
-              contentBlocks?: {
-                refName: string
-                start: number
-                end: number
-                offsetPx?: number
-              }[]
-            }
-          }
-        ).dynamicBlocks?.contentBlocks
-        const first = dynamicBlocks?.[0]
-        if (first) {
-          const blockOffsetPx = first.offsetPx ?? 0
-          const assemblyOrigin = first.start - blockOffsetPx * view.bpPerPx
-          const newOffsetPx = (newRangeStart - assemblyOrigin) / newBpPerPx
-
-          renderWithDomainRef.current([newRangeStart, newRangeEnd])
-          selfUpdateRef.current = true
-          view.setNewView(newBpPerPx, newOffsetPx)
-        }
-
-        checkDataNeedsRef.current()
       }
     }
 

@@ -627,65 +627,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           newY = [newY[0] - overflow, newY[1] - overflow]
         }
         model.setCurrentRangeY(newY)
-      } else if (view.scrollZoom || e.ctrlKey || e.metaKey) {
-        e.preventDefault()
-        e.stopPropagation()
-        // Zoom around mouse position
-        const currentRange = getVisibleBpRangeRef.current()
-        if (!currentRange) {
-          return
-        }
-
-        // Use cached rect to avoid forced layout on every wheel event
-        // Lazy init on first interaction if RAF hasn't fired yet
-        let rect = canvasRectRef.current
-        if (!rect) {
-          rect = canvas.getBoundingClientRect()
-          canvasRectRef.current = rect
-        }
-        const mouseX = e.clientX - rect.left
-        const factor = 1.2
-        const zoomFactor = e.deltaY > 0 ? factor : 1 / factor
-
-        // Calculate genomic position under mouse
-        const rangeWidth = currentRange[1] - currentRange[0]
-        const mouseFraction = mouseX / width
-        const mouseBp = currentRange[0] + rangeWidth * mouseFraction
-
-        // Calculate new zoom level
-        const newRangeWidth = rangeWidth * zoomFactor
-        const newBpPerPx = newRangeWidth / width
-
-        // Check zoom limits
-        if (newBpPerPx < view.minBpPerPx || newBpPerPx > view.maxBpPerPx) {
-          return
-        }
-
-        // Position new range so mouseBp stays at same screen position
-        const newRangeStart = mouseBp - mouseFraction * newRangeWidth
-
-        // Compute new offsetPx from the new range start
-        const contentBlocks = (
-          view as unknown as {
-            dynamicBlocks?: {
-              contentBlocks?: {
-                refName: string
-                start: number
-                end: number
-                offsetPx?: number
-              }[]
-            }
-          }
-        ).dynamicBlocks?.contentBlocks as
-          | { refName: string; start: number; end: number; offsetPx?: number }[]
-          | undefined
-        const first = contentBlocks?.[0]
-        if (first) {
-          const blockOffsetPx = first.offsetPx ?? 0
-          const assemblyOrigin = first.start - blockOffsetPx * view.bpPerPx
-          const newOffsetPx = (newRangeStart - assemblyOrigin) / newBpPerPx
-          view.setNewView(newBpPerPx, newOffsetPx)
-        }
       }
     }
 

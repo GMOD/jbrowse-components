@@ -311,6 +311,12 @@ export class SyntenyWebGLRenderer {
   private allocatedBuffers: WebGLBuffer[] = []
 
   init(canvas: HTMLCanvasElement) {
+    console.log('[SyntenyWebGL] init() called', {
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+      clientWidth: canvas.clientWidth,
+      clientHeight: canvas.clientHeight,
+    })
     const gl = canvas.getContext('webgl2', {
       antialias: true,
       alpha: true,
@@ -327,6 +333,11 @@ export class SyntenyWebGLRenderer {
     this.devicePixelRatio = canvas.width / (canvas.clientWidth || canvas.width)
     this.width = canvas.clientWidth || canvas.width
     this.height = canvas.clientHeight || canvas.height
+    console.log('[SyntenyWebGL] init() context acquired', {
+      devicePixelRatio: this.devicePixelRatio,
+      width: this.width,
+      height: this.height,
+    })
     try {
       // Create fill programs
       this.fillProgram = createProgram(gl, FILL_VERTEX_SHADER, FILL_FRAGMENT_SHADER)
@@ -414,6 +425,7 @@ export class SyntenyWebGLRenderer {
     if (this.width === width && this.height === height) {
       return
     }
+    console.log('[SyntenyWebGL] resize()', { width, height, prevWidth: this.width, prevHeight: this.height })
     const gl = this.gl
     this.devicePixelRatio = this.canvas.width / width
     this.width = width
@@ -575,6 +587,16 @@ export class SyntenyWebGLRenderer {
     bpPerPxs: number[],
     drawLocationMarkers: boolean,
   ) {
+    console.log('[SyntenyWebGL] buildGeometry() called', {
+      featCount: featPositions.length,
+      level,
+      alpha,
+      colorBy,
+      drawCurves,
+      drawCIGAR,
+      bpPerPxs,
+      hasGL: !!this.gl,
+    })
     if (!this.gl) {
       return
     }
@@ -712,6 +734,13 @@ export class SyntenyWebGLRenderer {
 
     // Upload fill geometry
     this.fillVertexCount = fillPosX.length
+    console.log('[SyntenyWebGL] buildGeometry() results', {
+      fillVertexCount: fillPosX.length,
+      edgeInstanceCount: edgeX1.length,
+      sampleFillPosX: fillPosX.slice(0, 6),
+      sampleFillPosY: fillPosY.slice(0, 6),
+      sampleFillColors: fillColors.slice(0, 4),
+    })
     if (this.fillVertexCount > 0) {
       const positionXBuf = this.createBuffer(gl, new Float32Array(fillPosX))
       const positionYBuf = this.createBuffer(gl, new Float32Array(fillPosY))
@@ -749,9 +778,22 @@ export class SyntenyWebGLRenderer {
 
   render(offset0: number, offset1: number, height: number, skipEdges = false) {
     if (!this.gl || !this.canvas) {
+      console.log('[SyntenyWebGL] render(): no gl or canvas')
       return
     }
     const gl = this.gl
+    console.log('[SyntenyWebGL] render()', {
+      offset0,
+      offset1,
+      height,
+      skipEdges,
+      fillVertexCount: this.fillVertexCount,
+      edgeInstanceCount: this.edgeInstanceCount,
+      canvasWidth: this.canvas.width,
+      canvasHeight: this.canvas.height,
+      width: this.width,
+      height2: this.height,
+    })
 
     gl.clear(gl.COLOR_BUFFER_BIT)
 

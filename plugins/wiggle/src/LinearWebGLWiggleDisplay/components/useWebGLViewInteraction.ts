@@ -112,52 +112,6 @@ export function useWebGLViewInteraction({
       if (absY < 1) {
         return
       }
-
-      if (!view.scrollZoom && !e.ctrlKey && !e.metaKey) {
-        return
-      }
-      e.preventDefault()
-      e.stopPropagation()
-
-      // Zoom around mouse position
-      const currentRange = getVisibleBpRangeRef.current()
-      if (!currentRange) {
-        return
-      }
-
-      let rect = canvasRectRef.current
-      if (!rect) {
-        rect = canvas.getBoundingClientRect()
-        canvasRectRef.current = rect
-      }
-      const mouseX = e.clientX - rect.left
-      const factor = 1.2
-      const zoomFactor = e.deltaY > 0 ? factor : 1 / factor
-
-      const rangeWidth = currentRange[1] - currentRange[0]
-      const mouseFraction = mouseX / width
-      const mouseBp = currentRange[0] + rangeWidth * mouseFraction
-
-      const newRangeWidth = rangeWidth * zoomFactor
-      const newBpPerPx = newRangeWidth / width
-
-      if (newBpPerPx < view.minBpPerPx || newBpPerPx > view.maxBpPerPx) {
-        return
-      }
-
-      const newRangeStart = mouseBp - mouseFraction * newRangeWidth
-      const newRangeEnd = newRangeStart + newRangeWidth
-
-      const contentBlocks = view.dynamicBlocks.contentBlocks
-      const first = contentBlocks[0]
-      if (first) {
-        const blockOffsetPx = first.offsetPx
-        const assemblyOrigin = first.start - blockOffsetPx * view.bpPerPx
-        const newOffsetPx = (newRangeStart - assemblyOrigin) / newBpPerPx
-
-        onRenderRef.current([newRangeStart, newRangeEnd])
-        view.setNewView(newBpPerPx, newOffsetPx)
-      }
     }
 
     canvas.addEventListener('wheel', handleWheel, { passive: false })

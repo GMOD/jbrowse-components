@@ -13,6 +13,7 @@ import type { SyntenyFeatureData } from '../LinearSyntenyRPC/executeSyntenyWebGL
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
+  console.log('[SyntenyWebGL] doAfterAttach called')
   let lastGeometryKey = ''
   let lastRenderer: unknown = null
   let edgeTimer: ReturnType<typeof setTimeout> | null = null
@@ -21,6 +22,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     autorun(
       function syntenyDrawAutorun() {
         if (self.isMinimized) {
+          console.log('[SyntenyWebGL] draw autorun: skipping (minimized)')
           return
         }
         const view = getContainingView(self) as LinearSyntenyViewModel
@@ -28,6 +30,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           !view.initialized ||
           !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
         ) {
+          console.log('[SyntenyWebGL] draw autorun: skipping (view not initialized)', {
+            viewInitialized: view.initialized,
+            viewCount: view.views.length,
+            viewStates: view.views.map(a => ({
+              initialized: a.initialized,
+              displayedRegions: a.displayedRegions.length,
+            })),
+          })
           return
         }
 
@@ -36,6 +46,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const width = view.width
 
         if (!self.webglRenderer || !self.webglInitialized) {
+          console.log('[SyntenyWebGL] draw autorun: skipping (renderer not ready)', {
+            hasRenderer: !!self.webglRenderer,
+            webglInitialized: self.webglInitialized,
+
+          })
           return
         }
 
@@ -51,8 +66,22 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Always resize in case dimensions changed
         self.webglRenderer.resize(width, height)
 
+        console.log('[SyntenyWebGL] draw autorun: proceeding', {
+          featPositions: featPositions.length,
+          width,
+          height,
+          level,
+          colorBy,
+          alpha,
+        })
+
         let geometryChanged = false
         if (geometryKey !== lastGeometryKey) {
+          console.log('[SyntenyWebGL] draw autorun: rebuilding geometry', {
+            geometryKey,
+            lastGeometryKey,
+            featCount: featPositions.length,
+          })
           const colorFn = createColorFunction(colorBy, alpha)
           const bpPerPxs = view.views.map(v => v.bpPerPx)
           self.webglRenderer.buildGeometry(
@@ -67,6 +96,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             bpPerPxs,
             view.drawLocationMarkers,
           )
+          console.log('[SyntenyWebGL] draw autorun: geometry built, hasGeometry=', self.webglRenderer.hasGeometry())
           lastGeometryKey = geometryKey
           geometryChanged = true
         }
@@ -74,6 +104,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const offsets = view.views.map(v => v.offsetPx)
         const o0 = offsets[level]!
         const o1 = offsets[level + 1]!
+        console.log('[SyntenyWebGL] draw autorun: rendering', { o0, o1, height })
 
         // Skip edges during scroll for performance, debounce a full
         // re-render with edges once scrolling stops
@@ -124,8 +155,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       },
       async ({ initialized }) => {
         if (!initialized) {
+          console.log('[SyntenyWebGL] RPC reaction: skipping (not initialized)')
           return
         }
+        console.log('[SyntenyWebGL] RPC reaction: running', {
+          features: self.features?.length ?? 'null',
+        })
         const { level } = self
         const { assemblyManager, rpcManager } = getSession(self)
         const view = getContainingView(self) as LSV
@@ -142,6 +177,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         }))
 
         const feats = self.features || []
+        console.log('[SyntenyWebGL] RPC reaction: serializing features', {
+          featureCount: feats.length,
+          level,
+          viewSnapCount: viewSnaps.length,
+        })
         const serializedFeatures = [] as SyntenyFeatureData[]
         for (const f of feats) {
           const mate = f.get('mate')
@@ -162,6 +202,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           })
         }
 
+        console.log('[SyntenyWebGL] RPC reaction: calling SyntenyGetWebGLGeometry', {
+          serializedFeatureCount: serializedFeatures.length,
+          sampleFeature: serializedFeatures[0],
+        })
         const result = (await rpcManager.call(
           sessionId,
           'SyntenyGetWebGLGeometry',
@@ -180,11 +224,21 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           cigars: string[]
         }
 
+        console.log('[SyntenyWebGL] RPC reaction: got result', {
+          featureIdCount: result.featureIds.length,
+          p11Length: result.p11_offsetPx.length,
+          sampleP11: result.p11_offsetPx[0],
+          sampleP12: result.p12_offsetPx[0],
+          sampleP21: result.p21_offsetPx[0],
+          sampleP22: result.p22_offsetPx[0],
+        })
         const featureMap = new Map(feats.map(f => [f.id(), f]))
         const map = [] as FeatPos[]
+        let skipped = 0
         for (let i = 0; i < result.featureIds.length; i++) {
           const f = featureMap.get(result.featureIds[i]!)
           if (!f) {
+            skipped++
             continue
           }
           map.push({
@@ -196,6 +250,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             cigar: MismatchParser.parseCigar(result.cigars[i]),
           })
         }
+        console.log('[SyntenyWebGL] RPC reaction: setFeatPositions', {
+          mapLength: map.length,
+          skipped,
+        })
 
         self.setFeatPositions(map)
       },

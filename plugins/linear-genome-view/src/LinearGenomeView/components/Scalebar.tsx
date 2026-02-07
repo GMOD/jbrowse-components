@@ -42,10 +42,10 @@ const Scalebar = observer(function Scalebar({
   const { classes } = useStyles()
   const { staticBlocks, offsetPx } = model
   const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
-  console.log('[Scalebar] render', {
-    numBlocks: staticBlocks.blocks.length,
-    totalWidthPx: staticBlocks.totalWidthPx,
-  })
+  // console.log('[Scalebar] render', {
+  //   numBlocks: staticBlocks.blocks.length,
+  //   totalWidthPx: staticBlocks.totalWidthPx,
+  // })
 
   return (
     <Paper

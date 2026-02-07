@@ -59,10 +59,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers: false,
         /**
          * #property
-         */
-        useWebGL: false,
-        /**
-         * #property
          * used for initializing the view from a session snapshot
          * example:
          * ```json
@@ -151,12 +147,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setDrawLocationMarkers(arg: boolean) {
         self.drawLocationMarkers = arg
-      },
-      /**
-       * #action
-       */
-      setUseWebGL(arg: boolean) {
-        self.useWebGL = arg
       },
       /**
        * #action
@@ -329,18 +319,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   helpText:
                     'Location markers add periodic visual indicators along long syntenic blocks, helping you track position and scale within large conserved regions. This is particularly useful when examining very long syntenic matches where it can be difficult to gauge relative position.',
                 },
-                {
-                  label: 'Use WebGL (experimental)',
-                  type: 'checkbox',
-                  checked: self.useWebGL,
-                  description:
-                    'Use GPU-accelerated WebGL rendering for better performance',
-                  onClick: () => {
-                    self.setUseWebGL(!self.useWebGL)
-                  },
-                  helpText:
-                    'Experimental WebGL renderer uses GPU acceleration for drawing synteny ribbons. This can provide better performance when viewing many syntenic regions with smooth anti-aliased edges.',
-                },
               ],
             },
             {
@@ -487,7 +465,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawCIGARMatchesOnly,
         drawCurves,
         drawLocationMarkers,
-        useWebGL,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -496,7 +473,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ...(drawCIGARMatchesOnly ? { drawCIGARMatchesOnly } : {}),
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
-        ...(useWebGL ? { useWebGL } : {}),
       } as typeof snap
     })
 }

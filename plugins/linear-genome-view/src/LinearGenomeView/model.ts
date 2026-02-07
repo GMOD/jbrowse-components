@@ -1356,17 +1356,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ) {
             fastPathHits++
             if (fastPathHits % 100 === 0) {
-              console.log(
-                `[staticBlocks] fast-path hits: ${fastPathHits}, full computations: ${fullComputations}`,
-              )
+              // console.log(
+              //   `[staticBlocks] fast-path hits: ${fastPathHits}, full computations: ${fullComputations}`,
+              // )
             }
             return currentlyCalculatedStaticBlocks
           }
 
           fullComputations++
-          console.log(
-            `[staticBlocks] full computation #${fullComputations} (fast-path hits so far: ${fastPathHits})`,
-          )
+          // console.log(
+          //   `[staticBlocks] full computation #${fullComputations} (fast-path hits so far: ${fastPathHits})`,
+          // )
           const newBlocks = calculateStaticBlocks(self)
           const newKeys = newBlocks.blocks.map(b => b.key).join(',')
           if (

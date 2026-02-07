@@ -1,15 +1,19 @@
 import type React from 'react'
 import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { MAX_COLOR_RANGE, getId } from '../drawSynteny.ts'
 import { SyntenyWebGLRenderer } from '../drawSyntenyWebGL.ts'
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
-import { getTooltip, onSynClick, onSynContextClick } from './util.ts'
+import { getTooltip } from './util.ts'
 
 import type { ClickCoord } from './util.ts'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
@@ -20,21 +24,12 @@ const SyntenyTooltip = lazy(() => import('./SyntenyTooltip.tsx'))
 type Timer = ReturnType<typeof setTimeout>
 
 const useStyles = makeStyles()({
-  pix: {
-    imageRendering: 'pixelated',
-    pointerEvents: 'none',
-    visibility: 'hidden',
-    position: 'absolute',
-  },
   rel: {
     position: 'relative',
   },
   mouseoverCanvas: {
     position: 'absolute',
     pointerEvents: 'none',
-  },
-  mainCanvas: {
-    position: 'absolute',
   },
   webglCanvas: {
     position: 'absolute',
@@ -62,7 +57,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const [mouseCurrDownX, setMouseCurrDownX] = useState<number>()
   const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
-  const mainSyntenyCanvasRefp = useRef<HTMLCanvasElement>(null)
   const webglCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -82,15 +76,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const mainSyntenyCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setMainCanvasRef(ref)
-      mainSyntenyCanvasRefp.current = ref // this ref is additionally used in useEffect below
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
-  )
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     function onWheel(event: WheelEvent) {
       event.preventDefault()
@@ -107,7 +92,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
                 : v.bpPerPx / (1 - delta.current),
               event.clientX -
                 (canvasRectRef.current?.left ??
-                  mainSyntenyCanvasRefp.current?.getBoundingClientRect().left ??
+                  webglCanvasRef.current?.getBoundingClientRect().left ??
                   0),
             )
           }
@@ -131,45 +116,34 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         }
       }
     }
-    const target = view.useWebGL
-      ? webglCanvasRef.current
-      : mainSyntenyCanvasRefp.current
+    const target = webglCanvasRef.current
     target?.addEventListener('wheel', onWheel)
     return () => {
       target?.removeEventListener('wheel', onWheel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, height, width, view.useWebGL])
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const clickMapCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setClickMapCanvasRef(ref)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
-  )
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const cigarClickMapCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setCigarClickMapCanvasRef(ref)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
-  )
+  }, [model, height, width])
 
   // Initialize/dispose WebGL renderer
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
-    if (view.useWebGL && webglCanvasRef.current) {
+    console.log('[SyntenyWebGL] useEffect: init check', {
+      hasCanvas: !!webglCanvasRef.current,
+      width,
+      height,
+    })
+    if (webglCanvasRef.current) {
+      console.log('[SyntenyWebGL] useEffect: creating SyntenyWebGLRenderer')
       const renderer = new SyntenyWebGLRenderer()
       const success = renderer.init(webglCanvasRef.current)
+      console.log('[SyntenyWebGL] useEffect: renderer.init result =', success)
       model.setWebGLRenderer(renderer)
       model.setWebGLInitialized(success)
       if (!success) {
-        console.warn('[Synteny] WebGL initialization failed, falling back to Canvas 2D')
+        console.warn('[Synteny] WebGL initialization failed')
       }
       return () => {
+        console.log('[SyntenyWebGL] useEffect: disposing renderer')
         renderer.dispose()
         model.setWebGLRenderer(null)
         model.setWebGLInitialized(false)
@@ -177,11 +151,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     }
     return undefined
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view.useWebGL, model, width, height])
+  }, [model, width, height])
 
   const handleWebGLPick = useCallback(
     (x: number, y: number) => {
-      if (view.useWebGL && model.webglRenderer && model.webglInitialized) {
+      if (model.webglRenderer && model.webglInitialized) {
         const featureIndex = model.webglRenderer.pick(x, y)
         if (featureIndex >= 0 && featureIndex < model.featPositions.length) {
           return model.featPositions[featureIndex]
@@ -189,7 +163,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       }
       return undefined
     },
-    [view.useWebGL, model],
+    [model],
   )
 
   const handleMouseMove = useCallback(
@@ -213,15 +187,12 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       }
 
       const { clientX, clientY } = event
-      const canvas = view.useWebGL
-        ? webglCanvasRef.current
-        : mainSyntenyCanvasRefp.current
+      const canvas = webglCanvasRef.current
       if (!canvas) {
         return
       }
       let rect = canvasRectRef.current
       if (!rect) {
-        console.log('[SyntenyRendering] canvasRectRef cache miss (mousemove)')
         rect = canvas.getBoundingClientRect()
         canvasRectRef.current = rect
       }
@@ -230,57 +201,13 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       setCurrX(clientX)
       setCurrY(clientY)
 
-      if (view.useWebGL && model.webglRenderer && model.webglInitialized) {
-        const feat = handleWebGLPick(x, y)
-        if (feat) {
-          model.setMouseoverId(feat.f.id())
-          setTooltip(getTooltip({ feature: feat.f }))
-        } else {
-          model.setMouseoverId(undefined)
-          setTooltip('')
-        }
-        return
-      }
-
-      // Canvas 2D picking
-      const ref1 = model.clickMapCanvas
-      const ref2 = model.cigarClickMapCanvas
-      if (!ref1 || !ref2) {
-        return
-      }
-      const ctx1 = ref1.getContext('2d')
-      const ctx2 = ref2.getContext('2d')
-      if (!ctx1 || !ctx2) {
-        return
-      }
-      const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-      const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
-      if (model.numFeats === 0) {
-        setTooltip('')
-        return
-      }
-      const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-      const id = getId(r1!, g1!, b1!, unitMultiplier)
-      model.setMouseoverId(model.featPositions[id]?.f.id())
-      if (id === -1 || !model.featPositions[id]) {
-        setTooltip('')
+      const feat = handleWebGLPick(x, y)
+      if (feat) {
+        model.setMouseoverId(feat.f.id())
+        setTooltip(getTooltip({ feature: feat.f }))
       } else {
-        const { f, cigar } = model.featPositions[id]
-        const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
-        const cigarIdx = getId(r2!, g2!, b2!, unitMultiplier2)
-        // this is hacky but the index sometimes returns odd number which
-        // is invalid due to the color-to-id mapping, check it is even to
-        // ensure better validity
-        // Also check that the CIGAR pixel data is not all zeros (no CIGAR data drawn)
-        const hasCigarData =
-          cigarIdx % 2 === 0 && (r2 !== 0 || g2 !== 0 || b2 !== 0)
-        setTooltip(
-          getTooltip({
-            feature: f,
-            cigarOp: hasCigarData ? cigar[cigarIdx + 1] : undefined,
-            cigarOpLen: hasCigarData ? cigar[cigarIdx] : undefined,
-          }),
-        )
+        model.setMouseoverId(undefined)
+        setTooltip('')
       }
     },
     [view, model, mouseCurrDownX, handleWebGLPick],
@@ -304,39 +231,51 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         mouseInitialDownX !== undefined &&
         Math.abs(evt.clientX - mouseInitialDownX) < 5
       ) {
-        if (view.useWebGL && model.webglRenderer && model.webglInitialized) {
-          const canvas = webglCanvasRef.current
-          if (canvas) {
-            let rect = canvasRectRef.current
-            if (!rect) {
-              console.log('[SyntenyRendering] canvasRectRef cache miss (mouseup)')
-              rect = canvas.getBoundingClientRect()
-              canvasRectRef.current = rect
-            }
-            const x = evt.clientX - rect.left
-            const y = evt.clientY - rect.top
-            const feat = handleWebGLPick(x, y)
-            if (feat) {
-              model.setClickId(feat.f.id())
+        const canvas = webglCanvasRef.current
+        if (canvas && model.webglRenderer && model.webglInitialized) {
+          let rect = canvasRectRef.current
+          if (!rect) {
+            rect = canvas.getBoundingClientRect()
+            canvasRectRef.current = rect
+          }
+          const x = evt.clientX - rect.left
+          const y = evt.clientY - rect.top
+          const feat = handleWebGLPick(x, y)
+          if (feat) {
+            const { f } = feat
+            model.setClickId(f.id())
+            const session = getSession(model)
+            if (isSessionModelWithWidgets(session)) {
+              const containingView = getContainingView(model)
+              const track = getContainingTrack(model)
+              session.showWidget(
+                session.addWidget(
+                  'SyntenyFeatureWidget',
+                  'syntenyFeature',
+                  {
+                    view: containingView,
+                    track,
+                    featureData: f.toJSON(),
+                    level: model.level,
+                  },
+                ),
+              )
             }
           }
-        } else {
-          onSynClick(evt, model, canvasRectRef)
         }
       }
     },
-    [view.useWebGL, model, mouseInitialDownX, handleWebGLPick],
+    [model, mouseInitialDownX, handleWebGLPick],
   )
 
   const handleContextMenu = useCallback(
     (evt: React.MouseEvent<HTMLCanvasElement>) => {
-      if (view.useWebGL && model.webglRenderer && model.webglInitialized) {
+      if (model.webglRenderer && model.webglInitialized) {
         evt.preventDefault()
         const canvas = webglCanvasRef.current
         if (canvas) {
           let rect = canvasRectRef.current
           if (!rect) {
-            console.log('[SyntenyRendering] canvasRectRef cache miss (contextmenu)')
             rect = canvas.getBoundingClientRect()
             canvasRectRef.current = rect
           }
@@ -352,69 +291,32 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
             })
           }
         }
-      } else {
-        onSynContextClick(evt, model, setAnchorEl, canvasRectRef)
       }
     },
-    [view.useWebGL, model, handleWebGLPick],
+    [model, handleWebGLPick],
   )
 
   return (
     <div className={classes.rel}>
-      {/* Canvas 2D rendering - hidden when WebGL is active */}
-      {!view.useWebGL ? (
-        <canvas
-          ref={mainSyntenyCanvasRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onContextMenu={handleContextMenu}
-          data-testid="synteny_canvas"
-          className={classes.mainCanvas}
-          width={width}
-          height={height}
-        />
-      ) : null}
-      {/* WebGL rendering canvas */}
-      {view.useWebGL ? (
-        <canvas
-          ref={webglCanvasRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onContextMenu={handleContextMenu}
-          data-testid="synteny_canvas_webgl"
-          className={classes.webglCanvas}
-          width={width * 2}
-          height={height * 2}
-          style={{ width, height }}
-        />
-      ) : null}
+      <canvas
+        ref={webglCanvasRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onContextMenu={handleContextMenu}
+        data-testid="synteny_canvas"
+        className={classes.webglCanvas}
+        width={width * 2}
+        height={height * 2}
+        style={{ width, height }}
+      />
       <canvas
         ref={mouseoverDetectionCanvasRef}
         width={width}
         height={height}
         className={classes.mouseoverCanvas}
       />
-      {/* Hidden canvases for Canvas 2D click detection */}
-      {!view.useWebGL ? (
-        <>
-          <canvas
-            ref={clickMapCanvasRef}
-            className={classes.pix}
-            width={width}
-            height={height}
-          />
-          <canvas
-            ref={cigarClickMapCanvasRef}
-            className={classes.pix}
-            width={width}
-            height={height}
-          />
-        </>
-      ) : null}
       {mouseoverId && tooltip && currX && currY ? (
         <SyntenyTooltip title={tooltip} />
       ) : null}
