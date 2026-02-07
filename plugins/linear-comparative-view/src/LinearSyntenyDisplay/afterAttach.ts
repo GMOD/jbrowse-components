@@ -52,7 +52,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Always resize in case dimensions changed
         self.webglRenderer.resize(width, height)
 
-        if (geometryKey !== lastGeometryKey || featPositions !== lastFeatPositions) {
+        if (
+          geometryKey !== lastGeometryKey ||
+          featPositions !== lastFeatPositions
+        ) {
           const colorFn = createColorFunction(colorBy, alpha)
           const bpPerPxs = view.views.map(v => v.bpPerPx)
           self.webglRenderer.buildGeometry(
@@ -73,24 +76,22 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         const o0 = view.views[level]!.offsetPx
         const o1 = view.views[level + 1]!.offsetPx
+        const bpPerPx0 = view.views[level]!.bpPerPx
+        const bpPerPx1 = view.views[level + 1]!.bpPerPx
 
         // Skip edges during scroll for performance, debounce a full
         // re-render with edges once scrolling stops
-        self.webglRenderer.render(o0, o1, height, true)
+        self.webglRenderer.render(o0, o1, height, bpPerPx0, bpPerPx1, true)
 
         if (edgeTimer) {
           clearTimeout(edgeTimer)
         }
         edgeTimer = setTimeout(() => {
-          self.webglRenderer?.render(o0, o1, height, false)
+          self.webglRenderer?.render(o0, o1, height, bpPerPx0, bpPerPx1, false)
         }, 150)
       },
       {
         name: 'SyntenyDraw',
-        // Defer re-runs to next animation frame so GL commands don't block
-        // the browser compositor in the same frame as the MobX transaction.
-        // Introduces 1-frame visual lag which is acceptable.
-        scheduler: run => requestAnimationFrame(run),
       },
     ),
   )

@@ -34,6 +34,8 @@ uniform vec2 u_resolution;
 uniform float u_height;
 uniform float u_offset0;
 uniform float u_offset1;
+uniform float u_scale0;
+uniform float u_scale1;
 uniform float u_visibleLeft;
 uniform float u_visibleRight;
 
@@ -41,8 +43,8 @@ out vec4 v_color;
 flat out float v_featureId;
 
 void main() {
-  float screenMinX = min(min(a_x1, a_x2) - u_offset0, min(a_x3, a_x4) - u_offset1);
-  float screenMaxX = max(max(a_x1, a_x2) - u_offset0, max(a_x3, a_x4) - u_offset1);
+  float screenMinX = min(min(a_x1, a_x2) * u_scale0 - u_offset0, min(a_x3, a_x4) * u_scale1 - u_offset1);
+  float screenMaxX = max(max(a_x1, a_x2) * u_scale0 - u_offset0, max(a_x3, a_x4) * u_scale1 - u_offset1);
   if (screenMaxX < u_visibleLeft || screenMinX > u_visibleRight) {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     v_color = vec4(0.0);
@@ -52,8 +54,8 @@ void main() {
 
   float topX = mix(a_x1, a_x2, a_side);
   float bottomX = mix(a_x4, a_x3, a_side);
-  float screenTopX = topX - u_offset0;
-  float screenBottomX = bottomX - u_offset1;
+  float screenTopX = topX * u_scale0 - u_offset0;
+  float screenBottomX = bottomX * u_scale1 - u_offset1;
 
   float x, y;
   if (a_isCurve > 0.5) {
@@ -125,6 +127,8 @@ uniform vec2 u_resolution;
 uniform float u_height;
 uniform float u_offset0;
 uniform float u_offset1;
+uniform float u_scale0;
+uniform float u_scale1;
 uniform float u_visibleLeft;
 uniform float u_visibleRight;
 
@@ -133,8 +137,8 @@ out float v_dist;
 flat out float v_featureId;
 
 vec2 evalEdge(float t, float topX, float bottomX, float isCurve) {
-  float screenTopX = topX - u_offset0;
-  float screenBottomX = bottomX - u_offset1;
+  float screenTopX = topX * u_scale0 - u_offset0;
+  float screenBottomX = bottomX * u_scale1 - u_offset1;
 
   if (isCurve > 0.5) {
     float mt = 1.0 - t;
@@ -154,8 +158,8 @@ vec2 evalEdge(float t, float topX, float bottomX, float isCurve) {
 }
 
 void main() {
-  float screenMinX = min(min(a_x1, a_x2) - u_offset0, min(a_x3, a_x4) - u_offset1);
-  float screenMaxX = max(max(a_x1, a_x2) - u_offset0, max(a_x3, a_x4) - u_offset1);
+  float screenMinX = min(min(a_x1, a_x2) * u_scale0 - u_offset0, min(a_x3, a_x4) * u_scale1 - u_offset1);
+  float screenMaxX = max(max(a_x1, a_x2) * u_scale0 - u_offset0, max(a_x3, a_x4) * u_scale1 - u_offset1);
   if (screenMaxX < u_visibleLeft || screenMinX > u_visibleRight) {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     v_color = vec4(0.0);
@@ -298,6 +302,12 @@ export class SyntenyWebGLRenderer {
   private lastOffset0 = 0
   private lastOffset1 = 0
   private lastHeight = 0
+  private lastScale0 = 1
+  private lastScale1 = 1
+
+  // bpPerPx used when geometry was built, for zoom-correction scaling
+  private geometryBpPerPx0 = 1
+  private geometryBpPerPx1 = 1
 
   // Cached uniform locations per program
   private uniformCache = new Map<WebGLProgram, Record<string, WebGLUniformLocation | null>>()
@@ -330,7 +340,7 @@ export class SyntenyWebGLRenderer {
       this.edgePickingProgram = createProgram(gl, EDGE_VERTEX_SHADER, PICKING_FRAGMENT_SHADER)
 
       // Cache uniform locations for all programs
-      const uniformNames = ['u_resolution', 'u_height', 'u_offset0', 'u_offset1', 'u_visibleLeft', 'u_visibleRight']
+      const uniformNames = ['u_resolution', 'u_height', 'u_offset0', 'u_offset1', 'u_scale0', 'u_scale1', 'u_visibleLeft', 'u_visibleRight']
       for (const program of [this.fillProgram, this.fillPickingProgram, this.edgeProgram, this.edgePickingProgram]) {
         const locs: Record<string, WebGLUniformLocation | null> = {}
         for (const name of uniformNames) {
@@ -546,6 +556,11 @@ export class SyntenyWebGLRenderer {
     const gl = this.gl
     this.cleanupGeometry()
 
+    // Store bpPerPx used for this geometry so we can scale correctly
+    // if the view zooms before new geometry arrives from RPC
+    this.geometryBpPerPx0 = bpPerPxs[level]!
+    this.geometryBpPerPx1 = bpPerPxs[level + 1]!
+
     // Instance data arrays (shared by fill and edge passes)
     // Non-CIGAR instances come first so edge pass can skip CIGAR segments
     const x1s: number[] = []
@@ -663,6 +678,16 @@ export class SyntenyWebGLRenderer {
           cx2 += d2 * rev2
         }
 
+        // Adaptively skip sub-pixel D/I/N ops when zoomed out: merge them
+        // into surrounding match segments to avoid visual noise
+        if (op === 'D' || op === 'N' || op === 'I') {
+          const relevantPx = op === 'I' ? d2 : d1
+          if (relevantPx < 1) {
+            continuingFlag = true
+            continue
+          }
+        }
+
         const isNotLast = j < cigar.length - 2
         if (
           Math.abs(cx1 - px1) <= 1 &&
@@ -727,11 +752,13 @@ export class SyntenyWebGLRenderer {
     }
   }
 
-  render(offset0: number, offset1: number, height: number, skipEdges = false) {
+  render(offset0: number, offset1: number, height: number, curBpPerPx0: number, curBpPerPx1: number, skipEdges = false) {
     if (!this.gl || !this.canvas) {
       return
     }
     const gl = this.gl
+    const scale0 = this.geometryBpPerPx0 / curBpPerPx0
+    const scale1 = this.geometryBpPerPx1 / curBpPerPx1
 
     gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -739,7 +766,7 @@ export class SyntenyWebGLRenderer {
     if (this.fillVao && this.instanceCount > 0) {
       gl.useProgram(this.fillProgram)
       gl.bindVertexArray(this.fillVao)
-      this.setUniforms(gl, this.fillProgram!, offset0, offset1, height)
+      this.setUniforms(gl, this.fillProgram!, offset0, offset1, height, scale0, scale1)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTICES_PER_INSTANCE, this.instanceCount)
     }
 
@@ -748,7 +775,7 @@ export class SyntenyWebGLRenderer {
     if (!skipEdges && this.edgeVao && this.nonCigarInstanceCount > 0) {
       gl.useProgram(this.edgeProgram)
       gl.bindVertexArray(this.edgeVao)
-      this.setUniforms(gl, this.edgeProgram!, offset0, offset1, height)
+      this.setUniforms(gl, this.edgeProgram!, offset0, offset1, height, scale0, scale1)
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
@@ -762,10 +789,12 @@ export class SyntenyWebGLRenderer {
     this.lastOffset0 = offset0
     this.lastOffset1 = offset1
     this.lastHeight = height
+    this.lastScale0 = scale0
+    this.lastScale1 = scale1
     this.pickingDirty = true
   }
 
-  renderPicking(offset0: number, offset1: number, height: number) {
+  renderPicking(offset0: number, offset1: number, height: number, scale0: number, scale1: number) {
     if (!this.gl || !this.canvas) {
       return
     }
@@ -783,7 +812,7 @@ export class SyntenyWebGLRenderer {
     if (this.fillPickingVao && this.instanceCount > 0) {
       gl.useProgram(this.fillPickingProgram)
       gl.bindVertexArray(this.fillPickingVao)
-      this.setUniforms(gl, this.fillPickingProgram!, offset0, offset1, height)
+      this.setUniforms(gl, this.fillPickingProgram!, offset0, offset1, height, scale0, scale1)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTICES_PER_INSTANCE, this.instanceCount)
     }
 
@@ -791,7 +820,7 @@ export class SyntenyWebGLRenderer {
     if (this.edgePickingVao && this.nonCigarInstanceCount > 0) {
       gl.useProgram(this.edgePickingProgram)
       gl.bindVertexArray(this.edgePickingVao)
-      this.setUniforms(gl, this.edgePickingProgram!, offset0, offset1, height)
+      this.setUniforms(gl, this.edgePickingProgram!, offset0, offset1, height, scale0, scale1)
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
@@ -816,12 +845,16 @@ export class SyntenyWebGLRenderer {
     offset0: number,
     offset1: number,
     height: number,
+    scale0: number,
+    scale1: number,
   ) {
     const locs = this.uniformCache.get(program)!
     gl.uniform2f(locs.u_resolution!, this.width, this.height)
     gl.uniform1f(locs.u_height!, height)
     gl.uniform1f(locs.u_offset0!, offset0)
     gl.uniform1f(locs.u_offset1!, offset1)
+    gl.uniform1f(locs.u_scale0!, scale0)
+    gl.uniform1f(locs.u_scale1!, scale1)
     if (locs.u_visibleLeft) {
       gl.uniform1f(locs.u_visibleLeft, -100)
       gl.uniform1f(locs.u_visibleRight!, this.width + 100)
@@ -834,7 +867,7 @@ export class SyntenyWebGLRenderer {
     }
 
     if (this.pickingDirty) {
-      this.renderPicking(this.lastOffset0, this.lastOffset1, this.lastHeight)
+      this.renderPicking(this.lastOffset0, this.lastOffset1, this.lastHeight, this.lastScale0, this.lastScale1)
       this.pickingDirty = false
     }
 

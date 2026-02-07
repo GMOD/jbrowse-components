@@ -1,21 +1,107 @@
-import { useEffect, useRef } from 'react'
-
-import { useTheme } from '@mui/material'
-import { autorun } from 'mobx'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import {
+  ContentBlock as ContentBlockComponent,
+  ElidedBlock as ElidedBlockComponent,
+  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
+} from '../../BaseLinearDisplay/components/Block.tsx'
 import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-/**
- * Canvas-based Gridlines component
- *
- * Uses canvas for rendering to avoid React reconciliation overhead.
- * Updates are done imperatively via MobX autorun, outside React lifecycle.
- */
+const useStyles = makeStyles()(theme => ({
+  verticalGuidesZoomContainer: {
+    position: 'absolute',
+    top: 0,
+    height: '100%',
+    width: '100%',
+    pointerEvents: 'none',
+  },
+  verticalGuidesContainer: {
+    position: 'absolute',
+    height: '100%',
+    pointerEvents: 'none',
+    display: 'flex',
+  },
+  tick: {
+    position: 'absolute',
+    height: '100%',
+    width: 1,
+  },
+  majorTick: {
+    background: theme.palette.action.disabled,
+  },
+  minorTick: {
+    background: theme.palette.divider,
+  },
+}))
+
+function RenderedBlockLines({
+  block,
+  bpPerPx,
+}: {
+  block: ContentBlock
+  bpPerPx: number
+}) {
+  const { classes } = useStyles()
+  const { start, end, reversed } = block
+  const ticks = makeTicks(start, end, bpPerPx)
+  const majorTickClass = `${classes.tick} ${classes.majorTick}`
+  const minorTickClass = `${classes.tick} ${classes.minorTick}`
+
+  return (
+    <ContentBlockComponent block={block}>
+      {ticks.map(({ type, base }) => {
+        const x = (reversed ? end - base : base - start) / bpPerPx
+        return (
+          <div
+            key={base}
+            className={
+              type === 'major' || type === 'labeledMajor'
+                ? majorTickClass
+                : minorTickClass
+            }
+            style={{ left: x }}
+          />
+        )
+      })}
+    </ContentBlockComponent>
+  )
+}
+
+const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
+  model,
+}: {
+  model: LGV
+}) {
+  const { staticBlocks, bpPerPx } = model
+  return (
+    <>
+      {staticBlocks.map((block, index) => {
+        const k = `${block.key}-${index}`
+        if (block.type === 'ContentBlock') {
+          return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
+        } else if (block.type === 'ElidedBlock') {
+          return <ElidedBlockComponent key={k} width={block.widthPx} />
+        } else if (block.type === 'InterRegionPaddingBlock') {
+          return (
+            <InterRegionPaddingBlockComponent
+              key={k}
+              width={block.widthPx}
+              boundary={block.variant === 'boundary'}
+            />
+          )
+        }
+        return null
+      })}
+    </>
+  )
+})
+
 const Gridlines = observer(function Gridlines({
   model,
   offset = 0,
@@ -23,146 +109,26 @@ const Gridlines = observer(function Gridlines({
   model: LGV
   offset?: number
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const theme = useTheme()
-
-  // Get theme colors for ticks
-  const majorTickColor = theme.palette.action.disabled
-  const minorTickColor = theme.palette.divider
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-    const parent = canvas.parentElement
-
-    // Cache height via ResizeObserver to avoid forced reflow in autorun.
-    // Reading clientHeight inside the autorun would force a synchronous
-    // layout on every scroll frame.
-    let cachedHeight = parent?.clientHeight || 600
-    const resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        cachedHeight = entry.contentRect.height
-      }
-    })
-    if (parent) {
-      resizeObserver.observe(parent)
-    }
-
-    // Use autorun to update canvas outside React lifecycle
-    const dispose = autorun(() => {
-      const { dynamicBlocks, bpPerPx, width, offsetPx } = model
-
-      if (!width) {
-        return
-      }
-
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        return
-      }
-
-      // Handle retina displays
-      const dpr = window.devicePixelRatio || 1
-      const height = cachedHeight
-
-      // Set canvas size accounting for device pixel ratio
-      const canvasWidth = width
-      const canvasHeight = height
-
-      // Reset transform before resizing
-      ctx.setTransform(1, 0, 0, 1, 0, 0)
-
-      if (
-        canvas.width !== canvasWidth * dpr ||
-        canvas.height !== canvasHeight * dpr
-      ) {
-        canvas.width = canvasWidth * dpr
-        canvas.height = canvasHeight * dpr
-        canvas.style.width = `${canvasWidth}px`
-        canvas.style.height = `${canvasHeight}px`
-      }
-
-      ctx.scale(dpr, dpr)
-
-      // Clear canvas
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight)
-
-      // Collect tick positions by type for batched drawing
-      const majorTicks: number[] = []
-      const minorTicks: number[] = []
-
-      for (const block of dynamicBlocks) {
-        if (block.type !== 'ContentBlock') {
-          continue
-        }
-
-        const blockScreenX = block.offsetPx - offsetPx - offset
-        const { start, end, reversed } = block
-        const ticks = makeTicks(start, end, bpPerPx)
-
-        for (const { type, base } of ticks) {
-          const tickPosInBlock =
-            (reversed ? end - base : base - start) / bpPerPx
-          const x = tickPosInBlock + blockScreenX
-
-          // Skip ticks outside visible area
-          if (x < 0 || x > canvasWidth) {
-            continue
-          }
-
-          if (type === 'major' || type === 'labeledMajor') {
-            majorTicks.push(Math.round(x) + 0.5)
-          } else {
-            minorTicks.push(Math.round(x) + 0.5)
-          }
-        }
-      }
-
-      // Draw all minor ticks in one batch
-      if (minorTicks.length > 0) {
-        ctx.strokeStyle = minorTickColor
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        for (const x of minorTicks) {
-          ctx.moveTo(x, 0)
-          ctx.lineTo(x, canvasHeight)
-        }
-        ctx.stroke()
-      }
-
-      // Draw all major ticks in one batch
-      if (majorTicks.length > 0) {
-        ctx.strokeStyle = majorTickColor
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        for (const x of majorTicks) {
-          ctx.moveTo(x, 0)
-          ctx.lineTo(x, canvasHeight)
-        }
-        ctx.stroke()
-      }
-    })
-
-    return () => {
-      dispose()
-      resizeObserver.disconnect()
-    }
-  }, [model, offset, majorTickColor, minorTickColor])
-
+  const { classes } = useStyles()
+  const { staticBlocks, scaleFactor, offsetPx } = model
+  const offsetLeft = staticBlocks.offsetPx - offsetPx
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      className={classes.verticalGuidesZoomContainer}
       style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
+        transform: scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
       }}
-    />
+    >
+      <div
+        className={classes.verticalGuidesContainer}
+        style={{
+          left: offsetLeft - offset,
+          width: staticBlocks.totalWidthPx,
+        }}
+      >
+        <RenderedVerticalGuides model={model} />
+      </div>
+    </div>
   )
 })
 

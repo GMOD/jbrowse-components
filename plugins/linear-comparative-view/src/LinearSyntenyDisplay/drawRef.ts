@@ -168,6 +168,16 @@ export function drawRef(
             cx2 += d2 * rev2
           }
 
+          // Adaptively skip sub-pixel D/I/N ops when zoomed out: merge them
+          // into surrounding match segments to avoid visual noise
+          if (op === 'D' || op === 'N' || op === 'I') {
+            const relevantPx = op === 'I' ? d2 : d1
+            if (relevantPx < 1) {
+              continuingFlag = true
+              continue
+            }
+          }
+
           // check that we are even drawing in view here, e.g. that all
           // points are not all less than 0 or greater than width
           if (

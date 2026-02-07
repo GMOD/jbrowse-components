@@ -88,6 +88,15 @@ export function drawCigarClickMap(
             cx2 += d2 * rev2
           }
 
+          // Skip sub-pixel D/I/N ops when zoomed out
+          if (op === 'D' || op === 'N' || op === 'I') {
+            const relevantPx = op === 'I' ? d2 : d1
+            if (relevantPx < 1) {
+              continuingFlag = true
+              continue
+            }
+          }
+
           if (
             !(
               Math.max(px1, px2, cx1, cx2) < 0 ||
