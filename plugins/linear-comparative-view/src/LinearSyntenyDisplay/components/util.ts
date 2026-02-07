@@ -1,5 +1,5 @@
 import type React from 'react'
-import type { MutableRefObject } from 'react'
+import type { RefObject } from 'react'
 
 import {
   assembleLocString,
@@ -227,7 +227,7 @@ export function drawBezierBox(
 export function getFeatureAtClick(
   event: React.MouseEvent,
   model: LinearSyntenyDisplayModel,
-  canvasRectRef?: MutableRefObject<DOMRect | null>,
+  canvasRectRef?: RefObject<DOMRect | null>,
 ) {
   const { clickMapCanvas, numFeats, featPositions } = model
   if (!clickMapCanvas) {
@@ -239,7 +239,7 @@ export function getFeatureAtClick(
   }
   let rect = canvasRectRef?.current
   if (!rect) {
-    console.log('[SyntenyUtil] canvasRectRef cache miss (getFeatureAtClick)')
+    console.warn('[SyntenyUtil] canvasRectRef cache miss (getFeatureAtClick)')
     rect = clickMapCanvas.getBoundingClientRect()
     if (canvasRectRef) {
       canvasRectRef.current = rect
@@ -256,7 +256,7 @@ export function getFeatureAtClick(
 export function onSynClick(
   event: React.MouseEvent,
   model: LinearSyntenyDisplayModel,
-  canvasRectRef?: MutableRefObject<DOMRect | null>,
+  canvasRectRef?: RefObject<DOMRect | null>,
 ) {
   const feat = getFeatureAtClick(event, model, canvasRectRef)
   if (feat) {
@@ -283,7 +283,7 @@ export function onSynContextClick(
   event: React.MouseEvent,
   model: LinearSyntenyDisplayModel,
   setAnchorEl: (arg: ClickCoord) => void,
-  canvasRectRef?: MutableRefObject<DOMRect | null>,
+  canvasRectRef?: RefObject<DOMRect | null>,
 ) {
   event.preventDefault()
   const feat = getFeatureAtClick(event, model, canvasRectRef)

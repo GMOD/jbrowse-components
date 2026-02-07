@@ -294,10 +294,7 @@ function createProgram(
 ) {
   const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
   const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
-  const program = gl.createProgram()
-  if (!program) {
-    throw new Error('Failed to create program')
-  }
+  const program = gl.createProgram()!
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
@@ -820,7 +817,7 @@ export class SyntenyWebGLRenderer {
 
       for (let j = 0; j < cigar.length; j += 2) {
         const len = +cigar[j]!
-        const op = cigar[j + 1] as keyof typeof defaultCigarColors
+        const op = cigar[j + 1]
 
         if (!continuingFlag) {
           px1 = cx1

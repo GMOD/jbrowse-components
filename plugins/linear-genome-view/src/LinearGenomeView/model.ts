@@ -1330,7 +1330,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let prevWidth: number | undefined
       let prevRegionsLen: number | undefined
       let fastPathHits = 0
-      let fullComputations = 0
       return {
         /**
          * #getter
@@ -1363,10 +1362,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             return currentlyCalculatedStaticBlocks
           }
 
-          fullComputations++
-          // console.log(
-          //   `[staticBlocks] full computation #${fullComputations} (fast-path hits so far: ${fastPathHits})`,
-          // )
           const newBlocks = calculateStaticBlocks(self)
           const newKeys = newBlocks.blocks.map(b => b.key).join(',')
           if (
