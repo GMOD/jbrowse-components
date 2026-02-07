@@ -3,6 +3,10 @@ import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import {
+  createSequenceFeatureDetailsModel,
+  destroySequenceFeatureDetailsModel,
+} from './model.ts'
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
 import { ErrorMessage, LoadingEllipses } from '../../ui/index.ts'
@@ -25,7 +29,15 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   model: BaseFeatureWidgetModel
   feature: SimpleFeatureSerialized
 }) {
-  const { sequenceFeatureDetails } = model
+  const [sequenceFeatureDetails] = useState(() =>
+    createSequenceFeatureDetailsModel(),
+  )
+  useEffect(() => {
+    return () => {
+      destroySequenceFeatureDetailsModel(sequenceFeatureDetails)
+    }
+  }, [sequenceFeatureDetails])
+
   const { upDownBp } = sequenceFeatureDetails
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
@@ -68,6 +80,7 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
           <Suspense fallback={<LoadingEllipses />}>
             <SequenceDialog
               model={model}
+              sequenceFeatureDetails={sequenceFeatureDetails}
               feature={feature}
               handleClose={() => {
                 setOpenInDialog(false)

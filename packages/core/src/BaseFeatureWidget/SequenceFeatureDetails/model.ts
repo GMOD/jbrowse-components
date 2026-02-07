@@ -1,4 +1,4 @@
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import {
@@ -150,7 +150,7 @@ export function SequenceFeatureDetailsF() {
       },
     }))
     .actions(self => ({
-      afterAttach() {
+      afterCreate() {
         addDisposer(
           self,
           autorun(
@@ -179,6 +179,16 @@ export function SequenceFeatureDetailsF() {
         )
       },
     }))
+}
+
+export function createSequenceFeatureDetailsModel() {
+  return SequenceFeatureDetailsF().create({})
+}
+
+export function destroySequenceFeatureDetailsModel(
+  model: SequenceFeatureDetailsModel,
+) {
+  destroy(model)
 }
 
 export type SequenceFeatureDetailsStateModel = ReturnType<
