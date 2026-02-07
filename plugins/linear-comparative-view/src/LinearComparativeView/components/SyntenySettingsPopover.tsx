@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import HelpIcon from '@mui/icons-material/Help'
 import TuneIcon from '@mui/icons-material/Tune'
-import { IconButton, Popover, Slider, Typography } from '@mui/material'
+import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import SliderTooltip from './SliderTooltip.tsx'
@@ -144,7 +145,13 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
           {hasOffScreen ? (
             <div className={classes.row}>
               <Typography variant="body2" className={classes.label}>
-                Off-screen:
+                Overdraw:
+                <Tooltip
+                  title="Extra pixels drawn beyond the visible area. Higher values keep off-screen synteny lines visible when scrolling, but may reduce performance."
+                  arrow
+                >
+                  <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
+                </Tooltip>
               </Typography>
               <Slider
                 value={view.maxOffScreenDrawPx}

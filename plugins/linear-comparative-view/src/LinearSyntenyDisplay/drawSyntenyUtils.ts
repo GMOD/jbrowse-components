@@ -37,22 +37,22 @@ export function getQueryColor(queryName: string) {
 
 // Default CIGAR operation colors
 export const defaultCigarColors = {
-  I: '#ff03',
-  N: '#0a03',
-  D: '#00f3',
+  I: '#ff0a',
+  N: '#0a0a',
+  D: '#00fa',
   X: 'brown',
-  M: '#f003',
-  '=': '#f003',
+  M: '#f00a',
+  '=': '#f00a',
 }
 
 // Strand-specific CIGAR operation colors (purple deletion instead of blue)
 export const strandCigarColors = {
-  I: '#ff03',
-  N: '#a020f0', // Purple for deletion
-  D: '#a020f0', // Purple for deletion
+  I: '#ff0a',
+  N: '#a020f0',
+  D: '#a020f0',
   X: 'brown',
-  M: '#f003',
-  '=': '#f003',
+  M: '#f00a',
+  '=': '#f00a',
 }
 
 // Color scheme configuration

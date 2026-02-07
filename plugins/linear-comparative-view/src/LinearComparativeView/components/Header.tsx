@@ -4,7 +4,6 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import SearchIcon from '@mui/icons-material/Search'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { FormGroup, ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -87,37 +86,39 @@ const Header = observer(function Header({
           },
           ...model.headerMenuItems(),
           {
-            label: 'Search box orientation - Side-by-side',
-            type: 'radio',
-            checked: sideBySide,
-            onClick: () => {
-              setSideBySide(!sideBySide)
-            },
-          },
-          {
-            label: 'Search box orientation - Vertical',
-            type: 'radio',
-            checked: !sideBySide,
-            onClick: () => {
-              setSideBySide(!sideBySide)
-            },
+            label: 'Show...',
+            subMenu: [
+              ...model.showMenuItems(),
+              {
+                label: 'Show search boxes',
+                type: 'checkbox' as const,
+                checked: showSearchBoxes,
+                onClick: () => {
+                  setShowSearchBoxes(!showSearchBoxes)
+                },
+              },
+              {
+                label: 'Search box orientation - Side-by-side',
+                type: 'radio' as const,
+                checked: sideBySide,
+                onClick: () => {
+                  setSideBySide(!sideBySide)
+                },
+              },
+              {
+                label: 'Search box orientation - Vertical',
+                type: 'radio' as const,
+                checked: !sideBySide,
+                onClick: () => {
+                  setSideBySide(!sideBySide)
+                },
+              },
+            ],
           },
         ]}
       >
         <MoreVertIcon />
       </CascadingMenuButton>
-      <ToggleButton
-        value="search"
-        selected={showSearchBoxes}
-        onChange={() => {
-          setShowSearchBoxes(!showSearchBoxes)
-        }}
-        title="Toggle search boxes"
-        className={classes.toggleButton}
-        size="small"
-      >
-        <SearchIcon />
-      </ToggleButton>
       <ToggleButton
         value="scrollZoom"
         selected={model.scrollZoom}

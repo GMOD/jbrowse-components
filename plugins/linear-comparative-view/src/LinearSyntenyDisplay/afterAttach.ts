@@ -18,37 +18,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastFeatPositions: FeatPos[] = []
   let lastRenderer: unknown = null
   let edgeTimer: ReturnType<typeof setTimeout> | null = null
-  let buildTimer: ReturnType<typeof setTimeout> | null = null
   // bpPerPx values at which featPositions were computed (by the RPC).
   // buildGeometry uses these as the "reference" so the shader's scale
   // compensation (geometryBpPerPx / currentBpPerPx) is correct.
   let featPositionsBpPerPxs: number[] = []
-
-  // Runs buildGeometry with the latest model/view values.
-  // Defined outside the autorun so it reads fresh values at call time
-  // rather than stale closure captures.
-  function runBuildGeometry() {
-    if (!self.webglRenderer || !self.webglInitialized) {
-      return
-    }
-    const view = getContainingView(self) as LinearSyntenyViewModel
-    const { alpha, colorBy, featPositions, level } = self
-    const colorFn = createColorFunction(colorBy, alpha)
-    self.webglRenderer.buildGeometry(
-      featPositions, level, alpha, colorBy, colorFn,
-      view.drawCurves, view.drawCIGAR, view.drawCIGARMatchesOnly,
-      featPositionsBpPerPxs, view.drawLocationMarkers,
-    )
-    // Re-render with the new geometry
-    const o0 = view.views[level]!.offsetPx
-    const o1 = view.views[level + 1]!.offsetPx
-    const bpPerPx0 = view.views[level]!.bpPerPx
-    const bpPerPx1 = view.views[level + 1]!.bpPerPx
-    self.webglRenderer.render(
-      o0, o1, self.height, bpPerPx0, bpPerPx1, false,
-      view.maxOffScreenDrawPx, self.minAlignmentLength,
-    )
-  }
 
   addDisposer(
     self,
@@ -89,27 +62,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           geometryKey !== lastGeometryKey ||
           featPositions !== lastFeatPositions
         ) {
-          const settingsChanged = geometryKey !== lastGeometryKey
           lastGeometryKey = geometryKey
           lastFeatPositions = featPositions
-
-          if (settingsChanged || !self.webglRenderer.hasGeometry()) {
-            // Settings change or first build: immediate
-            const colorFn = createColorFunction(colorBy, alpha)
-            self.webglRenderer.buildGeometry(
-              featPositions, level, alpha, colorBy, colorFn,
-              view.drawCurves, view.drawCIGAR, view.drawCIGARMatchesOnly,
-              featPositionsBpPerPxs, view.drawLocationMarkers,
-            )
-          } else {
-            // Position-only change (zoom): debounce. The shader's scale
-            // compensation (u_scale0/u_scale1) keeps rendering smooth
-            // with the existing geometry in the meantime.
-            if (buildTimer) {
-              clearTimeout(buildTimer)
-            }
-            buildTimer = setTimeout(runBuildGeometry, 300)
-          }
+          const colorFn = createColorFunction(colorBy, alpha)
+          self.webglRenderer.buildGeometry(
+            featPositions, level, alpha, colorBy, colorFn,
+            view.drawCurves, view.drawCIGAR, view.drawCIGARMatchesOnly,
+            featPositionsBpPerPxs, view.drawLocationMarkers,
+          )
         }
 
         const o0 = view.views[level]!.offsetPx

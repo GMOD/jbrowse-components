@@ -330,6 +330,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       headerMenuItems(): MenuItem[] {
         return []
       },
+      /**
+       * #method
+       * items for the "Show..." submenu in the header. overridden by
+       * subclasses to add view-specific toggle options
+       */
+      showMenuItems(): MenuItem[] {
+        return []
+      },
     }))
     .views(self => ({
       /**

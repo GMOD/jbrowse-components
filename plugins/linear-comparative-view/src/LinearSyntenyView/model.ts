@@ -226,8 +226,82 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => {
       const superHeaderMenuItems = self.headerMenuItems
+      const superShowMenuItems = self.showMenuItems
       const superMenuItems = self.menuItems
       return {
+        /**
+         * #method
+         */
+        showMenuItems() {
+          return [
+            ...superShowMenuItems(),
+            {
+              label: 'Show all regions',
+              onClick: self.showAllRegions,
+              description: 'Show entire genome assemblies',
+              icon: VisibilityIcon,
+              helpText:
+                'This command will zoom out all views to display the entire genome assemblies. This is useful when you want to get a high-level overview of syntenic relationships across whole genomes or when you need to reset the view after zooming into specific regions.',
+            },
+            {
+              label: 'Show dynamic controls',
+              type: 'checkbox',
+              checked: self.showDynamicControls,
+              onClick: () => {
+                self.setShowDynamicControls(!self.showDynamicControls)
+              },
+              helpText:
+                'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust synteny visualization parameters in real-time.',
+            },
+            {
+              label: 'Show CIGAR insertions/deletions',
+              checked: self.drawCIGAR,
+              type: 'checkbox',
+              description:
+                'If disabled, only shows the broad scale CIGAR match',
+              onClick: () => {
+                self.setDrawCIGAR(!self.drawCIGAR)
+              },
+              helpText:
+                'CIGAR strings encode detailed alignment information including matches, insertions, and deletions. When enabled, this option visualizes the fine-scale variations in syntenic alignments. Disable this for a cleaner view that shows only broad syntenic blocks.',
+            },
+            {
+              label: 'Show CIGAR matches only',
+              checked: self.drawCIGARMatchesOnly,
+              type: 'checkbox',
+              description:
+                'If enabled, hides the insertions and deletions in the CIGAR strings',
+              onClick: () => {
+                self.setDrawCIGARMatchesOnly(!self.drawCIGARMatchesOnly)
+              },
+              helpText:
+                'When comparing divergent genomes, showing all insertions and deletions can clutter the view. This option filters the CIGAR visualization to show only the matching regions, providing a cleaner view of conserved syntenic blocks while hiding small-scale indels.',
+            },
+            {
+              label: 'Show curved lines',
+              type: 'checkbox',
+              checked: self.drawCurves,
+              icon: Curves,
+              onClick: () => {
+                self.setDrawCurves(!self.drawCurves)
+              },
+              helpText:
+                'Toggle between straight lines and smooth bezier curves for synteny connections. Curved lines can make the visualization more aesthetically pleasing and may help reduce visual clutter when many syntenic regions are displayed. Straight lines provide a more direct representation.',
+            },
+            {
+              label: 'Show location markers',
+              type: 'checkbox',
+              checked: self.drawLocationMarkers,
+              description:
+                'Draw periodic markers to show location within large matches',
+              onClick: () => {
+                self.setDrawLocationMarkers(!self.drawLocationMarkers)
+              },
+              helpText:
+                'Location markers add periodic visual indicators along long syntenic blocks, helping you track position and scale within large conserved regions. This is particularly useful when examining very long syntenic matches where it can be difficult to gauge relative position.',
+            },
+          ]
+        },
         /**
          * #method
          * includes a subset of view menu options because the full list is a
@@ -261,76 +335,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 "Reorder and reorient query regions to minimize crossing lines, also known as 'diagonalizing'",
               helpText:
                 "This operation 'diagonalizes' the data which algorithmically reorders and reorients chromosomes to minimize crossing synteny lines, creating a more diagonal pattern. This makes it easier to identify large-scale genomic rearrangements, inversions, and translocations. The process may take a few moments for large genomes.",
-            },
-            {
-              label: 'Show...',
-              subMenu: [
-                {
-                  label: 'Show all regions',
-                  onClick: self.showAllRegions,
-                  description: 'Show entire genome assemblies',
-                  icon: VisibilityIcon,
-                  helpText:
-                    'This command will zoom out all views to display the entire genome assemblies. This is useful when you want to get a high-level overview of syntenic relationships across whole genomes or when you need to reset the view after zooming into specific regions.',
-                },
-                {
-                  label: 'Show dynamic controls',
-                  type: 'checkbox',
-                  checked: self.showDynamicControls,
-                  onClick: () => {
-                    self.setShowDynamicControls(!self.showDynamicControls)
-                  },
-                  helpText:
-                    'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust synteny visualization parameters in real-time.',
-                },
-                {
-                  label: 'Show CIGAR insertions/deletions',
-                  checked: self.drawCIGAR,
-                  type: 'checkbox',
-                  description:
-                    'If disabled, only shows the broad scale CIGAR match',
-                  onClick: () => {
-                    self.setDrawCIGAR(!self.drawCIGAR)
-                  },
-                  helpText:
-                    'CIGAR strings encode detailed alignment information including matches, insertions, and deletions. When enabled, this option visualizes the fine-scale variations in syntenic alignments. Disable this for a cleaner view that shows only broad syntenic blocks.',
-                },
-                {
-                  label: 'Show CIGAR matches only',
-                  checked: self.drawCIGARMatchesOnly,
-                  type: 'checkbox',
-                  description:
-                    'If enabled, hides the insertions and deletions in the CIGAR strings',
-                  onClick: () => {
-                    self.setDrawCIGARMatchesOnly(!self.drawCIGARMatchesOnly)
-                  },
-                  helpText:
-                    'When comparing divergent genomes, showing all insertions and deletions can clutter the view. This option filters the CIGAR visualization to show only the matching regions, providing a cleaner view of conserved syntenic blocks while hiding small-scale indels.',
-                },
-                {
-                  label: 'Show curved lines',
-                  type: 'checkbox',
-                  checked: self.drawCurves,
-                  icon: Curves,
-                  onClick: () => {
-                    self.setDrawCurves(!self.drawCurves)
-                  },
-                  helpText:
-                    'Toggle between straight lines and smooth bezier curves for synteny connections. Curved lines can make the visualization more aesthetically pleasing and may help reduce visual clutter when many syntenic regions are displayed. Straight lines provide a more direct representation.',
-                },
-                {
-                  label: 'Show location markers',
-                  type: 'checkbox',
-                  checked: self.drawLocationMarkers,
-                  description:
-                    'Draw periodic markers to show location within large matches',
-                  onClick: () => {
-                    self.setDrawLocationMarkers(!self.drawLocationMarkers)
-                  },
-                  helpText:
-                    'Location markers add periodic visual indicators along long syntenic blocks, helping you track position and scale within large conserved regions. This is particularly useful when examining very long syntenic matches where it can be difficult to gauge relative position.',
-                },
-              ],
             },
             {
               label: 'Link views',
