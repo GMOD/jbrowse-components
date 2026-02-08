@@ -42,10 +42,10 @@ import {
   LINE_VERTEX_SHADER,
   MISMATCH_FRAGMENT_SHADER,
   MISMATCH_VERTEX_SHADER,
-  MOD_COVERAGE_FRAGMENT_SHADER,
-  MOD_COVERAGE_VERTEX_SHADER,
   MODIFICATION_FRAGMENT_SHADER,
   MODIFICATION_VERTEX_SHADER,
+  MOD_COVERAGE_FRAGMENT_SHADER,
+  MOD_COVERAGE_VERTEX_SHADER,
   NONCOV_HISTOGRAM_FRAGMENT_SHADER,
   NONCOV_HISTOGRAM_VERTEX_SHADER,
   NUM_ARC_COLORS,
@@ -62,7 +62,7 @@ import {
   splitPositionWithFrac,
 } from './shaders/index.ts'
 
-import type { ColorPalette, RGBColor } from './shaders/index.ts'
+import type { ColorPalette } from './shaders/index.ts'
 
 export type { ColorPalette, RGBColor } from './shaders/index.ts'
 

@@ -74,6 +74,7 @@ export interface WebGLPileupDataResult {
   readPairOrientations: Uint8Array // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
   readIds: string[] // feature IDs for hit testing
+  readNames: string[] // read names (QNAME) for tooltip display
 
   // Gap data (deletions/skips) - offsets from regionStart
   gapPositions: Uint32Array // [startOffset, endOffset] pairs

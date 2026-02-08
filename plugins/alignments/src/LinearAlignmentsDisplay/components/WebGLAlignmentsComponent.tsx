@@ -73,6 +73,7 @@ function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
 
 interface FeatureInfo {
   id: string
+  name: string
   start: number
   end: number
   flags: number | undefined
@@ -448,8 +449,22 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       return
     }
 
-    const dispose = autorun(() => {
-      // Access view/model observables to track them - autorun re-runs when these change
+    // Sync domain to model only when view pan/zoom changes
+    const disposeDomainSync = autorun(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
+      if (!initialized) {
+        return
+      }
+
+      const visibleBpRange = getVisibleBpRangeRef.current()
+      if (visibleBpRange) {
+        model.setCurrentDomain(visibleBpRange)
+      }
+    })
+
+    // Re-render when view or model visual state changes
+    const disposeRender = autorun(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
       if (!initialized) {
@@ -465,17 +480,12 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         selectedFeatureIndex: _si,
       } = model
 
-      // Sync domain to model for data-loading reaction
-      const visibleBpRange = getVisibleBpRangeRef.current()
-      if (visibleBpRange) {
-        model.setCurrentDomain(visibleBpRange)
-      }
-
       renderNowRef.current()
     })
 
     return () => {
-      dispose()
+      disposeDomainSync()
+      disposeRender()
     }
   }, [view, model])
 
@@ -1456,7 +1466,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       if (featureId) {
         const info = model.getFeatureInfoById(featureId)
         if (info) {
-          const tooltipText = `${info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()} (${info.strand})`
+          const tooltipText = `${info.name || info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()} (${info.strand})`
           model.setMouseoverExtraInformation(tooltipText)
         } else {
           model.setMouseoverExtraInformation(undefined)

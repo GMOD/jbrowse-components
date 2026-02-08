@@ -451,8 +451,10 @@ export default function stateModelFactory(
         const mapq = rpcData.readMapqs[idx]
         const strand = flags !== undefined && flags & 16 ? '-' : '+'
         const refName = loadedRegion?.refName ?? ''
+        const name = rpcData.readNames[idx] ?? ''
         return {
           id: featureId,
+          name,
           start,
           end,
           flags,
@@ -478,6 +480,7 @@ export default function stateModelFactory(
           get: (key: string) => {
             switch (key) {
               case 'name':
+                return info.name || info.id
               case 'id':
                 return info.id
               case 'start':
@@ -544,11 +547,17 @@ export default function stateModelFactory(
       },
 
       setCurrentDomain(domainX: [number, number]) {
-        self.currentDomainX = domainX
+        const cur = self.currentDomainX
+        if (cur?.[0] !== domainX[0] || cur[1] !== domainX[1]) {
+          self.currentDomainX = domainX
+        }
       },
 
       setCurrentRangeY(rangeY: [number, number]) {
-        self.currentRangeY = rangeY
+        const cur = self.currentRangeY
+        if (cur[0] !== rangeY[0] || cur[1] !== rangeY[1]) {
+          self.currentRangeY = rangeY
+        }
       },
 
       setHighlightedFeatureIndex(index: number) {

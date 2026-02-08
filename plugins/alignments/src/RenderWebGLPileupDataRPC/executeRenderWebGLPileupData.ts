@@ -32,6 +32,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 interface FeatureData {
   id: string
+  name: string
   start: number
   end: number
   flags: number
@@ -760,6 +761,7 @@ export async function executeRenderWebGLPileupData({
       const strand = feature.get('strand')
       featuresData.push({
         id: featureId,
+        name: feature.get('name') ?? '',
         start: featureStart,
         end: feature.get('end'),
         flags: feature.get('flags') ?? 0,
@@ -1031,6 +1033,7 @@ export async function executeRenderWebGLPileupData({
     const readPairOrientations = new Uint8Array(features.length)
     const readStrands = new Int8Array(features.length)
     const readIds: string[] = []
+    const readNames: string[] = []
 
     for (const [i, f] of features.entries()) {
       const y = layout.get(f.id) ?? 0
@@ -1044,6 +1047,7 @@ export async function executeRenderWebGLPileupData({
       readPairOrientations[i] = f.pairOrientation
       readStrands[i] = f.strand
       readIds.push(f.id)
+      readNames.push(f.name)
     }
 
     // Filter gaps to only include those at or after regionStart (avoid Uint32 underflow)
@@ -1145,6 +1149,7 @@ export async function executeRenderWebGLPileupData({
         readPairOrientations,
         readStrands,
         readIds,
+        readNames,
       },
       gapArrays: { gapPositions, gapYs, gapLengths, gapTypes },
       mismatchArrays: {

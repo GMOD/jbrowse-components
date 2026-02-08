@@ -1,6 +1,6 @@
-import { fillColor } from '../../../shared/color.ts'
 import { cssColorToRgb } from './colors.ts'
 import { HP_GLSL_FUNCTIONS } from './utils.ts'
+import { fillColor } from '../../../shared/color.ts'
 
 import type { RGBColor } from './colors.ts'
 
