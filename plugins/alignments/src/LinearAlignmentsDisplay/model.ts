@@ -1,398 +1,1300 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
-import deepEqual from 'fast-deep-equal'
-import { autorun } from 'mobx'
+import { lazy } from 'react'
 
-import { LinearAlignmentsDisplayMixin } from './alignmentsModel.tsx'
-import { getLowerPanelDisplays } from './util.ts'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  SimpleFeature,
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
+import { reaction } from 'mobx'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { MenuItem } from '@jbrowse/core/ui'
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin.ts'
+import { getModificationsSubMenu } from '../shared/menuItems.ts'
+import { setupModificationsAutorun } from '../shared/setupModificationsAutorun.ts'
+
+import { ArcsSubModel } from './ArcsSubModel.ts'
+import { CloudSubModel } from './CloudSubModel.ts'
+
+import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
+import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
+import type { WebGLCloudDataResult } from '../RenderWebGLCloudDataRPC/types.ts'
+import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
+import type { ColorBy, FilterBy } from '../shared/types'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
-const minDisplayHeight = 20
-const defaultDisplayHeight = 250
-const defaultSnpCovHeight = 45
+type LGV = LinearGenomeViewModel
+
+// Offset for Y scalebar labels (same as wiggle plugin)
+export const YSCALEBAR_LABEL_OFFSET = 5
+
+// Insertion rendering thresholds (shared between WebGL shader and component)
+// Long insertions (>=10bp) show text box when zoomed in, small rectangle when zoomed out
+export const LONG_INSERTION_MIN_LENGTH = 10
+export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15 // min pixels to show text box
+
+// Insertion type classification - must match shader logic in WebGLRenderer.ts
+export type InsertionType = 'large' | 'long' | 'small'
 
 /**
- * #stateModel LinearAlignmentsDisplay
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [LinearAlignmentsDisplayMixin](../linearalignmentsdisplaymixin)
+ * Classify an insertion based on its length and current zoom level.
+ * - 'large': length >= 10bp AND wide enough to show text (>= 15px)
+ * - 'long': length >= 10bp but too zoomed out for text
+ * - 'small': length < 10bp
  */
-function stateModelFactory(
-  pluginManager: PluginManager,
+export function getInsertionType(
+  length: number,
+  pxPerBp: number,
+): InsertionType {
+  const isLongInsertion = length >= LONG_INSERTION_MIN_LENGTH
+  if (isLongInsertion) {
+    const insertionWidthPx = length * pxPerBp
+    if (insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
+      return 'large'
+    }
+    return 'long'
+  }
+  return 'small'
+}
+
+/**
+ * Calculate the pixel width needed to display a number as text.
+ * Must match the textWidthForNumber function in the insertion vertex shader.
+ */
+export function textWidthForNumber(num: number): number {
+  const charWidth = 6
+  const padding = 10
+  if (num < 10) {
+    return charWidth + padding
+  }
+  if (num < 100) {
+    return charWidth * 2 + padding
+  }
+  if (num < 1000) {
+    return charWidth * 3 + padding
+  }
+  if (num < 10000) {
+    return charWidth * 4 + padding
+  }
+  return charWidth * 5 + padding
+}
+
+/**
+ * Get the rectangle width in pixels for an insertion marker.
+ * Must match the shader logic in WebGLRenderer.ts.
+ */
+export function getInsertionRectWidthPx(
+  length: number,
+  pxPerBp: number,
+): number {
+  const type = getInsertionType(length, pxPerBp)
+  if (type === 'large') {
+    return textWidthForNumber(length)
+  }
+  if (type === 'long') {
+    return 2 // small solid rectangle
+  }
+  return Math.min(pxPerBp, 1) // thin bar, subpixel when zoomed out
+}
+
+interface Region {
+  refName: string
+  start: number
+  end: number
+  assemblyName?: string
+}
+
+function getSequenceAdapter(session: any, region: Region) {
+  const assembly = region.assemblyName
+    ? session.assemblyManager.get(region.assemblyName)
+    : undefined
+  const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
+  return sequenceAdapterConfig ? getSnapshot(sequenceAdapterConfig) : undefined
+}
+
+const WebGLPileupComponent = lazy(
+  () => import('./components/WebGLPileupComponent.tsx'),
+)
+
+const WebGLTooltip = lazy(() => import('./components/WebGLTooltip.tsx'))
+const ColorByTagDialog = lazy(
+  () => import('../LinearPileupDisplay/components/ColorByTagDialog.tsx'),
+)
+
+export const ColorScheme = {
+  normal: 0,
+  strand: 1,
+  mappingQuality: 2,
+  insertSize: 3,
+  firstOfPairStrand: 4,
+  pairOrientation: 5,
+  insertSizeAndOrientation: 6,
+  modifications: 7,
+  tag: 8,
+} as const
+
+/**
+ * State model factory for WebGL Pileup Display
+ */
+export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
     .compose(
-      'LinearAlignmentsDisplay',
-      BaseDisplay,
-      LinearAlignmentsDisplayMixin(pluginManager, configSchema),
+      BaseLinearDisplay,
+      SharedModificationsMixin(),
+      types.model('LinearAlignmentsDisplay', {
+        /**
+         * #property
+         */
+        type: types.literal('LinearAlignmentsDisplay'),
+        /**
+         * #property
+         */
+        configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        renderingMode: types.optional(
+          types.enumeration(['pileup', 'arcs', 'cloud']),
+          'pileup',
+        ),
+        /**
+         * #property
+         */
+        colorBySetting: types.frozen<ColorBy | undefined>(),
+        /**
+         * #property
+         */
+        filterBySetting: types.frozen<FilterBy | undefined>(),
+        /**
+         * #property
+         */
+        featureHeightSetting: types.maybe(types.number),
+        /**
+         * #property
+         */
+        showCoverage: true,
+        /**
+         * #property
+         */
+        coverageHeight: 45,
+        /**
+         * #property
+         */
+        showMismatches: true,
+        /**
+         * #property
+         * Show upside-down histogram bars for insertion/softclip/hardclip counts
+         */
+        showInterbaseCounts: true,
+        /**
+         * #property
+         * Show triangular indicators at positions with significant interbase events
+         */
+        showInterbaseIndicators: true,
+        /**
+         * #property
+         */
+        arcsState: types.optional(ArcsSubModel, {}),
+        /**
+         * #property
+         */
+        cloudState: types.optional(CloudSubModel, {}),
+      }),
     )
     .volatile(() => ({
-      /**
-       * #volatile
-       */
-      scrollTop: 0,
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setScrollTop(scrollTop: number) {
-        self.scrollTop = scrollTop
-      },
-
-      /**
-       * #action
-       */
-      setSNPCoverageHeight(n: number) {
-        self.snpCovHeight = n
-      },
-
-      /**
-       * #action
-       * Toggle legend visibility on the PileupDisplay sub-display
-       */
-      setShowLegend(s: boolean) {
-        self.PileupDisplay?.setShowLegend(s)
-      },
+      rpcData: null as WebGLPileupDataResult | null,
+      loadedRegion: null as Region | null,
+      isLoading: false,
+      statusMessage: undefined as string | undefined,
+      error: null as Error | null,
+      webglRef: null as unknown,
+      currentDomainX: null as [number, number] | null,
+      currentRangeY: [0, 600] as [number, number],
+      maxY: 0,
+      highlightedFeatureIndex: -1,
+      selectedFeatureIndex: -1,
+      colorTagMap: {} as Record<string, string>,
+      tagsReady: true,
     }))
     .views(self => ({
       /**
-       * #getter
+       * Use custom component instead of block-based rendering
        */
-      get height() {
-        return self.heightPreConfig ?? getConf(self, 'height')
+      get DisplayMessageComponent() {
+        return WebGLPileupComponent
       },
 
       /**
-       * #getter
+       * Custom tooltip that prioritizes mouseoverExtraInformation for CIGAR items
        */
-      get featureIdUnderMouse() {
-        return (
-          self.PileupDisplay.featureIdUnderMouse ||
-          self.SNPCoverageDisplay.featureIdUnderMouse
-        )
+      get TooltipComponent() {
+        return WebGLTooltip
       },
 
       /**
-       * #getter
-       * Returns true if PileupDisplay has legend shown
+       * Override to prevent block rendering - we handle our own rendering
+       * This must be a method (not a getter) that returns notReady: true
        */
-      get showLegend() {
-        return self.PileupDisplay?.showLegend
+      renderProps() {
+        return { notReady: true }
+      },
+
+      get colorBy(): ColorBy {
+        return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+
+      get modificationThreshold() {
+        return this.colorBy?.modifications?.threshold ?? 10
+      },
+
+      get filterBy(): FilterBy {
+        return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+
+      get featureHeight(): number {
+        return self.featureHeightSetting ?? getConf(self, 'featureHeight') ?? 7
+      },
+
+      get featureSpacing(): number {
+        return getConf(self, 'featureSpacing') ?? 1
+      },
+
+      get maxHeight(): number {
+        return getConf(self, 'maxHeight') ?? 1200
       },
 
       /**
-       * #method
-       * Returns the width needed for the SVG legend from subdisplays.
-       * Used by SVG export to add extra width for the legend area.
+       * Get the visible region from the parent view
+       * Uses currentDomainX if set by the WebGL component (source of truth during/after interaction)
+       * Falls back to computing from contentBlocks for initial load
        */
-      svgLegendWidth(theme?: unknown) {
-        const pileupWidth = self.PileupDisplay?.svgLegendWidth?.(theme) ?? 0
-        const snpCovWidth =
-          self.SNPCoverageDisplay?.svgLegendWidth?.(theme) ?? 0
-        return Math.max(pileupWidth, snpCovWidth)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get pileupConf() {
-        const conf = getConf(self, 'pileupDisplay')
-        return {
-          ...conf,
-          type: self.lowerPanelType,
-          displayId: `${self.configuration.displayId}_${self.lowerPanelType}_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
-        }
-      },
-
-      /**
-       * #method
-       */
-      getFeatureByID(blockKey: string, id: string) {
-        return self.PileupDisplay.getFeatureByID(blockKey, id)
-      },
-      /**
-       * #method
-       */
-      searchFeatureByID(id: string) {
-        return self.PileupDisplay.searchFeatureByID?.(id)
-      },
-
-      /**
-       * #getter
-       */
-      get features() {
-        return self.PileupDisplay.features
-      },
-
-      /**
-       * #getter
-       */
-      get DisplayBlurb() {
-        return self.PileupDisplay?.DisplayBlurb
-      },
-
-      /**
-       * #getter
-       */
-      get sortedBy() {
-        return self.PileupDisplay.sortedBy
-      },
-
-      /**
-       * #getter
-       */
-      get coverageConf() {
-        const conf = getConf(self, 'snpCoverageDisplay')
-        return {
-          ...conf,
-          displayId: `${self.configuration.displayId}_snpcoverage_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
-        }
-      },
-
-      /**
-       * #method
-       */
-      notReady() {
-        return (
-          self.PileupDisplay?.renderProps().notReady ||
-          self.SNPCoverageDisplay?.renderProps().notReady
-        )
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setSNPCoverageDisplay(configuration: AnyConfigurationModel) {
-        self.SNPCoverageDisplay = {
-          type: 'LinearSNPCoverageDisplay',
-          configuration,
-          height: self.snpCovHeight,
-        }
-      },
-      /**
-       * #action
-       */
-      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
-        self.PileupDisplay.setFeatureDensityStatsLimit(stats)
-        self.SNPCoverageDisplay.setFeatureDensityStatsLimit(stats)
-      },
-
-      /**
-       * #action
-       */
-      setPileupDisplay(configuration: AnyConfigurationModel) {
-        self.PileupDisplay = {
-          type: configuration.type || 'LinearPileupDisplay',
-          configuration,
-        }
-      },
-      /**
-       * #action
-       */
-      setHeight(n: number) {
-        self.heightPreConfig = Math.max(n, minDisplayHeight)
-        return self.heightPreConfig
-      },
-      /**
-       * #action
-       */
-      setLowerPanelType(type: string) {
-        self.lowerPanelType = type
-      },
-      /**
-       * #action
-       */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        return newHeight - oldHeight
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function alignmentsDisplayConfigAutorun() {
-              const {
-                SNPCoverageDisplay,
-                PileupDisplay,
-                coverageConf,
-                pileupConf,
-              } = self
-
-              if (!SNPCoverageDisplay) {
-                self.setSNPCoverageDisplay(coverageConf)
-              } else if (
-                !deepEqual(
-                  coverageConf,
-                  getSnapshot(SNPCoverageDisplay.configuration),
-                )
-              ) {
-                SNPCoverageDisplay.setHeight(self.snpCovHeight)
-                SNPCoverageDisplay.setConfig(self.coverageConf)
-              }
-
-              if (self.lowerPanelType !== PileupDisplay?.type) {
-                self.setPileupDisplay(pileupConf)
-              } else if (
-                !deepEqual(pileupConf, getSnapshot(PileupDisplay.configuration))
-              ) {
-                PileupDisplay.setConfig(self.pileupConf)
-              }
-            },
-            { name: 'AlignmentsDisplayConfig' },
-          ),
-        )
-
-        addDisposer(
-          self,
-          autorun(
-            function snpCoverageHeightAutorun() {
-              self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
-            },
-            { name: 'SNPCoverageHeight' },
-          ),
-        )
-
-        addDisposer(
-          self,
-          autorun(
-            function pileupHeightAutorun() {
-              // WebGL pileup has built-in coverage, so give it the full height.
-              // Regular pileup needs space subtracted for the SNPCoverageDisplay.
-              const snpCovHeight =
-                self.lowerPanelType === 'LinearWebGLPileupDisplay'
-                  ? 0
-                  : self.SNPCoverageDisplay.height
-              self.PileupDisplay.setHeight(self.height - snpCovHeight)
-            },
-            { name: 'PileupHeight' },
-          ),
-        )
-
-        addDisposer(
-          self,
-          autorun(
-            function syncColorByAutorun() {
-              const colorBy = self.PileupDisplay.colorBy
-              if (
-                colorBy?.type === 'modifications' ||
-                colorBy?.type === 'methylation'
-              ) {
-                self.SNPCoverageDisplay.setColorScheme(colorBy)
-              } else if (self.SNPCoverageDisplay.colorBy) {
-                self.SNPCoverageDisplay.setColorScheme(undefined)
-              }
-            },
-            { name: 'SyncColorBy' },
-          ),
-        )
-
-        addDisposer(
-          self,
-          autorun(
-            function syncFilterByAutorun() {
-              const filterBy = self.PileupDisplay.filterBy
-              self.SNPCoverageDisplay.setFilterBy(filterBy)
-            },
-            { name: 'SyncFilterBy' },
-          ),
-        )
-      },
-      /**
-       * #action
-       */
-      async renderSvg(opts: ExportSvgDisplayOptions) {
-        const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self, opts)
-      },
-    }))
-    .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
-      return {
-        /**
-         * #method
-         */
-        trackMenuItems(): MenuItem[] {
-          if (!self.PileupDisplay) {
-            return []
+      get visibleRegion() {
+        try {
+          const view = getContainingView(self) as LGV
+          if (!view.initialized) {
+            return null
           }
-          const extra = getLowerPanelDisplays(pluginManager).map(d => ({
-            type: 'radio' as const,
-            label: d.displayName,
-            checked: d.name === self.PileupDisplay.type,
-            onClick: () => {
-              self.setLowerPanelType(d.name)
-            },
-          }))
+          const blocks = view.dynamicBlocks.contentBlocks
+          const first = blocks[0]
+          if (!first) {
+            return null
+          }
 
-          return [
-            ...superTrackMenuItems(),
+          // If WebGL component has set the domain directly, use that
+          // This is the source of truth during and after interaction
+          if (self.currentDomainX) {
+            return {
+              refName: first.refName,
+              start: self.currentDomainX[0],
+              end: self.currentDomainX[1],
+              assemblyName: first.assemblyName,
+            }
+          }
+
+          // Fallback: compute from contentBlocks (only used for initial load)
+          const last = blocks[blocks.length - 1]
+          if (first.refName !== last?.refName) {
+            return {
+              refName: first.refName,
+              start: first.start,
+              end: first.end,
+              assemblyName: first.assemblyName,
+            }
+          }
+
+          const bpPerPx = view.bpPerPx
+          const blockOffsetPx = first.offsetPx
+          const deltaPx = view.offsetPx - blockOffsetPx
+          const deltaBp = deltaPx * bpPerPx
+
+          const viewportStart = first.start + deltaBp
+          const viewportEnd = viewportStart + view.width * bpPerPx
+
+          return {
+            refName: first.refName,
+            start: viewportStart,
+            end: viewportEnd,
+            assemblyName: first.assemblyName,
+          }
+        } catch {
+          return null
+        }
+      },
+
+      /**
+       * Calculate color scheme index from colorBy setting
+       */
+      get colorSchemeIndex(): number {
+        const colorBy = this.colorBy
+        switch (colorBy.type) {
+          case 'normal':
+            return ColorScheme.normal
+          case 'strand':
+            return ColorScheme.strand
+          case 'mappingQuality':
+            return ColorScheme.mappingQuality
+          case 'insertSize':
+            return ColorScheme.insertSize
+          case 'firstOfPairStrand':
+          case 'stranded':
+            return ColorScheme.firstOfPairStrand
+          case 'pairOrientation':
+            return ColorScheme.pairOrientation
+          case 'insertSizeAndOrientation':
+            return ColorScheme.insertSizeAndOrientation
+          case 'modifications':
+          case 'methylation':
+            return ColorScheme.modifications
+          case 'tag':
+            return ColorScheme.tag
+          default:
+            return ColorScheme.normal
+        }
+      },
+
+      get showModifications(): boolean {
+        const t = this.colorBy.type
+        return t === 'modifications' || t === 'methylation'
+      },
+
+      /**
+       * Check if current view is within loaded data region
+       */
+      get isWithinLoadedRegion(): boolean {
+        const visibleRegion = this.visibleRegion
+        if (!self.loadedRegion || !visibleRegion) {
+          return false
+        }
+        return (
+          self.loadedRegion.refName === visibleRegion.refName &&
+          visibleRegion.start >= self.loadedRegion.start &&
+          visibleRegion.end <= self.loadedRegion.end
+        )
+      },
+
+      get showLoading() {
+        return (
+          self.isLoading ||
+          !self.featureDensityStatsReady ||
+          !this.visibleRegion
+        )
+      },
+
+      get features(): Map<string, Feature> {
+        return new Map()
+      },
+      get sortedBy() {
+        return undefined
+      },
+
+      get coverageTicks(): CoverageTicks | undefined {
+        if (!self.showCoverage || !self.rpcData) {
+          return undefined
+        }
+        const maxDepth = self.rpcData.coverageMaxDepth
+        if (maxDepth === 0) {
+          return undefined
+        }
+        const height = self.coverageHeight
+        // Add offset so tick labels at top/bottom don't get clipped
+        const scale = scaleLinear()
+          .domain([0, maxDepth])
+          .range([height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET])
+          .nice()
+
+        // Use minimal ticks (just min/max) when height is small
+        const niceDomain = scale.domain()
+        const tickValues = height < 70 ? niceDomain : scale.ticks(4)
+        const ticks = tickValues.map(value => ({
+          value,
+          y: scale(value),
+        }))
+
+        return { ticks, height, maxDepth }
+      },
+    }))
+    .views(self => ({
+      getFeatureInfoById(featureId: string) {
+        const { rpcData, loadedRegion } = self
+        if (!rpcData?.readIds) {
+          return undefined
+        }
+        const idx = rpcData.readIds.indexOf(featureId)
+        if (idx === -1) {
+          return undefined
+        }
+        const startOffset = rpcData.readPositions[idx * 2]
+        const endOffset = rpcData.readPositions[idx * 2 + 1]
+        if (startOffset === undefined || endOffset === undefined) {
+          return undefined
+        }
+        const start = rpcData.regionStart + startOffset
+        const end = rpcData.regionStart + endOffset
+        const flags = rpcData.readFlags[idx]
+        const mapq = rpcData.readMapqs[idx]
+        const strand = flags !== undefined && flags & 16 ? '-' : '+'
+        const refName = loadedRegion?.refName ?? ''
+        return {
+          id: featureId,
+          start,
+          end,
+          flags,
+          mapq,
+          strand,
+          refName,
+        }
+      },
+    }))
+    .views(self => ({
+      get featureUnderMouse() {
+        const featId = self.featureIdUnderMouse
+        if (!featId) {
+          return undefined
+        }
+        const info = self.getFeatureInfoById(featId)
+        if (!info) {
+          return undefined
+        }
+        // Return a minimal Feature-like object for tooltip support
+        return {
+          id: () => info.id,
+          get: (key: string) => {
+            switch (key) {
+              case 'name':
+              case 'id':
+                return info.id
+              case 'start':
+                return info.start
+              case 'end':
+                return info.end
+              case 'refName':
+                return info.refName
+              case 'strand':
+                return info.strand === '-' ? -1 : 1
+              case 'flags':
+                return info.flags
+              case 'score':
+              case 'MAPQ':
+                return info.mapq
+              default:
+                return undefined
+            }
+          },
+        } as Feature
+      },
+    }))
+    .actions(self => ({
+      setRpcData(data: WebGLPileupDataResult | null) {
+        self.rpcData = data
+        if (data) {
+          self.maxY = data.maxY
+        }
+      },
+
+      setLoadedRegion(region: Region | null) {
+        self.loadedRegion = region
+      },
+
+      setLoading(loading: boolean) {
+        self.isLoading = loading
+      },
+
+      setStatusMessage(msg?: string) {
+        self.statusMessage = msg
+      },
+
+      setError(error: Error | null) {
+        self.error = error
+      },
+
+      setWebGLRef(ref: unknown) {
+        self.webglRef = ref
+      },
+
+      setMaxY(y: number) {
+        self.maxY = y
+        // Auto-resize height based on content
+        const rowHeight = self.featureHeight + self.featureSpacing
+        const pileupHeight = y * rowHeight
+        const totalHeight =
+          (self.showCoverage ? self.coverageHeight : 0) + pileupHeight + 10
+        // Clamp to maxHeight and ensure a minimum height
+        const clampedHeight = Math.min(
+          Math.max(totalHeight, 100),
+          self.maxHeight,
+        )
+        self.setHeight(clampedHeight)
+      },
+
+      setCurrentDomain(domainX: [number, number]) {
+        self.currentDomainX = domainX
+      },
+
+      setCurrentRangeY(rangeY: [number, number]) {
+        self.currentRangeY = rangeY
+      },
+
+      setHighlightedFeatureIndex(index: number) {
+        self.highlightedFeatureIndex = index
+      },
+
+      setSelectedFeatureIndex(index: number) {
+        self.selectedFeatureIndex = index
+      },
+
+      setColorScheme(colorBy: ColorBy) {
+        self.colorTagMap = {}
+        self.colorBySetting = colorBy
+        if (colorBy.tag) {
+          self.tagsReady = false
+        }
+      },
+
+      setTagsReady(flag: boolean) {
+        self.tagsReady = flag
+      },
+
+      updateColorTagMap(uniqueTag: string[]) {
+        const colorPalette = [
+          '#BBCCEE',
+          'pink',
+          '#CCDDAA',
+          '#EEEEBB',
+          '#FFCCCC',
+          'lightblue',
+          'lightgreen',
+          'tan',
+          '#CCEEFF',
+          'lightsalmon',
+        ]
+        const map = { ...self.colorTagMap }
+        for (const value of uniqueTag) {
+          if (!map[value]) {
+            const totalKeys = Object.keys(map).length
+            map[value] = colorPalette[totalKeys % colorPalette.length]!
+          }
+        }
+        self.colorTagMap = map
+      },
+
+      setFilterBy(filterBy: FilterBy) {
+        self.filterBySetting = filterBy
+      },
+
+      setFeatureHeight(height: number) {
+        self.featureHeightSetting = height
+      },
+
+      setShowCoverage(show: boolean) {
+        self.showCoverage = show
+      },
+
+      setCoverageHeight(height: number) {
+        self.coverageHeight = height
+      },
+
+      setShowMismatches(show: boolean) {
+        self.showMismatches = show
+      },
+
+      setShowInterbaseCounts(show: boolean) {
+        self.showInterbaseCounts = show
+      },
+
+      setShowInterbaseIndicators(show: boolean) {
+        self.showInterbaseIndicators = show
+      },
+
+      setRenderingMode(mode: 'pileup' | 'arcs' | 'cloud') {
+        self.renderingMode = mode
+      },
+
+      // Stubs required by LinearAlignmentsDisplay
+      setConfig(_config: unknown) {},
+
+      getFeatureByID(_blockKey: string, _id: string) {
+        return undefined
+      },
+
+      searchFeatureByID(_id: string) {
+        return undefined
+      },
+
+      async selectFeatureById(featureId: string) {
+        const session = getSession(self)
+        const { rpcManager } = session
+        try {
+          const track = getContainingTrack(self)
+          const adapterConfig = getConf(track, 'adapter')
+          const loadedRegion = self.loadedRegion
+          if (!loadedRegion) {
+            return
+          }
+
+          // Use the feature's known position from typed arrays to narrow the
+          // query region, avoiding a full re-fetch of the entire loaded region
+          const info = self.getFeatureInfoById(featureId)
+          const region = info
+            ? {
+                refName: loadedRegion.refName,
+                start: info.start,
+                end: info.end,
+                assemblyName: loadedRegion.assemblyName,
+              }
+            : loadedRegion
+
+          const sequenceAdapter = getSequenceAdapter(session, region)
+
+          const { feature } = (await rpcManager.call(
+            session.id ?? '',
+            'WebGLGetFeatureDetails',
             {
-              type: 'subMenu' as const,
-              label: 'Pileup settings',
-              subMenu: self.PileupDisplay.trackMenuItems(),
+              sessionId: session.id,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+              featureId,
             },
-            {
-              type: 'subMenu' as const,
-              label: 'SNPCoverage settings',
-              subMenu: self.SNPCoverageDisplay.trackMenuItems(),
+          )) as {
+            feature:
+              | (Record<string, unknown> & { uniqueId: string })
+              | undefined
+          }
+
+          if (isAlive(self) && feature && isSessionModelWithWidgets(session)) {
+            const feat = new SimpleFeature(
+              feature as ConstructorParameters<typeof SimpleFeature>[0],
+            )
+            const featureWidget = session.addWidget(
+              'AlignmentsFeatureWidget',
+              'alignmentFeature',
+              {
+                featureData: feat.toJSON(),
+                view: getContainingView(self),
+                track: getContainingTrack(self),
+              },
+            )
+            session.showWidget(featureWidget)
+            session.setSelection(feat)
+          }
+        } catch (e) {
+          console.error(e)
+          session.notifyError(`${e}`, e)
+        }
+      },
+    }))
+    .actions(self => {
+      let fetchGeneration = 0
+
+      async function fetchPileupData(
+        session: { id: string; rpcManager: any },
+        adapterConfig: unknown,
+        sequenceAdapter: unknown,
+        region: Region,
+      ) {
+        const result = (await session.rpcManager.call(
+          session.id ?? '',
+          'RenderWebGLPileupData',
+          {
+            sessionId: session.id,
+            adapterConfig,
+            sequenceAdapter,
+            region,
+            filterBy: self.filterBy,
+            colorBy: self.colorBy,
+            colorTagMap: self.colorTagMap,
+            statusCallback: (msg: string) => {
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
             },
-            {
-              type: 'subMenu' as const,
-              label: 'Replace lower panel with...',
-              subMenu: extra,
-            },
-          ]
+          },
+        )) as WebGLPileupDataResult
+        self.setRpcData(result)
+      }
+
+      async function fetchArcsData(
+        session: { id: string; rpcManager: any },
+        adapterConfig: unknown,
+        sequenceAdapter: unknown,
+        region: Region,
+      ) {
+        const result = (await session.rpcManager.call(
+          session.id ?? '',
+          'RenderWebGLArcsData',
+          {
+            sessionId: session.id,
+            adapterConfig,
+            sequenceAdapter,
+            region,
+            filterBy: self.filterBy,
+            colorBy: self.colorBy,
+            height: self.height,
+            drawInter: self.arcsState.drawInter,
+            drawLongRange: self.arcsState.drawLongRange,
+          },
+        )) as WebGLArcsDataResult
+        self.arcsState.setRpcData(result)
+      }
+
+      async function fetchCloudData(
+        session: { id: string; rpcManager: any },
+        adapterConfig: unknown,
+        sequenceAdapter: unknown,
+        region: Region,
+      ) {
+        const result = (await session.rpcManager.call(
+          session.id ?? '',
+          'RenderWebGLCloudData',
+          {
+            sessionId: session.id,
+            adapterConfig,
+            sequenceAdapter,
+            region,
+            filterBy: self.filterBy,
+            height: self.height,
+          },
+        )) as WebGLCloudDataResult
+        self.cloudState.setRpcData(result)
+      }
+
+      async function fetchFeaturesImpl(region: Region) {
+        const session = getSession(self)
+        const track = getContainingTrack(self)
+        const adapterConfig = getConf(track, 'adapter')
+
+        if (!adapterConfig) {
+          return
+        }
+
+        const thisGeneration = ++fetchGeneration
+        self.setLoading(true)
+        self.setError(null)
+
+        try {
+          const sequenceAdapter = getSequenceAdapter(session, region)
+
+          if (self.renderingMode === 'arcs') {
+            await fetchArcsData(
+              session,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+            )
+          } else if (self.renderingMode === 'cloud') {
+            await fetchCloudData(
+              session,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+            )
+          } else {
+            await fetchPileupData(
+              session,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+            )
+          }
+
+          // Discard stale responses from older requests
+          if (thisGeneration !== fetchGeneration) {
+            return
+          }
+
+          self.setLoadedRegion({
+            refName: region.refName,
+            start: region.start,
+            end: region.end,
+            assemblyName: region.assemblyName,
+          })
+          self.setLoading(false)
+        } catch (e) {
+          if (thisGeneration !== fetchGeneration) {
+            return
+          }
+          self.setError(e instanceof Error ? e : new Error(String(e)))
+          self.setLoading(false)
+        }
+      }
+
+      return {
+        fetchFeatures(region: Region) {
+          fetchFeaturesImpl(region).catch((e: unknown) => {
+            console.error('Failed to fetch features:', e)
+          })
+        },
+
+        afterAttach() {
+          // Fetch data when the visible region approaches the edge of
+          // loaded data.  Uses a 50% viewport buffer so we prefetch
+          // before the user actually scrolls past the loaded boundary.
+          addDisposer(
+            self,
+            reaction(
+              () => ({
+                region: self.visibleRegion,
+                ready: self.featureDensityStatsReadyAndRegionNotTooLarge,
+              }),
+              ({ region, ready }) => {
+                if (!region || !ready) {
+                  return
+                }
+                const { loadedRegion } = self
+                const buffer = (region.end - region.start) * 0.5
+                const needsData =
+                  loadedRegion?.refName !== region.refName ||
+                  region.start - buffer < loadedRegion.start ||
+                  region.end + buffer > loadedRegion.end
+
+                if (needsData) {
+                  const width = region.end - region.start
+                  const expandedRegion = {
+                    ...region,
+                    start: Math.max(0, region.start - width * 2),
+                    end: region.end + width * 2,
+                  }
+                  fetchFeaturesImpl(expandedRegion).catch((e: unknown) => {
+                    console.error('Failed to fetch features:', e)
+                  })
+                }
+              },
+              { delay: 300, fireImmediately: true },
+            ),
+          )
+
+          // Re-fetch when filter changes
+          addDisposer(
+            self,
+            reaction(
+              () => self.filterBy,
+              () => {
+                const visibleRegion = self.visibleRegion
+                if (
+                  visibleRegion &&
+                  self.featureDensityStatsReadyAndRegionNotTooLarge
+                ) {
+                  fetchFeaturesImpl(visibleRegion).catch((e: unknown) => {
+                    console.error('Failed to fetch features:', e)
+                  })
+                }
+              },
+            ),
+          )
+
+          // Re-fetch when colorBy changes (modifications/methylation/tag modes
+          // require different worker-side processing).
+          // For tag mode, also re-fetch when tagsReady becomes true (colorTagMap populated).
+          addDisposer(
+            self,
+            reaction(
+              () => ({
+                colorType: self.colorBy.type,
+                tag: self.colorBy.tag,
+                tagsReady: self.tagsReady,
+              }),
+              ({ colorType, tagsReady }) => {
+                if (colorType === 'tag' && !tagsReady) {
+                  return
+                }
+                const visibleRegion = self.visibleRegion
+                if (
+                  visibleRegion &&
+                  self.featureDensityStatsReadyAndRegionNotTooLarge
+                ) {
+                  fetchFeaturesImpl(visibleRegion).catch((e: unknown) => {
+                    console.error('Failed to fetch features:', e)
+                  })
+                }
+              },
+            ),
+          )
+
+          // Fetch unique tag values when colorBy.type is 'tag' and tags not yet ready
+          addDisposer(
+            self,
+            reaction(
+              () => ({
+                tag: self.colorBy.tag,
+                tagsReady: self.tagsReady,
+                region: self.visibleRegion,
+              }),
+              async ({ tag, tagsReady, region }) => {
+                if (!tag || tagsReady || !region) {
+                  return
+                }
+                try {
+                  const session = getSession(self)
+                  const track = getContainingTrack(self)
+                  const adapterConfig = getConf(track, 'adapter')
+                  const vals = (await session.rpcManager.call(
+                    session.id ?? '',
+                    'PileupGetGlobalValueForTag',
+                    {
+                      adapterConfig,
+                      tag,
+                      sessionId: session.id,
+                      regions: [region],
+                    },
+                  )) as string[]
+                  if (isAlive(self)) {
+                    self.updateColorTagMap(vals)
+                    self.setTagsReady(true)
+                  }
+                } catch (e) {
+                  console.error('Failed to fetch tag values:', e)
+                  if (isAlive(self)) {
+                    self.setTagsReady(true)
+                  }
+                }
+              },
+              { fireImmediately: true },
+            ),
+          )
+
+          // Re-fetch when rendering mode changes or arcs-specific settings change
+          addDisposer(
+            self,
+            reaction(
+              () => ({
+                mode: self.renderingMode,
+                drawInter: self.arcsState.drawInter,
+                drawLongRange: self.arcsState.drawLongRange,
+              }),
+              () => {
+                self.setLoadedRegion(null)
+                const visibleRegion = self.visibleRegion
+                if (
+                  visibleRegion &&
+                  self.featureDensityStatsReadyAndRegionNotTooLarge
+                ) {
+                  const width = visibleRegion.end - visibleRegion.start
+                  const expandedRegion = {
+                    ...visibleRegion,
+                    start: Math.max(0, visibleRegion.start - width * 2),
+                    end: visibleRegion.end + width * 2,
+                  }
+                  fetchFeaturesImpl(expandedRegion).catch((e: unknown) => {
+                    console.error('Failed to fetch features:', e)
+                  })
+                }
+              },
+            ),
+          )
+
+          setupModificationsAutorun(self, () => {
+            const view = getContainingView(self) as LGV
+            return view.initialized
+          })
         },
       }
     })
-    .preProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      // @ts-expect-error
-      const { height, ...rest } = snap
-      return { heightPreConfig: height, ...rest }
-    })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { heightPreConfig, lowerPanelType, snpCovHeight, ...rest } =
-        snap as Omit<typeof snap, symbol>
+    .views(self => ({
+      /**
+       * Track menu items
+       */
+      trackMenuItems() {
+        const modeMenu = {
+          label: 'Display mode',
+          subMenu: [
+            {
+              label: 'Pileup',
+              type: 'radio' as const,
+              checked: self.renderingMode === 'pileup',
+              onClick: () => {
+                self.setRenderingMode('pileup')
+              },
+            },
+            {
+              label: 'Arc',
+              type: 'radio' as const,
+              checked: self.renderingMode === 'arcs',
+              onClick: () => {
+                self.setRenderingMode('arcs')
+              },
+            },
+            {
+              label: 'Read cloud',
+              type: 'radio' as const,
+              checked: self.renderingMode === 'cloud',
+              onClick: () => {
+                self.setRenderingMode('cloud')
+              },
+            },
+          ],
+        }
+
+        const colorByMenu = {
+          label: 'Color by...',
+          subMenu: [
+            {
+              label: 'Normal',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'normal',
+              onClick: () => {
+                self.setColorScheme({ type: 'normal' })
+              },
+            },
+            {
+              label: 'Strand',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'strand',
+              onClick: () => {
+                self.setColorScheme({ type: 'strand' })
+              },
+            },
+            {
+              label: 'Mapping quality',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'mappingQuality',
+              onClick: () => {
+                self.setColorScheme({ type: 'mappingQuality' })
+              },
+            },
+            {
+              label: 'Insert size',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'insertSize',
+              onClick: () => {
+                self.setColorScheme({ type: 'insertSize' })
+              },
+            },
+            {
+              label: 'First of pair strand',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'firstOfPairStrand',
+              onClick: () => {
+                self.setColorScheme({ type: 'firstOfPairStrand' })
+              },
+            },
+            {
+              label: 'Pair orientation',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'pairOrientation',
+              onClick: () => {
+                self.setColorScheme({ type: 'pairOrientation' })
+              },
+            },
+            {
+              label: 'Insert size and orientation',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'insertSizeAndOrientation',
+              onClick: () => {
+                self.setColorScheme({ type: 'insertSizeAndOrientation' })
+              },
+            },
+            {
+              label: 'Modifications',
+              type: 'subMenu',
+              subMenu: getModificationsSubMenu(self, {
+                includeMethylation: true,
+              }),
+            },
+            {
+              label: 'Color by tag...',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'tag',
+              onClick: () => {
+                getSession(self).queueDialog((onClose: () => void) => [
+                  ColorByTagDialog,
+                  { model: self, handleClose: onClose },
+                ])
+              },
+            },
+          ],
+        }
+
+        const coverageItem = {
+          label: self.showCoverage ? 'Hide coverage' : 'Show coverage',
+          onClick: () => {
+            self.setShowCoverage(!self.showCoverage)
+          },
+        }
+
+        // Pileup-specific menu items
+        const pileupItems = [
+          colorByMenu,
+          coverageItem,
+          {
+            label: self.showMismatches ? 'Hide mismatches' : 'Show mismatches',
+            onClick: () => {
+              self.setShowMismatches(!self.showMismatches)
+            },
+          },
+          {
+            label: self.showInterbaseCounts
+              ? 'Hide interbase counts'
+              : 'Show interbase counts',
+            onClick: () => {
+              self.setShowInterbaseCounts(!self.showInterbaseCounts)
+            },
+          },
+          {
+            label: self.showInterbaseIndicators
+              ? 'Hide interbase indicators'
+              : 'Show interbase indicators',
+            onClick: () => {
+              self.setShowInterbaseIndicators(!self.showInterbaseIndicators)
+            },
+          },
+        ]
+
+        // Arcs-specific menu items
+        const arcsItems = [
+          {
+            label: 'Color by...',
+            subMenu: [
+              {
+                label: 'Insert size and orientation',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'insertSizeAndOrientation',
+                onClick: () => {
+                  self.setColorScheme({ type: 'insertSizeAndOrientation' })
+                },
+              },
+              {
+                label: 'Orientation only',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'orientation',
+                onClick: () => {
+                  self.setColorScheme({ type: 'orientation' })
+                },
+              },
+              {
+                label: 'Insert size only',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'insertSize',
+                onClick: () => {
+                  self.setColorScheme({ type: 'insertSize' })
+                },
+              },
+              {
+                label: 'Gradient',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'gradient',
+                onClick: () => {
+                  self.setColorScheme({ type: 'gradient' })
+                },
+              },
+            ],
+          },
+          {
+            label: 'Line width',
+            subMenu: [
+              {
+                label: 'Thin',
+                onClick: () => {
+                  self.arcsState.setLineWidth(1)
+                },
+              },
+              {
+                label: 'Bold',
+                onClick: () => {
+                  self.arcsState.setLineWidth(2)
+                },
+              },
+              {
+                label: 'Extra bold',
+                onClick: () => {
+                  self.arcsState.setLineWidth(5)
+                },
+              },
+            ],
+          },
+          {
+            label: 'Show...',
+            subMenu: [
+              {
+                label: 'Inter-chromosomal connections',
+                type: 'checkbox',
+                checked: self.arcsState.drawInter,
+                onClick: () => {
+                  self.arcsState.setDrawInter(!self.arcsState.drawInter)
+                },
+              },
+              {
+                label: 'Long range connections',
+                type: 'checkbox',
+                checked: self.arcsState.drawLongRange,
+                onClick: () => {
+                  self.arcsState.setDrawLongRange(
+                    !self.arcsState.drawLongRange,
+                  )
+                },
+              },
+            ],
+          },
+        ]
+
+        // Cloud-specific menu items
+        const cloudItems = [
+          {
+            label: 'Color by...',
+            subMenu: [
+              {
+                label: 'Insert size and orientation',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'insertSizeAndOrientation',
+                onClick: () => {
+                  self.setColorScheme({ type: 'insertSizeAndOrientation' })
+                },
+              },
+              {
+                label: 'Strand',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'strand',
+                onClick: () => {
+                  self.setColorScheme({ type: 'strand' })
+                },
+              },
+            ],
+          },
+        ]
+
+        const modeItems =
+          self.renderingMode === 'arcs'
+            ? arcsItems
+            : self.renderingMode === 'cloud'
+              ? cloudItems
+              : pileupItems
+
+        return [modeMenu, ...modeItems]
+      },
+    }))
+    .actions(self => {
+      const superReload = self.reload
       return {
-        ...rest,
-        ...(heightPreConfig !== undefined &&
-        heightPreConfig !== defaultDisplayHeight
-          ? { height: heightPreConfig }
-          : {}),
-        ...(lowerPanelType !== 'LinearWebGLPileupDisplay'
-          ? { lowerPanelType }
-          : {}),
-        ...(snpCovHeight !== defaultSnpCovHeight ? { snpCovHeight } : {}),
-      } as typeof snap
+        async reload() {
+          self.setLoadedRegion(null)
+          self.setRpcData(null)
+          self.arcsState.setRpcData(null)
+          self.cloudState.setRpcData(null)
+          await superReload()
+        },
+        async renderSvg(opts?: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self, opts)
+        },
+      }
     })
 }
-
-export default stateModelFactory
 
 export type LinearAlignmentsDisplayStateModel = ReturnType<
   typeof stateModelFactory

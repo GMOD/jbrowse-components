@@ -122,7 +122,7 @@ export interface IndicatorHitResult {
   counts: { insertion: number; softclip: number; hardclip: number }
 }
 
-interface LinearWebGLPileupDisplayModel {
+interface LinearAlignmentsDisplayModel {
   height: number
   rpcData: WebGLPileupDataResult | null
   loadedRegion: { refName: string; start: number; end: number } | null
@@ -162,7 +162,7 @@ interface LinearWebGLPileupDisplayModel {
 }
 
 export interface Props {
-  model: LinearWebGLPileupDisplayModel
+  model: LinearAlignmentsDisplayModel
 }
 
 /**

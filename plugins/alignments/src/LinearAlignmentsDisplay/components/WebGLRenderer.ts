@@ -1641,46 +1641,50 @@ export class WebGLRenderer {
     maxY: number
   }) {
     const gl = this.gl
+    // Save old buffers reference, then null out to prevent render() from
+    // drawing with stale data while we delete and recreate GL resources
+    const oldBuffers = this.buffers
+    this.buffers = null
 
     for (const buf of this.glBuffers) {
       gl.deleteBuffer(buf)
     }
     this.glBuffers = []
-    // Clean up old buffers
-    if (this.buffers) {
-      gl.deleteVertexArray(this.buffers.readVAO)
-      if (this.buffers.coverageVAO) {
-        gl.deleteVertexArray(this.buffers.coverageVAO)
+    // Clean up old VAOs
+    if (oldBuffers) {
+      gl.deleteVertexArray(oldBuffers.readVAO)
+      if (oldBuffers.coverageVAO) {
+        gl.deleteVertexArray(oldBuffers.coverageVAO)
       }
-      if (this.buffers.snpCoverageVAO) {
-        gl.deleteVertexArray(this.buffers.snpCoverageVAO)
+      if (oldBuffers.snpCoverageVAO) {
+        gl.deleteVertexArray(oldBuffers.snpCoverageVAO)
       }
-      if (this.buffers.noncovHistogramVAO) {
-        gl.deleteVertexArray(this.buffers.noncovHistogramVAO)
+      if (oldBuffers.noncovHistogramVAO) {
+        gl.deleteVertexArray(oldBuffers.noncovHistogramVAO)
       }
-      if (this.buffers.indicatorVAO) {
-        gl.deleteVertexArray(this.buffers.indicatorVAO)
+      if (oldBuffers.indicatorVAO) {
+        gl.deleteVertexArray(oldBuffers.indicatorVAO)
       }
-      if (this.buffers.gapVAO) {
-        gl.deleteVertexArray(this.buffers.gapVAO)
+      if (oldBuffers.gapVAO) {
+        gl.deleteVertexArray(oldBuffers.gapVAO)
       }
-      if (this.buffers.mismatchVAO) {
-        gl.deleteVertexArray(this.buffers.mismatchVAO)
+      if (oldBuffers.mismatchVAO) {
+        gl.deleteVertexArray(oldBuffers.mismatchVAO)
       }
-      if (this.buffers.insertionVAO) {
-        gl.deleteVertexArray(this.buffers.insertionVAO)
+      if (oldBuffers.insertionVAO) {
+        gl.deleteVertexArray(oldBuffers.insertionVAO)
       }
-      if (this.buffers.softclipVAO) {
-        gl.deleteVertexArray(this.buffers.softclipVAO)
+      if (oldBuffers.softclipVAO) {
+        gl.deleteVertexArray(oldBuffers.softclipVAO)
       }
-      if (this.buffers.hardclipVAO) {
-        gl.deleteVertexArray(this.buffers.hardclipVAO)
+      if (oldBuffers.hardclipVAO) {
+        gl.deleteVertexArray(oldBuffers.hardclipVAO)
       }
-      if (this.buffers.modificationVAO) {
-        gl.deleteVertexArray(this.buffers.modificationVAO)
+      if (oldBuffers.modificationVAO) {
+        gl.deleteVertexArray(oldBuffers.modificationVAO)
       }
-      if (this.buffers.modCoverageVAO) {
-        gl.deleteVertexArray(this.buffers.modCoverageVAO)
+      if (oldBuffers.modCoverageVAO) {
+        gl.deleteVertexArray(oldBuffers.modCoverageVAO)
       }
     }
 
@@ -1720,12 +1724,22 @@ export class WebGLRenderer {
       new Float32Array(data.readStrands),
       1,
     )
-    this.uploadNormalizedByteBuffer(
-      this.readProgram,
-      'a_tagColor',
-      data.readTagColors,
-      3,
-    )
+    // Only upload tag colors if data is available; otherwise set a constant
+    // attribute value to avoid "attribs only supply 0" WebGL warning
+    if (data.readTagColors.length > 0) {
+      this.uploadNormalizedByteBuffer(
+        this.readProgram,
+        'a_tagColor',
+        data.readTagColors,
+        3,
+      )
+    } else {
+      const loc = gl.getAttribLocation(this.readProgram, 'a_tagColor')
+      if (loc >= 0) {
+        gl.disableVertexAttribArray(loc)
+        gl.vertexAttrib3f(loc, 0, 0, 0)
+      }
+    }
     gl.bindVertexArray(null)
 
     this.buffers = {

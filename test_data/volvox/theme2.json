@@ -284,11 +284,7 @@
       "displays": [
         {
           "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_alignments_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup"
-          }
+          "displayId": "volvox_alignments_alignments"
         }
       ]
     },

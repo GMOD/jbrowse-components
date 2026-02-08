@@ -16,7 +16,6 @@ export default function register(pluginManager: PluginManager) {
         'Display stacked aligned reads showing exact placement and sequences relative to the reference genome',
       configSchema,
       stateModel: modelFactory(configSchema),
-      subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: BaseLinearDisplayComponent,

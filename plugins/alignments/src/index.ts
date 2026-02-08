@@ -11,9 +11,6 @@ import LinearPileupDisplayF from './LinearPileupDisplay/index.ts'
 import LinearReadArcsDisplayF from './LinearReadArcsDisplay/index.ts'
 import LinearReadCloudDisplayF from './LinearReadCloudDisplay/index.ts'
 import LinearSNPCoverageDisplayF from './LinearSNPCoverageDisplay/index.ts'
-import LinearWebGLArcsDisplayF from './LinearWebGLArcsDisplay/index.ts'
-import LinearWebGLCloudDisplayF from './LinearWebGLCloudDisplay/index.ts'
-import LinearWebGLPileupDisplayF from './LinearWebGLPileupDisplay/index.ts'
 import PileupRPCMethodsF from './PileupRPC/index.ts'
 import PileupRendererF from './PileupRenderer/index.ts'
 import LinearReadArcsDisplayRPCMethodsF from './RenderLinearReadArcsDisplayRPC/index.ts'
@@ -34,9 +31,6 @@ export default class AlignmentsPlugin extends Plugin {
       CramAdapterF,
       BamAdapterF,
       LinearPileupDisplayF,
-      LinearWebGLPileupDisplayF,
-      LinearWebGLArcsDisplayF,
-      LinearWebGLCloudDisplayF,
       LinearSNPCoverageDisplayF,
       AlignmentsTrackF,
       SNPCoverageAdapterF,
@@ -66,7 +60,5 @@ export {
   linearPileupDisplayStateModelFactory,
 } from './LinearPileupDisplay/index.ts'
 export type { LinearPileupDisplayModel } from './LinearPileupDisplay/model.ts'
-export type { LinearWebGLPileupDisplayModel } from './LinearWebGLPileupDisplay/model.ts'
-export type { LinearWebGLArcsDisplayModel } from './LinearWebGLArcsDisplay/model.ts'
-export type { LinearWebGLCloudDisplayModel } from './LinearWebGLCloudDisplay/model.ts'
+export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
 export * as MismatchParser from './MismatchParser/index.ts'

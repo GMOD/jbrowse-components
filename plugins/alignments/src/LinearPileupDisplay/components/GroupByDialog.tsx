@@ -72,15 +72,11 @@ function createTagBasedTracks({
         {
           displayId: `${trackId}-LinearAlignmentsDisplay`,
           type: 'LinearAlignmentsDisplay',
-          pileupDisplay: {
-            displayId: `${trackId}-LinearAlignmentsDisplay-LinearPileupDisplay`,
-            type: 'LinearPileupDisplay',
-            filterBy: {
-              ...defaultFilterFlags,
-              tagFilter: {
-                tag,
-                value: tagValue,
-              },
+          filterBySetting: {
+            ...defaultFilterFlags,
+            tagFilter: {
+              tag,
+              value: tagValue,
             },
           },
         },
@@ -110,16 +106,7 @@ function createStrandBasedTracks({
       {
         displayId: `${negTrackId}-LinearAlignmentsDisplay`,
         type: 'LinearAlignmentsDisplay',
-        pileupDisplay: {
-          displayId: `${negTrackId}-LinearAlignmentsDisplay-LinearPileupDisplay`,
-          type: 'LinearPileupDisplay',
-          filterBy: negFlags,
-        },
-      },
-      {
-        displayId: `${negTrackId}-LinearSNPCoverageDisplay`,
-        type: 'LinearSNPCoverageDisplay',
-        filterBy: negFlags,
+        filterBySetting: negFlags,
       },
     ],
   })
@@ -131,16 +118,7 @@ function createStrandBasedTracks({
       {
         displayId: `${posTrackId}-LinearAlignmentsDisplay`,
         type: 'LinearAlignmentsDisplay',
-        pileupDisplay: {
-          displayId: `${posTrackId}-LinearAlignmentsDisplay-LinearPileupDisplay`,
-          type: 'LinearPileupDisplay',
-          filterBy: posFlags,
-        },
-      },
-      {
-        displayId: `${posTrackId}-LinearSNPCoverageDisplay`,
-        type: 'LinearSNPCoverageDisplay',
-        filterBy: posFlags,
+        filterBySetting: posFlags,
       },
     ],
   })
