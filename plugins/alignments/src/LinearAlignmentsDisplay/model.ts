@@ -273,9 +273,13 @@ function stateModelFactory(
           self,
           autorun(
             function pileupHeightAutorun() {
-              self.PileupDisplay.setHeight(
-                self.height - self.SNPCoverageDisplay.height,
-              )
+              // WebGL pileup has built-in coverage, so give it the full height.
+              // Regular pileup needs space subtracted for the SNPCoverageDisplay.
+              const snpCovHeight =
+                self.lowerPanelType === 'LinearWebGLPileupDisplay'
+                  ? 0
+                  : self.SNPCoverageDisplay.height
+              self.PileupDisplay.setHeight(self.height - snpCovHeight)
             },
             { name: 'PileupHeight' },
           ),

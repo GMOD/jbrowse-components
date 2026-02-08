@@ -21,7 +21,8 @@ export interface RenderWebGLPileupDataArgs {
     assemblyName?: string
   }
   filterBy?: Record<string, unknown>
-  colorBy?: { type: string; modifications?: { threshold?: number } }
+  colorBy?: { type: string; tag?: string; modifications?: { threshold?: number } }
+  colorTagMap?: Record<string, string>
   statusCallback?: (status: string) => void
   stopToken?: string
 }
@@ -126,6 +127,10 @@ export interface WebGLPileupDataResult {
   // Tooltip data - detailed info for positions with SNPs or interbase events
   // Record from position offset to tooltip bin data
   tooltipData: Record<number, CoverageTooltipBin>
+
+  // Tag color data - RGB per read (3 bytes each), only populated when colorBy.type === 'tag'
+  readTagColors: Uint8Array
+  numTagColors: number
 
   // Modification data (MM tag) - offsets from regionStart
   modificationPositions: Uint32Array

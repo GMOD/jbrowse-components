@@ -127,6 +127,9 @@ const WebGLPileupComponent = lazy(
 )
 
 const WebGLTooltip = lazy(() => import('./components/WebGLTooltip.tsx'))
+const ColorByTagDialog = lazy(
+  () => import('../LinearPileupDisplay/components/ColorByTagDialog.tsx'),
+)
 
 export const ColorScheme = {
   normal: 0,
@@ -137,6 +140,7 @@ export const ColorScheme = {
   pairOrientation: 5,
   insertSizeAndOrientation: 6,
   modifications: 7,
+  tag: 8,
 } as const
 
 /**
@@ -206,6 +210,8 @@ export default function stateModelFactory(
       maxY: 0,
       highlightedFeatureIndex: -1,
       selectedFeatureIndex: -1,
+      colorTagMap: {} as Record<string, string>,
+      tagsReady: true,
     }))
     .views(self => ({
       /**
@@ -336,6 +342,8 @@ export default function stateModelFactory(
           case 'modifications':
           case 'methylation':
             return ColorScheme.modifications
+          case 'tag':
+            return ColorScheme.tag
           default:
             return ColorScheme.normal
         }
@@ -532,7 +540,38 @@ export default function stateModelFactory(
       },
 
       setColorScheme(colorBy: ColorBy) {
+        self.colorTagMap = {}
         self.colorBySetting = colorBy
+        if (colorBy.tag) {
+          self.tagsReady = false
+        }
+      },
+
+      setTagsReady(flag: boolean) {
+        self.tagsReady = flag
+      },
+
+      updateColorTagMap(uniqueTag: string[]) {
+        const colorPalette = [
+          '#BBCCEE',
+          'pink',
+          '#CCDDAA',
+          '#EEEEBB',
+          '#FFCCCC',
+          'lightblue',
+          'lightgreen',
+          'tan',
+          '#CCEEFF',
+          'lightsalmon',
+        ]
+        const map = { ...self.colorTagMap }
+        for (const value of uniqueTag) {
+          if (!map[value]) {
+            const totalKeys = Object.keys(map).length
+            map[value] = colorPalette[totalKeys % colorPalette.length]!
+          }
+        }
+        self.colorTagMap = map
       },
 
       setFilterBy(filterBy: FilterBy) {
@@ -667,6 +706,7 @@ export default function stateModelFactory(
               region,
               filterBy: self.filterBy,
               colorBy: self.colorBy,
+              colorTagMap: self.colorTagMap,
               statusCallback: (msg: string) => {
                 if (isAlive(self)) {
                   self.setStatusMessage(msg)
@@ -761,13 +801,21 @@ export default function stateModelFactory(
             ),
           )
 
-          // Re-fetch when colorBy changes to/from modifications/methylation
-          // (these modes require different worker-side processing)
+          // Re-fetch when colorBy changes (modifications/methylation/tag modes
+          // require different worker-side processing).
+          // For tag mode, also re-fetch when tagsReady becomes true (colorTagMap populated).
           addDisposer(
             self,
             reaction(
-              () => self.colorBy.type,
-              () => {
+              () => ({
+                colorType: self.colorBy.type,
+                tag: self.colorBy.tag,
+                tagsReady: self.tagsReady,
+              }),
+              ({ colorType, tagsReady }) => {
+                if (colorType === 'tag' && !tagsReady) {
+                  return
+                }
                 const visibleRegion = self.visibleRegion
                 if (
                   visibleRegion &&
@@ -778,6 +826,48 @@ export default function stateModelFactory(
                   })
                 }
               },
+            ),
+          )
+
+          // Fetch unique tag values when colorBy.type is 'tag' and tags not yet ready
+          addDisposer(
+            self,
+            reaction(
+              () => ({
+                tag: self.colorBy.tag,
+                tagsReady: self.tagsReady,
+                region: self.visibleRegion,
+              }),
+              async ({ tag, tagsReady, region }) => {
+                if (!tag || tagsReady || !region) {
+                  return
+                }
+                try {
+                  const session = getSession(self)
+                  const track = getContainingTrack(self)
+                  const adapterConfig = getConf(track, 'adapter')
+                  const vals = (await session.rpcManager.call(
+                    session.id ?? '',
+                    'PileupGetGlobalValueForTag',
+                    {
+                      adapterConfig,
+                      tag,
+                      sessionId: session.id,
+                      regions: [region],
+                    },
+                  )) as string[]
+                  if (isAlive(self)) {
+                    self.updateColorTagMap(vals)
+                    self.setTagsReady(true)
+                  }
+                } catch (e) {
+                  console.error('Failed to fetch tag values:', e)
+                  if (isAlive(self)) {
+                    self.setTagsReady(true)
+                  }
+                }
+              },
+              { fireImmediately: true },
             ),
           )
 
@@ -859,6 +949,17 @@ export default function stateModelFactory(
                 subMenu: getModificationsSubMenu(self, {
                   includeMethylation: true,
                 }),
+              },
+              {
+                label: 'Color by tag...',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'tag',
+                onClick: () => {
+                  getSession(self).queueDialog((onClose: () => void) => [
+                    ColorByTagDialog,
+                    { model: self, handleClose: onClose },
+                  ])
+                },
               },
             ],
           },

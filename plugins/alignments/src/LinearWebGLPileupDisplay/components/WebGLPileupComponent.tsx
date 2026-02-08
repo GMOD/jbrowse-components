@@ -483,6 +483,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       readInsertSizes: rpcData.readInsertSizes,
       readPairOrientations: rpcData.readPairOrientations,
       readStrands: rpcData.readStrands,
+      readTagColors: rpcData.readTagColors,
       numReads: rpcData.numReads,
       maxY: rpcData.maxY,
     })

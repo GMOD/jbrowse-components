@@ -93,6 +93,40 @@ function parseRgbColor(color: string): [number, number, number] {
   return [128, 128, 128]
 }
 
+// Named CSS colors used in the tol_light palette
+const namedColorMap: Record<string, [number, number, number]> = {
+  pink: [255, 192, 203],
+  lightblue: [173, 216, 230],
+  lightgreen: [144, 238, 144],
+  tan: [210, 180, 140],
+  lightsalmon: [255, 160, 122],
+  lightgrey: [200, 200, 200],
+}
+
+// Parse a CSS color (hex #RRGGBB, #RGB, named, or rgb()) to [r,g,b]
+function parseCssColor(color: string): [number, number, number] {
+  const lower = color.toLowerCase().trim()
+  const named = namedColorMap[lower]
+  if (named) {
+    return named
+  }
+  // #RRGGBB
+  const hex6 = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color)
+  if (hex6) {
+    return [parseInt(hex6[1]!, 16), parseInt(hex6[2]!, 16), parseInt(hex6[3]!, 16)]
+  }
+  // #RGB
+  const hex3 = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(color)
+  if (hex3) {
+    return [
+      parseInt(hex3[1]! + hex3[1]!, 16),
+      parseInt(hex3[2]! + hex3[2]!, 16),
+      parseInt(hex3[3]! + hex3[3]!, 16),
+    ]
+  }
+  return parseRgbColor(color)
+}
+
 function baseToAscii(base: string): number {
   return base.toUpperCase().charCodeAt(0)
 }
@@ -640,6 +674,7 @@ export async function executeRenderWebGLPileupData({
     sequenceAdapter,
     region,
     colorBy,
+    colorTagMap,
     statusCallback = () => {},
     stopToken,
   } = args
@@ -692,7 +727,7 @@ export async function executeRenderWebGLPileupData({
     regionSequence = seqFeats[0]?.get('seq')
   }
 
-  const { features, gaps, mismatches, insertions, softclips, hardclips, modifications } =
+  const { features, gaps, mismatches, insertions, softclips, hardclips, modifications, tagColors } =
     await updateStatus('Processing alignments', statusCallback, async () => {
       const deduped = dedupe(featuresArray, (f: Feature) => f.id())
 
@@ -703,6 +738,9 @@ export async function executeRenderWebGLPileupData({
       const softclipsData: SoftclipData[] = []
       const hardclipsData: HardclipData[] = []
       const modificationsData: ModificationEntry[] = []
+      // Per-feature tag color values (only populated when colorBy.type === 'tag')
+      const tagColorValues: string[] = []
+      const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
       for (const feature of deduped) {
         const featureId = feature.id()
         const featureStart = feature.get('start')
@@ -720,6 +758,13 @@ export async function executeRenderWebGLPileupData({
           ),
           strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
         })
+
+        if (isTagColorMode) {
+          const tag = colorBy!.tag!
+          const tags = feature.get('tags')
+          const val = tags ? tags[tag] : feature.get(tag)
+          tagColorValues.push(val != null ? String(val) : '')
+        }
 
         const featureMismatches = feature.get('mismatches') as
           | Mismatch[]
@@ -894,6 +939,52 @@ export async function executeRenderWebGLPileupData({
         }
       }
 
+      // Build per-read tag colors (RGB Uint8Array)
+      let readTagColors = new Uint8Array(0)
+      if (isTagColorMode) {
+        const tag = colorBy!.tag!
+        const map = colorTagMap!
+        // Pre-parse the color map to avoid repeated parsing
+        const parsedColors = new Map<string, [number, number, number]>()
+        for (const [k, v] of Object.entries(map)) {
+          parsedColors.set(k, parseCssColor(v))
+        }
+        // Strand colors for XS/TS/ts special handling
+        const fwdStrandRgb: [number, number, number] = [236, 139, 139] // #EC8B8B
+        const revStrandRgb: [number, number, number] = [143, 143, 216] // #8F8FD8
+        const nostrandRgb: [number, number, number] = [200, 200, 200]  // #c8c8c8
+
+        readTagColors = new Uint8Array(featuresData.length * 3)
+        for (let i = 0; i < featuresData.length; i++) {
+          const val = tagColorValues[i] ?? ''
+          let rgb: [number, number, number]
+
+          if (tag === 'XS' || tag === 'TS') {
+            if (val === '-') {
+              rgb = revStrandRgb
+            } else if (val === '+') {
+              rgb = fwdStrandRgb
+            } else {
+              rgb = nostrandRgb
+            }
+          } else if (tag === 'ts') {
+            const featureStrand = featuresData[i]!.strand
+            if (val === '-') {
+              rgb = featureStrand === -1 ? fwdStrandRgb : revStrandRgb
+            } else if (val === '+') {
+              rgb = featureStrand === -1 ? revStrandRgb : fwdStrandRgb
+            } else {
+              rgb = nostrandRgb
+            }
+          } else {
+            rgb = parsedColors.get(val) ?? nostrandRgb
+          }
+          readTagColors[i * 3] = rgb[0]
+          readTagColors[i * 3 + 1] = rgb[1]
+          readTagColors[i * 3 + 2] = rgb[2]
+        }
+      }
+
       return {
         features: featuresData,
         gaps: gapsData,
@@ -902,6 +993,7 @@ export async function executeRenderWebGLPileupData({
         softclips: softclipsData,
         hardclips: hardclipsData,
         modifications: modificationsData,
+        tagColors: readTagColors,
       }
     })
 
@@ -1363,6 +1455,9 @@ export async function executeRenderWebGLPileupData({
     ...hardclipArrays,
     ...modificationArrays,
 
+    readTagColors: tagColors,
+    numTagColors: tagColors.length / 3,
+
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
     coverageBinSize: coverage.binSize,
@@ -1449,6 +1544,7 @@ export async function executeRenderWebGLPileupData({
     result.modCovYOffsets.buffer,
     result.modCovHeights.buffer,
     result.modCovColors.buffer,
+    result.readTagColors.buffer,
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)

@@ -3,15 +3,16 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import PaletteIcon from '@mui/icons-material/Palette'
-import SettingsIcon from '@mui/icons-material/Settings'
+
+import { modificationData } from './modificationData.ts'
 
 import type { ColorBy } from './types.ts'
 
 const FilterByTagDialog = lazy(
   () => import('./components/FilterByTagDialog.tsx'),
 )
-const ModificationSettingsDialog = lazy(
-  () => import('./components/ModificationSettingsDialog.tsx'),
+const SetModificationThresholdDialog = lazy(
+  () => import('./components/SetModificationThresholdDialog.tsx'),
 )
 
 interface LinearReadDisplayModel {
@@ -41,7 +42,11 @@ export function getModificationsSubMenu(
   options: ModificationsMenuOptions = {},
 ) {
   const { includeMethylation = false } = options
-  const { modificationsReady, visibleModificationTypes } = model
+  const {
+    modificationThreshold,
+    modificationsReady,
+    visibleModificationTypes,
+  } = model
 
   if (!modificationsReady) {
     return [
@@ -54,31 +59,86 @@ export function getModificationsSubMenu(
     return visibleModificationTypes.length
       ? [
           {
-            label: 'Modifications',
+            label: `All modifications (>= ${modificationThreshold}% prob)`,
             type: 'radio' as const,
-            checked: model.colorBy?.type === 'modifications',
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              !model.colorBy.modifications?.isolatedModification &&
+              !model.colorBy.modifications?.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
                 modifications: {
-                  ...model.colorBy?.modifications,
-                  threshold: model.modificationThreshold,
+                  threshold: modificationThreshold,
                 },
               })
             },
           },
+          ...model.visibleModificationTypes.map(key => ({
+            label: `Show only ${modificationData[key]?.name || key} (>= ${modificationThreshold}% prob)`,
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              model.colorBy.modifications?.isolatedModification === key &&
+              !model.colorBy.modifications?.twoColor,
+            onClick: () => {
+              model.setColorScheme({
+                type: 'modifications',
+                modifications: {
+                  isolatedModification: key,
+                  threshold: modificationThreshold,
+                },
+              })
+            },
+          })),
+          { type: 'divider' as const },
+          {
+            label: 'All modifications (<50% prob colored blue)',
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              !model.colorBy.modifications?.isolatedModification &&
+              !!model.colorBy.modifications?.twoColor,
+            onClick: () => {
+              model.setColorScheme({
+                type: 'modifications',
+                modifications: {
+                  twoColor: true,
+                  threshold: modificationThreshold,
+                },
+              })
+            },
+          },
+          ...model.visibleModificationTypes.map(key => ({
+            label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              model.colorBy.modifications?.isolatedModification === key &&
+              !!model.colorBy.modifications?.twoColor,
+            onClick: () => {
+              model.setColorScheme({
+                type: 'modifications',
+                modifications: {
+                  isolatedModification: key,
+                  twoColor: true,
+                  threshold: modificationThreshold,
+                },
+              })
+            },
+          })),
           ...(includeMethylation
             ? [
+                { type: 'divider' as const },
                 {
-                  label: 'Methylation',
+                  label: 'All reference CpGs',
                   type: 'radio' as const,
                   checked: model.colorBy?.type === 'methylation',
                   onClick: () => {
                     model.setColorScheme({
                       type: 'methylation',
                       modifications: {
-                        ...model.colorBy?.modifications,
-                        threshold: model.modificationThreshold,
+                        threshold: modificationThreshold,
                       },
                     })
                   },
@@ -87,11 +147,10 @@ export function getModificationsSubMenu(
             : []),
           { type: 'divider' as const },
           {
-            label: 'Modification settings...',
-            icon: SettingsIcon,
+            label: `Adjust threshold (${modificationThreshold}%)`,
             onClick: () => {
               getSession(model).queueDialog(handleClose => [
-                ModificationSettingsDialog,
+                SetModificationThresholdDialog,
                 {
                   model,
                   handleClose,

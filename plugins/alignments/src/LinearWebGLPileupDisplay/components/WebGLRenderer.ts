@@ -95,6 +95,7 @@ in float a_mapq;
 in float a_insertSize;
 in float a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
 in float a_strand;           // -1=reverse, 0=unknown, 1=forward
+in vec3 a_tagColor;          // per-read tag color (normalized 0-1 from Uint8)
 
 uniform vec3 u_domainX;  // [domainStartHi, domainStartLo, domainExtent]
 uniform uint u_regionStart;  // Base position for converting offsets to absolute
@@ -310,6 +311,7 @@ void main() {
   else if (u_colorScheme == 5) color = pairOrientationColor(a_pairOrientation);
   else if (u_colorScheme == 6) color = insertSizeAndOrientationColor(a_insertSize, a_pairOrientation);
   else if (u_colorScheme == 7) color = modificationsColor(a_flags);
+  else if (u_colorScheme == 8) color = a_tagColor;
   else color = vec3(0.6);
 
   // Darken highlighted feature
@@ -1634,6 +1636,7 @@ export class WebGLRenderer {
     readInsertSizes: Float32Array
     readPairOrientations: Uint8Array
     readStrands: Int8Array
+    readTagColors: Uint8Array // RGB per read (3 bytes each), for tag coloring
     numReads: number
     maxY: number
   }) {
@@ -1716,6 +1719,12 @@ export class WebGLRenderer {
       'a_strand',
       new Float32Array(data.readStrands),
       1,
+    )
+    this.uploadNormalizedByteBuffer(
+      this.readProgram,
+      'a_tagColor',
+      data.readTagColors,
+      3,
     )
     gl.bindVertexArray(null)
 
@@ -2277,6 +2286,31 @@ export class WebGLRenderer {
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_SHORT, 0, 0)
+    gl.vertexAttribDivisor(loc, 1)
+  }
+
+  /**
+   * Upload Uint8Array as normalized float attribute (0-255 → 0.0-1.0)
+   * Used for per-instance color data stored as bytes
+   */
+  private uploadNormalizedByteBuffer(
+    program: WebGLProgram,
+    attrib: string,
+    data: Uint8Array,
+    size: number,
+  ) {
+    const gl = this.gl
+    const loc = gl.getAttribLocation(program, attrib)
+    if (loc < 0) {
+      return
+    }
+
+    const buffer = gl.createBuffer()
+    this.glBuffers.push(buffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribPointer(loc, size, gl.UNSIGNED_BYTE, true, 0, 0)
     gl.vertexAttribDivisor(loc, 1)
   }
 
