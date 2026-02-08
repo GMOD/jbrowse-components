@@ -37,6 +37,7 @@ export default class RenderWebGLPileupData extends RpcMethodType {
       ...args,
       region: {
         refName: renamedRegion.refName,
+        originalRefName: renamedRegion.originalRefName,
         start: renamedRegion.start,
         end: renamedRegion.end,
         assemblyName: renamedRegion.assemblyName,

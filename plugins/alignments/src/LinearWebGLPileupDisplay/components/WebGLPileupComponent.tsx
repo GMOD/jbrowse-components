@@ -131,6 +131,7 @@ interface LinearWebGLPileupDisplayModel {
   showMismatches: boolean
   showInterbaseCounts: boolean
   showInterbaseIndicators: boolean
+  showModifications: boolean
   maxY: number
   featureIdUnderMouse: string | undefined
   coverageTicks?: CoverageTicks
@@ -230,6 +231,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     showMismatches,
     showInterbaseCounts,
     showInterbaseIndicators,
+    showModifications,
   } = model
 
   // Use measured dimensions from ResizeObserver (preferred, passive)
@@ -311,6 +313,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         showMismatches,
         showInterbaseCounts,
         showInterbaseIndicators,
+        showModifications,
         canvasWidth: w,
         canvasHeight: height,
         highlightedFeatureIndex: model.highlightedFeatureIndex,
@@ -329,6 +332,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       showMismatches,
       showInterbaseCounts,
       showInterbaseIndicators,
+      showModifications,
       width,
       height,
     ],
@@ -498,6 +502,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       numHardclips: rpcData.numHardclips,
     })
 
+    // Upload modification data
+    renderer.uploadModificationsFromTypedArrays({
+      modificationPositions: rpcData.modificationPositions,
+      modificationYs: rpcData.modificationYs,
+      modificationColors: rpcData.modificationColors,
+      numModifications: rpcData.numModifications,
+    })
+
     // Upload coverage/SNP data in the same effect
     if (showCoverage) {
       renderer.uploadCoverageFromTypedArrays({
@@ -543,6 +555,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     showMismatches,
     showInterbaseCounts,
     showInterbaseIndicators,
+    showModifications,
     rpcData,
   ])
 

@@ -105,6 +105,7 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform int u_highlightedIndex;  // Feature index to highlight (-1 = none)
+uniform float u_canvasWidth;
 
 // Color uniforms - these match shared/color.ts and theme colors
 uniform vec3 u_colorFwdStrand;    // #EC8B8B
@@ -226,9 +227,7 @@ vec3 insertSizeAndOrientationColor(float insertSize, float pairOrientation) {
 }
 
 void main() {
-  int vid = gl_VertexID % 6;
-  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
-  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+  int vid = gl_VertexID % 9;
 
   // Convert offsets to absolute positions, then apply high-precision 12-bit split
   uint absStart = a_position.x + u_regionStart;
@@ -237,7 +236,6 @@ void main() {
   vec2 splitEnd = hpSplitUint(absEnd);
   float sx1 = hpToClipX(splitStart, u_domainX);
   float sx2 = hpToClipX(splitEnd, u_domainX);
-  float sx = mix(sx1, sx2, localX);
 
   // Calculate Y position in pixels (constant height per row)
   float rowHeight = u_featureHeight + u_featureSpacing;
@@ -250,7 +248,42 @@ void main() {
   float pxToClip = 2.0 / u_canvasHeight;
   float syTop = pileupTop - yTopPx * pxToClip;
   float syBot = pileupTop - yBotPx * pxToClip;
-  float sy = mix(syBot, syTop, localY);
+  float syMid = (syTop + syBot) * 0.5;
+
+  // Chevron width: 5px in clip space, only when zoomed in and feature tall enough
+  float chevronClip = 5.0 / u_canvasWidth * 2.0;
+  float domainExtent = u_domainX.z;
+  float bpPerPx = domainExtent / u_canvasWidth;
+  bool showChevron = bpPerPx < 10.0 && u_featureHeight > 5.0;
+
+  float sx;
+  float sy;
+  if (vid < 6) {
+    // Vertices 0-5: rectangle body (same as before)
+    float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+    float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+    sx = mix(sx1, sx2, localX);
+    sy = mix(syBot, syTop, localY);
+  } else if (showChevron) {
+    // Vertices 6-8: chevron triangle tip
+    if (a_strand > 0.5) {
+      // Forward strand: triangle on right
+      if (vid == 6) { sx = sx2; sy = syTop; }
+      else if (vid == 7) { sx = sx2; sy = syBot; }
+      else { sx = sx2 + chevronClip; sy = syMid; }
+    } else if (a_strand < -0.5) {
+      // Reverse strand: triangle on left
+      if (vid == 6) { sx = sx1; sy = syTop; }
+      else if (vid == 7) { sx = sx1 - chevronClip; sy = syMid; }
+      else { sx = sx1; sy = syBot; }
+    } else {
+      // No strand: degenerate triangle (invisible)
+      sx = sx1; sy = syTop;
+    }
+  } else {
+    // Chevrons disabled: degenerate triangle
+    sx = sx1; sy = syTop;
+  }
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
@@ -1046,6 +1079,71 @@ void main() {
 }
 `
 
+// Modification vertex shader - colored rectangles with per-instance RGBA color
+// Color and alpha are pre-computed on CPU (arbitrary modification types + probability)
+const MODIFICATION_VERTEX_SHADER = `#version 300 es
+precision highp float;
+precision highp int;
+
+in uint a_position;   // Position offset from regionStart
+in uint a_y;          // pileup row
+in vec4 a_color;      // RGBA color (normalized from Uint8)
+
+uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
+uniform vec2 u_rangeY;
+uniform float u_featureHeight;
+uniform float u_featureSpacing;
+uniform float u_coverageOffset;
+uniform float u_canvasHeight;
+uniform float u_canvasWidth;
+
+out vec4 v_color;
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+
+  float pos = float(a_position);
+  float domainWidth = u_domainX.y - u_domainX.x;
+  float sx1 = (pos - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx2 = (pos + 1.0 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+
+  // Ensure minimum width of 1 pixel
+  float minWidth = 2.0 / u_canvasWidth;
+  if (sx2 - sx1 < minWidth) {
+    float mid = (sx1 + sx2) * 0.5;
+    sx1 = mid - minWidth * 0.5;
+    sx2 = mid + minWidth * 0.5;
+  }
+
+  float sx = mix(sx1, sx2, localX);
+
+  float y = float(a_y);
+  float rowHeight = u_featureHeight + u_featureSpacing;
+  float yTopPx = y * rowHeight - u_rangeY.x;
+  float yBotPx = yTopPx + u_featureHeight;
+
+  float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
+  float pxToClip = 2.0 / u_canvasHeight;
+  float syTop = pileupTop - yTopPx * pxToClip;
+  float syBot = pileupTop - yBotPx * pxToClip;
+  float sy = mix(syBot, syTop, localY);
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  v_color = a_color;
+}
+`
+
+const MODIFICATION_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
 // RGB color as [r, g, b] where each is 0-1
 export type RGBColor = [number, number, number]
 
@@ -1111,6 +1209,7 @@ export interface RenderState {
   showMismatches: boolean
   showInterbaseCounts: boolean
   showInterbaseIndicators: boolean
+  showModifications: boolean
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
   canvasWidth: number
   canvasHeight: number
@@ -1130,6 +1229,7 @@ interface GPUBuffers {
   // CPU-side copies for selection outline drawing
   readPositions: Uint32Array
   readYs: Uint16Array
+  readStrands: Int8Array
   coverageVAO: WebGLVertexArrayObject | null
   coverageCount: number
   maxDepth: number
@@ -1155,6 +1255,8 @@ interface GPUBuffers {
   softclipCount: number
   hardclipVAO: WebGLVertexArrayObject | null
   hardclipCount: number
+  modificationVAO: WebGLVertexArrayObject | null
+  modificationCount: number
 }
 
 export class WebGLRenderer {
@@ -1172,6 +1274,7 @@ export class WebGLRenderer {
   private insertionProgram: WebGLProgram
   private softclipProgram: WebGLProgram
   private hardclipProgram: WebGLProgram
+  private modificationProgram: WebGLProgram
 
   private buffers: GPUBuffers | null = null
   private glBuffers: WebGLBuffer[] = []
@@ -1190,6 +1293,7 @@ export class WebGLRenderer {
   private insertionUniforms: Record<string, WebGLUniformLocation | null> = {}
   private softclipUniforms: Record<string, WebGLUniformLocation | null> = {}
   private hardclipUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private modificationUniforms: Record<string, WebGLUniformLocation | null> = {}
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -1250,6 +1354,10 @@ export class WebGLRenderer {
       HARDCLIP_VERTEX_SHADER,
       HARDCLIP_FRAGMENT_SHADER,
     )
+    this.modificationProgram = this.createProgram(
+      MODIFICATION_VERTEX_SHADER,
+      MODIFICATION_FRAGMENT_SHADER,
+    )
 
     this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_color'])
 
@@ -1273,6 +1381,7 @@ export class WebGLRenderer {
       'u_coverageOffset',
       'u_canvasHeight',
       'u_highlightedIndex',
+      'u_canvasWidth',
       // Color uniforms
       'u_colorFwdStrand',
       'u_colorRevStrand',
@@ -1364,6 +1473,9 @@ export class WebGLRenderer {
     this.cacheUniforms(this.hardclipProgram, this.hardclipUniforms, [
       ...cigarUniformsWithWidth,
       'u_colorHardclip',
+    ])
+    this.cacheUniforms(this.modificationProgram, this.modificationUniforms, [
+      ...cigarUniformsWithWidth,
     ])
 
     gl.enable(gl.BLEND)
@@ -1465,6 +1577,9 @@ export class WebGLRenderer {
       if (this.buffers.hardclipVAO) {
         gl.deleteVertexArray(this.buffers.hardclipVAO)
       }
+      if (this.buffers.modificationVAO) {
+        gl.deleteVertexArray(this.buffers.modificationVAO)
+      }
     }
 
     if (data.numReads === 0) {
@@ -1511,6 +1626,7 @@ export class WebGLRenderer {
       readCount: data.numReads,
       readPositions: data.readPositions,
       readYs: data.readYs,
+      readStrands: data.readStrands,
       coverageVAO: null,
       coverageCount: 0,
       maxDepth: 0,
@@ -1532,6 +1648,8 @@ export class WebGLRenderer {
       softclipCount: 0,
       hardclipVAO: null,
       hardclipCount: 0,
+      modificationVAO: null,
+      modificationCount: 0,
     }
   }
 
@@ -1889,6 +2007,54 @@ export class WebGLRenderer {
     }
   }
 
+  uploadModificationsFromTypedArrays(data: {
+    modificationPositions: Uint32Array
+    modificationYs: Uint16Array
+    modificationColors: Uint8Array // RGBA packed, 4 bytes per modification
+    numModifications: number
+  }) {
+    const gl = this.gl
+
+    if (!this.buffers) {
+      return
+    }
+
+    if (this.buffers.modificationVAO) {
+      gl.deleteVertexArray(this.buffers.modificationVAO)
+      this.buffers.modificationVAO = null
+    }
+
+    if (data.numModifications > 0) {
+      const modificationVAO = gl.createVertexArray()
+      gl.bindVertexArray(modificationVAO)
+      this.uploadUintBuffer(
+        this.modificationProgram,
+        'a_position',
+        data.modificationPositions,
+        1,
+      )
+      this.uploadUint16Buffer(
+        this.modificationProgram,
+        'a_y',
+        data.modificationYs,
+        1,
+      )
+      // Upload RGBA color as normalized unsigned bytes (gl.UNSIGNED_BYTE with normalize=true)
+      this.uploadNormalizedUint8Buffer(
+        this.modificationProgram,
+        'a_color',
+        data.modificationColors,
+        4,
+      )
+      gl.bindVertexArray(null)
+
+      this.buffers.modificationVAO = modificationVAO
+      this.buffers.modificationCount = data.numModifications
+    } else {
+      this.buffers.modificationCount = 0
+    }
+  }
+
   private uploadBuffer(
     program: WebGLProgram,
     attrib: string,
@@ -1980,6 +2146,32 @@ export class WebGLRenderer {
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_BYTE, 0, 0)
+    gl.vertexAttribDivisor(loc, 1)
+  }
+
+  /**
+   * Upload Uint8Array as normalized float attribute (0-255 -> 0.0-1.0)
+   * Used for RGBA colors where shader receives vec4 in 0-1 range
+   */
+  private uploadNormalizedUint8Buffer(
+    program: WebGLProgram,
+    attrib: string,
+    data: Uint8Array,
+    size: number,
+  ) {
+    const gl = this.gl
+    const loc = gl.getAttribLocation(program, attrib)
+    if (loc < 0) {
+      return
+    }
+
+    const buffer = gl.createBuffer()
+    this.glBuffers.push(buffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(loc)
+    // normalize=true converts Uint8 0-255 to float 0.0-1.0
+    gl.vertexAttribPointer(loc, size, gl.UNSIGNED_BYTE, true, 0, 0)
     gl.vertexAttribDivisor(loc, 1)
   }
 
@@ -2207,6 +2399,7 @@ export class WebGLRenderer {
     gl.uniform1f(this.readUniforms.u_featureSpacing!, state.featureSpacing)
     gl.uniform1f(this.readUniforms.u_coverageOffset!, coverageOffset)
     gl.uniform1f(this.readUniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform1f(this.readUniforms.u_canvasWidth!, canvasWidth)
     gl.uniform1i(
       this.readUniforms.u_highlightedIndex!,
       state.highlightedFeatureIndex,
@@ -2222,7 +2415,7 @@ export class WebGLRenderer {
     gl.uniform3f(this.readUniforms.u_colorPairLL!, ...colors.colorPairLL)
 
     gl.bindVertexArray(this.buffers.readVAO)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.readCount)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, this.buffers.readCount)
 
     // Draw CIGAR features if enabled
     if (state.showMismatches) {
@@ -2398,6 +2591,44 @@ export class WebGLRenderer {
       }
     }
 
+    // Draw modifications (on top of reads and mismatches)
+    if (
+      state.showModifications &&
+      this.buffers.modificationVAO &&
+      this.buffers.modificationCount > 0
+    ) {
+      gl.useProgram(this.modificationProgram)
+      gl.uniform2f(
+        this.modificationUniforms.u_domainX!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform2f(
+        this.modificationUniforms.u_rangeY!,
+        state.rangeY[0],
+        state.rangeY[1],
+      )
+      gl.uniform1f(
+        this.modificationUniforms.u_featureHeight!,
+        state.featureHeight,
+      )
+      gl.uniform1f(
+        this.modificationUniforms.u_featureSpacing!,
+        state.featureSpacing,
+      )
+      gl.uniform1f(this.modificationUniforms.u_coverageOffset!, coverageOffset)
+      gl.uniform1f(this.modificationUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.modificationUniforms.u_canvasWidth!, canvasWidth)
+
+      gl.bindVertexArray(this.buffers.modificationVAO)
+      gl.drawArraysInstanced(
+        gl.TRIANGLES,
+        0,
+        6,
+        this.buffers.modificationCount,
+      )
+    }
+
     gl.disable(gl.SCISSOR_TEST)
 
     // Draw selection outline if a feature is selected
@@ -2449,26 +2680,40 @@ export class WebGLRenderer {
         const syTop = pileupTop - yTopPx * pxToClip
         const syBot = pileupTop - yBotPx * pxToClip
 
-        // Draw rectangle outline
+        // Draw outline (chevron shape when zoomed in, rectangle otherwise)
         gl.useProgram(this.lineProgram)
         gl.uniform4f(this.lineUniforms.u_color!, 0, 0, 0, 1) // Black outline
 
-        const outlineData = new Float32Array([
-          sx1,
-          syTop,
-          sx2,
-          syTop,
-          sx2,
-          syBot,
-          sx1,
-          syBot,
-          sx1,
-          syTop, // Close the loop
-        ])
+        const bpPerPx = domainExtent / canvasWidth
+        const strand = this.buffers.readStrands[idx]
+        const showChevron = bpPerPx < 10 && state.featureHeight > 5
+        const chevronClip = (5 / canvasWidth) * 2
+        const syMid = (syTop + syBot) / 2
+
+        let outlineData: Float32Array
+        if (showChevron && strand === 1) {
+          // Forward: chevron on right
+          outlineData = new Float32Array([
+            sx1, syTop, sx2, syTop, sx2 + chevronClip, syMid,
+            sx2, syBot, sx1, syBot, sx1, syTop,
+          ])
+        } else if (showChevron && strand === -1) {
+          // Reverse: chevron on left
+          outlineData = new Float32Array([
+            sx1, syTop, sx2, syTop, sx2, syBot,
+            sx1, syBot, sx1 - chevronClip, syMid, sx1, syTop,
+          ])
+        } else {
+          outlineData = new Float32Array([
+            sx1, syTop, sx2, syTop, sx2, syBot,
+            sx1, syBot, sx1, syTop,
+          ])
+        }
+
         gl.bindVertexArray(this.lineVAO)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, outlineData, gl.DYNAMIC_DRAW)
-        gl.drawArrays(gl.LINE_STRIP, 0, 5)
+        gl.drawArrays(gl.LINE_STRIP, 0, outlineData.length / 2)
       }
     }
 
@@ -2510,6 +2755,9 @@ export class WebGLRenderer {
       if (this.buffers.hardclipVAO) {
         gl.deleteVertexArray(this.buffers.hardclipVAO)
       }
+      if (this.buffers.modificationVAO) {
+        gl.deleteVertexArray(this.buffers.modificationVAO)
+      }
     }
     if (this.lineVAO) {
       gl.deleteVertexArray(this.lineVAO)
@@ -2528,5 +2776,6 @@ export class WebGLRenderer {
     gl.deleteProgram(this.insertionProgram)
     gl.deleteProgram(this.softclipProgram)
     gl.deleteProgram(this.hardclipProgram)
+    gl.deleteProgram(this.modificationProgram)
   }
 }

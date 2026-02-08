@@ -62,21 +62,23 @@ export interface WebGLFeatureDataResult {
   // Floating labels metadata
   floatingLabelsData: FloatingLabelsDataMap
 
-  // Peptide data for amino acid overlay (only when colorByCDS is true)
-  peptideData?: PeptideOverlayData
+  // Precomputed amino acid overlay items (only when colorByCDS is true)
+  aminoAcidOverlay?: AminoAcidOverlayItem[]
 
   // Layout info
   maxY: number
   totalHeight: number
 }
 
-export interface PeptideOverlayEntry {
-  protein: string
-  featureJson: Record<string, unknown>
-  transcriptId: string
+export interface AminoAcidOverlayItem {
+  startBp: number
+  endBp: number
+  aminoAcid: string
+  proteinIndex: number
+  topPx: number
+  heightPx: number
+  isStopOrNonTriplet: boolean
 }
-
-export type PeptideOverlayData = Record<string, PeptideOverlayEntry>
 
 export interface FlatbushItem {
   featureId: string

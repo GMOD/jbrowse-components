@@ -1,16 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import {
-  SimpleFeature,
-  getContainingView,
-  measureText,
-} from '@jbrowse/core/util'
+import { getContainingView, measureText } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { prepareAminoAcidData } from '../../CanvasFeatureRenderer/peptides/prepareAminoAcidData.ts'
 import { shouldRenderPeptideText } from '../../CanvasFeatureRenderer/zoomThresholds.ts'
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
 
@@ -30,7 +25,6 @@ interface LinearWebGLFeatureDisplayModel {
   maxY: number
   selectedFeatureId: string | undefined // from base class computed
   featureIdUnderMouse: string | null
-  colorByCDS: boolean
   setMaxY: (y: number) => void
   setCurrentDomain: (domain: [number, number]) => void
   handleNeedMoreData: (region: { start: number; end: number }) => void
@@ -666,6 +660,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   // Compute floating label positions
   // Need to include view.bpPerPx and view.offsetPx in deps so labels update on pan/zoom
   const bpPerPx = view?.bpPerPx
+  const offsetPx = view?.offsetPx
 
   const floatingLabelElements = useMemo(() => {
     if (
@@ -742,16 +737,15 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
-  }, [rpcData, view, width, bpPerPx, getVisibleBpRange, scrollY])
+  }, [rpcData, view, width, bpPerPx, offsetPx, getVisibleBpRange, scrollY])
 
-  // Compute amino acid letter overlay
+  // Compute amino acid letter overlay from precomputed worker data
   const aminoAcidOverlayElements = useMemo(() => {
     if (
-      !rpcData?.peptideData ||
+      !rpcData?.aminoAcidOverlay ||
       !view?.initialized ||
       !width ||
       !bpPerPx ||
-      !model.colorByCDS ||
       !shouldRenderPeptideText(bpPerPx)
     ) {
       return null
@@ -763,105 +757,42 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     const elements: React.ReactElement[] = []
-    const peptideData = rpcData.peptideData
 
-    for (const [transcriptId, entry] of Object.entries(peptideData)) {
-      const { protein, featureJson } = entry
-      if (!protein) {
+    for (const [i, item] of rpcData.aminoAcidOverlay.entries()) {
+      if (item.endBp < visibleRange[0] || item.startBp > visibleRange[1]) {
         continue
       }
 
-      // Find the transcript's y position from subfeatureInfos
-      const transcriptInfo = rpcData.subfeatureInfos.find(
-        s => s.featureId === transcriptId,
+      const leftPx = (item.startBp - visibleRange[0]) / bpPerPx
+      const rightPx = (item.endBp - visibleRange[0]) / bpPerPx
+      const centerPx = (leftPx + rightPx) / 2
+      const topPx = item.topPx - scrollY
+      const fontSize = Math.min(item.heightPx - 2, 12)
+
+      elements.push(
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            left: centerPx,
+            top: topPx,
+            height: item.heightPx,
+            transform: 'translateX(-50%)',
+            fontSize,
+            lineHeight: `${item.heightPx}px`,
+            color: item.isStopOrNonTriplet ? 'red' : 'black',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {item.aminoAcid}
+          {item.proteinIndex + 1}
+        </div>,
       )
-      if (!transcriptInfo) {
-        continue
-      }
-
-      const transcriptHeight = transcriptInfo.bottomPx - transcriptInfo.topPx
-
-      // Create a SimpleFeature from the serialized JSON for g2p_mapper
-      const parentFeature = new SimpleFeature(featureJson as any)
-      const subfeatures = parentFeature.get('subfeatures') || []
-
-      // Process each CDS subfeature
-      for (const sub of subfeatures) {
-        if (sub.get('type') !== 'CDS') {
-          continue
-        }
-        const cdsStart = sub.get('start') as number
-        const cdsEnd = sub.get('end') as number
-        const strand = parentFeature.get('strand') as number
-
-        // Check if CDS is in visible range
-        if (cdsEnd < visibleRange[0] || cdsStart > visibleRange[1]) {
-          continue
-        }
-
-        const aminoAcids = prepareAminoAcidData(
-          parentFeature,
-          protein,
-          cdsStart,
-          cdsEnd,
-          strand,
-        )
-
-        const cdsLen = cdsEnd - cdsStart
-        const reversed = false // TODO: handle reversed regions
-        const effectiveStrand = strand * (reversed ? -1 : 1)
-
-        for (const aa of aminoAcids) {
-          let aaBpStart: number
-          let aaBpEnd: number
-          if (effectiveStrand === -1) {
-            aaBpStart = cdsStart + (cdsLen - aa.endIndex - 1)
-            aaBpEnd = cdsStart + (cdsLen - aa.startIndex)
-          } else {
-            aaBpStart = cdsStart + aa.startIndex
-            aaBpEnd = cdsStart + aa.endIndex + 1
-          }
-
-          // Check if amino acid is in visible range
-          if (aaBpEnd < visibleRange[0] || aaBpStart > visibleRange[1]) {
-            continue
-          }
-
-          const leftPx = (aaBpStart - visibleRange[0]) / bpPerPx
-          const rightPx = (aaBpEnd - visibleRange[0]) / bpPerPx
-          const centerPx = (leftPx + rightPx) / 2
-          const topPx = transcriptInfo.topPx - scrollY
-
-          const label = `${aa.aminoAcid}${aa.proteinIndex + 1}`
-          const isStopOrNonTriplet =
-            aa.aminoAcid === '*' || aa.length !== 3
-          const fontSize = Math.min(transcriptHeight - 2, 12)
-
-          elements.push(
-            <div
-              key={`aa-${transcriptId}-${cdsStart}-${aa.startIndex}`}
-              style={{
-                position: 'absolute',
-                left: centerPx,
-                top: topPx,
-                height: transcriptHeight,
-                transform: 'translateX(-50%)',
-                fontSize,
-                lineHeight: `${transcriptHeight}px`,
-                color: isStopOrNonTriplet ? 'red' : 'black',
-                pointerEvents: 'none',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {label}
-            </div>,
-          )
-        }
-      }
     }
 
     return elements.length > 0 ? elements : null
-  }, [rpcData, view, width, bpPerPx, getVisibleBpRange, scrollY, model.colorByCDS])
+  }, [rpcData, view, width, bpPerPx, offsetPx, getVisibleBpRange, scrollY])
 
   // Compute highlight overlays for hovered and selected features
   const highlightOverlays = useMemo(() => {
@@ -985,6 +916,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     view,
     width,
     bpPerPx,
+    offsetPx,
     getVisibleBpRange,
     scrollY,
     hoveredFeature,

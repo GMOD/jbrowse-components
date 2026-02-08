@@ -19,6 +19,11 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { parseCigar2 } from '../MismatchParser/index.ts'
+import { getMethBins } from '../ModificationParser/getMethBins.ts'
+import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
+import { getColorForModification, getTagAlt } from '../util.ts'
+
 import type { RenderWebGLPileupDataArgs, WebGLPileupDataResult } from './types'
 import type { Mismatch } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -67,6 +72,25 @@ interface HardclipData {
   featureId: string
   position: number
   length: number
+}
+
+interface ModificationEntry {
+  featureId: string
+  position: number // absolute genomic position
+  r: number
+  g: number
+  b: number
+  a: number // alpha from probability
+}
+
+// Parse "rgb(r,g,b)" string to [r,g,b]
+function parseRgbColor(color: string): [number, number, number] {
+  const match = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(color)
+  if (match) {
+    return [+match[1]!, +match[2]!, +match[3]!]
+  }
+  // Fallback for hex or named colors - return grey
+  return [128, 128, 128]
 }
 
 function baseToAscii(base: string): number {
@@ -520,6 +544,7 @@ export async function executeRenderWebGLPileupData({
     adapterConfig,
     sequenceAdapter,
     region,
+    colorBy,
     statusCallback = () => {},
     stopToken,
   } = args
@@ -550,7 +575,34 @@ export async function executeRenderWebGLPileupData({
 
   checkStopToken2(stopTokenCheck)
 
-  const { features, gaps, mismatches, insertions, softclips, hardclips } =
+  // Genomic positions are integers, but region bounds from the view can be fractional.
+  // Define integer bounds: floor for start (include first partially visible position),
+  // ceil for end (include last partially visible position).
+  // All position offsets throughout this function use regionStart as the reference point.
+  const regionStart = Math.floor(region.start)
+
+  // Fetch reference sequence for methylation coloring (requires CpG site detection)
+  // Fetched with 1bp padding on each side so we can detect CpG dinucleotides
+  // at region boundaries. The +1 offset in sequence indexing accounts for this.
+  let regionSequence: string | undefined
+  if (colorBy?.type === 'methylation' && sequenceAdapter) {
+    const seqAdapter = (
+      await getAdapter(pluginManager, sessionId, sequenceAdapter)
+    ).dataAdapter as BaseFeatureDataAdapter
+    const seqFeats = await firstValueFrom(
+      seqAdapter
+        .getFeatures({
+          ...regionWithAssembly,
+          refName: region.refName,
+          start: Math.max(0, regionStart - 1),
+          end: Math.ceil(region.end) + 1,
+        })
+        .pipe(toArray()),
+    )
+    regionSequence = seqFeats[0]?.get('seq')
+  }
+
+  const { features, gaps, mismatches, insertions, softclips, hardclips, modifications } =
     await updateStatus('Processing alignments', statusCallback, async () => {
       const deduped = dedupe(featuresArray, (f: Feature) => f.id())
 
@@ -560,7 +612,7 @@ export async function executeRenderWebGLPileupData({
       const insertionsData: InsertionData[] = []
       const softclipsData: SoftclipData[] = []
       const hardclipsData: HardclipData[] = []
-
+      const modificationsData: ModificationEntry[] = []
       for (const feature of deduped) {
         const featureId = feature.id()
         const featureStart = feature.get('start')
@@ -595,7 +647,7 @@ export async function executeRenderWebGLPileupData({
               mismatchesData.push({
                 featureId,
                 position: featureStart + mm.start,
-                base: baseToAscii(mm.base),
+                base: baseToAscii(mm.base ?? 'N'),
                 strand: strand === -1 ? -1 : 1,
               })
             } else if (mm.type === 'insertion') {
@@ -621,6 +673,133 @@ export async function executeRenderWebGLPileupData({
             }
           }
         }
+
+        // Extract modifications from MM tag (only when color by modifications)
+        if (colorBy?.type === 'modifications') {
+          const mmTag = getTagAlt(feature, 'MM', 'Mm')
+          if (mmTag) {
+            const cigarString = feature.get('CIGAR') as string | undefined
+            if (cigarString) {
+              const cigarOps = parseCigar2(cigarString)
+              const modThreshold =
+                (colorBy.modifications?.threshold ?? 10) / 100
+              const mods = getMaxProbModAtEachPosition(feature, cigarOps)
+              if (mods) {
+                // sparse array - use forEach
+                // eslint-disable-next-line unicorn/no-array-for-each
+                mods.forEach(({ prob, type }, refPos) => {
+                  if (prob < modThreshold) {
+                    return
+                  }
+                  const color = getColorForModification(type)
+                  const [r, g, b] = parseRgbColor(color)
+                  const alpha = Math.min(
+                    255,
+                    Math.round((prob * prob + 0.1) * 255),
+                  )
+                  modificationsData.push({
+                    featureId,
+                    position: featureStart + refPos,
+                    r,
+                    g,
+                    b,
+                    a: alpha,
+                  })
+                })
+              }
+            }
+          }
+        }
+
+        // Extract methylation data (only when color by methylation)
+        if (colorBy?.type === 'methylation' && regionSequence) {
+          const cigarString = feature.get('CIGAR') as string | undefined
+          if (cigarString) {
+            const cigarOps = parseCigar2(cigarString)
+            const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
+              getMethBins(feature, cigarOps)
+
+            const featureEnd = feature.get('end')
+            const rSeq = regionSequence.toLowerCase()
+
+            for (
+              let i = Math.max(0, regionStart - featureStart);
+              i < featureEnd - featureStart;
+              i++
+            ) {
+              const j = i + featureStart
+              const l1 = rSeq[j - regionStart + 1]
+              const l2 = rSeq[j - regionStart + 2]
+
+              if (l1 === 'c' && l2 === 'g') {
+                // CpG site found - check for methylation at C position
+                if (methBins[i]) {
+                  const p = methProbs[i] || 0
+                  // Red/blue gradient: red = methylated, blue = unmethylated
+                  if (p > 0.5) {
+                    const alpha = Math.round((p - 0.5) * 2 * 255)
+                    modificationsData.push({
+                      featureId,
+                      position: j,
+                      r: 255,
+                      g: 0,
+                      b: 0,
+                      a: alpha,
+                    })
+                  } else {
+                    const alpha = Math.round((1 - p * 2) * 255)
+                    modificationsData.push({
+                      featureId,
+                      position: j,
+                      r: 0,
+                      g: 0,
+                      b: 255,
+                      a: alpha,
+                    })
+                  }
+                } else {
+                  // CpG site without modification data = unmethylated (blue)
+                  modificationsData.push({
+                    featureId,
+                    position: j,
+                    r: 0,
+                    g: 0,
+                    b: 255,
+                    a: 255,
+                  })
+                }
+
+                // Check G position for hydroxymethylation
+                if (hydroxyMethBins[i + 1]) {
+                  const p = hydroxyMethProbs[i + 1] || 0
+                  if (p > 0.5) {
+                    // Pink
+                    const alpha = Math.round((p - 0.5) * 2 * 255)
+                    modificationsData.push({
+                      featureId,
+                      position: j + 1,
+                      r: 255,
+                      g: 192,
+                      b: 203,
+                      a: alpha,
+                    })
+                  } else {
+                    // Purple
+                    const alpha = Math.round((1 - p * 2) * 255)
+                    modificationsData.push({
+                      featureId,
+                      position: j + 1,
+                      r: 128,
+                      g: 0,
+                      b: 128,
+                      a: alpha,
+                    })
+                  }
+                }
+              }
+            }
+          }
+        }
       }
 
       return {
@@ -630,16 +809,12 @@ export async function executeRenderWebGLPileupData({
         insertions: insertionsData,
         softclips: softclipsData,
         hardclips: hardclipsData,
+        modifications: modificationsData,
       }
     })
 
   checkStopToken2(stopTokenCheck)
 
-  // Genomic positions are integers, but region bounds from the view can be fractional.
-  // Define integer bounds: floor for start (include first partially visible position),
-  // ceil for end (include last partially visible position).
-  // All position offsets throughout this function use regionStart as the reference point.
-  const regionStart = Math.floor(region.start)
   const regionEnd = Math.ceil(region.end)
 
   const {
@@ -650,6 +825,7 @@ export async function executeRenderWebGLPileupData({
     insertionArrays,
     softclipArrays,
     hardclipArrays,
+    modificationArrays,
   } = await updateStatus('Computing layout', statusCallback, async () => {
     const layout = computeLayout(features)
     const numLevels = Math.max(0, ...layout.values()) + 1
@@ -749,6 +925,23 @@ export async function executeRenderWebGLPileupData({
       hardclipLengths[i] = Math.min(65535, hc.length)
     }
 
+    // Filter modifications to only include those at or after regionStart
+    const filteredModifications = modifications.filter(
+      m => m.position >= regionStart,
+    )
+    const modificationPositions = new Uint32Array(filteredModifications.length)
+    const modificationYs = new Uint16Array(filteredModifications.length)
+    const modificationColors = new Uint8Array(filteredModifications.length * 4)
+    for (const [i, m] of filteredModifications.entries()) {
+      const y = layout.get(m.featureId) ?? 0
+      modificationPositions[i] = m.position - regionStart
+      modificationYs[i] = y
+      modificationColors[i * 4] = m.r
+      modificationColors[i * 4 + 1] = m.g
+      modificationColors[i * 4 + 2] = m.b
+      modificationColors[i * 4 + 3] = m.a
+    }
+
     return {
       maxY: numLevels,
       readArrays: {
@@ -776,6 +969,11 @@ export async function executeRenderWebGLPileupData({
       },
       softclipArrays: { softclipPositions, softclipYs, softclipLengths },
       hardclipArrays: { hardclipPositions, hardclipYs, hardclipLengths },
+      modificationArrays: {
+        modificationPositions,
+        modificationYs,
+        modificationColors,
+      },
     }
   })
 
@@ -1065,6 +1263,7 @@ export async function executeRenderWebGLPileupData({
     ...insertionArrays,
     ...softclipArrays,
     ...hardclipArrays,
+    ...modificationArrays,
 
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
@@ -1097,6 +1296,7 @@ export async function executeRenderWebGLPileupData({
     numSoftclips: softclipArrays.softclipPositions.length,
     numHardclips: hardclipArrays.hardclipPositions.length,
     numCoverageBins: coverage.depths.length,
+    numModifications: modificationArrays.modificationPositions.length,
     numSnpSegments: snpCoverage.count,
     numNoncovSegments: noncovCoverage.segmentCount,
     numIndicators: noncovCoverage.indicatorCount,
@@ -1138,6 +1338,9 @@ export async function executeRenderWebGLPileupData({
     result.noncovColorTypes.buffer,
     result.indicatorPositions.buffer,
     result.indicatorColorTypes.buffer,
+    result.modificationPositions.buffer,
+    result.modificationYs.buffer,
+    result.modificationColors.buffer,
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)

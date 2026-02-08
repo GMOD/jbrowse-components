@@ -327,6 +327,11 @@ export default function stateModelFactory(
         }
       },
 
+      get showModifications(): boolean {
+        const t = this.colorBy.type
+        return t === 'modifications' || t === 'methylation'
+      },
+
       /**
        * Check if current view is within loaded data region
        */
@@ -636,6 +641,7 @@ export default function stateModelFactory(
               sequenceAdapter,
               region,
               filterBy: self.filterBy,
+              colorBy: self.colorBy,
             },
           )) as WebGLPileupDataResult
 
@@ -718,6 +724,23 @@ export default function stateModelFactory(
               },
             ),
           )
+
+          // Re-fetch when colorBy changes to/from modifications/methylation
+          // (these modes require different worker-side processing)
+          addDisposer(
+            self,
+            reaction(
+              () => self.colorBy.type,
+              () => {
+                const visibleRegion = self.visibleRegion
+                if (visibleRegion) {
+                  fetchFeaturesImpl(visibleRegion).catch((e: unknown) => {
+                    console.error('Failed to fetch features:', e)
+                  })
+                }
+              },
+            ),
+          )
         },
       }
     })
@@ -770,6 +793,18 @@ export default function stateModelFactory(
                 label: 'Insert size and orientation',
                 onClick: () => {
                   self.setColorScheme({ type: 'insertSizeAndOrientation' })
+                },
+              },
+              {
+                label: 'Modifications',
+                onClick: () => {
+                  self.setColorScheme({ type: 'modifications' })
+                },
+              },
+              {
+                label: 'Methylation (CpG)',
+                onClick: () => {
+                  self.setColorScheme({ type: 'methylation' })
                 },
               },
             ],

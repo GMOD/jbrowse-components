@@ -35,10 +35,10 @@ import {
 import { shouldRenderPeptideBackground } from '../CanvasFeatureRenderer/zoomThresholds.ts'
 
 import type {
+  AminoAcidOverlayItem,
   FeatureLabelData,
   FlatbushItem,
   FloatingLabelsDataMap,
-  PeptideOverlayData,
   RenderWebGLFeatureDataArgs,
   SubfeatureInfo,
   WebGLFeatureDataResult,
@@ -124,8 +124,9 @@ interface LayoutRecordWithLabels extends LayoutRecord {
   totalHeightWithLabels?: number
 }
 
-function emitCodonRects(
+function emitCodonData(
   rects: RectData[],
+  overlayItems: AminoAcidOverlayItem[],
   aminoAcids: AggregatedAminoAcid[],
   baseColor: string,
   featureStart: number,
@@ -164,6 +165,16 @@ function emitCodonRects(
       color: colorToUint32(bgColor),
       type: 0,
     })
+
+    overlayItems.push({
+      startBp,
+      endBp,
+      aminoAcid: aa.aminoAcid,
+      proteinIndex: aa.proteinIndex,
+      topPx: y,
+      heightPx: height,
+      isStopOrNonTriplet: aa.aminoAcid === '*' || aa.length !== 3,
+    })
   }
 }
 
@@ -184,6 +195,7 @@ function collectRenderData(
   floatingLabelsData: FloatingLabelsDataMap
   flatbushItems: FlatbushItem[]
   subfeatureInfos: SubfeatureInfo[]
+  aminoAcidOverlay: AminoAcidOverlayItem[]
   maxY: number
 } {
   const rects: RectData[] = []
@@ -192,6 +204,7 @@ function collectRenderData(
   const floatingLabelsData: FloatingLabelsDataMap = {}
   const flatbushItems: FlatbushItem[] = []
   const subfeatureInfos: SubfeatureInfo[] = []
+  const aminoAcidOverlay: AminoAcidOverlayItem[] = []
   let maxY = 0
 
   for (const record of layoutRecords) {
@@ -346,8 +359,9 @@ function collectRenderData(
             transcriptStrand,
           )
           if (aminoAcids.length > 0) {
-            emitCodonRects(
+            emitCodonData(
               rects,
+              aminoAcidOverlay,
               aminoAcids,
               childColor,
               childStart,
@@ -514,6 +528,7 @@ function collectRenderData(
     floatingLabelsData,
     flatbushItems,
     subfeatureInfos,
+    aminoAcidOverlay,
     maxY,
   }
 }
@@ -747,7 +762,6 @@ export async function executeRenderWebGLFeatureData({
 
   // Fetch peptide data when colorByCDS is enabled and zoomed in enough
   let peptideDataMap: Map<string, PeptideData> | undefined
-  let peptideOverlayData: PeptideOverlayData | undefined
   if (colorByCDS && sequenceAdapter && shouldRenderPeptideBackground(bpPerPx)) {
     const deduped = dedupe(featuresArray, (f: Feature) => f.id())
     const features = new Map(deduped.map(f => [f.id(), f]))
@@ -773,39 +787,6 @@ export async function executeRenderWebGLFeatureData({
           features,
         ),
     )
-
-    // Build overlay data for the component (for amino acid text rendering)
-    if (peptideDataMap.size > 0) {
-      peptideOverlayData = {}
-      for (const [transcriptId, pData] of peptideDataMap.entries()) {
-        if (pData.protein) {
-          const transcript = features.get(transcriptId)
-          if (!transcript) {
-            // transcript may be a child of a gene feature
-            for (const feat of features.values()) {
-              const subs = feat.get('subfeatures')
-              if (subs) {
-                for (const sub of subs) {
-                  if (sub.id() === transcriptId) {
-                    peptideOverlayData[transcriptId] = {
-                      protein: pData.protein,
-                      featureJson: sub.toJSON(),
-                      transcriptId,
-                    }
-                  }
-                }
-              }
-            }
-          } else {
-            peptideOverlayData[transcriptId] = {
-              protein: pData.protein,
-              featureJson: transcript.toJSON(),
-              transcriptId,
-            }
-          }
-        }
-      }
-    }
   }
 
   const {
@@ -815,6 +796,7 @@ export async function executeRenderWebGLFeatureData({
     floatingLabelsData,
     flatbushItems,
     subfeatureInfos,
+    aminoAcidOverlay,
   } = await updateStatus('Collecting render data', statusCallback, async () =>
     collectRenderData(
       layoutRecords,
@@ -824,7 +806,7 @@ export async function executeRenderWebGLFeatureData({
       configContext,
       mockTheme,
       region.reversed ?? false,
-      !!colorByCDS && shouldRenderPeptideBackground(bpPerPx),
+      !!colorByCDS,
       peptideDataMap,
     ),
   )
@@ -924,7 +906,7 @@ export async function executeRenderWebGLFeatureData({
 
     floatingLabelsData,
 
-    peptideData: peptideOverlayData,
+    aminoAcidOverlay: aminoAcidOverlay.length > 0 ? aminoAcidOverlay : undefined,
 
     maxY,
     totalHeight: maxY,

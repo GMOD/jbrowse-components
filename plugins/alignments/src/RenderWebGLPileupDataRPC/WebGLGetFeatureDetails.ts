@@ -50,6 +50,7 @@ export default class WebGLGetFeatureDetails extends RpcMethodType {
           ...typedArgs,
           region: {
             refName: renamedRegion.refName,
+            originalRefName: renamedRegion.originalRefName,
             start: renamedRegion.start,
             end: renamedRegion.end,
             assemblyName: renamedRegion.assemblyName,
