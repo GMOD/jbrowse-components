@@ -164,6 +164,10 @@ export class WebGLRenderer {
 
   private buffers: GPUBuffers | null = null
   private glBuffers: WebGLBuffer[] = []
+  private buffersMap = new Map<number, GPUBuffers>()
+  private glBuffersMap = new Map<number, WebGLBuffer[]>()
+  private arcInstanceBuffersMap = new Map<number, WebGLBuffer[]>()
+  private cloudGLBuffersMap = new Map<number, WebGLBuffer[]>()
   private lineVAO: WebGLVertexArrayObject | null = null
   private lineBuffer: WebGLBuffer | null = null
 
@@ -1608,6 +1612,213 @@ export class WebGLRenderer {
     gl.vertexAttribDivisor(loc, 1)
   }
 
+  /**
+   * Clear legacy single-entry state (this.buffers, this.glBuffers, etc.)
+   * that may have been populated by direct (non-per-refName) uploads.
+   * Call once before starting per-refName uploads to prevent GPU resource leaks.
+   */
+  clearLegacyBuffers() {
+    const gl = this.gl
+    if (this.buffers) {
+      this.deleteBuffersVAOs(this.buffers)
+      this.buffers = null
+    }
+    for (const buf of this.glBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.glBuffers = []
+    for (const buf of this.arcInstanceBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.arcInstanceBuffers = []
+    for (const buf of this.cloudGLBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.cloudGLBuffers = []
+  }
+
+  /**
+   * Switch internal state to point at a specific region's buffers.
+   * Call before using existing upload methods for per-region data.
+   */
+  private activateRegion(regionNumber: number) {
+    this.buffers = this.buffersMap.get(regionNumber) ?? null
+    this.glBuffers = this.glBuffersMap.get(regionNumber) ?? []
+    this.arcInstanceBuffers = this.arcInstanceBuffersMap.get(regionNumber) ?? []
+    this.cloudGLBuffers = this.cloudGLBuffersMap.get(regionNumber) ?? []
+  }
+
+  /**
+   * Save internal state back to the map for the given region.
+   * Call after upload methods complete.
+   */
+  private deactivateRegion(regionNumber: number) {
+    if (this.buffers) {
+      this.buffersMap.set(regionNumber, this.buffers)
+    }
+    this.glBuffersMap.set(regionNumber, this.glBuffers)
+    this.arcInstanceBuffersMap.set(regionNumber, this.arcInstanceBuffers)
+    this.cloudGLBuffersMap.set(regionNumber, this.cloudGLBuffers)
+    // Reset to null so stale pointers don't linger
+    this.buffers = null
+    this.glBuffers = []
+    this.arcInstanceBuffers = []
+    this.cloudGLBuffers = []
+  }
+
+  /**
+   * Upload read data for a specific region
+   */
+  uploadFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadFromTypedArrays']>[0],
+  ) {
+    this.activateRegion(regionNumber)
+    this.uploadFromTypedArrays(data)
+    this.deactivateRegion(regionNumber)
+  }
+
+  /**
+   * Upload CIGAR data for a specific region
+   */
+  uploadCigarFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadCigarFromTypedArrays']>[0],
+  ) {
+    this.activateRegion(regionNumber)
+    this.uploadCigarFromTypedArrays(data)
+    this.deactivateRegion(regionNumber)
+  }
+
+  /**
+   * Upload coverage data for a specific region
+   */
+  uploadCoverageFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadCoverageFromTypedArrays']>[0],
+  ) {
+    this.activateRegion(regionNumber)
+    this.uploadCoverageFromTypedArrays(data)
+    this.deactivateRegion(regionNumber)
+  }
+
+  /**
+   * Upload modification data for a specific region
+   */
+  uploadModificationsFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadModificationsFromTypedArrays']>[0],
+  ) {
+    this.activateRegion(regionNumber)
+    this.uploadModificationsFromTypedArrays(data)
+    this.deactivateRegion(regionNumber)
+  }
+
+  /**
+   * Upload modification coverage data for a specific region
+   */
+  uploadModCoverageFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadModCoverageFromTypedArrays']>[0],
+  ) {
+    this.activateRegion(regionNumber)
+    this.uploadModCoverageFromTypedArrays(data)
+    this.deactivateRegion(regionNumber)
+  }
+
+  /**
+   * Upload arcs data for a specific region
+   */
+  uploadArcsFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadArcsFromTypedArrays']>[0],
+  ) {
+    this.activateRegion(regionNumber)
+    this.uploadArcsFromTypedArrays(data)
+    this.deactivateRegion(regionNumber)
+  }
+
+  /**
+   * Upload cloud data for a specific region
+   */
+  uploadCloudFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadCloudFromTypedArrays']>[0],
+  ) {
+    this.activateRegion(regionNumber)
+    this.uploadCloudFromTypedArrays(data)
+    this.deactivateRegion(regionNumber)
+  }
+
+  /**
+   * Render multiple blocks with scissor rects, each from a different refName's GPU buffers.
+   */
+  renderBlocks(
+    blocks: {
+      regionNumber: number
+      domainX: [number, number]
+      screenStartPx: number
+      screenEndPx: number
+    }[],
+    state: RenderState,
+  ) {
+    const gl = this.gl
+    const canvas = this.canvas
+    const { canvasWidth, canvasHeight } = state
+
+    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
+    }
+
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.clearColor(0, 0, 0, 0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+
+    const colors: ColorPalette = { ...defaultColorPalette, ...state.colors }
+    const mode = state.renderingMode ?? 'pileup'
+
+    for (const block of blocks) {
+      const buffers = this.buffersMap.get(block.regionNumber)
+      if (!buffers) {
+        continue
+      }
+
+      // Set this.buffers so private render methods can use it
+      this.buffers = buffers
+
+      const regionStart = buffers.regionStart
+      const domainOffset: [number, number] = [
+        block.domainX[0] - regionStart,
+        block.domainX[1] - regionStart,
+      ]
+
+      // Scissor to this block's screen region
+      // WebGL scissor Y is from bottom, so flip
+      const scissorX = Math.floor(block.screenStartPx)
+      const scissorW = Math.ceil(block.screenEndPx - block.screenStartPx)
+      gl.enable(gl.SCISSOR_TEST)
+      gl.scissor(scissorX, 0, scissorW, canvasHeight)
+
+      // Create a per-block state with adjusted domainX
+      const blockState: RenderState = { ...state, domainX: block.domainX }
+
+      // Draw coverage for this block
+      this.renderCoverage(blockState, domainOffset, colors)
+
+      if (mode === 'arcs') {
+        this.renderArcs(blockState)
+      } else if (mode === 'cloud') {
+        this.renderCloud(blockState)
+      } else {
+        this.renderPileup(blockState, domainOffset, colors)
+      }
+    }
+
+    gl.disable(gl.SCISSOR_TEST)
+    this.buffers = null
+  }
+
   render(state: RenderState) {
     const gl = this.gl
     const canvas = this.canvas
@@ -2349,56 +2560,87 @@ export class WebGLRenderer {
     gl.bindVertexArray(null)
   }
 
+  private deleteBuffersVAOs(buffers: GPUBuffers) {
+    const gl = this.gl
+    gl.deleteVertexArray(buffers.readVAO)
+    if (buffers.coverageVAO) {
+      gl.deleteVertexArray(buffers.coverageVAO)
+    }
+    if (buffers.snpCoverageVAO) {
+      gl.deleteVertexArray(buffers.snpCoverageVAO)
+    }
+    if (buffers.noncovHistogramVAO) {
+      gl.deleteVertexArray(buffers.noncovHistogramVAO)
+    }
+    if (buffers.indicatorVAO) {
+      gl.deleteVertexArray(buffers.indicatorVAO)
+    }
+    if (buffers.gapVAO) {
+      gl.deleteVertexArray(buffers.gapVAO)
+    }
+    if (buffers.mismatchVAO) {
+      gl.deleteVertexArray(buffers.mismatchVAO)
+    }
+    if (buffers.insertionVAO) {
+      gl.deleteVertexArray(buffers.insertionVAO)
+    }
+    if (buffers.softclipVAO) {
+      gl.deleteVertexArray(buffers.softclipVAO)
+    }
+    if (buffers.hardclipVAO) {
+      gl.deleteVertexArray(buffers.hardclipVAO)
+    }
+    if (buffers.modificationVAO) {
+      gl.deleteVertexArray(buffers.modificationVAO)
+    }
+    if (buffers.modCoverageVAO) {
+      gl.deleteVertexArray(buffers.modCoverageVAO)
+    }
+    if (buffers.arcVAO) {
+      gl.deleteVertexArray(buffers.arcVAO)
+    }
+    if (buffers.arcLineVAO) {
+      gl.deleteVertexArray(buffers.arcLineVAO)
+    }
+    if (buffers.cloudVAO) {
+      gl.deleteVertexArray(buffers.cloudVAO)
+    }
+  }
+
   destroy() {
     const gl = this.gl
+
+    // Clean up per-refName map entries
+    for (const buffers of this.buffersMap.values()) {
+      this.deleteBuffersVAOs(buffers)
+    }
+    this.buffersMap.clear()
+    for (const bufs of this.glBuffersMap.values()) {
+      for (const buf of bufs) {
+        gl.deleteBuffer(buf)
+      }
+    }
+    this.glBuffersMap.clear()
+    for (const bufs of this.arcInstanceBuffersMap.values()) {
+      for (const buf of bufs) {
+        gl.deleteBuffer(buf)
+      }
+    }
+    this.arcInstanceBuffersMap.clear()
+    for (const bufs of this.cloudGLBuffersMap.values()) {
+      for (const buf of bufs) {
+        gl.deleteBuffer(buf)
+      }
+    }
+    this.cloudGLBuffersMap.clear()
+
+    // Clean up legacy single-entry state
     for (const buf of this.glBuffers) {
       gl.deleteBuffer(buf)
     }
     this.glBuffers = []
     if (this.buffers) {
-      gl.deleteVertexArray(this.buffers.readVAO)
-      if (this.buffers.coverageVAO) {
-        gl.deleteVertexArray(this.buffers.coverageVAO)
-      }
-      if (this.buffers.snpCoverageVAO) {
-        gl.deleteVertexArray(this.buffers.snpCoverageVAO)
-      }
-      if (this.buffers.noncovHistogramVAO) {
-        gl.deleteVertexArray(this.buffers.noncovHistogramVAO)
-      }
-      if (this.buffers.indicatorVAO) {
-        gl.deleteVertexArray(this.buffers.indicatorVAO)
-      }
-      if (this.buffers.gapVAO) {
-        gl.deleteVertexArray(this.buffers.gapVAO)
-      }
-      if (this.buffers.mismatchVAO) {
-        gl.deleteVertexArray(this.buffers.mismatchVAO)
-      }
-      if (this.buffers.insertionVAO) {
-        gl.deleteVertexArray(this.buffers.insertionVAO)
-      }
-      if (this.buffers.softclipVAO) {
-        gl.deleteVertexArray(this.buffers.softclipVAO)
-      }
-      if (this.buffers.hardclipVAO) {
-        gl.deleteVertexArray(this.buffers.hardclipVAO)
-      }
-      if (this.buffers.modificationVAO) {
-        gl.deleteVertexArray(this.buffers.modificationVAO)
-      }
-      if (this.buffers.modCoverageVAO) {
-        gl.deleteVertexArray(this.buffers.modCoverageVAO)
-      }
-      if (this.buffers.arcVAO) {
-        gl.deleteVertexArray(this.buffers.arcVAO)
-      }
-      if (this.buffers.arcLineVAO) {
-        gl.deleteVertexArray(this.buffers.arcLineVAO)
-      }
-      if (this.buffers.cloudVAO) {
-        gl.deleteVertexArray(this.buffers.cloudVAO)
-      }
+      this.deleteBuffersVAOs(this.buffers)
     }
     if (this.lineVAO) {
       gl.deleteVertexArray(this.lineVAO)

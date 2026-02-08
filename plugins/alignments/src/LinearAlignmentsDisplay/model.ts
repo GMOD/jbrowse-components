@@ -219,8 +219,8 @@ export default function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      rpcData: null as WebGLPileupDataResult | null,
-      loadedRegion: null as Region | null,
+      rpcDataMap: new Map<number, WebGLPileupDataResult>(),
+      loadedRegions: new Map<number, Region>(),
       isLoading: false,
       statusMessage: undefined as string | undefined,
       error: null as Error | null,
@@ -281,9 +281,94 @@ export default function stateModelFactory(
       },
 
       /**
-       * Get the visible region from the parent view
+       * Backward-compat getter: returns first entry in rpcDataMap
+       */
+      get rpcData(): WebGLPileupDataResult | null {
+        const iter = self.rpcDataMap.values().next()
+        return iter.done ? null : iter.value
+      },
+
+      /**
+       * Backward-compat getter: returns first entry in loadedRegions
+       */
+      get loadedRegion(): Region | null {
+        const iter = self.loadedRegions.values().next()
+        return iter.done ? null : iter.value
+      },
+
+      /**
+       * Get visible regions from all content blocks in the parent view.
+       * Returns an array of regions with screen pixel positions.
+       */
+      get visibleRegions() {
+        try {
+          const view = getContainingView(self) as LGV
+          if (!view.initialized) {
+            return []
+          }
+          const blocks = view.dynamicBlocks.contentBlocks
+          if (blocks.length === 0) {
+            return []
+          }
+
+          const bpPerPx = view.bpPerPx
+          const regions: {
+            refName: string
+            regionNumber: number
+            start: number
+            end: number
+            assemblyName: string
+            screenStartPx: number
+            screenEndPx: number
+          }[] = []
+
+          // Group blocks by regionNumber and compute viewport-clipped ranges
+          for (const block of blocks) {
+            const blockScreenStart = block.offsetPx - view.offsetPx
+            const blockScreenEnd = blockScreenStart + block.widthPx
+
+            // Clip to viewport
+            const clippedScreenStart = Math.max(0, blockScreenStart)
+            const clippedScreenEnd = Math.min(view.width, blockScreenEnd)
+            if (clippedScreenStart >= clippedScreenEnd) {
+              continue
+            }
+
+            // Compute bp range for the clipped screen range
+            const bpStart =
+              block.start + (clippedScreenStart - blockScreenStart) * bpPerPx
+            const bpEnd =
+              block.start + (clippedScreenEnd - blockScreenStart) * bpPerPx
+
+            const blockRegionNumber = block.regionNumber ?? 0
+
+            // Merge with previous region if same regionNumber
+            const prev = regions[regions.length - 1]
+            if (prev && prev.regionNumber === blockRegionNumber) {
+              prev.end = bpEnd
+              prev.screenEndPx = clippedScreenEnd
+            } else {
+              regions.push({
+                refName: block.refName,
+                regionNumber: blockRegionNumber,
+                start: bpStart,
+                end: bpEnd,
+                assemblyName: block.assemblyName,
+                screenStartPx: clippedScreenStart,
+                screenEndPx: clippedScreenEnd,
+              })
+            }
+          }
+          return regions
+        } catch {
+          return []
+        }
+      },
+
+      /**
+       * Get the primary visible region from the parent view.
        * Uses currentDomainX if set by the WebGL component (source of truth during/after interaction)
-       * Falls back to computing from contentBlocks for initial load
+       * Falls back to first visibleRegion for initial load
        */
       get visibleRegion() {
         try {
@@ -308,30 +393,16 @@ export default function stateModelFactory(
             }
           }
 
-          // Fallback: compute from contentBlocks (only used for initial load)
-          const last = blocks[blocks.length - 1]
-          if (first.refName !== last?.refName) {
-            return {
-              refName: first.refName,
-              start: first.start,
-              end: first.end,
-              assemblyName: first.assemblyName,
-            }
+          // Use visibleRegions (handles multi-ref)
+          const regions = this.visibleRegions
+          if (regions.length === 0) {
+            return null
           }
-
-          const bpPerPx = view.bpPerPx
-          const blockOffsetPx = first.offsetPx
-          const deltaPx = view.offsetPx - blockOffsetPx
-          const deltaBp = deltaPx * bpPerPx
-
-          const viewportStart = first.start + deltaBp
-          const viewportEnd = viewportStart + view.width * bpPerPx
-
           return {
-            refName: first.refName,
-            start: viewportStart,
-            end: viewportEnd,
-            assemblyName: first.assemblyName,
+            refName: regions[0]!.refName,
+            start: regions[0]!.start,
+            end: regions[0]!.end,
+            assemblyName: regions[0]!.assemblyName,
           }
         } catch {
           return null
@@ -378,15 +449,21 @@ export default function stateModelFactory(
        * Check if current view is within loaded data region
        */
       get isWithinLoadedRegion(): boolean {
-        const visibleRegion = this.visibleRegion
-        if (!self.loadedRegion || !visibleRegion) {
+        const regions = this.visibleRegions
+        if (regions.length === 0) {
           return false
         }
-        return (
-          self.loadedRegion.refName === visibleRegion.refName &&
-          visibleRegion.start >= self.loadedRegion.start &&
-          visibleRegion.end <= self.loadedRegion.end
-        )
+        for (const region of regions) {
+          const loaded = self.loadedRegions.get(region.regionNumber)
+          if (
+            !loaded ||
+            region.start < loaded.start ||
+            region.end > loaded.end
+          ) {
+            return false
+          }
+        }
+        return true
       },
 
       get showLoading() {
@@ -405,10 +482,16 @@ export default function stateModelFactory(
       },
 
       get coverageTicks(): CoverageTicks | undefined {
-        if (!self.showCoverage || !self.rpcData) {
+        if (!self.showCoverage) {
           return undefined
         }
-        const maxDepth = self.rpcData.coverageMaxDepth
+        // Find max depth across all loaded regions
+        let maxDepth = 0
+        for (const data of self.rpcDataMap.values()) {
+          if (data.coverageMaxDepth > maxDepth) {
+            maxDepth = data.coverageMaxDepth
+          }
+        }
         if (maxDepth === 0) {
           return undefined
         }
@@ -432,36 +515,42 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       getFeatureInfoById(featureId: string) {
-        const { rpcData, loadedRegion } = self
-        if (!rpcData?.readIds) {
-          return undefined
+        // Search across all loaded regionNumber data
+        const view = getContainingView(self) as LGV
+        const displayedRegions = view.displayedRegions
+        for (const [regionNumber, rpcData] of self.rpcDataMap) {
+          if (!rpcData?.readIds) {
+            continue
+          }
+          const idx = rpcData.readIds.indexOf(featureId)
+          if (idx === -1) {
+            continue
+          }
+          const startOffset = rpcData.readPositions[idx * 2]
+          const endOffset = rpcData.readPositions[idx * 2 + 1]
+          if (startOffset === undefined || endOffset === undefined) {
+            continue
+          }
+          const start = rpcData.regionStart + startOffset
+          const end = rpcData.regionStart + endOffset
+          const flags = rpcData.readFlags[idx]
+          const mapq = rpcData.readMapqs[idx]
+          const strand = flags !== undefined && flags & 16 ? '-' : '+'
+          const name = rpcData.readNames[idx] ?? ''
+          const refName =
+            displayedRegions[regionNumber]?.refName ?? 'unknown'
+          return {
+            id: featureId,
+            name,
+            start,
+            end,
+            flags,
+            mapq,
+            strand,
+            refName,
+          }
         }
-        const idx = rpcData.readIds.indexOf(featureId)
-        if (idx === -1) {
-          return undefined
-        }
-        const startOffset = rpcData.readPositions[idx * 2]
-        const endOffset = rpcData.readPositions[idx * 2 + 1]
-        if (startOffset === undefined || endOffset === undefined) {
-          return undefined
-        }
-        const start = rpcData.regionStart + startOffset
-        const end = rpcData.regionStart + endOffset
-        const flags = rpcData.readFlags[idx]
-        const mapq = rpcData.readMapqs[idx]
-        const strand = flags !== undefined && flags & 16 ? '-' : '+'
-        const refName = loadedRegion?.refName ?? ''
-        const name = rpcData.readNames[idx] ?? ''
-        return {
-          id: featureId,
-          name,
-          start,
-          end,
-          flags,
-          mapq,
-          strand,
-          refName,
-        }
+        return undefined
       },
     }))
     .views(self => ({
@@ -504,15 +593,37 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcData(data: WebGLPileupDataResult | null) {
-        self.rpcData = data
+      setRpcData(regionNumber: number, data: WebGLPileupDataResult | null) {
+        const next = new Map(self.rpcDataMap)
         if (data) {
-          self.maxY = data.maxY
+          next.set(regionNumber, data)
+        } else {
+          next.delete(regionNumber)
         }
+        self.rpcDataMap = next
+        // Update maxY to be max across all regions
+        let maxY = 0
+        for (const d of self.rpcDataMap.values()) {
+          if (d.maxY > maxY) {
+            maxY = d.maxY
+          }
+        }
+        self.maxY = maxY
       },
 
-      setLoadedRegion(region: Region | null) {
-        self.loadedRegion = region
+      clearAllRpcData() {
+        self.rpcDataMap = new Map()
+        self.loadedRegions = new Map()
+      },
+
+      setLoadedRegion(regionNumber: number, region: Region | null) {
+        const next = new Map(self.loadedRegions)
+        if (region) {
+          next.set(regionNumber, region)
+        } else {
+          next.delete(regionNumber)
+        }
+        self.loadedRegions = next
       },
 
       setLoading(loading: boolean) {
@@ -652,22 +763,27 @@ export default function stateModelFactory(
         try {
           const track = getContainingTrack(self)
           const adapterConfig = getConf(track, 'adapter')
-          const loadedRegion = self.loadedRegion
-          if (!loadedRegion) {
-            return
-          }
 
           // Use the feature's known position from typed arrays to narrow the
           // query region, avoiding a full re-fetch of the entire loaded region
           const info = self.getFeatureInfoById(featureId)
-          const region = info
-            ? {
-                refName: loadedRegion.refName,
-                start: info.start,
-                end: info.end,
-                assemblyName: loadedRegion.assemblyName,
-              }
-            : loadedRegion
+          if (!info) {
+            return
+          }
+          // Find the loaded region that contains this feature
+          let assemblyName: string | undefined
+          for (const loaded of self.loadedRegions.values()) {
+            if (loaded.refName === info.refName) {
+              assemblyName = loaded.assemblyName
+              break
+            }
+          }
+          const region = {
+            refName: info.refName,
+            start: info.start,
+            end: info.end,
+            assemblyName,
+          }
 
           const sequenceAdapter = getSequenceAdapter(session, region)
 
@@ -711,13 +827,14 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => {
-      let fetchGeneration = 0
+      const fetchGenerations = new Map<number, number>()
 
       async function fetchPileupData(
         session: { rpcManager: any },
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
+        regionNumber: number,
       ) {
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
@@ -738,7 +855,7 @@ export default function stateModelFactory(
             },
           },
         )) as WebGLPileupDataResult
-        self.setRpcData(result)
+        self.setRpcData(regionNumber, result)
       }
 
       async function fetchArcsData(
@@ -746,6 +863,7 @@ export default function stateModelFactory(
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
+        regionNumber: number,
       ) {
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
@@ -763,7 +881,7 @@ export default function stateModelFactory(
             drawLongRange: self.arcsState.drawLongRange,
           },
         )) as WebGLArcsDataResult
-        self.arcsState.setRpcData(result)
+        self.arcsState.setRpcData(regionNumber, result)
       }
 
       async function fetchCloudData(
@@ -771,6 +889,7 @@ export default function stateModelFactory(
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
+        regionNumber: number,
       ) {
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
@@ -785,10 +904,13 @@ export default function stateModelFactory(
             height: self.height,
           },
         )) as WebGLCloudDataResult
-        self.cloudState.setRpcData(result)
+        self.cloudState.setRpcData(regionNumber, result)
       }
 
-      async function fetchFeaturesImpl(region: Region) {
+      async function fetchFeaturesForRegion(
+        region: Region,
+        regionNumber: number,
+      ) {
         const session = getSession(self)
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
@@ -797,7 +919,8 @@ export default function stateModelFactory(
           return
         }
 
-        const thisGeneration = ++fetchGeneration
+        const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
+        fetchGenerations.set(regionNumber, gen)
         self.setLoading(true)
         self.setError(null)
 
@@ -805,13 +928,20 @@ export default function stateModelFactory(
           const sequenceAdapter = getSequenceAdapter(session, region)
 
           if (self.renderingMode === 'arcs') {
-            await fetchArcsData(session, adapterConfig, sequenceAdapter, region)
+            await fetchArcsData(
+              session,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+              regionNumber,
+            )
           } else if (self.renderingMode === 'cloud') {
             await fetchCloudData(
               session,
               adapterConfig,
               sequenceAdapter,
               region,
+              regionNumber,
             )
           } else {
             await fetchPileupData(
@@ -819,15 +949,16 @@ export default function stateModelFactory(
               adapterConfig,
               sequenceAdapter,
               region,
+              regionNumber,
             )
           }
 
-          // Discard stale responses from older requests
-          if (thisGeneration !== fetchGeneration) {
+          // Discard stale responses from older requests for this regionNumber
+          if (fetchGenerations.get(regionNumber) !== gen) {
             return
           }
 
-          self.setLoadedRegion({
+          self.setLoadedRegion(regionNumber, {
             refName: region.refName,
             start: region.start,
             end: region.end,
@@ -835,7 +966,7 @@ export default function stateModelFactory(
           })
           self.setLoading(false)
         } catch (e) {
-          if (thisGeneration !== fetchGeneration) {
+          if (fetchGenerations.get(regionNumber) !== gen) {
             return
           }
           self.setError(e instanceof Error ? e : new Error(String(e)))
@@ -843,46 +974,59 @@ export default function stateModelFactory(
         }
       }
 
+      function fetchAllVisibleRegions() {
+        const regions = self.visibleRegions
+        if (!self.featureDensityStatsReadyAndRegionNotTooLarge) {
+          return
+        }
+        for (const region of regions) {
+          const loaded = self.loadedRegions.get(region.regionNumber)
+          const buffer = (region.end - region.start) * 0.5
+          const needsData =
+            !loaded ||
+            region.start - buffer < loaded.start ||
+            region.end + buffer > loaded.end
+
+          if (needsData) {
+            const width = region.end - region.start
+            const expandedRegion = {
+              refName: region.refName,
+              start: Math.max(0, region.start - width * 2),
+              end: region.end + width * 2,
+              assemblyName: region.assemblyName,
+            }
+            fetchFeaturesForRegion(expandedRegion, region.regionNumber).catch(
+              (e: unknown) => {
+                console.error('Failed to fetch features:', e)
+              },
+            )
+          }
+        }
+      }
+
       return {
-        fetchFeatures(region: Region) {
-          fetchFeaturesImpl(region).catch((e: unknown) => {
+        fetchFeatures(region: Region, regionNumber = 0) {
+          fetchFeaturesForRegion(region, regionNumber).catch((e: unknown) => {
             console.error('Failed to fetch features:', e)
           })
         },
 
         afterAttach() {
-          // Fetch data when the visible region approaches the edge of
+          // Fetch data when the visible regions approach the edge of
           // loaded data.  Uses a 50% viewport buffer so we prefetch
           // before the user actually scrolls past the loaded boundary.
           addDisposer(
             self,
             reaction(
               () => ({
-                region: self.visibleRegion,
+                regions: self.visibleRegions,
                 ready: self.featureDensityStatsReadyAndRegionNotTooLarge,
               }),
-              ({ region, ready }) => {
-                if (!region || !ready) {
+              ({ regions, ready }) => {
+                if (regions.length === 0 || !ready) {
                   return
                 }
-                const { loadedRegion } = self
-                const buffer = (region.end - region.start) * 0.5
-                const needsData =
-                  loadedRegion?.refName !== region.refName ||
-                  region.start - buffer < loadedRegion.start ||
-                  region.end + buffer > loadedRegion.end
-
-                if (needsData) {
-                  const width = region.end - region.start
-                  const expandedRegion = {
-                    ...region,
-                    start: Math.max(0, region.start - width * 2),
-                    end: region.end + width * 2,
-                  }
-                  fetchFeaturesImpl(expandedRegion).catch((e: unknown) => {
-                    console.error('Failed to fetch features:', e)
-                  })
-                }
+                fetchAllVisibleRegions()
               },
               { delay: 300, fireImmediately: true },
             ),
@@ -894,14 +1038,9 @@ export default function stateModelFactory(
             reaction(
               () => self.filterBy,
               () => {
-                const visibleRegion = self.visibleRegion
-                if (
-                  visibleRegion &&
-                  self.featureDensityStatsReadyAndRegionNotTooLarge
-                ) {
-                  fetchFeaturesImpl(visibleRegion).catch((e: unknown) => {
-                    console.error('Failed to fetch features:', e)
-                  })
+                if (self.featureDensityStatsReadyAndRegionNotTooLarge) {
+                  self.clearAllRpcData()
+                  fetchAllVisibleRegions()
                 }
               },
             ),
@@ -922,14 +1061,9 @@ export default function stateModelFactory(
                 if (colorType === 'tag' && !tagsReady) {
                   return
                 }
-                const visibleRegion = self.visibleRegion
-                if (
-                  visibleRegion &&
-                  self.featureDensityStatsReadyAndRegionNotTooLarge
-                ) {
-                  fetchFeaturesImpl(visibleRegion).catch((e: unknown) => {
-                    console.error('Failed to fetch features:', e)
-                  })
+                if (self.featureDensityStatsReadyAndRegionNotTooLarge) {
+                  self.clearAllRpcData()
+                  fetchAllVisibleRegions()
                 }
               },
             ),
@@ -978,6 +1112,23 @@ export default function stateModelFactory(
             ),
           )
 
+          // Clear all data when displayedRegions changes (region indices become stale)
+          addDisposer(
+            self,
+            reaction(
+              () => {
+                const view = getContainingView(self) as LGV
+                return view.displayedRegions
+              },
+              () => {
+                self.clearAllRpcData()
+                self.arcsState.clearAllRpcData()
+                self.cloudState.clearAllRpcData()
+                fetchAllVisibleRegions()
+              },
+            ),
+          )
+
           // Re-fetch when rendering mode changes or arcs-specific settings change
           addDisposer(
             self,
@@ -988,22 +1139,10 @@ export default function stateModelFactory(
                 drawLongRange: self.arcsState.drawLongRange,
               }),
               () => {
-                self.setLoadedRegion(null)
-                const visibleRegion = self.visibleRegion
-                if (
-                  visibleRegion &&
-                  self.featureDensityStatsReadyAndRegionNotTooLarge
-                ) {
-                  const width = visibleRegion.end - visibleRegion.start
-                  const expandedRegion = {
-                    ...visibleRegion,
-                    start: Math.max(0, visibleRegion.start - width * 2),
-                    end: visibleRegion.end + width * 2,
-                  }
-                  fetchFeaturesImpl(expandedRegion).catch((e: unknown) => {
-                    console.error('Failed to fetch features:', e)
-                  })
-                }
+                self.clearAllRpcData()
+                self.arcsState.clearAllRpcData()
+                self.cloudState.clearAllRpcData()
+                fetchAllVisibleRegions()
               },
             ),
           )
@@ -1289,10 +1428,9 @@ export default function stateModelFactory(
       const superReload = self.reload
       return {
         async reload() {
-          self.setLoadedRegion(null)
-          self.setRpcData(null)
-          self.arcsState.setRpcData(null)
-          self.cloudState.setRpcData(null)
+          self.clearAllRpcData()
+          self.arcsState.clearAllRpcData()
+          self.cloudState.clearAllRpcData()
           superReload()
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
