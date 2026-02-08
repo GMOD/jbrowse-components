@@ -184,6 +184,24 @@
           }
         }
       }
+    },
+    {
+      "name": "volvox_joined",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_joined-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "volvox_joined.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "volvox_joined.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "configuration": {
@@ -446,12 +464,8 @@
           "type": "LinearAlignmentsDisplay",
           "height": 600,
           "displayId": "volvox_alignments_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "colorBy": {
-              "type": "mappingQuality"
-            }
+          "colorBy": {
+            "type": "mappingQuality"
           }
         }
       ]
@@ -571,16 +585,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_bam_small_max_height_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_small_max_height_alignments_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "type": "PileupRenderer",
-                "maxHeight": 10
-              }
-            }
-          }
+          "maxHeight": 10
         }
       ]
     },
@@ -1533,6 +1538,63 @@
       }
     },
     {
+      "type": "AlignmentsTrack",
+      "trackId": "wgsim_short_reads",
+      "name": "wgsim short reads (joined genome)",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "wgsim_short_reads.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "wgsim_short_reads.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "badread_long_reads",
+      "name": "badread long reads (joined genome)",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "badread_long_reads.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "badread_long_reads.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
+      "trackId": "volvox_joined_vs_volvox",
+      "name": "volvox_joined_vs_volvox",
+      "assemblyNames": ["volvox", "volvox_joined"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_joined_vs_volvox.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox", "volvox_joined"]
+      }
+    },
+    {
       "type": "SyntenyTrack",
       "category": ["Synteny"],
       "trackId": "volvox_fake_synteny_alt",
@@ -1813,16 +1875,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "deep_seq_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "deep_seq_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "type": "PileupRenderer",
-                "maxHeight": 10000
-              }
-            }
-          }
+          "maxHeight": 10000
         }
       ]
     },

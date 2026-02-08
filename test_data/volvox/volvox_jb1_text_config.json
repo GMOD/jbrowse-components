@@ -243,16 +243,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_bam_small_max_height_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_small_max_height_alignments_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "type": "PileupRenderer",
-                "maxHeight": 10
-              }
-            }
-          }
+          "maxHeight": 10
         }
       ]
     },
