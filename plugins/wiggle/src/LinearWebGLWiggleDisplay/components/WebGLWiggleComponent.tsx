@@ -93,7 +93,9 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       return
     }
 
+    const activeRegions = new Set<number>()
     for (const [regionNumber, data] of dataMap) {
+      activeRegions.add(regionNumber)
       renderer.uploadForRegion(regionNumber, {
         regionStart: data.regionStart,
         featurePositions: data.featurePositions,
@@ -101,6 +103,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         numFeatures: data.numFeatures,
       })
     }
+    renderer.pruneStaleRegions(activeRegions)
   }, [model.rpcDataMap])
 
   // Render with explicit domain (for immediate rendering during interaction)
@@ -201,6 +204,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         negColor: parseColor(model.negColor),
         bicolorPivot: model.bicolorPivot,
         useBicolor,
+        canvasWidth: width,
         canvasHeight: height,
         renderingType: model.renderingType as RenderingType,
       })

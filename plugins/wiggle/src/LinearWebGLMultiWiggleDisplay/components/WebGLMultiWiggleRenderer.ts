@@ -463,12 +463,11 @@ export class WebGLMultiWiggleRenderer {
 
   renderBlocks(
     blocks: MultiWiggleRenderBlock[],
-    state: Omit<MultiWiggleRenderState, 'domainX' | 'canvasWidth'>,
+    state: Omit<MultiWiggleRenderState, 'domainX'>,
   ) {
     const gl = this.gl
     const canvas = this.canvas
-    const canvasWidth = Math.round(state.canvasHeight > 0 ? canvas.width : 0)
-    const { canvasHeight, renderingType } = state
+    const { canvasWidth, canvasHeight, renderingType } = state
 
     if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
       canvas.width = canvasWidth
@@ -633,6 +632,14 @@ export class WebGLMultiWiggleRenderer {
     }
 
     gl.bindVertexArray(null)
+  }
+
+  pruneStaleRegions(activeRegionNumbers: Set<number>) {
+    for (const regionNumber of [...this.buffersMap.keys()]) {
+      if (!activeRegionNumbers.has(regionNumber)) {
+        this.deleteBuffersForRegion(regionNumber)
+      }
+    }
   }
 
   clearAllBuffers() {

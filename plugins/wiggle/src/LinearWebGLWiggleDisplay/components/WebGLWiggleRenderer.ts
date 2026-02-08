@@ -471,17 +471,13 @@ export class WebGLWiggleRenderer {
 
   renderBlocks(
     blocks: WiggleRenderBlock[],
-    state: Omit<WiggleRenderState, 'domainX' | 'canvasWidth'>,
+    state: Omit<WiggleRenderState, 'domainX'>,
   ) {
     const gl = this.gl
     const canvas = this.canvas
-    const canvasWidth = Math.round(state.canvasHeight > 0 ? canvas.width : 0)
-    const { canvasHeight, renderingType } = state
+    const { canvasWidth, canvasHeight, renderingType } = state
 
-    if (
-      canvas.width !== canvasWidth ||
-      canvas.height !== canvasHeight
-    ) {
+    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
       canvas.width = canvasWidth
       canvas.height = canvasHeight
     }
@@ -682,6 +678,14 @@ export class WebGLWiggleRenderer {
     }
 
     gl.bindVertexArray(null)
+  }
+
+  pruneStaleRegions(activeRegionNumbers: Set<number>) {
+    for (const regionNumber of [...this.buffersMap.keys()]) {
+      if (!activeRegionNumbers.has(regionNumber)) {
+        this.deleteBuffersForRegion(regionNumber)
+      }
+    }
   }
 
   clearAllBuffers() {

@@ -128,7 +128,9 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       return
     }
 
+    const activeRegions = new Set<number>()
     for (const [regionNumber, data] of dataMap) {
+      activeRegions.add(regionNumber)
       const sourcesData: SourceRenderData[] = data.sources.map(source => ({
         featurePositions: source.featurePositions,
         featureScores: source.featureScores,
@@ -138,6 +140,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 
       renderer.uploadForRegion(regionNumber, data.regionStart, sourcesData)
     }
+    renderer.pruneStaleRegions(activeRegions)
   }, [model.rpcDataMap])
 
   // Render with explicit domain (for immediate rendering during interaction)
@@ -227,6 +230,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       renderer.renderBlocks(blocks, {
         domainY: domain,
         scaleType: model.scaleType as 'linear' | 'log',
+        canvasWidth: totalWidth,
         canvasHeight: height,
         rowPadding: ROW_PADDING,
         renderingType: model.renderingType as MultiRenderingType,
