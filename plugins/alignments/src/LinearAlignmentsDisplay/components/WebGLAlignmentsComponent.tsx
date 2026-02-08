@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
-import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingTrack,
   getContainingView,
@@ -10,6 +9,7 @@ import {
 } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import useMeasure from '@jbrowse/core/util/useMeasure'
+import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -598,7 +598,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       numLines: arcsRpcData.numLines,
     })
     scheduleRenderRef.current()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arcsRpcData, renderingMode])
 
   // Upload cloud data to GPU when cloudState.rpcData changes
@@ -618,7 +617,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       numChains: cloudRpcData.numChains,
     })
     scheduleRenderRef.current()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cloudRpcData, renderingMode])
 
   // Re-render on settings change
@@ -2041,9 +2039,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             borderRadius: 4,
           }}
         >
-          <LoadingEllipses
-            message={statusMessage || 'Loading'}
-          />
+          <LoadingEllipses message={statusMessage || 'Loading'} />
         </div>
       )}
     </div>

@@ -16,7 +16,7 @@ const SetModificationThresholdDialog = lazy(
 )
 
 interface LinearReadDisplayModel {
-  colorBy: ColorBy
+  colorBy?: ColorBy
   setColorScheme: (colorBy: ColorBy) => void
 }
 
@@ -24,7 +24,6 @@ export interface ModificationsModel extends LinearReadDisplayModel {
   modificationsReady: boolean
   visibleModificationTypes: string[]
   modificationThreshold: number
-  colorBy?: ColorBy
 }
 
 export function hasModificationsSupport(
@@ -80,7 +79,7 @@ export function getModificationsSubMenu(
             checked:
               model.colorBy?.type === 'modifications' &&
               model.colorBy.modifications?.isolatedModification === key &&
-              !model.colorBy.modifications?.twoColor,
+              !model.colorBy.modifications.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -115,7 +114,7 @@ export function getModificationsSubMenu(
             checked:
               model.colorBy?.type === 'modifications' &&
               model.colorBy.modifications?.isolatedModification === key &&
-              !!model.colorBy.modifications?.twoColor,
+              !!model.colorBy.modifications.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -178,7 +177,7 @@ export function getModificationsMenuItem(
  * Shared color scheme menu items for all LinearRead displays
  */
 export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
-  const { type } = model.colorBy
+  const { type } = model.colorBy || {}
   const baseItems = [
     {
       label: 'Insert size ± 3σ and orientation',

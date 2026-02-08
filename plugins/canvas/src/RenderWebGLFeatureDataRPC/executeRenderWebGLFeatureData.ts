@@ -45,7 +45,10 @@ import type {
 } from './types.ts'
 import type { AggregatedAminoAcid } from '../CanvasFeatureRenderer/peptides/aggregateAminoAcids.ts'
 import type { RenderConfigContext } from '../CanvasFeatureRenderer/renderConfig.ts'
-import type { LayoutRecord, PeptideData } from '../CanvasFeatureRenderer/types.ts'
+import type {
+  LayoutRecord,
+  PeptideData,
+} from '../CanvasFeatureRenderer/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -143,8 +146,8 @@ function emitCodonData(
   const effectiveStrand = strand * (reversed ? -1 : 1)
   const featureLen = featureEnd - featureStart
 
-  for (let i = 0; i < aminoAcids.length; i++) {
-    const aa = aminoAcids[i]!
+  for (const [i, aminoAcid] of aminoAcids.entries()) {
+    const aa = aminoAcid
     const bgColor = i % 2 === 1 ? color2 : color1
 
     let startBp: number
@@ -346,11 +349,7 @@ function collectRenderData(
         }
 
         // For CDS features with peptide data, emit per-codon rects
-        if (
-          childType === 'CDS' &&
-          transcriptPeptide?.protein &&
-          !childIsUTR
-        ) {
+        if (childType === 'CDS' && transcriptPeptide?.protein && !childIsUTR) {
           const aminoAcids = prepareAminoAcidData(
             transcriptFeature,
             transcriptPeptide.protein,
@@ -781,11 +780,7 @@ export async function executeRenderWebGLFeatureData({
       'Fetching peptide data',
       statusCallback,
       async () =>
-        fetchPeptideData(
-          pluginManager,
-          mockRenderProps as any,
-          features,
-        ),
+        fetchPeptideData(pluginManager, mockRenderProps as any, features),
     )
   }
 
@@ -906,7 +901,8 @@ export async function executeRenderWebGLFeatureData({
 
     floatingLabelsData,
 
-    aminoAcidOverlay: aminoAcidOverlay.length > 0 ? aminoAcidOverlay : undefined,
+    aminoAcidOverlay:
+      aminoAcidOverlay.length > 0 ? aminoAcidOverlay : undefined,
 
     maxY,
     totalHeight: maxY,

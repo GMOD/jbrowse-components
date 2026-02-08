@@ -2053,7 +2053,7 @@ export class WebGLRenderer {
 
     if (data.numReads === 0) {
       // Create a minimal buffers object so arcs/cloud modes can attach their data
-      const emptyVAO = gl.createVertexArray()!
+      const emptyVAO = gl.createVertexArray()
       gl.bindVertexArray(emptyVAO)
       gl.bindVertexArray(null)
       this.buffers = {
@@ -2797,7 +2797,7 @@ export class WebGLRenderer {
       return
     }
     const gl = this.gl
-    const emptyVAO = gl.createVertexArray()!
+    const emptyVAO = gl.createVertexArray()
     gl.bindVertexArray(emptyVAO)
     gl.bindVertexArray(null)
     this.buffers = {
@@ -2878,7 +2878,7 @@ export class WebGLRenderer {
     this.arcInstanceBuffers = []
 
     if (data.numArcs > 0) {
-      const arcVAO = gl.createVertexArray()!
+      const arcVAO = gl.createVertexArray()
       gl.bindVertexArray(arcVAO)
 
       const stride = 2 * 4 // 2 floats * 4 bytes
@@ -2896,7 +2896,7 @@ export class WebGLRenderer {
       gl.vertexAttribPointer(sideLoc, 1, gl.FLOAT, false, stride, 4)
 
       // Per-instance: a_x1
-      const x1Buf = gl.createBuffer()!
+      const x1Buf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, x1Buf)
       gl.bufferData(gl.ARRAY_BUFFER, data.arcX1, gl.STATIC_DRAW)
       const x1Loc = gl.getAttribLocation(this.arcProgram, 'a_x1')
@@ -2906,7 +2906,7 @@ export class WebGLRenderer {
       this.arcInstanceBuffers.push(x1Buf)
 
       // Per-instance: a_x2
-      const x2Buf = gl.createBuffer()!
+      const x2Buf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, x2Buf)
       gl.bufferData(gl.ARRAY_BUFFER, data.arcX2, gl.STATIC_DRAW)
       const x2Loc = gl.getAttribLocation(this.arcProgram, 'a_x2')
@@ -2916,7 +2916,7 @@ export class WebGLRenderer {
       this.arcInstanceBuffers.push(x2Buf)
 
       // Per-instance: a_colorType
-      const colorBuf = gl.createBuffer()!
+      const colorBuf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf)
       gl.bufferData(gl.ARRAY_BUFFER, data.arcColorTypes, gl.STATIC_DRAW)
       const colorLoc = gl.getAttribLocation(this.arcProgram, 'a_colorType')
@@ -2930,7 +2930,7 @@ export class WebGLRenderer {
       for (let i = 0; i < data.arcIsArc.length; i++) {
         isArcFloat[i] = data.arcIsArc[i]!
       }
-      const isArcBuf = gl.createBuffer()!
+      const isArcBuf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, isArcBuf)
       gl.bufferData(gl.ARRAY_BUFFER, isArcFloat, gl.STATIC_DRAW)
       const isArcLoc = gl.getAttribLocation(this.arcProgram, 'a_isArc')
@@ -2948,11 +2948,11 @@ export class WebGLRenderer {
 
     // Lines for inter-chromosomal / long-range connections
     if (data.numLines > 0) {
-      const arcLineVAO = gl.createVertexArray()!
+      const arcLineVAO = gl.createVertexArray()
       gl.bindVertexArray(arcLineVAO)
 
       const posLoc = gl.getAttribLocation(this.arcLineProgram, 'a_position')
-      const posBuf = gl.createBuffer()!
+      const posBuf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, posBuf)
       gl.bufferData(gl.ARRAY_BUFFER, data.linePositions, gl.STATIC_DRAW)
       gl.enableVertexAttribArray(posLoc)
@@ -2960,7 +2960,7 @@ export class WebGLRenderer {
       this.arcInstanceBuffers.push(posBuf)
 
       const yLoc = gl.getAttribLocation(this.arcLineProgram, 'a_y')
-      const yBuf = gl.createBuffer()!
+      const yBuf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, yBuf)
       gl.bufferData(gl.ARRAY_BUFFER, data.lineYs, gl.STATIC_DRAW)
       gl.enableVertexAttribArray(yLoc)
@@ -2968,7 +2968,7 @@ export class WebGLRenderer {
       this.arcInstanceBuffers.push(yBuf)
 
       const colorLoc = gl.getAttribLocation(this.arcLineProgram, 'a_colorType')
-      const colorBuf = gl.createBuffer()!
+      const colorBuf = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf)
       gl.bufferData(gl.ARRAY_BUFFER, data.lineColorTypes, gl.STATIC_DRAW)
       gl.enableVertexAttribArray(colorLoc)
@@ -3016,7 +3016,7 @@ export class WebGLRenderer {
       return
     }
 
-    const cloudVAO = gl.createVertexArray()!
+    const cloudVAO = gl.createVertexArray()
     gl.bindVertexArray(cloudVAO)
 
     this.uploadCloudBuffer(
@@ -3059,7 +3059,7 @@ export class WebGLRenderer {
     if (loc < 0) {
       return
     }
-    const buffer = gl.createBuffer()!
+    const buffer = gl.createBuffer()
     this.cloudGLBuffers.push(buffer)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
@@ -3127,6 +3127,7 @@ export class WebGLRenderer {
     }
 
     const { canvasWidth, canvasHeight } = state
+    const regionStart = this.buffers.regionStart
 
     // Compute high-precision split domain for reads (12-bit split approach).
     // Uses splitPositionWithFrac to preserve fractional scroll position - without this,
@@ -3389,12 +3390,7 @@ export class WebGLRenderer {
       gl.uniform1f(this.modificationUniforms.u_canvasWidth!, canvasWidth)
 
       gl.bindVertexArray(this.buffers.modificationVAO)
-      gl.drawArraysInstanced(
-        gl.TRIANGLES,
-        0,
-        6,
-        this.buffers.modificationCount,
-      )
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.modificationCount)
     }
 
     gl.disable(gl.SCISSOR_TEST)
@@ -3462,19 +3458,47 @@ export class WebGLRenderer {
         if (showChevron && strand === 1) {
           // Forward: chevron on right
           outlineData = new Float32Array([
-            sx1, syTop, sx2, syTop, sx2 + chevronClip, syMid,
-            sx2, syBot, sx1, syBot, sx1, syTop,
+            sx1,
+            syTop,
+            sx2,
+            syTop,
+            sx2 + chevronClip,
+            syMid,
+            sx2,
+            syBot,
+            sx1,
+            syBot,
+            sx1,
+            syTop,
           ])
         } else if (showChevron && strand === -1) {
           // Reverse: chevron on left
           outlineData = new Float32Array([
-            sx1, syTop, sx2, syTop, sx2, syBot,
-            sx1, syBot, sx1 - chevronClip, syMid, sx1, syTop,
+            sx1,
+            syTop,
+            sx2,
+            syTop,
+            sx2,
+            syBot,
+            sx1,
+            syBot,
+            sx1 - chevronClip,
+            syMid,
+            sx1,
+            syTop,
           ])
         } else {
           outlineData = new Float32Array([
-            sx1, syTop, sx2, syTop, sx2, syBot,
-            sx1, syBot, sx1, syTop,
+            sx1,
+            syTop,
+            sx2,
+            syTop,
+            sx2,
+            syBot,
+            sx1,
+            syBot,
+            sx1,
+            syTop,
           ])
         }
 
@@ -3514,10 +3538,7 @@ export class WebGLRenderer {
       domainOffset[0],
       domainOffset[1],
     )
-    gl.uniform1f(
-      this.coverageUniforms.u_coverageHeight!,
-      state.coverageHeight,
-    )
+    gl.uniform1f(this.coverageUniforms.u_coverageHeight!, state.coverageHeight)
     gl.uniform1f(
       this.coverageUniforms.u_coverageYOffset!,
       state.coverageYOffset,
@@ -3557,12 +3578,7 @@ export class WebGLRenderer {
       gl.uniform1f(this.modCoverageUniforms.u_canvasWidth!, canvasWidth)
 
       gl.bindVertexArray(this.buffers.modCoverageVAO)
-      gl.drawArraysInstanced(
-        gl.TRIANGLES,
-        0,
-        6,
-        this.buffers.modCoverageCount,
-      )
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.modCoverageCount)
     } else if (
       this.buffers.snpCoverageVAO &&
       this.buffers.snpCoverageCount > 0
@@ -3583,30 +3599,13 @@ export class WebGLRenderer {
       )
       gl.uniform1f(this.snpCoverageUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvasWidth)
-      gl.uniform3f(
-        this.snpCoverageUniforms.u_colorBaseA!,
-        ...colors.colorBaseA,
-      )
-      gl.uniform3f(
-        this.snpCoverageUniforms.u_colorBaseC!,
-        ...colors.colorBaseC,
-      )
-      gl.uniform3f(
-        this.snpCoverageUniforms.u_colorBaseG!,
-        ...colors.colorBaseG,
-      )
-      gl.uniform3f(
-        this.snpCoverageUniforms.u_colorBaseT!,
-        ...colors.colorBaseT,
-      )
+      gl.uniform3f(this.snpCoverageUniforms.u_colorBaseA!, ...colors.colorBaseA)
+      gl.uniform3f(this.snpCoverageUniforms.u_colorBaseC!, ...colors.colorBaseC)
+      gl.uniform3f(this.snpCoverageUniforms.u_colorBaseG!, ...colors.colorBaseG)
+      gl.uniform3f(this.snpCoverageUniforms.u_colorBaseT!, ...colors.colorBaseT)
 
       gl.bindVertexArray(this.buffers.snpCoverageVAO)
-      gl.drawArraysInstanced(
-        gl.TRIANGLES,
-        0,
-        6,
-        this.buffers.snpCoverageCount,
-      )
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.snpCoverageCount)
     }
 
     // Draw noncov (interbase) histogram - bars growing DOWN from top
@@ -3783,7 +3782,7 @@ export class WebGLRenderer {
       return
     }
 
-    const { canvasWidth, canvasHeight } = state
+    const { canvasHeight } = state
 
     const [domainStartHi, domainStartLo] = splitPositionWithFrac(
       state.domainX[0],
@@ -3801,19 +3800,13 @@ export class WebGLRenderer {
       this.cloudUniforms.u_regionStart!,
       Math.floor(this.buffers.regionStart),
     )
-    gl.uniform1f(
-      this.cloudUniforms.u_featureHeight!,
-      state.featureHeight,
-    )
+    gl.uniform1f(this.cloudUniforms.u_featureHeight!, state.featureHeight)
     gl.uniform1f(this.cloudUniforms.u_canvasHeight!, canvasHeight)
     gl.uniform1f(
       this.cloudUniforms.u_coverageOffset!,
       state.showCoverage ? state.coverageHeight : 0,
     )
-    gl.uniform1i(
-      this.cloudUniforms.u_colorScheme!,
-      state.cloudColorScheme ?? 0,
-    )
+    gl.uniform1i(this.cloudUniforms.u_colorScheme!, state.cloudColorScheme ?? 0)
 
     gl.bindVertexArray(this.buffers.cloudVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.cloudCount)

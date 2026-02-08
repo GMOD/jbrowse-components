@@ -6,8 +6,8 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { shouldRenderPeptideText } from '../../CanvasFeatureRenderer/zoomThresholds.ts'
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
+import { shouldRenderPeptideText } from '../../CanvasFeatureRenderer/zoomThresholds.ts'
 
 import type {
   FlatbushItem,
@@ -737,6 +737,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
+    // offsetPx needed here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rpcData, view, width, bpPerPx, offsetPx, getVisibleBpRange, scrollY])
 
   // Compute amino acid letter overlay from precomputed worker data
@@ -792,6 +794,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
+    // offsetPx needed here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rpcData, view, width, bpPerPx, offsetPx, getVisibleBpRange, scrollY])
 
   // Compute highlight overlays for hovered and selected features
@@ -911,6 +915,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return overlays.length > 0 ? overlays : null
+    // offsetPx needed here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     rpcData,
     view,

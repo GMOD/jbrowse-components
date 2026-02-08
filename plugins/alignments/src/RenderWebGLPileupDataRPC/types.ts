@@ -21,7 +21,11 @@ export interface RenderWebGLPileupDataArgs {
     assemblyName?: string
   }
   filterBy?: Record<string, unknown>
-  colorBy?: { type: string; tag?: string; modifications?: { threshold?: number } }
+  colorBy?: {
+    type: string
+    tag?: string
+    modifications?: { threshold?: number }
+  }
   colorTagMap?: Record<string, string>
   statusCallback?: (status: string) => void
   stopToken?: string

@@ -5,6 +5,7 @@ import {
   SimpleFeature,
   getContainingTrack,
   getContainingView,
+  getRpcSessionId,
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
@@ -18,12 +19,11 @@ import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { reaction } from 'mobx'
 
+import { ArcsSubModel } from './ArcsSubModel.ts'
+import { CloudSubModel } from './CloudSubModel.ts'
 import { SharedModificationsMixin } from '../shared/SharedModificationsMixin.ts'
 import { getModificationsSubMenu } from '../shared/menuItems.ts'
 import { setupModificationsAutorun } from '../shared/setupModificationsAutorun.ts'
-
-import { ArcsSubModel } from './ArcsSubModel.ts'
-import { CloudSubModel } from './CloudSubModel.ts'
 
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
@@ -261,7 +261,7 @@ export default function stateModelFactory(
       },
 
       get modificationThreshold() {
-        return this.colorBy?.modifications?.threshold ?? 10
+        return this.colorBy.modifications?.threshold ?? 10
       },
 
       get filterBy(): FilterBy {
@@ -662,11 +662,12 @@ export default function stateModelFactory(
 
           const sequenceAdapter = getSequenceAdapter(session, region)
 
+          const sessionId = getRpcSessionId(self)
           const { feature } = (await rpcManager.call(
-            session.id ?? '',
+            sessionId,
             'WebGLGetFeatureDetails',
             {
-              sessionId: session.id,
+              sessionId,
               adapterConfig,
               sequenceAdapter,
               region,
@@ -704,16 +705,17 @@ export default function stateModelFactory(
       let fetchGeneration = 0
 
       async function fetchPileupData(
-        session: { id: string; rpcManager: any },
+        session: { rpcManager: any },
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
       ) {
+        const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
-          session.id ?? '',
+          sessionId,
           'RenderWebGLPileupData',
           {
-            sessionId: session.id,
+            sessionId,
             adapterConfig,
             sequenceAdapter,
             region,
@@ -731,16 +733,17 @@ export default function stateModelFactory(
       }
 
       async function fetchArcsData(
-        session: { id: string; rpcManager: any },
+        session: { rpcManager: any },
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
       ) {
+        const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
-          session.id ?? '',
+          sessionId,
           'RenderWebGLArcsData',
           {
-            sessionId: session.id,
+            sessionId,
             adapterConfig,
             sequenceAdapter,
             region,
@@ -755,16 +758,17 @@ export default function stateModelFactory(
       }
 
       async function fetchCloudData(
-        session: { id: string; rpcManager: any },
+        session: { rpcManager: any },
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
       ) {
+        const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
-          session.id ?? '',
+          sessionId,
           'RenderWebGLCloudData',
           {
-            sessionId: session.id,
+            sessionId,
             adapterConfig,
             sequenceAdapter,
             region,
@@ -792,12 +796,7 @@ export default function stateModelFactory(
           const sequenceAdapter = getSequenceAdapter(session, region)
 
           if (self.renderingMode === 'arcs') {
-            await fetchArcsData(
-              session,
-              adapterConfig,
-              sequenceAdapter,
-              region,
-            )
+            await fetchArcsData(session, adapterConfig, sequenceAdapter, region)
           } else if (self.renderingMode === 'cloud') {
             await fetchCloudData(
               session,
@@ -944,13 +943,14 @@ export default function stateModelFactory(
                   const session = getSession(self)
                   const track = getContainingTrack(self)
                   const adapterConfig = getConf(track, 'adapter')
+                  const sessionId = getRpcSessionId(self)
                   const vals = (await session.rpcManager.call(
-                    session.id ?? '',
+                    sessionId,
                     'PileupGetGlobalValueForTag',
                     {
                       adapterConfig,
                       tag,
-                      sessionId: session.id,
+                      sessionId,
                       regions: [region],
                     },
                   )) as string[]
@@ -1234,9 +1234,7 @@ export default function stateModelFactory(
                 type: 'checkbox',
                 checked: self.arcsState.drawLongRange,
                 onClick: () => {
-                  self.arcsState.setDrawLongRange(
-                    !self.arcsState.drawLongRange,
-                  )
+                  self.arcsState.setDrawLongRange(!self.arcsState.drawLongRange)
                 },
               },
             ],
@@ -1286,7 +1284,7 @@ export default function stateModelFactory(
           self.setRpcData(null)
           self.arcsState.setRpcData(null)
           self.cloudState.setRpcData(null)
-          await superReload()
+          superReload()
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')

@@ -119,9 +119,7 @@ export default function stateModelFactory(
           'assemblyNames',
         ) as string[]
         const assembly = assemblyManager.get(assemblyNames[0]!)
-        return assembly
-          ? getConf(assembly, ['sequence', 'adapter'])
-          : undefined
+        return assembly ? getConf(assembly, ['sequence', 'adapter']) : undefined
       },
 
       get visibleRegion() {

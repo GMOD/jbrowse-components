@@ -113,7 +113,11 @@ function parseCssColor(color: string): [number, number, number] {
   // #RRGGBB
   const hex6 = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color)
   if (hex6) {
-    return [parseInt(hex6[1]!, 16), parseInt(hex6[2]!, 16), parseInt(hex6[3]!, 16)]
+    return [
+      parseInt(hex6[1]!, 16),
+      parseInt(hex6[2]!, 16),
+      parseInt(hex6[3]!, 16),
+    ]
   }
   // #RGB
   const hex3 = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(color)
@@ -727,275 +731,279 @@ export async function executeRenderWebGLPileupData({
     regionSequence = seqFeats[0]?.get('seq')
   }
 
-  const { features, gaps, mismatches, insertions, softclips, hardclips, modifications, tagColors } =
-    await updateStatus('Processing alignments', statusCallback, async () => {
-      const deduped = dedupe(featuresArray, (f: Feature) => f.id())
+  const {
+    features,
+    gaps,
+    mismatches,
+    insertions,
+    softclips,
+    hardclips,
+    modifications,
+    tagColors,
+  } = await updateStatus('Processing alignments', statusCallback, async () => {
+    const deduped = dedupe(featuresArray, (f: Feature) => f.id())
 
-      const featuresData: FeatureData[] = []
-      const gapsData: GapData[] = []
-      const mismatchesData: MismatchData[] = []
-      const insertionsData: InsertionData[] = []
-      const softclipsData: SoftclipData[] = []
-      const hardclipsData: HardclipData[] = []
-      const modificationsData: ModificationEntry[] = []
-      // Per-feature tag color values (only populated when colorBy.type === 'tag')
-      const tagColorValues: string[] = []
-      const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
-      for (const feature of deduped) {
-        const featureId = feature.id()
-        const featureStart = feature.get('start')
+    const featuresData: FeatureData[] = []
+    const gapsData: GapData[] = []
+    const mismatchesData: MismatchData[] = []
+    const insertionsData: InsertionData[] = []
+    const softclipsData: SoftclipData[] = []
+    const hardclipsData: HardclipData[] = []
+    const modificationsData: ModificationEntry[] = []
+    // Per-feature tag color values (only populated when colorBy.type === 'tag')
+    const tagColorValues: string[] = []
+    const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
+    for (const feature of deduped) {
+      const featureId = feature.id()
+      const featureStart = feature.get('start')
 
-        const strand = feature.get('strand')
-        featuresData.push({
-          id: featureId,
-          start: featureStart,
-          end: feature.get('end'),
-          flags: feature.get('flags') ?? 0,
-          mapq: feature.get('score') ?? feature.get('qual') ?? 60,
-          insertSize: Math.abs(feature.get('template_length') ?? 400),
-          pairOrientation: pairOrientationToNum(
-            feature.get('pair_orientation'),
-          ),
-          strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
-        })
+      const strand = feature.get('strand')
+      featuresData.push({
+        id: featureId,
+        start: featureStart,
+        end: feature.get('end'),
+        flags: feature.get('flags') ?? 0,
+        mapq: feature.get('score') ?? feature.get('qual') ?? 60,
+        insertSize: Math.abs(feature.get('template_length') ?? 400),
+        pairOrientation: pairOrientationToNum(feature.get('pair_orientation')),
+        strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
+      })
 
-        if (isTagColorMode) {
-          const tag = colorBy!.tag!
-          const tags = feature.get('tags')
-          const val = tags ? tags[tag] : feature.get(tag)
-          tagColorValues.push(val != null ? String(val) : '')
-        }
+      if (isTagColorMode) {
+        const tag = colorBy.tag!
+        const tags = feature.get('tags')
+        const val = tags ? tags[tag] : feature.get(tag)
+        tagColorValues.push(val != null ? String(val) : '')
+      }
 
-        const featureMismatches = feature.get('mismatches') as
-          | Mismatch[]
-          | undefined
-        if (featureMismatches) {
-          for (const mm of featureMismatches) {
-            if (mm.type === 'deletion' || mm.type === 'skip') {
-              gapsData.push({
-                featureId,
-                start: featureStart + mm.start,
-                end: featureStart + mm.start + mm.length,
-                type: mm.type,
-              })
-            } else if (mm.type === 'mismatch') {
-              mismatchesData.push({
-                featureId,
-                position: featureStart + mm.start,
-                base: baseToAscii(mm.base ?? 'N'),
-                strand: strand === -1 ? -1 : 1,
-              })
-            } else if (mm.type === 'insertion') {
-              insertionsData.push({
-                featureId,
-                position: featureStart + mm.start,
-                length: mm.insertlen,
-                sequence: mm.insertedBases,
-              })
-            } else if (mm.type === 'softclip') {
-              softclipsData.push({
-                featureId,
-                position: featureStart + mm.start,
-                length: mm.cliplen,
-              })
-            } else {
-              // hardclip
-              hardclipsData.push({
-                featureId,
-                position: featureStart + mm.start,
-                length: mm.cliplen,
-              })
-            }
+      const featureMismatches = feature.get('mismatches') as
+        | Mismatch[]
+        | undefined
+      if (featureMismatches) {
+        for (const mm of featureMismatches) {
+          if (mm.type === 'deletion' || mm.type === 'skip') {
+            gapsData.push({
+              featureId,
+              start: featureStart + mm.start,
+              end: featureStart + mm.start + mm.length,
+              type: mm.type,
+            })
+          } else if (mm.type === 'mismatch') {
+            mismatchesData.push({
+              featureId,
+              position: featureStart + mm.start,
+              base: baseToAscii(mm.base),
+              strand: strand === -1 ? -1 : 1,
+            })
+          } else if (mm.type === 'insertion') {
+            insertionsData.push({
+              featureId,
+              position: featureStart + mm.start,
+              length: mm.insertlen,
+              sequence: mm.insertedBases,
+            })
+          } else if (mm.type === 'softclip') {
+            softclipsData.push({
+              featureId,
+              position: featureStart + mm.start,
+              length: mm.cliplen,
+            })
+          } else {
+            // hardclip
+            hardclipsData.push({
+              featureId,
+              position: featureStart + mm.start,
+              length: mm.cliplen,
+            })
           }
         }
+      }
 
-        // Extract modifications from MM tag (only when color by modifications)
-        if (colorBy?.type === 'modifications') {
-          const mmTag = getTagAlt(feature, 'MM', 'Mm')
-          if (mmTag) {
-            const cigarString = feature.get('CIGAR') as string | undefined
-            const seq = feature.get('seq') as string | undefined
-            if (cigarString) {
-              const cigarOps = parseCigar2(cigarString)
-              const modThreshold =
-                (colorBy.modifications?.threshold ?? 10) / 100
-              const mods = getMaxProbModAtEachPosition(feature, cigarOps)
-              if (mods) {
-                // sparse array - use forEach
-                // eslint-disable-next-line unicorn/no-array-for-each
-                mods.forEach(({ prob, type }, refPos) => {
-                  if (prob < modThreshold) {
-                    return
-                  }
-                  const color = getColorForModification(type)
-                  const [r, g, b] = parseRgbColor(color)
-                  const alpha = Math.min(
-                    255,
-                    Math.round((prob * prob + 0.1) * 255),
-                  )
-                  modificationsData.push({
-                    featureId,
-                    position: featureStart + refPos,
-                    r,
-                    g,
-                    b,
-                    a: alpha,
-                  })
-                })
-              }
-            }
-          }
-        }
-
-        // Extract methylation data (only when color by methylation)
-        if (colorBy?.type === 'methylation' && regionSequence) {
+      // Extract modifications from MM tag (only when color by modifications)
+      if (colorBy?.type === 'modifications') {
+        const mmTag = getTagAlt(feature, 'MM', 'Mm')
+        if (mmTag) {
           const cigarString = feature.get('CIGAR') as string | undefined
           if (cigarString) {
             const cigarOps = parseCigar2(cigarString)
-            const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-              getMethBins(feature, cigarOps)
+            const modThreshold = (colorBy.modifications?.threshold ?? 10) / 100
+            const mods = getMaxProbModAtEachPosition(feature, cigarOps)
+            if (mods) {
+              // sparse array - use forEach
+              // eslint-disable-next-line unicorn/no-array-for-each
+              mods.forEach(({ prob, type }, refPos) => {
+                if (prob < modThreshold) {
+                  return
+                }
+                const color = getColorForModification(type)
+                const [r, g, b] = parseRgbColor(color)
+                const alpha = Math.min(
+                  255,
+                  Math.round((prob * prob + 0.1) * 255),
+                )
+                modificationsData.push({
+                  featureId,
+                  position: featureStart + refPos,
+                  r,
+                  g,
+                  b,
+                  a: alpha,
+                })
+              })
+            }
+          }
+        }
+      }
 
-            const featureEnd = feature.get('end')
-            const regionEnd = Math.ceil(region.end)
-            const rSeq = regionSequence.toLowerCase()
+      // Extract methylation data (only when color by methylation)
+      if (colorBy?.type === 'methylation' && regionSequence) {
+        const cigarString = feature.get('CIGAR') as string | undefined
+        if (cigarString) {
+          const cigarOps = parseCigar2(cigarString)
+          const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
+            getMethBins(feature, cigarOps)
 
-            for (
-              let i = Math.max(0, regionStart - featureStart);
-              i < Math.min(featureEnd - featureStart, regionEnd - featureStart);
-              i++
-            ) {
-              const j = i + featureStart
-              const l1 = rSeq[j - regionStart + 1]
-              const l2 = rSeq[j - regionStart + 2]
+          const featureEnd = feature.get('end')
+          const regionEnd = Math.ceil(region.end)
+          const rSeq = regionSequence.toLowerCase()
 
-              if (l1 === 'c' && l2 === 'g') {
-                // CpG site found - check for methylation at C position
-                if (methBins[i]) {
-                  const p = methProbs[i] || 0
-                  // Red/blue gradient: red = methylated, blue = unmethylated
-                  if (p > 0.5) {
-                    const alpha = Math.round((p - 0.5) * 2 * 255)
-                    modificationsData.push({
-                      featureId,
-                      position: j,
-                      r: 255,
-                      g: 0,
-                      b: 0,
-                      a: alpha,
-                    })
-                  } else {
-                    const alpha = Math.round((1 - p * 2) * 255)
-                    modificationsData.push({
-                      featureId,
-                      position: j,
-                      r: 0,
-                      g: 0,
-                      b: 255,
-                      a: alpha,
-                    })
-                  }
+          for (
+            let i = Math.max(0, regionStart - featureStart);
+            i < Math.min(featureEnd - featureStart, regionEnd - featureStart);
+            i++
+          ) {
+            const j = i + featureStart
+            const l1 = rSeq[j - regionStart + 1]
+            const l2 = rSeq[j - regionStart + 2]
+
+            if (l1 === 'c' && l2 === 'g') {
+              // CpG site found - check for methylation at C position
+              if (methBins[i]) {
+                const p = methProbs[i] || 0
+                // Red/blue gradient: red = methylated, blue = unmethylated
+                if (p > 0.5) {
+                  const alpha = Math.round((p - 0.5) * 2 * 255)
+                  modificationsData.push({
+                    featureId,
+                    position: j,
+                    r: 255,
+                    g: 0,
+                    b: 0,
+                    a: alpha,
+                  })
                 } else {
-                  // CpG site without modification data = unmethylated (blue)
+                  const alpha = Math.round((1 - p * 2) * 255)
                   modificationsData.push({
                     featureId,
                     position: j,
                     r: 0,
                     g: 0,
                     b: 255,
-                    a: 255,
+                    a: alpha,
                   })
                 }
+              } else {
+                // CpG site without modification data = unmethylated (blue)
+                modificationsData.push({
+                  featureId,
+                  position: j,
+                  r: 0,
+                  g: 0,
+                  b: 255,
+                  a: 255,
+                })
+              }
 
-                // Check G position for hydroxymethylation
-                if (hydroxyMethBins[i + 1]) {
-                  const p = hydroxyMethProbs[i + 1] || 0
-                  if (p > 0.5) {
-                    // Pink
-                    const alpha = Math.round((p - 0.5) * 2 * 255)
-                    modificationsData.push({
-                      featureId,
-                      position: j + 1,
-                      r: 255,
-                      g: 192,
-                      b: 203,
-                      a: alpha,
-                    })
-                  } else {
-                    // Purple
-                    const alpha = Math.round((1 - p * 2) * 255)
-                    modificationsData.push({
-                      featureId,
-                      position: j + 1,
-                      r: 128,
-                      g: 0,
-                      b: 128,
-                      a: alpha,
-                    })
-                  }
+              // Check G position for hydroxymethylation
+              if (hydroxyMethBins[i + 1]) {
+                const p = hydroxyMethProbs[i + 1] || 0
+                if (p > 0.5) {
+                  // Pink
+                  const alpha = Math.round((p - 0.5) * 2 * 255)
+                  modificationsData.push({
+                    featureId,
+                    position: j + 1,
+                    r: 255,
+                    g: 192,
+                    b: 203,
+                    a: alpha,
+                  })
+                } else {
+                  // Purple
+                  const alpha = Math.round((1 - p * 2) * 255)
+                  modificationsData.push({
+                    featureId,
+                    position: j + 1,
+                    r: 128,
+                    g: 0,
+                    b: 128,
+                    a: alpha,
+                  })
                 }
               }
             }
           }
         }
       }
+    }
 
-      // Build per-read tag colors (RGB Uint8Array)
-      let readTagColors = new Uint8Array(0)
-      if (isTagColorMode) {
-        const tag = colorBy!.tag!
-        const map = colorTagMap!
-        // Pre-parse the color map to avoid repeated parsing
-        const parsedColors = new Map<string, [number, number, number]>()
-        for (const [k, v] of Object.entries(map)) {
-          parsedColors.set(k, parseCssColor(v))
-        }
-        // Strand colors for XS/TS/ts special handling
-        const fwdStrandRgb: [number, number, number] = [236, 139, 139] // #EC8B8B
-        const revStrandRgb: [number, number, number] = [143, 143, 216] // #8F8FD8
-        const nostrandRgb: [number, number, number] = [200, 200, 200]  // #c8c8c8
+    // Build per-read tag colors (RGB Uint8Array)
+    let readTagColors = new Uint8Array(0)
+    if (isTagColorMode) {
+      const tag = colorBy.tag!
+      const map = colorTagMap
+      // Pre-parse the color map to avoid repeated parsing
+      const parsedColors = new Map<string, [number, number, number]>()
+      for (const [k, v] of Object.entries(map)) {
+        parsedColors.set(k, parseCssColor(v))
+      }
+      // Strand colors for XS/TS/ts special handling
+      const fwdStrandRgb: [number, number, number] = [236, 139, 139] // #EC8B8B
+      const revStrandRgb: [number, number, number] = [143, 143, 216] // #8F8FD8
+      const nostrandRgb: [number, number, number] = [200, 200, 200] // #c8c8c8
 
-        readTagColors = new Uint8Array(featuresData.length * 3)
-        for (let i = 0; i < featuresData.length; i++) {
-          const val = tagColorValues[i] ?? ''
-          let rgb: [number, number, number]
+      readTagColors = new Uint8Array(featuresData.length * 3)
+      for (const [i, featuresDatum] of featuresData.entries()) {
+        const val = tagColorValues[i] ?? ''
+        let rgb: [number, number, number]
 
-          if (tag === 'XS' || tag === 'TS') {
-            if (val === '-') {
-              rgb = revStrandRgb
-            } else if (val === '+') {
-              rgb = fwdStrandRgb
-            } else {
-              rgb = nostrandRgb
-            }
-          } else if (tag === 'ts') {
-            const featureStrand = featuresData[i]!.strand
-            if (val === '-') {
-              rgb = featureStrand === -1 ? fwdStrandRgb : revStrandRgb
-            } else if (val === '+') {
-              rgb = featureStrand === -1 ? revStrandRgb : fwdStrandRgb
-            } else {
-              rgb = nostrandRgb
-            }
+        if (tag === 'XS' || tag === 'TS') {
+          if (val === '-') {
+            rgb = revStrandRgb
+          } else if (val === '+') {
+            rgb = fwdStrandRgb
           } else {
-            rgb = parsedColors.get(val) ?? nostrandRgb
+            rgb = nostrandRgb
           }
-          readTagColors[i * 3] = rgb[0]
-          readTagColors[i * 3 + 1] = rgb[1]
-          readTagColors[i * 3 + 2] = rgb[2]
+        } else if (tag === 'ts') {
+          const featureStrand = featuresDatum.strand
+          if (val === '-') {
+            rgb = featureStrand === -1 ? fwdStrandRgb : revStrandRgb
+          } else if (val === '+') {
+            rgb = featureStrand === -1 ? revStrandRgb : fwdStrandRgb
+          } else {
+            rgb = nostrandRgb
+          }
+        } else {
+          rgb = parsedColors.get(val) ?? nostrandRgb
         }
+        readTagColors[i * 3] = rgb[0]
+        readTagColors[i * 3 + 1] = rgb[1]
+        readTagColors[i * 3 + 2] = rgb[2]
       }
+    }
 
-      return {
-        features: featuresData,
-        gaps: gapsData,
-        mismatches: mismatchesData,
-        insertions: insertionsData,
-        softclips: softclipsData,
-        hardclips: hardclipsData,
-        modifications: modificationsData,
-        tagColors: readTagColors,
-      }
-    })
+    return {
+      features: featuresData,
+      gaps: gapsData,
+      mismatches: mismatchesData,
+      insertions: insertionsData,
+      softclips: softclipsData,
+      hardclips: hardclipsData,
+      modifications: modificationsData,
+      tagColors: readTagColors,
+    }
+  })
 
   checkStopToken2(stopTokenCheck)
 
