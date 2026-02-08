@@ -15,6 +15,7 @@ import { parseColor } from '../../shared/webglUtils.ts'
 
 import type {
   MultiRenderingType,
+  MultiWiggleRenderBlock,
   SourceRenderData,
 } from './WebGLMultiWiggleRenderer.ts'
 import type { WebGLMultiWiggleDataResult } from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
@@ -25,7 +26,17 @@ type LGV = LinearGenomeViewModel
 
 export interface MultiWiggleDisplayModel {
   rpcData: WebGLMultiWiggleDataResult | null
+  rpcDataMap: Map<number, WebGLMultiWiggleDataResult>
   visibleRegion: { start: number; end: number } | null
+  visibleRegions: {
+    refName: string
+    regionNumber: number
+    start: number
+    end: number
+    assemblyName: string
+    screenStartPx: number
+    screenEndPx: number
+  }[]
   height: number
   domain: [number, number] | undefined
   scaleType: string
@@ -104,23 +115,30 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     }
   }, [])
 
-  // Upload data when rpcData changes
+  // Upload data when rpcDataMap changes
   useEffect(() => {
     const renderer = rendererRef.current
-    const data = model.rpcData
-    if (!renderer || !data) {
+    if (!renderer) {
       return
     }
 
-    const sourcesData: SourceRenderData[] = data.sources.map(source => ({
-      featurePositions: source.featurePositions,
-      featureScores: source.featureScores,
-      numFeatures: source.numFeatures,
-      color: parseColor(source.color),
-    }))
+    const dataMap = model.rpcDataMap
+    if (dataMap.size === 0) {
+      renderer.clearAllBuffers()
+      return
+    }
 
-    renderer.uploadFromSources(data.regionStart, sourcesData)
-  }, [model.rpcData])
+    for (const [regionNumber, data] of dataMap) {
+      const sourcesData: SourceRenderData[] = data.sources.map(source => ({
+        featurePositions: source.featurePositions,
+        featureScores: source.featureScores,
+        numFeatures: source.numFeatures,
+        color: parseColor(source.color),
+      }))
+
+      renderer.uploadForRegion(regionNumber, data.regionStart, sourcesData)
+    }
+  }, [model.rpcDataMap])
 
   // Render with explicit domain (for immediate rendering during interaction)
   const renderWithDomain = useCallback(
@@ -133,7 +151,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       if (!domain) {
         return
       }
-      const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+      const totalWidth = Math.round(view.width)
       const height = model.height
 
       renderer.render({
@@ -169,8 +187,8 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       return
     }
 
-    const visibleRegion = model.visibleRegion
-    if (!visibleRegion) {
+    const visibleRegions = model.visibleRegions
+    if (visibleRegions.length === 0) {
       return
     }
 
@@ -184,16 +202,31 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       return
     }
 
-    const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+    const totalWidth = Math.round(view.width)
     const height = model.height
+
+    // Build blocks from visibleRegions
+    const blocks: MultiWiggleRenderBlock[] = []
+    for (const vr of visibleRegions) {
+      blocks.push({
+        regionNumber: vr.regionNumber,
+        domainX: [vr.start, vr.end],
+        screenStartPx: vr.screenStartPx,
+        screenEndPx: vr.screenEndPx,
+      })
+    }
+
+    // Set canvas size
+    if (canvas.width !== totalWidth || canvas.height !== height) {
+      canvas.width = totalWidth
+      canvas.height = height
+    }
 
     // Use RAF for smooth rendering but only render once per state change
     rafRef.current = requestAnimationFrame(() => {
-      renderer.render({
-        domainX: [visibleRegion.start, visibleRegion.end],
+      renderer.renderBlocks(blocks, {
         domainY: domain,
         scaleType: model.scaleType as 'linear' | 'log',
-        canvasWidth: totalWidth,
         canvasHeight: height,
         rowPadding: ROW_PADDING,
         renderingType: model.renderingType as MultiRenderingType,
@@ -207,17 +240,19 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     }
   }, [
     model,
-    model.rpcData,
+    model.rpcDataMap,
     model.height,
     model.scaleType,
     model.renderingType,
-    model.visibleRegion,
+    model.visibleRegions,
     model.domain,
     view.initialized,
-    view.dynamicBlocks.totalWidthPx,
+    view.width,
+    view.offsetPx,
+    view.bpPerPx,
   ])
 
-  const totalWidth = Math.round(view.dynamicBlocks.totalWidthPx)
+  const totalWidth = Math.round(view.width)
   const height = model.height
   const { trackLabels } = view
   const track = getContainingTrack(model)
@@ -244,9 +279,10 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       ? (height - ROW_PADDING * (numSources - 1)) / numSources
       : height
 
-  // Calculate label width based on source names
-  const labelWidth = model.rpcData
-    ? Math.max(...model.rpcData.sources.map(s => measureText(s.name, 10))) + 10
+  // Calculate label width based on source names from first region's data
+  const firstData = model.rpcData
+  const labelWidth = firstData
+    ? Math.max(...firstData.sources.map(s => measureText(s.name, 10))) + 10
     : 0
 
   return (
@@ -282,9 +318,9 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         }}
       >
         {/* Source labels with semi-transparent background */}
-        {model.rpcData && model.rpcData.sources.length > 1 ? (
+        {firstData && firstData.sources.length > 1 ? (
           <>
-            {model.rpcData.sources.map((source, idx) => {
+            {firstData.sources.map((source, idx) => {
               const y = rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)
               const boxHeight = Math.min(20, rowHeight)
               return (

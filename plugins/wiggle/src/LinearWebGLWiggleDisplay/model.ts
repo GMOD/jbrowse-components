@@ -59,8 +59,8 @@ export default function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      rpcData: null as WebGLWiggleDataResult | null,
-      loadedRegion: null as Region | null,
+      rpcDataMap: new Map<number, WebGLWiggleDataResult>(),
+      loadedRegions: new Map<number, Region>(),
       isLoading: false,
       error: null as Error | null,
       currentDomainX: null as [number, number] | null,
@@ -116,6 +116,73 @@ export default function stateModelFactory(
         return val === Number.MAX_VALUE ? undefined : val
       },
 
+      // backward-compat: returns first entry from rpcDataMap
+      get rpcData() {
+        const iter = self.rpcDataMap.values().next()
+        return iter.done ? null : iter.value
+      },
+
+      get visibleRegions() {
+        try {
+          const view = getContainingView(self) as LGV
+          if (!view.initialized) {
+            return []
+          }
+          const blocks = view.dynamicBlocks.contentBlocks
+          if (blocks.length === 0) {
+            return []
+          }
+
+          const bpPerPx = view.bpPerPx
+          const regions: {
+            refName: string
+            regionNumber: number
+            start: number
+            end: number
+            assemblyName: string
+            screenStartPx: number
+            screenEndPx: number
+          }[] = []
+
+          for (const block of blocks) {
+            const blockScreenStart = block.offsetPx - view.offsetPx
+            const blockScreenEnd = blockScreenStart + block.widthPx
+
+            const clippedScreenStart = Math.max(0, blockScreenStart)
+            const clippedScreenEnd = Math.min(view.width, blockScreenEnd)
+            if (clippedScreenStart >= clippedScreenEnd) {
+              continue
+            }
+
+            const bpStart =
+              block.start + (clippedScreenStart - blockScreenStart) * bpPerPx
+            const bpEnd =
+              block.start + (clippedScreenEnd - blockScreenStart) * bpPerPx
+
+            const blockRegionNumber = block.regionNumber ?? 0
+
+            const prev = regions[regions.length - 1]
+            if (prev && prev.regionNumber === blockRegionNumber) {
+              prev.end = bpEnd
+              prev.screenEndPx = clippedScreenEnd
+            } else {
+              regions.push({
+                refName: block.refName,
+                regionNumber: blockRegionNumber,
+                start: bpStart,
+                end: bpEnd,
+                assemblyName: block.assemblyName,
+                screenStartPx: clippedScreenStart,
+                screenEndPx: clippedScreenEnd,
+              })
+            }
+          }
+          return regions
+        } catch {
+          return []
+        }
+      },
+
       get visibleRegion() {
         try {
           const view = getContainingView(self) as LGV
@@ -166,28 +233,39 @@ export default function stateModelFactory(
         }
       },
 
-      get isWithinLoadedRegion() {
-        const visibleRegion = this.visibleRegion
-        if (!self.loadedRegion || !visibleRegion) {
+      get isWithinLoadedRegions() {
+        const visibleRegions = this.visibleRegions
+        if (visibleRegions.length === 0) {
           return false
         }
-        return (
-          self.loadedRegion.refName === visibleRegion.refName &&
-          visibleRegion.start >= self.loadedRegion.start &&
-          visibleRegion.end <= self.loadedRegion.end
-        )
+        for (const vr of visibleRegions) {
+          const loaded = self.loadedRegions.get(vr.regionNumber)
+          if (
+            !loaded ||
+            loaded.refName !== vr.refName ||
+            vr.start < loaded.start ||
+            vr.end > loaded.end
+          ) {
+            return false
+          }
+        }
+        return true
       },
 
       get domain(): [number, number] | undefined {
-        if (!self.rpcData) {
+        if (self.rpcDataMap.size === 0) {
           return undefined
         }
-        const { scoreMin, scoreMax } = self.rpcData
+        let globalMin = Infinity
+        let globalMax = -Infinity
+        for (const data of self.rpcDataMap.values()) {
+          globalMin = Math.min(globalMin, data.scoreMin)
+          globalMax = Math.max(globalMax, data.scoreMax)
+        }
         const scaleType = this.scaleType
 
-        // Use getNiceDomain to snap to 0 for linear scale (matches standard wiggle displays)
         return getNiceDomain({
-          domain: [scoreMin, scoreMax],
+          domain: [globalMin, globalMax],
           bounds: [this.minScoreConfig, this.maxScoreConfig],
           scaleType,
         })
@@ -216,12 +294,21 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcData(data: WebGLWiggleDataResult | null) {
-        self.rpcData = data
+      setRpcDataForRegion(regionNumber: number, data: WebGLWiggleDataResult) {
+        const next = new Map(self.rpcDataMap)
+        next.set(regionNumber, data)
+        self.rpcDataMap = next
       },
 
-      setLoadedRegion(region: Region | null) {
-        self.loadedRegion = region
+      setLoadedRegionForRegion(regionNumber: number, region: Region) {
+        const next = new Map(self.loadedRegions)
+        next.set(regionNumber, region)
+        self.loadedRegions = next
+      },
+
+      clearAllRpcData() {
+        self.rpcDataMap = new Map()
+        self.loadedRegions = new Map()
       },
 
       setLoading(loading: boolean) {
@@ -265,7 +352,10 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => {
-      async function fetchFeaturesImpl(region: Region) {
+      async function fetchFeaturesForRegion(
+        region: Region,
+        regionNumber: number,
+      ) {
         const session = getSession(self)
         const { rpcManager } = session
         const track = getContainingTrack(self)
@@ -274,9 +364,6 @@ export default function stateModelFactory(
         if (!adapterConfig) {
           return
         }
-
-        self.setLoading(true)
-        self.setError(null)
 
         try {
           const result = (await rpcManager.call(
@@ -289,45 +376,99 @@ export default function stateModelFactory(
             },
           )) as WebGLWiggleDataResult
 
-          self.setRpcData(result)
-          self.setLoadedRegion({
+          self.setRpcDataForRegion(regionNumber, result)
+          self.setLoadedRegionForRegion(regionNumber, {
             refName: region.refName,
             start: region.start,
             end: region.end,
           })
-          self.setLoading(false)
         } catch (e) {
           self.setError(e instanceof Error ? e : new Error(String(e)))
-          self.setLoading(false)
         }
       }
 
-      return {
-        fetchFeatures(region: Region) {
-          fetchFeaturesImpl(region).catch((e: unknown) => {
-            console.error('Failed to fetch features:', e)
-          })
-        },
+      let prevDisplayedRegionsStr = ''
 
+      return {
         afterAttach() {
+          // Reaction: fetch data for all visible regions
           addDisposer(
             self,
             reaction(
-              () => self.visibleRegion,
-              region => {
-                if (region && !self.isWithinLoadedRegion) {
-                  const width = region.end - region.start
-                  const expandedRegion = {
-                    ...region,
-                    start: Math.max(0, region.start - width * 2),
-                    end: region.end + width * 2,
+              () => ({
+                visibleRegions: self.visibleRegions,
+                isWithinLoaded: self.isWithinLoadedRegions,
+              }),
+              ({ visibleRegions, isWithinLoaded }) => {
+                if (visibleRegions.length > 0 && !isWithinLoaded) {
+                  self.setLoading(true)
+                  self.setError(null)
+
+                  const promises: Promise<void>[] = []
+                  for (const vr of visibleRegions) {
+                    const loaded = self.loadedRegions.get(vr.regionNumber)
+                    if (
+                      loaded &&
+                      loaded.refName === vr.refName &&
+                      vr.start >= loaded.start &&
+                      vr.end <= loaded.end
+                    ) {
+                      continue
+                    }
+                    const width = vr.end - vr.start
+                    const expandedRegion = {
+                      refName: vr.refName,
+                      start: Math.max(0, vr.start - width * 2),
+                      end: vr.end + width * 2,
+                      assemblyName: vr.assemblyName,
+                    }
+                    promises.push(
+                      fetchFeaturesForRegion(expandedRegion, vr.regionNumber),
+                    )
                   }
-                  fetchFeaturesImpl(expandedRegion).catch((e: unknown) => {
-                    console.error('Failed to fetch wiggle features:', e)
-                  })
+
+                  Promise.all(promises)
+                    .then(() => {
+                      self.setLoading(false)
+                    })
+                    .catch((e: unknown) => {
+                      console.error('Failed to fetch wiggle features:', e)
+                      self.setLoading(false)
+                    })
                 }
               },
               { delay: 300, fireImmediately: true },
+            ),
+          )
+
+          // Reaction: clear data when displayedRegions identity changes
+          addDisposer(
+            self,
+            reaction(
+              () => {
+                try {
+                  const view = getContainingView(self) as LGV
+                  return JSON.stringify(
+                    view.displayedRegions.map(r => ({
+                      refName: r.refName,
+                      start: r.start,
+                      end: r.end,
+                    })),
+                  )
+                } catch {
+                  return ''
+                }
+              },
+              regionStr => {
+                if (
+                  prevDisplayedRegionsStr !== '' &&
+                  regionStr !== prevDisplayedRegionsStr
+                ) {
+                  self.clearAllRpcData()
+                }
+                prevDisplayedRegionsStr = regionStr
+              },
+              { fireImmediately: true },
             ),
           )
         },

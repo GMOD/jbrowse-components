@@ -253,6 +253,13 @@ export interface MultiWiggleRenderState {
   renderingType: MultiRenderingType
 }
 
+export interface MultiWiggleRenderBlock {
+  regionNumber: number
+  domainX: [number, number]
+  screenStartPx: number
+  screenEndPx: number
+}
+
 interface GPUBuffers {
   regionStart: number
   featureVAO: WebGLVertexArrayObject
@@ -267,8 +274,8 @@ export class WebGLMultiWiggleRenderer {
   private xyplotProgram: WebGLProgram
   private densityProgram: WebGLProgram
   private lineProgram: WebGLProgram
-  private buffers: GPUBuffers | null = null
-  private glBuffers: WebGLBuffer[] = []
+  private buffersMap = new Map<number, GPUBuffers>()
+  private glBuffersMap = new Map<number, WebGLBuffer[]>()
   private xyplotUniforms: Record<string, WebGLUniformLocation | null> = {}
   private densityUniforms: Record<string, WebGLUniformLocation | null> = {}
   private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -320,23 +327,20 @@ export class WebGLMultiWiggleRenderer {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
   }
 
-  uploadFromSources(regionStart: number, sources: SourceRenderData[]) {
+  uploadForRegion(regionNumber: number, regionStart: number, sources: SourceRenderData[]) {
     const gl = this.gl
 
-    this.deleteBuffers()
+    this.deleteBuffersForRegion(regionNumber)
 
-    // Calculate total features across all sources
     let totalFeatures = 0
     for (const source of sources) {
       totalFeatures += source.numFeatures
     }
 
     if (totalFeatures === 0 || sources.length === 0) {
-      this.buffers = null
       return
     }
 
-    // Create combined arrays with row index and color per feature
     const allPositions = new Uint32Array(totalFeatures * 2)
     const allScores = new Float32Array(totalFeatures)
     const allRowIndices = new Float32Array(totalFeatures)
@@ -344,8 +348,7 @@ export class WebGLMultiWiggleRenderer {
     const allPrevScores = new Float32Array(totalFeatures)
 
     let offset = 0
-    for (const [rowIndex, source_] of sources.entries()) {
-      const source = source_
+    for (const [rowIndex, source] of sources.entries()) {
       for (let i = 0; i < source.numFeatures; i++) {
         allPositions[(offset + i) * 2] = source.featurePositions[i * 2]!
         allPositions[(offset + i) * 2 + 1] = source.featurePositions[i * 2 + 1]!
@@ -354,46 +357,69 @@ export class WebGLMultiWiggleRenderer {
         allColors[(offset + i) * 3] = source.color[0]
         allColors[(offset + i) * 3 + 1] = source.color[1]
         allColors[(offset + i) * 3 + 2] = source.color[2]
-        // Previous score (first in each row uses its own score)
         allPrevScores[offset + i] =
           i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
       }
       offset += source.numFeatures
     }
 
-    // Create VAO for xyplot and density
+    const glBuffers: WebGLBuffer[] = []
+
     const featureVAO = gl.createVertexArray()
     gl.bindVertexArray(featureVAO)
 
-    this.uploadUintBuffer(this.xyplotProgram, 'a_position', allPositions, 2)
-    this.uploadBuffer(this.xyplotProgram, 'a_score', allScores, 1)
-    this.uploadBuffer(this.xyplotProgram, 'a_rowIndex', allRowIndices, 1)
-    this.uploadBuffer(this.xyplotProgram, 'a_color', allColors, 3)
+    glBuffers.push(
+      ...this.uploadUintBuffer(this.xyplotProgram, 'a_position', allPositions, 2),
+    )
+    glBuffers.push(
+      ...this.uploadBufferReturnHandles(this.xyplotProgram, 'a_score', allScores, 1),
+    )
+    glBuffers.push(
+      ...this.uploadBufferReturnHandles(this.xyplotProgram, 'a_rowIndex', allRowIndices, 1),
+    )
+    glBuffers.push(
+      ...this.uploadBufferReturnHandles(this.xyplotProgram, 'a_color', allColors, 3),
+    )
 
     gl.bindVertexArray(null)
 
-    // Create VAO for line rendering (needs previous score)
     const lineVAO = gl.createVertexArray()
     gl.bindVertexArray(lineVAO)
 
-    this.uploadUintBuffer(this.lineProgram, 'a_position', allPositions, 2)
-    this.uploadBuffer(this.lineProgram, 'a_score', allScores, 1)
-    this.uploadBuffer(this.lineProgram, 'a_prevScore', allPrevScores, 1)
-    this.uploadBuffer(this.lineProgram, 'a_rowIndex', allRowIndices, 1)
-    this.uploadBuffer(this.lineProgram, 'a_color', allColors, 3)
+    glBuffers.push(
+      ...this.uploadUintBuffer(this.lineProgram, 'a_position', allPositions, 2),
+    )
+    glBuffers.push(
+      ...this.uploadBufferReturnHandles(this.lineProgram, 'a_score', allScores, 1),
+    )
+    glBuffers.push(
+      ...this.uploadBufferReturnHandles(this.lineProgram, 'a_prevScore', allPrevScores, 1),
+    )
+    glBuffers.push(
+      ...this.uploadBufferReturnHandles(this.lineProgram, 'a_rowIndex', allRowIndices, 1),
+    )
+    glBuffers.push(
+      ...this.uploadBufferReturnHandles(this.lineProgram, 'a_color', allColors, 3),
+    )
 
     gl.bindVertexArray(null)
 
-    this.buffers = {
+    this.glBuffersMap.set(regionNumber, glBuffers)
+    this.buffersMap.set(regionNumber, {
       regionStart,
       featureVAO,
       totalFeatureCount: totalFeatures,
       numRows: sources.length,
       lineVAO,
-    }
+    })
   }
 
-  private uploadBuffer(
+  // Legacy single-region upload
+  uploadFromSources(regionStart: number, sources: SourceRenderData[]) {
+    this.uploadForRegion(0, regionStart, sources)
+  }
+
+  private uploadBufferReturnHandles(
     program: WebGLProgram,
     attrib: string,
     data: Float32Array,
@@ -402,16 +428,16 @@ export class WebGLMultiWiggleRenderer {
     const gl = this.gl
     const loc = gl.getAttribLocation(program, attrib)
     if (loc < 0) {
-      return
+      return []
     }
 
     const buffer = gl.createBuffer()
-    this.glBuffers.push(buffer)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0)
     gl.vertexAttribDivisor(loc, 1)
+    return [buffer]
   }
 
   private uploadUintBuffer(
@@ -423,18 +449,124 @@ export class WebGLMultiWiggleRenderer {
     const gl = this.gl
     const loc = gl.getAttribLocation(program, attrib)
     if (loc < 0) {
-      return
+      return []
     }
 
     const buffer = gl.createBuffer()
-    this.glBuffers.push(buffer)
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(loc)
     gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_INT, 0, 0)
     gl.vertexAttribDivisor(loc, 1)
+    return [buffer]
   }
 
+  renderBlocks(
+    blocks: MultiWiggleRenderBlock[],
+    state: Omit<MultiWiggleRenderState, 'domainX' | 'canvasWidth'>,
+  ) {
+    const gl = this.gl
+    const canvas = this.canvas
+    const canvasWidth = Math.round(state.canvasHeight > 0 ? canvas.width : 0)
+    const { canvasHeight, renderingType } = state
+
+    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
+    }
+
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.clearColor(0, 0, 0, 0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+
+    if (blocks.length === 0) {
+      return
+    }
+
+    let program: WebGLProgram
+    let uniforms: Record<string, WebGLUniformLocation | null>
+
+    if (renderingType === 'multirowdensity') {
+      program = this.densityProgram
+      uniforms = this.densityUniforms
+    } else if (renderingType === 'multirowline') {
+      program = this.lineProgram
+      uniforms = this.lineUniforms
+    } else {
+      program = this.xyplotProgram
+      uniforms = this.xyplotUniforms
+    }
+
+    gl.useProgram(program)
+
+    // Set uniforms that don't change per-block
+    gl.uniform1f(uniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform2f(uniforms.u_domainY!, state.domainY[0], state.domainY[1])
+    gl.uniform1i(uniforms.u_scaleType!, state.scaleType === 'log' ? 1 : 0)
+    gl.uniform1f(uniforms.u_rowPadding!, state.rowPadding)
+
+    gl.enable(gl.SCISSOR_TEST)
+
+    for (const block of blocks) {
+      const buffers = this.buffersMap.get(block.regionNumber)
+      if (!buffers || buffers.totalFeatureCount === 0) {
+        continue
+      }
+
+      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
+      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
+      const scissorW = scissorEnd - scissorX
+      if (scissorW <= 0) {
+        continue
+      }
+
+      gl.scissor(scissorX, 0, scissorW, canvasHeight)
+      gl.viewport(scissorX, 0, scissorW, canvasHeight)
+
+      const fullBlockWidth = block.screenEndPx - block.screenStartPx
+      const domainExtent = block.domainX[1] - block.domainX[0]
+      const bpPerPx = domainExtent / fullBlockWidth
+      const clippedDomainStart =
+        block.domainX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedDomainEnd =
+        block.domainX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+
+      const [domainStartHi, domainStartLo] =
+        splitPositionWithFrac(clippedDomainStart)
+      const clippedExtent = clippedDomainEnd - clippedDomainStart
+
+      gl.uniform3f(
+        uniforms.u_domainX!,
+        domainStartHi,
+        domainStartLo,
+        clippedExtent,
+      )
+      gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
+      gl.uniform1f(uniforms.u_numRows!, buffers.numRows)
+
+      let vao: WebGLVertexArrayObject
+      if (renderingType === 'multirowline') {
+        vao = buffers.lineVAO!
+      } else {
+        vao = buffers.featureVAO
+      }
+
+      gl.bindVertexArray(vao)
+
+      if (renderingType === 'multirowline') {
+        gl.drawArraysInstanced(gl.LINES, 0, 6, buffers.totalFeatureCount)
+      } else {
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.totalFeatureCount)
+      }
+
+      gl.bindVertexArray(null)
+    }
+
+    gl.disable(gl.SCISSOR_TEST)
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
+  }
+
+  // Legacy single-region render (used for interaction fast path)
   render(state: MultiWiggleRenderState) {
     const gl = this.gl
     const canvas = this.canvas
@@ -449,7 +581,9 @@ export class WebGLMultiWiggleRenderer {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    if (!this.buffers || this.buffers.totalFeatureCount === 0) {
+    const buffers =
+      this.buffersMap.get(0) ?? this.buffersMap.values().next().value
+    if (!buffers || buffers.totalFeatureCount === 0) {
       return
     }
 
@@ -458,7 +592,6 @@ export class WebGLMultiWiggleRenderer {
     )
     const domainExtent = state.domainX[1] - state.domainX[0]
 
-    // Select program and uniforms based on rendering type
     let program: WebGLProgram
     let uniforms: Record<string, WebGLUniformLocation | null>
     let vao: WebGLVertexArrayObject
@@ -466,15 +599,15 @@ export class WebGLMultiWiggleRenderer {
     if (renderingType === 'multirowdensity') {
       program = this.densityProgram
       uniforms = this.densityUniforms
-      vao = this.buffers.featureVAO
+      vao = buffers.featureVAO
     } else if (renderingType === 'multirowline') {
       program = this.lineProgram
       uniforms = this.lineUniforms
-      vao = this.buffers.lineVAO!
+      vao = buffers.lineVAO!
     } else {
       program = this.xyplotProgram
       uniforms = this.xyplotUniforms
-      vao = this.buffers.featureVAO
+      vao = buffers.featureVAO
     }
 
     gl.useProgram(program)
@@ -484,41 +617,51 @@ export class WebGLMultiWiggleRenderer {
       domainStartLo,
       domainExtent,
     )
-    gl.uniform1ui(uniforms.u_regionStart!, Math.floor(this.buffers.regionStart))
+    gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
     gl.uniform1f(uniforms.u_canvasHeight!, canvasHeight)
     gl.uniform2f(uniforms.u_domainY!, state.domainY[0], state.domainY[1])
     gl.uniform1i(uniforms.u_scaleType!, state.scaleType === 'log' ? 1 : 0)
-    gl.uniform1f(uniforms.u_numRows!, this.buffers.numRows)
+    gl.uniform1f(uniforms.u_numRows!, buffers.numRows)
     gl.uniform1f(uniforms.u_rowPadding!, state.rowPadding)
 
     gl.bindVertexArray(vao)
 
     if (renderingType === 'multirowline') {
-      gl.drawArraysInstanced(gl.LINES, 0, 6, this.buffers.totalFeatureCount)
+      gl.drawArraysInstanced(gl.LINES, 0, 6, buffers.totalFeatureCount)
     } else {
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.totalFeatureCount)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.totalFeatureCount)
     }
 
     gl.bindVertexArray(null)
   }
 
-  private deleteBuffers() {
-    const gl = this.gl
-    for (const buf of this.glBuffers) {
-      gl.deleteBuffer(buf)
+  clearAllBuffers() {
+    for (const regionNumber of [...this.buffersMap.keys()]) {
+      this.deleteBuffersForRegion(regionNumber)
     }
-    this.glBuffers = []
-    if (this.buffers) {
-      gl.deleteVertexArray(this.buffers.featureVAO)
-      if (this.buffers.lineVAO) {
-        gl.deleteVertexArray(this.buffers.lineVAO)
+  }
+
+  private deleteBuffersForRegion(regionNumber: number) {
+    const gl = this.gl
+    const glBuffers = this.glBuffersMap.get(regionNumber)
+    if (glBuffers) {
+      for (const buf of glBuffers) {
+        gl.deleteBuffer(buf)
       }
-      this.buffers = null
+      this.glBuffersMap.delete(regionNumber)
+    }
+    const buffers = this.buffersMap.get(regionNumber)
+    if (buffers) {
+      gl.deleteVertexArray(buffers.featureVAO)
+      if (buffers.lineVAO) {
+        gl.deleteVertexArray(buffers.lineVAO)
+      }
+      this.buffersMap.delete(regionNumber)
     }
   }
 
   destroy() {
-    this.deleteBuffers()
+    this.clearAllBuffers()
     const gl = this.gl
     gl.deleteProgram(this.xyplotProgram)
     gl.deleteProgram(this.densityProgram)

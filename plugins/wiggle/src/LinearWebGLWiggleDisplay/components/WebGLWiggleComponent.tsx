@@ -13,7 +13,7 @@ import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
-import type { RenderingType } from './WebGLWiggleRenderer.ts'
+import type { WiggleRenderBlock, RenderingType } from './WebGLWiggleRenderer.ts'
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -22,7 +22,17 @@ type LGV = LinearGenomeViewModel
 
 export interface WiggleDisplayModel {
   rpcData: WebGLWiggleDataResult | null
+  rpcDataMap: Map<number, WebGLWiggleDataResult>
   visibleRegion: { start: number; end: number } | null
+  visibleRegions: {
+    refName: string
+    regionNumber: number
+    start: number
+    end: number
+    assemblyName: string
+    screenStartPx: number
+    screenEndPx: number
+  }[]
   height: number
   domain: [number, number] | undefined
   scaleType: string
@@ -70,21 +80,28 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     }
   }, [])
 
-  // Upload data when rpcData changes
+  // Upload data when rpcDataMap changes
   useEffect(() => {
     const renderer = rendererRef.current
-    const data = model.rpcData
-    if (!renderer || !data) {
+    if (!renderer) {
       return
     }
 
-    renderer.uploadFromTypedArrays({
-      regionStart: data.regionStart,
-      featurePositions: data.featurePositions,
-      featureScores: data.featureScores,
-      numFeatures: data.numFeatures,
-    })
-  }, [model.rpcData])
+    const dataMap = model.rpcDataMap
+    if (dataMap.size === 0) {
+      renderer.clearAllBuffers()
+      return
+    }
+
+    for (const [regionNumber, data] of dataMap) {
+      renderer.uploadForRegion(regionNumber, {
+        regionStart: data.regionStart,
+        featurePositions: data.featurePositions,
+        featureScores: data.featureScores,
+        numFeatures: data.numFeatures,
+      })
+    }
+  }, [model.rpcDataMap])
 
   // Render with explicit domain (for immediate rendering during interaction)
   const renderWithDomain = useCallback(
@@ -97,7 +114,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       if (!domain) {
         return
       }
-      const width = Math.round(view.dynamicBlocks.totalWidthPx)
+      const width = Math.round(view.width)
       const height = model.height
       const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
 
@@ -138,8 +155,8 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       return
     }
 
-    const visibleRegion = model.visibleRegion
-    if (!visibleRegion) {
+    const visibleRegions = model.visibleRegions
+    if (visibleRegions.length === 0) {
       return
     }
 
@@ -153,16 +170,30 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       return
     }
 
-    const width = Math.round(view.dynamicBlocks.totalWidthPx)
+    const width = Math.round(view.width)
     const height = model.height
 
-    // Check if we should use bicolor (default color is the magenta default)
     const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
 
-    // Use RAF for smooth rendering but only render once per state change
+    // Build blocks from visibleRegions
+    const blocks: WiggleRenderBlock[] = []
+    for (const vr of visibleRegions) {
+      blocks.push({
+        regionNumber: vr.regionNumber,
+        domainX: [vr.start, vr.end],
+        screenStartPx: vr.screenStartPx,
+        screenEndPx: vr.screenEndPx,
+      })
+    }
+
+    // Set canvas size
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width
+      canvas.height = height
+    }
+
     rafRef.current = requestAnimationFrame(() => {
-      renderer.render({
-        domainX: [visibleRegion.start, visibleRegion.end],
+      renderer.renderBlocks(blocks, {
         domainY: domain,
         scaleType: model.scaleType as 'linear' | 'log',
         color: parseColor(model.color),
@@ -170,7 +201,6 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         negColor: parseColor(model.negColor),
         bicolorPivot: model.bicolorPivot,
         useBicolor,
-        canvasWidth: width,
         canvasHeight: height,
         renderingType: model.renderingType as RenderingType,
       })
@@ -183,18 +213,20 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     }
   }, [
     model,
-    model.rpcData,
+    model.rpcDataMap,
     model.height,
     model.color,
     model.scaleType,
     model.renderingType,
-    model.visibleRegion,
+    model.visibleRegions,
     model.domain,
     view.initialized,
-    view.dynamicBlocks.totalWidthPx,
+    view.width,
+    view.offsetPx,
+    view.bpPerPx,
   ])
 
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const width = Math.round(view.width)
   const height = model.height
   const { trackLabels } = view
   const track = getContainingTrack(model)
