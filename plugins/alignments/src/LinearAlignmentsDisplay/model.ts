@@ -127,8 +127,8 @@ function getSequenceAdapter(session: any, region: Region) {
   return sequenceAdapterConfig ? getSnapshot(sequenceAdapterConfig) : undefined
 }
 
-const WebGLPileupComponent = lazy(
-  () => import('./components/WebGLPileupComponent.tsx'),
+const WebGLAlignmentsComponent = lazy(
+  () => import('./components/WebGLAlignmentsComponent.tsx'),
 )
 
 const WebGLTooltip = lazy(() => import('./components/WebGLTooltip.tsx'))
@@ -149,7 +149,7 @@ export const ColorScheme = {
 } as const
 
 /**
- * State model factory for WebGL Pileup Display
+ * State model factory for LinearAlignmentsDisplay
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -238,7 +238,7 @@ export default function stateModelFactory(
        * Use custom component instead of block-based rendering
        */
       get DisplayMessageComponent() {
-        return WebGLPileupComponent
+        return WebGLAlignmentsComponent
       },
 
       /**

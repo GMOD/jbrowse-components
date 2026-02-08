@@ -4,7 +4,7 @@ import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-ge
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * Configuration schema for the WebGL Pileup Display
+ * Configuration schema for the LinearAlignmentsDisplay
  */
 export default function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(

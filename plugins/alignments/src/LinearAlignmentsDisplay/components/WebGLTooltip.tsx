@@ -225,7 +225,7 @@ interface IndicatorTooltipData {
 type TooltipDataType = CoverageTooltipData | IndicatorTooltipData | string
 
 /**
- * Custom Tooltip for WebGL Pileup Display
+ * Custom Tooltip for LinearAlignmentsDisplay
  * Supports flag-style tooltip with vertical line indicator for coverage
  */
 const WebGLTooltip = observer(function WebGLTooltip({

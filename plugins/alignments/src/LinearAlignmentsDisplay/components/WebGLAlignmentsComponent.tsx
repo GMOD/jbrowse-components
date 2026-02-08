@@ -176,7 +176,9 @@ export interface Props {
 }
 
 /**
- * WebGL Pileup Component
+ * WebGL Alignments Component
+ *
+ * Renders pileup, arcs, and cloud modes in a single WebGL canvas with shared coverage.
  *
  * Architecture: Hybrid approach - MobX is source of truth, but render immediately.
  *
@@ -190,7 +192,7 @@ export interface Props {
  * The useEffect watching MobX state handles external navigation (keyboard, clicks).
  */
 
-const WebGLPileupComponent = observer(function WebGLPileupComponent({
+const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   model,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -2048,4 +2050,4 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   )
 })
 
-export default WebGLPileupComponent
+export default WebGLAlignmentsComponent

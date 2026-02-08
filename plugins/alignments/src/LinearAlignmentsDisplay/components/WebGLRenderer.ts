@@ -1,7 +1,8 @@
 /**
- * WebGL Renderer for pileup display
+ * WebGL Renderer for alignments display
  *
- * Handles shader compilation, buffer management, and rendering.
+ * Handles pileup, arcs, and cloud rendering modes with shared coverage.
+ * Manages shader compilation, buffer management, and rendering.
  * Data is uploaded once, then rendering only updates uniforms.
  *
  * High-precision position handling inspired by genome-spy
@@ -3092,31 +3093,40 @@ export class WebGLRenderer {
       return
     }
 
-    const mode = state.renderingMode ?? 'pileup'
-
-    // Dispatch to mode-specific rendering
-    if (mode === 'arcs') {
-      this.renderArcs(state)
-      return
-    }
-    if (mode === 'cloud') {
-      this.renderCloud(state)
-      return
-    }
-
-    if (this.buffers.readCount === 0) {
-      return
-    }
-
-    // Convert domainX to offsets from regionStart for CIGAR features (simple float precision)
+    // Common preamble for all rendering modes
     const regionStart = this.buffers.regionStart
     const domainOffset: [number, number] = [
       state.domainX[0] - regionStart,
       state.domainX[1] - regionStart,
     ]
-
-    // Get color palette - used by multiple shaders
     const colors = { ...defaultColorPalette, ...state.colors }
+
+    // Draw coverage first (at top) — shared across all modes
+    this.renderCoverage(state, domainOffset, colors)
+
+    const mode = state.renderingMode ?? 'pileup'
+
+    // Dispatch to mode-specific rendering
+    if (mode === 'arcs') {
+      this.renderArcs(state)
+    } else if (mode === 'cloud') {
+      this.renderCloud(state)
+    } else {
+      this.renderPileup(state, domainOffset, colors)
+    }
+  }
+
+  private renderPileup(
+    state: RenderState,
+    domainOffset: [number, number],
+    colors: ColorPalette,
+  ) {
+    const gl = this.gl
+    if (!this.buffers || this.buffers.readCount === 0) {
+      return
+    }
+
+    const { canvasWidth, canvasHeight } = state
 
     // Compute high-precision split domain for reads (12-bit split approach).
     // Uses splitPositionWithFrac to preserve fractional scroll position - without this,
@@ -3125,9 +3135,6 @@ export class WebGLRenderer {
       state.domainX[0],
     )
     const domainExtent = state.domainX[1] - state.domainX[0]
-
-    // Draw coverage first (at top)
-    this.renderCoverage(state, domainOffset, colors)
 
     // Draw reads
     const coverageOffset = state.showCoverage ? state.coverageHeight : 0
@@ -3690,14 +3697,6 @@ export class WebGLRenderer {
       return
     }
 
-    const regionStart = this.buffers.regionStart
-    const domainOffset: [number, number] = [
-      state.domainX[0] - regionStart,
-      state.domainX[1] - regionStart,
-    ]
-    const colors = { ...defaultColorPalette, ...state.colors }
-    this.renderCoverage(state, domainOffset, colors)
-
     const { canvasWidth, canvasHeight } = state
     const lineWidth = state.arcLineWidth ?? 1
 
@@ -3779,14 +3778,6 @@ export class WebGLRenderer {
     if (!this.buffers || !this.cloudProgram) {
       return
     }
-
-    const regionStart = this.buffers.regionStart
-    const domainOffset: [number, number] = [
-      state.domainX[0] - regionStart,
-      state.domainX[1] - regionStart,
-    ]
-    const colors = { ...defaultColorPalette, ...state.colors }
-    this.renderCoverage(state, domainOffset, colors)
 
     if (!this.buffers.cloudVAO || this.buffers.cloudCount === 0) {
       return
