@@ -19,6 +19,9 @@
  * reads appear to "stick" at integer positions and snap when crossing boundaries.
  */
 
+import { colord } from '@jbrowse/core/util/colord'
+
+import { fillColor } from '../../shared/color.ts'
 import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
@@ -1278,6 +1281,254 @@ export const defaultColorPalette: ColorPalette = {
   colorModificationRev: [0.784, 0.863, 0.784], // #c8dcc8
 }
 
+// ---- Arc shader constants ----
+const ARC_CURVE_SEGMENTS = 64
+const NUM_ARC_COLORS = 8
+const NUM_LINE_COLORS = 2
+
+function cssColorToRgb(color: string): RGBColor {
+  const { r, g, b } = colord(color).toRgb()
+  return [r / 255, g / 255, b / 255]
+}
+
+const arcColorPalette: RGBColor[] = [
+  cssColorToRgb(fillColor.color_pair_lr),
+  cssColorToRgb(fillColor.color_longinsert),
+  cssColorToRgb(fillColor.color_shortinsert),
+  cssColorToRgb(fillColor.color_interchrom),
+  cssColorToRgb(fillColor.color_pair_ll),
+  cssColorToRgb(fillColor.color_pair_rr),
+  cssColorToRgb(fillColor.color_pair_rl),
+  cssColorToRgb(fillColor.color_longread_rev_fwd),
+]
+
+const arcLineColorPalette: RGBColor[] = [
+  cssColorToRgb(fillColor.color_interchrom),
+  cssColorToRgb(fillColor.color_longinsert),
+]
+
+const ARC_VERTEX_SHADER = `#version 300 es
+precision highp float;
+in float a_t;
+in float a_side;
+in float a_x1;
+in float a_x2;
+in float a_colorType;
+in float a_isArc;
+
+uniform float u_domainStartOffset;
+uniform float u_domainExtent;
+uniform float u_canvasWidth;
+uniform float u_canvasHeight;
+uniform float u_coverageOffset;
+uniform float u_lineWidthPx;
+uniform float u_gradientHue;
+uniform vec3 u_arcColors[${NUM_ARC_COLORS}];
+
+out vec4 v_color;
+out float v_dist;
+
+const float PI = 3.14159265359;
+
+vec3 getArcColor(float colorType) {
+  int idx = int(colorType + 0.5);
+  if (idx < ${NUM_ARC_COLORS}) {
+    return u_arcColors[idx];
+  }
+  float h = u_gradientHue / 360.0;
+  float s = 0.5;
+  float l = 0.5;
+  float c = (1.0 - abs(2.0 * l - 1.0)) * s;
+  float xc = c * (1.0 - abs(mod(h * 6.0, 2.0) - 1.0));
+  float m = l - c / 2.0;
+  vec3 rgb;
+  if (h < 1.0/6.0) rgb = vec3(c, xc, 0.0);
+  else if (h < 2.0/6.0) rgb = vec3(xc, c, 0.0);
+  else if (h < 3.0/6.0) rgb = vec3(0.0, c, xc);
+  else if (h < 4.0/6.0) rgb = vec3(0.0, xc, c);
+  else if (h < 5.0/6.0) rgb = vec3(xc, 0.0, c);
+  else rgb = vec3(c, 0.0, xc);
+  return rgb + m;
+}
+
+vec2 evalCurve(float t) {
+  float radius = (a_x2 - a_x1) / 2.0;
+  float absrad = abs(radius);
+  float cx = a_x1 + radius;
+  float pxPerBp = u_canvasWidth / u_domainExtent;
+  float absradPx = absrad * pxPerBp;
+  float availableHeight = u_canvasHeight - u_coverageOffset;
+  float destY = min(availableHeight, absradPx);
+  float x_bp, y_px;
+  if (a_isArc > 0.5) {
+    float angle = t * PI;
+    x_bp = cx + cos(angle) * radius;
+    float rawY = sin(angle) * absradPx;
+    y_px = (absradPx > 0.0) ? rawY * (destY / absradPx) : 0.0;
+  } else {
+    float mt = 1.0 - t;
+    float mt2 = mt * mt;
+    float mt3 = mt2 * mt;
+    float t2 = t * t;
+    float t3 = t2 * t;
+    x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
+    y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
+  }
+  float screenX = (x_bp - u_domainStartOffset) * pxPerBp;
+  return vec2(screenX, y_px);
+}
+
+void main() {
+  vec2 pos = evalCurve(a_t);
+  float eps = 1.0 / ${ARC_CURVE_SEGMENTS}.0;
+  float t0 = max(a_t - eps * 0.5, 0.0);
+  float t1 = min(a_t + eps * 0.5, 1.0);
+  vec2 p0 = evalCurve(t0);
+  vec2 p1 = evalCurve(t1);
+  vec2 tangent = p1 - p0;
+  float tangentLen = length(tangent);
+  vec2 normal;
+  if (tangentLen > 0.001) {
+    tangent /= tangentLen;
+    normal = vec2(-tangent.y, tangent.x);
+  } else {
+    normal = vec2(0.0, 1.0);
+  }
+  float halfWidth = u_lineWidthPx * 0.5 + 0.5;
+  pos += normal * halfWidth * a_side;
+  float clipX = (pos.x / u_canvasWidth) * 2.0 - 1.0;
+  float clipY = 1.0 - ((pos.y + u_coverageOffset) / u_canvasHeight) * 2.0;
+  gl_Position = vec4(clipX, clipY, 0.0, 1.0);
+  v_dist = a_side * halfWidth;
+  v_color = vec4(getArcColor(a_colorType), 1.0);
+}
+`
+
+const ARC_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+in float v_dist;
+uniform float u_lineWidthPx;
+out vec4 fragColor;
+void main() {
+  float halfWidth = u_lineWidthPx * 0.5;
+  float d = abs(v_dist);
+  float aa = fwidth(v_dist);
+  float alpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
+  fragColor = vec4(v_color.rgb, v_color.a * alpha);
+}
+`
+
+const ARC_LINE_VERTEX_SHADER = `#version 300 es
+precision highp float;
+precision highp int;
+in uint a_position;
+in float a_y;
+in float a_colorType;
+uniform vec3 u_domainX;
+uniform uint u_regionStart;
+uniform float u_canvasHeight;
+uniform float u_coverageOffset;
+uniform vec3 u_arcLineColors[${NUM_LINE_COLORS}];
+out vec4 v_color;
+
+${HP_GLSL_FUNCTIONS}
+
+void main() {
+  uint absPos = a_position + u_regionStart;
+  vec2 splitPos = hpSplitUint(absPos);
+  float sx = hpToClipX(splitPos, u_domainX);
+  float sy = 1.0 - ((a_y + u_coverageOffset) / u_canvasHeight) * 2.0;
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  int idx = int(a_colorType + 0.5);
+  if (idx < ${NUM_LINE_COLORS}) {
+    v_color = vec4(u_arcLineColors[idx], 1.0);
+  } else {
+    v_color = vec4(u_arcLineColors[0], 1.0);
+  }
+}
+`
+
+const ARC_LINE_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
+// ---- Cloud shader constants ----
+const CLOUD_VERTEX_SHADER = `#version 300 es
+precision highp float;
+precision highp int;
+in uvec2 a_position;
+in float a_y;
+in float a_flags;
+in float a_colorType;
+uniform vec3 u_domainX;
+uniform uint u_regionStart;
+uniform float u_featureHeight;
+uniform float u_canvasHeight;
+uniform float u_coverageOffset;
+uniform int u_colorScheme;
+out vec4 v_color;
+
+${HP_GLSL_FUNCTIONS}
+
+vec3 getInsertSizeOrientationColor(float colorType, float flags) {
+  if (colorType < 0.5) return vec3(0.55, 0.55, 0.55);
+  if (colorType < 1.5) return vec3(0.85, 0.25, 0.25);
+  if (colorType < 2.5) return vec3(0.25, 0.35, 0.85);
+  if (colorType < 3.5) return vec3(0.5, 0.0, 0.5);
+  return vec3(0.0, 0.5, 0.0);
+}
+
+vec3 cloudStrandColor(float flags) {
+  bool isReverse = mod(floor(flags / 16.0), 2.0) > 0.5;
+  return isReverse ? vec3(0.55, 0.55, 0.85) : vec3(0.85, 0.55, 0.55);
+}
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+  uint absStart = a_position.x + u_regionStart;
+  uint absEnd = a_position.y + u_regionStart;
+  vec2 splitStart = hpSplitUint(absStart);
+  vec2 splitEnd = hpSplitUint(absEnd);
+  float sx1 = hpToClipX(splitStart, u_domainX);
+  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx = mix(sx1, sx2, localX);
+  float availableHeight = u_canvasHeight - u_coverageOffset;
+  float yTopPx = u_coverageOffset + (1.0 - a_y) * availableHeight - u_featureHeight * 0.5;
+  float yBotPx = yTopPx + u_featureHeight;
+  float pxToClip = 2.0 / u_canvasHeight;
+  float syTop = 1.0 - yTopPx * pxToClip;
+  float syBot = 1.0 - yBotPx * pxToClip;
+  float sy = mix(syBot, syTop, localY);
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  vec3 color;
+  if (u_colorScheme == 0) {
+    color = getInsertSizeOrientationColor(a_colorType, a_flags);
+  } else if (u_colorScheme == 1) {
+    color = cloudStrandColor(a_flags);
+  } else {
+    color = vec3(0.55);
+  }
+  v_color = vec4(color, 1.0);
+}
+`
+
+const CLOUD_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
 export interface RenderState {
   domainX: [number, number] // absolute genomic positions
   rangeY: [number, number]
@@ -1300,6 +1551,12 @@ export interface RenderState {
   selectedFeatureIndex: number
   // Optional color palette - uses defaultColorPalette if not provided
   colors?: Partial<ColorPalette>
+  // Rendering mode - 'pileup' (default), 'arcs', or 'cloud'
+  renderingMode?: 'pileup' | 'arcs' | 'cloud'
+  // Arcs-specific
+  arcLineWidth?: number
+  // Cloud-specific
+  cloudColorScheme?: number
 }
 
 interface GPUBuffers {
@@ -1340,6 +1597,14 @@ interface GPUBuffers {
   modificationCount: number
   modCoverageVAO: WebGLVertexArrayObject | null
   modCoverageCount: number
+  // Arcs mode
+  arcVAO: WebGLVertexArrayObject | null
+  arcCount: number
+  arcLineVAO: WebGLVertexArrayObject | null
+  arcLineCount: number
+  // Cloud mode
+  cloudVAO: WebGLVertexArrayObject | null
+  cloudCount: number
 }
 
 export class WebGLRenderer {
@@ -1379,6 +1644,19 @@ export class WebGLRenderer {
   private hardclipUniforms: Record<string, WebGLUniformLocation | null> = {}
   private modificationUniforms: Record<string, WebGLUniformLocation | null> = {}
   private modCoverageUniforms: Record<string, WebGLUniformLocation | null> = {}
+
+  // Arcs mode
+  private arcProgram: WebGLProgram | null = null
+  private arcLineProgram: WebGLProgram | null = null
+  private arcTemplateBuffer: WebGLBuffer | null = null
+  private arcInstanceBuffers: WebGLBuffer[] = []
+  private arcUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private arcLineUniforms: Record<string, WebGLUniformLocation | null> = {}
+
+  // Cloud mode
+  private cloudProgram: WebGLProgram | null = null
+  private cloudGLBuffers: WebGLBuffer[] = []
+  private cloudUniforms: Record<string, WebGLUniformLocation | null> = {}
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -1576,6 +1854,71 @@ export class WebGLRenderer {
       'u_canvasWidth',
     ])
 
+    // Arcs programs
+    this.arcProgram = this.createProgram(ARC_VERTEX_SHADER, ARC_FRAGMENT_SHADER)
+    this.arcLineProgram = this.createProgram(
+      ARC_LINE_VERTEX_SHADER,
+      ARC_LINE_FRAGMENT_SHADER,
+    )
+
+    this.cacheUniforms(this.arcProgram, this.arcUniforms, [
+      'u_domainStartOffset',
+      'u_domainExtent',
+      'u_canvasWidth',
+      'u_canvasHeight',
+      'u_coverageOffset',
+      'u_lineWidthPx',
+      'u_gradientHue',
+    ])
+    for (let i = 0; i < NUM_ARC_COLORS; i++) {
+      this.arcUniforms[`u_arcColors[${i}]`] = gl.getUniformLocation(
+        this.arcProgram,
+        `u_arcColors[${i}]`,
+      )
+    }
+
+    this.cacheUniforms(this.arcLineProgram, this.arcLineUniforms, [
+      'u_domainX',
+      'u_regionStart',
+      'u_canvasHeight',
+      'u_coverageOffset',
+    ])
+    for (let i = 0; i < NUM_LINE_COLORS; i++) {
+      this.arcLineUniforms[`u_arcLineColors[${i}]`] = gl.getUniformLocation(
+        this.arcLineProgram,
+        `u_arcLineColors[${i}]`,
+      )
+    }
+
+    // Arc template buffer (shared triangle strip for instanced curves)
+    const numArcVertices = (ARC_CURVE_SEGMENTS + 1) * 2
+    const templateData = new Float32Array(numArcVertices * 2)
+    for (let i = 0; i <= ARC_CURVE_SEGMENTS; i++) {
+      const t = i / ARC_CURVE_SEGMENTS
+      const base = i * 4
+      templateData[base + 0] = t
+      templateData[base + 1] = 1
+      templateData[base + 2] = t
+      templateData[base + 3] = -1
+    }
+    this.arcTemplateBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.arcTemplateBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, templateData, gl.STATIC_DRAW)
+
+    // Cloud program
+    this.cloudProgram = this.createProgram(
+      CLOUD_VERTEX_SHADER,
+      CLOUD_FRAGMENT_SHADER,
+    )
+    this.cacheUniforms(this.cloudProgram, this.cloudUniforms, [
+      'u_domainX',
+      'u_regionStart',
+      'u_featureHeight',
+      'u_canvasHeight',
+      'u_coverageOffset',
+      'u_colorScheme',
+    ])
+
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
   }
@@ -1686,10 +2029,71 @@ export class WebGLRenderer {
       if (oldBuffers.modCoverageVAO) {
         gl.deleteVertexArray(oldBuffers.modCoverageVAO)
       }
+      if (oldBuffers.arcVAO) {
+        gl.deleteVertexArray(oldBuffers.arcVAO)
+      }
+      if (oldBuffers.arcLineVAO) {
+        gl.deleteVertexArray(oldBuffers.arcLineVAO)
+      }
+      if (oldBuffers.cloudVAO) {
+        gl.deleteVertexArray(oldBuffers.cloudVAO)
+      }
     }
+    // Clean up arc instance buffers
+    for (const buf of this.arcInstanceBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.arcInstanceBuffers = []
+    // Clean up cloud buffers
+    for (const buf of this.cloudGLBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.cloudGLBuffers = []
 
     if (data.numReads === 0) {
-      this.buffers = null
+      // Create a minimal buffers object so arcs/cloud modes can attach their data
+      const emptyVAO = gl.createVertexArray()!
+      gl.bindVertexArray(emptyVAO)
+      gl.bindVertexArray(null)
+      this.buffers = {
+        regionStart: data.regionStart,
+        readVAO: emptyVAO,
+        readCount: 0,
+        readPositions: data.readPositions,
+        readYs: data.readYs,
+        readStrands: data.readStrands,
+        coverageVAO: null,
+        coverageCount: 0,
+        maxDepth: 0,
+        binSize: 1,
+        snpCoverageVAO: null,
+        snpCoverageCount: 0,
+        noncovHistogramVAO: null,
+        noncovHistogramCount: 0,
+        noncovMaxCount: 0,
+        indicatorVAO: null,
+        indicatorCount: 0,
+        gapVAO: null,
+        gapCount: 0,
+        mismatchVAO: null,
+        mismatchCount: 0,
+        insertionVAO: null,
+        insertionCount: 0,
+        softclipVAO: null,
+        softclipCount: 0,
+        hardclipVAO: null,
+        hardclipCount: 0,
+        modificationVAO: null,
+        modificationCount: 0,
+        modCoverageVAO: null,
+        modCoverageCount: 0,
+        arcVAO: null,
+        arcCount: 0,
+        arcLineVAO: null,
+        arcLineCount: 0,
+        cloudVAO: null,
+        cloudCount: 0,
+      }
       return
     }
 
@@ -1774,6 +2178,12 @@ export class WebGLRenderer {
       modificationCount: 0,
       modCoverageVAO: null,
       modCoverageCount: 0,
+      arcVAO: null,
+      arcCount: 0,
+      arcLineVAO: null,
+      arcLineCount: 0,
+      cloudVAO: null,
+      cloudCount: 0,
     }
   }
 
@@ -2378,6 +2788,289 @@ export class WebGLRenderer {
     gl.vertexAttribDivisor(loc, 1)
   }
 
+  /**
+   * Ensure a buffers object exists (needed for arcs/cloud modes that don't have pileup data)
+   */
+  ensureBuffers(regionStart: number) {
+    if (this.buffers) {
+      return
+    }
+    const gl = this.gl
+    const emptyVAO = gl.createVertexArray()!
+    gl.bindVertexArray(emptyVAO)
+    gl.bindVertexArray(null)
+    this.buffers = {
+      regionStart,
+      readVAO: emptyVAO,
+      readCount: 0,
+      readPositions: new Uint32Array(0),
+      readYs: new Uint16Array(0),
+      readStrands: new Int8Array(0),
+      coverageVAO: null,
+      coverageCount: 0,
+      maxDepth: 0,
+      binSize: 1,
+      snpCoverageVAO: null,
+      snpCoverageCount: 0,
+      noncovHistogramVAO: null,
+      noncovHistogramCount: 0,
+      noncovMaxCount: 0,
+      indicatorVAO: null,
+      indicatorCount: 0,
+      gapVAO: null,
+      gapCount: 0,
+      mismatchVAO: null,
+      mismatchCount: 0,
+      insertionVAO: null,
+      insertionCount: 0,
+      softclipVAO: null,
+      softclipCount: 0,
+      hardclipVAO: null,
+      hardclipCount: 0,
+      modificationVAO: null,
+      modificationCount: 0,
+      modCoverageVAO: null,
+      modCoverageCount: 0,
+      arcVAO: null,
+      arcCount: 0,
+      arcLineVAO: null,
+      arcLineCount: 0,
+      cloudVAO: null,
+      cloudCount: 0,
+    }
+  }
+
+  /**
+   * Upload arcs data from pre-computed typed arrays (from RPC worker)
+   */
+  uploadArcsFromTypedArrays(data: {
+    regionStart: number
+    arcX1: Float32Array
+    arcX2: Float32Array
+    arcColorTypes: Float32Array
+    arcIsArc: Uint8Array
+    numArcs: number
+    linePositions: Uint32Array
+    lineYs: Float32Array
+    lineColorTypes: Float32Array
+    numLines: number
+  }) {
+    const gl = this.gl
+    this.ensureBuffers(data.regionStart)
+
+    if (!this.buffers || !this.arcProgram || !this.arcLineProgram) {
+      return
+    }
+
+    // Clean up old arcs VAOs
+    if (this.buffers.arcVAO) {
+      gl.deleteVertexArray(this.buffers.arcVAO)
+      this.buffers.arcVAO = null
+    }
+    if (this.buffers.arcLineVAO) {
+      gl.deleteVertexArray(this.buffers.arcLineVAO)
+      this.buffers.arcLineVAO = null
+    }
+    for (const buf of this.arcInstanceBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.arcInstanceBuffers = []
+
+    if (data.numArcs > 0) {
+      const arcVAO = gl.createVertexArray()!
+      gl.bindVertexArray(arcVAO)
+
+      const stride = 2 * 4 // 2 floats * 4 bytes
+
+      // Per-vertex: template t values
+      const tLoc = gl.getAttribLocation(this.arcProgram, 'a_t')
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.arcTemplateBuffer)
+      gl.enableVertexAttribArray(tLoc)
+      gl.vertexAttribPointer(tLoc, 1, gl.FLOAT, false, stride, 0)
+
+      // Per-vertex: side (-1 or +1)
+      const sideLoc = gl.getAttribLocation(this.arcProgram, 'a_side')
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.arcTemplateBuffer)
+      gl.enableVertexAttribArray(sideLoc)
+      gl.vertexAttribPointer(sideLoc, 1, gl.FLOAT, false, stride, 4)
+
+      // Per-instance: a_x1
+      const x1Buf = gl.createBuffer()!
+      gl.bindBuffer(gl.ARRAY_BUFFER, x1Buf)
+      gl.bufferData(gl.ARRAY_BUFFER, data.arcX1, gl.STATIC_DRAW)
+      const x1Loc = gl.getAttribLocation(this.arcProgram, 'a_x1')
+      gl.enableVertexAttribArray(x1Loc)
+      gl.vertexAttribPointer(x1Loc, 1, gl.FLOAT, false, 0, 0)
+      gl.vertexAttribDivisor(x1Loc, 1)
+      this.arcInstanceBuffers.push(x1Buf)
+
+      // Per-instance: a_x2
+      const x2Buf = gl.createBuffer()!
+      gl.bindBuffer(gl.ARRAY_BUFFER, x2Buf)
+      gl.bufferData(gl.ARRAY_BUFFER, data.arcX2, gl.STATIC_DRAW)
+      const x2Loc = gl.getAttribLocation(this.arcProgram, 'a_x2')
+      gl.enableVertexAttribArray(x2Loc)
+      gl.vertexAttribPointer(x2Loc, 1, gl.FLOAT, false, 0, 0)
+      gl.vertexAttribDivisor(x2Loc, 1)
+      this.arcInstanceBuffers.push(x2Buf)
+
+      // Per-instance: a_colorType
+      const colorBuf = gl.createBuffer()!
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf)
+      gl.bufferData(gl.ARRAY_BUFFER, data.arcColorTypes, gl.STATIC_DRAW)
+      const colorLoc = gl.getAttribLocation(this.arcProgram, 'a_colorType')
+      gl.enableVertexAttribArray(colorLoc)
+      gl.vertexAttribPointer(colorLoc, 1, gl.FLOAT, false, 0, 0)
+      gl.vertexAttribDivisor(colorLoc, 1)
+      this.arcInstanceBuffers.push(colorBuf)
+
+      // Per-instance: a_isArc (Uint8 → float)
+      const isArcFloat = new Float32Array(data.arcIsArc.length)
+      for (let i = 0; i < data.arcIsArc.length; i++) {
+        isArcFloat[i] = data.arcIsArc[i]!
+      }
+      const isArcBuf = gl.createBuffer()!
+      gl.bindBuffer(gl.ARRAY_BUFFER, isArcBuf)
+      gl.bufferData(gl.ARRAY_BUFFER, isArcFloat, gl.STATIC_DRAW)
+      const isArcLoc = gl.getAttribLocation(this.arcProgram, 'a_isArc')
+      gl.enableVertexAttribArray(isArcLoc)
+      gl.vertexAttribPointer(isArcLoc, 1, gl.FLOAT, false, 0, 0)
+      gl.vertexAttribDivisor(isArcLoc, 1)
+      this.arcInstanceBuffers.push(isArcBuf)
+
+      gl.bindVertexArray(null)
+      this.buffers.arcVAO = arcVAO
+      this.buffers.arcCount = data.numArcs
+    } else {
+      this.buffers.arcCount = 0
+    }
+
+    // Lines for inter-chromosomal / long-range connections
+    if (data.numLines > 0) {
+      const arcLineVAO = gl.createVertexArray()!
+      gl.bindVertexArray(arcLineVAO)
+
+      const posLoc = gl.getAttribLocation(this.arcLineProgram, 'a_position')
+      const posBuf = gl.createBuffer()!
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBuf)
+      gl.bufferData(gl.ARRAY_BUFFER, data.linePositions, gl.STATIC_DRAW)
+      gl.enableVertexAttribArray(posLoc)
+      gl.vertexAttribIPointer(posLoc, 1, gl.UNSIGNED_INT, 0, 0)
+      this.arcInstanceBuffers.push(posBuf)
+
+      const yLoc = gl.getAttribLocation(this.arcLineProgram, 'a_y')
+      const yBuf = gl.createBuffer()!
+      gl.bindBuffer(gl.ARRAY_BUFFER, yBuf)
+      gl.bufferData(gl.ARRAY_BUFFER, data.lineYs, gl.STATIC_DRAW)
+      gl.enableVertexAttribArray(yLoc)
+      gl.vertexAttribPointer(yLoc, 1, gl.FLOAT, false, 0, 0)
+      this.arcInstanceBuffers.push(yBuf)
+
+      const colorLoc = gl.getAttribLocation(this.arcLineProgram, 'a_colorType')
+      const colorBuf = gl.createBuffer()!
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf)
+      gl.bufferData(gl.ARRAY_BUFFER, data.lineColorTypes, gl.STATIC_DRAW)
+      gl.enableVertexAttribArray(colorLoc)
+      gl.vertexAttribPointer(colorLoc, 1, gl.FLOAT, false, 0, 0)
+      this.arcInstanceBuffers.push(colorBuf)
+
+      gl.bindVertexArray(null)
+      this.buffers.arcLineVAO = arcLineVAO
+      this.buffers.arcLineCount = data.numLines
+    } else {
+      this.buffers.arcLineCount = 0
+    }
+  }
+
+  /**
+   * Upload cloud data from pre-computed typed arrays (from RPC worker)
+   */
+  uploadCloudFromTypedArrays(data: {
+    regionStart: number
+    chainPositions: Uint32Array
+    chainYs: Float32Array
+    chainFlags: Uint16Array
+    chainColorTypes: Uint8Array
+    numChains: number
+  }) {
+    const gl = this.gl
+    this.ensureBuffers(data.regionStart)
+
+    if (!this.buffers || !this.cloudProgram) {
+      return
+    }
+
+    // Clean up old cloud VAO
+    if (this.buffers.cloudVAO) {
+      gl.deleteVertexArray(this.buffers.cloudVAO)
+      this.buffers.cloudVAO = null
+    }
+    for (const buf of this.cloudGLBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.cloudGLBuffers = []
+
+    if (data.numChains === 0) {
+      this.buffers.cloudCount = 0
+      return
+    }
+
+    const cloudVAO = gl.createVertexArray()!
+    gl.bindVertexArray(cloudVAO)
+
+    this.uploadCloudBuffer(
+      this.cloudProgram,
+      'a_position',
+      data.chainPositions,
+      2,
+      true,
+    )
+    this.uploadCloudBuffer(this.cloudProgram, 'a_y', data.chainYs, 1, false)
+    this.uploadCloudBuffer(
+      this.cloudProgram,
+      'a_flags',
+      new Float32Array(data.chainFlags),
+      1,
+      false,
+    )
+    this.uploadCloudBuffer(
+      this.cloudProgram,
+      'a_colorType',
+      new Float32Array(data.chainColorTypes),
+      1,
+      false,
+    )
+
+    gl.bindVertexArray(null)
+    this.buffers.cloudVAO = cloudVAO
+    this.buffers.cloudCount = data.numChains
+  }
+
+  private uploadCloudBuffer(
+    program: WebGLProgram,
+    attrib: string,
+    data: Uint32Array | Float32Array,
+    size: number,
+    isUint: boolean,
+  ) {
+    const gl = this.gl
+    const loc = gl.getAttribLocation(program, attrib)
+    if (loc < 0) {
+      return
+    }
+    const buffer = gl.createBuffer()!
+    this.cloudGLBuffers.push(buffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(loc)
+    if (isUint) {
+      gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_INT, 0, 0)
+    } else {
+      gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0)
+    }
+    gl.vertexAttribDivisor(loc, 1)
+  }
+
   render(state: RenderState) {
     const gl = this.gl
     const canvas = this.canvas
@@ -2395,7 +3088,23 @@ export class WebGLRenderer {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    if (!this.buffers || this.buffers.readCount === 0) {
+    if (!this.buffers) {
+      return
+    }
+
+    const mode = state.renderingMode ?? 'pileup'
+
+    // Dispatch to mode-specific rendering
+    if (mode === 'arcs') {
+      this.renderArcs(state)
+      return
+    }
+    if (mode === 'cloud') {
+      this.renderCloud(state)
+      return
+    }
+
+    if (this.buffers.readCount === 0) {
       return
     }
 
@@ -2418,198 +3127,7 @@ export class WebGLRenderer {
     const domainExtent = state.domainX[1] - state.domainX[0]
 
     // Draw coverage first (at top)
-    const willDrawCoverage =
-      state.showCoverage &&
-      this.buffers.coverageVAO &&
-      this.buffers.coverageCount > 0
-    if (willDrawCoverage) {
-      // Draw grey coverage bars - coverage uses offset-based positions
-      gl.useProgram(this.coverageProgram)
-      gl.uniform2f(
-        this.coverageUniforms.u_visibleRange!,
-        domainOffset[0],
-        domainOffset[1],
-      )
-      gl.uniform1f(
-        this.coverageUniforms.u_coverageHeight!,
-        state.coverageHeight,
-      )
-      gl.uniform1f(
-        this.coverageUniforms.u_coverageYOffset!,
-        state.coverageYOffset,
-      )
-      gl.uniform1f(this.coverageUniforms.u_binSize!, this.buffers.binSize)
-      gl.uniform1f(this.coverageUniforms.u_canvasHeight!, canvasHeight)
-      gl.uniform1f(this.coverageUniforms.u_canvasWidth!, canvasWidth)
-      // Coverage color uniform from theme
-      gl.uniform3f(
-        this.coverageUniforms.u_colorCoverage!,
-        ...colors.colorCoverage,
-      )
-
-      gl.bindVertexArray(this.buffers.coverageVAO)
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.coverageCount)
-
-      // Draw modification coverage bars OR SNP coverage bars (not both)
-      if (
-        state.showModifications &&
-        this.buffers.modCoverageVAO &&
-        this.buffers.modCoverageCount > 0
-      ) {
-        gl.useProgram(this.modCoverageProgram)
-        gl.uniform2f(
-          this.modCoverageUniforms.u_visibleRange!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform1f(
-          this.modCoverageUniforms.u_coverageHeight!,
-          state.coverageHeight,
-        )
-        gl.uniform1f(
-          this.modCoverageUniforms.u_coverageYOffset!,
-          state.coverageYOffset,
-        )
-        gl.uniform1f(this.modCoverageUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform1f(this.modCoverageUniforms.u_canvasWidth!, canvasWidth)
-
-        gl.bindVertexArray(this.buffers.modCoverageVAO)
-        gl.drawArraysInstanced(
-          gl.TRIANGLES,
-          0,
-          6,
-          this.buffers.modCoverageCount,
-        )
-      } else if (
-        this.buffers.snpCoverageVAO &&
-        this.buffers.snpCoverageCount > 0
-      ) {
-        gl.useProgram(this.snpCoverageProgram)
-        gl.uniform2f(
-          this.snpCoverageUniforms.u_visibleRange!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform1f(
-          this.snpCoverageUniforms.u_coverageHeight!,
-          state.coverageHeight,
-        )
-        gl.uniform1f(
-          this.snpCoverageUniforms.u_coverageYOffset!,
-          state.coverageYOffset,
-        )
-        gl.uniform1f(this.snpCoverageUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvasWidth)
-        // Base color uniforms from theme
-        gl.uniform3f(
-          this.snpCoverageUniforms.u_colorBaseA!,
-          ...colors.colorBaseA,
-        )
-        gl.uniform3f(
-          this.snpCoverageUniforms.u_colorBaseC!,
-          ...colors.colorBaseC,
-        )
-        gl.uniform3f(
-          this.snpCoverageUniforms.u_colorBaseG!,
-          ...colors.colorBaseG,
-        )
-        gl.uniform3f(
-          this.snpCoverageUniforms.u_colorBaseT!,
-          ...colors.colorBaseT,
-        )
-
-        gl.bindVertexArray(this.buffers.snpCoverageVAO)
-        gl.drawArraysInstanced(
-          gl.TRIANGLES,
-          0,
-          6,
-          this.buffers.snpCoverageCount,
-        )
-      }
-
-      // Draw noncov (interbase) histogram - bars growing DOWN from top
-      // Height is 1/4 of coverage height to keep it compact
-      const noncovHeight = state.coverageHeight / 4
-      if (
-        state.showInterbaseCounts &&
-        this.buffers.noncovHistogramVAO &&
-        this.buffers.noncovHistogramCount > 0
-      ) {
-        gl.useProgram(this.noncovHistogramProgram)
-        gl.uniform2f(
-          this.noncovHistogramUniforms.u_visibleRange!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform1f(this.noncovHistogramUniforms.u_noncovHeight!, noncovHeight)
-        gl.uniform1f(this.noncovHistogramUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform1f(this.noncovHistogramUniforms.u_canvasWidth!, canvasWidth)
-        // Indel/clip color uniforms from theme
-        gl.uniform3f(
-          this.noncovHistogramUniforms.u_colorInsertion!,
-          ...colors.colorInsertion,
-        )
-        gl.uniform3f(
-          this.noncovHistogramUniforms.u_colorSoftclip!,
-          ...colors.colorSoftclip,
-        )
-        gl.uniform3f(
-          this.noncovHistogramUniforms.u_colorHardclip!,
-          ...colors.colorHardclip,
-        )
-
-        gl.bindVertexArray(this.buffers.noncovHistogramVAO)
-        gl.drawArraysInstanced(
-          gl.TRIANGLES,
-          0,
-          6,
-          this.buffers.noncovHistogramCount,
-        )
-      }
-
-      // Draw interbase indicators - triangles at top of coverage area
-      if (
-        state.showInterbaseIndicators &&
-        this.buffers.indicatorVAO &&
-        this.buffers.indicatorCount > 0
-      ) {
-        gl.useProgram(this.indicatorProgram)
-        gl.uniform2f(
-          this.indicatorUniforms.u_visibleRange!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform1f(this.indicatorUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform1f(this.indicatorUniforms.u_canvasWidth!, canvasWidth)
-        // Indel/clip color uniforms from theme
-        gl.uniform3f(
-          this.indicatorUniforms.u_colorInsertion!,
-          ...colors.colorInsertion,
-        )
-        gl.uniform3f(
-          this.indicatorUniforms.u_colorSoftclip!,
-          ...colors.colorSoftclip,
-        )
-        gl.uniform3f(
-          this.indicatorUniforms.u_colorHardclip!,
-          ...colors.colorHardclip,
-        )
-
-        gl.bindVertexArray(this.buffers.indicatorVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.buffers.indicatorCount)
-      }
-
-      // Draw separator line at bottom of coverage area
-      const lineY = 1 - (state.coverageHeight / canvasHeight) * 2
-      gl.useProgram(this.lineProgram)
-      gl.uniform4f(this.lineUniforms.u_color!, 0.7, 0.7, 0.7, 1)
-
-      const lineData = new Float32Array([-1, lineY, 1, lineY])
-      gl.bindVertexArray(this.lineVAO)
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
-      gl.bufferData(gl.ARRAY_BUFFER, lineData, gl.DYNAMIC_DRAW)
-      gl.drawArrays(gl.LINES, 0, 2)
-    }
+    this.renderCoverage(state, domainOffset, colors)
 
     // Draw reads
     const coverageOffset = state.showCoverage ? state.coverageHeight : 0
@@ -2963,6 +3481,354 @@ export class WebGLRenderer {
     gl.bindVertexArray(null)
   }
 
+  private renderCoverage(
+    state: RenderState,
+    domainOffset: [number, number],
+    colors: ColorPalette,
+  ) {
+    const gl = this.gl
+    if (!this.buffers) {
+      return
+    }
+    const { canvasWidth, canvasHeight } = state
+
+    const willDrawCoverage =
+      state.showCoverage &&
+      this.buffers.coverageVAO &&
+      this.buffers.coverageCount > 0
+    if (!willDrawCoverage) {
+      return
+    }
+
+    // Draw grey coverage bars - coverage uses offset-based positions
+    gl.useProgram(this.coverageProgram)
+    gl.uniform2f(
+      this.coverageUniforms.u_visibleRange!,
+      domainOffset[0],
+      domainOffset[1],
+    )
+    gl.uniform1f(
+      this.coverageUniforms.u_coverageHeight!,
+      state.coverageHeight,
+    )
+    gl.uniform1f(
+      this.coverageUniforms.u_coverageYOffset!,
+      state.coverageYOffset,
+    )
+    gl.uniform1f(this.coverageUniforms.u_binSize!, this.buffers.binSize)
+    gl.uniform1f(this.coverageUniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform1f(this.coverageUniforms.u_canvasWidth!, canvasWidth)
+    gl.uniform3f(
+      this.coverageUniforms.u_colorCoverage!,
+      ...colors.colorCoverage,
+    )
+
+    gl.bindVertexArray(this.buffers.coverageVAO)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.coverageCount)
+
+    // Draw modification coverage bars OR SNP coverage bars (not both)
+    if (
+      state.showModifications &&
+      this.buffers.modCoverageVAO &&
+      this.buffers.modCoverageCount > 0
+    ) {
+      gl.useProgram(this.modCoverageProgram)
+      gl.uniform2f(
+        this.modCoverageUniforms.u_visibleRange!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform1f(
+        this.modCoverageUniforms.u_coverageHeight!,
+        state.coverageHeight,
+      )
+      gl.uniform1f(
+        this.modCoverageUniforms.u_coverageYOffset!,
+        state.coverageYOffset,
+      )
+      gl.uniform1f(this.modCoverageUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.modCoverageUniforms.u_canvasWidth!, canvasWidth)
+
+      gl.bindVertexArray(this.buffers.modCoverageVAO)
+      gl.drawArraysInstanced(
+        gl.TRIANGLES,
+        0,
+        6,
+        this.buffers.modCoverageCount,
+      )
+    } else if (
+      this.buffers.snpCoverageVAO &&
+      this.buffers.snpCoverageCount > 0
+    ) {
+      gl.useProgram(this.snpCoverageProgram)
+      gl.uniform2f(
+        this.snpCoverageUniforms.u_visibleRange!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform1f(
+        this.snpCoverageUniforms.u_coverageHeight!,
+        state.coverageHeight,
+      )
+      gl.uniform1f(
+        this.snpCoverageUniforms.u_coverageYOffset!,
+        state.coverageYOffset,
+      )
+      gl.uniform1f(this.snpCoverageUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.snpCoverageUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform3f(
+        this.snpCoverageUniforms.u_colorBaseA!,
+        ...colors.colorBaseA,
+      )
+      gl.uniform3f(
+        this.snpCoverageUniforms.u_colorBaseC!,
+        ...colors.colorBaseC,
+      )
+      gl.uniform3f(
+        this.snpCoverageUniforms.u_colorBaseG!,
+        ...colors.colorBaseG,
+      )
+      gl.uniform3f(
+        this.snpCoverageUniforms.u_colorBaseT!,
+        ...colors.colorBaseT,
+      )
+
+      gl.bindVertexArray(this.buffers.snpCoverageVAO)
+      gl.drawArraysInstanced(
+        gl.TRIANGLES,
+        0,
+        6,
+        this.buffers.snpCoverageCount,
+      )
+    }
+
+    // Draw noncov (interbase) histogram - bars growing DOWN from top
+    // Height is 1/4 of coverage height to keep it compact
+    const noncovHeight = state.coverageHeight / 4
+    if (
+      state.showInterbaseCounts &&
+      this.buffers.noncovHistogramVAO &&
+      this.buffers.noncovHistogramCount > 0
+    ) {
+      gl.useProgram(this.noncovHistogramProgram)
+      gl.uniform2f(
+        this.noncovHistogramUniforms.u_visibleRange!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform1f(this.noncovHistogramUniforms.u_noncovHeight!, noncovHeight)
+      gl.uniform1f(this.noncovHistogramUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.noncovHistogramUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform3f(
+        this.noncovHistogramUniforms.u_colorInsertion!,
+        ...colors.colorInsertion,
+      )
+      gl.uniform3f(
+        this.noncovHistogramUniforms.u_colorSoftclip!,
+        ...colors.colorSoftclip,
+      )
+      gl.uniform3f(
+        this.noncovHistogramUniforms.u_colorHardclip!,
+        ...colors.colorHardclip,
+      )
+
+      gl.bindVertexArray(this.buffers.noncovHistogramVAO)
+      gl.drawArraysInstanced(
+        gl.TRIANGLES,
+        0,
+        6,
+        this.buffers.noncovHistogramCount,
+      )
+    }
+
+    // Draw interbase indicators - triangles at top of coverage area
+    if (
+      state.showInterbaseIndicators &&
+      this.buffers.indicatorVAO &&
+      this.buffers.indicatorCount > 0
+    ) {
+      gl.useProgram(this.indicatorProgram)
+      gl.uniform2f(
+        this.indicatorUniforms.u_visibleRange!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform1f(this.indicatorUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.indicatorUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform3f(
+        this.indicatorUniforms.u_colorInsertion!,
+        ...colors.colorInsertion,
+      )
+      gl.uniform3f(
+        this.indicatorUniforms.u_colorSoftclip!,
+        ...colors.colorSoftclip,
+      )
+      gl.uniform3f(
+        this.indicatorUniforms.u_colorHardclip!,
+        ...colors.colorHardclip,
+      )
+
+      gl.bindVertexArray(this.buffers.indicatorVAO)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.buffers.indicatorCount)
+    }
+
+    // Draw separator line at bottom of coverage area
+    const lineY = 1 - (state.coverageHeight / canvasHeight) * 2
+    gl.useProgram(this.lineProgram)
+    gl.uniform4f(this.lineUniforms.u_color!, 0.7, 0.7, 0.7, 1)
+
+    const lineData = new Float32Array([-1, lineY, 1, lineY])
+    gl.bindVertexArray(this.lineVAO)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, lineData, gl.DYNAMIC_DRAW)
+    gl.drawArrays(gl.LINES, 0, 2)
+  }
+
+  private renderArcs(state: RenderState) {
+    const gl = this.gl
+    if (!this.buffers || !this.arcProgram || !this.arcLineProgram) {
+      return
+    }
+
+    const regionStart = this.buffers.regionStart
+    const domainOffset: [number, number] = [
+      state.domainX[0] - regionStart,
+      state.domainX[1] - regionStart,
+    ]
+    const colors = { ...defaultColorPalette, ...state.colors }
+    this.renderCoverage(state, domainOffset, colors)
+
+    const { canvasWidth, canvasHeight } = state
+    const lineWidth = state.arcLineWidth ?? 1
+
+    // Draw arcs using instanced triangle strip rendering
+    if (this.buffers.arcVAO && this.buffers.arcCount > 0) {
+      gl.useProgram(this.arcProgram)
+
+      const domainStartOffset = state.domainX[0] - this.buffers.regionStart
+      const domainExtent = state.domainX[1] - state.domainX[0]
+
+      const coverageOffset = state.showCoverage ? state.coverageHeight : 0
+      gl.uniform1f(this.arcUniforms.u_domainStartOffset!, domainStartOffset)
+      gl.uniform1f(this.arcUniforms.u_domainExtent!, domainExtent)
+      gl.uniform1f(this.arcUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform1f(this.arcUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.arcUniforms.u_coverageOffset!, coverageOffset)
+      gl.uniform1f(this.arcUniforms.u_lineWidthPx!, lineWidth)
+      gl.uniform1f(this.arcUniforms.u_gradientHue!, 0)
+
+      for (let i = 0; i < NUM_ARC_COLORS; i++) {
+        const c = arcColorPalette[i]!
+        gl.uniform3f(this.arcUniforms[`u_arcColors[${i}]`]!, c[0], c[1], c[2])
+      }
+
+      gl.bindVertexArray(this.buffers.arcVAO)
+      gl.drawArraysInstanced(
+        gl.TRIANGLE_STRIP,
+        0,
+        (ARC_CURVE_SEGMENTS + 1) * 2,
+        this.buffers.arcCount,
+      )
+    }
+
+    // Draw vertical lines for inter-chromosomal / long-range
+    if (this.buffers.arcLineVAO && this.buffers.arcLineCount > 0) {
+      gl.useProgram(this.arcLineProgram)
+
+      const [domainStartHi, domainStartLo] = splitPositionWithFrac(
+        state.domainX[0],
+      )
+      const domainExtent = state.domainX[1] - state.domainX[0]
+
+      gl.uniform3f(
+        this.arcLineUniforms.u_domainX!,
+        domainStartHi,
+        domainStartLo,
+        domainExtent,
+      )
+      gl.uniform1ui(
+        this.arcLineUniforms.u_regionStart!,
+        Math.floor(this.buffers.regionStart),
+      )
+      gl.uniform1f(this.arcLineUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(
+        this.arcLineUniforms.u_coverageOffset!,
+        state.showCoverage ? state.coverageHeight : 0,
+      )
+
+      for (let i = 0; i < NUM_LINE_COLORS; i++) {
+        const c = arcLineColorPalette[i]!
+        gl.uniform3f(
+          this.arcLineUniforms[`u_arcLineColors[${i}]`]!,
+          c[0],
+          c[1],
+          c[2],
+        )
+      }
+
+      gl.lineWidth(lineWidth)
+      gl.bindVertexArray(this.buffers.arcLineVAO)
+      gl.drawArrays(gl.LINES, 0, this.buffers.arcLineCount * 2)
+    }
+
+    gl.bindVertexArray(null)
+  }
+
+  private renderCloud(state: RenderState) {
+    const gl = this.gl
+    if (!this.buffers || !this.cloudProgram) {
+      return
+    }
+
+    const regionStart = this.buffers.regionStart
+    const domainOffset: [number, number] = [
+      state.domainX[0] - regionStart,
+      state.domainX[1] - regionStart,
+    ]
+    const colors = { ...defaultColorPalette, ...state.colors }
+    this.renderCoverage(state, domainOffset, colors)
+
+    if (!this.buffers.cloudVAO || this.buffers.cloudCount === 0) {
+      return
+    }
+
+    const { canvasWidth, canvasHeight } = state
+
+    const [domainStartHi, domainStartLo] = splitPositionWithFrac(
+      state.domainX[0],
+    )
+    const domainExtent = state.domainX[1] - state.domainX[0]
+
+    gl.useProgram(this.cloudProgram)
+    gl.uniform3f(
+      this.cloudUniforms.u_domainX!,
+      domainStartHi,
+      domainStartLo,
+      domainExtent,
+    )
+    gl.uniform1ui(
+      this.cloudUniforms.u_regionStart!,
+      Math.floor(this.buffers.regionStart),
+    )
+    gl.uniform1f(
+      this.cloudUniforms.u_featureHeight!,
+      state.featureHeight,
+    )
+    gl.uniform1f(this.cloudUniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform1f(
+      this.cloudUniforms.u_coverageOffset!,
+      state.showCoverage ? state.coverageHeight : 0,
+    )
+    gl.uniform1i(
+      this.cloudUniforms.u_colorScheme!,
+      state.cloudColorScheme ?? 0,
+    )
+
+    gl.bindVertexArray(this.buffers.cloudVAO)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.cloudCount)
+    gl.bindVertexArray(null)
+  }
+
   destroy() {
     const gl = this.gl
     for (const buf of this.glBuffers) {
@@ -3004,6 +3870,15 @@ export class WebGLRenderer {
       if (this.buffers.modCoverageVAO) {
         gl.deleteVertexArray(this.buffers.modCoverageVAO)
       }
+      if (this.buffers.arcVAO) {
+        gl.deleteVertexArray(this.buffers.arcVAO)
+      }
+      if (this.buffers.arcLineVAO) {
+        gl.deleteVertexArray(this.buffers.arcLineVAO)
+      }
+      if (this.buffers.cloudVAO) {
+        gl.deleteVertexArray(this.buffers.cloudVAO)
+      }
     }
     if (this.lineVAO) {
       gl.deleteVertexArray(this.lineVAO)
@@ -3024,5 +3899,25 @@ export class WebGLRenderer {
     gl.deleteProgram(this.hardclipProgram)
     gl.deleteProgram(this.modificationProgram)
     gl.deleteProgram(this.modCoverageProgram)
+    // Arcs cleanup
+    for (const buf of this.arcInstanceBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    if (this.arcTemplateBuffer) {
+      gl.deleteBuffer(this.arcTemplateBuffer)
+    }
+    if (this.arcProgram) {
+      gl.deleteProgram(this.arcProgram)
+    }
+    if (this.arcLineProgram) {
+      gl.deleteProgram(this.arcLineProgram)
+    }
+    // Cloud cleanup
+    for (const buf of this.cloudGLBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    if (this.cloudProgram) {
+      gl.deleteProgram(this.cloudProgram)
+    }
   }
 }

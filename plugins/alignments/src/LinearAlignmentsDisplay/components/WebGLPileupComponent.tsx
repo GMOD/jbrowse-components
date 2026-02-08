@@ -27,6 +27,8 @@ import { WebGLRenderer } from './WebGLRenderer.ts'
 
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
 import type { ColorPalette, RGBColor } from './WebGLRenderer.ts'
+import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
+import type { WebGLCloudDataResult } from '../../RenderWebGLCloudDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
@@ -159,6 +161,14 @@ interface LinearAlignmentsDisplayModel {
   setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (featureId: string) => void
   getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
+  renderingMode: 'pileup' | 'arcs' | 'cloud'
+  arcsState: {
+    rpcData: WebGLArcsDataResult | null
+    lineWidth: number
+  }
+  cloudState: {
+    rpcData: WebGLCloudDataResult | null
+  }
 }
 
 export interface Props {
@@ -243,6 +253,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     showInterbaseCounts,
     showInterbaseIndicators,
     showModifications,
+    renderingMode,
   } = model
 
   // Use measured dimensions from ResizeObserver (preferred, passive)
@@ -330,6 +341,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         highlightedFeatureIndex: model.highlightedFeatureIndex,
         selectedFeatureIndex: model.selectedFeatureIndex,
         colors: colorPalette,
+        renderingMode,
+        arcLineWidth: model.arcsState.lineWidth,
+        cloudColorScheme: colorSchemeIndex,
       })
     },
     [
@@ -344,6 +358,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       showInterbaseCounts,
       showInterbaseIndicators,
       showModifications,
+      renderingMode,
       width,
       height,
     ],
@@ -560,6 +575,50 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rpcData, showCoverage])
 
+  // Upload arcs data to GPU when arcsState.rpcData changes
+  const arcsRpcData = model.arcsState.rpcData
+  useEffect(() => {
+    if (!rendererRef.current || !arcsRpcData || renderingMode !== 'arcs') {
+      return
+    }
+    // uploadArcsFromTypedArrays calls ensureBuffers internally,
+    // so no need to create dummy pileup buffers first
+    rendererRef.current.uploadArcsFromTypedArrays({
+      regionStart: arcsRpcData.regionStart,
+      arcX1: arcsRpcData.arcX1,
+      arcX2: arcsRpcData.arcX2,
+      arcColorTypes: arcsRpcData.arcColorTypes,
+      arcIsArc: arcsRpcData.arcIsArc,
+      numArcs: arcsRpcData.numArcs,
+      linePositions: arcsRpcData.linePositions,
+      lineYs: arcsRpcData.lineYs,
+      lineColorTypes: arcsRpcData.lineColorTypes,
+      numLines: arcsRpcData.numLines,
+    })
+    scheduleRenderRef.current()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arcsRpcData, renderingMode])
+
+  // Upload cloud data to GPU when cloudState.rpcData changes
+  const cloudRpcData = model.cloudState.rpcData
+  useEffect(() => {
+    if (!rendererRef.current || !cloudRpcData || renderingMode !== 'cloud') {
+      return
+    }
+    // uploadCloudFromTypedArrays calls ensureBuffers internally,
+    // so no need to create dummy pileup buffers first
+    rendererRef.current.uploadCloudFromTypedArrays({
+      regionStart: cloudRpcData.regionStart,
+      chainPositions: cloudRpcData.chainPositions,
+      chainYs: cloudRpcData.chainYs,
+      chainFlags: cloudRpcData.chainFlags,
+      chainColorTypes: cloudRpcData.chainColorTypes,
+      numChains: cloudRpcData.numChains,
+    })
+    scheduleRenderRef.current()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cloudRpcData, renderingMode])
+
   // Re-render on settings change
   useEffect(() => {
     if (rendererReady) {
@@ -577,6 +636,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     showInterbaseCounts,
     showInterbaseIndicators,
     showModifications,
+    renderingMode,
     rpcData,
   ])
 
